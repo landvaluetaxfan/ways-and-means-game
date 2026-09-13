@@ -408,7 +408,7 @@ const Shell = (function () {
       <div class="opt-title">Sound</div>
       ${row("mute", "Mute", "Silence everything, without losing the levels below")}
       ${row("roomTone", "Room tone", "The air handling, a long way off")}
-      ${row("music", "Music", "A slow bed that swells when a bill carries")}
+      ${row("music", "Music", "A jazz-funk bed that swells when a bill carries")}
       ${slider("gainUi", "Terminal")}
       ${slider("gainRoom", "Room")}
       ${slider("gainEvent", "Events")}

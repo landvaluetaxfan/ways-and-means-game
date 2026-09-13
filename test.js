@@ -636,11 +636,11 @@ console.log("\nCURRENTS IN A DIVISION:");
 /* ---------------------------------------------------------------------
    THE BED IS IN TUNE.
 
-   The eight-bar loop was replaced with a twenty-four-bar form, which is
-   seventy-two hand-typed MIDI numbers. A mistyped one is a wrong note
+   Thirty-two bars of hand-typed MIDI. A mistyped number is a wrong note
    that every static check passes and nobody hears until the loop reaches
-   that bar, two minutes into a session, once. These are the assertions
-   that would have caught it.
+   that bar, once, a minute into a session. These are the assertions that
+   would have caught it — plus the two structural claims the funk rewrite
+   rests on, because a claim nothing checks is a claim that rots.
    --------------------------------------------------------------------- */
 console.log("\nTHE ADAPTIVE BED:");
 (function () {
@@ -654,46 +654,70 @@ console.log("\nTHE ADAPTIVE BED:");
 
   const NAME = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
   const pc = m => ((m % 12) + 12) % 12;
-  /* D natural minor: D E F G A Bb C */
-  const SCALE = [2, 4, 5, 7, 9, 10, 0];
+  /* D dorian: D E F G A B C. The natural sixth is the mode's signature
+     and the clearest break from the minor the bed started in. */
+  const MODE = [2, 4, 5, 7, 9, 11, 0];
+  const inMode = m => MODE.indexOf(pc(m)) >= 0;
+  const named = ms => ms.map(m => NAME[pc(m)]).join(" ");
 
   ok("the form is long enough not to announce its own loop",
      F.BARS >= 20,
      F.BARS + " bars = " + (F.BARS * F.BEATS * 60 / F.BPM).toFixed(0) + "s at " + F.BPM + " BPM");
 
-  /* The old loop ended A7 -> Dm, a perfect cadence straight into bar one.
-     The ear learns that join in two passes. The last bar must not be the
-     dominant of the first. */
+  /* The old form cadenced A7 -> Dm across the join, which is as closed as
+     a join gets: the ear learns it in two passes. A cadence is carried by
+     the bass, so that is what this reads. */
   const last = F.PROG[F.BARS - 1], first = F.PROG[0];
-  /* A cadence is carried by the BASS, so that is what this reads. The old
-     form went A -> D across the join, which is as closed as a join gets. */
   ok("and does not cadence into its own first bar",
-     pc(last.bass[0]) !== pc(first.ch[0] + 7),
-     NAME[pc(last.bass[0])] + " -> " + NAME[pc(first.ch[0])] +
-     ", not " + NAME[pc(first.ch[0] + 7)] + " -> " + NAME[pc(first.ch[0])]);
+     pc(last.bass[0]) !== pc(first.bass[0] + 7),
+     named([last.bass[0]]) + " -> " + named([first.bass[0]]) +
+     ", not " + NAME[pc(first.bass[0] + 7)] + " -> " + named([first.bass[0]]));
 
-  /* Every sustained note must belong to the chord under it or to the key. */
+  /* Every note in the piece, against the mode. */
   const stray = [];
   F.PROG.forEach((b, i) => {
-    const tones = b.ch.map(pc);
-    const fits = m => tones.indexOf(pc(m)) >= 0 || SCALE.indexOf(pc(m)) >= 0;
-    if (!fits(b.reed)) stray.push("bar " + (i + 1) + " reed " + NAME[pc(b.reed)]);
-    (b.h || []).forEach(([m]) => {
-      if (!fits(m)) stray.push("bar " + (i + 1) + " lead " + NAME[pc(m)]);
+    const at = "bar " + (i + 1) + " ";
+    b.ch.forEach(m => { if (!inMode(m)) stray.push(at + "voicing " + NAME[pc(m)]); });
+    if (!inMode(b.reed)) stray.push(at + "reed " + NAME[pc(b.reed)]);
+    (b.h || []).forEach(([m]) => { if (!inMode(m)) stray.push(at + "lead " + NAME[pc(m)]); });
+    /* the bass may leave the mode only where the bar says it means to */
+    if (!b.chr) b.bass.forEach(m => {
+      if (!inMode(m)) stray.push(at + "bass " + NAME[pc(m)] + " (not marked chr)");
     });
-    /* the bass names the chord; its root must be the chord's root */
-    if (pc(b.bass[0]) !== pc(b.ch[0]) && i !== F.BARS - 1)
-      stray.push("bar " + (i + 1) + " bass " + NAME[pc(b.bass[0])] +
-                 " under " + NAME[pc(b.ch[0])]);
   });
-  ok("every sustained note is a chord tone or in the key",
+  ok("every note is in the mode, or marked as leaving it",
      stray.length === 0, stray.length ? stray.join("; ") : F.BARS + " bars checked");
 
-  /* The last bar is the deliberate exception above: the tonic chord over
-     the subdominant, which drifts back to bar one instead of resolving. */
-  ok("except the last bar, which hangs on purpose",
-     pc(last.bass[0]) !== pc(last.ch[0]),
-     NAME[pc(last.ch[0])] + " over " + NAME[pc(last.bass[0])]);
+  const chr = F.PROG.filter(b => b.chr).length;
+  ok("and leaving it is rare enough to mean something",
+     chr > 0 && chr <= F.BARS / 8, chr + " of " + F.BARS + " bars borrow a root");
+
+  /* THE ROOTLESS VOICING is the fusion claim: the bass carries the root,
+     which is why the same four notes are Dm11 over D and Fmaj9 over F.
+     If a voicing ever doubles its own root the trick is off. */
+  const rooted = F.PROG.filter((b, i) => b.ch.some(m => pc(m) === pc(b.bass[0])));
+  ok("every voicing leaves its root to the bass",
+     rooted.length === 0,
+     rooted.length ? rooted.length + " voicings double the root" : F.BARS + " rootless");
+
+  /* THE KIT IS IN THE BED. It used to be a swell layer held back for a
+     division, and funk with no drums is a chord loop. */
+  ok("the kit plays in the bed and not only in a swell",
+     F.BED.indexOf("drums") >= 0, F.BED.join(", "));
+  ok("and the horn is still held back for the swells",
+     F.BED.indexOf("lead") < 0);
+
+  /* A horn note off the sixteenth grid never fires at all: the sequencer
+     matches beat * 4 against an integer step. It would be silently absent. */
+  const offgrid = [];
+  F.PROG.forEach((b, i) => (b.h || []).forEach(([m, beat, d]) => {
+    if (Math.abs(beat * 4 - Math.round(beat * 4)) > 1e-9)
+      offgrid.push("bar " + (i + 1) + " at beat " + beat);
+    if (beat + d > F.BEATS + 0.001)
+      offgrid.push("bar " + (i + 1) + " runs past the barline");
+  }));
+  ok("every horn note lands on the grid and inside its bar",
+     offgrid.length === 0, offgrid.join("; ") || "checked");
 
   ok("every note is in a range a human could play",
      F.PROG.every(b => b.ch.every(m => m >= 36 && m <= 84) &&
@@ -703,17 +727,129 @@ console.log("\nTHE ADAPTIVE BED:");
   /* Silence is a layer. Every bar used to carry every voice. */
   const quiet = F.PROG.filter(b => b.q).length;
   ok("some bars are quieter than others", quiet > 0 && quiet < F.BARS,
-     quiet + " of " + F.BARS + " bars drop the keys");
+     quiet + " of " + F.BARS + " bars drop the comping");
 
-  /* The hook has to be a hook: short, in the key, and actually used. */
+  /* The hook has to be a hook: short, in the mode, and actually used. */
   ok("the hook is short enough to remember",
      F.MOTIF.length >= 2 && F.MOTIF.length <= 5, F.MOTIF.length + " notes");
-  ok("and is in the key",
-     F.MOTIF.every(m => SCALE.indexOf(pc(m)) >= 0),
-     F.MOTIF.map(m => NAME[pc(m)]).join(" ")); 
+  ok("and is in the mode", F.MOTIF.every(inMode), named(F.MOTIF));
+  /* the dorian sixth is the whole point of moving off the minor */
+  ok("and uses the mode's own note", F.MOTIF.some(m => pc(m) === 11),
+     "B natural, the dorian sixth");
   const quoted = F.PROG.some(b => (b.h || []).length >= F.MOTIF.length &&
     F.MOTIF.every((m, i) => pc(b.h[i][0]) === pc(m)));
   ok("and the written line quotes it somewhere", quoted);
 
   if (bad) { console.log("\n" + bad + " BED FAILURES"); process.exitCode = 1; }
+})();
+
+/* ---------------------------------------------------------------------
+   AND IT PLAYS.
+
+   The section above proves the NOTES are right. Nothing proved the code
+   that plays them runs at all: jsdom has no Web Audio, so build() returns
+   false in every harness and the sequencer, the six voices and the four
+   swells were never executed by any check in the project.
+
+   This drives a whole loop of the form through a recording stub. It is
+   not listening — it cannot be — but it catches the errors that are not
+   about taste: a voice that throws, a pattern that addresses a step that
+   does not exist, and an exponential ramp to zero, which is silent in a
+   stub and a thrown DOMException in a browser.
+   --------------------------------------------------------------------- */
+console.log("\nAND IT PLAYS:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const M = require("./js/music.js"), F = M.__form;
+  const made = {}, ramps = [];
+  const bump = k => made[k] = (made[k] || 0) + 1;
+
+  function param(name) {
+    const p = {
+      value: 0,
+      setValueAtTime: (v, t) => { ramps.push([name, "set", v, t]); return p; },
+      linearRampToValueAtTime: (v, t) => { ramps.push([name, "lin", v, t]); return p; },
+      exponentialRampToValueAtTime: (v, t) => { ramps.push([name, "exp", v, t]); return p; },
+      cancelScheduledValues: () => p,
+      cancelAndHoldAtTime: () => p
+    };
+    return p;
+  }
+  const node = extra => Object.assign({
+    connect: () => {}, disconnect: () => {}
+  }, extra);
+
+  const ctx = {
+    currentTime: 0, sampleRate: 8000, state: "running", resume: () => {},
+    createOscillator: () => { bump("osc"); return node(
+      { type: "sine", frequency: param("osc.f"), detune: param("osc.detune"),
+        start: () => {}, stop: () => {} }); },
+    createGain: () => { bump("gain"); return node({ gain: param("gain") }); },
+    createBiquadFilter: () => { bump("filter"); return node(
+      { type: "lowpass", frequency: param("filter.f"), Q: param("Q") }); },
+    createDelay: () => node({ delayTime: param("delay") }),
+    createBufferSource: () => { bump("noise"); return node(
+      { buffer: null, loop: false, start: () => {}, stop: () => {} }); },
+    createBuffer: (ch, len) => ({ getChannelData: () => new Float32Array(len) })
+  };
+  const musicBus = node({ gain: param("bus") });
+
+  /* music.js reads the globals at init(), so the stub goes in first. */
+  globalThis.Sound = {
+    context: () => ctx, musicOut: () => musicBus, onReady: fn => fn()
+  };
+
+  /* The sequencer paces itself with setTimeout. Capture the callback and
+     drive the clock by hand so a whole loop passes in no time at all. */
+  const realSet = globalThis.setTimeout, realClear = globalThis.clearTimeout;
+  let pending = null, ticks = 0, threw = null;
+  globalThis.setTimeout = fn => { pending = fn; return 0; };
+  globalThis.clearTimeout = () => { pending = null; };
+
+  const LOOP = F.BARS * F.BEATS * 60 / F.BPM;
+  try {
+    M.init();
+    ok("the graph builds and the transport starts", M.available() === true);
+    /* one full pass of the form, plus every swell along the way */
+    const swells = ["rise", "tension", "moment", "defeat", "sombre"];
+    while (pending && ctx.currentTime < LOOP + 1 && ticks < 50000) {
+      const fn = pending; pending = null;
+      ctx.currentTime += 0.04;
+      fn();
+      if (ticks % 400 === 399) M[swells[(ticks / 400 | 0) % swells.length]]();
+      ticks++;
+    }
+    M.stop();
+  } catch (e) { threw = e; }
+  globalThis.setTimeout = realSet; globalThis.clearTimeout = realClear;
+
+  ok("a whole loop of the form plays without throwing",
+     !threw, threw ? threw.message : ticks + " scheduler ticks over " +
+     ctx.currentTime.toFixed(0) + "s");
+
+  ok("and it got all the way round", ctx.currentTime >= LOOP,
+     ctx.currentTime.toFixed(0) + "s of a " + LOOP.toFixed(0) + "s form");
+
+  /* Every voice in the form must actually have been reached. A pattern
+     that addresses a step outside the bar is silent, not an error. */
+  ok("every voice was reached", (made.osc || 0) > 500 && (made.noise || 0) > 200,
+     (made.osc || 0) + " oscillators, " + (made.noise || 0) + " noise bursts");
+
+  /* AN EXPONENTIAL RAMP TO ZERO throws a DOMException in a browser and
+     does nothing in a stub, so it is invisible everywhere except on the
+     player's machine. Every fade here has to end at a small positive. */
+  const zeroed = ramps.filter(r => r[1] === "exp" && !(r[2] > 0));
+  ok("no exponential ramp reaches zero", zeroed.length === 0,
+     zeroed.length ? zeroed.length + " ramps to " + zeroed[0][2] +
+     " on " + zeroed[0][0] : ramps.length + " automation points");
+
+  /* A ramp scheduled in the past is applied instantly, which is a click. */
+  const backwards = ramps.filter(r => r[3] < -0.001);
+  ok("and none is scheduled before the clock", backwards.length === 0);
+
+  delete globalThis.Sound;
+  if (bad) { console.log("\n" + bad + " PLAYBACK FAILURES"); process.exitCode = 1; }
 })();
