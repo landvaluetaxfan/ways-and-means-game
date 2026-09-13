@@ -1020,38 +1020,89 @@ const UI = (function () {
      owns which brief - wants a `brief` field on content/cabinet.js and
      is left for the content pass. */
   function cabinetView(effects) {
-    const moved = {};
-    /* A loyalty target may be a CURRENT rather than a party, and a
-       current's ministers sit for its party — so fold currents up to
-       their parent or the cabinet never notices the half of the caucus
-       most likely to be upset. */
+    /* WHO SPEAKS, in two passes.
+
+       FIRST BY BRIEF. A minister owns subjects — content/cabinet.js says
+       which — and a choice that moves one of them is a choice in their
+       department. That is the strong signal and it is why the field
+       exists: the Minister for Substrate and Thermal should answer on
+       substrate because it is hers, not because her party happens to be
+       in the coalition.
+
+       THEN BY PARTY, for whatever the briefs do not cover, because a
+       choice that costs a party is still a choice its ministers feel.
+       Currents fold up to their parent or the half of the caucus most
+       likely to be upset stays invisible.
+
+       Never exactly one voice: a lone adviser reads as the game telling
+       you the answer. Two who disagree is a decision; two who agree is
+       information of a stronger kind. */
     const owner = id => {
       const cur = (C.currents || []).find(x => x.id === id);
       return cur ? cur.party : id;
     };
+    const subjects = new Set(), moved = {};
     const add = (k, v) => { const o = owner(k); moved[o] = (moved[o] || 0) + v; };
-    [].concat(effects || []).forEach(e => {
-      if (e.loyalty) Object.keys(e.loyalty).forEach(k => add(k, e.loyalty[k]));
-      if (e.capital) Object.keys(e.capital).forEach(k => add(k, e.capital[k]));
+    [].concat(effects || []).forEach(e => Object.keys(e).forEach(k => {
+      if (k === "move") Object.keys(e.move).forEach(key => {
+        const dot = key.indexOf("."), ns = dot < 0 ? "scalar" : key.slice(0, dot);
+        const id = dot < 0 ? key : key.slice(dot + 1);
+        if (ns === "loyalty" || ns === "capital") add(id, e.move[key]);
+        else subjects.add(ns === "scalar" ? id : ns + "." + id);
+      });
+      if (k === "law") Object.keys(e.law).forEach(x => subjects.add(x));
+      if (k === "station") Object.keys(e.station).forEach(sid =>
+        Object.keys(e.station[sid]).forEach(f => subjects.add(f)));
+    }));
+
+    const rows = [], seen = new Set();
+    const push = (post, holder, forIt, why) => {
+      if (seen.has(post.id)) return;
+      seen.add(post.id);
+      const who = C.characterById[holder];
+      rows.push({ name: who ? who.name : holder, office: post.title || post.name,
+                  for: forIt, why: why });
+    };
+
+    (C.cabinet || []).forEach(post => {
+      const p = st.cabinet[post.id];
+      if (!p || !p.holder) return;
+      const hit = (post.brief || []).some(b => subjects.has(b));
+      if (!hit) return;
+      /* Whether they are for it is not derivable from the subject alone,
+         so the brief decides that they SPEAK and their party decides
+         which way. A minister whose party is untouched is neutral, and
+         a neutral voice on their own brief is still worth hearing. */
+      const party = p.party || post.party;
+      push(post, p.holder, (moved[party] || 0) >= 0, "brief");
     });
-    const rows = [];
+
     (C.cabinet || []).forEach(post => {
       const p = st.cabinet[post.id];
       if (!p || !p.holder) return;
       const party = p.party || post.party;
       if (moved[party] == null || moved[party] === 0) return;
-      const who = C.characterById[p.holder];
-      rows.push({ name: who ? who.name : p.holder, office: post.title || post.name,
-                  for: moved[party] > 0 });
+      push(post, p.holder, moved[party] > 0, "party");
     });
-    /* NEVER EXACTLY ONE. A single adviser reads as the game telling you
-       the answer, which is the failure this guard exists for. Two who
-       disagree is a decision; two or more who agree is also information,
-       and a stronger kind — "the cabinet is against this" is worth
-       hearing. So: a disagreeing pair if there is one, otherwise up to
-       two of a united view, and nothing at all from a lone voice. */
+
+    const byBrief = rows.filter(r => r.why === "brief");
     const yes = rows.filter(r => r.for), no = rows.filter(r => !r.for);
+
+    /* A brief holder always gets a seat at the table if anyone does. */
+    if (byBrief.length && yes.length && no.length) {
+      const a = byBrief[0];
+      const other = (a.for ? no : yes)[0];
+      if (other) return [a, other];
+    }
     if (yes.length && no.length) return [yes[0], no[0]];
+
+    /* THE "NEVER EXACTLY ONE" RULE IS ABOUT PARTY-DERIVED ADVICE, where a
+       lone voice is arbitrary and reads as the game telling you the
+       answer. A minister answering on their OWN DEPARTMENT is not that:
+       it is the department reporting, and suppressing it means a
+       decision purely about substrate hears from nobody at all — which
+       is what the first version of this did. */
+    if (byBrief.length === 1 && rows.length === 1) return byBrief;
     if (rows.length >= 2) return rows.slice(0, 2);
     return [];
   }
@@ -1817,5 +1868,6 @@ const UI = (function () {
   /* redraw is exported for the checks only. It is drawAll under another
      name, and it makes no sound — which is itself asserted, so exporting
      it cannot become a way to smuggle a cue into a renderer. */
-  return { boot, state: () => st, annotate, setStatus, redraw: drawAll };
+  return { boot, state: () => st, annotate, setStatus, redraw: drawAll,
+           __test: { cabinetView } };
 })();

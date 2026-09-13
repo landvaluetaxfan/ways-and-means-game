@@ -842,4 +842,52 @@ try {
      lo > mid && mid > hi, `treasury 20 → ${lo}, 50 → ${mid}, 80 → ${hi}`);
 } catch (e) { ok("the volume price", false, e.message); }
 
+
+/* CABINET ADVICE KEYS ON THE BRIEF, NOT ONLY ON PARTY.
+
+   Before content/cabinet.js carried a `brief`, the only signal was party
+   membership — so on a substrate decision the Deputy Prime Minister and
+   the Minister for Substrate and Thermal both spoke, identically,
+   because they are both NPP, and the one whose department it actually
+   was had no special claim. */
+try {
+  const E = w.eval("Engine"), Cx = w.eval("CONTENT");
+  const withBrief = (Cx.cabinet || []).filter(p => p.brief && p.brief.length);
+  ok("ministries declare what they own", withBrief.length >= 8,
+     withBrief.length + " of " + (Cx.cabinet || []).length + " posts");
+
+  /* every subject a brief names must be a real thing the engine moves */
+  const st = w.eval("Engine.newGame(CONTENT)");
+  const known = new Set(
+    Object.keys(st.scalars)
+      .concat(Object.keys(st.law))
+      .concat(Object.keys(st.prices).map(k => "price." + k))
+      .concat(["suspended", "closure", "attested", "population", "slots",
+               "anchor_concession"]));
+  const unknown = [];
+  withBrief.forEach(p => (p.brief || []).forEach(b => {
+    if (!known.has(b)) unknown.push(p.id + " → " + b);
+  }));
+  ok("and every subject named is one the engine actually has",
+     unknown.length === 0, unknown.join(", "));
+
+  /* the minister whose department it is speaks on a choice in it */
+  w.eval('UI.boot(UI.state(), CONTENT);');
+  const spoke = w.eval(`(function () {
+    var rows = UI.__test.cabinetView([{ move: { "price.substrate": -12 } }]);
+    return rows.map(function (r) { return r.office; });
+  })()`);
+  ok("a decision on substrate is answered by the minister who owns it",
+     spoke.some(o => /Substrate/i.test(o)), spoke.join(" | "));
+  /* One voice is allowed ONLY when it is the department's own. The rule
+     guards against a lone PARTY-derived adviser, which reads as the game
+     telling you the answer; a minister on their own brief is the
+     department reporting. */
+  const partyOnly = w.eval(`(function () {
+    return UI.__test.cabinetView([{ move: { "loyalty.psa": -9 } }]).length;
+  })()`);
+  ok("a lone party-derived adviser is still suppressed", partyOnly !== 1,
+     partyOnly + " voices on a pure loyalty cost");
+} catch (e) { ok("cabinet advice by brief", false, e.message); }
+
 H.finish("the interface is healthy");

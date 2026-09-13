@@ -39,11 +39,10 @@ block ahead of Part D.
 - **`suspendedAbove` / `suspendedBelow`**: the last link of §7.9's chain.
 - **The consequence-chain audit** in `tools/lint.js`.
 
-**Vocabulary: 26 effects, 27 conditions.** Over the twenty-verb line §15.5 warns
-about. `design/01` sets out the consolidation that pays for it —
-five number-movers into one `move` — and **that decision is outstanding and is
-the author's**, because it trades legibility in content for room to build. Until
-it is made, no new verb should land.
+**Vocabulary: 20 effects, 29 conditions.** The `move` consolidation landed —
+five number-movers into one namespaced verb, `unflag` folded into `flag`,
+`byelection` folded into `vacate_seat` — so the count is back under §15.5's line
+with room for the six the plan still needs.
 
 ---
 
@@ -132,12 +131,19 @@ undertaking's `text` is what the order paper prints and the wording is prose.
 
 Small, and none of it blocks Part C.
 
-- **The calendar** (`design/15`), and it should go first. Nothing advances
-  `st.session`, nothing refills the slots, and no session length exists — so
-  §7.7's "currency that cannot be topped up" also never runs out, and a division
-  happens whenever the player calls it. One setup field, one block in
-  `advance()`, one field on a bill. It closes the loudest complaint about the
-  loop with less code than anything else in `design/`.
+- ~~The calendar~~ — **done** (`design/15`). Sessions end, order-paper time
+  refills, unpassed business falls, and a division has a day.
+- ~~The `move` consolidation~~ — **done**, along with four pre-existing
+  data-loss bugs in the editor that the migration exposed.
+- ~~A `brief` field on `content/cabinet.js`~~ — **done**. Cabinet advice keys on
+  the ministry that owns a subject before it falls back to party.
+- ~~Money, the half that needed no canon~~ — **done**: confidence and supply is
+  a distinct whip relationship, and the volume price is continuous.
+
+**Now blocking, and the author's:** lock §7.5.3, name the unit, and amend
+§7.6's treasury line. The exact wording is written out in `design/13` §8.1.
+Until it lands, the denominated stock, the Appropriation Bill and a treasury
+that is a quantity rather than an index all stay unbuilt.
 
 - **The `move` consolidation** (`design/01`), once the author decides. It touches
   every event and the editor, and it gets more expensive with every event

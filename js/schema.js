@@ -93,6 +93,11 @@ const SCHEMA = {
   },
 
   /* ---------- enumerations the forms draw from ---------- */
+  /* What a ministry can own. A brief is the list of subjects a post
+     answers for, and it is what decides which minister speaks when a
+     choice touches their department — see cabinetView() in js/ui.js. */
+  briefSubjects: ["scalars", "laws", "prices", "stationFields"],
+
   vocab: {
     scalars: ["party_loyalty","public_standing","consumables","thermal_margin","treasury"],
     laws: ["divergence_threshold_hours","civic_clock_minimum","suspension_debt_accrual","substrate_public_share",
