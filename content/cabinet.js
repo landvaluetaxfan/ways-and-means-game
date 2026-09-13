@@ -74,7 +74,38 @@ const CABINET = [
     brief:["thermal_margin","closure"],
     note:"The civilian answer to the engineering authority. Declaration is easy; termination is the fight." },
   { id:"treasury",                name:"The Treasury",              title:"Treasurer",
-    holder:"skye", party:"cu", apart:true,
+    /* VACANT AT THE OPENING, because it is the post the Prime Minister
+       herself held until last week. A new leader's first appointment is
+       her own replacement, and it is the one seat at the table she
+       chose. See design/14 §6.2.
+
+       MECHANICAL DEMONSTRATION, opencode's to re-author: the three
+       candidates are the three different acts available — keep the
+       department steady, bring the challenger inside, or pay the third
+       partner — and the notes are engineering rather than prose. Nobody
+       here is invented; §2.7 freezes the roster and all three already
+       exist. */
+    holder:null, party:null, apart:true, vacatedBy:"flash",
     brief:["treasury"],
+    candidates:[
+      { holder:"skye", party:"cu",
+        note:"Your deputy at the Treasury for four years. Knows the file, and is owed nothing.",
+        effects:[{move:{"loyalty.cu_loyalists":4}},
+                 {move:{treasury:3}},
+                 {wire:"SKYE CONFIRMED AT THE TREASURY; NO CHANGE OF DIRECTION SIGNALLED"}] },
+      { holder:"halloran", party:"cu",
+        note:"Leads the eleven members collecting signatures against you. Inside the tent, he cannot count them.",
+        effects:[{move:{"loyalty.cu_halloran":26}},
+                 {move:{"loyalty.cu_loyalists":-11}},
+                 {move:{public_standing:-4}},
+                 {signatures:-4},
+                 {wire:"CZARNECKI TO THE TREASURY; LOYALISTS SAY THEY WERE NOT CONSULTED"}] },
+      { holder:"abadi", party:"rv",
+        note:"The third partner has two junior posts and has asked for a department that matters.",
+        effects:[{move:{"loyalty.rv":14}},
+                 {move:{"capital.rv":3}},
+                 {move:{"loyalty.cu_maintenance":-7}},
+                 {wire:"TREASURY GOES TO THE DEMOCRATIC CENTRE IN COALITION REBALANCE"}] }
+    ],
     note:"Sits apart and reports directly to the Prime Minister." }
 ];

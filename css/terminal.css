@@ -1483,3 +1483,21 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
   text-transform:none;color:var(--ink-soft);
   border-bottom:1px solid var(--chrome-dk);padding-bottom:3px;margin-bottom:10px;
 }
+
+/* ---------- the appointment ----------
+   A vacancy with names against it. Each candidate is a small dossier
+   rather than a menu row, because the whole point is that appointing
+   one costs something and the cost is legible before you commit. */
+#gov-appoint .cand{
+  border-top:1px solid var(--rule);padding:6px 0 8px;
+}
+#gov-appoint .cand:first-of-type{border-top:0;}
+#gov-appoint .cand-h{display:flex;align-items:baseline;gap:6px;}
+#gov-appoint .cand-h b{font-size:12.5px;}
+#gov-appoint .cand .note{margin:1px 0 3px;}
+#gov-appoint .cand .ch-eff{margin-bottom:5px;}
+#gov-appoint .cand .commit{width:100%;}
+/* a hole in the government, which is not the same thing as a promise */
+#sit-docket .dk.post{border-left:3px dashed var(--alert);padding-left:6px;}
+#sit-docket .dk.post b{font-weight:700;}
+#sit-docket .dk.post i{color:var(--alert);}

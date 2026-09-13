@@ -591,6 +591,61 @@ const UI = (function () {
         <td class="n">${s.party ? mark(s.party) : ""}</td></tr>`;
     }).join("");
 
+    /* ---- the appointment ----
+
+       A vacancy the player fills, once. It is not a menu: each name
+       carries what appointing them costs, and the cost is paid the
+       moment it is made. Leaving it empty is also a decision — a post
+       with no holder cannot make a statutory instrument. */
+    const vac = Engine.vacancies(st, C);
+    const vbox = $("#gov-appoint");
+    if (vbox) {
+      if (!vac.length) { vbox.innerHTML = ""; vbox.hidden = true; }
+      else {
+        vbox.hidden = false;
+        vbox.innerHTML = vac.map(pid => {
+          const post = (C.cabinet || []).find(p => p.id === pid);
+          return `<div class="rulehead">${esc(post.title || post.name)} &mdash; vacant</div>` +
+            (post.vacatedBy === C.setup.pm
+              ? `<div class="note">The post you held until last week. Your first
+                   appointment is your own replacement, and it cannot be taken back.</div>`
+              : "") +
+            Engine.candidates(st, C, pid).map(c => {
+              const ch = C.characterById[c.holder];
+              const cl = Engine.describe(st, C, c.effects).filter(x => x.text);
+              return `<div class="cand">
+                <div class="cand-h"><b>${esc(ch ? ch.name : c.holder)}</b>
+                  ${c.party ? mark(c.party) : ""}</div>
+                <div class="note">${esc(c.note || "")}</div>
+                <ul class="ch-eff">${cl.map(x =>
+                  `<li class="t-${x.tone}"><i>${x.tone === "good" ? "+" : x.tone === "bad" ? "\u2212" : "\u00b7"}</i>${esc(x.text)}</li>`
+                ).join("")}</ul>
+                <button class="btn commit grave" data-appoint="${esc(pid)}"
+                  data-cand="${c.index}">Appoint ${esc(ch ? bare(ch.name) : c.holder)}</button>
+              </div>`;
+            }).join("");
+        }).join("");
+
+        vbox.querySelectorAll("[data-appoint]").forEach(b => b.addEventListener("click", () => {
+          const pid = b.dataset.appoint, ci = +b.dataset.cand;
+          const c = Engine.candidates(st, C, pid)[ci];
+          const ch = c && C.characterById[c.holder];
+          Dialog.confirm(
+            (ch ? ch.name : c.holder) + " takes the post. An appointment cannot be undone.",
+            { title: "Appoint?", yes: "Appoint", danger: true },
+            ok => {
+              if (!ok) return;
+              const r = Engine.fillPost(st, C, pid, ci);
+              if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
+              cue("stamp");
+              if (typeof Wait !== "undefined") Wait.brief(420);
+              setStatus("Appointed " + (ch ? ch.name : r.holder), "transient");
+              saved(); drawAll(); afterAction();
+            });
+        }));
+      }
+    }
+
     $("#gov-pres").innerHTML =
       `<div class="kv"><dt>Incumbent</dt><dd>${C.characterById.tenaya.name.replace("President ", "")}</dd>` +
       `<dt>Relations</dt><dd>${st.president.relationship}</dd></div>` +
@@ -1192,6 +1247,20 @@ const UI = (function () {
         rows.push(`<div class="dk pray"><b>${esc(si.number)}</b>
           <i>prayable for ${x.prayerCloses - st.sitting} more</i></div>`);
     });
+    /* A POST THE GOVERNMENT HAS NOT FILLED IS BUSINESS. The appointment
+       lives on the Government screen, but a player who never opens it
+       would never learn there was one — and the docket is where this
+       game says what is outstanding. */
+    Engine.vacancies(st, C).forEach(pid => {
+      const post = (C.cabinet || []).find(p => p.id === pid);
+      /* `.post`, not `.owed`. An undertaking is a promise the government
+         made; a vacancy is a hole in it. They look alike and they are not
+         the same business, and sharing the class made the docket's own
+         check count one as the other. */
+      rows.push(`<div class="dk post"><b>${esc(post ? post.title || post.name : pid)}
+        stands vacant</b><i>no holder · the department cannot make an order</i></div>`);
+    });
+
     /* THE SESSION'S END IS ALWAYS ON THE PAPER. It is the cheapest
        possible source of pressure and it needs no mechanic of its own:
        everything above it has to happen before it. */

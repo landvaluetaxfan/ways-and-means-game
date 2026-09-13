@@ -645,19 +645,42 @@ try {
   const d = w.eval("JSON.stringify(window.__d)");
   ok("describe() names the party rather than its id", /New Progressive/.test(d), d);
 
+  /* EVERY set of effects the player is shown, not only a choice's. The
+     candidates for an appointment are read the same way, and
+     `{signatures:-4}` rendered as the bare word "signatures" there —
+     teaching the engine's vocabulary instead of the world's — because
+     this check only walked events. */
   const bare = w.eval(`(function () {
-    var bad = [];
+    var bad = [], st = UI.state();
     CONTENT.events.forEach(function (e) {
       (e.choices || []).forEach(function (c) {
-        Engine.describe(UI.state(), CONTENT, c.effects).forEach(function (x) {
-          if (/^[a-z_]+$/.test(x.text)) bad.push(e.id + ": " + x.text);
+        Engine.describe(st, CONTENT, c.effects).forEach(function (x) {
+          if (/^[a-z_]+$/.test(x.text)) bad.push("event " + e.id + ": " + x.text);
+        });
+      });
+    });
+    (CONTENT.cabinet || []).forEach(function (p) {
+      (p.candidates || []).forEach(function (c) {
+        Engine.describe(st, CONTENT, c.effects).forEach(function (x) {
+          if (/^[a-z_]+$/.test(x.text)) bad.push("candidate " + p.id + "/" + c.holder + ": " + x.text);
+        });
+      });
+    });
+    (CONTENT.bills || []).forEach(function (b) {
+      ["onPass", "onFail"].forEach(function (k) {
+        Engine.describe(st, CONTENT, b[k]).forEach(function (x) {
+          if (/^[a-z_]+$/.test(x.text)) bad.push("bill " + b.id + " " + k + ": " + x.text);
         });
       });
     });
     return bad;
   })()`);
-  ok("no choice in the content describes itself as a bare verb name",
+  ok("nothing shown to the player describes itself as a bare verb name",
      bare.length === 0, bare.join(", "));
+
+  /* and a gain is not described with a loss's adverb */
+  const up = w.eval('JSON.stringify(Engine.describe(UI.state(), CONTENT, [{move:{"loyalty.psa":20}}]))');
+  ok("a large gain reads as a gain", !/badly/.test(up), up);
 } catch (e) { ok("the derived reading", false, e.message); }
 
 /* UNDERTAKINGS AND THE DOCKET. */
@@ -889,5 +912,60 @@ try {
   ok("a lone party-derived adviser is still suppressed", partyOnly !== 1,
      partyOnly + " voices on a pure loyalty cost");
 } catch (e) { ok("cabinet advice by brief", false, e.message); }
+
+
+/* THE ONE APPOINTMENT. The post the Prime Minister held until last week
+   is vacant, and filling it is her first act. It is an ACT, not a menu:
+   each name costs something and the cost is paid on the click. */
+try {
+  const E = w.eval("Engine"), Cx = w.eval("CONTENT");
+  const st0 = w.eval("Engine.newGame(CONTENT)");
+  ok("a post is vacant at the opening", E.vacancies(st0, Cx).length === 1,
+     E.vacancies(st0, Cx).join(", "));
+  ok("and it is the one she vacated on becoming Prime Minister",
+     (Cx.cabinet.find(p => p.id === E.vacancies(st0, Cx)[0]) || {}).vacatedBy === Cx.setup.pm);
+
+  const cands = E.candidates(st0, Cx, "treasury");
+  ok("it offers more than one name", cands.length >= 2, cands.length + " candidates");
+  ok("every candidate is a person who already exists (§2.7)",
+     cands.every(c => !!Cx.characterById[c.holder]),
+     cands.map(c => c.holder).join(", "));
+  ok("and every one of them costs something",
+     cands.every(c => (c.effects || []).length > 0));
+
+  /* the costs must DIFFER, or it is a menu with one item wearing three hats */
+  const shapes = cands.map(c => JSON.stringify(E.describe(st0, Cx, c.effects).map(x => x.text)));
+  ok("the three are politically different acts",
+     new Set(shapes).size === cands.length, new Set(shapes).size + " distinct");
+
+  /* filling it pays, once */
+  const before = st0.currents.cu_halloran.loyalty;
+  const r = E.fillPost(st0, Cx, "treasury", 1);
+  ok("appointing fills the post", r.ok && st0.cabinet.treasury.holder === "halloran");
+  ok("and pays for it at once", st0.currents.cu_halloran.loyalty !== before,
+     before + " → " + st0.currents.cu_halloran.loyalty);
+  ok("the vacancy is gone", E.vacancies(st0, Cx).length === 0);
+  ok("and it cannot be taken back", E.fillPost(st0, Cx, "treasury", 0).ok === false);
+
+  /* leaving it empty is also a decision — 3.3's refusal power biting from
+     the other side: a post with no holder cannot make an instrument */
+  const st1 = w.eval("Engine.newGame(CONTENT)");
+  const byTreasury = (Cx.instruments || []).find(i => i.author === "treasury");
+  if (byTreasury) {
+    ok("a vacant post cannot make its instrument",
+       E.canMake(st1, Cx, byTreasury.id).ok === false);
+  } else {
+    ok("a vacant post cannot make its instrument", true,
+       "no instrument is authored by the Treasury — skipped");
+  }
+
+  /* and the control exists, is a real button, and confirms */
+  w.eval('UI.boot(UI.state(), CONTENT);');
+  w.document.querySelector('.tab[data-t="gov"]').click();
+  const btns = w.document.querySelectorAll("#gov-appoint [data-appoint]");
+  ok("the Government screen offers the appointment", btns.length >= 2,
+     btns.length + " buttons");
+  ok("each is a real button", [].slice.call(btns).every(b => b.tagName === "BUTTON"));
+} catch (e) { ok("the one appointment", false, e.message); }
 
 H.finish("the interface is healthy");

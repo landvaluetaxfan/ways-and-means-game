@@ -1121,6 +1121,52 @@ const Engine = (function () {
     return { ok: true };
   }
 
+  /* ---------------------------------------------------------
+     THE APPOINTMENT
+
+     A vacancy the player fills. Content declares who is available and
+     what each of them costs, because who may hold the Treasury is a
+     fact about the Commonwealth and not about the engine (15.5).
+
+     IT IS AN ACT AND NOT A MENU. Filling a post applies that
+     candidate's effects, so the choice is paid for at the moment it is
+     made — and leaving it empty is also a decision, because a post with
+     no holder cannot make a statutory instrument, which is the
+     President's appointment-refusal power biting from the other side.
+
+     ONCE. There is no reshuffle yet (design/08 §3): once a post is
+     filled, `candidates` no longer apply and the appointment is spent.
+     That is deliberate for a first appointment — the whole weight of it
+     is that it cannot be taken back. */
+  function candidates(st, C, postId) {
+    const post = (C.cabinet || []).find(p => p.id === postId);
+    const held = st.cabinet[postId];
+    if (!post || !held || held.holder) return [];
+    return (post.candidates || []).map((c, i) => Object.assign({ index: i }, c));
+  }
+
+  function vacancies(st, C) {
+    return (C.cabinet || [])
+      .filter(p => st.cabinet[p.id] && !st.cabinet[p.id].holder &&
+                   (p.candidates || []).length)
+      .map(p => p.id);
+  }
+
+  function fillPost(st, C, postId, index) {
+    const list = candidates(st, C, postId);
+    const c = list[index];
+    if (!c) return { ok: false, reason: "not an available candidate" };
+    const post = (C.cabinet || []).find(p => p.id === postId);
+    appoint(st, C, postId, c.holder, c.party);
+    apply(st, C, c.effects);
+    const who = (C.characters || []).find(x => x.id === c.holder);
+    st.log.unshift({ sitting: st.sitting,
+      text: (post ? post.title || post.name : postId) + ": " +
+            (who ? who.name : c.holder) + " appointed" });
+    settle(st, C);
+    return { ok: true, holder: c.holder };
+  }
+
   function vacate(st, C, postId, reason) {
     const p = st.cabinet[postId];
     if (!p || !p.holder) return { ok: false };
@@ -1611,10 +1657,14 @@ const Engine = (function () {
      It names no party, station or event - every name is looked up in
      content (15.5).
      --------------------------------------------------------- */
-  const BAND = [[12, "badly"], [6, ""], [0, "a little"]];
+  /* MAGNITUDE WORDS DEPEND ON DIRECTION. One list gave "Pleases the
+     Czarnecki group, badly" — the band word was written for "Costs you"
+     and is nonsense on a gain. Two lists, and the caller says which. */
+  const BAND_DOWN = [[12, "badly"], [6, ""], [0, "a little"]];
+  const BAND_UP   = [[12, "a great deal"], [6, ""], [0, "a little"]];
   function band(n) {
-    const a = Math.abs(n);
-    for (const [t, w] of BAND) if (a >= t) return w;
+    const a = Math.abs(n), list = n >= 0 ? BAND_UP : BAND_DOWN;
+    for (const [t, w] of list) if (a >= t) return w;
     return "a little";
   }
   /* A verb pair per scalar, because one template does not fit all five:
@@ -1708,6 +1758,18 @@ const Engine = (function () {
           tone: "grave", text: "Makes " + nameOf("instruments", id, "number") }));
           break;
         case "wire": out.push({ tone: "plain", text: "Puts it on the wire" }); break;
+        /* A number that moves and is not described renders as its own
+           verb name — "signatures" — which teaches the player the
+           engine's vocabulary instead of the world's. */
+        case "signatures": out.push({
+          tone: v <= 0 ? "good" : "bad",
+          text: (v <= 0 ? "Thins the signatures against you"
+                        : "Adds to the signatures against you") });
+          break;
+        case "slots": out.push({ tone: (v && v.total > 0) ? "good" : "plain",
+          text: v && v.refill ? "Refills the order paper"
+                              : "Changes the order paper's time" });
+          break;
         case "coalition":
           if (v.remove) out.push({ tone: "grave", text: "Breaks the coalition" });
           if (v.add) out.push({ tone: "good", text: "Widens the coalition" });
@@ -1994,7 +2056,7 @@ const Engine = (function () {
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
     settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
-    prorogue, canDivide,
+    prorogue, canDivide, candidates, vacancies, fillPost,
     federalSuspended,
     CONDITIONS, EFFECTS
   };
