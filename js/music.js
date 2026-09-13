@@ -29,12 +29,14 @@ const Music = (function () {
   const SWING = SPB * 0.17;    /* push the off-beats late */
 
   const LAYERS = [
-    { id: "pad",   level: 0.07 },
-    { id: "bass",  level: 0.22 },
-    { id: "keys",  level: 0.11 },
-    { id: "reed",  level: 0.10 },
-    { id: "drums", level: 0.18 },
-    { id: "lead",  level: 0.15 }
+    { id: "pad",    level: 0.07 },
+    { id: "bass",   level: 0.22 },
+    { id: "rhodes", level: 0.09 },
+    { id: "keys",   level: 0.11 },
+    { id: "reed",   level: 0.10 },
+    { id: "shaker", level: 0.05 },
+    { id: "drums",  level: 0.18 },
+    { id: "lead",   level: 0.15 }
   ];
 
   /* 8 bars. ch: chord (MIDI). bass: [root, fifth, approach]. reed: a long
@@ -163,6 +165,25 @@ const Music = (function () {
     o.connect(lp); lp.connect(g); g.connect(gains.keys);
     o.start(t); o.stop(t + dur + 0.05);
   }
+  /* the rhodes: a warm electric piano. A short bell two octaves up over a round
+     sine body, comping one chord a bar under the sax. Part of the bed. */
+  function rhodes(t, ch, dur) {
+    ch.forEach((m, i) => {
+      const f = hz(m + 12), at = t + i * 0.012;
+      const o = ctx.createOscillator(), bell = ctx.createOscillator(),
+            bg = ctx.createGain(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
+      o.type = "sine"; o.frequency.value = f;
+      bell.type = "sine"; bell.frequency.value = f * 2;
+      lp.type = "lowpass"; lp.frequency.value = 1700;
+      bg.gain.setValueAtTime(0.4, at);
+      bg.gain.exponentialRampToValueAtTime(0.0001, at + 0.4);
+      g.gain.setValueAtTime(0.0001, at);
+      g.gain.linearRampToValueAtTime(0.07, at + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+      o.connect(lp); bell.connect(bg); bg.connect(lp); lp.connect(g); g.connect(gains.rhodes);
+      o.start(at); bell.start(at); o.stop(at + dur + 0.1); bell.stop(at + dur + 0.1);
+    });
+  }
   /* the reed: a soft saxophone, a long tone with vibrato. Part of the bed. */
   function reed(t, f, dur) {
     const o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
@@ -224,6 +245,19 @@ const Music = (function () {
     s.start(t); s.stop(t + 0.07);
   }
 
+  /* the shaker: a soft off-beat pulse that belongs to the bed rather than to
+     the kit, so the room has a heartbeat even when no event is running. */
+  function shaker(t, lvl) {
+    const s = ctx.createBufferSource(), hp = ctx.createBiquadFilter(), g = ctx.createGain();
+    s.buffer = NOISE;
+    hp.type = "highpass"; hp.frequency.value = 5200;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(lvl || 0.035, t + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+    s.connect(hp); hp.connect(g); g.connect(gains.shaker);
+    s.start(t); s.stop(t + 0.09);
+  }
+
   /* ---------- the sequencer ---------- */
   function scheduleStep(s, t0) {
     const bar = Math.floor(s / 8) % BARS;
@@ -235,6 +269,8 @@ const Music = (function () {
       if (Math.abs(b - st / 2) < 0.001) bass(t, hz(chord.bass[i]), d * SPB, a * 0.5);
     });
     if (st === 0) reed(t, hz(chord.reed), SPB * 3.4);
+    if (st === 4) rhodes(t, chord.ch, SPB * 1.3);
+    if (st % 2 === 1) shaker(t, 0.035);
     if (st === 0) kick(t);
     if (st === 2 || st === 6) brush(t);
     if (st % 2 === 0) hat(t, 0.05);
@@ -260,7 +296,7 @@ const Music = (function () {
     if (playing || !ctx || !out) return;
     if (ctx.state === "suspended" && ctx.resume) { try { ctx.resume(); } catch (e) {} }
     playing = true; step = 0; nextTime = ctx.currentTime + 0.1;
-    ["pad", "bass", "keys", "reed"].forEach(id => ramp(id, level(id), ctx.currentTime, 1.5));
+    ["pad", "bass", "rhodes", "keys", "reed", "shaker"].forEach(id => ramp(id, level(id), ctx.currentTime, 1.5));
     loop();
   }
   function stop() {
@@ -363,17 +399,36 @@ const Music = (function () {
      It is NOT a defeat — nothing has been lost yet — so nothing swells
      and nothing resolves. The sax goes, the pad thins, and a low
      chromatic figure walks down underneath. Something is coming. */
+  /* A BUILD. Every other interruption jumps between plateaus; this one CLIMBS.
+     Over N bars the drums come up, the shaker doubles, the lead arrives on the
+     last bar, and the bass walks a step a bar. It is the missing shape in the
+     score, and it is reserved for the one thing in the game that is genuinely
+     on its way rather than simply happening: the signatures reaching the
+     threshold. */
+  function swell(bars) {
+    if (!playing || !ctx) return;
+    const n = Math.max(2, bars || 4), t = ctx.currentTime, bar = nextBarTime();
+    const dur = n * BEATS * SPB;
+    ramp("drums",  0.24, t, dur * 0.7);
+    ramp("shaker", level("shaker") * 1.8, t, dur * 0.6);
+    ramp("lead",   0.16, t + (n - 1) * BEATS * SPB, 0.9);
+    for (let i = 0; i < n; i++)
+      bass(bar + i * BEATS * SPB, hz(38 + i * 2), SPB * 0.9, 0.30 + i * 0.03);
+    ramp("drums",  0, t + dur, 1.4);
+    ramp("lead",   0, t + dur, 1.4);
+    ramp("shaker", level("shaker"), t + dur, 1.4);
+  }
+
   function threat() {
     if (!playing || !ctx) return;
-    const t = ctx.currentTime, bar = nextBarTime();
+    const t = ctx.currentTime;
     ramp("reed", 0, t, 0.6);
     ramp("keys", 0, t, 0.8);
     ramp("pad", level("pad") * 0.5, t, 0.8);
-    [0, 1, 2, 3].forEach(i =>
-      bass(bar + i * SPB * 0.5, hz(38 - i), SPB * 0.5, 0.34 + i * 0.02));
-    ramp("reed", level("reed"), t + 7, 2.5);
-    ramp("keys", level("keys"), t + 7, 2.5);
-    ramp("pad", level("pad"), t + 7, 2.5);
+    swell(3);
+    ramp("reed", level("reed"), t + 10, 2.5);
+    ramp("keys", level("keys"), t + 10, 2.5);
+    ramp("pad", level("pad"), t + 10, 2.5);
   }
 
   /* PROROGATION. The session ends, and this is the only place the bed
@@ -468,7 +523,7 @@ const Music = (function () {
     init: init, start: start, stop: stop, apply: apply,
     tension: tension, moment: moment, defeat: defeat, rise: rise, sombre: sombre,
     undertake: undertake, order: order, revoke: revoke, threat: threat,
-    prorogue: prorogue,
+    prorogue: prorogue, swell: swell,
     available: () => !!ctx,
     /* for the checks and for the Options readout: what the bed is
        actually doing, as opposed to what it was told to do */
