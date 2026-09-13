@@ -44,7 +44,7 @@ const PARTIES = [
     note:"List-tier strength, almost no districts. Shares your economics, despises your personhood line." },
 
   { id:"sc",  name:"Home Rule",                    short:"HR",  colour:"var(--p-sc)",
-    leader:"laughon",
+    leader:"laughon", logo:"sc.png", wordmark:"sc_mark.png",
     seats:{district:26,list:8,functional:0},
     kind:"national", loyalty:35,
     axes:{ownership:null,personhood:null,sovereignty:"station",closure:"closurist"},
@@ -65,7 +65,7 @@ const PARTIES = [
     note:"Continuity of soul. A copy is not the person. Economically left, culturally immovable." },
 
   { id:"fh",  name:"Party of Property Owners",     short:"PPO", colour:"var(--p-fh)",
-    leader:"bluespan",
+    leader:"bluespan", logo:"fh.png", wordmark:"fh_mark.png",
     seats:{district:8,list:3,functional:6},
     kind:"national", loyalty:12,
     axes:{ownership:"private",personhood:"restrictionist",sovereignty:"station",closure:null},
@@ -80,14 +80,14 @@ const PARTIES = [
     note:"Exists only in the functional tier. Does not campaign. Cannot be voted out." },
 
   { id:"des", name:"One-G",                        short:"ONE", colour:"var(--p-des)",
-    leader:"edelstein_powell",
+    leader:"edelstein_powell", logo:"des.png", wordmark:"des_mark.png",
     seats:{district:3,list:1,functional:0},
     kind:"national", loyalty:18,
     axes:{ownership:null,personhood:"restrictionist",sovereignty:null,closure:null},
     note:"Gravity as birthright. Draws the physiologically excluded." },
 
   { id:"geo", name:"Single Tax Party",             short:"STP", colour:"var(--p-geo)",
-    leader:"wheeler",
+    leader:"wheeler", logo:"geo.png", wordmark:"geo_mark.png",
     seats:{district:0,list:3,functional:0},
     kind:"national", loyalty:66,
     axes:{ownership:null,personhood:null,sovereignty:"federal",closure:null},
@@ -98,7 +98,7 @@ const PARTIES = [
          "always within a point of the threshold." },
 
   { id:"upl", name:"Common Kind",                  short:"CMK", colour:"var(--p-upl)",
-    leader:"lindegaard",
+    leader:"lindegaard", logo:"upl.png", wordmark:"upl_mark.png",
     seats:{district:0,list:2,functional:0},
     kind:"national", loyalty:58,
     /* Bible 4.8: the list threshold exempts a party representing a single
