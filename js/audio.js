@@ -97,22 +97,58 @@ const Sound = (function () {
 
   /* ---------- unlocking ----------
      An AudioContext created before a user gesture starts suspended and stays
-     that way. init() only installs the listener; the context is built on the
-     first real interaction, which is also the first moment we are allowed to
-     make noise. */
-  function init() {
-    if (unlocked || dead || typeof window === "undefined") return;
-    const go = () => {
-      if (unlocked || dead) return;
+     that way. init() only installs the listeners; the context is built on
+     the first real interaction, which is also the first moment we are
+     allowed to make noise.
+
+     THE FIRST GESTURE IS NOT GUARANTEED TO WORK, AND THAT IS THE WHOLE
+     PROBLEM. This used to latch `unlocked` and remove the listener with
+     `{ once: true }` before it knew whether the context had actually
+     started. resume() is asynchronous and it can be refused: on iOS a
+     pointerdown that turns into a scroll is not user activation at all.
+     When that happened the listener was already gone, the flag was
+     already set, and the game was SILENT FOR THE REST OF THE SESSION
+     with no way back — which is exactly what a phone does.
+
+     So the listeners are permanent and the flag is set only once the
+     context reports `running`. A refused gesture costs nothing and the
+     next tap tries again. The same permanence fixes the other half of
+     mobile audio: iOS suspends the context when the page is backgrounded,
+     and coming back to a dead terminal used to be final too.
+
+     touchend and click are here as well as pointerdown because Safari has
+     never treated them as equivalent for activation, and the cost of
+     listening to all of them is one early return per tap. */
+  function unlock() {
+    if (dead) return;
+    if (unlocked && ctx && ctx.state === "running") return;   /* the usual case */
+    if (!ctx && !build()) return;
+
+    const finish = () => {
+      if (!ctx || ctx.state !== "running" || unlocked) return;
       unlocked = true;
-      if (!build()) return;
-      if (ctx.state === "suspended" && ctx.resume) { try { ctx.resume(); } catch (e) {} }
       if (pref("roomTone")) room(true);
       const fns = readyFns; readyFns = [];
       fns.forEach(fn => { try { fn(); } catch (e) {} });
     };
-    ["pointerdown", "keydown"].forEach(ev =>
-      window.addEventListener(ev, go, { once: true, capture: true }));
+
+    if (ctx.state === "running") { finish(); return; }
+    try {
+      const p = ctx.resume && ctx.resume();
+      /* resume() resolves when the hardware is actually going. Waiting for
+         it is what makes the retry unnecessary in the common case and
+         harmless in the rest; a rejection is a refused gesture, not an
+         error, and the next one will be along. */
+      if (p && p.then) p.then(finish, function () {}); else finish();
+    } catch (e) { /* a browser that refuses outright: try again next tap */ }
+  }
+
+  let listening = false;
+  function init() {
+    if (dead || listening || typeof window === "undefined") return;
+    listening = true;
+    ["pointerdown", "touchend", "click", "keydown"].forEach(ev =>
+      window.addEventListener(ev, unlock, { capture: true, passive: true }));
   }
 
   /* ---------- cues ----------
@@ -339,6 +375,11 @@ const Sound = (function () {
     /* the graph itself, for the music bed: the context and the music bus */
     context: () => ctx, musicOut: () => bus.music || null, onReady: onReady,
     /* for the checks: is there a graph at all */
-    available: () => live()
+    available: () => live(),
+    /* for the checks: has a gesture actually started the hardware. A
+       context that exists is not a context that is running, and the
+       difference is the entire mobile bug. */
+    running: () => !!ctx && ctx.state === "running",
+    __unlock: unlock
   };
 })();

@@ -853,3 +853,111 @@ console.log("\nAND IT PLAYS:");
   delete globalThis.Sound;
   if (bad) { console.log("\n" + bad + " PLAYBACK FAILURES"); process.exitCode = 1; }
 })();
+
+/* ---------------------------------------------------------------------
+   THE FIRST TAP IS NOT GUARANTEED TO WORK.
+
+   A phone reported no sound at all. The unlock latched `unlocked` and
+   removed its listener with { once: true } BEFORE it knew whether the
+   context had started, and resume() is asynchronous and refusable — on
+   iOS a pointerdown that becomes a scroll is not user activation. When
+   that happened the flag was set, the listener was gone, and the game
+   was silent for the whole session with no way back.
+
+   These assertions are the difference between "a context exists" and
+   "the hardware is running", which is the entire bug.
+   --------------------------------------------------------------------- */
+(async function () {
+  console.log("\nUNLOCKING ON A PHONE:");
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  /* A context that starts suspended and only resumes when we say so —
+     which is what every mobile browser actually gives you. */
+  let allow = false, resumes = 0;
+  function FakeContext() {
+    this.state = "suspended";
+    this.sampleRate = 8000;
+    this.currentTime = 0;
+    this.destination = {};
+    this.resume = () => {
+      resumes++;
+      if (!allow) return Promise.reject(new Error("not allowed to start"));
+      this.state = "running";
+      return Promise.resolve();
+    };
+    const node = () => ({ connect() {}, gain: { value: 0,
+      setValueAtTime() {}, linearRampToValueAtTime() {},
+      exponentialRampToValueAtTime() {}, cancelScheduledValues() {} } });
+    this.createGain = node;
+    this.createBiquadFilter = () => Object.assign(node(),
+      { type: "", frequency: { value: 0 }, Q: { value: 0 } });
+    this.createOscillator = () => Object.assign(node(),
+      { type: "", frequency: { value: 0, setValueAtTime() {},
+        exponentialRampToValueAtTime() {} }, start() {}, stop() {} });
+    this.createBufferSource = () => Object.assign(node(),
+      { buffer: null, loop: false, start() {}, stop() {} });
+    this.createBuffer = (c, n) => ({ getChannelData: () => new Float32Array(n) });
+    this.createDelay = () => Object.assign(node(), { delayTime: { value: 0 } });
+  }
+
+  const taps = {};
+  const sandbox = {
+    console: console,
+    window: {
+      AudioContext: FakeContext,
+      addEventListener: (ev, fn, opts) => { (taps[ev] = taps[ev] || []).push({ fn, opts }); }
+    }
+  };
+  sandbox.globalThis = sandbox;
+  vm.createContext(sandbox);
+  vm.runInContext(fs.readFileSync("js/audio.js", "utf8") + "\n;this.__S = Sound;", sandbox);
+  const S = sandbox.__S;
+
+  let ready = 0;
+  S.onReady(() => ready++);
+  S.init();
+
+  /* A listener removed after one failed attempt is a session with no
+     sound in it, so the events must stay bound. */
+  const evs = Object.keys(taps);
+  ok("it listens for the gestures a phone actually sends",
+     evs.indexOf("touchend") >= 0 && evs.indexOf("pointerdown") >= 0 &&
+     evs.indexOf("click") >= 0, evs.join(", "));
+  ok("and does not unbind after one try",
+     evs.every(e => taps[e].every(l => !(l.opts && l.opts.once))));
+
+  const tap = async ev => {
+    (taps[ev] || []).forEach(l => l.fn());
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+  };
+
+  /* THE REFUSED GESTURE. This is the case that used to be fatal. */
+  await tap("pointerdown");
+  ok("a refused gesture leaves the hardware stopped", S.running() === false);
+  ok("and does not start the music on a context that is not going", ready === 0);
+  ok("but it did try", resumes === 1, resumes + " resume attempt");
+
+  /* THE NEXT TAP. The listener is still there, so the player gets sound
+     the moment the browser is willing to give it to them. */
+  allow = true;
+  await tap("touchend");
+  ok("the next gesture recovers", S.running() === true);
+  ok("and everything waiting on the graph starts", ready === 1);
+
+  /* Backgrounding a page suspends its context on iOS. Coming back to a
+     dead terminal used to be final for the same reason. */
+  const before = resumes;
+  S.__unlock();
+  ok("a tap on a running context costs nothing", resumes === before);
+
+  /* iOS suspends a backgrounded page's context behind the player's back. */
+  S.context().state = "suspended";
+  ok("backgrounding stops it", S.running() === false);
+  await tap("click");
+  ok("and a tap brings it back", S.running() === true);
+  ok("without starting the music a second time", ready === 1);
+
+  if (bad) { console.log("\n" + bad + " UNLOCK FAILURES"); process.exitCode = 1; }
+})();
