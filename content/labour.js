@@ -119,8 +119,8 @@ const LABOUR = {
 
     { id:"substrate", name:"Substrate operations", share:3.0,
       embodied:0.44, licensed:null, sector:"fc_substrate", forkable:"high",
-      note:"Running the hardware that runs the people. The franchise here belongs to companies "+
-           "rather than to the 47,000 who operate it — 411 corporate voters, six of them "+
+      note:"Running the hardware that runs the people. The franchise here belongs to companies, "+
+           "not to the 47,000 who operate it: 411 corporate voters, six of them "+
            "incorporated in the same week." },
 
     { id:"transit", name:"Transit and orbital mechanics", share:3.0,
@@ -150,8 +150,8 @@ const LABOUR = {
       embodied:1.00, licensed:null, sector:null, forkable:"none",
       note:"The anchors, the Earth-surface terminals, and anything requiring tolerance of a "+
            "full gravity. Requires bone density most orbital-born do not have and cannot "+
-           "acquire. Well paid, high status, and overwhelmingly done by Earth-born arrivals — "+
-           "which is the whole of the nativist grievance, inverted." },
+           "acquire. Well paid, high status, and overwhelmingly done by Earth-born arrivals. "+
+           "That is the whole of the nativist grievance, inverted." },
 
     { id:"other", name:"Everything else", share:0.2,
       embodied:0.50, licensed:null, sector:null, forkable:"medium",

@@ -141,8 +141,8 @@ const INSTRUMENTS = [
     author:"persons_continuity", procedure:"negative", prayer_window:6, revocable:true,
     when:{ flags:["rung1_tried"] },
     summary:"Slows the emulated blocs' clock rate by four per cent for the duration of the "+
-            "margin. Subjectively it is a long weekend. Objectively it is a cut in the wage "+
-            "of everyone who runs faster than a body does.",
+            "margin. To an emulated person it is a long weekend. In fact it is a wage cut for "+
+            "everyone who runs faster than a body does.",
     effect_note:"Buys margin out of the emulated population's patience, which is the one "+
                 "resource the New Progressive Party exists to protect.",
     effects:[ {move:{"thermal_margin":4}}, {move:{"loyalty.psa":-8}}, { flag:"rung2_tried" },
@@ -198,7 +198,7 @@ const INSTRUMENTS = [
     when:{ flags:["rung5_tried"] },
     summary:"Draws down the substrate insurance fund ahead of the quarter it was written for. "+
             "The fund exists so that nobody is suspended for a price they did not set. Spending "+
-            "it on the price is spending the thing it was for on the thing it was for.",
+            "it on the price uses up the protection it was meant to give.",
     effect_note:"Relief now, and an empty fund the next time the margin thins. The third rail "+
                 "is not the drawdown; it is what the drawdown leaves behind.",
     effects:[ {move:{"thermal_margin":11}}, {move:{"price.substrate":-10}},
@@ -229,8 +229,8 @@ const INSTRUMENTS = [
     author:"law_charter", procedure:"affirmative", revocable:true,
     when:{ flags:["rung7_tried"] },
     summary:"Assumes the Allocation Act's emergency powers over the tier registers and the "+
-            "shed order. It does not suspend anyone. It takes the power to, which is the "+
-            "whole of what emergency powers are.",
+            "shed order. It suspends nobody. It takes the power to suspend, which is what "+
+            "emergency powers are.",
     effect_note:"The declaration is not the fight. The fight is the termination, and by then "+
                 "the power is the ordinary way the margin is managed.",
     effects:[ {move:{"thermal_margin":15}}, {move:{"public_standing":-18}},

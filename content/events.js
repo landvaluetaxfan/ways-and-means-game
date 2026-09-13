@@ -39,7 +39,7 @@ one he thinks you will not answer.
 
 "Prime Minister. You inherit a majority, a bill you did not write, and a party
 that has spent thirty years arguing with itself about what it is for." He does
-not look at his notes. "Before anything else — why you?"
+not look at his notes. "Before anything else: why you?"
 
 It is the only question of the morning that you get to answer twice: once now,
 and once for the rest of it. The record is the record. What is not yet settled
@@ -120,7 +120,7 @@ Once a fork of eight days is a person, a fork of eight days can hold a licence,
 and then the panel that certifies life support is a panel my members do not
 recognise. You are not reforming personhood. You are reforming us."`,
   choices:[
-    { label:"Offer a licensure carve-out — the threshold moves, licensure does not",
+    { label:"Offer a licensure carve-out: the threshold moves, licensure does not",
       act:"Offer it",
       /* MECHANICAL PLACEHOLDER, opencode's to reword: the undertaking's
          `text` is the line the order paper carries and the wording is
@@ -179,7 +179,7 @@ hours make a stranger. Give me the shed order. Give me anything on the shed orde
 { id:"halloran_finds_nine", queuedOnly:true, once:true,
   title:"He found them",
   speaker:"halloran",
-  body:`Four of the nine are revenants — members returned on the list after losing
+  body:`Four of the nine are revenants: members returned on the list after losing
 a district, who owe their seats entirely to the party and were therefore supposed
 to be unbuyable. They have worked out that a leadership change reorders the list,
 and that a list can be reordered upward as easily as down.
@@ -335,7 +335,7 @@ The bill is called at two. You have the morning.`,
 whole of the offer and it is not negotiable at the margins.
 
 What it means in practice: an emulation separated for forty-one hours becomes a
-person, may hold property, may vote in a district — and may not hold a life
+person, may hold property, may vote in a district, and may not hold a life
 support licence, which means may not vote in the constituency that represents
 the work she does every day.
 
@@ -424,8 +424,8 @@ which is eleven of yours.
   speaker:null,
   body:`The number is published quarterly and has never once been read aloud in
 the House. Seventy-five thousand and some. That is the count of people suspended
-— stopped, held, not running — across the thirty stations, and it has crossed the
-figure the Allocation Act calls a federal strain.
+across the thirty stations, stopped and held and not running, and it has crossed
+the figure the Allocation Act calls a federal strain.
 
 What follows is not a headline. It is a shed order, posted at 06:00: Ashfield,
 tier four, a further eleven hundred, effective next sitting. Nobody voted for it.
@@ -543,7 +543,7 @@ Commonwealth has already promised to pay for.`,
   when:{ scalarBelow:{public_standing:26}, flagsAbsent:["standing_low_seen"] },
   title:"A government nobody is for",
   speaker:"ceyhan",
-  body:`The polling is not catastrophic. It is worse than that: it is flat. You
+  body:`The polling is not catastrophic. It is flat, which is worse: you
 are not hated and you are not trusted, and the number that measures the gap
 between those two things has been falling all session.
 
