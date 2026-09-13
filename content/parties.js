@@ -72,7 +72,7 @@ const PARTIES = [
     note:"Volume owners. Property absolutists." },
 
   { id:"gb",  name:"Alliance of Business and Government", short:"ABG", colour:"var(--p-gb)",
-    leader:"hatt",
+    leader:"hatt", logo:"gb.png", wordmark:"gb_mark.png",
     aliases:["Guild Bench"],
     seats:{district:0,list:0,functional:9},
     kind:"professional", loyalty:30,

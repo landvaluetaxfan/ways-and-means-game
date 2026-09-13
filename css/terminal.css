@@ -690,8 +690,10 @@ img.dith{display:block;}
   height:11px;width:auto;max-width:22px;object-fit:contain;
   display:inline-block;vertical-align:-1px;margin-right:4px;
 }
-/* The constituency dossier has room for the wordmark at reading size. */
-.plogo.lg{height:24px;max-width:80px;vertical-align:middle;margin-right:6px;}
+/* The constituency dossier has room for the wordmark at reading size. The cap
+   is generous because a party whose mark is a long wordmark ("HOME RULE!") is
+   otherwise squeezed to an unreadable strip by an 80px limit built for badges. */
+.plogo.lg{height:24px;max-width:150px;vertical-align:middle;margin-right:6px;}
 
 /* ---------- orbital chart ---------- */
 #orbit-chart svg{display:block;width:100%;height:auto;}
