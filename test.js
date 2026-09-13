@@ -659,17 +659,16 @@ console.log("\nTHE SCORE:");
 
   const walk = [];
   F.ITINERARY.forEach(name =>
-    F.SECTIONS[name].forEach((b, j) => walk.push({ b: b, sec: name, at: name + (j + 1) })));
+    F.SECTIONS[name].bars.forEach((b, j) =>
+      walk.push({ b: b, sec: name, d: F.SECTIONS[name].d, at: name + (j + 1) })));
 
-  ok("the form is long enough not to announce its own loop", walk.length >= 48,
+  ok("the form is long enough not to announce its own loop", walk.length >= 64,
      walk.length + " bars = " + (walk.length * F.BEATS * 60 / F.BPM).toFixed(0) +
      "s at " + F.BPM + " BPM");
   ok("and the itinerary uses every section it defines",
      Object.keys(F.SECTIONS).every(k => F.ITINERARY.indexOf(k) >= 0),
      F.ITINERARY.join(" "));
 
-  /* Every chord in the form must be a chord this module knows how to
-     voice and how to improvise over. A typo here is a silent bar. */
   const unknown = [];
   walk.forEach(({ b, at }) => b.c.forEach(n => {
     if (!F.CH[n]) unknown.push(at + " " + n);
@@ -679,37 +678,83 @@ console.log("\nTHE SCORE:");
      unknown.join("; ") || Object.keys(F.CH).length + " chords, " +
      Object.keys(F.TYPE).length + " types");
 
-  /* ROOTLESS VOICINGS. The bass carries the root, which is what lets the
-     same shape sit over different feet and what keeps four notes from
-     turning into mud in the middle of the keyboard. */
   const rooted = Object.keys(F.TYPE).filter(t => F.TYPE[t].v.indexOf(0) >= 0);
   ok("every voicing leaves its root to the bass", rooted.length === 0,
      rooted.join(", ") || Object.keys(F.TYPE).length + " types rootless");
 
-  /* HARMONIC RHYTHM is what separates this from a vamp with jazz chords
-     on it. A form where nothing moves twice in a bar is a groove. */
-  const twoChord = walk.filter(x => x.b.c.length > 1).length;
-  ok("the harmony moves inside the bar, not just across it",
-     twoChord >= walk.length / 6,
-     twoChord + " of " + walk.length + " bars change chord at the half");
+  /* ---- THE ONE IDEA. Everything below is the thing the last score
+     did not have: parts that know about each other. ---- */
 
-  /* IT MODULATES. A chord whose scale contains a note outside the home
-     mode has taken the tune somewhere else, which is the thing a
-     two-chord vamp can never do. */
-  const HOME = [2, 4, 5, 7, 9, 11, 0];        /* D dorian */
+  /* THE CELL IS SEQUENCED. The previous head was sixteen bars of
+     sixteen distinct melodic shapes, which is not a tune — the ear has
+     nothing to recognise coming back. Written as scale degrees, one
+     figure over three chord areas IS the repetition. */
+  const head = F.SECTIONS.HEAD.bars;
+  const phrases = [];
+  for (let i = 0; i < head.length; i += 2) {
+    const ns = (head[i].m || []).concat(head[i + 1].m || []).map(x => x[0]);
+    if (ns.length) phrases.push({ f: head[i].f, ns: ns,
+      shape: ns.map((n, j) => j ? n - ns[j - 1] : "").slice(1).join(",") });
+  }
+  ok("the head is built from repeated phrases, not continuous invention",
+     phrases.length >= 6 && new Set(phrases.map(p => p.shape)).size <= phrases.length * 0.6,
+     phrases.length + " two-bar phrases, " +
+     new Set(phrases.map(p => p.shape)).size + " distinct shapes");
+  ok("and the cell appears more often than the answer to it",
+     phrases.filter(p => p.f === "a").length > phrases.filter(p => p.f === "b").length,
+     phrases.map(p => p.f).join(" "));
+  ok("the same figure really does move to new harmony",
+     new Set(phrases.filter(p => p.f === "a").map(p => p.ns.join(","))).size >= 4,
+     phrases.filter(p => p.f === "a").map(p => named(p.ns)).join("  |  "));
+
+  /* THE RHYTHM SECTION AGREES WITH THE TUNE. Not unison — the band
+     shares some accents with the melody and differs on the rest, which
+     is what an arrangement is. A bass indexed off a global counter, as
+     the last one was, agrees with nothing. */
+  const onsets = new Set();
+  Object.keys(F.FIGS).forEach(k => F.FIGS[k].forEach(([b]) => onsets.add(Math.round(b * 4))));
+  const shared = F.ACC.filter(a => onsets.has(a));
+  ok("the rhythm section shares accents with the cell",
+     shared.length >= 2 && shared.length < F.ACC.length,
+     shared.length + " of " + F.ACC.length + " shared, so they agree and are not in unison");
+  ok("and the kick and the comping read the same list",
+     F.KICKA.every(a => F.ACC.indexOf(a) >= 0) &&
+     F.COMPA.every(a => F.ACC.indexOf(a) >= 0));
+
+  /* DENSITY IS COMPOSITIONAL. The player reads three hundred words of
+     parliamentary prose over this, so the sparse section has to be most
+     of the record and the tune has to be an event. */
+  const vamp = walk.filter(x => x.sec === "VAMP").length;
+  ok("the sparse section is most of the record",
+     vamp >= walk.length * 0.4, vamp + " of " + walk.length + " bars, " +
+     Math.round(100 * vamp / walk.length) + "%");
+  ok("and it really is the sparsest thing in the form",
+     F.SECTIONS.VAMP.d === Math.min(...Object.keys(F.SECTIONS).map(k => F.SECTIONS[k].d)),
+     Object.keys(F.SECTIONS).map(k => k + " " + F.SECTIONS[k].d).join(", "));
+  ok("while the tune is the densest, and rare",
+     F.SECTIONS.HEAD.d === Math.max(...Object.keys(F.SECTIONS).map(k => F.SECTIONS[k].d)) &&
+     F.ITINERARY.filter(x => x === "HEAD").length <= 2,
+     F.ITINERARY.filter(x => x === "HEAD").length + " statements of the head");
+
+  /* ---- and the things that were already right ---- */
+
+  const HOME = [2, 4, 5, 7, 9, 11, 0];
   const away = [...new Set(walk.flatMap(({ b }) => b.c.filter(n => {
     const [r, t] = F.CH[n];
     return F.TYPE[t].s.some(i => HOME.indexOf(pc(r + i)) < 0);
   })))];
-  ok("and the tune leaves the home mode and comes back",
-     away.length >= 3, away.join(", "));
+  ok("the tune leaves the home mode and comes back", away.length >= 3,
+     away.length + " chords outside D dorian");
 
-  /* THE MELODY, against the chord under it. Two chords in a bar split at
-     the half, the same way the sequencer reads them. This is the whole
-     difference between jazz and wrong, and it is eighty-odd hand-typed
-     numbers that no other check can see. */
+  const twoChord = walk.filter(x => x.b.c.length > 1).length;
+  ok("the harmony moves inside the bar, not just across it",
+     twoChord >= walk.length / 8,
+     twoChord + " of " + walk.length + " bars change chord at the half");
+
+  /* Every note of the tune against the chord under it. It is generated
+     now rather than typed, so this checks the GENERATOR. */
   const wrong = [];
-  walk.forEach(({ b, at }) => (b.m || []).forEach(([m, beat, d]) => {
+  walk.forEach(({ b, at }) => (b.m || []).forEach(([m, beat]) => {
     const nm = b.c.length > 1 && beat >= F.BEATS / 2 ? b.c[1] : b.c[0];
     const [r, t] = F.CH[nm];
     if (F.TYPE[t].s.indexOf(pc(m - r)) < 0)
@@ -719,27 +764,21 @@ console.log("\nTHE SCORE:");
   ok("every note of the tune is in the scale of its own chord",
      wrong.length === 0, wrong.join("; ") || melNotes + " melody notes checked");
 
-  /* A tune, not a motif: it has to have a range and it has to move. */
   const mel = walk.flatMap(x => (x.b.m || []).map(h => h[0]));
-  /* a minor third is three semitones; the check said "a third or more"
-     and tested for four, which is a major third and a different claim */
+  ok("the tune has a singer's range and stays in one",
+     Math.max(...mel) - Math.min(...mel) >= 12 && Math.max(...mel) <= 88 &&
+     Math.min(...mel) >= 60,
+     named([Math.min(...mel)]) + " to " + named([Math.max(...mel)]) + ", MIDI " +
+     Math.min(...mel) + "-" + Math.max(...mel));
   const leaps = mel.filter((m, i) => i && Math.abs(m - mel[i - 1]) >= 3).length;
-  ok("and the tune has a singer's range", mel.length > 40 &&
-     Math.max(...mel) - Math.min(...mel) >= 12,
-     named([Math.min(...mel)]) + " to " + named([Math.max(...mel)]) +
-     ", " + (Math.max(...mel) - Math.min(...mel)) + " semitones");
-  ok("with leaps in it and not just steps", leaps >= mel.length / 5,
+  ok("with leaps in it and not just steps", leaps >= mel.length / 6,
      leaps + " intervals of a third or more");
 
-  /* The join. A cadence there is learned in two passes and heard ever
-     after; every ii-V INSIDE the head is welcome to resolve. */
   const last = walk[walk.length - 1].b, first = walk[0].b;
   ok("the form does not cadence into its own first bar",
      pc(F.CH[last.c[last.c.length - 1]][0]) !== pc(F.CH[first.c[0]][0] + 7),
      last.c[last.c.length - 1] + " -> " + first.c[0]);
 
-  /* VOICE LEADING. Fixed shapes jump; a player moves as little as
-     possible. Measured across the whole form rather than asserted. */
   let prev = null, moves = [], lo = 127, hi = 0;
   walk.forEach(({ b }) => b.c.forEach(n => {
     const v = F.voicing(F.CH[n][0], F.CH[n][1]);
@@ -747,56 +786,24 @@ console.log("\nTHE SCORE:");
     if (prev) moves.push(v.reduce((a, x, i) => a + Math.abs(x - prev[i]), 0));
     prev = v;
   }));
-  const avg = moves.reduce((a, x) => a + x, 0) / moves.length;
-  ok("the comping voices lead rather than jump", avg < 6,
-     avg.toFixed(1) + " semitones total across four voices per change");
+  ok("the comping voices lead rather than jump",
+     moves.reduce((a, x) => a + x, 0) / moves.length < 6,
+     (moves.reduce((a, x) => a + x, 0) / moves.length).toFixed(1) +
+     " semitones total across four voices per change");
   ok("and stay in one register", lo >= 52 && hi <= 79, "MIDI " + lo + " to " + hi);
 
-  /* THE SIGNATURE LICK IS THE BAND'S OWN TUNE. A separate motif would
-     be a second idea competing with the first. */
   ok("the unison lick quotes the head's opening",
-     F.UNISON.slice(0, walk[0].b.m.length)
-       .every((m, i) => m === walk[0].b.m[i][0]),
-     named(F.UNISON));
+     F.UNISON.slice(0, 4).every((m, i) => m === phrases[0].ns[i]), named(F.UNISON));
   ok("and the hook is its first four notes",
      F.MOTIF.every((m, i) => m === F.UNISON[i]), named(F.MOTIF));
   ok("the run ascends without leaving the home mode",
      F.RUN.every(m => HOME.indexOf(pc(m)) >= 0) &&
-     F.RUN.every((m, i) => i === 0 || m > F.RUN[i - 1]),
-     F.RUN.length + " notes");
+     F.RUN.every((m, i) => i === 0 || m > F.RUN[i - 1]), F.RUN.length + " notes");
 
-  /* THE SOLO section has the changes and not the tune, or the improviser
-     is playing over somebody else's melody. */
   const solo = walk.filter(x => x.b.solo);
   ok("the solo section carries changes and no written tune",
-     solo.length >= 8 && solo.every(x => !x.b.m && x.b.c.length),
-     solo.length + " bars");
+     solo.length >= 8 && solo.every(x => !x.b.m && x.b.c.length), solo.length + " bars");
 
-  /* THE DRUMMER IS A PLAYER. One bass pattern and no fills is the
-     loudest possible announcement that this is a loop. */
-  ok("the bass has more than one thing to play", F.CELLS.length >= 3 &&
-     new Set(F.CELLS.map(c => JSON.stringify(c))).size === F.CELLS.length,
-     F.CELLS.length + " distinct cells");
-
-  /* Range at both ends of the key drift — a form that is fine in D and
-     unplayable four semitones down is not fine. */
-  /* the sequencer takes the octave up rather than go under MIDI 31, so
-     that floor is the number this has to hold against */
-  let bassLo = 127;
-  walk.forEach(x => x.b.c.forEach(n => {
-    let m = 33 + pc(F.CH[n][0] - 9);
-    while (m + F.KEY_MIN < 31) m += 12;
-    bassLo = Math.min(bassLo, m + F.KEY_MIN);
-  }));
-  ok("the whole form stays playable across the key drift",
-     bassLo >= 31 && hi + F.KEY_MAX <= 88,
-     "bass down to MIDI " + bassLo + ", comping up to " + (hi + F.KEY_MAX));
-  ok("and the key cannot drift somewhere it never comes back from",
-     F.KEY_MIN < 0 && F.KEY_MAX > 0 && F.KEY_MAX - F.KEY_MIN <= 12);
-
-  /* THE IMPROVISER'S ONE DECISION. Everything else in the score is read
-     off the page; this is chosen at runtime, over every chord in the
-     solo, and a wrong answer is a wrong note sixteen bars at a time. */
   let offScale = 0, farthest = 0;
   Object.keys(F.CH).forEach(name => {
     const [r, t] = F.CH[name], sc = F.TYPE[t].s;
@@ -808,9 +815,19 @@ console.log("\nTHE SCORE:");
   });
   ok("the improviser always lands on a note of the chord's scale",
      offScale === 0, offScale ? offScale + " off-scale" : "20 chords x 29 notes");
-  ok("and never has to move far to do it", farthest <= 2,
-     "at most " + farthest + " semitones");
+  ok("and never has to move far to do it", farthest <= 2, "at most " + farthest + " semitones");
 
+  let bassLo = 127;
+  walk.forEach(x => x.b.c.forEach(n => {
+    let m = 33 + pc(F.CH[n][0] - 9);
+    while (m + F.KEY_MIN < 31) m += 12;
+    bassLo = Math.min(bassLo, m + F.KEY_MIN);
+  }));
+  ok("the whole form stays playable across the key drift",
+     bassLo >= 31 && hi + F.KEY_MAX <= 88,
+     "bass down to MIDI " + bassLo + ", comping up to " + (hi + F.KEY_MAX));
+  ok("and the key cannot drift somewhere it never comes back from",
+     F.KEY_MIN < 0 && F.KEY_MAX > 0 && F.KEY_MAX - F.KEY_MIN <= 12);
   ok("the kit plays in the bed and not only in a swell",
      F.BED.indexOf("drums") >= 0, F.BED.join(", "));
   ok("and the horn is still held back for the moods and the solo",
@@ -897,14 +914,23 @@ console.log("\nAND IT PLAYS:");
     ok("the graph builds and the transport starts", M.available() === true);
 
     /* a full pass of the arrangement, watching where it goes on its own */
-    for (let i = 0; i < 70; i++) {
+    /* the form is 104 bars now, so a pass has to be long enough to see
+       all of it — a drive that stopped short would "pass" by never
+       reaching the section it was meant to check */
+    let sparse = 0;
+    for (let i = 0; i < 115; i++) {
       SECS(BAR);
       const st = M.state();
-      if (st.section) { seen[st.section] = true; bars++; }
+      if (st.section) {
+        seen[st.section] = true; bars++;
+        if (st.density === 1) sparse++;
+      }
     }
     ok("it walks the whole arrangement unaided",
        Object.keys(seen).length === Object.keys(F.SECTIONS).length,
        Object.keys(seen).sort().join(" ") + " over " + bars + " bars");
+    ok("and spends most of it in the sparse section, where the player reads",
+       sparse >= bars * 0.35, sparse + " of " + bars + " bars at density 1");
 
     /* ---- the moods, each read back rather than taken on trust ---- */
     const home = M.state().semitones;

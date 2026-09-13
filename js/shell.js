@@ -105,8 +105,9 @@ const Shell = (function () {
     else if (!m.playing) bits.push("bed stopped");
     else {
       const open = Object.keys(m.levels).filter(k => m.levels[k] > 0.0005);
-      bits.push("bed " + m.section + " " + m.bar + " \u00b7 " + (m.chord || "?") +
-                " \u00b7 key " + m.key + (m.halfTime ? " \u00b7 half-time" : ""));
+      bits.push("bed " + m.section + " " + m.bar + "/d" + m.density + " \u00b7 " +
+                (m.chord || "?") + " \u00b7 key " + m.key +
+                (m.halfTime ? " \u00b7 half-time" : ""));
       bits.push(open.length ? open.length + " layers up" : "ALL LAYERS AT ZERO");
     }
     if (running && !opts.mute && m && m.playing)
