@@ -976,4 +976,82 @@ try {
   ok("each is a real button", [].slice.call(btns).every(b => b.tagName === "BUTTON"));
 } catch (e) { ok("the one appointment", false, e.message); }
 
+
+/* MOTION. Same rule as the audio bus: a transition may follow a user
+   action or an engine outcome and may NEVER follow a redraw. A player
+   who switches tabs must not watch the screen dither at them. */
+try {
+  /* KEEP THE REAL ONE before spying, or the no-motion assertion below
+     tests the spy and passes for the wrong reason. */
+  w.eval(`window.__realDissolve = Motion.dissolve;
+          window.__motion = [];
+          Motion.dissolve = function (swap, done) {
+            window.__motion.push("dissolve");
+            if (typeof swap === "function") swap();
+            if (typeof done === "function") done();
+          };
+          Motion.notify = function (n) { window.__motion.push("notify:" + (n && n.tab)); };`);
+
+  w.eval('window.__motion.length = 0; UI.boot(UI.state(), CONTENT);');
+  ok("a full redraw starts no animation", w.eval("window.__motion.length") === 0,
+     w.eval("JSON.stringify(window.__motion)"));
+
+  w.eval('window.__motion.length = 0;');
+  w.document.querySelector('.tab[data-t="cham"]').click();
+  ok("nor does switching tabs", w.eval("window.__motion.length") === 0,
+     w.eval("JSON.stringify(window.__motion)"));
+
+  /* the notice fires on a change that lands on ANOTHER screen */
+  w.eval('window.__motion.length = 0;');
+  w.document.querySelector('.tab[data-t="sit"]').click();
+  const fired = w.eval(`(function () {
+    var st = UI.state();
+    var before = UI.__test.structure(st);
+    Engine.apply(st, CONTENT, [{ undertake: { id: "mv_probe", text: "Lay the probe order",
+      by: 3, discharge: { flag: "never_mv" } } }]);
+    UI.__test.reportMoves(before, UI.__test.structure(st));
+    return window.__motion.slice();
+  })()`);
+  ok("an undertaking reports itself to the screen that holds it",
+     fired.length === 1 && /gov/.test(fired[0]), JSON.stringify(fired));
+
+  ok("and a change with no cross-screen consequence reports nothing",
+     w.eval(`(function () {
+       window.__motion.length = 0;
+       var st = UI.state(), before = UI.__test.structure(st);
+       Engine.apply(st, CONTENT, [{ move: { public_standing: 3 } }]);
+       UI.__test.reportMoves(before, UI.__test.structure(st));
+       return window.__motion.length;
+     })()`) === 0);
+} catch (e) { ok("motion follows actions, not redraws", false, e.message); }
+
+/* NO-MOTION IS NOT A DEGRADED MODE. The dissolve must still perform the
+   swap — a player who turned animation off and got left on the menu
+   would have lost the game, not the theatre. */
+try {
+  const real = w.eval("typeof Motion.reduced === 'function'");
+  ok("motion knows the preference", real);
+  const swapped = w.eval(`(function () {
+    document.body.classList.add("no-motion");
+    var did = false, finished = false;
+    window.__realDissolve(function () { did = true; }, function () { finished = true; });
+    document.body.classList.remove("no-motion");
+    return did && finished;
+  })()`);
+  ok("with animation off the swap still happens, synchronously", swapped === true);
+
+  /* AND WITH ANIMATION ON. The swap must not wait for a frame: it was
+     gated on requestAnimationFrame once, and in a tab that does not
+     paint the player pressed Continue and the game did not start. */
+  const swappedAnimated = w.eval(`(function () {
+    var did = false;
+    window.__realDissolve(function () { did = true; });
+    /* clear the overlay so it does not sit over the rest of the run */
+    var l = document.querySelector(".dissolve");
+    if (l && l.parentNode) l.parentNode.removeChild(l);
+    return did;
+  })()`);
+  ok("and with animation on it still does not wait for one", swappedAnimated === true);
+} catch (e) { ok("no-motion still swaps", false, e.message); }
+
 H.finish("the interface is healthy");

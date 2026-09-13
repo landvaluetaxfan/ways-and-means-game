@@ -1513,3 +1513,50 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .movetab td.d{width:44px;font-weight:700;}
 .movetab tr.t-good td.d{color:var(--ok);}
 .movetab tr.t-bad  td.d{color:var(--alert);}
+
+/* =============================================================
+   MOTION — the dissolve, and the card that says something moved.
+
+   THE STANDARD IS AN ORDERED DITHER, not a fade. The interface is a
+   terminal that draws things; a transition is the screen being
+   written, cell by cell, in the same Bayer order tools/dither.sh uses
+   on every image in the game (12.11). It reads as machine output
+   because it is the machine's own ordering.
+
+   body.no-motion already kills every animation with
+   `animation:none !important`, and js/motion.js checks the preference
+   before it builds anything — so these rules are the theatre, and the
+   state they arrive at is reachable without them.
+   ============================================================= */
+.dissolve{
+  position:fixed;inset:0;z-index:900;display:grid;pointer-events:none;
+  /* the cells are transparent by default and painted when switched on,
+     so the grid itself never covers anything it has not been told to */
+}
+.dissolve i{display:block;background:transparent;}
+.dissolve i.on{background:var(--chrome-dkr);}
+
+/* the card. Anchored under the tab it concerns, so it points at where
+   the change is rather than floating in a corner. */
+.movecard{
+  position:fixed;z-index:880;max-width:280px;pointer-events:none;
+  background:var(--chrome);color:var(--ink);
+  border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
+  border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
+  box-shadow:3px 3px 0 rgba(27,29,25,.22);
+  padding:5px 8px 6px;
+  opacity:0;transform:translateY(-3px);
+  transition:opacity .16s linear, transform .16s linear;
+}
+.movecard.in{opacity:1;transform:translateY(0);}
+body.no-motion .movecard{transition:none;}
+.movecard .mc-h{
+  font-family:var(--f-data);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-soft);
+}
+.movecard .mc-b{font-size:12.5px;margin-top:1px;}
+.movecard .mc-d{
+  font-family:var(--f-data);font-size:10px;color:var(--ink-soft);margin-top:2px;
+}
+/* the tab itself says it, so the card is a prompt and not the only signal */
+.tab.tab-moved{box-shadow:inset 0 -3px 0 var(--ok);}

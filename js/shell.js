@@ -335,14 +335,29 @@ const Shell = (function () {
     catch (e) { Dialog.alert("That save could not be read: " + e.message,
                              { title: "Could not load" }); return; }
     current = { n: n, name: name };
-    document.getElementById("menu").classList.remove("on");
-    document.body.classList.remove("menu-on");
-    document.getElementById("shell").classList.add("on");
-    /* A different game is a different set of rows; carrying the last
-       one's selection into it points at things that may not exist. */
-    if (typeof Focus !== "undefined") Focus.reset();
-    if (typeof Papers !== "undefined") Papers.reset();
-    UI.boot(state, C);
+
+    /* THE ONE TRANSITION THAT EARNS ITSELF. Leaving the menu for a
+       government is the only moment in the game where the whole screen
+       is replaced, so it is the only place a full-screen dissolve is
+       honest — everywhere else the terminal redraws a panel and should
+       simply redraw it. The swap happens at the halfway point, behind
+       the cover, so neither screen is ever seen half-drawn.
+
+       Motion.dissolve runs the swap synchronously when animation is
+       off, so this is the same code path either way and there is no
+       branch here to get wrong. */
+    const swap = function () {
+      document.getElementById("menu").classList.remove("on");
+      document.body.classList.remove("menu-on");
+      document.getElementById("shell").classList.add("on");
+      /* A different game is a different set of rows; carrying the last
+         one's selection into it points at things that may not exist. */
+      if (typeof Focus !== "undefined") Focus.reset();
+      if (typeof Papers !== "undefined") Papers.reset();
+      UI.boot(state, C);
+    };
+    if (typeof Motion !== "undefined") Motion.dissolve(swap);
+    else swap();
     /* a government opens: the bed rises with the first sitting */
     if (typeof Music !== "undefined") Music.rise();
     if (!stateStr) saveNow(true);

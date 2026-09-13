@@ -1070,6 +1070,86 @@ const UI = (function () {
   /* the measured diff of the last decision, held for the outcome block */
   let lastChanges = null;
 
+  /* ---------- what moved somewhere else ----------
+
+     A decision on this screen can put an item on the order paper, fill
+     a post, move a bill or make an order — all of which live on other
+     tabs, none of which the player has any reason to look at. This
+     names the change and points at the tab that now holds it.
+
+     STRUCTURAL CHANGES ONLY. The indicators are already reported, in
+     the outcome ledger, where the player is looking; repeating them
+     here would be noise and would train them to dismiss the card. What
+     goes here is a thing that has MOVED SCREENS. */
+  function structure(st) {
+    const bills = {};
+    (C.bills || []).forEach(b => {
+      const bs = st.bills[b.id];
+      if (bs) bills[b.id] = bs.stage + (bs.dead ? "/dead" : "") +
+                            (bs.dividesOn == null ? "" : "@" + bs.dividesOn);
+    });
+    const si = {};
+    (C.instruments || []).forEach(i => {
+      const x = st.instruments[i.id];
+      if (x) si[i.id] = (x.made ? "made" : "") + (x.inForce ? "+force" : "") +
+                        (x.revoked ? "+revoked" : "");
+    });
+    const posts = {};
+    (C.cabinet || []).forEach(p => { posts[p.id] = (st.cabinet[p.id] || {}).holder || ""; });
+    return { owed: (st.undertakings || []).map(u => u.id + ":" + u.state).join("|"),
+             owedOpen: Engine.outstanding(st).length,
+             bills: bills, si: si, posts: posts,
+             slots: st.slots.total - st.slots.used };
+  }
+
+  function reportMoves(before, after) {
+    if (typeof Motion === "undefined") return;
+    const notes = [];
+
+    if (after.owedOpen > before.owedOpen) {
+      const u = Engine.outstanding(st)[Engine.outstanding(st).length - 1];
+      notes.push({ tab: "gov", where: "Order paper",
+                   text: "An undertaking has been entered.",
+                   detail: u ? u.text : null });
+    } else if (after.owedOpen < before.owedOpen && before.owed !== after.owed) {
+      notes.push({ tab: "gov", where: "Order paper",
+                   text: "An undertaking has been discharged." });
+    }
+
+    Object.keys(after.bills).forEach(id => {
+      if (before.bills[id] === after.bills[id]) return;
+      const b = (C.bills || []).find(x => x.id === id);
+      const bs = st.bills[id];
+      notes.push({ tab: "gov", where: "Order paper",
+                   text: (b ? b.title : id) +
+                         (bs.dead ? " has fallen." : " has moved."),
+                   detail: bs.dead ? null : String(bs.stage).replace(/_/g, " ") });
+    });
+
+    Object.keys(after.si).forEach(id => {
+      if (before.si[id] === after.si[id]) return;
+      const i = (C.instruments || []).find(x => x.id === id);
+      notes.push({ tab: "pap", where: "Papers",
+                   text: (i ? i.number : id) + " is in force.",
+                   detail: i ? i.title : null });
+    });
+
+    Object.keys(after.posts).forEach(id => {
+      if (before.posts[id] === after.posts[id]) return;
+      const p = (C.cabinet || []).find(x => x.id === id);
+      const ch = C.characterById[after.posts[id]];
+      notes.push({ tab: "gov", where: "Cabinet",
+                   text: after.posts[id]
+                     ? (p ? p.title || p.name : id) + " is filled."
+                     : (p ? p.title || p.name : id) + " stands vacant.",
+                   detail: ch ? ch.name : null });
+    });
+
+    /* Two is a report; five is a wall. Anything past the first two is
+       on the screen it belongs to anyway. */
+    notes.slice(0, 2).forEach(n => Motion.notify(n));
+  }
+
   const TONE_MARK = { good: "+", bad: "−", grave: "!", owed: "¤", plain: "·" };
 
   /* The commit button says the ACT. The terminal does not ask whether
@@ -1422,7 +1502,7 @@ const UI = (function () {
     foot.querySelectorAll(".commit").forEach(b => b.addEventListener("click", () => {
       const i = +b.dataset.i, ch = e.choices[i];
       const owes = [].concat(ch.effects || []).some(x => x.undertake);
-      const before = Engine.snapshot(st);
+      const before = Engine.snapshot(st), beforeStruct = structure(st);
       lastResult = Engine.choose(st, C, e, i) || "Noted.";
       lastChanges = Engine.changes(before, Engine.snapshot(st), C);
       /* THE FIGURE, AND THE HOURGLASS. Both scale with what was done:
@@ -1432,6 +1512,7 @@ const UI = (function () {
       setStatus(e.title + " — " + lastResult.replace(/\s+/g, " ").slice(0, 120), "transient");
       saved();
       drawAll(); afterAction();
+      reportMoves(beforeStruct, structure(st));
       revealNode($("#sitting-outcome"), e);
     }));
   }
@@ -1972,5 +2053,5 @@ const UI = (function () {
      name, and it makes no sound — which is itself asserted, so exporting
      it cannot become a way to smuggle a cue into a renderer. */
   return { boot, state: () => st, annotate, setStatus, redraw: drawAll,
-           __test: { cabinetView } };
+           __test: { cabinetView, structure, reportMoves } };
 })();
