@@ -105,13 +105,14 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 /* columns scroll as a whole */
 #s-gov .stack,#s-pap .stack{min-height:0;overflow:auto;}
 /* one row of panels: the panel fills its cell, its body scrolls */
-#s-cham .grid > .panel,
 #s-pap .grid > .panel,
 #s-log .panel{display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden;}
-#s-cham .grid > .panel > .pbody,
 #s-pap .grid > .panel > .pbody,
 #s-log .panel > .pbody{flex:1 1 auto;min-height:0;overflow:auto;}
-#s-cham .grid > .panel > .pbody + .pbody{flex:0 0 auto;}
+/* the chamber is a short row — the seating plan and two tables — so its panels
+   keep their own height rather than being stretched to the viewport, which is
+   what the fill rule above did to them */
+#s-cham .grid{align-items:start;}
 /* the Concordance was pinned to a viewport offset; fill the screen instead */
 #s-cx .panel{height:100% !important;min-height:0 !important;}
 
@@ -526,6 +527,11 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 }
 @media (max-width:1080px){
   .g-gov,.g-cham,.g-orb,.g-disp,.g-pap,.g-elec{grid-template-columns:minmax(0,1fr);}
+  /* stacked, the chamber is taller than the viewport, so its panels go back to
+     filling and scrolling rather than being clipped */
+  #s-cham .grid{align-items:stretch;}
+  #s-cham .grid > .panel{display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+  #s-cham .grid > .panel > .pbody{flex:1 1 auto;min-height:0;overflow:auto;}
   .newsbody{column-count:1;}
 }
 
