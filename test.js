@@ -656,8 +656,8 @@ console.log("\nTHE ADAPTIVE BED:");
   /* D natural minor: D E F G A Bb C */
   const KEY = [2, 4, 5, 7, 9, 10, 0];
 
-  ok("the bed is the eight-bar loop it was written as",
-     F.BARS === F.PROG.length && F.PROG.length === 8,
+  ok("the bed is the sixteen-bar form it was written as",
+     F.BARS === F.PROG.length && F.PROG.length === 16,
      F.BARS + " bars = " + (F.BARS * F.BEATS * 60 / F.BPM).toFixed(0) +
      "s at " + F.BPM + " BPM");
 

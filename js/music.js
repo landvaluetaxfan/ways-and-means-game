@@ -1,14 +1,14 @@
 /* =============================================================
    MUSIC — the adaptive bed.
 
-   A slow eight-bar loop at 72 BPM in D minor, synthesised from
+   A slow sixteen-bar form at 72 BPM in D minor, synthesised from
    oscillators and one noise buffer. No assets, same as the cues.
 
-   VERTICAL REMIXING. The loop is split into layers, each on its own
-   gain. The BED is pad, bass, keys and reed — a smooth saxophone
-   line of long tones. The special bars add the drums and a brighter
-   trumpet lead. Nothing changes tempo, which is the whole point: a
-   swell is a layer entering, not the band speeding up.
+   VERTICAL REMIXING. The form is split into layers, each on its own
+   gain. The BED is pad, bass, Rhodes, guitar, keys, reed and shaker;
+   the special bars add the kit and a brighter trumpet lead. Nothing
+   changes tempo, which is the whole point: a swell is a layer entering,
+   not the band speeding up.
 
    THE HARD RULE, from js/audio.js, applies here too: music is
    started and swelled by USER ACTIONS and ENGINE EFFECTS only, never
