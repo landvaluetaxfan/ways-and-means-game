@@ -39,18 +39,18 @@
 const Sound = (function () {
   "use strict";
 
-  const CATS = ["ui", "room", "event"];
+  const CATS = ["ui", "room", "event", "music"];
   /* flat keys, not a nested {gain:{ui:…}} object, because Shell merges
      stored options over the defaults SHALLOWLY: one nested object from an
      older build would replace the whole default and take its missing keys
      with it. */
-  const GAIN_KEY = { ui: "gainUi", room: "gainRoom", event: "gainEvent" };
+  const GAIN_KEY = { ui: "gainUi", room: "gainRoom", event: "gainEvent", music: "gainMusic" };
 
   let ctx = null, master = null, bus = {}, noise = null;
-  let roomNodes = null, unlocked = false, dead = false;
+  let roomNodes = null, unlocked = false, dead = false, readyFns = [];
 
   /* Shell may not be loaded (the editor, a headless check). Defaults then. */
-  const FALLBACK = { mute: false, gainUi: 0.55, gainRoom: 0.3, gainEvent: 0.7, roomTone: true };
+  const FALLBACK = { mute: false, gainUi: 0.55, gainRoom: 0.3, gainEvent: 0.7, gainMusic: 0.4, roomTone: true };
   function pref(k) {
     if (typeof Shell !== "undefined" && Shell.opt) {
       const v = Shell.opt(k);
@@ -87,6 +87,14 @@ const Sound = (function () {
      function called available() must answer true or false, never null. */
   const live = () => !dead && !!ctx && ctx.state !== "closed";
 
+  /* Modules that need the graph itself (the music bed) register here, and are
+     called the moment the context exists. Before that they queue, because the
+     context is built on the first gesture and not a moment earlier. */
+  function onReady(fn) {
+    if (typeof fn !== "function") return;
+    if (live()) { try { fn(); } catch (e) {} } else readyFns.push(fn);
+  }
+
   /* ---------- unlocking ----------
      An AudioContext created before a user gesture starts suspended and stays
      that way. init() only installs the listener; the context is built on the
@@ -100,6 +108,8 @@ const Sound = (function () {
       if (!build()) return;
       if (ctx.state === "suspended" && ctx.resume) { try { ctx.resume(); } catch (e) {} }
       if (pref("roomTone")) room(true);
+      const fns = readyFns; readyFns = [];
+      fns.forEach(fn => { try { fn(); } catch (e) {} });
     };
     ["pointerdown", "keydown"].forEach(ev =>
       window.addEventListener(ev, go, { once: true, capture: true }));
@@ -322,10 +332,12 @@ const Sound = (function () {
   }
 
   return {
-    init: init, play: play, type: type, room: room, note: note,
+    init: init, play: play, type: type, room: room,
     registers: Object.keys(BAND),
     setMute: setMute, setGain: setGain, apply: apply,
     categories: CATS, gainKey: GAIN_KEY,
+    /* the graph itself, for the music bed: the context and the music bus */
+    context: () => ctx, musicOut: () => bus.music || null, onReady: onReady,
     /* for the checks: is there a graph at all */
     available: () => live()
   };

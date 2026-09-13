@@ -49,8 +49,8 @@ const Shell = (function () {
      it, and the failure would be a volume of undefined. */
   const DEFAULTS = {
     autosave: true, motion: true, confirmDestructive: true,
-    mute: false, roomTone: true,
-    gainUi: 0.55, gainRoom: 0.3, gainEvent: 0.7,
+    mute: false, roomTone: true, music: true,
+    gainUi: 0.55, gainRoom: 0.3, gainEvent: 0.7, gainMusic: 0.4,
     /* Text arrives a character at a time. Normal by default: fast reads
        as a flicker rather than as typing, and the point of the effect is
        that the terminal is saying something to you. Anyone who finds it
@@ -77,6 +77,7 @@ const Shell = (function () {
     /* Audio is optional at every level: the module may not be loaded, and
        if it is it may have no graph yet. Both are silence, not an error. */
     if (typeof Sound !== "undefined") Sound.apply();
+    if (typeof Music !== "undefined") Music.apply();
   }
   function opt(k) { return opts[k]; }
   function setOpt(k, v) { opts[k] = v; saveOpts(); }
@@ -390,9 +391,11 @@ const Shell = (function () {
       <div class="opt-title">Sound</div>
       ${row("mute", "Mute", "Silence everything, without losing the levels below")}
       ${row("roomTone", "Room tone", "The air handling, a long way off")}
+      ${row("music", "Music", "A slow bed that swells when a bill carries")}
       ${slider("gainUi", "Terminal")}
       ${slider("gainRoom", "Room")}
       ${slider("gainEvent", "Events")}
+      ${slider("gainMusic", "Music")}
       <div class="opt-sep"></div>
       <div class="opt-title">Text</div>
       ${row("stream", "Type text out", "New text arrives a character at a time. Any key skips it.")}
@@ -493,6 +496,8 @@ const Shell = (function () {
        graph and makes no sound until the player's first click or keypress,
        because every browser refuses to start one before that anyway. */
     if (typeof Sound !== "undefined") Sound.init();
+    /* The music bed borrows Sound's graph once the first gesture builds it. */
+    if (typeof Music !== "undefined") Music.init();
     document.addEventListener("click", e => {
       const p = document.getElementById("tb-optpanel");
       if (p.classList.contains("on") && !p.contains(e.target)) toggleOptions(false);

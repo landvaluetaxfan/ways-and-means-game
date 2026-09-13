@@ -339,6 +339,9 @@ const UI = (function () {
      delegated listener in boot(). Audio follows actions and outcomes; see
      the header of js/audio.js for why a draw function may never reach here. */
   function cue(name) { if (typeof Sound !== "undefined") Sound.play(name); }
+  /* The adaptive bed, driven from the same places as the cues: a bill carries
+     and the drums enter; the government falls and the bed thins out. */
+  function score(name) { if (typeof Music !== "undefined" && Music[name]) Music[name](); }
 
   /* Called after anything that moved the game on. A government falls once,
      so the knell is edge-triggered rather than drawn from the current state
@@ -349,6 +352,7 @@ const UI = (function () {
     if (loss.lost && !fallen) {
       fallen = true;
       cue("knell");
+      score("sombre");
       setStatus("The government has fallen \u2014 " + loss.reason, "transient");
       /* The session log outlives every save, so a government is recorded
          as it ends rather than when the player next reaches the menu.
@@ -561,6 +565,7 @@ const UI = (function () {
           if (!ok) return;
           Engine.prayAgainst(st, C, b.dataset.pray);
           cue(f.carries ? "aye" : "nay"); if (typeof Wait !== "undefined") Wait.brief(320);
+          if (f.carries) score("moment");
           setStatus("Prayer against " + b.dataset.pray.replace(/_/g, " ") +
                     (f.carries ? " carried \u2014 the order is annulled"
                                : " defeated \u2014 the order stands"), "transient");
@@ -829,6 +834,7 @@ const UI = (function () {
       ms: 520,
       run: () => {
         cue(r.carries ? "aye" : "nay");
+        if (r.carries) score("moment");
         if (!verdict) return;
         verdict.textContent = r.carries
           ? (out.assent && out.assent.referred
