@@ -896,7 +896,7 @@ const UI = (function () {
        not an economy: a division is the thing that can end you. */
     steps.push({
       label: "The House divides",
-      ms: 300,
+      ms: 700,
       run: () => cue("knell"),
       /* TIER 3. Only from a flag content set, never from a roll. Nothing
          in content sets this yet; that is the point of it being a hook. */
@@ -907,7 +907,7 @@ const UI = (function () {
 
     rows.forEach((row, i) => steps.push({
       label: pn(row.party) + " reports",
-      ms: 105,
+      ms: 180,
       run: () => {
         popRun += row.popularAye;
         /* THE FUNCTIONAL COLUMN LAGS, one party behind every second
@@ -925,7 +925,7 @@ const UI = (function () {
 
     steps.push({
       label: dual ? "The functional benches are counted separately" : "The count is complete",
-      ms: 420,
+      ms: 800,
       run: () => {
         /* Squared off against the engine's own totals rather than the
            running sum, so a skip can never leave a different number on
@@ -939,7 +939,7 @@ const UI = (function () {
 
     steps.push({
       label: "The result",
-      ms: 520,
+      ms: 2200,
       run: () => {
         cue(r.carries ? "aye" : "nay");
         score(r.carries ? "moment" : "defeat");
