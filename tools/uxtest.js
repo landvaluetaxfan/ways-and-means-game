@@ -792,4 +792,54 @@ try {
      !!w.document.querySelector("#sit-decide .choices"));
 } catch (e) { ok("expanding does not redraw the prose", false, e.message); }
 
+
+/* CONFIDENCE AND SUPPLY IS A DIFFERENT ARRANGEMENT FROM COALITION.
+
+   The state object has drawn the distinction since the first build and
+   nothing read it: whippable() treated the two identically, so a party
+   that had promised only the budget and confidence could be whipped
+   through anything. */
+try {
+  const E = w.eval("Engine"), Cx = w.eval("CONTENT");
+  const st = w.eval("Engine.newGame(CONTENT)");
+  const cs = st.confidenceSupply[0], co = st.coalition.find(p => p !== st.playerParty);
+  const bill = "divergence";
+
+  const csOrdinary = E.whippable(st, Cx, bill, cs, "popular");
+  ok("a confidence-and-supply party is free on ordinary business",
+     csOrdinary.max === 0 && /confidence and supply/.test(csOrdinary.reason || ""),
+     cs + ": " + (csOrdinary.reason || csOrdinary.max));
+
+  const coOrdinary = E.whippable(st, Cx, bill, co, "popular");
+  ok("while a coalition partner is not", coOrdinary.max > 0 || !/confidence and supply/.test(coOrdinary.reason || ""),
+     co + ": " + (coOrdinary.reason || coOrdinary.max));
+
+  /* mark the bill supply and the same party becomes movable */
+  const b = Cx.billById[bill]; const had = b.supply;
+  b.supply = true;
+  const csSupply = E.whippable(st, Cx, bill, cs, "popular");
+  b.supply = had;
+  ok("but is movable on supply", !/confidence and supply/.test(csSupply.reason || ""),
+     csSupply.reason || ("max " + csSupply.max));
+
+  ok("and a party outside both is still lobbying, not whipping",
+     /lobbying/.test((E.whippable(st, Cx, bill, "cl", "popular").reason) || ""));
+} catch (e) { ok("confidence and supply", false, e.message); }
+
+/* THE VOLUME PRICE HAD TWO STATES. A binary on a scalar is not a model,
+   and 7.9's rule says a price nothing meaningfully moves is a price no
+   event can honestly be gated on. */
+try {
+  const E = w.eval("Engine"), Cx = w.eval("CONTENT");
+  const at = t => {
+    const s2 = w.eval("Engine.newGame(CONTENT)");
+    s2.scalars.treasury = t;
+    for (let i = 0; i < 12; i++) E.advance(s2, Cx);
+    return Math.round(s2.prices.volume * 10) / 10;
+  };
+  const lo = at(20), mid = at(50), hi = at(80);
+  ok("the volume price answers continuously to the treasury",
+     lo > mid && mid > hi, `treasury 20 → ${lo}, 50 → ${mid}, 80 → ${hi}`);
+} catch (e) { ok("the volume price", false, e.message); }
+
 H.finish("the interface is healthy");

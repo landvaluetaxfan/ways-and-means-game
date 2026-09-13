@@ -274,6 +274,57 @@ It is a **canon decision first**: lock §7.5.3, name the unit, and amend §7.6's
 treasury line. None of the engine work should start before those three are in
 `bible.md`.
 
+## 8.1 The bible patch, ready to apply
+
+Three edits, and they are the author's rather than the engine pass's — §2.7
+makes inventing a setting term in passing the main production risk, and one of
+these invents a unit. Proposed wording:
+
+**§7.5.3 — change the status line from LEANING to LOCKED**, and append:
+
+> The unit is named ⟨TO BE CHOSEN, per §3.9⟩. Everything fiscal is denominated
+> in it: the treasury holds it, the appropriation divides it, and a person costs
+> it. Locking this is what makes the franchise question and the budget question
+> the same question.
+
+**§7.6 — replace the `treasury` line** in the scalar list:
+
+> `treasury` — the quota the state holds and may allocate, denominated in the
+> unit of §7.5.3. A quantity, not an index. Shown exactly, for the same reason
+> capital is: this game is for people who want the arithmetic.
+
+**§7.9 — append to the design rule**, recording what the appropriation drives:
+
+> The four prices are legislative outputs, and the appropriation is the
+> legislation. A price whose only input is a scalar is a placeholder for the
+> appropriation that has not been written yet.
+
+Until those three land, `design/13`'s stock, the Appropriation Bill and the
+denominated treasury all stay unbuilt. What has been built without them is in
+§8.2.
+
+## 8.2 What landed ahead of the canon decision
+
+Two things in this document needed no naming and no amendment, so they are in:
+
+**Confidence and supply is a different arrangement from coalition.** The state
+object has drawn the distinction since the first build and nothing read it —
+`whippable()` treated the two identically, so a party that had promised only the
+budget and confidence could be whipped through anything. Those benches are
+movable on supply and on confidence and immovable on ordinary business now. A
+bill declares itself with `supply` or `confidence`; until the Appropriation Bill
+exists nothing does, so today it reads as "free on everything", which is the
+correct answer for a House with no budget in it.
+
+**The volume price is continuous.** It was `treasury < 40 ? 14 : -4` — two
+target states, and a treasury moving from 80 to 41 changed nothing. Measured
+after: treasury 20 → 107.8, 50 → 100, 80 → 92.2. The real driver is still the
+appropriation; this is the honest interim.
+
+Transit remains thin — `treasury` alone, linearly — and is left that way
+deliberately. Its other input is the anchor states, and foreign affairs
+(`design/11`) is gated behind chapter one reaching about twenty-five events.
+
 ## 9. Acceptance
 
 - The Appropriation Bill exists in content, reaches the House once per session,

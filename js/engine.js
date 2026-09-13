@@ -767,9 +767,26 @@ const Engine = (function () {
 
   function whippable(st, C, billId, partyId, tier) {
     const bill = C.billById[billId];
-    const inGov = st.coalition.includes(partyId) || st.confidenceSupply.includes(partyId);
     const own = partyId === st.playerParty;
-    if (!inGov && !own) return { max: 0, costPerSeat: 0, reason: "outside the coalition — lobbying, not whipping" };
+    const inCoalition = st.coalition.includes(partyId);
+    const inCS = st.confidenceSupply.includes(partyId);
+    if (!inCoalition && !inCS && !own)
+      return { max: 0, costPerSeat: 0, reason: "outside the coalition — lobbying, not whipping" };
+
+    /* CONFIDENCE AND SUPPLY IS NOT COALITION, and the two were treated
+       identically. The arrangement is a promise to vote through the
+       BUDGET and to hold on CONFIDENCE, and to be free on everything
+       else — so those benches are movable on supply and on confidence
+       and immovable on ordinary business. st.confidenceSupply has always
+       drawn the distinction; this is the first thing to read it.
+
+       A bill declares itself supply or confidence in content. Until the
+       Appropriation Bill exists (design/13) nothing does, so today this
+       reads as "free on everything", which is the correct answer to a
+       House with no budget in it. */
+    if (inCS && !inCoalition && !own && !(bill && (bill.supply || bill.confidence)))
+      return { max: 0, costPerSeat: 0,
+               reason: "confidence and supply only — free on ordinary business" };
 
     const seats = tier === "functional" ? partyFunctional(st, partyId) : partyPopular(st, partyId);
     const already = resolveStance(st, C, bill, partyId, tier);
@@ -1784,9 +1801,22 @@ const Engine = (function () {
     P.substrate = clamp(P.substrate + drift(P.substrate,
       70 + (1 - pub) * 60 + (P.thermal - 100) * 0.4), 20, 400);
 
-    /* volume: pressurised cubic metres, capped by construction schedule */
+    /* volume: pressurised cubic metres, capped by the construction
+       schedule, which is bought out of the treasury.
+
+       CONTINUOUS, NOT A SWITCH. This was `treasury < 40 ? 14 : -4`, so
+       the volume price had exactly two target states and a treasury
+       moving from 80 to 41 changed nothing at all. Under 7.9's design
+       rule a price nothing meaningfully moves is a price no event can
+       honestly be gated on, which is most of why nothing is.
+
+       The real driver is the appropriation (7.5.2: "a market in
+       permission-to-exist-at-scale whose price is set by an
+       appropriation vote"), and that waits on the canon decision in
+       design/13. This is the honest interim: continuous in the one
+       input it actually has. */
     P.volume = clamp(P.volume + drift(P.volume,
-      100 + (st.scalars.treasury < 40 ? 14 : -4)), 20, 400);
+      100 + (50 - st.scalars.treasury) * 0.28), 20, 400);
 
     /* transit: launch windows and delta-v */
     P.transit = clamp(P.transit + drift(P.transit,
