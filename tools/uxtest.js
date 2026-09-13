@@ -1163,8 +1163,11 @@ try {
 
     /* The other direction. A swell nobody triggers is the audio version of
        a number nobody sees, and this file already fails an explanation
-       that nothing anchors for the same reason. */
-    const moods = ["tension", "moment", "defeat", "rise", "sombre"];
+       that nothing anchors for the same reason. The list comes FROM the
+       module, so adding a mood and forgetting to fire it fails here
+       rather than sitting in the score unheard. */
+    const moods = w.eval("Music.__form ? Music.__form.MOODS : null") ||
+                  ["tension", "moment", "defeat", "rise", "sombre"];
     const unused = moods.filter(n => has.indexOf(n) >= 0 && asked.indexOf(n) < 0);
     ok("and no swell is written that nothing fires", unused.length === 0,
        unused.length ? "NEVER CALLED: " + unused.join(", ") : moods.length + " moods wired");

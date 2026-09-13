@@ -114,6 +114,11 @@ const UI = (function () {
   function boot(state, content) {
     st = state; C = content;
     currentEvent = null; lastResult = null;
+    /* Shell re-boots on every load, and both of these are EDGE triggers
+       against the previous state. Carrying them across a load would fire
+       a cadence for a session the player never sat through, or swallow
+       the knell for a government that has already fallen. */
+    lastSession = null; fallen = false;
     if (wired) { drawAll(); reveal(); return; }   /* Shell re-boots on every load */
     wired = true;
     document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
@@ -346,8 +351,16 @@ const UI = (function () {
   /* Called after anything that moved the game on. A government falls once,
      so the knell is edge-triggered rather than drawn from the current state
      - which is also why this cannot live in drawStatus. */
-  let fallen = false;
+  let fallen = false, lastSession = null;
   function afterAction() {
+    /* PROROGATION IS THE ONE CADENCE IN THE SCORE, and nothing clicks it:
+       the session turns over inside Engine.advance() as sittings pass. So
+       it is edge-triggered off the state here, the same way the knell is,
+       because both are things that HAPPEN TO the player rather than
+       things the player does. */
+    if (lastSession === null) lastSession = st.session;
+    else if (st.session !== lastSession) { lastSession = st.session; score("prorogue"); }
+
     const loss = Engine.checkLoss(st, C);
     if (loss.lost && !fallen) {
       fallen = true;
@@ -548,7 +561,8 @@ const UI = (function () {
       const r = Engine.makeInstrument(st, C, b.dataset.make);
       if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); Dialog.alert(r.reason, { title: "Order refused" }); }
       else {
-        cue("stamp"); if (typeof Wait !== "undefined") Wait.brief(320);
+        cue("stamp"); score("order");
+        if (typeof Wait !== "undefined") Wait.brief(320);
         setStatus((si ? si.number : b.dataset.make) + " made \u2014 in force at once, and prayable",
                   "transient");
       }
@@ -1525,6 +1539,9 @@ const UI = (function () {
       /* THE FIGURE, AND THE HOURGLASS. Both scale with what was done:
          an undertaking hangs unresolved and takes longer to file. */
       cue(owes ? "undertake" : "decide");
+      /* An undertaking is a promise and not an outcome, so the score
+         notes it and carries on: one hit, no key change, no jump. */
+      if (owes) score("undertake");
       if (typeof Wait !== "undefined") Wait.brief(owes ? 480 : 280);
       setStatus(e.title + " — " + lastResult.replace(/\s+/g, " ").slice(0, 120), "transient");
       saved();

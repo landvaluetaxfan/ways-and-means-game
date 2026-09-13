@@ -636,11 +636,12 @@ console.log("\nCURRENTS IN A DIVISION:");
 /* ---------------------------------------------------------------------
    THE BED IS IN TUNE.
 
-   Thirty-two bars of hand-typed MIDI. A mistyped number is a wrong note
-   that every static check passes and nobody hears until the loop reaches
-   that bar, once, a minute into a session. These are the assertions that
-   would have caught it — plus the two structural claims the funk rewrite
-   rests on, because a claim nothing checks is a claim that rots.
+   Four eight-bar sections of hand-typed MIDI. A mistyped number is a
+   wrong note that every static check passes and nobody hears until the
+   arrangement happens to reach that bar, once, two minutes in. These
+   also hold the claims the whole design rests on — rootless voicings, a
+   join that cannot cadence, a mode that is only left on purpose —
+   because a claim nothing checks is a claim that rots.
    --------------------------------------------------------------------- */
 console.log("\nTHE ADAPTIVE BED:");
 (function () {
@@ -655,19 +656,29 @@ console.log("\nTHE ADAPTIVE BED:");
   const NAME = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
   const pc = m => ((m % 12) + 12) % 12;
   /* D dorian: D E F G A B C. The natural sixth is the mode's signature
-     and the clearest break from the minor the bed started in. */
+     and the clearest break from the minor this score started in. */
   const MODE = [2, 4, 5, 7, 9, 11, 0];
   const inMode = m => MODE.indexOf(pc(m)) >= 0;
   const named = ms => ms.map(m => NAME[pc(m)]).join(" ");
 
-  ok("the form is long enough not to announce its own loop",
-     F.BARS >= 20,
-     F.BARS + " bars = " + (F.BARS * F.BEATS * 60 / F.BPM).toFixed(0) + "s at " + F.BPM + " BPM");
+  /* the arrangement, flattened the way the sequencer walks it */
+  const walk = [];
+  F.ITINERARY.forEach((name, i) =>
+    F.SECTIONS[name].forEach((b, j) => walk.push({ b: b, sec: name, at: name + (j + 1) })));
 
-  /* The old form cadenced A7 -> Dm across the join, which is as closed as
-     a join gets: the ear learns it in two passes. A cadence is carried by
-     the bass, so that is what this reads. */
-  const last = F.PROG[F.BARS - 1], first = F.PROG[0];
+  ok("the form is long enough not to announce its own loop",
+     walk.length >= 32,
+     walk.length + " bars = " + (walk.length * F.BEATS * 60 / F.BPM).toFixed(0) +
+     "s at " + F.BPM + " BPM");
+  ok("and the itinerary uses every section it defines",
+     Object.keys(F.SECTIONS).every(k => F.ITINERARY.indexOf(k) >= 0),
+     F.ITINERARY.join(" "));
+  ok("with the head arriving once, so it stays an event",
+     F.ITINERARY.filter(x => x === "D").length === 1);
+
+  /* A cadence is carried by the bass. The join has to be as unremarkable
+     as any other bar change or the ear learns it in two passes. */
+  const last = walk[walk.length - 1].b, first = walk[0].b;
   ok("and does not cadence into its own first bar",
      pc(last.bass[0]) !== pc(first.bass[0] + 7),
      named([last.bass[0]]) + " -> " + named([first.bass[0]]) +
@@ -675,87 +686,105 @@ console.log("\nTHE ADAPTIVE BED:");
 
   /* Every note in the piece, against the mode. */
   const stray = [];
-  F.PROG.forEach((b, i) => {
-    const at = "bar " + (i + 1) + " ";
-    b.ch.forEach(m => { if (!inMode(m)) stray.push(at + "voicing " + NAME[pc(m)]); });
-    if (!inMode(b.reed)) stray.push(at + "reed " + NAME[pc(b.reed)]);
-    (b.h || []).forEach(([m]) => { if (!inMode(m)) stray.push(at + "lead " + NAME[pc(m)]); });
-    /* the bass may leave the mode only where the bar says it means to */
-    if (!b.chr) b.bass.forEach(m => {
-      if (!inMode(m)) stray.push(at + "bass " + NAME[pc(m)] + " (not marked chr)");
-    });
+  walk.forEach(({ b, at }) => {
+    if (b.chr) return;                      /* this bar says it is leaving */
+    b.ch.forEach(m => { if (!inMode(m)) stray.push(at + " voicing " + NAME[pc(m)]); });
+    b.bass.forEach(m => { if (!inMode(m)) stray.push(at + " bass " + NAME[pc(m)]); });
+    if (!inMode(b.reed)) stray.push(at + " reed " + NAME[pc(b.reed)]);
+    (b.h || []).forEach(([m]) => { if (!inMode(m)) stray.push(at + " horn " + NAME[pc(m)]); });
   });
-  ok("every note is in the mode, or marked as leaving it",
-     stray.length === 0, stray.length ? stray.join("; ") : F.BARS + " bars checked");
+  ok("every note is in the mode, or its bar is marked as leaving it",
+     stray.length === 0, stray.length ? stray.join("; ") : walk.length + " bars checked");
 
-  const chr = F.PROG.filter(b => b.chr).length;
-  ok("and leaving it is rare enough to mean something",
-     chr > 0 && chr <= F.BARS / 8, chr + " of " + F.BARS + " bars borrow a root");
+  /* Leaving the mode is the dark section's job and nobody else's. If it
+     spreads, the mode stops being a place the music can come back to. */
+  const chrSecs = [...new Set(walk.filter(x => x.b.chr).map(x => x.sec))];
+  ok("and only one section is allowed to leave it",
+     chrSecs.length === 1, chrSecs.join(", ") || "none");
+  const chrBars = walk.filter(x => x.b.chr).length;
+  ok("for a minority of the form", chrBars > 0 && chrBars < walk.length / 4,
+     chrBars + " of " + walk.length + " bars");
 
-  /* THE ROOTLESS VOICING is the fusion claim: the bass carries the root,
-     which is why the same four notes are Dm11 over D and Fmaj9 over F.
-     If a voicing ever doubles its own root the trick is off. */
-  const rooted = F.PROG.filter((b, i) => b.ch.some(m => pc(m) === pc(b.bass[0])));
+  /* ROOTLESS VOICINGS are the claim the whole harmony rests on: the bass
+     carries the root, which is why the same four notes are Dm11 over D
+     and Fmaj9 over F. If a voicing doubles its own root the trick is off. */
+  const rooted = walk.filter(({ b }) => b.ch.some(m => pc(m) === pc(b.bass[0])));
   ok("every voicing leaves its root to the bass",
      rooted.length === 0,
-     rooted.length ? rooted.length + " voicings double the root" : F.BARS + " rootless");
-
-  /* THE KIT IS IN THE BED. It used to be a swell layer held back for a
-     division, and funk with no drums is a chord loop. */
-  ok("the kit plays in the bed and not only in a swell",
-     F.BED.indexOf("drums") >= 0, F.BED.join(", "));
-  ok("and the horn is still held back for the swells",
-     F.BED.indexOf("lead") < 0);
+     rooted.length ? rooted.map(x => x.at).join(", ") : walk.length + " rootless");
 
   /* A horn note off the sixteenth grid never fires at all: the sequencer
      matches beat * 4 against an integer step. It would be silently absent. */
   const offgrid = [];
-  F.PROG.forEach((b, i) => (b.h || []).forEach(([m, beat, d]) => {
-    if (Math.abs(beat * 4 - Math.round(beat * 4)) > 1e-9)
-      offgrid.push("bar " + (i + 1) + " at beat " + beat);
-    if (beat + d > F.BEATS + 0.001)
-      offgrid.push("bar " + (i + 1) + " runs past the barline");
+  walk.forEach(({ b, at }) => (b.h || []).forEach(([m, beat, d]) => {
+    if (Math.abs(beat * (F.PER_BAR / F.BEATS) - Math.round(beat * (F.PER_BAR / F.BEATS))) > 1e-9)
+      offgrid.push(at + " at beat " + beat);
+    if (beat + d > F.BEATS + 0.001) offgrid.push(at + " runs past the barline");
   }));
   ok("every horn note lands on the grid and inside its bar",
      offgrid.length === 0, offgrid.join("; ") || "checked");
 
-  ok("every note is in a range a human could play",
-     F.PROG.every(b => b.ch.every(m => m >= 36 && m <= 84) &&
-                       b.bass.every(m => m >= 28 && m <= 55) &&
-                       b.reed >= 48 && b.reed <= 84));
+  /* Range, at the extremes of the key drift as well as at home — a form
+     that is fine in D and unplayable four semitones down is not fine. */
+  const lowest = Math.min(...walk.map(x => Math.min(...x.b.bass))) + F.KEY_MIN;
+  const highest = Math.max(...walk.map(x => Math.max(x.b.reed, ...x.b.ch,
+    ...(x.b.h || []).map(h => h[0])))) + F.KEY_MAX;
+  ok("the whole form stays playable across the key drift",
+     lowest >= 28 && highest <= 88,
+     "MIDI " + lowest + " to " + highest + " over " + F.KEY_MIN + ".." + F.KEY_MAX);
+  ok("and the key cannot drift somewhere it never comes back from",
+     F.KEY_MIN < 0 && F.KEY_MAX > 0 && F.KEY_MAX - F.KEY_MIN <= 12);
 
-  /* Silence is a layer. Every bar used to carry every voice. */
-  const quiet = F.PROG.filter(b => b.q).length;
-  ok("some bars are quieter than others", quiet > 0 && quiet < F.BARS,
-     quiet + " of " + F.BARS + " bars drop the comping");
+  /* Silence is a layer. */
+  const quiet = walk.filter(x => x.b.q).length;
+  ok("some bars are quieter than others", quiet > 0 && quiet < walk.length,
+     quiet + " of " + walk.length + " bars drop the comping");
 
   /* The hook has to be a hook: short, in the mode, and actually used. */
   ok("the hook is short enough to remember",
      F.MOTIF.length >= 2 && F.MOTIF.length <= 5, F.MOTIF.length + " notes");
   ok("and is in the mode", F.MOTIF.every(inMode), named(F.MOTIF));
-  /* the dorian sixth is the whole point of moving off the minor */
   ok("and uses the mode's own note", F.MOTIF.some(m => pc(m) === 11),
      "B natural, the dorian sixth");
-  const quoted = F.PROG.some(b => (b.h || []).length >= F.MOTIF.length &&
+  const quoted = walk.filter(({ b }) => (b.h || []).length >= F.MOTIF.length &&
     F.MOTIF.every((m, i) => pc(b.h[i][0]) === pc(m)));
-  ok("and the written line quotes it somewhere", quoted);
+  ok("and the written arrangement states it", quoted.length > 0,
+     quoted.map(x => x.at).join(", "));
+
+  /* The unison line is the hook opened out, or it is a different tune
+     wearing its clothes. */
+  ok("the unison line opens with the hook",
+     F.MOTIF.every((m, i) => F.UNISON[i] === m),
+     named(F.UNISON));
+  ok("and stays in the mode", F.UNISON.every(inMode));
+  ok("the run ascends without leaving the mode",
+     F.RUN.every(inMode) && F.RUN.every((m, i) => i === 0 || m > F.RUN[i - 1]),
+     F.RUN.length + " notes, " + named([F.RUN[0]]) + " up to " + named([F.RUN[F.RUN.length - 1]]));
+
+  /* THE KIT IS IN THE BED. Funk with no drums is a chord loop. */
+  ok("the kit plays in the bed and not only in a swell",
+     F.BED.indexOf("drums") >= 0, F.BED.join(", "));
+  ok("and the horn is still held back for the moods",
+     F.BED.indexOf("lead") < 0);
 
   if (bad) { console.log("\n" + bad + " BED FAILURES"); process.exitCode = 1; }
 })();
 
 /* ---------------------------------------------------------------------
-   AND IT PLAYS.
+   AND IT PLAYS, AND THE MOODS MOVE IT.
 
-   The section above proves the NOTES are right. Nothing proved the code
-   that plays them runs at all: jsdom has no Web Audio, so build() returns
-   false in every harness and the sequencer, the six voices and the four
-   swells were never executed by any check in the project.
+   The section above proves the NOTES are right. Nothing there proves the
+   code that plays them runs: jsdom has no Web Audio, so build() returns
+   false in every harness and the sequencer, the eight voices, the four
+   gestures and the eight moods are executed by no other check.
 
-   This drives a whole loop of the form through a recording stub. It is
-   not listening — it cannot be — but it catches the errors that are not
-   about taste: a voice that throws, a pattern that addresses a step that
-   does not exist, and an exponential ramp to zero, which is silent in a
-   stub and a thrown DOMException in a browser.
+   This drives the whole arrangement through a recording stub and then
+   fires each mood and reads back where the band ended up. It is not
+   listening — it cannot be — but it catches everything that is not
+   about taste: a voice that throws, a pattern addressing a step that
+   does not exist, a key that walks off the end of the piano, a mood
+   that says it jumps and does not, and an exponential ramp to zero,
+   which is silent in a stub and a thrown DOMException in a browser.
    --------------------------------------------------------------------- */
 console.log("\nAND IT PLAYS:");
 (function () {
@@ -769,8 +798,8 @@ console.log("\nAND IT PLAYS:");
 
   /* `anchored` counts the events actually placed on THIS param's timeline.
      A ramp reads its start value from the previous event, so a ramp with
-     none is the silent-bed bug and is recorded as such. cancelAndHold is
-     not counted: it holds an existing event and cannot invent one. */
+     none is the silent-bed bug. cancelAndHold is not counted: it holds an
+     existing event and cannot invent one. */
   function param(name) {
     const p = {
       value: 0, anchored: 0,
@@ -785,10 +814,7 @@ console.log("\nAND IT PLAYS:");
     };
     return p;
   }
-  const node = extra => Object.assign({
-    connect: () => {}, disconnect: () => {}
-  }, extra);
-
+  const node = extra => Object.assign({ connect: () => {}, disconnect: () => {} }, extra);
   const ctx = {
     currentTime: 0, sampleRate: 8000, state: "running", resume: () => {},
     createOscillator: () => { bump("osc"); return node(
@@ -800,79 +826,116 @@ console.log("\nAND IT PLAYS:");
     createDelay: () => node({ delayTime: param("delay") }),
     createBufferSource: () => { bump("noise"); return node(
       { buffer: null, loop: false, start: () => {}, stop: () => {} }); },
-    createBuffer: (ch, len) => ({ getChannelData: () => new Float32Array(len) })
+    createBuffer: (c, n) => ({ getChannelData: () => new Float32Array(n) })
   };
-  const musicBus = node({ gain: param("bus") });
-
-  /* music.js reads the globals at init(), so the stub goes in first. */
-  globalThis.Sound = {
-    context: () => ctx, musicOut: () => musicBus, onReady: fn => fn()
-  };
+  globalThis.Sound = { context: () => ctx, musicOut: () => node({ gain: param("bus") }),
+                       onReady: fn => fn() };
 
   /* The sequencer paces itself with setTimeout. Capture the callback and
-     drive the clock by hand so a whole loop passes in no time at all. */
+     drive the clock by hand so minutes pass in no time at all. */
   const realSet = globalThis.setTimeout, realClear = globalThis.clearTimeout;
-  let pending = null, ticks = 0, threw = null, mix = null;
+  let pending = null, threw = null;
   globalThis.setTimeout = fn => { pending = fn; return 0; };
   globalThis.clearTimeout = () => { pending = null; };
+  const tick = () => { if (!pending) return false; const fn = pending; pending = null;
+                       ctx.currentTime += 0.04; fn(); return true; };
+  const SECS = n => { const to = ctx.currentTime + n; while (ctx.currentTime < to && tick()); };
+  const BAR = F.BEATS * 60 / F.BPM;
 
-  const LOOP = F.BARS * F.BEATS * 60 / F.BPM;
+  let bars = 0; const seen = {}; let mix = null;
   try {
     M.init();
     ok("the graph builds and the transport starts", M.available() === true);
-    /* one full pass of the form, plus every swell along the way */
-    const swells = ["rise", "tension", "moment", "defeat", "sombre"];
-    while (pending && ctx.currentTime < LOOP + 1 && ticks < 50000) {
-      const fn = pending; pending = null;
-      ctx.currentTime += 0.04;
-      fn();
-      if (ticks % 400 === 399) M[swells[(ticks / 400 | 0) % swells.length]]();
-      ticks++;
+
+    /* a full pass of the arrangement, watching where it goes on its own */
+    for (let i = 0; i < 70; i++) {
+      SECS(BAR);
+      const st = M.state();
+      if (st.section) { seen[st.section] = true; bars++; }
     }
-    mix = M.state ? M.state() : null;    /* while it is still playing */
+    ok("it walks the whole arrangement unaided",
+       Object.keys(seen).length === Object.keys(F.SECTIONS).length,
+       Object.keys(seen).sort().join(" ") + " over " + bars + " bars");
+
+    /* ---- the moods, each read back rather than taken on trust ---- */
+    const home = M.state().semitones;
+
+    M.moment(); SECS(BAR * 2);
+    const afterCarry = M.state();
+    ok("a carried bill lifts the key", afterCarry.semitones > home,
+       home + " -> " + afterCarry.semitones + " (" + afterCarry.key + ")");
+    ok("and takes the head", afterCarry.section === "D", afterCarry.section);
+
+    M.defeat(); SECS(BAR * 2);
+    const afterLoss = M.state();
+    ok("a lost bill drops it again", afterLoss.semitones < afterCarry.semitones,
+       afterCarry.semitones + " -> " + afterLoss.semitones + " (" + afterLoss.key + ")");
+    ok("and slips into the section that is out of the mode",
+       afterLoss.section === "C", afterLoss.section);
+
+    M.tension(); SECS(BAR);
+    ok("a division halves the feel", M.state().halfTime === true);
+    M.moment(); SECS(BAR);
+    ok("and the result puts it back", M.state().halfTime === false);
+
+    /* THE CLAMP. Good news must not walk the band off the piano. */
+    for (let i = 0; i < 8; i++) { M.moment(); SECS(BAR); }
+    ok("a run of good news stops at the ceiling",
+       M.state().semitones === F.KEY_MAX, M.state().key);
+    for (let i = 0; i < 10; i++) { M.defeat(); SECS(BAR); }
+    ok("and a run of bad news at the floor",
+       M.state().semitones === F.KEY_MIN, M.state().key);
+
+    /* PROROGATION IS THE ONE CADENCE, and it takes the key home. */
+    M.prorogue(); SECS(BAR * 2);
+    ok("prorogation returns the key home", M.state().semitones === 0, M.state().key);
+    ok("and restarts the arrangement", M.state().section === "A");
+
+    /* the two that change nothing structural, and must not */
+    const before = M.state();
+    M.undertake(); M.order(); SECS(BAR);
+    ok("an undertaking and an order leave the key alone",
+       M.state().semitones === before.semitones);
+
+    M.rise(); SECS(BAR * 2);
+    ok("a new government runs up into the vamp",
+       M.state().section === "A" && M.state().semitones === 0);
+    M.sombre(); SECS(BAR * 2);
+    ok("and a fallen one goes half time", M.state().halfTime === true);
+
+    mix = M.state();
     M.stop();
   } catch (e) { threw = e; }
   globalThis.setTimeout = realSet; globalThis.clearTimeout = realClear;
 
-  ok("a whole loop of the form plays without throwing",
-     !threw, threw ? threw.message : ticks + " scheduler ticks over " +
-     ctx.currentTime.toFixed(0) + "s");
+  ok("every mood plays without throwing", !threw,
+     threw ? threw.message + " | " + String(threw.stack).split("\n")[1].trim()
+           : F.MOODS.length + " moods");
 
-  ok("and it got all the way round", ctx.currentTime >= LOOP,
-     ctx.currentTime.toFixed(0) + "s of a " + LOOP.toFixed(0) + "s form");
-
-  /* Every voice in the form must actually have been reached. A pattern
-     that addresses a step outside the bar is silent, not an error. */
-  ok("every voice was reached", (made.osc || 0) > 500 && (made.noise || 0) > 200,
+  ok("every voice was reached", (made.osc || 0) > 2000 && (made.noise || 0) > 800,
      (made.osc || 0) + " oscillators, " + (made.noise || 0) + " noise bursts");
 
   /* AN EXPONENTIAL RAMP TO ZERO throws a DOMException in a browser and
      does nothing in a stub, so it is invisible everywhere except on the
-     player's machine. Every fade here has to end at a small positive. */
+     player's machine. */
   const zeroed = ramps.filter(r => r[1] === "exp" && !(r[2] > 0));
   ok("no exponential ramp reaches zero", zeroed.length === 0,
-     zeroed.length ? zeroed.length + " ramps to " + zeroed[0][2] +
-     " on " + zeroed[0][0] : ramps.length + " automation points");
-
-  /* A ramp scheduled in the past is applied instantly, which is a click. */
+     zeroed.length ? zeroed.length + " ramps to " + zeroed[0][2] + " on " + zeroed[0][0]
+                   : ramps.length + " automation points");
   const backwards = ramps.filter(r => r[3] < -0.001);
   ok("and none is scheduled before the clock", backwards.length === 0);
 
   /* THE SILENT BED. A linear ramp takes its start value from the previous
      event on the param's timeline, and an assigned .value is not an event.
-     The layer gains had nothing on their timelines and were written
-     through ramp() and nothing else, so where that resolves the wrong way
-     the whole bed sits at zero while every oscillator runs on time — audible
-     nowhere, visible in no check, and reported as "no music on mobile".
-     The cues never had it because every one of them anchors first. */
+     Where that resolves the wrong way the whole bed sits at zero while
+     every oscillator runs on time — audible nowhere, visible in no check,
+     and reported as "no music on mobile". */
   const unanchored = ramps.filter(r => (r[1] === "lin" || r[1] === "exp") && !r[4]);
   ok("no ramp starts from an empty automation timeline",
      unanchored.length === 0,
      unanchored.length ? unanchored.length + " unanchored, first on " + unanchored[0][0]
-                       : ramps.filter(r => r[1] === "lin" || r[1] === "exp").length + " ramps anchored");
+       : ramps.filter(r => r[1] === "lin" || r[1] === "exp").length + " ramps anchored");
 
-  /* And the mixer must actually have opened. A bed that plays every note
-     into a gain of zero is the same silence from the other end. */
   ok("the module can report its own mixer", !!mix);
   if (mix) {
     const up = Object.keys(mix.levels).filter(k => mix.levels[k] > 0);

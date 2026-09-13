@@ -105,7 +105,7 @@ const Shell = (function () {
     else if (!m.playing) bits.push("bed stopped");
     else {
       const open = Object.keys(m.levels).filter(k => m.levels[k] > 0.0005);
-      bits.push("bed bar " + m.bar + "/32");
+      bits.push("bed " + m.section + m.bar + " in " + m.key + (m.halfTime ? " half-time" : ""));
       bits.push(open.length ? open.length + " layers up" : "ALL LAYERS AT ZERO");
     }
     if (running && !opts.mute && m && m.playing)
@@ -449,7 +449,7 @@ const Shell = (function () {
       <div class="opt-title">Sound</div>
       ${row("mute", "Mute", "Silence everything, without losing the levels below")}
       ${row("roomTone", "Room tone", "The air handling, a long way off")}
-      ${row("music", "Music", "A jazz-funk bed that swells when a bill carries")}
+      ${row("music", "Music", "A jazz-funk bed that changes key with your fortunes")}
       ${slider("gainUi", "Terminal")}
       ${slider("gainRoom", "Room")}
       ${slider("gainEvent", "Events")}
