@@ -634,6 +634,45 @@ console.log("\nCURRENTS IN A DIVISION:");
 })();
 
 /* ---------------------------------------------------------------------
+   A9 — SUSPENSION MUST NEVER BE THE EFFICIENT ANSWER.
+
+   The ladder (design/03 §4) is nine rungs from a voluntary appeal to
+   involuntary suspension, each cheaper politically and dearer fiscally
+   than the one below. The rule is stated as an assertion rather than a
+   hope: the political cost of relief rises down the ladder faster than
+   the relief does, so the last rung is the worst bargain in the game.
+   --------------------------------------------------------------------- */
+console.log("\nTHE ESCALATION LADDER:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const rungs = (CONTENT.instruments || []).filter(i => /^rung\d/.test(i.id))
+    .sort((a, b) => a.id.localeCompare(b.id));
+  const num = e => Object.keys(e.move || {}).reduce((n, k) => n + Math.abs(e.move[k]), 0);
+  const cost = i => [].concat(i.political_cost || []).reduce((n, e) => n + num(e), 0);
+  const relief = i => [].concat(i.effects || []).reduce((n, e) =>
+    n + ((e.move || {})["thermal_margin"] || 0), 0);
+  const ratio = i => relief(i) > 0 ? cost(i) / relief(i) : Infinity;
+
+  ok("the ladder has nine rungs", rungs.length === 9, rungs.map(r => r.id).join(", "));
+  ok("each rung is gated on the one above it",
+     rungs.every((r, i) => i === 0
+       ? !r.when
+       : !!(r.when && r.when.flags && r.when.flags[0] === "rung" + i + "_tried")),
+     rungs.map(r => (r.when && r.when.flags ? r.when.flags[0] : "ungated")).join(" "));
+  ok("A9: the political cost rises down the ladder",
+     rungs.every((r, i) => i === 0 || cost(r) > cost(rungs[i - 1])),
+     rungs.map(r => cost(r)).join(" < "));
+  ok("A9: and the last rung is the worst bargain on it",
+     rungs.every(r => ratio(r) <= ratio(rungs[8])),
+     rungs.map(r => relief(r) + "m/" + cost(r) + "c").join(", "));
+
+  if (bad) { console.log("\n" + bad + " LADDER FAILURES"); process.exitCode = 1; }
+})();
+
+/* ---------------------------------------------------------------------
    THE BED IS IN TUNE.
 
    Eight bars of hand-typed MIDI. A mistyped number is a wrong note that

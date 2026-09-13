@@ -110,6 +110,153 @@ const INSTRUMENTS = [
               { flag:{ legal_board_packed:false } } ],
     political_cost:[ {move:{"public_standing":-8}}, {move:{"loyalty.cu_halloran":-14}} ],
     prayer_stances:{ cu:{ifLoyaltyBelow:30}, psa:"against", rv:{ifLoyaltyBelow:35},
-                     gb:"for", hul:"for", fh:"for", cl:"for" } }
+                     gb:"for", hul:"for", fh:"for", cl:"for" } },
+
+/* =============================================================
+   THE ESCALATION LADDER (design/03 §4, bible 7.9)
+
+   Nine rungs before involuntary suspension, each cheaper politically
+   and dearer fiscally than the one below. Each is gated on the rung
+   above having been tried, so the ladder is a sequence and not a menu.
+
+   THE BALANCE RULE: suspension must never be the efficient answer. The
+   political cost rises down the ladder faster than the relief does, so
+   rung nine buys the most margin at the worst price in the game. A9 in
+   test.js asserts it from the first rung.
+   ============================================================= */
+
+  { id:"rung1_conservation",
+    title:"Voluntary Conservation (Appeal) Order 2287", number:"SI 2287/61",
+    author:"substrate_thermal", procedure:"negative", prayer_window:6, revocable:true,
+    summary:"Asks the stations to draw down non-essential load ahead of the winter margin. "+
+            "It asks; it does not compel. The margin improves a little and the appeal is forgotten in a week.",
+    effect_note:"The cheapest rung, and the one that buys the least. A first move, not a policy.",
+    effects:[ {move:{"thermal_margin":3}}, { flag:"rung1_tried" },
+              { wire:"CONSERVATION APPEAL ISSUED TO STATION AUTHORITIES" } ],
+    reverse:[ {move:{"thermal_margin":-3}}, { flag:{ rung1_tried:false } } ],
+    political_cost:[ {move:{"public_standing":-2}} ] },
+
+  { id:"rung2_clockrate",
+    title:"Clock-Rate (Reduction) Order 2287", number:"SI 2287/62",
+    author:"persons_continuity", procedure:"negative", prayer_window:6, revocable:true,
+    when:{ flags:["rung1_tried"] },
+    summary:"Slows the emulated blocs' clock rate by four per cent for the duration of the "+
+            "margin. Subjectively it is a long weekend. Objectively it is a cut in the wage "+
+            "of everyone who runs faster than a body does.",
+    effect_note:"Buys margin out of the emulated population's patience, which is the one "+
+                "resource the New Progressive Party exists to protect.",
+    effects:[ {move:{"thermal_margin":4}}, {move:{"loyalty.psa":-8}}, { flag:"rung2_tried" },
+              { wire:"CLOCK RATES CUT FOUR PER CENT; SUBSTRATE LEFT PROTESTS" } ],
+    reverse:[ {move:{"thermal_margin":-4}}, {move:{"loyalty.psa":8}}, { flag:{ rung2_tried:false } } ],
+    political_cost:[ {move:{"loyalty.psa":-6}} ] },
+
+  { id:"rung3_deferred",
+    title:"Deferred-Computation (Scheduling) Order 2287", number:"SI 2287/63",
+    author:"substrate_thermal", procedure:"negative", prayer_window:6, revocable:true,
+    when:{ flags:["rung2_tried"] },
+    summary:"Moves non-critical substrate computation to the cold hours. The racks still run; "+
+            "they run when the station can afford to reject the heat. The guilds lose the "+
+            "night shift and the overtime that came with it.",
+    effect_note:"Margin out of the consumables cycle, and the engineers' goodwill with it.",
+    effects:[ {move:{"thermal_margin":5}}, {move:{"price.substrate":-4}},
+              {move:{"loyalty.gb":-6}}, {move:{"loyalty.hul":-6}}, { flag:"rung3_tried" },
+              { wire:"DEFERRED-COMPUTATION SCHEDULE IMPOSED; GUILD BENCH OBJECTS" } ],
+    reverse:[ {move:{"thermal_margin":-5}}, {move:{"price.substrate":4}},
+              {move:{"loyalty.gb":6}}, {move:{"loyalty.hul":6}}, { flag:{ rung3_tried:false } } ],
+    political_cost:[ {move:{"loyalty.gb":-5}}, {move:{"loyalty.hul":-5}} ] },
+
+  { id:"rung4_appropriation",
+    title:"Emergency Thermal (Appropriation) Order 2287", number:"SI 2287/64",
+    author:"treasury", procedure:"affirmative", revocable:true,
+    when:{ flags:["rung3_tried"] },
+    summary:"Appropriates directly against the reserve to buy thermal capacity at whatever the "+
+            "market asks. The reserve was built for exactly this and has never been spent on it.",
+    effect_note:"The first rung that spends real money, and the first that needs the House to "+
+                "approve it before it takes effect.",
+    effects:[ {move:{"thermal_margin":7}}, {move:{"treasury":-12}}, { flag:"rung4_tried" },
+              { wire:"EMERGENCY THERMAL APPROPRIATION APPROVED" } ],
+    reverse:[ {move:{"thermal_margin":-7}}, {move:{"treasury":12}}, { flag:{ rung4_tried:false } } ],
+    political_cost:[ {move:{"treasury":-10}}, {move:{"public_standing":-3}} ] },
+
+  { id:"rung5_purchase",
+    title:"Thermal Quota (Market Purchase) Order 2287", number:"SI 2287/65",
+    author:"treasury", procedure:"negative", prayer_window:6, revocable:true,
+    when:{ flags:["rung4_tried"] },
+    summary:"Buys quota on the open exchange and holds it off the market. It works, it works at "+
+            "once, and it is the rung the engineers have been asking for since the fault.",
+    effect_note:"A hard spend for a real result. The reserve does not come back.",
+    effects:[ {move:{"thermal_margin":9}}, {move:{"price.thermal":-14}}, {move:{"treasury":-18}},
+              { flag:"rung5_tried" },
+              { wire:"GOVERNMENT BUYS THERMAL QUOTA AT MARKET; PRICE FALLS" } ],
+    reverse:[ {move:{"thermal_margin":-9}}, {move:{"price.thermal":14}}, {move:{"treasury":18}},
+              { flag:{ rung5_tried:false } } ],
+    political_cost:[ {move:{"treasury":-14}} ] },
+
+  { id:"rung6_drawdown",
+    title:"Substrate Insurance (Drawdown) Order 2287", number:"SI 2287/66",
+    author:"treasury", procedure:"negative", prayer_window:6, revocable:true,
+    when:{ flags:["rung5_tried"] },
+    summary:"Draws down the substrate insurance fund ahead of the quarter it was written for. "+
+            "The fund exists so that nobody is suspended for a price they did not set. Spending "+
+            "it on the price is spending the thing it was for on the thing it was for.",
+    effect_note:"Relief now, and an empty fund the next time the margin thins. The third rail "+
+                "is not the drawdown; it is what the drawdown leaves behind.",
+    effects:[ {move:{"thermal_margin":11}}, {move:{"price.substrate":-10}},
+              {move:{"public_standing":-12}}, {move:{"loyalty.psa":-10}}, { flag:"rung6_tried" },
+              { wire:"INSURANCE FUND DRAWN DOWN; MINISTERS DECLINE TO SAY WHEN IT REFILLS" } ],
+    reverse:[ {move:{"thermal_margin":-11}}, {move:{"price.substrate":10}},
+              {move:{"public_standing":12}}, {move:{"loyalty.psa":10}}, { flag:{ rung6_tried:false } } ],
+    political_cost:[ {move:{"public_standing":-10}}, {move:{"loyalty.psa":-8}} ] },
+
+  { id:"rung7_standards",
+    title:"Life Support (Performance Standards) Order 2287", number:"SI 2287/67",
+    author:"life_support", procedure:"affirmative", revocable:true,
+    when:{ flags:["rung6_tried"] },
+    summary:"Lowers the certified performance standard on radiator and seal integrity by one "+
+            "grade. The margin improves because the standard was the margin. The boards that "+
+            "certify the standard are the boards whose authority is the certification.",
+    effect_note:"The engineering authority is asked to certify its own reduction. It will, "+
+                "because the alternative is worse, and it will not forgive it.",
+    effects:[ {move:{"thermal_margin":13}}, {move:{"loyalty.gb":-16}}, {move:{"loyalty.hul":-16}},
+              {move:{"loyalty.psa":-12}}, { flag:"rung7_tried" },
+              { wire:"PERFORMANCE STANDARDS LOWERED A GRADE; BOARDS COMPLY UNDER PROTEST" } ],
+    reverse:[ {move:{"thermal_margin":-13}}, {move:{"loyalty.gb":16}}, {move:{"loyalty.hul":16}},
+              {move:{"loyalty.psa":12}}, { flag:{ rung7_tried:false } } ],
+    political_cost:[ {move:{"loyalty.gb":-12}}, {move:{"loyalty.hul":-12}} ] },
+
+  { id:"rung8_powers",
+    title:"Emergency Powers (Allocation) Order 2287", number:"SI 2287/68",
+    author:"law_charter", procedure:"affirmative", revocable:true,
+    when:{ flags:["rung7_tried"] },
+    summary:"Assumes the Allocation Act's emergency powers over the tier registers and the "+
+            "shed order. It does not suspend anyone. It takes the power to, which is the "+
+            "whole of what emergency powers are.",
+    effect_note:"The declaration is not the fight. The fight is the termination, and by then "+
+                "the power is the ordinary way the margin is managed.",
+    effects:[ {move:{"thermal_margin":15}}, {move:{"public_standing":-18}},
+              {move:{"loyalty.cu_maintenance":-14}}, {move:{"loyalty.psa":-14}}, { flag:"rung8_tried" },
+              { wire:"EMERGENCY POWERS ASSUMED OVER THE TIER REGISTERS" } ],
+    reverse:[ {move:{"thermal_margin":-15}}, {move:{"public_standing":18}},
+              {move:{"loyalty.cu_maintenance":14}}, {move:{"loyalty.psa":14}}, { flag:{ rung8_tried:false } } ],
+    political_cost:[ {move:{"public_standing":-16}}, {move:{"loyalty.cu_maintenance":-12}} ] },
+
+  { id:"rung9_suspension",
+    title:"Involuntary Suspension (Federal) Order 2287", number:"SI 2287/69",
+    author:"contingencies", procedure:"affirmative", revocable:true,
+    when:{ flags:["rung8_tried"] },
+    summary:"Suspends the tier-four register across the exposed stations without notice and "+
+            "without a minister being told first. The margin improves at once. The order is "+
+            "lawful, the schedule is published, and the people on it stop running.",
+    effect_note:"The most margin in the game at the worst price in the game. It is here so "+
+                "that it is always an option, and never the efficient one.",
+    effects:[ {move:{"thermal_margin":18}}, {move:{"public_standing":-30}},
+              {move:{"loyalty.cu_maintenance":-22}}, {move:{"loyalty.psa":-20}},
+              {move:{"loyalty.cu_halloran":-20}}, { flag:"rung9_tried" },
+              { wire:"FEDERAL SUSPENSION ORDER ISSUED; THE SCHEDULE IS PUBLISHED" } ],
+    reverse:[ {move:{"thermal_margin":-18}}, {move:{"public_standing":30}},
+              {move:{"loyalty.cu_maintenance":22}}, {move:{"loyalty.psa":20}},
+              {move:{"loyalty.cu_halloran":20}}, { flag:{ rung9_tried:false } } ],
+    political_cost:[ {move:{"public_standing":-20}}, {move:{"loyalty.cu_maintenance":-16}},
+                     {move:{"loyalty.psa":-14}} ] }
 
 ];

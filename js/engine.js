@@ -1130,6 +1130,10 @@ const Engine = (function () {
     const si = (C.instrumentById || {})[siId], s = st.instruments[siId];
     if (!si || !s) return { ok: false, reason: "no such instrument" };
     if (s.made && !s.revoked) return { ok: false, reason: "already made" };
+    /* A rung of the escalation ladder is not available until the rung above it
+       has been tried, which is the same vocabulary events gate on. The lint
+       already walks an instrument's `when`; this is the reader it assumed. */
+    if (si.when && !matches(st, si.when)) return { ok: false, reason: "not yet available" };
     const post = st.cabinet[si.author];
     if (!post) return { ok: false, reason: "names no cabinet post" };
     if (!post.holder) return { ok: false, reason: "the post of " +
