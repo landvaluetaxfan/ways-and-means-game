@@ -282,11 +282,21 @@ try {
   const moved = {}, gated = {};
   const bump = (m, k) => { m[k] = (m[k] || 0) + 1; };
 
+  /* The `move` verb consolidated price/scalar/loyalty/relationship/capital, and
+     this walk predated it, so every keyed effect written the new way was
+     invisible to the chain. A number that moves and is not seen here is exactly
+     the bug this check exists to find. */
   const walkEffects = eff => [].concat(eff || []).forEach(e => Object.keys(e).forEach(k => {
     if (k === "price")   Object.keys(e[k]).forEach(x => bump(moved, "price." + x));
     if (k === "scalar")  Object.keys(e[k]).forEach(x => bump(moved, "scalar." + x));
     if (k === "station") bump(moved, "station");
     if (k === "law")     Object.keys(e[k]).forEach(x => bump(moved, "law." + x));
+    if (k === "move")    Object.keys(e[k]).forEach(key => {
+      const dot = key.indexOf(".");
+      if (dot < 0) return bump(moved, "scalar." + key);
+      const ns = key.slice(0, dot), x = key.slice(dot + 1);
+      if (ns === "price" || ns === "scalar") bump(moved, ns + "." + x);
+    });
   }));
   const walkWhen = w => w && Object.keys(w).forEach(k => {
     if (k === "priceAbove" || k === "priceBelow")
