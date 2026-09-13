@@ -1434,6 +1434,58 @@ const Engine = (function () {
   }
 
   /* ---------------------------------------------------------
+     3b. IMPERFECT INFORMATION (design/08 §8)
+
+     A division is exact — the arithmetic is the argument of the game. What
+     the player is SHOWN is not. Every forecast comes from a source, and every
+     source is wrong by something: the whips count their own side, a partner is
+     honest until its loyalty thins, the functional bench is an estimate, and
+     the opposition is a guess.
+
+     The error is DERIVED from the seed and the state, never rolled fresh, so a
+     redraw does not move the number and the player cannot re-read it until it
+     settles. The point is not the error; it is that a partner whose loyalty is
+     collapsing gives you a worse number and does not tell you it is worse.
+     --------------------------------------------------------- */
+  function noise(st, key) {
+    let h = 2166136261 >>> 0;
+    const s = key + ":" + (st.seed || 1);
+    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    return h;
+  }
+  function reportError(st, partyId, bench) {
+    if (partyId === st.playerParty) return 0;                 /* the whips do count */
+    let scale = 1;                                            /* the opposition: a guess */
+    const partner = st.coalition.indexOf(partyId) >= 0 ||
+                    st.confidenceSupply.indexOf(partyId) >= 0;
+    if (partner) {
+      const p = st.parties[partyId] || {};
+      const loy = p.loyalty == null ? 100 : p.loyalty;
+      scale = Math.floor((100 - loy) / 18);                   /* worse as loyalty falls */
+    }
+    const n = noise(st, bench + ":" + partyId);
+    return (n % (2 * scale + 1)) - scale;
+  }
+  function reported(st, C, billId) {
+    const d = division(st, C, billId);
+    const benchAye = bench => {
+      let aye = 0;
+      d.rows.forEach(r => { aye += Math.max(0, r[bench + "Aye"] + reportError(st, r.party, bench)); });
+      return Math.max(0, Math.min(d[bench].total, aye));
+    };
+    const p = benchAye("popular"), f = benchAye("functional");
+    const pc = p >= d.popular.need, fc = f >= d.functional.need;
+    return {
+      dual: d.dual, true: d,
+      popular:    { aye: p, total: d.popular.total,    need: d.popular.need,    carries: pc },
+      functional: { aye: f, total: d.functional.total, need: d.functional.need, carries: fc },
+      carries: d.dual ? (pc && fc) : pc,
+      /* what the number is and who said so. Present on every forecast shown. */
+      prov: "Whips' count; partners' assurances; an estimate of the functional bench"
+    };
+  }
+
+  /* ---------------------------------------------------------
      4. CONDITIONS — the closed vocabulary events may test
      --------------------------------------------------------- */
 
@@ -2282,7 +2334,7 @@ const Engine = (function () {
     STATE_VERSION, newGame, migrate, save, load, chapters,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal,
-    division, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
+    division, reported, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
     apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,
     seedRoll, syncRoll, reconcile, partyDistrict,
     lastReconcile: () => lastReconcile, nationalShares, vacantSeats, seatsFor,

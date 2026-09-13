@@ -696,6 +696,31 @@ console.log("\nTHE ESCALATION LADDER:");
   if (bad) { console.log("\n" + bad + " LADDER FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nTHE FORECAST IS AN OPINION (design/08 §8):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const a = Engine.newGame(CONTENT), b = Engine.newGame(CONTENT);
+  const fa = Engine.reported(a, CONTENT, "divergence");
+  ok("a fresh save reports a forecast", !!fa && !!fa.popular && !!fa.prov, fa.prov);
+  ok("the same state reports the same number twice",
+     Engine.reported(a, CONTENT, "divergence").popular.aye === fa.popular.aye);
+  ok("and the seed makes it reproducible",
+     Engine.reported(b, CONTENT, "divergence").popular.aye === fa.popular.aye);
+  ok("the reported number is not the exact one",
+     fa.popular.aye !== fa.true.popular.aye ||
+     fa.functional.aye !== fa.true.functional.aye,
+     "reported " + fa.popular.aye + "/" + fa.functional.aye +
+     "  exact " + fa.true.popular.aye + "/" + fa.true.functional.aye);
+  const seed2 = Engine.newGame(CONTENT); seed2.seed = 424242;
+  ok("a different seed moves the error",
+     Engine.reported(seed2, CONTENT, "divergence").popular.aye !== fa.popular.aye);
+
+  if (bad) { console.log("\n" + bad + " FORECAST FAILURES"); process.exitCode = 1; }
+})();
+
 /* ---------------------------------------------------------------------
    THE BED IS IN TUNE.
 

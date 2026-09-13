@@ -695,6 +695,10 @@ const UI = (function () {
 
   function drawBill(id) {
     const b = C.billById[id], bs = st.bills[id], d = Engine.division(st, C, id);
+    /* The forecast is the REPORTED division, not the exact one (design/08 §8).
+       The whip panel and the division itself still use the true count — the
+       cost of whipping is a mechanical fact, not a source's opinion. */
+    const rep = (Engine.reported ? Engine.reported(st, C, id) : d);
     const det = $("#bill-detail");
     $("#bill-hdr").textContent = b.title;
     $("#bill-ref").textContent = b.ref;
@@ -702,11 +706,12 @@ const UI = (function () {
       `<div class="note" style="margin-bottom:6px">${b.summary}</div>` +
       (b.effectNote ? `<div class="rulehead">Effect</div><div class="note">${b.effectNote}</div>` : "") +
       `<div class="rulehead">Division forecast</div>` +
-      benchBar("Popular", d.popular) +
-      (b.dualMajority ? benchBar("Functional", d.functional) : "") +
+      (rep.prov ? `<div class="note" style="margin:-2px 0 5px">${esc(rep.prov)}</div>` : "") +
+      benchBar("Popular", rep.popular) +
+      (b.dualMajority ? benchBar("Functional", rep.functional) : "") +
       `<div class="note" style="margin-top:5px">${
-        d.carries ? "<b>Carries.</b>" :
-        (b.dualMajority && d.popular.carries && !d.functional.carries
+        rep.carries ? "<b>Carries.</b>" :
+        (b.dualMajority && rep.popular.carries && !rep.functional.carries
           ? "<b>Carries on the popular benches and fails on the functional.</b> The dual test applies: bills touching life-support integrity and charter amendments must carry separately among functional members."
           : "<b>Fails.</b>")}</div>` +
       whipPanel(id, b, d) +
