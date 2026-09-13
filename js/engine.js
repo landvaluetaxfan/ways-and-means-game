@@ -470,7 +470,7 @@ const Engine = (function () {
     syncRoll(st, C);
     const k = C.constituencyById[cid];
     st.log.unshift({ sitting: st.sitting,
-      text: `Seat vacated: ${k ? k.name : cid} (${party})${why ? " — " + why : ""}` });
+      text: `Seat vacated: ${k ? k.name : cid} (${party})${why ? ", " + why : ""}` });
     return { ok: true };
   }
 
@@ -591,9 +591,9 @@ const Engine = (function () {
     const gains = Object.keys(won).filter(p => (before[p] || 0) === 0);
     st.log.unshift({ sitting: st.sitting,
       text: `By-election, ${k.name}: ${filled} seat${filled === 1 ? "" : "s"} filled` +
-            (gains.length ? ` — gain for ${gains.join(", ")}` : " — no change of hands") });
+            (gains.length ? `, gain for ${gains.join(", ")}` : ", no change of hands") });
     st.wire.unshift({ sitting: st.sitting,
-      text: `BY-ELECTION ${k.name.toUpperCase()} — ` +
+      text: `BY-ELECTION ${k.name.toUpperCase()}: ` +
             Object.keys(won).map(p => `${p.toUpperCase()} ${won[p]}`).join(", ") });
     return { ok: true, filled: filled, won: won, gains: gains };
   }
@@ -898,7 +898,7 @@ const Engine = (function () {
     const inCoalition = st.coalition.includes(partyId);
     const inCS = st.confidenceSupply.includes(partyId);
     if (!inCoalition && !inCS && !own)
-      return { max: 0, costPerSeat: 0, reason: "outside the coalition — lobbying, not whipping" };
+       return { max: 0, costPerSeat: 0, reason: "outside the coalition; this is lobbying, not whipping" };
 
     /* CONFIDENCE AND SUPPLY IS NOT COALITION, and the two were treated
        identically. The arrangement is a promise to vote through the
@@ -913,7 +913,7 @@ const Engine = (function () {
        House with no budget in it. */
     if (inCS && !inCoalition && !own && !(bill && (bill.supply || bill.confidence)))
       return { max: 0, costPerSeat: 0,
-               reason: "confidence and supply only — free on ordinary business" };
+                reason: "confidence and supply only; free on ordinary business" };
 
     const seats = tier === "functional" ? partyFunctional(st, partyId) : partyPopular(st, partyId);
     const already = resolveStance(st, C, bill, partyId, tier);
@@ -994,7 +994,7 @@ const Engine = (function () {
     if (!result.carries) {
       apply(st, C, b.onFail);
       bs.stage = "defeated"; bs.dead = true;
-      st.log.unshift({ sitting: st.sitting, text: "Division: " + b.title + " — defeated" +
+      st.log.unshift({ sitting: st.sitting, text: "Division: " + b.title + " defeated" +
         (paid.seats ? " (" + paid.seats + " whipped)" : "") });
       return { result: result, paid: paid, assent: null };
     }
@@ -1007,7 +1007,7 @@ const Engine = (function () {
     bs.stage = "awaiting_assent";
     bs.carriedAt = st.sitting;
     bs.contested = !!(b.dualMajority && result.functional.aye < result.functional.need + 3);
-    st.log.unshift({ sitting: st.sitting, text: "Division: " + b.title + " — carried" +
+    st.log.unshift({ sitting: st.sitting, text: "Division: " + b.title + " carried" +
       (paid.seats ? " (" + paid.seats + " whipped)" : "") });
     const a = presidentDecides(st, C, billId, result);
     settle(st, C);
@@ -1303,7 +1303,7 @@ const Engine = (function () {
     if (!p || !p.holder) return { ok: false };
     p.holder = null;
     st.log.unshift({ sitting: st.sitting,
-      text: "Ministerial vacancy: " + postId.replace(/_/g, " ") + (reason ? " — " + reason : "") });
+      text: "Ministerial vacancy: " + postId.replace(/_/g, " ") + (reason ? ", " + reason : "") });
     return { ok: true };
   }
 

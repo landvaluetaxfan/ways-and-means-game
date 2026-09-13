@@ -272,7 +272,7 @@ const Papers = (function () {
     return { html: `<div class="paper">
       ${head("Office of the Prime Minister", "Circumterrestrial Commonwealth \u00b7 Anselm Ring",
              "FILE " + m.file, "SITTING " + (m.sitting || st.sitting))}
-      <div class="classif">${esc(m.classification || "Restricted — ministerial")}</div>
+      <div class="classif">${esc(m.classification || "Restricted: ministerial")}</div>
       <div class="distrib">
         ${line("FROM", esc(m.from))}
         ${line("TO", esc(m.to))}

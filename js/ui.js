@@ -271,7 +271,7 @@ const UI = (function () {
       ow.style.color = owedN.some(u => u.by - st.sitting <= 1) ? "var(--alert)" : "";
     }
     const loss = Engine.checkLoss(st, C);
-    $("#sb-state").textContent = loss.lost ? "GOVERNMENT FALLEN — " + loss.reason.toUpperCase() : "READY";
+    $("#sb-state").textContent = loss.lost ? "GOVERNMENT FALLEN: " + loss.reason.toUpperCase() : "READY";
     $("#sb-state").style.color = loss.lost ? "var(--alert)" : "";
     setStatus(ambient(), "ambient");
   }
@@ -835,7 +835,7 @@ const UI = (function () {
     if (!rows) return `<div class="rulehead">The whip</div>` +
       `<div class="note">No headroom. Every member of the coalition who can be brought to this ` +
       `measure is already voting for it. ${b.dualMajority && !d.functional.carries
-        ? "The functional bench cannot be whipped — the government holds " +
+        ? "The functional bench cannot be whipped. The government holds " +
           d.rows.reduce((n, r) => n + (st.coalition.includes(r.party) ? r.functionalSeats : 0), 0) +
           " of " + d.functional.total + " and needs " + d.functional.need + ". This is not a whipping problem."
         : ""}</div>`;
@@ -1564,7 +1564,7 @@ const UI = (function () {
          notes it and carries on: one hit, no key change, no jump. */
       if (owes) score("undertake");
       if (typeof Wait !== "undefined") Wait.brief(owes ? 480 : 280);
-      setStatus(e.title + " — " + lastResult.replace(/\s+/g, " ").slice(0, 120), "transient");
+      setStatus(e.title + ": " + lastResult.replace(/\s+/g, " ").slice(0, 120), "transient");
       saved();
       drawAll(); afterAction();
       reportMoves(beforeStruct, structure(st));

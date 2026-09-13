@@ -164,15 +164,14 @@ const Shell = (function () {
     <div class="menu-footer">
       <div class="mf-text">
         <h1>Life in Space Needs People to Run It.</h1>
-        <p>Ways &amp; Means puts you in the position of Prime Minister Adriana Eireann Flash of the
-        Circumterrestrial Commonwealth, a federation of orbital habitats bound together by trade,
-        shared infrastructure, and mutual dependence. Its near-post-scarcity economy makes
-        manufactured goods abundant, while habitable volume, thermal capacity, substrate, and
-        transportation remain tightly constrained. The outcome is a sophisticated rentier economy
-        where private consortiums, public utilities, and federal institutions compete to manage the
-        Commonwealth's most vital resources. Navigate interparty relations, your governmental
-        coalition, parliament, and foreign affairs to keep this sophisticated nation and economy
-        running.</p>
+        <p>Ways &amp; Means makes you Prime Minister Adriana Eireann Flash of the
+        Circumterrestrial Commonwealth, a federation of orbital habitats held together by
+        trade, shared infrastructure and mutual dependence. Manufactured goods are nearly
+        free. Habitable volume, thermal capacity, substrate and transport are not, and
+        those four things set every price in the game. Private consortiums, public
+        utilities and federal institutions compete for them. You have to keep the country
+        running while you manage your party, your coalition, the House and the Earth
+        states.</p>
       </div>
       <img class="mf-gov" src="img/menu/gov.png"
         alt="Government of the Circumterrestrial Commonwealth">
@@ -294,7 +293,7 @@ const Shell = (function () {
   function credits() {
     return `<div class="menu-sub">Credits</div>
       <div class="menu-text">
-        <p><b>Ways &amp; Means</b> — a narrative political thriller with real
+        <p><b>Ways &amp; Means</b>: a narrative political thriller with real
         electoral mechanics, set in the Circumterrestrial Commonwealth.</p>
         <p>Written and designed by Harper.</p>
         <p>Art and imagery by Harper.</p>

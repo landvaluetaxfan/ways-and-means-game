@@ -13,13 +13,13 @@
 const MINUTES = [
 
   { id:"min_118", file:"PM/4/2287/118", sitting:1,
-    classification:"Restricted — ministerial",
+    classification:"Restricted: ministerial",
     from:"The Prime Minister",
     to:"Minister for Life Support",
     copy:["Chief Whip","Law Officer","Cabinet Secretary"],
     struck:["Minister for Substrate and Thermal"],
     notCopied:["Coalition liaison (New Progressive Party)"],
-    subject:"Shed order priority — Homestead",
+    subject:"Shed order priority: Homestead",
     body:`I have seen the engineering authority's published order for the current quarter. Homestead is placed in the fourth tier for the eleventh consecutive year, and eleven thousand four hundred suspended residents are held in that tier.
 
 1. I want the statutory basis for the authority's discretion set out in writing, and specifically whether the order is made under s.12 or under the residual emergency power. The distinction has never been tested and I should like to know why not.
@@ -30,12 +30,12 @@ I am conscious that a government which cannot carry a rights measure through the
 
   { id:"min_121", file:"PM/4/2287/121", sitting:2,
     when:{ flags:["board_packed"] },
-    classification:"Restricted — ministerial, personal",
+    classification:"Restricted: ministerial, personal",
     from:"The Chief Whip",
     to:"The Prime Minister",
     copy:["Cabinet Secretary"],
     notCopied:["Minister for Attestation and the Registry","Law Officer"],
-    subject:"Guild Bench — after the licensing order",
+    subject:"Guild Bench: after the licensing order",
     body:`You asked how it was received. It was received exactly as you were told it would be.
 
 The panel chair will not take a meeting. She has not said so in terms; she has said that her diary is full until the recess, which is the same thing said politely. The Life Support panel met for forty minutes yesterday and I am told the word used was pattern.
@@ -48,12 +48,12 @@ It went as well as it could have.` },
 
   { id:"min_126", file:"LAW/4/2287/12", sitting:3,
     when:{ flags:["attestation_tightened"] },
-    classification:"Restricted — legal advice, privileged",
+    classification:"Restricted: legal advice, privileged",
     from:"The Law Officer",
     to:"The Prime Minister",
     copy:["Cabinet Secretary"],
     notCopied:["Minister for Attestation and the Registry"],
-    subject:"Attestation (Lapse and Restoration) Order 2287 — vires",
+    subject:"Attestation (Lapse and Restoration) Order 2287: vires",
     body:`You have asked whether the Order is within the powers conferred by the Attestation Act. My view is that it is, narrowly, and that this is not the question you should be asking.
 
 The Act permits the Registry to set the lapse period. It does not require the Registry to consider the distribution of the effect. The effect is nonetheless distributed: on the Bureau's own figures the Order removes electors from the Verge, Lantern, Homestead and the Tannery at between three and four times the rate at which it removes them from Anselm Ring.
@@ -67,13 +67,13 @@ I would ordinarily copy this to the Minister. I have not.` }
 ,
 
   { id:"min_130", file:"PM/4/2287/130", sitting:1,
-    classification:"Restricted — ministerial",
+    classification:"Restricted: ministerial",
     signedBy:"Adriana Flash MP · Prime Minister",
     from:"The Prime Minister",
     to:"Minister for Attestation and the Registry",
     copy:["Cabinet Secretary"],
     notCopied:["Chief Whip","Law Officer"],
-    subject:"Licensing boards — direction as to composition",
+    subject:"Licensing boards: direction as to composition",
     body:`You have the power to alter the composition of a licensing board by order. I am writing to say that I know that, and that you should not use it without writing to me first.
 
 1. No licensing order is to be laid without a minute to this office setting out the number of electors added or removed and the constituency affected.
