@@ -140,6 +140,12 @@ Small, and none of it blocks Part C.
 - ~~Money, the half that needed no canon~~ — **done**: confidence and supply is
   a distinct whip relationship, and the volume price is continuous.
 
+**Two fiscal questions are now decided** and written up in `design/13` §8.3: no
+sovereign deficit — the setting has no lender, and the thing a deficit is for is
+already `thermal_margin`, which has a physical transmission and a loss condition
+— and no budget vote at sitting one, but an **inherited** appropriation as a
+document, with the player's own first budget at the session boundary.
+
 **Now blocking, and the author's:** lock §7.5.3, name the unit, and amend
 §7.6's treasury line. The exact wording is written out in `design/13` §8.1.
 Until it lands, the denominated stock, the Appropriation Bill and a treasury

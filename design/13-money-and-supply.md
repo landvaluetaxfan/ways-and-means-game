@@ -325,6 +325,76 @@ Transit remains thin — `treasury` alone, linearly — and is left that way
 deliberately. Its other input is the anchor states, and foreign affairs
 (`design/11`) is gated behind chapter one reaching about twenty-five events.
 
+## 8.3 Two questions, decided
+
+### Should the game track a deficit?
+
+**No — and the thing a deficit is FOR already exists.**
+
+A deficit only bites because somebody is owed. Bond markets, ratings, interest:
+that is the whole transmission mechanism, and **this setting has no lender.**
+Searched: `deficit`, `sovereign debt`, `government bond`, `borrow` return
+nothing in `bible.md` or `textbook.md`. Every debt in the Commonwealth is
+personal — substrate debt is §7.5.2's *"credit secured against your own
+continuation"*, §7.4 calls it *"time-imprisonment"*, and
+`suspension_debt_accrual` is a law boolean about whether obligations accrue
+while a person is cold. The state does not borrow. Nobody lends to it.
+
+So a sovereign deficit would be an accumulator that grows and that nothing
+reads — precisely the failure §7.9 names and `tools/lint.js` now hard-reports:
+*a number nobody sees.* It would also fail §7.6's test twice over, because an
+accumulator is the one shape that genuinely requires a second window: you
+cannot know whether you can afford a thing without tracking a running balance
+across sessions.
+
+**What a deficit would be for, this game already has, and it is called
+`thermal_margin`.** Over-allocate quota and the margin narrows; the margin
+drives the thermal price (`(35 − thermal_margin) × 1.2`), the thermal price
+drives substrate, substrate sheds people, and at zero `checkLoss` ends the
+government in a cascade. That is a complete chain from a fiscal decision to a
+political death, it is already built, and it is denominated in the only thing
+that is actually scarce.
+
+> **The deficit in this game is physical, not financial. You do not run out of
+> money; you run out of room to reject heat, and people go cold.**
+
+So the Appropriation Bill in §4 moves `thermal_margin` directly. Over-allocation
+is a narrowing margin, and there is nothing further to model.
+
+### Should there be a budget at the start of the game?
+
+**Not a vote. An inheritance.**
+
+Opening on an appropriation is tempting — a new government's first act really is
+supply — and it is wrong here for two reasons that are already enforced.
+
+**§2.6 and the lint.** A budget introduces quota, appropriation, supply, the
+heads of expenditure, and confidence-and-supply in one sitting. That is five
+concept clusters, `MAX_NEW_CLUSTERS` is 1, and `tools/lint.js` would reject it —
+correctly. The teaching chapter can carry one idea at a time.
+
+**It would displace the spine.** `design/05` fixes chapter one as fully authored
+in a settled order, and the game opens on the divergence bill because that is
+what the game is about. A budget at sitting one makes the first hour about
+arithmetic instead.
+
+What belongs at the start is **the budget the player did not vote for.** §9.2 is
+LOCKED: *the player inherits commitments they did not make.* So:
+
+- the previous session's appropriation exists as a **document** in Papers, with
+  its heads and its numbers;
+- it is the reason `thermal_margin` is 17 and the substrate price sits where it
+  does — the status bar stops being arbitrary and becomes somebody's decision;
+- the player cannot amend it. They can only live in it, and read it;
+- **their own first appropriation falls at the session boundary**, which now
+  exists (`design/15`) — twenty-four sittings in, by which time the vocabulary
+  has been met one cluster at a time.
+
+That also answers `design/14` §4's complaint that the game states no purpose:
+an inherited budget is a statement of what the last government thought the
+Commonwealth was for, and the first thing the player does that is entirely their
+own is write the next one.
+
 ## 9. Acceptance
 
 - The Appropriation Bill exists in content, reaches the House once per session,
