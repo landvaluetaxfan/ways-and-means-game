@@ -50,203 +50,202 @@ const Tips = (function () {
   const TIPS = {
     /* ---- the status bar, left to right ---- */
     state: { title: "Government status",
-      body: "READY while you hold office. A government falls when confidence " +
-            "drops below the majority, or when the House carries a motion of no " +
-            "confidence. There is no undo." },
+      body: "READY while you are in office. You lose office if confidence falls " +
+            "below a majority, or if the House passes a no-confidence motion. " +
+            "There is no undo." },
     chapter: { title: "Chapter",
-      body: "The act of the story you are in. Chapters gate which events can " +
-            "fire; they do not advance on a timer." },
+      body: "The act of the story you are in. Chapters control which events can " +
+            "fire. They do not advance on a timer." },
     slots: { title: "Order paper time",
-      body: "Sittings of debating time left this session. Granting one to a " +
-            "partner's bill advances that bill a stage and puts them in your " +
-            "debt; granting one to your own advances nothing but your programme. " +
-            "They do not refill until the House rises and the next session opens." },
+      body: "Debating time left this session. Give a slot to a partner's bill " +
+            "and it advances a stage and you earn capital with that partner. " +
+            "Give one to your own bill and you advance your programme instead. " +
+            "Slots refill when the House rises and the next session opens." },
     signatures: { title: "Signatures",
-      body: "Names Czarnecki has collected toward the nine he needs to force a " +
-            "leadership ballot. Your own conduct feeds this counter - packing a " +
-            "licensing board is worth two names, packing a second is worth three." },
+      body: "Names Czarnecki has collected. At nine he can force a leadership " +
+            "ballot. Your own conduct adds to this count: packing one licensing " +
+            "board adds two names, and packing a second adds three." },
     confidence: { title: "Confidence",
-      body: "Seats held by your coalition plus those supplying confidence, " +
-            "against the whole chamber of 280. This is what keeps you in office, " +
-            "and it is not the same as the votes for any particular bill." },
+      body: "Seats held by your coalition, plus any party supplying confidence. " +
+            "This is measured against all 280 seats, and it keeps you in office. " +
+            "It is not the same as the votes on a particular bill." },
     margin: { title: "Margin",
-      body: "Confidence minus the majority of 141. At zero you govern on the " +
-            "exact number: one defection and the arithmetic stops working." },
+      body: "Confidence minus the majority of 141. At zero, one defection loses " +
+            "you the chamber." },
 
     /* ---- the chamber ---- */
     seats: { title: "Seats",
-      body: "280 in all: 140 elected in districts, 100 allocated from party " +
-            "lists, and 40 returned by functional constituencies. The tiers are " +
-            "parallel and do not compensate each other." },
+      body: "280 seats in all. 140 come from districts, 100 from party lists, " +
+            "and 40 from functional constituencies. The three tiers run " +
+            "separately and do not make up for each other." },
     loyalty: { title: "Loyalty",
-      body: "How much of what a party says it will deliver actually turns up. " +
-            "Discipline runs from 75% at nought to 100% at a hundred, so a party " +
-            "at 40 delivers 85 of every 100 seats it has promised. The gap is " +
-            "what the whip exists to buy back.", go: "parliament" },
+      body: "How much of a party's promised vote actually turns up. At loyalty " +
+            "0 a party delivers 75 per cent of its seats; at 100 it delivers all " +
+            "of them. A party at 40 delivers 85 of every 100 seats it promised. " +
+            "Whipping buys back the gap.", go: "parliament" },
     mps: { title: "Members",
-      body: "Members of your own party in this current. Currents are factions " +
-            "with their own loyalty; they are counted inside the party's seats, " +
-            "not beside them." },
+      body: "Members of your own party in this current. A current is a faction " +
+            "with its own loyalty. Its members are part of the party's seats, " +
+            "not extra ones." },
     popular: { title: "The popular benches",
-      body: "The 240 members returned by district and list together. A bill " +
+      body: "The 240 members returned by districts and lists together. A bill " +
             "needs a simple majority of them." },
     functional: { title: "The functional benches", go: "functional_constituency" },
     dual: { title: "Dual majority", go: "dual_majority" },
     simple: { title: "Simple majority",
-      body: "Carried on the popular benches alone. The functional forty vote, " +
-            "and their votes are counted in the same total rather than tested " +
+      body: "Carried on the popular benches alone. The functional forty still " +
+            "vote, and their votes count in the same total. They are not tested " +
             "separately." },
     stage: { title: "Stage",
       body: "Drafting, first reading, second reading, committee, report, third " +
-            "reading, assent. A bill divides at third reading. " +
-            "Order paper time is what moves it along, one stage at a time." },
+            "reading, assent. A bill divides at third reading. Each order-paper " +
+            "slot moves a bill one stage." },
     whip: { title: "The whip",
-      body: "Committing members costs capital with a partner and loyalty with " +
-            "your own party, at a rate set by how far the bill sits from that " +
-            "party's position. Nothing is charged until you divide, so a plan " +
-            "can be revised or cleared." },
+      body: "Committing members costs capital with a partner, and loyalty with " +
+            "your own party. The rate depends on how far the bill is from that " +
+            "party's position. Nothing is charged until you divide, so you can " +
+            "revise or clear the plan." },
 
     district: { title: "District seats",
       body: "140 seats, first past the post, one constituency at a time. The " +
-            "roll of who holds each one is the only record there is: totals are " +
-            "counted from it and never stored beside it." },
+            "roll of who holds each seat is the only record. Totals are counted " +
+            "from it, never stored beside it." },
     list: { title: "List seats",
-      body: "100 seats allocated from closed party lists by D'Hondt, above a 4% " +
-            "national threshold. A party under the threshold keeps its list " +
-            "seats if it won a district, or if it speaks for one station or one " +
-            "category of legal person. The divisor and the threshold are both " +
-            "laws, so a bill can change them - and changing them changes who is " +
-            "in the room.", go: "parliament" },
+      body: "100 seats allocated from closed party lists by D'Hondt. A party " +
+            "needs 4 per cent of the national vote to qualify. A party below " +
+            "that still keeps its list seats if it won a district, or if it " +
+            "represents one station or one category of legal person. The divisor " +
+            "and the threshold are both set by law, so a bill can change them.",
+      go: "parliament" },
     government: { title: "The government benches",
-      body: "Seats held by the parties in your coalition. Confidence and supply " +
-            "sits opposite and counts toward confidence anyway." },
+      body: "Seats held by the parties in your coalition. Confidence-and-supply " +
+            "parties sit on the opposition side but still count toward your " +
+            "confidence." },
     opposition: { title: "The opposition benches",
       body: "Everyone not in the coalition. They are not one bloc and do not " +
-            "vote as one." },
+            "vote together." },
     majority: { title: "Majority",
-      body: "141 of 280. Half the chamber plus one, recomputed rather than " +
-            "stored, so it follows the chamber if the chamber ever changes size." },
+      body: "141 of 280. Half the chamber plus one. It is recalculated, so it " +
+            "follows the chamber if the number of seats changes." },
     speaker: { title: "The Chair",
-      body: "Elected from among the members and still counted in their party's " +
-            "total. They hold a seat; they simply do not use it the way the " +
-            "others do." },
+      body: "Elected from among the members, and still counted in their party's " +
+            "total. The Chair holds a seat but does not vote with the others." },
     benches: { title: "Facing benches",
-      body: "Drawn as two facing sides rather than a hemicycle, because " +
-            "confidence is binary and the whip next door moves whole benches " +
-            "across a floor. A semicircle would read the chamber as a spectrum." },
+      body: "The chamber is drawn as two facing sides, not a semicircle, " +
+            "because confidence is binary. A whip can move a whole bench across " +
+            "the floor. A semicircle would make the chamber look like a " +
+            "spectrum." },
 
     /* ---- the functional tier ---- */
     franchise: { title: "Franchise",
-      body: "How a functional constituency's electors are enrolled: by trade " +
+      body: "How a functional constituency enrols its electors: by trade " +
             "licence, by company, by union bloc, or residually. The residual " +
-            "constituency is everyone in no recognised sector and returns one " +
+            "constituency is everyone in no recognised sector. It returns one " +
             "seat.", go: "functional_constituency" },
     electors: { title: "Electorate",
       body: "Enrolled electors, not population. The functional roll and the " +
-            "district roll count different people, which is the whole quarrel." },
+            "district roll count different people." },
 
     /* ---- the orbit ---- */
     schematic: { title: "The habitat schematic",
-      body: "A stratification chart before it is a map: vertical position is " +
-            "altitude band, glyph shape is what kind of habitat it physically " +
-            "is, glyph size is population, fill tint is closure, and the tick " +
-            "beneath is the leading party. Orbits are dynamic and in three " +
-            "dimensions, so literal geography would be unreadable." },
+      body: "This is a chart, not a map. Vertical position is altitude band. " +
+            "Shape is habitat type. Size is population. Tint is closure. The " +
+            "mark below is the leading party. Real orbits move in three " +
+            "dimensions, so a literal map would be unreadable." },
     form: { title: "Habitat form",
-      body: "What the station physically is - a ring, a cylinder, a bundled " +
-            "cluster of settlements. It decides nothing mechanically and " +
-            "explains a great deal about who lives there." },
+      body: "What the station physically is: a ring, a cylinder, or a cluster " +
+            "of settlements. It has no mechanical effect. It explains a lot " +
+            "about who lives there." },
 
     wire: { title: "The wire",
-      body: "Headlines, newest first. A wire item is pushed by an effect, so " +
-            "everything here is a consequence of something you did rather " +
-            "than weather." },
+      body: "Headlines, newest first. Every item is pushed by an effect, so " +
+            "everything here follows from something you did." },
 
     /* ---- papers and the record ---- */
     register: { title: "The register",
-      body: "Acts, orders and minutes, in the order they were done. An act " +
-            "here has been through a division and cannot be undone; an order " +
-            "can still be revoked." },
+      body: "Acts, orders and minutes, in the order they were made. An act has " +
+            "been through a division and cannot be undone. An order can still " +
+            "be revoked." },
     minute: { title: "Minute",
-      body: "An instruction from this office, signed and served. It is not " +
-            "law and it binds nobody outside the building, which is " +
-            "occasionally the point." },
+      body: "An instruction from your office, signed and served. It is not law " +
+            "and it binds nobody outside the building." },
     log: { title: "The record",
       body: "Every decision this government has taken, newest first. It is " +
-            "written by the engine and never by a renderer, so it says what " +
-            "happened rather than what was shown." },
+            "written by the engine, not the display, so it records what " +
+            "happened." },
 
     /* ---- the coalition ---- */
     ledger: { title: "Capital",
-      body: "A signed account with each partner. Positive means they owe you; " +
-            "negative means you owe them. Nothing here decays and nothing is " +
-            "forgiven. Overdrawing it costs their loyalty at twice the rate." },
+      body: "A running account with each partner. Positive means they owe you. " +
+            "Negative means you owe them. Nothing here decays or is forgiven. " +
+            "Overdrawing costs that partner loyalty at twice the rate." },
     gov: { title: "In government",
       body: "This party holds ministries and is bound by collective " +
             "responsibility." },
     cs: { title: "Confidence and supply",
-      body: "Not in government, and counted toward confidence anyway. They vote " +
-            "for the budget and against anything else they like." },
+      body: "Not in government, but counted toward confidence anyway. They vote " +
+            "for the budget, and against anything else they choose." },
     senior: { title: "Senior post",
-      body: "Life Support is the senior ministry and the one that ends careers - " +
-            "the only ministry whose minister can be summoned by the engineering " +
-            "authority rather than the reverse." },
+      body: "Life Support is the senior ministry. Its minister can be summoned " +
+            "by the engineering authority. In every other brief, the minister " +
+            "does the summoning." },
     vacant: { title: "Vacant",
-      body: "Nobody holds this post, and a vacant post cannot make an " +
-            "instrument. The President's power to refuse an appointment and the " +
-            "fight over the licensing boards are therefore the same fight.",
+      body: "No minister holds this post, so it cannot make instruments. " +
+            "Appoint one to change that.",
       go: "cabinet" },
     live: { title: "Reserve power",
       body: "Held by the President and available now. Dissolution, formation, " +
-            "referral and appointments are constitutional powers, not political " +
-            "ones: they do not need the House's agreement.", go: "perigee_charter" },
+            "referral and appointments are constitutional powers. They do not " +
+            "need the House's agreement.", go: "perigee_charter" },
 
     /* ---- instruments ---- */
     instrument: { title: "Statutory instrument",
-      body: "An order signed rather than voted. It needs no majority and is in " +
-            "force the moment it is made - and it can be revoked, which a bill " +
+      body: "An order signed rather than voted. It needs no majority and takes " +
+            "effect as soon as it is made. It can be revoked, which a bill " +
             "cannot." },
     prayer: { title: "Praying against",
-      body: "The House's only recourse against an order already in force, and it " +
-            "expires. The number is the sittings remaining; after that the order " +
+      body: "The House's only way to challenge an order already in force. It " +
+            "expires. The number is the sittings left. After that the order " +
             "stands permanently." },
     priority: { title: "Priority bill",
-      body: "Its owner values the time more, so granting it a slot is worth an " +
+      body: "Its owner values the time more, so granting it a slot earns an " +
             "extra point of capital." },
 
     /* ---- indicators and scarcity ---- */
     party_loyalty: { title: "Party loyalty",
-      body: "Your own party's discipline, distinct from the currents inside it. " +
-            "Whipping your own members is paid for out of this." },
+      body: "Your own party's discipline. It is separate from the loyalty of " +
+            "the currents inside it. Whipping your own members is paid for from " +
+            "this." },
     public_standing: { title: "Public standing",
-      body: "How the government reads outside the chamber. It does not vote, and " +
-            "it decides what the wire prints." },
+      body: "How the government is seen outside the chamber. It does not vote. " +
+            "It decides what the wire prints." },
     consumables: { title: "Consumables",
-      body: "Food, water and the rest of what a habitat eats. Low is not an " +
-            "abstraction: it is stations going short." },
+      body: "Food, water and everything else a habitat consumes. When it is " +
+            "low, stations go short." },
     thermal_margin: { title: "Thermal margin",
-      body: "Waste heat headroom across the ring. Everything a habitat does ends " +
-            "as heat and heat is the hardest thing to get rid of in vacuum. This " +
-            "is the number that kills people.", go: "the_permanent_emergency" },
+      body: "Waste-heat headroom across the ring. Everything a habitat does " +
+            "produces heat, and heat is the hardest thing to get rid of in " +
+            "vacuum. When this reaches zero, people die.",
+      go: "the_permanent_emergency" },
     treasury: { title: "Treasury",
       body: "What the government can spend without asking the House for more." },
     scarcity: { title: "Scarcity index",
-      body: "100 at the opening of the series. Every one of these four is set by " +
-            "legislation rather than by a market - a thermal appropriation moves " +
-            "the quota price, and the quota price decides whether a poor station " +
-            "can afford to keep its people running." },
+      body: "All four start at 100. Each one is set by legislation, not by a " +
+            "market. A thermal appropriation moves the quota price, and the " +
+            "quota price decides whether a poor station can keep its people " +
+            "running." },
 
     /* ---- the orbit ---- */
     ratio: { title: "Apportionment ratio",
-      body: "Electors per seat against the Commonwealth average. Above one is " +
-            "under-represented; below one is over-represented. It is derived " +
-            "from the roll and never stored." },
+      body: "Electors per seat, measured against the Commonwealth average. " +
+            "Above 1 means under-represented. Below 1 means over-represented. " +
+            "It is calculated from the roll, not stored." },
     held: { title: "Held by",
-      body: "The party returning this seat now. District seats are the roll and " +
-            "the roll is the only record of who holds what." },
+      body: "The party that holds this seat now. For district seats, the roll " +
+            "is the only record of who holds what." },
     band: { title: "Altitude band",
       body: "Higher orbit is different politics. The chart is a stratification " +
-            "diagram before it is a map, which is the argument it is making." },
+            "diagram, not a map." },
     closure: { title: "Closure" }   /* the glossary has this one */
   };
 
