@@ -632,3 +632,88 @@ console.log("\nCURRENTS IN A DIVISION:");
 
   if (bad) { console.log("\n" + bad + " CURRENT FAILURES"); process.exitCode = 1; }
 })();
+
+/* ---------------------------------------------------------------------
+   THE BED IS IN TUNE.
+
+   The eight-bar loop was replaced with a twenty-four-bar form, which is
+   seventy-two hand-typed MIDI numbers. A mistyped one is a wrong note
+   that every static check passes and nobody hears until the loop reaches
+   that bar, two minutes into a session, once. These are the assertions
+   that would have caught it.
+   --------------------------------------------------------------------- */
+console.log("\nTHE ADAPTIVE BED:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  let F;
+  try { F = require("./js/music.js").__form; }
+  catch (e) { ok("the music module loads", false, e.message); return; }
+
+  const NAME = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  const pc = m => ((m % 12) + 12) % 12;
+  /* D natural minor: D E F G A Bb C */
+  const SCALE = [2, 4, 5, 7, 9, 10, 0];
+
+  ok("the form is long enough not to announce its own loop",
+     F.BARS >= 20,
+     F.BARS + " bars = " + (F.BARS * F.BEATS * 60 / F.BPM).toFixed(0) + "s at " + F.BPM + " BPM");
+
+  /* The old loop ended A7 -> Dm, a perfect cadence straight into bar one.
+     The ear learns that join in two passes. The last bar must not be the
+     dominant of the first. */
+  const last = F.PROG[F.BARS - 1], first = F.PROG[0];
+  /* A cadence is carried by the BASS, so that is what this reads. The old
+     form went A -> D across the join, which is as closed as a join gets. */
+  ok("and does not cadence into its own first bar",
+     pc(last.bass[0]) !== pc(first.ch[0] + 7),
+     NAME[pc(last.bass[0])] + " -> " + NAME[pc(first.ch[0])] +
+     ", not " + NAME[pc(first.ch[0] + 7)] + " -> " + NAME[pc(first.ch[0])]);
+
+  /* Every sustained note must belong to the chord under it or to the key. */
+  const stray = [];
+  F.PROG.forEach((b, i) => {
+    const tones = b.ch.map(pc);
+    const fits = m => tones.indexOf(pc(m)) >= 0 || SCALE.indexOf(pc(m)) >= 0;
+    if (!fits(b.reed)) stray.push("bar " + (i + 1) + " reed " + NAME[pc(b.reed)]);
+    (b.h || []).forEach(([m]) => {
+      if (!fits(m)) stray.push("bar " + (i + 1) + " lead " + NAME[pc(m)]);
+    });
+    /* the bass names the chord; its root must be the chord's root */
+    if (pc(b.bass[0]) !== pc(b.ch[0]) && i !== F.BARS - 1)
+      stray.push("bar " + (i + 1) + " bass " + NAME[pc(b.bass[0])] +
+                 " under " + NAME[pc(b.ch[0])]);
+  });
+  ok("every sustained note is a chord tone or in the key",
+     stray.length === 0, stray.length ? stray.join("; ") : F.BARS + " bars checked");
+
+  /* The last bar is the deliberate exception above: the tonic chord over
+     the subdominant, which drifts back to bar one instead of resolving. */
+  ok("except the last bar, which hangs on purpose",
+     pc(last.bass[0]) !== pc(last.ch[0]),
+     NAME[pc(last.ch[0])] + " over " + NAME[pc(last.bass[0])]);
+
+  ok("every note is in a range a human could play",
+     F.PROG.every(b => b.ch.every(m => m >= 36 && m <= 84) &&
+                       b.bass.every(m => m >= 28 && m <= 55) &&
+                       b.reed >= 48 && b.reed <= 84));
+
+  /* Silence is a layer. Every bar used to carry every voice. */
+  const quiet = F.PROG.filter(b => b.q).length;
+  ok("some bars are quieter than others", quiet > 0 && quiet < F.BARS,
+     quiet + " of " + F.BARS + " bars drop the keys");
+
+  /* The hook has to be a hook: short, in the key, and actually used. */
+  ok("the hook is short enough to remember",
+     F.MOTIF.length >= 2 && F.MOTIF.length <= 5, F.MOTIF.length + " notes");
+  ok("and is in the key",
+     F.MOTIF.every(m => SCALE.indexOf(pc(m)) >= 0),
+     F.MOTIF.map(m => NAME[pc(m)]).join(" ")); 
+  const quoted = F.PROG.some(b => (b.h || []).length >= F.MOTIF.length &&
+    F.MOTIF.every((m, i) => pc(b.h[i][0]) === pc(m)));
+  ok("and the written line quotes it somewhere", quoted);
+
+  if (bad) { console.log("\n" + bad + " BED FAILURES"); process.exitCode = 1; }
+})();
