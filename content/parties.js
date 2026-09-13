@@ -51,14 +51,14 @@ const PARTIES = [
     note:"Confederalist. Cannot whip its own members." },
 
   { id:"hul", name:"Association of Engineers and Systems", short:"AES", colour:"var(--p-hul)",
-    leader:"wilde_hayward",
+    leader:"wilde_hayward", logo:"hul.png", wordmark:"hul_mark.png",
     seats:{district:9,list:6,functional:7},
     kind:"national", loyalty:15,
     axes:{ownership:null,personhood:"restrictionist",sovereignty:null,closure:"closurist"},
     note:"Habitat as lifeboat. Engineering authority supreme." },
 
   { id:"rv",  name:"Democratic Centre",            short:"DEC", colour:"var(--p-rv)",
-    leader:"park",
+    leader:"park", logo:"rv.png", wordmark:"rv_mark.png",
     seats:{district:12,list:5,functional:1},
     kind:"national", loyalty:23,
     axes:{ownership:null,personhood:"restrictionist",sovereignty:null,closure:null},
