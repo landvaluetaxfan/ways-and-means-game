@@ -21,7 +21,7 @@
    MP.
 
    NAMING SCHEME — locked.
-     Parliament          the legislature (bicameral)
+      Parliament          the legislature
      House of Delegates  the elected chamber
      MP                  Member of Parliament, of any tier
      Prime Minister      head of government, chairs Cabinet
@@ -59,13 +59,13 @@ const CHARACTERS = [
     note:"Runs the brief that decides which station is close and which is abandoned." },
   { id:"preiss", name:"Luke Preiss MP", role:"Minister for Attestation and the Registry",
     party:"cu", seat:"Registry Walk", relationship:55, office:"minister",
-    note:"Appoints the licensing boards. Bible 4.6.4 — the sharpest tool in the game." },
+    note:"Appoints the licensing boards. This is the sharpest tool in the game." },
   { id:"marin", name:"Florence Marin MP", role:"Minister for Persons and Continuity",
     party:"rv", seat:"Concord—Bellfield", relationship:49, office:"minister",
     note:"Given to the Democratic Centre at formation. The portfolio is the party's whole argument, and she has never had to make it in public." },
   { id:"landry", name:"Jean Landry MP", role:"Minister for External Relations",
     party:"cu", seat:"Anchor Head—Cable Row", relationship:43, office:"minister",
-    note:"The anchors stand on foreign soil, so this is a domestic brief wearing a hat." },
+    note:"The anchors stand on foreign soil, so this is really a domestic brief." },
   { id:"skye", name:"Aster Skye MP", role:"Treasurer",
     party:"cu", seat:"Deep Deck", relationship:66, office:"minister",
     note:"Sits apart and reports directly to the Prime Minister. Knows what everything costs." },
@@ -140,7 +140,7 @@ const CHARACTERS = [
     note:"Gravity as birthright, orbital life as temporary exile, and the rhetoric to match." },
   { id:"wheeler", name:"Marion Wheeler MP", role:"Leader, Single Tax Party",
     party:"geo", relationship:57, office:"leader",
-    note:"Volume tax, land value tax, nothing else. Correct. List tier only." },
+    note:"Volume tax, land value tax, nothing else. List tier only." },
   { id:"lindegaard", name:"Aalborg Lindegaard MP", role:"Leader, Common Kind",
     party:"upl", relationship:50, office:"leader",
     note:"Two seats, permanently kingmaker-adjacent. Price is always the same thing." },

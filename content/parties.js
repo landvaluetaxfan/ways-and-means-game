@@ -26,7 +26,7 @@ const PARTIES = [
     seats:{district:48,list:25,functional:9},
     kind:"national", loyalty:62,
     axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:null},
-    note:"Old left. Embodied maintenance labour. The strike weapon." },
+    note:"Old left. Embodied maintenance labour, and the strike weapon." },
 
   { id:"cl",  name:"Liberal Party",                short:"LIB", colour:"var(--p-cl)",
     leader:"watkins", logo:"cl.png", wordmark:"cl_mark.png",
@@ -77,7 +77,7 @@ const PARTIES = [
     seats:{district:0,list:0,functional:9},
     kind:"professional", loyalty:30,
     axes:{ownership:null,personhood:"restrictionist",sovereignty:"federal",closure:"closurist"},
-    note:"Exists only in the functional tier. Does not campaign. Cannot be voted out." },
+    note:"Exists only in the functional tier. It does not campaign and cannot be voted out." },
 
   { id:"des", name:"One-G",                        short:"ONE", colour:"var(--p-des)",
     leader:"edelstein_powell", logo:"des.png", wordmark:"des_mark.png",
@@ -94,8 +94,8 @@ const PARTIES = [
     /* No carve-out: a national ideological party with no district roots and
        no category to protect. It lives or dies on the threshold every time,
        which is exactly the party 4.8 says will agonise just below the line. */
-    note:"Volume tax. Land value tax. Nothing else. Correct. Three seats and "+
-         "always within a point of the threshold." },
+    note:"Volume tax, land value tax, nothing else. Three seats, and always "+
+         "within a point of the threshold." },
 
   { id:"upl", name:"Common Kind",                  short:"CMK", colour:"var(--p-upl)",
     leader:"lindegaard", logo:"upl.png", wordmark:"upl_mark.png",
