@@ -45,14 +45,14 @@ const Music = (function () {
     { ch: [55,58,62,65], bass: [43,50,46], reed: 58, h: [[74,1,1.5],[72,3,1]] },
     { ch: [55,58,62,65], bass: [43,50,45], reed: 62, h: null },
     { ch: [58,62,65,69], bass: [46,53,50], reed: 65, h: [[70,0,1.5],[69,2.5,1]] },
-    { ch: [57,61,64,67], bass: [45,52,48], reed: 64, h: [[67,0,2]] },
+    { ch: [57,61,64,67], bass: [45,52,49], reed: 64, h: [[67,0,2]] },
     { ch: [50,53,57,60], bass: [38,45,40], reed: 57, h: null },
     { ch: [57,61,64,67], bass: [45,52,43], reed: 61, h: [[65,1,1],[67,2.5,1.5]] }
   ];
 
   /* the bass rhythm: [beat, duration in beats, amp]. Root, fifth, approach,
      so it is not the same note at the same interval every time. */
-  const BASS_T = [[0, 1.7, 1.0], [2, 1.1, 0.85], [3.5, 0.7, 0.7]];
+  const BASS_T = [[0, 1.5, 1.0], [2, 0.7, 0.85], [3, 0.5, 0.7]];
 
   const hz = m => 440 * Math.pow(2, (m - 69) / 12);
 
@@ -108,11 +108,11 @@ const Music = (function () {
     o2.type = "sine"; o2.frequency.value = f * 2; g2.gain.value = 0.12;
     lp.type = "lowpass"; lp.frequency.value = 650;
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(amp, t + 0.14);
-    g.gain.linearRampToValueAtTime(amp * 0.9, t + 0.6);
-    g.gain.linearRampToValueAtTime(0.0001, t + dur + 0.45);
+    g.gain.linearRampToValueAtTime(amp, t + 0.1);
+    g.gain.linearRampToValueAtTime(amp * 0.9, t + 0.5);
+    g.gain.linearRampToValueAtTime(0.0001, t + dur + 0.2);
     o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(gains.bass);
-    o.start(t); o2.start(t); o.stop(t + dur + 0.55); o2.stop(t + dur + 0.55);
+    o.start(t); o2.start(t); o.stop(t + dur + 0.3); o2.stop(t + dur + 0.3);
   }
   function pad(t, freqs, dur) {
     freqs.forEach(f => {
@@ -144,7 +144,7 @@ const Music = (function () {
     vib.frequency.value = 4.6; vg.gain.value = f * 0.004;
     vib.connect(vg); vg.connect(o.frequency);
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(0.13, t + 0.45);
+    g.gain.linearRampToValueAtTime(0.13, t + 0.3);
     g.gain.linearRampToValueAtTime(0.10, t + dur * 0.65);
     g.gain.linearRampToValueAtTime(0.0001, t + dur);
     o.connect(lp); lp.connect(g); g.connect(gains.reed);
