@@ -1434,6 +1434,37 @@ const Engine = (function () {
   }
 
   /* ---------------------------------------------------------
+     3c. THE LEADERSHIP BALLOT (design/08 §2)
+
+     The caucus divides on loyalty and on what the Prime Minister has paid each
+     current. This is a SUM, not a model: each current votes its members in
+     proportion to its loyalty, the members in no current vote on the party's
+     own loyalty, and the revenants — returned on the list, owing their seat to
+     the party — are loyal until they break, and then break together.
+
+     Held when the signatures against the PM reach the threshold. A ballot the
+     PM loses routes through the existing loss condition, not a second one.
+     --------------------------------------------------------- */
+  function ballot(st, C) {
+    const party = st.playerParty;
+    const seats = partyPopular(st, party);
+    const currents = (C.currents || []).filter(c0 => c0.party === party);
+    let aye = 0, named = 0;
+    currents.forEach(c0 => {
+      const cur = st.currents[c0.id] || c0;
+      const mem = cur.members || 0;
+      named += mem;
+      aye += mem * ((cur.loyalty == null ? 100 : cur.loyalty) / 100);
+    });
+    const rest = Math.max(0, seats - named);
+    aye += rest * (((st.parties[party] || {}).loyalty || 100) / 100);
+    aye = Math.round(aye);
+    const need = Math.floor(seats / 2) + 1;
+    return { for: aye, against: Math.max(0, seats - aye), seats: seats,
+             need: need, carries: aye >= need };
+  }
+
+  /* ---------------------------------------------------------
      3b. IMPERFECT INFORMATION (design/08 §8)
 
      A division is exact — the arithmetic is the argument of the game. What
@@ -1507,6 +1538,11 @@ const Engine = (function () {
                     Object.keys(v[id]).every(f => st.stations[id][f] < v[id][f])),
     billStage:    (st, v) => Object.keys(v).every(id => st.bills[id] && st.bills[id].stage === v[id]),
     signaturesAtLeast: (st, v) => (st.signatures || 0) >= v,
+    /* The leadership ballot (design/08 §2). Content narrates it; the engine
+       holds it. `ballotHeld` is true once the caucus has divided and before
+       the event has been read; `ballotCarries` says which way it went. */
+    ballotHeld:     (st, v) => v ? !!st.ballot : !st.ballot,
+    ballotCarries:  (st, v) => !!st.ballot && st.ballot.carries === !!v,
     siInForce:      (st, v) => [].concat(v).every(k => st.instruments[k] && st.instruments[k].inForce),
     siNotMade:      (st, v) => [].concat(v).every(k => st.instruments[k] && !st.instruments[k].made),
     postVacant:     (st, v) => [].concat(v).every(k => st.cabinet[k] && !st.cabinet[k].holder),
@@ -2196,6 +2232,20 @@ const Engine = (function () {
           marks.push(s.name + " falls below ten thousand suspended");
       });
     }
+    /* THE BALLOT. Signatures against the Prime Minister reaching the threshold
+       force the caucus to divide. Held once; a carried ballot clears the names,
+       a lost one is the end and checkLoss says so. */
+    const ballotAt = (C.setup.thresholds && C.setup.thresholds.ballot) || 12;
+    if (!st.ballot && (st.signatures || 0) >= ballotAt) {
+      st.ballot = ballot(st, C);
+      marks.push("LEADERSHIP BALLOT: " + st.ballot.for + " for, " +
+        st.ballot.against + " against, " + st.ballot.need + " needed");
+      st.log.unshift({ sitting: st.sitting, text: "Leadership ballot: " +
+        st.ballot.for + " for, " + st.ballot.against + " against, " +
+        st.ballot.need + " needed \u2014 " +
+        (st.ballot.carries ? "the Prime Minister holds" : "the Prime Minister loses") });
+      if (st.ballot.carries) st.signatures = 0;
+    }
     return marks;
   }
 
@@ -2300,6 +2350,9 @@ const Engine = (function () {
 
   function checkLoss(st, C) {
     if (confidence(st) < majority(st)) return { lost: true, reason: "confidence" };
+    /* A ballot the Prime Minister lost is the end, through the same reason the
+       old loyalty floor used, so there is one leadership loss and not two. */
+    if (st.ballot && !st.ballot.carries) return { lost: true, reason: "leadership" };
     if (st.scalars.party_loyalty <= C.setup.thresholds.leadershipChallenge)
       return { lost: true, reason: "leadership" };
     if (st.scalars.thermal_margin <= 0) return { lost: true, reason: "cascade" };
@@ -2334,7 +2387,7 @@ const Engine = (function () {
     STATE_VERSION, newGame, migrate, save, load, chapters,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal,
-    division, reported, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
+    division, reported, ballot, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
     apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,
     seedRoll, syncRoll, reconcile, partyDistrict,
     lastReconcile: () => lastReconcile, nationalShares, vacantSeats, seatsFor,

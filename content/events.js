@@ -595,6 +595,33 @@ Registry has said, in writing, that it will not finish before the next election.
                {flag:"threshold_seen"},{flag:"kept_wrong_boundaries"},
                {wire:"BOUNDARY COMMISSION OVERRULED; REDRAW DEFERRED"}],
       result:"The seat you hold and the seat you are entitled to hold have stopped being the same seat." }
+  ]},
+
+/* THE LEADERSHIP BALLOT (design/08 §2). The engine holds the ballot when the
+   signatures reach the threshold and decides it from the caucus arithmetic;
+   this event is the prose for the one the Prime Minister survives. A lost one
+   ends the government through the existing loss condition and is never read. */
+{ id:"leadership_ballot", weight:99, once:true,
+  when:{ ballotHeld:true, ballotCarries:true, flagsAbsent:["ballot_seen"] },
+  title:"The ballot",
+  speaker:null,
+  body:`The count is in the tea room before it is in the lobby. The names were
+twelve, and twelve is enough to force a ballot, and a ballot is a vote on you.
+
+It is not a division of the House. It is a division of the party, held in the
+committee room, on a paper that is destroyed afterwards. The whips count their
+own benches and nobody else's, and what is being decided is whether the party
+that put you here intends to keep you.`,
+  choices:[
+    { label:"Let the count be taken. Say nothing.",
+      effects:[{flag:"ballot_seen"},{move:{"loyalty.cu_maintenance":6}},{move:{"loyalty.cu_loyalists":-4}},
+               {wire:"LEADERSHIP BALLOT HELD; PM SURVIVES"}],
+      result:"You survive, and every member who signed knows exactly what the number was, and what it would take." },
+    { label:"Speak first. Remind them what the alternative costs.",
+      effects:[{flag:"ballot_seen"},{move:{"loyalty.cu_halloran":-8}},{move:{"loyalty.cu_loyalists":8}},
+               {move:{"public_standing":3}},
+               {wire:"PM ADDRESSES CAUCUS BEFORE BALLOT; SURVIVES"}],
+      result:"The speech is remembered as the day the party decided, which is not the same as the day it agreed." }
   ]}
 
 ];

@@ -721,6 +721,37 @@ console.log("\nTHE FORECAST IS AN OPINION (design/08 §8):");
   if (bad) { console.log("\n" + bad + " FORECAST FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nTHE LEADERSHIP BALLOT (design/08 §2):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const a = Engine.newGame(CONTENT);
+  const b0 = Engine.ballot(a, CONTENT);
+  ok("a fresh caucus would carry a ballot", b0.carries && b0.for >= b0.need,
+     b0.for + " for, " + b0.against + " against, " + b0.need + " needed");
+
+  const b = Engine.newGame(CONTENT);
+  Object.keys(b.currents).forEach(k => { b.currents[k].loyalty = 0; });
+  b.parties[b.playerParty].loyalty = 0;
+  const lost = Engine.ballot(b, CONTENT);
+  ok("a caucus with no loyalty loses it", !lost.carries,
+     lost.for + " for of " + lost.need);
+
+  const c = Engine.newGame(CONTENT);
+  c.signatures = CONTENT.setup.thresholds.ballot;
+  Engine.tick(c, CONTENT);
+  ok("the threshold holds a ballot", !!c.ballot);
+  ok("and it is reported in the log",
+     c.log.some(l => /Leadership ballot/.test(l.text)));
+  const before = c.ballot;
+  Engine.tick(c, CONTENT);
+  ok("and only once", c.ballot === before);
+
+  if (bad) { console.log("\n" + bad + " BALLOT FAILURES"); process.exitCode = 1; }
+})();
+
 /* ---------------------------------------------------------------------
    THE BED IS IN TUNE.
 
