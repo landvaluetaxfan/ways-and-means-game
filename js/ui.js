@@ -694,7 +694,8 @@ const UI = (function () {
         d.rows.filter(r => r.popularSeats + r.functionalSeats > 0).map(r =>
           `<tr><td>${sw(pc(r.party))}${(C.partyById[r.party] || {}).short || r.party}</td>` +
           `<td class="n">${r.popularAye}${r.popularWhipped ? `<span class="wh">+${r.popularWhipped}</span>` : ""}</td><td class="n">${r.popularSeats}</td>` +
-          `<td class="n">${r.functionalAye}${r.functionalWhipped ? `<span class="wh">+${r.functionalWhipped}</span>` : ""}</td><td class="n">${r.functionalSeats}</td></tr>`).join("") +
+          `<td class="n">${r.functionalAye}${r.functionalWhipped ? `<span class="wh">+${r.functionalWhipped}</span>` : ""}</td><td class="n">${r.functionalSeats}</td></tr>` +
+          benchRowsHTML(r)).join("") +
         `</tbody></table>`;
     });
     det.querySelectorAll(".whipbar").forEach(bar => {
@@ -755,6 +756,22 @@ const UI = (function () {
      What you can move depends on how far the bill sits from the party's own
      position, which is what keeps the four axes load-bearing. What it costs
      comes out of the ledger, and overdrawing costs loyalty. */
+  /* The factions under their party in the division breakdown. Only present
+     where the engine actually derived the count from them — a stated
+     forecast belongs to the whips who wrote it, not to the currents, and
+     the engine returns no benches in that case. Each column sums to the
+     party row above it. */
+  function benchRowsHTML(r) {
+    if (!r.benches) return "";
+    const cell = (aye, seats) => aye == null
+      ? `<td class="n">&mdash;</td><td class="n">${seats}</td>`
+      : `<td class="n">${aye}</td><td class="n">${seats}</td>`;
+    return r.benches.map(b =>
+      `<tr class="bench"><td>${esc(b.name)}</td>` +
+      cell(b.popularAye, b.popularSeats) +
+      cell(b.functionalAye, b.functionalSeats) + `</tr>`).join("");
+  }
+
   function whipPanel(billId, b, d) {
     if (st.bills[billId].dead) return "";
     const partners = [st.playerParty].concat(

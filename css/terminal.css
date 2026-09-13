@@ -734,6 +734,19 @@ img.dith{display:block;}
 .whipcost .ed-x{margin-left:auto;}
 .wh{color:var(--ok);font-size:10px;}
 
+/* A current under its party in the division breakdown. Indented and
+   quieter, because it is the working behind the row above rather than
+   another row of the same kind — and it uses the existing table's cells
+   rather than a nested table, so the columns stay aligned with it. */
+#breakdown tr.bench > td{
+  color:var(--ink-soft);font-size:11px;border-top:none;padding-top:1px;padding-bottom:1px;
+}
+#breakdown tr.bench > td:first-child{padding-left:16px;position:relative;}
+#breakdown tr.bench > td:first-child::before{
+  content:"";position:absolute;left:7px;top:.62em;width:5px;
+  border-top:1px solid var(--chrome-dk);
+}
+
 /* ---------- scarcity prices ---------- */
 .prow{display:grid;grid-template-columns:1fr auto 54px;gap:6px;align-items:center;
   padding:2px 0;border-bottom:1px solid var(--chrome-dk);}

@@ -682,12 +682,104 @@ const Engine = (function () {
 
   const AXES = ["ownership", "personhood", "sovereignty", "closure"];
 
-  /* Full loyalty delivers every member; none still delivers three quarters,
-     because a party is not a coalition of strangers. */
-  function discipline(st, partyId) {
-    const p = st.parties[partyId];
-    const loy = p ? p.loyalty : 60;
-    return 0.75 + 0.25 * (loy / 100);
+  /* ---------------------------------------------------------
+     WHO ACTUALLY WALKS THROUGH THE LOBBY
+
+     A party's POSITION is one thing and its TURNOUT is another, and
+     the gap between them is the whip's whole job. Two things open it.
+
+     Loyalty: full loyalty delivers every member, none still delivers
+     three quarters, because a party is not a coalition of strangers.
+
+     Currents: a party with factions is not one bloc voting at one
+     rate. Each current turns out at ITS OWN discipline, and a current
+     whose axes disagree with the measure does not turn out for it
+     however loyal it is — a faction is defined by its position, which
+     is what makes it a faction rather than a mood.
+
+     THE CASE THIS EXISTS FOR is a party with no position on an axis
+     whose currents all have one. Agreement is scored against the
+     CURRENT's axes, not the party's, so a measure the party is neutral
+     on can still cost it a third of its benches. That is the whole
+     content of "weighted towards several ideological positions", and
+     nothing else in the engine could see it.
+
+     Disagreement only ever costs. A current cannot deliver more
+     members than it has, so agreement above the party line buys
+     nothing — the upside of a popular measure is that the ones who
+     disagree stay home rather than vote against.
+
+     MEMBERS ARE A PROPORTION, NOT A COUNT. Content states a current's
+     size; the roll states the party's. An election moves the roll and
+     will not move the content, so a current is read as its SHARE of
+     its party and resized against whatever the party currently holds.
+     Storing faction seats beside party seats is the mistake
+     apportionment_ratio already taught us once.
+     --------------------------------------------------------- */
+
+  /* The currents of a party as normalised shares, or null if it has none. */
+  function benches(st, C, partyId) {
+    if (!C || !C.currents || !st.currents) return null;
+    const seats = partyTotal(st, partyId);
+    if (!seats) return null;
+    const cs = C.currents.filter(c => c.party === partyId && st.currents[c.id]);
+    if (!cs.length) return null;
+    const claimed = cs.reduce((n, c) => n + (st.currents[c.id].members || 0), 0);
+    if (!claimed) return null;
+    return cs.map(c => ({
+      id: c.id, name: c.name,
+      share: (st.currents[c.id].members || 0) / claimed,
+      loyalty: st.currents[c.id].loyalty,
+      axes: c.axes || {}
+    }));
+  }
+
+  /* The fraction of a party's seats that votes with its stated position.
+     `floor` is what indiscipline cannot take away: 0.75 on a whipped
+     position, 0 on a free vote, where there is no line to hold.
+     `detail`, if given, collects the per-current working for the UI. */
+  function turnout(st, C, bill, partyId, floor, detail) {
+    const rate = l => floor + (1 - floor) * ((l == null ? 60 : l) / 100);
+    const bs = benches(st, C, partyId);
+
+    if (!bs) {
+      /* No currents: the party is one bench and its own axes already
+         chose its position. Bending here would charge it twice. */
+      const p = st.parties[partyId];
+      return rate(p ? p.loyalty : 60);
+    }
+
+    const billAxes = bill && bill.axes;
+    let total = 0;
+    bs.forEach(b => {
+      let r = rate(b.loyalty);
+      if (billAxes) {
+        const a = axisAgreement(b.axes, billAxes);
+        if (a < 0) r *= (1 + a);          /* a = -1 -> nobody at all */
+      }
+      total += b.share * r;
+      if (detail) detail.push({ id: b.id, name: b.name, share: b.share, rate: r });
+    });
+    return total;
+  }
+
+  function discipline(st, C, partyId, bill, detail) {
+    return turnout(st, C, bill, partyId, 0.75, detail);
+  }
+
+  /* Split `total` across `weights` so the parts are whole numbers that
+     sum to exactly `total`. Largest remainder, because a breakdown whose
+     rows do not add up to the row above it is worse than no breakdown. */
+  function apportion(total, weights) {
+    const sum = weights.reduce((n, w) => n + w, 0);
+    if (!sum) return weights.map(() => 0);
+    const exact = weights.map(w => (w / sum) * total);
+    const out = exact.map(Math.floor);
+    let left = total - out.reduce((n, v) => n + v, 0);
+    exact.map((v, i) => [v - out[i], i])
+      .sort((a, b) => b[0] - a[0])
+      .forEach(([, i]) => { if (left > 0) { out[i]++; left--; } });
+    return out;
   }
 
   function axisAgreement(partyAxes, billAxes) {
@@ -700,7 +792,12 @@ const Engine = (function () {
     return counted ? score / counted : 0;   // -1 .. +1
   }
 
-  function resolveStance(st, C, bill, partyId, tier) {
+  /* `detail`, if given, is filled with the per-current working — but ONLY
+     where the count was actually derived from the currents. An explicit
+     {for:n} is a number the whips handed the Prime Minister, and
+     attributing it to factions afterwards would be the interface
+     inventing a reason the content did not give. */
+  function resolveStance(st, C, bill, partyId, tier, detail) {
     const seats = tier === "functional" ? partyFunctional(st, partyId) : partyPopular(st, partyId);
     if (!seats) return 0;
 
@@ -714,17 +811,17 @@ const Engine = (function () {
     }
 
     /* A bare "for" is a party POSITION, not a guarantee of turnout. What it
-       actually delivers depends on discipline, and discipline is loyalty.
-       The gap between position and delivery is exactly what whipping buys
-       back — without it the whip has nothing to do. An explicit {for:n} is
-       a stated count and is taken at face value. */
-    if (s === "for") return Math.round(seats * discipline(st, partyId));
+       actually delivers depends on discipline, and discipline is loyalty
+       read faction by faction. The gap between position and delivery is
+       exactly what whipping buys back — without it the whip has nothing to
+       do. An explicit {for:n} is a stated count and is taken at face value. */
+    if (s === "for") return Math.round(seats * discipline(st, C, partyId, bill, detail));
     if (s === "against" || s === "abstain") return 0;
     if (typeof s === "object") {
-      if (s.free) {
-        const loy = st.parties[partyId] ? st.parties[partyId].loyalty : 50;
-        return Math.min(seats, Math.round(seats * (loy / 100)));
-      }
+      /* A free vote has no line to hold, so nothing is floored: a current
+         votes at its own conviction and its own view of the measure. */
+      if (s.free) return Math.min(seats,
+        Math.round(seats * turnout(st, C, bill, partyId, 0, detail)));
       if (s.forPct != null) return Math.min(seats, Math.round(seats * s.forPct));
       if (s.for != null) return Math.min(seats, s.for);   // seats in THIS bench
     }
@@ -1070,12 +1167,12 @@ const Engine = (function () {
          notices" rather than merely to the opposition. */
       if (stance && typeof stance === "object" && stance.ifLoyaltyBelow != null) {
         if ((st.parties[pid] ? st.parties[pid].loyalty : 100) < stance.ifLoyaltyBelow)
-          aye += Math.round(seats * discipline(st, pid));
+          aye += Math.round(seats * discipline(st, C, pid, null));
         return;
       }
       if (stance === "for") aye += seats;
       else if (stance === "against") return;
-      else if (!inGov) aye += Math.round(seats * discipline(st, pid));
+      else if (!inGov) aye += Math.round(seats * discipline(st, C, pid, null));
     });
     return { aye: aye, total: total, need: need, carries: aye >= need };
   }
@@ -1211,6 +1308,54 @@ const Engine = (function () {
     return { constituencies: cons, party: party, ok: cons === party };
   }
 
+  /* The faction breakdown of a party's own row. Seats and ayes are both
+     apportioned by largest remainder so each column sums to the party
+     figure above it; a breakdown that does not add up reads as a bug in
+     the arithmetic even when the arithmetic is right.
+
+     Ayes are weighted by SEATS x RATE and not by SHARE x RATE, which is
+     the same quantity in the continuous case and not the same table.
+     Weighting by share let the rounding of the seat column and the
+     rounding of the aye column disagree, and on nine functional seats
+     that printed the most loyal current delivering two of three while
+     the least loyal delivered one of one. Apportion the ayes over the
+     seats you are about to print beside them. */
+  function benchRows(st, pid, pWork, pBase, fWork, fBase) {
+    const work = pWork.length ? pWork : fWork;
+    if (!work.length) return null;
+    const split = function (seatTotal, ayeTotal, has) {
+      const seats = apportion(seatTotal, work.map(b => b.share));
+      if (!has) return { seats: seats, ayes: work.map(() => null) };
+      return { seats: seats,
+               ayes: capped(ayeTotal, work.map((b, i) => seats[i] * b.rate), seats) };
+    };
+    const P = split(partyPopular(st, pid), pBase, !!pWork.length);
+    const F = split(partyFunctional(st, pid), fBase, !!fWork.length);
+    return work.map((b, i) => ({
+      id: b.id, name: b.name,
+      popularSeats: P.seats[i], popularAye: P.ayes[i],
+      functionalSeats: F.seats[i], functionalAye: F.ayes[i]
+    }));
+  }
+
+  /* Largest remainder with a ceiling per row: no current may deliver more
+     members than it has, and the total must still come out exact. */
+  function capped(total, weights, caps) {
+    const out = apportion(total, weights);
+    for (let pass = 0; pass < out.length; pass++) {
+      let moved = false;
+      for (let i = 0; i < out.length; i++) {
+        while (out[i] > caps[i]) {
+          const j = out.findIndex((v, k) => k !== i && v < caps[k]);
+          if (j < 0) { out[i] = caps[i]; break; }
+          out[i]--; out[j]++; moved = true;
+        }
+      }
+      if (!moved) break;
+    }
+    return out;
+  }
+
   function division(st, C, billId) {
     const bill = C.billById[billId];
     if (!bill) throw new Error("unknown bill: " + billId);
@@ -1221,15 +1366,20 @@ const Engine = (function () {
     const w = st.whips[billId] || {};
     Object.keys(st.parties).forEach(pid => {
       const wp = w[pid] || {};
-      const pBase = resolveStance(st, C, bill, pid, "popular");
-      const fBase = resolveStance(st, C, bill, pid, "functional");
+      const pWork = [], fWork = [];
+      const pBase = resolveStance(st, C, bill, pid, "popular", pWork);
+      const fBase = resolveStance(st, C, bill, pid, "functional", fWork);
       const pAye = Math.min(partyPopular(st, pid), pBase + (wp.popular || 0));
       const fAye = Math.min(partyFunctional(st, pid), fBase + (wp.functional || 0));
       popAye += pAye; funcAye += fAye;
       rows.push({
         party: pid,
         popularSeats: partyPopular(st, pid), popularAye: pAye, popularWhipped: wp.popular || 0,
-        functionalSeats: partyFunctional(st, pid), functionalAye: fAye, functionalWhipped: wp.functional || 0
+        functionalSeats: partyFunctional(st, pid), functionalAye: fAye, functionalWhipped: wp.functional || 0,
+        /* Present only where the count came from the currents. Whipped seats
+           are deliberately excluded — the whip buys members, not factions,
+           until design/07 says otherwise. */
+        benches: benchRows(st, pid, pWork, pBase, fWork, fBase)
       });
     });
 
@@ -2098,7 +2248,7 @@ const Engine = (function () {
     STATE_VERSION, newGame, migrate, save, load, chapters,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal,
-    division, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
+    division, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
     apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,
     seedRoll, syncRoll, reconcile, partyDistrict,
     lastReconcile: () => lastReconcile, nationalShares, vacantSeats, seatsFor,

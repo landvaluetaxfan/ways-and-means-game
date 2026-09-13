@@ -539,3 +539,96 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
 
   if (bad) { console.log("\n" + bad + " ACCEPTANCE FAILURES"); process.exitCode = 1; }
 })();
+
+/* ---------------------------------------------------------------------
+   THE CURRENTS VOTE.
+
+   A party with factions is not one bloc at one rate. These assertions
+   exist because the currents carried an `axes` object for the whole life
+   of the project and NOTHING READ IT — the four factions inside the
+   governing party were a loyalty dial and a paragraph in the
+   Concordance, and a division treated all eighty-two members as one
+   voice. The bible's 128 is unaffected and asserted above, because that
+   forecast is stated in content rather than derived.
+   --------------------------------------------------------------------- */
+console.log("\nCURRENTS IN A DIVISION:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const st = Engine.newGame(CONTENT);
+  const row = (bill, pid) =>
+    Engine.division(st, CONTENT, bill).rows.find(r => r.party === pid);
+
+  /* thermal2 gives the governing party a bare "for", so the count is
+     derived and the factions are visible. */
+  const cu = row("thermal2", "cu");
+  ok("a party with currents reports its factions", !!cu.benches,
+     cu.benches ? cu.benches.length + " currents" : "none");
+
+  const flat = Math.round(cu.popularSeats * (0.75 + 0.25 * (st.parties.cu.loyalty / 100)));
+  ok("and does not vote at its party-wide rate", cu.popularAye !== flat,
+     cu.popularAye + " aye, not " + flat);
+
+  /* THE CASE THE WHOLE CHANGE EXISTS FOR. The Party of Socialists and
+     Democrats has NO position on closure; two of its currents do. The
+     deck cooperativists are the MORE loyal of this pair and the LESS
+     willing, which is only possible if the current's own axes are read.
+     If this ever fails because loyalty alone decides turnout, the
+     factions have gone back to being decoration. */
+  const deck = cu.benches.find(b => b.id === "cu_deck");
+  const main = cu.benches.find(b => b.id === "cu_maintenance");
+  const rate = b => b.popularAye / b.popularSeats;
+  ok("a current is more loyal than another",
+     st.currents.cu_deck.loyalty > st.currents.cu_maintenance.loyalty,
+     "deck " + st.currents.cu_deck.loyalty + " vs maintenance " + st.currents.cu_maintenance.loyalty);
+  ok("and still turns out less, because it disagrees with the bill",
+     rate(deck) < rate(main),
+     (100 * rate(deck)).toFixed(0) + "% vs " + (100 * rate(main)).toFixed(0) + "%");
+
+  /* A breakdown whose rows do not add up to the row above reads as a bug
+     in the arithmetic even when the arithmetic is right. */
+  const sum = (bs, k) => bs.reduce((n, b) => n + (b[k] || 0), 0);
+  ok("faction seats sum to the party's seats",
+     sum(cu.benches, "popularSeats") === cu.popularSeats &&
+     sum(cu.benches, "functionalSeats") === cu.functionalSeats,
+     sum(cu.benches, "popularSeats") + "/" + cu.popularSeats + " popular");
+  ok("faction ayes sum to the party's ayes",
+     sum(cu.benches, "popularAye") === cu.popularAye &&
+     sum(cu.benches, "functionalAye") === cu.functionalAye,
+     sum(cu.benches, "popularAye") + "/" + cu.popularAye + " popular");
+  ok("and no current delivers more members than it has",
+     cu.benches.every(b => b.popularAye <= b.popularSeats &&
+                           b.functionalAye <= b.functionalSeats));
+
+  /* An explicit {for:n} is a forecast the whips handed the Prime
+     Minister. Splitting it across factions afterwards would be the
+     interface inventing a reason the content did not give. */
+  ok("a stated forecast is not attributed to the factions",
+     row("divergence", "cu").benches === null,
+     "HC 4/117 states cu popular {for:68}");
+
+  /* Eleven of the twelve parties have no currents, and none of their
+     numbers may move. */
+  const others = Engine.division(st, CONTENT, "thermal2").rows
+    .filter(r => r.party !== "cu" && r.popularSeats);
+  ok("a party with no currents reports none",
+     others.every(r => r.benches === null), others.length + " parties");
+
+  /* Content states a faction's size; the roll states the party's, and an
+     election moves the roll without touching the content. A current is
+     therefore a SHARE, resized against whatever its party currently
+     holds — the mistake apportionment_ratio taught us once already. */
+  const e = Engine.newGame(CONTENT);
+  e.parties.cu.seats.district = 20;              /* a bad night */
+  const shrunk = Engine.division(e, CONTENT, "thermal2").rows.find(r => r.party === "cu");
+  ok("a party that loses seats still has factions that add up",
+     shrunk.benches.reduce((n, b) => n + b.popularSeats, 0) === shrunk.popularSeats,
+     shrunk.popularSeats + " popular seats across " + shrunk.benches.length + " currents");
+  ok("and the factions shrank with it",
+     shrunk.benches.every(b => b.popularSeats <= cu.benches
+       .find(x => x.id === b.id).popularSeats));
+
+  if (bad) { console.log("\n" + bad + " CURRENT FAILURES"); process.exitCode = 1; }
+})();

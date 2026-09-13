@@ -120,7 +120,20 @@ asks for decisions that gate everything else:
   two sittings. The game currently has four ways to lose and states no purpose.
 - fix her seat: `content/characters.js` says First Spin, §11.2 says Anselm Ring.
 
-### C.5 Two rewordings owed
+### C.5 Currents for the parties that matter
+
+`design/04` §6.5. All four currents belong to the governing party; the other
+eleven are monolithic. Now that a current's axes decide who walks through the
+lobby, two or three currents inside the **New Progressive Party** (the coalition
+partner) and the **Alliance of Business and Government** (the functional bench
+that decides every dual majority) turn coalition management into a negotiation
+with factions rather than with a bloc.
+
+Content only — the engine needs nothing. **Cap it there.** Thirty currents across
+twelve parties is the spreadsheet §7.6 forbids; the value is in the two or three
+benches whose internal argument the player has to manage.
+
+### C.6 Two rewordings owed
 
 `content/events.js` carries two mechanical demonstrations flagged in place. The
 undertaking's `text` is what the order paper prints and the wording is prose.
@@ -139,6 +152,12 @@ Small, and none of it blocks Part C.
   the ministry that owns a subject before it falls back to party.
 - ~~Money, the half that needed no canon~~ — **done**: confidence and supply is
   a distinct whip relationship, and the volume price is continuous.
+- ~~The currents vote~~ — **done** (`design/04` §6.5). A party with factions no
+  longer resolves as one bloc at one rate: each current turns out at its own
+  discipline, and one whose axes disagree with the measure turns out less. The
+  four `axes` objects in `content/parties.js` had been read by nothing since they
+  were written. The bible's 128 is untouched, because that forecast is stated in
+  content rather than derived.
 
 **Two fiscal questions are now decided** and written up in `design/13` §8.3: no
 sovereign deficit — the setting has no lender, and the thing a deficit is for is

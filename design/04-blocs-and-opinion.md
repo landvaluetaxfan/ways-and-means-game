@@ -106,6 +106,101 @@ The same derivation is what `09` needs to change the electorate between
 parliaments, and what `06` needs to price an amendment's cost in bloc terms
 rather than in raw loyalty.
 
+## 6.5 The other kind of bloc — currents, and what was inert in them
+
+Asked whether parties should be *"weighted towards multiple different ideological
+blocs"*, the honest answer turned out to be that half the mechanism had been in
+the build the whole time and the other half was decoration.
+
+`content/parties.js` carries **CURRENTS**: factions inside a party, each with its
+own `members`, its own `loyalty`, and **its own four axes**, independent of its
+party's. Four of them, all inside the governing party:
+
+| | members | loyalty | |
+|---|---|---|---|
+| Maintenance bloc | 31 | 29 | public · restrictionist · federal · closurist |
+| Leadership loyalists | 22 | 88 | public · restrictionist · federal · — |
+| Deck cooperativists | 18 | 54 | public · restrictionist · **station** · closurist |
+| Czarnecki group | 11 | 12 | public · restrictionist · federal · closurist |
+
+The loyalty half was wired: a current is a `move` target and a `loyaltyBelow`
+subject, and the leadership challenge reads one. **The axes were read by
+nothing.** `axisAgreement` was only ever called with a *party's* axes, and a
+division resolved all eighty-two members at one rate derived from one number.
+Four ideological positions sat in content as documentation.
+
+This is worth stating plainly because it is a §7.9 violation in a form the
+consequence-chain audit cannot see: the audit compares effect verbs against
+conditions, and these were neither. They were a field nobody read.
+
+### The distinction that matters
+
+Currents and blocs are the same idea on opposite sides of the chamber door, and
+neither substitutes for the other.
+
+| | currents | blocs (§§2–5 above) |
+|---|---|---|
+| the question | who votes how | who suffers what |
+| where | inside a party, in the House | outside it, in the electorate |
+| the data | `CURRENTS[].axes`, `.loyalty` | `material_interest`, prices |
+| the output | a division result | an event, and eventually a seat |
+| stored? | loyalty yes, size as a **share** | nothing at all |
+
+### What the engine now does
+
+`turnout()` resolves a party's delivery **faction by faction**: each current at
+its own discipline, and a current whose axes disagree with the measure turning
+out proportionally less, to nobody at total disagreement. Disagreement only ever
+costs — a faction cannot deliver more members than it has, so a popular measure
+buys quiet rather than extra votes.
+
+**The case it exists for** is a party with no position on an axis whose currents
+all have one. The governing party's `closure` is `null`; two of its currents are
+`closurist` and the bill in front of it is `integrationist`. Read at party level
+the axis is simply skipped. Read at current level it costs the deck
+cooperativists nearly half their turnout, and no other mechanism in the engine
+could have seen it.
+
+Three properties, each asserted in `test.js`:
+
+- **Members are a share, not a count.** Content states a faction's size; the roll
+  states the party's, and an election moves the roll without touching the
+  content. A current is resized against whatever its party currently holds —
+  `apportionment_ratio` taught this once already.
+- **A stated forecast is not attributed to the factions.** `{for: 68}` is a
+  number the whips handed the Prime Minister. Splitting it across currents
+  afterwards would be the interface inventing a reason the content did not give,
+  so the engine returns no breakdown for a stated count. The bible's 128 is
+  untouched for exactly this reason.
+- **Every column sums.** Faction seats sum to the party's seats and faction ayes
+  to the party's ayes, by largest remainder, in the engine and on the screen.
+
+### The content this now makes worth writing — opencode's lane
+
+**All four currents belong to one party.** The other eleven are monolithic, and
+the mechanism that would make coalition management a negotiation with factions
+rather than with a bloc is now sitting there unused for all of them.
+
+Two or three currents inside the parties the player actually negotiates with —
+the New Progressive Party and the Alliance of Business and Government first,
+since one is the coalition partner and the other is the functional bench that
+decides every dual majority. **Content only; the engine needs nothing.**
+
+The discipline is §7.6's: **cap it at the parties that are negotiated with.**
+Thirty currents across twelve parties is the spreadsheet the depth test forbids,
+and the value is entirely in the two or three benches whose internal argument the
+player has to manage.
+
+### What is deliberately NOT built
+
+**Whipping a named current.** The whip moves members, not factions, and a plan
+that targets a faction is a bargain rather than a whip — `design/07`, where the
+currency is different and the counterparty can refuse.
+
+**A current defecting to another party.** `content/parties.js` already says a
+current that drifts far enough *"simply becomes a party in the list above"*.
+That is a content event and a `vacate_seat`, not an engine feature.
+
 ## 7. Acceptance
 
 - `Engine.blocView()` adds nothing to `Engine.save()` output — asserted by
@@ -117,3 +212,18 @@ rather than in raw loyalty.
 - `content/blocs.js` round-trips through the editor (`tools/roundtrip.js`), and
   `js/refs.js` follows bloc ids so a rename reaches them.
 - `grep -E 'fork_rentier|emulated|guild' js/engine.js` returns nothing (T3).
+
+For §6.5, all present in `npm run check`:
+
+- A current that is **more** loyal than another and **less** willing turns out
+  less, which is only possible if its own axes are read.
+- Faction seats and faction ayes each sum to the party figure above them, in
+  `test.js` and again in the rendered table in `tools/uxtest.js`.
+- A party with no currents reports none, and none of the eleven monolithic
+  parties' numbers moved.
+- A stated `{for: n}` forecast produces no faction breakdown.
+- A party that loses seats has factions that shrink with it and still add up.
+- T3: no branch in `js/engine.js` names a party or a current. The four
+  occurrences of an id there are worked examples in doc comments
+  (`{move:{"loyalty.psa":8}}`), which is the file explaining its own
+  vocabulary rather than encoding a party.

@@ -1054,4 +1054,67 @@ try {
   ok("and with animation on it still does not wait for one", swappedAnimated === true);
 } catch (e) { ok("no-motion still swaps", false, e.message); }
 
+/* ---------------------------------------------------------------------
+   THE FACTION BREAKDOWN RENDERS.
+
+   test.js proves the arithmetic; a table that computes correctly and
+   draws nothing is invisible to every static check, which is why
+   uitest.js exists at all. This clicks the control a player clicks.
+   --------------------------------------------------------------------- */
+try {
+  w.eval("UI.boot(UI.state(), CONTENT);");
+  w.document.querySelector('.tab[data-t="gov"]').click();
+
+  /* thermal2 gives the governing party a bare "for", so its count is
+     derived from the currents and the sub-rows have something to say. */
+  const billRow = w.document.querySelector('#gov-bills tr[data-bill="thermal2"]');
+  ok("the bill with a derived forecast is on the Government screen", !!billRow);
+  if (billRow) {
+    billRow.click();
+    const btn = w.document.querySelector("#btn-breakdown");
+    ok("it offers a party breakdown", !!btn);
+    if (btn) {
+      btn.click();
+      const bd = w.document.querySelector("#breakdown");
+      const bench = bd.querySelectorAll("tr.bench");
+      ok("which lists the factions under their party", bench.length === 4,
+         bench.length + " current rows");
+      ok("named, not keyed",
+         [...bench].every(tr => /[a-z]/.test(tr.cells[0].textContent) &&
+                                !/^cu_/.test(tr.cells[0].textContent.trim())),
+         [...bench].map(tr => tr.cells[0].textContent.trim()).join(" · "));
+
+      /* One table, so the columns line up with the party row above. A
+         nested table would drift the moment a column width changed. */
+      const party = bd.querySelector("tbody tr:not(.bench)");
+      ok("in the same table as the party row",
+         bench.length > 0 && bench[0].parentNode === party.parentNode);
+      ok("with the same number of columns",
+         [...bench].every(tr => tr.cells.length === 5));
+
+      /* And they add up on screen, not merely in the engine. */
+      const num = (tr, i) => parseInt(tr.cells[i].textContent, 10) || 0;
+      const partyRow = [...bd.querySelectorAll("tr")]
+        .find(tr => !tr.classList.contains("bench") && tr.cells.length === 5 &&
+                    tr.cells[0].textContent.indexOf("PSD") >= 0);
+      if (partyRow) {
+        const col = i => [...bench].reduce((n, tr) => n + num(tr, i), 0);
+        ok("the printed faction seats sum to the printed party seats",
+           col(2) === num(partyRow, 2) && col(4) === num(partyRow, 4),
+           col(2) + " = " + num(partyRow, 2));
+        ok("and so do the ayes",
+           col(1) === num(partyRow, 1) && col(3) === num(partyRow, 3),
+           col(1) + " = " + num(partyRow, 1));
+      } else ok("the governing party is in the breakdown", false);
+
+      /* A stated forecast belongs to the whips who wrote it. */
+      btn.click();
+      w.document.querySelector('#gov-bills tr[data-bill="divergence"]').click();
+      w.document.querySelector("#btn-breakdown").click();
+      ok("a stated forecast draws no faction rows",
+         w.document.querySelectorAll("#breakdown tr.bench").length === 0);
+    }
+  }
+} catch (e) { ok("the faction breakdown renders", false, e.message); }
+
 H.finish("the interface is healthy");
