@@ -30,7 +30,7 @@ const Music = (function () {
 
   const LAYERS = [
     { id: "pad",   level: 0.07 },
-    { id: "bass",  level: 0.24 },
+    { id: "bass",  level: 0.22 },
     { id: "keys",  level: 0.11 },
     { id: "reed",  level: 0.10 },
     { id: "drums", level: 0.18 },
@@ -52,7 +52,7 @@ const Music = (function () {
 
   /* the bass rhythm: [beat, duration in beats, amp]. Root, fifth, approach,
      so it is not the same note at the same interval every time. */
-  const BASS_T = [[0, 1.5, 1.0], [2, 1.0, 0.85], [3.5, 0.5, 0.7]];
+  const BASS_T = [[0, 1.7, 1.0], [2, 1.1, 0.85], [3.5, 0.7, 0.7]];
 
   const hz = m => 440 * Math.pow(2, (m - 69) / 12);
 
@@ -99,23 +99,20 @@ const Music = (function () {
 
   /* ---------- voices ---------- */
 
-  /* the bass: legato and rounded, a filter that opens and closes, so it reads
-     as a double bass rather than a series of plucks. */
+  /* the bass: pure sines, no filter sweep, a soft attack and a long release so
+     the notes run into each other rather than starting fresh. */
   function bass(t, f, dur, amp) {
-    const o = ctx.createOscillator(), o2 = ctx.createOscillator(),
+    const o = ctx.createOscillator(), o2 = ctx.createOscillator(), g2 = ctx.createGain(),
           lp = ctx.createBiquadFilter(), g = ctx.createGain();
-    o.type = "triangle"; o.frequency.value = f;
-    o2.type = "sine"; o2.frequency.value = f;
-    lp.type = "lowpass";
-    lp.frequency.setValueAtTime(300, t);
-    lp.frequency.linearRampToValueAtTime(520, t + 0.14);
-    lp.frequency.linearRampToValueAtTime(250, t + dur);
+    o.type = "sine"; o.frequency.value = f;
+    o2.type = "sine"; o2.frequency.value = f * 2; g2.gain.value = 0.12;
+    lp.type = "lowpass"; lp.frequency.value = 650;
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(amp, t + 0.06);
-    g.gain.linearRampToValueAtTime(amp * 0.85, t + dur * 0.6);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(lp); o2.connect(lp); lp.connect(g); g.connect(gains.bass);
-    o.start(t); o2.start(t); o.stop(t + dur + 0.05); o2.stop(t + dur + 0.05);
+    g.gain.linearRampToValueAtTime(amp, t + 0.14);
+    g.gain.linearRampToValueAtTime(amp * 0.9, t + 0.6);
+    g.gain.linearRampToValueAtTime(0.0001, t + dur + 0.45);
+    o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(gains.bass);
+    o.start(t); o2.start(t); o.stop(t + dur + 0.55); o2.stop(t + dur + 0.55);
   }
   function pad(t, freqs, dur) {
     freqs.forEach(f => {
