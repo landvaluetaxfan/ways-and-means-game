@@ -1794,6 +1794,59 @@ const Engine = (function () {
     return out;
   }
 
+  /* ---------------------------------------------------------
+     WHAT ACTUALLY MOVED
+
+     describe() says what a choice INTENDS. This says what happened,
+     which is not the same thing: a value can clamp at 0 or 100, a
+     loyalty target can not exist, and an effect can be ignored by the
+     engine with a line in the log. Showing the intention as though it
+     were the outcome would be the same lie a hand-written description
+     tells, arrived at from the other side.
+
+     So the outcome is a DIFF of two snapshots taken around the act. */
+  function snapshot(st) {
+    const snap = { scalars: {}, prices: {}, loyalty: {}, capital: {},
+                   signatures: st.signatures || 0,
+                   confidence: 0, slots: st.slots.total - st.slots.used,
+                   owed: (st.undertakings || []).filter(u => u.state === "open").length };
+    Object.keys(st.scalars).forEach(k => snap.scalars[k] = st.scalars[k]);
+    Object.keys(st.prices).forEach(k => snap.prices[k] = st.prices[k]);
+    Object.keys(st.parties).forEach(k => snap.loyalty[k] = st.parties[k].loyalty);
+    Object.keys(st.currents).forEach(k => snap.loyalty[k] = st.currents[k].loyalty);
+    Object.keys(st.capital).forEach(k => snap.capital[k] = st.capital[k]);
+    return snap;
+  }
+
+  function changes(a, b, C) {
+    const out = [];
+    const nameOf = (list, id) => {
+      for (const pool of list) {
+        const x = (C[pool] || []).find(y => y.id === id);
+        if (x) return x.name || id;
+      }
+      return String(id).replace(/_/g, " ");
+    };
+    const push = (label, from, to, goodUp) => {
+      if (from === to) return;
+      out.push({ label: label, from: from, to: to, delta: to - from,
+                 tone: ((to > from) === (goodUp !== false)) ? "good" : "bad" });
+    };
+    Object.keys(b.scalars).forEach(k =>
+      push((SCALAR_SAY[k] ? k.replace(/_/g, " ") : k.replace(/_/g, " ")),
+           a.scalars[k], b.scalars[k]));
+    Object.keys(b.prices).forEach(k =>
+      push(k + " price", a.prices[k], b.prices[k], false));
+    Object.keys(b.loyalty).forEach(k =>
+      push(nameOf(["parties", "currents"], k), a.loyalty[k], b.loyalty[k]));
+    Object.keys(b.capital).forEach(k =>
+      push(nameOf(["parties"], k) + " ledger", a.capital[k], b.capital[k]));
+    push("signatures against you", a.signatures, b.signatures, false);
+    push("order-paper time", a.slots, b.slots);
+    push("undertakings outstanding", a.owed, b.owed, false);
+    return out;
+  }
+
   /* GRAVE — does this choice deserve a confirmation?
      A confirm on every choice becomes a reflex click within twenty
      minutes and then protects nothing, so the engine decides rather
@@ -2056,6 +2109,7 @@ const Engine = (function () {
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
     settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
+    snapshot, changes,
     prorogue, canDivide, candidates, vacancies, fillPost,
     federalSuspended,
     CONDITIONS, EFFECTS

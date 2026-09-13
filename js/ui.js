@@ -635,11 +635,15 @@ const UI = (function () {
             { title: "Appoint?", yes: "Appoint", danger: true },
             ok => {
               if (!ok) return;
+              const snap = Engine.snapshot(st);
               const r = Engine.fillPost(st, C, pid, ci);
               if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
+              const moved = Engine.changes(snap, Engine.snapshot(st), C);
               cue("stamp");
               if (typeof Wait !== "undefined") Wait.brief(420);
-              setStatus("Appointed " + (ch ? ch.name : r.holder), "transient");
+              setStatus("Appointed " + (ch ? ch.name : r.holder) +
+                        (moved.length ? " \u00b7 " + moved.length + " indicator" +
+                         (moved.length === 1 ? "" : "s") + " moved" : ""), "transient");
               saved(); drawAll(); afterAction();
             });
         }));
@@ -1063,6 +1067,8 @@ const UI = (function () {
   /* which row is open, so it survives the redraw that every decision
      causes. Keyed by event so a new event opens closed. */
   let openRow = { event: null, i: -1 };
+  /* the measured diff of the last decision, held for the outcome block */
+  let lastChanges = null;
 
   const TONE_MARK = { good: "+", bad: "−", grave: "!", owed: "¤", plain: "·" };
 
@@ -1376,9 +1382,24 @@ const UI = (function () {
     const e = currentEvent;
 
     if (lastResult) {
+      /* WHAT ACTUALLY MOVED, measured across the act rather than read off
+         the effects. A value that clamped does not appear, which is the
+         point: the outcome tells the truth about the state and the
+         expanded choice told you the intention. */
+      const moved = lastChanges || [];
       foot.innerHTML =
-        `<div class="decl"><b>Outcome</b><br><span id="sitting-outcome">${lastResult}</span></div>
-         <div class="btnrow"><button class="btn" id="btn-advance">Rise until the next sitting</button></div>`;
+        `<div class="decl"><b>Outcome</b><br><span id="sitting-outcome">${lastResult}</span></div>` +
+        (moved.length
+          ? `<div class="ch-sec outcome-moved"><h4>What moved</h4>
+               <table class="movetab"><tbody>${moved.map(m =>
+                 `<tr class="t-${m.tone}"><td>${esc(m.label)}</td>
+                    <td class="n">${m.from}</td>
+                    <td class="n arrow">&rarr;</td>
+                    <td class="n to">${m.to}</td>
+                    <td class="n d">${m.delta > 0 ? "+" : ""}${m.delta}</td></tr>`
+               ).join("")}</tbody></table></div>`
+          : `<div class="note">Nothing on the board moved.</div>`) +
+        `<div class="btnrow"><button class="btn" id="btn-advance">Rise until the next sitting</button></div>`;
       $("#btn-advance").addEventListener("click", rise);
       return;
     }
@@ -1401,7 +1422,9 @@ const UI = (function () {
     foot.querySelectorAll(".commit").forEach(b => b.addEventListener("click", () => {
       const i = +b.dataset.i, ch = e.choices[i];
       const owes = [].concat(ch.effects || []).some(x => x.undertake);
+      const before = Engine.snapshot(st);
       lastResult = Engine.choose(st, C, e, i) || "Noted.";
+      lastChanges = Engine.changes(before, Engine.snapshot(st), C);
       /* THE FIGURE, AND THE HOURGLASS. Both scale with what was done:
          an undertaking hangs unresolved and takes longer to file. */
       cue(owes ? "undertake" : "decide");
@@ -1434,6 +1457,7 @@ const UI = (function () {
 
   function rise() {
     Engine.advance(st, C); currentEvent = null; lastResult = null;
+    lastChanges = null;
     openRow = { event: null, i: -1 };
     setStatus("The House rises · sitting " + st.sitting, "transient");
     if (typeof Wait !== "undefined") Wait.brief(200);

@@ -20,7 +20,62 @@
 
 const EVENTS = [
 
-{ id:"briefing_divergence", prologue:1, once:true,
+{ id:"the_account", prologue:1, once:true,
+  title:"The first question",
+  speaker:"ceyhan",
+  /* THE EMPHASIS. Her record is FIXED (design/14 §2) — this does not
+     change a thing she did. It decides which reading of it she puts her
+     weight behind, which is the whole political act of the moderniser
+     she is: the same facts read as pragmatism or as betrayal depending
+     on who is reading.
+
+     MECHANICAL DEMONSTRATION, opencode's to re-voice. The shape is
+     right and the costs are balanced against each other; the sentences
+     are engineering. Three flags, and later content may gate a line on
+     `led_on_competence` / `led_on_continuity` / `led_on_break` — never a
+     branch, only a line. Nothing here forks the prose. */
+  body:`He has been waiting by the lift since seven, which means the question is
+one he thinks you will not answer.
+
+"Prime Minister. You inherit a majority, a bill you did not write, and a party
+that has spent thirty years arguing with itself about what it is for." He does
+not look at his notes. "Before anything else — why you?"
+
+It is the only question of the morning that you get to answer twice: once now,
+and once for the rest of it. The record is the record. What is not yet settled
+is which part of it you intend to be known for.`,
+  choices:[
+    { label:"Because the last government could not run it, and I can",
+      act:"Say it",
+      effects:[{flag:"led_on_competence"},
+               {move:{public_standing:5}},
+               {move:{"loyalty.cu_maintenance":-6}},
+               {move:{"rel.gb_chair":6}},
+               {wire:"NEW PM PITCHES COMPETENCE; SAYS GOVERNMENT WILL BE 'RUN, NOT ARGUED WITH'"}],
+      result:"He writes it down without expression. The engineers will like it. Thirty-one of your own members have spent their careers being told they are the problem, and have just been told again." },
+
+    { label:"Because I am what this party has always been",
+      act:"Say it",
+      effects:[{flag:"led_on_continuity"},
+               {move:{"loyalty.cu_maintenance":11}},
+               {move:{"loyalty.cu_loyalists":4}},
+               {move:{public_standing:-4}},
+               {move:{"loyalty.psa":-5}},
+               {wire:"PM CLAIMS THE MOVEMENT'S INHERITANCE; PARTNERS SEEK CLARIFICATION"}],
+      result:"The maintenance bloc will carry that sentence into every meeting for a year. So will the New Progressive Party, in a different tone, and the bill you inherited is about wages whichever way you look at it." },
+
+    { label:"Because the party had to change and I changed it",
+      act:"Say it",
+      effects:[{flag:"led_on_break"},
+               {move:{public_standing:7}},
+               {move:{"loyalty.psa":9}},
+               {move:{"loyalty.cu_maintenance":-13}},
+               {move:{"loyalty.cu_halloran":-8}},
+               {wire:"PM: 'THE PARTY HAD TO CHANGE.' CZARNECKI GROUP DECLINES TO COMMENT"}],
+      result:"It is the answer the country wanted and the one your own benches will quote back at you. Czarnecki declines to comment, which from him is a statement." }
+  ]},
+
+{ id:"briefing_divergence", prologue:2, once:true,
   title:"The bill you inherited",
   speaker:"ceyhan",
   body:`Your predecessor promised it and did not have to carry it. You do.
@@ -51,7 +106,7 @@ undercut their wages, would rather you had paid a different price.`,
       result:"The Substrate Left is delighted. Thirty-one of your own members were not consulted." }
   ]},
 
-{ id:"gb_approach", prologue:4, once:true,
+{ id:"gb_approach", prologue:5, once:true,
   when:{ billStage:{divergence:"committee"}, flagsAbsent:["gb_approached"] },
   title:"The Guild Bench will see you",
   speaker:"gb_chair",
@@ -90,7 +145,7 @@ recognise. You are not reforming personhood. You are reforming us."`,
       result:"You learn that the panel meets on Thursday morning, which is four hours before the division." }
   ]},
 
-{ id:"halloran_signatures", prologue:2,
+{ id:"halloran_signatures", prologue:3,
   when:{ loyaltyBelow:{cu_halloran:20}, flagsAbsent:["halloran_confronted"] },
   title:"Nine signatures",
   speaker:"halloran",
@@ -144,7 +199,7 @@ The ballot is called for the week after next.`,
       result:"You keep the leadership. The New Progressive Party meets tonight without you." }
   ]},
 
-{ id:"vantage_radiator", prologue:3,
+{ id:"vantage_radiator", prologue:4,
   when:{ scalarBelow:{thermal_margin:22}, flagsAbsent:["vantage_handled"] },
   title:"Ember Ridge, third day below reserve",
   speaker:null,
@@ -246,10 +301,10 @@ consensus. It is not clear that either is illegal.`,
 
 /* ---------- CHAPTER TWO — the division and its consequences ----------
    Every event below is tagged chapter:2, so none of them can fire until
-   something applies {chapter:2}. The opening is authored (prologue:1),
+   something applies {chapter:2}. The opening is authored (prologue:2),
    the rest is a weighted pool. */
 
-{ id:"ch2_open", chapter:2, prologue:1, once:true,
+{ id:"ch2_open", chapter:2, prologue:2, once:true,
   title:"Thursday",
   speaker:null,
   body:`The panel met at nine. Whatever was said in that room has not reached
