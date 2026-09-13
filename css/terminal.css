@@ -825,6 +825,13 @@ img.dith{display:block;}
 .opt b{display:block;font-weight:600;font-size:12px;}
 .opt i{display:block;font-style:normal;font-family:var(--f-read);font-size:11px;color:var(--ink-soft);line-height:1.35;}
 .opt-sep{height:1px;background:var(--chrome-dk);margin:7px 0;}
+/* The audio readout. Web Audio fails silently by construction, so the
+   panel says what the hardware is actually doing. Deliberately plain and
+   small: it is an instrument, not a feature. */
+.optdiag{
+  font-family:var(--f-data);font-size:10px;line-height:1.4;
+  color:var(--ink-soft);margin:5px 0 1px;word-break:break-word;
+}
 
 /* --- the main menu ---
    A full-bleed photographic plate with a left scrim, so the title and the

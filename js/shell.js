@@ -79,6 +79,47 @@ const Shell = (function () {
     if (typeof Sound !== "undefined") Sound.apply();
     if (typeof Music !== "undefined") Music.apply();
   }
+  /* WHY THE GAME REPORTS ON ITS OWN SOUND.
+
+     Web Audio fails silently by construction: a suspended context, a
+     refused gesture, a layer gain that never opened and a phone with its
+     ring switch off all produce exactly the same thing, which is nothing,
+     with no error anywhere. Debugging that from a description is guessing,
+     and it has already cost two wrong diagnoses.
+
+     So the Options panel says what the audio hardware is actually doing.
+     It is one line, it is only visible with the panel open, and it turns
+     "no music on mobile" into a fact. */
+  function audioLine() {
+    const el = document.getElementById("opt-audio");
+    if (!el) return;
+    if (typeof Sound === "undefined" || !Sound.available()) {
+      el.textContent = "audio: no context yet \u2014 tap anything";
+      return;
+    }
+    const running = Sound.running && Sound.running();
+    const bits = ["audio: " + (running ? "running" : "SUSPENDED")];
+    if (opts.mute) bits.push("MUTED");
+    const m = (typeof Music !== "undefined" && Music.state) ? Music.state() : null;
+    if (!m) bits.push("no bed");
+    else if (!m.playing) bits.push("bed stopped");
+    else {
+      const open = Object.keys(m.levels).filter(k => m.levels[k] > 0.0005);
+      bits.push("bed bar " + m.bar + "/32");
+      bits.push(open.length ? open.length + " layers up" : "ALL LAYERS AT ZERO");
+    }
+    if (running && !opts.mute && m && m.playing)
+      bits.push("\u2014 if this is silent, check the ring/silent switch");
+    el.textContent = bits.join(" \u00b7 ");
+  }
+  let diagTimer = null;
+  function watchAudio(on) {
+    if (diagTimer) { clearInterval(diagTimer); diagTimer = null; }
+    if (!on) return;
+    audioLine();
+    diagTimer = setInterval(audioLine, 1000);
+  }
+
   function opt(k) { return opts[k]; }
   function setOpt(k, v) { opts[k] = v; saveOpts(); }
 
@@ -413,6 +454,7 @@ const Shell = (function () {
       ${slider("gainRoom", "Room")}
       ${slider("gainEvent", "Events")}
       ${slider("gainMusic", "Music")}
+      <div class="optdiag" id="opt-audio">audio: not started</div>
       <div class="opt-sep"></div>
       <div class="opt-title">Text</div>
       ${row("stream", "Type text out", "New text arrives a character at a time. Any key skips it.")}
@@ -470,10 +512,12 @@ const Shell = (function () {
          back on the control that opened it. */
       const b = document.getElementById("tb-options");
       if (b && p.contains(document.activeElement)) b.focus();
+      watchAudio(false);
       return;
     }
     p.innerHTML = optionsHTML(true);
     wireOptions(p, true);
+    watchAudio(true);   /* only ticks while the panel is open */
   }
 
   function exportFile() {

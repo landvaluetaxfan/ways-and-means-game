@@ -92,6 +92,19 @@ try {
   const mute = w.document.querySelector('#tb-optpanel [data-opt="mute"]');
   const lvl  = w.document.querySelector('#tb-optpanel [data-lvl="gainEvent"]');
   ok("the options panel offers sound", !!mute && !!lvl);
+
+  /* THE AUDIO READOUT. Web Audio fails silently by construction — a
+     suspended context, a refused gesture, a layer gain that never opened
+     and a phone with its ring switch off all produce the same nothing,
+     with no error anywhere. Two wrong diagnoses were made from a verbal
+     description before this existed, so it has to be present and it has
+     to say something. jsdom has no Web Audio at all, which is the very
+     case it must not go blank in. */
+  const diag = w.document.querySelector("#opt-audio");
+  ok("and reports what the audio hardware is doing", !!diag);
+  ok("even on a machine with no Web Audio at all",
+     !!diag && diag.textContent.trim().length > 0 &&
+     /audio:/.test(diag.textContent), diag && diag.textContent.trim());
   mute.checked = true;
   mute.dispatchEvent(new w.Event("change", { bubbles: true }));
   lvl.value = "25";

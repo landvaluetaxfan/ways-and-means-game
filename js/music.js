@@ -189,7 +189,29 @@ const Music = (function () {
     delay.connect(fb); fb.connect(delay); delay.connect(wet); wet.connect(out);
     send = delay;
     LAYERS.forEach(l => {
-      const g = ctx.createGain(); g.gain.value = 0; g.connect(out);
+      const g = ctx.createGain();
+      g.gain.value = 0;
+      /* ANCHOR THE TIMELINE, AND THIS LINE IS THE WHOLE BED.
+
+         Every layer gain in this module is written through ramp() and
+         through nothing else, and ramp() finishes with
+         linearRampToValueAtTime. A linear ramp takes its START value from
+         the previous event on the automation timeline — and these params
+         had no events on them at all, only an assigned .value, which is
+         not an event. That case is under-specified in practice, and
+         cancelAndHoldAtTime does not reliably insert an event to hold
+         when there is nothing on the timeline to hold.
+
+         Where it resolves the wrong way every layer stays at zero: the
+         sequencer runs, every oscillator starts and stops on time, the
+         graph is connected, and the output is SILENCE. The cues are
+         unaffected because every one of them calls setValueAtTime before
+         it ramps, which is exactly the anchor this was missing.
+
+         One scheduled zero at the start of time, and the timeline is
+         never empty again. */
+      g.gain.setValueAtTime(0, ctx.currentTime);
+      g.connect(out);
       gains[l.id] = g;
     });
     gains.reed.connect(send); gains.lead.connect(send); gains.clav.connect(send);
@@ -199,13 +221,24 @@ const Music = (function () {
     return true;
   }
 
+  /* Ramps are scheduled AHEAD as well as now — moment() books its own
+     release four bars out — so this cannot simply stamp the current value
+     at t: that would cancel the ramp running into it. The hold is what
+     preserves that, and build() guarantees there is always something on
+     the timeline for it to hold. The fallback path anchors explicitly,
+     and a browser that throws on either gets the ramp anyway. */
   function ramp(id, target, t, glide) {
     const g = gains[id]; if (!g || !ctx) return;
     const now = ctx.currentTime;
     if (t < now) t = now;
-    if (g.gain.cancelAndHoldAtTime) g.gain.cancelAndHoldAtTime(t);
-    else { const v = g.gain.value; g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(v, t); }
-    g.gain.linearRampToValueAtTime(target, t + (glide || 0.4));
+    const v = g.gain.value;
+    try {
+      if (g.gain.cancelAndHoldAtTime) g.gain.cancelAndHoldAtTime(t);
+      else { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(v, t); }
+    } catch (e) {
+      try { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(v, t); } catch (e2) {}
+    }
+    try { g.gain.linearRampToValueAtTime(target, t + (glide || 0.4)); } catch (e) {}
   }
 
   /* ---------- voices ----------
@@ -543,6 +576,17 @@ const Music = (function () {
     init: init, start: start, stop: stop,
     tension: tension, moment: moment, defeat: defeat, rise: rise, sombre: sombre, apply: apply,
     available: () => !!ctx,
+    /* for the checks and for the diagnostic readout: what the mixer is
+       actually doing, as opposed to what it was told to do */
+    state: () => ({
+      playing: playing,
+      context: ctx ? ctx.state : null,
+      bar: ctx && playing ? (Math.floor(step / PER_BAR) % BARS) + 1 : null,
+      levels: LAYERS.reduce((o, l) => {
+        o[l.id] = gains[l.id] ? Math.round(gains[l.id].gain.value * 1000) / 1000 : null;
+        return o;
+      }, {})
+    }),
     /* For the checks only. The form is hand-typed MIDI, and a mistyped
        number is a wrong note that no static check can see and nobody
        hears until the loop happens to reach that bar. */

@@ -767,12 +767,19 @@ console.log("\nAND IT PLAYS:");
   const made = {}, ramps = [];
   const bump = k => made[k] = (made[k] || 0) + 1;
 
+  /* `anchored` counts the events actually placed on THIS param's timeline.
+     A ramp reads its start value from the previous event, so a ramp with
+     none is the silent-bed bug and is recorded as such. cancelAndHold is
+     not counted: it holds an existing event and cannot invent one. */
   function param(name) {
     const p = {
-      value: 0,
-      setValueAtTime: (v, t) => { ramps.push([name, "set", v, t]); return p; },
-      linearRampToValueAtTime: (v, t) => { ramps.push([name, "lin", v, t]); return p; },
-      exponentialRampToValueAtTime: (v, t) => { ramps.push([name, "exp", v, t]); return p; },
+      value: 0, anchored: 0,
+      setValueAtTime: (v, t) => { p.anchored++; ramps.push([name, "set", v, t, 1]); return p; },
+      setTargetAtTime: (v, t) => { p.anchored++; ramps.push([name, "tgt", v, t, 1]); return p; },
+      /* the stub models a ramp by its DESTINATION, which is enough to tell
+         an opened layer from one left shut and not enough to be a synth */
+      linearRampToValueAtTime: (v, t) => { ramps.push([name, "lin", v, t, p.anchored]); p.value = v; return p; },
+      exponentialRampToValueAtTime: (v, t) => { ramps.push([name, "exp", v, t, p.anchored]); return p; },
       cancelScheduledValues: () => p,
       cancelAndHoldAtTime: () => p
     };
@@ -805,7 +812,7 @@ console.log("\nAND IT PLAYS:");
   /* The sequencer paces itself with setTimeout. Capture the callback and
      drive the clock by hand so a whole loop passes in no time at all. */
   const realSet = globalThis.setTimeout, realClear = globalThis.clearTimeout;
-  let pending = null, ticks = 0, threw = null;
+  let pending = null, ticks = 0, threw = null, mix = null;
   globalThis.setTimeout = fn => { pending = fn; return 0; };
   globalThis.clearTimeout = () => { pending = null; };
 
@@ -822,6 +829,7 @@ console.log("\nAND IT PLAYS:");
       if (ticks % 400 === 399) M[swells[(ticks / 400 | 0) % swells.length]]();
       ticks++;
     }
+    mix = M.state ? M.state() : null;    /* while it is still playing */
     M.stop();
   } catch (e) { threw = e; }
   globalThis.setTimeout = realSet; globalThis.clearTimeout = realClear;
@@ -849,6 +857,28 @@ console.log("\nAND IT PLAYS:");
   /* A ramp scheduled in the past is applied instantly, which is a click. */
   const backwards = ramps.filter(r => r[3] < -0.001);
   ok("and none is scheduled before the clock", backwards.length === 0);
+
+  /* THE SILENT BED. A linear ramp takes its start value from the previous
+     event on the param's timeline, and an assigned .value is not an event.
+     The layer gains had nothing on their timelines and were written
+     through ramp() and nothing else, so where that resolves the wrong way
+     the whole bed sits at zero while every oscillator runs on time — audible
+     nowhere, visible in no check, and reported as "no music on mobile".
+     The cues never had it because every one of them anchors first. */
+  const unanchored = ramps.filter(r => (r[1] === "lin" || r[1] === "exp") && !r[4]);
+  ok("no ramp starts from an empty automation timeline",
+     unanchored.length === 0,
+     unanchored.length ? unanchored.length + " unanchored, first on " + unanchored[0][0]
+                       : ramps.filter(r => r[1] === "lin" || r[1] === "exp").length + " ramps anchored");
+
+  /* And the mixer must actually have opened. A bed that plays every note
+     into a gain of zero is the same silence from the other end. */
+  ok("the module can report its own mixer", !!mix);
+  if (mix) {
+    const up = Object.keys(mix.levels).filter(k => mix.levels[k] > 0);
+    ok("and the bed layers were actually opened", up.length >= 4,
+       up.map(k => k + " " + mix.levels[k]).join(", "));
+  }
 
   delete globalThis.Sound;
   if (bad) { console.log("\n" + bad + " PLAYBACK FAILURES"); process.exitCode = 1; }
