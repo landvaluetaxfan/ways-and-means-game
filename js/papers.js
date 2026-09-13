@@ -135,7 +135,7 @@ const Papers = (function () {
   const STAGE_LABEL = {
     drafting:"Drafting", first_reading:"First reading", second_reading:"Second reading",
     committee:"Committee", report:"Report", third_reading:"Third reading",
-    upper_house:"Upper house", assent:"Assent", blocked:"Blocked"
+    assent:"Assent", blocked:"Blocked"
   };
   const TERMINAL = {
     struck:    { label:"Struck on review", cls:"bad",  note:"Removed from the statute book. It cannot be revived; it must be brought again as a new bill." },

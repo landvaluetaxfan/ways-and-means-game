@@ -145,19 +145,14 @@ const ENCYCLOPEDIA = {
   { id:"parliament", title:"Parliament", category:"Institutions",
     banners:[],
     edited:{ by:"Concordance institutions group", attested:true, note:"seat figures from Bureau returns" },
-    summary:"**Parliament** is the legislature of the Commonwealth. It is bicameral, comprising "+
-      "the elected House of Delegates and an upper house in which each station is represented "+
-      "equally regardless of population. Members of either house are styled MP.",
+    summary:"**Parliament** is the legislature of the Commonwealth. It comprises the elected "+
+      "House of Delegates, whose members are styled MP.",
     sections:[
       { h:"The House of Delegates", body:
         "The House has 280 seats, elected by three methods that operate independently: 140 from "+
         "geographic districts, 100 from national party lists, and 40 from "+
         "[[functional_constituency|functional constituencies]] representing professions and "+
         "industries. A majority is 141." },
-      { h:"The upper house", body:
-        "Each station returns the same number of members, whether its population is two million "+
-        "or eighteen thousand. The arrangement is defended as the price of union and criticised "+
-        "as malapportionment." },
       { h:"The dual test", body:
         "Measures affecting life-support integrity, and amendments to the "+
         "[[perigee_charter|Charter]], must carry separately among functional and elected "+

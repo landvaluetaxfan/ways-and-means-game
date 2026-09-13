@@ -299,7 +299,7 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
      (bible 7.7), so granting one must always move a bill. A stage the engine
      did not recognise fell through every branch and burned the slot in
      silence — content had a bill parked at "lords", which is neither in
-     STAGE_ORDER nor the name this setting uses for the upper house. */
+     STAGE_ORDER nor a stage the engine recognises. */
   {
     let burned = [], sl = Engine.newGame(CONTENT);
     CONTENT.bills.forEach(b => {
@@ -696,7 +696,7 @@ console.log("\nTHE ESCALATION LADDER:");
   if (bad) { console.log("\n" + bad + " LADDER FAILURES"); process.exitCode = 1; }
 })();
 
-console.log("\nTHE FORECAST IS AN OPINION (design/08 §8):");
+console.log("\nTHE FORECAST IS AN OPINION (design/08 §7):");
 (function () {
   let bad = 0;
   const ok = (l, c, extra) => { if (!c) bad++;

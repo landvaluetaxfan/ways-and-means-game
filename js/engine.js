@@ -1098,9 +1098,9 @@ const Engine = (function () {
 
   /* A bill walks the ladder one order-paper slot at a time. Divisions happen at
      third reading only; earlier stages are procedural and consume a slot without
-     a vote. The upper house is a pure delay — its powers are still THIN. */
+     a vote. */
   const STAGE_ORDER = ["drafting","first_reading","second_reading","committee",
-                       "report","third_reading","upper_house","assent"];
+                       "report","third_reading","assent"];
   const DIVIDES_AT = "third_reading";
 
   function grantSlot(st, C, billId) {
@@ -1465,7 +1465,7 @@ const Engine = (function () {
   }
 
   /* ---------------------------------------------------------
-     3b. IMPERFECT INFORMATION (design/08 §8)
+     3b. IMPERFECT INFORMATION (design/08 §7)
 
      A division is exact — the arithmetic is the argument of the game. What
      the player is SHOWN is not. Every forecast comes from a source, and every

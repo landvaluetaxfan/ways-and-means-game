@@ -362,8 +362,6 @@ Why parliamentary:
 - 100 list seats
 - 40 functional seats
 
-**Upper house of stations**, equal representation regardless of population. Generates permanent malapportionment fights. Currently **THIN** — needs powers defined (delay? veto? territorial matters only?).
-
 ## 3.3 The presidency — LOCKED
 
 Directly elected, separate cycle, independent mandate. Can credibly claim to speak for the country against the government.
@@ -1849,7 +1847,6 @@ reads that as a bug.
 - **Threshold height and carve-out rules.**
 - **Which two novelties stay hot**, which freeze into infrastructure.
 - **Opposition→government transition** — mid-game arc or out of scope.
-- **Upper house powers** — currently undefined.
 - **The failed revolution** — needs a date, a cause, and a roster of who stood where.
 - **Real-time persistence** — whether push notifications are required.
 - **Money denominated in thermal rejection capacity** — LEANING, touches every price.

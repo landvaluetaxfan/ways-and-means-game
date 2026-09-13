@@ -98,7 +98,7 @@ const Tips = (function () {
             "separately." },
     stage: { title: "Stage",
       body: "Drafting, first reading, second reading, committee, report, third " +
-            "reading, upper house, assent. A bill divides at third reading. " +
+            "reading, assent. A bill divides at third reading. " +
             "Order paper time is what moves it along, one stage at a time." },
     whip: { title: "The whip",
       body: "Committing members costs capital with a partner and loyalty with " +

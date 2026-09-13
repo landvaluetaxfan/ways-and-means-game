@@ -167,7 +167,6 @@ Part C's gap list is absorbed and expanded, not replaced:
 | C.2 leadership ballot | `08-actors.md` |
 | C.3 scandal and the thriller spine | `09-knowledge.md` |
 | C.4 wiring the election in | `10-the-election.md` |
-| C.5 upper house | `08-actors.md` |
 | C.5 opposition mode | `08-actors.md` (and `05` — it is a campaign, not a system) |
 | C.5 lobbying | `07-bargaining.md` |
 | C.5 attestation on the wire | `09-knowledge.md` |
@@ -188,7 +187,7 @@ binding constraint, and no document here should be built as a block ahead of it.
 | `05-campaigns-and-divergence.md` | how strict the storyline is; what depth actually buys divergence; four settlements | framing |
 | `06-variance.md` | the seeded PRNG, event classes, arrival channels, simultaneity | Claude |
 | `07-bargaining.md` | amendments, lobbying, and solving the functional trap | Claude |
-| `08-actors.md` | opposition, cabinet, caucus, partners, the President, the upper house, imperfect information | Claude |
+| `08-actors.md` | opposition, cabinet, caucus, partners, the President, imperfect information | Claude |
 | `09-knowledge.md` | secrets, scandal, the distribution list, attestation | Claude |
 | `10-the-election.md` | dissolution, the campaign, Election Night, the changed electorate | Claude |
 | `11-foreign-affairs.md` | light-lag as the organising axis; anchors, Kessler severance, metanationals | Claude |

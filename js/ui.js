@@ -695,7 +695,7 @@ const UI = (function () {
 
   function drawBill(id) {
     const b = C.billById[id], bs = st.bills[id], d = Engine.division(st, C, id);
-    /* The forecast is the REPORTED division, not the exact one (design/08 §8).
+    /* The forecast is the REPORTED division, not the exact one (design/08 §7).
        The whip panel and the division itself still use the true count — the
        cost of whipping is a mechanical fact, not a source's opinion. */
     const rep = (Engine.reported ? Engine.reported(st, C, id) : d);
