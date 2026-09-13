@@ -953,9 +953,22 @@ const UI = (function () {
       const re = new RegExp("\\b(" + g.term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")\\b", "i");
       for (let i = 0; i < parts.length; i++) {
         if (parts[i].charAt(0) === "<" || !re.test(parts[i])) continue;
+        /* ONE TOOLTIP SYSTEM. A glossary term used to open an inline
+           .glbox on CLICK, inserted after the word, which shoved the
+           paragraph around and behaved like nothing else in the game.
+           js/tips.js already draws a floating card on hover and on
+           focus, hides on Escape and on scroll, and is deliberately
+           neither focusable nor clickable — so a term simply carries the
+           attributes that card reads and the second system is gone. */
         parts[i] = parts[i].replace(re, m =>
-          `<span class="gl" tabindex="0" data-gloss="${esc(g.gloss)}"` +
-          ` data-handle="${esc(g.handle || "")}">${m}</span>`);
+          /* NO PERMANENT tabindex. Every other annotation enters the tab
+             order only in explain mode, on the visible screen — that is
+             what `?` is for — and a glossary term is an annotated
+             readout like any other. Permanently tabbable prose puts
+             dozens of stops between a keyboard user and the decision. */
+          `<span class="gl" data-tip="term:${esc(g.term)}"` +
+          ` data-tip-title="${esc(g.term)}" data-tip-body="${esc(g.gloss)}"` +
+          (g.handle ? ` data-tip-go="${esc(g.handle)}"` : "") + `>${m}</span>`);
         done.add(g.term);
         parts = parts.join("").split(/(<[^>]*>)/);
         break;
@@ -977,19 +990,10 @@ const UI = (function () {
     return String(n == null ? "" : n).replace(/^Rt\. Hon\. /, "").replace(/ MP$/, "");
   }
 
-  function bindGlossary(scope) {
-    scope.querySelectorAll(".gl").forEach(n => {
-      const show = () => {
-        scope.querySelectorAll(".glbox").forEach(b => b.remove());
-        const box = el("span", "glbox",
-          `<b>${n.textContent}</b> ${n.dataset.gloss}` +
-          (n.dataset.handle ? `<em>${n.dataset.handle}</em>` : ""));
-        n.after(box);
-      };
-      n.addEventListener("click", show);
-      n.addEventListener("focus", show);
-    });
-  }
+  /* bindGlossary is gone. A glossary term is a [data-tip] now and
+     js/tips.js does the rest — see annotate(). Calls to it were removed
+     with it; if one comes back, the term will still work and the extra
+     call will not. */
 
   /* ---------- images ----------
      Both helpers return "" when there is no image, and both hide
@@ -1357,7 +1361,6 @@ const UI = (function () {
       `<div class="sit-decide" id="sit-decide"></div>`;
 
     drawDecision();
-    bindGlossary(box);
   }
 
   /* THE DECISION BLOCK, DRAWN ON ITS OWN.
@@ -1384,7 +1387,6 @@ const UI = (function () {
     foot.innerHTML = `<div class="rulehead">Decision</div><div class="choices">` +
       open.map(x => choiceRow(e, x.choice, x.index, openRow.i === x.index)).join("") +
       `</div>`;
-    bindGlossary(foot);
 
     /* Expanding is a user action, so it may cue. Drawing is not. */
     foot.querySelectorAll("[data-expand]").forEach(b => b.addEventListener("click", () => {

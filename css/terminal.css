@@ -549,13 +549,10 @@ img.dith{display:block;}
 
 /* ---------- glossary: first use gets a footnote, not a wiki ---------- */
 .gl{border-bottom:1px dotted var(--rule);cursor:help;}
-.glbox{
   display:block;margin:4px 0 6px;padding:4px 7px;
   background:var(--field);border-left:3px solid var(--rule);
   font-size:12px;line-height:1.4;
 }
-.glbox b{font-size:11px;letter-spacing:.09em;text-transform:uppercase;}
-.glbox em{display:block;font-style:italic;color:var(--ink-soft);margin-top:2px;}
 
 /* =============================================================
    THE CONCORDANCE — an in-world reference work.

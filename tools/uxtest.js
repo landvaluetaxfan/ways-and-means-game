@@ -431,7 +431,15 @@ try {
   ok("the readouts are annotated", anchors.length > 20 && keys.length > 10,
      anchors.length + " anchors, " + keys.length + " distinct keys");
 
-  const dangling = keys.filter(k => !w.eval('Tips.find("' + k + '")'));
+  /* An anchor either resolves to a keyed explanation OR carries its own
+     body — that is the rule js/tips.js actually implements, and glossary
+     terms in prose take the second route: their gloss is content, not a
+     fixed token, so there is nothing to register. */
+  const inlineKeys = new Set(anchors
+    .filter(a => a.getAttribute("data-tip-body"))
+    .map(a => a.getAttribute("data-tip")));
+  const dangling = keys.filter(k =>
+    !inlineKeys.has(k) && !w.eval('Tips.find("' + JSON.stringify(k).slice(1, -1) + '")'));
   ok("every annotation resolves to an explanation", dangling.length === 0,
      dangling.join(", "));
 
