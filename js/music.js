@@ -23,7 +23,7 @@
 const Music = (function () {
   "use strict";
 
-  const BPM = 72, BEATS = 4, BARS = 8;
+  const BPM = 72, BEATS = 4, BARS = 16;
   const SPB = 60 / BPM;        /* seconds per beat */
   const STEP = SPB / 2;        /* one eighth note */
   const SWING = SPB * 0.17;    /* push the off-beats late */
@@ -32,6 +32,7 @@ const Music = (function () {
     { id: "pad",    level: 0.07 },
     { id: "bass",   level: 0.22 },
     { id: "rhodes", level: 0.09 },
+    { id: "guitar", level: 0.08 },
     { id: "keys",   level: 0.11 },
     { id: "reed",   level: 0.10 },
     { id: "shaker", level: 0.05 },
@@ -39,9 +40,13 @@ const Music = (function () {
     { id: "lead",   level: 0.15 }
   ];
 
-  /* 8 bars. ch: chord (MIDI). bass: [root, fifth, approach]. reed: a long
-     tone, one per bar. h: the lead line, as [beat, midi, dur in beats]. */
+  /* SIXTEEN BARS, IN TWO HALVES. The A half is the statement; the B half lifts
+     to Fmaj7 and brings the guitar in, so the loop has an arc instead of
+     resetting to the same texture every eight bars. ch: chord (MIDI).
+     bass: [root, fifth, approach]. reed: a long tone, one per bar.
+     h: the lead line, as [beat, midi, dur in beats]. */
   const PROG = [
+    /* A — the statement */
     { ch: [50,53,57,60], bass: [38,45,41], reed: 53, h: [[69,0,1.5],[72,2.5,1]] },
     { ch: [50,53,57,60], bass: [38,45,43], reed: 57, h: null },
     { ch: [55,58,62,65], bass: [43,50,46], reed: 58, h: [[74,1,1.5],[72,3,1]] },
@@ -49,7 +54,16 @@ const Music = (function () {
     { ch: [58,62,65,69], bass: [46,53,50], reed: 65, h: [[70,0,1.5],[69,2.5,1]] },
     { ch: [57,61,64,67], bass: [45,52,49], reed: 64, h: [[67,0,2]] },
     { ch: [50,53,57,60], bass: [38,45,40], reed: 57, h: null },
-    { ch: [57,61,64,67], bass: [45,52,43], reed: 61, h: [[65,1,1],[67,2.5,1.5]] }
+    { ch: [57,61,64,67], bass: [45,52,43], reed: 61, h: [[65,1,1],[67,2.5,1.5]] },
+    /* B — the lift, and where the guitar enters */
+    { ch: [53,57,60,65], bass: [41,48,53], reed: 60, h: [[72,0,1.5],[74,2.5,1]] },
+    { ch: [53,57,60,65], bass: [41,48,50], reed: 65, h: null },
+    { ch: [55,58,62,65], bass: [43,50,46], reed: 58, h: [[77,1,1.5],[74,3,1]] },
+    { ch: [57,61,64,67], bass: [45,52,49], reed: 61, h: [[76,0,2]] },
+    { ch: [58,62,65,69], bass: [46,53,50], reed: 65, h: [[74,0,1.5],[72,2.5,1]] },
+    { ch: [55,58,62,65], bass: [43,50,45], reed: 62, h: null },
+    { ch: [57,61,64,67], bass: [45,52,49], reed: 64, h: [[69,1,1],[72,2.5,1.5]] },
+    { ch: [57,61,64,67], bass: [45,43,41], reed: 61, h: null }
   ];
 
   /* the bass rhythm: [beat, duration in beats, amp]. Root, fifth, approach,
@@ -106,7 +120,7 @@ const Music = (function () {
       g.connect(out);
       gains[l.id] = g;
     });
-    gains.reed.connect(send); gains.lead.connect(send);
+    gains.reed.connect(send); gains.lead.connect(send); gains.guitar.connect(send);
     NOISE = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
     const d = NOISE.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -184,6 +198,20 @@ const Music = (function () {
       o.start(at); bell.start(at); o.stop(at + dur + 0.1); bell.stop(at + dur + 0.1);
     });
   }
+  /* the guitar: a clean electric — two slightly detuned saws through a warm
+     filter, plucked. It enters only in the B half, so the form lifts. */
+  function guitar(t, f, dur) {
+    const o = ctx.createOscillator(), o2 = ctx.createOscillator(),
+          lp = ctx.createBiquadFilter(), g = ctx.createGain();
+    o.type = "sawtooth"; o.frequency.value = f;
+    o2.type = "sawtooth"; o2.frequency.value = f * 1.006;
+    lp.type = "lowpass"; lp.frequency.value = 1500; lp.Q.value = 0.7;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.1, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(lp); o2.connect(lp); lp.connect(g); g.connect(gains.guitar);
+    o.start(t); o2.start(t); o.stop(t + dur + 0.05); o2.stop(t + dur + 0.05);
+  }
   /* the reed: a soft saxophone, a long tone with vibrato. Part of the bed. */
   function reed(t, f, dur) {
     const o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
@@ -258,6 +286,19 @@ const Music = (function () {
     s.start(t); s.stop(t + 0.09);
   }
 
+  /* the ride: the jazz pulse, part of the kit rather than the bed, so it
+     arrives with the drums and leaves with them. */
+  function ride(t, lvl) {
+    const s = ctx.createBufferSource(), hp = ctx.createBiquadFilter(), g = ctx.createGain();
+    s.buffer = NOISE;
+    hp.type = "highpass"; hp.frequency.value = 4800;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(lvl || 0.03, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+    s.connect(hp); hp.connect(g); g.connect(gains.drums);
+    s.start(t); s.stop(t + 0.35);
+  }
+
   /* ---------- the sequencer ---------- */
   function scheduleStep(s, t0) {
     const bar = Math.floor(s / 8) % BARS;
@@ -268,11 +309,22 @@ const Music = (function () {
     BASS_T.forEach(([b, d, a], i) => {
       if (Math.abs(b - st / 2) < 0.001) bass(t, hz(chord.bass[i]), d * SPB, a * 0.5);
     });
-    if (st === 0) reed(t, hz(chord.reed), SPB * 3.4);
+    if (st === 0 && bar !== 6) reed(t, hz(chord.reed), SPB * 3.4);
     if (st === 4) rhodes(t, chord.ch, SPB * 1.3);
     if (st % 2 === 1) shaker(t, 0.035);
+    /* the guitar enters in the B half: an off-beat arpeggio up the chord */
+    if (bar >= 8) {
+      const n = chord.ch;
+      if (st === 1) guitar(t, hz(n[1] + 12), SPB * 0.9);
+      if (st === 3) guitar(t, hz(n[2] + 12), SPB * 0.9);
+      if (st === 5) guitar(t, hz(n[3] + 12), SPB * 0.9);
+      if (st === 7) guitar(t, hz(n[0] + 24), SPB * 0.9);
+    }
+    /* the kit, when it is in */
     if (st === 0) kick(t);
     if (st === 2 || st === 6) brush(t);
+    if (st === 0 || st === 2 || st === 4 || st === 6) ride(t, 0.026);
+    if (st === 3 || st === 7) ride(t, 0.034);
     if (st % 2 === 0) hat(t, 0.05);
     if (st === 3 || st === 7) hat(t, 0.028);
     if (st === 3 || st === 5) chord.ch.forEach((m, i) => key(t + i * 0.012, hz(m + 12), SPB * 0.6));
@@ -280,6 +332,10 @@ const Music = (function () {
     if (chord.h) chord.h.forEach(([m, b, d]) => {
       if (Math.abs(b - st / 2) < 0.001) lead(t, hz(m), d * SPB);
     });
+    /* THE HOOK IN THE BED. Once per form, at the end of the A half, the sax
+       states the three notes the trumpet plays when a bill carries — so the
+       player has heard the tune before it ever means anything. */
+    if (bar === 6 && st === 0) MOTIF.forEach((m, i) => reed(t + i * SPB * 0.75, hz(m), SPB * 0.7));
   }
 
   function loop() {
@@ -296,7 +352,7 @@ const Music = (function () {
     if (playing || !ctx || !out) return;
     if (ctx.state === "suspended" && ctx.resume) { try { ctx.resume(); } catch (e) {} }
     playing = true; step = 0; nextTime = ctx.currentTime + 0.1;
-    ["pad", "bass", "rhodes", "keys", "reed", "shaker"].forEach(id => ramp(id, level(id), ctx.currentTime, 1.5));
+    ["pad", "bass", "rhodes", "guitar", "keys", "reed", "shaker"].forEach(id => ramp(id, level(id), ctx.currentTime, 1.5));
     loop();
   }
   function stop() {
