@@ -1733,6 +1733,10 @@ const Engine = (function () {
       if ((st.undertakings || []).some(x => x.id === u.id && x.state === "open")) return;
       st.undertakings.push({
         id: u.id, text: u.text || u.id, owed_to: u.owed_to || null,
+        /* `post` names the cabinet brief the promise belongs to. A promise
+           broken in a minister's brief is answered by that minister
+           (design/08 §3); a promise with no post is answered by nobody. */
+        post: u.post || null,
         /* `by` counts sittings from now. An EXPLICIT null means "before
            the House rises" and comes due at prorogation instead, which
            is the deadline an author usually means and could not
@@ -1913,6 +1917,37 @@ const Engine = (function () {
 
   function outstanding(st) {
     return (st.undertakings || []).filter(u => u.state === "open");
+  }
+
+  /* ---------------------------------------------------------
+     A BROKEN PROMISE, AND THE MINISTER WHO ANSWERS FOR IT
+
+     Breaking an undertaking QUEUES AN EVENT and moves no number: the
+     politics of a broken promise belongs where it can be written and
+     argued with (design/02). When the promise names a cabinet post, the
+     minister holding it is the one who answers — the post is vacated
+     here, the same {cabinet:{post:null}} the player has, and content
+     narrates it. A resignation the player did not choose is the
+     strongest available consequence of a broken promise, and this is
+     where it comes from (design/08 §3).
+     --------------------------------------------------------- */
+  function breakUndertaking(st, C, u, why) {
+    u.state = "broken";
+    st.log.unshift({ sitting: st.sitting, text: "Undertaking broken" +
+      (why ? " at " + why : "") + " \u2014 " + u.text });
+    const post = u.post && st.cabinet ? st.cabinet[u.post] : null;
+    if (post && post.holder) {
+      const holder = post.holder;
+      post.holder = null;
+      st.lastResignation = { post: u.post, holder: holder,
+                             undertaking: u.id, sitting: st.sitting };
+      st.flags["minister_resigned"] = true;
+      const pname = ((C && C.cabinetById && C.cabinetById[u.post]) || {}).name || u.post;
+      st.log.unshift({ sitting: st.sitting, text: "The " + pname + " resigns" });
+    }
+    if (u.onBreach && C && C.eventById && C.eventById[u.onBreach])
+      st.queue.push({ eventId: u.onBreach, dueSitting: st.sitting });
+    return u;
   }
 
   /* ---------------------------------------------------------
@@ -2286,10 +2321,7 @@ const Engine = (function () {
        than on a sitting number the author had to guess. */
     (st.undertakings || []).forEach(u => {
       if (u.state !== "open" || u.by != null) return;
-      u.state = "broken";
-      st.log.unshift({ sitting: st.sitting, text: "Undertaking broken at prorogation — " + u.text });
-      if (u.onBreach && C.eventById && C.eventById[u.onBreach])
-        st.queue.push({ eventId: u.onBreach, dueSitting: st.sitting });
+      breakUndertaking(st, C, u, "prorogation");
     });
 
     st.session += 1;
@@ -2333,10 +2365,7 @@ const Engine = (function () {
        silent correction the player never sees. See design/02. */
     (st.undertakings || []).forEach(u => {
       if (u.state !== "open" || u.by == null || u.by >= st.sitting) return;
-      u.state = "broken";
-      st.log.unshift({ sitting: st.sitting, text: "Undertaking broken \u2014 " + u.text });
-      if (u.onBreach && C && C.eventById && C.eventById[u.onBreach])
-        st.queue.push({ eventId: u.onBreach, dueSitting: st.sitting });
+      breakUndertaking(st, C, u);
     });
     if (C && st.sessionEnds != null && st.sitting > st.sessionEnds) prorogue(st, C);
     if (C) reviewReturns(st, C);

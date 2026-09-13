@@ -622,6 +622,33 @@ that put you here intends to keep you.`,
                {move:{"public_standing":3}},
                {wire:"PM ADDRESSES CAUCUS BEFORE BALLOT; SURVIVES"}],
       result:"The speech is remembered as the day the party decided, which is not the same as the day it agreed." }
+  ]},
+
+/* A MINISTER ANSWERS FOR A BROKEN PROMISE (design/08 §3). The engine vacates the
+   post when an undertaking naming it is broken, and sets `minister_resigned`;
+   this is the prose for the aftermath. The resignation itself is not the
+   player's to choose — that is the point of it. */
+{ id:"minister_resignation", weight:99, once:true,
+  when:{ flags:["minister_resigned"] },
+  title:"A resignation",
+  speaker:null,
+  body:`The letter is on the desk before the morning brief, which is how these
+things are arranged: the minister told the paper, the paper called the office,
+and the office said nothing.
+
+The resignation is not a protest. It is a payment. A promise was made in that
+minister's name and the promise was not kept, and in this building a minister
+who will not resign for it is resigned for. The post is empty. What it will not
+do is stay empty by itself.`,
+  choices:[
+    { label:"Fill it from the loyal wing of the party.",
+      effects:[{move:{"party_loyalty":5}},{move:{"public_standing":-2}},
+               {wire:"VACANT POST FILLED AFTER MINISTERIAL RESIGNATION"}],
+      result:"The replacement is grateful, which is a form of loyalty that has to be renewed." },
+    { label:"Leave it empty. Do the work from your own office.",
+      effects:[{move:{"public_standing":-4}},{flag:"post_left_vacant"},
+               {wire:"PM LEAVES MINISTERIAL POST VACANT"}],
+      result:"No instrument comes out of that brief until someone holds it, and the opposition has read the same rules you have." }
   ]}
 
 ];

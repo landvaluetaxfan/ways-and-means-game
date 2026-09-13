@@ -752,6 +752,32 @@ console.log("\nTHE LEADERSHIP BALLOT (design/08 §2):");
   if (bad) { console.log("\n" + bad + " BALLOT FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nA MINISTER ANSWERS FOR A BROKEN PROMISE (design/08 §3):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const a = Engine.newGame(CONTENT);
+  const post = Object.keys(a.cabinet).find(k => a.cabinet[k].holder);
+  ok("a fresh cabinet has a holder to lose", !!post, post);
+  const holder = a.cabinet[post].holder;
+
+  Engine.apply(a, CONTENT, [{undertake:{ id:"t_resign", text:"test promise",
+    post:post, by:0, discharge:{ flag:"never_set" }}}]);
+  const u = a.undertakings.find(x => x.id === "t_resign");
+  ok("an undertaking remembers its post", !!(u && u.post === post));
+
+  Engine.advance(a, CONTENT);
+  ok("breaking it vacates the post", !a.cabinet[post].holder,
+     holder + " -> " + (a.cabinet[post].holder || "vacant"));
+  ok("and records the resignation", !!a.lastResignation && a.lastResignation.post === post);
+  ok("and flags it for content", !!a.flags["minister_resigned"]);
+  ok("and it is in the log", a.log.some(l => /resigns/.test(l.text)));
+
+  if (bad) { console.log("\n" + bad + " RESIGNATION FAILURES"); process.exitCode = 1; }
+})();
+
 /* ---------------------------------------------------------------------
    THE BED IS IN TUNE.
 
