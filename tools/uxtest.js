@@ -1065,6 +1065,41 @@ try {
     return did;
   })()`);
   ok("and with animation on it still does not wait for one", swappedAnimated === true);
+
+  /* THE DISSOLVE MUST NOT BE MEMORISED. It is the one animation a player
+     sees on every load and every return to the menu, and a fixed 4x4
+     tile resolves in exactly one order every single time. */
+  const varies = w.eval(`(function () {
+    var M = Motion, cols = 40, rows = 24, runs = [];
+    for (var r = 0; r < 8; r++) {
+      var p = M.__plan(), a = [];
+      for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++)
+        a.push(M.__order(p, x, y, cols, rows));
+      runs.push(a.join(","));
+    }
+    return { distinct: new Set(runs).size, runs: runs.length };
+  })()`);
+  ok("eight dissolves produce eight different orderings",
+     varies.distinct === varies.runs, varies.distinct + " of " + varies.runs);
+
+  /* and it must still BE a dissolve: every cell has to fall inside the
+     level range the frame loop counts through, or some never turn off */
+  const bounded = w.eval(`(function () {
+    var M = Motion, p = M.__plan(), lo = 99, hi = -1;
+    for (var y = 0; y < 24; y++) for (var x = 0; x < 40; x++) {
+      var v = M.__order(p, x, y, 40, 24);
+      if (v < lo) lo = v; if (v > hi) hi = v;
+    }
+    return [lo, hi];
+  })()`);
+  ok("and every cell still resolves inside the count",
+     bounded[0] >= 0 && bounded[1] <= 16, "levels " + bounded[0] + " to " + bounded[1]);
+
+  /* LEAVING GETS THE SAME TRANSITION AS ARRIVING. It only ran one way. */
+  const src = require("fs").readFileSync("js/shell.js", "utf8");
+  const back = src.slice(src.indexOf('[data-act="menu"]'));
+  ok("returning to the menu dissolves too, and not only entering",
+     /Motion\.dissolve/.test(back.slice(0, 900)));
 } catch (e) { ok("no-motion still swaps", false, e.message); }
 
 /* ---------------------------------------------------------------------

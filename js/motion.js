@@ -51,6 +51,74 @@ const Motion = (function () {
   const CELL = 22;                /* px per cell, before the tile repeats */
   const STEPS = 16;               /* Bayer levels */
 
+  /* ---------------------------------------------------------------
+     THE SAME DITHER, NEVER THE SAME TWICE.
+
+     A fixed 4x4 tile resolves in exactly one order, so the transition
+     looked identical every single time — and this is the one animation
+     a player sees on every load and every return to the menu, which is
+     the worst possible place for something to be memorised.
+
+     Three things vary per run, and none of them changes WHAT the
+     effect is: it is still an ordered dither in the Bayer sequence the
+     image pipeline uses, because that is the house style and the whole
+     reason it reads as machine output.
+
+       SYMMETRY. The tile has eight — four rotations and a mirror.
+       Picking one turns the grain a different way.
+
+       SWEEP. A positional gradient across the screen, so the dither
+       sometimes resolves left to right, sometimes bottom to top,
+       sometimes from a corner, and sometimes not at all. This is the
+       biggest change per line of code in the file.
+
+       JITTER. A little noise on each cell's threshold, so the tile
+       edges break up and the grid stops being a grid.
+
+     Math.random(), NOT Engine.draw(). The game's PRNG is save state:
+     a transition that consumed it would change which events fire.
+     --------------------------------------------------------------- */
+  const SWEEPS = [
+    [0, 0], [0, 0],            /* twice as likely: the plain dither */
+    [1, 0], [-1, 0], [0, 1], [0, -1],
+    [1, 1], [-1, 1], [1, -1], [-1, -1]
+  ];
+
+  function plan() {
+    const r = Math.random();
+    const sw = SWEEPS[Math.floor(Math.random() * SWEEPS.length)];
+    return {
+      rot: Math.floor(Math.random() * 4),
+      flip: Math.random() < 0.5,
+      sx: sw[0], sy: sw[1],
+      /* a sweep needs the dither to be the texture rather than the
+         shape, so it takes the smaller share when one is running */
+      w: (sw[0] || sw[1]) ? 0.42 : 1,
+      jit: 0.06 + Math.random() * 0.10
+    };
+  }
+
+  /* the tile value at (x, y) under one of the eight symmetries */
+  function tile(p, x, y) {
+    let a = x % GRID, b = y % GRID;
+    if (p.flip) a = GRID - 1 - a;
+    for (let i = 0; i < p.rot; i++) { const t = a; a = GRID - 1 - b; b = t; }
+    return BAYER[b * GRID + a];
+  }
+
+  /* When each cell gives way, 0..STEPS. */
+  function order(p, x, y, cols, rows) {
+    let v = (tile(p, x, y) / (STEPS - 1)) * p.w;
+    if (p.sx || p.sy) {
+      const fx = cols > 1 ? x / (cols - 1) : 0, fy = rows > 1 ? y / (rows - 1) : 0;
+      const g = ((p.sx ? (p.sx > 0 ? fx : 1 - fx) : 0) +
+                 (p.sy ? (p.sy > 0 ? fy : 1 - fy) : 0)) / ((p.sx ? 1 : 0) + (p.sy ? 1 : 0));
+      v += g * (1 - p.w);
+    }
+    v += (Math.random() - 0.5) * p.jit;
+    return Math.max(0, Math.min(STEPS, Math.round(v * STEPS)));
+  }
+
   function reduced() {
     if (typeof document === "undefined") return true;
     if (document.body && document.body.classList.contains("no-motion")) return true;
@@ -104,10 +172,11 @@ const Motion = (function () {
       layer.setAttribute("aria-hidden", "true");
       const w = window.innerWidth || 1200, h = window.innerHeight || 800;
       const cols = Math.ceil(w / CELL), rows = Math.ceil(h / CELL);
+      const p = plan();
       let html = "";
       for (let y = 0; y < rows; y++)
         for (let x = 0; x < cols; x++)
-          html += '<i class="on" data-s="' + BAYER[(y % GRID) * GRID + (x % GRID)] + '"></i>';
+          html += '<i class="on" data-s="' + order(p, x, y, cols, rows) + '"></i>';
       layer.style.gridTemplateColumns = "repeat(" + cols + ", " + CELL + "px)";
       layer.style.gridAutoRows = CELL + "px";
       layer.innerHTML = html;
@@ -223,7 +292,8 @@ const Motion = (function () {
       !!document.querySelector(".dissolve, .movecard");
   }
 
-  return { dissolve: dissolve, notify: notify, reduced: reduced, busy: busy };
+  return { dissolve: dissolve, notify: notify, reduced: reduced, busy: busy,
+           __plan: plan, __order: order };
 })();
 
 if (typeof module !== "undefined") module.exports = Motion;

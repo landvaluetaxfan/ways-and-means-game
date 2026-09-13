@@ -932,53 +932,144 @@ console.log("\nAND IT PLAYS:");
     ok("and spends most of it in the sparse section, where the player reads",
        sparse >= bars * 0.35, sparse + " of " + bars + " bars at density 1");
 
-    /* ---- the moods, each read back rather than taken on trust ---- */
-    const home = M.state().semitones;
+    /* ---- the moods, each MEASURED rather than taken on trust ---- */
 
-    M.moment(); SECS(BAR * 2);
-    const afterCarry = M.state();
-    ok("a carried bill lifts the key", afterCarry.semitones > home,
-       home + " -> " + afterCarry.semitones + " (" + afterCarry.key + ")");
-    ok("and takes the head", afterCarry.section === "HEAD", afterCarry.section);
+    /* THE CRESCENDO, which did not exist in any form until now: every
+       one of the twenty-six voice calls passed a hardcoded constant and
+       the only dynamic mechanism was a fader on the moods. */
+    const arcSeen = {};
+    for (let i = 0; i < 40; i++) {
+      SECS(BAR); const st = M.state();
+      if (st.section) (arcSeen[st.section] = arcSeen[st.section] || []).push(st.dyn);
+    }
+    const spread = Object.keys(arcSeen).map(k =>
+      Math.max(...arcSeen[k]) - Math.min(...arcSeen[k]));
+    ok("the ensemble dynamic actually moves",
+       Math.max(...Object.values(arcSeen).flat()) -
+       Math.min(...Object.values(arcSeen).flat()) > 0.15,
+       Object.keys(arcSeen).map(k =>
+         k + " " + Math.min(...arcSeen[k]).toFixed(2) + "-" +
+         Math.max(...arcSeen[k]).toFixed(2)).join(", "));
+    if (arcSeen.SOLO && arcSeen.SOLO.length > 3)
+      ok("and climbs across the solo rather than sitting at one level",
+         arcSeen.SOLO[arcSeen.SOLO.length - 1] > arcSeen.SOLO[0],
+         arcSeen.SOLO[0].toFixed(2) + " -> " +
+         arcSeen.SOLO[arcSeen.SOLO.length - 1].toFixed(2));
+    else ok("and climbs across the solo", false, "never reached the solo");
 
-    M.defeat(); SECS(BAR * 2);
-    const afterLoss = M.state();
-    ok("a lost bill drops it again", afterLoss.semitones < afterCarry.semitones,
-       afterCarry.semitones + " -> " + afterLoss.semitones + " (" + afterLoss.key + ")");
-    ok("and slips into the section that is out of the mode",
-       afterLoss.section === "BRIDGE", afterLoss.section);
+    /* THE SOLO BUILDS. It used to be a flat sixteen bars — fixed
+       amplitude, fixed rest probability, no reference to where in the
+       chorus it was, so bar one and bar sixteen were identical. */
+    const soloBars = [];
+    for (let i = 0; i < 160 && soloBars.length < 16; i++) {
+      const before = made.osc || 0;
+      SECS(BAR);
+      if (M.state().section === "SOLO") soloBars.push((made.osc || 0) - before);
+    }
+    if (soloBars.length >= 12) {
+      const early = soloBars.slice(0, 4).reduce((a, x) => a + x, 0);
+      const late = soloBars.slice(-4).reduce((a, x) => a + x, 0);
+      ok("the solo is busier at the end than at the start", late > early,
+         early + " notes in the first four bars, " + late + " in the last four");
+    } else ok("the solo is busier at the end than at the start", false,
+              "only saw " + soloBars.length + " solo bars");
 
-    M.tension(); SECS(BAR);
-    ok("a division halves the feel", M.state().halfTime === true);
-    M.moment(); SECS(BAR);
-    ok("and the result puts it back", M.state().halfTime === false);
+    /* STOP TIME IS ATTACKS AND SILENCE, not a fader. Measured as what
+       a bar actually costs: a stop-time bar should be a fraction of a
+       playing one. */
+    let normal = 0;
+    for (let i = 0; i < 3; i++) { const n = made.osc || 0; SECS(BAR); normal += (made.osc || 0) - n; }
+    normal /= 3;
+    M.tension();
+    const s0 = made.osc || 0; SECS(BAR); const stopped = (made.osc || 0) - s0;
+    ok("a division stops the band rather than fading it",
+       M.state().stopTime === true && stopped < normal * 0.5,
+       stopped + " notes in a stop-time bar against " + normal.toFixed(0) + " normally");
 
-    /* THE CLAMP. Good news must not walk the band off the piano. */
-    for (let i = 0; i < 8; i++) { M.moment(); SECS(BAR); }
-    ok("a run of good news stops at the ceiling",
-       M.state().semitones === F.KEY_MAX, M.state().key);
-    for (let i = 0; i < 10; i++) { M.defeat(); SECS(BAR); }
-    ok("and a run of bad news at the floor",
-       M.state().semitones === F.KEY_MIN, M.state().key);
+    /* A TURN FILL announces a jump. Toms are the only voice that sets a
+       frequency in this band, so they can be counted from outside. */
+    const toms = () => ramps.filter(r => r[0] === "osc.f" && r[1] === "set" &&
+                                          r[2] >= 160 && r[2] <= 270).length;
+    const t0 = toms();
+    M.moment(0.5);
+    SECS(BAR * 0.9);
+    ok("a mood fills into the bar line instead of cutting", toms() > t0,
+       (toms() - t0) + " toms in the bar before the jump");
+    SECS(BAR * 2);
+    ok("and lands in the head", M.state().section === "HEAD", M.state().section);
 
-    /* PROROGATION IS THE ONE CADENCE, and it takes the key home. */
-    M.prorogue(); SECS(BAR * 2);
-    ok("prorogation returns the key home", M.state().semitones === 0, M.state().key);
-    ok("and restarts the arrangement", M.state().section === "VAMP",
-       M.state().section);
+    /* THE KEY CHANGE IS THE SIZE OF THE THING THAT HAPPENED. The engine
+       always knew the margin; the score never asked, so a one-vote
+       squeaker sounded exactly like a landslide. */
+    const keyAfter = (mood, f) => {
+      M.stop(); M.start(); SECS(BAR);
+      M[mood](f); SECS(BAR * 2);
+      return M.state().semitones;
+    };
+    const narrow = keyAfter("moment", 0.05), wide = keyAfter("moment", 0.95);
+    ok("a landslide moves the key further than a squeaker", wide > narrow,
+       "+" + narrow + " against +" + wide);
+    const nLoss = keyAfter("defeat", 0.05), wLoss = keyAfter("defeat", 0.95);
+    ok("and so does a rout against a near miss", wLoss < nLoss,
+       nLoss + " against " + wLoss);
 
-    /* the two that change nothing structural, and must not */
-    const before = M.state();
+    /* THE SHOUT CHORUS is the loudest thing the score can do and is
+       reserved for something that earns it. */
+    M.stop(); M.start(); SECS(BAR);
+    M.moment(0.05); SECS(BAR);
+    const quietWin = M.state().shout;
+    M.stop(); M.start(); SECS(BAR);
+    M.moment(0.95); SECS(BAR);
+    ok("only a landslide gets the shout chorus",
+       M.state().shout === true && quietWin === false);
+
+    /* THE LAST HEAD IS THE BIGGEST THING ON THE RECORD. The two
+       statements used to be byte-identical. */
+    M.stop(); M.start();
+    const formBars = F.ITINERARY.reduce((n, k) => n + F.SECTIONS[k].bars.length, 0);
+    const heads = [];
+    let wasHead = false;
+    /* ONE PASS ONLY. A longer drive wraps the itinerary and the third
+       entry is the NEXT pass's opening head, which would make the test
+       compare a head against itself. */
+    for (let i = 0; i < formBars - 1; i++) {
+      SECS(BAR); const st = M.state();
+      const isHead = st.section === "HEAD";
+      if (isHead && !wasHead) heads.push(st.dyn);
+      else if (isHead) heads[heads.length - 1] = Math.max(heads[heads.length - 1], st.dyn);
+      wasHead = isHead;
+    }
+    ok("the last statement of the tune is louder than the first",
+       heads.length === 2 && heads[1] > heads[0],
+       heads.map(h => h.toFixed(2)).join(" -> ") + " over one " + formBars + "-bar pass");
+
+    /* the two moments that used to be silent */
+    M.stop(); M.start(); SECS(BAR);
+    const k0 = M.state().semitones;
+    M.threat(); SECS(BAR * 2);
+    ok("the leadership challenge is audible and does not resolve",
+       M.state().semitones < k0 && M.state().section !== "BRIDGE",
+       "key " + k0 + " -> " + M.state().semitones + ", still in " + M.state().section);
+    const before2 = M.state().semitones;
+    M.revoke(); SECS(BAR);
+    ok("a revoked order changes nothing structural, only the figure",
+       M.state().semitones === before2);
+
+    /* and the ones that must stay small */
+    const before3 = M.state();
     M.undertake(); M.order(); SECS(BAR);
     ok("an undertaking and an order leave the key alone",
-       M.state().semitones === before.semitones);
+       M.state().semitones === before3.semitones);
 
     M.rise(); SECS(BAR * 2);
     ok("a new government runs up into the head",
        M.state().section === "HEAD" && M.state().semitones === 0,
        M.state().section + " in " + M.state().key);
+    M.prorogue(); SECS(BAR * 2);
+    ok("prorogation returns the key home and restarts the arrangement",
+       M.state().semitones === 0 && M.state().section === "VAMP", M.state().section);
     M.sombre(); SECS(BAR * 2);
-    ok("and a fallen one goes half time", M.state().halfTime === true);
+    ok("and a fallen government goes half time", M.state().halfTime === true);
 
     mix = M.state();
     M.stop();

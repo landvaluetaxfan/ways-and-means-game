@@ -492,9 +492,18 @@ const Shell = (function () {
       document.getElementById("file-load").click());
     p.querySelector('[data-act="menu"]').addEventListener("click", () => {
       const go = () => {
-        toggleOptions(false);
-        document.getElementById("shell").classList.remove("on");
-        current = null; showMenu(null);
+        /* LEAVING GETS THE SAME TRANSITION AS ARRIVING. It only ever ran
+           one way, so the game dissolved in and then cut out, which reads
+           as the menu having crashed back rather than been returned to.
+           Same rule as the boot path: the swap is synchronous inside
+           Motion.dissolve, so a browser that refuses frames still lands. */
+        const swap = () => {
+          toggleOptions(false);
+          document.getElementById("shell").classList.remove("on");
+          current = null; showMenu(null);
+        };
+        if (typeof Motion !== "undefined") Motion.dissolve(swap);
+        else swap();
       };
       if (opts.confirmDestructive)
         Dialog.confirm("Return to the main menu? Unsaved progress is lost.",

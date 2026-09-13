@@ -118,7 +118,7 @@ const UI = (function () {
        against the previous state. Carrying them across a load would fire
        a cadence for a session the player never sat through, or swallow
        the knell for a government that has already fallen. */
-    lastSession = null; fallen = false;
+    lastSession = null; fallen = false; lastSigBand = null;
     if (wired) { drawAll(); reveal(); return; }   /* Shell re-boots on every load */
     wired = true;
     document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
@@ -346,13 +346,39 @@ const UI = (function () {
   function cue(name) { if (typeof Sound !== "undefined") Sound.play(name); }
   /* The adaptive bed, driven from the same places as the cues: a bill carries
      and the drums enter; the government falls and the bed thins out. */
-  function score(name) { if (typeof Music !== "undefined" && Music[name]) Music[name](); }
+  function score(name, force) {
+    if (typeof Music !== "undefined" && Music[name]) Music[name](force);
+  }
+  /* HOW DECISIVE WAS IT, 0 to 1. The engine has always known whether a
+     division was a squeaker or a landslide; the score never asked, so
+     every win sounded the same size. A dual-majority bill is measured on
+     whichever tier was tighter, because that is the one that decided it. */
+  function decisiveness(r) {
+    if (!r || !r.popular) return 0.5;
+    const share = tier => {
+      const room = tier.carries ? tier.total - tier.need : tier.need;
+      return room > 0 ? Math.abs(tier.aye - tier.need) / room : 0.5;
+    };
+    const p = share(r.popular);
+    return r.dual ? Math.min(p, share(r.functional)) : p;
+  }
 
   /* Called after anything that moved the game on. A government falls once,
      so the knell is edge-triggered rather than drawn from the current state
      - which is also why this cannot live in drawStatus. */
-  let fallen = false, lastSession = null;
+  let fallen = false, lastSession = null, lastSigBand = null;
   function afterAction() {
+    /* THE SIGNATURES AGAINST HER. Nine is a ballot and seven is the band
+       the topbar turns red at — the most dramatic thing that can happen
+       short of losing, and the score did not notice it at all. Edge
+       triggered on the way UP only: it is news when it gets worse, and
+       silence when a signature is withdrawn. */
+    const sigs = st.signatures || 0;
+    const band = sigs >= 9 ? 2 : sigs >= 7 ? 1 : 0;
+    if (lastSigBand === null) lastSigBand = band;
+    else if (band > lastSigBand) { lastSigBand = band; score("threat"); }
+    else if (band < lastSigBand) lastSigBand = band;
+
     /* PROROGATION IS THE ONE CADENCE IN THE SCORE, and nothing clicks it:
        the session turns over inside Engine.advance() as sittings pass. So
        it is edge-triggered off the state here, the same way the knell is,
@@ -579,7 +605,12 @@ const UI = (function () {
           if (!ok) return;
           Engine.prayAgainst(st, C, b.dataset.pray);
           cue(f.carries ? "aye" : "nay"); if (typeof Wait !== "undefined") Wait.brief(320);
-          score(f.carries ? "moment" : "defeat");
+          /* A CARRIED PRAYER ANNULS THE GOVERNMENT'S OWN ORDER, so it
+             fired the triumphant swell for the player losing something.
+             Carried, the order goes out of force and the score walks the
+             figure back down; defeated, the order merely stands, which is
+             the status quo and gets a single hit. */
+          score(f.carries ? "revoke" : "undertake");
           setStatus("Prayer against " + b.dataset.pray.replace(/_/g, " ") +
                     (f.carries ? " carried \u2014 the order is annulled"
                                : " defeated \u2014 the order stands"), "transient");
@@ -653,7 +684,7 @@ const UI = (function () {
               const r = Engine.fillPost(st, C, pid, ci);
               if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
               const moved = Engine.changes(snap, Engine.snapshot(st), C);
-              cue("stamp");
+              cue("stamp"); score("undertake");
               if (typeof Wait !== "undefined") Wait.brief(420);
               setStatus("Appointed " + (ch ? ch.name : r.holder) +
                         (moved.length ? " \u00b7 " + moved.length + " indicator" +
@@ -926,7 +957,7 @@ const UI = (function () {
       ms: 520,
       run: () => {
         cue(r.carries ? "aye" : "nay");
-        score(r.carries ? "moment" : "defeat");
+        score(r.carries ? "moment" : "defeat", decisiveness(r));
         if (!verdict) return;
         verdict.textContent = r.carries
           ? (out.assent && out.assent.referred

@@ -73,7 +73,7 @@
 const Music = (function () {
   "use strict";
 
-  const BPM = 124, BEATS = 4;
+  const BPM = 108, BEATS = 4;
   const SPB = 60 / BPM;
   const DIV = 4;
   const STEP = SPB / DIV;
@@ -190,6 +190,33 @@ const Music = (function () {
                      "SOLO","VAMP","VAMP","HEAD","VAMP"];
 
   /* ---------------------------------------------------------------
+     THE ARC — one dynamic per slot of the itinerary, and the reason
+     the record has a shape rather than a length.
+
+     Nothing in this score accumulated: bar four hundred sounded like
+     bar four, because every note was written at a hardcoded level and
+     the only dynamic mechanism was a fader on the eight moods. This is
+     the fix, and note where the biggest number is. THE LAST HEAD IS
+     THE LOUDEST THING ON THE RECORD, which is true of every fusion
+     side ever pressed and was not true here: the two statements of the
+     tune were byte-identical.
+     --------------------------------------------------------------- */
+  const ARC = [0.70, 0.52, 0.52, 0.62, 0.55, 0.86, 0.58, 0.58, 1.00, 0.50];
+  /*            HEAD  VAMP  VAMP  BRIDG VAMP  SOLO  VAMP  VAMP  HEAD  VAMP */
+
+  /* THE SHOUT CHORUS. The whole band on one written rhythm — the
+     biggest single thing an arrangement can do, and it was missing, so
+     a landslide had nowhere louder to go than an ordinary win. Two
+     bars of ensemble hits, held on the last. */
+  const SHOUT = [[0,2],[3,2],[6,3],[12,2],[16,2],[22,3],[26,2],[28,6]];
+
+  /* A TURN FILL announces a change; a phrase fill only punctuates one.
+     Every mood that jumps the arrangement now plays this across the
+     rest of the bar, so a section arrives instead of cutting. */
+  const TURNFILL = [[8,"t",260],[10,"t",220],[11,"s",0.20],[12,"t",190],
+                    [13,"s",0.24],[14,"t",165],[14.5,"s",0.20],[15,"s",0.34]];
+
+  /* ---------------------------------------------------------------
      RENDERING THE CELL.
 
      A degree becomes a pitch through the scale of whatever chord is
@@ -236,7 +263,38 @@ const Music = (function () {
   let playing = false, step = 0, nextTime = 0, timer = null;
   let secIdx = 0, barIdx = 0, current = null, dens = 1, barCount = 0;
   let jumpTo = null, keyNow = 0, keyNext = null, halfTime = false;
-  let lastVoicing = null;
+  let lastVoicing = null, stopBars = 0, shoutAt = -1;
+
+  /* ---------------------------------------------------------------
+     THE DYNAMIC, AND IT IS THE MISSING VERB.
+
+     Every voice call in this file used to pass a hardcoded constant as
+     its level, so the score could jump between loudness plateaus when
+     a mood fired and could do nothing else. It could not swell into a
+     section, build across a solo, lift a final chorus, or push into a
+     fill — none of which is a mixing problem, all of which is what an
+     arrangement IS.
+
+     dynAt() is a pure function of TIME, not a fader, which is the
+     whole point: the sequencer schedules three hundred milliseconds
+     ahead, so a note asks what the dynamic will be AT THE MOMENT IT
+     SOUNDS and a crescendo therefore spans bars correctly rather than
+     stepping once per scheduler tick.
+     --------------------------------------------------------------- */
+  let dynFrom = 1, dynTo = 1, dynT0 = 0, dynT1 = 0;
+  function dynAt(t) {
+    if (t >= dynT1) return dynTo;
+    if (t <= dynT0) return dynFrom;
+    return dynFrom + (dynTo - dynFrom) * ((t - dynT0) / (dynT1 - dynT0));
+  }
+  /* Ramp the ensemble from wherever it is now to `to`, over `secs`,
+     starting at `at`. The one primitive everything else needs. */
+  function swell(to, secs, at) {
+    if (!ctx) return;
+    const t = at == null ? ctx.currentTime : Math.max(ctx.currentTime, at);
+    dynFrom = dynAt(t); dynTo = to; dynT0 = t; dynT1 = t + Math.max(0.01, secs);
+  }
+  const amp = (t, base) => base * dynAt(t);
 
   /* The improviser's own random source, permanently separate from
      Engine.draw(): the game's PRNG is save state and a solo that
@@ -477,17 +535,38 @@ const Music = (function () {
   }
 
   /* ---------- the improviser ---------- */
-  let soloNote = 72;
-  function improvise(t, chord, st) {
+  let soloNote = 70;
+  /* A SOLO THAT DOES NOT BUILD IS THE COMMONEST WAY AN ALGORITHMIC ONE
+     SOUNDS WRONG, and this one did not: fixed amplitude, fixed rest and
+     leap probabilities, and no reference to where in the section it was,
+     so bar one and bar sixteen were statistically identical.
+
+     Now everything is a function of how far through the chorus we are.
+     It starts low, sparse and quiet, and ends high, busy and loud —
+     which is what a player does, and it is also a crescendo the ensemble
+     dynamic is riding underneath. */
+  function improvise(t, chord, st, p) {
     if (st % 2) return;
-    if (rnd() < 0.24) return;
+    if (rnd() < 0.42 - 0.30 * p) return;               /* space closes up */
     const scale = TYPE[chord[1]].s;
-    const dir = rnd() < 0.5 ? -1 : 1;
-    const leap = rnd() < 0.18 ? 3 : 1;
-    const n = Math.max(64, Math.min(86,
+    const centre = 68 + Math.round(13 * p);            /* register climbs */
+    const pull = (centre - soloNote) / 24;             /* drawn toward it */
+    const dir = rnd() < 0.5 + pull ? 1 : -1;
+    const leap = rnd() < 0.14 + 0.22 * p ? 3 : 1;      /* and gets wider */
+    const n = Math.max(64, Math.min(88,
       snap(soloNote + dir * leap * (1 + Math.floor(rnd() * 2)), chord[0], scale)));
     soloNote = n;
-    horn(t, hz(n + keyNow), STEP * (rnd() < 0.3 ? 3.4 : 1.7), 0.10);
+    horn(t, hz(n + keyNow), STEP * (rnd() < 0.3 ? 3.4 : 1.7),
+         amp(t, 0.06 + 0.10 * p));
+  }
+
+  /* TRADING FOURS. Four bars of horn, four of kit, four of horn, then
+     both together for the last four — the standard shape, and it gives
+     the solo section an argument rather than sixteen bars of one voice.
+     Returns who has it: 1 the soloist, 2 the drummer, 3 both. */
+  function trading(bar) {
+    const four = Math.floor(bar / 4) % 4;
+    return four === 1 ? 2 : four === 3 ? 3 : 1;
   }
 
   /* ---------- the arrangement ---------- */
@@ -503,6 +582,17 @@ const Music = (function () {
     if (keyNext != null) { keyNow = clampKey(keyNext); keyNext = null; }
     const sec = SECTIONS[ITINERARY[secIdx]];
     current = sec.bars[barIdx]; dens = sec.d; barCount++;
+    if (stopBars > 0) stopBars--;
+
+    /* THE ARC. Arriving at a section swells the ensemble to that slot's
+       dynamic over a bar rather than stepping to it, and the solo keeps
+       climbing all the way through its own sixteen bars instead of
+       sitting at one level. */
+    const target = ARC[secIdx % ARC.length];
+    if (barIdx === 0) swell(target, BEATS * SPB, nextTime);
+    else if (ITINERARY[secIdx] === "SOLO")
+      swell(target * (0.72 + 0.28 * (barIdx / (sec.bars.length - 1))),
+            BEATS * SPB, nextTime);
   }
 
   function scheduleStep(s, t0) {
@@ -512,8 +602,6 @@ const Music = (function () {
     const t = t0 + (st % 2 ? SWING : 0);
     const ch = chordOf(b, st / DIV);
     const root = 33 + pc(ch[0] - 9);
-    /* the shared accents run over TWO bars, so which half we are in
-       decides which of them apply here */
     const half = (barIdx % 2) * PER_BAR;
     const acc = a => ACC.indexOf(a + half) >= 0;
 
@@ -521,56 +609,116 @@ const Music = (function () {
       lastVoicing = voicing(ch[0], ch[1]);
     const V = lastVoicing || [57, 60, 64, 67];
 
-    /* THE BASS on the shared accents, root and fifth, with a chromatic
-       approach into the next bar. It agrees with the kick because they
-       read the same list. */
-    if (acc(st) || (!halfTime && st === 14 && barIdx % 2)) {
-      let m = st === 14 ? root - 1 : (st === 10 || st === 26 - half) ? root + 7 : root;
-      while (m + keyNow < 31) m += 12;                 /* the octave up, never the hole */
-      bass(t, hz(m + keyNow), (st === 0 ? 3 : 2) * STEP, (st === 0 ? 0.5 : 0.4));
+    /* ---- STOP TIME. The band hits one and leaves the bar empty.
+       This used to be four layers faded to zero over 250ms, which is a
+       MUTE — the correct instinct implemented as a mixer move. Real
+       stop-time is accented attacks alternating with silence, and it
+       reads in one beat where a fade reads in none. ---- */
+    if (stopBars > 0) {
+      if (st === 0) {
+        kick(t, amp(t, 0.9));
+        V.forEach((m, i) => gtr(t + i * 0.004, hz(m + 12 + keyNow), 0.26, amp(t, 0.16)));
+        bass(t, hz(root + keyNow), SPB * 0.5, amp(t, 0.5));
+      }
+      if (st === 8) hat(t, amp(t, 0.03));
+      return;
     }
 
-    /* THE KIT. A fill on the LAST BAR OF A FOUR-BAR PHRASE inside this
-       section, so it marks the end of an idea rather than the end of a
-       count that nothing else knows about. */
+    /* ---- THE TURN FILL. A mood has asked the arrangement to jump at
+       the next bar line, so the rest of THIS bar announces it. Without
+       this a change is an edit; with it, a section arrives. ---- */
+    if (jumpTo != null && !halfTime && st >= 8) {
+      TURNFILL.forEach(([at, kind, v]) => {
+        if (Math.abs(at - st) > 0.001 && Math.abs(at - 0.5 - st) > 0.001) return;
+        const ft = t + (at % 1 ? STEP / 2 : 0);
+        if (kind === "t") tom(ft, v, amp(ft, 0.34)); else snare(ft, amp(ft, v));
+      });
+      if (st === 8 || st === 12) bass(t, hz(root + keyNow), 2 * STEP, amp(t, 0.42));
+      return;
+    }
+
+    /* ---- THE SHOUT CHORUS, if one is running. ---- */
+    if (shoutAt >= 0) {
+      const off = (barCount - shoutAt) * PER_BAR + st;
+      SHOUT.forEach(([at, len]) => {
+        if (at !== off) return;
+        V.forEach((m, i) => gtr(t + i * 0.004, hz(m + 12 + keyNow), len * STEP, amp(t, 0.17)));
+        V.forEach((m, i) => rhodes(t + i * 0.008, hz(m + keyNow), len * STEP, amp(t, 0.22)));
+        bass(t, hz(root - 12 + keyNow), len * STEP, amp(t, 0.5));
+        horn(t, hz(V[V.length - 1] + 12 + keyNow), len * STEP, amp(t, 0.13));
+        kick(t, amp(t, 0.8)); snare(t, amp(t, 0.26));
+      });
+      if (off >= 34) shoutAt = -1;
+      if (off < 34) return;
+    }
+
+    /* ---- THE BASS. It plays the shared accents, and on the off-beats
+       it takes an EXTENSION rather than the fifth: published analysis
+       names outlining extensions as the trait that separates a fusion
+       bass line from a funk line under a jazz chord, and ours only ever
+       knew the root, the fifth and a chromatic approach. ---- */
+    const ext = TYPE[ch[1]].v;
+    if (acc(st) || (!halfTime && st === 14 && barIdx % 2)) {
+      let m = st === 14 ? root - 1
+            : st === 10 ? root + ext[2]                 /* the seventh */
+            : (st === 26 - half) ? root + ext[3] + 12   /* the ninth, up */
+            : st === 6 ? root + 7 : root;
+      while (m + keyNow < 31) m += 12;
+      bass(t, hz(m + keyNow), (st === 0 ? 3 : 2) * STEP, amp(t, st === 0 ? 0.5 : 0.4));
+    }
+
+    /* ---- THE KIT. A phrase fill on the last bar of a four-bar phrase
+       INSIDE this section, so it marks the end of an idea. ---- */
     const filling = !halfTime && dens >= 2 && barIdx % 4 === 3 && st >= 12;
     if (filling) {
       FILL.forEach(([at, kind, v]) => {
         if (Math.abs(at - st) > 0.001 && Math.abs(at - 0.5 - st) > 0.001) return;
         const ft = t + (at % 1 ? STEP / 2 : 0);
-        if (kind === "t") tom(ft, v, 0.3); else snare(ft, v);
+        if (kind === "t") tom(ft, v, amp(ft, 0.3)); else snare(ft, amp(ft, v));
       });
     } else if (halfTime) {
-      if (st === 0) kick(t, 0.85);
-      if (st === 8) snare(t, 0.3);
+      if (st === 0) kick(t, amp(t, 0.85));
+      if (st === 8) snare(t, amp(t, 0.3));
     } else {
-      if (KICKA.indexOf(st + half) >= 0) kick(t, st === 0 ? 0.85 : 0.6);
-      if (SNARE.indexOf(st) >= 0) snare(t, 0.3);
-      if (dens >= 2 && GHOST.indexOf(st) >= 0) snare(t, 0.05);
+      const hand = b.solo ? trading(barIdx) : 1;
+      if (KICKA.indexOf(st + half) >= 0) kick(t, amp(t, st === 0 ? 0.85 : 0.6));
+      if (SNARE.indexOf(st) >= 0) snare(t, amp(t, 0.3));
+      if (dens >= 2 && GHOST.indexOf(st) >= 0) snare(t, amp(t, 0.05));
+      /* the drummer's four bars: busier, and answering rather than keeping time */
+      if (hand >= 2) {
+        if (st === 2 || st === 9) tom(t, 220, amp(t, 0.22));
+        if (st === 5 || st === 13) tom(t, 170, amp(t, 0.2));
+        if (st === 3 || st === 11) snare(t, amp(t, 0.12));
+      }
     }
-    /* DENSITY IS COMPOSITIONAL. The vamp is where the player reads. */
-    if (halfTime) { if (st % 4 === 0) hat(t, 0.03); }
-    else if (dens === 1) { if (st % 2 === 0) hat(t, st % 4 === 0 ? 0.042 : 0.024); }
-    else hat(t, st % 4 === 0 ? 0.048 : st % 2 === 0 ? 0.028 : 0.016, st === 14 && !filling);
-    if (st === 0 && barIdx === 0 && dens >= 2) crash(t, 0.14);
+    if (halfTime) { if (st % 4 === 0) hat(t, amp(t, 0.03)); }
+    else if (dens === 1) { if (st % 2 === 0) hat(t, amp(t, st % 4 === 0 ? 0.042 : 0.024)); }
+    else hat(t, amp(t, st % 4 === 0 ? 0.048 : st % 2 === 0 ? 0.028 : 0.016),
+             st === 14 && !filling);
+    if (st === 0 && barIdx === 0 && dens >= 2) crash(t, amp(t, 0.14));
 
-    /* COMPING on the shared accents, thinned by density. */
+    /* ---- COMPING, thinned by density. The vamp is where the player
+       reads, so it loses the electric piano entirely. ---- */
     if (!halfTime && COMPA.indexOf(st + half) >= 0 &&
         (dens >= 2 || (st + half) === COMPA[1] || (st + half) === COMPA[3]))
-      V.forEach((m, i) => gtr(t + i * 0.005, hz(m + 12 + keyNow), 0.16, 0.075));
+      V.forEach((m, i) => gtr(t + i * 0.005, hz(m + 12 + keyNow), 0.16, amp(t, 0.075)));
     if (!halfTime && dens >= 2 && (st === 6 || st === 13))
-      V.forEach((m, i) => rhodes(t + i * 0.008, hz(m + keyNow), SPB * 0.8, 0.15));
+      V.forEach((m, i) => rhodes(t + i * 0.008, hz(m + keyNow), SPB * 0.8, amp(t, 0.15)));
     if (st === 0) pad(t, V.map(m => hz(m + keyNow)), SPB * BEATS);
     if (st === 0 && dens >= 3 && !b.m) reed(t, hz(V[V.length - 1] + keyNow), SPB * 3);
 
-    /* THE TUNE, guitar and electric piano in unison. */
+    /* ---- THE TUNE, guitar and electric piano in unison. The horn
+       doubles it an octave up only when the arc is at its loudest,
+       which is what makes the last statement the big one. ---- */
     if (b.m) b.m.forEach(([m, beat, d]) => {
       if (Math.abs(beat * DIV - st) > 0.001) return;
-      gtr(t, hz(m + keyNow), d * SPB * 0.9, 0.15);
-      rhodes(t, hz(m - 12 + keyNow), d * SPB * 0.9, 0.18);
-      horn(t, hz(m + keyNow), d * SPB * 0.85, 0.05);
+      const big = dynAt(t) > 0.9;
+      gtr(t, hz(m + keyNow), d * SPB * 0.9, amp(t, 0.15));
+      rhodes(t, hz(m - 12 + keyNow), d * SPB * 0.9, amp(t, 0.18));
+      horn(t, hz(m + (big ? 12 : 0) + keyNow), d * SPB * 0.85, amp(t, big ? 0.10 : 0.05));
     });
-    if (b.solo) improvise(t, ch, st);
+    if (b.solo && trading(barIdx) !== 2)
+      improvise(t, ch, st, barIdx / (SECTIONS[ITINERARY[secIdx]].bars.length - 1));
   }
 
   function loop() {
@@ -602,34 +750,38 @@ const Music = (function () {
     if (!ctx) return;
     UNISON.forEach((m, i) => {
       const t = at + i * STEP;
-      gtr(t, hz(m + k), STEP * 1.5, 0.15);
-      rhodes(t, hz(m - 12 + k), STEP * 1.4, 0.20);
-      horn(t, hz(m + 12 + k), STEP * 1.4, 0.10);
-      bass(t, hz(m - 24 + k), STEP * 1.2, 0.28);
+      gtr(t, hz(m + k), STEP * 1.5, amp(t, 0.15));
+      rhodes(t, hz(m - 12 + k), STEP * 1.4, amp(t, 0.20));
+      horn(t, hz(m + 12 + k), STEP * 1.4, amp(t, 0.10));
+      bass(t, hz(m - 24 + k), STEP * 1.2, amp(t, 0.28));
     });
   }
   function runUp(at, k) {
     if (!ctx) return;
     RUN.forEach((m, i) => {
       const t = at + i * STEP;
-      gtr(t, hz(m + k), STEP * 1.2, 0.06 + i * 0.005);
+      /* the run IS a crescendo: it gets louder as it climbs */
+      gtr(t, hz(m + k), STEP * 1.2, amp(t, 0.06 + i * 0.006));
       if (i % 4 === 0) hat(t, 0.03);
     });
   }
-  function plane(at, k, V) {
+  /* Chromatic approach. `dir` 1 climbs into the bar and lands; -1 walks
+     down out of it, which is the same gesture meaning the opposite. */
+  function plane(at, k, V, dir) {
     if (!ctx) return;
+    const d = dir < 0 ? -1 : 1;
     [-3, -2, -1].forEach((off, i) => {
       const t = at - (3 - i) * STEP;
       if (t < ctx.currentTime) return;
-      V.forEach((m, j) => gtr(t + j * 0.004, hz(m + 12 + k + off), 0.12, 0.09));
+      V.forEach((m, j) => gtr(t + j * 0.004, hz(m + 12 + k + off * d), 0.12, amp(t, 0.09)));
     });
   }
   function hit(at, k, V) {
     if (!ctx) return;
-    V.forEach((m, j) => gtr(at + j * 0.004, hz(m + 12 + k), 0.2, 0.13));
-    rhodes(at, hz(V[0] + k), SPB * 0.6, 0.24);
-    bass(at, hz(V[0] - 24 + k), SPB * 0.5, 0.32);
-    kick(at, 0.7);
+    V.forEach((m, j) => gtr(at + j * 0.004, hz(m + 12 + k), 0.2, amp(at, 0.13)));
+    rhodes(at, hz(V[0] + k), SPB * 0.6, amp(at, 0.24));
+    bass(at, hz(V[0] - 24 + k), SPB * 0.5, amp(at, 0.32));
+    kick(at, amp(at, 0.7));
   }
 
   /* ---------- transport ---------- */
@@ -639,6 +791,8 @@ const Music = (function () {
     playing = true; step = 0; nextTime = ctx.currentTime + 0.1;
     secIdx = 0; barIdx = 0; current = null; barCount = 0; jumpTo = null;
     keyNow = 0; keyNext = null; halfTime = false; lastVoicing = null;
+    stopBars = 0; shoutAt = -1; soloNote = 70;
+    dynFrom = ARC[0]; dynTo = ARC[0]; dynT0 = 0; dynT1 = 0;
     BED.forEach(id => ramp(id, level(id), ctx.currentTime, 1.5));
     loop();
   }
@@ -653,45 +807,73 @@ const Music = (function () {
   function restore(t, glide) { BED.forEach(id => ramp(id, level(id), t, glide || 1.0)); }
   const V = () => lastVoicing || [57, 60, 64, 67];
 
-  /* ---------- the moods ---------- */
+  /* ---------------------------------------------------------------
+     THE MOODS.
+
+     Each is a DEVICE — what the band does — and several now take a
+     `force` between 0 and 1: how decisive the thing that happened was.
+     The engine has always known whether a division was a squeaker or a
+     landslide and the score never asked, so every win sounded the same
+     size. It does not now.
+     --------------------------------------------------------------- */
+  const force01 = f => (typeof f === "number" && isFinite(f))
+    ? Math.max(0, Math.min(1, f)) : 0.5;
+
+  /* A DIVISION IS CALLED — STOP TIME, and this is the real thing now:
+     the band hits one and leaves the bar empty, twice, then the result
+     overrides it. A fade said nothing in the two seconds it had. */
   function tension() {
     if (!playing || !ctx) return;
-    const t = ctx.currentTime;
-    halfTime = true;
-    ramp("pad", 0, t, 0.25); ramp("keys", 0, t, 0.2);
-    ramp("gtr", 0, t, 0.2); ramp("reed", 0, t, 0.3);
-    ramp("drums", level("drums") * 0.8, t, 0.3);
+    stopBars = 2; halfTime = false; shoutAt = -1;
+    swell(0.62, 0.15);
   }
-  function moment() {
+
+  /* A BILL CARRIES. Up the key, into the head, unison lick on the way
+     in — and on a landslide the whole band plays the shout chorus,
+     which is the loudest thing this score can do and is now reserved
+     for something that deserves it. */
+  function moment(f) {
+    const w = force01(f);
     if (!playing || !ctx) return;
     const t = ctx.currentTime, bar = nextBarTime();
-    halfTime = false;
-    keyNext = clampKey(keyNow + 2);
+    halfTime = false; stopBars = 0;
+    keyNext = clampKey(keyNow + (w < 0.25 ? 1 : w > 0.7 ? 3 : 2));
     jumpTo = sectionIndex("HEAD");
     restore(t, 0.4);
+    swell(0.85 + 0.15 * w, BEATS * SPB, t);
     ramp("drums", 0.19, t, 0.35); ramp("lead", 0.17, t, 0.35);
     unison(nextStepTime(), soonKey());
-    crash(bar, 0.20);
+    crash(bar, amp(bar, 0.20));
+    if (w > 0.7) shoutAt = barCount + 1;            /* the shout chorus */
     const back = bar + 4 * BEATS * SPB;
     ramp("drums", level("drums"), back, 0.9);
     ramp("lead", 0, back, 0.9);
   }
-  function defeat() {
+
+  /* A BILL IS LOST. Down the key and into the bridge, which is out of
+     the home mode entirely, and the ensemble drops with it. */
+  function defeat(f) {
+    const w = force01(f);
     if (!playing || !ctx) return;
     const t = ctx.currentTime;
-    halfTime = false;
-    keyNext = clampKey(keyNow - 3);
+    halfTime = false; stopBars = 0; shoutAt = -1;
+    keyNext = clampKey(keyNow - (w < 0.25 ? 2 : w > 0.7 ? 4 : 3));
     jumpTo = sectionIndex("BRIDGE");
     ramp("lead", 0, t, 0.4); ramp("gtr", 0, t, 0.5); ramp("keys", 0, t, 0.5);
     ramp("drums", level("drums") * 0.6, t, 0.6);
+    swell(0.42 - 0.10 * w, BEATS * SPB, t);
     restore(t + 2 * BEATS * SPB, 1.6);
+    swell(0.6, 4 * BEATS * SPB, t + 2 * BEATS * SPB);
   }
+
   function rise() {
     if (!playing || !ctx) return;
     const t = ctx.currentTime, bar = nextBarTime();
-    halfTime = false; keyNext = 0;
+    halfTime = false; stopBars = 0; keyNext = 0;
     jumpTo = sectionIndex("HEAD");
     runUp(Math.max(t, bar - PER_BAR * STEP), soonKey());
+    swell(0.35, 0.05, t);
+    swell(0.95, PER_BAR * STEP, t + 0.05);          /* the run is a crescendo */
     crash(bar, 0.24);
     restore(t, 1.2);
     ramp("drums", 0.18, t, 1.0); ramp("lead", 0.15, t, 1.0);
@@ -699,41 +881,78 @@ const Music = (function () {
     ramp("drums", level("drums"), back, 1.0);
     ramp("lead", 0, back, 1.0);
   }
+
   function sombre() {
     if (!playing || !ctx) return;
     const t = ctx.currentTime;
-    halfTime = true; keyNext = 0;
+    halfTime = true; stopBars = 0; shoutAt = -1; keyNext = 0;
     jumpTo = sectionIndex("BRIDGE");
     ramp("lead", 0, t, 0.4); ramp("gtr", 0, t, 0.6); ramp("keys", 0, t, 0.8);
     ramp("drums", 0, t, 1.4);
     ramp("reed", level("reed") * 0.5, t, 1.0);
+    swell(0.3, 3, t);
     restore(t + 8, 3.0);
   }
+
+  /* A promise is not an outcome: one hit, no key change, no jump. */
   function undertake() {
     if (!playing || !ctx) return;
     hit(nextStepTime(), keyNow, V());
   }
+  /* An order is in force the moment it is signed, so it arrives rather
+     than builds: the chord planes UP chromatically and lands. */
   function order() {
     if (!playing || !ctx) return;
     const bar = nextBarTime();
-    plane(bar, keyNow, V()); hit(bar, keyNow, V());
+    plane(bar, keyNow, V(), 1); hit(bar, keyNow, V());
   }
+  /* AND ITS OPPOSITE. A prayer carried against an order takes it out of
+     force, so the same figure runs DOWNWARD and lands on nothing —
+     the one gesture in the score that is another gesture reversed. */
+  function revoke() {
+    if (!playing || !ctx) return;
+    const bar = nextBarTime();
+    plane(bar, keyNow, V(), -1);
+    swell(0.45, BEATS * SPB, bar);
+    swell(0.6, 4 * BEATS * SPB, bar + BEATS * SPB);
+  }
+
+  /* THE SIGNATURES REACH THE BALLOT THRESHOLD. The most dramatic thing
+     that can happen to the player short of losing, and until now the
+     score did not notice it at all. It is not a defeat — nothing has
+     been lost yet — so nothing jumps and nothing resolves: the key
+     slips a semitone, the band thins, and a chromatic figure walks
+     down where the order's figure walks up. Something is coming. */
+  function threat() {
+    if (!playing || !ctx) return;
+    const t = ctx.currentTime, bar = nextBarTime();
+    halfTime = false; shoutAt = -1;
+    keyNext = clampKey(keyNow - 1);
+    plane(bar, keyNow, V(), -1);
+    ramp("keys", 0, t, 0.8); ramp("lead", 0, t, 0.5);
+    swell(0.40, 2 * BEATS * SPB, t);
+    ramp("keys", level("keys"), t + 6, 2.5);
+    swell(0.58, 4 * BEATS * SPB, t + 6);
+  }
+
   /* PROROGATION — THE ONE CADENCE. Every ii-V inside the head resolves;
      the FORM does not, which is what lets three minutes pass without
-     announcing a loop. This is the single exception. */
+     announcing a loop. This is the single exception in the score. */
   function prorogue() {
     if (!playing || !ctx) return;
     const t = ctx.currentTime, bar = nextBarTime();
-    halfTime = false;
+    halfTime = false; stopBars = 0; shoutAt = -1;
     const A7 = voicing(9, "dom7b9"), DM = voicing(2, "m11");
     const pre = Math.max(t, bar - 2 * STEP);
-    A7.forEach((m, i) => rhodes(pre + i * 0.01, hz(m), SPB, 0.22));
-    bass(pre, hz(33), SPB * 0.9, 0.3);
+    swell(0.9, Math.max(0.05, pre - t), t);          /* lean into it */
+    A7.forEach((m, i) => rhodes(pre + i * 0.01, hz(m), SPB, amp(pre, 0.22)));
+    bass(pre, hz(33), SPB * 0.9, amp(pre, 0.3));
     hit(bar, 0, DM);
-    DM.forEach((m, i) => rhodes(bar + i * 0.012, hz(m), SPB * 2.4, 0.24));
+    DM.forEach((m, i) => rhodes(bar + i * 0.012, hz(m), SPB * 2.4, amp(bar, 0.24)));
     crash(bar, 0.18);
     keyNext = 0; jumpTo = sectionIndex("VAMP");
     ramp("lead", 0, t, 0.3);
+    swell(0.5, 2 * BEATS * SPB, bar + BEATS * SPB);
     restore(bar + BEATS * SPB, 1.6);
   }
 
@@ -753,6 +972,7 @@ const Music = (function () {
     init: init, start: start, stop: stop, apply: apply,
     tension: tension, moment: moment, defeat: defeat, rise: rise, sombre: sombre,
     undertake: undertake, order: order, prorogue: prorogue,
+    revoke: revoke, threat: threat,
     available: () => !!ctx,
     state: () => ({
       playing: playing,
@@ -763,6 +983,8 @@ const Music = (function () {
       density: playing && current ? dens : null,
       key: NOTE[pc(2 + keyNow)] + (keyNow ? (keyNow > 0 ? " +" : " ") + keyNow : ""),
       semitones: keyNow, halfTime: halfTime,
+      dyn: Math.round(dynAt(ctx ? ctx.currentTime : 0) * 100) / 100,
+      stopTime: stopBars > 0, shout: shoutAt >= 0,
       levels: LAYERS.reduce((o, l) => {
         o[l.id] = gains[l.id] ? Math.round(gains[l.id].gain.value * 1000) / 1000 : null;
         return o;
@@ -775,7 +997,8 @@ const Music = (function () {
               KEY_MIN: KEY_MIN, KEY_MAX: KEY_MAX, BED: BED,
               LAYERS: LAYERS.map(l => l.id),
               MOODS: ["tension","moment","defeat","rise","sombre",
-                      "undertake","order","prorogue"],
+                      "undertake","order","prorogue","revoke","threat"],
+              ARC: ARC, SHOUT: SHOUT, TURNFILL: TURNFILL,
               voicing: voicing, snap: snap }
   };
 })();
