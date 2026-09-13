@@ -367,6 +367,30 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
        CONTENT.parties.every(p => back.parties[p.id]));
   }
 
+  /* And one layer down again: instruments, bills and characters added to
+     content left older saves without the key, and the order paper and the
+     instruments panel read st.instruments[id] unguarded — so the render threw
+     and the panels went blank. This is exactly what a save written before the
+     escalation ladder hit, and why it "needed a new save". */
+  {
+    const fresh = Engine.newGame(CONTENT);
+    const lastSi = CONTENT.instruments[CONTENT.instruments.length - 1];
+    const lastBill = CONTENT.bills[CONTENT.bills.length - 1];
+    const lastCh = CONTENT.characters[CONTENT.characters.length - 1];
+    delete fresh.instruments[lastSi.id];
+    delete fresh.bills[lastBill.id];
+    delete fresh.characters[lastCh.id];
+    const back = Engine.load(Engine.save(fresh), CONTENT);
+    ok("a save missing an instrument regains it", !!back.instruments[lastSi.id]);
+    ok("a save missing a bill regains it", !!back.bills[lastBill.id]);
+    ok("a save missing a character regains it", !!back.characters[lastCh.id]);
+    const n = Engine.lastReconcile() || {};
+    ok("and all three are reported as added",
+       (n.instrumentsAdded || []).indexOf(lastSi.id) >= 0 &&
+       (n.billsAdded || []).indexOf(lastBill.id) >= 0 &&
+       (n.charactersAdded || []).indexOf(lastCh.id) >= 0);
+  }
+
   /* The cabinet lives in the save, so a recast in content leaves an old holder
      id behind and the panel prints the raw id. load() must repair it, and a
      ministry content has added must appear. */

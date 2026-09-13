@@ -240,7 +240,8 @@ const Engine = (function () {
     if (!C) return st;
     const notes = { stationsAdded: [], stationsDropped: [], seatsAdded: [], seatsDropped: [],
                     partiesAdded: [], currentsAdded: [], cabinetAdded: [], cabinetRepaired: [],
-                    functionalAdded: [], functionalDropped: [] };
+                    functionalAdded: [], functionalDropped: [], instrumentsAdded: [],
+                    billsAdded: [], charactersAdded: [] };
 
     st.stations = st.stations || {};
     C.stations.forEach(s0 => {
@@ -334,6 +335,35 @@ const Engine = (function () {
       }
     });
     syncFunctional(st, C);
+
+    /* INSTRUMENTS, BILLS AND CHARACTERS THE SAVE HAS NEVER SEEN. The same rule
+       as parties above, and the same failure: content added after a save was
+       written leaves st.instruments[id] undefined, the order paper and the
+       instruments panel read it, and the render throws and leaves blank panels.
+       This is what bit a save written before the escalation ladder. Content owns
+       identity; the save owns what play has done to it, so a new one is seeded
+       in its opening state and an existing one is left exactly as it is. */
+    st.instruments = st.instruments || {};
+    (C.instruments || []).forEach(i0 => {
+      if (st.instruments[i0.id]) return;
+      st.instruments[i0.id] = {
+        id: i0.id, made: false, inForce: false, revoked: false,
+        madeAt: null, prayerCloses: null, effectApplied: false };
+      notes.instrumentsAdded.push(i0.id);
+    });
+    st.bills = st.bills || {};
+    (C.bills || []).forEach(b0 => {
+      if (st.bills[b0.id]) return;
+      st.bills[b0.id] = { id: b0.id, stage: b0.stage, dead: false, amendments: [] };
+      notes.billsAdded.push(b0.id);
+    });
+    st.characters = st.characters || {};
+    (C.characters || []).forEach(ch0 => {
+      if (st.characters[ch0.id]) return;
+      st.characters[ch0.id] = { id: ch0.id,
+        relationship: ch0.relationship == null ? 50 : ch0.relationship, alive: true };
+      notes.charactersAdded.push(ch0.id);
+    });
 
     /* Notes live on the module, not on the state. Anything written onto st
        here would be saved, reloaded and compared, and a save would stop
@@ -1564,7 +1594,7 @@ const Engine = (function () {
         roll.held[pid] = (roll.held[pid] || 0) + v[fid][pid];
         if (roll.held[pid] <= 0) delete roll.held[pid];
       });
-      syncFunctional(st, C);
+    syncFunctional(st, C);
     }),
     /* One verb, not two. `{flag:"x"}` sets, `{flag:{x:false}}` clears.
        The old `unflag` verb is gone: it was the same operation with the
