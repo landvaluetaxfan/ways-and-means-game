@@ -1,6 +1,6 @@
 # FINISHING THE ENGINE — THE COMPLETION PLAN
 
-**13 September 2026.** Sixteen documents specifying every remaining engine system,
+**13 September 2026.** Seventeen documents specifying every remaining engine system,
 in dependency order, to the point where `js/engine.js` is done and the project is
 content work plus interface work and nothing else.
 
@@ -196,6 +196,7 @@ binding constraint, and no document here should be built as a block ahead of it.
 | `13-money-and-supply.md` | the fiscal currency, the Appropriation Bill, what confidence-and-supply means | canon, then Claude |
 | `14-the-player-character.md` | how malleable Flash is, what must already be true about her, what the player is expected to do | the narrative pass |
 | `15-the-calendar.md` | the session, prorogation, and giving a division a day — **do this early** | Claude |
+| `16-the-score.md` | what Casiopea does that we can use, an audit of every musical interruption, and the gap list | Claude |
 
 Every document ends with an **Acceptance** section naming the assertions that
 must exist in `npm run check` before it can be called done. That is the project's
