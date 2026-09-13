@@ -238,6 +238,11 @@ const Music = (function () {
   function stop() {
     playing = false;
     if (timer) { clearTimeout(timer); timer = null; }
+    /* ramp() guards on ctx, but ctx.currentTime is read BEFORE the call, so
+       the guard never runs. stop() is exported, and build() leaves ctx null
+       when Web Audio is absent or blocked — which is precisely the machine
+       this module promises not to throw on. */
+    if (!ctx) return;
     LAYERS.forEach(l => ramp(l.id, 0, ctx.currentTime, 0.6));
   }
 

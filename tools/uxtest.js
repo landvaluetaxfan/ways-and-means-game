@@ -1117,4 +1117,53 @@ try {
   }
 } catch (e) { ok("the faction breakdown renders", false, e.message); }
 
+/* ---------------------------------------------------------------------
+   THE ADAPTIVE BED IS STILL PLUGGED IN.
+
+   ui.js reaches the music through `score(name)`, which is a dynamic
+   lookup guarded by `Music[name] &&`. That guard is right — the bed must
+   never break the interface — but it means a RENAME IN music.js
+   disables a swell silently and forever, with no error and nothing on
+   screen. The Options screen promises "a slow bed that swells when a
+   bill carries"; nothing else in the build checks that it does.
+   --------------------------------------------------------------------- */
+try {
+  const uisrc = require("fs").readFileSync("js/ui.js", "utf8") +
+                require("fs").readFileSync("js/shell.js", "utf8");
+  /* Every string literal inside a score(...) call, not just a bare one:
+     the result swell is chosen by a ternary, score(r.carries ? … : …),
+     and a scan that only reads bare literals would report the two swells
+     that DO fire as dead. */
+  const inScore = [...uisrc.matchAll(/\bscore\(([^)]*)\)/g)]
+    .flatMap(m => [...m[1].matchAll(/"([a-z]+)"/g)].map(x => x[1]));
+  const asked = [...new Set(
+    inScore.concat([...uisrc.matchAll(/\bMusic\.([a-z]+)\(/g)].map(m => m[1])))];
+  ok("the interface asks the bed for something", asked.length >= 4,
+     asked.join(", "));
+
+  const has = w.eval("typeof Music === 'undefined' ? null : Object.keys(Music)");
+  ok("the music module is loaded in the page", Array.isArray(has));
+  if (Array.isArray(has)) {
+    const missing = asked.filter(n => has.indexOf(n) < 0);
+    ok("and answers to every name the interface uses", missing.length === 0,
+       missing.length ? "MISSING: " + missing.join(", ") : asked.length + " names");
+
+    /* The other direction. A swell nobody triggers is the audio version of
+       a number nobody sees, and this file already fails an explanation
+       that nothing anchors for the same reason. */
+    const moods = ["tension", "moment", "defeat", "rise", "sombre"];
+    const unused = moods.filter(n => has.indexOf(n) >= 0 && asked.indexOf(n) < 0);
+    ok("and no swell is written that nothing fires", unused.length === 0,
+       unused.length ? "NEVER CALLED: " + unused.join(", ") : moods.length + " moods wired");
+  }
+
+  /* It must survive a machine with no Web Audio at all — the module says so
+     in its own header, and stop() read ctx.currentTime before the guard. */
+  const safe = w.eval(`(function () {
+    try { Music.stop(); Music.stop(); return "ok"; }
+    catch (e) { return e.message; }
+  })()`);
+  ok("and stopping a bed that never started does not throw", safe === "ok", safe);
+} catch (e) { ok("the adaptive bed is wired", false, e.message); }
+
 H.finish("the interface is healthy");
