@@ -3,6 +3,32 @@
 *What Casiopea actually does, which of it survives our constraints, and an
 audit of every interruption the build currently has.*
 
+> **STATUS, 13 September 2026 — THIS IS A PLAN, NOT A DESCRIPTION.**
+>
+> §5's recommendations were built and then deliberately reverted. The
+> full fusion score — sections, an itinerary, transposition, a
+> cell-derived head, FM voices, an improviser, an arrangement arc — got
+> close enough to show that the remaining distance is drums, and drums
+> are a sampling problem this project cannot solve. It was more machinery
+> than a text game's bed can justify, and the author called it: too
+> ambitious to finish well in one pass.
+>
+> **The bed is opencode's eight-bar loop again**, at 72 BPM in D minor.
+> Three things were kept out of the whole exercise, because each fixes
+> something that was actually broken rather than adding ambition:
+>
+> 1. the gain-timeline anchor (§ the silent bed — this was the "no music
+>    on mobile" report, and it is not optional);
+> 2. gestures quantised to the grid, so a figure lands with the band;
+> 3. **ten moods instead of five**, which is §3.3's coverage gap closed:
+>    an undertaking, an order made, an order revoked, the signatures
+>    reaching the ballot threshold, and prorogation all had no musical
+>    response at all.
+>
+> Everything else here stands as the plan if the score is ever picked up
+> again. The analysis in §§1–4 is unchanged and still accurate about the
+> reference track and the limits.
+
 **Reference track: "Tears of the Star" (ティアーズ・オブ・ザ・スター), Issei Noro,
 1979; the known reading is the *Mint Jams* live cut, 4:29.** G minor. The
 transcriptions in circulation give two readings of the changes — `Gm7 · Fm7 ·

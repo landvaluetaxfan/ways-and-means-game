@@ -346,22 +346,7 @@ const UI = (function () {
   function cue(name) { if (typeof Sound !== "undefined") Sound.play(name); }
   /* The adaptive bed, driven from the same places as the cues: a bill carries
      and the drums enter; the government falls and the bed thins out. */
-  function score(name, force) {
-    if (typeof Music !== "undefined" && Music[name]) Music[name](force);
-  }
-  /* HOW DECISIVE WAS IT, 0 to 1. The engine has always known whether a
-     division was a squeaker or a landslide; the score never asked, so
-     every win sounded the same size. A dual-majority bill is measured on
-     whichever tier was tighter, because that is the one that decided it. */
-  function decisiveness(r) {
-    if (!r || !r.popular) return 0.5;
-    const share = tier => {
-      const room = tier.carries ? tier.total - tier.need : tier.need;
-      return room > 0 ? Math.abs(tier.aye - tier.need) / room : 0.5;
-    };
-    const p = share(r.popular);
-    return r.dual ? Math.min(p, share(r.functional)) : p;
-  }
+  function score(name) { if (typeof Music !== "undefined" && Music[name]) Music[name](); }
 
   /* Called after anything that moved the game on. A government falls once,
      so the knell is edge-triggered rather than drawn from the current state
@@ -957,7 +942,7 @@ const UI = (function () {
       ms: 520,
       run: () => {
         cue(r.carries ? "aye" : "nay");
-        score(r.carries ? "moment" : "defeat", decisiveness(r));
+        score(r.carries ? "moment" : "defeat");
         if (!verdict) return;
         verdict.textContent = r.carries
           ? (out.assent && out.assent.referred

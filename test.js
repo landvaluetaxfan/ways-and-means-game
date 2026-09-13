@@ -636,14 +636,11 @@ console.log("\nCURRENTS IN A DIVISION:");
 /* ---------------------------------------------------------------------
    THE BED IS IN TUNE.
 
-   Four eight-bar sections of hand-typed MIDI. A mistyped number is a
-   wrong note that every static check passes and nobody hears until the
-   arrangement happens to reach that bar, once, two minutes in. These
-   also hold the claims the whole design rests on — rootless voicings, a
-   join that cannot cadence, a mode that is only left on purpose —
-   because a claim nothing checks is a claim that rots.
+   Eight bars of hand-typed MIDI. A mistyped number is a wrong note that
+   every static check passes and nobody hears until the loop happens to
+   reach that bar.
    --------------------------------------------------------------------- */
-console.log("\nTHE SCORE:");
+console.log("\nTHE ADAPTIVE BED:");
 (function () {
   let bad = 0;
   const ok = (l, c, extra) => { if (!c) bad++;
@@ -656,201 +653,71 @@ console.log("\nTHE SCORE:");
   const NAME = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
   const pc = m => ((m % 12) + 12) % 12;
   const named = ms => ms.map(m => NAME[pc(m)]).join(" ");
+  /* D natural minor: D E F G A Bb C */
+  const KEY = [2, 4, 5, 7, 9, 10, 0];
 
-  const walk = [];
-  F.ITINERARY.forEach(name =>
-    F.SECTIONS[name].bars.forEach((b, j) =>
-      walk.push({ b: b, sec: name, d: F.SECTIONS[name].d, at: name + (j + 1) })));
-
-  ok("the form is long enough not to announce its own loop", walk.length >= 64,
-     walk.length + " bars = " + (walk.length * F.BEATS * 60 / F.BPM).toFixed(0) +
+  ok("the bed is the eight-bar loop it was written as",
+     F.BARS === F.PROG.length && F.PROG.length === 8,
+     F.BARS + " bars = " + (F.BARS * F.BEATS * 60 / F.BPM).toFixed(0) +
      "s at " + F.BPM + " BPM");
-  ok("and the itinerary uses every section it defines",
-     Object.keys(F.SECTIONS).every(k => F.ITINERARY.indexOf(k) >= 0),
-     F.ITINERARY.join(" "));
 
-  const unknown = [];
-  walk.forEach(({ b, at }) => b.c.forEach(n => {
-    if (!F.CH[n]) unknown.push(at + " " + n);
-    else if (!F.TYPE[F.CH[n][1]]) unknown.push(at + " type " + F.CH[n][1]);
-  }));
-  ok("every chord resolves to a root and a type", unknown.length === 0,
-     unknown.join("; ") || Object.keys(F.CH).length + " chords, " +
-     Object.keys(F.TYPE).length + " types");
-
-  const rooted = Object.keys(F.TYPE).filter(t => F.TYPE[t].v.indexOf(0) >= 0);
-  ok("every voicing leaves its root to the bass", rooted.length === 0,
-     rooted.join(", ") || Object.keys(F.TYPE).length + " types rootless");
-
-  /* ---- THE ONE IDEA. Everything below is the thing the last score
-     did not have: parts that know about each other. ---- */
-
-  /* THE CELL IS SEQUENCED. The previous head was sixteen bars of
-     sixteen distinct melodic shapes, which is not a tune — the ear has
-     nothing to recognise coming back. Written as scale degrees, one
-     figure over three chord areas IS the repetition. */
-  const head = F.SECTIONS.HEAD.bars;
-  const phrases = [];
-  for (let i = 0; i < head.length; i += 2) {
-    const ns = (head[i].m || []).concat(head[i + 1].m || []).map(x => x[0]);
-    if (ns.length) phrases.push({ f: head[i].f, ns: ns,
-      shape: ns.map((n, j) => j ? n - ns[j - 1] : "").slice(1).join(",") });
-  }
-  ok("the head is built from repeated phrases, not continuous invention",
-     phrases.length >= 6 && new Set(phrases.map(p => p.shape)).size <= phrases.length * 0.6,
-     phrases.length + " two-bar phrases, " +
-     new Set(phrases.map(p => p.shape)).size + " distinct shapes");
-  ok("and the cell appears more often than the answer to it",
-     phrases.filter(p => p.f === "a").length > phrases.filter(p => p.f === "b").length,
-     phrases.map(p => p.f).join(" "));
-  ok("the same figure really does move to new harmony",
-     new Set(phrases.filter(p => p.f === "a").map(p => p.ns.join(","))).size >= 4,
-     phrases.filter(p => p.f === "a").map(p => named(p.ns)).join("  |  "));
-
-  /* THE RHYTHM SECTION AGREES WITH THE TUNE. Not unison — the band
-     shares some accents with the melody and differs on the rest, which
-     is what an arrangement is. A bass indexed off a global counter, as
-     the last one was, agrees with nothing. */
-  const onsets = new Set();
-  Object.keys(F.FIGS).forEach(k => F.FIGS[k].forEach(([b]) => onsets.add(Math.round(b * 4))));
-  const shared = F.ACC.filter(a => onsets.has(a));
-  ok("the rhythm section shares accents with the cell",
-     shared.length >= 2 && shared.length < F.ACC.length,
-     shared.length + " of " + F.ACC.length + " shared, so they agree and are not in unison");
-  ok("and the kick and the comping read the same list",
-     F.KICKA.every(a => F.ACC.indexOf(a) >= 0) &&
-     F.COMPA.every(a => F.ACC.indexOf(a) >= 0));
-
-  /* DENSITY IS COMPOSITIONAL. The player reads three hundred words of
-     parliamentary prose over this, so the sparse section has to be most
-     of the record and the tune has to be an event. */
-  const vamp = walk.filter(x => x.sec === "VAMP").length;
-  ok("the sparse section is most of the record",
-     vamp >= walk.length * 0.4, vamp + " of " + walk.length + " bars, " +
-     Math.round(100 * vamp / walk.length) + "%");
-  ok("and it really is the sparsest thing in the form",
-     F.SECTIONS.VAMP.d === Math.min(...Object.keys(F.SECTIONS).map(k => F.SECTIONS[k].d)),
-     Object.keys(F.SECTIONS).map(k => k + " " + F.SECTIONS[k].d).join(", "));
-  ok("while the tune is the densest, and rare",
-     F.SECTIONS.HEAD.d === Math.max(...Object.keys(F.SECTIONS).map(k => F.SECTIONS[k].d)) &&
-     F.ITINERARY.filter(x => x === "HEAD").length <= 2,
-     F.ITINERARY.filter(x => x === "HEAD").length + " statements of the head");
-
-  /* ---- and the things that were already right ---- */
-
-  const HOME = [2, 4, 5, 7, 9, 11, 0];
-  const away = [...new Set(walk.flatMap(({ b }) => b.c.filter(n => {
-    const [r, t] = F.CH[n];
-    return F.TYPE[t].s.some(i => HOME.indexOf(pc(r + i)) < 0);
-  })))];
-  ok("the tune leaves the home mode and comes back", away.length >= 3,
-     away.length + " chords outside D dorian");
-
-  const twoChord = walk.filter(x => x.b.c.length > 1).length;
-  ok("the harmony moves inside the bar, not just across it",
-     twoChord >= walk.length / 8,
-     twoChord + " of " + walk.length + " bars change chord at the half");
-
-  /* Every note of the tune against the chord under it. It is generated
-     now rather than typed, so this checks the GENERATOR. */
-  const wrong = [];
-  walk.forEach(({ b, at }) => (b.m || []).forEach(([m, beat]) => {
-    const nm = b.c.length > 1 && beat >= F.BEATS / 2 ? b.c[1] : b.c[0];
-    const [r, t] = F.CH[nm];
-    if (F.TYPE[t].s.indexOf(pc(m - r)) < 0)
-      wrong.push(at + " beat " + beat + ": " + NAME[pc(m)] + " over " + nm);
-  }));
-  const melNotes = walk.reduce((n, x) => n + (x.b.m ? x.b.m.length : 0), 0);
-  ok("every note of the tune is in the scale of its own chord",
-     wrong.length === 0, wrong.join("; ") || melNotes + " melody notes checked");
-
-  const mel = walk.flatMap(x => (x.b.m || []).map(h => h[0]));
-  ok("the tune has a singer's range and stays in one",
-     Math.max(...mel) - Math.min(...mel) >= 12 && Math.max(...mel) <= 88 &&
-     Math.min(...mel) >= 60,
-     named([Math.min(...mel)]) + " to " + named([Math.max(...mel)]) + ", MIDI " +
-     Math.min(...mel) + "-" + Math.max(...mel));
-  const leaps = mel.filter((m, i) => i && Math.abs(m - mel[i - 1]) >= 3).length;
-  ok("with leaps in it and not just steps", leaps >= mel.length / 6,
-     leaps + " intervals of a third or more");
-
-  const last = walk[walk.length - 1].b, first = walk[0].b;
-  ok("the form does not cadence into its own first bar",
-     pc(F.CH[last.c[last.c.length - 1]][0]) !== pc(F.CH[first.c[0]][0] + 7),
-     last.c[last.c.length - 1] + " -> " + first.c[0]);
-
-  let prev = null, moves = [], lo = 127, hi = 0;
-  walk.forEach(({ b }) => b.c.forEach(n => {
-    const v = F.voicing(F.CH[n][0], F.CH[n][1]);
-    lo = Math.min(lo, v[0]); hi = Math.max(hi, v[v.length - 1]);
-    if (prev) moves.push(v.reduce((a, x, i) => a + Math.abs(x - prev[i]), 0));
-    prev = v;
-  }));
-  ok("the comping voices lead rather than jump",
-     moves.reduce((a, x) => a + x, 0) / moves.length < 6,
-     (moves.reduce((a, x) => a + x, 0) / moves.length).toFixed(1) +
-     " semitones total across four voices per change");
-  ok("and stay in one register", lo >= 52 && hi <= 79, "MIDI " + lo + " to " + hi);
-
-  ok("the unison lick quotes the head's opening",
-     F.UNISON.slice(0, 4).every((m, i) => m === phrases[0].ns[i]), named(F.UNISON));
-  ok("and the hook is its first four notes",
-     F.MOTIF.every((m, i) => m === F.UNISON[i]), named(F.MOTIF));
-  ok("the run ascends without leaving the home mode",
-     F.RUN.every(m => HOME.indexOf(pc(m)) >= 0) &&
-     F.RUN.every((m, i) => i === 0 || m > F.RUN[i - 1]), F.RUN.length + " notes");
-
-  const solo = walk.filter(x => x.b.solo);
-  ok("the solo section carries changes and no written tune",
-     solo.length >= 8 && solo.every(x => !x.b.m && x.b.c.length), solo.length + " bars");
-
-  let offScale = 0, farthest = 0;
-  Object.keys(F.CH).forEach(name => {
-    const [r, t] = F.CH[name], sc = F.TYPE[t].s;
-    for (let n = 60; n <= 88; n++) {
-      const got = F.snap(n, r, sc);
-      if (sc.indexOf(pc(got - r)) < 0) offScale++;
-      farthest = Math.max(farthest, Math.abs(got - n));
-    }
+  /* Every sustained note is hand-typed MIDI, and a mistyped one is a
+     wrong note nobody hears until the loop reaches that bar. */
+  const stray = [];
+  F.PROG.forEach((b, i) => {
+    const at = "bar " + (i + 1) + " ";
+    const tones = b.ch.map(pc);
+    const fits = m => tones.indexOf(pc(m)) >= 0 || KEY.indexOf(pc(m)) >= 0;
+    b.ch.forEach(m => { if (!fits(m)) stray.push(at + "voicing " + NAME[pc(m)]); });
+    b.bass.forEach(m => { if (!fits(m)) stray.push(at + "bass " + NAME[pc(m)]); });
+    if (!fits(b.reed)) stray.push(at + "reed " + NAME[pc(b.reed)]);
+    (b.h || []).forEach(([m]) => { if (!fits(m)) stray.push(at + "lead " + NAME[pc(m)]); });
   });
-  ok("the improviser always lands on a note of the chord's scale",
-     offScale === 0, offScale ? offScale + " off-scale" : "20 chords x 29 notes");
-  ok("and never has to move far to do it", farthest <= 2, "at most " + farthest + " semitones");
+  ok("every note is a chord tone or in the key", stray.length === 0,
+     stray.join("; ") || F.PROG.length + " bars checked");
 
-  let bassLo = 127;
-  walk.forEach(x => x.b.c.forEach(n => {
-    let m = 33 + pc(F.CH[n][0] - 9);
-    while (m + F.KEY_MIN < 31) m += 12;
-    bassLo = Math.min(bassLo, m + F.KEY_MIN);
+  /* A lead note off the eighth grid never fires at all: the sequencer
+     matches beat * 2 against an integer step, so it would be silently
+     absent rather than audibly wrong. */
+  const offgrid = [];
+  F.PROG.forEach((b, i) => (b.h || []).forEach(([m, beat, d]) => {
+    if (Math.abs(beat * 2 - Math.round(beat * 2)) > 1e-9)
+      offgrid.push("bar " + (i + 1) + " at beat " + beat);
+    if (beat + d > F.BEATS + 0.001) offgrid.push("bar " + (i + 1) + " past the barline");
   }));
-  ok("the whole form stays playable across the key drift",
-     bassLo >= 31 && hi + F.KEY_MAX <= 88,
-     "bass down to MIDI " + bassLo + ", comping up to " + (hi + F.KEY_MAX));
-  ok("and the key cannot drift somewhere it never comes back from",
-     F.KEY_MIN < 0 && F.KEY_MAX > 0 && F.KEY_MAX - F.KEY_MIN <= 12);
-  ok("the kit plays in the bed and not only in a swell",
-     F.BED.indexOf("drums") >= 0, F.BED.join(", "));
-  ok("and the horn is still held back for the moods and the solo",
-     F.BED.indexOf("lead") < 0);
+  ok("every lead note lands on the grid and inside its bar",
+     offgrid.length === 0, offgrid.join("; ") || "checked");
 
-  if (bad) { console.log("\n" + bad + " SCORE FAILURES"); process.exitCode = 1; }
+  ok("every note is in a range a human could play",
+     F.PROG.every(b => b.ch.every(m => m >= 36 && m <= 84) &&
+                       b.bass.every(m => m >= 28 && m <= 55) &&
+                       b.reed >= 48 && b.reed <= 84));
+
+  ok("the hook is short enough to remember",
+     F.MOTIF.length >= 2 && F.MOTIF.length <= 5, named(F.MOTIF));
+  ok("and is in the key", F.MOTIF.every(m => KEY.indexOf(pc(m)) >= 0));
+
+  /* TEN MOODS. Each has to be a different musical idea, or the score is
+     saying the same thing about different events. */
+  ok("there is a distinct response for ten different things",
+     F.MOODS.length === 10, F.MOODS.join(", "));
+
+  if (bad) { console.log("\n" + bad + " BED FAILURES"); process.exitCode = 1; }
 })();
 
 /* ---------------------------------------------------------------------
-   AND IT PLAYS, AND THE MOODS MOVE IT.
+   AND IT PLAYS.
 
-   The section above proves the NOTES are right. Nothing there proves the
-   code that plays them runs: jsdom has no Web Audio, so build() returns
-   false in every harness and the sequencer, the eight voices, the four
-   gestures and the eight moods are executed by no other check.
+   jsdom has no Web Audio, so build() returns false in every harness and
+   the sequencer, the six voices and the ten moods are executed by no
+   other check in the project. This drives the whole loop through a
+   recording stub and fires every mood from an off-beat position,
+   because a player does not click on the beat.
 
-   This drives the whole arrangement through a recording stub and then
-   fires each mood and reads back where the band ended up. It is not
-   listening — it cannot be — but it catches everything that is not
-   about taste: a voice that throws, a pattern addressing a step that
-   does not exist, a key that walks off the end of the piano, a mood
-   that says it jumps and does not, and an exponential ramp to zero,
-   which is silent in a stub and a thrown DOMException in a browser.
+   It is not listening — it cannot be — but it catches what is not about
+   taste: a voice that throws, a pattern addressing a step that does not
+   exist, and an exponential ramp to zero, which is silent in a stub and
+   a thrown DOMException in a browser.
    --------------------------------------------------------------------- */
 console.log("\nAND IT PLAYS:");
 (function () {
@@ -862,17 +729,15 @@ console.log("\nAND IT PLAYS:");
   const made = {}, ramps = [];
   const bump = k => made[k] = (made[k] || 0) + 1;
 
-  /* `anchored` counts the events actually placed on THIS param's timeline.
+  /* `anchored` counts events actually placed on THIS param's timeline.
      A ramp reads its start value from the previous event, so a ramp with
-     none is the silent-bed bug. cancelAndHold is not counted: it holds an
-     existing event and cannot invent one. */
+     none is the silent-bed bug. cancelAndHold is not counted: it holds
+     an existing event and cannot invent one. */
   function param(name) {
     const p = {
       value: 0, anchored: 0,
       setValueAtTime: (v, t) => { p.anchored++; ramps.push([name, "set", v, t, 1]); return p; },
       setTargetAtTime: (v, t) => { p.anchored++; ramps.push([name, "tgt", v, t, 1]); return p; },
-      /* the stub models a ramp by its DESTINATION, which is enough to tell
-         an opened layer from one left shut and not enough to be a synth */
       linearRampToValueAtTime: (v, t) => { ramps.push([name, "lin", v, t, p.anchored]); p.value = v; return p; },
       exponentialRampToValueAtTime: (v, t) => { ramps.push([name, "exp", v, t, p.anchored]); return p; },
       cancelScheduledValues: () => p,
@@ -897,10 +762,8 @@ console.log("\nAND IT PLAYS:");
   globalThis.Sound = { context: () => ctx, musicOut: () => node({ gain: param("bus") }),
                        onReady: fn => fn() };
 
-  /* The sequencer paces itself with setTimeout. Capture the callback and
-     drive the clock by hand so minutes pass in no time at all. */
   const realSet = globalThis.setTimeout, realClear = globalThis.clearTimeout;
-  let pending = null, threw = null;
+  let pending = null, threw = null, mix = null, fired = 0;
   globalThis.setTimeout = fn => { pending = fn; return 0; };
   globalThis.clearTimeout = () => { pending = null; };
   const tick = () => { if (!pending) return false; const fn = pending; pending = null;
@@ -908,179 +771,28 @@ console.log("\nAND IT PLAYS:");
   const SECS = n => { const to = ctx.currentTime + n; while (ctx.currentTime < to && tick()); };
   const BAR = F.BEATS * 60 / F.BPM;
 
-  let bars = 0; const seen = {}; let mix = null;
   try {
     M.init();
     ok("the graph builds and the transport starts", M.available() === true);
 
-    /* a full pass of the arrangement, watching where it goes on its own */
-    /* the form is 104 bars now, so a pass has to be long enough to see
-       all of it — a drive that stopped short would "pass" by never
-       reaching the section it was meant to check */
-    let sparse = 0;
-    for (let i = 0; i < 115; i++) {
-      SECS(BAR);
-      const st = M.state();
-      if (st.section) {
-        seen[st.section] = true; bars++;
-        if (st.density === 1) sparse++;
-      }
-    }
-    ok("it walks the whole arrangement unaided",
-       Object.keys(seen).length === Object.keys(F.SECTIONS).length,
-       Object.keys(seen).sort().join(" ") + " over " + bars + " bars");
-    ok("and spends most of it in the sparse section, where the player reads",
-       sparse >= bars * 0.35, sparse + " of " + bars + " bars at density 1");
+    const LOOP = F.BARS * BAR;
+    SECS(LOOP + 1);
+    ok("a whole pass of the loop plays", ctx.currentTime >= LOOP,
+       ctx.currentTime.toFixed(0) + "s of a " + LOOP.toFixed(0) + "s loop");
 
-    /* ---- the moods, each MEASURED rather than taken on trust ---- */
+    /* EVERY MOOD, each fired from a different offset inside the bar. */
+    F.MOODS.forEach((m, i) => { SECS(BAR * 0.31 + i * 0.09); M[m](); fired++; SECS(BAR); });
+    ok("every mood was fired", fired === F.MOODS.length, fired + " moods");
 
-    /* THE CRESCENDO, which did not exist in any form until now: every
-       one of the twenty-six voice calls passed a hardcoded constant and
-       the only dynamic mechanism was a fader on the moods. */
-    const arcSeen = {};
-    for (let i = 0; i < 40; i++) {
-      SECS(BAR); const st = M.state();
-      if (st.section) (arcSeen[st.section] = arcSeen[st.section] || []).push(st.dyn);
-    }
-    const spread = Object.keys(arcSeen).map(k =>
-      Math.max(...arcSeen[k]) - Math.min(...arcSeen[k]));
-    ok("the ensemble dynamic actually moves",
-       Math.max(...Object.values(arcSeen).flat()) -
-       Math.min(...Object.values(arcSeen).flat()) > 0.15,
-       Object.keys(arcSeen).map(k =>
-         k + " " + Math.min(...arcSeen[k]).toFixed(2) + "-" +
-         Math.max(...arcSeen[k]).toFixed(2)).join(", "));
-    if (arcSeen.SOLO && arcSeen.SOLO.length > 3)
-      ok("and climbs across the solo rather than sitting at one level",
-         arcSeen.SOLO[arcSeen.SOLO.length - 1] > arcSeen.SOLO[0],
-         arcSeen.SOLO[0].toFixed(2) + " -> " +
-         arcSeen.SOLO[arcSeen.SOLO.length - 1].toFixed(2));
-    else ok("and climbs across the solo", false, "never reached the solo");
-
-    /* THE SOLO BUILDS. It used to be a flat sixteen bars — fixed
-       amplitude, fixed rest probability, no reference to where in the
-       chorus it was, so bar one and bar sixteen were identical. */
-    const soloBars = [];
-    for (let i = 0; i < 160 && soloBars.length < 16; i++) {
-      const before = made.osc || 0;
-      SECS(BAR);
-      if (M.state().section === "SOLO") soloBars.push((made.osc || 0) - before);
-    }
-    if (soloBars.length >= 12) {
-      const early = soloBars.slice(0, 4).reduce((a, x) => a + x, 0);
-      const late = soloBars.slice(-4).reduce((a, x) => a + x, 0);
-      ok("the solo is busier at the end than at the start", late > early,
-         early + " notes in the first four bars, " + late + " in the last four");
-    } else ok("the solo is busier at the end than at the start", false,
-              "only saw " + soloBars.length + " solo bars");
-
-    /* STOP TIME IS ATTACKS AND SILENCE, not a fader. Measured as what
-       a bar actually costs: a stop-time bar should be a fraction of a
-       playing one. */
-    let normal = 0;
-    for (let i = 0; i < 3; i++) { const n = made.osc || 0; SECS(BAR); normal += (made.osc || 0) - n; }
-    normal /= 3;
-    M.tension();
-    const s0 = made.osc || 0; SECS(BAR); const stopped = (made.osc || 0) - s0;
-    ok("a division stops the band rather than fading it",
-       M.state().stopTime === true && stopped < normal * 0.5,
-       stopped + " notes in a stop-time bar against " + normal.toFixed(0) + " normally");
-
-    /* A TURN FILL announces a jump. Toms are the only voice that sets a
-       frequency in this band, so they can be counted from outside. */
-    const toms = () => ramps.filter(r => r[0] === "osc.f" && r[1] === "set" &&
-                                          r[2] >= 160 && r[2] <= 270).length;
-    const t0 = toms();
-    M.moment(0.5);
-    SECS(BAR * 0.9);
-    ok("a mood fills into the bar line instead of cutting", toms() > t0,
-       (toms() - t0) + " toms in the bar before the jump");
-    SECS(BAR * 2);
-    ok("and lands in the head", M.state().section === "HEAD", M.state().section);
-
-    /* THE KEY CHANGE IS THE SIZE OF THE THING THAT HAPPENED. The engine
-       always knew the margin; the score never asked, so a one-vote
-       squeaker sounded exactly like a landslide. */
-    const keyAfter = (mood, f) => {
-      M.stop(); M.start(); SECS(BAR);
-      M[mood](f); SECS(BAR * 2);
-      return M.state().semitones;
-    };
-    const narrow = keyAfter("moment", 0.05), wide = keyAfter("moment", 0.95);
-    ok("a landslide moves the key further than a squeaker", wide > narrow,
-       "+" + narrow + " against +" + wide);
-    const nLoss = keyAfter("defeat", 0.05), wLoss = keyAfter("defeat", 0.95);
-    ok("and so does a rout against a near miss", wLoss < nLoss,
-       nLoss + " against " + wLoss);
-
-    /* THE SHOUT CHORUS is the loudest thing the score can do and is
-       reserved for something that earns it. */
-    M.stop(); M.start(); SECS(BAR);
-    M.moment(0.05); SECS(BAR);
-    const quietWin = M.state().shout;
-    M.stop(); M.start(); SECS(BAR);
-    M.moment(0.95); SECS(BAR);
-    ok("only a landslide gets the shout chorus",
-       M.state().shout === true && quietWin === false);
-
-    /* THE LAST HEAD IS THE BIGGEST THING ON THE RECORD. The two
-       statements used to be byte-identical. */
-    M.stop(); M.start();
-    const formBars = F.ITINERARY.reduce((n, k) => n + F.SECTIONS[k].bars.length, 0);
-    const heads = [];
-    let wasHead = false;
-    /* ONE PASS ONLY. A longer drive wraps the itinerary and the third
-       entry is the NEXT pass's opening head, which would make the test
-       compare a head against itself. */
-    for (let i = 0; i < formBars - 1; i++) {
-      SECS(BAR); const st = M.state();
-      const isHead = st.section === "HEAD";
-      if (isHead && !wasHead) heads.push(st.dyn);
-      else if (isHead) heads[heads.length - 1] = Math.max(heads[heads.length - 1], st.dyn);
-      wasHead = isHead;
-    }
-    ok("the last statement of the tune is louder than the first",
-       heads.length === 2 && heads[1] > heads[0],
-       heads.map(h => h.toFixed(2)).join(" -> ") + " over one " + formBars + "-bar pass");
-
-    /* the two moments that used to be silent */
-    M.stop(); M.start(); SECS(BAR);
-    const k0 = M.state().semitones;
-    M.threat(); SECS(BAR * 2);
-    ok("the leadership challenge is audible and does not resolve",
-       M.state().semitones < k0 && M.state().section !== "BRIDGE",
-       "key " + k0 + " -> " + M.state().semitones + ", still in " + M.state().section);
-    const before2 = M.state().semitones;
-    M.revoke(); SECS(BAR);
-    ok("a revoked order changes nothing structural, only the figure",
-       M.state().semitones === before2);
-
-    /* and the ones that must stay small */
-    const before3 = M.state();
-    M.undertake(); M.order(); SECS(BAR);
-    ok("an undertaking and an order leave the key alone",
-       M.state().semitones === before3.semitones);
-
-    M.rise(); SECS(BAR * 2);
-    ok("a new government runs up into the head",
-       M.state().section === "HEAD" && M.state().semitones === 0,
-       M.state().section + " in " + M.state().key);
-    M.prorogue(); SECS(BAR * 2);
-    ok("prorogation returns the key home and restarts the arrangement",
-       M.state().semitones === 0 && M.state().section === "VAMP", M.state().section);
-    M.sombre(); SECS(BAR * 2);
-    ok("and a fallen government goes half time", M.state().halfTime === true);
-
+    SECS(BAR * 8);
     mix = M.state();
     M.stop();
   } catch (e) { threw = e; }
   globalThis.setTimeout = realSet; globalThis.clearTimeout = realClear;
 
-  ok("every mood plays without throwing", !threw,
-     threw ? threw.message + " | " + String(threw.stack).split("\n")[1].trim()
-           : F.MOODS.length + " moods");
-
-  ok("every voice was reached", (made.osc || 0) > 2000 && (made.noise || 0) > 800,
+  ok("and none of them threw", !threw,
+     threw ? threw.message + " | " + String(threw.stack).split("\n")[1].trim() : "");
+  ok("every voice was reached", (made.osc || 0) > 300 && (made.noise || 0) > 100,
      (made.osc || 0) + " oscillators, " + (made.noise || 0) + " noise bursts");
 
   /* AN EXPONENTIAL RAMP TO ZERO throws a DOMException in a browser and
@@ -1090,31 +802,30 @@ console.log("\nAND IT PLAYS:");
   ok("no exponential ramp reaches zero", zeroed.length === 0,
      zeroed.length ? zeroed.length + " ramps to " + zeroed[0][2] + " on " + zeroed[0][0]
                    : ramps.length + " automation points");
-  const backwards = ramps.filter(r => r[3] < -0.001);
-  ok("and none is scheduled before the clock", backwards.length === 0);
+  ok("and none is scheduled before the clock",
+     ramps.filter(r => r[3] < -0.001).length === 0);
 
-  /* THE SILENT BED. A linear ramp takes its start value from the previous
-     event on the param's timeline, and an assigned .value is not an event.
-     Where that resolves the wrong way the whole bed sits at zero while
-     every oscillator runs on time — audible nowhere, visible in no check,
-     and reported as "no music on mobile". */
+  /* THE SILENT BED. A linear ramp takes its start value from the
+     previous event on the param's timeline, and an assigned .value is
+     not an event. Where that resolves the wrong way the whole bed sits
+     at zero while every oscillator runs on time — audible nowhere,
+     visible in no check, and reported as "no music on mobile". */
   const unanchored = ramps.filter(r => (r[1] === "lin" || r[1] === "exp") && !r[4]);
-  ok("no ramp starts from an empty automation timeline",
-     unanchored.length === 0,
+  ok("no ramp starts from an empty automation timeline", unanchored.length === 0,
      unanchored.length ? unanchored.length + " unanchored, first on " + unanchored[0][0]
        : ramps.filter(r => r[1] === "lin" || r[1] === "exp").length + " ramps anchored");
 
-  ok("the module can report its own mixer", !!mix);
-  if (mix) {
-    const up = Object.keys(mix.levels).filter(k => mix.levels[k] > 0);
-    ok("and the bed layers were actually opened", up.length >= 4,
-       up.map(k => k + " " + mix.levels[k]).join(", "));
-  }
+  /* Ten moods fired back to back must leave the bed PLAYING. Every path
+     out of a mood that takes a layer down has to put it back, and with
+     ten of them the chance of one forgetting is the whole risk here. */
+  ok("the bed is still up after every mood has fired", !!mix &&
+     Object.keys(mix.levels).filter(k => mix.levels[k] > 0).length >= 4,
+     mix ? Object.keys(mix.levels).filter(k => mix.levels[k] > 0)
+             .map(k => k + " " + mix.levels[k]).join(", ") : "no state");
 
   delete globalThis.Sound;
   if (bad) { console.log("\n" + bad + " PLAYBACK FAILURES"); process.exitCode = 1; }
 })();
-
 /* ---------------------------------------------------------------------
    THE FIRST TAP IS NOT GUARANTEED TO WORK.
 
