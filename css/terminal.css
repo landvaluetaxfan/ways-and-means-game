@@ -1441,9 +1441,45 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 #s-sit .panel > .pbody{flex:1 1 auto;min-height:0;}
 #sitting-body{display:flex;flex-direction:column;}
 .sit-read{flex:0 0 auto;}
-.sit-decide{flex:0 0 auto;margin-top:auto;padding-top:10px;}
+/* NOT margin-top:auto. Pinning the decision to the bottom of a tall
+   panel only relocated the emptiness and read as forced — a gap you have
+   to scroll past to answer the question. It follows the prose. */
+.sit-decide{flex:0 0 auto;padding-top:10px;}
 /* a hairline above the decision so the gap is a rule and not a void */
 .sit-decide .rulehead:first-child{border-top:1px solid var(--rule);padding-top:6px;}
-/* the prose has a comfortable measure rather than running the full width
-   of a wide panel: past about 78 characters the eye loses the line */
-#sitting-prose{max-width:64em;}
+/* ---------- the event body is the reading surface ----------
+
+   IT HAD NO STYLING AT ALL. `.prose` matched no rule, so the one thing on
+   the screen the player is meant to READ inherited the chrome's own
+   12.5px/1.25 — the metrics of a form field — while --f-read, a face
+   declared in the palette for exactly this and used in seven other
+   places, was never applied to it.
+
+   That is most of why the screen looked empty: four paragraphs set as UI
+   occupy about two thirds of the height they occupy as prose. The fix is
+   typographic rather than a widget, which is the right kind of fix —
+   nothing was missing from the screen, the text was just small.
+
+   The measure is in ch, not em. `max-width:64em` computes against the
+   element's own font-size, so it moves when the type does and means
+   nothing in characters; 62ch is a character count at whatever size, which
+   is the thing actually being limited. */
+.prose{
+  font-family:var(--f-read);
+  font-size:14px;
+  line-height:1.62;
+  max-width:68ch;
+  color:var(--ink);
+}
+.prose p{margin:0 0 .85em;}
+.prose p:last-child{margin-bottom:0;}
+
+/* the speaker gets a byline rather than a label: this is the one screen
+   where somebody is talking to you, and a slightly larger portrait with
+   the name set in the reading face says so without any new element */
+#s-sit .portrait{width:112px;margin:0 12px 6px 0;}
+#s-sit .sit-read > .rulehead{
+  font-family:var(--f-read);font-size:11.5px;letter-spacing:.04em;
+  text-transform:none;color:var(--ink-soft);
+  border-bottom:1px solid var(--chrome-dk);padding-bottom:3px;margin-bottom:10px;
+}
