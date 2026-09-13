@@ -1258,13 +1258,54 @@ const Engine = (function () {
      --------------------------------------------------------- */
 
   const EFFECTS = {
-    scalar: (st, C, v) => Object.keys(v).forEach(k => {
-      st.scalars[k] = clamp((st.scalars[k] || 0) + v[k], 0, 100);
+    /* MOVE — one verb for every number that is clamp-and-add against a
+       keyed table. It replaced `scalar`, `loyalty`, `relationship`,
+       `price` and `capital`, which differed only in which table they
+       reached into and what the bounds were:
+
+         {move:{ treasury:-5 }}              a bare key is a scalar
+         {move:{ "loyalty.psa":8 }}          a party OR a current
+         {move:{ "rel.gb_chair":12 }}        a character, or "president"
+         {move:{ "price.substrate":-10 }}
+         {move:{ "capital.psa":3 }}
+
+       Bounds are kept per namespace, not flattened: scalars and loyalty
+       clamp 0-100, prices clamp 20-400, and capital is unbounded and
+       signed because 7.6 says nothing decays and nothing is forgiven.
+
+       ONE PAIR PER OBJECT is the house style, and it is not cosmetic:
+       the editor renders one key-value row per effect, so a multi-key
+       object used to lose every key after the first when a human opened
+       and saved it. 25 of 53 keyed effects in content were in that
+       state. Multi-key objects still WORK here — the loop below takes
+       them all — and js/editor.js now expands one into a row each, so
+       neither half can drop anything again. */
+    move: (st, C, v) => Object.keys(v).forEach(key => {
+      const d = v[key], dot = key.indexOf(".");
+      const ns = dot < 0 ? "scalar" : key.slice(0, dot);
+      const k  = dot < 0 ? key : key.slice(dot + 1);
+      switch (ns) {
+        case "scalar":
+          st.scalars[k] = clamp((st.scalars[k] || 0) + d, 0, 100); break;
+        case "loyalty": {
+          const t = st.currents[k] || st.parties[k];
+          if (t) t.loyalty = clamp(t.loyalty + d, 0, 100);
+          break;
+        }
+        case "rel":
+          if (k === "president") st.president.relationship = clamp(st.president.relationship + d, 0, 100);
+          else if (st.characters[k]) st.characters[k].relationship = clamp(st.characters[k].relationship + d, 0, 100);
+          break;
+        case "price":
+          st.prices[k] = clamp((st.prices[k] || 100) + d, 20, 400); break;
+        case "capital":
+          st.capital[k] = (st.capital[k] || 0) + d; break;
+        default:
+          st.log.unshift({ sitting: st.sitting, text:
+            "IGNORED: a move effect named no such target: " + key + "." });
+      }
     }),
-    loyalty: (st, C, v) => Object.keys(v).forEach(k => {
-      const t = st.currents[k] || st.parties[k];
-      if (t) t.loyalty = clamp(t.loyalty + v[k], 0, 100);
-    }),
+
     law: (st, C, v) => Object.assign(st.law, v),
     station: (st, C, v) => Object.keys(v).forEach(id => {
       Object.keys(v[id]).forEach(f => {
@@ -1309,19 +1350,14 @@ const Engine = (function () {
       syncFunctional(st, C);
     }),
     /* One verb, not two. `{flag:"x"}` sets, `{flag:{x:false}}` clears.
-       `unflag` is kept as an alias because content and saved editor
-       output use it; new content should not. */
+       The old `unflag` verb is gone: it was the same operation with the
+       value baked in. */
     flag:   (st, C, v) => {
       if (v && typeof v === "object" && !Array.isArray(v))
         Object.keys(v).forEach(f => { if (v[f]) st.flags[f] = true; else delete st.flags[f]; });
       else [].concat(v).forEach(f => st.flags[f] = true);
     },
-    unflag: (st, C, v) => [].concat(v).forEach(f => delete st.flags[f]),
     bill:   (st, C, v) => Object.keys(v).forEach(id => Object.assign(st.bills[id], v[id])),
-    relationship: (st, C, v) => Object.keys(v).forEach(k => {
-      if (k === "president") st.president.relationship = clamp(st.president.relationship + v[k], 0, 100);
-      else if (st.characters[k]) st.characters[k].relationship = clamp(st.characters[k].relationship + v[k], 0, 100);
-    }),
     coalition: (st, C, v) => {
       if (v.remove) st.coalition = st.coalition.filter(p => !v.remove.includes(p));
       if (v.add) v.add.forEach(p => { if (!st.coalition.includes(p)) st.coalition.push(p); });
@@ -1335,13 +1371,6 @@ const Engine = (function () {
       if (v[post] === null) vacate(st, C, post, "resigned");
       else appoint(st, C, post, v[post].holder, v[post].party);
     }),
-    price: (st, C, v) => Object.keys(v).forEach(k => {
-      st.prices[k] = clamp((st.prices[k] || 100) + v[k], 20, 400);
-    }),
-    capital: (st, C, v) => Object.keys(v).forEach(k => {
-      if (st.capital[k] == null) st.capital[k] = 0;
-      st.capital[k] += v[k];
-    }),
     slots: (st, C, v) => {
       if (v.total != null) st.slots.total += v.total;
       if (v.refill) { st.slots.used = 0; }
@@ -1351,9 +1380,12 @@ const Engine = (function () {
        silently, which is the failure this whole section exists to prevent. */
     cross: (st, C, v) => [].concat(v).forEach(x =>
       crossFloor(st, C, x.constituency, x.from, x.to, x.seats || 1)),
-    vacate_seat: (st, C, v) => [].concat(v).forEach(x =>
-      vacateSeat(st, C, x.constituency, x.party, x.why)),
-    byelection: (st, C, v) => [].concat(v).forEach(cid => byElection(st, C, cid)),
+    /* A by-election is what a vacancy CAUSES, so it is an option on the
+       vacancy rather than a verb of its own: {then:"byelection"}. */
+    vacate_seat: (st, C, v) => [].concat(v).forEach(x => {
+      vacateSeat(st, C, x.constituency, x.party, x.why);
+      if (x.then === "byelection") byElection(st, C, x.constituency);
+    }),
     election: (st, C, v) => { if (v) generalElection(st, C); },
 
     /* UNDERTAKE — the government says it will do a thing by a sitting.
@@ -1594,6 +1626,35 @@ const Engine = (function () {
     [].concat(effects || []).forEach(eff => Object.keys(eff).forEach(k => {
       const v = eff[k];
       switch (k) {
+        /* One verb in, five readings out — the namespace decides which. */
+        case "move": Object.keys(v).forEach(key => {
+          const dot = key.indexOf("."), d = v[key];
+          const ns = dot < 0 ? "scalar" : key.slice(0, dot);
+          const id = dot < 0 ? key : key.slice(dot + 1);
+          if (ns === "scalar") {
+            const say = SCALAR_SAY[id];
+            const stem = say ? say[d >= 0 ? 0 : 1]
+                             : (d >= 0 ? "Improves " : "Costs you ") + id.replace(/_/g, " ");
+            out.push({ tone: d >= 0 ? "good" : "bad",
+                       text: stem + (band(d) ? ", " + band(d) : "") });
+          } else if (ns === "loyalty") {
+            out.push({ tone: d >= 0 ? "good" : "bad",
+              text: (d >= 0 ? "Pleases " : "Costs you with ") +
+                    nameOf("parties", id, "name") + (band(d) ? ", " + band(d) : "") });
+          } else if (ns === "rel") {
+            out.push({ tone: d >= 0 ? "good" : "bad",
+              text: (d >= 0 ? "Warms " : "Cools ") +
+                    (id === "president" ? "the President" : nameOf("characters", id, "name")) });
+          } else if (ns === "price") {
+            out.push({ tone: d <= 0 ? "good" : "bad",
+              text: (d >= 0 ? "Pushes up " : "Brings down ") + id + " prices" });
+          } else if (ns === "capital") {
+            out.push({ tone: d >= 0 ? "good" : "bad", cost: true,
+              text: (d >= 0 ? "Puts " : "Spends credit with ") +
+                    nameOf("parties", id, "name") + (d >= 0 ? " in your debt" : "") });
+          }
+        });
+          break;
         case "scalar": Object.keys(v).forEach(sk => {
           const say = SCALAR_SAY[sk];
           const stem = say ? say[v[sk] >= 0 ? 0 : 1]

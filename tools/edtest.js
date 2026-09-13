@@ -117,6 +117,48 @@ try {
   ok("export runs", typeof S.file === "function" && typeof S.encyclopediaFile === "function");
 } catch (e) { ok("export runs", false, e.message); }
 
+/* NO EFFECT MAY LOSE A PAIR THROUGH THE FORM.
+
+   The editor renders one key-value row per effect, so a multi-key
+   object used to save back with only its first pair — 25 of 53 keyed
+   effects in content were in that state, and roundtrip.js could not see
+   it because it round-trips PLAY STATE rather than the editor's own
+   encoding. This checks the encoding itself: explode every effect in
+   content into rows, put each row back, and require that the pairs that
+   come out are the pairs that went in. */
+try {
+  const ed = w.eval("Editor && Editor.__test ? Editor.__test : null");
+  /* Flatten to LEAVES. Splitting one effect into two is not a loss —
+     {bill:{x:{stage:s,dead:true}}} and the same thing as two effects
+     apply identically — so the comparison has to be on the leaf values
+     rather than on the object shape, or a correct fix reads as a
+     failure. */
+  const pairsOf = eff => {
+    const out = [];
+    const walk = (path, val) => {
+      if (val && typeof val === "object" && !Array.isArray(val))
+        Object.keys(val).forEach(k => walk(path + "/" + k, val[k]));
+      else out.push(path + "=" + JSON.stringify(val));
+    };
+    Object.keys(eff).forEach(v => walk(v, eff[v]));
+    return out;
+  };
+  if (!ed) {
+    ok("effect pairs survive the form", true, "editor exposes no test hook — skipped");
+  } else {
+    const lost = [];
+    w.eval("CONTENT.events").forEach(e => (e.choices || []).forEach(c => {
+      const want = [].concat(c.effects || []).flatMap(pairsOf).sort().join(" | ");
+      const got = ed.explodeEffects(c.effects)
+        .map(x => ed.rowToEff(ed.effToRow(x)))
+        .filter(Boolean).flatMap(pairsOf).sort().join(" | ");
+      if (want !== got) lost.push(e.id + ": " + want + "  ->  " + got);
+    }));
+    ok("every effect pair in content survives the editor's own encoding",
+       lost.length === 0, lost.slice(0, 3).join("  //  "));
+  }
+} catch (e) { ok("effect pairs survive the form", false, e.message); }
+
 console.log("");
 const uniq = [...new Set(errs.map(e => String(e).replace(/^Uncaught \[?|\]$/g, "")))];
 if (uniq.length) { console.log("WINDOW ERRORS:"); uniq.forEach(e => console.log("  " + e)); fail += uniq.length; }

@@ -36,7 +36,7 @@ const BILLS = [
     },
     onPass:[{law:{divergence_threshold_hours:40}},
             {wire:"DIVERGENCE THRESHOLD CUT TO FORTY HOURS; CENSUS BUREAU BEGINS REGISTRATION"}],
-    onFail:[{loyalty:{psa:-14}},
+    onFail:[{move:{"loyalty.psa":-14}},
             {wire:"THRESHOLD BILL FAILS ON THE FUNCTIONAL DIVISION"}] },
 
   { id:"thermal2", ref:"HC 4/094", stage:"second_reading", owner:"cu",
@@ -46,10 +46,10 @@ const BILLS = [
     dualMajority:false,
     axes:{ownership:"public",personhood:null,sovereignty:"federal",closure:"integrationist"},
     stances:{ cu:"for", psa:"for", rv:"for", upl:"for", geo:"for", sc:{forPct:0.4}, cl:{forPct:0.3} },
-    onPass:[{station:{vantage:{closure:0.04}}},{scalar:{thermal_margin:9}},
-            {price:{thermal:-22}},
+    onPass:[{station:{vantage:{closure:0.04}}},{move:{"thermal_margin":9}},
+            {move:{"price.thermal":-22}},
             {wire:"THERMAL QUOTA REALLOCATED; QUOTA PRICE FALLS SHARPLY"}],
-    onFail:[{scalar:{thermal_margin:-4}},{price:{thermal:8}}] },
+    onFail:[{move:{"thermal_margin":-4}},{move:{"price.thermal":8}}] },
 
   { id:"shedorder", ref:"HC 4/061", stage:"blocked", owner:"cu", referrable:true,
     title:"Shed Order (Civilian Oversight) Bill",
@@ -59,8 +59,8 @@ const BILLS = [
     axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
     stances:{ cu:"for", psa:"for", rv:{for:11}, upl:"for", geo:"for",
               gb:"against", hul:"against", fh:"against", cl:{forPct:0.2}, sc:{forPct:0.35} },
-    onPass:[{law:{shed_order_authority:"statute"}},{scalar:{public_standing:6}}],
-    onFail:[{loyalty:{cu_halloran:-8}}] },
+    onPass:[{law:{shed_order_authority:"statute"}},{move:{"public_standing":6}}],
+    onFail:[{move:{"loyalty.cu_halloran":-8}}] },
 
   { id:"anchor_kepler", ref:"HC 4/103", stage:"upper_house", owner:null,
     title:"Anchor Concession (Anchorage) Ratification Bill",
@@ -69,8 +69,8 @@ const BILLS = [
     dualMajority:false,
     axes:{ownership:"private",personhood:null,sovereignty:"federal",closure:"integrationist"},
     stances:{ cl:"for", cu:{forPct:0.7}, psa:{forPct:0.5}, sc:"against", hul:"against" },
-    onPass:[{scalar:{treasury:8}},{station:{kepler:{closure:0.02}}},{price:{transit:-11}}],
-    onFail:[{scalar:{treasury:-6}},{wire:"KEPLER CONCESSION LAPSES; EARTH STATE SIGNALS REVIEW"}] },
+    onPass:[{move:{"treasury":8}},{station:{kepler:{closure:0.02}}},{move:{"price.transit":-11}}],
+    onFail:[{move:{"treasury":-6}},{wire:"KEPLER CONCESSION LAPSES; EARTH STATE SIGNALS REVIEW"}] },
 
   { id:"substrate_insurance", ref:"HC 4/121", stage:"drafting", owner:"psa",
     title:"Substrate Insurance (Uprating) Bill",
@@ -81,10 +81,10 @@ const BILLS = [
     axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
     stances:{ psa:"for", cu:{forPct:0.8}, upl:"for", geo:"for", rv:{forPct:0.6},
               fh:"against", cl:{forPct:0.25}, hul:"against" },
-    onPass:[{scalar:{treasury:-11,public_standing:7}},{loyalty:{psa:12}},
-            {station:{ashfield:{suspended:-1800}}},{price:{substrate:-14}},
+    onPass:[{move:{"treasury":-11}},{move:{"public_standing":7}},{move:{"loyalty.psa":12}},
+            {station:{ashfield:{suspended:-1800}}},{move:{"price.substrate":-14}},
             {wire:"SUBSTRATE INSURANCE UPRATED; MEANS TEST ABOLISHED"}],
-    onFail:[{loyalty:{psa:-13}}] },
+    onFail:[{move:{"loyalty.psa":-13}}] },
 
   { id:"continuity_registration", ref:"HC 4/129", stage:"drafting", owner:"rv", priority:true,
     title:"Continuity of Person (Registration) Bill",
@@ -96,9 +96,9 @@ const BILLS = [
     axes:{ownership:null,personhood:"restrictionist",sovereignty:"federal",closure:null},
     stances:{ rv:"for", cu:{forPct:0.65}, des:"for", hul:{forPct:0.7}, gb:{forPct:0.5},
               psa:"against", cl:"against", upl:"against" },
-    onPass:[{loyalty:{rv:18,psa:-14}},
+    onPass:[{move:{"loyalty.rv":18}},{move:{"loyalty.psa":-14}},
             {wire:"CONTINUITY REGISTER ESTABLISHED; SUBSTRATE LEFT VOTES AGAINST GOVERNMENT BILL"}],
-    onFail:[{loyalty:{rv:-16}}] },
+    onFail:[{move:{"loyalty.rv":-16}}] },
 
   { id:"substrate_public_stake", ref:"HC 4/133", stage:"drafting", owner:"psa",
     title:"Substrate (Public Stake) Bill",
@@ -111,9 +111,9 @@ const BILLS = [
     axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
     stances:{ psa:"for", cu:{forPct:0.85}, upl:"for", geo:{forPct:0.6}, rv:{forPct:0.4},
               cl:"against", fh:"against", hul:{forPct:0.3}, gb:{forPct:0.2} },
-    onPass:[{law:{substrate_public_share:0.6}},{price:{substrate:-26}},
-            {scalar:{treasury:-19,public_standing:5}},{loyalty:{psa:16,cl:-20,fh:-14}},
+    onPass:[{law:{substrate_public_share:0.6}},{move:{"price.substrate":-26}},
+            {move:{"treasury":-19}},{move:{"public_standing":5}},{move:{"loyalty.psa":16}},{move:{"loyalty.cl":-20}},{move:{"loyalty.fh":-14}},
             {wire:"PUBLIC STAKE TAKEN IN SUBSTRATE PROVIDERS; RENTS EXPECTED TO FALL"}],
-    onFail:[{loyalty:{psa:-11}},{price:{substrate:6}}] }
+    onFail:[{move:{"loyalty.psa":-11}},{move:{"price.substrate":6}}] }
 
 ];

@@ -70,10 +70,12 @@ const Refs = (function () {
     (S.confidenceSupply || []).forEach((p, i) => { if (p === id) H("setup · confidence & supply", to => S.confidenceSupply[i] = to); });
     if (S.capital && S.capital[id] !== undefined) H("setup · opening ledger", to => renameKey(S.capital, id, to));
 
+    /* seats stays its own verb; loyalty and capital are move namespaces now */
+    moveRefs(M, "loyalty", id, H);
+    moveRefs(M, "capital", id, H);
     eachEffect(M, (eff, where) => {
-      ["loyalty", "capital", "seats"].forEach(v => {
-        if (eff[v] && eff[v][id] !== undefined) H(`${where} · ${v}`, to => renameKey(eff[v], id, to));
-      });
+      if (eff.seats && eff.seats[id] !== undefined)
+        H(`${where} · seats`, to => renameKey(eff.seats, id, to));
       if (eff.coalition) ["add", "remove"].forEach(k =>
         (eff.coalition[k] || []).forEach((p, i) => {
           if (p === id) H(`${where} · coalition ${k}`, to => eff.coalition[k][i] = to);
@@ -135,15 +137,28 @@ const Refs = (function () {
     return hits;
   }
 
+  /* MOVE KEYS ARE NAMESPACED, so a rename has to find "loyalty.psa"
+     rather than a bare "psa". One helper, used by every kind of id that
+     can be a move target: parties, currents, characters and the
+     president. Without it a rename silently leaves a dangling target and
+     the effect quietly does nothing — which is exactly what
+     tools/renametest.js exists to catch. */
+  function moveRefs(M, ns, id, H) {
+    eachEffect(M, (eff, where) => {
+      if (!eff.move) return;
+      const key = ns ? ns + "." + id : id;
+      if (eff.move[key] === undefined) return;
+      H(`${where} · move ${ns || "scalar"}`,
+        to => renameKey(eff.move, key, ns ? ns + "." + to : to));
+    });
+  }
+
   /* ---------- character ---------- */
   function characterRefs(M, id) {
     const hits = [];
     const H = (where, apply) => hits.push({ where, apply });
     M.events.forEach(e => { if (e.speaker === id) H(`event ${e.id} · speaker`, to => e.speaker = to); });
-    eachEffect(M, (eff, where) => {
-      if (eff.relationship && eff.relationship[id] !== undefined)
-        H(`${where} · relationship`, to => renameKey(eff.relationship, id, to));
-    });
+    moveRefs(M, "rel", id, H);
     if (M.setup.pm === id) H("setup · pm", to => M.setup.pm = to);
     if (M.setup.president && M.setup.president.id === id)
       H("setup · president", to => M.setup.president.id = to);
@@ -159,10 +174,7 @@ const Refs = (function () {
   function currentRefs(M, id) {
     const hits = [];
     const H = (where, apply) => hits.push({ where, apply });
-    eachEffect(M, (eff, where) => {
-      if (eff.loyalty && eff.loyalty[id] !== undefined)
-        H(`${where} · loyalty`, to => renameKey(eff.loyalty, id, to));
-    });
+    moveRefs(M, "loyalty", id, H);
     eachCondition(M, (w, where) => {
       ["loyaltyAbove", "loyaltyBelow"].forEach(k => {
         if (w[k] && w[k][id] !== undefined) H(`${where} · ${k}`, to => renameKey(w[k], id, to));

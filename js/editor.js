@@ -84,6 +84,16 @@ const Editor = (function () {
         .concat(M.currents.map(c => [c.id, "  ↳ " + c.name]));
       case "relTargets": return [["president", "The President"]]
         .concat(M.characters.map(c => [c.id, c.name]));
+      /* EVERY TARGET `move` CAN REACH, grouped and prefixed exactly as the
+         engine parses them. Built from content rather than listed, so a
+         new party or character is offerable the moment it exists. */
+      case "moveTargets": return SCHEMA.vocab.scalars.map(k => [k, k.replace(/_/g, " ")])
+        .concat(M.parties.map(p => ["loyalty." + p.id, "loyalty · " + p.name]))
+        .concat(M.currents.map(c => ["loyalty." + c.id, "loyalty ·   ↳ " + c.name]))
+        .concat([["rel.president", "relations · The President"]])
+        .concat(M.characters.map(c => ["rel." + c.id, "relations · " + c.name]))
+        .concat(SCHEMA.vocab.prices.map(k => ["price." + k, "price · " + k]))
+        .concat(M.parties.map(p => ["capital." + p.id, "capital · " + p.name]));
       default: return [];
     }
   }
@@ -94,8 +104,10 @@ const Editor = (function () {
       (e.when?.flags || []).forEach(x => f.add(x));
       (e.when?.flagsAbsent || []).forEach(x => f.add(x));
       (e.choices || []).forEach(c => [].concat(c.effects || []).forEach(eff => {
-        [].concat(eff.flag || []).forEach(x => f.add(x));
-        [].concat(eff.unflag || []).forEach(x => f.add(x));
+        /* flag takes a string, a list, or an object of name -> bool */
+        if (eff.flag && typeof eff.flag === "object" && !Array.isArray(eff.flag))
+          Object.keys(eff.flag).forEach(x => f.add(x));
+        else [].concat(eff.flag || []).forEach(x => f.add(x));
       }));
     });
     return [...f].sort();
@@ -122,9 +134,47 @@ const Editor = (function () {
      EFFECTS — read an effect object into form rows, and back
      ========================================================= */
 
+  /* AN EFFECT MAY CARRY SEVERAL PAIRS AND THE FORM SHOWS ONE.
+
+     {move:{a:1,b:2}} used to render as a single row and save back as
+     {move:{a:1}} — every pair after the first silently lost the moment a
+     human opened and saved the entry. 25 of 53 keyed effects in content
+     were in that state, and tools/roundtrip.js could not see it because
+     it round-trips PLAY STATE rather than the editor's own encoding.
+
+     So a multi-key keyed effect is expanded into one effect per pair
+     before the form ever sees it. The engine takes either shape. */
+  function explodeEffects(list) {
+    const out = [];
+    [].concat(list || []).forEach(eff => {
+      const verb = Object.keys(eff)[0], d = SCHEMA.effects[verb], v = eff[verb];
+      const keyed  = d && (d.shape === "keyed"  || d.shape === "keyedSet");
+      const nested = d && (d.shape === "nested" || d.shape === "nestedSet");
+      if (keyed && v && typeof v === "object" && Object.keys(v).length > 1)
+        Object.keys(v).forEach(k => out.push({ [verb]: { [k]: v[k] } }));
+      /* nested loses the same way one level down: {bill:{x:{stage:…,dead:…}}}
+         showed one field and saved back one field, so `dead` disappeared. */
+      else if (nested && v && typeof v === "object")
+        Object.keys(v).forEach(k => {
+          const inner = v[k];
+          if (inner && typeof inner === "object" && Object.keys(inner).length > 1)
+            Object.keys(inner).forEach(f2 => out.push({ [verb]: { [k]: { [f2]: inner[f2] } } }));
+          else out.push({ [verb]: { [k]: inner } });
+        });
+      else out.push(eff);
+    });
+    return out;
+  }
+
   function effToRow(eff) {
     const verb = Object.keys(eff)[0], v = eff[verb], d = SCHEMA.effects[verb];
-    if (!d) return { verb, key: "", field: "", value: JSON.stringify(v), delta: "" };
+    /* A VERB THE SCHEMA DOES NOT MODEL SURVIVES AS RAW JSON rather than
+       being dropped. `undertake` has no form — its shape is an object of
+       six fields — and rowToEff used to return null for it, so opening
+       an event that carried one and saving deleted the undertaking. An
+       effect the editor cannot present is still an effect it must not
+       destroy. */
+    if (!d) return { verb, key: "", field: "", value: JSON.stringify(v), delta: "", raw: true };
     const r = { verb, key: "", field: "", value: "", delta: "" };
     switch (d.shape) {
       case "keyed":     r.key = Object.keys(v)[0]; r.delta = v[r.key]; break;
@@ -141,8 +191,22 @@ const Editor = (function () {
   }
 
   function rowToEff(r) {
-    const d = SCHEMA.effects[r.verb]; if (!d) return null;
-    const n = x => x === "" || x == null ? 0 : (isNaN(+x) ? x : +x);
+    const d = SCHEMA.effects[r.verb];
+    if (!d) {
+      try { return { [r.verb]: JSON.parse(r.value) }; }
+      catch (e) { return null; }
+    }
+    /* A BOOLEAN IS NOT A NUMBER. `+true` is 1 and not NaN, so the old
+       coercion quietly turned {dead:true} into {dead:1} on every save.
+       The engine treats 1 as truthy so nothing broke — the content just
+       stopped saying what it meant, one save at a time. */
+    const n = x => {
+      if (typeof x === "boolean") return x;
+      if (x === "true") return true;
+      if (x === "false") return false;
+      if (x === "" || x == null) return 0;
+      return isNaN(+x) ? x : +x;
+    };
     switch (d.shape) {
       case "keyed":     return { [r.verb]: { [r.key]: n(r.delta) } };
       case "keyedSet":  return { [r.verb]: { [r.key]: n(r.value) } };
@@ -155,7 +219,9 @@ const Editor = (function () {
   }
 
   function effRow(eff, ci, ei) {
-    const r = effToRow(eff), d = SCHEMA.effects[r.verb] || { args: [] };
+    const r = effToRow(eff);
+    const d = SCHEMA.effects[r.verb] ||
+      { args: [{ k: "value", type: "text", label: "JSON", hint: "raw" }] };
     const verbSel = `<select class="ed-f ed-verb" data-f="verb">` +
       Object.keys(SCHEMA.effects).map(k =>
         `<option value="${k}"${k === r.verb ? " selected" : ""}>${esc(SCHEMA.effects[k].label)}</option>`).join("") +
@@ -261,7 +327,7 @@ const Editor = (function () {
       </div>
       <label class="ed-res">Result <input class="ed-f" data-f="result" type="text" value="${esc(c.result || "")}" placeholder="Line shown after the choice"></label>
       <div class="ed-effhd">Effects <button class="btn ed-add" data-act="eff-add" data-ci="${i}">+ effect</button></div>
-      <div class="ed-effs">${[].concat(c.effects || []).map((eff, ei) => effRow(eff, i, ei)).join("")}</div>
+      <div class="ed-effs">${explodeEffects(c.effects).map((eff, ei) => effRow(eff, i, ei)).join("")}</div>
     </div>`;
   }
 
@@ -1511,5 +1577,10 @@ const Editor = (function () {
     draw();
   }
 
-  return { boot };
+  /* __test exposes the effect encoder to tools/edtest.js and nothing
+     else. It is here because the bug worth guarding — a multi-key
+     effect losing every pair after the first — lives in the encoding
+     rather than in anything the DOM shows, so a check that drove the
+     form would not see it. */
+  return { boot, __test: { explodeEffects, effToRow, rowToEff } };
 })();

@@ -640,7 +640,7 @@ try {
 try {
   const st = w.eval("JSON.parse(Engine.save(UI.state()))");
   const before = w.eval("Engine.save(UI.state())");
-  w.eval('window.__d = Engine.describe(UI.state(), CONTENT, [{scalar:{treasury:-8}},{loyalty:{psa:5}}]);');
+  w.eval('window.__d = Engine.describe(UI.state(), CONTENT, [{move:{treasury:-8}},{move:{"loyalty.psa":5}}]);');
   ok("describe() mutates nothing", w.eval("Engine.save(UI.state())") === before);
   const d = w.eval("JSON.stringify(window.__d)");
   ok("describe() names the party rather than its id", /New Progressive/.test(d), d);

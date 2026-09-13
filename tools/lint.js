@@ -130,6 +130,39 @@ n += section("IN PROSE BUT NOT IN THE GLOSSARY", sus,
   s => `"${s}" — used in ${seenSuspect[s].join(", ")}`);
 
 /* =============================================================
+   RETIRED AND UNKNOWN EFFECT VERBS
+
+   apply() throws on an unknown verb, so a retired one in content is a
+   crash waiting for whichever branch reaches it. That is not
+   hypothetical: folding `unflag` into `flag` left three uses in the
+   REVERSE effects of instruments — the path taken when an order is
+   revoked — and every check passed, because no check revokes one.
+
+   Content files are scanned as text rather than by walking known keys:
+   the same pass previously missed content/bills.js entirely, because
+   its effects live under onPass and onFail rather than under `effects`.
+   ============================================================= */
+const verbBad = [];
+try {
+  const Eng = require(path.join(root, "js", "engine.js"));
+  const known = new Set(Object.keys(Eng.EFFECTS));
+  const RETIRED = ["scalar", "loyalty", "relationship", "price", "capital", "unflag", "byelection"];
+  fs.readdirSync(path.join(root, "content")).filter(f => /\.js$/.test(f)).forEach(f => {
+    const src4 = fs.readFileSync(path.join(root, "content", f), "utf8");
+    RETIRED.forEach(v => {
+      /* `{verb:` or `{ verb :` — the object-literal form an effect takes.
+         A bare word in prose or a comment is not a match. */
+      const re2 = new RegExp("\\{\\s*" + v + "\\s*:", "g");
+      const n = (src4.match(re2) || []).length;
+      if (n) verbBad.push(`${f}: ${n} use(s) of the retired verb \`${v}\``);
+    });
+  });
+  known.size || verbBad.push("the engine exposes no EFFECTS to check against");
+} catch (e) { verbBad.push("could not read the vocabulary: " + e.message); }
+
+section("RETIRED EFFECT VERBS IN CONTENT", verbBad, x => x);
+
+/* =============================================================
    UNDEFINED CUSTOM PROPERTIES
 
    A var() naming a property nothing defines is invalid at
@@ -293,10 +326,11 @@ R.push(n ? `${n} legibility issues` : "no legibility issues");
 if (artBad.length) R.push(`${artBad.length} ARTIFACT SHAPE FAILURES`);
 if (chainBad.length) R.push(`${chainBad.length} BREAKS IN THE CONSEQUENCE CHAIN`);
 if (cssBad.length) R.push(`${cssBad.length} UNDEFINED CSS CUSTOM PROPERTIES`);
+if (verbBad.length) R.push(`${verbBad.length} RETIRED EFFECT VERBS IN CONTENT`);
 console.log(R.join("\n"));
 /* The chain is reported loudly and does NOT fail the build yet: the
    current content breaks it in several places by omission, and a check
    that fails from the day it lands gets disabled rather than fixed. It
    becomes a hard failure when the content pass in design/03 closes the
    rows below. */
-if (artBad.length || cssBad.length) process.exit(1);
+if (artBad.length || cssBad.length || verbBad.length) process.exit(1);

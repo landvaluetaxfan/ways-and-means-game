@@ -9,13 +9,13 @@ const SCHEMA = {
 
   /* ---------- effect verbs ---------- */
   effects: {
-    scalar:      { label:"Move an indicator", args:[
-                   {k:"key", type:"enum", src:"scalars", label:"Indicator"},
-                   {k:"delta", type:"int", label:"Change", hint:"+ or −"}],
-                   shape:"keyed" },
-    loyalty:     { label:"Move loyalty", args:[
-                   {k:"key", type:"enum", src:"loyaltyTargets", label:"Party or current"},
-                   {k:"delta", type:"int", label:"Change"}],
+    /* ONE VERB for every clamp-and-add against a keyed table. The target
+       is namespaced: a bare key is a scalar, otherwise loyalty. / rel. /
+       price. / capital. — so the editor offers one picker rather than
+       five near-identical verbs. See js/engine.js EFFECTS.move. */
+    move:        { label:"Move a number", args:[
+                   {k:"key",   type:"enum", src:"moveTargets", label:"Target"},
+                   {k:"delta", type:"int",  label:"Change", hint:"+ or −"}],
                    shape:"keyed" },
     law:         { label:"Set a law value", args:[
                    {k:"key", type:"enum", src:"laws", label:"Law"},
@@ -37,29 +37,16 @@ const SCHEMA = {
                    {k:"delta", type:"int", label:"Seats"}],
                    shape:"nested" },
     flag:        { label:"Set a flag", args:[{k:"value", type:"flag", label:"Flag"}], shape:"scalarVal" },
-    unflag:      { label:"Clear a flag", args:[{k:"value", type:"flag", label:"Flag"}], shape:"scalarVal" },
     bill:        { label:"Change a bill", args:[
                    {k:"key", type:"enum", src:"bills", label:"Bill"},
                    {k:"field", type:"enum", src:"billFields", label:"Field"},
                    {k:"value", type:"any", label:"Value"}],
                    shape:"nestedSet" },
-    relationship:{ label:"Move a relationship", args:[
-                   {k:"key", type:"enum", src:"relTargets", label:"Person"},
-                   {k:"delta", type:"int", label:"Change"}],
-                   shape:"keyed" },
     coalition:   { label:"Change the coalition", args:[
                    {k:"field", type:"enum", src:["add","remove"], label:"Action"},
                    {k:"value", type:"enum", src:"parties", label:"Party"}],
                    shape:"coalition" },
     wire:        { label:"Push a wire headline", args:[{k:"value", type:"text", label:"Headline", hint:"CAPS"}], shape:"scalarVal" },
-    price:       { label:"Move a scarcity price", args:[
-                   {k:"key", type:"enum", src:"prices", label:"Price"},
-                   {k:"delta", type:"int", label:"Change", hint:"index points"}],
-                   shape:"keyed" },
-    capital:     { label:"Move a capital debt", args:[
-                   {k:"key", type:"enum", src:"parties", label:"Partner"},
-                   {k:"delta", type:"int", label:"Change", hint:"+ they owe you"}],
-                   shape:"keyed" },
     chapter:     { label:"Advance to chapter", args:[
                    {k:"value", type:"int", label:"Chapter"}], shape:"scalarVal" },
     queue:       { label:"Queue a later event", args:[
@@ -77,9 +64,6 @@ const SCHEMA = {
                    {k:"constituency", type:"enum", src:"constituencies", label:"Constituency"},
                    {k:"party", type:"enum", src:"parties", label:"Held by"},
                    {k:"why", type:"text", label:"Reason"}], shape:"list" },
-    byelection:  { label:"Hold a by-election", args:[
-                   {k:"value", type:"enum", src:"constituencies", label:"Constituency"}],
-                   shape:"listVal" },
     election:    { label:"Hold a general election", args:[
                    {k:"value", type:"bool", label:"Dissolve"}], shape:"scalarVal" }
   },

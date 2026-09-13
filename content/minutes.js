@@ -81,7 +81,7 @@ I would ordinarily copy this to the Minister. I have not.` }
 3. This direction is not a refusal. It is a record.
 
 I am aware of how this minute will read if it is ever produced. I would rather it read as caution than as ignorance.`,
-    onSign:[ { flag:"licensing_direction" }, { scalar:{ public_standing:2 } },
-             { relationship:{ gb_chair:6 } } ] }
+    onSign:[ { flag:"licensing_direction" }, {move:{"public_standing":2}},
+             {move:{"rel.gb_chair":6}} ] }
 
 ];
