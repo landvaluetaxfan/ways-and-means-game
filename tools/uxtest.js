@@ -769,4 +769,27 @@ try {
      /House rises/i.test(w.document.querySelector("#sit-docket").textContent));
 } catch (e) { ok("the calendar", false, e.message); }
 
+
+/* EXPANDING A ROW MUST NOT REBUILD THE PICTURE ABOVE IT.
+
+   The whole sitting body used to be redrawn on every toggle, which
+   destroyed and recreated the speaker's <img>: the replacement reported
+   complete:false and for a frame the portrait was its empty template.
+   Asserting on the NODE IDENTITY is the point — a test on how it looks
+   would pass while the flicker continued. */
+try {
+  w.eval('UI.boot(UI.state(), CONTENT);');
+  w.document.querySelector('.tab[data-t="sit"]').click();
+  const read = w.document.querySelector(".sit-read");
+  const before = read ? read.innerHTML : null;
+  const node = w.document.querySelector(".sit-read img");
+  w.document.querySelector("#sitting-body [data-expand]").click();
+  ok("expanding a choice leaves the reading block untouched",
+     !!read && read.innerHTML === before);
+  ok("and never rebuilds the portrait node",
+     w.document.querySelector(".sit-read img") === node);
+  ok("the decision block is a separate element",
+     !!w.document.querySelector("#sit-decide .choices"));
+} catch (e) { ok("expanding does not redraw the prose", false, e.message); }
+
 H.finish("the interface is healthy");

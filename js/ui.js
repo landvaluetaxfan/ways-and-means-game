@@ -1209,34 +1209,66 @@ const UI = (function () {
     const e = currentEvent;
     if (openRow.event !== e.id) openRow = { event: e.id, i: -1 };
     const spk = e.speaker ? C.characterById[e.speaker] : null;
-    const open = Engine.openChoices(st, C, e);
     $("#sitting-hdr").textContent = e.title;
-    box.innerHTML =
-      plate(e.image) +
-      (spk ? portrait(spk) + `<div class="rulehead">${spk.name} &mdash; ${spk.role}</div>` : "") +
-      `<div class="prose" id="sitting-prose">${annotate(e.body.split(/\n\n/).map(p => `<p>${p.replace(/\n/g, " ")}</p>`).join(""))}</div>` +
-      `<div style="clear:both"></div>` +
-      (lastResult
-        ? `<div class="decl" style="margin-top:8px"><b>Outcome</b><br><span id="sitting-outcome">${lastResult}</span></div>
-           <div class="btnrow"><button class="btn" id="btn-advance">Rise until the next sitting</button></div>`
-        : `<div class="rulehead">Decision</div><div class="choices">` +
-          open.map(x => choiceRow(e, x.choice, x.index, openRow.i === x.index)).join("") +
-          `</div>`);
 
+    /* TWO BLOCKS: what you are reading, and what you are deciding.
+       The reading block is ONE element so the portrait's float still
+       wraps the prose inside it — a flex column would otherwise make
+       the portrait and the text siblings and the float would wrap
+       nothing. The decision block is pushed to the foot of the panel by
+       margin-top:auto, so a short event leaves its space between the
+       two rather than below everything, which reads as a margin
+       instead of as an unfinished panel. */
+    box.innerHTML =
+      `<div class="sit-read">` +
+        plate(e.image) +
+        (spk ? portrait(spk) + `<div class="rulehead">${spk.name} &mdash; ${spk.role}</div>` : "") +
+        `<div class="prose" id="sitting-prose">${annotate(e.body.split(/\n\n/).map(p => `<p>${p.replace(/\n/g, " ")}</p>`).join(""))}</div>` +
+        `<div style="clear:both"></div>` +
+      `</div>` +
+      `<div class="sit-decide" id="sit-decide"></div>`;
+
+    drawDecision();
     bindGlossary(box);
-    if (lastResult) { $("#btn-advance").addEventListener("click", rise); return; }
+  }
+
+  /* THE DECISION BLOCK, DRAWN ON ITS OWN.
+
+     Expanding a row used to redraw the whole sitting body, which
+     destroyed and rebuilt the speaker's <img>. Measured: the node was
+     replaced and the replacement reported complete:false, so for a frame
+     the portrait was its empty box — the flicker. Only this block is
+     rewritten now, so the picture above it is never touched. */
+  function drawDecision() {
+    const foot = $("#sit-decide");
+    if (!foot || !currentEvent) return;
+    const e = currentEvent;
+
+    if (lastResult) {
+      foot.innerHTML =
+        `<div class="decl"><b>Outcome</b><br><span id="sitting-outcome">${lastResult}</span></div>
+         <div class="btnrow"><button class="btn" id="btn-advance">Rise until the next sitting</button></div>`;
+      $("#btn-advance").addEventListener("click", rise);
+      return;
+    }
+
+    const open = Engine.openChoices(st, C, e);
+    foot.innerHTML = `<div class="rulehead">Decision</div><div class="choices">` +
+      open.map(x => choiceRow(e, x.choice, x.index, openRow.i === x.index)).join("") +
+      `</div>`;
+    bindGlossary(foot);
 
     /* Expanding is a user action, so it may cue. Drawing is not. */
-    box.querySelectorAll("[data-expand]").forEach(b => b.addEventListener("click", () => {
+    foot.querySelectorAll("[data-expand]").forEach(b => b.addEventListener("click", () => {
       const i = +b.dataset.expand;
       openRow = { event: e.id, i: openRow.i === i ? -1 : i };
       cue("click");
-      Focus.around(() => drawSitting(), null);
-      const n = $(`[data-expand="${openRow.i}"]`);
+      drawDecision();
+      const n = $(`[data-expand="${openRow.i >= 0 ? openRow.i : i}"]`);
       if (n) n.focus({ preventScroll: true });
     }));
 
-    box.querySelectorAll(".commit").forEach(b => b.addEventListener("click", () => {
+    foot.querySelectorAll(".commit").forEach(b => b.addEventListener("click", () => {
       const i = +b.dataset.i, ch = e.choices[i];
       const owes = [].concat(ch.effects || []).some(x => x.undertake);
       lastResult = Engine.choose(st, C, e, i) || "Noted.";
