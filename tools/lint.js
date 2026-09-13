@@ -202,6 +202,63 @@ try {
 
 section("UNDEFINED CSS CUSTOM PROPERTIES", cssBad, x => x);
 
+/* ---------------------------------------------------------------------
+   DOES THE STYLESHEET ACTUALLY PARSE?
+
+   It cost the Concordance its entire layout and nothing caught it. A
+   `.glbox` rule was deleted by removing its SELECTOR and leaving the
+   body and the closing brace behind, so the file carried four orphaned
+   declarations and one extra `}`. A browser parsing that looks for the
+   next `{` to end the selector it thinks it is reading — and the next
+   `{` belonged to `.cx-wrap`, so the Concordance's two-column grid was
+   swallowed into an invalid selector and silently dropped.
+
+   No other check could see it. jsdom does not lay out, so every screen
+   still "rendered"; cxcheck reads content, not CSS; and the file was
+   valid enough that nothing threw. The only symptom was one rule
+   missing in a real browser.
+   --------------------------------------------------------------------- */
+const parseBad = [];
+["css/terminal.css", "css/editor.css"].forEach(rel => {
+  let src;
+  try { src = fs.readFileSync(path.join(root, rel), "utf8"); }
+  catch (e) { return; }
+  /* blank the comments but keep the newlines, so line numbers survive */
+  const bare = src.replace(/\/\*[\s\S]*?\*\//g, m => m.replace(/[^\n]/g, " "));
+
+  let depth = 0, line = 1;
+  for (let i = 0; i < bare.length; i++) {
+    const c = bare[i];
+    if (c === "\n") line++;
+    else if (c === "{") depth++;
+    else if (c === "}") {
+      depth--;
+      if (depth < 0) { parseBad.push(`${rel}:${line} — a closing brace with nothing open`); depth = 0; }
+    }
+  }
+  if (depth > 0) parseBad.push(`${rel} — ${depth} block${depth === 1 ? "" : "s"} left unclosed`);
+
+  /* A declaration outside any block is the other half of the same
+     mistake, and it is the half that eats the next rule. */
+  depth = 0; line = 1;
+  let tok = "";
+  for (let i = 0; i < bare.length; i++) {
+    const c = bare[i];
+    if (c === "\n") line++;
+    if (c === "{") { depth++; tok = ""; continue; }
+    if (c === "}") { depth = Math.max(0, depth - 1); tok = ""; continue; }
+    if (depth > 0) continue;
+    if (c === ";") {
+      /* at the top level only @import/@charset may end in a semicolon */
+      const t = tok.trim();
+      if (t && !/^@/.test(t) && /^[-a-zA-Z]+\s*:/.test(t))
+        parseBad.push(`${rel}:${line} — "${t.slice(0, 44)}" is a declaration outside any rule`);
+      tok = "";
+    } else tok += c;
+  }
+});
+section("STYLESHEETS THAT DO NOT PARSE", parseBad, x => x);
+
 /* =============================================================
    THE CONSEQUENCE CHAIN (bible 7.9)
 
@@ -326,6 +383,7 @@ R.push(n ? `${n} legibility issues` : "no legibility issues");
 if (artBad.length) R.push(`${artBad.length} ARTIFACT SHAPE FAILURES`);
 if (chainBad.length) R.push(`${chainBad.length} BREAKS IN THE CONSEQUENCE CHAIN`);
 if (cssBad.length) R.push(`${cssBad.length} UNDEFINED CSS CUSTOM PROPERTIES`);
+if (parseBad.length) R.push(`${parseBad.length} STYLESHEET PARSE FAILURES`);
 if (verbBad.length) R.push(`${verbBad.length} RETIRED EFFECT VERBS IN CONTENT`);
 console.log(R.join("\n"));
 /* The chain is reported loudly and does NOT fail the build yet: the
@@ -333,4 +391,4 @@ console.log(R.join("\n"));
    that fails from the day it lands gets disabled rather than fixed. It
    becomes a hard failure when the content pass in design/03 closes the
    rows below. */
-if (artBad.length || cssBad.length || verbBad.length) process.exit(1);
+if (artBad.length || cssBad.length || verbBad.length || parseBad.length) process.exit(1);
