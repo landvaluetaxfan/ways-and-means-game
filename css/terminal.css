@@ -96,9 +96,24 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
   position:relative;top:1px;
 }
 
-#viewport{flex:1 1 auto;overflow:auto;padding:5px;}
+/* A TAB NEVER SCROLLS. The viewport is fixed; a screen fills it; what is
+   inside a screen scrolls. A long column — the cabinet appointments — used to
+   grow the whole tab and push the chrome off the bottom of the window. */
+#viewport{flex:1 1 auto;overflow:hidden;padding:5px;min-height:0;}
 .screen{display:none;}
-.screen.on{display:block;}
+.screen.on{display:block;height:100%;min-height:0;}
+/* columns scroll as a whole */
+#s-gov .stack,#s-pap .stack{min-height:0;overflow:auto;}
+/* one row of panels: the panel fills its cell, its body scrolls */
+#s-cham .grid > .panel,
+#s-pap .grid > .panel,
+#s-log .panel{display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden;}
+#s-cham .grid > .panel > .pbody,
+#s-pap .grid > .panel > .pbody,
+#s-log .panel > .pbody{flex:1 1 auto;min-height:0;overflow:auto;}
+#s-cham .grid > .panel > .pbody + .pbody{flex:0 0 auto;}
+/* the Concordance was pinned to a viewport offset; fill the screen instead */
+#s-cx .panel{height:100% !important;min-height:0 !important;}
 
 #statusbar{
   flex:0 0 auto;
@@ -117,7 +132,11 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #sb-msg.live{background:var(--chrome-lt);font-weight:bold;}
 
 /* ---------- panels ---------- */
-.grid{display:grid;gap:5px;}
+.grid{display:grid;gap:5px;height:100%;min-height:0;}
+/* the government, chamber and papers grids are one row on a wide screen and
+   one column of rows on a narrow one; either way each cell is an equal share
+   and scrolls, so the tab itself never grows */
+#s-gov .grid,#s-cham .grid,#s-pap .grid{grid-auto-rows:minmax(0,1fr);}
 .g-gov{grid-template-columns:300px minmax(0,1.3fr) 300px;}
 /* The seating plan is drawn at a fixed size and the composition tables were
    cramped into 300px beside it, so the one panel that could not use its
