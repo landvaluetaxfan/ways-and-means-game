@@ -343,6 +343,8 @@ const Shell = (function () {
     if (typeof Focus !== "undefined") Focus.reset();
     if (typeof Papers !== "undefined") Papers.reset();
     UI.boot(state, C);
+    /* a government opens: the bed rises with the first sitting */
+    if (typeof Music !== "undefined") Music.rise();
     if (!stateStr) saveNow(true);
     stampSlot();
   }

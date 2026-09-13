@@ -4,11 +4,11 @@
    A slow eight-bar loop at 72 BPM in D minor, synthesised from
    oscillators and one noise buffer. No assets, same as the cues.
 
-   VERTICAL REMIXING. The loop is split into layers — pad, bass,
-   keys, drums, horn — each on its own gain. The bed is pad, bass
-   and keys; a moment fades the drums and horn in for four bars and
-   drops them back. Nothing changes tempo, which is the whole point:
-   a swell is a layer entering, not the band speeding up.
+   VERTICAL REMIXING. The loop is split into layers, each on its own
+   gain. The BED is pad, bass, keys and reed — a smooth saxophone
+   line of long tones. The special bars add the drums and a brighter
+   trumpet lead. Nothing changes tempo, which is the whole point: a
+   swell is a layer entering, not the band speeding up.
 
    THE HARD RULE, from js/audio.js, applies here too: music is
    started and swelled by USER ACTIONS and ENGINE EFFECTS only, never
@@ -30,23 +30,29 @@ const Music = (function () {
 
   const LAYERS = [
     { id: "pad",   level: 0.07 },
-    { id: "bass",  level: 0.26 },
-    { id: "keys",  level: 0.12 },
-    { id: "drums", level: 0.20 },
-    { id: "horn",  level: 0.15 }
+    { id: "bass",  level: 0.24 },
+    { id: "keys",  level: 0.11 },
+    { id: "reed",  level: 0.10 },
+    { id: "drums", level: 0.18 },
+    { id: "lead",  level: 0.15 }
   ];
 
-  /* 8 bars: chord (MIDI), walking bass (one per beat), horn (beat, dur in beats) */
+  /* 8 bars. ch: chord (MIDI). bass: [root, fifth, approach]. reed: a long
+     tone, one per bar. h: the lead line, as [beat, midi, dur in beats]. */
   const PROG = [
-    { ch: [50,53,57,60], b: [38,45,50,48], h: [[69,0,1.5],[72,2.5,1]] },
-    { ch: [50,53,57,60], b: [50,48,45,43], h: null },
-    { ch: [55,58,62,65], b: [43,50,55,53], h: [[74,1,1.5],[72,3,1]] },
-    { ch: [55,58,62,65], b: [55,53,50,48], h: null },
-    { ch: [58,62,65,69], b: [46,53,58,57], h: [[70,0,1.5],[69,2.5,1]] },
-    { ch: [57,61,64,67], b: [45,52,57,55], h: [[67,0,2]] },
-    { ch: [50,53,57,60], b: [38,45,50,52], h: null },
-    { ch: [57,61,64,67], b: [45,43,41,40], h: [[65,1,1],[67,2.5,1.5]] }
+    { ch: [50,53,57,60], bass: [38,45,41], reed: 53, h: [[69,0,1.5],[72,2.5,1]] },
+    { ch: [50,53,57,60], bass: [38,45,43], reed: 57, h: null },
+    { ch: [55,58,62,65], bass: [43,50,46], reed: 58, h: [[74,1,1.5],[72,3,1]] },
+    { ch: [55,58,62,65], bass: [43,50,45], reed: 62, h: null },
+    { ch: [58,62,65,69], bass: [46,53,50], reed: 65, h: [[70,0,1.5],[69,2.5,1]] },
+    { ch: [57,61,64,67], bass: [45,52,48], reed: 64, h: [[67,0,2]] },
+    { ch: [50,53,57,60], bass: [38,45,40], reed: 57, h: null },
+    { ch: [57,61,64,67], bass: [45,52,43], reed: 61, h: [[65,1,1],[67,2.5,1.5]] }
   ];
+
+  /* the bass rhythm: [beat, duration in beats, amp]. Root, fifth, approach,
+     so it is not the same note at the same interval every time. */
+  const BASS_T = [[0, 1.5, 1.0], [2, 1.0, 0.85], [3.5, 0.5, 0.7]];
 
   const hz = m => 440 * Math.pow(2, (m - 69) / 12);
 
@@ -75,7 +81,7 @@ const Music = (function () {
       const g = ctx.createGain(); g.gain.value = 0; g.connect(out);
       gains[l.id] = g;
     });
-    gains.keys.connect(send); gains.horn.connect(send);
+    gains.reed.connect(send); gains.lead.connect(send);
     NOISE = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
     const d = NOISE.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -92,14 +98,21 @@ const Music = (function () {
   }
 
   /* ---------- voices ---------- */
-  function bass(t, f, dur) {
+
+  /* the bass: legato and rounded, a filter that opens and closes, so it reads
+     as a double bass rather than a series of plucks. */
+  function bass(t, f, dur, amp) {
     const o = ctx.createOscillator(), o2 = ctx.createOscillator(),
           lp = ctx.createBiquadFilter(), g = ctx.createGain();
     o.type = "triangle"; o.frequency.value = f;
-    o2.type = "sine"; o2.frequency.value = f / 2;
-    lp.type = "lowpass"; lp.frequency.value = 520;
+    o2.type = "sine"; o2.frequency.value = f;
+    lp.type = "lowpass";
+    lp.frequency.setValueAtTime(300, t);
+    lp.frequency.linearRampToValueAtTime(520, t + 0.14);
+    lp.frequency.linearRampToValueAtTime(250, t + dur);
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.5, t + 0.02);
+    g.gain.linearRampToValueAtTime(amp, t + 0.06);
+    g.gain.linearRampToValueAtTime(amp * 0.85, t + dur * 0.6);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(lp); o2.connect(lp); lp.connect(g); g.connect(gains.bass);
     o.start(t); o2.start(t); o.stop(t + dur + 0.05); o2.stop(t + dur + 0.05);
@@ -124,6 +137,35 @@ const Music = (function () {
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(lp); lp.connect(g); g.connect(gains.keys);
     o.start(t); o.stop(t + dur + 0.05);
+  }
+  /* the reed: a soft saxophone, a long tone with vibrato. Part of the bed. */
+  function reed(t, f, dur) {
+    const o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
+    const vib = ctx.createOscillator(), vg = ctx.createGain();
+    o.type = "sawtooth"; o.frequency.value = f;
+    lp.type = "lowpass"; lp.frequency.value = 900; lp.Q.value = 0.6;
+    vib.frequency.value = 4.6; vg.gain.value = f * 0.004;
+    vib.connect(vg); vg.connect(o.frequency);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.13, t + 0.45);
+    g.gain.linearRampToValueAtTime(0.10, t + dur * 0.65);
+    g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    o.connect(lp); lp.connect(g); g.connect(gains.reed);
+    o.start(t); vib.start(t); o.stop(t + dur + 0.1); vib.stop(t + dur + 0.1);
+  }
+  /* the lead: a brighter trumpet, held back for the special bars */
+  function lead(t, f, dur) {
+    const o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
+    const vib = ctx.createOscillator(), vg = ctx.createGain();
+    o.type = "sawtooth"; o.frequency.value = f;
+    lp.type = "lowpass"; lp.frequency.value = 1800;
+    vib.frequency.value = 5.3; vg.gain.value = f * 0.006;
+    vib.connect(vg); vg.connect(o.frequency);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.16, t + 0.09);
+    g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    o.connect(lp); lp.connect(g); g.connect(gains.lead);
+    o.start(t); vib.start(t); o.stop(t + dur + 0.1); vib.stop(t + dur + 0.1);
   }
   function kick(t) {
     const o = ctx.createOscillator(), g = ctx.createGain();
@@ -156,19 +198,6 @@ const Music = (function () {
     s.connect(hp); hp.connect(g); g.connect(gains.drums);
     s.start(t); s.stop(t + 0.07);
   }
-  function horn(t, f, dur) {
-    const o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
-    const vib = ctx.createOscillator(), vg = ctx.createGain();
-    o.type = "sawtooth"; o.frequency.value = f;
-    lp.type = "lowpass"; lp.frequency.value = 1250;
-    vib.frequency.value = 5.1; vg.gain.value = f * 0.006;
-    vib.connect(vg); vg.connect(o.frequency);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(0.2, t + 0.13);
-    g.gain.linearRampToValueAtTime(0.0001, t + dur);
-    o.connect(lp); lp.connect(g); g.connect(gains.horn);
-    o.start(t); vib.start(t); o.stop(t + dur + 0.1); vib.stop(t + dur + 0.1);
-  }
 
   /* ---------- the sequencer ---------- */
   function scheduleStep(s, t0) {
@@ -177,7 +206,10 @@ const Music = (function () {
     const t = t0 + (st % 2 ? SWING : 0);    /* swing the off-beats */
     const chord = PROG[bar];
 
-    if (st % 2 === 0) bass(t, hz(chord.b[st / 2]), SPB * 0.9);
+    BASS_T.forEach(([b, d, a], i) => {
+      if (Math.abs(b - st / 2) < 0.001) bass(t, hz(chord.bass[i]), d * SPB, a * 0.5);
+    });
+    if (st === 0) reed(t, hz(chord.reed), SPB * 3.4);
     if (st === 0) kick(t);
     if (st === 2 || st === 6) brush(t);
     if (st % 2 === 0) hat(t, 0.05);
@@ -185,7 +217,7 @@ const Music = (function () {
     if (st === 3 || st === 5) chord.ch.forEach((m, i) => key(t + i * 0.012, hz(m + 12), SPB * 0.6));
     if (st === 0) pad(t, chord.ch.map(hz), SPB * BEATS);
     if (chord.h) chord.h.forEach(([m, b, d]) => {
-      if (Math.abs(b - st / 2) < 0.001) horn(t, hz(m), d * SPB);
+      if (Math.abs(b - st / 2) < 0.001) lead(t, hz(m), d * SPB);
     });
   }
 
@@ -203,7 +235,7 @@ const Music = (function () {
     if (playing || !ctx || !out) return;
     if (ctx.state === "suspended" && ctx.resume) { try { ctx.resume(); } catch (e) {} }
     playing = true; step = 0; nextTime = ctx.currentTime + 0.1;
-    ["pad", "bass", "keys"].forEach(id => ramp(id, level(id), ctx.currentTime, 1.5));
+    ["pad", "bass", "keys", "reed"].forEach(id => ramp(id, level(id), ctx.currentTime, 1.5));
     loop();
   }
   function stop() {
@@ -212,23 +244,52 @@ const Music = (function () {
     LAYERS.forEach(l => ramp(l.id, 0, ctx.currentTime, 0.6));
   }
 
-  /* a bill carries: the drums and horn enter for four bars, the pad steps back */
+  /* a division is called: the drums enter, and stay until the result */
+  function tension() {
+    if (!playing || !ctx) return;
+    const t = ctx.currentTime;
+    ramp("drums", 0.22, t, 0.5);
+    ramp("pad",   level("pad") * 0.6, t, 0.5);
+  }
+  /* a bill carries: the trumpet enters over the drums for four bars */
   function moment() {
     if (!playing || !ctx) return;
     const t = ctx.currentTime, dur = 4 * BEATS * SPB;
-    ramp("drums", 0.30, t, 0.4);
-    ramp("horn",  0.24, t, 0.4);
+    ramp("drums", 0.24, t, 0.4);
+    ramp("lead",  0.17, t, 0.4);
     ramp("pad",   level("pad") * 0.5, t, 0.4);
     ramp("drums", 0, t + dur - 0.9, 0.9);
-    ramp("horn",  0, t + dur - 0.9, 0.9);
+    ramp("lead",  0, t + dur - 0.9, 0.9);
     ramp("pad",   level("pad"), t + dur - 0.9, 0.9);
+  }
+  /* a bill is lost: the drums and trumpet drop and the keys go out for two bars */
+  function defeat() {
+    if (!playing || !ctx) return;
+    const t = ctx.currentTime, dur = 2 * BEATS * SPB;
+    ramp("drums", 0, t, 0.4);
+    ramp("lead",  0, t, 0.4);
+    ramp("keys",  0, t, 0.4);
+    ramp("pad",   level("pad") * 0.6, t, 0.5);
+    ramp("keys",  level("keys"), t + dur, 1.2);
+    ramp("pad",   level("pad"), t + dur, 1.2);
+  }
+  /* a government opens: the whole bed comes up, drums and trumpet with it, then
+     they settle back and leave the room */
+  function rise() {
+    if (!playing || !ctx) return;
+    const t = ctx.currentTime, dur = 6 * BEATS * SPB;
+    ["pad", "bass", "keys", "reed"].forEach(id => ramp(id, level(id), t, 1.5));
+    ramp("drums", 0.20, t, 1.0);
+    ramp("lead",  0.15, t, 1.0);
+    ramp("drums", 0, t + dur - 1.0, 1.0);
+    ramp("lead",  0, t + dur - 1.0, 1.0);
   }
   /* the government has fallen: thin the bed out, then let it return */
   function sombre() {
     if (!playing || !ctx) return;
     const t = ctx.currentTime;
     ramp("drums", 0, t, 0.4);
-    ramp("horn",  0, t, 0.4);
+    ramp("lead",  0, t, 0.4);
     ramp("keys",  level("keys") * 0.4, t, 0.6);
     ramp("keys",  level("keys"), t + 5, 2.5);
   }
@@ -247,7 +308,8 @@ const Music = (function () {
   }
 
   return {
-    init: init, start: start, stop: stop, moment: moment, sombre: sombre, apply: apply,
+    init: init, start: start, stop: stop,
+    tension: tension, moment: moment, defeat: defeat, rise: rise, sombre: sombre, apply: apply,
     available: () => !!ctx
   };
 })();

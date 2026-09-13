@@ -565,7 +565,7 @@ const UI = (function () {
           if (!ok) return;
           Engine.prayAgainst(st, C, b.dataset.pray);
           cue(f.carries ? "aye" : "nay"); if (typeof Wait !== "undefined") Wait.brief(320);
-          if (f.carries) score("moment");
+          score(f.carries ? "moment" : "defeat");
           setStatus("Prayer against " + b.dataset.pray.replace(/_/g, " ") +
                     (f.carries ? " carried \u2014 the order is annulled"
                                : " defeated \u2014 the order stands"), "transient");
@@ -664,6 +664,8 @@ const UI = (function () {
     }
     $("#btn-divide").addEventListener("click", () => {
       if (!Engine.canDivide(st, C, id).ok) { cue("deny"); return; }
+      /* the drums come in while the division is being read out */
+      score("tension");
       /* THE DIVISION RESOLVES HERE, ON THE CLICK, BEFORE ANYTHING IS
          SHOWN. Engine.divide pays the whips, moves the stage, logs it and
          puts the bill in front of the President; the dialog that follows
@@ -834,7 +836,7 @@ const UI = (function () {
       ms: 520,
       run: () => {
         cue(r.carries ? "aye" : "nay");
-        if (r.carries) score("moment");
+        score(r.carries ? "moment" : "defeat");
         if (!verdict) return;
         verdict.textContent = r.carries
           ? (out.assent && out.assent.referred
