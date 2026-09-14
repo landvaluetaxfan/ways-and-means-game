@@ -11,6 +11,9 @@
   --bar-txt:#e9eae2;
   --alert:#7a2e22;
   --ok:#3d5c33;
+  /* the amber between them. It was hardcoded in .whipcost and nowhere
+     named, so the next thing that wanted it guessed. */
+  --warn:#8a6d22;
 
   --p-cu:#fe0000;
   --p-psa:#0c9bdf;
@@ -732,7 +735,7 @@ img.dith{display:block;}
 .whipbar i.on{background:var(--ok);}
 .whipbar i:not(.on):hover{background:var(--chrome-dk);}
 .whipcost{
-  background:#f4eddb;border-left:3px solid #8a6d22;padding:4px 7px;margin-top:5px;
+  background:#f4eddb;border-left:3px solid var(--warn);padding:4px 7px;margin-top:5px;
   font-size:12px;line-height:1.45;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;
 }
 .whipcost .od{color:var(--alert);font-weight:bold;}
@@ -1455,20 +1458,32 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .calgrid i.cd.past{opacity:.5;}
 .calgrid i.cd.now{background:var(--ink);border-color:var(--ink);}
 .calgrid i.cd.now b,.calgrid i.cd.now u{color:var(--field);}
-/* a day carrying something wears a corner flag, coloured by what it is */
-.calgrid i.cd s{
-  position:absolute;top:0;right:0;width:0;height:0;text-decoration:none;
-  border-top:7px solid var(--rule);border-left:7px solid transparent;
+/* ONE PIP PER THING DOWN FOR THAT DAY, not one flag per day. A single
+   corner flag said "something happens here" and lost both the count and,
+   where two kinds fell together, the colour. A row of pips reads as a
+   quantity and a kind at a glance, which is the whole job. */
+.calgrid i.cd .pips{
+  position:absolute;left:2px;right:2px;bottom:1px;
+  display:flex;gap:1.5px;justify-content:flex-start;pointer-events:none;
 }
-.calgrid i.cd.m-division s{border-top-color:var(--alert);}
-.calgrid i.cd.m-owed s{border-top-color:var(--ok);}
-.calgrid i.cd.m-rises s{border-top-color:var(--ink);}
+.calgrid s{
+  display:block;width:4px;height:4px;text-decoration:none;flex:0 0 auto;
+  background:var(--rule);border-radius:50%;
+}
+s.p-division{background:var(--alert);}
+s.p-owed    {background:var(--ok);}
+s.p-prayer  {background:var(--warn);}
+s.p-expected{background:var(--chrome-dkr);}
+s.p-rises   {background:var(--ink);}
+/* a fifth thing on one day is a rule, not a fifth dot */
+s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
+.calgrid i.cd.now s{outline:1px solid var(--field);}
 .calkey{
   display:flex;gap:9px;margin-top:5px;font-family:var(--f-data);font-size:9px;
   color:var(--ink-soft);align-items:center;flex-wrap:wrap;
 }
 .calkey span{display:flex;align-items:center;gap:3px;}
-.calkey i.cd{width:9px;min-height:0;height:9px;aspect-ratio:auto;display:inline-block;}
+.calkey s{width:5px;height:5px;}
 .calnext{margin-top:7px;border-top:1px solid var(--chrome-dk);padding-top:5px;}
 .calnext .cn{padding:2px 0;}
 .calnext .cn b{display:block;font-size:11.5px;font-weight:400;}

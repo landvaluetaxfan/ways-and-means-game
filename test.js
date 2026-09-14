@@ -1156,5 +1156,33 @@ console.log("\nTHE CALENDAR:");
      open.length === 1 && open[0].sitting === v.sessionEnds,
      open.length ? "sitting " + open[0].sitting + " of " + v.sessionEnds : "not shown");
 
+  /* A PRAYER WINDOW IS A DEADLINE — an order stands unless the House prays
+     against it before the window closes, and that date lived in the state
+     and nowhere the player could see it. */
+  const w = Engine.newGame(CONTENT);
+  Engine.makeInstrument(w, CONTENT, CONTENT.instruments[0].id);
+  const pr = Engine.deadlines(w, CONTENT).filter(d => d.kind === "prayer");
+  ok("a prayer window is on the calendar", pr.length === 1,
+     pr.length ? pr[0].text + " by " + pr[0].date : "not shown");
+
+  /* SOMETHING SET IN MOTION IS COMING BACK, and content decides whether the
+     player can see it coming. An ambush must stay an ambush. */
+  const q = Engine.newGame(CONTENT);
+  const anyEvent = CONTENT.events[0];
+  Engine.apply(q, CONTENT, [{ queue: { event: anyEvent.id, after: 5 } }]);
+  const seen = Engine.deadlines(q, CONTENT).filter(d => d.kind === "expected");
+  ok("a queued event with no label stays a surprise",
+     !anyEvent.foreseen ? seen.length === 0 : true,
+     anyEvent.foreseen ? "(this event is foreseeable, so it shows)" : "nothing announced");
+
+  /* Marks on one day must all survive, or the calendar under-reports. */
+  const m = Engine.newGame(CONTENT);
+  const day = m.sitting + 3;
+  Engine.apply(m, CONTENT, [{ undertake: { id: "a", text: "First promise", by: 3 } },
+                            { undertake: { id: "b", text: "Second promise", by: 3 } }]);
+  const both = Engine.deadlines(m, CONTENT).filter(d => d.sitting === day);
+  ok("two things due the same day are two entries, not one",
+     both.length === 2, both.map(x => x.text).join(" + "));
+
   if (bad) { console.log("\n" + bad + " CALENDAR FAILURES"); process.exitCode = 1; }
 })();

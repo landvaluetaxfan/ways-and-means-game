@@ -1115,8 +1115,25 @@ try {
      w.document.querySelectorAll("#sit-cal .calgrid i.cd.now").length === 1);
   ok("the days the House does not sit are drawn differently",
      w.document.querySelectorAll("#sit-cal .calgrid i.cd.dark").length > 0);
-  ok("every day says what it is, for a pointer and a screen reader",
-     [...cells].every(c => (c.getAttribute("title") || "").length > 0));
+  /* The card is for a pointer; the label is what a screen reader gets.
+     Swapping the native title= for the project's own hover card dropped
+     the second one, and this is why the pair is asserted together. */
+  ok("every day carries the project's hover card, not a native title",
+     [...cells].every(c => (c.getAttribute("data-tip-body") || "").length > 0) &&
+     [...cells].every(c => !c.hasAttribute("title")));
+  ok("and the same sentence reaches a screen reader",
+     [...cells].every(c => (c.getAttribute("aria-label") || "").length > 0),
+     (cells[10] || {}).getAttribute && cells[10].getAttribute("aria-label"));
+
+  /* ONE PIP PER THING. A single corner flag lost the count, and lost the
+     colour where two kinds fell on one day. */
+  const marked = [...cells].filter(c => c.querySelector(".pips"));
+  ok("a day with something down for it is marked", marked.length > 0,
+     marked.length + " marked days");
+  ok("and carries one pip per thing, not one flag per day",
+     marked.every(c => c.querySelectorAll(".pips s").length ===
+       ((c.getAttribute("data-tip-body") || "").split("\u2014").length)),
+     marked.map(c => c.querySelectorAll(".pips s").length).join(","));
 
   /* The session end must appear as a square, not only as a sentence in
      the docket — one source, two readouts. */

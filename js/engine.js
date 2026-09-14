@@ -2378,9 +2378,27 @@ const Engine = (function () {
       if (u.state !== "open") return;
       add(u.by == null ? st.sessionEnds : u.by, "owed", u.text);
     });
+    /* A PRAYER WINDOW IS A DEADLINE. An order stands unless the House
+       prays against it before the window closes, and until now that date
+       existed in the state and nowhere the player could see it. */
+    (C.instruments || []).forEach(si => {
+      const s0 = st.instruments[si.id];
+      if (s0 && s0.inForce && !s0.revoked && s0.prayerCloses != null)
+        add(s0.prayerCloses, "prayer", "Last day to pray against " + (si.number || si.id));
+    });
+    /* SOMETHING THE PLAYER SET IN MOTION IS COMING BACK. Content decides
+       whether it is foreseeable: an event with a `foreseen` label appears
+       on the calendar under that label, one without it does not appear at
+       all. An ambush must stay an ambush, and the engine cannot know
+       which is which. */
+    (st.queue || []).forEach(q => {
+      const e = C.eventById && C.eventById[q.eventId];
+      if (e && e.foreseen) add(q.dueSitting, "expected", e.foreseen);
+    });
     if (st.sessionEnds != null)
       add(st.sessionEnds, "rises", "The House rises \u2014 session " + st.session);
-    return out.sort((a, b) => a.sitting - b.sitting);
+    return out.sort((a, b) => a.sitting - b.sitting ||
+                              a.kind.localeCompare(b.kind));
   }
 
   /* One month of days for the calendar, each carrying whatever falls on

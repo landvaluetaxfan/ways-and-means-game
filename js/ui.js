@@ -1374,7 +1374,19 @@ const UI = (function () {
      not the other is how a player learns to trust neither.
      --------------------------------------------------------------- */
   const DOW = ["S", "M", "T", "W", "T", "F", "S"];
+  const MARKNAME = { division: "Division", owed: "Promised", rises: "The House rises",
+                     prayer: "Prayer window closes", expected: "Expected" };
+  const SITDAYS = "four";
   let calMonth = 0;                    /* months from the current sitting */
+
+  /* "Thursday 14 April" — the card names the day, because a player
+     reading a date wants the weekday as much as the number. */
+  function dayLabel(iso) {
+    const [y, m, d] = String(iso).split("-").map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    return dt.toLocaleDateString("en-GB",
+      { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+  }
 
   function calendarHTML() {
     const cal = Engine.calendar(st, C, calMonth);
@@ -1388,13 +1400,33 @@ const UI = (function () {
       if (d.past) cls.push("past");
       if (d.today) cls.push("now");
       d.marks.forEach(m => cls.push("m-" + m.kind));
-      const tip = d.marks.length
-        ? d.marks.map(m => m.text).join(" \u00b7 ")
-        : (d.sitting != null ? "Sitting " + d.sitting : "The House does not sit");
-      cells += `<i class="${cls.join(" ")}" title="${esc(tip)}">` +
+      /* ONE MARK PER THING, NOT ONE FLAG PER DAY. A single corner flag
+         said "something happens here" and lost both the count and, when
+         two kinds landed together, the colour — the classes stacked and
+         the last one won. A row of pips says how many and which. */
+      const pips = d.marks.slice(0, 4).map(m =>
+        `<s class="p-${m.kind}"></s>`).join("") +
+        (d.marks.length > 4 ? '<s class="p-more"></s>' : "");
+
+      /* AND THE PROJECT'S OWN HOVER CARD, not the browser's. This was a
+         native title= — slow, unstyled, and a second tooltip system in a
+         build that spent a commit removing one. */
+      const title = d.sitting != null ? "Sitting " + d.sitting : "The House does not sit";
+      const body = d.marks.length
+        ? d.marks.map(m => MARKNAME[m.kind] + ": " + m.text).join(" \u2014 ")
+        : (d.sitting != null ? "Nothing is down for this day."
+                             : "The House sits " + SITDAYS + " days in seven.");
+      /* data-tip draws the card for a pointer; aria-label is what a screen
+         reader gets, and it has to carry the same sentence. Swapping the
+         native title= for the project's own card quietly dropped the
+         second one, which the checks caught. */
+      const said = title + ", " + dayLabel(d.date) + ". " + body;
+      cells += `<i class="${cls.join(" ")}" aria-label="${esc(said)}"` +
+               ` data-tip-title="${esc(title)} \u00b7 ${esc(dayLabel(d.date))}"` +
+               ` data-tip-body="${esc(body)}">` +
                `<b>${d.dom}</b>` +
                (d.sitting != null ? `<u>${d.sitting}</u>` : "") +
-               (d.marks.length ? '<s></s>' : "") + `</i>`;
+               (pips ? `<span class="pips">${pips}</span>` : "") + `</i>`;
     });
     const next = Engine.deadlines(st, C).filter(x => x.away >= 0).slice(0, 3);
     return `<div class="calhead">
@@ -1404,9 +1436,11 @@ const UI = (function () {
       </div>
       <div class="calgrid">${DOW.map(d => '<em>' + d + '</em>').join("")}${cells}</div>
       <div class="calkey">
-        <span><i class="cd now"></i>today</span>
-        <span><i class="cd"></i>sitting</span>
-        <span><i class="cd dark"></i>rises</span>
+        <span><s class="p-division"></s>division</span>
+        <span><s class="p-owed"></s>promised</span>
+        <span><s class="p-prayer"></s>prayer</span>
+        <span><s class="p-expected"></s>expected</span>
+        <span><s class="p-rises"></s>rises</span>
       </div>` +
       (next.length ? '<div class="calnext">' + next.map(m =>
         `<div class="cn ${m.kind}${m.away <= 2 ? " late" : ""}"><b>${esc(m.text)}</b>` +
