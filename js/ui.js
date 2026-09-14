@@ -165,7 +165,10 @@ const UI = (function () {
       /* drawStatus too: the ambient line names the open bill, so a
          selection that does not refresh it leaves the status bar
          describing the bill you just navigated away from. */
-      activate: () => { drawGovernment(); drawStatus(); }
+      /* And the Chamber, which is coloured for whatever the order paper
+         has picked. One selection, two views: leaving the House drawn for
+         the previous measure is the same bug as the stale highlight. */
+      activate: () => { drawGovernment(); drawChamber(); drawStatus(); }
     });
     Focus.region("orbit-table", {
       rows: "tr[data-station]",
@@ -701,11 +704,13 @@ const UI = (function () {
   }
 
   function drawBill(id) {
-    const b = C.billById[id], bs = st.bills[id], d = Engine.division(st, C, id);
-    /* The forecast is the REPORTED division, not the exact one (design/08 §7).
-       The whip panel and the division itself still use the true count — the
-       cost of whipping is a mechanical fact, not a source's opinion. */
-    const rep = (Engine.reported ? Engine.reported(st, C, id) : d);
+    const b = C.billById[id], bs = st.bills[id];
+    /* The forecast is the REPORTED division, not the exact one (design/08 §7),
+       and so is every other number the player is shown about it — the bars
+       here, the seats on the Chamber plan, the breakdown beside them. The
+       true count is reached only where a MECHANIC needs it: what a seat
+       costs to whip, and the division itself. */
+    const rep = forecast(id);
     const det = $("#bill-detail");
     $("#bill-hdr").textContent = b.title;
     $("#bill-ref").textContent = b.ref;
@@ -721,38 +726,21 @@ const UI = (function () {
         (b.dualMajority && rep.popular.carries && !rep.functional.carries
           ? "<b>Carries on the popular benches and fails on the functional.</b> The dual test applies: bills touching life-support integrity and charter amendments must carry separately among functional members."
           : "<b>Fails.</b>")}</div>` +
-      whipPanel(id, b, d) +
+      whipLine(id) +
       `<div class="btnrow">
          <button class="btn" id="btn-divide"${bs.dead ? " disabled" : ""}>Move to a division</button>
-         <button class="btn" id="btn-breakdown">Party breakdown</button>
-       </div>
-       <div id="breakdown"></div>`;
+         <button class="btn" id="btn-tochamber">Work the benches</button>
+       </div>`;
 
-    $("#btn-breakdown").addEventListener("click", () => {
-      const bd = $("#breakdown");
-      if (bd.innerHTML) { bd.innerHTML = ""; return; }
-      bd.innerHTML = `<div class="rulehead">By party</div><table><thead><tr><th>Party</th>` +
-        `<th class="n">Pop aye</th><th class="n">of</th><th class="n">Func aye</th><th class="n">of</th></tr></thead><tbody>` +
-        d.rows.filter(r => r.popularSeats + r.functionalSeats > 0).map(r =>
-          `<tr><td>${sw(pc(r.party))}${(C.partyById[r.party] || {}).short || r.party}</td>` +
-          `<td class="n">${r.popularAye}${r.popularWhipped ? `<span class="wh">+${r.popularWhipped}</span>` : ""}</td><td class="n">${r.popularSeats}</td>` +
-          `<td class="n">${r.functionalAye}${r.functionalWhipped ? `<span class="wh">+${r.functionalWhipped}</span>` : ""}</td><td class="n">${r.functionalSeats}</td></tr>` +
-          benchRowsHTML(r)).join("") +
-        `</tbody></table>`;
+    /* ONE SELECTION, TWO VIEWS. The order paper picks the measure; the
+       Chamber colours the House for whichever measure the order paper has
+       picked. So this is a change of view, not a second picker. */
+    $("#btn-tochamber").addEventListener("click", () => {
+      chamberBare = false;
+      drawChamber();
+      const tab = document.querySelector('.tab[data-t="cham"]');
+      if (tab) tab.click();
     });
-    det.querySelectorAll(".whipbar").forEach(bar => {
-      const wp = bar.dataset.wp, wt = bar.dataset.wt;
-      [...bar.querySelectorAll("i")].forEach((cell, i) =>
-        cell.addEventListener("click", () => {
-          const cur = ((st.whips[id] || {})[wp] || {})[wt] || 0;
-          /* Click a block to commit up to it; click the last committed block
-             again to release it. */
-          Engine.setWhip(st, C, id, wp, wt, i + 1 === cur ? i : i + 1);
-          drawBill(id); drawStatus();
-        }));
-    });
-    const clr = $("#btn-clearwhip");
-    if (clr) clr.addEventListener("click", () => { Engine.clearWhips(st, id); drawBill(id); });
 
     /* A division that has been SET happens on its day. The button says
        when rather than going quiet: a control that is merely dead tells
@@ -798,6 +786,63 @@ const UI = (function () {
         drawAll(); afterAction();
       });
     });
+  }
+
+  /* ---------- what the player is shown about a division ----------
+
+     ONE function, so the bars, the seating plan and the breakdown cannot
+     drift apart. Every one of them is the whips' estimate; the true count
+     is reached only by Engine.division, and only where a mechanic needs
+     it (what a seat costs to whip, and the division itself). */
+  function forecast(billId) {
+    return Engine.reported ? Engine.reported(st, C, billId)
+                           : Engine.division(st, C, billId);
+  }
+
+  /* The House counted by party, with the currents under their party where
+     the engine derived the count from them. */
+  function breakdownHTML(d) {
+    return `<table><thead><tr><th>Party</th>` +
+      `<th class="n">Pop aye</th><th class="n">of</th><th class="n">Func aye</th><th class="n">of</th></tr></thead><tbody>` +
+      d.rows.filter(r => r.popularSeats + r.functionalSeats > 0).map(r =>
+        `<tr><td>${sw(pc(r.party))}${(C.partyById[r.party] || {}).short || r.party}</td>` +
+        `<td class="n">${r.popularAye}${r.popularWhipped ? `<span class="wh">+${r.popularWhipped}</span>` : ""}</td><td class="n">${r.popularSeats}</td>` +
+        `<td class="n">${r.functionalAye}${r.functionalWhipped ? `<span class="wh">+${r.functionalWhipped}</span>` : ""}</td><td class="n">${r.functionalSeats}</td></tr>` +
+        benchRowsHTML(r)).join("") +
+      `</tbody></table>`;
+  }
+
+  /* Click a block to commit up to it; click the last committed block again
+     to release it. `after` is what to redraw, because the same control now
+     lives on a tab that draws more than the bill detail. */
+  function wireWhipbars(root, billId, after) {
+    root.querySelectorAll(".whipbar").forEach(bar => {
+      const wp = bar.dataset.wp, wt = bar.dataset.wt;
+      [...bar.querySelectorAll("i")].forEach((cell, i) =>
+        cell.addEventListener("click", () => {
+          const cur = ((st.whips[billId] || {})[wp] || {})[wt] || 0;
+          Engine.setWhip(st, C, billId, wp, wt, i + 1 === cur ? i : i + 1);
+          after();
+        }));
+    });
+    const clr = root.querySelector("#btn-clearwhip");
+    if (clr) clr.addEventListener("click", () => { Engine.clearWhips(st, billId); after(); });
+  }
+
+  /* On the Government tab the whip is a READOUT: what has been committed
+     and what it will cost. The control that commits it is on the Chamber
+     tab, next to the members it moves, and there is only one of it. */
+  function whipLine(billId) {
+    if (st.bills[billId].dead) return "";
+    const cost = Engine.whipCost(st, C, billId);
+    if (!cost.seats) return `<div class="note">No members whipped. The whip is on the ` +
+      `<b>Chamber</b> tab, beside the benches it moves.</div>`;
+    const capLines = Object.keys(cost.capital).map(p =>
+      `${(C.partyById[p] || {}).short || p} &minus;${cost.capital[p]}`).join(" &middot; ");
+    return `<div class="whipcost">Whipped: <b>${cost.seats}</b> seats. ` +
+      (capLines ? "Capital " + capLines + ". " : "") +
+      (cost.loyalty ? `Own party loyalty &minus;${cost.loyalty}. ` : "") +
+      `Charged when the division is called.</div>`;
   }
 
   /* ---------- the whip ----------
@@ -1907,7 +1952,115 @@ const UI = (function () {
 
      Glyph shape still carries tier (12.2's split visual language):
      circle district, square list, triangle functional. */
+  /* ---------- GOVERNMENT AND CHAMBER: WHICH TAB HOLDS WHAT ----------
+
+     The rule that settles it: A READOUT MAY APPEAR ON MORE THAN ONE TAB.
+     A CONTROL APPEARS ON EXACTLY ONE. A scoreboard belongs wherever you
+     are standing; a lever in two rooms is two levers that disagree.
+
+     So the forecast BARS are on both — the minister steering a bill wants
+     to know whether it passes without leaving the room — and the whip and
+     the party breakdown, which are how you WORK the numbers, are here,
+     beside the benches they move. Government is what you command:
+     coalition, currents, ledger, cabinet, undertakings, order-paper time,
+     the programme. Chamber is who you must convince.
+
+     There is ONE selection. The order paper picks the measure; the House
+     is coloured for whatever the order paper has picked. `chamberBare`
+     is not a second choice of bill, only a request to see the House at
+     rest, and naming a measure here names it there. */
+  let chamberBare = true;
+  const chamberBill = () => chamberBare ? null : Focus.selected("gov-bills");
+
+  function drawChamberPicker() {
+    const el = $("#cham-pick"); if (!el) return;
+    const cur = chamberBill();
+    /* Every measure on the order paper, fallen ones included. The picker
+       is not a second list of bills — it is the same selection, seen from
+       the House, and a selection with no home here would put the two tabs
+       out of step the moment a division went against the government. */
+    el.innerHTML =
+      `<div class="chpick"><b>Show the House on</b>` +
+      `<button class="chp${cur ? "" : " on"}" data-cb="">nothing \u2014 as it sits</button>` +
+      C.bills.map(b => `<button class="chp${cur === b.id ? " on" : ""}` +
+        `${st.bills[b.id].dead ? " gone" : ""}" data-cb="${b.id}"` +
+        ` data-tip-title="${esc(b.title)}" data-tip-body="${esc(b.summary || "")}">` +
+        `${esc(b.title.replace(/ \(Amendment\)| Bill$/g, ""))}` +
+        `${st.bills[b.id].dead ? ' <i class="dual">fallen</i>'
+          : b.dualMajority ? ' <i class="dual">dual</i>' : ""}</button>`).join("") +
+      `</div>`;
+    el.querySelectorAll("[data-cb]").forEach(b =>
+      b.addEventListener("click", () => {
+        chamberBare = !b.dataset.cb;
+        /* seed, not activate: writing the selection without rendering the
+           Government tab underneath us. Its detail is redrawn once, below. */
+        if (!chamberBare) Focus.seed("gov-bills", b.dataset.cb);
+        cue("click"); drawChamber();
+        if (!chamberBare) drawBill(b.dataset.cb);
+      }));
+  }
+
+  /* The two majorities the measure must clear, under the plan that shows
+     why. A dual bill can carry the popular benches and fall on the
+     functional forty, and 4.6.7 says both are on screen throughout.
+
+     The numbers are the REPORTED ones, the same estimate the Government
+     tab prints (design/08 §7). Colouring the seats from the true count
+     would have handed the player the exact division by counting marks. */
+  function drawChamberForecast() {
+    const el = $("#cham-forecast"); if (!el) return;
+    const id = chamberBill();
+    if (!id) {
+      el.innerHTML = `<div class="note">Naming a measure colours the benches by how they are expected to go, ` +
+        `and puts the whip beside them.</div>`;
+      return;
+    }
+    const b = C.billById[id], d = forecast(id);
+    el.innerHTML =
+      benchBar("Popular", d.popular) +
+      (b.dualMajority ? benchBar("Functional", d.functional) : "") +
+      `<div class="note">${b.dualMajority
+        ? (d.carries ? "Carries both tests."
+           : d.popular.carries ? "<b>Carries the House and fails the functional bench.</b>"
+           : "Fails.")
+        : (d.popular.carries ? "Carries." : "Fails.")}
+        Filled seats are expected ayes; the count is by party, not by member.
+        ${esc(d.prov || "")}.</div>`;
+  }
+
+  /* The whip, where the members it moves are on screen. It reads the TRUE
+     count, not the reported one: what a seat costs is a mechanical fact
+     the whips' office knows exactly, even when its forecast is a guess. */
+  function drawChamberWhip() {
+    const panel = $("#p-whip"), el = $("#cham-whip"); if (!el) return;
+    const id = chamberBill();
+    if (panel) panel.hidden = !id;
+    if (!id) { el.innerHTML = ""; return; }
+    const b = C.billById[id], d = Engine.division(st, C, id);
+    const html = whipPanel(id, b, d);
+    /* whipPanel says nothing about a fallen measure, and an empty panel
+       is a frame around a hole. */
+    if (panel) panel.hidden = !html;
+    if (!html) { el.innerHTML = ""; return; }
+    const hdr = $("#cham-whip-hdr");
+    if (hdr) hdr.textContent = b.title;
+    el.innerHTML = html;
+    wireWhipbars(el, id, () => { drawChamber(); drawBill(id); drawStatus(); });
+  }
+
+  /* The breakdown is no longer behind a button. It was a control that
+     revealed a readout, on a tab that had no room for it; here the tab is
+     the House and this is the House counted. */
+  function drawChamberBreakdown() {
+    const panel = $("#p-break"), el = $("#cham-break"); if (!el) return;
+    const id = chamberBill();
+    if (panel) panel.hidden = !id;
+    if (!id) { el.innerHTML = ""; return; }
+    el.innerHTML = breakdownHTML(forecast(id));
+  }
+
   function drawChamber() {
+    drawChamberPicker();
     const govIds = st.coalition.concat(st.confidenceSupply);
 
     /* Largest party nearest the floor, so the front bench reads as the
@@ -1915,18 +2068,47 @@ const UI = (function () {
     const bySize = ids => ids.slice().sort((a, b) =>
       Engine.partyTotal(st, b) - Engine.partyTotal(st, a));
 
+    /* ---------------------------------------------------------------
+       THE CHAMBER AS THE WHIP'S MAP.
+
+       The plan was a diagram: here is the House, in party colours, and
+       nothing to do with it. Naming a bill turns it into an instrument —
+       every seat recolours to how that party's bench is expected to go,
+       and the two majorities the measure has to clear are drawn under it.
+
+       Aye keeps the party's full colour; the rest of the bench keeps the
+       colour and loses the fill. So a player reads party AND vote in one
+       look: the Liberals gave us a third of their bench is a shape, not
+       a number in a table.
+
+       WHICH member votes which way is not modelled and this does not
+       pretend otherwise — the engine returns a count per party per tier,
+       so the first n seats of each block are filled. The block is honest;
+       the individual seat is a convenience of drawing. */
+    const shown = chamberBill();
+    const fc = shown ? forecast(shown) : null;
+    const rowOf = id => fc && fc.rows.find(r => r.party === id);
     const gov = [], opp = [], cross = [];
     const popular = (id, into) => {
       const s = st.parties[id].seats, col = C.partyById[id].colour;
-      for (let i = 0; i < s.district; i++) into.push({ c: col, t: "d", p: id });
-      for (let i = 0; i < s.list; i++)     into.push({ c: col, t: "l", p: id });
+      const r = rowOf(id);
+      let aye = r ? r.popularAye : null;
+      const put = t => { const on = aye == null || aye-- > 0;
+                         into.push({ c: col, t: t, p: id, aye: aye == null ? null : on }); };
+      for (let i = 0; i < s.district; i++) put("d");
+      for (let i = 0; i < s.list; i++)     put("l");
     };
     const allIds = C.parties.map(p => p.id);
     bySize(allIds.filter(id => govIds.includes(id))).forEach(id => popular(id, gov));
     bySize(allIds.filter(id => !govIds.includes(id))).forEach(id => popular(id, opp));
     bySize(allIds).forEach(id => {
       const s = st.parties[id].seats, col = C.partyById[id].colour;
-      for (let i = 0; i < s.functional; i++) cross.push({ c: col, t: "f", p: id });
+      const r = rowOf(id);
+      let aye = r ? r.functionalAye : null;
+      for (let i = 0; i < s.functional; i++) {
+        const on = aye == null || aye-- > 0;
+        cross.push({ c: col, t: "f", p: id, aye: aye == null ? null : on });
+      }
     });
 
     /* No outline. A stroke on a 3px mark is a third of its area, so 280 of
@@ -1934,7 +2116,8 @@ const UI = (function () {
        let the benches read as blocks of party at a glance, which is the
        only thing this diagram is for. */
     const glyph = (x, y, s) => {
-      const st_ = ` class="sg" fill="${s.c}"`;
+      /* a seat that is not voting aye keeps its party and loses its fill */
+      const st_ = ` class="sg${s.aye === false ? " no" : ""}" fill="${s.c}"`;
       if (s.t === "d") return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4"${st_}/>`;
       if (s.t === "l") return `<rect x="${(x-3).toFixed(1)}" y="${(y-3).toFixed(1)}" width="6" height="6"${st_}/>`;
       return `<path d="M${x.toFixed(1)} ${(y-3.8).toFixed(1)}L${(x+3.6).toFixed(1)} ${(y+2.7).toFixed(1)}` +
@@ -2069,6 +2252,9 @@ const UI = (function () {
     /* The legend names the two kinds of support — a partner in government and
        a party that only sustains it — while the diagram keeps both on the
        government side of the floor, which is where confidence and supply sits. */
+    drawChamberForecast();
+    drawChamberWhip();
+    drawChamberBreakdown();
     $("#chamber-legend").innerHTML = C.parties.map(p => {
       const tag = st.coalition.includes(p.id) ? ' <i class="ingov">GOV</i>'
                 : st.confidenceSupply.includes(p.id) ? ' <i class="ingov">C&amp;S</i>' : "";
@@ -2178,7 +2364,7 @@ const UI = (function () {
       `<div class="ostats">
         <span><b>${s.population.toLocaleString()}</b><i>population</i></span>
         <span><b>${s.seats}</b><i>seats</i></span>
-        <span><b>${s.closure.toFixed(2)}</b><i>closure</i></span>
+        <span data-tip="closure"><b>${s.closure.toFixed(2)}</b><i>closure</i></span>
         <span><b>${r.toFixed(2)}</b><i>${r > 1.15 ? "over-represented" :
             r < 0.85 ? "under-represented" : "near parity"}</i></span>
         <span><b>${s.suspended.toLocaleString()}</b><i>suspended, non-voting</i></span>

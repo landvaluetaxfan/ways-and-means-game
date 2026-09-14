@@ -1252,11 +1252,16 @@ try {
 } catch (e) { ok("no-motion still swaps", false, e.message); }
 
 /* ---------------------------------------------------------------------
-   THE FACTION BREAKDOWN RENDERS.
+   THE FACTION BREAKDOWN RENDERS — ON THE CHAMBER TAB.
 
    test.js proves the arithmetic; a table that computes correctly and
    draws nothing is invisible to every static check, which is why
-   uitest.js exists at all. This clicks the control a player clicks.
+   uitest.js exists at all. This works the controls a player works.
+
+   It moved. The Government tab is what you command and the Chamber is
+   who you must convince, so the whip and the breakdown live beside the
+   benches they describe, and the order paper's selection is the same
+   selection — naming a measure on one names it on the other.
    --------------------------------------------------------------------- */
 try {
   w.eval("UI.boot(UI.state(), CONTENT);");
@@ -1268,49 +1273,92 @@ try {
   ok("the bill with a derived forecast is on the Government screen", !!billRow);
   if (billRow) {
     billRow.click();
-    const btn = w.document.querySelector("#btn-breakdown");
-    ok("it offers a party breakdown", !!btn);
-    if (btn) {
-      btn.click();
-      const bd = w.document.querySelector("#breakdown");
-      const bench = bd.querySelectorAll("tr.bench");
-      ok("which lists the factions under their party", bench.length === 4,
-         bench.length + " current rows");
-      ok("named, not keyed",
-         [...bench].every(tr => /[a-z]/.test(tr.cells[0].textContent) &&
-                                !/^cu_/.test(tr.cells[0].textContent.trim())),
-         [...bench].map(tr => tr.cells[0].textContent.trim()).join(" · "));
+    ok("the bill detail no longer carries the whip, which is a control",
+       !w.document.querySelector("#bill-detail .whipbar"));
+    const to = w.document.querySelector("#btn-tochamber");
+    ok("it offers to take the measure to the benches", !!to);
 
-      /* One table, so the columns line up with the party row above. A
-         nested table would drift the moment a column width changed. */
-      const party = bd.querySelector("tbody tr:not(.bench)");
-      ok("in the same table as the party row",
-         bench.length > 0 && bench[0].parentNode === party.parentNode);
-      ok("with the same number of columns",
-         [...bench].every(tr => tr.cells.length === 5));
+    /* ONE SELECTION. The Chamber shows what the order paper picked. */
+    to.click();
+    ok("which switches to the Chamber tab",
+       w.document.querySelector("#s-cham").classList.contains("on"));
+    const on = w.document.querySelector("#cham-pick .chp.on");
+    ok("with the same measure already named", !!on && on.dataset.cb === "thermal2",
+       on ? on.dataset.cb : "none");
 
-      /* And they add up on screen, not merely in the engine. */
-      const num = (tr, i) => parseInt(tr.cells[i].textContent, 10) || 0;
-      const partyRow = [...bd.querySelectorAll("tr")]
-        .find(tr => !tr.classList.contains("bench") && tr.cells.length === 5 &&
-                    tr.cells[0].textContent.indexOf("PSD") >= 0);
-      if (partyRow) {
-        const col = i => [...bench].reduce((n, tr) => n + num(tr, i), 0);
-        ok("the printed faction seats sum to the printed party seats",
-           col(2) === num(partyRow, 2) && col(4) === num(partyRow, 4),
-           col(2) + " = " + num(partyRow, 2));
-        ok("and so do the ayes",
-           col(1) === num(partyRow, 1) && col(3) === num(partyRow, 3),
-           col(1) + " = " + num(partyRow, 1));
-      } else ok("the governing party is in the breakdown", false);
+    const bd = w.document.querySelector("#cham-break");
+    ok("the party breakdown is drawn without a control to reveal it",
+       !!bd && /thead/.test(bd.innerHTML));
+    const bench = bd.querySelectorAll("tr.bench");
+    ok("which lists the factions under their party", bench.length === 4,
+       bench.length + " current rows");
+    ok("named, not keyed",
+       [...bench].every(tr => /[a-z]/.test(tr.cells[0].textContent) &&
+                              !/^cu_/.test(tr.cells[0].textContent.trim())),
+       [...bench].map(tr => tr.cells[0].textContent.trim()).join(" · "));
 
-      /* A stated forecast belongs to the whips who wrote it. */
-      btn.click();
-      w.document.querySelector('#gov-bills tr[data-bill="divergence"]').click();
-      w.document.querySelector("#btn-breakdown").click();
-      ok("a stated forecast draws no faction rows",
-         w.document.querySelectorAll("#breakdown tr.bench").length === 0);
-    }
+    /* One table, so the columns line up with the party row above. A
+       nested table would drift the moment a column width changed. */
+    const party = bd.querySelector("tbody tr:not(.bench)");
+    ok("in the same table as the party row",
+       bench.length > 0 && bench[0].parentNode === party.parentNode);
+    ok("with the same number of columns",
+       [...bench].every(tr => tr.cells.length === 5));
+
+    /* And they add up on screen, not merely in the engine. */
+    const num = (tr, i) => parseInt(tr.cells[i].textContent, 10) || 0;
+    const partyRow = [...bd.querySelectorAll("tr")]
+      .find(tr => !tr.classList.contains("bench") && tr.cells.length === 5 &&
+                  tr.cells[0].textContent.indexOf("PSD") >= 0);
+    if (partyRow) {
+      const col = i => [...bench].reduce((n, tr) => n + num(tr, i), 0);
+      ok("the printed faction seats sum to the printed party seats",
+         col(2) === num(partyRow, 2) && col(4) === num(partyRow, 4),
+         col(2) + " = " + num(partyRow, 2));
+      ok("and so do the ayes",
+         col(1) === num(partyRow, 1) && col(3) === num(partyRow, 3),
+         col(1) + " = " + num(partyRow, 1));
+    } else ok("the governing party is in the breakdown", false);
+
+    /* THE LEAK THAT CLOSED. The bars are the whips' estimate; the table
+       under them used to be exact, so adding up the column handed the
+       player the true count and imperfect information withheld nothing.
+       Everything shown about a division is now the same reported number. */
+    const rows = [...bd.querySelectorAll("tbody tr:not(.bench)")];
+    const printed = rows.reduce((n, tr) => n + num(tr, 1), 0);
+    const bar = w.document.querySelector("#cham-forecast .dm .lbl");
+    const shown = parseInt(bar.textContent, 10);
+    ok("the printed party ayes sum to the bar above them",
+       printed === shown, printed + " vs " + shown);
+    const truth = w.eval("Engine.division(UI.state(), CONTENT, 'thermal2').popular.aye");
+    ok("and the number shown is the estimate, not the true count",
+       typeof truth === "number");
+
+    /* A stated forecast belongs to the whips who wrote it. */
+    w.document.querySelector('#cham-pick [data-cb="divergence"]').click();
+    ok("a stated forecast draws no faction rows",
+       w.document.querySelectorAll("#cham-break tr.bench").length === 0);
+
+    /* A fallen measure keeps its place in the picker — the selection is
+       shared, so it must have a home here — and loses the whip. */
+    ok("a measure that has fallen is still in the picker, marked",
+       !!w.document.querySelector('#cham-pick [data-cb="divergence"].gone'));
+    ok("and shows no whip, because there is nothing left to move",
+       w.document.querySelector("#p-whip").hidden);
+
+    /* The whip came with it, and it is a control, so there is one of it. */
+    w.document.querySelector('#cham-pick [data-cb="thermal2"]').click();
+    ok("the whip is on the Chamber tab now",
+       !!w.document.querySelector("#cham-whip .whipbar, #cham-whip .note"));
+    ok("and nowhere else",
+       w.document.querySelectorAll(".whipbar").length ===
+       w.document.querySelectorAll("#cham-whip .whipbar").length);
+
+    /* At rest the House is a diagram again and the working surfaces go. */
+    w.document.querySelector('#cham-pick [data-cb=""]').click();
+    ok("showing the House at rest puts the whip away",
+       w.document.querySelector("#p-whip").hidden &&
+       w.document.querySelector("#p-break").hidden);
   }
 } catch (e) { ok("the faction breakdown renders", false, e.message); }
 

@@ -1519,17 +1519,54 @@ const Engine = (function () {
     const n = noise(st, bench + ":" + partyId);
     return (n % (2 * scale + 1)) - scale;
   }
+  /* The same error, applied once, per party — and then everything the
+     player is shown is a sum of THESE rows.
+
+     The bars used to be reported and the breakdown under them exact, so a
+     player who added up the table had the true count and reported() was
+     withholding nothing. A summary that is an estimate over a table that
+     is exact is not imperfect information; it is a slower way of telling
+     the truth. The factions under a party are re-apportioned to the
+     party's reported aye by largest remainder, capped at each current's
+     members, so every column still adds up on screen (test.js §614). */
+  function reportedRows(st, d) {
+    return d.rows.map(r => {
+      const out = Object.assign({}, r);
+      ["popular", "functional"].forEach(bench => {
+        const k = bench + "Aye", seats = r[bench + "Seats"];
+        out[k] = Math.max(0, Math.min(seats, r[k] + reportError(st, r.party, bench)));
+      });
+      if (r.benches) out.benches = reportedBenches(r, out);
+      return out;
+    });
+  }
+  function reportedBenches(r, out) {
+    return ["popular", "functional"].reduce((rows, bench) => {
+      const k = bench + "Aye", sk = bench + "Seats";
+      if (r[k] === out[k]) return rows;
+      const live = rows.filter(b => b[k] != null);
+      if (!live.length) return rows;
+      /* Weight by the true count, so a current that was delivering
+         nothing is not handed members by the whips' own guesswork; fall
+         back to members when every current was at zero. */
+      const w = live.map(b => b[k] || 0);
+      const share = capped(out[k], w.some(n => n) ? w : live.map(b => b[sk]),
+                           live.map(b => b[sk]));
+      const seen = new Map(live.map((b, i) => [b, share[i]]));
+      return rows.map(b => seen.has(b) ? Object.assign({}, b, { [k]: seen.get(b) }) : b);
+    }, r.benches.map(b => Object.assign({}, b)));
+  }
+
   function reported(st, C, billId) {
     const d = division(st, C, billId);
-    const benchAye = bench => {
-      let aye = 0;
-      d.rows.forEach(r => { aye += Math.max(0, r[bench + "Aye"] + reportError(st, r.party, bench)); });
-      return Math.max(0, Math.min(d[bench].total, aye));
-    };
+    const rows = reportedRows(st, d);
+    const benchAye = bench =>
+      Math.max(0, Math.min(d[bench].total,
+        rows.reduce((n, r) => n + r[bench + "Aye"], 0)));
     const p = benchAye("popular"), f = benchAye("functional");
     const pc = p >= d.popular.need, fc = f >= d.functional.need;
     return {
-      dual: d.dual, true: d,
+      dual: d.dual, true: d, rows: rows,
       popular:    { aye: p, total: d.popular.total,    need: d.popular.need,    carries: pc },
       functional: { aye: f, total: d.functional.total, need: d.functional.need, carries: fc },
       carries: d.dual ? (pc && fc) : pc,

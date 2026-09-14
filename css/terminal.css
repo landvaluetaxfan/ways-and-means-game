@@ -1428,6 +1428,30 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .ch-commit .commit.grave{border-width:2px;font-weight:700;box-shadow:2px 2px 0 rgba(27,29,25,.2);}
 
 /* ---------- the docket ---------- */
+/* ---------- the chamber as the whip's map ----------
+   A seat not expected to vote aye keeps its party colour and loses its
+   fill, so party and vote read in the same glance. Opacity rather than a
+   grey: a grey seat would say "nobody", and the point is that it is
+   somebody, on that bench, not with you. */
+.sg.no{fill-opacity:.16;}
+.chpick{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+.chpick b{font-family:var(--f-ui);font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-soft);font-weight:400;margin-right:3px;}
+.chp{
+  font:inherit;font-size:11.5px;cursor:pointer;padding:2px 7px;
+  background:var(--field);border:1px solid var(--chrome-dk);color:var(--ink);
+}
+.chp:hover{background:var(--chrome-lt);}
+.chp.on{background:var(--ink);border-color:var(--ink);color:var(--field);}
+/* A measure that has fallen keeps its place — the selection is shared with
+   the order paper — and says so by going quiet rather than disappearing. */
+.chp.gone{opacity:.5;text-decoration:line-through;}
+.chp.gone.on{opacity:1;text-decoration:line-through;}
+.chp .dual{font-style:normal;font-family:var(--f-data);font-size:8.5px;
+  letter-spacing:.08em;text-transform:uppercase;opacity:.75;}
+#cham-forecast .dm{margin-bottom:5px;}
+#cham-forecast .note{margin-top:6px;}
+
 /* ---------- what the government will do ----------
    The one panel where she starts something. The head is the thing; the
    body is HOW, and the how is the decision — so the tempo options are
