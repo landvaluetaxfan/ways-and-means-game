@@ -1230,18 +1230,33 @@ const UI = (function () {
     const b = C.billById[r0.bill] || {};
     const tally = r => r.popularAye + " of " + r.popularSeats +
       (r0.dual ? " \u00b7 " + r.functionalAye + " of " + r.functionalSeats + " functional" : "");
+    /* THE COUNT SWITCHES THE PLAN TO THE VIEW THAT SHOWS A VOTE, and puts it
+       back afterwards because it is the player's setting and not ours. A
+       division is the one moment the drawing should be about ayes and noes and
+       nothing else; a dual bill keeps its bench, because the bench is half the
+       question it is asking. */
+    const was = { colour: chamberColour, group: chamberGroup, fold: chamberFold };
     const steps = [{
       label: "The House divides",
-      ms: 620,
-      run: () => cue("knell"),
+      ms: 900,
+      run: () => {
+        chamberColour = "vote";
+        chamberGroup = true;
+        chamberFold = !r0.dual;
+        chamberCount = { rows: order, n: 0 };
+        drawChamber();
+        cue("knell");
+      },
       /* TIER 3. Content's, never a roll: it fires from a flag and nothing else. */
       stall: { flag: "division_stalled",
                label: "The Clerk is recounting the functional bench",
-               ms: 1100 }
+               ms: 1400 }
     }];
     order.forEach((r, i) => steps.push({
       label: pn(r.party) + " reports \u00b7 " + tally(r),
-      ms: 200,
+      /* Long enough to watch a bench move, which is the whole point of doing
+         this on the plan instead of in a table. Skippable, as ever. */
+      ms: 420,
       run: () => {
         chamberCount = { rows: order, n: i + 1 };
         drawChamber();
@@ -1251,9 +1266,10 @@ const UI = (function () {
     }));
     steps.push({
       label: r0.carries ? "Carried" : "Not carried",
-      ms: 900,
+      ms: 1500,
       run: () => {
         chamberCount = null;
+        chamberColour = was.colour; chamberGroup = was.group; chamberFold = was.fold;
         drawChamber();
         cue(r0.carries ? "aye" : "nay");
         score(r0.carries ? "moment" : "defeat");
@@ -2385,16 +2401,35 @@ const UI = (function () {
      instrument for changing that, all on one screen. The Government tab
      keeps the executive — the coalition, the ledger, the cabinet, the
      programme and what it costs. */
-  /* A ONE-LINE STAGE TRACK for the order paper. The Papers register draws the
-     ladder in full; here it has to fit a table cell, so it is one mark per
-     stage — cleared, here, to come — and the division stage carries a heavier
-     mark, so the row the House can act on is findable without reading a word.
-     Same source as the register's track: Engine.STAGE_ORDER, never a copy. */
-  function stagePips(bs) {
+  /* THE STATE OF A BILL, in one word, so the stage column and anything else
+     that colours a bill agree on what colour it is. `passed` and `dead` reuse
+     the Papers register's own terminal colours — good and bad — and two more
+     are named for the states a register does not rank: a bill still in
+     drafting has not been introduced, and a blocked bill is on the book and
+     going nowhere. */
+  function billState(bs) {
+    if (bs.dead || bs.stage === "withdrawn" || bs.stage === "defeated" ||
+        bs.stage === "struck" || bs.stage === "fallen" || bs.stage === "referred")
+      return "dead";
+    if (bs.stage === "blocked")  return "blocked";
+    if (bs.stage === "drafting") return "drafting";
+    if (bs.stage === "assent" || bs.stage === "assented" || bs.stage === "awaiting_assent")
+      return "passed";
+    return "live";
+  }
+
+  /* THE STAGE BAR. One segment per stage of the ladder, filled to where the
+     bill has got to. It is a BAR and not seven loose marks, because a bar
+     reads as a quantity before it is counted; and it is COLOURED BY STATE and
+     not by progress, so a dead bill is red however far it got and a passed one
+     is green the whole way along. The division rung is a wider segment, so the
+     one stage that matters is findable without a legend. Same source as the
+     Papers register's track: Engine.STAGE_ORDER, never a copy. */
+  function stageBar(bs, state) {
     const order = Engine.STAGE_ORDER || [];
     const at = bs.stage === "assented" ? order.length - 1 : order.indexOf(bs.stage);
-    return `<span class="spips">` + order.map((sg, i) => {
-      const cls = i < at ? "done" : i === at ? "here" : "";
+    return `<span class="sbar ${state}" aria-hidden="true">` + order.map((sg, i) => {
+      const cls = i < at ? "done" : i === at ? "here" : "todo";
       return `<i class="${cls}${sg === Engine.DIVIDES_AT ? " dv" : ""}"></i>`;
     }).join("") + `</span>`;
   }
@@ -2414,17 +2449,18 @@ const UI = (function () {
          printed the TRUE count in the game's most-read table, two panels
          above bars that were carefully reporting a guess. */
       const d = forecast(b.id);
-      const dead = bs.dead || bs.stage === "withdrawn";
+      const state = billState(bs);
+      const dead = state === "dead";
       /* CAN THE HOUSE ACT ON IT TODAY — not merely "is it at a stage". The
          engine already answers this for the button; the row borrows the
          answer rather than guessing at one, so the mark and the control can
          never disagree. */
       const ready = !dead && Engine.canDivide(st, C, b.id).ok;
-      bh += `<tr class="${b.id === sel ? "sel" : ""}${ready ? " ready" : ""}"` +
+      bh += `<tr class="${b.id === sel ? "sel" : ""} st-${state}${ready ? " ready" : ""}"` +
         ` data-bill="${b.id}" style="cursor:pointer">` +
         `<td>${b.title.replace(/ Bill$/, "")}</td>` +
-        `<td class="stage"><span class="stname">${dead ? "Withdrawn" : bs.stage.replace(/_/g, " ")}</span>` +
-          (dead ? "" : stagePips(bs)) +
+        `<td class="stage"><span class="stname ${state}">${bs.stage.replace(/_/g, " ")}</span>` +
+          (dead ? "" : stageBar(bs, state)) +
           (ready ? ` <span class="rdy" data-tip="stage">ready</span>` : "") + `</td>` +
         `<td class="n">${d.popular.aye}</td><td class="n">${b.dualMajority ? d.functional.aye : "&mdash;"}</td>` +
         `<td><span class="flag ${b.dualMajority ? "bad" : ""}" data-tip="${b.dualMajority ? "dual" : "simple"}">` +
@@ -2502,7 +2538,10 @@ const UI = (function () {
     const popular = (id, into) => {
       const s = st.parties[id].seats, col = C.partyById[id].colour;
       const r = rowOf(id);
-      let aye = r ? r.popularAye : null;
+      /* A party not yet called in a division has NO ayes counted, which is not
+         the same as having no forecast at all: uncalled seats hold their
+         colour and no fill, so the plan visibly fills as the count runs. */
+      let aye = r ? r.popularAye : (counting ? 0 : null);
       const whip = voted || !r ? 0 : Math.min(r.popularWhipped || 0, r.popularAye);
       const put = t => { const on = aye == null || aye-- > 0;
                          into.push({ c: col, t: t, p: id, aye: aye == null ? null : on,
@@ -2516,7 +2555,7 @@ const UI = (function () {
     bySize(allIds).forEach(id => {
       const s = st.parties[id].seats, col = C.partyById[id].colour;
       const r = rowOf(id);
-      let aye = r ? r.functionalAye : null;
+      let aye = r ? r.functionalAye : (counting ? 0 : null);
       const whip = voted || !r ? 0 : Math.min(r.functionalWhipped || 0, r.functionalAye);
       /* AISLES FOLDS THE BENCH IN. The functional forty sit at the Bar in
          their own block because the dual test makes them a separate
