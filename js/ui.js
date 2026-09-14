@@ -756,6 +756,12 @@ const UI = (function () {
       dbtn.disabled = true;
       dbtn.textContent = "Division set for sitting " + dchk.on;
       dbtn.title = dchk.reason;
+    } else if (dbtn && !dchk.ok && dchk.noTime) {
+      /* A division is House time (design/18 §3), so no time is a reason to
+         refuse — and a refusal the player cannot see is a bug report. */
+      dbtn.disabled = true;
+      dbtn.textContent = "No order-paper time left";
+      dbtn.title = dchk.reason;
     }
     $("#btn-divide").addEventListener("click", () => {
       if (!Engine.canDivide(st, C, id).ok) { cue("deny"); return; }

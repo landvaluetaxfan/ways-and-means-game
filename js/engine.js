@@ -986,6 +986,8 @@ const Engine = (function () {
   function divide(st, C, billId) {
     const chk = canDivide(st, C, billId);
     if (!chk.ok) return { ok: false, reason: chk.reason, result: null, paid: null, assent: null };
+    /* House time, spent whether the bill carries or falls. */
+    spendSlots(st, 1);
     const b = C.billById[billId];
     const result = division(st, C, billId);     // whips still in place
     const paid = payWhips(st, C, billId);       // now charge for them
@@ -1103,8 +1105,28 @@ const Engine = (function () {
                        "report","third_reading","assent"];
   const DIVIDES_AT = "third_reading";
 
+  /* ---------------------------------------------------------
+     ORDER-PAPER TIME, SPENT
+
+     §7.7 calls order-paper time "the currency that cannot be topped up",
+     but until now only a bill could spend it, so the player never once
+     ran out over sixty sittings and the scarcity was inert. A division is
+     House time like any other (design/18 §3): it costs a slot, and when
+     the session's slots are gone, no more business is taken.
+
+     spendSlots is the general form so that a future spender — an
+     initiative (design/18 §4) — does not reach into st.slots itself.
+     --------------------------------------------------------- */
+  function slotsRemaining(st) { return st.slots.total - st.slots.used; }
+
+  function spendSlots(st, n) {
+    if (slotsRemaining(st) < n) return false;
+    st.slots.used += n;
+    return true;
+  }
+
   function grantSlot(st, C, billId) {
-    if (st.slots.used >= st.slots.total) return { ok: false, reason: "no slots left this session" };
+    if (slotsRemaining(st) < 1) return { ok: false, reason: "no slots left this session" };
     const b = C.billById[billId], bs = st.bills[billId];
     if (!b || bs.dead) return { ok: false, reason: "not before Parliament" };
     if (bs.stage === DIVIDES_AT) return { ok: false, reason: "awaiting a division" };
@@ -1118,7 +1140,7 @@ const Engine = (function () {
     else if (i === STAGE_ORDER.length - 1) return { ok: false, reason: "already awaiting assent" };
     else if (i >= 0) { bs.stage = STAGE_ORDER[i + 1]; }
     else return { ok: false, reason: 'unknown stage "' + bs.stage + '"' };
-    st.slots.used += 1;
+    spendSlots(st, 1);
     (st.slotsGranted || (st.slotsGranted = [])).push(billId);
     /* Two sittings' notice. Long enough for the benches to be worked,
        short enough that the session can still hold a division. */
@@ -2551,6 +2573,12 @@ const Engine = (function () {
     const bs = st.bills[billId];
     if (!bs) return { ok: false, reason: "no such bill" };
     if (bs.dead) return { ok: false, reason: "the bill is dead" };
+    /* A DIVISION IS HOUSE TIME (design/18 §3). It costs a slot like any other
+       business, so when the session's order-paper time is gone the House is
+       done — which is what makes §7.7's scarcity bite. `noTime` lets the
+       interface say so rather than refusing in silence. */
+    if (slotsRemaining(st) < 1)
+      return { ok: false, reason: "no order-paper time left this session", noTime: true };
     /* THE DAY, AND ONLY THE DAY. divide() has never enforced a stage and
        this is not the change that should start: content and the checks
        both divide from committee. What is new is that once a division
