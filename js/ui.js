@@ -18,7 +18,26 @@ const UI = (function () {
   /* The party mark in the lists and panels: the colour block. The logo is
      reserved for the places with room for it, the constituency dossier and
      the Concordance, through logoMark(). */
-  const mark = id => sw(pc(id));
+  /* AND IT SAYS WHOSE IT IS. Twelve parties is more colours than anyone
+     memorises, and the order paper's owner column is a swatch with no
+     name beside it at all. The card is data rather than a keyed token, so
+     it carries the live seat count and where the party stands. */
+  const mark = id => {
+    const p = C && C.partyById && C.partyById[id];
+    if (!p) return sw(pc(id));
+    return `<i class="swatch" style="background:${pc(id)}"` +
+      ` data-tip-title="${esc(p.name)}" data-tip-body="${esc(partyLine(id))}"></i>`;
+  };
+  function partyLine(id) {
+    const seats = Engine.partyTotal(st, id);
+    const loy = (st.parties[id] || {}).loyalty;
+    const role = id === st.playerParty ? "The Prime Minister's party."
+      : st.coalition.indexOf(id) >= 0 ? "In the coalition."
+      : st.confidenceSupply.indexOf(id) >= 0 ? "Confidence and supply."
+      : "Opposition.";
+    return role + " " + seats + " seat" + (seats === 1 ? "" : "s") +
+      (id !== st.playerParty && loy != null ? ", loyalty " + loy + "." : ".");
+  }
   const logoMark = (id, cls) => {
     const p = C.partyById[id];
     const file = p && (p.wordmark || p.logo);
@@ -462,9 +481,30 @@ const UI = (function () {
     });
     h += "</tbody>";
     $("#gov-coalition").innerHTML = h;
-    $("#gov-margin").innerHTML = conf - maj === 0
-      ? "Working majority of nil. Confidence carries on the exact number."
-      : `Working majority of ${conf - maj}. Majority is ${maj}.`;
+    /* THE MARGIN IS THE GAME, SO IT IS DRAWN AND NOT NARRATED.
+
+       confidence() below majority() is the first line of checkLoss: this
+       is the number the government dies on. It was a sentence in a note
+       under a table, which reads as a footnote, and a player scanning the
+       screen for how much trouble they are in had to stop and parse a
+       clause. It is the same bar a division uses, with the same threshold
+       mark, because it is the same question asked of a different set. */
+    const tot = Engine.chamberTotal(st), over = conf - maj;
+    $("#gov-margin").innerHTML =
+      `<div class="dm"><b>Confidence</b><div class="dmbar"` +
+        tipAttr("The working majority",
+          "Every seat the government can call on against the " + maj + " it needs. " +
+          (over > 0 ? "You can lose " + over + " before the government falls."
+           : over === 0 ? "Confidence carries on the exact number. One defection ends it."
+           : "You are " + (-over) + " short. The government falls at the next test.")) +
+        `><i class="yes" style="width:${Math.min(100, conf / tot * 100)}%;` +
+          `background:${over >= 0 ? "var(--ok)" : "var(--alert)"}"></i>` +
+        `<span class="thr" style="left:${maj / tot * 100}%"></span>` +
+        `<span class="lbl">${conf} / ${tot} &middot; need ${maj}</span></div></div>` +
+      `<div class="note">${over === 0
+        ? "Working majority of nil. Confidence carries on the exact number."
+        : over > 0 ? `Working majority of ${over}.`
+        : `Short by ${-over}. The government does not command the House.`}</div>`;
 
     let ch = "<thead><tr><th>Current</th><th class='n' data-tip='mps'>MPs</th>" +
       "<th class='n' data-tip='loyalty'>Loy</th></tr></thead><tbody>";
@@ -484,7 +524,10 @@ const UI = (function () {
       "<th data-tip='dual'>Test</th></tr></thead><tbody>";
     C.bills.forEach(b => {
       const bs = st.bills[b.id];
-      const d = Engine.division(st, C, b.id);
+      /* The estimate, like every other forecast the player is shown. This
+         printed the TRUE count in the game's most-read table, two panels
+         above bars that were carefully reporting a guess. */
+      const d = forecast(b.id);
       const dead = bs.dead || bs.stage === "withdrawn";
       bh += `<tr class="${b.id === sel ? "sel" : ""}" data-bill="${b.id}" style="cursor:pointer">` +
         `<td>${b.title.replace(/ Bill$/, "")}</td><td>${dead ? "Withdrawn" : bs.stage.replace(/_/g, " ")}</td>` +
@@ -501,16 +544,40 @@ const UI = (function () {
 
     drawBill(sel);
 
+    /* THE LINE THAT MATTERS IS DRAWN ON THE BAR.
+
+       Two of these five end the game — checkLoss() falls the government
+       at party_loyalty <= the leadership-challenge threshold and at
+       thermal_margin <= 0 — and the bars said so only by turning amber at
+       a number this renderer had made up. A player could not tell a bad
+       reading from a fatal one, and the amber could disagree with the
+       engine the moment content moved the threshold.
+
+       So the fatal line is READ FROM THE ENGINE'S OWN CONSTANTS and drawn
+       as a tick, the same threshold mark a division bar uses, and the
+       warning band is derived from it rather than typed beside it. The
+       three with no fatal line keep a soft one and say that they have. */
+    const fatal = {
+      party_loyalty: (C.setup.thresholds || {}).leadershipChallenge,
+      thermal_margin: 0
+    };
     const meters = [
-      ["Party loyalty", "party_loyalty", 15], ["Public standing", "public_standing", 20],
-      ["Consumables", "consumables", 25], ["Thermal margin", "thermal_margin", 20],
+      ["Party loyalty", "party_loyalty", 25], ["Public standing", "public_standing", 20],
+      ["Consumables", "consumables", 25], ["Thermal margin", "thermal_margin", 12],
       ["Treasury", "treasury", 15]
     ];
-    $("#gov-meters").innerHTML = meters.map(([lab, k, warn]) => {
-      const v = st.scalars[k];
-      const cls = v <= warn ? "warn" : v >= 65 ? "good" : "";
+    $("#gov-meters").innerHTML = meters.map(([lab, k, soft]) => {
+      const v = st.scalars[k], f = fatal[k];
+      const cls = (f != null && v <= f + 10) || v <= soft ? "warn" : v >= 65 ? "good" : "";
+      const tick = f == null ? "" :
+        `<span class="thr" style="left:${Math.max(0, f)}%"` +
+        tipAttr(lab + " \u2014 the line",
+          f <= 0 ? "At nought the stations go dark and the government falls. There is no undo."
+                 : "At " + f + " or below the party removes you. There is no undo.") +
+        `></span>`;
       return `<div class="meterrow"><label data-tip="${k}">${lab}</label>` +
-        `<div class="meter ${cls}"><i style="width:${v}%"></i></div><output>${v}</output></div>`;
+        `<div class="meter ${cls}"><i style="width:${v}%"></i>${tick}</div>` +
+        `<output>${v}</output></div>`;
     }).join("");
 
     /* the ledger: signed, permanent, and shown exactly */
@@ -535,10 +602,18 @@ const UI = (function () {
       `<div class="note" style="margin-top:4px">${left} of ${st.slots.total} slots left this session. ` +
       `Giving a partner's bill time puts them in your debt. Giving your own advances nothing but your programme.</div>` +
       `<table><tbody>${C.bills.filter(b => !st.bills[b.id].dead).map(b =>
-        `<tr><td>${b.owner ? mark(b.owner) : "<i class='swatch' style='background:var(--chrome-dk)'></i>"}${b.title.replace(/ Bill$/, "")}` +
+        `<tr><td>${b.owner ? mark(b.owner)
+            : `<i class="swatch" style="background:var(--chrome-dk)" data-tip-title="No sponsor"` +
+              ` data-tip-body="A measure the government did not bring forward."></i>`}${b.title.replace(/ Bill$/, "")}` +
         `${b.priority ? " <span class='flag' data-tip='priority'>PRIORITY</span>" : ""}</td>` +
         `<td class="n">${b.owner && b.owner !== st.playerParty ? "+" + (b.priority ? 3 : 2) : "&mdash;"}</td>` +
-        `<td class="n"><button class="btn slotbtn" data-slot="${b.id}"${left ? "" : " disabled"}>Grant</button></td></tr>`
+        `<td class="n"><button class="btn slotbtn" data-slot="${b.id}"${left ? "" : " disabled"}` +
+          priceTip("Give time to " + b.title, { slots: 1,
+            note: b.owner && b.owner !== st.playerParty
+              ? "Moves it a stage and puts " + ps(b.owner) + " +" + (b.priority ? 3 : 2) +
+                " in your debt."
+              : "Moves it a stage. Your own bill buys you no debt." },
+            left ? null : "no order-paper time left this session") + `>Grant</button></td></tr>`
       ).join("")}</tbody></table>`;
     /* THE ORDER PAPER CARRIES UNDERTAKINGS TOO. An order paper lists the
        business, and a promise the government has made is business. This
@@ -580,7 +655,11 @@ const UI = (function () {
         <td>${si.title.replace(/ Order 2287$/, "")}<div class="note">${si.number} &middot; ${si.author.replace(/_/g,' ')}</div></td>
         <td class="n"><span class="flag ${cls}" data-tip="${s.inForce ? "prayer" : "instrument"}">${status}</span></td>
         <td class="n">${s.made ? "" :
-          `<button class="btn sibtn" data-make="${si.id}"${chk.ok ? "" : " disabled title='" + esc(chk.reason) + "'"}>Make</button>`}
+          `<button class="btn sibtn" data-make="${si.id}"${chk.ok ? "" : " disabled"}` +
+            priceTip("Make " + si.number,
+                     { free: "Costs no order-paper time. That is the point of an order: " +
+                             "it is in force at once, and prayable." },
+                     chk.ok ? null : chk.reason) + `>Make</button>`}
           ${s.inForce && window > 0 ? `<button class="btn sibtn" data-pray="${si.id}">Pray</button>` : ""}</td>
       </tr>`;
     }).join("");
@@ -711,7 +790,7 @@ const UI = (function () {
   }
 
   function drawBill(id) {
-    const b = C.billById[id], bs = st.bills[id];
+    const b = C.billById[id], bs = st.bills[id], dchk = Engine.canDivide(st, C, id);
     /* The forecast is the REPORTED division, not the exact one (design/08 §7),
        and so is every other number the player is shown about it — the bars
        here, the seats on the Chamber plan, the breakdown beside them. The
@@ -735,7 +814,10 @@ const UI = (function () {
           : "<b>Fails.</b>")}</div>` +
       whipLine(id) +
       `<div class="btnrow">
-         <button class="btn" id="btn-divide"${bs.dead ? " disabled" : ""}>Move to a division</button>
+         <button class="btn" id="btn-divide"${bs.dead ? " disabled" : ""}` +
+           priceTip("Move to a division",
+                    Object.assign({ slots: 1 }, Engine.whipCost(st, C, id)),
+                    bs.dead ? "the bill is dead" : dchk.ok ? null : dchk.reason) + `>Move to a division</button>
          <button class="btn" id="btn-tochamber">Work the benches</button>
        </div>`;
 
@@ -751,19 +833,17 @@ const UI = (function () {
 
     /* A division that has been SET happens on its day. The button says
        when rather than going quiet: a control that is merely dead tells
-       the player nothing about why. */
-    const dchk = Engine.canDivide(st, C, id);
+       the player nothing about why. The reason itself is on the card the
+       template already built, never a native title (js/tips.js). */
     const dbtn = $("#btn-divide");
     if (dbtn && !dchk.ok && dchk.on != null) {
       dbtn.disabled = true;
       dbtn.textContent = "Division set for sitting " + dchk.on;
-      dbtn.title = dchk.reason;
     } else if (dbtn && !dchk.ok && dchk.noTime) {
       /* A division is House time (design/18 §3), so no time is a reason to
          refuse — and a refusal the player cannot see is a bug report. */
       dbtn.disabled = true;
       dbtn.textContent = "No order-paper time left";
-      dbtn.title = dchk.reason;
     }
     $("#btn-divide").addEventListener("click", () => {
       if (!Engine.canDivide(st, C, id).ok) { cue("deny"); return; }
@@ -795,6 +875,49 @@ const UI = (function () {
     });
   }
 
+  /* ---------- PRICE, AND REFUSAL ----------
+
+     Every control that spends says what it spends and what it leaves.
+     Every control that refuses says why. One mechanism, because they are
+     the same sentence in two moods: this costs two slots and you have
+     four; this costs two slots and you have one.
+
+     Before this you learned the price by paying it, and a disabled
+     button said nothing at all — canDivide has returned a reason since
+     design/18 and only the divide button used it, through a native
+     title=, which js/tips.js forbids in as many words: slow, unstyled,
+     invisible to a keyboard, and it cannot say two things at once. Three
+     call sites were quietly ignoring that. They do not now.
+
+     Returns an ATTRIBUTE STRING, so it drops into the template literal a
+     control is already built from and no renderer has to grow a branch. */
+  function tipAttr(title, body) {
+    return body ? ` data-tip-title="${esc(title)}" data-tip-body="${esc(body)}"` : "";
+  }
+  function slotWord(n) { return n + " slot" + (n === 1 ? "" : "s"); }
+  function priceTip(what, spend, refusal) {
+    const bits = [];
+    const s = spend || {};
+    if (s.slots) {
+      const left = st.slots.total - st.slots.used;
+      bits.push(slotWord(s.slots) + " of order-paper time. " +
+        (s.slots > left ? left + " left this session \u2014 not enough."
+                        : left + " left, " + (left - s.slots) + " after."));
+    }
+    Object.keys(s.capital || {}).forEach(pid => {
+      const n = s.capital[pid], have = st.capital[pid] || 0;
+      bits.push("Capital with " + ps(pid) + " \u2212" + n + (s.per || "") +
+        " (" + (have >= 0 ? "+" : "") + have + " now" +
+        (s.per ? ")." : ", " + (have - n > 0 ? "+" : "") + (have - n) + " after" +
+                       (have - n < 0 ? ", overdrawn" : "") + ")."));
+    });
+    if (s.loyalty) bits.push("Own-party loyalty \u2212" + s.loyalty + (s.per || "") + ".");
+    if (s.free && !bits.length) bits.push(s.free);
+    if (s.note) bits.push(s.note);
+    if (refusal) bits.push("Refused: " + refusal + ".");
+    return tipAttr(what, bits.join(" "));
+  }
+
   /* ---------- what the player is shown about a division ----------
 
      ONE function, so the bars, the seating plan and the breakdown cannot
@@ -809,12 +932,23 @@ const UI = (function () {
   /* The House counted by party, with the currents under their party where
      the engine derived the count from them. */
   function breakdownHTML(d) {
+    /* THE WHIP IS SHOWN ON TOP OF THE COUNT, NOT INSIDE IT.
+
+       popularAye already includes whipped members and the faction rows
+       under it deliberately do not (the whip buys members, not
+       factions), so printing the total put a party row of 67 over
+       currents adding to 59 — the one thing test.js §614 says a
+       breakdown must never do. The base is printed, the whip is printed
+       beside it, and the columns add up again. */
+    const cell = (aye, whipped) => whipped
+      ? (aye - whipped) + `<span class="wh">+${whipped}</span>`
+      : aye;
     return `<table><thead><tr><th>Party</th>` +
       `<th class="n">Pop aye</th><th class="n">of</th><th class="n">Func aye</th><th class="n">of</th></tr></thead><tbody>` +
       d.rows.filter(r => r.popularSeats + r.functionalSeats > 0).map(r =>
-        `<tr><td>${sw(pc(r.party))}${(C.partyById[r.party] || {}).short || r.party}</td>` +
-        `<td class="n">${r.popularAye}${r.popularWhipped ? `<span class="wh">+${r.popularWhipped}</span>` : ""}</td><td class="n">${r.popularSeats}</td>` +
-        `<td class="n">${r.functionalAye}${r.functionalWhipped ? `<span class="wh">+${r.functionalWhipped}</span>` : ""}</td><td class="n">${r.functionalSeats}</td></tr>` +
+        `<tr><td>${mark(r.party)}${(C.partyById[r.party] || {}).short || r.party}</td>` +
+        `<td class="n">${cell(r.popularAye, r.popularWhipped)}</td><td class="n">${r.popularSeats}</td>` +
+        `<td class="n">${cell(r.functionalAye, r.functionalWhipped)}</td><td class="n">${r.functionalSeats}</td></tr>` +
         benchRowsHTML(r)).join("") +
       `</tbody></table>`;
   }
@@ -889,8 +1023,14 @@ const UI = (function () {
           `<td>${tier === "functional" ? "func" : "elected"}</td>` +
           `<td class="n">${cur} / ${cap.max}</td>` +
           `<td class="n">${cap.costPerSeat}&thinsp;${cap.currency === "loyalty" ? "loy" : "cap"}</td>` +
-          `<td class="mv"><div class="whipbar" data-wp="${pid}" data-wt="${tier}" ` +
-            `title="${cur} of ${cap.max} whipped">` +
+          `<td class="mv"><div class="whipbar" data-wp="${pid}" data-wt="${tier}"` +
+            priceTip("Whip " + ps(pid) + (tier === "functional" ? ", functional bench" : ""),
+              { capital: cap.currency === "loyalty" ? {} : { [pid]: cap.costPerSeat },
+                loyalty: cap.currency === "loyalty" ? cap.costPerSeat : 0,
+                per: " a seat",
+                note: "Up to " + cap.max + ". Nothing is charged until the division is called." },
+              cap.max ? null : (cap.reason || "no headroom on this bench")) +
+            ` data-whipped="${cur} of ${cap.max}">` +
             Array.from({ length: cap.max }, (_, i) =>
               `<i${i < cur ? ' class="on"' : ""}></i>`).join("") +
           `</div></td></tr>`;
@@ -1455,7 +1595,8 @@ const UI = (function () {
     const left = st.slots.total - st.slots.used;
     return list.map(i => {
       const open = initOpen === i.id;
-      const head = `<button class="ini-h" data-ini="${i.id}"${i.ok ? "" : " disabled"}>
+      const head = `<button class="ini-h" data-ini="${i.id}"${i.ok ? "" : " disabled"}` +
+        priceTip(i.title, { slots: i.cost }, i.ok ? null : i.reason) + `>
           <b>${esc(i.title)}</b>
           <i>${i.ok ? slotPips(st.slots.used, st.slots.total, i.cost) +
                       " " + i.cost + " slot" + (i.cost === 1 ? "" : "s")
@@ -1465,7 +1606,9 @@ const UI = (function () {
       const tempo = (i.tempo || []).map((t, n) => {
         const cost = i.cost + (t.cost || 0);
         const can = cost <= left;
-        return `<button class="ini-t" data-take="${i.id}" data-tempo="${n}"${can ? "" : " disabled"}>
+        return `<button class="ini-t" data-take="${i.id}" data-tempo="${n}"${can ? "" : " disabled"}` +
+          priceTip(i.title + " \u2014 " + t.label, { slots: cost },
+                   can ? null : "not enough order-paper time left this session") + `>
             <b>${esc(t.label)}</b>
             <i>answers in ${t.after} sitting${t.after === 1 ? "" : "s"} \u00b7 ${cost} slot${cost === 1 ? "" : "s"}${can ? "" : " \u00b7 not enough time"}</i>
           </button>`;
@@ -2048,8 +2191,8 @@ const UI = (function () {
            : d.popular.carries ? "<b>Carries the House and fails the functional bench.</b>"
            : "Fails.")
         : (d.popular.carries ? "Carries." : "Fails.")}
-        Filled seats are expected ayes; the count is by party, not by member.
-        ${esc(d.prov || "")}.</div>`;
+        Filled seats are expected ayes, half-filled ones the whip has bought;
+        the count is by party, not by member. ${esc(d.prov || "")}.</div>`;
   }
 
   /* The whip, where the members it moves are on screen. It reads the TRUE
@@ -2112,13 +2255,23 @@ const UI = (function () {
     const shown = chamberBill();
     const fc = shown ? forecast(shown) : null;
     const rowOf = id => fc && fc.rows.find(r => r.party === id);
+    /* AND THE SEATS THE WHIP BOUGHT ARE NOT THE SEATS YOU HAD. A whipped
+       member is an aye, so it filled like any other and committing three
+       members changed a number in a table and nothing on the plan. They
+       are the LAST ayes of their party's block and they are drawn at half
+       fill: solid is a bench that was always yours, half is one you are
+       paying for, empty is one you have not got. The whole point of the
+       whip living on this tab is watching the benches change as you buy
+       them. Opacity rather than a stroke, for the reason under glyph(). */
     const gov = [], opp = [], cross = [];
     const popular = (id, into) => {
       const s = st.parties[id].seats, col = C.partyById[id].colour;
       const r = rowOf(id);
       let aye = r ? r.popularAye : null;
+      const whip = r ? Math.min(r.popularWhipped || 0, r.popularAye) : 0;
       const put = t => { const on = aye == null || aye-- > 0;
-                         into.push({ c: col, t: t, p: id, aye: aye == null ? null : on }); };
+                         into.push({ c: col, t: t, p: id, aye: aye == null ? null : on,
+                                     wh: on && aye != null && aye < whip }); };
       for (let i = 0; i < s.district; i++) put("d");
       for (let i = 0; i < s.list; i++)     put("l");
     };
@@ -2129,9 +2282,11 @@ const UI = (function () {
       const s = st.parties[id].seats, col = C.partyById[id].colour;
       const r = rowOf(id);
       let aye = r ? r.functionalAye : null;
+      const whip = r ? Math.min(r.functionalWhipped || 0, r.functionalAye) : 0;
       for (let i = 0; i < s.functional; i++) {
         const on = aye == null || aye-- > 0;
-        cross.push({ c: col, t: "f", p: id, aye: aye == null ? null : on });
+        cross.push({ c: col, t: "f", p: id, aye: aye == null ? null : on,
+                     wh: on && aye != null && aye < whip });
       }
     });
 
@@ -2141,7 +2296,7 @@ const UI = (function () {
        only thing this diagram is for. */
     const glyph = (x, y, s) => {
       /* a seat that is not voting aye keeps its party and loses its fill */
-      const st_ = ` class="sg${s.aye === false ? " no" : ""}" fill="${s.c}"`;
+      const st_ = ` class="sg${s.aye === false ? " no" : s.wh ? " wh" : ""}" fill="${s.c}"`;
       if (s.t === "d") return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4"${st_}/>`;
       if (s.t === "l") return `<rect x="${(x-3).toFixed(1)}" y="${(y-3).toFixed(1)}" width="6" height="6"${st_}/>`;
       return `<path d="M${x.toFixed(1)} ${(y-3.8).toFixed(1)}L${(x+3.6).toFixed(1)} ${(y+2.7).toFixed(1)}` +
@@ -2408,7 +2563,9 @@ const UI = (function () {
         <span><b>${(s.attested * 100).toFixed(1)}%</b><i>attested</i></span>
       </div>
       ${s.composition ? `<div class="compbar">${["biological","emulation","uplift","synthetic"].map(k =>
-        s.composition[k] ? `<i class="c-${k}" style="width:${s.composition[k]*100}%" title="${k} ${(s.composition[k]*100).toFixed(0)}%"></i>` : ""
+        s.composition[k] ? `<i class="c-${k}" style="width:${s.composition[k]*100}%"` +
+          ` data-tip-title="${esc(k.charAt(0).toUpperCase() + k.slice(1))}"` +
+          ` data-tip-body="${(s.composition[k]*100).toFixed(0)}% of this station's population."></i>` : ""
       ).join("")}</div>
       <div class="note">biological ${(s.composition.biological*100).toFixed(0)}% &middot;
         emulation ${(s.composition.emulation*100).toFixed(0)}% &middot;

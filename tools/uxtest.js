@@ -1477,4 +1477,125 @@ try {
   ok("and stopping a bed that never started does not throw", safe === "ok", safe);
 } catch (e) { ok("the adaptive bed is wired", false, e.message); }
 
+/* ---------------------------------------------------------------------
+   WHAT A CONTROL COSTS, AND WHY IT IS REFUSED.
+
+   You used to learn a price by paying it, and a disabled button said
+   nothing at all. Both are one mechanism now — priceTip() — and both are
+   asserted here, along with the rule they were breaking: js/tips.js says
+   NEVER a native title=, and three call sites were ignoring it.
+   --------------------------------------------------------------------- */
+try {
+  w.eval("UI.boot(UI.state(), CONTENT);");
+  const doc = w.document;
+  const body = el => el && el.getAttribute("data-tip-body");
+
+  /* --- 1. every control that spends says what it spends --- */
+  doc.querySelector('.tab[data-t="gov"]').click();
+  const div = doc.querySelector("#btn-divide");
+  ok("moving to a division says what it costs before you spend it",
+     /order-paper time/.test(body(div) || ""), body(div));
+  ok("and how much is left after", /left, \d+ after|not enough/.test(body(div) || ""));
+
+  const ini = [...doc.querySelectorAll("#gov-init .ini-h")].find(b => !b.disabled);
+  ok("so does an initiative", /slot/.test(body(ini) || ""), body(ini));
+  ini.click();
+  const tempo = doc.querySelector("#gov-init .ini-t");
+  ok("and each way of doing it", /slot/.test(body(tempo) || ""), body(tempo));
+
+  doc.querySelector('.tab[data-t="pap"]').click();
+  const make = doc.querySelector("#gov-si [data-make]");
+  ok("an order says that it costs no time, which is the point of an order",
+     /no order-paper time/.test(body(make) || ""), body(make));
+
+  /* --- 2. a refused control says why --- */
+  const refused = [...doc.querySelectorAll("[data-make][disabled], .ini-h[disabled]")];
+  ok("every refused control names its reason",
+     refused.length > 0 && refused.every(b => /Refused:/.test(body(b) || "")),
+     refused.length + " refused, " +
+     refused.filter(b => !/Refused:/.test(body(b) || "")).length + " silent");
+
+  /* --- 3. and none of them does it with a native tooltip --- */
+  /* Not the Concordance: it is deliberately not government chrome and
+     carries no terminal annotations at all (js/tips.js), so a red link
+     explaining itself in the browser's own voice is correct there. */
+  const native = [...doc.querySelectorAll("#viewport [title]")]
+    .filter(e => !e.closest("#s-cx"))
+    .map(e => (e.id || e.className || e.tagName) + '="' + e.getAttribute("title") + '"');
+  ok("and no control falls back to a native tooltip", native.length === 0,
+     native.slice(0, 4).join(" · ") || "none");
+
+  /* --- 4. the party marks name their party --- */
+  doc.querySelector('.tab[data-t="gov"]').click();
+  const swatches = [...doc.querySelectorAll("#gov-slots .swatch")];
+  ok("the order paper's sponsor column is a colour that says whose it is",
+     swatches.length > 0 && swatches.every(i => !!i.getAttribute("data-tip-title")),
+     swatches.length + " marks");
+  const named = swatches.find(i => /seat/.test(i.getAttribute("data-tip-body") || ""));
+  ok("and the card carries the live seat count, not a fixed token",
+     !!named, named ? named.getAttribute("data-tip-body") : "none");
+
+  /* --- 5. the fatal line is drawn, and it is the engine's --- */
+  const rows = [...doc.querySelectorAll("#gov-meters .meterrow")];
+  const loyalty = rows.find(r => /loyalty/i.test(r.textContent));
+  const thr = loyalty.querySelector(".meter>.thr");
+  ok("the indicator that ends the game draws the line it ends on", !!thr);
+  const lc = w.eval("CONTENT.setup.thresholds.leadershipChallenge");
+  ok("and the line is the engine's number, not the interface's",
+     thr && thr.style.left === lc + "%", (thr && thr.style.left) + " vs " + lc + "%");
+  ok("and it says what happens there",
+     /no undo/i.test(thr.getAttribute("data-tip-body") || ""),
+     thr.getAttribute("data-tip-body"));
+  const soft = rows.find(r => /treasury/i.test(r.textContent));
+  ok("an indicator with no fatal line draws none",
+     !soft.querySelector(".meter>.thr"));
+
+  /* --- 6. the margin is a bar with the same threshold mark --- */
+  const marg = doc.querySelector("#gov-margin .dmbar");
+  ok("the working majority is drawn, not narrated", !!marg);
+  ok("against the majority it has to clear", !!marg.querySelector(".thr"));
+  ok("and it says what the margin buys you",
+     /before the government falls|exact number|short/i.test(body(marg) || ""), body(marg));
+
+  /* --- 7. the whip fills the seats it buys --- */
+  doc.querySelector('#gov-bills tr[data-bill="thermal2"]').click();
+  doc.querySelector("#btn-tochamber").click();
+  const bar = doc.querySelector("#cham-whip .whipbar");
+  if (!bar) ok("the whip has headroom to spend on this measure", false);
+  else {
+    const before = doc.querySelectorAll("#chamber .sg.wh").length;
+    const cells = bar.querySelectorAll("i");
+    cells[Math.min(2, cells.length - 1)].click();
+    const after = doc.querySelectorAll("#chamber .sg.wh").length;
+    ok("committing members fills the seats they are on the plan",
+       after > before, before + " -> " + after + " half-filled seats");
+    const wp = bar.dataset.wp, wt = bar.dataset.wt;
+    const bought = w.eval(`(UI.state().whips.thermal2 || {})["${wp}"]["${wt}"]`);
+    ok("exactly as many seats as members bought", after - before === bought,
+       (after - before) + " seats for " + bought + " members");
+    /* AND THE BREAKDOWN STILL ADDS UP. popularAye includes whipped
+       members and the faction rows under it deliberately do not, so
+       printing the total put a party row of 67 over currents summing to
+       59 — the exact fault test.js §614 exists to catch, invisible until
+       somebody actually whipped somebody. */
+    const brk = doc.querySelector("#cham-break");
+    const bench2 = [...brk.querySelectorAll("tr.bench")];
+    const prow = [...brk.querySelectorAll("tbody tr:not(.bench)")]
+      .find(tr => /PSD/.test(tr.cells[0].textContent));
+    if (bench2.length && prow) {
+      const base = parseInt(prow.cells[1].textContent, 10);
+      const sum = bench2.reduce((n, tr) => n + (parseInt(tr.cells[1].textContent, 10) || 0), 0);
+      ok("the factions still sum to the party row once members are whipped",
+         base === sum, sum + " currents vs " + base + " printed");
+      ok("and the whip is printed on top of that base, not inside it",
+         /\+\d/.test(prow.cells[1].textContent), prow.cells[1].textContent);
+    } else ok("the whipped party is in the breakdown", false);
+
+    ok("and the whip prices itself per seat, with a ceiling",
+       /a seat\./.test(bar.getAttribute("data-tip-body") || "") &&
+       /Up to \d+\. Nothing is charged until/.test(bar.getAttribute("data-tip-body") || ""),
+       bar.getAttribute("data-tip-body"));
+  }
+} catch (e) { ok("price and refusal", false, e.message); }
+
 H.finish("the interface is healthy");

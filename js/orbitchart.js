@@ -106,11 +106,17 @@ const OrbitChart = (function () {
         const tierFour = s.closure < 0.35;
         return `<button type="button" class="ochip${s.id === selectedId ? " on" : ""}"` +
           ` data-station="${esc(s.id)}"` +
-          ` title="${esc(s.name)} — closure ${s.closure.toFixed(2)}, ${s.seats} seat${s.seats === 1 ? "" : "s"}">` +
+          /* The terminal's own card, never a native title: js/tips.js says
+             so, and a native tooltip cannot say two things at once. */
+          ` data-tip-title="${esc(s.name)}"` +
+          ` data-tip-body="Closure ${s.closure.toFixed(2)} \u2014 the share of what it consumes ` +
+            `that it makes for itself. ${s.seats} seat${s.seats === 1 ? "" : "s"}.` +
+            `${s.closure < 0.35 ? " Below 0.35: it lives on what the Commonwealth sends it." : ""}"` +
+          ` data-tip-go="closure">` +
           glyph(s.form, fill(s.closure)) +
           `<span class="oname">${esc(s.name)}</span>` +
           `<span class="oseats">${s.seats}</span>` +
-          (tierFour ? `<i class="otier" title="closure below 0.35"></i>` : "") +
+          (tierFour ? `<i class="otier"></i>` : "") +
           `<i class="obar" style="background:${pc || "transparent"}"></i>` +
         `</button>`;
       }).join("");
@@ -134,7 +140,8 @@ const OrbitChart = (function () {
     const g = forms.map(([f, l]) =>
       `<span class="okey">${glyph(f, "#93a184")}${l}</span>`).join("");
     const clos = [0.28, 0.5, 0.72, 0.9].map(c =>
-      `<i style="background:${fill(c)}" title="closure ${c}"></i>`).join("");
+      `<i style="background:${fill(c)}" data-tip-title="Closure ${c.toFixed(2)}"` +
+      ` data-tip-body="A station making ${Math.round(c * 100)}% of what it consumes."></i>`).join("");
     return `
       <div class="okeyrow"><b data-tip="form">Form</b>${g}</div>
       <div class="okeyrow"><b data-tip="closure">Closure</b><span class="oramp">${clos}</span>
