@@ -11,6 +11,10 @@ const UI = (function () {
      was opened under. A station change resets the open row to the selected
      seat; the player can close it by clicking it again. */
   let consOpen = null, consOpenAt = null;
+  /* The functional tier opens in place the same way a seat does. One id,
+     because only one row can be open and the alternative is a column of
+     detail rows with no relationship to what is above them. */
+  let funcOpen = null;
 
   const $ = s => document.querySelector(s);
   const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
@@ -218,6 +222,17 @@ const UI = (function () {
         return (mine[0] || {}).id;
       },
       activate: id => pickConstituency(id)
+    });
+    /* The functional tier is a region too. It uses the seat list's own
+       pattern — a row that opens under itself — rather than the hover card it
+       used to carry: a card cannot be read with a keyboard, cannot stay open
+       while you compare two seats, and put the tier's whole information
+       budget in a mechanism the player has to discover. */
+    Focus.region("func-table", {
+      rows: "tr[data-func]",
+      key: tr => tr.dataset.func,
+      fallback: () => ((C.functional || [])[0] || {}).id,
+      activate: id => pickFunctional(id)
     });
     Focus.wire();
     /* Both capture their own skip listeners; both are no-ops without a
@@ -2173,6 +2188,13 @@ const UI = (function () {
      is not a second choice of bill, only a request to see the House at
      rest, and naming a measure here names it there. */
   let chamberBare = false;
+  /* HOW THE HOUSE IS ARRANGED ON THE PAGE. Party is the House as it is
+     actually arranged. Vote regroups each aisle so the ayes sit together and
+     the nays together, which is what a division looks like from the gallery.
+     Aisles drops party altogether and colours the two benches by the vote
+     alone, which is what a simple measure deserves and a dual one does not. */
+  let chamberView = "party";
+  const CHVIEWS = [["party", "by party"], ["vote", "ayes together"], ["aisles", "aisles only"]];
   const chamberBill = () => chamberBare ? null : Focus.selected("cham-bills");
 
   function drawChamberPicker() {
@@ -2191,11 +2213,20 @@ const UI = (function () {
         `<button class="chp" data-cb="">show the House at rest</button>`
       : `<b>Showing</b><span class="chnow">the House as it sits</span>` +
         `<i class="chhint">choose a measure on the order paper to colour the benches</i>`) +
-      `</div>`;
+      `</div>` +
+      /* The view is offered only when there is a vote to show. At rest every
+         seat is the same state, so all three views would draw one picture. */
+      (b ? `<div class="chviews">` + CHVIEWS.map(([v, lab]) =>
+        `<button class="chv${chamberView === v ? " on" : ""}" data-view="${v}"` +
+        ` aria-pressed="${chamberView === v ? "true" : "false"}">${lab}</button>`
+      ).join("") + `</div>` : "");
     const off = el.querySelector("[data-cb]");
     if (off) off.addEventListener("click", () => {
       chamberBare = true; cue("click"); drawChamber();
     });
+    el.querySelectorAll("[data-view]").forEach(btn => btn.addEventListener("click", () => {
+      chamberView = btn.dataset.view; cue("click"); drawChamber();
+    }));
   }
 
   /* The two majorities the measure must clear, under the plan that shows
@@ -2432,6 +2463,19 @@ const UI = (function () {
       chair = take(gov) || take(opp);
     }
 
+    /* THE VIEW (chamberView). Party leaves the benches as they are arranged.
+       Vote regroups each aisle so the ayes are contiguous and the nays are
+       contiguous — party colours kept, so you can still see who moved. Aisles
+       drops party and colours by the vote alone. The Chair is taken out of the
+       array first, so no view can move it. */
+    const sortByVote = arr => arr.slice().sort((a, b) =>
+      (b.aye === true ? 1 : 0) - (a.aye === true ? 1 : 0));
+    const voteTint = arr => arr.map(s => Object.assign({}, s,
+      { c: s.aye === false ? "var(--alert)" : "var(--ok)" }));
+    const viewed = arr => chamberView === "party" ? arr
+      : chamberView === "aisles" ? voteTint(sortByVote(arr)) : sortByVote(arr);
+    const govV = viewed(gov), oppV = viewed(opp), crossV = viewed(cross);
+
     /* Everything is derived from the seat counts, so the diagram tightens
        when a party crosses the floor rather than leaving a hole. */
     const govCols = Math.max(1, cols(gov.length));
@@ -2491,9 +2535,9 @@ const UI = (function () {
       /* the Chair holds the end, one member and not a piece of furniture */
       (chair ? glyph(30, FLOOR, chair) : "") +
       label(30, FLOOR + 17, "SPEAKER") +
-      bench(gov, X0, govFront, -1) +
-      bench(opp, X0, oppFront, +1) +
-      crossbench(cross, crossX, crossTop) +
+      bench(govV, X0, govFront, -1) +
+      bench(oppV, X0, oppFront, +1) +
+      crossbench(crossV, crossX, crossTop) +
       label(CX, govTop - 12, "GOVERNMENT") +
       label(CX, oppBot + 22, "OPPOSITION") +
       label(crossCX, crossTop - 14, "THE BENCH") +
@@ -2562,7 +2606,7 @@ const UI = (function () {
   }
 
   /* The seat list's activate. A player action: it may make a sound and write
-     the status line. Clicking the open seat again closes its detail row. */
+      the status line. Clicking the open seat again closes its detail row. */
   function pickConstituency(id) {
     consOpen = (consOpen === id) ? null : id;
     drawSeats(Focus.selected("orbit-table"));
@@ -2570,6 +2614,17 @@ const UI = (function () {
     if (k) setStatus(k.name + " \u00b7 " + k.band + " band \u00b7 " +
                      k.electorate.toLocaleString() + " electors", "transient");
   }
+
+  /* The functional tier's activate, the same shape: open the row, or close
+     it if it is the one already open. */
+  function pickFunctional(id) {
+    funcOpen = (funcOpen === id) ? null : id;
+    drawFunctional();
+    const f = (C.functional || []).find(x => x.id === id);
+    if (f) setStatus(f.name + " \u00b7 " + f.seats + (f.seats === 1 ? " seat" : " seats") +
+                     " \u00b7 " + f.electorate.toLocaleString() + " electors", "transient");
+  }
+
 
   /* The orbit region's activate. A player action, not a redraw: it may
      make a sound and it may write the status line. drawOrbit(), which it
@@ -2771,40 +2826,63 @@ const UI = (function () {
       if (post) return post.title || post.name;
       return ch.role || (ch.office && OFFICE[ch.office] ? OFFICE[ch.office][0] : null);
     };
-    /* The hover overview: what the seat returns, who is on its roll, who holds
-       it, and how it behaves — built from the data rather than restated. */
-    const overview = f => {
+    /* THE DETAIL, under the row it belongs to. Everything the hover card used
+       to carry, plus the two things a card could not: the roll spelled out,
+       and the members. It reads the same live roll the row does. */
+    const detailHTML = f => {
       const h = heldOf(f);
       const held = Object.keys(h).sort((a, b) => h[b] - h[a]);
-      const roll = (f.electors || []).map(e => `${e.body} ${e.count.toLocaleString()}`).join("; ");
-      return `${f.seats} ${f.seats === 1 ? "seat" : "seats"} by ${FR[f.franchise] || f.franchise}. ` +
-        `${f.electorate.toLocaleString()} electors` + (roll ? `: ${roll}` : "") + ". " +
-        (held.length ? `Held by ${held.map(pid => `${ps(pid)} ${h[pid]}`).join(", ")}. ` : "") +
-        (f.description ? f.description + " " : "") +
-        (f.note || "");
+      const mem = membersOf(f);
+      const roll = (f.electors || []).map(e =>
+        esc(e.body) + " " + e.count.toLocaleString()).join(" \u00b7 ");
+      return `<div class="ostats">
+          <span><b>${f.seats}</b><i>${f.seats === 1 ? "seat" : "seats"}</i></span>
+          <span><b>${f.electorate.toLocaleString()}</b><i>electors</i></span>
+          <span><b>${esc(FR[f.franchise] || f.franchise)}</b><i>franchise</i></span>
+        </div>` +
+        (f.description ? `<div class="rulehead">Description</div>
+          <div class="note">${esc(f.description)}</div>` : "") +
+        (roll ? `<div class="rulehead">On the roll</div><div class="note">${roll}</div>` : "") +
+        (f.note_franchise || f.note ? `<div class="rulehead">How it is won</div>
+          <div class="note">${esc(f.note_franchise || f.note)}</div>` : "") +
+        (f.gatekeeper ? `<div class="rulehead">Gatekeeper</div>
+          <div class="note">${esc(f.gatekeeper.board || "none")}` +
+          (f.gatekeeper.appointed_by && f.gatekeeper.appointed_by !== "none"
+            ? `, appointed by the ${esc(f.gatekeeper.appointed_by)}` : "") + `.</div>` : "") +
+        (f.excluded ? `<div class="rulehead">Excluded from the roll</div>
+          <div class="note">${esc(f.excluded.body)}, ${f.excluded.count.toLocaleString()}. ` +
+          esc(f.excluded.note || "") + `</div>` : "") +
+        (mem.length ? `<div class="rulehead">Members</div>
+          <table class="fmem"><tbody>${mem.map(m =>
+            `<tr><td class="r">${esc(m.r || "")}</td>` +
+            `<td>${m.p ? `${mark(m.p)}<i class="hs">${esc(ps(m.p))}</i>` : ""}</td>` +
+            `<td>${esc(m.n)}${m.o ? ` <i class="office">${esc(m.o)}</i>` : ""}</td></tr>`).join("")}` +
+          `</tbody></table>` : "") +
+        `<div class="rulehead">Held by</div>
+        <div class="note">${held.length
+          ? held.map(pid => `${logoMark(pid, "lg")}${esc(pn(pid))} ${h[pid]}`).join(", ")
+          : "&mdash;"}</div>` +
+        ((f.interest || []).length ? `<div class="rulehead">Material interest</div>
+          <div class="note">${f.interest.map(esc).join(" \u00b7 ")}</div>` : "");
     };
+    const open = funcOpen && F.some(f => f.id === funcOpen) ? funcOpen : null;
     $("#func-table").innerHTML =
       "<thead><tr><th>Constituency</th><th class='n' data-tip='functional'>Seats</th>" +
       "<th data-tip='held'>Held by</th></tr></thead><tbody>" +
       F.map(f => {
         const h = heldOf(f);
         const held = Object.keys(h).sort((a, b) => h[b] - h[a]);
-        /* i.sub is display:block, so both halves stay inside ONE of them and
-           take a span each; two i.sub would put the franchise and the
-           electorate on separate lines. */
-        const mem = membersOf(f);
-        return `<tr><td data-tip="functional" data-tip-title="${esc(f.name)}"` +
-          ` data-tip-body="${esc(overview(f))}"` +
-          (mem.length ? ` data-tip-members="${esc(JSON.stringify(mem))}"` : "") +
-          ` data-tip-go="functional_constituency">` +
-          /* ONE LINE. The franchise and the electorate were a second line
-             under every name, which is eleven extra rows of height for
-             something the hover card already says in full. */
-          `<b>${f.name}</b></td>` +
+        const isOpen = f.id === open;
+        const row = `<tr data-func="${f.id}"${isOpen ? ' class="sel"' : ""} style="cursor:pointer">` +
+          `<td><i class="caret${isOpen ? " open" : ""}"></i><b>${esc(f.name)}</b></td>` +
           `<td class="n">${f.seats}</td><td class="hcell">${held.length
             ? held.map(pid => `${mark(pid)}<span class="hn">${h[pid]}</span>`).join(" ")
             : "&mdash;"}</td></tr>`;
+        return row + (isOpen
+          ? `<tr class="funcdet"><td colspan="3">${detailHTML(f)}</td></tr>` : "");
       }).join("") + "</tbody>";
+    $("#func-table").querySelectorAll("tr[data-func]").forEach(tr =>
+      tr.addEventListener("click", () => Focus.activate("func-table", tr.dataset.func)));
 
     const seats = F.reduce((n, f) => n + f.seats, 0);
     const licensed = F.filter(f => f.franchise !== "residual")

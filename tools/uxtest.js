@@ -133,17 +133,17 @@ try {
    asserted: what is on the page, and what the source is allowed to emit. */
 try {
   const rows = [...w.document.querySelectorAll("tr.sel")];
-  const stray = rows.filter(tr => !tr.matches("[data-bill],[data-station],[data-doc],[data-cons]"));
+  const stray = rows.filter(tr => !tr.matches("[data-bill],[data-station],[data-doc],[data-cons],[data-func]"));
   ok(".sel is only on a row a click selects", rows.length >= 2 && stray.length === 0,
      rows.length + " selected, " + stray.length + " on rows that do nothing");
 
-  /* four quoted literals, in the four tables that select a row: #cham-bills,
-     #orbit-table, #pp-list, #cons-table. A fifth is a regression. */
+  /* five quoted literals, in the five tables that select a row: #cham-bills,
+     #orbit-table, #pp-list, #cons-table, #func-table. A sixth is a regression. */
   const jssrc = ["js/ui.js", "js/papers.js", "js/editor.js", "js/shell.js",
                  "js/encyclopedia.js", "js/orbitchart.js"]
     .map(f => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
   const lits = jssrc.match(/["']sel["']/g) || [];
-  ok("nothing else emits a sel class", lits.length === 4, lits.length + " literals");
+  ok("nothing else emits a sel class", lits.length === 5, lits.length + " literals");
 
   /* the three other states differ in texture and hue - a gutter, a hatch,
      a ghost - so they cannot be read as paler selections */
@@ -159,6 +159,38 @@ try {
     .concat(css2.match(/[^}]*:focus[a-z-]*[^{}]*\{[^}]*transition[^}]*\}/g) || []);
   ok("no transition on a selection or a focus state", anim.length === 0, anim.join(" | "));
 } catch (e) { ok("selection semantics", false, e.message); }
+
+/* THE FUNCTIONAL TIER OPENS IN PLACE. It used to carry its detail in a hover
+   card, which a keyboard cannot open and which cannot be held open while two
+   seats are compared. */
+try {
+  const rows = [...w.document.querySelectorAll("#func-table tr[data-func]")];
+  ok("the functional tier is a table of rows", rows.length > 0, rows.length + " rows");
+  ok("and no functional row carries a hover card any more",
+     rows.length > 0 && rows.every(r => !r.getAttribute("data-tip-body")));
+  if (rows.length > 1) {
+    rows[0].click();
+    ok("clicking one opens its detail under it",
+       w.document.querySelectorAll("#func-table tr.funcdet").length === 1);
+    rows[1].click();
+    const open = [...w.document.querySelectorAll("#func-table tr.funcdet")];
+    ok("and opening another closes the first, leaving exactly one open",
+       open.length === 1 && !!open[0].querySelector(".ostats"));
+  }
+} catch (e) { ok("functional list", false, e.message); }
+
+/* THE CHAMBER HAS THREE VIEWS, and each draws a different House. A view that
+   draws the same picture as another is a control that does nothing. */
+try {
+  w.document.querySelector(".tab[data-t='cham']").click();
+  w.eval("Focus.seed('cham-bills', CONTENT.bills[0].id); UI.boot(UI.state(), CONTENT);");
+  const btns = [...w.document.querySelectorAll("#cham-pick [data-view]")];
+  ok("the chamber offers a view per question", btns.length === 3,
+     btns.map(b => b.dataset.view).join(","));
+  const seen = new Set();
+  btns.forEach(b => { b.click(); seen.add(w.document.querySelector("#chamber").innerHTML); });
+  ok("and the three views draw three different Houses", seen.size === 3, seen.size + " distinct");
+} catch (e) { ok("chamber views", false, e.message); }
 
 /* FOCUS RESTORATION.
 

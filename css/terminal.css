@@ -182,7 +182,12 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    measure open on it. Right is reference: how the benches are counted,
    what the House is made of, who sits for what. Both sides are narrow on
    purpose; the plan and the whip under it are what the tab is for. */
-.g-cham{grid-template-columns:minmax(300px,340px) minmax(0,690px) minmax(340px,1fr);}
+/* LEFT TAKES THE SURPLUS, RIGHT IS CAPPED. The reference column was `1fr`,
+   so at a wide window it ate everything the plan did not and then sat half
+   empty under the composition table. The order paper was the thing squeezed.
+   Now: the plan keeps its 690, the reference is capped, and the order paper
+   and the measure open on it absorb the rest. */
+.g-cham{grid-template-columns:minmax(340px,1fr) minmax(0,690px) minmax(272px,320px);}
 /* THE TAB FITS. Nothing here scrolls the page: the screen takes the
    viewport's height, the single grid row divides it, and anything that
    cannot fit scrolls INSIDE its own panel with the terminal's drawn bar.
@@ -321,6 +326,24 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #cons-table tr.consdet .ostats{margin-bottom:4px;max-width:460px;}
 #cons-table tr.consdet .ostats span{background:transparent;border-color:#e0d3a8;}
 #cons-table tr.consdet .rulehead{color:#7a6428;border-color:#e0d3a8;}
+
+/* The functional tier opens the same way, sharing the caret and the tint so
+   the two lists read as one pattern rather than two. It used to carry its
+   detail in a hover card, which a keyboard cannot open and which cannot be
+   held open while two seats are compared. */
+#func-table .caret{display:inline-block;width:0;height:0;margin-right:5px;
+  border-top:3px solid transparent;border-bottom:3px solid transparent;
+  border-left:4px solid var(--ink-soft);}
+#func-table .caret.open{transform:rotate(90deg);}
+#func-table tr[data-func].sel>td{background:var(--chrome-lt);}
+#func-table tr.funcdet>td{background:#f7f1dd;border-color:#e0d3a8;padding:5px 9px 7px;}
+#func-table tr.funcdet .ostats{margin-bottom:4px;}
+#func-table tr.funcdet .ostats span{background:transparent;border-color:#e0d3a8;}
+#func-table tr.funcdet .rulehead{color:#7a6428;border-color:#e0d3a8;}
+/* the members of a functional seat, ref / party / name-and-office */
+.fmem{border-collapse:collapse;font-size:11.5px;margin-top:2px;}
+.fmem td{padding:1px 8px 1px 0;border:0;vertical-align:baseline;}
+.fmem td.r{font-family:var(--f-data);font-size:10px;color:var(--ink-soft);}
 
 /* ---- the schematic: five band rows of chips ---- */
 .obands{padding:5px 7px 6px;}
@@ -1604,7 +1627,18 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .chnow .dual{font-style:normal;font-family:var(--f-data);font-size:8.5px;
   letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--rule);
   padding:0 3px;margin-left:3px;vertical-align:1px;}
-.chhint{font-style:normal;font-size:10.5px;color:var(--ink-soft);}
+  .chhint{font-style:normal;font-size:10.5px;color:var(--ink-soft);}
+  /* what the plan is drawn for: by party, ayes together, or two aisles only.
+     Shown only when a measure is picked, since at rest all three are one
+     picture. */
+  .chviews{display:flex;gap:3px;margin-top:5px;}
+  .chv{
+    font:inherit;font-family:var(--f-ui);font-size:9.5px;letter-spacing:.08em;
+    text-transform:uppercase;cursor:pointer;padding:2px 7px;
+    background:var(--field);border:1px solid var(--chrome-dk);color:var(--ink-soft);
+  }
+  .chv:hover{background:var(--chrome-lt);}
+  .chv.on{background:var(--ink);border-color:var(--ink);color:var(--field);}
 .chp .dual{font-style:normal;font-family:var(--f-data);font-size:8.5px;
   letter-spacing:.08em;text-transform:uppercase;opacity:.75;}
 #cham-forecast .dm{margin-bottom:5px;}
