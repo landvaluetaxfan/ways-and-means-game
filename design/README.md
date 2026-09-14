@@ -198,6 +198,9 @@ binding constraint, and no document here should be built as a block ahead of it.
 | `16-the-score.md` | what Casiopea does that we can use, an audit of every musical interruption, and the gap list | Claude |
 | `17-what-is-still-missing.md` | pre-emption, the quiet sitting, the loop holes no document covers, and foreign affairs now rather than later | Claude + opencode |
 | `18-pacing-and-initiative.md` | **the length target and the arithmetic behind it**, order-paper time as the clock, one mechanism for player initiative, and what should go to the bible | Claude |
+| `19-the-docket-and-the-clock.md` | the two-games diagnosis, the corrected cut list, and how time is shown | Claude |
+| `20-the-commission.md` | the recorded score: the stem contract, the layer map, the gesture vocabulary, and the shopping list | opencode |
+| `21-the-tutorial.md` | how the systems are taught, given that it cannot use a tutorial box; the curriculum and the three untaught beats | opencode |
 | `19-the-docket-and-the-clock.md` | the two-games diagnosis, the three currencies, the corrected cut list, and how time is shown | Claude |
 
 Every document ends with an **Acceptance** section naming the assertions that
