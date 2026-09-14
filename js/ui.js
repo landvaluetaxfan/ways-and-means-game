@@ -257,7 +257,13 @@ const UI = (function () {
     $("#sb-margin").textContent = `MARGIN ${conf - maj >= 0 ? "+" : ""}${conf - maj}`;
     $("#sb-thermal").textContent = `THERMAL ${st.scalars.thermal_margin}%`;
     $("#sb-chapter").textContent = `CHAPTER ${st.chapter}`;
-    $("#sb-slots").textContent = `SLOTS ${st.slots.total - st.slots.used}/${st.slots.total}`;
+    /* ORDER-PAPER TIME AS MARKS, NOT A FRACTION (design/19 §5.1). "4 of 6" is
+       a number; six marks with two dark is a quantity the eye has before it
+       reads. The tooltip still says what the marks mean. */
+    const sUsed = st.slots.used, sTot = st.slots.total;
+    $("#sb-slots").innerHTML = "SLOTS" + Array.from({ length: sTot }, (_, i) =>
+      `<i class="sbpip${i < sUsed ? " spent" : ""}"></i>`).join("");
+    $("#sb-slots").classList.toggle("none", sUsed >= sTot);
     $("#sb-sig").textContent = `SIGNATURES ${st.signatures || 0}/9`;
     $("#sb-sig").style.color = (st.signatures || 0) >= 7 ? "var(--alert)" : "";
     /* OUTSTANDING UNDERTAKINGS. Absent when there are none, rather than

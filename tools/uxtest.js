@@ -1172,6 +1172,17 @@ try {
        return day.length > 0 && day.every(t => t && body.indexOf(t) >= 0);
      }));
 
+  /* ORDER-PAPER TIME IS A QUANTITY, NOT A FRACTION (design/19 §5.1). */
+  {
+    const s1 = JSON.parse(w.eval("Engine.save(UI.state())"));
+    const pips = [...w.document.querySelectorAll("#sb-slots .sbpip")];
+    ok("the status bar draws order-paper time as marks",
+       pips.length === s1.slots.total && pips.length > 0, pips.length + " marks");
+    ok("and darkens exactly the spent ones",
+       pips.filter(p => p.classList.contains("spent")).length === s1.slots.used,
+       s1.slots.used + " of " + s1.slots.total + " spent");
+  }
+
   /* ONE PIP PER THING. A single corner flag lost the count, and lost the
      colour where two kinds fell on one day. */
   const marked = [...cells].filter(c => c.querySelector(".pips"));

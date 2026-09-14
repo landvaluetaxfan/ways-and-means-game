@@ -720,6 +720,16 @@ img.dith{display:block;}
   border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);
 }
 .slotbar i.spent{background:var(--chrome-dk);}
+/* THE SAME MARKS IN THE STATUS BAR, where the currency is read at a glance
+   rather than navigated to. Same colours as the order-paper bar so the two
+   readouts cannot disagree about what a spent slot looks like. */
+.sbpip{
+  display:inline-block;width:7px;height:9px;margin:2px 0 0 2px;vertical-align:-1px;
+  background:var(--ok);border:1px solid var(--chrome-dkr);
+}
+.sbpip.spent{background:var(--chrome-dk);}
+#sb-slots.none{color:var(--alert);}
+#sb-slots.none .sbpip{background:var(--chrome-dk);}
 .whiptab td{padding:1px 4px;}
 .whiptab td:first-child{white-space:nowrap;}
 /* The whip is one block per whippable seat. The number of blocks is what
