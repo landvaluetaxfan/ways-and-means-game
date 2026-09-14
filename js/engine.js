@@ -2672,6 +2672,40 @@ const Engine = (function () {
     return { ok: true, on: on };
   }
 
+  /* ---------------------------------------------------------
+     THE QUIET SITTING — the order paper when nothing is asked
+
+     design/17 §2.2: thirty-nine of sixty sittings printed nothing, and a
+     player who met "nothing demands a decision" thirty times read it as a
+     missing placeholder rather than as the state of the world. A real
+     parliament always has business: questions taken, a committee reporting,
+     an instrument laid, a member's statement.
+
+     NOTHING HERE IS A DECISION. It moves no number and is gated on nothing
+     being read. It is the room being a room, and it is what makes a sitting
+     with no event feel like a sitting rather than a gap.
+
+     The draw is deterministic from the seed and the sitting, so the same
+     playthrough always prints the same order paper, and a check can assert
+     both that it prints and that it does not move.
+     --------------------------------------------------------- */
+  function business(st, C, n) {
+    const pool = (C.business || []).filter(b => matches(st, b.when));
+    if (!pool.length) return [];
+    const want = Math.min(n == null ? 3 : n, pool.length);
+    const out = [], used = {};
+    let h = noise(st, "business:" + st.sitting);
+    while (out.length < want) {
+      h = (Math.imul(h, 1103515245) + 12345) >>> 0;
+      let i = h % pool.length, guard = 0;
+      while (used[i] && guard++ < pool.length) i = (i + 1) % pool.length;
+      if (used[i]) break;
+      used[i] = true;
+      out.push(pool[i]);
+    }
+    return out;
+  }
+
   function prorogue(st, C) {
     const fell = [];
     (C.bills || []).forEach(b => {
@@ -2797,7 +2831,7 @@ const Engine = (function () {
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal,
     division, reported, ballot, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
-    dateOfSitting, sittingOfDate, deadlines, calendar, today,
+    dateOfSitting, sittingOfDate, deadlines, calendar, today, business,
     initiatives, take, setDivision,
     apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,
     seedRoll, syncRoll, reconcile, partyDistrict,
