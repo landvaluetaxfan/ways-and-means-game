@@ -956,6 +956,47 @@ try {
      w.document.querySelector(".sit-read img") === node);
   ok("the decision block is a separate element",
      !!w.document.querySelector("#sit-decide .choices"));
+
+  /* AND THE SLOT IS FILLED WHETHER OR NOT THE FILE EXISTS.
+
+     That earlier fix stopped the rebuild on EXPANDING a row. Choosing
+     still rebuilds the reading block, and there the portrait deleted
+     itself: six characters declare one and one file exists, so five
+     decisions in six drew the box, its bevel and its REGISTRY caption,
+     and then removed the node. js/artifacts.js has said since it was
+     written that a slot is a reserved box and an empty one is an
+     invisible box of the declared size; these two helpers predated it
+     and did the opposite. */
+  const po = w.document.querySelector(".sit-read .portrait");
+  ok("a decision draws its portrait slot even with no photograph on file", !!po);
+  const pim = po && po.querySelector("img");
+  ok("and the slot holds an image element, not an empty frame", !!pim);
+  /* jsdom resolves no var() in a computed background, so the contract is
+     read off the stylesheet: the slot paints an inline SVG, which is the
+     only kind of image that works on file:// (js/artifacts.js). */
+  const cssP = fs.readFileSync(path.join(root, "css/terminal.css"), "utf8");
+  ok("which carries a placeholder that does not depend on a file",
+     /--sil:\s*url\("data:image\/svg/.test(cssP) &&
+     /\.portrait img\{[^}]*background:var\(--sil\)/.test(cssP));
+  ok("and a 404 clears the src rather than deleting the box",
+     !!pim && /onerror=/.test(pim.outerHTML) && !/remove\(\)/.test(pim.outerHTML),
+     (pim.getAttribute("onerror") || "").slice(0, 46));
+
+  /* ONE SIZE FOR EVERY NON-PORTRAIT IMAGE, and it is the size the
+     project already declares. The plate was width:100% of whatever
+     panel it landed in — 1062px across on a 1440 window, cropping its
+     own declared 12:5 into a 3.3:1 letterbox. */
+  const cssImg = fs.readFileSync(path.join(root, "css/terminal.css"), "utf8");
+  const slot = w.eval("Artifacts.spec('notice_plate')");
+  const declared = /--plate-w:\s*(\d+)px/.exec(cssImg);
+  ok("the plate has one declared width, not the width of its panel",
+     !!declared && /\.plate-img\{[^}]*width:var\(--plate-w\)/.test(cssImg),
+     declared ? declared[1] + "px" : "none");
+  ok("and it is the width js/artifacts.js declares for the slot",
+     !!slot && !!declared && +declared[1] === slot.width,
+     (slot ? slot.width : "?") + " vs " + (declared ? declared[1] : "?"));
+  ok("and no max-height crops the ratio it just declared",
+     !/\.plate-img img\{[^}]*max-height/.test(cssImg));
 } catch (e) { ok("expanding does not redraw the prose", false, e.message); }
 
 

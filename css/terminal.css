@@ -636,6 +636,24 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 /* ---------- images: photographic plates, not machine scans ---------- */
 img.dith{display:block;}
 /* registry portrait — an ID photo on a government system */
+/* EVERY SLOT IS FILLED, ALWAYS.
+
+   Six characters declare a portrait and one file exists, so five of six
+   404ed: the box drew with its bevel and its REGISTRY caption and then
+   `onerror` deleted the node. That is the flicker — a frame of furniture
+   that then goes away, on every decision, because choosing rebuilds the
+   reading block and the <img> with it.
+
+   The placeholder is a BACKGROUND on the image, not a fallback src. A
+   background paints immediately and stays behind a slow load, a failed
+   load and a missing file alike, so the box is never empty for a frame
+   and never disappears. No asset: an inline SVG, because there is no
+   asset loading on file:// (see the notes in js/artifacts.js). */
+:root{
+  --plate-w:640px;                 /* the notice_plate slot, 12:5 at 640 */
+  --sil:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 50' preserveAspectRatio='xMidYMid slice'%3E%3Crect width='40' height='50' fill='%23e4e1d5'/%3E%3Cg fill='%23b9b6a8'%3E%3Ccircle cx='20' cy='19' r='8'/%3E%3Cpath d='M4 50c0-9 7-16 16-16s16 7 16 16z'/%3E%3C/g%3E%3C/svg%3E");
+  --nofilm:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 20' preserveAspectRatio='xMidYMid slice'%3E%3Crect width='48' height='20' fill='%2317190f'/%3E%3Cg stroke='%232e3122' stroke-width='1'%3E%3Cpath d='M-4 24L24-4M8 24L36-4M20 24L48-4M32 24L60-4'/%3E%3C/g%3E%3C/svg%3E");
+}
 .portrait{
   float:left;margin:0 8px 4px 0;width:96px;
   border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);
@@ -646,6 +664,7 @@ img.dith{display:block;}
   display:block;width:100%;
   aspect-ratio:4/5;max-height:150px;
   object-fit:cover;object-position:center top;
+  background:var(--sil) center/cover no-repeat;
 }
 .portrait .cap{
   font-family:var(--f-data);font-size:9px;color:var(--ink-soft);
@@ -653,15 +672,26 @@ img.dith{display:block;}
 }
 /* event plate — a printed photograph, not a terminal scan: a paper mount,
    the image inset with a hairline, and a serif caption under a rule. */
-.plate-img{margin:0 0 10px;background:#efeae0;border:1px solid #c9c2b2;padding:8px;}
+/* ONE SIZE FOR EVERY NON-PORTRAIT IMAGE, and it is the size the project
+   already declares: js/artifacts.js gives notice_plate as 12:5 at 640px
+   wide. The plate was width:100% of whatever panel it landed in — 1062px
+   across on a 1440 window, with max-height cropping the declared 12:5
+   down to a 3.3:1 letterbox. A slot whose rendered size depends on the
+   panel it is in is not a slot. tools/uxtest.js checks the two agree. */
+.plate-img{
+  margin:0 0 10px;background:#efeae0;border:1px solid #c9c2b2;padding:8px;
+  width:var(--plate-w);max-width:100%;
+}
 /* A plate is a BAND, never whatever shape the source happens to be.
-   aspect-ratio sets it; max-height and object-fit are the guards for
-   old browsers and for images that arrive the wrong shape anyway. */
+   aspect-ratio sets it; object-fit is the guard for an image that
+   arrives the wrong shape anyway. No max-height: the width is fixed, so
+   the height follows from the ratio and nothing crops it. */
 .plate-img img{
   display:block;width:100%;
-  aspect-ratio:12/5;max-height:320px;
+  aspect-ratio:12/5;
   object-fit:cover;object-position:center;
   border:1px solid #b7ae95;
+  background:var(--nofilm) center/cover no-repeat;
 }
 .plate-img .cap{
   font-family:var(--f-doc);font-size:11.5px;line-height:1.35;color:#4e4838;

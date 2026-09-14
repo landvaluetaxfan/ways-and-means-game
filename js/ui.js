@@ -1239,23 +1239,45 @@ const UI = (function () {
      call will not. */
 
   /* ---------- images ----------
-     Both helpers return "" when there is no image, and both hide
-     themselves if the file 404s. Content can reference an image that
-     has not been made yet without breaking the build. */
+
+     THE SLOT IS FILLED WHETHER OR NOT THE FILE EXISTS. js/artifacts.js
+     has said for a long time that a slot is a reserved box and an empty
+     one is an invisible box of the declared size — but these two helpers
+     predate it and did the opposite: they returned "" with no character
+     and DELETED THEMSELVES on a 404. Six characters declare a portrait
+     and one file exists, so five decisions in six drew the box, its
+     bevel and its REGISTRY caption, and then removed the node. Every
+     choice rebuilds the reading block, so that happened on every
+     decision. That is the flicker.
+
+     The placeholder is a CSS background on the <img>, so it is painted
+     before the network is consulted and stays put behind a slow load, a
+     failed load and a missing file alike. `onerror` clears the src to
+     reveal it rather than removing anything, and nothing in the layout
+     ever moves. */
+
+  /* A 1x1 transparent GIF. Removing the src was not enough: Chromium
+     keeps painting its broken-image marker over an <img> whose load has
+     failed, so the placeholder came up with a torn-page icon in the
+     corner of it. Pointing the element at an image that exists and is
+     nothing leaves the CSS background alone to do the work. onerror is
+     cleared first so a failure here cannot loop. */
+  const BLANK = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+  const NOIMG = `onerror="this.onerror=null;this.src='${BLANK}'"`;
 
   function portrait(ch) {
-    if (!ch || !ch.portrait) return "";
+    const src = ch && ch.portrait ? `img/portraits/${ch.portrait}` : "";
     return `<div class="portrait">` +
-      `<img class="dith" src="img/portraits/${ch.portrait}" alt="${ch.name}"` +
-      ` onerror="this.closest('.portrait').remove()">` +
+      `<img class="dith" src="${src || BLANK}" alt="${ch ? esc(ch.name) : "No registry photograph"}" ` +
+      NOIMG + `>` +
       `<div class="cap">REGISTRY</div></div>`;
   }
 
   function plate(img) {
     if (!img || !img.src) return "";
     return `<div class="plate-img">` +
-      `<img class="dith" src="img/events/${img.src}" alt="${img.caption || ""}"` +
-      ` onerror="this.closest('.plate-img').remove()">` +
+      `<img class="dith" src="img/events/${esc(img.src)}" alt="${esc(img.caption || "")}" ` +
+      NOIMG + `>` +
       `<div class="cap"><span>${img.caption || ""}</span><em>${img.credit || ""}</em></div></div>`;
   }
 
@@ -1972,7 +1994,8 @@ const UI = (function () {
     box.innerHTML =
       `<div class="sit-read">` +
         plate(e.image) +
-        (spk ? portrait(spk) + `<div class="rulehead">${spk.name} &mdash; ${spk.role}</div>` : "") +
+        portrait(spk) +
+        (spk ? `<div class="rulehead">${spk.name} &mdash; ${spk.role}</div>` : "") +
         `<div class="prose" id="sitting-prose">${annotate(e.body.split(/\n\n/).map(p => `<p>${p.replace(/\n/g, " ")}</p>`).join(""))}</div>` +
         `<div style="clear:both"></div>` +
       `</div>` +
