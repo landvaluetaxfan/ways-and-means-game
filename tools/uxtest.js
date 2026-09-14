@@ -502,13 +502,21 @@ try {
   /* NO SCREEN SHIPS WITH NOTHING. The Concordance is the deliberate
      exception: it is in-world, on white paper, in a serif, and it is
      something civilians made. Terminal chrome does not belong inside it. */
+  /* ASKED IN THE MODULE'S OWN TERMS. This spelled "[data-tip]" out twice,
+     and the definition of an annotation changed underneath it when inline
+     cards started raising one: a data-tip-body in the Concordance would
+     have put terminal chrome on white paper and passed both lines. */
+  const TSEL = w.eval("Tips.SEL");
   const bare = [...w.document.querySelectorAll(".screen")]
-    .filter(sc => sc.id !== "s-cx" && !sc.querySelector("[data-tip]"))
+    .filter(sc => sc.id !== "s-cx" && !sc.querySelector(TSEL))
     .map(sc => sc.id);
   ok("every screen but the Concordance explains something", bare.length === 0,
      bare.join(", "));
-  ok("and the Concordance explains nothing, on purpose",
-     w.document.querySelectorAll("#s-cx [data-tip]").length === 0);
+  const inCx = [...w.document.querySelectorAll("#s-cx *")]
+    .filter(e => e.matches(TSEL))
+    .map(e => e.tagName + "." + (e.className || "") );
+  ok("and the Concordance explains nothing, on purpose", inCx.length === 0,
+     inCx.slice(0, 4).join(" | "));
 
   /* A tip may hand off to the Concordance rather than restate it. If it
      names an article, the article has to be there. */

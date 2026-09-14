@@ -471,7 +471,12 @@ const Tips = (function () {
     window.addEventListener("scroll", hide, true);
   }
 
-  return { wire, hide, find, explain, remark,
+  /* SEL is exported because it is a RULE, not an implementation detail:
+     "the Concordance carries no terminal annotations" is only checkable
+     against this module's own idea of what an annotation is. The check
+     used to spell the selector out itself and went quietly out of date
+     the moment inline cards became annotations too. */
+  return { wire, hide, find, explain, remark, SEL,
            explaining: () => explaining,
            keys: () => Object.keys(TIPS) };
 })();
