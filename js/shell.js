@@ -440,34 +440,42 @@ const Shell = (function () {
       <input type="range" data-lvl="${k}" min="0" max="100" step="5"
         value="${Math.round((opts[k] || 0) * 100)}" aria-label="${label} volume"></label>`;
     return `${showTitle === false ? "" : `<div class="opt-title">Options</div>`}
-      ${row("autosave", "Autosave", "Write to the current slot after every sitting")}
-      ${row("motion", "Animations", "The signature ceremony and other transitions")}
-      ${row("confirmDestructive", "Confirm overwrites", "Ask before replacing or deleting a save")}
-      ${row("tips", "Explain the readouts", "Hover a column, a flag or a meter. Press ? to tab through them.")}
-      <div class="opt-sep"></div>
-      <div class="opt-title">Sound</div>
-      ${row("mute", "Mute", "Silence everything, without losing the levels below")}
-      ${row("roomTone", "Room tone", "The air handling, a long way off")}
-      ${row("music", "Music", "A slow bed that answers what happens in the House")}
-      ${slider("gainUi", "Terminal")}
-      ${slider("gainRoom", "Room")}
-      ${slider("gainEvent", "Events")}
-      ${slider("gainMusic", "Music")}
-      <div class="optdiag" id="opt-audio">audio: not started</div>
-      <div class="opt-sep"></div>
-      <div class="opt-title">Text</div>
-      ${row("stream", "Type text out", "New text arrives a character at a time. Any key skips it.")}
-      <label class="optlvl"><span>Speed</span>
-        <select data-pick="streamSpeed" aria-label="Streaming speed">
-          ${(typeof Stream !== "undefined" ? Stream.speeds : ["slow", "normal", "fast"])
-            .map(v => `<option value="${v}"${opts.streamSpeed === v ? " selected" : ""}>` +
-                      v.charAt(0).toUpperCase() + v.slice(1) + `</option>`).join("")}
-        </select></label>
-      ${inGame === false ? "" : `<div class="opt-sep"></div>
-      <button class="mbtn sm wide" data-act="export">Export to file</button>
-      <button class="mbtn sm wide" data-act="import">Import from file</button>
-      <div class="opt-sep"></div>
-      <button class="mbtn sm wide danger" data-act="menu">Return to main menu</button>`}`;
+      <div class="optgroups">
+        <div class="opt-group general">
+          <div class="opt-title">Interface</div>
+          ${row("autosave", "Autosave", "Write to the slot after every sitting")}
+          ${row("motion", "Animations", "The signature ceremony and transitions")}
+          ${row("confirmDestructive", "Confirm overwrites", "Ask before overwriting or deleting")}
+          ${row("tips", "Explain the readouts", "Hover a column, flag or meter. ? to tab through.")}
+        </div>
+        <div class="opt-group sound">
+          <div class="opt-title">Sound</div>
+          ${row("mute", "Mute", "Silence everything, keeping the levels below")}
+          ${row("roomTone", "Room tone", "The air handling, a long way off")}
+          ${row("music", "Music", "A slow bed for what happens in the House")}
+          ${slider("gainUi", "Terminal")}
+          ${slider("gainRoom", "Room")}
+          ${slider("gainEvent", "Events")}
+          ${slider("gainMusic", "Music")}
+          <div class="optdiag" id="opt-audio">audio: not started</div>
+        </div>
+        <div class="opt-group text">
+          <div class="opt-title">Text</div>
+          ${row("stream", "Type text out", "Text arrives a character at a time. Any key skips.")}
+          <label class="optlvl"><span>Speed</span>
+            <select data-pick="streamSpeed" aria-label="Streaming speed">
+              ${(typeof Stream !== "undefined" ? Stream.speeds : ["slow", "normal", "fast"])
+                .map(v => `<option value="${v}"${opts.streamSpeed === v ? " selected" : ""}>` +
+                          v.charAt(0).toUpperCase() + v.slice(1) + `</option>`).join("")}
+            </select></label>
+        </div>
+        ${inGame === false ? "" : `<div class="opt-group session">
+          <div class="opt-title">Session</div>
+          <button class="mbtn sm wide" data-act="export">Export to file</button>
+          <button class="mbtn sm wide" data-act="import">Import from file</button>
+          <button class="mbtn sm wide danger" data-act="menu">Return to main menu</button>
+        </div>`}
+      </div>`;
   }
 
   function wireOptions(p, inGame) {

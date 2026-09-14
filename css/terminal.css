@@ -865,7 +865,7 @@ body.menu-on{background:#0b1826;}
 .menu-stage::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
   background:
     linear-gradient(90deg, rgba(12,14,11,.88) 0%, rgba(12,14,11,.6) 34%, rgba(12,14,11,.06) 68%, rgba(12,14,11,0) 100%);}
-.menu-plate{position:relative;z-index:2;max-width:620px;padding:52px 44px 96px 56px;}
+.menu-plate{position:relative;z-index:2;max-width:700px;padding:52px 44px 96px 56px;}
 /* the wordmark: Georgia for the words, Garamond for the ampersand */
 .menu-title{font-family:Georgia,"Liberation Serif","Times New Roman",Times,serif;color:#fff;line-height:.84;
   text-transform:uppercase;text-shadow:0 2px 24px rgba(0,0,0,.72);}
@@ -1296,11 +1296,21 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
   font-size:9.5px;opacity:.72;margin-top:2px;letter-spacing:0;text-transform:none;}
 /* the inline options panel sits over the photograph in the main menu, so it
    carries its own dark ground and light ink. The popover in the bar keeps the
-   chrome, where these overrides do not apply. */
-.optpanel-inline{max-height:46vh;overflow:auto;padding:14px 16px;
+   chrome, where these overrides do not apply.
+
+   TWO COLUMNS on the menu panel: it is the tallest thing on the plate, and one
+   column runs past the viewport and puts a scrollbar inside the box. Interface
+   and Text stack in the left column, Sound runs down the right. */
+.optpanel-inline{max-height:min(66vh,620px);overflow:auto;padding:13px 18px;
   background:rgba(11,15,20,.85);
   border:1px solid rgba(233,234,226,.16);
   backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+.optpanel-inline .optgroups{display:grid;grid-template-columns:1fr 1fr;
+  column-gap:28px;align-items:start;}
+.optpanel-inline .opt-group.general{grid-column:1;grid-row:1;}
+.optpanel-inline .opt-group.text{grid-column:1;grid-row:2;margin-top:9px;}
+.optpanel-inline .opt-group.sound{grid-column:2;grid-row:1 / span 2;}
+.optpanel-inline .opt-group.session{grid-column:1 / -1;margin-top:10px;}
 .optpanel-inline .opt{color:#eef0e8;}
 .optpanel-inline .opt b{color:#f5f6ef;}
 .optpanel-inline .opt i{color:#bcc1b2;}
@@ -1308,6 +1318,10 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .optpanel-inline .opt-sep{background:rgba(233,234,226,.16);}
 .optpanel-inline .optlvl{color:#c6cabb;}
 .optpanel-inline .opt input[type=checkbox]{accent-color:#cfd3c4;}
+/* the popover is one narrow column, so its groups need a rule between them
+   rather than a column gap. */
+#tb-optpanel .opt-group + .opt-group{margin-top:9px;padding-top:9px;
+  border-top:1px solid var(--chrome-dk);}
 /* =============================================================
    THE SITTING SCREEN — a choice is a row that expands.
 
