@@ -1,0 +1,337 @@
+<title>Ways &amp; Means Order of Business</title>
+<style>
+/* ===========================================================
+   The roadmap is set as an order paper, because that is the
+   document this game is about. Palette and type stacks are
+   lifted from css/terminal.css rather than invented, so the
+   plan looks like the thing it plans.
+   =========================================================== */
+:root{
+  --field:#f2f2ec; --paper:#fbfbf7; --ink:#1b1d19; --ink-soft:#4d5049;
+  --rule:#6e7167; --hair:#c8c9c0; --bar:#3c4038; --bar-txt:#e9eae2;
+  --alert:#7a2e22; --ok:#3d5c33; --wait:#8a6d22;
+  --f-ui:"Liberation Sans Narrow","Arial Narrow",Arial,Helvetica,sans-serif;
+  --f-read:"Segoe UI","Liberation Sans",Roboto,Helvetica,Arial,sans-serif;
+  --f-data:"DejaVu Sans Mono",Consolas,"Liberation Mono","Courier New",monospace;
+  --f-doc:Georgia,"Liberation Serif","Times New Roman",Times,serif;
+  --f-disp:"Bodoni MT",Didot,"Playfair Display",Georgia,"Liberation Serif",serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --field:#1c1e1a; --paper:#232620; --ink:#e6e7de; --ink-soft:#a2a599;
+    --rule:#8b8e82; --hair:#3d4139; --bar:#0f110d; --bar-txt:#e9eae2;
+    --alert:#c8705e; --ok:#8fb47e; --wait:#c9a44a;
+  }
+}
+:root[data-theme="dark"]{
+  --field:#1c1e1a; --paper:#232620; --ink:#e6e7de; --ink-soft:#a2a599;
+  --rule:#8b8e82; --hair:#3d4139; --bar:#0f110d; --bar-txt:#e9eae2;
+  --alert:#c8705e; --ok:#8fb47e; --wait:#c9a44a;
+}
+*{box-sizing:border-box;}
+body{
+  background:var(--field); color:var(--ink);
+  font-family:var(--f-read); font-size:15px; line-height:1.6;
+  margin:0; padding-block:0 64px; padding-left:16px; padding-right:16px;
+}
+.sheet{max-width:60rem;margin:0 auto;}
+
+/* ---------- masthead ---------- */
+.mast{
+  border-bottom:3px double var(--rule); padding-block:28px 12px; margin-bottom:6px;
+}
+.mast .house{
+  font-family:var(--f-ui); font-size:11px; letter-spacing:.22em;
+  text-transform:uppercase; color:var(--ink-soft);
+}
+.mast h1{
+  font-family:var(--f-disp); font-weight:400; font-size:clamp(30px,6vw,52px);
+  line-height:1.04; margin:6px 0 4px; text-wrap:balance; letter-spacing:-.01em;
+}
+.mast .sub{font-family:var(--f-doc);font-style:italic;color:var(--ink-soft);font-size:16px;}
+.stamp{
+  display:inline-block;margin-top:12px;padding:3px 9px;
+  border:1px solid var(--rule); font-family:var(--f-data); font-size:10.5px;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft);
+}
+
+/* ---------- section headings, numbered because this IS a sequence ---------- */
+h2{
+  font-family:var(--f-ui); font-size:12px; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--ink); font-weight:700;
+  border-bottom:1px solid var(--rule); padding-bottom:4px;
+  margin:40px 0 14px; display:flex; gap:10px; align-items:baseline;
+}
+h2 span{font-family:var(--f-data);color:var(--ink-soft);font-weight:400;letter-spacing:0;}
+p{max-width:65ch;}
+.lede{font-family:var(--f-doc);font-size:16.5px;}
+
+/* ---------- the state of play ---------- */
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
+  background:var(--hair);border:1px solid var(--hair);}
+.fig{background:var(--paper);padding:11px 12px;}
+.fig b{display:block;font-family:var(--f-data);font-size:23px;line-height:1.1;
+  font-variant-numeric:tabular-nums;}
+.fig i{display:block;font-style:normal;font-family:var(--f-ui);font-size:10.5px;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);margin-top:3px;}
+.fig em{display:block;font-style:normal;font-size:12px;color:var(--ink-soft);margin-top:5px;}
+
+/* ---------- the chapter spine: a real chart, to a real scale ---------- */
+.spine{margin-top:14px;}
+.spine .row{display:grid;grid-template-columns:78px 1fr 70px;gap:10px;align-items:center;
+  padding:5px 0;border-bottom:1px dotted var(--hair);}
+.spine .row:last-child{border-bottom:0;}
+.spine .nm{font-family:var(--f-ui);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;}
+.spine .bar{position:relative;height:17px;background:var(--paper);border:1px solid var(--hair);}
+.spine .bar u{position:absolute;inset:0 auto 0 0;background:var(--rule);text-decoration:none;}
+.spine .bar s{position:absolute;top:-3px;bottom:-3px;width:1px;background:var(--ink);
+  text-decoration:none;}
+.spine .ct{font-family:var(--f-data);font-size:11.5px;text-align:right;
+  font-variant-numeric:tabular-nums;color:var(--ink-soft);}
+.scalekey{font-family:var(--f-ui);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-soft);margin-top:8px;display:flex;gap:16px;flex-wrap:wrap;}
+
+/* ---------- items of business ---------- */
+.biz{border-top:1px solid var(--rule);}
+.item{
+  display:grid;grid-template-columns:34px 1fr 104px;gap:14px;
+  padding:14px 0;border-bottom:1px solid var(--hair);align-items:start;
+}
+.item .no{font-family:var(--f-data);font-size:13px;color:var(--ink-soft);
+  font-variant-numeric:tabular-nums;padding-top:2px;}
+.item h3{margin:0 0 3px;font-size:16px;font-weight:600;line-height:1.3;}
+.item p{margin:0;font-size:13.5px;color:var(--ink-soft);max-width:58ch;}
+.item .who{font-family:var(--f-data);font-size:10.5px;color:var(--ink-soft);margin-top:5px;}
+/* status is a stamp in the margin, and reads by shape as well as colour */
+.st{font-family:var(--f-data);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  padding:2px 6px;border:1px solid currentColor;text-align:center;white-space:nowrap;}
+.st.done{color:var(--ok);}
+.st.next{background:var(--ink);color:var(--field);border-color:var(--ink);}
+.st.soon{color:var(--wait);}
+.st.later{color:var(--ink-soft);border-style:dashed;}
+.item.is-done h3{text-decoration:line-through;text-decoration-thickness:1px;color:var(--ink-soft);}
+
+/* ---------- the two games ---------- */
+.two{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:stretch;margin-top:12px;}
+.two .g{background:var(--paper);border:1px solid var(--hair);padding:12px 13px;}
+.two .g h4{margin:0 0 5px;font-family:var(--f-ui);font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;}
+.two .g ul{margin:0;padding-left:16px;font-size:13px;color:var(--ink-soft);}
+.two .join{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:var(--f-data);font-size:10px;color:var(--alert);letter-spacing:.06em;
+  text-align:center;min-width:74px;}
+.two .join b{font-size:19px;font-weight:400;line-height:1;}
+
+/* ---------- plain lists ---------- */
+table{border-collapse:collapse;width:100%;font-size:13.5px;}
+th,td{text-align:left;padding:6px 10px 6px 0;border-bottom:1px solid var(--hair);
+  vertical-align:top;}
+th{font-family:var(--f-ui);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-soft);font-weight:400;}
+td.n{font-family:var(--f-data);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.wrap{overflow-x:auto;}
+.cut li{margin-bottom:7px;}
+.cut b{font-weight:600;}
+blockquote{
+  margin:14px 0;padding:10px 0 10px 15px;border-left:3px solid var(--rule);
+  font-family:var(--f-doc);font-size:16px;font-style:italic;max-width:62ch;
+}
+footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--hair);
+  font-family:var(--f-data);font-size:11px;color:var(--ink-soft);}
+@media (max-width:560px){
+  .item{grid-template-columns:26px 1fr;}
+  .item .st{grid-column:2;justify-self:start;margin-top:6px;}
+  .two{grid-template-columns:1fr;}
+  .two .join{flex-direction:row;gap:8px;min-width:0;}
+  .spine .row{grid-template-columns:64px 1fr 58px;}
+}
+</style>
+
+<div class="sheet">
+
+<header class="mast">
+  <div class="house">The Commonwealth of Habitats &middot; House of Commons</div>
+  <h1>Order of Business</h1>
+  <div class="sub">Ways &amp; Means &mdash; what is built, what is next, and how long the game is.</div>
+  <div class="stamp">Session 4 &middot; 14 September 2287 &middot; 431 assertions green</div>
+</header>
+
+<h2>I <span>Where the build stands</span></h2>
+<div class="figs">
+  <div class="fig"><b>21</b><i>events written</i><em>of 45&ndash;50 for a full playthrough</em></div>
+  <div class="fig"><b>431</b><i>assertions</i><em>nine checks, all green</em></div>
+  <div class="fig"><b>20</b><i>design documents</i><em>plus a 132-section bible</em></div>
+  <div class="fig"><b>~2h</b><i>target playthrough</i><em>three sessions, one election</em></div>
+</div>
+
+<h2>II <span>The four chapters, to scale</span></h2>
+<p>Chapter budgets are canon as of today (&sect;1.7). The filled bar is what exists;
+the tick is the budget.</p>
+<div class="spine">
+  <div class="row"><span class="nm">1 Teaching</span>
+    <span class="bar"><u style="width:100%"></u><s style="left:75%"></s></span>
+    <span class="ct">17 / 12&ndash;15</span></div>
+  <div class="row"><span class="nm">2 Governing</span>
+    <span class="bar"><u style="width:22%"></u><s style="left:92%"></s></span>
+    <span class="ct">4 / 15&ndash;18</span></div>
+  <div class="row"><span class="nm">3 Election</span>
+    <span class="bar"><u style="width:0"></u><s style="left:39%"></s></span>
+    <span class="ct">0 / 6&ndash;8</span></div>
+  <div class="row"><span class="nm">4 Settlement</span>
+    <span class="bar"><u style="width:0"></u><s style="left:50%"></s></span>
+    <span class="ct">0 / 8&ndash;10</span></div>
+</div>
+<div class="scalekey">
+  <span>Bar &mdash; written</span><span>Tick &mdash; budget</span>
+  <span>Full width = 18 events</span>
+</div>
+<p style="margin-top:12px">Chapter one is <em>over</em> budget and chapters three and four
+are unstarted. The teaching chapter is done; the game is not.</p>
+
+<h2>III <span>The diagnosis</span></h2>
+<p class="lede">There are two games and they do not touch.</p>
+<div class="two">
+  <div class="g"><h4>A &mdash; the narrative</h4>
+    <ul><li>events, choices, flags</li><li>prose and consequence</li>
+    <li>all 21 events live here</li></ul></div>
+  <div class="join"><b>&harr;</b>two thin wires</div>
+  <div class="g"><h4>B &mdash; the parliament</h4>
+    <ul><li>whips, slots, divisions</li><li>instruments, appointments</li>
+    <li>nearly all the engineering</li></ul></div>
+</div>
+<blockquote>A player can finish Game A without meaningfully playing Game B.
+That is more fundamental than pacing, and it is why the loop feels thin when
+both halves are good.</blockquote>
+<p>The fix is one rule: <b>every chapter puts commitments on the docket with a
+date, and the session&rsquo;s order-paper time is the entire capacity to meet
+them.</b> The player will not meet all of them. Which one they drop is the game.</p>
+
+<h2>IV <span>Items of business</span></h2>
+<div class="biz">
+
+  <div class="item is-done"><span class="no">1</span>
+    <div><h3>The clock runs, and the House has a calendar</h3>
+      <p>The date was written once at new game and never again &mdash; thirty sittings
+      later the topbar still read 11 April. A sitting is now a day, the House sits four
+      days in seven, and the sitting page carries a month grid with deadlines on it.</p>
+      <div class="who">engine &middot; interface &middot; 20 assertions</div></div>
+    <span class="st done">Done</span></div>
+
+  <div class="item"><span class="no">2</span>
+    <div><h3>A division costs order-paper time</h3>
+      <p>&sect;7.7 calls time the currency that cannot be topped up, and in sixty sittings
+      the player never once ran out, because only a bill could spend it. Six slots against
+      a programme that wants two stage-advances and a division per bill means one bill
+      carried properly per session, or two fumbled.</p>
+      <div class="who">engine &middot; small</div></div>
+    <span class="st next">Next</span></div>
+
+  <div class="item"><span class="no">3</span>
+    <div><h3>Slots drawn as pips</h3>
+      <p>&ldquo;4 of 6&rdquo; is a number. Six marks with two struck through is a quantity
+      you feel before you read it.</p>
+      <div class="who">interface &middot; small</div></div>
+    <span class="st next">Next</span></div>
+
+  <div class="item"><span class="no">4</span>
+    <div><h3>Deadlines that can be missed, at a price</h3>
+      <p>Not a loss condition &mdash; a cost. The threshold bill must reach a division
+      before the House rises or the coalition partner extracts payment. This is where
+      Game A starts setting targets only Game B can hit.</p>
+      <div class="who">content &middot; one engine reader</div></div>
+    <span class="st soon">Soon</span></div>
+
+  <div class="item"><span class="no">5</span>
+    <div><h3>Initiatives &mdash; the player starts something</h3>
+      <p>She spends order-paper time to put something in motion and the consequence
+      arrives later as an event. Needs no new vocabulary: <code>flag</code>,
+      <code>queue</code>, <code>move</code>. Closes four problems at once &mdash; initiative,
+      scarcity, empty sittings, and the story offering what she has already done.</p>
+      <div class="who">engine + content</div></div>
+    <span class="st soon">Soon</span></div>
+
+  <div class="item"><span class="no">6</span>
+    <div><h3>The game can be won</h3>
+      <p><code>checkLoss()</code> has four conditions and there is no <code>checkWin()</code>.
+      Four settlements are now canon (&sect;3.5.1); each is a <code>when</code> block, and
+      <code>matches()</code> already evaluates those. Four blocks in content and the
+      argument can end.</p>
+      <div class="who">engine &middot; small &middot; content declares the four</div></div>
+    <span class="st soon">Soon</span></div>
+
+  <div class="item"><span class="no">7</span>
+    <div><h3>Consumables derived from closure</h3>
+      <p>One of five indicators is read by nothing. It is not unwanted &mdash; it is
+      unwired: &sect;7.2 makes closure the sovereignty number and consumables its national
+      counterpart. Derive one from the other and two dead numbers become one live one.</p>
+      <div class="who">engine &middot; small</div></div>
+    <span class="st later">Later</span></div>
+
+  <div class="item"><span class="no">8</span>
+    <div><h3>The quiet sitting</h3>
+      <p>Thirty-six of sixty sittings have nothing in them. A real parliament always has
+      business: questions taken, a committee reporting, a member&rsquo;s statement. Mostly
+      unactionable, some of it foreshadowing.</p>
+      <div class="who">content &middot; ~40 one-liners + a reader</div></div>
+    <span class="st later">Later</span></div>
+
+  <div class="item"><span class="no">9</span>
+    <div><h3>Foreign affairs, as a price and a debt</h3>
+      <p>No state exists, and the fiction already leans on it &mdash; a bill about an
+      anchor, two stations whose recorded interest is tether traffic, one that depends on
+      an anchor standing on foreign soil. Ship one price moved from outside, arriving on
+      the wire with its age stated. That is light-lag for free. The map stays shelved.</p>
+      <div class="who">engine + content &middot; no new verbs</div></div>
+    <span class="st later">Later</span></div>
+
+</div>
+
+<h2>V <span>The world is larger than the game</span></h2>
+<div class="wrap"><table>
+  <thead><tr><th>Built</th><th class="n">Exists</th><th class="n">Named in an event</th><th>Reading</th></tr></thead>
+  <tbody>
+    <tr><td>Constituencies</td><td class="n">141</td><td class="n">1</td>
+        <td>Keep as the engine&rsquo;s source of truth; stop treating coverage as a goal.</td></tr>
+    <tr><td>Characters</td><td class="n">54</td><td class="n">5</td>
+        <td>Five is thin for a thriller. The roster is not the problem; the events are.</td></tr>
+    <tr><td>Stations</td><td class="n">35</td><td class="n">2</td>
+        <td>One station the player knows well beats thirty they scroll past.</td></tr>
+    <tr><td>Indicators</td><td class="n">5</td><td class="n">4</td>
+        <td>Item 7 above. Unwired, not unwanted.</td></tr>
+  </tbody>
+</table></div>
+
+<h2>VI <span>What to cut, and what not to</span></h2>
+<ul class="cut">
+  <li><b>Not consumables.</b> The first draft of this list said cut it. That was wrong:
+  &sect;7.2 is LOCKED and closure is the sovereignty number. <em>A dead number is more
+  often unwired than unwanted &mdash; check the wiring before reaching for the knife.</em></li>
+  <li><b>The constituency roll as a player-facing system.</b> Keep the arithmetic, drop
+  the ambition of coverage.</li>
+  <li><b>Foreign affairs as a map.</b> Light-lag as a chart is the version that never
+  gets finished. Ship the price.</li>
+  <li><b>Opposition mode.</b> &sect;3.6 is LEANING and it is a second game. Decide against
+  it properly rather than leaving it open for years.</li>
+</ul>
+
+<h2>VII <span>Settled in canon today</span></h2>
+<div class="wrap"><table>
+  <thead><tr><th>&sect;</th><th>What it now says</th></tr></thead>
+  <tbody>
+    <tr><td class="n">3.5.1</td><td>Four settlements &mdash; restriction, substrate
+      neutrality, graduated personhood, the federal fudge. The player is never shown
+      the list. Closure and dissolution are failure modes, not settlements.</td></tr>
+    <tr><td class="n">7.7</td><td>Order-paper time is the pacing instrument, not merely a
+      scarce good. Everything the House does costs it. A free division is a bug.</td></tr>
+    <tr><td class="n">1.7</td><td>Four chapters, three sessions, one election, one
+      settlement, about two hours. Replay is the other settlements and a second
+      leader &mdash; not length.</td></tr>
+  </tbody>
+</table></div>
+
+<footer>
+  Ways &amp; Means &middot; roadmap generated from the repository, 14 September 2026 &middot;
+  figures counted, not estimated &middot; see <code>design/17</code>, <code>18</code>, <code>19</code>
+</footer>
+
+</div>
