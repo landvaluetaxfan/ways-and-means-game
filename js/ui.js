@@ -1415,11 +1415,27 @@ const UI = (function () {
        only possible because today() reports obligations and not what
        happens to be available. */
     document.querySelectorAll(".tab").forEach(tab => {
-      const asked = t.tabs.indexOf(tab.dataset.t) >= 0 && tab.dataset.t !== "sit";
+      const mine = t.items.filter(i => i.tab === tab.dataset.t);
+      const asked = mine.length > 0 && tab.dataset.t !== "sit";
       tab.classList.toggle("asked", asked);
-      if (asked) tab.setAttribute("data-asked",
-        t.items.filter(i => i.tab === tab.dataset.t).length);
-      else tab.removeAttribute("data-asked");
+      const old = tab.querySelector(".tab-n");
+      if (old) old.remove();
+      if (!asked) return;
+      /* The count is a REAL element rather than a ::after, so that it can
+         carry the project's own hover card — a pseudo-element cannot. Hovering
+         it says WHAT is asked, in the same words the order of the day uses, so
+         the number stops being an unexplained red box. */
+      const n = document.createElement("span");
+      n.className = "tab-n";
+      n.setAttribute("data-tip", "tab-asked");
+      n.setAttribute("data-tip-title",
+        (TABNAME[tab.dataset.t] || tab.textContent.trim()) + ": " +
+        mine.length + (mine.length === 1 ? " thing asked" : " things asked"));
+      n.setAttribute("data-tip-body", mine.map(i =>
+        i.text + (i.when === "overdue" ? " (overdue)"
+                : i.when === "now" ? " (today)" : "")).join("   \u00b7   "));
+      n.textContent = mine.length;
+      tab.appendChild(n);
     });
     /* and the rise button says what leaving now would leave behind */
     const rb = $("#btn-advance");

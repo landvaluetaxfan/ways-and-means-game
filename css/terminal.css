@@ -1448,11 +1448,14 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
    asked rather than what is available — a mark that never clears is a
    mark the player learns to stop seeing. */
 .tab.asked{position:relative;}
-.tab.asked::after{
-  content:attr(data-asked);
-  position:absolute;top:2px;right:3px;
+/* tucked hard into the corner, and a real element so it can carry the hover
+   card. The old ::after could only show a number and had to sit inboard of the
+   border; this reads as a stamp on the tab. */
+.tab-n{
+  position:absolute;top:0;right:0;
   font-family:var(--f-data);font-size:8.5px;line-height:1;
   padding:1px 3px;background:var(--alert);color:var(--bar-txt);
+  cursor:help;
 }
 .btn.warn{border-color:var(--alert);color:var(--alert);}
 
