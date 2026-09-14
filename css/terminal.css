@@ -145,7 +145,10 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 
 /* ---------- panels ---------- */
 .grid{display:grid;gap:5px;}
-.g-gov{grid-template-columns:300px minmax(0,1.3fr) 300px;}
+/* The middle was 1.3fr to hold the order paper and the bill open on it.
+   Those are the legislature's and live on the Chamber tab now, so the
+   three columns are even again: the ministry, its business, its state. */
+.g-gov{grid-template-columns:minmax(280px,330px) minmax(0,1fr) minmax(300px,360px);}
 /* The seating plan is drawn at a fixed size and the composition tables were
    cramped into 300px beside it, so the one panel that could not use its
    width had most of it and the two that could had none. Three columns
@@ -174,9 +177,17 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #gov-wire .post{border-bottom:1px solid var(--chrome-dk);padding:4px 6px;background:var(--field);}
 #gov-wire .post p{margin:0;font-family:var(--f-read);font-size:12px;}
 .g-sit{grid-template-columns:minmax(0,1fr) 320px;}
-.g-cham{grid-template-columns:minmax(0,auto) minmax(0,1fr) minmax(0,1.1fr);}
-.g-cham>.panel:first-child{max-width:var(--planw,none);}
-.g-cham svg{max-width:100%;height:auto;}
+/* THE HOUSE IS THE SUBJECT OF THE SCREEN, so it takes the middle and the
+   surplus. Left is what is before the House — the order paper and the
+   measure open on it. Right is reference: how the benches are counted,
+   what the House is made of, who sits for what. Both sides are narrow on
+   purpose; the plan and the whip under it are what the tab is for. */
+.g-cham{grid-template-columns:minmax(300px,360px) minmax(0,1fr) minmax(240px,290px);}
+/* The plan fills its column. It carries a viewBox and an aspect-ratio set
+   from the seat count, and no width attribute, so it is as large as the
+   window allows up to the point where a 3px seat mark stops gaining
+   anything from more room. */
+.g-cham svg{display:block;width:100%;max-width:1000px;height:auto;}
 /* THE CAP BELONGS ON THE SCHEMATIC, NOT ON WHAT IS LEFT OVER.
 
    The middle column was capped at 1090px so the schematic stopped
@@ -227,8 +238,12 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    orbit feature rather than the terminal's, and every scroller added
    afterwards quietly got the OS one instead. */
 .sbwrap{flex:1 1 auto;min-height:0;min-width:0;display:flex;}
-.sbwrap>.pbody{flex:1 1 auto;min-height:0;min-width:0;overflow:auto;scrollbar-width:none;}
-.sbwrap>.pbody::-webkit-scrollbar{display:none;}
+/* The marked element, whatever it is. This named .pbody, so marking
+   anything that is not a panel body — the Government tab's columns, the
+   viewport itself — wrapped it and then left it with the operating
+   system's bar inside the wrapper, which is the fault with an extra step. */
+.sbwrap>.scrolls{flex:1 1 auto;min-height:0;min-width:0;overflow:auto;scrollbar-width:none;}
+.sbwrap>.scrolls::-webkit-scrollbar{display:none;}
 .sbwrap>.sbar{flex:0 0 13px;position:relative;background:var(--chrome-lt);
   box-shadow:inset 1px 0 0 var(--chrome-dk);}
 .sbwrap>.sbar>.sbar-thumb{position:absolute;left:0;right:0;top:0;min-height:26px;
@@ -325,6 +340,14 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .g-disp{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);}
 .g-elec{grid-template-columns:290px minmax(0,1fr) 250px;}
 .stack{display:flex;flex-direction:column;gap:5px;min-width:0;}
+
+/* A `display` in a component rule silently defeats the `hidden` attribute:
+   .panel sets display:flex, which outranks the browser's own
+   [hidden]{display:none}, so a panel the renderer had hidden still drew
+   its title bar with nothing under it. Same shape as the id outranking
+   .screen{display:none} in the notes. `hidden` is a STATE, not a style,
+   so it wins everywhere. */
+[hidden]{display:none !important;}
 
 .panel{
   background:var(--chrome);
@@ -580,8 +603,7 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 }
 @media (max-width:1080px){
   .g-gov,.g-cham,.g-orb,.g-disp,.g-pap,.g-elec,.g-sit{grid-template-columns:minmax(0,1fr);}
-  /* one column, so the plan is free to be the width of the screen again */
-  .g-cham>.panel:first-child{max-width:none;}
+  /* one column: the plan is already fluid, nothing to release */
   .newsbody{column-count:1;}
 }
 
@@ -1513,8 +1535,11 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .chp.on{background:var(--ink);border-color:var(--ink);color:var(--field);}
 /* A measure that has fallen keeps its place — the selection is shared with
    the order paper — and says so by going quiet rather than disappearing. */
-.chp.gone{opacity:.5;text-decoration:line-through;}
-.chp.gone.on{opacity:1;text-decoration:line-through;}
+.chnow{font-family:var(--f-data);font-size:11.5px;}
+.chnow .dual{font-style:normal;font-family:var(--f-data);font-size:8.5px;
+  letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--rule);
+  padding:0 3px;margin-left:3px;vertical-align:1px;}
+.chhint{font-style:normal;font-size:10.5px;color:var(--ink-soft);}
 .chp .dual{font-style:normal;font-family:var(--f-data);font-size:8.5px;
   letter-spacing:.08em;text-transform:uppercase;opacity:.75;}
 #cham-forecast .dm{margin-bottom:5px;}

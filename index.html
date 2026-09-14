@@ -40,7 +40,7 @@
     <button class="tab" role="tab" aria-selected="false" data-t="log">Record</button>
   </div>
 
-  <div id="viewport">
+  <div id="viewport" class="scrolls">
 
     <section class="screen on" id="s-sit">
       <div class="grid g-sit">
@@ -63,7 +63,7 @@
 
     <section class="screen" id="s-gov">
       <div class="grid g-gov">
-        <div class="stack">
+        <div class="stack scrolls">
           <div class="panel">
             <h2>What the government will do <em id="gov-init-hdr">order-paper time</em></h2>
             <div class="pbody" id="gov-init"></div>
@@ -79,6 +79,8 @@
             <h2>Own party currents</h2>
             <div class="pbody flush"><table id="gov-currents"></table></div>
           </div>
+        </div>
+        <div class="stack scrolls">
           <div class="panel">
             <h2>Coalition ledger <em>permanent</em></h2>
             <div class="pbody flush">
@@ -90,16 +92,6 @@
             <h2><span data-tip="live">Presidency</span></h2>
             <div class="pbody" id="gov-pres"></div>
           </div>
-        </div>
-        <div class="stack">
-          <div class="panel">
-            <h2>Order paper <em>select a bill</em></h2>
-            <div class="pbody flush"><table id="gov-bills"></table></div>
-          </div>
-          <div class="panel">
-            <h2><span id="bill-hdr"></span> <em id="bill-ref"></em></h2>
-            <div class="pbody" id="bill-detail"></div>
-          </div>
           <div class="panel">
             <h2>Undertakings <em>what the government has said it will do</em></h2>
             <div class="pbody" id="gov-owed"></div>
@@ -109,7 +101,7 @@
             <div class="pbody" id="gov-slots"></div>
           </div>
         </div>
-        <div class="stack">
+        <div class="stack scrolls">
           <div class="panel"><h2>Standing indicators</h2><div class="pbody" id="gov-meters"></div></div>
           <div class="panel">
             <h2><span data-tip="scarcity">Scarcity</span> <em data-tip="scarcity">index, 100 at open</em></h2>
@@ -126,33 +118,51 @@
 
     <section class="screen" id="s-cham">
       <div class="grid g-cham">
-        <div class="panel">
-          <h2><span data-tip="benches">Parliament &mdash; House of Delegates</span> <em>district / list / functional</em></h2>
-          <div class="pbody" id="cham-pick"></div>
-          <div class="pbody flush">
-            <svg viewBox="0 0 720 348" width="720" height="348" role="img" aria-label="Seating plan of the House of Delegates">
-              <g id="chamber"></g>
-            </svg>
-            <div class="chtally" id="chamber-tally"></div>
-            <div class="seatkey"><b>&#9679; district</b><b>&#9633; list</b><b>&#9650; functional</b></div>
-            <div class="legend" id="chamber-legend"></div>
-            <div class="pbody" id="cham-forecast"></div>
-          </div>
-        </div>
+
+        <!-- WHAT IS BEFORE THE HOUSE. The order paper is the picker: choosing
+             a measure here colours the benches for it. There is no separate
+             row of buttons any more, because there was never a second list. -->
         <div class="stack">
           <div class="panel">
-            <h2>Composition <em>by tier</em></h2>
-            <div class="pbody flush"><table id="comp-table"></table></div>
+            <h2>Order paper <em>select a measure</em></h2>
+            <div class="pbody flush"><table id="cham-bills"></table></div>
           </div>
+          <div class="panel">
+            <h2><span id="bill-hdr"></span> <em id="bill-ref"></em></h2>
+            <div class="pbody" id="bill-detail"></div>
+          </div>
+        </div>
+
+        <!-- THE HOUSE, and directly under it the instrument that moves it. -->
+        <div class="stack">
+          <div class="panel">
+            <h2><span data-tip="benches">Parliament &mdash; House of Delegates</span> <em>district / list / functional</em></h2>
+            <div class="pbody" id="cham-pick"></div>
+            <div class="pbody flush">
+              <svg viewBox="0 0 720 348" role="img" aria-label="Seating plan of the House of Delegates">
+                <g id="chamber"></g>
+              </svg>
+              <div class="chtally" id="chamber-tally"></div>
+              <div class="seatkey"><b>&#9679; district</b><b>&#9633; list</b><b>&#9650; functional</b></div>
+              <div class="legend" id="chamber-legend"></div>
+              <div class="pbody" id="cham-forecast"></div>
+            </div>
+          </div>
+          <div class="panel" id="p-whip" hidden>
+            <h2><span data-tip="whip">The whip</span> <em id="cham-whip-hdr"></em></h2>
+            <div class="pbody" id="cham-whip"></div>
+          </div>
+        </div>
+
+        <!-- REFERENCE: what the House is made of, and who is counted where. -->
+        <div class="stack">
           <div class="panel" id="p-break" hidden>
             <h2>By party <em id="cham-break-hdr">how the benches are counted</em></h2>
             <div class="pbody flush" id="cham-break"></div>
           </div>
-        </div>
-        <div class="stack">
-          <div class="panel" id="p-whip" hidden>
-            <h2><span data-tip="whip">The whip</span> <em id="cham-whip-hdr"></em></h2>
-            <div class="pbody" id="cham-whip"></div>
+          <div class="panel">
+            <h2>Composition <em>by tier</em></h2>
+            <div class="pbody flush"><table id="comp-table"></table></div>
           </div>
           <div class="panel">
             <h2><span data-tip="functional">Functional constituencies</span> <em data-tip="dual">40 seats, dual majority</em></h2>
@@ -160,6 +170,7 @@
             <div class="pbody"><div class="note" id="func-note"></div></div>
           </div>
         </div>
+
       </div>
     </section>
 

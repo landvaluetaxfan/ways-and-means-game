@@ -137,7 +137,7 @@ try {
   ok(".sel is only on a row a click selects", rows.length >= 2 && stray.length === 0,
      rows.length + " selected, " + stray.length + " on rows that do nothing");
 
-  /* four quoted literals, in the four tables that select a row: #gov-bills,
+  /* four quoted literals, in the four tables that select a row: #cham-bills,
      #orbit-table, #pp-list, #cons-table. A fifth is a regression. */
   const jssrc = ["js/ui.js", "js/papers.js", "js/editor.js", "js/shell.js",
                  "js/encyclopedia.js", "js/orbitchart.js"]
@@ -247,6 +247,26 @@ try {
   ok("and the marks are spread across the terminal, not one screen",
      new Set(marked.map(e => (e.closest("section") || {}).id)).size >= 3,
      [...new Set(marked.map(e => (e.closest("section") || {}).id))].join(" "));
+
+  /* THE LIST IS THE ONES THAT ACTUALLY SCROLL, measured in a real browser
+     rather than read off the stylesheet: the viewport itself, the
+     Government tab's three columns, and the panel bodies. Chromium hid
+     the gap — it themes ::-webkit-scrollbar globally — so on Chrome every
+     one of these looked right and only Firefox showed the OS bar. */
+  ok("the page's own scroll is drawn too, not just the panels",
+     w.document.querySelector("#viewport").classList.contains("scrolls"));
+  const govStacks = [...w.document.querySelectorAll("#s-gov .stack")];
+  ok("and the Government tab's columns, which scroll inside themselves",
+     govStacks.length > 0 && govStacks.every(e => e.classList.contains("scrolls")),
+     govStacks.filter(e => !e.classList.contains("scrolls")).length + " unmarked");
+
+  /* THE CONCORDANCE IS EXEMPT, and deliberately: it is white paper in a
+     serif, something civilians made, and a drawn government scrollbar
+     inside it collapses the separation the whole screen is built on —
+     the same rule that keeps terminal tooltips out of it. */
+  ok("and the Concordance keeps a plain bar, like the paper it is",
+     [...w.document.querySelectorAll("#cx-body, #cx-side")]
+       .every(e => !e.classList.contains("scrolls")));
   ok("each one got a drawn bar rather than the operating system's",
      marked.every(e => e.parentNode.classList.contains("sbwrap") &&
                        !!e.parentNode.querySelector(".sbar>.sbar-thumb")),
@@ -359,7 +379,7 @@ try {
       var st = Engine.load(window.__snap, CONTENT);
       ${flag ? 'st.flags["' + flag + '"] = true;' : ""}
       UI.boot(st, CONTENT);
-      Focus.activate("gov-bills", window.__bill);
+      Focus.activate("cham-bills", window.__bill);
       var b = document.getElementById("btn-divide");
       if (!b) return "NO DIVIDE BUTTON";
       b.click();
@@ -553,8 +573,8 @@ try {
   w.eval('Shell.setOpt("tips", true);');
   /* Only the screen you are looking at is marked - putting a hidden tab's
      headings into the tab order would be worse than not marking them. */
-  w.document.querySelector('.tab[data-t="gov"]').click();
-  const th = w.document.querySelector("#gov-bills th[data-tip]");
+  w.document.querySelector('.tab[data-t="cham"]').click();
+  const th = w.document.querySelector("#cham-bills th[data-tip]");
   ok("a heading is not a tab stop by default", th.getAttribute("tabindex") === null);
 
   w.document.dispatchEvent(new w.KeyboardEvent("keydown", { key: "?", bubbles: true }));
@@ -580,13 +600,13 @@ try {
   /* The mode has to survive a redraw, because a redraw replaces every one
      of the nodes it just marked. */
   w.eval("UI.boot(UI.state(), CONTENT)");
-  const th2 = w.document.querySelector("#gov-bills th[data-tip]");
+  const th2 = w.document.querySelector("#cham-bills th[data-tip]");
   ok("and the mode survives a re-render", th2.getAttribute("tabindex") === "0");
 
   w.document.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
   ok("Escape leaves the mode and takes the tab stops with it",
      w.eval("Tips.explaining()") === false &&
-     w.document.querySelector("#gov-bills th[data-tip]").getAttribute("tabindex") === null);
+     w.document.querySelector("#cham-bills th[data-tip]").getAttribute("tabindex") === null);
   ok("and the card is down", w.document.getElementById("tipcard").hidden === true);
 
   /* The card must never become a place focus can land. */
@@ -1365,26 +1385,25 @@ try {
    --------------------------------------------------------------------- */
 try {
   w.eval("UI.boot(UI.state(), CONTENT);");
-  w.document.querySelector('.tab[data-t="gov"]').click();
+  w.document.querySelector('.tab[data-t="cham"]').click();
 
   /* thermal2 gives the governing party a bare "for", so its count is
      derived from the currents and the sub-rows have something to say. */
-  const billRow = w.document.querySelector('#gov-bills tr[data-bill="thermal2"]');
-  ok("the bill with a derived forecast is on the Government screen", !!billRow);
+  const billRow = w.document.querySelector('#cham-bills tr[data-bill="thermal2"]');
+  ok("the order paper is on the Chamber screen, with the House it acts on", !!billRow);
   if (billRow) {
     billRow.click();
-    ok("the bill detail no longer carries the whip, which is a control",
+    ok("the bill detail does not carry the whip, which is a control",
        !w.document.querySelector("#bill-detail .whipbar"));
-    const to = w.document.querySelector("#btn-tochamber");
-    ok("it offers to take the measure to the benches", !!to);
 
-    /* ONE SELECTION. The Chamber shows what the order paper picked. */
-    to.click();
-    ok("which switches to the Chamber tab",
-       w.document.querySelector("#s-cham").classList.contains("on"));
-    const on = w.document.querySelector("#cham-pick .chp.on");
-    ok("with the same measure already named", !!on && on.dataset.cb === "thermal2",
-       on ? on.dataset.cb : "none");
+    /* ONE LIST. There was a row of buttons here naming the same measures
+       the order paper names; picking a bill IS naming it to the House. */
+    ok("choosing a measure colours the House for it, with no second picker",
+       w.document.querySelectorAll("#cham-pick [data-cb]").length <= 1 &&
+       /Thermal Quota/.test(w.document.querySelector("#cham-pick").textContent),
+       w.document.querySelector("#cham-pick").textContent.trim().slice(0, 60));
+    ok("and the seats say how the benches are expected to go",
+       w.document.querySelectorAll("#chamber .sg.no").length > 0);
 
     const bd = w.document.querySelector("#cham-break");
     ok("the party breakdown is drawn without a control to reveal it",
@@ -1397,15 +1416,12 @@ try {
                               !/^cu_/.test(tr.cells[0].textContent.trim())),
        [...bench].map(tr => tr.cells[0].textContent.trim()).join(" · "));
 
-    /* One table, so the columns line up with the party row above. A
-       nested table would drift the moment a column width changed. */
     const party = bd.querySelector("tbody tr:not(.bench)");
     ok("in the same table as the party row",
        bench.length > 0 && bench[0].parentNode === party.parentNode);
     ok("with the same number of columns",
        [...bench].every(tr => tr.cells.length === 5));
 
-    /* And they add up on screen, not merely in the engine. */
     const num = (tr, i) => parseInt(tr.cells[i].textContent, 10) || 0;
     const partyRow = [...bd.querySelectorAll("tr")]
       .find(tr => !tr.classList.contains("bench") && tr.cells.length === 5 &&
@@ -1422,34 +1438,29 @@ try {
 
     /* THE LEAK THAT CLOSED. The bars are the whips' estimate; the table
        under them used to be exact, so adding up the column handed the
-       player the true count and imperfect information withheld nothing.
-       Everything shown about a division is now the same reported number. */
+       player the true count and imperfect information withheld nothing. */
     const rows = [...bd.querySelectorAll("tbody tr:not(.bench)")];
     const printed = rows.reduce((n, tr) => n + num(tr, 1), 0);
     const bar = w.document.querySelector("#cham-forecast .dm .lbl");
     const shown = parseInt(bar.textContent, 10);
     ok("the printed party ayes sum to the bar above them",
        printed === shown, printed + " vs " + shown);
-    const truth = w.eval("Engine.division(UI.state(), CONTENT, 'thermal2').popular.aye");
-    ok("and the number shown is the estimate, not the true count",
-       typeof truth === "number");
 
-    /* A stated forecast belongs to the whips who wrote it. */
-    w.document.querySelector('#cham-pick [data-cb="divergence"]').click();
+    /* ONE PLACE EACH, now that the measure and the plan share a screen. */
+    ok("and the forecast is drawn once, under the plan it explains",
+       w.document.querySelectorAll("#bill-detail .dmbar").length === 0);
+
+    /* A fallen measure keeps its row and loses the whip. */
+    w.document.querySelector('#cham-bills tr[data-bill="divergence"]').click();
     ok("a stated forecast draws no faction rows",
        w.document.querySelectorAll("#cham-break tr.bench").length === 0);
-
-    /* A fallen measure keeps its place in the picker — the selection is
-       shared, so it must have a home here — and loses the whip. */
-    ok("a measure that has fallen is still in the picker, marked",
-       !!w.document.querySelector('#cham-pick [data-cb="divergence"].gone'));
-    ok("and shows no whip, because there is nothing left to move",
+    ok("and a measure that has fallen shows no whip",
        w.document.querySelector("#p-whip").hidden);
 
-    /* The whip came with it, and it is a control, so there is one of it. */
-    w.document.querySelector('#cham-pick [data-cb="thermal2"]').click();
-    ok("the whip is on the Chamber tab now",
-       !!w.document.querySelector("#cham-whip .whipbar, #cham-whip .note"));
+    /* The whip is a control, so there is exactly one of it, and it sits
+       under the plan rather than beside the bill. */
+    w.document.querySelector('#cham-bills tr[data-bill="thermal2"]').click();
+    ok("the whip is under the plan", !!w.document.querySelector("#cham-whip .whipbar"));
     ok("and nowhere else",
        w.document.querySelectorAll(".whipbar").length ===
        w.document.querySelectorAll("#cham-whip .whipbar").length);
@@ -1459,28 +1470,26 @@ try {
     ok("showing the House at rest puts the whip away",
        w.document.querySelector("#p-whip").hidden &&
        w.document.querySelector("#p-break").hidden);
+    ok("and takes the vote colouring off the benches",
+       w.document.querySelectorAll("#chamber .sg.no").length === 0);
+    /* And choosing a measure puts it all back. One press of "at rest"
+       used to leave every later selection drawing an empty chamber while
+       the order paper insisted a bill was open. */
+    w.document.querySelector('#cham-bills tr[data-bill="thermal2"]').click();
+    ok("and naming another measure arms it again",
+       !w.document.querySelector("#p-whip").hidden &&
+       w.document.querySelectorAll("#chamber .sg.no").length > 0);
 
-    /* --- THE CENTRE COLUMN STOPS AT THE DRAWING ---
-
-       The seating plan is a fixed number of pixels, measured from the
-       seat count; a `1fr` centre column claimed 718 of a 1440 window to
-       draw 539 of them and the whip and the breakdown split what was
-       left. drawChamber publishes the measurement and the stylesheet
-       spends the surplus on the tables. jsdom does no layout, so what is
-       assertable here is the contract between the two. */
-    const plan = w.document.querySelector(".g-cham>.panel");
+    /* THE PLAN IS THE SUBJECT OF THE SCREEN. It carried a fixed pixel
+       width and the column was capped to match; it fills the column now,
+       so the aspect comes from the seat count and nothing else. */
     const psvg = w.document.querySelector("#s-cham svg");
-    const planw = plan.style.getPropertyValue("--planw");
-    ok("the chamber panel publishes the width of the plan it drew", /^\d+px$/.test(planw), planw);
-    ok("which is the drawing plus its gutter, not a guess",
-       parseInt(planw, 10) === parseInt(psvg.getAttribute("width"), 10) + 24,
-       planw + " for a " + psvg.getAttribute("width") + "px plan");
-    const css = require("fs").readFileSync(
+    ok("the plan is sized by its column, not by a hardcoded width",
+       !psvg.hasAttribute("width") && /^\d+ \/ \d+$/.test(psvg.style.aspectRatio),
+       psvg.style.aspectRatio);
+    const css2 = require("fs").readFileSync(
       require("path").join(__dirname, "..", "css", "terminal.css"), "utf8");
-    ok("the stylesheet caps the column with it",
-       /\.g-cham>\.panel:first-child\{max-width:var\(--planw/.test(css));
-    ok("and lets go of it when the grid falls to one column",
-       /@media[^{]*\{[\s\S]*?\.g-cham>\.panel:first-child\{max-width:none/.test(css));
+    ok("and the stylesheet gives it the width", /\.g-cham svg\{[^}]*width:100%/.test(css2));
   }
 } catch (e) { ok("the faction breakdown renders", false, e.message); }
 
@@ -1617,8 +1626,8 @@ try {
      /before the government falls|exact number|short/i.test(body(marg) || ""), body(marg));
 
   /* --- 7. the whip fills the seats it buys --- */
-  doc.querySelector('#gov-bills tr[data-bill="thermal2"]').click();
-  doc.querySelector("#btn-tochamber").click();
+  doc.querySelector('.tab[data-t="cham"]').click();
+  doc.querySelector('#cham-bills tr[data-bill="thermal2"]').click();
   const bar = doc.querySelector("#cham-whip .whipbar");
   if (!bar) ok("the whip has headroom to spend on this measure", false);
   else {

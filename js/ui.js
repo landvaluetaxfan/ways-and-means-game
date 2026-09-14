@@ -180,7 +180,7 @@ const UI = (function () {
        does. Focus owns the selection and the keyboard from here; this
        file keeps the knowledge of what a bill or a station is, which is
        the only reason the fallbacks are functions and not strings. */
-    Focus.region("gov-bills", {
+    Focus.region("cham-bills", {
       rows: "tr[data-bill]",
       key: tr => tr.dataset.bill,
       fallback: () => (C.bills[0] || {}).id,
@@ -194,7 +194,11 @@ const UI = (function () {
       /* And the Chamber, which is coloured for whatever the order paper
          has picked. One selection, two views: leaving the House drawn for
          the previous measure is the same bug as the stale highlight. */
-      activate: () => { drawGovernment(); drawChamber(); drawStatus(); }
+      /* Choosing a measure IS naming it to the House, so it re-arms the
+         plan. Without this, one press of "show the House at rest" left
+         every later selection drawing an uncoloured chamber and hiding
+         the whip, with the order paper insisting a bill was open. */
+      activate: () => { chamberBare = false; drawChamber(); drawStatus(); }
     });
     Focus.region("orbit-table", {
       rows: "tr[data-station]",
@@ -368,7 +372,7 @@ const UI = (function () {
   function ambient() {
     const note = SCREEN_NOTE[screen] || "";
     if (screen !== "gov" && screen !== "cham") return note;
-    const id = Focus.selected("gov-bills");
+    const id = Focus.selected("cham-bills");
     const b = (C.bills || []).find(x => x.id === id);
     if (!b) return note;
     return b.title + " \u2014 " + (b.dualMajority ? "dual test applies" : "simple majority");
@@ -514,35 +518,7 @@ const UI = (function () {
     });
     $("#gov-currents").innerHTML = ch + "</tbody>";
 
-    /* WHICH BILL IS OPEN. This used to be the string "divergence", hard
-       coded, so the order paper marked the same row for the whole of a
-       game however many other bills you opened. The renderer asks the
-       selection store, and the store asks content for its default. */
-    const sel = Focus.selected("gov-bills");
-    let bh = "<thead><tr><th>Bill</th><th data-tip='stage'>Stage</th>" +
-      "<th class='n' data-tip='popular'>Pop.</th><th class='n' data-tip='functional'>Func.</th>" +
-      "<th data-tip='dual'>Test</th></tr></thead><tbody>";
-    C.bills.forEach(b => {
-      const bs = st.bills[b.id];
-      /* The estimate, like every other forecast the player is shown. This
-         printed the TRUE count in the game's most-read table, two panels
-         above bars that were carefully reporting a guess. */
-      const d = forecast(b.id);
-      const dead = bs.dead || bs.stage === "withdrawn";
-      bh += `<tr class="${b.id === sel ? "sel" : ""}" data-bill="${b.id}" style="cursor:pointer">` +
-        `<td>${b.title.replace(/ Bill$/, "")}</td><td>${dead ? "Withdrawn" : bs.stage.replace(/_/g, " ")}</td>` +
-        `<td class="n">${d.popular.aye}</td><td class="n">${b.dualMajority ? d.functional.aye : "&mdash;"}</td>` +
-        `<td><span class="flag ${b.dualMajority ? "bad" : ""}" data-tip="${b.dualMajority ? "dual" : "simple"}">` +
-        `${b.dualMajority ? "DUAL" : "SIMPLE"}</span></td></tr>`;
-    });
-    $("#gov-bills").innerHTML = bh + "</tbody>";
-    /* ONE activation path. A click and an Enter both land in
-       Focus.activate, which sets the selection, redraws, and leaves
-       focus on the row it just opened. */
-    $("#gov-bills").querySelectorAll("tr[data-bill]").forEach(tr =>
-      tr.addEventListener("click", () => Focus.activate("gov-bills", tr.dataset.bill)));
 
-    drawBill(sel);
 
     /* THE LINE THAT MATTERS IS DRAWN ON THE BAR.
 
@@ -803,33 +779,21 @@ const UI = (function () {
     det.innerHTML =
       `<div class="note" style="margin-bottom:6px">${b.summary}</div>` +
       (b.effectNote ? `<div class="rulehead">Effect</div><div class="note">${b.effectNote}</div>` : "") +
-      `<div class="rulehead">Division forecast</div>` +
-      (rep.prov ? `<div class="note" style="margin:-2px 0 5px">${esc(rep.prov)}</div>` : "") +
-      benchBar("Popular", rep.popular) +
-      (b.dualMajority ? benchBar("Functional", rep.functional) : "") +
+      /* NOT THE FORECAST. It is drawn under the plan, a hand's width to
+         the right on the same screen, where it doubles as the legend for
+         the seat colouring. Two copies of one number is not emphasis. */
       `<div class="note" style="margin-top:5px">${
-        rep.carries ? "<b>Carries.</b>" :
+        rep.carries ? "<b>Carries</b> as the benches stand." :
         (b.dualMajority && rep.popular.carries && !rep.functional.carries
           ? "<b>Carries on the popular benches and fails on the functional.</b> The dual test applies: bills touching life-support integrity and charter amendments must carry separately among functional members."
-          : "<b>Fails.</b>")}</div>` +
+          : "<b>Fails</b> as the benches stand.")}</div>` +
       whipLine(id) +
       `<div class="btnrow">
          <button class="btn" id="btn-divide"${bs.dead ? " disabled" : ""}` +
            priceTip("Move to a division",
                     Object.assign({ slots: 1 }, Engine.whipCost(st, C, id)),
                     bs.dead ? "the bill is dead" : dchk.ok ? null : dchk.reason) + `>Move to a division</button>
-         <button class="btn" id="btn-tochamber">Work the benches</button>
        </div>`;
-
-    /* ONE SELECTION, TWO VIEWS. The order paper picks the measure; the
-       Chamber colours the House for whichever measure the order paper has
-       picked. So this is a change of view, not a second picker. */
-    $("#btn-tochamber").addEventListener("click", () => {
-      chamberBare = false;
-      drawChamber();
-      const tab = document.querySelector('.tab[data-t="cham"]');
-      if (tab) tab.click();
-    });
 
     /* A division that has been SET happens on its day. The button says
        when rather than going quiet: a control that is merely dead tells
@@ -976,8 +940,8 @@ const UI = (function () {
   function whipLine(billId) {
     if (st.bills[billId].dead) return "";
     const cost = Engine.whipCost(st, C, billId);
-    if (!cost.seats) return `<div class="note">No members whipped. The whip is on the ` +
-      `<b>Chamber</b> tab, beside the benches it moves.</div>`;
+    if (!cost.seats) return `<div class="note">No members whipped. ` +
+      `The whip is below the plan, and the seats it buys fill as you commit them.</div>`;
     const capLines = Object.keys(cost.capital).map(p =>
       `${(C.partyById[p] || {}).short || p} &minus;${cost.capital[p]}`).join(" &middot; ");
     return `<div class="whipcost">Whipped: <b>${cost.seats}</b> seats. ` +
@@ -1037,8 +1001,7 @@ const UI = (function () {
       });
     });
 
-    if (!rows) return `<div class="rulehead">The whip</div>` +
-      `<div class="note">No headroom. Every member of the coalition who can be brought to this ` +
+    if (!rows) return `<div class="note">No headroom. Every member of the coalition who can be brought to this ` +
       `measure is already voting for it. ${b.dualMajority && !d.functional.carries
         ? "The functional bench cannot be whipped. The government holds " +
           d.rows.reduce((n, r) => n + (st.coalition.includes(r.party) ? r.functionalSeats : 0), 0) +
@@ -1052,8 +1015,7 @@ const UI = (function () {
              `<span class="${after < 0 ? "od" : ""}"> (${after > 0 ? "+" : ""}${after})</span>`;
     }).join(" &middot; ");
 
-    return `<div class="rulehead">The whip</div>` +
-      `<table class="whiptab"><thead><tr><th>Party</th><th>Bench</th><th class="n">Seats</th>` +
+    return `<table class="whiptab"><thead><tr><th>Party</th><th>Bench</th><th class="n">Seats</th>` +
       `<th class="n" data-tip="whip">Rate</th><th data-tip="whip">Move</th></tr></thead><tbody>${rows}</tbody></table>` +
       (cost.seats
         ? `<div class="whipcost">Plan: <b>${cost.seats}</b> seats. ` +
@@ -2136,35 +2098,30 @@ const UI = (function () {
      is coloured for whatever the order paper has picked. `chamberBare`
      is not a second choice of bill, only a request to see the House at
      rest, and naming a measure here names it there. */
-  let chamberBare = true;
-  const chamberBill = () => chamberBare ? null : Focus.selected("gov-bills");
+  let chamberBare = false;
+  const chamberBill = () => chamberBare ? null : Focus.selected("cham-bills");
 
   function drawChamberPicker() {
     const el = $("#cham-pick"); if (!el) return;
     const cur = chamberBill();
-    /* Every measure on the order paper, fallen ones included. The picker
-       is not a second list of bills — it is the same selection, seen from
-       the House, and a selection with no home here would put the two tabs
-       out of step the moment a division went against the government. */
-    el.innerHTML =
-      `<div class="chpick"><b>Show the House on</b>` +
-      `<button class="chp${cur ? "" : " on"}" data-cb="">nothing \u2014 as it sits</button>` +
-      C.bills.map(b => `<button class="chp${cur === b.id ? " on" : ""}` +
-        `${st.bills[b.id].dead ? " gone" : ""}" data-cb="${b.id}"` +
-        ` data-tip-title="${esc(b.title)}" data-tip-body="${esc(b.summary || "")}">` +
-        `${esc(b.title.replace(/ \(Amendment\)| Bill$/g, ""))}` +
-        `${st.bills[b.id].dead ? ' <i class="dual">fallen</i>'
-          : b.dualMajority ? ' <i class="dual">dual</i>' : ""}</button>`).join("") +
+    const b = cur ? C.billById[cur] : null;
+    /* ONE LINE, TWO STATES. This was a wrapping grid of one button per
+       measure — seven buttons over four lines, a second order paper
+       above the first. The order paper beside it does the choosing now,
+       so all this has to say is what the House is currently drawn for
+       and how to put it back at rest. */
+    el.innerHTML = `<div class="chpick">` + (b
+      ? `<b>Showing</b><span class="chnow">${esc(b.title)}` +
+        `${b.dualMajority ? ' <i class="dual">dual</i>' : ""}` +
+        `${st.bills[cur].dead ? ' <i class="dual">fallen</i>' : ""}</span>` +
+        `<button class="chp" data-cb="">show the House at rest</button>`
+      : `<b>Showing</b><span class="chnow">the House as it sits</span>` +
+        `<i class="chhint">choose a measure on the order paper to colour the benches</i>`) +
       `</div>`;
-    el.querySelectorAll("[data-cb]").forEach(b =>
-      b.addEventListener("click", () => {
-        chamberBare = !b.dataset.cb;
-        /* seed, not activate: writing the selection without rendering the
-           Government tab underneath us. Its detail is redrawn once, below. */
-        if (!chamberBare) Focus.seed("gov-bills", b.dataset.cb);
-        cue("click"); drawChamber();
-        if (!chamberBare) drawBill(b.dataset.cb);
-      }));
+    const off = el.querySelector("[data-cb]");
+    if (off) off.addEventListener("click", () => {
+      chamberBare = true; cue("click"); drawChamber();
+    });
   }
 
   /* The two majorities the measure must clear, under the plan that shows
@@ -2226,7 +2183,49 @@ const UI = (function () {
     el.innerHTML = breakdownHTML(forecast(id));
   }
 
+  /* THE ORDER PAPER IS THE PICKER.
+
+     It was on the Government tab with a second row of buttons over here
+     naming the same measures, which is two lists for one selection. The
+     legislature's business belongs with the legislature: what is before
+     the House, what stage it is at, how it is expected to go, and the
+     instrument for changing that, all on one screen. The Government tab
+     keeps the executive — the coalition, the ledger, the cabinet, the
+     programme and what it costs. */
+  function drawOrderPaper() {
+    /* WHICH BILL IS OPEN. This used to be the string "divergence", hard
+       coded, so the order paper marked the same row for the whole of a
+       game however many other bills you opened. The renderer asks the
+       selection store, and the store asks content for its default. */
+    const sel = Focus.selected("cham-bills");
+    let bh = "<thead><tr><th>Bill</th><th data-tip='stage'>Stage</th>" +
+      "<th class='n' data-tip='popular'>Pop.</th><th class='n' data-tip='functional'>Func.</th>" +
+      "<th data-tip='dual'>Test</th></tr></thead><tbody>";
+    C.bills.forEach(b => {
+      const bs = st.bills[b.id];
+      /* The estimate, like every other forecast the player is shown. This
+         printed the TRUE count in the game's most-read table, two panels
+         above bars that were carefully reporting a guess. */
+      const d = forecast(b.id);
+      const dead = bs.dead || bs.stage === "withdrawn";
+      bh += `<tr class="${b.id === sel ? "sel" : ""}" data-bill="${b.id}" style="cursor:pointer">` +
+        `<td>${b.title.replace(/ Bill$/, "")}</td><td>${dead ? "Withdrawn" : bs.stage.replace(/_/g, " ")}</td>` +
+        `<td class="n">${d.popular.aye}</td><td class="n">${b.dualMajority ? d.functional.aye : "&mdash;"}</td>` +
+        `<td><span class="flag ${b.dualMajority ? "bad" : ""}" data-tip="${b.dualMajority ? "dual" : "simple"}">` +
+        `${b.dualMajority ? "DUAL" : "SIMPLE"}</span></td></tr>`;
+    });
+    $("#cham-bills").innerHTML = bh + "</tbody>";
+    /* ONE activation path. A click and an Enter both land in
+       Focus.activate, which sets the selection, redraws, and leaves
+       focus on the row it just opened. */
+    $("#cham-bills").querySelectorAll("tr[data-bill]").forEach(tr =>
+      tr.addEventListener("click", () => Focus.activate("cham-bills", tr.dataset.bill)));
+
+    drawBill(sel);
+  }
+
   function drawChamber() {
+    drawOrderPaper();
     drawChamberPicker();
     const govIds = st.coalition.concat(st.confidenceSupply);
 
@@ -2401,21 +2400,16 @@ const UI = (function () {
     /* 1.35, not 1: at true 1:1 a 9px label is 9px and the whole House is
        450px wide in a 1280px panel, which reads as an afterthought rather
        than as the diagram the tab is named for. */
-    const drawnW = Math.round(W * 1.35);
-    svg.setAttribute("width", drawnW);
-    svg.setAttribute("height", Math.round(H * 1.35));
-    /* AND THE COLUMN STOPS AT THE DRAWING. The plan is a fixed number of
-       pixels wide, so a `1fr` centre column was claiming 718 to draw 539
-       and the whip and the breakdown were squeezed into what was left.
-       Capping the panel lets the grid's `auto` track shrink to the plan
-       and hands the surplus to the tables, which can use it. */
-    const host = svg.closest && svg.closest(".panel");
-    /* A CUSTOM PROPERTY, NOT AN INLINE max-width. An inline width beats
-       the stylesheet, so pinning 563px here would pin it at 400px on a
-       phone too, where the grid is one column and the panel must be free
-       to be as wide as the screen. The stylesheet reads the measurement
-       and decides what to do with it. */
-    if (host) host.style.setProperty("--planw", (drawnW + 24) + "px");
+    /* NO WIDTH ATTRIBUTE. The plan used to be drawn at a fixed 1.35x and
+       the column capped to match, which was the right answer while the
+       Chamber was three narrow panels and the plan was the smallest
+       thing on it. Now the House is the subject of the screen: the
+       viewBox carries the aspect and the stylesheet gives it the column,
+       so it grows with the window instead of sitting at 539px in the
+       middle of it. Height follows from the ratio. */
+    svg.removeAttribute("width");
+    svg.removeAttribute("height");
+    svg.style.aspectRatio = Math.round(W) + " / " + Math.round(H);
 
     const label = (x, y, t, cls) =>
       `<text x="${x.toFixed(0)}" y="${y.toFixed(0)}" text-anchor="middle" class="chlab${cls ? " " + cls : ""}">${t}</text>`;
