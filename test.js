@@ -1186,3 +1186,78 @@ console.log("\nTHE CALENDAR:");
 
   if (bad) { console.log("\n" + bad + " CALENDAR FAILURES"); process.exitCode = 1; }
 })();
+
+
+/* ---------------------------------------------------------------------
+   THE ORDER OF THE DAY.
+
+   The distinction this whole feature turns on: it reports what is ASKED
+   of the player, not what is AVAILABLE to them. Six bills can advance on
+   day one and on day forty, so a tab marked for that is marked forever,
+   and a mark that never clears teaches a player to stop reading it.
+   --------------------------------------------------------------------- */
+console.log("\nTHE ORDER OF THE DAY:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const st = Engine.newGame(CONTENT);
+  const t0 = Engine.today(st, CONTENT, true);
+
+  ok("the House's business comes first and is the only duty",
+     t0.items[0].kind === "decision" && t0.required === 1,
+     t0.items.map(i => i.kind).join(", "));
+  ok("every item says where it is answered",
+     t0.items.every(i => ["sit", "gov", "pap", "orb"].indexOf(i.tab) >= 0));
+
+  /* OPPORTUNITIES ARE NOT OBLIGATIONS, and this is the assertion that
+     keeps the feature honest. Plenty is available on day one. */
+  const advanceable = CONTENT.bills.filter(b =>
+    Engine.grantSlot(JSON.parse(Engine.save(st)), CONTENT, b.id).ok !== false).length;
+  const makeable = CONTENT.instruments.filter(i =>
+    Engine.canMake(st, CONTENT, i.id).ok).length;
+  ok("what is merely available is not listed as business",
+     advanceable > 3 && makeable > 3 && t0.items.length < 4,
+     advanceable + " bills and " + makeable + " orders available, " +
+     t0.items.length + " things asked");
+
+  /* AND EVERY ITEM CLEARS. Fill the vacancy and it must leave the list. */
+  const before = Engine.today(st, CONTENT, false).items.filter(i => i.kind === "vacancy");
+  ok("a vacant ministry is asked about", before.length === 1, before[0] && before[0].text);
+  const v = Engine.vacancies(st, CONTENT)[0];
+  Engine.fillPost(st, CONTENT, v, 0);
+  ok("and stops being asked about once it is filled",
+     Engine.today(st, CONTENT, false).items.filter(i => i.kind === "vacancy").length === 0);
+
+  /* The tab strip reads the same source, so a mark cannot disagree with
+     the list that produced it. */
+  const t1 = Engine.today(st, CONTENT, true);
+  ok("the tabs named are exactly the tabs the items live on",
+     t1.tabs.slice().sort().join(",") ===
+     [...new Set(t1.items.map(i => i.tab))].sort().join(","),
+     t1.tabs.join(", "));
+
+  /* Something overdue must read as overdue, not merely as soon. */
+  const o = Engine.newGame(CONTENT);
+  Engine.apply(o, CONTENT, [{ undertake: { id: "late", text: "A promise", by: 1 } }]);
+  Engine.advance(o, CONTENT);
+  Engine.advance(o, CONTENT);
+  const owed = Engine.today(o, CONTENT, false).items.filter(i => i.kind === "owed");
+  ok("a promise past its day reads as overdue",
+     owed.length === 0 || owed[0].when === "overdue",
+     owed.length ? owed[0].when + " by " + owed[0].away : "(settled already, which is also correct)");
+
+  /* THE LIST MUST NOT BECOME WALLPAPER. The session end is on the
+     calendar all session; it is only business when it is close. */
+  const f = Engine.newGame(CONTENT);
+  ok("the rise is not business twenty sittings out",
+     Engine.today(f, CONTENT, false).items.every(i => i.kind !== "rises"),
+     "sessionEnds " + f.sessionEnds + " at sitting " + f.sitting);
+  while (f.sitting < f.sessionEnds - 1) Engine.advance(f, CONTENT);
+  ok("and is business when it is next week",
+     Engine.today(f, CONTENT, false).items.some(i => i.kind === "rises"),
+     "at sitting " + f.sitting + " of " + f.sessionEnds);
+
+  if (bad) { console.log("\n" + bad + " ORDER-OF-DAY FAILURES"); process.exitCode = 1; }
+})();

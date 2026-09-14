@@ -2427,6 +2427,85 @@ const Engine = (function () {
              days: out };
   }
 
+  /* ---------------------------------------------------------
+     WHAT IS ASKED OF YOU TODAY.
+
+     The sitting screen could tell the player what was AVAILABLE — six
+     bills can advance, five orders can be made — and that is true on
+     day one and true on day forty, so it is not business, it is a
+     menu. A day only has a shape if something is asked of it.
+
+     So this reports OBLIGATIONS, not opportunities: the decision the
+     House has brought, anything dated today or overdue, anything
+     closing soon enough to matter, and a ministry sitting empty.
+     Every one of them CLEARS when it is dealt with, which is the whole
+     property an indicator needs — a mark that never goes out teaches
+     the player to stop looking at it.
+
+     `tab` names where the thing is done, so the interface can point
+     rather than describe. The order of the list is the order of a
+     prime minister's day: the House first, then the government's own
+     business, then the papers.
+     --------------------------------------------------------- */
+  const TAB_OF = { decision: "sit", division: "gov", vacancy: "gov",
+                   owed: "sit", prayer: "pap", expected: "sit", rises: "sit",
+                   slots: "gov" };
+  const ORDER  = { sit: 0, gov: 1, pap: 2, orb: 3 };
+  const SOON = 2;                 /* sittings. Closer than this is business. */
+
+  function today(st, C, hasDecision) {
+    const items = [];
+    const push = (kind, text, opts) => items.push(Object.assign({
+      kind: kind, text: text, tab: TAB_OF[kind] || "sit",
+      when: "soon", away: null, required: false
+    }, opts || {}));
+
+    /* The House's own business comes first and is the only thing the
+       player cannot decline: everything else is a power, this is a duty. */
+    if (hasDecision) push("decision", "The House is waiting on you",
+                          { when: "now", away: 0, required: true });
+
+    deadlines(st, C).forEach(d => {
+      if (d.away > SOON) return;
+      /* The rise is not business until it is nearly here — it is on the
+         calendar all session and would otherwise sit in this list for
+         twenty-four sittings, which is how a list stops being read. */
+      if (d.kind === "rises" && d.away > SOON) return;
+      push(d.kind, d.text,
+           { away: d.away, when: d.away < 0 ? "overdue" : d.away === 0 ? "now" : "soon" });
+    });
+
+    /* A ministry with no minister is an obligation with no date: it
+       cannot make its own instruments and somebody is answering for a
+       brief they do not hold. */
+    vacancies(st, C).forEach(v => {
+      const post = (C.cabinetById || {})[v] || {};
+      push("vacancy", (post.title || post.name || v) + " is vacant",
+           { when: "soon", away: null });
+    });
+
+    /* Order-paper time does not carry over, so time left unspent in the
+       last days of a session is time thrown away. */
+    const left = st.slots.total - st.slots.used;
+    const toRise = st.sessionEnds != null ? st.sessionEnds - st.sitting : 99;
+    if (left > 0 && toRise <= SOON)
+      push("slots", left + " order-paper slot" + (left === 1 ? "" : "s") +
+                    " unspent before the House rises",
+           { away: toRise, when: "soon" });
+
+    items.sort((a, b) =>
+      (ORDER[a.tab] - ORDER[b.tab]) ||
+      ((a.away == null ? 99 : a.away) - (b.away == null ? 99 : b.away)));
+
+    return {
+      items: items,
+      required: items.filter(i => i.required).length,
+      pressing: items.filter(i => i.when !== "soon").length,
+      /* which tabs have something asked of them, for the tab strip */
+      tabs: [...new Set(items.map(i => i.tab))]
+    };
+  }
+
   function prorogue(st, C) {
     const fell = [];
     (C.bills || []).forEach(b => {
@@ -2546,7 +2625,7 @@ const Engine = (function () {
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal,
     division, reported, ballot, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
-    dateOfSitting, sittingOfDate, deadlines, calendar,
+    dateOfSitting, sittingOfDate, deadlines, calendar, today,
     apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,
     seedRoll, syncRoll, reconcile, partyDistrict,
     lastReconcile: () => lastReconcile, nationalShares, vacantSeats, seatsFor,

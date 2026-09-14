@@ -1361,6 +1361,78 @@ const UI = (function () {
      here reaches the screen that carries it out: promising something
      puts an item here, and keeping it takes the item away. */
   /* ---------------------------------------------------------------
+     THE ORDER OF THE DAY.
+
+     The sitting screen could have listed what was AVAILABLE — six bills
+     can advance, five orders can be made — and that is equally true on
+     day one and day forty, so it is a menu rather than business. A day
+     only has a shape if something is ASKED of it.
+
+     This lists obligations, in the order of a prime minister's day: the
+     House first, then the government's own business, then the papers.
+     Each row says where it is answered and takes the player there, so
+     the tabs stop being places you might look and become places the day
+     sends you. And every item CLEARS when it is dealt with — a mark
+     that never goes out teaches a player to stop reading it.
+     --------------------------------------------------------------- */
+  const TABNAME = { sit: "Sitting", gov: "Government", pap: "Papers", orb: "Orbit" };
+  const WHENWORD = { overdue: "overdue", now: "today", soon: "soon" };
+
+  function todayHTML() {
+    const t = Engine.today(st, C, !!currentEvent || !!Engine.nextEvent(
+      /* on a COPY: nextEvent takes the queue apart as it reads it */
+      JSON.parse(Engine.save(st)), C));
+    if (!t.items.length)
+      return `<div class="note">Nothing is asked of you today. The House may rise.</div>`;
+    return t.items.map(i => {
+      const away = i.away == null ? ""
+        : i.away < 0 ? Math.abs(i.away) + " sittings late"
+        : i.away === 0 ? "today"
+        : i.away === 1 ? "next sitting" : "in " + i.away + " sittings";
+      return `<button class="tdo ${i.when}${i.required ? " req" : ""}" data-goto="${i.tab}">
+        <b>${esc(i.text)}</b>
+        <i>${esc(TABNAME[i.tab] || i.tab)}${away ? " \u00b7 " + esc(away) : ""}</i>
+      </button>`;
+    }).join("");
+  }
+
+  function drawToday() {
+    const el = $("#sit-today"); if (!el) return;
+    const t = Engine.today(st, C, !!currentEvent || !!Engine.nextEvent(
+      JSON.parse(Engine.save(st)), C));
+    el.innerHTML = todayHTML();
+    const sum = $("#today-sum");
+    if (sum) sum.textContent = t.items.length
+      ? t.items.length + (t.items.length === 1 ? " thing asked" : " things asked")
+      : "nothing asked";
+    el.querySelectorAll("[data-goto]").forEach(b =>
+      b.addEventListener("click", () => {
+        const tab = document.querySelector('.tab[data-t="' + b.dataset.goto + '"]');
+        if (tab) tab.click();
+      }));
+    /* THE TAB STRIP CARRIES THE SAME TRUTH. A tab with something asked of
+       it wears a mark, and it goes out when the thing is done — which is
+       only possible because today() reports obligations and not what
+       happens to be available. */
+    document.querySelectorAll(".tab").forEach(tab => {
+      const asked = t.tabs.indexOf(tab.dataset.t) >= 0 && tab.dataset.t !== "sit";
+      tab.classList.toggle("asked", asked);
+      if (asked) tab.setAttribute("data-asked",
+        t.items.filter(i => i.tab === tab.dataset.t).length);
+      else tab.removeAttribute("data-asked");
+    });
+    /* and the rise button says what leaving now would leave behind */
+    const rb = $("#btn-advance");
+    if (rb) {
+      const left = t.items.filter(i => i.when !== "soon" && !i.required).length;
+      rb.textContent = left
+        ? "Rise \u2014 " + left + " unanswered"
+        : "Rise until the next sitting";
+      rb.classList.toggle("warn", left > 0);
+    }
+  }
+
+  /* ---------------------------------------------------------------
      THE PARLIAMENTARY CALENDAR.
 
      Pacing was a number in a sentence — "4 sittings left of session 4" —
@@ -1527,6 +1599,7 @@ const UI = (function () {
     const dk = $("#sit-docket");
     if (dk) dk.innerHTML = docketHTML();
     drawCalendar();
+    drawToday();
 
     const box = $("#sitting-body");
     const loss = Engine.checkLoss(st, C);

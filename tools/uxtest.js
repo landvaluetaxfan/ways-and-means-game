@@ -1125,6 +1125,35 @@ try {
      [...cells].every(c => (c.getAttribute("aria-label") || "").length > 0),
      (cells[10] || {}).getAttribute && cells[10].getAttribute("aria-label"));
 
+  /* THE ORDER OF THE DAY, and the property that makes it worth having:
+     each row is a control that takes the player where the thing is
+     answered, so the tabs stop being places you might look. */
+  const todo = w.document.querySelectorAll("#sit-today .tdo");
+  ok("the day lists what is asked of the player", todo.length > 0,
+     todo.length + " items");
+  ok("and every row says where it is answered",
+     [...todo].every(b => /^(sit|gov|pap|orb)$/.test(b.dataset.goto || "")));
+  if (todo.length) {
+    const target = [...todo].find(b => b.dataset.goto !== "sit");
+    if (target) {
+      target.click();
+      ok("clicking one goes to the tab that owns it",
+         w.document.querySelector("#s-" + target.dataset.goto).classList.contains("on"),
+         target.dataset.goto);
+      w.document.querySelector('.tab[data-t="sit"]').click();
+    } else ok("clicking one goes to the tab that owns it", true, "all on the sitting screen");
+  }
+
+  /* A MARK THAT NEVER CLEARS IS A MARK NOBODY READS. The strip must
+     agree with the list, and only tabs with something asked may carry one. */
+  const askedTabs = [...w.document.querySelectorAll(".tab.asked")].map(t => t.dataset.t);
+  const wantedTabs = [...new Set([...todo].map(b => b.dataset.goto))].filter(x => x !== "sit");
+  ok("the tab strip marks exactly the tabs the day names",
+     askedTabs.slice().sort().join(",") === wantedTabs.slice().sort().join(","),
+     "marked [" + askedTabs.join(",") + "] wanted [" + wantedTabs.join(",") + "]");
+  ok("and the sitting tab never marks itself, since you are on it",
+     askedTabs.indexOf("sit") < 0);
+
   /* ONE PIP PER THING. A single corner flag lost the count, and lost the
      colour where two kinds fell on one day. */
   const marked = [...cells].filter(c => c.querySelector(".pips"));
