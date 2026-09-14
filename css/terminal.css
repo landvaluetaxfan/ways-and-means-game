@@ -720,6 +720,16 @@ img.dith{display:block;}
   border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);
 }
 .slotbar i.spent{background:var(--chrome-dk);}
+/* THE SAME MARKS IN THE STATUS BAR, where the currency is read at a glance
+   rather than navigated to. Same colours as the order-paper bar so the two
+   readouts cannot disagree about what a spent slot looks like. */
+.sbpip{
+  display:inline-block;width:7px;height:9px;margin:2px 0 0 2px;vertical-align:-1px;
+  background:var(--ok);border:1px solid var(--chrome-dkr);
+}
+.sbpip.spent{background:var(--chrome-dk);}
+#sb-slots.none{color:var(--alert);}
+#sb-slots.none .sbpip{background:var(--chrome-dk);}
 .whiptab td{padding:1px 4px;}
 .whiptab td:first-child{white-space:nowrap;}
 /* The whip is one block per whippable seat. The number of blocks is what
@@ -1489,11 +1499,14 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
    asked rather than what is available — a mark that never clears is a
    mark the player learns to stop seeing. */
 .tab.asked{position:relative;}
-.tab.asked::after{
-  content:attr(data-asked);
-  position:absolute;top:2px;right:3px;
+/* tucked hard into the corner, and a real element so it can carry the hover
+   card. The old ::after could only show a number and had to sit inboard of the
+   border; this reads as a stamp on the tab. */
+.tab-n{
+  position:absolute;top:0;right:0;
   font-family:var(--f-data);font-size:8.5px;line-height:1;
   padding:1px 3px;background:var(--alert);color:var(--bar-txt);
+  cursor:help;
 }
 .btn.warn{border-color:var(--alert);color:var(--alert);}
 

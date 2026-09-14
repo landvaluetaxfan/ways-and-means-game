@@ -778,6 +778,35 @@ console.log("\nA MINISTER ANSWERS FOR A BROKEN PROMISE (design/08 §3):");
   if (bad) { console.log("\n" + bad + " RESIGNATION FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nA DIVISION IS HOUSE TIME (design/18 §3):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const a = Engine.newGame(CONTENT);
+  let guard = 0;
+  while (a.bills.divergence.stage !== "third_reading" && guard++ < 8)
+    Engine.grantSlot(a, CONTENT, "divergence");
+  while (a.sitting < (a.bills.divergence.dividesOn || 0)) Engine.advance(a, CONTENT);
+  const usedBySlots = a.slots.used;
+  const out = Engine.divide(a, CONTENT, "divergence");
+  ok("the division resolves", !!out.result);
+  ok("and it spent a slot of House time", a.slots.used === usedBySlots + 1,
+     usedBySlots + " -> " + a.slots.used);
+
+  /* THE CLOCK RUNS OUT. With no order-paper time the House is done, and the
+     refusal is visible rather than silent. */
+  const b = Engine.newGame(CONTENT);
+  b.slots.used = b.slots.total;
+  const chk = Engine.canDivide(b, CONTENT, "divergence");
+  ok("no time left refuses a division", !chk.ok && !!chk.noTime, chk.reason);
+  ok("and a refused division charges nothing",
+     Engine.divide(b, CONTENT, "divergence").ok === false && b.slots.used === b.slots.total);
+
+  if (bad) { console.log("\n" + bad + " DIVISION-COST FAILURES"); process.exitCode = 1; }
+})();
+
 /* ---------------------------------------------------------------------
    THE BED IS IN TUNE.
 

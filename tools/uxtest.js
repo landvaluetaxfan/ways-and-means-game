@@ -1185,6 +1185,35 @@ try {
   ok("and the sitting tab never marks itself, since you are on it",
      askedTabs.indexOf("sit") < 0);
 
+  /* THE BADGE EXPLAINS ITSELF. A red number with no explanation is the exact
+     thing the order of the day was built to remove, so the count is a real
+     element carrying the project's own hover card, and the card says what the
+     day says. A ::after cannot carry a tip, which is why it is a span. */
+  const badges = [...w.document.querySelectorAll(".tab.asked .tab-n")];
+  ok("a marked tab carries a count", badges.length > 0, badges.length + " badges");
+  ok("the count can carry a hover card",
+     badges.every(b => (b.getAttribute("data-tip-body") || "").length > 0));
+  ok("and the card names what the day names",
+     badges.every(b => {
+       const tab = b.closest(".tab").dataset.t;
+       const day = [...w.document.querySelectorAll("#sit-today .tdo")]
+         .filter(x => x.dataset.goto === tab)
+         .map(x => (x.querySelector("b") || {}).textContent || "");
+       const body = b.getAttribute("data-tip-body") || "";
+       return day.length > 0 && day.every(t => t && body.indexOf(t) >= 0);
+     }));
+
+  /* ORDER-PAPER TIME IS A QUANTITY, NOT A FRACTION (design/19 §5.1). */
+  {
+    const s1 = JSON.parse(w.eval("Engine.save(UI.state())"));
+    const pips = [...w.document.querySelectorAll("#sb-slots .sbpip")];
+    ok("the status bar draws order-paper time as marks",
+       pips.length === s1.slots.total && pips.length > 0, pips.length + " marks");
+    ok("and darkens exactly the spent ones",
+       pips.filter(p => p.classList.contains("spent")).length === s1.slots.used,
+       s1.slots.used + " of " + s1.slots.total + " spent");
+  }
+
   /* ONE PIP PER THING. A single corner flag lost the count, and lost the
      colour where two kinds fell on one day. */
   const marked = [...cells].filter(c => c.querySelector(".pips"));

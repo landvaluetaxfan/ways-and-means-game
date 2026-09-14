@@ -257,7 +257,13 @@ const UI = (function () {
     $("#sb-margin").textContent = `MARGIN ${conf - maj >= 0 ? "+" : ""}${conf - maj}`;
     $("#sb-thermal").textContent = `THERMAL ${st.scalars.thermal_margin}%`;
     $("#sb-chapter").textContent = `CHAPTER ${st.chapter}`;
-    $("#sb-slots").textContent = `SLOTS ${st.slots.total - st.slots.used}/${st.slots.total}`;
+    /* ORDER-PAPER TIME AS MARKS, NOT A FRACTION (design/19 §5.1). "4 of 6" is
+       a number; six marks with two dark is a quantity the eye has before it
+       reads. The tooltip still says what the marks mean. */
+    const sUsed = st.slots.used, sTot = st.slots.total;
+    $("#sb-slots").innerHTML = "SLOTS" + Array.from({ length: sTot }, (_, i) =>
+      `<i class="sbpip${i < sUsed ? " spent" : ""}"></i>`).join("");
+    $("#sb-slots").classList.toggle("none", sUsed >= sTot);
     $("#sb-sig").textContent = `SIGNATURES ${st.signatures || 0}/9`;
     $("#sb-sig").style.color = (st.signatures || 0) >= 7 ? "var(--alert)" : "";
     /* OUTSTANDING UNDERTAKINGS. Absent when there are none, rather than
@@ -756,6 +762,12 @@ const UI = (function () {
     if (dbtn && !dchk.ok && dchk.on != null) {
       dbtn.disabled = true;
       dbtn.textContent = "Division set for sitting " + dchk.on;
+      dbtn.title = dchk.reason;
+    } else if (dbtn && !dchk.ok && dchk.noTime) {
+      /* A division is House time (design/18 §3), so no time is a reason to
+         refuse — and a refusal the player cannot see is a bug report. */
+      dbtn.disabled = true;
+      dbtn.textContent = "No order-paper time left";
       dbtn.title = dchk.reason;
     }
     $("#btn-divide").addEventListener("click", () => {
@@ -1497,11 +1509,27 @@ const UI = (function () {
        only possible because today() reports obligations and not what
        happens to be available. */
     document.querySelectorAll(".tab").forEach(tab => {
-      const asked = t.tabs.indexOf(tab.dataset.t) >= 0 && tab.dataset.t !== "sit";
+      const mine = t.items.filter(i => i.tab === tab.dataset.t);
+      const asked = mine.length > 0 && tab.dataset.t !== "sit";
       tab.classList.toggle("asked", asked);
-      if (asked) tab.setAttribute("data-asked",
-        t.items.filter(i => i.tab === tab.dataset.t).length);
-      else tab.removeAttribute("data-asked");
+      const old = tab.querySelector(".tab-n");
+      if (old) old.remove();
+      if (!asked) return;
+      /* The count is a REAL element rather than a ::after, so that it can
+         carry the project's own hover card — a pseudo-element cannot. Hovering
+         it says WHAT is asked, in the same words the order of the day uses, so
+         the number stops being an unexplained red box. */
+      const n = document.createElement("span");
+      n.className = "tab-n";
+      n.setAttribute("data-tip", "tab-asked");
+      n.setAttribute("data-tip-title",
+        (TABNAME[tab.dataset.t] || tab.textContent.trim()) + ": " +
+        mine.length + (mine.length === 1 ? " thing asked" : " things asked"));
+      n.setAttribute("data-tip-body", mine.map(i =>
+        i.text + (i.when === "overdue" ? " (overdue)"
+                : i.when === "now" ? " (today)" : "")).join("   \u00b7   "));
+      n.textContent = mine.length;
+      tab.appendChild(n);
     });
     /* and the rise button says what leaving now would leave behind */
     const rb = $("#btn-advance");
