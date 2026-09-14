@@ -3,6 +3,14 @@
 *Measured against the build on 14 September 2026, not against the plan.
 Everything numbered here was counted, not estimated.*
 
+> **Re-measured after merging opencode's twenty-four commits.** Two findings
+> in the first draft were already closed by that work and have been removed
+> rather than softened: the consequence chain is now **whole** — all eight
+> rows have both a mover and an eye on them — and a broken promise now costs
+> the minister whose brief it was, which gives `design/02`'s spine the
+> terminus it lacked. The upper house is gone. What follows is what survives
+> re-measurement.
+
 `design/01`–`16` specify systems. This document is about three things they do
 not cover: what happens when the player gets ahead of the story, why the loop
 still has holes with every planned system built, and what foreign affairs
@@ -34,11 +42,13 @@ and **none of them is called anywhere.** Of the six events whose choices act on
 something the player can also do from another screen, **three carry no guard at
 all**: `halloran_finds_nine`, `vantage_cascade`, `ch2_carveout_price`.
 
-`owes` and `breached` being unused is worse than it looks: it means the
-undertakings system — the spine of `design/02`, the thing that makes a promise
-cost something — **has no terminus.** Nothing in the game notices that the
-player owes anything or has broken anything. That is §7.9's design rule broken
-by a system built specifically to satisfy it.
+On `owes` and `breached`, be precise: a breach now **does** have a
+consequence, because opencode wired one into the engine — the minister whose
+brief the promise belonged to resigns, and `minister_resigned` is set for
+content to read, which one event does. So the spine has a terminus. What is
+still true is narrower and still worth fixing: **no event asks whether the
+player is *currently* carrying an unmet promise.** `owes` is the condition for
+a government under pressure it has not yet failed, and that state is invisible.
 
 ### 1.2 But guarding is only one of three answers, and it is the worst one
 
@@ -150,32 +160,25 @@ events are eligible and what they cost. It is `when` conditions on a flag she
 sets herself. Engine cost: one effect verb and one condition, both of which
 `flag`/`flags` already are.
 
-### 3.2 The consequence chain is still open four ways
+### 3.2 The consequence chain is closed, and the audit should now bite
 
-```
-law.divergence_threshold_hours   moved by 1  gated by 0   NUMBER NOBODY SEES
-price.substrate                  moved by 0  gated by 1   EVENT NEVER FIRES
-scalar.thermal_margin            moved by 0  gated by 1   EVENT NEVER FIRES
-station                          moved by 3  gated by 0   NUMBER NOBODY SEES
-```
+All eight rows carry both a mover and an eye. `sweep-brief.md` Part D has said
+since it was written that the audit becomes a hard failure once the rows close.
+**They have closed.** Turning it on now costs nothing and stops it reopening;
+leaving it as a report means the next unwatched number is found by a player.
 
-The two `EVENT NEVER FIRES` rows are new and they are the more embarrassing
-kind: content has written an event gated on `price.substrate` and on
-`thermal_margin`, and **nothing in the game moves either number.** An event that
-cannot fire is worse than a number nobody reads, because somebody wrote it.
+### 3.3 Two stations of thirty-five appear in any event
 
-### 3.3 One station of thirty-five appears in any event
-
-The setting is thirty-five inhabited places and the game is about one of them.
-`design/03` asks for station events; this is the measurement of how far there is
-to go.
+The setting is thirty-five inhabited places and the game is about two of them.
+Twenty-one events now, up from thirteen, and the station roster is the part of
+the world the writing has not reached.
 
 ### 3.4 Nothing accumulates across a session boundary
 
 Prorogation refills the slots and drops the unpassed bills, and that is all it
-does. The player carries no record. There is no "in your first session you did
-X" that a later event can read, which is exactly what `owes`/`breached` were for
-and exactly what nothing uses.
+does. The player carries no record between sessions — there is no "in your
+first session you did X" for a later event to read. The flags exist to carry
+it; nothing sets one at a session boundary.
 
 ---
 
@@ -236,8 +239,8 @@ behaving like a closed system before then.
 |---|---|---|---|
 | 1 | **The quiet sitting** — a pool of unactionable order-paper lines | 39 of 60 sittings are empty; this is the loop's biggest hole | content + a small reader |
 | 2 | **Declare a posture on every pre-emptable event** — guard, adapt or reproach | 3 unguarded today, and 4 conditions unused | content |
-| 3 | **Close the two `EVENT NEVER FIRES` rows** | somebody wrote an event that cannot happen | content |
-| 4 | **Make `owes`/`breached` read by something** | the undertakings spine has no terminus | content |
+| 3 | **Make the chain audit a hard failure** | the rows are closed; keep them closed | Claude |
+| 4 | **Gate one event on `owes`** | a government under pressure it has not yet failed is invisible | content |
 | 5 | **Set `dividesOn` on the bills** | the calendar's teeth, unused | content |
 | 6 | **The standing agenda** — one verb, one condition | the player cannot initiate anything | Claude |
 | 7 | **Foreign affairs as a price and a concession** | the fiction already assumes it | Claude + content |
@@ -251,8 +254,9 @@ giving since Part D: the engine is not the constraint.
 
 - A playthrough of sixty sittings has fewer than ten sittings with nothing
   printed on the order paper.
-- `siNotMade`, `postVacant`, `owes` and `breached` are each used at least once.
-- `npm run lint` reports no `EVENT NEVER FIRES`.
+- `siNotMade`, `postVacant` and `owes` are each used at least once.
+- `npm run lint` FAILS on a break in the consequence chain, rather than
+  reporting one.
 - At least one bill in content carries `dividesOn`.
 - A `move` naming a target that does not exist appears in the log, and
   `npm run lint` fails on one in content.
