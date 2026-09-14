@@ -1418,6 +1418,47 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .ch-commit .commit.grave{border-width:2px;font-weight:700;box-shadow:2px 2px 0 rgba(27,29,25,.2);}
 
 /* ---------- the docket ---------- */
+/* ---------- what the government will do ----------
+   The one panel where she starts something. The head is the thing; the
+   body is HOW, and the how is the decision — so the tempo options are
+   full-width controls rather than a select, because a dropdown hides
+   the trade it is asking about. */
+.ini{border-bottom:1px solid var(--chrome-dk);}
+.ini:last-child{border-bottom:0;}
+.ini-h{
+  display:block;width:100%;text-align:left;background:none;border:0;
+  font:inherit;color:var(--ink);padding:6px 0;cursor:pointer;
+}
+.ini-h:disabled{cursor:default;opacity:.55;}
+.ini-h b{display:block;font-size:13px;font-weight:400;line-height:1.35;}
+.ini-h i{display:flex;align-items:center;gap:5px;font-style:normal;
+  font-family:var(--f-data);font-size:9.5px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--ink-soft);margin-top:3px;}
+.ini.open .ini-h b{font-weight:bold;}
+.ini-b{padding:0 0 8px;}
+.ini-b p{margin:0 0 7px;font-size:12.5px;line-height:1.5;color:var(--ink-soft);
+  max-width:56ch;}
+.ini-t{
+  display:block;width:100%;text-align:left;cursor:pointer;
+  background:var(--field);border:1px solid var(--chrome-dk);border-left-width:3px;
+  font:inherit;color:var(--ink);padding:5px 8px;margin-bottom:4px;
+}
+.ini-t:hover:not(:disabled){background:var(--chrome-lt);}
+.ini-t:disabled{opacity:.5;cursor:default;}
+.ini-t b{display:block;font-size:12.5px;font-weight:400;}
+.ini-t i{display:block;font-style:normal;font-family:var(--f-data);font-size:9.5px;
+  color:var(--ink-soft);margin-top:2px;}
+
+/* ORDER-PAPER TIME AS PIPS. "4 of 6" is a number; six marks with two
+   struck through is a quantity you read before you count it. */
+.pips.slots{display:inline-flex;gap:2px;vertical-align:middle;}
+.pips.slots s{
+  display:block;width:7px;height:7px;text-decoration:none;border-radius:0;
+  border:1px solid var(--rule);background:transparent;
+}
+.pips.slots s.spent{background:var(--rule);}
+.pips.slots s.want{background:var(--warn);border-color:var(--warn);}
+
 /* ---------- the order of the day ----------
    Obligations, not opportunities. Each row is a control that takes the
    player where the thing is answered, so it is styled as a control and

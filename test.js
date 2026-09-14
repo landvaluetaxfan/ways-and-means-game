@@ -1,6 +1,6 @@
 /* Headless check: does the division calculator reproduce the bible's numbers? */
 const fs = require("fs"), vm = require("vm");
-const files = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js","content/minutes.js",
+const files = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js","content/initiatives.js","content/minutes.js",
                "content/functional.js","content/labour.js",
                "content/characters.js","content/bills.js","content/events.js","content/glossary.js","content/encyclopedia.js","content/index.js"];
 const src = files.map(f => fs.readFileSync(f,"utf8")).join("\n") + "\n;globalThis.__C = CONTENT;";
@@ -1260,4 +1260,96 @@ console.log("\nTHE ORDER OF THE DAY:");
      "at sitting " + f.sitting + " of " + f.sessionEnds);
 
   if (bad) { console.log("\n" + bad + " ORDER-OF-DAY FAILURES"); process.exitCode = 1; }
+})();
+
+
+/* ---------------------------------------------------------------------
+   INITIATIVE, AND THE CLOCK THE PLAYER WINDS.
+
+   An authored deadline is orchestration and the player can feel the hand
+   that set it. A deadline the player set is the same pressure and reads
+   as agency. So the assertions here are less about the verb working than
+   about WHO CHOSE THE TIMING.
+   --------------------------------------------------------------------- */
+console.log("\nINITIATIVE:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const INI = CONTENT.initiatives || [];
+  ok("the government has things it can start", INI.length >= 3, INI.length + " initiatives");
+
+  /* TEMPO IS THE DECISION. An initiative whose tempos differ only in
+     speed is a difficulty setting; they have to buy different things. */
+  ok("every initiative offers more than one way of doing it",
+     INI.every(i => (i.tempo || []).length >= 2));
+  const sameEffects = INI.filter(i => {
+    const e = (i.tempo || []).map(t => JSON.stringify(t.effects || null));
+    return new Set(e).size < e.length;
+  });
+  ok("and the ways differ in more than speed", sameEffects.length === 0,
+     sameEffects.map(i => i.id).join(", ") || "each tempo buys something different");
+  ok("a slower way always answers later",
+     INI.every(i => i.tempo.every((t, n) => n === 0 || t.after >= i.tempo[n - 1].after)));
+
+  const st = Engine.newGame(CONTENT);
+  const before = st.slots.total - st.slots.used;
+
+  /* IT COSTS THE SAME TIME A BILL WANTS. That is what makes it a choice
+     rather than a free button, and it is what finally makes 7.7 true. */
+  const r = Engine.take(st, CONTENT, INI[0].id, 0);
+  ok("taking one spends order-paper time", r.ok && st.slots.used > 0,
+     before + " slots -> " + (st.slots.total - st.slots.used));
+
+  /* THE PLAYER CHOSE WHEN THE ANSWER COMES. */
+  const q = st.queue[st.queue.length - 1];
+  ok("and queues an answer at the tempo she picked",
+     !!q && q.dueSitting === st.sitting + INI[0].tempo[0].after,
+     q ? "due sitting " + q.dueSitting : "nothing queued");
+  const slow = Engine.newGame(CONTENT);
+  Engine.take(slow, CONTENT, INI[0].id, 1);
+  ok("a different way answers on a different day",
+     slow.queue[slow.queue.length - 1].dueSitting !== q.dueSitting,
+     "sitting " + q.dueSitting + " against " + slow.queue[slow.queue.length - 1].dueSitting);
+
+  /* AND IT SOLVES PRE-EMPTION BY THE SAME ACT. The story must stop
+     offering what she has already done. */
+  ok("what she has started is not offered again",
+     Engine.initiatives(st, CONTENT).find(x => x.id === INI[0].id).ok === false);
+  ok("and a power she cannot afford is still shown, with the reason",
+     Engine.initiatives(st, CONTENT).every(x => x.ok || (x.reason || "").length > 0));
+
+  /* TIME RUNS OUT. Six slots a session against a legislative programme
+     means she cannot do everything, which is the whole of 7.7. */
+  const e = Engine.newGame(CONTENT);
+  let taken = 0;
+  (CONTENT.initiatives || []).forEach(i => { if (Engine.take(e, CONTENT, i.id, 1).ok) taken++; });
+  ok("she cannot take everything in one session",
+     taken < INI.length || e.slots.used >= e.slots.total,
+     taken + " of " + INI.length + " taken, " + e.slots.used + "/" + e.slots.total + " slots spent");
+
+  /* THE DIVISION DAY IS HERS. It was st.sitting + 2, an engine constant
+     that nobody chose and the player could not move. */
+  const d = Engine.newGame(CONTENT);
+  const bill = CONTENT.bills.find(b => Engine.canDivide(d, CONTENT, b.id).ok &&
+                                       d.bills[b.id].stage !== "drafting");
+  if (bill) {
+    const set = Engine.setDivision(d, CONTENT, bill.id, d.sitting + 6);
+    ok("the government names the day a bill is put to the House",
+       set.ok && d.bills[bill.id].dividesOn === d.sitting + 6,
+       set.ok ? "set down for sitting " + set.on : set.reason);
+    ok("but not before the House next sits",
+       Engine.setDivision(d, CONTENT, bill.id, d.sitting).ok === false);
+    ok("and a bill still in drafting cannot be set down at all",
+       CONTENT.bills.filter(b => d.bills[b.id].stage === "drafting")
+         .every(b => Engine.setDivision(d, CONTENT, b.id, d.sitting + 3).ok === false));
+    ok("and not after it has risen",
+       Engine.setDivision(d, CONTENT, bill.id, d.sessionEnds + 1).ok === false);
+    ok("and the day she named is on the calendar",
+       Engine.deadlines(d, CONTENT).some(x => x.kind === "division" &&
+                                              x.sitting === d.sitting + 6));
+  } else ok("a bill is available to set down", false, "none dividable at open");
+
+  if (bad) { console.log("\n" + bad + " INITIATIVE FAILURES"); process.exitCode = 1; }
 })();

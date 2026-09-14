@@ -2506,6 +2506,113 @@ const Engine = (function () {
     };
   }
 
+  /* ---------------------------------------------------------
+     INITIATIVE, AND WHY IT IS THE PACING MECHANISM.
+
+     Everything in this game happens TO the prime minister. She answers
+     the House, fills what falls vacant, whips what content wrote. She
+     cannot start anything, which makes her a spectator with buttons.
+
+     The fix is also the answer to pacing, and that is not a
+     coincidence. An AUTHORED deadline — "the bill must carry by sitting
+     twenty" — is orchestration, and the player can feel the hand that
+     set it. A deadline the PLAYER set is the same pressure and feels
+     like agency: she said she would take it to a division on the
+     fourteenth, and now the whip count is a problem she made.
+
+     So an initiative is a commitment with a clock the player winds:
+
+       she spends order-paper time,
+       she chooses HOW IT IS DONE, which sets how long the answer takes,
+       and the answer arrives as an event she did not write.
+
+     TEMPO IS THE DECISION, not a difficulty setting. A word in the
+     corridor comes back next sitting and is worth what a corridor is
+     worth. A formal approach through the Cabinet Office takes a week
+     and carries the government's weight. Neither is correct.
+
+     And the density of the game becomes hers. Take three things on in
+     one week and their answers collide in the third; space them and the
+     grind is quiet. Nobody orchestrated that — she did, and she can
+     feel that she did.
+     --------------------------------------------------------- */
+  function initiativeById(C, id) {
+    return (C.initiatives || []).find(x => x.id === id) || null;
+  }
+
+  /* What the government could put in motion, and where it cannot. An
+     initiative the player cannot afford is still LISTED, with the
+     reason — a power you cannot see is a power you do not have. */
+  function initiatives(st, C) {
+    return (C.initiatives || []).map(i => {
+      const left = st.slots.total - st.slots.used;
+      const already = (st.flags || {})["init_" + i.id];
+      const why = already ? "already in hand"
+        : !matches(st, i.when) ? "not open to you"
+        : (i.cost || 1) > left ? "no order-paper time left this session"
+        : null;
+      return { id: i.id, title: i.title, note: i.note || "",
+               cost: i.cost || 1, tempo: i.tempo || [],
+               ok: !why, reason: why };
+    });
+  }
+
+  /* Take one. Spends the time, applies the initiative's effects and the
+     tempo's, and queues the answer. The flag is what stops the story
+     offering her a thing she has already done — the pre-emption problem
+     solved by the same act that causes it. */
+  function take(st, C, id, tempoIdx) {
+    const i = initiativeById(C, id);
+    if (!i) return { ok: false, reason: "no such initiative" };
+    const avail = initiatives(st, C).find(x => x.id === id);
+    if (!avail.ok) return { ok: false, reason: avail.reason };
+
+    const t = (i.tempo || [])[tempoIdx || 0] || { after: 3 };
+    const cost = (i.cost || 1) + (t.cost || 0);
+    if (cost > st.slots.total - st.slots.used)
+      return { ok: false, reason: "no order-paper time left this session" };
+    st.slots.used += cost;
+
+    st.flags["init_" + i.id] = true;
+    if (i.effects) apply(st, C, i.effects);
+    if (t.effects) apply(st, C, t.effects);
+    if (i.event) apply(st, C, [{ queue: { event: i.event, after: t.after || 3 } }]);
+
+    st.log.unshift({ sitting: st.sitting,
+      text: i.title + (t.label ? " \u2014 " + t.label : "") });
+    settle(st, C);
+    return { ok: true, cost: cost, after: t.after || 3 };
+  }
+
+  /* ---------------------------------------------------------
+     AND THE DAY OF A DIVISION IS HERS TOO.
+
+     dividesOn was st.sitting + 2, an engine constant nobody chose. The
+     date a bill is put to the House is the most consequential piece of
+     timing a government controls: name it early and you divide on the
+     whips you have, name it late and you have time to work but the
+     other side does too.
+     --------------------------------------------------------- */
+  function setDivision(st, C, billId, on) {
+    const bs = st.bills[billId];
+    if (!bs || bs.dead) return { ok: false, reason: "not before the House" };
+    /* NO STAGE CHECK, deliberately, and canDivide() explains why: divide()
+       has never enforced one, and content and the checks both divide from
+       committee. Setting a day is a weaker act than dividing, so a rule
+       here that divide() does not have would only be a rule the player
+       could walk around. */
+    if (bs.stage === "drafting")
+      return { ok: false, reason: "not introduced yet" };
+    const first = st.sitting + 1;
+    const last = st.sessionEnds == null ? first + 12 : st.sessionEnds;
+    if (on < first) return { ok: false, reason: "the House cannot divide before sitting " + first };
+    if (on > last) return { ok: false, reason: "the House rises at sitting " + last };
+    bs.dividesOn = on;
+    st.log.unshift({ sitting: st.sitting, text:
+      (C.billById[billId] || {}).title + " set down for sitting " + on });
+    return { ok: true, on: on };
+  }
+
   function prorogue(st, C) {
     const fell = [];
     (C.bills || []).forEach(b => {
@@ -2626,6 +2733,7 @@ const Engine = (function () {
     partyPopular, partyFunctional, partyTotal,
     division, reported, ballot, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
     dateOfSitting, sittingOfDate, deadlines, calendar, today,
+    initiatives, take, setDivision,
     apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,
     seedRoll, syncRoll, reconcile, partyDistrict,
     lastReconcile: () => lastReconcile, nationalShares, vacantSeats, seatsFor,

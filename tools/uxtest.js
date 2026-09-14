@@ -1125,6 +1125,37 @@ try {
      [...cells].every(c => (c.getAttribute("aria-label") || "").length > 0),
      (cells[10] || {}).getAttribute && cells[10].getAttribute("aria-label"));
 
+  /* WHAT THE GOVERNMENT WILL DO. The one panel where she starts
+     something, so the assertions are about whether the trade is visible
+     before she commits to it. */
+  w.document.querySelector('.tab[data-t="gov"]').click();
+  const inis = w.document.querySelectorAll("#gov-init .ini-h");
+  ok("the government screen offers things to set in motion", inis.length >= 3,
+     inis.length + " initiatives");
+  ok("and each shows what it costs in order-paper time",
+     [...inis].every(b => b.querySelector(".pips.slots") || b.disabled));
+
+  /* TEMPO IS THE DECISION, so it must be visible before committing —
+     not hidden behind a select the player opens after choosing. */
+  inis[0].click();
+  const tempi = w.document.querySelectorAll("#gov-init .ini-t");
+  ok("opening one shows the ways it could be done", tempi.length >= 2,
+     tempi.length + " tempos");
+  ok("and each says when the answer comes and what it costs",
+     [...tempi].every(b => /sitting/.test(b.textContent) && /slot/.test(b.textContent)),
+     tempi[0] && tempi[0].textContent.replace(/\s+/g, " ").trim());
+
+  /* SPENDING IT MUST BE VISIBLE AS SPENDING. The pips are the point. */
+  const pipsBefore = w.document.querySelectorAll("#gov-init .pips.slots s.spent").length;
+  tempi[0].click();
+  const pipsAfter = w.document.querySelectorAll("#gov-init .pips.slots s.spent").length;
+  ok("taking one spends time you can see", pipsAfter > pipsBefore,
+     pipsBefore + " spent -> " + pipsAfter);
+  ok("and it stops being on offer",
+     [...w.document.querySelectorAll("#gov-init .ini-h")].filter(b => !b.disabled).length
+       < inis.length);
+  w.document.querySelector('.tab[data-t="sit"]').click();
+
   /* THE ORDER OF THE DAY, and the property that makes it worth having:
      each row is a control that takes the player where the thing is
      answered, so the tabs stop being places you might look. */

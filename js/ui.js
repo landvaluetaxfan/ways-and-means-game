@@ -428,6 +428,7 @@ const UI = (function () {
 
   /* ---------- government ---------- */
   function drawGovernment() {
+    drawInitiatives();
     const conf = Engine.confidence(st), maj = Engine.majority(st);
     $("#gov-coalition-hdr").textContent = `${conf}/${Engine.chamberTotal(st)}`;
 
@@ -1360,6 +1361,87 @@ const UI = (function () {
   /* THE DOCKET. What is before the House, which is how a decision taken
      here reaches the screen that carries it out: promising something
      puts an item here, and keeping it takes the item away. */
+  /* ---------------------------------------------------------------
+     WHAT THE GOVERNMENT WILL DO.
+
+     Everything else on this screen answers something. This is the one
+     panel where the prime minister starts it, and the shape of the
+     control carries the argument: she picks the thing, and then she
+     picks HOW IT IS DONE, and the second choice is the one that
+     matters. A word in the corridor comes back next sitting and is
+     worth what a corridor is worth.
+
+     The order-paper cost is drawn as pips rather than written as a
+     fraction, because "4 of 6" is a number and six marks with two
+     struck through is a quantity. It is the same time a bill wants, so
+     the competition is visible in the place the spending happens.
+     --------------------------------------------------------------- */
+  let initOpen = null;
+
+  function slotPips(used, total, need) {
+    let out = "";
+    for (let i = 0; i < total; i++)
+      out += `<s class="${i < used ? "spent" : i < used + (need || 0) ? "want" : ""}"></s>`;
+    return `<span class="pips slots">${out}</span>`;
+  }
+
+  function initHTML() {
+    const list = Engine.initiatives(st, C);
+    if (!list.length) return `<div class="note">Nothing the government can set in motion.</div>`;
+    const left = st.slots.total - st.slots.used;
+    return list.map(i => {
+      const open = initOpen === i.id;
+      const head = `<button class="ini-h" data-ini="${i.id}"${i.ok ? "" : " disabled"}>
+          <b>${esc(i.title)}</b>
+          <i>${i.ok ? slotPips(st.slots.used, st.slots.total, i.cost) +
+                      " " + i.cost + " slot" + (i.cost === 1 ? "" : "s")
+                    : esc(i.reason)}</i>
+        </button>`;
+      if (!open) return `<div class="ini">${head}</div>`;
+      const tempo = (i.tempo || []).map((t, n) => {
+        const cost = i.cost + (t.cost || 0);
+        const can = cost <= left;
+        return `<button class="ini-t" data-take="${i.id}" data-tempo="${n}"${can ? "" : " disabled"}>
+            <b>${esc(t.label)}</b>
+            <i>answers in ${t.after} sitting${t.after === 1 ? "" : "s"} \u00b7 ${cost} slot${cost === 1 ? "" : "s"}${can ? "" : " \u00b7 not enough time"}</i>
+          </button>`;
+      }).join("");
+      return `<div class="ini open">${head}
+        <div class="ini-b"><p>${esc(i.note)}</p>${tempo}</div></div>`;
+    }).join("");
+  }
+
+  function drawInitiatives() {
+    const el = $("#gov-init"); if (!el) return;
+    el.innerHTML = initHTML();
+    const hdr = $("#gov-init-hdr");
+    if (hdr) hdr.textContent = (st.slots.total - st.slots.used) + " of " +
+                               st.slots.total + " slots left this session";
+    el.querySelectorAll("[data-ini]").forEach(b =>
+      b.addEventListener("click", () => {
+        initOpen = initOpen === b.dataset.ini ? null : b.dataset.ini;
+        drawInitiatives();
+      }));
+    el.querySelectorAll("[data-take]").forEach(b =>
+      b.addEventListener("click", () => {
+        const i = (C.initiatives || []).find(x => x.id === b.dataset.take) || {};
+        const t = (i.tempo || [])[+b.dataset.tempo] || {};
+        Dialog.confirm(i.title + " \u2014 " + (t.label || "") + "?",
+          { title: "Set it in motion", yes: "Do it" },
+          okd => {
+            if (!okd) return;
+            const r = Engine.take(st, C, b.dataset.take, +b.dataset.tempo);
+            if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
+            cue("stamp"); score("undertake");
+            if (typeof Wait !== "undefined") Wait.brief(420);
+            initOpen = null;
+            setStatus(i.title + " \u2014 an answer in " + r.after +
+                      " sitting" + (r.after === 1 ? "" : "s"), "transient");
+            drawAll(); saved(); afterAction();
+          });
+      }));
+  }
+
   /* ---------------------------------------------------------------
      THE ORDER OF THE DAY.
 
