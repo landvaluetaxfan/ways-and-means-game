@@ -389,10 +389,32 @@ const Tips = (function () {
      a mode, it is announced in the options panel, and Escape leaves it.
      Never a positive tabindex - 0 means "in document order", which is
      exactly where a column heading belongs. */
+  /* AN ANNOTATION IS EITHER KEYED OR INLINE, AND BOTH ARE ANNOTATIONS.
+
+     show() has read a one-off data-tip-body since the functional roll
+     needed one, but every selector that DECIDES whether to call show()
+     asked for data-tip alone — so an element carrying only the inline
+     card was invisible to hover, to focus and to `?`, and its card could
+     never appear at all. Anything written with data-tip-title and no key
+     beside it was dead on the page and looked completely fine in the
+     markup, which is why several were: a calendar day, the party marks,
+     every price and refusal card, the chamber picker, the orbit chips.
+
+     One constant, used by all four call sites. An inline card carries its
+     own title and body and needs no key; there is nothing for a key to
+     add and nothing to fall through to. */
+  const SEL = "[data-tip],[data-tip-body]";
+  /* A comma splits the WHOLE selector list, so "#statusbar " + SEL reads
+     as "#statusbar [data-tip]" OR "[data-tip-body]" anywhere in the
+     document — which marked eleven rows on a screen nobody was looking
+     at. A prefix has to be distributed across the list, not glued to the
+     front of it. The existing check caught this on the first run. */
+  const within = pre => SEL.split(",").map(s => pre + " " + s).join(",");
+
   function marks() {
     const screen = document.querySelector(".screen.on") || document;
-    return [].slice.call(screen.querySelectorAll("[data-tip]"))
-      .concat([].slice.call(document.querySelectorAll("#statusbar [data-tip]")));
+    return [].slice.call(screen.querySelectorAll(SEL))
+      .concat([].slice.call(document.querySelectorAll(within("#statusbar"))));
   }
   function explain(on) {
     if (typeof document === "undefined") return;
@@ -414,7 +436,7 @@ const Tips = (function () {
 
     document.addEventListener("pointerover", e => {
       if (!opt()) return;
-      const el = e.target.closest && e.target.closest("[data-tip]");
+      const el = e.target.closest && e.target.closest(SEL);
       if (!el || el === anchor) return;
       hide();
       /* A DELAY ON HOVER AND NONE ON FOCUS. A pointer crosses six table
@@ -423,13 +445,13 @@ const Tips = (function () {
       timer = setTimeout(() => show(el), HOVER_DELAY);
     });
     document.addEventListener("pointerout", e => {
-      const el = e.target.closest && e.target.closest("[data-tip]");
+      const el = e.target.closest && e.target.closest(SEL);
       if (el && el === anchor) hide();
       else if (el) clearTimeout(timer);
     });
     document.addEventListener("focusin", e => {
       if (!opt()) return;
-      const el = e.target.closest && e.target.closest("[data-tip]");
+      const el = e.target.closest && e.target.closest(SEL);
       hide();
       if (el) show(el);
     });

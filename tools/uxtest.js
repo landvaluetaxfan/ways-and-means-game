@@ -557,7 +557,9 @@ try {
   ok("all of the ones on screen, and none with a positive value", marked.length > 12 &&
      marked.every(n => n.getAttribute("tabindex") === "0"), marked.length + " marked");
   const hidden = [...w.document.querySelectorAll('.screen:not(.on) [data-tip][tabindex]')];
-  ok("and nothing on a screen you cannot see", hidden.length === 0, hidden.length + " marked");
+  ok("and nothing on a screen you cannot see", hidden.length === 0,
+     hidden.length + " marked: " + hidden.slice(0,6).map(n =>
+       (n.closest(".screen")||{}).id + " " + n.tagName + "." + n.className).join(" | "));
 
   th.focus();
   const cardShown = w.document.getElementById("tipcard");
@@ -584,6 +586,55 @@ try {
   ok("the card cannot be hovered or clicked", /#tipcard\{[^}]*pointer-events:none/.test(css));
   const tsrc = fs.readFileSync(path.join(root, "js/tips.js"), "utf8");
   ok("and is never given a tabindex", !/tipcard[\s\S]{0,300}tabindex/.test(tsrc));
+
+  /* AN INLINE CARD IS AN ANNOTATION TOO, AND IT HAS TO ACTUALLY APPEAR.
+
+     show() has read a one-off data-tip-body for a long time, but every
+     selector deciding whether to CALL show() asked for data-tip alone.
+     An element carrying only the inline card was invisible to hover, to
+     focus and to `?` — dead on the page and perfectly correct-looking in
+     the markup. Several were: a calendar day, the party marks, every
+     price and refusal card, the chamber picker, the orbit chips.
+
+     Every assertion this suite had about those cards read the ATTRIBUTE.
+     None of them asked whether a card would come up, which is the only
+     question that mattered. This one does, through the real hover path. */
+  w.eval('Shell.setOpt("tips", true);');
+  const inlineOnly = () => {
+    const scr = w.document.querySelector(".screen.on");
+    return [...scr.querySelectorAll("[data-tip-body]")].filter(e => !e.hasAttribute("data-tip"));
+  };
+  /* Through the FOCUS path, which is the one with no delay — "a keyboard
+     has already committed to the thing it is on". It reads the same
+     selector constant the pointer does, so proving one proves both. */
+  const raise = el => {
+    w.eval("Tips.hide()");
+    el.dispatchEvent(new w.FocusEvent("focusin", { bubbles: true }));
+    const c = w.document.getElementById("tipcard");
+    return c && c.hidden === false ? c.textContent : "";
+  };
+  w.document.querySelector('.tab[data-t="gov"]').click();
+  const cards = inlineOnly();
+  ok("the government screen carries cards with no keyed token behind them",
+     cards.length > 3, cards.length + " inline cards");
+  const sample = cards.slice(0, 5);
+  const shown = sample.filter(e => raise(e).length > 4);
+  ok("and every one of them puts a card up", shown.length === sample.length,
+     shown.length + " of " + sample.length);
+  const last = sample[sample.length - 1];
+  ok("carrying the text the element wrote, not a keyed lookup",
+     raise(last).indexOf(last.getAttribute("data-tip-body").slice(0, 24)) >= 0,
+     raise(last).slice(0, 70));
+
+  /* `?` has to reach them too: a tip only a mouse can find is not an
+     explanation, it is a reward for owning a mouse (js/tips.js). */
+  w.document.dispatchEvent(new w.KeyboardEvent("keydown", { key: "?", bubbles: true }));
+  const tabbable = inlineOnly().filter(e => e.getAttribute("tabindex") === "0" ||
+                                            /^(a|button|input|select|textarea)$/i.test(e.tagName));
+  ok("and ? puts them in the tab order with everything else",
+     tabbable.length === inlineOnly().length,
+     tabbable.length + " of " + inlineOnly().length);
+  w.document.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
 
   /* Off means off. */
   w.eval('Shell.setOpt("tips", false);');
