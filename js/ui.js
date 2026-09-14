@@ -604,7 +604,7 @@ const UI = (function () {
               ? "Moves it a stage and puts " + ps(b.owner) + " +" + (b.priority ? 3 : 2) +
                 " in your debt."
               : "Moves it a stage. Your own bill buys you no debt." },
-            left ? null : "no order-paper time left this session") + `>Grant</button></td></tr>`
+            left ? null : "no order-paper time left this session") + `>${grantLabel(b.id)}</button></td></tr>`
       ).join("")}</tbody></table>`;
     /* THE ORDER PAPER CARRIES UNDERTAKINGS TOO. An order paper lists the
        business, and a promise the government has made is business. This
@@ -624,7 +624,7 @@ const UI = (function () {
     $("#gov-slots").querySelectorAll(".slotbtn").forEach(btn =>
       btn.addEventListener("click", () => {
         const b = C.bills.find(x => x.id === btn.dataset.slot);
-        Engine.grantSlot(st, C, btn.dataset.slot);
+        acted(() => Engine.grantSlot(st, C, btn.dataset.slot));
         cue("stamp"); if (typeof Wait !== "undefined") Wait.brief(240);
         setStatus("Order paper time granted to " + (b ? b.title : btn.dataset.slot) +
                   " \u00b7 " + (st.slots.total - st.slots.used) + " of " +
@@ -656,7 +656,7 @@ const UI = (function () {
     }).join("");
     $("#gov-si").querySelectorAll("[data-make]").forEach(b => b.addEventListener("click", () => {
       const si = (C.instruments || []).find(x => x.id === b.dataset.make);
-      const r = Engine.makeInstrument(st, C, b.dataset.make);
+      const r = acted(() => Engine.makeInstrument(st, C, b.dataset.make));
       if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); Dialog.alert(r.reason, { title: "Order refused" }); }
       else {
         cue("stamp"); score("order");
@@ -675,7 +675,7 @@ const UI = (function () {
         { title: "Pray against this order?", yes: "Pray", danger: true },
         ok => {
           if (!ok) return;
-          Engine.prayAgainst(st, C, b.dataset.pray);
+          acted(() => Engine.prayAgainst(st, C, b.dataset.pray));
           cue(f.carries ? "aye" : "nay"); if (typeof Wait !== "undefined") Wait.brief(320);
           /* A CARRIED PRAYER ANNULS THE GOVERNMENT'S OWN ORDER, so it
              fired the triumphant swell for the player losing something.
@@ -753,7 +753,9 @@ const UI = (function () {
             ok => {
               if (!ok) return;
               const snap = Engine.snapshot(st);
-              const r = Engine.fillPost(st, C, pid, ci);
+              /* Filling a post makes that ministry's orders makeable, which
+                 is a change on Papers and was never reported. */
+              const r = acted(() => Engine.fillPost(st, C, pid, ci));
               if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
               const moved = Engine.changes(snap, Engine.snapshot(st), C);
               cue("stamp"); score("undertake");
@@ -955,6 +957,23 @@ const UI = (function () {
         drawAll(); afterAction();
       });
     });
+  }
+
+  /* THE BUTTON NAMES THE DESTINATION.
+
+     It said "Grant", which is a verb with no object: a new player can
+     press it repeatedly without ever learning that it moves a bill one
+     stage along a ladder, that the ladder is what the division gate reads,
+     or that a measure at drafting is two grants and a division away — a
+     third of a session's time. A control that states its outcome cannot be
+     spammed by accident, which is a cheaper fix than any animation. */
+  function grantLabel(billId) {
+    const bs = st.bills[billId];
+    const i = Engine.STAGE_ORDER.indexOf(bs.stage);
+    const next = bs.stage === "blocked" ? "second_reading"
+               : i >= 0 && i < Engine.STAGE_ORDER.length - 1 ? Engine.STAGE_ORDER[i + 1]
+               : null;
+    return next ? `Grant &rarr; ${esc(next.replace(/_/g, " "))}` : "Grant";
   }
 
   /* ---------- PRICE, AND REFUSAL ----------
@@ -1503,10 +1522,39 @@ const UI = (function () {
     });
     const posts = {};
     (C.cabinet || []).forEach(p => { posts[p.id] = (st.cabinet[p.id] || {}).holder || ""; });
+    /* THE LEDGER AND THE CALENDAR were the two destinations this was blind
+       to, and they are the two most acted upon. Capital moves whenever a
+       partner is paid or put in debt, and a DATED thing — a division set,
+       a prayer window, an initiative answering — lands on a day the player
+       is not looking at. Four different actions put something on the
+       calendar and not one of them said so. */
+    const capital = {};
+    Object.keys(st.capital || {}).forEach(k => capital[k] = st.capital[k]);
+    const dated = Engine.deadlines(st, C)
+      .map(d => d.kind + "@" + d.sitting + ":" + (d.text || "")).join("|");
     return { owed: (st.undertakings || []).map(u => u.id + ":" + u.state).join("|"),
              owedOpen: Engine.outstanding(st).length,
-             bills: bills, si: si, posts: posts,
+             bills: bills, si: si, posts: posts, capital: capital, dated: dated,
+             datedList: Engine.deadlines(st, C),
              slots: st.slots.total - st.slots.used };
+  }
+
+  /* EVERY ACTION REPORTS WHAT IT MOVED SOMEWHERE ELSE.
+
+     reportMoves() and the card it fires have existed since motion.js was
+     written, and exactly ONE action called them: taking a decision on the
+     Sitting screen. Granting time, making an order, praying against one,
+     appointing a minister and setting a division all change something on
+     a tab the player is not looking at, and all of them said nothing.
+
+     `acted` wraps the action instead of asking each handler to remember —
+     a handler that forgets is the bug this replaces, and there is now one
+     place to forget it rather than nine. */
+  function acted(fn) {
+    const before = structure(st);
+    const out = fn();
+    reportMoves(before, structure(st));
+    return out;
   }
 
   function reportMoves(before, after) {
@@ -1515,11 +1563,11 @@ const UI = (function () {
 
     if (after.owedOpen > before.owedOpen) {
       const u = Engine.outstanding(st)[Engine.outstanding(st).length - 1];
-      notes.push({ tab: "gov", where: "Order paper",
+      notes.push({ tab: "gov", where: "Undertakings",
                    text: "An undertaking has been entered.",
                    detail: u ? u.text : null });
     } else if (after.owedOpen < before.owedOpen && before.owed !== after.owed) {
-      notes.push({ tab: "gov", where: "Order paper",
+      notes.push({ tab: "gov", where: "Undertakings",
                    text: "An undertaking has been discharged." });
     }
 
@@ -1527,7 +1575,7 @@ const UI = (function () {
       if (before.bills[id] === after.bills[id]) return;
       const b = (C.bills || []).find(x => x.id === id);
       const bs = st.bills[id];
-      notes.push({ tab: "gov", where: "Order paper",
+      notes.push({ tab: "cham", where: "Order paper",
                    text: (b ? b.title : id) +
                          (bs.dead ? " has fallen." : " has moved."),
                    detail: bs.dead ? null : String(bs.stage).replace(/_/g, " ") });
@@ -1551,6 +1599,34 @@ const UI = (function () {
                      : (p ? p.title || p.name : id) + " stands vacant.",
                    detail: ch ? ch.name : null });
     });
+
+    Object.keys(after.capital).forEach(pid => {
+      const d = after.capital[pid] - (before.capital[pid] || 0);
+      if (!d) return;
+      notes.push({ tab: "gov", where: "Coalition ledger",
+                   text: ps(pid) + (d > 0 ? " owes you " + d + " more."
+                                          : " is owed " + (-d) + " more."),
+                   detail: "Now " + (after.capital[pid] > 0 ? "+" : "") + after.capital[pid] + "." });
+    });
+
+    /* A DATED THING LANDS ON A DAY THE PLAYER IS NOT LOOKING AT — but only
+       report the ones nothing else here covers, or one fact gets two cards.
+       An undertaking is already an `owed` deadline and has its own note
+       above; a division set is in `bills`; a prayer window is in `si`.
+       What is left is `expected`: a commission reporting, a dispatch due,
+       an initiative answering — a fact the queue is holding for a day, and
+       the one dated thing nothing announced. */
+    if (before.dated !== after.dated) {
+      const was = new Set((before.datedList || []).map(d => d.kind + "@" + d.sitting + ":" + (d.text || "")));
+      const now = (after.datedList || [])
+        .filter(d => d.kind === "expected")
+        .filter(d => !was.has(d.kind + "@" + d.sitting + ":" + (d.text || "")));
+      now.slice(0, 1).forEach(d => notes.push({
+        tab: "sit", where: "The calendar",
+        text: d.text || "Something is down for a day.",
+        detail: d.away === 0 ? "Today." : d.away === 1 ? "Tomorrow."
+              : "In " + d.away + " sittings." }));
+    }
 
     /* Two is a report; five is a wall. Anything past the first two is
        on the screen it belongs to anyway. */
@@ -1787,7 +1863,9 @@ const UI = (function () {
           { title: "Set it in motion", yes: "Do it" },
           okd => {
             if (!okd) return;
-            const r = Engine.take(st, C, b.dataset.take, +b.dataset.tempo);
+            /* An initiative answers on a named sitting — a dated thing on a
+               tab the player is not on. */
+            const r = acted(() => Engine.take(st, C, b.dataset.take, +b.dataset.tempo));
             if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
             cue("stamp"); score("undertake");
             if (typeof Wait !== "undefined") Wait.brief(420);

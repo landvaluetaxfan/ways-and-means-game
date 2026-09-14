@@ -1240,6 +1240,59 @@ try {
   ok("an undertaking reports itself to the screen that holds it",
      fired.length === 1 && /gov/.test(fired[0]), JSON.stringify(fired));
 
+  /* EVERY ACTION THAT MOVES SOMETHING ELSEWHERE REPORTS IT. The card and
+     the diff behind it existed from the start and exactly ONE handler
+     called them — taking a decision. Granting time, making an order,
+     praying against one, appointing a minister and taking an initiative
+     were all silent about the tab they changed. */
+  /* These spend slots and move bills on the LIVE state, and later blocks
+     read both, so the state is put back exactly as it was afterwards. */
+  w.eval('window.__saved = Engine.save(UI.state());');
+  w.eval('window.__motion.length = 0;');
+  const granted = w.eval(`(function () {
+    var st = UI.state(), before = UI.__test.structure(st);
+    var live = CONTENT.bills.filter(function (b) {
+      return !st.bills[b.id].dead && st.bills[b.id].stage !== "third_reading"; })[0];
+    Engine.grantSlot(st, CONTENT, live.id);
+    UI.__test.reportMoves(before, UI.__test.structure(st));
+    return window.__motion.slice();
+  })()`);
+  ok("granting time reports the stage it moved, on the tab that holds the paper",
+     granted.some(x => /cham/.test(x)), JSON.stringify(granted));
+
+  /* THE LEDGER. Granting a partner's bill puts them in your debt, which
+     is a number on a tab you are not on. */
+  w.eval('window.__motion.length = 0;');
+  const paid = w.eval(`(function () {
+    var st = UI.state(), before = UI.__test.structure(st);
+    var owned = CONTENT.bills.filter(function (b) {
+      return b.owner && b.owner !== st.playerParty && !st.bills[b.id].dead &&
+             st.bills[b.id].stage !== "third_reading"; })[0];
+    if (!owned) return ["no partner bill"];
+    Engine.grantSlot(st, CONTENT, owned.id);
+    UI.__test.reportMoves(before, UI.__test.structure(st));
+    return window.__motion.slice();
+  })()`);
+  ok("and the debt it bought, on the tab that holds the ledger",
+     paid.some(x => /gov/.test(x)), JSON.stringify(paid));
+
+  /* THE CALENDAR, which four actions write to and none announced. Only
+     the kinds nothing else covers: an undertaking is already reported by
+     its own note, so reporting it again would be one fact twice. */
+  w.eval('window.__motion.length = 0;');
+  const dated = w.eval(`(function () {
+    var st = UI.state(), before = UI.__test.structure(st);
+    Engine.apply(st, CONTENT, [{ queue: { after: 4, label: "The commission reports",
+      effects: [{ move: { treasury: -1 } }] } }]);
+    UI.__test.reportMoves(before, UI.__test.structure(st));
+    return window.__motion.slice();
+  })()`);
+  ok("a fact put on a day reports itself to the calendar",
+     dated.some(x => /sit/.test(x)), JSON.stringify(dated));
+
+  w.eval('UI.boot(Engine.load(window.__saved, CONTENT), CONTENT);');
+  w.eval('window.__motion.length = 0;');
+
   ok("and a change with no cross-screen consequence reports nothing",
      w.eval(`(function () {
        window.__motion.length = 0;
