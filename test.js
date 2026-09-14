@@ -840,6 +840,33 @@ console.log("\nTHE QUIET SITTING HAS A PAGE (design/17 §2.2):");
   if (bad) { console.log("\n" + bad + " ORDER-PAPER FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nAN INITIATIVE'S ANSWER IS AN EVENT (design/18 §4):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const ids = new Set(CONTENT.events.map(e => e.id));
+  const inits = CONTENT.initiatives || [];
+  ok("there are initiatives", inits.length > 0, inits.length + "");
+  ok("and each queues an event that exists",
+     inits.every(i => ids.has(i.event)),
+     inits.filter(i => !ids.has(i.event)).map(i => i.id).join(",") || "");
+
+  /* Taking one spends the clock and puts the answer on the queue. */
+  const a = Engine.newGame(CONTENT);
+  const i0 = inits[0];
+  const before = a.slots.used;
+  const r = Engine.take(a, CONTENT, i0.id, 0);
+  ok("taking an initiative succeeds", !!r.ok, r.reason || "");
+  ok("and it spends order-paper time", a.slots.used > before,
+     before + " -> " + a.slots.used);
+  ok("and it queues the answer",
+     (a.queue || []).some(q => q.eventId === i0.event), JSON.stringify(a.queue || []));
+
+  if (bad) { console.log("\n" + bad + " INITIATIVE FAILURES"); process.exitCode = 1; }
+})();
+
 /* ---------------------------------------------------------------------
    THE BED IS IN TUNE.
 

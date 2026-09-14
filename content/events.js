@@ -649,6 +649,94 @@ do is stay empty by itself.`,
       effects:[{move:{"public_standing":-4}},{flag:"post_left_vacant"},
                {wire:"PM LEAVES MINISTERIAL POST VACANT"}],
       result:"No instrument comes out of that brief until someone holds it, and the opposition has read the same rules you have." }
+  ]},
+
+/* ============================================================
+   THE INITIATIVES ANSWER (design/18 §4)
+
+   Three things a government can put in motion rather than answer, and
+   the answer to each. content/initiatives.js queues these by id, and
+   each is queuedOnly so nothing can reach it before she has started
+   the thing.
+
+   ONE EVENT PER INITIATIVE, and the tempo is read off the flags that
+   tempo set — `when` on a choice, which is where a branch belongs.
+   The answer arrives either way; what changes is what she can do
+   with it, and that is the whole of the tempo decision.
+   ============================================================ */
+
+{ id:"guild_answers", queuedOnly:true, once:true,
+  title:"The panel's answer",
+  speaker:"gb_chair",
+  body:`The panel met on Thursday, which is when it always meets, and the answer it agreed is the one the sector has given every government since 2279.
+
+"Nine seats," the chair says, "and not one of them moves for a government that has moved the roll. Count it again if you like. The count will not change."
+
+She is not angry about it, which is the difficulty. She has been doing this longer than the government has existed, and she is telling you what her members will do, not what she thinks of you.`,
+  choices:[
+    { label:"Take the answer. Stop asking.",
+      effects:[{flag:"guild_met"},{move:{"rel.gb_chair":5}},{move:{"loyalty.gb":5}}],
+      result:"The panel has said no. A government that hears no and moves on keeps something the next approach will need." },
+    { label:"Ask what it would take, and make her name it.",
+      effects:[{flag:"guild_met"},{flag:"guild_price_asked"},
+               {move:{"rel.gb_chair":-6}},{move:{"loyalty.gb":-4}}],
+      result:"She names it, and it is the thing you already knew: leave the roll alone. Naming it in a room is not the same as knowing it." },
+    { label:"Remind her the sunset clause has been extended four times.",
+      when:{ flagsAbsent:["threatened_guild_bench"] },
+      effects:[{flag:"guild_met"},{flag:"threatened_guild_bench"},
+               {move:{"rel.gb_chair":-12}},{move:{public_standing:2}}],
+      result:"\"Extend it a fifth time,\" she says. \"You will need us for that too.\"" }
+  ]},
+
+{ id:"review_reports", queuedOnly:true, once:true,
+  title:"What the standing orders have shed",
+  speaker:null,
+  body:`Somebody has finally counted. The register of people suspended under the standing shed orders stands at seventy-six thousand, and no House has ever been told the number aloud, because nothing required it to be.
+
+It is not a scandal. It is a schedule. That is the part that will be quoted.`,
+  choices:[
+    { label:"Read the number into the record yourself.",
+      when:{ flags:["review_full"] },
+      effects:[{flag:"shed_number_published"},{move:{public_standing:8}},
+               {move:{"loyalty.cu_maintenance":10}},{move:{"loyalty.hul":9}},
+               {wire:"PM READS SHED ORDER TOTAL INTO THE HOUSE: SEVENTY-SIX THOUSAND"}],
+      result:"A figure an inquiry produced carries the inquiry's weight. That is what paying for the inquiry bought." },
+    { label:"Take the number and sit on it.",
+      when:{ flags:["review_thin"] },
+      effects:[{flag:"shed_number_held"},{move:{public_standing:-3}}],
+      result:"A departmental note is easy to keep. It is also easy to leak, and it now sits in the department." },
+    { label:"Announce a standing register, published quarterly.",
+      effects:[{flag:"shed_register_promised"},{move:{public_standing:5}},
+               {move:{"loyalty.psa":6}},{move:{"loyalty.gb":-5}},
+               {wire:"GOVERNMENT TO PUBLISH SHED ORDER REGISTER QUARTERLY"}],
+      result:"The number becomes furniture. That is either the point of publishing it or the way to stop it mattering, depending on who is asked." },
+    { label:"Do nothing with it. It was a review, not a policy.",
+      effects:[{flag:"review_filed"},{move:{"loyalty.cu_maintenance":-6}}],
+      result:"The file joins the others. Someone on the maintenance benches will ask for it by name within the month." }
+  ]},
+
+{ id:"position_lands", queuedOnly:true, once:true,
+  title:"What saying it did",
+  speaker:"ceyhan",
+  body:`It is on the record now, and the record is the thing that cannot be walked back. The question is not whether anyone agrees. It is who has written down that the government said it.
+
+Ceyhan has, which was always going to happen. The whip has, in a different column, for a different reason.`,
+  choices:[
+    { label:"Leave it where it is. It was said and it stands.",
+      effects:[{flag:"position_public"},{move:{"loyalty.cu_maintenance":4}},
+               {move:{"rel.ceyhan":5}}],
+      result:"Nothing more is said. The sentence stays on the record, which is what a position is." },
+    { label:"Repeat it, and make the government's case for it.",
+      effects:[{flag:"position_public"},{flag:"position_campaigned"},
+               {move:{public_standing:5}},{move:{"loyalty.cu_maintenance":-8}},
+               {move:{"loyalty.psa":6}},
+               {wire:"PM CAMPAIGNS ON THRESHOLD POSITION; MAINTENANCE BENCHES OBJECT"}],
+      result:"The position becomes the government's, for good. That is a stronger thing to hold and a heavier one to put down." },
+    { label:"Soften it. Say it was a preference, not a commitment.",
+      when:{ flags:["position_offhand"] },
+      effects:[{flag:"position_softened"},{move:{"rel.ceyhan":-8}},
+               {move:{"loyalty.psa":-7}},{move:{"loyalty.cu_maintenance":5}}],
+      result:"An answer at questions is easy to call a preference. It is also the second time the same audience has watched you do it." }
   ]}
 
 ];

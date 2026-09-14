@@ -17,12 +17,10 @@
      tempo   [{ label, after, cost?, effects? }]
 
    ---------------------------------------------------------------------
-   PROSE IS A MECHANICAL DEMONSTRATION AND IS FOR OPENCODE TO REWRITE.
-   The three below exist to exercise the verb: one relationship, one
-   piece of information, one public commitment. The shapes are right and
-   the words are placeholders. Each queues an event that does not exist
-   yet, so each `event` id is a TODO and the initiative will queue a
-   miss until it is written.
+   The three below are the opening set: one relationship, one piece of
+   information, one public commitment. Each queues an answer event in
+   content/events.js, and the tempo decides which branch of it is open
+   to her. `npm run lint` fails if an `event` here has no event there.
    --------------------------------------------------------------------- */
 const INITIATIVES = [
 
@@ -32,10 +30,10 @@ const INITIATIVES = [
   { id: "approach_guild",
     title: "Approach the Guild Bench",
     note: "Nine functional seats that decide every dual majority, and a chair " +
-          "who will not take a meeting with you.",
+          "who will not take a meeting with the Prime Minister.",
     cost: 1,
     when: { flagsAbsent: ["guild_met"] },
-    event: "TODO_guild_answers",
+    event: "guild_answers",
     tempo: [
       { label: "Send the Minister he will see", after: 2,
         effects: [ { flag: { guild_via_minister: true } } ] },
@@ -47,11 +45,11 @@ const INITIATIVES = [
      difference is whether the answer is worth quoting in the House. */
   { id: "commission_review",
     title: "Commission a review of the shed orders",
-    note: "Nobody has counted what the standing orders have actually shed. " +
-          "The number will be inconvenient whoever produces it.",
+    note: "Nobody has counted how many people the standing shed orders have " +
+          "suspended. Whoever produces the number will have to live with it.",
     cost: 1,
     when: { flagsAbsent: ["review_ordered"] },
-    event: "TODO_review_reports",
+    event: "review_reports",
     tempo: [
       { label: "A note from the department, this week", after: 2,
         effects: [ { flag: { review_thin: true } } ] },
@@ -64,11 +62,11 @@ const INITIATIVES = [
      and the government can be seen to have failed. */
   { id: "state_the_position",
     title: "State the government's position on the threshold",
-    note: "Everyone has inferred it. Saying it out loud makes it a thing " +
-          "she can be held to.",
+    note: "Everyone has inferred the government's position. Saying it out loud " +
+          "makes it something she can be held to.",
     cost: 2,
     when: { flagsAbsent: ["position_stated"] },
-    event: "TODO_position_lands",
+    event: "position_lands",
     tempo: [
       { label: "At questions, in an answer", after: 1,
         effects: [ { flag: { position_offhand: true } } ] },

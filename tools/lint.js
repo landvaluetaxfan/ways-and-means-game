@@ -22,8 +22,8 @@ const root = path.join(__dirname, "..");
 const files = ["setup", "parties", "stations", "constituencies", "cabinet", "instruments","initiatives", "minutes", "characters", "bills", "events", "glossary", "encyclopedia", "labour"]
   .map(f => path.join(root, "content", f + ".js"));
 vm.runInThisContext(files.map(f => fs.readFileSync(f, "utf8")).join("\n") +
-  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR};");
-const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR } = globalThis.__G;
+  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES};");
+const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES } = globalThis.__G;
 
 const MAX_NEW_CLUSTERS = 1;  // per event. Raise this and you are choosing to confuse people.
 
@@ -497,6 +497,24 @@ try {
 
 section("POPULATION STORED TWICE (advisory)", popBad, x => x);
 
+/* =============================================================
+   INITIATIVES POINT AT EVENTS THAT EXIST (design/18 §6)
+
+   An initiative queues its answer by event id. A typo is SILENT: the
+   engine pushes the miss onto the queue and the player waits for an
+   event that is never defined. content/initiatives.js shipped three of
+   these as TODO_ ids, which is exactly the failure this catches.
+   ============================================================= */
+const eventIds = new Set(EVENTS.map(e => e.id));
+const initBad = [];
+(INITIATIVES || []).forEach(i => {
+  const check = (id, where) => {
+    if (id && !eventIds.has(id)) initBad.push(`${where}: queues "${id}", which is not an event`);
+  };
+  check(i.event, i.id);
+  (i.tempo || []).forEach((t, k) => check(t.event, `${i.id} tempo ${k + 1}`));
+});
+section("INITIATIVES WHOSE ANSWER DOES NOT EXIST", initBad, x => x);
 
 R.push("=".repeat(60));
 R.push(n ? `${n} legibility issues` : "no legibility issues");
@@ -505,15 +523,15 @@ if (chainBad.length) R.push(`${chainBad.length} BREAKS IN THE CONSEQUENCE CHAIN`
 if (cssBad.length) R.push(`${cssBad.length} UNDEFINED CSS CUSTOM PROPERTIES`);
 if (parseBad.length) R.push(`${parseBad.length} STYLESHEET PARSE FAILURES`);
 if (verbBad.length) R.push(`${verbBad.length} RETIRED EFFECT VERBS IN CONTENT`);
+if (initBad.length) R.push(`${initBad.length} INITIATIVES WITH NO ANSWER`);
 if (popBad.length) R.push("THE POPULATION IS STORED TWICE AND HAS DRIFTED (advisory)");
 console.log(R.join("\n"));
-/* The chain is reported loudly and does NOT fail the build yet: the
-   current content breaks it in several places by omission, and a check
-   that fails from the day it lands gets disabled rather than fixed. It
-   becomes a hard failure when the content pass in design/03 closes the
-   rows below. */
-
-/* gridBad is a hard failure: it was clean the day it landed, both halves
-   were verified against a planted fault, and a starved column is not a
-   matter of taste. popBad is not, for the reason given above it. */
-if (artBad.length || cssBad.length || verbBad.length || parseBad.length || gridBad.length) process.exit(1);
+/* HARD FAILURES: everything except popBad. The chain is one of them now —
+   design/17 §3.2, all eight rows carry both a mover and an eye on them, and
+   the audit exists to stop that reopening. gridBad was clean the day it
+   landed and a starved column is not a matter of taste.
+   ADVISORY: popBad. Which of the two stored populations is canon is a bible
+   edit and a content fix, not a call a linter gets to make, and a check that
+   fails from the day it lands gets disabled rather than fixed. */
+if (artBad.length || chainBad.length || cssBad.length || verbBad.length ||
+    parseBad.length || initBad.length || gridBad.length) process.exit(1);
