@@ -133,7 +133,15 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    cramped into 300px beside it, so the one panel that could not use its
    width had most of it and the two that could had none. Three columns
    instead, with the plan on the remainder. */
-.g-cham{grid-template-columns:minmax(0,1fr) minmax(240px,300px) minmax(0,400px);}
+/* THE PLAN IS A FIXED WIDTH, SO IT TAKES A FIXED COLUMN. `1fr` for the
+   chamber claimed 718px to draw 539px of seating and left the whip and
+   the breakdown 300 and 400. drawChamber() caps the panel at the drawing
+   it just measured; `auto` then shrinks to that and the two table columns
+   split the surplus, the whip's a little wider because its MOVE column is
+   one block per whippable seat and blocks want room. */
+.g-cham{grid-template-columns:minmax(0,auto) minmax(0,1fr) minmax(0,1.1fr);}
+.g-cham>.panel:first-child{max-width:var(--planw,none);}
+.g-cham svg{max-width:100%;height:auto;}
 .g-orb{
   grid-template-columns:216px minmax(0,1090px) minmax(0,1fr);
   grid-template-rows:minmax(0,1fr) auto;
@@ -165,11 +173,16 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 
 /* A DRAWN SCROLLBAR FOR ENGINES THAT CANNOT BEVEL ONE (Gecko).
 
-   js/ui.js wraps a scrolling orbit body in .sbwrap and appends a .sbar, so
-   the bar takes a column of its own and never runs under the rightmost
-   table column. The native bar is hidden. Engines with ::-webkit-scrollbar
-   keep the beveled native bar and never get this markup. */
-.g-orb>.panel>.sbwrap{flex:1 1 auto;min-height:0;min-width:0;display:flex;}
+   Any body that scrolls inside the terminal's chrome carries `.scrolls`
+   in the markup; js/ui.js wraps it in .sbwrap and appends a .sbar, so the
+   bar takes a column of its own and never runs under the rightmost table
+   column. The native bar is hidden. Engines with ::-webkit-scrollbar keep
+   the beveled native bar and never get this markup.
+
+   NOT scoped to a screen. It used to name .g-orb, so the drawn bar was an
+   orbit feature rather than the terminal's, and every scroller added
+   afterwards quietly got the OS one instead. */
+.sbwrap{flex:1 1 auto;min-height:0;min-width:0;display:flex;}
 .sbwrap>.pbody{flex:1 1 auto;min-height:0;min-width:0;overflow:auto;scrollbar-width:none;}
 .sbwrap>.pbody::-webkit-scrollbar{display:none;}
 .sbwrap>.sbar{flex:0 0 13px;position:relative;background:var(--chrome-lt);
@@ -517,6 +530,8 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 }
 @media (max-width:1080px){
   .g-gov,.g-cham,.g-orb,.g-disp,.g-pap,.g-elec{grid-template-columns:minmax(0,1fr);}
+  /* one column, so the plan is free to be the width of the screen again */
+  .g-cham>.panel:first-child{max-width:none;}
   .newsbody{column-count:1;}
 }
 

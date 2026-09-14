@@ -233,6 +233,31 @@ try {
   ok("scroll survives a re-render on every scrollable panel",
      scrollers.split("/")[0] === "0" && +scrollers.split("/")[1] > 4,
      scrollers.split("/")[1] + " panels, " + scrollers.split("/")[0] + " lost");
+
+  /* --- THE DRAWN SCROLLBAR IS THE TERMINAL'S, NOT ORBIT'S ---
+
+     jsdom reports no ::-webkit-scrollbar, so it takes the Gecko path and
+     decorateScrollers() actually runs here. It used to name two orbit
+     panels by selector, which made every scroller added afterwards get
+     the operating system's bar while orbit had a drawn one. The marker
+     class is the contract; these assert both halves of it. */
+  const marked = [...w.document.querySelectorAll(".scrolls")];
+  ok("every scrolling body is marked for the drawn bar", marked.length >= 5,
+     marked.length + " marked");
+  ok("and the marks are spread across the terminal, not one screen",
+     new Set(marked.map(e => (e.closest("section") || {}).id)).size >= 3,
+     [...new Set(marked.map(e => (e.closest("section") || {}).id))].join(" "));
+  ok("each one got a drawn bar rather than the operating system's",
+     marked.every(e => e.parentNode.classList.contains("sbwrap") &&
+                       !!e.parentNode.querySelector(".sbar>.sbar-thumb")),
+     marked.filter(e => !e.parentNode.classList.contains("sbwrap"))
+           .map(e => e.id || e.className).join(" ") || "all wrapped");
+  /* And the rule that lays it out is not scoped to a screen either — the
+     CSS is where the last version of this bug actually lived. */
+  const sheet = require("fs").readFileSync(
+    require("path").join(__dirname, "..", "css", "terminal.css"), "utf8");
+  ok("and the stylesheet does not scope .sbwrap to one grid",
+     /^\.sbwrap\{/m.test(sheet) && !/\.g-\w+>\.panel>\.sbwrap/.test(sheet));
 } catch (e) { ok("focus restoration", false, e.message); }
 
 /* THE CONCORDANCE WITHOUT A MOUSE.
@@ -1375,6 +1400,28 @@ try {
     ok("showing the House at rest puts the whip away",
        w.document.querySelector("#p-whip").hidden &&
        w.document.querySelector("#p-break").hidden);
+
+    /* --- THE CENTRE COLUMN STOPS AT THE DRAWING ---
+
+       The seating plan is a fixed number of pixels, measured from the
+       seat count; a `1fr` centre column claimed 718 of a 1440 window to
+       draw 539 of them and the whip and the breakdown split what was
+       left. drawChamber publishes the measurement and the stylesheet
+       spends the surplus on the tables. jsdom does no layout, so what is
+       assertable here is the contract between the two. */
+    const plan = w.document.querySelector(".g-cham>.panel");
+    const psvg = w.document.querySelector("#s-cham svg");
+    const planw = plan.style.getPropertyValue("--planw");
+    ok("the chamber panel publishes the width of the plan it drew", /^\d+px$/.test(planw), planw);
+    ok("which is the drawing plus its gutter, not a guess",
+       parseInt(planw, 10) === parseInt(psvg.getAttribute("width"), 10) + 24,
+       planw + " for a " + psvg.getAttribute("width") + "px plan");
+    const css = require("fs").readFileSync(
+      require("path").join(__dirname, "..", "css", "terminal.css"), "utf8");
+    ok("the stylesheet caps the column with it",
+       /\.g-cham>\.panel:first-child\{max-width:var\(--planw/.test(css));
+    ok("and lets go of it when the grid falls to one column",
+       /@media[^{]*\{[\s\S]*?\.g-cham>\.panel:first-child\{max-width:none/.test(css));
   }
 } catch (e) { ok("the faction breakdown renders", false, e.message); }
 

@@ -67,7 +67,14 @@ const UI = (function () {
     try { bevel = !!(window.CSS && CSS.supports && CSS.supports("selector(::-webkit-scrollbar)")); }
     catch (e) { bevel = false; }
     if (bevel) return;
-    document.querySelectorAll(".p-cons>.pbody, .p-doss>.pbody").forEach(box => {
+    /* A MARKER CLASS, NOT A LIST OF PANELS.
+
+       This named two orbit panels by selector, so every scrolling body
+       added afterwards silently got the OS bar while orbit had a drawn
+       one — the hardcoded-list fault this repo has been bitten by twice
+       already. Anything that scrolls inside the terminal's chrome now
+       says `.scrolls` in the markup and gets the drawn bar for free. */
+    document.querySelectorAll(".scrolls").forEach(box => {
       if (box._sb) return;
       box._sb = true;
       const wrap = document.createElement("div");
@@ -2239,8 +2246,21 @@ const UI = (function () {
     /* 1.35, not 1: at true 1:1 a 9px label is 9px and the whole House is
        450px wide in a 1280px panel, which reads as an afterthought rather
        than as the diagram the tab is named for. */
-    svg.setAttribute("width", Math.round(W * 1.35));
+    const drawnW = Math.round(W * 1.35);
+    svg.setAttribute("width", drawnW);
     svg.setAttribute("height", Math.round(H * 1.35));
+    /* AND THE COLUMN STOPS AT THE DRAWING. The plan is a fixed number of
+       pixels wide, so a `1fr` centre column was claiming 718 to draw 539
+       and the whip and the breakdown were squeezed into what was left.
+       Capping the panel lets the grid's `auto` track shrink to the plan
+       and hands the surplus to the tables, which can use it. */
+    const host = svg.closest && svg.closest(".panel");
+    /* A CUSTOM PROPERTY, NOT AN INLINE max-width. An inline width beats
+       the stylesheet, so pinning 563px here would pin it at 400px on a
+       phone too, where the grid is one column and the panel must be free
+       to be as wide as the screen. The stylesheet reads the measurement
+       and decides what to do with it. */
+    if (host) host.style.setProperty("--planw", (drawnW + 24) + "px");
 
     const label = (x, y, t, cls) =>
       `<text x="${x.toFixed(0)}" y="${y.toFixed(0)}" text-anchor="middle" class="chlab${cls ? " " + cls : ""}">${t}</text>`;
