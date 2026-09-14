@@ -179,17 +179,34 @@ try {
   }
 } catch (e) { ok("functional list", false, e.message); }
 
-/* THE CHAMBER HAS THREE VIEWS, and each draws a different House. A view that
-   draws the same picture as another is a control that does nothing. */
+/* THE CHAMBER'S CONTROLS ARE TWO KINDS, and each kind says which it is. The
+   colour is a CHOICE (one of two); the arrangement is a SET (any of them),
+   and the set combines — which is the whole reason they are not one list. */
 try {
   w.document.querySelector(".tab[data-t='cham']").click();
   w.eval("Focus.seed('cham-bills', CONTENT.bills[0].id); UI.boot(UI.state(), CONTENT);");
-  const btns = [...w.document.querySelectorAll("#cham-pick [data-view]")];
-  ok("the chamber offers a view per question", btns.length === 3,
-     btns.map(b => b.dataset.view).join(","));
-  const seen = new Set();
-  btns.forEach(b => { b.click(); seen.add(w.document.querySelector("#chamber").innerHTML); });
-  ok("and the three views draw three different Houses", seen.size === 3, seen.size + " distinct");
+  const cols = [...w.document.querySelectorAll("#cham-pick [data-colour]")];
+  const togs = [...w.document.querySelectorAll("#cham-pick [data-toggle]")];
+  ok("the colour is a choice of two", cols.length === 2, cols.map(b => b.dataset.colour).join(","));
+  ok("the arrangement is two toggles", togs.length === 2, togs.map(b => b.dataset.toggle).join(","));
+  ok("and the two kinds carry different affordances",
+     cols.every(b => b.getAttribute("aria-checked") != null) &&
+     togs.every(b => b.getAttribute("aria-pressed") != null));
+
+  const snap = () => w.document.querySelector("#chamber").innerHTML;
+  /* reset to no toggles, then build up */
+  togs.forEach(t => { if (t.getAttribute("aria-pressed") === "true") t.click(); });
+  const base = snap();
+  togs[0].click(); const one = snap();
+  togs[1].click(); const both = snap();
+  ok("each toggle changes the drawing", one !== base && both !== one);
+  ok("and the two combine into a House neither gives alone", both !== base && both !== one);
+  /* the colour is exclusive: picking one puts the other out */
+  cols[0].click(); const a = snap();
+  cols[1].click(); const b2 = snap();
+  ok("but the colour excludes, so switching it moves the drawing", a !== b2);
+  ok("and only one colour is ever on",
+     w.document.querySelectorAll("#cham-pick [data-colour].on").length === 1);
 } catch (e) { ok("chamber views", false, e.message); }
 
 /* FOCUS RESTORATION.

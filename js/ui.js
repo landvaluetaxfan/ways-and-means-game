@@ -823,6 +823,25 @@ const UI = (function () {
         `<li class="${esc(l.tone || "")}">${esc(l.text)}</li>`).join("")}</ul>`;
   }
 
+  /* WHICH WAY IT MOVES THE ARGUMENT. A bill is positioned on the same four
+     axes as the parties are, and those axes are what the fight is about —
+     so this is the measure's direction in the terms the rest of the game
+     argues in, read off its own stance rather than written beside it. */
+  const AXIS_DIR = {
+    ownership:   { public:"toward public ownership", private:"toward private ownership" },
+    personhood:  { expansionist:"toward the expansion of personhood",
+                   restrictionist:"toward restriction" },
+    sovereignty: { federal:"toward the federation", station:"toward the stations" },
+    closure:     { integrationist:"toward integration", closurist:"toward closure" }
+  };
+  function billAxesHTML(b) {
+    const a = b.axes || {};
+    const moves = Object.keys(AXIS_DIR).filter(k => a[k] && AXIS_DIR[k][a[k]])
+      .map(k => AXIS_DIR[k][a[k]]);
+    if (!moves.length) return "";
+    return `<div class="note"><b>Moves the argument</b> ${moves.join("; ")}.</div>`;
+  }
+
   /* WHO IS FOR IT, AND WHY. The stance is content; the reason is the axis
      reading above, so the table can never disagree with the division the
      dividers will actually run. A party with no seats on either bench is not
@@ -840,17 +859,14 @@ const UI = (function () {
         : s && (s.popular != null || s.functional != null) ? "split by bench"
         : null;
       const why = axisWhy(p.axes, b.axes) || (s == null ? "No stated position." : "");
-      const sq = st.parties[p.id].seats;
       return `<tr><td>${mark(p.id)}${esc(ps(p.id))}</td>` +
-        `<td class="n">${Engine.partyTotal(st, p.id)}</td>` +
         `<td class="st${s === "for" ? " yea" : s === "against" ? " nay" : ""}">` +
           `${read ? esc(read) : "inferred"}</td>` +
         `<td class="wy">${esc(why)}</td></tr>`;
     }).filter(Boolean).join("");
     if (!rows) return "";
     return `<div class="rulehead">Who is for it, and why</div>
-      <table class="billwhy"><thead><tr><th>Party</th><th class="n">Seats</th>` +
-      `<th>Position</th><th>Why</th></tr></thead><tbody>${rows}</tbody></table>`;
+      <table class="billwhy"><tbody>${rows}</tbody></table>`;
   }
 
   function drawBill(id) {
@@ -865,18 +881,27 @@ const UI = (function () {
     $("#bill-hdr").textContent = b.title;
     $("#bill-ref").textContent = b.ref;
     det.innerHTML =
-      `<div class="note" style="margin-bottom:6px">${b.summary}</div>` +
-      (b.effectNote ? `<div class="rulehead">Effect</div><div class="note">${b.effectNote}</div>` : "") +
-      billDoesHTML(b) +
-      /* NOT THE FORECAST. It is drawn under the plan, a hand's width to
-         the right on the same screen, where it doubles as the legend for
-         the seat colouring. Two copies of one number is not emphasis. */
-      `<div class="note" style="margin-top:5px">${
-        rep.carries ? "<b>Carries</b> as the benches stand." :
-        (b.dualMajority && rep.popular.carries && !rep.functional.carries
-          ? "<b>Carries on the popular benches and fails on the functional.</b> The dual test applies: bills touching life-support integrity and charter amendments must carry separately among functional members."
-          : "<b>Fails</b> as the benches stand.")}</div>` +
-      billWhoHTML(b) +
+      /* WHAT IT DOES LEADS, AND GETS THE ROOM. The opinions are real and stay,
+         but they are a column beside the substance rather than the substance:
+         the summary, the effect and the engine's reading of the effects are
+         what the player is deciding about. */
+      `<div class="billbody">` +
+        `<div class="billmain">` +
+          `<div class="note">${b.summary}</div>` +
+          (b.effectNote ? `<div class="rulehead">Effect</div><div class="note">${b.effectNote}</div>` : "") +
+          billAxesHTML(b) +
+          billDoesHTML(b) +
+          /* NOT THE FORECAST. It is drawn under the plan, a hand's width to
+             the right on the same screen, where it doubles as the legend for
+             the seat colouring. Two copies of one number is not emphasis. */
+          `<div class="note" style="margin-top:5px">${
+            rep.carries ? "<b>Carries</b> as the benches stand." :
+            (b.dualMajority && rep.popular.carries && !rep.functional.carries
+              ? "<b>Carries on the popular benches and fails on the functional.</b> The dual test applies: bills touching life-support integrity and charter amendments must carry separately among functional members."
+              : "<b>Fails</b> as the benches stand.")}</div>` +
+        `</div>` +
+        `<div class="billside">` + billWhoHTML(b) + `</div>` +
+      `</div>` +
       whipLine(id) +
       dayLine(id, dchk) +
       `<div class="btnrow">
@@ -2263,13 +2288,25 @@ const UI = (function () {
      is not a second choice of bill, only a request to see the House at
      rest, and naming a measure here names it there. */
   let chamberBare = false;
-  /* HOW THE HOUSE IS ARRANGED ON THE PAGE. Party is the House as it is
-     actually arranged. Vote regroups each aisle so the ayes sit together and
-     the nays together, which is what a division looks like from the gallery.
-     Aisles drops party altogether and colours the two benches by the vote
-     alone, which is what a simple measure deserves and a dual one does not. */
-  let chamberView = "party";
-  const CHVIEWS = [["party", "by party"], ["vote", "ayes together"], ["aisles", "bench folded in"]];
+  /* HOW THE HOUSE IS DRAWN, in two parts that are not the same kind of thing.
+
+     THE COLOUR IS A CHOICE. A seat is coloured by the party that holds it or
+     by the vote it is giving, and not both, so the two exclude each other.
+
+     THE ARRANGEMENT IS A SET. Regrouping the ayes, and folding the functional
+     bench into the two sides, are independent facts about the drawing, and
+     either can hold with the other. Combining them is the point: fold the
+     bench in AND group the ayes is the view a whip wants for a simple
+     measure.
+
+     The interface says which is which — a segmented control for the choice, a
+     row of toggles for the set — because two controls that look alike and
+     behave differently is the bug, not the feature. */
+  let chamberColour = "party";     /* party | vote */
+  let chamberGroup = false;        /* ayes contiguous within each aisle */
+  let chamberFold = false;         /* the functional bench joins the aisles */
+  const CHCOLOURS = [["party", "by party"], ["vote", "by vote"]];
+  const CHTOGGLES = [["group", "ayes together"], ["fold", "bench folded in"]];
   const chamberBill = () => chamberBare ? null : Focus.selected("cham-bills");
 
   function drawChamberPicker() {
@@ -2289,18 +2326,36 @@ const UI = (function () {
       : `<b>Showing</b><span class="chnow">the House as it sits</span>` +
         `<i class="chhint">choose a measure on the order paper to colour the benches</i>`) +
       `</div>` +
-      /* The view is offered only when there is a vote to show. At rest every
-         seat is the same state, so all three views would draw one picture. */
-      (b ? `<div class="chviews">` + CHVIEWS.map(([v, lab]) =>
-        `<button class="chv${chamberView === v ? " on" : ""}" data-view="${v}"` +
-        ` aria-pressed="${chamberView === v ? "true" : "false"}">${lab}</button>`
-      ).join("") + `</div>` : "");
+      /* The controls are offered only when there is a vote to show. At rest
+         every seat is the same state and every option would draw one picture.
+
+         TWO KINDS, MARKED AS TWO KINDS. The colour is a radio group and the
+         two buttons are joined into one segmented control, which is what "pick
+         one" looks like. The arrangement is a pair of toggles, each with its
+         own box, which is what "any of these" looks like. */
+      (b ? `<div class="chviews">` +
+        `<span class="chgrp radios" role="radiogroup" aria-label="Colour the benches">` +
+        CHCOLOURS.map(([v, lab]) =>
+          `<button class="chv rad${chamberColour === v ? " on" : ""}" data-colour="${v}"` +
+          ` role="radio" aria-checked="${chamberColour === v ? "true" : "false"}">${lab}</button>`
+        ).join("") + `</span>` +
+        `<span class="chgrp toggles" role="group" aria-label="Arrange the benches">` +
+        CHTOGGLES.map(([k, lab]) => {
+          const on = k === "group" ? chamberGroup : chamberFold;
+          return `<button class="chv tog${on ? " on" : ""}" data-toggle="${k}"` +
+            ` aria-pressed="${on ? "true" : "false"}"><i class="box"></i>${lab}</button>`;
+        }).join("") + `</span>` + `</div>` : "");
     const off = el.querySelector("[data-cb]");
     if (off) off.addEventListener("click", () => {
       chamberBare = true; cue("click"); drawChamber();
     });
-    el.querySelectorAll("[data-view]").forEach(btn => btn.addEventListener("click", () => {
-      chamberView = btn.dataset.view; cue("click"); drawChamber();
+    el.querySelectorAll("[data-colour]").forEach(btn => btn.addEventListener("click", () => {
+      chamberColour = btn.dataset.colour; cue("click"); drawChamber();
+    }));
+    el.querySelectorAll("[data-toggle]").forEach(btn => btn.addEventListener("click", () => {
+      if (btn.dataset.toggle === "group") chamberGroup = !chamberGroup;
+      else chamberFold = !chamberFold;
+      cue("click"); drawChamber();
     }));
   }
 
@@ -2466,7 +2521,7 @@ const UI = (function () {
          question. For a simple measure they are only votes, and a bench of
          their own says otherwise — so they join the side their party is on
          and the Bar goes away. */
-      const into = chamberView === "aisles"
+      const into = chamberFold
         ? (govIds.includes(id) ? gov : opp) : cross;
       for (let i = 0; i < s.functional; i++) {
         const on = aye == null || aye-- > 0;
@@ -2545,15 +2600,17 @@ const UI = (function () {
       chair = take(gov) || take(opp);
     }
 
-    /* THE VIEW (chamberView). Party leaves the benches as they are arranged.
-       Vote regroups each aisle so the ayes are contiguous and the nays are
-       contiguous — party colours kept, so you can still see who moved. Aisles
-       leaves them alone too; what it changes is above, where the functional
-       bench is folded in. The Chair is out of the array first either way, so
-       no view can move it. */
+    /* THE VIEW, applied last and in two independent parts. Grouping reorders
+       each aisle; colouring repaints it; neither knows about the other, and
+       the fold happened above when the seats were dealt. The Chair is out of
+       the array before any of them, so no view can move it. */
     const sortByVote = arr => arr.slice().sort((a, b) =>
       (b.aye === true ? 1 : 0) - (a.aye === true ? 1 : 0));
-    const viewed = arr => chamberView === "vote" ? sortByVote(arr) : arr;
+    const paint = arr => chamberColour === "vote"
+      ? arr.map(s => Object.assign({}, s,
+          { c: s.aye === false ? "var(--alert)" : "var(--ok)" }))
+      : arr;
+    const viewed = arr => paint(chamberGroup ? sortByVote(arr) : arr);
     const govV = viewed(gov), oppV = viewed(opp), crossV = viewed(cross);
 
     /* Everything is derived from the seat counts, so the diagram tightens
@@ -2631,7 +2688,7 @@ const UI = (function () {
     /* AISLES puts the functional forty into the aisles, so a popular
        denominator would read "169/240" and mean nothing. In that view the
        two sides are measured against the whole House. */
-    const sideOf = chamberView === "aisles"
+    const sideOf = chamberFold
       ? Engine.popularTotal(st) + Engine.functionalTotal(st)
       : Engine.popularTotal(st);
     $("#chamber-tally").innerHTML =
