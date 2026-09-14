@@ -780,6 +780,79 @@ const UI = (function () {
       : `<div class="pbody"><div class="note">No traffic this session.</div></div>`;
   }
 
+  /* THE FOUR AXES, and the words for them. A bill and a party are both
+     described on these, which is what makes "why" derivable rather than
+     written: the reason a bench votes a way IS its position against the
+     bill's, and the engine already computes that distance for the division. */
+  const AXIS_NAME = { ownership:"ownership", personhood:"personhood",
+                      sovereignty:"sovereignty", closure:"closure" };
+
+  /* WHY A PARTY IS WHERE IT IS, read off the axes it and the bill share. A
+     party with no settled position on an axis the bill moves says nothing
+     about it, rather than being given a reason content did not. */
+  function axisWhy(paxes, baxes) {
+    const same = [], diff = [];
+    Object.keys(AXIS_NAME).forEach(a => {
+      if (!baxes || baxes[a] == null || !paxes || paxes[a] == null) return;
+      (paxes[a] === baxes[a] ? same : diff).push(AXIS_NAME[a]);
+    });
+    if (!same.length && !diff.length) return "";
+    if (diff.length && !same.length) return "against it on " + diff.join(" and ");
+    if (same.length && !diff.length) return "with it on " + same.join(" and ");
+    return "with it on " + same.join(" and ") + ", against on " + diff.join(" and ");
+  }
+
+  /* WHAT THE BILL DOES, in the engine's own reading of its own effects.
+     Engine.describe() is the same function the choice labels use, so a bill
+     cannot claim an effect it does not have — the words are read off onPass
+     rather than written beside it. */
+  function billDoesHTML(b) {
+    /* MATERIAL EFFECTS ONLY. A wire headline and a flag are bookkeeping: a
+       bill that "puts it on the wire" has changed nothing in the world, and a
+       list headed "what it does" cannot say that. */
+    const KEEP = ["law","station","move","price","seats","functional","coalition","relationship"];
+    const material = (b.onPass || []).map(e => {
+      const o = {};
+      KEEP.forEach(k => { if (e[k] != null) o[k] = e[k]; });
+      return o;
+    }).filter(e => Object.keys(e).length);
+    const lines = Engine.describe(st, C, material);
+    if (!lines.length) return "";
+    return `<div class="rulehead">What it does</div>
+      <ul class="does">${lines.map(l =>
+        `<li class="${esc(l.tone || "")}">${esc(l.text)}</li>`).join("")}</ul>`;
+  }
+
+  /* WHO IS FOR IT, AND WHY. The stance is content; the reason is the axis
+     reading above, so the table can never disagree with the division the
+     dividers will actually run. A party with no seats on either bench is not
+     in the House and is not listed. */
+  function billWhoHTML(b) {
+    const rows = C.parties.map(p => {
+      if (!Engine.partyTotal(st, p.id)) return null;
+      const s = (b.stances || {})[p.id];
+      const read = s === "for" ? "for"
+        : s === "against" ? "against"
+        : s === "abstain" ? "abstains"
+        : s && s.free ? "a free vote"
+        : s && s.forPct != null ? `splits, ~${Math.round(s.forPct * 100)}% for`
+        : s && s.for != null ? `${s.for} for`
+        : s && (s.popular != null || s.functional != null) ? "split by bench"
+        : null;
+      const why = axisWhy(p.axes, b.axes) || (s == null ? "No stated position." : "");
+      const sq = st.parties[p.id].seats;
+      return `<tr><td>${mark(p.id)}${esc(ps(p.id))}</td>` +
+        `<td class="n">${Engine.partyTotal(st, p.id)}</td>` +
+        `<td class="st${s === "for" ? " yea" : s === "against" ? " nay" : ""}">` +
+          `${read ? esc(read) : "inferred"}</td>` +
+        `<td class="wy">${esc(why)}</td></tr>`;
+    }).filter(Boolean).join("");
+    if (!rows) return "";
+    return `<div class="rulehead">Who is for it, and why</div>
+      <table class="billwhy"><thead><tr><th>Party</th><th class="n">Seats</th>` +
+      `<th>Position</th><th>Why</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+
   function drawBill(id) {
     const b = C.billById[id], bs = st.bills[id], dchk = Engine.canDivide(st, C, id);
     /* The forecast is the REPORTED division, not the exact one (design/08 §7),
@@ -794,6 +867,7 @@ const UI = (function () {
     det.innerHTML =
       `<div class="note" style="margin-bottom:6px">${b.summary}</div>` +
       (b.effectNote ? `<div class="rulehead">Effect</div><div class="note">${b.effectNote}</div>` : "") +
+      billDoesHTML(b) +
       /* NOT THE FORECAST. It is drawn under the plan, a hand's width to
          the right on the same screen, where it doubles as the legend for
          the seat colouring. Two copies of one number is not emphasis. */
@@ -802,6 +876,7 @@ const UI = (function () {
         (b.dualMajority && rep.popular.carries && !rep.functional.carries
           ? "<b>Carries on the popular benches and fails on the functional.</b> The dual test applies: bills touching life-support integrity and charter amendments must carry separately among functional members."
           : "<b>Fails</b> as the benches stand.")}</div>` +
+      billWhoHTML(b) +
       whipLine(id) +
       dayLine(id, dchk) +
       `<div class="btnrow">
@@ -2194,7 +2269,7 @@ const UI = (function () {
      Aisles drops party altogether and colours the two benches by the vote
      alone, which is what a simple measure deserves and a dual one does not. */
   let chamberView = "party";
-  const CHVIEWS = [["party", "by party"], ["vote", "ayes together"], ["aisles", "aisles only"]];
+  const CHVIEWS = [["party", "by party"], ["vote", "ayes together"], ["aisles", "bench folded in"]];
   const chamberBill = () => chamberBare ? null : Focus.selected("cham-bills");
 
   function drawChamberPicker() {
@@ -2386,9 +2461,16 @@ const UI = (function () {
       const r = rowOf(id);
       let aye = r ? r.functionalAye : null;
       const whip = r ? Math.min(r.functionalWhipped || 0, r.functionalAye) : 0;
+      /* AISLES FOLDS THE BENCH IN. The functional forty sit at the Bar in
+         their own block because the dual test makes them a separate
+         question. For a simple measure they are only votes, and a bench of
+         their own says otherwise — so they join the side their party is on
+         and the Bar goes away. */
+      const into = chamberView === "aisles"
+        ? (govIds.includes(id) ? gov : opp) : cross;
       for (let i = 0; i < s.functional; i++) {
         const on = aye == null || aye-- > 0;
-        cross.push({ c: col, t: "f", p: id, aye: aye == null ? null : on,
+        into.push({ c: col, t: "f", p: id, aye: aye == null ? null : on,
                      wh: on && aye != null && aye < whip });
       }
     });
@@ -2466,14 +2548,12 @@ const UI = (function () {
     /* THE VIEW (chamberView). Party leaves the benches as they are arranged.
        Vote regroups each aisle so the ayes are contiguous and the nays are
        contiguous — party colours kept, so you can still see who moved. Aisles
-       drops party and colours by the vote alone. The Chair is taken out of the
-       array first, so no view can move it. */
+       leaves them alone too; what it changes is above, where the functional
+       bench is folded in. The Chair is out of the array first either way, so
+       no view can move it. */
     const sortByVote = arr => arr.slice().sort((a, b) =>
       (b.aye === true ? 1 : 0) - (a.aye === true ? 1 : 0));
-    const voteTint = arr => arr.map(s => Object.assign({}, s,
-      { c: s.aye === false ? "var(--alert)" : "var(--ok)" }));
-    const viewed = arr => chamberView === "party" ? arr
-      : chamberView === "aisles" ? voteTint(sortByVote(arr)) : sortByVote(arr);
+    const viewed = arr => chamberView === "vote" ? sortByVote(arr) : arr;
     const govV = viewed(gov), oppV = viewed(opp), crossV = viewed(cross);
 
     /* Everything is derived from the seat counts, so the diagram tightens
@@ -2497,7 +2577,11 @@ const UI = (function () {
 
     const CX = X0 + benchW / 2 - CW / 2;              // bench centre
 
-    const crossX = X0 + benchW + 30;
+    /* THE BAR IS DRAWN ONLY WHEN SOMETHING IS AT IT. AISLES puts the
+       functional seats into the two aisles, so the block would be a column of
+       empty space with "THE BENCH" written over it. */
+    const hasBar = cross.length > 0;
+    const crossX = X0 + benchW + (hasBar ? 30 : 0);
     const crossTop = FLOOR - ((crossRows - 1) * XRH) / 2;
     const crossBot = crossTop + (crossRows - 1) * XRH;
     /* The label is centred on the COLUMNS, not on crossX: the first column's
@@ -2505,8 +2589,8 @@ const UI = (function () {
        Centring on crossX put both labels a column-width right of the bench. */
     const crossCX = crossX + ((XCOLS - 1) * XCW) / 2;
 
-    const W = crossX + XCOLS * XCW + 14;
-    const H = Math.max(oppBot + 26, crossBot + 26) + 8;
+    const W = hasBar ? crossX + XCOLS * XCW + 14 : X0 + benchW + 22;
+    const H = Math.max(oppBot + 26, hasBar ? crossBot + 26 : 0) + 8;
     /* An inline <svg> with a viewBox and no width defaults to the width of
        its container, so shrinking the coordinate space only magnified the
        drawing. Sizing it at 1:1 is what actually makes it smaller; the CSS
@@ -2537,17 +2621,23 @@ const UI = (function () {
       label(30, FLOOR + 17, "SPEAKER") +
       bench(govV, X0, govFront, -1) +
       bench(oppV, X0, oppFront, +1) +
-      crossbench(crossV, crossX, crossTop) +
+      (hasBar ? crossbench(crossV, crossX, crossTop) : "") +
       label(CX, govTop - 12, "GOVERNMENT") +
       label(CX, oppBot + 22, "OPPOSITION") +
-      label(crossCX, crossTop - 14, "THE BENCH") +
-      label(crossCX, crossBot + 22, "functional tier", "sub");
+      (hasBar ? label(crossCX, crossTop - 14, "THE BENCH") : "") +
+      (hasBar ? label(crossCX, crossBot + 22, "functional tier", "sub") : "");
 
     const seatLine = (n, of) => `${n}<span class="of">/${of}</span>`;
+    /* AISLES puts the functional forty into the aisles, so a popular
+       denominator would read "169/240" and mean nothing. In that view the
+       two sides are measured against the whole House. */
+    const sideOf = chamberView === "aisles"
+      ? Engine.popularTotal(st) + Engine.functionalTotal(st)
+      : Engine.popularTotal(st);
     $("#chamber-tally").innerHTML =
-      `<span class="ct gov" data-tip="government">Government ${seatLine(govN, Engine.popularTotal(st))}</span>` +
-      `<span class="ct opp" data-tip="opposition">Opposition ${seatLine(oppN, Engine.popularTotal(st))}</span>` +
-      `<span class="ct cross" data-tip="functional">Functional ${crossN}</span>` +
+      `<span class="ct gov" data-tip="government">Government ${seatLine(govN, sideOf)}</span>` +
+      `<span class="ct opp" data-tip="opposition">Opposition ${seatLine(oppN, sideOf)}</span>` +
+      (crossN ? `<span class="ct cross" data-tip="functional">Functional ${crossN}</span>` : "") +
       `<span class="ct" data-tip="majority">Majority ${Engine.majority(st)}</span>` +
       (chairName ? `<span class="ct" data-tip="speaker">Speaker ${chairParty ? mark(chairParty) : ""}` +
                    `${esc(bare(chairName))}<i class="of"> ${esc(spkSeat.name)}</i></span>` : "");
