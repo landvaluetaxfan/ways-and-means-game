@@ -1360,6 +1360,74 @@ const UI = (function () {
   /* THE DOCKET. What is before the House, which is how a decision taken
      here reaches the screen that carries it out: promising something
      puts an item here, and keeping it takes the item away. */
+  /* ---------------------------------------------------------------
+     THE PARLIAMENTARY CALENDAR.
+
+     Pacing was a number in a sentence — "4 sittings left of session 4" —
+     and a number in a sentence is something you read, not something you
+     feel. A month grid is something you feel: you can see how much time
+     is left, that the House does not sit every day, and exactly which
+     square the division falls on.
+
+     It reads Engine.calendar(), which reads Engine.deadlines(), which is
+     the same source the docket uses. A deadline that appeared on one and
+     not the other is how a player learns to trust neither.
+     --------------------------------------------------------------- */
+  const DOW = ["S", "M", "T", "W", "T", "F", "S"];
+  let calMonth = 0;                    /* months from the current sitting */
+
+  function calendarHTML() {
+    const cal = Engine.calendar(st, C, calMonth);
+    if (!cal || !cal.days.length) return "";
+    let cells = "";
+    /* the blanks before the first, so the columns line up with the week */
+    for (let i = 0; i < cal.days[0].dow; i++) cells += '<i class="pad"></i>';
+    cal.days.forEach(d => {
+      const cls = ["cd"];
+      if (!d.sits) cls.push("dark");
+      if (d.past) cls.push("past");
+      if (d.today) cls.push("now");
+      d.marks.forEach(m => cls.push("m-" + m.kind));
+      const tip = d.marks.length
+        ? d.marks.map(m => m.text).join(" \u00b7 ")
+        : (d.sitting != null ? "Sitting " + d.sitting : "The House does not sit");
+      cells += `<i class="${cls.join(" ")}" title="${esc(tip)}">` +
+               `<b>${d.dom}</b>` +
+               (d.sitting != null ? `<u>${d.sitting}</u>` : "") +
+               (d.marks.length ? '<s></s>' : "") + `</i>`;
+    });
+    const next = Engine.deadlines(st, C).filter(x => x.away >= 0).slice(0, 3);
+    return `<div class="calhead">
+        <button class="calnav" data-cal="-1" aria-label="Previous month">&lsaquo;</button>
+        <span>${esc(cal.label)}</span>
+        <button class="calnav" data-cal="1" aria-label="Next month">&rsaquo;</button>
+      </div>
+      <div class="calgrid">${DOW.map(d => '<em>' + d + '</em>').join("")}${cells}</div>
+      <div class="calkey">
+        <span><i class="cd now"></i>today</span>
+        <span><i class="cd"></i>sitting</span>
+        <span><i class="cd dark"></i>rises</span>
+      </div>` +
+      (next.length ? '<div class="calnext">' + next.map(m =>
+        `<div class="cn ${m.kind}${m.away <= 2 ? " late" : ""}"><b>${esc(m.text)}</b>` +
+        `<i>${m.away === 0 ? "today" : m.away === 1 ? "next sitting"
+            : "in " + m.away + " sittings"} \u00b7 ${m.date}</i></div>`).join("") + "</div>"
+       : "");
+  }
+
+  function drawCalendar() {
+    const el = $("#sit-cal"); if (!el) return;
+    el.innerHTML = calendarHTML();
+    const ss = $("#cal-sess"); if (ss) ss.textContent = st.session;
+    el.querySelectorAll("[data-cal]").forEach(b =>
+      b.addEventListener("click", () => {
+        calMonth += +b.dataset.cal;
+        /* never wander: two months either side of where the House is */
+        calMonth = Math.max(-2, Math.min(2, calMonth));
+        drawCalendar();
+      }));
+  }
+
   function docketHTML() {
     const owed = Engine.outstanding(st);
     const bill = (C.bills || []).find(b => st.bills[b.id] && !st.bills[b.id].dead &&
@@ -1424,6 +1492,7 @@ const UI = (function () {
   function drawSitting() {
     const dk = $("#sit-docket");
     if (dk) dk.innerHTML = docketHTML();
+    drawCalendar();
 
     const box = $("#sitting-body");
     const loss = Engine.checkLoss(st, C);

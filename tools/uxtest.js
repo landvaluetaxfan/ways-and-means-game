@@ -1100,6 +1100,49 @@ try {
   const back = src.slice(src.indexOf('[data-act="menu"]'));
   ok("returning to the menu dissolves too, and not only entering",
      /Motion\.dissolve/.test(back.slice(0, 900)));
+
+  /* ---------------------------------------------------------------
+     THE CALENDAR IS ON THE SITTING PAGE AND IT DRAWS.
+
+     Pacing was a number in a sentence. A month grid is only better than
+     the sentence if it actually renders, and a panel that draws nothing
+     passes every static check in this project. */
+  w.document.querySelector('.tab[data-t="sit"]').click();
+  const cells = w.document.querySelectorAll("#sit-cal .calgrid i.cd");
+  ok("the calendar draws a month of days", cells.length >= 28,
+     cells.length + " days");
+  ok("and exactly one of them is today",
+     w.document.querySelectorAll("#sit-cal .calgrid i.cd.now").length === 1);
+  ok("the days the House does not sit are drawn differently",
+     w.document.querySelectorAll("#sit-cal .calgrid i.cd.dark").length > 0);
+  ok("every day says what it is, for a pointer and a screen reader",
+     [...cells].every(c => (c.getAttribute("title") || "").length > 0));
+
+  /* The session end must appear as a square, not only as a sentence in
+     the docket — one source, two readouts. */
+  ok("the day the House rises carries a mark",
+     w.document.querySelectorAll("#sit-cal .calgrid i.cd.m-rises").length +
+     w.document.querySelectorAll("#sit-cal .calnext .cn.rises").length > 0);
+
+  /* Paging must not wander off into a year of empty months. */
+  const label = () => (w.document.querySelector("#sit-cal .calhead span") || {}).textContent;
+  const start = label();
+  for (let i = 0; i < 6; i++) {
+    const b = w.document.querySelector('#sit-cal [data-cal="1"]');
+    if (b) b.click();
+  }
+  const far = label();
+  for (let i = 0; i < 12; i++) {
+    const b = w.document.querySelector('#sit-cal [data-cal="-1"]');
+    if (b) b.click();
+  }
+  ok("paging is bounded either side of where the House is",
+     far !== start && label() !== far, start + " -> " + far + " -> " + label());
+  /* put it back where the player would expect it */
+  for (let i = 0; i < 3; i++) {
+    const b = w.document.querySelector('#sit-cal [data-cal="1"]');
+    if (b) b.click();
+  }
 } catch (e) { ok("no-motion still swaps", false, e.message); }
 
 /* ---------------------------------------------------------------------

@@ -1401,6 +1401,68 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .ch-commit .commit.grave{border-width:2px;font-weight:700;box-shadow:2px 2px 0 rgba(27,29,25,.2);}
 
 /* ---------- the docket ---------- */
+/* ---------- the parliamentary calendar ----------
+   A month you can point at, rather than "four sittings left" in a
+   sentence. Sitting days are paper; the days the House does not sit are
+   the ground it sits on. Today is the only filled square, so the eye
+   finds it before it reads anything. */
+.calhead{
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  font-family:var(--f-data);font-size:11px;letter-spacing:.06em;
+  text-transform:uppercase;margin-bottom:5px;
+}
+.calnav{
+  border:1px solid var(--chrome-dk);background:var(--field);color:var(--ink);
+  font:inherit;line-height:1;padding:1px 6px;cursor:pointer;
+}
+.calnav:hover{background:var(--chrome-dk);}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.calgrid em{
+  font-style:normal;font-family:var(--f-data);font-size:9px;text-align:center;
+  color:var(--ink-soft);padding-bottom:2px;
+}
+.calgrid i.pad{visibility:hidden;}
+.calgrid i.cd{
+  position:relative;display:block;aspect-ratio:1;min-height:22px;
+  background:var(--field);border:1px solid var(--chrome-dk);
+  font-style:normal;cursor:default;
+}
+.calgrid i.cd b{
+  position:absolute;top:1px;left:2px;font-weight:400;
+  font-family:var(--f-data);font-size:9.5px;color:var(--ink);
+}
+/* the sitting number, small and quiet: it is the game's clock, not the world's */
+.calgrid i.cd u{
+  position:absolute;bottom:0;right:2px;text-decoration:none;
+  font-family:var(--f-data);font-size:8px;color:var(--ink-soft);
+}
+.calgrid i.cd.dark{background:transparent;border-color:transparent;}
+.calgrid i.cd.dark b{color:var(--ink-soft);opacity:.55;}
+.calgrid i.cd.past{opacity:.5;}
+.calgrid i.cd.now{background:var(--ink);border-color:var(--ink);}
+.calgrid i.cd.now b,.calgrid i.cd.now u{color:var(--field);}
+/* a day carrying something wears a corner flag, coloured by what it is */
+.calgrid i.cd s{
+  position:absolute;top:0;right:0;width:0;height:0;text-decoration:none;
+  border-top:7px solid var(--rule);border-left:7px solid transparent;
+}
+.calgrid i.cd.m-division s{border-top-color:var(--alert);}
+.calgrid i.cd.m-owed s{border-top-color:var(--ok);}
+.calgrid i.cd.m-rises s{border-top-color:var(--ink);}
+.calkey{
+  display:flex;gap:9px;margin-top:5px;font-family:var(--f-data);font-size:9px;
+  color:var(--ink-soft);align-items:center;flex-wrap:wrap;
+}
+.calkey span{display:flex;align-items:center;gap:3px;}
+.calkey i.cd{width:9px;min-height:0;height:9px;aspect-ratio:auto;display:inline-block;}
+.calnext{margin-top:7px;border-top:1px solid var(--chrome-dk);padding-top:5px;}
+.calnext .cn{padding:2px 0;}
+.calnext .cn b{display:block;font-size:11.5px;font-weight:400;}
+.calnext .cn i{display:block;font-style:normal;font-family:var(--f-data);
+  font-size:9.5px;color:var(--ink-soft);}
+.calnext .cn.late b{font-weight:bold;}
+.calnext .cn.late i{color:var(--alert);}
+
 #sit-docket .dk{padding:3px 0;border-bottom:1px dotted var(--rule);}
 #sit-docket .dk:last-child{border-bottom:0;}
 #sit-docket .dk b{display:block;font-size:12px;font-weight:400;}

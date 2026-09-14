@@ -1078,3 +1078,83 @@ console.log("\nAND IT PLAYS:");
 
   if (bad) { console.log("\n" + bad + " UNLOCK FAILURES"); process.exitCode = 1; }
 })();
+
+
+/* ---------------------------------------------------------------------
+   THE CLOCK RUNS.
+
+   st.date was written once at newGame from setup.startDate and never
+   touched again — thirty sittings later the topbar still read the
+   opening day. Nothing caught it because nothing had ever asked what
+   the date was for.
+   --------------------------------------------------------------------- */
+console.log("\nTHE CALENDAR:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const st = Engine.newGame(CONTENT);
+  const opened = st.date;
+  for (let i = 0; i < 10; i++) Engine.advance(st, CONTENT);
+  ok("the date advances with the sittings", st.date !== opened,
+     opened + " -> " + st.date + " at sitting " + st.sitting);
+
+  /* A sitting is a day the House sits, so the map from one to the other
+     has to be a pure function or a deadline drifts against the square it
+     was drawn on. */
+  ok("a sitting always falls on a day the House sits",
+     Engine.sittingOfDate(CONTENT, st.date) === st.sitting,
+     st.date + " is sitting " + Engine.sittingOfDate(CONTENT, st.date));
+  ok("and the mapping is stable however often it is asked",
+     Engine.dateOfSitting(CONTENT, 17) === Engine.dateOfSitting(CONTENT, 17) &&
+     Engine.dateOfSitting(CONTENT, 17) === Engine.dateOfSitting(CONTENT, 17));
+  ok("later sittings are later days",
+     Engine.dateOfSitting(CONTENT, 1) < Engine.dateOfSitting(CONTENT, 24),
+     Engine.dateOfSitting(CONTENT, 1) + " ... " + Engine.dateOfSitting(CONTENT, 24));
+
+  const DAYS = CONTENT.setup.sittingDays;
+  ok("the House does not sit every day", Array.isArray(DAYS) && DAYS.length < 7,
+     DAYS.length + " days in seven");
+
+  /* THE CALENDAR AND THE DOCKET MUST READ THE SAME SOURCE. A deadline on
+     one and not the other is how a player learns to trust neither. */
+  const cal = Engine.calendar(st, CONTENT, 0);
+  ok("the calendar draws a real month", cal.days.length >= 28 && cal.days.length <= 31,
+     cal.label + ", " + cal.days.length + " days");
+  ok("and knows which of them the House sits on",
+     cal.days.some(d => d.sits) && cal.days.some(d => !d.sits),
+     cal.days.filter(d => d.sits).length + " sitting days");
+  ok("exactly one day is today",
+     cal.days.filter(d => d.today).length === 1);
+  ok("and the days before it are past",
+     cal.days.filter(d => d.today)[0].sitting === st.sitting);
+
+  const dl = Engine.deadlines(st, CONTENT);
+  ok("the session end is a deadline like any other",
+     dl.some(d => d.kind === "rises" && d.sitting === st.sessionEnds),
+     dl.map(d => d.kind).join(", ") || "(none)");
+  ok("every deadline lands on a square the calendar drew",
+     dl.every(d => Engine.sittingOfDate(CONTENT, d.date) === d.sitting));
+  ok("and carries how far away it is, in sittings",
+     dl.every(d => d.away === d.sitting - st.sitting));
+
+  /* An undertaking with a due date has to appear, or the calendar is
+     decoration rather than the instrument. */
+  const u = Engine.newGame(CONTENT);
+  Engine.apply(u, CONTENT, [{ undertake: { id: "cal_probe", text: "A test promise", by: 4 } }]);
+  const owed = Engine.deadlines(u, CONTENT).filter(d => d.kind === "owed");
+  ok("a promise with a date is on the calendar", owed.length === 1,
+     owed.length ? owed[0].text + " on " + owed[0].date : "not shown");
+
+  /* `by: null` means "before the House rises", so it must land on the
+     last sitting of the session rather than nowhere. */
+  const v = Engine.newGame(CONTENT);
+  Engine.apply(v, CONTENT, [{ undertake: { id: "cal_open", text: "Before we rise", by: null } }]);
+  const open = Engine.deadlines(v, CONTENT).filter(d => d.kind === "owed");
+  ok("and one owed before the House rises lands on the last sitting",
+     open.length === 1 && open[0].sitting === v.sessionEnds,
+     open.length ? "sitting " + open[0].sitting + " of " + v.sessionEnds : "not shown");
+
+  if (bad) { console.log("\n" + bad + " CALENDAR FAILURES"); process.exitCode = 1; }
+})();

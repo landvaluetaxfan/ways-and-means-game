@@ -25,7 +25,7 @@ const Engine = (function () {
       sitting: 1,
       chapter: 1,
       session: 4,
-      date: C.setup.startDate,
+      date: dateOfSitting(C, 1),   /* the first day the House actually sits */
       inGovernment: true,
       pm: C.setup.pm,
       playerParty: C.setup.playerParty,
@@ -2302,6 +2302,113 @@ const Engine = (function () {
      IT IS NOT A TURN LIMIT. Nothing is lost that cannot be brought back
      next session, poorer. The boundary is a cost, not a fail state.
      --------------------------------------------------------- */
+  /* ---------------------------------------------------------
+     THE CALENDAR.
+
+     st.date was set once at newGame from setup.startDate and never
+     touched again — thirty sittings later the topbar still read
+     2287-04-11. The clock on the wall was stopped, which is most of
+     why time in this game has never felt real.
+
+     A sitting is a DAY, and the House does not sit every day. Given a
+     start date and the days of the week it sits, the date of sitting N
+     is a pure function of N: no state, nothing to desynchronise, and
+     the same answer for a deadline three months out as for today.
+     That is what lets a division "on the fourteenth" be a square the
+     player can point at rather than a number in a sentence.
+     --------------------------------------------------------- */
+  const DAY = 86400000;
+  const iso = d => d.toISOString().slice(0, 10);
+  const parseDay = s => { const [y, m, d] = String(s).split("-").map(Number);
+                          return new Date(Date.UTC(y, (m || 1) - 1, d || 1)); };
+
+  function sittingDays(C) {
+    const d = C && C.setup && C.setup.sittingDays;
+    return (Array.isArray(d) && d.length) ? d : [1, 2, 3, 4];
+  }
+  /* The date the House sits for the nth time, counting the start date as
+     sitting 1 if it is itself a sitting day. */
+  function dateOfSitting(C, n) {
+    const days = sittingDays(C);
+    let d = parseDay((C && C.setup && C.setup.startDate) || "2287-01-01");
+    let count = 0;
+    for (let guard = 0; guard < 20000; guard++) {
+      if (days.indexOf(d.getUTCDay()) >= 0) { count++; if (count >= n) return iso(d); }
+      d = new Date(d.getTime() + DAY);
+    }
+    return iso(d);
+  }
+  /* The inverse, for putting a date back on the order paper. */
+  function sittingOfDate(C, date) {
+    const days = sittingDays(C);
+    let d = parseDay((C && C.setup && C.setup.startDate) || "2287-01-01");
+    const t = parseDay(date).getTime();
+    let count = 0;
+    for (let guard = 0; guard < 20000 && d.getTime() <= t; guard++) {
+      if (days.indexOf(d.getUTCDay()) >= 0) count++;
+      if (d.getTime() === t) return days.indexOf(d.getUTCDay()) >= 0 ? count : null;
+      d = new Date(d.getTime() + DAY);
+    }
+    return null;
+  }
+
+  /* ---------------------------------------------------------
+     WHAT IS COMING, AND WHEN.
+
+     Everything with a date on it, in one list, so the calendar and the
+     order paper read the SAME source. A deadline that appears on one
+     and not the other is how a player learns not to trust either.
+     --------------------------------------------------------- */
+  function deadlines(st, C) {
+    const out = [];
+    const add = (sitting, kind, text) => {
+      if (sitting == null) return;
+      out.push({ sitting: sitting, date: dateOfSitting(C, sitting), kind: kind,
+                 text: text, away: sitting - st.sitting });
+    };
+    (C.bills || []).forEach(b => {
+      const bs = st.bills[b.id];
+      if (bs && bs.dividesOn != null && !bs.dead)
+        add(bs.dividesOn, "division", b.title + " divides");
+    });
+    /* An undertaking counts down in `by`, and an explicit null means
+       "before the House rises" — so that one lands on the last sitting
+       of the session, which is where the author meant it. */
+    (st.undertakings || []).forEach(u => {
+      if (u.state !== "open") return;
+      add(u.by == null ? st.sessionEnds : u.by, "owed", u.text);
+    });
+    if (st.sessionEnds != null)
+      add(st.sessionEnds, "rises", "The House rises \u2014 session " + st.session);
+    return out.sort((a, b) => a.sitting - b.sitting);
+  }
+
+  /* One month of days for the calendar, each carrying whatever falls on
+     it. `offset` is months from the one the current sitting is in. */
+  function calendar(st, C, offset) {
+    const here = parseDay(st.date || dateOfSitting(C, st.sitting));
+    const first = new Date(Date.UTC(here.getUTCFullYear(),
+                                    here.getUTCMonth() + (offset || 0), 1));
+    const days = sittingDays(C), marks = deadlines(st, C);
+    const out = [];
+    for (let d = new Date(first); d.getUTCMonth() === first.getUTCMonth();
+         d = new Date(d.getTime() + DAY)) {
+      const day = iso(d), sits = days.indexOf(d.getUTCDay()) >= 0;
+      const n = sits ? sittingOfDate(C, day) : null;
+      out.push({
+        date: day, dom: d.getUTCDate(), dow: d.getUTCDay(),
+        sitting: n, sits: sits,
+        past: n != null && n < st.sitting,
+        today: n != null && n === st.sitting,
+        marks: marks.filter(m => m.date === day)
+      });
+    }
+    return { year: first.getUTCFullYear(), month: first.getUTCMonth(),
+             label: first.toLocaleString("en-GB", { month: "long", timeZone: "UTC" }) +
+                    " " + first.getUTCFullYear(),
+             days: out };
+  }
+
   function prorogue(st, C) {
     const fell = [];
     (C.bills || []).forEach(b => {
@@ -2367,6 +2474,10 @@ const Engine = (function () {
       if (u.state !== "open" || u.by == null || u.by >= st.sitting) return;
       breakUndertaking(st, C, u);
     });
+    /* THE CLOCK RUNS. st.date was written once at newGame and never again,
+       so the topbar showed the same day for the whole game. A sitting is a
+       day the House sits, and which day that is comes from the calendar. */
+    if (C) st.date = dateOfSitting(C, st.sitting);
     if (C && st.sessionEnds != null && st.sitting > st.sessionEnds) prorogue(st, C);
     if (C) reviewReturns(st, C);
     if (C) tick(st, C).forEach(m =>
@@ -2417,6 +2528,7 @@ const Engine = (function () {
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal,
     division, reported, ballot, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
+    dateOfSitting, sittingOfDate, deadlines, calendar,
     apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,
     seedRoll, syncRoll, reconcile, partyDistrict,
     lastReconcile: () => lastReconcile, nationalShares, vacantSeats, seatsFor,
