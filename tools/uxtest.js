@@ -1214,6 +1214,22 @@ try {
        s1.slots.used + " of " + s1.slots.total + " spent");
   }
 
+  /* A QUIET SITTING PRINTS AN ORDER PAPER (design/17 §2.2). The state the old
+     screen rendered as an empty gap — nothing eligible — should render a page
+     instead. nextEvent is stubbed so the state is quiet on demand, and put
+     back afterwards so nothing downstream depends on the stub. */
+  {
+    w.eval("window.__next = Engine.nextEvent; Engine.nextEvent = function () { return null; };");
+    w.eval("UI.boot(UI.state(), CONTENT)");
+    const body = w.document.querySelector("#sitting-body");
+    const lines = body ? [...body.querySelectorAll(".op .opline")] : [];
+    ok("a quiet sitting prints an order paper", lines.length > 0, lines.length + " lines");
+    ok("and no line is a control",
+       lines.every(l => !l.querySelector("button")) &&
+       !!body && body.querySelectorAll(".op [data-goto]").length === 0);
+    w.eval("Engine.nextEvent = window.__next; UI.boot(UI.state(), CONTENT)");
+  }
+
   /* ONE PIP PER THING. A single corner flag lost the count, and lost the
      colour where two kinds fell on one day. */
   const marked = [...cells].filter(c => c.querySelector(".pips"));

@@ -10,7 +10,8 @@ const CONTENT = (function () {
     instruments: typeof INSTRUMENTS !== "undefined" ? INSTRUMENTS : [],
     minutes: typeof MINUTES !== "undefined" ? MINUTES : [], characters: CHARACTERS, bills: BILLS, events: EVENTS, glossary: GLOSSARY, encyclopedia: ENCYCLOPEDIA,
     functional: typeof FUNCTIONAL !== "undefined" ? FUNCTIONAL : [],
-    archetypes: typeof ARCHETYPES !== "undefined" ? ARCHETYPES : []
+    archetypes: typeof ARCHETYPES !== "undefined" ? ARCHETYPES : [],
+    business: typeof BUSINESS !== "undefined" ? BUSINESS : []
   };
   const idx = (arr) => arr.reduce((m, o) => (m[o.id] = o, m), {});
   C.partyById = idx(PARTIES);

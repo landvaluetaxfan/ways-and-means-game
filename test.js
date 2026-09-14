@@ -2,7 +2,7 @@
 const fs = require("fs"), vm = require("vm");
 const files = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js","content/initiatives.js","content/minutes.js",
                "content/functional.js","content/labour.js",
-               "content/characters.js","content/bills.js","content/events.js","content/glossary.js","content/encyclopedia.js","content/index.js"];
+               "content/characters.js","content/bills.js","content/events.js","content/glossary.js","content/encyclopedia.js","content/business.js","content/index.js"];
 const src = files.map(f => fs.readFileSync(f,"utf8")).join("\n") + "\n;globalThis.__C = CONTENT;";
 vm.runInThisContext(src);
 const CONTENT = globalThis.__C;
@@ -805,6 +805,39 @@ console.log("\nA DIVISION IS HOUSE TIME (design/18 §3):");
      Engine.divide(b, CONTENT, "divergence").ok === false && b.slots.used === b.slots.total);
 
   if (bad) { console.log("\n" + bad + " DIVISION-COST FAILURES"); process.exitCode = 1; }
+})();
+
+console.log("\nTHE QUIET SITTING HAS A PAGE (design/17 §2.2):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const a = Engine.newGame(CONTENT);
+  /* business() filters the pool with matches(), which THROWS on an unknown
+     condition, so this call alone proves every gate in content/business.js
+     resolves. */
+  const first = Engine.business(a, CONTENT, 3);
+  ok("a quiet sitting prints an order paper", first.length === 3, first.length + " lines");
+  ok("every line is text", first.every(b => b && typeof b.text === "string" && b.text.length > 10));
+  ok("and no line is a control",
+     first.every(b => b.tab === undefined && b.effects === undefined &&
+                      b.result === undefined && b.choices === undefined));
+  ok("the page is stable on a re-read",
+     Engine.business(a, CONTENT, 3).map(b => b.id).join(",") ===
+     first.map(b => b.id).join(","));
+
+  Engine.advance(a, CONTENT);
+  const next = Engine.business(a, CONTENT, 3);
+  ok("a new sitting prints a new page",
+     next.map(b => b.id).join(",") !== first.map(b => b.id).join(","));
+  ok("and no line appears twice on one page",
+     new Set(next.map(b => b.id)).size === next.length);
+
+  ok("the pool is deeper than a session of pages",
+     (CONTENT.business || []).length >= 30, (CONTENT.business || []).length + " entries");
+
+  if (bad) { console.log("\n" + bad + " ORDER-PAPER FAILURES"); process.exitCode = 1; }
 })();
 
 /* ---------------------------------------------------------------------

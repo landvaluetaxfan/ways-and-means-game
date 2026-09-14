@@ -1584,6 +1584,26 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
 .calnext .cn.late b{font-weight:bold;}
 .calnext .cn.late i{color:var(--alert);}
 
+/* ---------- the order paper ----------
+   What the House took on a sitting with no decision on it. Deliberately flat:
+   it is a record, not a control, and a record that looks like a control is the
+   worst of both. The kind is a quiet left rule, not a colour wash, so the page
+   still reads as a page. */
+.op{border:1px solid var(--chrome-dk);background:var(--paper,#fbfbf7);margin-bottom:6px;}
+.ophead{
+  display:flex;justify-content:space-between;align-items:baseline;
+  font-family:var(--f-ui);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-soft);border-bottom:1px solid var(--chrome-dk);padding:3px 7px;
+}
+.ophead em{font-style:normal;font-family:var(--f-data);letter-spacing:0;font-size:9.5px;}
+.opline{
+  font-size:12px;line-height:1.4;padding:4px 7px;
+  border-bottom:1px dotted var(--rule);border-left:2px solid var(--chrome-dk);
+}
+.opline:last-child{border-bottom:0;}
+.opline.instrument{border-left-color:var(--warn);}
+.opline.petition{border-left-color:var(--ok);}
+
 #sit-docket .dk{padding:3px 0;border-bottom:1px dotted var(--rule);}
 #sit-docket .dk:last-child{border-bottom:0;}
 #sit-docket .dk b{display:block;font-size:12px;font-weight:400;}

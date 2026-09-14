@@ -1705,6 +1705,19 @@ const UI = (function () {
     return p ? p.name : String(id).replace(/_/g, " ");
   }
 
+  /* THE ORDER PAPER. A quiet sitting is still a sitting: the House keeps
+     meeting whether or not the player is the story. Nothing here is a control,
+     nothing moves a number, and nothing is gated on being read. It is the room
+     being a room, and it is what stops a quiet sitting reading as a gap in the
+     build — which is exactly how the empty version read (design/17 §2.2). */
+  function orderPaperHTML(list) {
+    if (!list || !list.length) return "";
+    return `<div class="op"><div class="ophead">Order paper` +
+      `<em>${list.length} taken</em></div>` +
+      list.map(b => `<div class="opline ${esc(b.kind || "")}">${esc(b.text)}</div>`).join("") +
+      `</div>`;
+  }
+
   function drawSitting() {
     const dk = $("#sit-docket");
     if (dk) dk.innerHTML = docketHTML();
@@ -1733,7 +1746,11 @@ const UI = (function () {
          out of content should admit it rather than let the player keep
          clicking. */
       const ahead = lookAhead();
+      /* THE ORDER PAPER PRINTS FIRST. The day has a page whether or not it
+         has a decision on it, and printing one is the difference between a
+         quiet sitting and an empty screen. */
       box.innerHTML =
+        orderPaperHTML(Engine.business(st, C, 3)) +
         `<div class="note">${ahead.n === 0
           ? "There is no further business before the House. Nothing in the order " +
             "paper will call for a decision, however long the session runs."
