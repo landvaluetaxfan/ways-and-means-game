@@ -1599,6 +1599,7 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .chp.on{background:var(--ink);border-color:var(--ink);color:var(--field);}
 /* A measure that has fallen keeps its place — the selection is shared with
    the order paper — and says so by going quiet rather than disappearing. */
+.dayline{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:4px;}
 .chnow{font-family:var(--f-data);font-size:11.5px;}
 .chnow .dual{font-style:normal;font-family:var(--f-data);font-size:8.5px;
   letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--rule);

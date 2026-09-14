@@ -22,6 +22,7 @@ const SETUP = {
             The value is kept for the editor and for any future bill that
             merges seats back into multi-member districts. */
          district_divisor:"fptp", list_divisor:"dhondt" },
+  divisionsPerSitting: 2,
   slotsPerSession: 6,
   /* HOW LONG A SESSION RUNS, in sittings. The House rises at the end of it:
      order-paper time refills, business not carried falls, and anything owed

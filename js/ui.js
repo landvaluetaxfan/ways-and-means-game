@@ -788,6 +788,7 @@ const UI = (function () {
           ? "<b>Carries on the popular benches and fails on the functional.</b> The dual test applies: bills touching life-support integrity and charter amendments must carry separately among functional members."
           : "<b>Fails</b> as the benches stand.")}</div>` +
       whipLine(id) +
+      dayLine(id, dchk) +
       `<div class="btnrow">
          <button class="btn" id="btn-divide"${bs.dead ? " disabled" : ""}` +
            priceTip("Move to a division",
@@ -800,14 +801,16 @@ const UI = (function () {
        the player nothing about why. The reason itself is on the card the
        template already built, never a native title (js/tips.js). */
     const dbtn = $("#btn-divide");
-    if (dbtn && !dchk.ok && dchk.on != null) {
+    if (dbtn && !dchk.ok) {
+      /* Every refusal says what it is on the face of the control. A
+         disabled button with its old label on it reads as broken. */
       dbtn.disabled = true;
-      dbtn.textContent = "Division set for sitting " + dchk.on;
-    } else if (dbtn && !dchk.ok && dchk.noTime) {
-      /* A division is House time (design/18 §3), so no time is a reason to
-         refuse — and a refusal the player cannot see is a bug report. */
-      dbtn.disabled = true;
-      dbtn.textContent = "No order-paper time left";
+      if (dchk.on != null) dbtn.textContent = "Division set for sitting " + dchk.on;
+      /* A division is House time (design/18 §3), so no time is a reason
+         to refuse — and a refusal the player cannot see is a bug report. */
+      else if (dchk.noTime) dbtn.textContent = "No order-paper time left";
+      else if (dchk.unread) dbtn.textContent = "Not yet read a second time";
+      else if (dchk.full)   dbtn.textContent = "The House has finished for today";
     }
     $("#btn-divide").addEventListener("click", () => {
       if (!Engine.canDivide(st, C, id).ok) { cue("deny"); return; }
@@ -952,6 +955,34 @@ const UI = (function () {
     });
     const clr = root.querySelector("#btn-clearwhip");
     if (clr) clr.addEventListener("click", () => { Engine.clearWhips(st, billId); after(); });
+  }
+
+  /* THE DAY'S BUSINESS, AND WHAT IT WOULD TAKE.
+
+     Order-paper time is two limits now and the player has to be able to
+     see both: how much the House will hear today, and how far this
+     measure still is from a division. A bill at drafting needs two
+     grants and then the division itself — half a session's time — which
+     is the fact that makes granting a step rather than a favour. */
+  function dayLine(billId, chk) {
+    const cap = (C.setup && C.setup.divisionsPerSitting) || 2;
+    const left = Math.max(0, cap - (st.divisionsToday || 0));
+    const bs = st.bills[billId];
+    const i = Engine.STAGE_ORDER.indexOf(bs.stage);
+    const need = Engine.STAGE_ORDER.indexOf("second_reading");
+    const away = i < 0 ? 1 : Math.max(0, need - i);
+    const pips = Array.from({ length: cap }, (_, n) =>
+      `<s class="${n < cap - left ? "spent" : ""}"></s>`).join("");
+    return `<div class="note dayline">` +
+      `<span class="pips slots" ` +
+      tipAttr("The day's business",
+        "The House divides at most " + cap + (cap === 1 ? " time" : " times") + " a sitting. " +
+        (left ? left + " left today." : "None left today; the rest keeps until tomorrow.")) +
+      `>${pips}</span> ` +
+      (left ? left + " of " + cap + " divisions left today" : "no divisions left today") +
+      (away ? ` &middot; this measure wants <b>${away}</b> more ` +
+              `${away === 1 ? "reading" : "readings"} before the House can divide on it` : "") +
+      `</div>`;
   }
 
   /* On the Government tab the whip is a READOUT: what has been committed

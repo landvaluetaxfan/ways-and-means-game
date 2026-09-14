@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 10;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar
+  const STATE_VERSION = 11;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business
 
   /* ---------------------------------------------------------
      1. STATE
@@ -51,6 +51,16 @@ const Engine = (function () {
          A session has a finite number of slots and every one you give a
          partner is one you do not get. */
       slots: { total: C.setup.slotsPerSession || 6, used: 0 },
+
+      /* THE DAY'S BUSINESS. Order-paper time was a session budget and
+         nothing more: six slots, twenty-four sittings, and every one of
+         them available on the first day — so a player could take the
+         whole session's business before lunch and then sit through
+         twenty-three empty sittings. A budget caps how much you do. It
+         does not pace anything, which is what §7.7 says this currency is
+         for. This is the clock half: how much of it the House will hear
+         in one day. Reset by advance(), never carried. */
+      divisionsToday: 0,
 
       /* Czarnecki needs nine more names for a leadership ballot. Things the
          player does add to the counter; §3.5's second loss condition reads it. */
@@ -206,6 +216,10 @@ const Engine = (function () {
          session from where it stands rather than being prorogued on load. */
       if (st.sessionEnds == null) st.sessionEnds = st.sitting + 24;
       st.version = 10;
+    }
+    if (st.version < 11) {                    // the day's business
+      if (st.divisionsToday == null) st.divisionsToday = 0;
+      st.version = 11;
     }
     return st;
   }
@@ -986,8 +1000,10 @@ const Engine = (function () {
   function divide(st, C, billId) {
     const chk = canDivide(st, C, billId);
     if (!chk.ok) return { ok: false, reason: chk.reason, result: null, paid: null, assent: null };
-    /* House time, spent whether the bill carries or falls. */
+    /* House time, spent whether the bill carries or falls, and one of
+       the day's divisions whichever way it goes. */
     spendSlots(st, 1);
+    st.divisionsToday = (st.divisionsToday || 0) + 1;
     const b = C.billById[billId];
     const result = division(st, C, billId);     // whips still in place
     const paid = payWhips(st, C, billId);       // now charge for them
@@ -2757,10 +2773,34 @@ const Engine = (function () {
        interface say so rather than refusing in silence. */
     if (slotsRemaining(st) < 1)
       return { ok: false, reason: "no order-paper time left this session", noTime: true };
-    /* THE DAY, AND ONLY THE DAY. divide() has never enforced a stage and
-       this is not the change that should start: content and the checks
-       both divide from committee. What is new is that once a division
-       has been SET, it happens then and not before. */
+
+    /* A BILL MUST HAVE BEEN READ BEFORE THE HOUSE DIVIDES ON IT.
+
+       divide() never checked a stage, and the comment that used to sit
+       here defended that by saying content divides from committee —
+       which was not true of the roster. Three of the seven bills open at
+       `drafting`, and both could be taken straight to a division on the
+       first sitting without ever being granted time. That made the whole
+       stage ladder decorative: granting time was never a step you had to
+       take to pass anything, only a way to buy capital from the partner
+       whose bill it was. A measure has to have had its second reading. */
+    if (STAGE_ORDER.indexOf(bs.stage) < STAGE_ORDER.indexOf("second_reading"))
+      return { ok: false, unread: true,
+               reason: "the House has not read it a second time \u2014 give it time on the order paper" };
+
+    /* AND THE HOUSE HEARS SO MUCH IN A DAY. The session budget capped
+       how much business a player could take and said nothing about
+       when, so all six slots were spendable on sitting 1. §7.7 calls
+       order-paper time the pacing instrument; this is the part that
+       paces. */
+    const cap = (C.setup && C.setup.divisionsPerSitting) || 2;
+    if ((st.divisionsToday || 0) >= cap)
+      return { ok: false, full: true, cap: cap,
+               reason: cap === 1 ? "the House has already divided today"
+                                 : "the House has divided " + cap + " times today" };
+
+    /* THE DAY, AND ONLY THE DAY: once a division has been SET, it
+       happens then and not before. */
     if (bs.dividesOn != null && st.sitting < bs.dividesOn)
       return { ok: false, reason: "the division is set for sitting " + bs.dividesOn,
                on: bs.dividesOn };
@@ -2769,6 +2809,7 @@ const Engine = (function () {
 
   function advance(st, C) {
     st.sitting += 1;
+    st.divisionsToday = 0;                    /* a new day's business */
     /* A promise not kept by its sitting is broken, once. Breaking it
        QUEUES AN EVENT and moves no number: the politics of a broken
        promise belongs where it can be written and argued with, not in a

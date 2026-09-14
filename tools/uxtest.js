@@ -1735,4 +1735,85 @@ try {
   }
 } catch (e) { ok("price and refusal", false, e.message); }
 
+/* ---------------------------------------------------------------------
+   ORDER-PAPER TIME IS A CLOCK NOW, NOT ONLY A BUDGET.
+
+   Six slots across twenty-four sittings capped how MUCH business a
+   player could take and said nothing about WHEN: every slot was
+   spendable on sitting 1. And divide() never checked a stage, though
+   three of the seven bills open at `drafting` — so a measure could go
+   from unread to carried on the first day without ever being granted
+   time, which made the whole stage ladder decorative.
+   --------------------------------------------------------------------- */
+try {
+  const E = w.eval("Engine"), Cx = w.eval("CONTENT");
+  let st2 = E.newGame(Cx);
+  const cap = Cx.setup.divisionsPerSitting;
+  ok("the setting says how much the House hears in a day", cap >= 1, cap + " a sitting");
+
+  const drafting = Cx.bills.find(b => b.stage === "drafting");
+  ok("content opens measures that have not been read", !!drafting, drafting && drafting.id);
+  ok("and the House will not divide on one",
+     !E.canDivide(st2, Cx, drafting.id).ok &&
+     !!E.canDivide(st2, Cx, drafting.id).unread,
+     E.canDivide(st2, Cx, drafting.id).reason);
+
+  /* Granting time is a STEP now, not only a favour: drafting is two
+     readings away, so the measure costs two grants and the division. */
+  E.grantSlot(st2, Cx, drafting.id);
+  ok("one grant is not enough", !E.canDivide(st2, Cx, drafting.id).ok);
+  E.grantSlot(st2, Cx, drafting.id);
+  ok("two carries it to a second reading, and then the House may divide",
+     E.canDivide(st2, Cx, drafting.id).ok,
+     st2.bills[drafting.id].stage);
+
+  /* The day's business. */
+  st2 = E.newGame(Cx);
+  const ready = Cx.bills.filter(b =>
+    E.STAGE_ORDER.indexOf(b.stage) >= E.STAGE_ORDER.indexOf("second_reading"));
+  ok("more measures are ready than the House will hear in a day",
+     ready.length > cap, ready.length + " ready, " + cap + " a day");
+  let done = 0;
+  ready.forEach(b => { if (E.canDivide(st2, Cx, b.id).ok) { E.divide(st2, Cx, b.id); done++; } });
+  ok("and it stops at the cap", done === cap, done + " divisions taken");
+  const nextUp = ready.find(b => !st2.bills[b.id].dead);
+  ok("naming the reason rather than refusing in silence",
+     !!nextUp && /divided .* today|already divided today/.test(
+       E.canDivide(st2, Cx, nextUp.id).reason || ""),
+     nextUp ? E.canDivide(st2, Cx, nextUp.id).reason : "nothing left to try");
+
+  /* And the day turns. */
+  E.advance(st2, Cx);
+  ok("a new sitting is a new day's business", st2.divisionsToday === 0);
+  ok("so the measure the House ran out of time for can be taken",
+     !!nextUp && E.canDivide(st2, Cx, nextUp.id).ok);
+
+  /* A save written before any of this still loads. */
+  const old = JSON.parse(E.save(E.newGame(Cx)));
+  delete old.divisionsToday; old.version = 10;
+  const back = E.load(JSON.stringify(old), Cx);
+  ok("and a save from before the day existed gets one",
+     back.divisionsToday === 0 && back.version === E.STATE_VERSION,
+     "v" + back.version + " divisionsToday=" + back.divisionsToday);
+
+  /* The player can see both limits without opening a second window. */
+  w.eval("UI.boot(UI.state(), CONTENT);");
+  w.document.querySelector('.tab[data-t="cham"]').click();
+  w.document.querySelector('#cham-bills tr[data-bill="thermal2"]').click();
+  const dl = w.document.querySelector("#bill-detail .dayline");
+  ok("the bill detail says how much of the day is left", !!dl,
+     dl ? dl.textContent.trim().slice(0, 60) : "no line");
+  const unread = w.document.querySelector(
+    '#cham-bills tr[data-bill="' + drafting.id + '"]');
+  if (unread) {
+    unread.click();
+    ok("and how far an unread measure still is from a division",
+       /more reading/.test((w.document.querySelector("#bill-detail .dayline") || {}).textContent || ""),
+       (w.document.querySelector("#bill-detail .dayline") || {}).textContent);
+    ok("with the button saying so instead of wearing its old label",
+       /read a second time/i.test(w.document.querySelector("#btn-divide").textContent),
+       w.document.querySelector("#btn-divide").textContent);
+  } else ok("the unread measure is on the order paper", false);
+} catch (e) { ok("order-paper time paces the session", false, e.message); }
+
 H.finish("the interface is healthy");
