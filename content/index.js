@@ -11,7 +11,8 @@ const CONTENT = (function () {
     minutes: typeof MINUTES !== "undefined" ? MINUTES : [], characters: CHARACTERS, bills: BILLS, events: EVENTS, glossary: GLOSSARY, encyclopedia: ENCYCLOPEDIA,
     functional: typeof FUNCTIONAL !== "undefined" ? FUNCTIONAL : [],
     archetypes: typeof ARCHETYPES !== "undefined" ? ARCHETYPES : [],
-    business: typeof BUSINESS !== "undefined" ? BUSINESS : []
+    business: typeof BUSINESS !== "undefined" ? BUSINESS : [],
+    settlements: typeof SETTLEMENTS !== "undefined" ? SETTLEMENTS : []
   };
   const idx = (arr) => arr.reduce((m, o) => (m[o.id] = o, m), {});
   C.partyById = idx(PARTIES);
@@ -30,6 +31,7 @@ const CONTENT = (function () {
   C.artifacts = typeof ARTIFACTS !== "undefined" ? ARTIFACTS : {};
   C.notice = typeof NOTICE !== "undefined" ? NOTICE : null;
   C.encyclopediaById = ((C.encyclopedia||{}).articles||[]).reduce((m,a)=>(m[a.id]=a,m),{});
+  C.settlementById = (C.settlements||[]).reduce((m,x)=>(m[x.id]=x,m),{});
   C.glossaryByTerm = GLOSSARY.reduce((m,g)=>(m[g.term.toLowerCase()]=g,m),{});
   return C;
 })();

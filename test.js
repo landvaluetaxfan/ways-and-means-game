@@ -2,7 +2,7 @@
 const fs = require("fs"), vm = require("vm");
 const files = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js","content/initiatives.js","content/minutes.js",
                "content/functional.js","content/labour.js",
-               "content/characters.js","content/bills.js","content/events.js","content/glossary.js","content/encyclopedia.js","content/business.js","content/index.js"];
+               "content/characters.js","content/bills.js","content/events.js","content/glossary.js","content/encyclopedia.js","content/business.js","content/settlements.js","content/index.js"];
 const src = files.map(f => fs.readFileSync(f,"utf8")).join("\n") + "\n;globalThis.__C = CONTENT;";
 vm.runInThisContext(src);
 const CONTENT = globalThis.__C;
@@ -1324,6 +1324,135 @@ console.log("\nTHE ORDER OF THE DAY:");
   if (bad) { console.log("\n" + bad + " ORDER-OF-DAY FAILURES"); process.exitCode = 1; }
 })();
 
+
+/* =============================================================
+   A DEFERRED FACT, NOT ONLY A DEFERRED STORY.
+
+   st.queue held {eventId, dueSitting} and nothing else, so anything the
+   game wanted to happen LATER had to happen as an authored event: a
+   court could not return a verdict, a dispatch could not arrive, a
+   commission could not report, without prose written first. That is the
+   one thing standing between building the engine and writing content
+   afterwards rather than the other way round.
+   ============================================================= */
+console.log("\nA DEFERRED FACT (the queue carries effects):");
+(function(){
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const m = Engine.newGame(CONTENT);
+  const before = m.scalars.treasury;
+  Engine.apply(m, CONTENT, [{ queue: { after: 3, label: "The commission reports",
+                                       effects: [{ move: { treasury: -7 } }] } }]);
+  ok("a fact can be put in the queue with no event attached",
+     m.queue.length === 1 && !m.queue[0].eventId && !!m.queue[0].effects);
+  ok("and it has not happened yet", m.scalars.treasury === before);
+
+  /* It is on the calendar, because it is labelled — a commission is a
+     thing the government knows is coming. */
+  const dl = Engine.deadlines(m, CONTENT).filter(d => /commission reports/i.test(d.text || ""));
+  ok("a labelled fact is on the calendar before it lands", dl.length === 1,
+     dl.length + " entries");
+
+  Engine.advance(m, CONTENT);
+  ok("and does not land early", m.scalars.treasury === before, "sitting " + m.sitting);
+  Engine.advance(m, CONTENT); Engine.advance(m, CONTENT);
+  ok("it lands on its day", m.scalars.treasury === before - 7,
+     before + " -> " + m.scalars.treasury);
+  ok("and leaves the queue", m.queue.filter(q => q.effects).length === 0);
+  ok("and says so in the record",
+     m.log.some(l => /commission reports/i.test(l.text)));
+
+  /* An unlabelled one is nobody's business until it happens. */
+  const n = Engine.newGame(CONTENT);
+  Engine.apply(n, CONTENT, [{ queue: { after: 2, effects: [{ move: { treasury: -1 } }] } }]);
+  ok("an unlabelled fact is on no calendar",
+     Engine.deadlines(n, CONTENT).filter(d => d.kind === "expected").length === 0);
+
+  /* An event entry still behaves exactly as it did. */
+  const e0 = CONTENT.events[0];
+  const q = Engine.newGame(CONTENT);
+  Engine.apply(q, CONTENT, [{ queue: { event: e0.id, after: 0 } }]);
+  ok("and a queued EVENT is still a story, not a fact",
+     Engine.nextEvent(q, CONTENT) === e0);
+  if (bad) { console.log("\n" + bad + " DEFERRED-FACT FAILURES"); process.exitCode = 1; }
+})();
+
+/* =============================================================
+   THE GAME CAN BE WON.
+
+   Bible 3.5.1: four settlements, each a reachable configuration of the
+   existing state object. The engine adds a READER and never a branch,
+   so this drives the four from constructed states rather than from
+   anything the engine knows about them.
+   ============================================================= */
+console.log("\nTHE SETTLEMENTS (3.5.1):");
+(function(){
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const fresh = () => Engine.newGame(CONTENT);
+  ok("content carries four settlements", (CONTENT.settlements || []).length === 4,
+     (CONTENT.settlements || []).length + " settlements");
+  ok("and every one is a when block, not a branch",
+     CONTENT.settlements.every(s0 => s0.when && typeof s0.when === "object"));
+
+  /* A SETTLEMENT IS NOT A THING YOU INHERIT. The first draft of the
+     restriction block was "the threshold is above 167", which the
+     opening state satisfies — 168 is where the game starts — so the
+     Commonwealth had settled before the first sitting by doing nothing.
+     This is the assertion that caught it, and it is the general rule:
+     no configuration the player was handed is an ending. */
+  const open0 = fresh();
+  ok("an opening state has settled nothing", Engine.checkSettlement(open0, CONTENT) === null,
+     JSON.stringify(Engine.checkSettlement(open0, CONTENT)));
+  ok("and no single settlement is true at the opening",
+     CONTENT.settlements.every(s0 => !Engine.matches(open0, s0.when)),
+     CONTENT.settlements.filter(s0 => Engine.matches(open0, s0.when)).map(s0 => s0.id).join(", "));
+
+  /* Restriction: the threshold stands, and the reform was put and lost. */
+  const r = fresh(); r.law.divergence_threshold_hours = 200;
+  r.bills.divergence.stage = "defeated"; r.bills.divergence.dead = true;
+  ok("a threshold left high is the restriction settlement",
+     (Engine.checkSettlement(r, CONTENT) || {}).id === "restriction",
+     (Engine.checkSettlement(r, CONTENT) || {}).id);
+
+  /* Substrate neutrality: the threshold low. */
+  const sn = fresh(); sn.law.divergence_threshold_hours = 24;
+  ok("a threshold brought low is substrate neutrality",
+     (Engine.checkSettlement(sn, CONTENT) || {}).id === "substrate_neutrality",
+     (Engine.checkSettlement(sn, CONTENT) || {}).id);
+
+  /* Graduated personhood beats either: a tribunal takes the number out
+     of law, so the threshold stops deciding anything. */
+  const g = fresh(); g.law.divergence_threshold_hours = 200;
+  g.bills.divergence.stage = "defeated"; g.bills.divergence.dead = true;
+  g.flags.tribunal_established = true;
+  ok("a tribunal outranks whatever the threshold says",
+     (Engine.checkSettlement(g, CONTENT) || {}).id === "graduated_personhood",
+     (Engine.checkSettlement(g, CONTENT) || {}).id);
+
+  /* The federal fudge is compatible with almost anything, so it is read
+     last and only wins when nothing sharper is true. */
+  const f = fresh(); f.flags.federal_schedule = true;
+  ok("the federal settlement is the one that is read last",
+     (Engine.checkSettlement(f, CONTENT) || {}).id === "federal_fudge",
+     (Engine.checkSettlement(f, CONTENT) || {}).id);
+
+  /* Rule 3: closure and dissolution are failure modes, not settlements. */
+  const lost = fresh(); lost.law.divergence_threshold_hours = 200;
+  lost.bills.divergence.stage = "defeated"; lost.bills.divergence.dead = true;
+  lost.scalars.thermal_margin = 0;
+  ok("a government that has fallen has settled nothing",
+     Engine.checkLoss(lost, CONTENT).lost && Engine.checkSettlement(lost, CONTENT) === null);
+
+  /* Rule 2: the list is never shown. Nothing may report progress toward
+     a settlement, because an ending named in advance is a quest marker. */
+  ok("and the engine offers no way to ask which one you are near",
+     typeof Engine.settlementProgress === "undefined" &&
+     typeof Engine.settlements === "undefined");
+  if (bad) { console.log("\n" + bad + " SETTLEMENT FAILURES"); process.exitCode = 1; }
+})();
 
 /* ---------------------------------------------------------------------
    INITIATIVE, AND THE CLOCK THE PLAYER WINDS.

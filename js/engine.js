@@ -1773,8 +1773,29 @@ const Engine = (function () {
       if (v.add) v.add.forEach(p => { if (!st.coalition.includes(p)) st.coalition.push(p); });
     },
     wire: (st, C, v) => [].concat(v).forEach(t => st.wire.unshift({ sitting: st.sitting, text: t })),
+    /* THE QUEUE CARRIES A FACT AS WELL AS A STORY.
+
+       It held `{eventId, dueSitting}` and nothing else, so anything the
+       game wanted to happen LATER had to happen as an authored event: a
+       court could not return a verdict, a dispatch could not arrive, a
+       commission could not report, without prose written first. That is
+       the single thing standing between "build the engine, then write
+       the content" and its opposite.
+
+       `effects` is a key on the verb that already exists, not a verb of
+       its own — §15.5's twenty-verb line holds at twenty. An entry may
+       carry an event, a set of effects, or both; `label` is what the
+       calendar calls it, and a labelled entry is foreseeable exactly the
+       way a `foreseen` event is. Unlabelled, it arrives unannounced,
+       which is the difference between a commission and an ambush. */
     queue: (st, C, v) => [].concat(v).forEach(q =>
-      st.queue.push({ eventId: q.event, dueSitting: st.sitting + (q.after || 1) })),
+      st.queue.push({
+        eventId: q.event || null,
+        effects: q.effects || null,
+        label:   q.label || null,
+        source:  q.source || null,
+        dueSitting: st.sitting + (q.after == null ? 1 : q.after)
+      })),
     signatures: (st, C, v) => { st.signatures = Math.max(0, (st.signatures || 0) + v); },
     si: (st, C, v) => [].concat(v).forEach(id => makeInstrument(st, C, id)),
     cabinet: (st, C, v) => Object.keys(v).forEach(post => {
@@ -1912,7 +1933,10 @@ const Engine = (function () {
   }
 
   function nextEvent(st, C) {
-    const due = st.queue.filter(q => q.dueSitting <= st.sitting);
+    /* Only entries that ARE an event. A pure-effects entry has already
+       been resolved by resolveDue() in advance(); it is not a story and
+       must not be mistaken for one. */
+    const due = st.queue.filter(q => q.dueSitting <= st.sitting && q.eventId);
     if (due.length) {
       const q = due[0];
       st.queue = st.queue.filter(x => x !== q);
@@ -2467,6 +2491,10 @@ const Engine = (function () {
        all. An ambush must stay an ambush, and the engine cannot know
        which is which. */
     (st.queue || []).forEach(q => {
+      /* A labelled entry is a thing the government KNOWS is coming — a
+         verdict reserved, a commission reporting, a dispatch due back.
+         An unlabelled one is not on anybody's calendar. */
+      if (q.label) { add(q.dueSitting, "expected", q.label); return; }
       const e = C.eventById && C.eventById[q.eventId];
       if (e && e.foreseen) add(q.dueSitting, "expected", e.foreseen);
     });
@@ -2822,15 +2850,62 @@ const Engine = (function () {
        so the topbar showed the same day for the whole game. A sitting is a
        day the House sits, and which day that is comes from the calendar. */
     if (C) st.date = dateOfSitting(C, st.sitting);
+    /* BEFORE ANYTHING READS THE STATE. A verdict that lands today is part
+       of today's world: event selection, the docket and the loss check
+       must all see it, so it resolves at the top of the sitting and not
+       at the point somebody happens to look. */
+    if (C) resolveDue(st, C);
     if (C && st.sessionEnds != null && st.sitting > st.sessionEnds) prorogue(st, C);
     if (C) reviewReturns(st, C);
     if (C) tick(st, C).forEach(m =>
       st.wire.unshift({ sitting: st.sitting, text: m.toUpperCase() }));
   }
 
+  /* Everything in the queue whose day has come and which carries effects
+     rather than a story. Applied in the order it was queued, removed as
+     it goes, and logged under its own label so the player can see what
+     arrived and what put it there. Returns what it resolved. */
+  function resolveDue(st, C) {
+    const due = (st.queue || []).filter(q => q.dueSitting <= st.sitting && q.effects);
+    if (!due.length) return [];
+    st.queue = st.queue.filter(q => due.indexOf(q) < 0);
+    due.forEach(q => {
+      apply(st, C, q.effects);
+      if (q.label) st.log.unshift({ sitting: st.sitting, text: q.label });
+    });
+    return due;
+  }
+
   /* ---------------------------------------------------------
      7. LOSS CONDITIONS
      --------------------------------------------------------- */
+
+  /* THE GAME CAN BE WON.
+
+     checkLoss() has had no counterpart since the first build: four ways
+     to lose and none to finish, which §3.5.1 calls a survival game and
+     says this is not one.
+
+     A READER, NEVER A BRANCH. A settlement is a `when` block in content,
+     evaluated by the same matches() every event uses, so the engine
+     names no settlement and content can add a fifth without touching
+     this file. `rank` breaks a tie: a specific configuration beats a
+     general one, so the federal fudge — which is compatible with almost
+     any threshold — is read last.
+
+     THE LIST IS NEVER SHOWN. §3.5.1 rule 2: an ending named in advance
+     is a quest marker. This returns the one that is TRUE and nothing
+     about the ones that are not; there is deliberately no function that
+     reports progress toward a settlement, and no caller should invent
+     one. Losing is checked first: closure and dissolution are failure
+     modes, not settlements (rule 3). */
+  function checkSettlement(st, C) {
+    if (checkLoss(st, C).lost) return null;
+    const found = (C.settlements || [])
+      .filter(s0 => matches(st, s0.when))
+      .sort((a, b) => (a.rank || 0) - (b.rank || 0));
+    return found.length ? found[0] : null;
+  }
 
   function checkLoss(st, C) {
     if (confidence(st) < majority(st)) return { lost: true, reason: "confidence" };
@@ -2871,7 +2946,7 @@ const Engine = (function () {
     STATE_VERSION, newGame, migrate, save, load, chapters,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal,
-    division, reported, ballot, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
+    division, reported, ballot, resolveDue, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss, checkSettlement,
     dateOfSitting, sittingOfDate, deadlines, calendar, today, business,
     initiatives, take, setDivision,
     apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,
