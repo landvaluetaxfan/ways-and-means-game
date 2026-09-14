@@ -1364,6 +1364,14 @@ body.busy, body.busy *{cursor:progress;}
 }
 .wait-dlg{width:min(560px,100%);max-height:88vh;overflow:auto;}
 .wait-dlg:focus-visible{outline:1px dotted var(--bar-txt);outline-offset:2px;}
+/* A BARE WAIT IS A CAPTION, NOT A MODAL. The division is read out over the
+   plan that is showing it, so the overlay must not cover the thing it is
+   about: no scrim, no centred panel, a strip along the foot of the screen. */
+.wait-back.bare{background:transparent;align-items:flex-end;padding:0;}
+.wait-back.bare .wait-dlg{
+  width:min(660px,100%);border-bottom:0;
+  box-shadow:0 -3px 0 rgba(27,29,25,.18);
+}
 
 /* one chunk per sub-step, 1px apart, in a bevelled well */
 .wait-seg{
@@ -1656,6 +1664,49 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
   letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--rule);
   padding:0 3px;margin-left:3px;vertical-align:1px;}
   .chhint{font-style:normal;font-size:10.5px;color:var(--ink-soft);}
+  /* THE ORDER PAPER'S STAGE. The stage name and the bar both carry the bill's
+     state, in the same colours the Papers register uses for a terminal state —
+     green passed, amber blocked, red dead — plus grey for drafting, which has
+     not been introduced, and ink for everything still moving.
+
+     THE STATE MUST SURVIVE THE SELECTION TINT. A selected row is washed gold,
+     and a quiet mark on gold says nothing. So the marks are the state's own
+     colour at FULL strength rather than a faded tint, the current rung is
+     marked by a light top edge that reads on any ground, and the row carries
+     the same colour down its left chord, which the tint does not reach. */
+  td.stage{white-space:nowrap;}
+  td.stage .stname{font-family:var(--f-data);font-size:10.5px;}
+  .stname.live{color:var(--ink);}
+  .stname.drafting{color:var(--ink-soft);}
+  .stname.blocked{color:var(--warn);}
+  .stname.passed{color:var(--ok);}
+  .stname.dead{color:var(--alert);}
+
+  .sbar{display:inline-flex;margin-left:6px;vertical-align:1px;border:1px solid var(--chrome-dk);}
+  .sbar i{display:block;width:6px;height:8px;background:var(--field);
+    border-right:1px solid var(--chrome-dk);}
+  .sbar i:last-child{border-right:0;}
+  .sbar i.dv{width:9px;}
+  .sbar i.done{background:currentColor;}
+  /* the rung the bill is ON, told apart by a light top edge, not by a fainter
+     colour — a faded mark is the one that disappears on the gold tint */
+  .sbar i.here{background:currentColor;box-shadow:inset 0 2px 0 rgba(255,255,255,.72);}
+  .sbar.live{color:var(--ink);}
+  .sbar.drafting{color:var(--chrome-dkr);}
+  .sbar.blocked{color:var(--warn);}
+  .sbar.passed{color:var(--ok);}
+  .sbar.dead{color:var(--alert);}
+
+  #cham-bills tr.st-live>td:first-child{box-shadow:inset 3px 0 0 var(--ink-soft);}
+  #cham-bills tr.st-drafting>td:first-child{box-shadow:inset 3px 0 0 var(--chrome-dk);}
+  #cham-bills tr.st-blocked>td:first-child{box-shadow:inset 3px 0 0 var(--warn);}
+  #cham-bills tr.st-passed>td:first-child{box-shadow:inset 3px 0 0 var(--ok);}
+  #cham-bills tr.st-dead>td:first-child{box-shadow:inset 3px 0 0 var(--alert);}
+
+  .rdy{
+    font-family:var(--f-ui);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ok);border:1px solid var(--ok);padding:0 4px;margin-left:6px;
+  }
   /* THE PLAN'S CONTROLS, in the two shapes the two kinds of control have.
      The colour is a CHOICE, so its buttons are one segmented control with
      shared edges — pick one. The arrangement is a SET, so each toggle carries

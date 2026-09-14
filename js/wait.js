@@ -78,7 +78,8 @@ const Wait = (function () {
     const opener = document.activeElement;
     const h = host();
     h.innerHTML =
-      '<div class="wait-back"><div class="wait-dlg panel" role="dialog" aria-modal="true"' +
+      '<div class="wait-back' + (spec.bare ? " bare" : "") + '">' +
+      '<div class="wait-dlg panel" role="dialog" aria-modal="' + (spec.bare ? "false" : "true") + '"' +
       ' aria-label="' + esc(spec.title || "Working") + '" tabindex="-1">' +
         '<h2>' + esc(spec.title || "Working") +
           (spec.sub ? '<em>' + esc(spec.sub) + '</em>' : '') + '</h2>' +

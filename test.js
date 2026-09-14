@@ -867,6 +867,33 @@ console.log("\nAN INITIATIVE'S ANSWER IS AN EVENT (design/18 §4):");
   if (bad) { console.log("\n" + bad + " INITIATIVE FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nTHE HOUSE VOTES, AND THE BILL REMEMBERS IT (design/08 §7):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const a = Engine.newGame(CONTENT);
+  let guard = 0;
+  while (a.bills.divergence.stage !== "third_reading" && guard++ < 8)
+    Engine.grantSlot(a, CONTENT, "divergence");
+  while (a.sitting < (a.bills.divergence.dividesOn || 0)) Engine.advance(a, CONTENT);
+
+  const truth = Engine.division(a, CONTENT, "divergence");
+  ok("nothing is recorded before the House votes", !a.bills.divergence.lastDivision);
+  Engine.divide(a, CONTENT, "divergence");
+  const lr = a.bills.divergence.lastDivision;
+  ok("the bill records the division once it runs", !!lr);
+  ok("and the record is the arithmetic that ran",
+     !!lr && lr.popular.aye === truth.popular.aye && lr.carries === truth.carries,
+     lr ? lr.popular.aye + " against " + truth.popular.aye : "");
+  ok("and it is a trimmed copy, not the bill itself",
+     !!lr && lr.bill === undefined && Array.isArray(lr.rows));
+  ok("and it keeps the sitting it happened", !!lr && lr.at === a.sitting);
+
+  if (bad) { console.log("\n" + bad + " DIVISION-RECORD FAILURES"); process.exitCode = 1; }
+})();
+
 /* ---------------------------------------------------------------------
    THE BED IS IN TUNE.
 

@@ -450,7 +450,6 @@ try {
       var b = document.getElementById("btn-divide");
       if (!b) return "NO DIVIDE BUTTON";
       b.click();
-      window.__pop = document.getElementById("dv-pop");
       window.__stalled = !!document.querySelector(".wait-seg i.stall");
       ${skip ? "Wait.skip();" : "Wait.skip();"}
       return Engine.save(UI.state());
@@ -469,15 +468,24 @@ try {
   /* The screen has to agree with the engine after a skip, not just the
      state. Skip runs every remaining step and only then detaches the
      dialog, so the node still carries what it was left showing. */
-  const shownPop = w.eval("window.__pop && window.__pop.textContent");
-  const want = w.eval(`
+  /* AND THE PLAN SHOWS THE VOTE THAT HAPPENED. The running-total table is gone
+     — the division is read out over the House itself now — so what has to
+     agree with the engine is the plan: it draws from the result the division
+     recorded, not from the estimate that preceded it. The Chair is drawn
+     among the seats and may be an aye either way, hence the tolerance of one. */
+  const drawn = String(w.eval(`
     (function () {
-      var d = Engine.division(Engine.load(window.__snap, CONTENT), CONTENT, window.__bill);
-      return d.popular.aye + " / " + d.popular.need;
+      var bs = UI.state().bills[window.__bill];
+      if (!bs.lastDivision) return "NO RECORD";
+      var marks = document.querySelectorAll("#chamber .sg:not(.no)").length;
+      return marks + "::" + (bs.lastDivision.popular.aye + bs.lastDivision.functional.aye);
     })()
-  `);
-  ok("and the running total on screen is the engine's own number",
-     shownPop === want, "screen " + shownPop + ", engine " + want);
+  `)).split("::");
+  ok("the division is recorded on the bill the moment it runs",
+     drawn[0] !== "NO RECORD", drawn[0]);
+  ok("and the plan draws that vote rather than the forecast",
+     drawn[0] !== "NO RECORD" && Math.abs(+drawn[0] - +drawn[1]) <= 1,
+     "plan " + drawn[0] + " ayes, record " + drawn[1]);
 
   /* TIER 3. A stall the player cannot cause is an annoyance; one the
      fiction chose is a scene. It fires from a content flag and from
