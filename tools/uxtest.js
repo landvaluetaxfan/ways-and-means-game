@@ -260,6 +260,24 @@ try {
      govStacks.length > 0 && govStacks.every(e => e.classList.contains("scrolls")),
      govStacks.filter(e => !e.classList.contains("scrolls")).length + " unmarked");
 
+  /* THE TAB FITS. Nothing scrolls the whole page: a screen takes the
+     viewport's height and anything that cannot fit scrolls inside its own
+     panel. jsdom does no layout, so what is assertable here is the
+     construction every screen has to share — a definite height on the
+     screen and on its grid, and a floor of nothing on the rows. Measured
+     in a real browser at four window sizes; the Papers tab was 138px over
+     at 720 and the orbit station list was CLIPPED rather than scrollable,
+     both found that way. */
+  const sheet2 = require("fs").readFileSync(
+    require("path").join(__dirname, "..", "css", "terminal.css"), "utf8");
+  ["cham", "pap", "orb", "sit"].forEach(id => {
+    ok("the " + id + " screen takes the viewport's height rather than growing past it",
+       new RegExp("#s-" + id + "\\.screen\\.on\\{[^}]*height:100%").test(sheet2));
+  });
+  ok("and no panel carries an inline max-height to hold itself back",
+     !/style="[^"]*max-height/.test(
+       require("fs").readFileSync(require("path").join(__dirname, "..", "index.html"), "utf8")));
+
   /* THE CONCORDANCE IS EXEMPT, and deliberately: it is white paper in a
      serif, something civilians made, and a drawn government scrollbar
      inside it collapses the separation the whole screen is built on —
@@ -1405,9 +1423,12 @@ try {
     ok("and the seats say how the benches are expected to go",
        w.document.querySelectorAll("#chamber .sg.no").length > 0);
 
-    const bd = w.document.querySelector("#cham-break");
-    ok("the party breakdown is drawn without a control to reveal it",
-       !!bd && /thead/.test(bd.innerHTML));
+    /* ONE TABLE. Composition and the party breakdown were two panels and
+       the second one's "of" columns were the first one — seats per party
+       per tier, printed twice, 745px of a 818px column between them. */
+    const bd = w.document.querySelector("#comp-table");
+    ok("composition carries the forecast when a measure is named",
+       !!bd && />Aye</.test(bd.innerHTML));
     const bench = bd.querySelectorAll("tr.bench");
     ok("which lists the factions under their party", bench.length === 4,
        bench.length + " current rows");
@@ -1416,34 +1437,40 @@ try {
                               !/^cu_/.test(tr.cells[0].textContent.trim())),
        [...bench].map(tr => tr.cells[0].textContent.trim()).join(" · "));
 
+    /* Party | D | L | F | Tot | Pop aye | Func aye, and the currents keep
+       the same seven so the columns line up under the party they belong to. */
     const party = bd.querySelector("tbody tr:not(.bench)");
     ok("in the same table as the party row",
        bench.length > 0 && bench[0].parentNode === party.parentNode);
     ok("with the same number of columns",
-       [...bench].every(tr => tr.cells.length === 5));
+       [...bench].every(tr => tr.cells.length === party.cells.length),
+       party.cells.length + " columns");
 
     const num = (tr, i) => parseInt(tr.cells[i].textContent, 10) || 0;
+    const COL = { tot: 4, pop: 5, func: 6 };
     const partyRow = [...bd.querySelectorAll("tr")]
-      .find(tr => !tr.classList.contains("bench") && tr.cells.length === 5 &&
+      .find(tr => !tr.classList.contains("bench") &&
+                  tr.cells.length === party.cells.length &&
                   tr.cells[0].textContent.indexOf("PSD") >= 0);
     if (partyRow) {
       const col = i => [...bench].reduce((n, tr) => n + num(tr, i), 0);
       ok("the printed faction seats sum to the printed party seats",
-         col(2) === num(partyRow, 2) && col(4) === num(partyRow, 4),
-         col(2) + " = " + num(partyRow, 2));
+         col(COL.tot) === num(partyRow, COL.tot),
+         col(COL.tot) + " = " + num(partyRow, COL.tot));
       ok("and so do the ayes",
-         col(1) === num(partyRow, 1) && col(3) === num(partyRow, 3),
-         col(1) + " = " + num(partyRow, 1));
+         col(COL.pop) === num(partyRow, COL.pop) &&
+         col(COL.func) === num(partyRow, COL.func),
+         col(COL.pop) + " = " + num(partyRow, COL.pop));
     } else ok("the governing party is in the breakdown", false);
 
     /* THE LEAK THAT CLOSED. The bars are the whips' estimate; the table
-       under them used to be exact, so adding up the column handed the
+       beside them used to be exact, so adding up the column handed the
        player the true count and imperfect information withheld nothing. */
     const rows = [...bd.querySelectorAll("tbody tr:not(.bench)")];
-    const printed = rows.reduce((n, tr) => n + num(tr, 1), 0);
+    const printed = rows.reduce((n, tr) => n + num(tr, COL.pop), 0);
     const bar = w.document.querySelector("#cham-forecast .dm .lbl");
     const shown = parseInt(bar.textContent, 10);
-    ok("the printed party ayes sum to the bar above them",
+    ok("the printed party ayes sum to the bar beside them",
        printed === shown, printed + " vs " + shown);
 
     /* ONE PLACE EACH, now that the measure and the plan share a screen. */
@@ -1453,7 +1480,7 @@ try {
     /* A fallen measure keeps its row and loses the whip. */
     w.document.querySelector('#cham-bills tr[data-bill="divergence"]').click();
     ok("a stated forecast draws no faction rows",
-       w.document.querySelectorAll("#cham-break tr.bench").length === 0);
+       w.document.querySelectorAll("#comp-table tr.bench").length === 0);
     ok("and a measure that has fallen shows no whip",
        w.document.querySelector("#p-whip").hidden);
 
@@ -1468,8 +1495,7 @@ try {
     /* At rest the House is a diagram again and the working surfaces go. */
     w.document.querySelector('#cham-pick [data-cb=""]').click();
     ok("showing the House at rest puts the whip away",
-       w.document.querySelector("#p-whip").hidden &&
-       w.document.querySelector("#p-break").hidden);
+       w.document.querySelector("#p-whip").hidden);
     ok("and takes the vote colouring off the benches",
        w.document.querySelectorAll("#chamber .sg.no").length === 0);
     /* And choosing a measure puts it all back. One press of "at rest"
@@ -1489,7 +1515,8 @@ try {
        psvg.style.aspectRatio);
     const css2 = require("fs").readFileSync(
       require("path").join(__dirname, "..", "css", "terminal.css"), "utf8");
-    ok("and the stylesheet gives it the width", /\.g-cham svg\{[^}]*width:100%/.test(css2));
+    ok("and the stylesheet gives it the column, capped",
+       /#s-cham \.pbody\.flush>svg\{[^}]*width:100%[^}]*max-width:\d+px/.test(css2));
   }
 } catch (e) { ok("the faction breakdown renders", false, e.message); }
 
@@ -1646,17 +1673,18 @@ try {
        printing the total put a party row of 67 over currents summing to
        59 — the exact fault test.js §614 exists to catch, invisible until
        somebody actually whipped somebody. */
-    const brk = doc.querySelector("#cham-break");
+    const brk = doc.querySelector("#comp-table");
     const bench2 = [...brk.querySelectorAll("tr.bench")];
     const prow = [...brk.querySelectorAll("tbody tr:not(.bench)")]
       .find(tr => /PSD/.test(tr.cells[0].textContent));
     if (bench2.length && prow) {
-      const base = parseInt(prow.cells[1].textContent, 10);
-      const sum = bench2.reduce((n, tr) => n + (parseInt(tr.cells[1].textContent, 10) || 0), 0);
+      const n2 = (tr, i) => parseInt(tr.cells[i].textContent, 10) || 0;
+      const base = n2(prow, 5);                       /* Pop aye */
+      const sum = bench2.reduce((n, tr) => n + n2(tr, 5), 0);
       ok("the factions still sum to the party row once members are whipped",
          base === sum, sum + " currents vs " + base + " printed");
       ok("and the whip is printed on top of that base, not inside it",
-         /\+\d/.test(prow.cells[1].textContent), prow.cells[1].textContent);
+         /\+\d/.test(prow.cells[5].textContent), prow.cells[5].textContent);
     } else ok("the whipped party is in the breakdown", false);
 
     ok("and the whip prices itself per seat, with a ceiling",

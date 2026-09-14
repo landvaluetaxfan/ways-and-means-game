@@ -125,11 +125,11 @@
         <div class="stack">
           <div class="panel">
             <h2>Order paper <em>select a measure</em></h2>
-            <div class="pbody flush"><table id="cham-bills"></table></div>
+            <div class="pbody flush scrolls"><table id="cham-bills"></table></div>
           </div>
           <div class="panel">
             <h2><span id="bill-hdr"></span> <em id="bill-ref"></em></h2>
-            <div class="pbody" id="bill-detail"></div>
+            <div class="pbody scrolls" id="bill-detail"></div>
           </div>
         </div>
 
@@ -150,23 +150,19 @@
           </div>
           <div class="panel" id="p-whip" hidden>
             <h2><span data-tip="whip">The whip</span> <em id="cham-whip-hdr"></em></h2>
-            <div class="pbody" id="cham-whip"></div>
+            <div class="pbody scrolls" id="cham-whip"></div>
           </div>
         </div>
 
         <!-- REFERENCE: what the House is made of, and who is counted where. -->
         <div class="stack">
-          <div class="panel" id="p-break" hidden>
-            <h2>By party <em id="cham-break-hdr">how the benches are counted</em></h2>
-            <div class="pbody flush" id="cham-break"></div>
-          </div>
           <div class="panel">
-            <h2>Composition <em>by tier</em></h2>
-            <div class="pbody flush"><table id="comp-table"></table></div>
+            <h2>Composition <em id="comp-hdr">by tier</em></h2>
+            <div class="pbody flush scrolls"><table id="comp-table"></table></div>
           </div>
           <div class="panel">
             <h2><span data-tip="functional">Functional constituencies</span> <em data-tip="dual">40 seats, dual majority</em></h2>
-            <div class="pbody flush"><table id="func-table"></table></div>
+            <div class="pbody flush scrolls"><table id="func-table"></table></div>
             <div class="pbody"><div class="note" id="func-note"></div></div>
           </div>
         </div>
@@ -178,7 +174,7 @@
       <div class="grid g-orb">
         <div class="panel p-stat">
           <h2>Stations <em id="orbit-count"></em></h2>
-          <div class="pbody flush"><table id="orbit-table"></table></div>
+          <div class="pbody flush scrolls"><table id="orbit-table"></table></div>
         </div>
         <div class="panel p-cons">
           <h2><span id="cons-hdr"></span> <em id="cons-sub"></em></h2>
@@ -201,7 +197,7 @@
         <div class="stack">
           <div class="panel">
             <h2><span data-tip="instrument">Instruments</span> <em>signed, not voted</em></h2>
-            <div class="pbody flush">
+            <div class="pbody flush scrolls">
               <table id="gov-si"></table>
               <div class="pbody"><div class="note">A bill needs a majority and cannot be undone.
                 An order needs no majority and can be revoked. Signing one puts it in force at
@@ -210,7 +206,7 @@
           </div>
           <div class="panel">
             <h2><span data-tip="register">Register</span> <em>acts, orders and minutes</em></h2>
-            <div class="pbody flush" style="max-height:340px;overflow:auto">
+            <div class="pbody flush scrolls">
               <table id="pp-list"></table>
             </div>
           </div>

@@ -893,28 +893,48 @@ const UI = (function () {
                            : Engine.division(st, C, billId);
   }
 
-  /* The House counted by party, with the currents under their party where
-     the engine derived the count from them. */
-  function breakdownHTML(d) {
-    /* THE WHIP IS SHOWN ON TOP OF THE COUNT, NOT INSIDE IT.
+  /* THE HOUSE, BY PARTY — composition and forecast in one table.
 
-       popularAye already includes whipped members and the faction rows
-       under it deliberately do not (the whip buys members, not
-       factions), so printing the total put a party row of 67 over
-       currents adding to 59 — the one thing test.js §614 says a
-       breakdown must never do. The base is printed, the whip is printed
-       beside it, and the columns add up again. */
+     These were two panels, 745px of a 818px column between them, and the
+     second one's "of" columns WERE the first one: seats per party per
+     tier, printed twice, one of them behind a hidden panel. Composition
+     is what the House is made of; the forecast is what it is expected to
+     do with the measure in hand. They are the same rows.
+
+     So the table is always the composition, and naming a measure adds two
+     columns and the currents under their party. Short party codes, one
+     line each: the swatch carries the full name, the seat count and where
+     the party stands on a card, which is what that change bought.  */
+  function benchTableHTML(d) {
+    const armed = !!d;
+    const seatsOf = id => st.parties[id].seats;
     const cell = (aye, whipped) => whipped
       ? (aye - whipped) + `<span class="wh">+${whipped}</span>`
       : aye;
-    return `<table><thead><tr><th>Party</th>` +
-      `<th class="n">Pop aye</th><th class="n">of</th><th class="n">Func aye</th><th class="n">of</th></tr></thead><tbody>` +
-      d.rows.filter(r => r.popularSeats + r.functionalSeats > 0).map(r =>
-        `<tr><td>${mark(r.party)}${(C.partyById[r.party] || {}).short || r.party}</td>` +
-        `<td class="n">${cell(r.popularAye, r.popularWhipped)}</td><td class="n">${r.popularSeats}</td>` +
-        `<td class="n">${cell(r.functionalAye, r.functionalWhipped)}</td><td class="n">${r.functionalSeats}</td></tr>` +
-        benchRowsHTML(r)).join("") +
-      `</tbody></table>`;
+    let h = `<thead><tr><th>Party</th>` +
+      `<th class="n" data-tip="district">D</th><th class="n" data-tip="list">L</th>` +
+      `<th class="n" data-tip="functional">F</th><th class="n" data-tip="seats">Tot</th>` +
+      (armed ? `<th class="n" data-tip="popular">Aye</th>` +
+               `<th class="n" data-tip="functional">F&#8239;aye</th>` : "") +
+      `</tr></thead><tbody>`;
+    const govIds = st.coalition.concat(st.confidenceSupply);
+    C.parties.forEach(p => {
+      const sq = seatsOf(p.id), r = armed && d.rows.find(x => x.party === p.id);
+      h += `<tr${govIds.includes(p.id) ? ' class="govrow"' : ""}>` +
+        `<td>${mark(p.id)}${ps(p.id)}</td>` +
+        `<td class="n">${sq.district}</td><td class="n">${sq.list}</td>` +
+        `<td class="n">${sq.functional}</td>` +
+        `<td class="n"><b>${Engine.partyTotal(st, p.id)}</b></td>` +
+        (armed ? `<td class="n">${r ? cell(r.popularAye, r.popularWhipped) : "&mdash;"}</td>` +
+                 `<td class="n">${r ? cell(r.functionalAye, r.functionalWhipped) : "&mdash;"}</td>` : "") +
+        `</tr>`;
+      if (armed && r && r.benches) h += r.benches.map(b =>
+        `<tr class="bench"><td>${esc(b.name)}</td><td class="n"></td><td class="n"></td>` +
+        `<td class="n"></td><td class="n">${b.popularSeats + b.functionalSeats}</td>` +
+        `<td class="n">${b.popularAye == null ? "&mdash;" : b.popularAye}</td>` +
+        `<td class="n">${b.functionalAye == null ? "&mdash;" : b.functionalAye}</td></tr>`).join("");
+    });
+    return h + `</tbody>`;
   }
 
   /* Click a block to commit up to it; click the last committed block again
@@ -2172,15 +2192,13 @@ const UI = (function () {
     wireWhipbars(el, id, () => { drawChamber(); drawBill(id); drawStatus(); });
   }
 
-  /* The breakdown is no longer behind a button. It was a control that
-     revealed a readout, on a tab that had no room for it; here the tab is
-     the House and this is the House counted. */
-  function drawChamberBreakdown() {
-    const panel = $("#p-break"), el = $("#cham-break"); if (!el) return;
+  /* One table, drawn from whichever state the House is in. */
+  function drawBenchTable() {
+    const el = $("#comp-table"), hdr = $("#comp-hdr");
+    if (!el) return;
     const id = chamberBill();
-    if (panel) panel.hidden = !id;
-    if (!id) { el.innerHTML = ""; return; }
-    el.innerHTML = breakdownHTML(forecast(id));
+    if (hdr) hdr.textContent = id ? "by tier, and how they are expected to go" : "by tier";
+    el.innerHTML = benchTableHTML(id ? forecast(id) : null);
   }
 
   /* THE ORDER PAPER IS THE PICKER.
@@ -2223,6 +2241,7 @@ const UI = (function () {
 
     drawBill(sel);
   }
+
 
   function drawChamber() {
     drawOrderPaper();
@@ -2440,22 +2459,12 @@ const UI = (function () {
        government side of the floor, which is where confidence and supply sits. */
     drawChamberForecast();
     drawChamberWhip();
-    drawChamberBreakdown();
+    drawBenchTable();
     $("#chamber-legend").innerHTML = C.parties.map(p => {
       const tag = st.coalition.includes(p.id) ? ' <i class="ingov">GOV</i>'
                 : st.confidenceSupply.includes(p.id) ? ' <i class="ingov">C&amp;S</i>' : "";
       return `<span>${mark(p.id)}${p.name} ${Engine.partyTotal(st, p.id)}${tag}</span>`;
     }).join("");
-
-    $("#comp-table").innerHTML =
-      "<thead><tr><th>Party</th><th class='n' data-tip='district'>Dist</th>" +
-      "<th class='n' data-tip='list'>List</th><th class='n' data-tip='functional'>Func</th>" +
-      "<th class='n' data-tip='seats'>Tot</th></tr></thead><tbody>" +
-      C.parties.map(p => { const s = st.parties[p.id].seats;
-        return `<tr${govIds.includes(p.id) ? ' class="govrow"' : ""}><td>${sw(p.colour)}${p.name}</td>` +
-               `<td class="n">${s.district}</td><td class="n">${s.list}</td>` +
-               `<td class="n">${s.functional}</td><td class="n"><b>${Engine.partyTotal(st, p.id)}</b></td></tr>`;
-      }).join("") + "</tbody>";
   }
 
   /* ---------- orbit ---------- */
@@ -2734,9 +2743,10 @@ const UI = (function () {
           ` data-tip-body="${esc(overview(f))}"` +
           (mem.length ? ` data-tip-members="${esc(JSON.stringify(mem))}"` : "") +
           ` data-tip-go="functional_constituency">` +
-          `<b>${f.name}</b><i class="sub">` +
-          `<span data-tip="franchise">${FR[f.franchise] || f.franchise}</span>` +
-          ` &middot; <span data-tip="electors">${f.electorate.toLocaleString()} electors</span></i></td>` +
+          /* ONE LINE. The franchise and the electorate were a second line
+             under every name, which is eleven extra rows of height for
+             something the hover card already says in full. */
+          `<b>${f.name}</b></td>` +
           `<td class="n">${f.seats}</td><td class="hcell">${held.length
             ? held.map(pid => `${mark(pid)}<span class="hn">${h[pid]}</span>`).join(" ")
             : "&mdash;"}</td></tr>`;
@@ -2747,9 +2757,12 @@ const UI = (function () {
                       .reduce((n, f) => n + f.electorate, 0);
     const resid = F.filter(f => f.franchise === "residual")
                    .reduce((n, f) => n + f.electorate, 0);
+    /* The two words the table used to anchor on every row now anchor
+       once, here, where the sentence is actually about them. */
     $("#func-note").innerHTML =
-      `${seats} seats. <b>${licensed.toLocaleString()}</b> electors hold a functional ` +
-      `franchise across ${F.length - 1} licensed constituencies; ` +
+      `${seats} seats. <b>${licensed.toLocaleString()}</b> <span data-tip="electors">electors</span> ` +
+      `hold a functional <span data-tip="franchise">franchise</span> across ` +
+      `${F.length - 1} licensed constituencies; ` +
       `<b>${resid.toLocaleString()}</b> sit in the residual constituency and return ` +
       `${F.filter(f => f.franchise === "residual").reduce((n, f) => n + f.seats, 0)}. ` +
       `A measure touching life-support integrity or the Charter must carry here separately.`;

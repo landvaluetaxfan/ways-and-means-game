@@ -182,12 +182,23 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    measure open on it. Right is reference: how the benches are counted,
    what the House is made of, who sits for what. Both sides are narrow on
    purpose; the plan and the whip under it are what the tab is for. */
-.g-cham{grid-template-columns:minmax(300px,360px) minmax(0,1fr) minmax(240px,290px);}
-/* The plan fills its column. It carries a viewBox and an aspect-ratio set
-   from the seat count, and no width attribute, so it is as large as the
-   window allows up to the point where a 3px seat mark stops gaining
-   anything from more room. */
-.g-cham svg{display:block;width:100%;max-width:1000px;height:auto;}
+.g-cham{grid-template-columns:minmax(300px,340px) minmax(0,690px) minmax(340px,1fr);}
+/* THE TAB FITS. Nothing here scrolls the page: the screen takes the
+   viewport's height, the single grid row divides it, and anything that
+   cannot fit scrolls INSIDE its own panel with the terminal's drawn bar.
+   Same construction as #s-orb and #s-sit. */
+#s-cham.screen.on{height:100%;min-height:0;}
+.g-cham{grid-template-rows:minmax(0,1fr);align-items:stretch;height:100%;min-height:0;}
+.g-cham > .stack{min-height:0;}
+.g-cham .panel{min-height:0;}
+/* The plan takes what the column has left; the whip under it is its own
+   height and never squeezed. */
+.g-cham > .stack > .panel:first-child{flex:0 1 auto;min-height:0;}
+/* The plan is drawn to a viewBox with an aspect ratio from the seat
+   count. 766px on a 1440 window was too much — the seats stopped gaining
+   anything from the room and the tab stopped fitting. It is capped, and
+   it is centred rather than stretched so the panel keeps its width for
+   the tally and the legend under it. */
 /* THE CAP BELONGS ON THE SCHEMATIC, NOT ON WHAT IS LEFT OVER.
 
    The middle column was capped at 1090px so the schematic stopped
@@ -223,7 +234,12 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .p-doss{grid-column:3;grid-row:1 / span 2;}
 .g-orb>.panel{display:flex;flex-direction:column;min-height:0;}
 .g-orb>.panel>.pbody{flex:1 1 auto;min-height:0;overflow:auto;}
-.p-stat>.pbody{overflow:hidden;}
+/* It was overflow:hidden on the strength of "thirty-four rows never
+   grows" — true of the list, not of the window. On a 720px-tall screen
+   the last stations were simply cut off and unreachable. It scrolls now,
+   with the drawn bar, which is the point of never growing: it almost
+   never has to. */
+.p-stat>.pbody{overflow:auto;}
 .p-map>.pbody{flex:0 0 auto;overflow:visible;}
 
 /* A DRAWN SCROLLBAR FOR ENGINES THAT CANNOT BEVEL ONE (Gecko).
@@ -237,6 +253,12 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    NOT scoped to a screen. It used to name .g-orb, so the drawn bar was an
    orbit feature rather than the terminal's, and every scroller added
    afterwards quietly got the OS one instead. */
+/* THE MARK IS THE BEHAVIOUR. `.scrolls` said "give this the drawn bar"
+   and nothing else, so the actual overflow:auto came from whatever other
+   rule happened to target the element — and a newly marked panel body
+   with no such rule scrolled nowhere and pushed the page instead. */
+.scrolls{overflow:auto;min-height:0;}
+
 .sbwrap{flex:1 1 auto;min-height:0;min-width:0;display:flex;}
 /* The marked element, whatever it is. This named .pbody, so marking
    anything that is not a panel body — the Government tab's columns, the
@@ -467,7 +489,11 @@ tr.vacant td{background:var(--chrome);color:var(--ink-soft);}
 
 /* --- the chamber (Westminster) --- */
 /* 1:1, and only ever scaled DOWN. See drawChamber. */
-#s-cham .pbody.flush>svg{display:block;max-width:100%;height:auto;margin:6px auto 2px;}
+/* The seating plan. Capped: 766px on a 1440 window was too much — the
+   seat marks stopped gaining anything from the room and the tab stopped
+   fitting. Centred rather than stretched, so the panel keeps its width
+   for the tally and the legend under it. */
+#s-cham .pbody.flush>svg{display:block;width:100%;max-width:660px;height:auto;margin:6px auto 2px;}
 .chlab{font-family:var(--f-ui);font-size:9px;letter-spacing:.16em;fill:var(--ink-soft);
   text-transform:uppercase;}
 .chlab.sub{font-size:8px;letter-spacing:.1em;fill:var(--chrome-dkr);text-transform:none;}
@@ -877,7 +903,15 @@ img.dith{display:block;}
 .c-synthetic{background:#7a5c8c;}
 
 /* ---------- Papers register ---------- */
-.g-pap{grid-template-columns:340px minmax(0,1fr);}
+/* THE TAB FITS, like the Chamber, the orbit and the sitting screen. The
+   register carried an inline max-height in the markup to stop the column
+   running away, which worked at one window height and overflowed the
+   page by 138px at another. The screen takes the viewport and the panels
+   divide it. */
+.g-pap{grid-template-columns:340px minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:100%;min-height:0;}
+#s-pap.screen.on{height:100%;min-height:0;}
+.g-pap > .stack{min-height:0;}
+.g-pap .panel{min-height:0;}
 #pp-doc{background:#f4f0e4;overflow:auto;max-height:640px;}
 #pp-doc .paper{min-height:0;}
 .madestamp{
