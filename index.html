@@ -5,17 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Circumterrestrial Commonwealth — Executive Terminal</title>
 <link rel="stylesheet" href="css/terminal.css">
-<style>
-.prose p{font-family:var(--f-read);font-size:14px;line-height:1.62;margin:0 0 10px;max-width:66ch;}
-.choice{
-  width:100%;white-space:normal;text-align:left;
-  font-family:var(--f-read);font-size:13.5px;line-height:1.4;padding:7px 10px;
-}
-.choice:hover{background:#dfe4d3;}
-#gov-wire .post{border-bottom:1px solid var(--chrome-dk);padding:4px 6px;background:var(--field);}
-#gov-wire .post p{margin:0;font-family:var(--f-read);font-size:12px;}
-.g-sit{grid-template-columns:minmax(0,1fr) 320px;}
-</style>
 </head>
 <body>
 <div id="menu"></div>
@@ -31,8 +20,10 @@
     <span class="tbgroup">
       <span class="tbslot" id="tb-slot"></span>
       <span id="tb-flash"></span>
-      <button class="tbbtn" id="tb-save" title="Write to the current slot">Save</button>
-      <button class="tbbtn" id="tb-load" title="Open the save list">Load</button>
+      <button class="tbbtn" id="tb-save" data-tip-title="Save"
+              data-tip-body="Write the game to the slot named on this bar.">Save</button>
+      <button class="tbbtn" id="tb-load" data-tip-title="Load"
+              data-tip-body="Open the save list. An unsaved game is lost.">Load</button>
       <button class="tbbtn" id="tb-options" aria-haspopup="true">Options</button>
       <div id="tb-optpanel"></div>
     </span>

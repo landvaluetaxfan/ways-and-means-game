@@ -202,6 +202,45 @@ try {
 
 section("UNDEFINED CSS CUSTOM PROPERTIES", cssBad, x => x);
 
+/* =============================================================
+   EVERY SCREEN GRID COLLAPSES TO ONE COLUMN.
+
+   .g-sit was the only screen grid defined in a <style> block inside
+   index.html instead of here, so the one-column breakpoint listed the
+   other six and never knew about it. At 420px the sitting screen stayed
+   two columns wide and the narrow one set roughly one word per line —
+   a rule hiding in the markup does not see the media queries written for
+   its neighbours.
+
+   Two things are checked, and the first is why the second was possible:
+   the page carries no <style> block at all, and every .g-* grid the
+   stylesheet defines columns for is named in the breakpoint that
+   collapses them. A new screen gets caught the day it is added rather
+   than the day somebody opens the game on a phone.
+   ============================================================= */
+const gridBad = [];
+try {
+  const css2 = fs.readFileSync(path.join(root, "css", "terminal.css"), "utf8");
+  const html2 = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  if (/<style[\s>]/i.test(html2))
+    gridBad.push("index.html carries a <style> block; a rule there cannot see the breakpoints");
+  /* the block that puts the screens into one column */
+  const mq = css2.match(/@media\s*\(max-width:\s*1080px\)\s*\{([\s\S]*?)\n\}/);
+  if (!mq) gridBad.push("no one-column breakpoint found in the stylesheet");
+  else {
+    const declared = new Set();
+    let g, gre = /(^|[,}\s])(\.g-[a-z]+)\s*\{[^}]*grid-template-columns/gm;
+    while ((g = gre.exec(css2))) declared.add(g[2]);
+    [...declared].sort().forEach(name => {
+      if (mq[1].indexOf(name + "{") < 0 && mq[1].indexOf(name + ",") < 0 &&
+          mq[1].indexOf(name + " ") < 0 && mq[1].indexOf(name + ">") < 0)
+        gridBad.push(name + " sets columns but the one-column breakpoint never names it");
+    });
+  }
+} catch (e) { gridBad.push("could not read the stylesheet: " + e.message); }
+
+section("SCREEN GRIDS THAT DO NOT COLLAPSE", gridBad, x => x);
+
 /* ---------------------------------------------------------------------
    DOES THE STYLESHEET ACTUALLY PARSE?
 

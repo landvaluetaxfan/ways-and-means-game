@@ -64,13 +64,29 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
   border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
 }
 #shell.on{display:flex;}
+/* THE CHROME WRAPS BEFORE IT RUNS OFF THE WINDOW.
+
+   #titlebar and #statusbar are nowrap flex rows of fixed-width readouts,
+   and neither could do anything but overflow: at 420px the SAVE, LOAD and
+   OPTIONS buttons sat at x=447 to x=587 and the window boxes at 640, off
+   the right-hand edge of a 420px screen with no way to reach them. The
+   page reported a 662px scroll width and nothing was visibly wider than
+   the viewport, because the thing overflowing was the frame and not the
+   content. The tab strip was already handling it — it scrolls sideways —
+   and these two now wrap instead, which suits them better: a status bar
+   is a row of separate readings and reads perfectly well on two lines.
+
+   The product name yields first. It is the one thing on the bar that
+   nobody needs to read twice. */
 #titlebar{
   background:var(--bar);color:var(--bar-txt);
   padding:3px 6px;
   display:flex;justify-content:space-between;align-items:center;gap:16px;
+  flex-wrap:wrap;
   font-size:12px;letter-spacing:.09em;text-transform:uppercase;
   flex:0 0 auto;
 }
+#titlebar>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 #titlebar .sys{font-family:var(--f-data);letter-spacing:0;text-transform:none;opacity:.7;}
 #titlebar .boxes{display:flex;gap:2px;}
 #titlebar .boxes i{width:11px;height:11px;background:var(--chrome);border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);display:inline-block;}
@@ -113,6 +129,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #statusbar{
   flex:0 0 auto;
   display:flex;gap:3px;padding:3px 4px;
+  flex-wrap:wrap;
   border-top:1px solid var(--chrome-lt);
   font-family:var(--f-data);font-size:11px;
 }
@@ -139,6 +156,24 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    it just measured; `auto` then shrinks to that and the two table columns
    split the surplus, the whip's a little wider because its MOVE column is
    one block per whippable seat and blocks want room. */
+/* MOVED OUT OF index.html.
+
+   These five lived in a <style> block in the page, and one of them was
+   a grid: .g-sit was the only screen grid the stylesheet had never
+   heard of, so the one-column breakpoint below listed the other six and
+   silently missed it. At 420px the sitting screen stayed two columns and
+   the first was narrow enough to set one word per line. A rule hiding in
+   the markup does not see the media queries written for its neighbours;
+   there is nowhere for a rule to live but here. */
+.prose p{font-family:var(--f-read);font-size:14px;line-height:1.62;margin:0 0 10px;max-width:66ch;}
+.choice{
+  width:100%;white-space:normal;text-align:left;
+  font-family:var(--f-read);font-size:13.5px;line-height:1.4;padding:7px 10px;
+}
+.choice:hover{background:#dfe4d3;}
+#gov-wire .post{border-bottom:1px solid var(--chrome-dk);padding:4px 6px;background:var(--field);}
+#gov-wire .post p{margin:0;font-family:var(--f-read);font-size:12px;}
+.g-sit{grid-template-columns:minmax(0,1fr) 320px;}
 .g-cham{grid-template-columns:minmax(0,auto) minmax(0,1fr) minmax(0,1.1fr);}
 .g-cham>.panel:first-child{max-width:var(--planw,none);}
 .g-cham svg{max-width:100%;height:auto;}
@@ -535,7 +570,7 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
   .tally i{transition:none;}
 }
 @media (max-width:1080px){
-  .g-gov,.g-cham,.g-orb,.g-disp,.g-pap,.g-elec{grid-template-columns:minmax(0,1fr);}
+  .g-gov,.g-cham,.g-orb,.g-disp,.g-pap,.g-elec,.g-sit{grid-template-columns:minmax(0,1fr);}
   /* one column, so the plan is free to be the width of the screen again */
   .g-cham>.panel:first-child{max-width:none;}
   .newsbody{column-count:1;}
@@ -1683,6 +1718,18 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
 #s-sit .stack{min-height:0;display:flex;flex-direction:column;}
 #s-sit .stack > .panel:last-child{flex:1 1 auto;min-height:120px;}
 #s-sit .stack > .panel:last-child > .pbody{overflow:auto;}
+/* NONE OF WHICH SURVIVES ONE COLUMN. Filling the viewport is right for
+   two columns side by side and wrong for five panels stacked: the row
+   becomes a single screen-height box that everything below is pushed out
+   of. This has to sit AFTER the rules it undoes — the shared breakpoint
+   is 1100 lines above and would lose to them on source order alone. */
+@media (max-width:1080px){
+  .g-sit{grid-template-rows:none;}
+  #s-sit.screen.on{display:block;height:auto;min-height:0;}
+  #s-sit .grid{flex:none;}
+  #s-sit #sitting-body,#s-sit .stack>.panel:last-child>.pbody{overflow:visible;}
+  #s-sit .stack>.panel:last-child{flex:none;min-height:0;}
+}
 #sb-owed{border-left:3px solid currentColor;padding-left:5px;font-weight:700;}
 /* the second button on a quiet sitting carries its distance */
 #btn-until i{font-style:normal;font-family:var(--f-data);font-size:9.5px;opacity:.72;
