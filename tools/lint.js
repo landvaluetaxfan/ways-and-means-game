@@ -19,11 +19,11 @@
 
 const fs = require("fs"), vm = require("vm"), path = require("path");
 const root = path.join(__dirname, "..");
-const files = ["setup", "parties", "stations", "constituencies", "cabinet", "instruments","initiatives", "minutes", "characters", "bills", "events", "glossary", "encyclopedia"]
+const files = ["setup", "parties", "stations", "constituencies", "cabinet", "instruments","initiatives", "minutes", "characters", "bills", "events", "glossary", "encyclopedia", "labour"]
   .map(f => path.join(root, "content", f + ".js"));
 vm.runInThisContext(files.map(f => fs.readFileSync(f, "utf8")).join("\n") +
-  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS};");
-const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS } = globalThis.__G;
+  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR};");
+const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR } = globalThis.__G;
 
 const MAX_NEW_CLUSTERS = 1;  // per event. Raise this and you are choosing to confuse people.
 
@@ -98,6 +98,7 @@ EVENTS.forEach(e => {
 /* ---------- report ---------- */
 const R = [];
 R.push("LEGIBILITY LINT");
+
 R.push("=".repeat(60));
 R.push("");
 R.push("PLAYER'S PATH THROUGH THE VOCABULARY");
@@ -456,6 +457,47 @@ try {
 
 section("ARTIFACT IMAGES OF THE WRONG SHAPE", artBad, x => x);
 
+/* =============================================================
+   THE POPULATION IS STORED IN TWO PLACES AND THEY HAVE DRIFTED.
+
+   content/labour.js opens "THE ANCHORS ARE ALREADY CANON. Population
+   6,863,000" and content/stations.js carries a population per habitat.
+   Nothing had ever compared them. They are 223,000 apart.
+
+   CLAUDE.md's handoff recorded the gap as 143,000. It is 223,000 because
+   the capital was added afterwards at 80,000 and the stored total did not
+   move — which is the whole argument for the rule this repo already has:
+   "apportionment_ratio was stored beside seats and population and the
+   three diverged. Derived, never stored."
+
+   It is NOT the §4.7 distinction between apportionment population and
+   voting population. The suspended cohort across all thirty-five habitats
+   is 71,430, nowhere near the gap.
+
+   ADVISORY, for the reason the consequence chain is: which of the two is
+   canon is a bible decision and a content edit, not a call a linter gets
+   to make, and a check that fails from the day it lands gets disabled
+   rather than fixed. What it must do is stop the gap moving in silence
+   the next time a habitat is added.
+   ============================================================= */
+const popBad = [];
+try {
+  const roster = STATIONS.reduce((n, s) => n + (s.population || 0), 0);
+  const stored = LABOUR.totals.population;
+  if (roster !== stored) {
+    const susp = STATIONS.reduce((n, s) => n + (s.suspended || 0), 0);
+    popBad.push("the station roster sums to " + roster.toLocaleString() +
+      " and labour.js stores " + stored.toLocaleString() +
+      " \u2014 " + Math.abs(roster - stored).toLocaleString() + " apart");
+    popBad.push("not the suspended cohort, which is " + susp.toLocaleString() +
+      " across " + STATIONS.length + " habitats");
+    popBad.push("one of the two is canon; deciding which is a bible edit (\u00a74.7, \u00a711)");
+  }
+} catch (e) { popBad.push("could not compare the populations: " + e.message); }
+
+section("POPULATION STORED TWICE (advisory)", popBad, x => x);
+
+
 R.push("=".repeat(60));
 R.push(n ? `${n} legibility issues` : "no legibility issues");
 if (artBad.length) R.push(`${artBad.length} ARTIFACT SHAPE FAILURES`);
@@ -463,10 +505,15 @@ if (chainBad.length) R.push(`${chainBad.length} BREAKS IN THE CONSEQUENCE CHAIN`
 if (cssBad.length) R.push(`${cssBad.length} UNDEFINED CSS CUSTOM PROPERTIES`);
 if (parseBad.length) R.push(`${parseBad.length} STYLESHEET PARSE FAILURES`);
 if (verbBad.length) R.push(`${verbBad.length} RETIRED EFFECT VERBS IN CONTENT`);
+if (popBad.length) R.push("THE POPULATION IS STORED TWICE AND HAS DRIFTED (advisory)");
 console.log(R.join("\n"));
 /* The chain is reported loudly and does NOT fail the build yet: the
    current content breaks it in several places by omission, and a check
    that fails from the day it lands gets disabled rather than fixed. It
    becomes a hard failure when the content pass in design/03 closes the
    rows below. */
-if (artBad.length || cssBad.length || verbBad.length || parseBad.length) process.exit(1);
+
+/* gridBad is a hard failure: it was clean the day it landed, both halves
+   were verified against a planted fault, and a starved column is not a
+   matter of taste. popBad is not, for the reason given above it. */
+if (artBad.length || cssBad.length || verbBad.length || parseBad.length || gridBad.length) process.exit(1);
