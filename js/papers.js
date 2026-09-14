@@ -369,5 +369,5 @@ const Papers = (function () {
   function reset() { drawn = {}; Focus.seed("pp-list", null); }
   function onUpdate(fn) { onChange = fn; }
 
-  return { render, reset, onUpdate };
+  return { render, reset, onUpdate, stageTrack };
 })();

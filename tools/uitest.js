@@ -103,7 +103,10 @@ try {
   ok("the assented act is in the register", !!act, rows.length + " register rows");
   if (act) {
     act.click();
-    const track = w.document.querySelector(".stagetrack");
+    /* SCOPED TO THE REGISTER. The Chamber's bill detail draws the same track
+       now, and it is earlier in the document — an unscoped query found that
+       one and read a committee bill as if it were the assented act. */
+    const track = w.document.querySelector("#pp-doc .stagetrack");
     ok("the act document draws a stage track", !!track);
     if (track) {
       const steps = [...track.querySelectorAll("li")];

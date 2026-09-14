@@ -890,6 +890,12 @@ const UI = (function () {
       `<div class="billbody">` +
         `<div class="billmain">` +
           `<div class="note">${b.summary}</div>` +
+          /* WHERE IT IS, IN FULL. The order paper carries the one-line bar;
+             here is the ladder itself, the same renderer the register uses, so
+             the two can never tell the player different stories about a bill. */
+          (typeof Papers !== "undefined" && Papers.stageTrack
+            ? `<div class="rulehead">Where it is</div>` + Papers.stageTrack(b, bs)
+            : "") +
           (b.effectNote ? `<div class="rulehead">Effect</div><div class="note">${b.effectNote}</div>` : "") +
           billAxesHTML(b) +
           billDoesHTML(b) +
