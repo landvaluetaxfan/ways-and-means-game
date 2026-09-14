@@ -1,6 +1,6 @@
 # FINISHING THE ENGINE — THE COMPLETION PLAN
 
-**13 September 2026.** Eighteen documents specifying every remaining engine system,
+**13 September 2026.** Nineteen documents specifying every remaining engine system,
 in dependency order, to the point where `js/engine.js` is done and the project is
 content work plus interface work and nothing else.
 
@@ -197,6 +197,7 @@ binding constraint, and no document here should be built as a block ahead of it.
 | `15-the-calendar.md` | the session, prorogation, and giving a division a day — **do this early** | Claude |
 | `16-the-score.md` | what Casiopea does that we can use, an audit of every musical interruption, and the gap list | Claude |
 | `17-what-is-still-missing.md` | pre-emption, the quiet sitting, the loop holes no document covers, and foreign affairs now rather than later | Claude + opencode |
+| `18-pacing-and-initiative.md` | **the length target and the arithmetic behind it**, order-paper time as the clock, one mechanism for player initiative, and what should go to the bible | Claude |
 
 Every document ends with an **Acceptance** section naming the assertions that
 must exist in `npm run check` before it can be called done. That is the project's
