@@ -129,6 +129,13 @@ th,td{text-align:left;padding:6px 10px 6px 0;border-bottom:1px solid var(--hair)
 th{font-family:var(--f-ui);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--ink-soft);font-weight:400;}
 td.n{font-family:var(--f-data);font-variant-numeric:tabular-nums;white-space:nowrap;}
+/* a row whose numbers are the argument, not the furniture */
+tr.warn td{background:rgba(138,109,34,.10);}
+tr.warn td.n{font-weight:700;}
+.chain{margin:14px 0 8px;}
+/* what an item shipped, under the paragraph that asked for it */
+.ship{border-left:2px solid var(--ok);padding-left:9px;margin:7px 0 0;color:var(--ink-soft);}
+.item.is-done .ship{color:var(--ink);}
 .wrap{overflow-x:auto;}
 .cut li{margin-bottom:7px;}
 .cut b{font-weight:600;}
@@ -153,14 +160,15 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--hair);
   <div class="house">The Commonwealth of Habitats &middot; House of Commons</div>
   <h1>Order of Business</h1>
   <div class="sub">Ways &amp; Means &mdash; what is built, what is next, and how long the game is.</div>
-  <div class="stamp">Session 4 &middot; 14 September 2287 &middot; 431 assertions green</div>
+  <div class="stamp">Session 4 &middot; 14 September 2287 &middot; 583 assertions green</div>
 </header>
 
 <h2>I <span>Where the build stands</span></h2>
 <div class="figs">
   <div class="fig"><b>21</b><i>events written</i><em>of 45&ndash;50 for a full playthrough</em></div>
-  <div class="fig"><b>431</b><i>assertions</i><em>nine checks, all green</em></div>
-  <div class="fig"><b>20</b><i>design documents</i><em>plus a 132-section bible</em></div>
+  <div class="fig"><b>14<span style="font-size:15px">/31</span></b><i>conditions used</i><em>the branching vocabulary is built and idle</em></div>
+  <div class="fig"><b>583</b><i>assertions</i><em>nine checks, all green</em></div>
+  <div class="fig"><b>22</b><i>design documents</i><em>plus a 133-section bible</em></div>
   <div class="fig"><b>~2h</b><i>target playthrough</i><em>three sessions, one election</em></div>
 </div>
 
@@ -217,47 +225,47 @@ them.</b> The player will not meet all of them. Which one they drop is the game.
       <div class="who">engine &middot; interface &middot; 20 assertions</div></div>
     <span class="st done">Done</span></div>
 
-  <div class="item"><span class="no">2</span>
+  <div class="item is-done"><span class="no">2</span>
     <div><h3>A division costs order-paper time</h3>
       <p>&sect;7.7 calls time the currency that cannot be topped up, and in sixty sittings
       the player never once ran out, because only a bill could spend it. Six slots against
       a programme that wants two stage-advances and a division per bill means one bill
       carried properly per session, or two fumbled.</p>
       <div class="who">engine &middot; small</div></div>
-    <span class="st next">Next</span></div>
+    <span class="st done">Done</span></div>
 
-  <div class="item"><span class="no">3</span>
+  <div class="item is-done"><span class="no">3</span>
     <div><h3>Slots drawn as pips</h3>
       <p>&ldquo;4 of 6&rdquo; is a number. Six marks with two struck through is a quantity
       you feel before you read it.</p>
       <div class="who">interface &middot; small</div></div>
-    <span class="st next">Next</span></div>
+    <span class="st done">Done</span></div>
 
-  <div class="item"><span class="no">4</span>
+  <div class="item is-done"><span class="no">4</span>
     <div><h3>Deadlines that can be missed, at a price</h3>
       <p>Not a loss condition &mdash; a cost. The threshold bill must reach a division
       before the House rises or the coalition partner extracts payment. This is where
       Game A starts setting targets only Game B can hit.</p>
-      <div class="who">content &middot; one engine reader</div></div>
-    <span class="st soon">Soon</span></div>
+      <p class="ship">Shipped: undertakings carry a day, <code>breakUndertaking()</code> queues an event rather than moving a number in silence, and a promise past its day reads as overdue on the docket.</p><div class="who">content &middot; one engine reader</div></div>
+    <span class="st done">Done</span></div>
 
-  <div class="item"><span class="no">5</span>
+  <div class="item is-done"><span class="no">5</span>
     <div><h3>Initiatives &mdash; the player starts something</h3>
       <p>She spends order-paper time to put something in motion and the consequence
       arrives later as an event. Needs no new vocabulary: <code>flag</code>,
       <code>queue</code>, <code>move</code>. Closes four problems at once &mdash; initiative,
       scarcity, empty sittings, and the story offering what she has already done.</p>
       <div class="who">engine + content</div></div>
-    <span class="st soon">Soon</span></div>
+    <span class="st done">Done</span></div>
 
-  <div class="item"><span class="no">6</span>
+  <div class="item is-done"><span class="no">6</span>
     <div><h3>The game can be won</h3>
       <p><code>checkLoss()</code> has four conditions and there is no <code>checkWin()</code>.
       Four settlements are now canon (&sect;3.5.1); each is a <code>when</code> block, and
       <code>matches()</code> already evaluates those. Four blocks in content and the
       argument can end.</p>
-      <div class="who">engine &middot; small &middot; content declares the four</div></div>
-    <span class="st soon">Soon</span></div>
+      <p class="ship">Shipped: <code>checkSettlement()</code> reads four <code>when</code> blocks in <code>content/settlements.js</code> through the same <code>matches()</code> every event uses. The engine names no settlement and nothing reports progress toward one &mdash; an ending named in advance is a quest marker (&sect;3.5.1 rule 2).</p><div class="who">engine &middot; small &middot; content declares the four</div></div>
+    <span class="st done">Done</span></div>
 
   <div class="item"><span class="no">7</span>
     <div><h3>Consumables derived from closure</h3>
@@ -265,15 +273,15 @@ them.</b> The player will not meet all of them. Which one they drop is the game.
       unwired: &sect;7.2 makes closure the sovereignty number and consumables its national
       counterpart. Derive one from the other and two dead numbers become one live one.</p>
       <div class="who">engine &middot; small</div></div>
-    <span class="st later">Later</span></div>
+    <span class="st soon">Soon</span></div>
 
-  <div class="item"><span class="no">8</span>
+  <div class="item is-done"><span class="no">8</span>
     <div><h3>The quiet sitting</h3>
       <p>Thirty-six of sixty sittings have nothing in them. A real parliament always has
       business: questions taken, a committee reporting, a member&rsquo;s statement. Mostly
       unactionable, some of it foreshadowing.</p>
       <div class="who">content &middot; ~40 one-liners + a reader</div></div>
-    <span class="st later">Later</span></div>
+    <span class="st done">Done</span></div>
 
   <div class="item"><span class="no">9</span>
     <div><h3>Foreign affairs, as a price and a debt</h3>
@@ -284,22 +292,84 @@ them.</b> The player will not meet all of them. Which one they drop is the game.
       <div class="who">engine + content &middot; no new verbs</div></div>
     <span class="st later">Later</span></div>
 
+  <div class="item"><span class="no">10</span>
+    <div><h3>A lobbying currency</h3>
+      <p><b>One of the four settlements is currently unreachable.</b> Substrate neutrality
+      needs the dual majority; the dual majority needs the functional forty; and moving a
+      bench outside the coalition is impossible by design &mdash; the whip panel says so in
+      as many words. Part XVI has flagged this as an open decision and it is not a content
+      gap, it is a correctness one: the engine offers a win the player cannot get to.</p>
+      <p>Wants its own currency, not capital. Capital is a debt between governing partners;
+      this is something else, paid to people who owe you nothing.</p>
+      <div class="who">engine &middot; medium &middot; a new store, no new verb if it rides <code>move</code></div></div>
+    <span class="st next">Next</span></div>
+
+  <div class="item"><span class="no">11</span>
+    <div><h3>Actors outside the chamber</h3>
+      <p>Metanationals, the unions, the fork-rentiers and the licensing board have
+      near-party power in the bible and no representation in state at all. Parties have
+      loyalty and characters have a relationship; a consortium that can withhold a
+      shipment has nothing. This is the store that lets the world <em>act on</em> the
+      player rather than only the reverse, and it is what foreign affairs will need
+      anyway when it comes off the shelf.</p>
+      <p>Part XVI: the fork-rentiers are 210,000 people with a direct interest in the
+      threshold and no expression in the chamber. That is the worked example.</p>
+      <div class="who">engine &middot; medium &middot; unblocks foreign affairs</div></div>
+    <span class="st soon">Soon</span></div>
+
+  <div class="item"><span class="no">12</span>
+    <div><h3>Something that can be undone</h3>
+      <p>An instrument can be revoked and a bill can be referred. Nothing reverses an Act,
+      so the player&rsquo;s mistakes are permanent and inert &mdash; which is a thriller
+      without a second act. A court is the natural author of a reversal, and &sect;10.8 has
+      long-lived emulated judges who personally remember the founding sitting on it.</p>
+      <p>Cheap now: the queue carries facts, so a verdict is
+      <code>{after, label, effects:[{law: &hellip;}]}</code> and needs no prose to exist.</p>
+      <div class="who">content mostly &middot; the engine work is done</div></div>
+    <span class="st soon">Soon</span></div>
+
 </div>
 
 <h2>V <span>The world is larger than the game</span></h2>
 <div class="wrap"><table>
-  <thead><tr><th>Built</th><th class="n">Exists</th><th class="n">Named in an event</th><th>Reading</th></tr></thead>
+  <thead><tr><th>Built</th><th class="n">Exists</th><th class="n">Reached</th><th>Reading</th></tr></thead>
   <tbody>
     <tr><td>Constituencies</td><td class="n">141</td><td class="n">1</td>
         <td>Keep as the engine&rsquo;s source of truth; stop treating coverage as a goal.</td></tr>
-    <tr><td>Characters</td><td class="n">54</td><td class="n">5</td>
-        <td>Five is thin for a thriller. The roster is not the problem; the events are.</td></tr>
-    <tr><td>Stations</td><td class="n">35</td><td class="n">2</td>
+    <tr><td>Characters</td><td class="n">54</td><td class="n">1</td>
+        <td>Re-measured, and worse than the estimate above it: <b>one</b> named person
+        appears in any event. Fifty-three have a party, a seat, an office and a
+        Concordance article, and never speak.</td></tr>
+    <tr><td>Stations</td><td class="n">35</td><td class="n">3</td>
         <td>One station the player knows well beats thirty they scroll past.</td></tr>
     <tr><td>Indicators</td><td class="n">5</td><td class="n">4</td>
         <td>Item 7 above. Unwired, not unwanted.</td></tr>
+    <tr class="warn"><td>Engine conditions</td><td class="n">31</td><td class="n">14</td>
+        <td>Seventeen have never been used. The whole apparatus for making an event depend
+        on the state the player produced is built, tested and unexercised.</td></tr>
+    <tr class="warn"><td>Glossary terms</td><td class="n">23</td><td class="n">15</td>
+        <td>Eight never occur in an event, so the player is taught words the game
+        does not say.</td></tr>
   </tbody>
 </table></div>
+
+<p class="chain"><b>And the ratio that matters most.</b> The consequence-chain audit
+(&sect;7.9) runs every build and reports <code>ok</code> because its bar is
+&ldquo;gated by at least one&rdquo;:</p>
+<div class="wrap"><table>
+  <thead><tr><th>Number</th><th class="n">Moved by</th><th class="n">Gates</th><th>Reading</th></tr></thead>
+  <tbody>
+    <tr class="warn"><td>public_standing</td><td class="n">40</td><td class="n">1</td>
+        <td>The most-moved number in the game changes the world exactly once.</td></tr>
+    <tr class="warn"><td>thermal_margin</td><td class="n">17</td><td class="n">1</td><td></td></tr>
+    <tr class="warn"><td>treasury</td><td class="n">11</td><td class="n">1</td><td></td></tr>
+    <tr class="warn"><td>party_loyalty</td><td class="n">11</td><td class="n">1</td><td></td></tr>
+  </tbody>
+</table></div>
+<p class="chain">Forty-to-one is not a consequence chain; it is a scoreboard with a
+decorative exit. &sect;7.9&rsquo;s own sentence &mdash; <em>a price nobody watches is a
+number nobody sees</em> &mdash; is satisfied on a technicality by all four. The check
+should count, not merely exist.</p>
 
 <h2>VI <span>What to cut, and what not to</span></h2>
 <ul class="cut">
@@ -331,7 +401,7 @@ them.</b> The player will not meet all of them. Which one they drop is the game.
 
 <footer>
   Ways &amp; Means &middot; roadmap generated from the repository, 14 September 2026 &middot;
-  figures counted, not estimated &middot; see <code>design/17</code>, <code>18</code>, <code>19</code>
+  figures counted, not estimated &middot; see <code>design/17</code>&ndash;<code>19</code> and <code>design/22</code>
 </footer>
 
 </div>
