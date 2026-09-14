@@ -1100,6 +1100,95 @@ try {
   const back = src.slice(src.indexOf('[data-act="menu"]'));
   ok("returning to the menu dissolves too, and not only entering",
      /Motion\.dissolve/.test(back.slice(0, 900)));
+
+  /* ---------------------------------------------------------------
+     THE CALENDAR IS ON THE SITTING PAGE AND IT DRAWS.
+
+     Pacing was a number in a sentence. A month grid is only better than
+     the sentence if it actually renders, and a panel that draws nothing
+     passes every static check in this project. */
+  w.document.querySelector('.tab[data-t="sit"]').click();
+  const cells = w.document.querySelectorAll("#sit-cal .calgrid i.cd");
+  ok("the calendar draws a month of days", cells.length >= 28,
+     cells.length + " days");
+  ok("and exactly one of them is today",
+     w.document.querySelectorAll("#sit-cal .calgrid i.cd.now").length === 1);
+  ok("the days the House does not sit are drawn differently",
+     w.document.querySelectorAll("#sit-cal .calgrid i.cd.dark").length > 0);
+  /* The card is for a pointer; the label is what a screen reader gets.
+     Swapping the native title= for the project's own hover card dropped
+     the second one, and this is why the pair is asserted together. */
+  ok("every day carries the project's hover card, not a native title",
+     [...cells].every(c => (c.getAttribute("data-tip-body") || "").length > 0) &&
+     [...cells].every(c => !c.hasAttribute("title")));
+  ok("and the same sentence reaches a screen reader",
+     [...cells].every(c => (c.getAttribute("aria-label") || "").length > 0),
+     (cells[10] || {}).getAttribute && cells[10].getAttribute("aria-label"));
+
+  /* THE ORDER OF THE DAY, and the property that makes it worth having:
+     each row is a control that takes the player where the thing is
+     answered, so the tabs stop being places you might look. */
+  const todo = w.document.querySelectorAll("#sit-today .tdo");
+  ok("the day lists what is asked of the player", todo.length > 0,
+     todo.length + " items");
+  ok("and every row says where it is answered",
+     [...todo].every(b => /^(sit|gov|pap|orb)$/.test(b.dataset.goto || "")));
+  if (todo.length) {
+    const target = [...todo].find(b => b.dataset.goto !== "sit");
+    if (target) {
+      target.click();
+      ok("clicking one goes to the tab that owns it",
+         w.document.querySelector("#s-" + target.dataset.goto).classList.contains("on"),
+         target.dataset.goto);
+      w.document.querySelector('.tab[data-t="sit"]').click();
+    } else ok("clicking one goes to the tab that owns it", true, "all on the sitting screen");
+  }
+
+  /* A MARK THAT NEVER CLEARS IS A MARK NOBODY READS. The strip must
+     agree with the list, and only tabs with something asked may carry one. */
+  const askedTabs = [...w.document.querySelectorAll(".tab.asked")].map(t => t.dataset.t);
+  const wantedTabs = [...new Set([...todo].map(b => b.dataset.goto))].filter(x => x !== "sit");
+  ok("the tab strip marks exactly the tabs the day names",
+     askedTabs.slice().sort().join(",") === wantedTabs.slice().sort().join(","),
+     "marked [" + askedTabs.join(",") + "] wanted [" + wantedTabs.join(",") + "]");
+  ok("and the sitting tab never marks itself, since you are on it",
+     askedTabs.indexOf("sit") < 0);
+
+  /* ONE PIP PER THING. A single corner flag lost the count, and lost the
+     colour where two kinds fell on one day. */
+  const marked = [...cells].filter(c => c.querySelector(".pips"));
+  ok("a day with something down for it is marked", marked.length > 0,
+     marked.length + " marked days");
+  ok("and carries one pip per thing, not one flag per day",
+     marked.every(c => c.querySelectorAll(".pips s").length ===
+       ((c.getAttribute("data-tip-body") || "").split("\u2014").length)),
+     marked.map(c => c.querySelectorAll(".pips s").length).join(","));
+
+  /* The session end must appear as a square, not only as a sentence in
+     the docket — one source, two readouts. */
+  ok("the day the House rises carries a mark",
+     w.document.querySelectorAll("#sit-cal .calgrid i.cd.m-rises").length +
+     w.document.querySelectorAll("#sit-cal .calnext .cn.rises").length > 0);
+
+  /* Paging must not wander off into a year of empty months. */
+  const label = () => (w.document.querySelector("#sit-cal .calhead span") || {}).textContent;
+  const start = label();
+  for (let i = 0; i < 6; i++) {
+    const b = w.document.querySelector('#sit-cal [data-cal="1"]');
+    if (b) b.click();
+  }
+  const far = label();
+  for (let i = 0; i < 12; i++) {
+    const b = w.document.querySelector('#sit-cal [data-cal="-1"]');
+    if (b) b.click();
+  }
+  ok("paging is bounded either side of where the House is",
+     far !== start && label() !== far, start + " -> " + far + " -> " + label());
+  /* put it back where the player would expect it */
+  for (let i = 0; i < 3; i++) {
+    const b = w.document.querySelector('#sit-cal [data-cal="1"]');
+    if (b) b.click();
+  }
 } catch (e) { ok("no-motion still swaps", false, e.message); }
 
 /* ---------------------------------------------------------------------

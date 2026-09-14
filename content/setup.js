@@ -1,6 +1,11 @@
 /* SETUP — the opening state. Change a number here and the game starts differently. */
 const SETUP = {
   startDate: "2287-04-11", session: 4, sitting: 1,
+  /* THE HOUSE DOES NOT SIT EVERY DAY, and the days it does are what turn a
+     sitting number into a date the player can point at on a calendar.
+     0 is Sunday. Four days in seven, so a 24-sitting session runs six weeks
+     and a three-session parliament is about four months. */
+  sittingDays: [1, 2, 3, 4],
   pm: "flash", playerParty: "cu",
   coalition: ["cu","psa","rv"],
   confidenceSupply: ["upl","geo"],

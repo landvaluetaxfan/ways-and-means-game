@@ -1078,3 +1078,186 @@ console.log("\nAND IT PLAYS:");
 
   if (bad) { console.log("\n" + bad + " UNLOCK FAILURES"); process.exitCode = 1; }
 })();
+
+
+/* ---------------------------------------------------------------------
+   THE CLOCK RUNS.
+
+   st.date was written once at newGame from setup.startDate and never
+   touched again — thirty sittings later the topbar still read the
+   opening day. Nothing caught it because nothing had ever asked what
+   the date was for.
+   --------------------------------------------------------------------- */
+console.log("\nTHE CALENDAR:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const st = Engine.newGame(CONTENT);
+  const opened = st.date;
+  for (let i = 0; i < 10; i++) Engine.advance(st, CONTENT);
+  ok("the date advances with the sittings", st.date !== opened,
+     opened + " -> " + st.date + " at sitting " + st.sitting);
+
+  /* A sitting is a day the House sits, so the map from one to the other
+     has to be a pure function or a deadline drifts against the square it
+     was drawn on. */
+  ok("a sitting always falls on a day the House sits",
+     Engine.sittingOfDate(CONTENT, st.date) === st.sitting,
+     st.date + " is sitting " + Engine.sittingOfDate(CONTENT, st.date));
+  ok("and the mapping is stable however often it is asked",
+     Engine.dateOfSitting(CONTENT, 17) === Engine.dateOfSitting(CONTENT, 17) &&
+     Engine.dateOfSitting(CONTENT, 17) === Engine.dateOfSitting(CONTENT, 17));
+  ok("later sittings are later days",
+     Engine.dateOfSitting(CONTENT, 1) < Engine.dateOfSitting(CONTENT, 24),
+     Engine.dateOfSitting(CONTENT, 1) + " ... " + Engine.dateOfSitting(CONTENT, 24));
+
+  const DAYS = CONTENT.setup.sittingDays;
+  ok("the House does not sit every day", Array.isArray(DAYS) && DAYS.length < 7,
+     DAYS.length + " days in seven");
+
+  /* THE CALENDAR AND THE DOCKET MUST READ THE SAME SOURCE. A deadline on
+     one and not the other is how a player learns to trust neither. */
+  const cal = Engine.calendar(st, CONTENT, 0);
+  ok("the calendar draws a real month", cal.days.length >= 28 && cal.days.length <= 31,
+     cal.label + ", " + cal.days.length + " days");
+  ok("and knows which of them the House sits on",
+     cal.days.some(d => d.sits) && cal.days.some(d => !d.sits),
+     cal.days.filter(d => d.sits).length + " sitting days");
+  ok("exactly one day is today",
+     cal.days.filter(d => d.today).length === 1);
+  ok("and the days before it are past",
+     cal.days.filter(d => d.today)[0].sitting === st.sitting);
+
+  const dl = Engine.deadlines(st, CONTENT);
+  ok("the session end is a deadline like any other",
+     dl.some(d => d.kind === "rises" && d.sitting === st.sessionEnds),
+     dl.map(d => d.kind).join(", ") || "(none)");
+  ok("every deadline lands on a square the calendar drew",
+     dl.every(d => Engine.sittingOfDate(CONTENT, d.date) === d.sitting));
+  ok("and carries how far away it is, in sittings",
+     dl.every(d => d.away === d.sitting - st.sitting));
+
+  /* An undertaking with a due date has to appear, or the calendar is
+     decoration rather than the instrument. */
+  const u = Engine.newGame(CONTENT);
+  Engine.apply(u, CONTENT, [{ undertake: { id: "cal_probe", text: "A test promise", by: 4 } }]);
+  const owed = Engine.deadlines(u, CONTENT).filter(d => d.kind === "owed");
+  ok("a promise with a date is on the calendar", owed.length === 1,
+     owed.length ? owed[0].text + " on " + owed[0].date : "not shown");
+
+  /* `by: null` means "before the House rises", so it must land on the
+     last sitting of the session rather than nowhere. */
+  const v = Engine.newGame(CONTENT);
+  Engine.apply(v, CONTENT, [{ undertake: { id: "cal_open", text: "Before we rise", by: null } }]);
+  const open = Engine.deadlines(v, CONTENT).filter(d => d.kind === "owed");
+  ok("and one owed before the House rises lands on the last sitting",
+     open.length === 1 && open[0].sitting === v.sessionEnds,
+     open.length ? "sitting " + open[0].sitting + " of " + v.sessionEnds : "not shown");
+
+  /* A PRAYER WINDOW IS A DEADLINE — an order stands unless the House prays
+     against it before the window closes, and that date lived in the state
+     and nowhere the player could see it. */
+  const w = Engine.newGame(CONTENT);
+  Engine.makeInstrument(w, CONTENT, CONTENT.instruments[0].id);
+  const pr = Engine.deadlines(w, CONTENT).filter(d => d.kind === "prayer");
+  ok("a prayer window is on the calendar", pr.length === 1,
+     pr.length ? pr[0].text + " by " + pr[0].date : "not shown");
+
+  /* SOMETHING SET IN MOTION IS COMING BACK, and content decides whether the
+     player can see it coming. An ambush must stay an ambush. */
+  const q = Engine.newGame(CONTENT);
+  const anyEvent = CONTENT.events[0];
+  Engine.apply(q, CONTENT, [{ queue: { event: anyEvent.id, after: 5 } }]);
+  const seen = Engine.deadlines(q, CONTENT).filter(d => d.kind === "expected");
+  ok("a queued event with no label stays a surprise",
+     !anyEvent.foreseen ? seen.length === 0 : true,
+     anyEvent.foreseen ? "(this event is foreseeable, so it shows)" : "nothing announced");
+
+  /* Marks on one day must all survive, or the calendar under-reports. */
+  const m = Engine.newGame(CONTENT);
+  const day = m.sitting + 3;
+  Engine.apply(m, CONTENT, [{ undertake: { id: "a", text: "First promise", by: 3 } },
+                            { undertake: { id: "b", text: "Second promise", by: 3 } }]);
+  const both = Engine.deadlines(m, CONTENT).filter(d => d.sitting === day);
+  ok("two things due the same day are two entries, not one",
+     both.length === 2, both.map(x => x.text).join(" + "));
+
+  if (bad) { console.log("\n" + bad + " CALENDAR FAILURES"); process.exitCode = 1; }
+})();
+
+
+/* ---------------------------------------------------------------------
+   THE ORDER OF THE DAY.
+
+   The distinction this whole feature turns on: it reports what is ASKED
+   of the player, not what is AVAILABLE to them. Six bills can advance on
+   day one and on day forty, so a tab marked for that is marked forever,
+   and a mark that never clears teaches a player to stop reading it.
+   --------------------------------------------------------------------- */
+console.log("\nTHE ORDER OF THE DAY:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const st = Engine.newGame(CONTENT);
+  const t0 = Engine.today(st, CONTENT, true);
+
+  ok("the House's business comes first and is the only duty",
+     t0.items[0].kind === "decision" && t0.required === 1,
+     t0.items.map(i => i.kind).join(", "));
+  ok("every item says where it is answered",
+     t0.items.every(i => ["sit", "gov", "pap", "orb"].indexOf(i.tab) >= 0));
+
+  /* OPPORTUNITIES ARE NOT OBLIGATIONS, and this is the assertion that
+     keeps the feature honest. Plenty is available on day one. */
+  const advanceable = CONTENT.bills.filter(b =>
+    Engine.grantSlot(JSON.parse(Engine.save(st)), CONTENT, b.id).ok !== false).length;
+  const makeable = CONTENT.instruments.filter(i =>
+    Engine.canMake(st, CONTENT, i.id).ok).length;
+  ok("what is merely available is not listed as business",
+     advanceable > 3 && makeable > 3 && t0.items.length < 4,
+     advanceable + " bills and " + makeable + " orders available, " +
+     t0.items.length + " things asked");
+
+  /* AND EVERY ITEM CLEARS. Fill the vacancy and it must leave the list. */
+  const before = Engine.today(st, CONTENT, false).items.filter(i => i.kind === "vacancy");
+  ok("a vacant ministry is asked about", before.length === 1, before[0] && before[0].text);
+  const v = Engine.vacancies(st, CONTENT)[0];
+  Engine.fillPost(st, CONTENT, v, 0);
+  ok("and stops being asked about once it is filled",
+     Engine.today(st, CONTENT, false).items.filter(i => i.kind === "vacancy").length === 0);
+
+  /* The tab strip reads the same source, so a mark cannot disagree with
+     the list that produced it. */
+  const t1 = Engine.today(st, CONTENT, true);
+  ok("the tabs named are exactly the tabs the items live on",
+     t1.tabs.slice().sort().join(",") ===
+     [...new Set(t1.items.map(i => i.tab))].sort().join(","),
+     t1.tabs.join(", "));
+
+  /* Something overdue must read as overdue, not merely as soon. */
+  const o = Engine.newGame(CONTENT);
+  Engine.apply(o, CONTENT, [{ undertake: { id: "late", text: "A promise", by: 1 } }]);
+  Engine.advance(o, CONTENT);
+  Engine.advance(o, CONTENT);
+  const owed = Engine.today(o, CONTENT, false).items.filter(i => i.kind === "owed");
+  ok("a promise past its day reads as overdue",
+     owed.length === 0 || owed[0].when === "overdue",
+     owed.length ? owed[0].when + " by " + owed[0].away : "(settled already, which is also correct)");
+
+  /* THE LIST MUST NOT BECOME WALLPAPER. The session end is on the
+     calendar all session; it is only business when it is close. */
+  const f = Engine.newGame(CONTENT);
+  ok("the rise is not business twenty sittings out",
+     Engine.today(f, CONTENT, false).items.every(i => i.kind !== "rises"),
+     "sessionEnds " + f.sessionEnds + " at sitting " + f.sitting);
+  while (f.sitting < f.sessionEnds - 1) Engine.advance(f, CONTENT);
+  ok("and is business when it is next week",
+     Engine.today(f, CONTENT, false).items.some(i => i.kind === "rises"),
+     "at sitting " + f.sitting + " of " + f.sessionEnds);
+
+  if (bad) { console.log("\n" + bad + " ORDER-OF-DAY FAILURES"); process.exitCode = 1; }
+})();

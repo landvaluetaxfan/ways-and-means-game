@@ -1360,6 +1360,180 @@ const UI = (function () {
   /* THE DOCKET. What is before the House, which is how a decision taken
      here reaches the screen that carries it out: promising something
      puts an item here, and keeping it takes the item away. */
+  /* ---------------------------------------------------------------
+     THE ORDER OF THE DAY.
+
+     The sitting screen could have listed what was AVAILABLE — six bills
+     can advance, five orders can be made — and that is equally true on
+     day one and day forty, so it is a menu rather than business. A day
+     only has a shape if something is ASKED of it.
+
+     This lists obligations, in the order of a prime minister's day: the
+     House first, then the government's own business, then the papers.
+     Each row says where it is answered and takes the player there, so
+     the tabs stop being places you might look and become places the day
+     sends you. And every item CLEARS when it is dealt with — a mark
+     that never goes out teaches a player to stop reading it.
+     --------------------------------------------------------------- */
+  const TABNAME = { sit: "Sitting", gov: "Government", pap: "Papers", orb: "Orbit" };
+  const WHENWORD = { overdue: "overdue", now: "today", soon: "soon" };
+
+  function todayHTML() {
+    const t = Engine.today(st, C, !!currentEvent || !!Engine.nextEvent(
+      /* on a COPY: nextEvent takes the queue apart as it reads it */
+      JSON.parse(Engine.save(st)), C));
+    if (!t.items.length)
+      return `<div class="note">Nothing is asked of you today. The House may rise.</div>`;
+    return t.items.map(i => {
+      const away = i.away == null ? ""
+        : i.away < 0 ? Math.abs(i.away) + " sittings late"
+        : i.away === 0 ? "today"
+        : i.away === 1 ? "next sitting" : "in " + i.away + " sittings";
+      return `<button class="tdo ${i.when}${i.required ? " req" : ""}" data-goto="${i.tab}">
+        <b>${esc(i.text)}</b>
+        <i>${esc(TABNAME[i.tab] || i.tab)}${away ? " \u00b7 " + esc(away) : ""}</i>
+      </button>`;
+    }).join("");
+  }
+
+  function drawToday() {
+    const el = $("#sit-today"); if (!el) return;
+    const t = Engine.today(st, C, !!currentEvent || !!Engine.nextEvent(
+      JSON.parse(Engine.save(st)), C));
+    el.innerHTML = todayHTML();
+    const sum = $("#today-sum");
+    if (sum) sum.textContent = t.items.length
+      ? t.items.length + (t.items.length === 1 ? " thing asked" : " things asked")
+      : "nothing asked";
+    el.querySelectorAll("[data-goto]").forEach(b =>
+      b.addEventListener("click", () => {
+        const tab = document.querySelector('.tab[data-t="' + b.dataset.goto + '"]');
+        if (tab) tab.click();
+      }));
+    /* THE TAB STRIP CARRIES THE SAME TRUTH. A tab with something asked of
+       it wears a mark, and it goes out when the thing is done — which is
+       only possible because today() reports obligations and not what
+       happens to be available. */
+    document.querySelectorAll(".tab").forEach(tab => {
+      const asked = t.tabs.indexOf(tab.dataset.t) >= 0 && tab.dataset.t !== "sit";
+      tab.classList.toggle("asked", asked);
+      if (asked) tab.setAttribute("data-asked",
+        t.items.filter(i => i.tab === tab.dataset.t).length);
+      else tab.removeAttribute("data-asked");
+    });
+    /* and the rise button says what leaving now would leave behind */
+    const rb = $("#btn-advance");
+    if (rb) {
+      const left = t.items.filter(i => i.when !== "soon" && !i.required).length;
+      rb.textContent = left
+        ? "Rise \u2014 " + left + " unanswered"
+        : "Rise until the next sitting";
+      rb.classList.toggle("warn", left > 0);
+    }
+  }
+
+  /* ---------------------------------------------------------------
+     THE PARLIAMENTARY CALENDAR.
+
+     Pacing was a number in a sentence — "4 sittings left of session 4" —
+     and a number in a sentence is something you read, not something you
+     feel. A month grid is something you feel: you can see how much time
+     is left, that the House does not sit every day, and exactly which
+     square the division falls on.
+
+     It reads Engine.calendar(), which reads Engine.deadlines(), which is
+     the same source the docket uses. A deadline that appeared on one and
+     not the other is how a player learns to trust neither.
+     --------------------------------------------------------------- */
+  const DOW = ["S", "M", "T", "W", "T", "F", "S"];
+  const MARKNAME = { division: "Division", owed: "Promised", rises: "The House rises",
+                     prayer: "Prayer window closes", expected: "Expected" };
+  const SITDAYS = "four";
+  let calMonth = 0;                    /* months from the current sitting */
+
+  /* "Thursday 14 April" — the card names the day, because a player
+     reading a date wants the weekday as much as the number. */
+  function dayLabel(iso) {
+    const [y, m, d] = String(iso).split("-").map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    return dt.toLocaleDateString("en-GB",
+      { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+  }
+
+  function calendarHTML() {
+    const cal = Engine.calendar(st, C, calMonth);
+    if (!cal || !cal.days.length) return "";
+    let cells = "";
+    /* the blanks before the first, so the columns line up with the week */
+    for (let i = 0; i < cal.days[0].dow; i++) cells += '<i class="pad"></i>';
+    cal.days.forEach(d => {
+      const cls = ["cd"];
+      if (!d.sits) cls.push("dark");
+      if (d.past) cls.push("past");
+      if (d.today) cls.push("now");
+      d.marks.forEach(m => cls.push("m-" + m.kind));
+      /* ONE MARK PER THING, NOT ONE FLAG PER DAY. A single corner flag
+         said "something happens here" and lost both the count and, when
+         two kinds landed together, the colour — the classes stacked and
+         the last one won. A row of pips says how many and which. */
+      const pips = d.marks.slice(0, 4).map(m =>
+        `<s class="p-${m.kind}"></s>`).join("") +
+        (d.marks.length > 4 ? '<s class="p-more"></s>' : "");
+
+      /* AND THE PROJECT'S OWN HOVER CARD, not the browser's. This was a
+         native title= — slow, unstyled, and a second tooltip system in a
+         build that spent a commit removing one. */
+      const title = d.sitting != null ? "Sitting " + d.sitting : "The House does not sit";
+      const body = d.marks.length
+        ? d.marks.map(m => MARKNAME[m.kind] + ": " + m.text).join(" \u2014 ")
+        : (d.sitting != null ? "Nothing is down for this day."
+                             : "The House sits " + SITDAYS + " days in seven.");
+      /* data-tip draws the card for a pointer; aria-label is what a screen
+         reader gets, and it has to carry the same sentence. Swapping the
+         native title= for the project's own card quietly dropped the
+         second one, which the checks caught. */
+      const said = title + ", " + dayLabel(d.date) + ". " + body;
+      cells += `<i class="${cls.join(" ")}" aria-label="${esc(said)}"` +
+               ` data-tip-title="${esc(title)} \u00b7 ${esc(dayLabel(d.date))}"` +
+               ` data-tip-body="${esc(body)}">` +
+               `<b>${d.dom}</b>` +
+               (d.sitting != null ? `<u>${d.sitting}</u>` : "") +
+               (pips ? `<span class="pips">${pips}</span>` : "") + `</i>`;
+    });
+    const next = Engine.deadlines(st, C).filter(x => x.away >= 0).slice(0, 3);
+    return `<div class="calhead">
+        <button class="calnav" data-cal="-1" aria-label="Previous month">&lsaquo;</button>
+        <span>${esc(cal.label)}</span>
+        <button class="calnav" data-cal="1" aria-label="Next month">&rsaquo;</button>
+      </div>
+      <div class="calgrid">${DOW.map(d => '<em>' + d + '</em>').join("")}${cells}</div>
+      <div class="calkey">
+        <span><s class="p-division"></s>division</span>
+        <span><s class="p-owed"></s>promised</span>
+        <span><s class="p-prayer"></s>prayer</span>
+        <span><s class="p-expected"></s>expected</span>
+        <span><s class="p-rises"></s>rises</span>
+      </div>` +
+      (next.length ? '<div class="calnext">' + next.map(m =>
+        `<div class="cn ${m.kind}${m.away <= 2 ? " late" : ""}"><b>${esc(m.text)}</b>` +
+        `<i>${m.away === 0 ? "today" : m.away === 1 ? "next sitting"
+            : "in " + m.away + " sittings"} \u00b7 ${m.date}</i></div>`).join("") + "</div>"
+       : "");
+  }
+
+  function drawCalendar() {
+    const el = $("#sit-cal"); if (!el) return;
+    el.innerHTML = calendarHTML();
+    const ss = $("#cal-sess"); if (ss) ss.textContent = st.session;
+    el.querySelectorAll("[data-cal]").forEach(b =>
+      b.addEventListener("click", () => {
+        calMonth += +b.dataset.cal;
+        /* never wander: two months either side of where the House is */
+        calMonth = Math.max(-2, Math.min(2, calMonth));
+        drawCalendar();
+      }));
+  }
+
   function docketHTML() {
     const owed = Engine.outstanding(st);
     const bill = (C.bills || []).find(b => st.bills[b.id] && !st.bills[b.id].dead &&
@@ -1424,6 +1598,8 @@ const UI = (function () {
   function drawSitting() {
     const dk = $("#sit-docket");
     if (dk) dk.innerHTML = docketHTML();
+    drawCalendar();
+    drawToday();
 
     const box = $("#sitting-body");
     const loss = Engine.checkLoss(st, C);
