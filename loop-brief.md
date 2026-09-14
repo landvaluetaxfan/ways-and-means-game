@@ -232,21 +232,19 @@ Ordered by what unblocks the most. Items marked *(canon)* are already specified 
     cheapest tool in the game with only the prayer to check it.
 13. **An active President** *(canon, §3.3)*. Refusal and referral exist as gates
     with a relationship score. The office has no motives of its own.
-14. **The upper house** *(open)*. Undefined in Part XVI, yet `content/minutes.js`
-    already references it. Either define its powers or stop naming it.
-15. **Committees.** Bills have a committee stage that is a string. Amendments,
+14. **Committees.** Bills have a committee stage that is a string. Amendments,
     witnesses and chair patronage are all missing.
-16. **Media** *(canon, §10.7)*. The Wire is output-only. No leak, no interview, no
+15. **Media** *(canon, §10.7)*. The Wire is output-only. No leak, no interview, no
     lobby briefing, no choosing when to announce.
-17. **Scandal** *(canon, §13.1 taxonomy)*. A taxonomy with no mechanic.
-18. **Election Night** *(canon, §12.5)*. `generalElection()` exists in the engine
+16. **Scandal** *(canon, §13.1 taxonomy)*. A taxonomy with no mechanic.
+17. **Election Night** *(canon, §12.5)*. `generalElection()` exists in the engine
     and works; there is no UI, so an election currently resolves invisibly. This
     is a large, well-specified, self-contained build.
-19. **By-election campaigns.** The effect exists; the campaign does not.
-20. **Coalition formation and exit** as a mechanic rather than a list.
-21. **Patronage.** The `cabinet` effect can appoint and vacate; the player cannot
+18. **By-election campaigns.** The effect exists; the campaign does not.
+19. **Coalition formation and exit** as a mechanic rather than a list.
+20. **Patronage.** The `cabinet` effect can appoint and vacate; the player cannot
     reshuffle as an action.
-22. **The thriller spine** *(canon, §13.2 LEANING)*. Backup coercion, held in
+21. **The thriller spine** *(canon, §13.2 LEANING)*. Backup coercion, held in
     reserve for a late arc. Nothing built.
 
 ### 3.3 Simulation depth

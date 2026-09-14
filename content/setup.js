@@ -28,5 +28,9 @@ const SETUP = {
   capital: { psa: 2, rv: -3, upl: 0, geo: 1 },
   president: { id:"tenaya", relationship:22,
                powers:["dissolution","formation","referral","appointments"] },
-  thresholds: { leadershipChallenge: 15 }
+  /* leadershipChallenge is the loyalty floor at which a ballot becomes
+     unwinnable and the government falls. ballot is the number of signatures
+     that forces one (design/08 §2): below it the challenger is gathering,
+     above it the caucus divides. */
+  thresholds: { leadershipChallenge: 15, ballot: 12 }
 };

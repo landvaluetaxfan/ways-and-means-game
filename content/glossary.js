@@ -89,7 +89,7 @@ const GLOSSARY = [
     introduced:"gb_approach" },
 
   { term:"Perigee", gloss:"Metonym for the government, from the Charter signed there.",
-    handle:"Washington, Brussels, Whitehall — the place standing in for the people in it.",
+    handle:"Washington or Whitehall: the place standing in for the people in it.",
     assumed:true },
 
   { term:"emulation", gloss:"A person running as software rather than in a body.", assumed:true },

@@ -271,7 +271,7 @@ const UI = (function () {
       ow.style.color = owedN.some(u => u.by - st.sitting <= 1) ? "var(--alert)" : "";
     }
     const loss = Engine.checkLoss(st, C);
-    $("#sb-state").textContent = loss.lost ? "GOVERNMENT FALLEN — " + loss.reason.toUpperCase() : "READY";
+    $("#sb-state").textContent = loss.lost ? "GOVERNMENT FALLEN: " + loss.reason.toUpperCase() : "READY";
     $("#sb-state").style.color = loss.lost ? "var(--alert)" : "";
     setStatus(ambient(), "ambient");
   }
@@ -695,6 +695,10 @@ const UI = (function () {
 
   function drawBill(id) {
     const b = C.billById[id], bs = st.bills[id], d = Engine.division(st, C, id);
+    /* The forecast is the REPORTED division, not the exact one (design/08 §7).
+       The whip panel and the division itself still use the true count — the
+       cost of whipping is a mechanical fact, not a source's opinion. */
+    const rep = (Engine.reported ? Engine.reported(st, C, id) : d);
     const det = $("#bill-detail");
     $("#bill-hdr").textContent = b.title;
     $("#bill-ref").textContent = b.ref;
@@ -702,11 +706,12 @@ const UI = (function () {
       `<div class="note" style="margin-bottom:6px">${b.summary}</div>` +
       (b.effectNote ? `<div class="rulehead">Effect</div><div class="note">${b.effectNote}</div>` : "") +
       `<div class="rulehead">Division forecast</div>` +
-      benchBar("Popular", d.popular) +
-      (b.dualMajority ? benchBar("Functional", d.functional) : "") +
+      (rep.prov ? `<div class="note" style="margin:-2px 0 5px">${esc(rep.prov)}</div>` : "") +
+      benchBar("Popular", rep.popular) +
+      (b.dualMajority ? benchBar("Functional", rep.functional) : "") +
       `<div class="note" style="margin-top:5px">${
-        d.carries ? "<b>Carries.</b>" :
-        (b.dualMajority && d.popular.carries && !d.functional.carries
+        rep.carries ? "<b>Carries.</b>" :
+        (b.dualMajority && rep.popular.carries && !rep.functional.carries
           ? "<b>Carries on the popular benches and fails on the functional.</b> The dual test applies: bills touching life-support integrity and charter amendments must carry separately among functional members."
           : "<b>Fails.</b>")}</div>` +
       whipPanel(id, b, d) +
@@ -830,7 +835,7 @@ const UI = (function () {
     if (!rows) return `<div class="rulehead">The whip</div>` +
       `<div class="note">No headroom. Every member of the coalition who can be brought to this ` +
       `measure is already voting for it. ${b.dualMajority && !d.functional.carries
-        ? "The functional bench cannot be whipped — the government holds " +
+        ? "The functional bench cannot be whipped. The government holds " +
           d.rows.reduce((n, r) => n + (st.coalition.includes(r.party) ? r.functionalSeats : 0), 0) +
           " of " + d.functional.total + " and needs " + d.functional.need + ". This is not a whipping problem."
         : ""}</div>`;
@@ -896,7 +901,7 @@ const UI = (function () {
        not an economy: a division is the thing that can end you. */
     steps.push({
       label: "The House divides",
-      ms: 300,
+      ms: 700,
       run: () => cue("knell"),
       /* TIER 3. Only from a flag content set, never from a roll. Nothing
          in content sets this yet; that is the point of it being a hook. */
@@ -907,7 +912,7 @@ const UI = (function () {
 
     rows.forEach((row, i) => steps.push({
       label: pn(row.party) + " reports",
-      ms: 105,
+      ms: 180,
       run: () => {
         popRun += row.popularAye;
         /* THE FUNCTIONAL COLUMN LAGS, one party behind every second
@@ -925,7 +930,7 @@ const UI = (function () {
 
     steps.push({
       label: dual ? "The functional benches are counted separately" : "The count is complete",
-      ms: 420,
+      ms: 800,
       run: () => {
         /* Squared off against the engine's own totals rather than the
            running sum, so a skip can never leave a different number on
@@ -939,7 +944,7 @@ const UI = (function () {
 
     steps.push({
       label: "The result",
-      ms: 520,
+      ms: 2200,
       run: () => {
         cue(r.carries ? "aye" : "nay");
         score(r.carries ? "moment" : "defeat");
@@ -1559,7 +1564,7 @@ const UI = (function () {
          notes it and carries on: one hit, no key change, no jump. */
       if (owes) score("undertake");
       if (typeof Wait !== "undefined") Wait.brief(owes ? 480 : 280);
-      setStatus(e.title + " — " + lastResult.replace(/\s+/g, " ").slice(0, 120), "transient");
+      setStatus(e.title + ": " + lastResult.replace(/\s+/g, " ").slice(0, 120), "transient");
       saved();
       drawAll(); afterAction();
       reportMoves(beforeStruct, structure(st));

@@ -88,7 +88,7 @@ const Concordance = (function () {
     const currents = C.currents.filter(c => c.party === p.id);
     const sections = [
       { h: "Position", body:
-        `Recorded position on the four axes of Commonwealth politics — ${axisLine}. ` +
+        `Recorded position on the four axes of Commonwealth politics: ${axisLine}. ` +
         (p.note || "") },
       { h: "Representation", body:
         `${total} seats: ${seats.district} district, ${seats.list} list, ${seats.functional} functional. ` +

@@ -240,7 +240,8 @@ const Engine = (function () {
     if (!C) return st;
     const notes = { stationsAdded: [], stationsDropped: [], seatsAdded: [], seatsDropped: [],
                     partiesAdded: [], currentsAdded: [], cabinetAdded: [], cabinetRepaired: [],
-                    functionalAdded: [], functionalDropped: [] };
+                    functionalAdded: [], functionalDropped: [], instrumentsAdded: [],
+                    billsAdded: [], charactersAdded: [] };
 
     st.stations = st.stations || {};
     C.stations.forEach(s0 => {
@@ -334,6 +335,35 @@ const Engine = (function () {
       }
     });
     syncFunctional(st, C);
+
+    /* INSTRUMENTS, BILLS AND CHARACTERS THE SAVE HAS NEVER SEEN. The same rule
+       as parties above, and the same failure: content added after a save was
+       written leaves st.instruments[id] undefined, the order paper and the
+       instruments panel read it, and the render throws and leaves blank panels.
+       This is what bit a save written before the escalation ladder. Content owns
+       identity; the save owns what play has done to it, so a new one is seeded
+       in its opening state and an existing one is left exactly as it is. */
+    st.instruments = st.instruments || {};
+    (C.instruments || []).forEach(i0 => {
+      if (st.instruments[i0.id]) return;
+      st.instruments[i0.id] = {
+        id: i0.id, made: false, inForce: false, revoked: false,
+        madeAt: null, prayerCloses: null, effectApplied: false };
+      notes.instrumentsAdded.push(i0.id);
+    });
+    st.bills = st.bills || {};
+    (C.bills || []).forEach(b0 => {
+      if (st.bills[b0.id]) return;
+      st.bills[b0.id] = { id: b0.id, stage: b0.stage, dead: false, amendments: [] };
+      notes.billsAdded.push(b0.id);
+    });
+    st.characters = st.characters || {};
+    (C.characters || []).forEach(ch0 => {
+      if (st.characters[ch0.id]) return;
+      st.characters[ch0.id] = { id: ch0.id,
+        relationship: ch0.relationship == null ? 50 : ch0.relationship, alive: true };
+      notes.charactersAdded.push(ch0.id);
+    });
 
     /* Notes live on the module, not on the state. Anything written onto st
        here would be saved, reloaded and compared, and a save would stop
@@ -440,7 +470,7 @@ const Engine = (function () {
     syncRoll(st, C);
     const k = C.constituencyById[cid];
     st.log.unshift({ sitting: st.sitting,
-      text: `Seat vacated: ${k ? k.name : cid} (${party})${why ? " — " + why : ""}` });
+      text: `Seat vacated: ${k ? k.name : cid} (${party})${why ? ", " + why : ""}` });
     return { ok: true };
   }
 
@@ -561,9 +591,9 @@ const Engine = (function () {
     const gains = Object.keys(won).filter(p => (before[p] || 0) === 0);
     st.log.unshift({ sitting: st.sitting,
       text: `By-election, ${k.name}: ${filled} seat${filled === 1 ? "" : "s"} filled` +
-            (gains.length ? ` — gain for ${gains.join(", ")}` : " — no change of hands") });
+            (gains.length ? `, gain for ${gains.join(", ")}` : ", no change of hands") });
     st.wire.unshift({ sitting: st.sitting,
-      text: `BY-ELECTION ${k.name.toUpperCase()} — ` +
+      text: `BY-ELECTION ${k.name.toUpperCase()}: ` +
             Object.keys(won).map(p => `${p.toUpperCase()} ${won[p]}`).join(", ") });
     return { ok: true, filled: filled, won: won, gains: gains };
   }
@@ -868,7 +898,7 @@ const Engine = (function () {
     const inCoalition = st.coalition.includes(partyId);
     const inCS = st.confidenceSupply.includes(partyId);
     if (!inCoalition && !inCS && !own)
-      return { max: 0, costPerSeat: 0, reason: "outside the coalition — lobbying, not whipping" };
+       return { max: 0, costPerSeat: 0, reason: "outside the coalition; this is lobbying, not whipping" };
 
     /* CONFIDENCE AND SUPPLY IS NOT COALITION, and the two were treated
        identically. The arrangement is a promise to vote through the
@@ -883,7 +913,7 @@ const Engine = (function () {
        House with no budget in it. */
     if (inCS && !inCoalition && !own && !(bill && (bill.supply || bill.confidence)))
       return { max: 0, costPerSeat: 0,
-               reason: "confidence and supply only — free on ordinary business" };
+                reason: "confidence and supply only; free on ordinary business" };
 
     const seats = tier === "functional" ? partyFunctional(st, partyId) : partyPopular(st, partyId);
     const already = resolveStance(st, C, bill, partyId, tier);
@@ -964,7 +994,7 @@ const Engine = (function () {
     if (!result.carries) {
       apply(st, C, b.onFail);
       bs.stage = "defeated"; bs.dead = true;
-      st.log.unshift({ sitting: st.sitting, text: "Division: " + b.title + " — defeated" +
+      st.log.unshift({ sitting: st.sitting, text: "Division: " + b.title + " defeated" +
         (paid.seats ? " (" + paid.seats + " whipped)" : "") });
       return { result: result, paid: paid, assent: null };
     }
@@ -977,7 +1007,7 @@ const Engine = (function () {
     bs.stage = "awaiting_assent";
     bs.carriedAt = st.sitting;
     bs.contested = !!(b.dualMajority && result.functional.aye < result.functional.need + 3);
-    st.log.unshift({ sitting: st.sitting, text: "Division: " + b.title + " — carried" +
+    st.log.unshift({ sitting: st.sitting, text: "Division: " + b.title + " carried" +
       (paid.seats ? " (" + paid.seats + " whipped)" : "") });
     const a = presidentDecides(st, C, billId, result);
     settle(st, C);
@@ -1068,9 +1098,9 @@ const Engine = (function () {
 
   /* A bill walks the ladder one order-paper slot at a time. Divisions happen at
      third reading only; earlier stages are procedural and consume a slot without
-     a vote. The upper house is a pure delay — its powers are still THIN. */
+     a vote. */
   const STAGE_ORDER = ["drafting","first_reading","second_reading","committee",
-                       "report","third_reading","upper_house","assent"];
+                       "report","third_reading","assent"];
   const DIVIDES_AT = "third_reading";
 
   function grantSlot(st, C, billId) {
@@ -1130,6 +1160,10 @@ const Engine = (function () {
     const si = (C.instrumentById || {})[siId], s = st.instruments[siId];
     if (!si || !s) return { ok: false, reason: "no such instrument" };
     if (s.made && !s.revoked) return { ok: false, reason: "already made" };
+    /* A rung of the escalation ladder is not available until the rung above it
+       has been tried, which is the same vocabulary events gate on. The lint
+       already walks an instrument's `when`; this is the reader it assumed. */
+    if (si.when && !matches(st, si.when)) return { ok: false, reason: "not yet available" };
     const post = st.cabinet[si.author];
     if (!post) return { ok: false, reason: "names no cabinet post" };
     if (!post.holder) return { ok: false, reason: "the post of " +
@@ -1269,7 +1303,7 @@ const Engine = (function () {
     if (!p || !p.holder) return { ok: false };
     p.holder = null;
     st.log.unshift({ sitting: st.sitting,
-      text: "Ministerial vacancy: " + postId.replace(/_/g, " ") + (reason ? " — " + reason : "") });
+      text: "Ministerial vacancy: " + postId.replace(/_/g, " ") + (reason ? ", " + reason : "") });
     return { ok: true };
   }
 
@@ -1400,6 +1434,89 @@ const Engine = (function () {
   }
 
   /* ---------------------------------------------------------
+     3c. THE LEADERSHIP BALLOT (design/08 §2)
+
+     The caucus divides on loyalty and on what the Prime Minister has paid each
+     current. This is a SUM, not a model: each current votes its members in
+     proportion to its loyalty, the members in no current vote on the party's
+     own loyalty, and the revenants — returned on the list, owing their seat to
+     the party — are loyal until they break, and then break together.
+
+     Held when the signatures against the PM reach the threshold. A ballot the
+     PM loses routes through the existing loss condition, not a second one.
+     --------------------------------------------------------- */
+  function ballot(st, C) {
+    const party = st.playerParty;
+    const seats = partyPopular(st, party);
+    const currents = (C.currents || []).filter(c0 => c0.party === party);
+    let aye = 0, named = 0;
+    currents.forEach(c0 => {
+      const cur = st.currents[c0.id] || c0;
+      const mem = cur.members || 0;
+      named += mem;
+      aye += mem * ((cur.loyalty == null ? 100 : cur.loyalty) / 100);
+    });
+    const rest = Math.max(0, seats - named);
+    aye += rest * (((st.parties[party] || {}).loyalty || 100) / 100);
+    aye = Math.round(aye);
+    const need = Math.floor(seats / 2) + 1;
+    return { for: aye, against: Math.max(0, seats - aye), seats: seats,
+             need: need, carries: aye >= need };
+  }
+
+  /* ---------------------------------------------------------
+     3b. IMPERFECT INFORMATION (design/08 §7)
+
+     A division is exact — the arithmetic is the argument of the game. What
+     the player is SHOWN is not. Every forecast comes from a source, and every
+     source is wrong by something: the whips count their own side, a partner is
+     honest until its loyalty thins, the functional bench is an estimate, and
+     the opposition is a guess.
+
+     The error is DERIVED from the seed and the state, never rolled fresh, so a
+     redraw does not move the number and the player cannot re-read it until it
+     settles. The point is not the error; it is that a partner whose loyalty is
+     collapsing gives you a worse number and does not tell you it is worse.
+     --------------------------------------------------------- */
+  function noise(st, key) {
+    let h = 2166136261 >>> 0;
+    const s = key + ":" + (st.seed || 1);
+    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    return h;
+  }
+  function reportError(st, partyId, bench) {
+    if (partyId === st.playerParty) return 0;                 /* the whips do count */
+    let scale = 1;                                            /* the opposition: a guess */
+    const partner = st.coalition.indexOf(partyId) >= 0 ||
+                    st.confidenceSupply.indexOf(partyId) >= 0;
+    if (partner) {
+      const p = st.parties[partyId] || {};
+      const loy = p.loyalty == null ? 100 : p.loyalty;
+      scale = Math.floor((100 - loy) / 18);                   /* worse as loyalty falls */
+    }
+    const n = noise(st, bench + ":" + partyId);
+    return (n % (2 * scale + 1)) - scale;
+  }
+  function reported(st, C, billId) {
+    const d = division(st, C, billId);
+    const benchAye = bench => {
+      let aye = 0;
+      d.rows.forEach(r => { aye += Math.max(0, r[bench + "Aye"] + reportError(st, r.party, bench)); });
+      return Math.max(0, Math.min(d[bench].total, aye));
+    };
+    const p = benchAye("popular"), f = benchAye("functional");
+    const pc = p >= d.popular.need, fc = f >= d.functional.need;
+    return {
+      dual: d.dual, true: d,
+      popular:    { aye: p, total: d.popular.total,    need: d.popular.need,    carries: pc },
+      functional: { aye: f, total: d.functional.total, need: d.functional.need, carries: fc },
+      carries: d.dual ? (pc && fc) : pc,
+      /* what the number is and who said so. Present on every forecast shown. */
+      prov: "Whips' count; partners' assurances; an estimate of the functional bench"
+    };
+  }
+
+  /* ---------------------------------------------------------
      4. CONDITIONS — the closed vocabulary events may test
      --------------------------------------------------------- */
 
@@ -1421,6 +1538,11 @@ const Engine = (function () {
                     Object.keys(v[id]).every(f => st.stations[id][f] < v[id][f])),
     billStage:    (st, v) => Object.keys(v).every(id => st.bills[id] && st.bills[id].stage === v[id]),
     signaturesAtLeast: (st, v) => (st.signatures || 0) >= v,
+    /* The leadership ballot (design/08 §2). Content narrates it; the engine
+       holds it. `ballotHeld` is true once the caucus has divided and before
+       the event has been read; `ballotCarries` says which way it went. */
+    ballotHeld:     (st, v) => v ? !!st.ballot : !st.ballot,
+    ballotCarries:  (st, v) => !!st.ballot && st.ballot.carries === !!v,
     siInForce:      (st, v) => [].concat(v).every(k => st.instruments[k] && st.instruments[k].inForce),
     siNotMade:      (st, v) => [].concat(v).every(k => st.instruments[k] && !st.instruments[k].made),
     postVacant:     (st, v) => [].concat(v).every(k => st.cabinet[k] && !st.cabinet[k].holder),
@@ -1560,7 +1682,7 @@ const Engine = (function () {
         roll.held[pid] = (roll.held[pid] || 0) + v[fid][pid];
         if (roll.held[pid] <= 0) delete roll.held[pid];
       });
-      syncFunctional(st, C);
+    syncFunctional(st, C);
     }),
     /* One verb, not two. `{flag:"x"}` sets, `{flag:{x:false}}` clears.
        The old `unflag` verb is gone: it was the same operation with the
@@ -1611,6 +1733,10 @@ const Engine = (function () {
       if ((st.undertakings || []).some(x => x.id === u.id && x.state === "open")) return;
       st.undertakings.push({
         id: u.id, text: u.text || u.id, owed_to: u.owed_to || null,
+        /* `post` names the cabinet brief the promise belongs to. A promise
+           broken in a minister's brief is answered by that minister
+           (design/08 §3); a promise with no post is answered by nobody. */
+        post: u.post || null,
         /* `by` counts sittings from now. An EXPLICIT null means "before
            the House rises" and comes due at prorogation instead, which
            is the deadline an author usually means and could not
@@ -1791,6 +1917,37 @@ const Engine = (function () {
 
   function outstanding(st) {
     return (st.undertakings || []).filter(u => u.state === "open");
+  }
+
+  /* ---------------------------------------------------------
+     A BROKEN PROMISE, AND THE MINISTER WHO ANSWERS FOR IT
+
+     Breaking an undertaking QUEUES AN EVENT and moves no number: the
+     politics of a broken promise belongs where it can be written and
+     argued with (design/02). When the promise names a cabinet post, the
+     minister holding it is the one who answers — the post is vacated
+     here, the same {cabinet:{post:null}} the player has, and content
+     narrates it. A resignation the player did not choose is the
+     strongest available consequence of a broken promise, and this is
+     where it comes from (design/08 §3).
+     --------------------------------------------------------- */
+  function breakUndertaking(st, C, u, why) {
+    u.state = "broken";
+    st.log.unshift({ sitting: st.sitting, text: "Undertaking broken" +
+      (why ? " at " + why : "") + " \u2014 " + u.text });
+    const post = u.post && st.cabinet ? st.cabinet[u.post] : null;
+    if (post && post.holder) {
+      const holder = post.holder;
+      post.holder = null;
+      st.lastResignation = { post: u.post, holder: holder,
+                             undertaking: u.id, sitting: st.sitting };
+      st.flags["minister_resigned"] = true;
+      const pname = ((C && C.cabinetById && C.cabinetById[u.post]) || {}).name || u.post;
+      st.log.unshift({ sitting: st.sitting, text: "The " + pname + " resigns" });
+    }
+    if (u.onBreach && C && C.eventById && C.eventById[u.onBreach])
+      st.queue.push({ eventId: u.onBreach, dueSitting: st.sitting });
+    return u;
   }
 
   /* ---------------------------------------------------------
@@ -2110,6 +2267,20 @@ const Engine = (function () {
           marks.push(s.name + " falls below ten thousand suspended");
       });
     }
+    /* THE BALLOT. Signatures against the Prime Minister reaching the threshold
+       force the caucus to divide. Held once; a carried ballot clears the names,
+       a lost one is the end and checkLoss says so. */
+    const ballotAt = (C.setup.thresholds && C.setup.thresholds.ballot) || 12;
+    if (!st.ballot && (st.signatures || 0) >= ballotAt) {
+      st.ballot = ballot(st, C);
+      marks.push("LEADERSHIP BALLOT: " + st.ballot.for + " for, " +
+        st.ballot.against + " against, " + st.ballot.need + " needed");
+      st.log.unshift({ sitting: st.sitting, text: "Leadership ballot: " +
+        st.ballot.for + " for, " + st.ballot.against + " against, " +
+        st.ballot.need + " needed \u2014 " +
+        (st.ballot.carries ? "the Prime Minister holds" : "the Prime Minister loses") });
+      if (st.ballot.carries) st.signatures = 0;
+    }
     return marks;
   }
 
@@ -2150,10 +2321,7 @@ const Engine = (function () {
        than on a sitting number the author had to guess. */
     (st.undertakings || []).forEach(u => {
       if (u.state !== "open" || u.by != null) return;
-      u.state = "broken";
-      st.log.unshift({ sitting: st.sitting, text: "Undertaking broken at prorogation — " + u.text });
-      if (u.onBreach && C.eventById && C.eventById[u.onBreach])
-        st.queue.push({ eventId: u.onBreach, dueSitting: st.sitting });
+      breakUndertaking(st, C, u, "prorogation");
     });
 
     st.session += 1;
@@ -2197,10 +2365,7 @@ const Engine = (function () {
        silent correction the player never sees. See design/02. */
     (st.undertakings || []).forEach(u => {
       if (u.state !== "open" || u.by == null || u.by >= st.sitting) return;
-      u.state = "broken";
-      st.log.unshift({ sitting: st.sitting, text: "Undertaking broken \u2014 " + u.text });
-      if (u.onBreach && C && C.eventById && C.eventById[u.onBreach])
-        st.queue.push({ eventId: u.onBreach, dueSitting: st.sitting });
+      breakUndertaking(st, C, u);
     });
     if (C && st.sessionEnds != null && st.sitting > st.sessionEnds) prorogue(st, C);
     if (C) reviewReturns(st, C);
@@ -2214,6 +2379,9 @@ const Engine = (function () {
 
   function checkLoss(st, C) {
     if (confidence(st) < majority(st)) return { lost: true, reason: "confidence" };
+    /* A ballot the Prime Minister lost is the end, through the same reason the
+       old loyalty floor used, so there is one leadership loss and not two. */
+    if (st.ballot && !st.ballot.carries) return { lost: true, reason: "leadership" };
     if (st.scalars.party_loyalty <= C.setup.thresholds.leadershipChallenge)
       return { lost: true, reason: "leadership" };
     if (st.scalars.thermal_margin <= 0) return { lost: true, reason: "cascade" };
@@ -2248,7 +2416,7 @@ const Engine = (function () {
     STATE_VERSION, newGame, migrate, save, load, chapters,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal,
-    division, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
+    division, reported, ballot, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
     apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,
     seedRoll, syncRoll, reconcile, partyDistrict,
     lastReconcile: () => lastReconcile, nationalShares, vacantSeats, seatsFor,

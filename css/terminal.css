@@ -15,13 +15,13 @@
   --p-cu:#fe0000;
   --p-psa:#0c9bdf;
   --p-cl:#ff7621;
-  --p-sc:#6b8f47;
+  --p-sc:#098d4d;
   --p-hul:#4b4b4b;
   --p-rv:#f85694;
-  --p-fh:#8c6a45;
-  --p-des:#6e2c3a;
-  --p-upl:#4f8c6e;
-  --p-geo:#8aa0b8;
+  --p-fh:#1800ad;
+  --p-des:#c07a52;
+  --p-upl:#14d879;
+  --p-geo:#426907;
   --p-gb:#4a5f75;
   --p-ind:#7d7d74;
 
@@ -99,6 +99,13 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #viewport{flex:1 1 auto;overflow:auto;padding:5px;}
 .screen{display:none;}
 .screen.on{display:block;}
+/* THE GOVERNMENT TAB SCROLLS INSIDE ITSELF. It is three long columns, and a
+   long one — the cabinet appointments — used to grow the whole tab and push
+   the chrome off the window. Only this tab needed it; every other tab keeps
+   the viewport's own scroll, which is what they were built against. */
+#s-gov.screen.on{height:100%;min-height:0;overflow:hidden;}
+#s-gov .grid{height:100%;min-height:0;grid-auto-rows:minmax(0,1fr);}
+#s-gov .stack{min-height:0;overflow:auto;}
 
 #statusbar{
   flex:0 0 auto;
@@ -123,7 +130,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    cramped into 300px beside it, so the one panel that could not use its
    width had most of it and the two that could had none. Three columns
    instead, with the plan on the remainder. */
-.g-cham{grid-template-columns:minmax(0,660px) minmax(250px,310px) minmax(0,500px);}
+.g-cham{grid-template-columns:minmax(0,1fr) minmax(240px,300px) minmax(0,400px);}
 .g-orb{
   grid-template-columns:216px minmax(0,1090px) minmax(0,1fr);
   grid-template-rows:minmax(0,1fr) auto;
@@ -671,8 +678,10 @@ img.dith{display:block;}
   height:11px;width:auto;max-width:22px;object-fit:contain;
   display:inline-block;vertical-align:-1px;margin-right:4px;
 }
-/* The constituency dossier has room for the wordmark at reading size. */
-.plogo.lg{height:24px;max-width:80px;vertical-align:middle;margin-right:6px;}
+/* The constituency dossier has room for the wordmark at reading size. The cap
+   is generous because a party whose mark is a long wordmark ("HOME RULE!") is
+   otherwise squeezed to an unreadable strip by an 80px limit built for badges. */
+.plogo.lg{height:24px;max-width:150px;vertical-align:middle;margin-right:6px;}
 
 /* ---------- orbital chart ---------- */
 #orbit-chart svg{display:block;width:100%;height:auto;}
@@ -1135,10 +1144,10 @@ body.busy, body.busy *{cursor:progress;}
 
 .wait-back{
   position:fixed;inset:0;z-index:200;
-  background:rgba(27,29,25,.55);
+  background:rgba(27,29,25,.38);
   display:flex;align-items:center;justify-content:center;padding:20px;
 }
-.wait-dlg{width:min(460px,100%);max-height:88vh;overflow:auto;}
+.wait-dlg{width:min(560px,100%);max-height:88vh;overflow:auto;}
 .wait-dlg:focus-visible{outline:1px dotted var(--bar-txt);outline-offset:2px;}
 
 /* one chunk per sub-step, 1px apart, in a bevelled well */

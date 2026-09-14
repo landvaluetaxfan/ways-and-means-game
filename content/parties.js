@@ -26,7 +26,7 @@ const PARTIES = [
     seats:{district:48,list:25,functional:9},
     kind:"national", loyalty:62,
     axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:null},
-    note:"Old left. Embodied maintenance labour. The strike weapon." },
+    note:"Old left. Embodied maintenance labour, and the strike weapon." },
 
   { id:"cl",  name:"Liberal Party",                short:"LIB", colour:"var(--p-cl)",
     leader:"watkins", logo:"cl.png", wordmark:"cl_mark.png",
@@ -44,7 +44,7 @@ const PARTIES = [
     note:"List-tier strength, almost no districts. Shares your economics, despises your personhood line." },
 
   { id:"sc",  name:"Home Rule",                    short:"HR",  colour:"var(--p-sc)",
-    leader:"laughon",
+    leader:"laughon", logo:"sc.png", wordmark:"sc_mark.png",
     seats:{district:26,list:8,functional:0},
     kind:"national", loyalty:35,
     axes:{ownership:null,personhood:null,sovereignty:"station",closure:"closurist"},
@@ -65,40 +65,40 @@ const PARTIES = [
     note:"Continuity of soul. A copy is not the person. Economically left, culturally immovable." },
 
   { id:"fh",  name:"Party of Property Owners",     short:"PPO", colour:"var(--p-fh)",
-    leader:"bluespan",
+    leader:"bluespan", logo:"fh.png", wordmark:"fh_mark.png",
     seats:{district:8,list:3,functional:6},
     kind:"national", loyalty:12,
     axes:{ownership:"private",personhood:"restrictionist",sovereignty:"station",closure:null},
     note:"Volume owners. Property absolutists." },
 
   { id:"gb",  name:"Alliance of Business and Government", short:"ABG", colour:"var(--p-gb)",
-    leader:"hatt",
+    leader:"hatt", logo:"gb.png", wordmark:"gb_mark.png",
     aliases:["Guild Bench"],
     seats:{district:0,list:0,functional:9},
     kind:"professional", loyalty:30,
     axes:{ownership:null,personhood:"restrictionist",sovereignty:"federal",closure:"closurist"},
-    note:"Exists only in the functional tier. Does not campaign. Cannot be voted out." },
+    note:"Exists only in the functional tier. It does not campaign and cannot be voted out." },
 
   { id:"des", name:"One-G",                        short:"ONE", colour:"var(--p-des)",
-    leader:"edelstein_powell",
+    leader:"edelstein_powell", logo:"des.png", wordmark:"des_mark.png",
     seats:{district:3,list:1,functional:0},
     kind:"national", loyalty:18,
     axes:{ownership:null,personhood:"restrictionist",sovereignty:null,closure:null},
     note:"Gravity as birthright. Draws the physiologically excluded." },
 
   { id:"geo", name:"Single Tax Party",             short:"STP", colour:"var(--p-geo)",
-    leader:"wheeler",
+    leader:"wheeler", logo:"geo.png", wordmark:"geo_mark.png",
     seats:{district:0,list:3,functional:0},
     kind:"national", loyalty:66,
     axes:{ownership:null,personhood:null,sovereignty:"federal",closure:null},
     /* No carve-out: a national ideological party with no district roots and
        no category to protect. It lives or dies on the threshold every time,
        which is exactly the party 4.8 says will agonise just below the line. */
-    note:"Volume tax. Land value tax. Nothing else. Correct. Three seats and "+
-         "always within a point of the threshold." },
+    note:"Volume tax, land value tax, nothing else. Three seats, and always "+
+         "within a point of the threshold." },
 
   { id:"upl", name:"Common Kind",                  short:"CMK", colour:"var(--p-upl)",
-    leader:"lindegaard",
+    leader:"lindegaard", logo:"upl.png", wordmark:"upl_mark.png",
     seats:{district:0,list:2,functional:0},
     kind:"national", loyalty:58,
     /* Bible 4.8: the list threshold exempts a party representing a single

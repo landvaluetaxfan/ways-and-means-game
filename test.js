@@ -299,7 +299,7 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
      (bible 7.7), so granting one must always move a bill. A stage the engine
      did not recognise fell through every branch and burned the slot in
      silence — content had a bill parked at "lords", which is neither in
-     STAGE_ORDER nor the name this setting uses for the upper house. */
+     STAGE_ORDER nor a stage the engine recognises. */
   {
     let burned = [], sl = Engine.newGame(CONTENT);
     CONTENT.bills.forEach(b => {
@@ -365,6 +365,30 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
        ((Engine.lastReconcile() || {}).partiesAdded || []).indexOf(lastParty.id) >= 0);
     ok("every content party is present after load",
        CONTENT.parties.every(p => back.parties[p.id]));
+  }
+
+  /* And one layer down again: instruments, bills and characters added to
+     content left older saves without the key, and the order paper and the
+     instruments panel read st.instruments[id] unguarded — so the render threw
+     and the panels went blank. This is exactly what a save written before the
+     escalation ladder hit, and why it "needed a new save". */
+  {
+    const fresh = Engine.newGame(CONTENT);
+    const lastSi = CONTENT.instruments[CONTENT.instruments.length - 1];
+    const lastBill = CONTENT.bills[CONTENT.bills.length - 1];
+    const lastCh = CONTENT.characters[CONTENT.characters.length - 1];
+    delete fresh.instruments[lastSi.id];
+    delete fresh.bills[lastBill.id];
+    delete fresh.characters[lastCh.id];
+    const back = Engine.load(Engine.save(fresh), CONTENT);
+    ok("a save missing an instrument regains it", !!back.instruments[lastSi.id]);
+    ok("a save missing a bill regains it", !!back.bills[lastBill.id]);
+    ok("a save missing a character regains it", !!back.characters[lastCh.id]);
+    const n = Engine.lastReconcile() || {};
+    ok("and all three are reported as added",
+       (n.instrumentsAdded || []).indexOf(lastSi.id) >= 0 &&
+       (n.billsAdded || []).indexOf(lastBill.id) >= 0 &&
+       (n.charactersAdded || []).indexOf(lastCh.id) >= 0);
   }
 
   /* The cabinet lives in the save, so a recast in content leaves an old holder
@@ -634,6 +658,127 @@ console.log("\nCURRENTS IN A DIVISION:");
 })();
 
 /* ---------------------------------------------------------------------
+   A9 — SUSPENSION MUST NEVER BE THE EFFICIENT ANSWER.
+
+   The ladder (design/03 §4) is nine rungs from a voluntary appeal to
+   involuntary suspension, each cheaper politically and dearer fiscally
+   than the one below. The rule is stated as an assertion rather than a
+   hope: the political cost of relief rises down the ladder faster than
+   the relief does, so the last rung is the worst bargain in the game.
+   --------------------------------------------------------------------- */
+console.log("\nTHE ESCALATION LADDER:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const rungs = (CONTENT.instruments || []).filter(i => /^rung\d/.test(i.id))
+    .sort((a, b) => a.id.localeCompare(b.id));
+  const num = e => Object.keys(e.move || {}).reduce((n, k) => n + Math.abs(e.move[k]), 0);
+  const cost = i => [].concat(i.political_cost || []).reduce((n, e) => n + num(e), 0);
+  const relief = i => [].concat(i.effects || []).reduce((n, e) =>
+    n + ((e.move || {})["thermal_margin"] || 0), 0);
+  const ratio = i => relief(i) > 0 ? cost(i) / relief(i) : Infinity;
+
+  ok("the ladder has nine rungs", rungs.length === 9, rungs.map(r => r.id).join(", "));
+  ok("each rung is gated on the one above it",
+     rungs.every((r, i) => i === 0
+       ? !r.when
+       : !!(r.when && r.when.flags && r.when.flags[0] === "rung" + i + "_tried")),
+     rungs.map(r => (r.when && r.when.flags ? r.when.flags[0] : "ungated")).join(" "));
+  ok("A9: the political cost rises down the ladder",
+     rungs.every((r, i) => i === 0 || cost(r) > cost(rungs[i - 1])),
+     rungs.map(r => cost(r)).join(" < "));
+  ok("A9: and the last rung is the worst bargain on it",
+     rungs.every(r => ratio(r) <= ratio(rungs[8])),
+     rungs.map(r => relief(r) + "m/" + cost(r) + "c").join(", "));
+
+  if (bad) { console.log("\n" + bad + " LADDER FAILURES"); process.exitCode = 1; }
+})();
+
+console.log("\nTHE FORECAST IS AN OPINION (design/08 §7):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const a = Engine.newGame(CONTENT), b = Engine.newGame(CONTENT);
+  const fa = Engine.reported(a, CONTENT, "divergence");
+  ok("a fresh save reports a forecast", !!fa && !!fa.popular && !!fa.prov, fa.prov);
+  ok("the same state reports the same number twice",
+     Engine.reported(a, CONTENT, "divergence").popular.aye === fa.popular.aye);
+  ok("and the seed makes it reproducible",
+     Engine.reported(b, CONTENT, "divergence").popular.aye === fa.popular.aye);
+  ok("the reported number is not the exact one",
+     fa.popular.aye !== fa.true.popular.aye ||
+     fa.functional.aye !== fa.true.functional.aye,
+     "reported " + fa.popular.aye + "/" + fa.functional.aye +
+     "  exact " + fa.true.popular.aye + "/" + fa.true.functional.aye);
+  const seed2 = Engine.newGame(CONTENT); seed2.seed = 424242;
+  ok("a different seed moves the error",
+     Engine.reported(seed2, CONTENT, "divergence").popular.aye !== fa.popular.aye);
+
+  if (bad) { console.log("\n" + bad + " FORECAST FAILURES"); process.exitCode = 1; }
+})();
+
+console.log("\nTHE LEADERSHIP BALLOT (design/08 §2):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const a = Engine.newGame(CONTENT);
+  const b0 = Engine.ballot(a, CONTENT);
+  ok("a fresh caucus would carry a ballot", b0.carries && b0.for >= b0.need,
+     b0.for + " for, " + b0.against + " against, " + b0.need + " needed");
+
+  const b = Engine.newGame(CONTENT);
+  Object.keys(b.currents).forEach(k => { b.currents[k].loyalty = 0; });
+  b.parties[b.playerParty].loyalty = 0;
+  const lost = Engine.ballot(b, CONTENT);
+  ok("a caucus with no loyalty loses it", !lost.carries,
+     lost.for + " for of " + lost.need);
+
+  const c = Engine.newGame(CONTENT);
+  c.signatures = CONTENT.setup.thresholds.ballot;
+  Engine.tick(c, CONTENT);
+  ok("the threshold holds a ballot", !!c.ballot);
+  ok("and it is reported in the log",
+     c.log.some(l => /Leadership ballot/.test(l.text)));
+  const before = c.ballot;
+  Engine.tick(c, CONTENT);
+  ok("and only once", c.ballot === before);
+
+  if (bad) { console.log("\n" + bad + " BALLOT FAILURES"); process.exitCode = 1; }
+})();
+
+console.log("\nA MINISTER ANSWERS FOR A BROKEN PROMISE (design/08 §3):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const a = Engine.newGame(CONTENT);
+  const post = Object.keys(a.cabinet).find(k => a.cabinet[k].holder);
+  ok("a fresh cabinet has a holder to lose", !!post, post);
+  const holder = a.cabinet[post].holder;
+
+  Engine.apply(a, CONTENT, [{undertake:{ id:"t_resign", text:"test promise",
+    post:post, by:0, discharge:{ flag:"never_set" }}}]);
+  const u = a.undertakings.find(x => x.id === "t_resign");
+  ok("an undertaking remembers its post", !!(u && u.post === post));
+
+  Engine.advance(a, CONTENT);
+  ok("breaking it vacates the post", !a.cabinet[post].holder,
+     holder + " -> " + (a.cabinet[post].holder || "vacant"));
+  ok("and records the resignation", !!a.lastResignation && a.lastResignation.post === post);
+  ok("and flags it for content", !!a.flags["minister_resigned"]);
+  ok("and it is in the log", a.log.some(l => /resigns/.test(l.text)));
+
+  if (bad) { console.log("\n" + bad + " RESIGNATION FAILURES"); process.exitCode = 1; }
+})();
+
+/* ---------------------------------------------------------------------
    THE BED IS IN TUNE.
 
    Eight bars of hand-typed MIDI. A mistyped number is a wrong note that
@@ -656,8 +801,8 @@ console.log("\nTHE ADAPTIVE BED:");
   /* D natural minor: D E F G A Bb C */
   const KEY = [2, 4, 5, 7, 9, 10, 0];
 
-  ok("the bed is the eight-bar loop it was written as",
-     F.BARS === F.PROG.length && F.PROG.length === 8,
+  ok("the bed is the sixteen-bar form it was written as",
+     F.BARS === F.PROG.length && F.PROG.length === 16,
      F.BARS + " bars = " + (F.BARS * F.BEATS * 60 / F.BPM).toFixed(0) +
      "s at " + F.BPM + " BPM");
 

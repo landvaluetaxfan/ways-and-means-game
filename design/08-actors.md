@@ -2,8 +2,8 @@
 
 *Everyone in the game who is currently scenery.*
 
-The chamber has 280 seats, eleven parties, a cabinet, a caucus with currents, a
-President with reserve powers and an upper house. **Not one of them ever does
+The chamber has 280 seats, eleven parties, a cabinet, a caucus with currents and a
+President with reserve powers. **Not one of them ever does
 anything the player did not cause.** Every consequence in the build is either a
 number moving or an event the player triggered.
 
@@ -120,22 +120,7 @@ the same axes as everything else — and let referral be *predictable from it*
 rather than a coin the player cannot read. A President who refuses on principle
 is an actor; one who refuses on a threshold is a gate.
 
-## 7. The upper house
-
-`sweep-brief.md` C.5: *"`upper_house` is a stage with no actor and no rejection
-path."* Part XVI: powers undefined.
-
-**Decide the powers before building anything**, and the cheapest decision that
-earns the stage is a **delay power, not a veto**: the upper house can hold a bill
-for N sittings and no more. That makes it a cost in order-paper time — the
-currency the game already has — rather than a second veto beside the functional
-bench, which the game does not need and which would make the dual majority less
-legible rather than more.
-
-This is an open canon decision and belongs in the bible before it belongs in the
-engine.
-
-## 8. Imperfect information
+## 7. Imperfect information
 
 Not an actor, but it belongs here because it is what makes actors readable as
 people rather than as rules.

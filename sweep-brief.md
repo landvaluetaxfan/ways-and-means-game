@@ -217,7 +217,5 @@ earlier block.
   until it is made.
 - **§7.5.3 money.** LEANING, and `design/13` recommends locking it, naming the
   unit, and amending §7.6's treasury line. Everything fiscal waits on it.
-- **The upper house.** `upper_house` is a stage with no actor. `design/08` §7
-  proposes a delay power rather than a veto, and it is a canon decision.
 - **What the player is expected to do**, per `design/14` §4. The game has four
   loss conditions and no stated purpose.

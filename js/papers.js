@@ -135,7 +135,7 @@ const Papers = (function () {
   const STAGE_LABEL = {
     drafting:"Drafting", first_reading:"First reading", second_reading:"Second reading",
     committee:"Committee", report:"Report", third_reading:"Third reading",
-    upper_house:"Upper house", assent:"Assent", blocked:"Blocked"
+    assent:"Assent", blocked:"Blocked"
   };
   const TERMINAL = {
     struck:    { label:"Struck on review", cls:"bad",  note:"Removed from the statute book. It cannot be revived; it must be brought again as a new bill." },
@@ -272,7 +272,7 @@ const Papers = (function () {
     return { html: `<div class="paper">
       ${head("Office of the Prime Minister", "Circumterrestrial Commonwealth \u00b7 Anselm Ring",
              "FILE " + m.file, "SITTING " + (m.sitting || st.sitting))}
-      <div class="classif">${esc(m.classification || "Restricted — ministerial")}</div>
+      <div class="classif">${esc(m.classification || "Restricted: ministerial")}</div>
       <div class="distrib">
         ${line("FROM", esc(m.from))}
         ${line("TO", esc(m.to))}

@@ -154,13 +154,24 @@ kind. `description` on a station, shown in the station dossier on the Orbit tab.
 
 ### The Concordance
 
-Written like Wikipedia, because that is what it is pretending to be. Neutral
-tone; a lead that defines the subject in its first sentence; sections with
-sentence-case headings; an infobox on the right; a See-also list at the foot;
-third person, no address to the reader, no rhetorical flourish. The maintenance
-banners are the refraction (see the Concordance section below); the prose itself
-stays encyclopedic. Do not put the election-desk register or the event register
-into the Concordance.
+Written like Wikipedia in its furniture, because that is what it is pretending
+to be: a lead that defines the subject in its first sentence, sentence-case
+headings, an infobox on the right, a See-also list at the foot, third person, no
+address to the reader. But the prose is **plain**: short declaratives, no em
+dashes, no "not X but Y", no rhetorical closers. The maintenance banners are the
+refraction (see the Concordance section below). Do not put the election-desk
+register or the event register into the Concordance.
+
+### Tooltips and interface prose
+
+Every tooltip (`js/tips.js`), every menu line, every log line. These address the
+player as **you** and say what the thing does, not what it means. The test: if a
+sentence states a thesis rather than a fact, cut it.
+
+- "No minister holds this post, so it cannot make instruments. Appoint one to
+  change that." Not "The President's power to refuse an appointment and the
+  fight over the licensing boards are therefore the same fight."
+- Short is fine. A fragment is fine. An aphorism is not.
 
 ---
 
@@ -543,27 +554,28 @@ glossary terms `term_<slug>` or the bare slug.
 
 Run `node tools/cxcheck.js` to confirm every link, see-also and banner resolves.
 
-### The Wikipedia style
+### The Concordance
 
-The Concordance is written as Wikipedia, because that is what it is pretending
-to be. Hold to these:
+An in-world reference work, so it keeps Wikipedia's **furniture**: a lead that
+defines the subject in its first sentence, sentence-case headings, an infobox on
+the right, a See-also list at the foot, third person, no address to the reader.
+The maintenance banners are the refraction; the prose itself stays encyclopedic.
 
-- **Lead.** The first sentence defines the subject and puts the title in bold:
-  "The **Perigee Charter** is the founding document of the Commonwealth." Not a
-  hook, not a scene, not a question.
-- **Headings** are sentence case: "The residual constituency", not "The Residual
-  Constituency".
-- **Neutral, third person.** No "you", no "we". Attribute contested claims:
-  "Critics argue…", "The Bureau does not publish…". The article reports the
-  dispute; it does not take a side.
+But the prose is written in the **plain register**, not a literary one:
+
+- **Plain declaratives.** "The congress sat for eleven weeks and produced a text
+  no single delegation would have written." Not "A text no single delegation
+  would have written was produced by a congress that sat for eleven weeks."
+- **No em dashes.** A comma, a colon or a full stop does the work.
+- **No "not X but Y".** "What orders the population is whether a person can be
+  switched off." Not "The distinction that orders the population is not what a
+  person is made of but whether they can be switched off."
 - **No rhetorical closers.** A sentence ends when the fact ends. If a line is
   there for effect rather than information, cut it.
 - **The bias is in the furniture, not the prose.** The maintenance banners
   (`neutrality`, `contested`, `stub`, `protected`), the edit record and the
-  protection status carry the in-world point of view. The body text stays
-  encyclopedic. The reader sees the bias in the machinery, never in the
-  sentences.
-- Em dashes are permitted here, unlike the constituency prose.
+  protection status carry the in-world point of view. The reader sees the bias
+  in the machinery, never in the sentences.
 
 ### Editing it
 

@@ -39,7 +39,7 @@ one he thinks you will not answer.
 
 "Prime Minister. You inherit a majority, a bill you did not write, and a party
 that has spent thirty years arguing with itself about what it is for." He does
-not look at his notes. "Before anything else — why you?"
+not look at his notes. "Before anything else: why you?"
 
 It is the only question of the morning that you get to answer twice: once now,
 and once for the rest of it. The record is the record. What is not yet settled
@@ -120,7 +120,7 @@ Once a fork of eight days is a person, a fork of eight days can hold a licence,
 and then the panel that certifies life support is a panel my members do not
 recognise. You are not reforming personhood. You are reforming us."`,
   choices:[
-    { label:"Offer a licensure carve-out — the threshold moves, licensure does not",
+    { label:"Offer a licensure carve-out: the threshold moves, licensure does not",
       act:"Offer it",
       /* MECHANICAL PLACEHOLDER, opencode's to reword: the undertaking's
          `text` is the line the order paper carries and the wording is
@@ -179,7 +179,7 @@ hours make a stranger. Give me the shed order. Give me anything on the shed orde
 { id:"halloran_finds_nine", queuedOnly:true, once:true,
   title:"He found them",
   speaker:"halloran",
-  body:`Four of the nine are revenants — members returned on the list after losing
+  body:`Four of the nine are revenants: members returned on the list after losing
 a district, who owe their seats entirely to the party and were therefore supposed
 to be unbuyable. They have worked out that a leadership change reorders the list,
 and that a list can be reordered upward as easily as down.
@@ -335,7 +335,7 @@ The bill is called at two. You have the morning.`,
 whole of the offer and it is not negotiable at the margins.
 
 What it means in practice: an emulation separated for forty-one hours becomes a
-person, may hold property, may vote in a district — and may not hold a life
+person, may hold property, may vote in a district, and may not hold a life
 support licence, which means may not vote in the constituency that represents
 the work she does every day.
 
@@ -404,6 +404,251 @@ which is eleven of yours.
                {flag:"substrate_bite_seen"},{flag:"staked_on_public_stake"},
                {wire:"GOVERNMENT ADVANCES PUBLIC STAKE BILL AFTER RENT RISE"}],
       result:"You have made the rest of the session about one bill. The Liberal Party begins counting." }
+  ]},
+
+/* ============================================================
+   THE CONSEQUENCE CHAIN (design/03, bible 7.9)
+
+   Six numbers move every sitting and, until now, nothing read them
+   back. The engine runs three quarters of the chain already — decision,
+   price, station conditions — and had almost nothing at the end of it.
+   Each event below is the last link: a number the engine has been
+   quietly moving becomes something the player is told about by
+   somebody. The `when` is the whole point; the prose is the delivery.
+   ============================================================ */
+
+{ id:"shed_order_crisis", weight:95, once:true,
+  when:{ priceAbove:{substrate:106}, suspendedAbove:{federal:73000},
+         flagsAbsent:["shed_crisis_seen"] },
+  title:"Seventy-five thousand",
+  speaker:null,
+  body:`The number is published quarterly and has never once been read aloud in
+the House. Seventy-five thousand and some. That is the count of people suspended
+across the thirty stations, stopped and held and not running, and it has crossed
+the figure the Allocation Act calls a federal strain.
+
+What follows is not a headline. It is a shed order, posted at 06:00: Ashfield,
+tier four, a further eleven hundred, effective next sitting. Nobody voted for it.
+It is what the price does when it goes up and nobody pays it down.
+
+By the time the House sits, the figure has been on the wire four hours and the
+government has said nothing.`,
+  choices:[
+    { label:"Intervene. Requisition substrate and suspend the order.",
+      effects:[{move:{"price.substrate":-12}},{move:{"treasury":-16}},{move:{"public_standing":7}},
+               {move:{"loyalty.cu_maintenance":10}},{move:{"loyalty.psa":8}},
+               {flag:"shed_crisis_seen"},{flag:"intervened_in_shed"},
+               {wire:"GOVERNMENT REQUISITIONS SUBSTRATE; SHED ORDER SUSPENDED"}],
+      result:"The order is suspended. The reserve pays for it, and the next order will be larger, because nothing about the price has changed." },
+    { label:"Let it stand. The Act is the Act and the price is the price.",
+      effects:[{move:{"public_standing":-12}},{move:{"loyalty.cu_maintenance":-14}},{move:{"loyalty.psa":-11}},
+               {move:{"loyalty.hul":9}},{flag:"shed_crisis_seen"},{flag:"let_the_shed_stand"},
+               {wire:"PM DECLINES TO SUSPEND SHED ORDER; ASHFIELD DELEGATION WALKS OUT"}],
+      result:"Eleven hundred people stop running, lawfully, on a schedule the government did not choose and did not refuse." },
+    { label:"Blame the drift. Announce a review of the price mechanism.",
+      effects:[{move:{"public_standing":-4}},{move:{"loyalty.cu_maintenance":-6}},
+               {flag:"shed_crisis_seen"},{flag:"blamed_the_drift"},
+               {wire:"PM ORDERS REVIEW OF SUBSTRATE PRICE MECHANISM AFTER SHED ORDER"}],
+      result:"A review reports to a minister, the minister reports to you, and the number keeps climbing while it does." }
+  ]},
+
+{ id:"thermal_squeeze", weight:70, once:true,
+  when:{ priceAbove:{thermal:112}, flagsAbsent:["thermal_squeeze_seen"] },
+  title:"The quota is not a price until somebody cannot pay it",
+  speaker:null,
+  body:`Thermal capacity is bought and sold like anything else, and for eleven
+years the price has been boring. It is not boring now. The margin between what
+the stations can reject and what they generate has thinned, and the exchange has
+done what an exchange does with a thin market: it has found a number.
+
+Ember Ridge is bidding for its own quota. Tsiolkovsky is bidding against it,
+because Tsiolkovsky's substrate farms run hot and have to. Both of them are
+bidding with money that came, in the end, from the appropriation.`,
+  choices:[
+    { label:"Buy quota on the open market and hold the price down",
+      effects:[{move:{"price.thermal":-14}},{move:{"treasury":-18}},{move:{"loyalty.hul":6}},
+               {move:{"thermal_margin":5}},{flag:"thermal_squeeze_seen"},
+               {wire:"GOVERNMENT BUYS THERMAL QUOTA AT MARKET; PRICE FALLS"}],
+      result:"The price comes down for everyone and the reserve pays for one station's comfort twice over." },
+    { label:"Cap the exchange. A quota is not a commodity.",
+      effects:[{move:{"price.thermal":-8}},{move:{"loyalty.hul":-12}},{move:{"loyalty.cl":-9}},
+               {move:{"public_standing":4}},{flag:"thermal_squeeze_seen"},{flag:"capped_the_exchange"},
+               {wire:"GOVERNMENT CAPS THERMAL EXCHANGE; ENGINEERS WARN OF UNDERINVESTMENT"}],
+      result:"The cap holds the price and chokes the market that builds the radiators. Both effects arrive in about four years." },
+    { label:"Leave the market alone. Scarce things have prices.",
+      effects:[{move:{"public_standing":-7}},{move:{"loyalty.hul":7}},{move:{"thermal_margin":-4}},
+               {flag:"thermal_squeeze_seen"},{flag:"left_thermal_market"},
+               {wire:"PM: THERMAL PRICE 'A SIGNAL, NOT A SCANDAL'"}],
+      result:"The signal reaches the stations that cannot pay it, which is what a signal is for." }
+  ]},
+
+{ id:"party_fracture", weight:80, once:true,
+  when:{ scalarBelow:{party_loyalty:22}, flagsAbsent:["party_fracture_seen"] },
+  title:"The tea room has a count",
+  speaker:null,
+  body:`Nobody has called a ballot and nobody has asked for one. What has
+happened is smaller and worse: the party has stopped bringing its arguments to
+you. Three motions have gone to committee this week and you learned about all
+three afterwards.
+
+The whip's count is a count of people who will vote with the government and
+against the party, and it has been shrinking for a month.`,
+  choices:[
+    { label:"Go to them. Put the whole programme in front of the backbench.",
+      effects:[{move:{"party_loyalty":14}},{move:{"loyalty.cu_maintenance":6}},
+               {move:{"public_standing":-3}},{flag:"party_fracture_seen"},
+               {wire:"PM ADDRESSES OWN BACKBENCH AFTER WEEKS OF DRIFT"}],
+      result:"You give them the argument and the timetable. Half of them wanted to be asked." },
+    { label:"Reshuffle. Move two of them up and one of them out.",
+      effects:[{move:{"party_loyalty":6}},{move:{"loyalty.cu_halloran":-10}},{move:{"loyalty.cu_maintenance":-4}},
+               {flag:"party_fracture_seen"},{flag:"fracture_reshuffle"},
+               {wire:"MINI-RESHUFFLE AFTER BACKBENCH UNREST"}],
+      result:"The promotion is read as a bribe and the removal as a warning, and both readings are correct." },
+    { label:"Ignore it. A party that argues is a party that is alive.",
+      effects:[{move:{"party_loyalty":-8}},{move:{"public_standing":2}},{flag:"party_fracture_seen"},
+               {wire:"PM DISMISSES TALK OF PARTY UNREST AS 'A WORKING PARTY WORKING'"}],
+      result:"It is alive. It is also, increasingly, not yours." }
+  ]},
+
+{ id:"reserve_low", weight:75, once:true,
+  when:{ scalarBelow:{treasury:14}, flagsAbsent:["reserve_low_seen"] },
+  title:"What is left of the reserve",
+  speaker:null,
+  body:`The appropriation is spent, the contingency is spent, and what remains
+in the reserve is a number the Treasury will not put in a document because
+putting it in a document would make it a fact.
+
+There is no lender. The Commonwealth has never borrowed and the Charter does not
+provide for it. What there is, is the option of not paying for something the
+Commonwealth has already promised to pay for.`,
+  choices:[
+    { label:"Raise the tether tariff. The traffic pays.",
+      effects:[{move:{"treasury":16}},{move:{"price.substrate":6}},{move:{"loyalty.cl":-10}},
+               {move:{"loyalty.cu_maintenance":-5}},{flag:"reserve_low_seen"},{flag:"raised_tariff"},
+               {wire:"TETHER TARIFF RAISED TO REFILL RESERVE; SHIPPERS OBJECT"}],
+      result:"The reserve fills. The substrate price rises with it, and the low band pays the difference in a currency the Treasury does not measure." },
+    { label:"Defer the maintenance appropriation. It is not due this session.",
+      effects:[{move:{"treasury":10}},{move:{"thermal_margin":-9}},{move:{"loyalty.hul":-11}},
+               {flag:"reserve_low_seen"},{flag:"deferred_maintenance"},
+               {wire:"MAINTENANCE APPROPRIATION DEFERRED TO NEXT SESSION"}],
+      result:"Nothing fails this session. Things that fail next session were being maintained this one." },
+    { label:"Spend what is left and let the next government find the rest.",
+      effects:[{move:{"public_standing":5}},{move:{"loyalty.cu_maintenance":7}},
+               {flag:"reserve_low_seen"},{flag:"spent_the_reserve"},
+               {wire:"PM COMMITS RESERVE TO CURRENT PROGRAMME"}],
+      result:"It is not dishonest. It is a bet that the bill comes due to somebody else." }
+  ]},
+
+{ id:"standing_low", weight:78, once:true,
+  when:{ scalarBelow:{public_standing:26}, flagsAbsent:["standing_low_seen"] },
+  title:"A government nobody is for",
+  speaker:"ceyhan",
+  body:`The polling is not catastrophic. It is flat, which is worse: you
+are not hated and you are not trusted, and the number that measures the gap
+between those two things has been falling all session.
+
+Ceyhan asks the question the number is actually about. "If you lost tomorrow,
+who would notice? Not who would be pleased. Who would notice."`,
+  choices:[
+    { label:"Answer it with something they will notice.",
+      effects:[{move:{"public_standing":12}},{move:{"treasury":-10}},{move:{"loyalty.psa":5}},
+               {flag:"standing_low_seen"},{flag:"bought_attention"},
+               {wire:"GOVERNMENT ANNOUNCES RELIEF PACKAGE AS POLLS FLATLINE"}],
+      result:"The number moves and the money is gone, and both of those facts will be tested again in a month." },
+    { label:"Answer it honestly. A government is not a popularity.",
+      effects:[{move:{"public_standing":-5}},{move:{"loyalty.cu_maintenance":6}},{move:{"rel.ceyhan":6}},
+               {flag:"standing_low_seen"},{flag:"refused_the_poll"},
+               {wire:"PM: 'I DID NOT COME HERE TO BE LIKED'"}],
+      result:"It is the most quotable thing you have said in weeks, which is its own kind of problem." },
+    { label:"Change the subject. Reshuffle the cabinet and reset the story.",
+      effects:[{move:{"public_standing":7}},{move:{"party_loyalty":-7}},{move:{"loyalty.cu_loyalists":-8}},
+               {flag:"standing_low_seen"},{flag:"reset_the_story"},
+               {wire:"CABINET RESHUFFLE ANNOUNCED; SENIOR MINISTERS OUT"}],
+      result:"The story resets and the people who made the government work are now the people briefing against it." }
+  ]},
+
+{ id:"threshold_consequence", weight:85, once:true,
+  when:{ lawBelow:{divergence_threshold_hours:100}, flagsAbsent:["threshold_seen"] },
+  title:"Two million, and then the registers",
+  speaker:null,
+  body:`The threshold has moved, so the registers have to. Every copy separated
+for longer than the new figure is a person, and the Registry has to find out how
+many that is, and where they vote, and whether they were counted somewhere else
+already.
+
+Six districts have to be redrawn. Two of them are yours. The functional rolls
+grow by an amount nobody can estimate until the Registry has finished, and the
+Registry has said, in writing, that it will not finish before the next election.`,
+  choices:[
+    { label:"Fund the Registry. Whatever it costs, the roll has to be true.",
+      effects:[{move:{"treasury":-14}},{move:{"public_standing":8}},{move:{"loyalty.psa":9}},
+               {move:{"loyalty.cl":-5}},{flag:"threshold_seen"},{flag:"funded_the_registry"},
+               {wire:"EMERGENCY REGISTRY FUNDING AFTER THRESHOLD CHANGE"}],
+      result:"The roll will be true, late, and expensive, which is the best of the three available outcomes." },
+    { label:"Set the new electors aside until after the election.",
+      effects:[{move:{"public_standing":-13}},{move:{"loyalty.psa":-16}},{move:{"loyalty.cu_maintenance":4}},
+               {flag:"threshold_seen"},{flag:"set_aside_new_electors"},
+               {wire:"GOVERNMENT DEFERS ENFRANCHISEMENT OF NEW PERSONS TO NEXT PARLIAMENT"}],
+      result:"Two million people are told their rights start after the vote that would have exercised them." },
+    { label:"Let the districts stay wrong. A wrong boundary is a legal boundary.",
+      effects:[{move:{"public_standing":-6}},{move:{"loyalty.cu_maintenance":-7}},{move:{"loyalty.psa":-4}},
+               {flag:"threshold_seen"},{flag:"kept_wrong_boundaries"},
+               {wire:"BOUNDARY COMMISSION OVERRULED; REDRAW DEFERRED"}],
+      result:"The seat you hold and the seat you are entitled to hold have stopped being the same seat." }
+  ]},
+
+/* THE LEADERSHIP BALLOT (design/08 §2). The engine holds the ballot when the
+   signatures reach the threshold and decides it from the caucus arithmetic;
+   this event is the prose for the one the Prime Minister survives. A lost one
+   ends the government through the existing loss condition and is never read. */
+{ id:"leadership_ballot", weight:99, once:true,
+  when:{ ballotHeld:true, ballotCarries:true, flagsAbsent:["ballot_seen"] },
+  title:"The ballot",
+  speaker:null,
+  body:`The count is in the tea room before it is in the lobby. The names were
+twelve, and twelve is enough to force a ballot, and a ballot is a vote on you.
+
+It is not a division of the House. It is a division of the party, held in the
+committee room, on a paper that is destroyed afterwards. The whips count their
+own benches and nobody else's, and what is being decided is whether the party
+that put you here intends to keep you.`,
+  choices:[
+    { label:"Let the count be taken. Say nothing.",
+      effects:[{flag:"ballot_seen"},{move:{"loyalty.cu_maintenance":6}},{move:{"loyalty.cu_loyalists":-4}},
+               {wire:"LEADERSHIP BALLOT HELD; PM SURVIVES"}],
+      result:"You survive, and every member who signed knows exactly what the number was, and what it would take." },
+    { label:"Speak first. Remind them what the alternative costs.",
+      effects:[{flag:"ballot_seen"},{move:{"loyalty.cu_halloran":-8}},{move:{"loyalty.cu_loyalists":8}},
+               {move:{"public_standing":3}},
+               {wire:"PM ADDRESSES CAUCUS BEFORE BALLOT; SURVIVES"}],
+      result:"The speech is remembered as the day the party decided, which is not the same as the day it agreed." }
+  ]},
+
+/* A MINISTER ANSWERS FOR A BROKEN PROMISE (design/08 §3). The engine vacates the
+   post when an undertaking naming it is broken, and sets `minister_resigned`;
+   this is the prose for the aftermath. The resignation itself is not the
+   player's to choose — that is the point of it. */
+{ id:"minister_resignation", weight:99, once:true,
+  when:{ flags:["minister_resigned"] },
+  title:"A resignation",
+  speaker:null,
+  body:`The letter is on the desk before the morning brief, which is how these
+things are arranged: the minister told the paper, the paper called the office,
+and the office said nothing.
+
+The resignation is not a protest. It is a payment. A promise was made in that
+minister's name and the promise was not kept, and in this building a minister
+who will not resign for it is resigned for. The post is empty. What it will not
+do is stay empty by itself.`,
+  choices:[
+    { label:"Fill it from the loyal wing of the party.",
+      effects:[{move:{"party_loyalty":5}},{move:{"public_standing":-2}},
+               {wire:"VACANT POST FILLED AFTER MINISTERIAL RESIGNATION"}],
+      result:"The replacement is grateful, which is a form of loyalty that has to be renewed." },
+    { label:"Leave it empty. Do the work from your own office.",
+      effects:[{move:{"public_standing":-4}},{flag:"post_left_vacant"},
+               {wire:"PM LEAVES MINISTERIAL POST VACANT"}],
+      result:"No instrument comes out of that brief until someone holds it, and the opposition has read the same rules you have." }
   ]}
 
 ];
