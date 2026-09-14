@@ -1008,6 +1008,15 @@ const Engine = (function () {
     const result = division(st, C, billId);     // whips still in place
     const paid = payWhips(st, C, billId);       // now charge for them
     const bs = st.bills[billId];
+    /* THE HOUSE HAS VOTED, AND THAT IS NOW A FACT ABOUT THE BILL. The forecast
+       is an estimate and stops being the truth the moment a division runs;
+       this is what actually happened. It is kept so the plan and the register
+       can show the vote rather than the guess, and it is what a bill that has
+       been through the lobbies is drawn from afterwards. Trimmed of the
+       content reference, so a save does not carry a copy of the bill. */
+    bs.lastDivision = { carries: !!result.carries, popular: result.popular,
+                        functional: result.functional, rows: result.rows,
+                        at: st.sitting };
 
     if (!result.carries) {
       apply(st, C, b.onFail);

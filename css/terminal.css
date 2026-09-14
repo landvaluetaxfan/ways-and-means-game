@@ -1364,6 +1364,14 @@ body.busy, body.busy *{cursor:progress;}
 }
 .wait-dlg{width:min(560px,100%);max-height:88vh;overflow:auto;}
 .wait-dlg:focus-visible{outline:1px dotted var(--bar-txt);outline-offset:2px;}
+/* A BARE WAIT IS A CAPTION, NOT A MODAL. The division is read out over the
+   plan that is showing it, so the overlay must not cover the thing it is
+   about: no scrim, no centred panel, a strip along the foot of the screen. */
+.wait-back.bare{background:transparent;align-items:flex-end;padding:0;}
+.wait-back.bare .wait-dlg{
+  width:min(660px,100%);border-bottom:0;
+  box-shadow:0 -3px 0 rgba(27,29,25,.18);
+}
 
 /* one chunk per sub-step, 1px apart, in a bevelled well */
 .wait-seg{
@@ -1656,6 +1664,23 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
   letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--rule);
   padding:0 3px;margin-left:3px;vertical-align:1px;}
   .chhint{font-style:normal;font-size:10.5px;color:var(--ink-soft);}
+  /* THE ORDER PAPER'S STAGE. One mark per stage of the ladder — cleared, here,
+     to come — with the division stage drawn heavier, and the word only on the
+     rows the House can act on today. Same seven stages the Papers register
+     draws in full; this is the cell-sized version of that track. */
+  td.stage{white-space:nowrap;}
+  td.stage .stname{font-family:var(--f-data);font-size:10.5px;color:var(--ink-soft);}
+  .spips{display:inline-flex;gap:2px;margin-left:6px;vertical-align:1px;}
+  .spips i{display:block;width:5px;height:7px;background:var(--chrome-dk);}
+  .spips i.done{background:var(--ink-soft);}
+  .spips i.here{background:var(--ink);}
+  .spips i.dv{width:7px;background:var(--warn);}
+  .spips i.here.dv{background:var(--alert);}
+  .rdy{
+    font-family:var(--f-ui);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--alert);border:1px solid var(--alert);padding:0 4px;margin-left:6px;
+  }
+  #cham-bills tr.ready>td:first-child{box-shadow:inset 3px 0 0 var(--alert);}
   /* THE PLAN'S CONTROLS, in the two shapes the two kinds of control have.
      The colour is a CHOICE, so its buttons are one segmented control with
      shared edges — pick one. The arrangement is a SET, so each toggle carries

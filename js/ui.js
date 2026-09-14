@@ -940,7 +940,7 @@ const UI = (function () {
          arithmetic is untouched. */
       const out = Engine.divide(st, C, id) || {};
       const r = out.result || {};
-      divisionTheatre(b, out).then(() => {
+      countDivision(r.rows, out).then(() => {
         /* A dual bill can carry the House and still fall, which is the
            whole argument of the game, so the line names BOTH tests and not
            just the verdict. Assent is a third gate again: carrying sends it
@@ -1010,6 +1010,13 @@ const UI = (function () {
     return Engine.reported ? Engine.reported(st, C, billId)
                            : Engine.division(st, C, billId);
   }
+
+  /* HOW THE HOUSE WENT, OR HOW IT IS EXPECTED TO GO. Up to the division these
+     are the same thing — an estimate — and after it they are not. The engine
+     records the result on the bill the moment it runs, so the plan can show
+     the House that actually voted rather than the one the whips guessed at. */
+  const houseVoted = id => !!(st.bills[id] && st.bills[id].lastDivision);
+  const houseRead  = id => (st.bills[id] && st.bills[id].lastDivision) || forecast(id);
 
   /* THE HOUSE, BY PARTY — composition and forecast in one table.
 
@@ -1200,118 +1207,64 @@ const UI = (function () {
       `<span class="lbl">${r.aye} / ${r.total} &middot; need ${r.need}</span></div></div>`;
   }
 
-  /* ---------- the division, read out ----------
+  /* ---------------------------------------------------------------
+     THE DIVISION IS THE PLAN VOTING.
 
-     §4.6.7: both majorities on screen throughout. A dual bill can carry
-     the popular benches and fall on the functional forty, and a player
-     who only ever sees the verdict never learns that. So the two columns
-     fill side by side, and the functional one fills SLOWER - it is the
-     smaller number, it is the one that kills bills, and it should be the
-     one you are still watching when the popular column has finished.
+     It used to be a modal table of numbers floating over the one screen in
+     the game that has a picture of the House on it — covering up the thing
+     the Chamber tab exists to show, at the only moment it matters. Now the
+     plan fills in party by party as the Clerk calls them: a called party's
+     ayes light, the rest hold their colour and no fill, and the verdict lands
+     under a House that shows what happened.
 
-     Every number here comes out of the result Engine.divide already
-     returned. Nothing is recomputed and nothing is rounded again. */
-  function divisionTheatre(b, out) {
-    const r = out.result || {};
-    const rows = (r.rows || []).filter(x => x.popularSeats + x.functionalSeats > 0);
-    if (!rows.length || typeof Wait === "undefined") return Promise.resolve();
-
-    const dual = !!b.dualMajority;
-    let popRun = 0, funcRun = 0, shown = 0;
-    let tbody = null, popCell = null, funcCell = null, verdict = null;
-
-    const paint = () => {
-      if (!popCell) return;
-      popCell.textContent = popRun + " / " + r.popular.need;
-      popCell.className = "n " + (popRun >= r.popular.need ? "ok" : "");
-      funcCell.textContent = dual ? funcRun + " / " + r.functional.need : "\u2014";
-      funcCell.className = "n " + (dual && funcRun >= r.functional.need ? "ok" : "");
-    };
-
-    const steps = [];
-
-    /* The bell. The same bell the government hears when it falls, which is
-       not an economy: a division is the thing that can end you. */
-    steps.push({
+     Nothing is charged or decided here. Engine.divide() has already run, so
+     this is the reading-out of a result that is already final — which is what
+     makes it safe to look away from, and impossible to desynchronise. The
+     Waits are the ones every other reading-out uses, so a key skips it and the
+     stall works; what changed is that the panel is a caption under the plan
+     rather than a modal over it. */
+  function countDivision(rows, out) {
+    const order = (rows || []).filter(r => r.popularSeats + r.functionalSeats > 0);
+    const r0 = out.result || {};
+    if (!order.length || typeof Wait === "undefined") return Promise.resolve();
+    const b = C.billById[r0.bill] || {};
+    const tally = r => r.popularAye + " of " + r.popularSeats +
+      (r0.dual ? " \u00b7 " + r.functionalAye + " of " + r.functionalSeats + " functional" : "");
+    const steps = [{
       label: "The House divides",
-      ms: 700,
+      ms: 620,
       run: () => cue("knell"),
-      /* TIER 3. Only from a flag content set, never from a roll. Nothing
-         in content sets this yet; that is the point of it being a hook. */
+      /* TIER 3. Content's, never a roll: it fires from a flag and nothing else. */
       stall: { flag: "division_stalled",
                label: "The Clerk is recounting the functional bench",
                ms: 1100 }
-    });
-
-    rows.forEach((row, i) => steps.push({
-      label: pn(row.party) + " reports",
-      ms: 180,
+    }];
+    order.forEach((r, i) => steps.push({
+      label: pn(r.party) + " reports \u00b7 " + tally(r),
+      ms: 200,
       run: () => {
-        popRun += row.popularAye;
-        /* THE FUNCTIONAL COLUMN LAGS, one party behind every second
-           report, and is squared off by the catch-up step below. */
-        if (i % 2 === 1 || i === rows.length - 1) {
-          while (shown <= i) { funcRun += rows[shown].functionalAye; shown++; }
-        }
-        if (tbody) tbody.insertAdjacentHTML("beforeend",
-          `<tr><td>${mark(row.party)}${pn(row.party)}</td>` +
-          `<td class="n">${row.popularAye}<i>/${row.popularSeats}</i></td>` +
-          `<td class="n">${dual ? row.functionalAye + "<i>/" + row.functionalSeats + "</i>" : "\u2014"}</td></tr>`);
-        paint();
+        chamberCount = { rows: order, n: i + 1 };
+        drawChamber();
+        cue("click");
+        setStatus("The Clerk reports " + pn(r.party) + " \u00b7 " + tally(r), "transient");
       }
     }));
-
     steps.push({
-      label: dual ? "The functional benches are counted separately" : "The count is complete",
-      ms: 800,
+      label: r0.carries ? "Carried" : "Not carried",
+      ms: 900,
       run: () => {
-        /* Squared off against the engine's own totals rather than the
-           running sum, so a skip can never leave a different number on
-           screen from the one that resolved. */
-        popRun = r.popular.aye;
-        while (shown < rows.length) { funcRun += rows[shown].functionalAye; shown++; }
-        funcRun = r.functional.aye;
-        paint();
+        chamberCount = null;
+        drawChamber();
+        cue(r0.carries ? "aye" : "nay");
+        score(r0.carries ? "moment" : "defeat");
       }
     });
-
-    steps.push({
-      label: "The result",
-      ms: 2200,
-      run: () => {
-        cue(r.carries ? "aye" : "nay");
-        score(r.carries ? "moment" : "defeat");
-        if (!verdict) return;
-        verdict.textContent = r.carries
-          ? (out.assent && out.assent.referred
-              ? "Carried \u2014 and referred for constitutional review"
-              : "Carried")
-          : (dual && r.popular.carries && !r.functional.carries
-              ? "Not carried \u2014 the House was with you and the functional bench was not"
-              : "Not carried");
-        verdict.className = "wait-verdict " + (r.carries ? "ok" : "bad");
-      }
-    });
-
     return Wait.run({
       title: "Division",
-      sub: b.title,
-      /* This module asks the state; Wait never sees a flag. */
+      sub: b.title || "",
+      bare: true,
       stalled: f => !!(st.flags && st.flags[f]),
-      steps: steps,
-      mount: el => {
-        el.innerHTML =
-          `<table class="divtally"><thead><tr><th>Party</th>` +
-          `<th class="n">Popular</th><th class="n">Functional</th></tr></thead>` +
-          `<tbody></tbody><tfoot><tr><th>Running</th>` +
-          `<th class="n" id="dv-pop">0 / ${r.popular.need}</th>` +
-          `<th class="n" id="dv-func">${dual ? "0 / " + r.functional.need : "\u2014"}</th>` +
-          `</tr></tfoot></table><div class="wait-verdict" id="dv-verdict">&nbsp;</div>`;
-        tbody = el.querySelector("tbody");
-        popCell = el.querySelector("#dv-pop");
-        funcCell = el.querySelector("#dv-func");
-        verdict = el.querySelector("#dv-verdict");
-      }
+      steps: steps
     });
   }
 
@@ -2305,6 +2258,10 @@ const UI = (function () {
   let chamberColour = "party";     /* party | vote */
   let chamberGroup = false;        /* ayes contiguous within each aisle */
   let chamberFold = false;         /* the functional bench joins the aisles */
+  /* WHILE A DIVISION IS BEING READ. Parties named so far fill their ayes; the
+     ones not yet called hold their party colour and no fill. Null the rest of
+     the time, which is nearly all of it. */
+  let chamberCount = null;
   const CHCOLOURS = [["party", "by party"], ["vote", "by vote"]];
   const CHTOGGLES = [["group", "ayes together"], ["fold", "bench folded in"]];
   const chamberBill = () => chamberBare ? null : Focus.selected("cham-bills");
@@ -2374,17 +2331,20 @@ const UI = (function () {
         `and puts the whip beside them.</div>`;
       return;
     }
-    const b = C.billById[id], d = forecast(id);
+    const b = C.billById[id], d = houseRead(id), voted = houseVoted(id);
     el.innerHTML =
-      benchBar("Popular", d.popular) +
-      (b.dualMajority ? benchBar("Functional", d.functional) : "") +
+      benchBar(voted ? "Popular \u00b7 as voted" : "Popular", d.popular) +
+      (b.dualMajority ? benchBar(voted ? "Functional \u00b7 as voted" : "Functional", d.functional) : "") +
       `<div class="note">${b.dualMajority
         ? (d.carries ? "Carries both tests."
            : d.popular.carries ? "<b>Carries the House and fails the functional bench.</b>"
            : "Fails.")
-        : (d.popular.carries ? "Carries." : "Fails.")}
-        Filled seats are expected ayes, half-filled ones the whip has bought;
-        the count is by party, not by member. ${esc(d.prov || "")}.</div>`;
+        : (d.popular.carries ? "Carries." : "Fails.")} ` +
+        (voted
+          ? `As the House voted at sitting ${st.bills[id].lastDivision.at}: filled seats are ayes, ` +
+            `the rest are noes or absentees.`
+          : `Filled seats are expected ayes, half-filled ones the whip has bought; ` +
+            `the count is by party, not by member. ${esc(d.prov || "")}.`) + `</div>`;
   }
 
   /* The whip, where the members it moves are on screen. It reads the TRUE
@@ -2425,6 +2385,20 @@ const UI = (function () {
      instrument for changing that, all on one screen. The Government tab
      keeps the executive — the coalition, the ledger, the cabinet, the
      programme and what it costs. */
+  /* A ONE-LINE STAGE TRACK for the order paper. The Papers register draws the
+     ladder in full; here it has to fit a table cell, so it is one mark per
+     stage — cleared, here, to come — and the division stage carries a heavier
+     mark, so the row the House can act on is findable without reading a word.
+     Same source as the register's track: Engine.STAGE_ORDER, never a copy. */
+  function stagePips(bs) {
+    const order = Engine.STAGE_ORDER || [];
+    const at = bs.stage === "assented" ? order.length - 1 : order.indexOf(bs.stage);
+    return `<span class="spips">` + order.map((sg, i) => {
+      const cls = i < at ? "done" : i === at ? "here" : "";
+      return `<i class="${cls}${sg === Engine.DIVIDES_AT ? " dv" : ""}"></i>`;
+    }).join("") + `</span>`;
+  }
+
   function drawOrderPaper() {
     /* WHICH BILL IS OPEN. This used to be the string "divergence", hard
        coded, so the order paper marked the same row for the whole of a
@@ -2441,8 +2415,17 @@ const UI = (function () {
          above bars that were carefully reporting a guess. */
       const d = forecast(b.id);
       const dead = bs.dead || bs.stage === "withdrawn";
-      bh += `<tr class="${b.id === sel ? "sel" : ""}" data-bill="${b.id}" style="cursor:pointer">` +
-        `<td>${b.title.replace(/ Bill$/, "")}</td><td>${dead ? "Withdrawn" : bs.stage.replace(/_/g, " ")}</td>` +
+      /* CAN THE HOUSE ACT ON IT TODAY — not merely "is it at a stage". The
+         engine already answers this for the button; the row borrows the
+         answer rather than guessing at one, so the mark and the control can
+         never disagree. */
+      const ready = !dead && Engine.canDivide(st, C, b.id).ok;
+      bh += `<tr class="${b.id === sel ? "sel" : ""}${ready ? " ready" : ""}"` +
+        ` data-bill="${b.id}" style="cursor:pointer">` +
+        `<td>${b.title.replace(/ Bill$/, "")}</td>` +
+        `<td class="stage"><span class="stname">${dead ? "Withdrawn" : bs.stage.replace(/_/g, " ")}</span>` +
+          (dead ? "" : stagePips(bs)) +
+          (ready ? ` <span class="rdy" data-tip="stage">ready</span>` : "") + `</td>` +
         `<td class="n">${d.popular.aye}</td><td class="n">${b.dualMajority ? d.functional.aye : "&mdash;"}</td>` +
         `<td><span class="flag ${b.dualMajority ? "bad" : ""}" data-tip="${b.dualMajority ? "dual" : "simple"}">` +
         `${b.dualMajority ? "DUAL" : "SIMPLE"}</span></td></tr>`;
@@ -2486,8 +2469,27 @@ const UI = (function () {
        so the first n seats of each block are filled. The block is honest;
        the individual seat is a convenience of drawing. */
     const shown = chamberBill();
-    const fc = shown ? forecast(shown) : null;
-    const rowOf = id => fc && fc.rows.find(r => r.party === id);
+    /* WHILE A DIVISION IS BEING READ the plan is drawn from the running count
+       and not from the bill: the seats of a party that has been called fill,
+       and a party still to come does not. */
+    const counting = !!chamberCount;
+    const fc = counting ? { rows: chamberCount.rows }
+             : shown ? houseRead(shown) : null;
+    /* A VOTED BILL HAS NO HALF-FILL. The half-filled seat means "the whip
+       bought this one", which is a fact about a plan. Once the division has
+       run there is no plan, only a vote, and the plan's marks would be a lie
+       about members who have already been through the lobby. */
+    const voted = counting || (shown ? houseVoted(shown) : false);
+    /* A party not yet called returns no row, which is the exact state a seat
+       is in before it is reported: its colour, and no fill. */
+    const rowOf = id => {
+      if (!fc) return null;
+      if (counting) {
+        const i = chamberCount.rows.findIndex(r => r.party === id);
+        if (i < 0 || i >= chamberCount.n) return null;
+      }
+      return fc.rows.find(r => r.party === id);
+    };
     /* AND THE SEATS THE WHIP BOUGHT ARE NOT THE SEATS YOU HAD. A whipped
        member is an aye, so it filled like any other and committing three
        members changed a number in a table and nothing on the plan. They
@@ -2501,7 +2503,7 @@ const UI = (function () {
       const s = st.parties[id].seats, col = C.partyById[id].colour;
       const r = rowOf(id);
       let aye = r ? r.popularAye : null;
-      const whip = r ? Math.min(r.popularWhipped || 0, r.popularAye) : 0;
+      const whip = voted || !r ? 0 : Math.min(r.popularWhipped || 0, r.popularAye);
       const put = t => { const on = aye == null || aye-- > 0;
                          into.push({ c: col, t: t, p: id, aye: aye == null ? null : on,
                                      wh: on && aye != null && aye < whip }); };
@@ -2515,7 +2517,7 @@ const UI = (function () {
       const s = st.parties[id].seats, col = C.partyById[id].colour;
       const r = rowOf(id);
       let aye = r ? r.functionalAye : null;
-      const whip = r ? Math.min(r.functionalWhipped || 0, r.functionalAye) : 0;
+      const whip = voted || !r ? 0 : Math.min(r.functionalWhipped || 0, r.functionalAye);
       /* AISLES FOLDS THE BENCH IN. The functional forty sit at the Bar in
          their own block because the dual test makes them a separate
          question. For a simple measure they are only votes, and a bench of
