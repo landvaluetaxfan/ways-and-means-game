@@ -237,6 +237,35 @@ try {
         gridBad.push(name + " sets columns but the one-column breakpoint never names it");
     });
   }
+
+  /* A CAPPED TRACK BESIDE A TRACK WITH NO FLOOR STARVES IT.
+
+     minmax(0, 1090px) means "grow to 1090 if you can", and a neighbour
+     written minmax(0, 1fr) means "have whatever is left" — which at a
+     1440px window was 112 pixels. The orbit dossier's station name
+     wrapped to four lines with "cylinder" clipped mid-word. The chamber
+     had the same shape from the other direction a few commits earlier.
+     Twice is a check. A FIXED track (300px) is fine and common: it is
+     the greedy cap, not the fixed width, that does the starving. */
+  try {
+    const css3 = fs.readFileSync(path.join(root, "css", "terminal.css"), "utf8");
+    /* The property is not always the first thing in the block — .g-orb
+       puts it on the line below the brace — so match the RULE and look
+       inside it. The first cut of this check matched `{grid-template`
+       with no whitespace allowed and silently found nothing, which is
+       the failure mode a check has to be tested against to notice. */
+    let d, dre = /(\.g-[a-z]+)\s*\{([^}]*)\}/g;
+    while ((d = dre.exec(css3))) {
+      const decl = /grid-template-columns:([^;}]*)/.exec(d[2]);
+      if (!decl) continue;
+      const tracks = decl[1].trim().split(/\s+(?![^(]*\))/).filter(Boolean);
+      if (!tracks.some(t => /^minmax\(\s*0\s*,\s*\d+px\s*\)$/.test(t))) continue;
+      const starved = tracks.filter(t => /^minmax\(\s*0\s*,/.test(t) &&
+                                         !/^minmax\(\s*0\s*,\s*\d+px\s*\)$/.test(t));
+      starved.forEach(t => gridBad.push(
+        d[1] + " caps a track in px next to " + t + ", which can be starved to nothing"));
+    }
+  } catch (e) { gridBad.push("could not re-read the stylesheet: " + e.message); }
 } catch (e) { gridBad.push("could not read the stylesheet: " + e.message); }
 
 section("SCREEN GRIDS THAT DO NOT COLLAPSE", gridBad, x => x);

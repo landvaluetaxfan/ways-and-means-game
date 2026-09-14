@@ -177,8 +177,17 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .g-cham{grid-template-columns:minmax(0,auto) minmax(0,1fr) minmax(0,1.1fr);}
 .g-cham>.panel:first-child{max-width:var(--planw,none);}
 .g-cham svg{max-width:100%;height:auto;}
+/* THE CAP BELONGS ON THE SCHEMATIC, NOT ON WHAT IS LEFT OVER.
+
+   The middle column was capped at 1090px so the schematic stopped
+   sprawling, and the dossier took the remainder — which at a 1440 window
+   is 112 pixels. The station name wrapped to four lines with "cylinder"
+   clipped mid-word and the prose set two words to a line. The cap was
+   right and the leftover was the mistake: the dossier carries the floor
+   now and absorbs the surplus at wide windows, which is what the comment
+   below always intended by "gives up the width it used to waste". */
 .g-orb{
-  grid-template-columns:216px minmax(0,1090px) minmax(0,1fr);
+  grid-template-columns:216px minmax(0,1090px) minmax(340px,1fr);
   grid-template-rows:minmax(0,1fr) auto;
   height:100%;align-items:stretch;
 }
