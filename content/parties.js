@@ -57,14 +57,14 @@ const PARTIES = [
     axes:{ownership:null,personhood:"restrictionist",sovereignty:null,closure:"closurist"},
     note:"Habitat as lifeboat. Engineering authority supreme." },
 
-  { id:"rv",  name:"Democratic Centre",            short:"DEC", colour:"var(--p-rv)",
+  { id:"rv",  name:"Congregational Democratic Alliance", short:"CDA", colour:"var(--p-rv)",
     leader:"park", logo:"rv.png", wordmark:"rv_mark.png",
     seats:{district:12,list:5,functional:1},
     kind:"national", loyalty:23,
     axes:{ownership:null,personhood:"restrictionist",sovereignty:null,closure:null},
     note:"Continuity of soul. A copy is not the person. Economically left, culturally immovable." },
 
-  { id:"fh",  name:"Party of Property Owners",     short:"PPO", colour:"var(--p-fh)",
+  { id:"fh",  name:"Freehold Party",               short:"FH",  colour:"var(--p-fh)",
     leader:"bluespan", logo:"fh.png", wordmark:"fh_mark.png",
     seats:{district:8,list:3,functional:6},
     kind:"national", loyalty:12,
@@ -97,12 +97,12 @@ const PARTIES = [
     note:"Volume tax, land value tax, nothing else. Three seats, and always "+
          "within a point of the threshold." },
 
-  { id:"upl", name:"Common Kind",                  short:"CMK", colour:"var(--p-upl)",
+  { id:"upl", name:"Uplift Alliance",              short:"UPA", colour:"var(--p-upl)",
     leader:"lindegaard", logo:"upl.png", wordmark:"upl_mark.png",
     seats:{district:0,list:2,functional:0},
     kind:"national", loyalty:58,
     /* Bible 4.8: the list threshold exempts a party representing a single
-       legal-person category, as minority protection. The Common Kind is
+       legal-person category, as minority protection. The Uplift Alliance is
        the case that carve-out was written for — and the exemption is itself
        permanently contested, which is the point of having it. */
     carve_out:"category",

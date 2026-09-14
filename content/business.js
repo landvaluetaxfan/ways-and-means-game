@@ -52,7 +52,7 @@ const BUSINESS = [
   { id:"q_gravity", kind:"question",
     text:"Oral question, One-G: the waiting list for embodiment fitting." },
   { id:"q_reabsorb", kind:"question",
-    text:"Written question, the Common Kind: reabsorptions recorded since the last return." },
+    text:"Written question, the Uplift Alliance: reabsorptions recorded since the last return." },
   { id:"q_reserve", kind:"question",
     text:"Written question: what remains in the reserve, and on whose authority." },
   { id:"q_patronage", kind:"question",

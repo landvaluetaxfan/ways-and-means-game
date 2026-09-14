@@ -89,7 +89,7 @@ const BILLS = [
   { id:"continuity_registration", ref:"HC 4/129", stage:"drafting", owner:"rv", priority:true,
     title:"Continuity of Person (Registration) Bill",
     summary:"Requires a person to be entered on a continuity register before any instance may be "+
-            "reabsorbed, and gives the instance a right to be heard. The Democratic Centre has asked for it "+
+            "reabsorbed, and gives the instance a right to be heard. The Congregational Democratic Alliance has asked for it "+
             "at every coalition meeting since formation.",
     effectNote:"Adds a procedural step to every reabsorption. Fork-labour costs rise.",
     dualMajority:false,

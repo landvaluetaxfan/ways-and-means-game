@@ -206,7 +206,7 @@ const ENCYCLOPEDIA = {
       { h:"Collective responsibility", body:
         "A minister who cannot support a decision is expected to resign before opposing it. In "+
         "practice the convention is observed by absence more often than by resignation. Two "+
-        "Democratic Centre ministers were absent from the threshold division rather than vote "+
+        "Congregational Democratic Alliance ministers were absent from the threshold division rather than vote "+
         "against the leadership." },
       { h:"The Secretary-General", body:
         "The Perigee Charter calls the office the *Secretary-General of the Commonwealth*. "+

@@ -129,74 +129,74 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 - §8.1 · L1132 — The four axes  *LOCKED*
 - §8.2 · L1141 — Depth budget  *LOCKED*
 - §8.3 · L1150 — Naming register  *LOCKED*
-- §8.4 · L1154 — The seated parties  *LOCKED (280 seats*
-- §8.5 · L1174 — Party notes
-- §8.6 · L1198 — Parties available but not currently seated  *LOCKED as reserve material*
-- §8.7 · L1234 — Extraparliamentary  *LOCKED*
-- §8.8 · L1240 — Historical and defunct  *LOCKED*
-- §8.9 · L1246 — Ideologies as doctrines  *LOCKED*
+- §8.4 · L1175 — The seated parties  *LOCKED (280 seats*
+- §8.5 · L1195 — Party notes
+- §8.6 · L1219 — Parties available but not currently seated  *LOCKED as reserve material*
+- §8.7 · L1255 — Extraparliamentary  *LOCKED*
+- §8.8 · L1261 — Historical and defunct  *LOCKED*
+- §8.9 · L1267 — Ideologies as doctrines  *LOCKED*
 
-**Part IX — THE PLAYER'S PARTY** · L1258
-- §9.1 · L1260 — Which party  *LEANING (Commons Union)*
-- §9.2 · L1273 — Inherited platform  *LOCKED*
-- §9.3 · L1277 — Two alliance structures  *LOCKED*
-- §9.4 · L1286 — Refraction  *LOCKED as a writing principle*
-- §9.5 · L1290 — Current caucus (Commons Union, 82)  *LOCKED*
+**Part IX — THE PLAYER'S PARTY** · L1279
+- §9.1 · L1281 — Which party  *LEANING (Commons Union)*
+- §9.2 · L1294 — Inherited platform  *LOCKED*
+- §9.3 · L1298 — Two alliance structures  *LOCKED*
+- §9.4 · L1307 — Refraction  *LOCKED as a writing principle*
+- §9.5 · L1311 — Current caucus (Commons Union, 82)  *LOCKED*
 
-**Part X — SOCIETY, CULTURE, LAW** · L1305
-- §10.1 · L1307 — Aesthetic register — orbital warmth  *LOCKED*
-- §10.2 · L1319 — Nativism, inverted  *LOCKED*
-- §10.3 · L1325 — Labour  *LOCKED*
-- §10.3.1 · L1349 — Four overlays that matter more than the sectors  *LOCKED*
-- §10.4 · L1378 — Who is not in paid work  *LOCKED*
-- §10.5 · L1416 — Fork-rentiers  *LOCKED*
-- §10.6 · L1431 — Labour conflict  *LOCKED*
-- §10.7 · L1439 — Media and information  *LOCKED*
-- §10.8 · L1445 — Courts and law  *LOCKED*
-- §10.9 · L1451 — Religion  *LOCKED*
-- §10.10 · L1455 — External pressures  *LOCKED*
+**Part X — SOCIETY, CULTURE, LAW** · L1326
+- §10.1 · L1328 — Aesthetic register — orbital warmth  *LOCKED*
+- §10.2 · L1340 — Nativism, inverted  *LOCKED*
+- §10.3 · L1346 — Labour  *LOCKED*
+- §10.3.1 · L1370 — Four overlays that matter more than the sectors  *LOCKED*
+- §10.4 · L1399 — Who is not in paid work  *LOCKED*
+- §10.5 · L1437 — Fork-rentiers  *LOCKED*
+- §10.6 · L1452 — Labour conflict  *LOCKED*
+- §10.7 · L1460 — Media and information  *LOCKED*
+- §10.8 · L1466 — Courts and law  *LOCKED*
+- §10.9 · L1472 — Religion  *LOCKED*
+- §10.10 · L1476 — External pressures  *LOCKED*
 
-**Part XI — NAMED CANON** · L1463
-- §11.1 · L1467 — The polity
-- §11.2 · L1488 — Persons
-- §11.3 · L1522 — Stations and constituencies
-- §11.4 · L1590 — The functional roster  *LOCKED*
-- §11.5 · L1612 — The live bill
-- §11.6 · L1621 — Other business on the order paper
+**Part XI — NAMED CANON** · L1484
+- §11.1 · L1488 — The polity
+- §11.2 · L1509 — Persons
+- §11.3 · L1543 — Stations and constituencies
+- §11.4 · L1611 — The functional roster  *LOCKED*
+- §11.5 · L1633 — The live bill
+- §11.6 · L1642 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L1634
-- §12.1 · L1636 — The core principle  *LOCKED*
-- §12.2 · L1640 — Split visual language  *LOCKED*
-- §12.3 · L1647 — Chrome direction  *LOCKED*
-- §12.4 · L1653 — Screens  *LOCKED*
-- §12.5 · L1657 — Election night  *LOCKED*
-- §12.6 · L1666 — The orbital map  *LOCKED*
-- §12.7 · L1694 — The parliament diagram  *LOCKED*
-- §12.8 · L1720 — Documents  *LOCKED*
-- §12.9 · L1726 — The feed  *LOCKED*
-- §12.10 · L1730 — Build cost  *LOCKED*
-- §12.11 · L1734 — Images  *LOCKED*
-- §12.12 · L1762 — Existing artifact
+**Part XII — UI AND PRESENTATION** · L1655
+- §12.1 · L1657 — The core principle  *LOCKED*
+- §12.2 · L1661 — Split visual language  *LOCKED*
+- §12.3 · L1668 — Chrome direction  *LOCKED*
+- §12.4 · L1674 — Screens  *LOCKED*
+- §12.5 · L1678 — Election night  *LOCKED*
+- §12.6 · L1687 — The orbital map  *LOCKED*
+- §12.7 · L1715 — The parliament diagram  *LOCKED*
+- §12.8 · L1741 — Documents  *LOCKED*
+- §12.9 · L1747 — The feed  *LOCKED*
+- §12.10 · L1751 — Build cost  *LOCKED*
+- §12.11 · L1755 — Images  *LOCKED*
+- §12.12 · L1783 — Existing artifact
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L1774
-- §13.1 · L1776 — Scandal taxonomy  *LOCKED*
-- §13.2 · L1789 — The spine  *LEANING*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L1795
+- §13.1 · L1797 — Scandal taxonomy  *LOCKED*
+- §13.2 · L1810 — The spine  *LEANING*
 
-**Part XIV — PRIOR ART** · L1795
-- §14.1 · L1797 — The gap  *LOCKED*
-- §14.2 · L1801 — Works
-- §14.3 · L1809 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L1816
+- §14.1 · L1818 — The gap  *LOCKED*
+- §14.2 · L1822 — Works
+- §14.3 · L1830 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L1822
-- §15.1 · L1824 — Team  *LOCKED*
-- §15.2 · L1830 — Documentation  *LOCKED*
-- §15.3 · L1846 — Where this gets hard  *LOCKED*
-- §15.4 · L1857 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L1874 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L1843
+- §15.1 · L1845 — Team  *LOCKED*
+- §15.2 · L1851 — Documentation  *LOCKED*
+- §15.3 · L1867 — Where this gets hard  *LOCKED*
+- §15.4 · L1878 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L1895 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L1911
+**Part XVI — OPEN DECISIONS** · L1932
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L1941
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L1962
 
 <!-- /TOC -->
 
@@ -817,7 +817,7 @@ player's own party uncomfortable rather than villainous (§9.1).
 **They occupy volume; emulations barely do.** Volume is the fundamental scarce
 good and the volume fight — density regulation, minimum-volume standards,
 subletting, partitioning a berth into six — is almost entirely a biological
-politics. The Freeholders are a party about embodied life whatever their
+politics. The Freehold Party is a party about embodied life whatever its
 literature says.
 
 **They die, and emulations do not.** This is the sharpest of the four. The
@@ -890,7 +890,7 @@ The pipeline, stated properly:
 It also locks the person out of 46% of the labour market, and returning requires
 renting a body at more than the volume rent they were fleeing. A poverty trap with
 a shape no real economy has. It gives Medicine and Embodiment a real constituency
-interest and gives Root & Vessel's continuity-of-soul position an economic base
+interest and gives the CDA's continuity-of-soul position an economic base
 rather than only a theological one. **THIN** — no events use it yet.
 
 ## 6.11 Physiological class — LOCKED
@@ -1149,7 +1149,28 @@ Three tiers of party development:
 
 ## 8.3 Naming register — LOCKED
 
-Real parties are named for a **value** (Solidarity, Continuity), an **interest** (Freeholders, Deck Cooperatives), a **place**, or a **founding event**. Almost none are named for their ideology. "Substrate Left" is a press nickname; the actual name is the Public Substrate Association.
+Real parties are named for a **value** (Solidarity, Continuity), an **interest** (the Freehold Party, the Deck Cooperatives), a **place**, or a **founding event**. Almost none are named for their ideology. "Substrate Left" is a press nickname; the actual name is the Public Substrate Association.
+
+**A PARTY NAMES ITSELF FOR WHO IT IS, NOT FOR WHAT IT OPPOSES**, and the roster
+broke this rule twice before anyone noticed it was written down.
+
+*Party of Property Owners* was the clearer failure: no propertied interest has
+ever named itself for the asset. That is what the tax form calls them. They are
+the **Freehold Party**, because a tenure sounds like a liberty, and what their
+opponents call them — the landlords' party — is prose, not a roster field.
+
+The second is subtler and worth keeping. A confessional party is named for the
+**faith**, never for its position on the contested question: the Christian
+Democratic Union is not the Anti-Abortion Union. So the continuity bloc cannot
+be the Continuity Party, however accurately that would describe its vote. It is
+the **Congregational Democratic Alliance** — named for the congregations it is
+assembled from, with *Alliance* carrying that it spans several faiths and
+*Democratic* carrying the claim a religious party in this polity actually has
+to make, that this is settled in a chamber and not by an authority (§3.7).
+
+The corollary, for anyone naming the next one: a name that would still be
+accurate if the party changed its mind is a good name. A name that would become
+a lie is a slogan.
 
 ## 8.4 The seated parties — LOCKED (280 seats, majority 141)
 
@@ -1160,14 +1181,14 @@ Real parties are named for a **value** (Solidarity, Continuity), an **interest**
 | Public Substrate Association | 6 | 28 | 2 | **36** | Public · Expansionist · Federal · Integrationist |
 | Station Compact | 26 | 8 | 0 | **34** | mixed · mixed · Station · Closurist |
 | Hullists | 9 | 6 | 7 | **22** | mixed · Restrictionist · mixed · Closurist |
-| Root & Vessel | 12 | 5 | 1 | **18** | mixed · Restrictionist · mixed · mixed |
-| Freeholders | 8 | 3 | 6 | **17** | Private · Restrictionist · Station · mixed |
+| Congregational Democratic Alliance | 12 | 5 | 1 | **18** | mixed · Restrictionist · mixed · mixed |
+| Freehold Party | 8 | 3 | 6 | **17** | Private · Restrictionist · Station · mixed |
 | Guild Bench & independents | 6 | 0 | 9 | **15** | — · Restrictionist · Federal · Closurist |
 | Descensionists | 3 | 1 | 0 | **4** | mixed · Restrictionist · — · — |
 | Georgists | 0 | 3 | 0 | **3** | mixed · — · Federal · — |
-| Uplift Caucus | 0 | 2 | 0 | **2** | Public · Expansionist · — · — |
+| Uplift Alliance | 0 | 2 | 0 | **2** | Public · Expansionist · — · — |
 
-**Government:** Commons Union 82 + Public Substrate Association 36 + Root & Vessel 18 = 136, plus confidence-and-supply from Uplift Caucus (2) and Georgists (3) = **141 exactly.** Working majority of nil.
+**Government:** Commons Union 82 + Public Substrate Association 36 + the CDA 18 = 136, plus confidence-and-supply from the Uplift Alliance (2) and Georgists (3) = **141 exactly.** Working majority of nil.
 
 **Dual majority position:** coalition holds 12 of 40 functional seats. Needs 21. Structurally cannot carry an integrity bill or a charter amendment. This is the trap the campaign is built on.
 
@@ -1183,9 +1204,9 @@ Real parties are named for a **value** (Solidarity, Continuity), an **interest**
 
 **Hullists** — habitat-as-lifeboat, engineering authority supreme. Split internally between **constitutional Hullists**, who want emergency powers codified and limited, and **integrity Hullists**, who do not think that is a meaningful distinction. Not fringe.
 
-**Root & Vessel** — personhood restrictionism on continuity-of-soul grounds. A copy is not the person. Economically left, culturally immovable — the Christian-democratic shape. Conference voted against threshold reform 71–29; its three ministers absented themselves rather than divide against the leadership in public.
+**Congregational Democratic Alliance** (CDA) — personhood restrictionism on continuity-of-soul grounds. A copy is not the person. Economically left, culturally immovable — the Christian-democratic shape. Conference voted against threshold reform 71–29; its three ministers absented themselves rather than divide against the leadership in public.
 
-**Freeholders** — volume owners, the landlord class. Property absolutists, anti-Georgist to the point of obsession.
+**Freehold Party** — volume owners, the landlord class. Property absolutists, anti-Georgist to the point of obsession. **They are the Freehold Party and never the party of property owners**: no propertied interest has ever named itself for the asset. It names itself for the tenure, because a tenure sounds like a liberty. What their opponents call them is a separate question and belongs in the prose, not in the roster.
 
 **Guild Bench** — exists only in the functional tier. Contests no geographic constituency, does not campaign, cannot be voted out, holds a veto on integrity bills. Position unchanged since 2279.
 
@@ -1193,7 +1214,7 @@ Real parties are named for a **value** (Solidarity, Continuity), an **interest**
 
 **Georgists** — volume tax, land value tax, nothing else. Correct. Perennially at 4.1%.
 
-**Uplift Caucus** — two seats, permanently kingmaker-adjacent, and the only bloc whose price is always the same thing.
+**Uplift Alliance** — two seats, permanently kingmaker-adjacent, and the only bloc whose price is always the same thing.
 
 ## 8.6 Parties available but not currently seated — LOCKED as reserve material
 
@@ -1450,7 +1471,7 @@ Fork liability: who serves the sentence. Continuity law: when a person legally c
 
 ## 10.9 Religion — LOCKED, currently THIN
 
-Continuity-of-soul disputes split every existing faith into recognisers and non-recognisers. Congregations that will not admit emulations. Funeral rites for someone who still exists. A religious bloc that votes on personhood questions and is otherwise economically left, fouling up coalition math realistically. Root & Vessel is the parliamentary expression.
+Continuity-of-soul disputes split every existing faith into recognisers and non-recognisers. Congregations that will not admit emulations. Funeral rites for someone who still exists. A religious bloc that votes on personhood questions and is otherwise economically left, fouling up coalition math realistically. The Congregational Democratic Alliance is the parliamentary expression: a CROSS-CONFESSIONAL bloc of the non-recognisers, assembled out of several faiths that agree on one thing and on almost nothing else. It is named for the congregations and not for its vote — a confessional party names the faith, never its position on the contested question, which is why it is not the Continuity Party.
 
 ## 10.10 External pressures — LOCKED
 
@@ -1512,7 +1533,7 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
 - **Adam King MP** — independent, member for Colonnade. Backbench since the
   presidency.
 - **Benj Clarke MP** — Liberal Party, member for Meridian Loop. Backbench.
-- **Haukur Tómasson MP** — Democratic Centre, member for Brant North. Backbench.
+- **Haukur Tómasson MP** — Congregational Democratic Alliance, member for Brant North. Backbench.
 - **Ivor Ceyhan** — political editor, *The Spindle*.
 - **Ondine Charnock** — author of *The Circumterrestrial Economy*, 4th edition,
   Perigee Review Press. The standard primer, and mildly out of date since the
@@ -1625,7 +1646,7 @@ Corporate seats are controlled by whoever controls the companies (§4.6.2).
 - Substrate Insurance Uprating — drafting.
 - Shed Order (Civilian Oversight) — blocked. 134 popular, 9 functional. Dual test. Owner: Commons Union.
 - Substrate Insurance (Uprating) — drafting. Owner: Public Substrate Association.
-- Continuity of Person (Registration) — drafting. Owner: Root & Vessel, their priority.
+- Continuity of Person (Registration) — drafting. Owner: the CDA, their priority.
 - Substrate (Public Stake) — drafting. Owner: Public Substrate Association. Takes
   the public share from 0.35 to 0.6 and knocks 26 points off the substrate index.
 

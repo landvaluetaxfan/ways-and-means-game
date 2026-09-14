@@ -47,7 +47,7 @@ const CABINET = [
   { id:"persons_continuity",      name:"Persons and Continuity",    title:"Minister for Persons and Continuity",
     holder:"marin", party:"rv",
     brief:["divergence_threshold_hours","civic_clock_minimum"],
-    note:"Given to the Democratic Centre at formation, and held from a district seat rather than the medicine roll." },
+    note:"Given to the Congregational Democratic Alliance at formation, and held from a district seat rather than the medicine roll." },
   { id:"external_relations",      name:"External Relations",        title:"Minister for External Relations",
     holder:"landry", party:"cu",
     note:"The anchors stand on foreign soil, so this is really a domestic brief." },

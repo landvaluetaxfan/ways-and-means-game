@@ -47,7 +47,7 @@ Continuity again (Abadi keeps `fc_medicine`, backbench); Anselm Ring's
 composition was rebalanced so the population-weighted composition is the bible's
 64/28/4/4; and stale facts in `content/encyclopedia.js` were fixed (station
 count, functional-electorate range, the full cabinet ministry list, "two
-Democratic Centre Ministers", a doubled "the").
+Congregational Democratic Alliance Ministers", a doubled "the").
 
 **Two inconsistencies left open, both content, both flagged here:**
 
@@ -131,13 +131,22 @@ are already here. The table is a record:
 | psa | New Progressive Party | NPP |
 | sc | Home Rule | HR |
 | hul | Association of Engineers and Systems | AES |
-| rv | Democratic Centre | DEC |
-| fh | Party of Property Owners | PPO |
+| rv | Congregational Democratic Alliance | CDA |
+| fh | Freehold Party | FH |
 | gb | Alliance of Business and Government | ABG |
 | des | One-G | ONE |
 | geo | Single Tax Party | STP |
-| upl | Common Kind | CMK |
+| upl | Uplift Alliance | UPA |
 | ind | Independents | IND |
+
+Three of those were renamed again on 14 Sep 2026 under bible §8.3's rule that a
+party names itself for who it is and not for what it opposes: `fh` was the
+*Party of Property Owners*, which is what a tax form calls them; `rv` was the
+*Democratic Centre*, which described neither their economics nor their faith;
+`upl` was *Common Kind*, a good phrase that identified nobody. **The ids never
+changed and are still the initials of the pre-rename names** — `cu` for Commons
+Union, `psa` for Public Substrate Association, and so on — so an id is a poor
+guide to what a party is now called. Read `content/parties.js`.
 
 ## Finding things without reading everything
 

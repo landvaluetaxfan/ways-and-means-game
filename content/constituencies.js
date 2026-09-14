@@ -67,7 +67,7 @@ const CONSTITUENCIES = [
     parent:"anselm_ring_north",
     material_interest:["tether_traffic", "volume_rationing"],
     description:"A green belt on the station's inner face, laid out to the Charter's original plan and never built over. The electorate is professional and larger than the station average, and the recorded interests are tether traffic and volume rationing.",
-    tendency:"Charter-first and professional, on a roll of 33,783 and a ratio of 0.88. Otto Rakoto holds it; the vote turns on the founding document, and a Democratic Centre challenge on the personhood line has not carried the seat." },
+    tendency:"Charter-first and professional, on a roll of 33,783 and a ratio of 0.88. Otto Rakoto holds it; the vote turns on the founding document, and a CDA challenge on the personhood line has not carried the seat." },
 
   { id:"concord_bellfield", name:"Concord—Bellfield", station:"anselm", band:"ring",
     magnitude:1, electorate:30230,
@@ -149,7 +149,7 @@ const CONSTITUENCIES = [
     parent:"anselm_ring_agricultural",
     material_interest:["tether_traffic", "volume_rationing"],
     description:"Named for the count that decides whether the House can sit. The recorded interests are tether traffic and volume rationing.",
-    tendency:"Restrictionist and procedural, on a roll of 29,789 and a ratio of 1.00, and the Democratic Centre leader's seat. Lucian Okafor holds a safe seat, but the majority is read as a measure of the party's survival." },
+    tendency:"Restrictionist and procedural, on a roll of 29,789 and a ratio of 1.00, and the CDA leader's seat. Lucian Okafor holds a safe seat, but the majority is read as a measure of the party's survival." },
 
   { id:"the_cisterns", name:"The Cisterns", station:"anselm", band:"ring",
     magnitude:1, electorate:27591,
