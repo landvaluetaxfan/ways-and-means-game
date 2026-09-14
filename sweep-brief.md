@@ -11,14 +11,22 @@ This supersedes the seat-system brief, closed out in Part A. Its gap list is now
 
 ## PART 0 — WHERE THE BUILD IS
 
+> **THE CURRENT WORK ORDER IS `design/24-the-build-order.md`.** Two lanes that do
+> not collide: Lane A is engine (Claude Code), Lane B is content (opencode), and
+> Lane B needs no new schema so both can run at once. Read `design/23` for why
+> lobbying, actors and polling are one feature and not three. The parts below
+> are the record of the sweeps that closed before it.
+
 | | |
 |---|---|
-| Engine | Substantially complete for governing, and now for deciding. Divisions with dual majority, whipping against a per-partner ledger, statutory instruments with prayer and reversal, cabinet vacancies gating instruments, scarcity prices, order-paper slots, the district and functional rolls, elections, save migration to v9, **undertakings**, a **seeded PRNG**, and the **derived reading of what a choice does**. |
-| Content | **12 events.** Chapter one is playable, chapter two is four events. This is the project and it is barely begun. |
-| Plan | `design/` — fourteen documents specifying the rest of the engine. |
+| Engine | Substantially complete for governing, deciding and **pacing**. Divisions with dual majority, whipping against a per-partner ledger, statutory instruments with prayer and reversal, cabinet vacancies gating instruments, scarcity prices, the district and functional rolls, elections, undertakings, a seeded PRNG, the derived reading of what a choice does — and since: a **calendar** where a sitting is a day, **order-paper time as a clock** (a division costs a slot, wants a second reading, and the House hears two a day), a queue that carries **a deferred fact and not only a deferred story**, and `checkSettlement()`, so the game can be won. Save migration to **v11**. |
+| Content | **21 events**, 7 bills, 13 instruments, 3 initiatives, 51 items of quiet business, 4 settlements. Chapter one is over budget; chapters three and four are unstarted. This is still the project. |
+| Plan | `design/` — twenty-four documents. `22` is the measured sweep, `23` the argument, `24` the work order. |
 
-**The ratio is still the risk** (§15.3.6). Nothing in Part C should be built as a
-block ahead of Part D.
+**The ratio is still the risk** (§15.3.6), and `design/22` measured it: 1 of 54
+characters appears in an event, 3 of 35 stations, 14 of 31 conditions are used,
+and `public_standing` is moved by forty effects and gated by one. The bible is
+not outrunning the game any more — it has outrun it, and Lane B is the answer.
 
 ---
 
