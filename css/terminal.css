@@ -204,6 +204,14 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 /* The plan takes what the column has left; the whip under it is its own
    height and never squeezed. */
 .g-cham > .stack > .panel:first-child{flex:0 1 auto;min-height:0;}
+/* THE REFERENCE COLUMN SCROLLS, NOT ITS PANELS. Opening a functional seat
+   should make the list LONGER — downward, into the room below it — rather than
+   making it scroll inside itself, and it should not squeeze the composition
+   table above it to make room. So the panels keep their natural height and the
+   column takes the overflow when there is one. */
+.g-cham > .stack.cref{overflow:auto;}
+.g-cham > .stack.cref > .panel{flex:0 0 auto;min-height:0;}
+.g-cham > .stack.cref > .panel .pbody.scrolls{overflow:visible;}
 /* The plan is drawn to a viewBox with an aspect ratio from the seat
    count. 766px on a 1440 window was too much — the seats stopped gaining
    anything from the room and the tab stopped fitting. It is capped, and

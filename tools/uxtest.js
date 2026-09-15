@@ -1602,7 +1602,7 @@ try {
     const partyRow = [...bd.querySelectorAll("tr")]
       .find(tr => !tr.classList.contains("bench") &&
                   tr.cells.length === party.cells.length &&
-                  tr.cells[0].textContent.indexOf("PSD") >= 0);
+                  tr.cells[0].textContent.indexOf("Socialists") >= 0);
     if (partyRow) {
       const col = i => [...bench].reduce((n, tr) => n + num(tr, i), 0);
       ok("the printed faction seats sum to the printed party seats",
@@ -1827,7 +1827,7 @@ try {
     const brk = doc.querySelector("#comp-table");
     const bench2 = [...brk.querySelectorAll("tr.bench")];
     const prow = [...brk.querySelectorAll("tbody tr:not(.bench)")]
-      .find(tr => /PSD/.test(tr.cells[0].textContent));
+      .find(tr => /Socialists/.test(tr.cells[0].textContent));
     if (bench2.length && prow) {
       const n2 = (tr, i) => parseInt(tr.cells[i].textContent, 10) || 0;
       const base = n2(prow, 5);                       /* Pop aye */

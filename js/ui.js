@@ -1089,7 +1089,10 @@ const UI = (function () {
     C.parties.forEach(p => {
       const sq = seatsOf(p.id), r = armed && d.rows.find(x => x.party === p.id);
       h += `<tr${govIds.includes(p.id) ? ' class="govrow"' : ""}>` +
-        `<td>${mark(p.id)}${ps(p.id)}</td>` +
+        /* THE FULL NAME. There is room for it in this column — eleven rows of
+           short numbers — and a composition table is the one place the reader
+           wants to know which party, not which three letters. */
+        `<td class="pn">${mark(p.id)}${esc(pn(p.id))}</td>` +
         `<td class="n">${sq.district}</td><td class="n">${sq.list}</td>` +
         `<td class="n">${sq.functional}</td>` +
         `<td class="n"><b>${Engine.partyTotal(st, p.id)}</b></td>` +
@@ -3308,7 +3311,11 @@ const UI = (function () {
         const row = `<tr data-func="${f.id}"${isOpen ? ' class="sel"' : ""} style="cursor:pointer">` +
           `<td><i class="caret${isOpen ? " open" : ""}"></i><b>${esc(f.name)}</b></td>` +
           `<td class="n">${f.seats}</td><td class="hcell">${held.length
-            ? held.map(pid => `${mark(pid)}<span class="hn">${h[pid]}</span>`).join(" ")
+            /* THE ACRONYM WITH THE COUNT. Three letters and a number is what a
+               whip actually writes down, and this column is wide enough for
+               it — the marks alone were a colour the player had to decode. */
+            ? held.map(pid => `${mark(pid)}<i class="hs">${esc(ps(pid))}</i>` +
+                ` <span class="hn">${h[pid]}</span>`).join("  ")
             : "&mdash;"}</td></tr>`;
         return row + (isOpen
           ? `<tr class="funcdet"><td colspan="3">${detailHTML(f)}</td></tr>` : "");
@@ -3322,14 +3329,24 @@ const UI = (function () {
     const resid = F.filter(f => f.franchise === "residual")
                    .reduce((n, f) => n + f.electorate, 0);
     /* The two words the table used to anchor on every row now anchor
-       once, here, where the sentence is actually about them. */
-    $("#func-note").innerHTML =
-      `${seats} seats. <b>${licensed.toLocaleString()}</b> <span data-tip="electors">electors</span> ` +
-      `hold a functional <span data-tip="franchise">franchise</span> across ` +
-      `${F.length - 1} licensed constituencies; ` +
-      `<b>${resid.toLocaleString()}</b> sit in the residual constituency and return ` +
-      `${F.filter(f => f.franchise === "residual").reduce((n, f) => n + f.seats, 0)}. ` +
-      `A measure touching life-support integrity or the Charter must carry here separately.`;
+       once, here, where the sentence is actually about them. IT STANDS DOWN
+       WHEN A ROW IS OPEN: the detail is longer than the note and the note is
+       not what the reader is on, so leaving it there pushed the thing they
+       opened off the bottom of the column. Hidden, not removed — it is also
+       where `electors` and `franchise` are anchored, and a tip nobody carries
+       is a tip nobody can reach. */
+    const fn = $("#func-note");
+    if (fn) {
+      fn.innerHTML =
+        `${seats} seats. <b>${licensed.toLocaleString()}</b> <span data-tip="electors">electors</span> ` +
+        `hold a functional <span data-tip="franchise">franchise</span> across ` +
+        `${F.length - 1} licensed constituencies; ` +
+        `<b>${resid.toLocaleString()}</b> sit in the residual constituency and return ` +
+        `${F.filter(f => f.franchise === "residual").reduce((n, f) => n + f.seats, 0)}. ` +
+        `A measure touching life-support integrity or the Charter must carry here separately.`;
+      fn.hidden = !!open;
+      if (fn.parentNode) fn.parentNode.hidden = !!open;   /* the pbody holding it */
+    }
   }
 
   /* ---------- log ---------- */
