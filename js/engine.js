@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 11;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business
+  const STATE_VERSION = 12;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing
 
   /* ---------------------------------------------------------
      1. STATE
@@ -77,6 +77,28 @@ const Engine = (function () {
       /* Planned whipping, per bill. Not spent until the division is called,
          so it can be revised or cleared. */
       whips: {},
+
+      /* PAIRING — a Westminster courtesy this chamber's arithmetic does
+         not support, which is exactly why it is here.
+
+         Two members on opposite sides agree that neither will vote. At
+         Westminster that is neutral, because a majority there is a
+         majority of those VOTING. Here a majority is a majority of the
+         MEMBERS — 121 of 240, 21 of 40 (§4.6.1) — so the opposition gives
+         up a nay that was never counted and the government gives up an
+         aye that was. A pair costs the government one and the opposition
+         nothing.
+
+         Nobody has revisited the maths. The courtesy was inherited with
+         the rest of the procedure and the whips who understand it do not
+         volunteer that they do, which makes granting pairs a generous-
+         feeling habit that quietly costs a government its margin — a
+         dated novelty in the §2.1 sense, and the same kind of fossil as
+         the vestigial Secretary-General title in §3.9.
+
+         {billId: {partyId: n}}. Planned, revisable, and settled when the
+         division is called, exactly like the whips. */
+      pairs: {},
 
       /* PRICES — index numbers, 100 at the founding of the current series.
          Not a market simulation and deliberately not equities: there is no
@@ -220,6 +242,10 @@ const Engine = (function () {
     if (st.version < 11) {                    // the day's business
       if (st.divisionsToday == null) st.divisionsToday = 0;
       st.version = 11;
+    }
+    if (st.version < 12) {                    // pairing
+      if (!st.pairs) st.pairs = {};
+      st.version = 12;
     }
     return st;
   }
@@ -1490,7 +1516,8 @@ const Engine = (function () {
       rows.push({
         party: pid,
         popularSeats: pSeats, popularAye: pAye, popularWhipped: wp.popular || 0,
-        popularAbstain: pAbs, popularNay: Math.max(0, pSeats - pAye - pAbs), popularKind: pKind,
+        popularAbstain: pAbs, popularNay: Math.max(0, pSeats - pAye - pAbs),
+        popularAbsent: 0, popularKind: pKind,
         functionalSeats: fSeats, functionalAye: fAye, functionalWhipped: wp.functional || 0,
         functionalAbstain: fAbs, functionalNay: Math.max(0, fSeats - fAye - fAbs), functionalKind: fKind,
         /* Present only where the count came from the currents. Whipped seats
@@ -1505,17 +1532,41 @@ const Engine = (function () {
     const funcNeed = Math.floor(funcTotal / 2) + 1;
 
     const dual = !!bill.dualMajority;
-    const popCarries = popAye >= popNeed;
+    /* NOTE: carrying is decided AFTER the pairs are settled, below. A
+       reading taken here would be the count before the whips' courtesy
+       came out of it. */
     const funcCarries = funcAye >= funcNeed;
+
+    /* THE PAIRS ARE SETTLED HERE, on the popular bench only: a pair is an
+       arrangement between whips and the functional forty have no whips.
+       A paired member is neither aye nor nay — they are ABSENT, which is
+       the fourth thing a seat can be and the reason the count needs it.
+       The government's side of every pair comes out of the Prime
+       Minister's own party, because those are the members its whips can
+       promise. */
+    const pairPlan = (st.pairs || {})[billId] || {};
+    const mine = rows.find(r => r.party === st.playerParty);
+    Object.keys(pairPlan).forEach(pid => {
+      const other = rows.find(r => r.party === pid);
+      const n = Math.max(0, Math.min(pairPlan[pid] || 0,
+        mine ? mine.popularAye : 0, other ? other.popularNay : 0));
+      if (!n || !other || !mine) return;
+      mine.popularAye -= n;  mine.popularAbsent = (mine.popularAbsent || 0) + n;
+      other.popularNay -= n; other.popularAbsent = (other.popularAbsent || 0) + n;
+      popAye -= n;
+    });
+    const popCarriesAfter = popAye >= popNeed;
 
     const sum = (k) => rows.reduce((n, r) => n + (r[k] || 0), 0);
     return {
       bill: billId, dual: dual, rows: rows,
-      popular:   { aye: popAye,  total: popTotal,  need: popNeed,  carries: popCarries,
-                   abstain: sum("popularAbstain"), nay: sum("popularNay") },
+      popular:   { aye: popAye,  total: popTotal,  need: popNeed,  carries: popCarriesAfter,
+                   abstain: sum("popularAbstain"), nay: sum("popularNay"),
+                   absent: sum("popularAbsent"), paired: sum("popularAbsent") },
       functional:{ aye: funcAye, total: funcTotal, need: funcNeed, carries: funcCarries,
-                   abstain: sum("functionalAbstain"), nay: sum("functionalNay") },
-      carries: dual ? (popCarries && funcCarries) : popCarries
+                   abstain: sum("functionalAbstain"), nay: sum("functionalNay"),
+                   absent: 0 },
+      carries: dual ? (popCarriesAfter && funcCarries) : popCarriesAfter
     };
   }
 
@@ -1593,6 +1644,45 @@ const Engine = (function () {
      the truth. The factions under a party are re-apportioned to the
      party's reported aye by largest remainder, capped at each current's
      members, so every column still adds up on screen (test.js §614). */
+  /* WHAT A PAIR WOULD COST, AND WHETHER THERE IS ONE TO BE HAD.
+
+     A pair needs a government member willing to stay out and an opposing
+     member on the other side to cancel. The government's side always
+     comes from the Prime Minister's own party, so the ceiling is the
+     smaller of what this party is voting against and what the player's
+     own bench is voting for. `costsYou` is stated plainly because the
+     whole point of this mechanic is that nobody in the fiction states it. */
+  function pairable(st, C, billId, partyId) {
+    const bs = st.bills[billId];
+    if (!bs || bs.dead) return { max: 0, reason: "not before the House" };
+    if (partyId === st.playerParty)
+      return { max: 0, reason: "a party cannot pair with itself" };
+    /* Read the count with this bill's pairs removed, so the ceiling does
+       not shrink as it is spent and then refuse the plan already made. */
+    const kept = (st.pairs || {})[billId];
+    if (kept) { st.pairs[billId] = {}; }
+    const d = division(st, C, billId);
+    if (kept) { st.pairs[billId] = kept; }
+    const mine = d.rows.find(r => r.party === st.playerParty);
+    const them = d.rows.find(r => r.party === partyId);
+    const max = Math.max(0, Math.min(mine ? mine.popularAye : 0,
+                                     them ? them.popularNay : 0));
+    return { max: max,
+             reason: max ? null : "no member of theirs is voting against it",
+             costsYou: 1,      /* one aye of your margin, per pair */
+             costsThem: 0 };   /* a nay the threshold never counted */
+  }
+
+  function setPairs(st, C, billId, partyId, n) {
+    const cap = pairable(st, C, billId, partyId);
+    const v = Math.max(0, Math.min(Math.round(n) || 0, cap.max));
+    const plan = st.pairs[billId] || (st.pairs[billId] = {});
+    if (v) plan[partyId] = v; else delete plan[partyId];
+    return { ok: true, pairs: v, max: cap.max };
+  }
+
+  function clearPairs(st, billId) { delete st.pairs[billId]; }
+
   function reportedRows(st, d) {
     return d.rows.map(r => {
       const out = Object.assign({}, r);
@@ -1604,7 +1694,8 @@ const Engine = (function () {
            the error — the leak this function exists to close, reopened one
            column to the right. Abstention is a stated position and not a
            count, so it is not estimated. */
-        out[bench + "Nay"] = Math.max(0, seats - out[k] - (r[bench + "Abstain"] || 0));
+        out[bench + "Nay"] = Math.max(0, seats - out[k] -
+          (r[bench + "Abstain"] || 0) - (r[bench + "Absent"] || 0));
       });
       if (r.benches) out.benches = reportedBenches(r, out);
       return out;
@@ -1639,9 +1730,11 @@ const Engine = (function () {
     return {
       dual: d.dual, true: d, rows: rows,
       popular:    { aye: p, total: d.popular.total,    need: d.popular.need,    carries: pc,
-                    abstain: benchSum("popular", "Abstain"), nay: benchSum("popular", "Nay") },
+                    abstain: benchSum("popular", "Abstain"), nay: benchSum("popular", "Nay"),
+                    absent: benchSum("popular", "Absent") },
       functional: { aye: f, total: d.functional.total, need: d.functional.need, carries: fc,
-                    abstain: benchSum("functional", "Abstain"), nay: benchSum("functional", "Nay") },
+                    abstain: benchSum("functional", "Abstain"), nay: benchSum("functional", "Nay"),
+                    absent: 0 },
       carries: d.dual ? (pc && fc) : pc,
       /* what the number is and who said so. Present on every forecast shown. */
       prov: "Whips' count; partners' assurances; an estimate of the functional bench"
@@ -3003,7 +3096,7 @@ const Engine = (function () {
     STATE_VERSION, newGame, migrate, save, load, chapters,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal,
-    division, reported, ballot, resolveDue, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss, checkSettlement,
+    division, reported, ballot, resolveDue, pairable, setPairs, clearPairs, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss, checkSettlement,
     dateOfSitting, sittingOfDate, deadlines, calendar, today, business,
     initiatives, take, setDivision,
     apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,

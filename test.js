@@ -1502,6 +1502,78 @@ console.log("\nTHE THREE-WAY COUNT (aye, nay, abstain):");
   if (bad) { console.log("\n" + bad + " COUNT FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nPAIRING (a courtesy the arithmetic does not support):");
+(function(){
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const st3 = Engine.newGame(CONTENT);
+  const before = Engine.division(st3, CONTENT, "divergence");
+  const foe = before.rows.find(r => r.party !== st3.playerParty && r.popularNay > 5);
+
+  const cap = Engine.pairable(st3, CONTENT, "divergence", foe.party);
+  ok("a pair needs a member of theirs voting against", cap.max > 0,
+     cap.max + " available with " + foe.party);
+  ok("and it cannot be made with yourself",
+     Engine.pairable(st3, CONTENT, "divergence", st3.playerParty).max === 0);
+
+  Engine.setPairs(st3, CONTENT, "divergence", foe.party, 6);
+  const after = Engine.division(st3, CONTENT, "divergence");
+
+  /* THE WHOLE POINT. At Westminster a pair is neutral because a majority
+     is of those VOTING. Here it is a majority of the MEMBERS, so the
+     opposition gives up a nay the threshold never counted and the
+     government gives up an aye it did. The courtesy is asymmetric and it
+     runs against whoever is in office. */
+  ok("six pairs cost the government six ayes",
+     after.popular.aye === before.popular.aye - 6,
+     before.popular.aye + " -> " + after.popular.aye);
+  ok("and the bar does not move an inch",
+     after.popular.need === before.popular.need, "need " + after.popular.need);
+  ok("so the margin narrows and nothing is given back",
+     (after.popular.aye - after.popular.need) ===
+     (before.popular.aye - before.popular.need) - 6,
+     "margin " + (before.popular.aye - before.popular.need) +
+     " -> " + (after.popular.aye - after.popular.need));
+
+  const me = after.rows.find(r => r.party === st3.playerParty);
+  const them = after.rows.find(r => r.party === foe.party);
+  ok("a paired member is absent, not aye and not nay",
+     me.popularAbsent === 6 && them.popularAbsent === 6);
+  ok("and every seat is still accounted for on both sides",
+     me.popularAye + me.popularNay + me.popularAbstain + me.popularAbsent === me.popularSeats &&
+     them.popularAye + them.popularNay + them.popularAbstain + them.popularAbsent === them.popularSeats);
+  ok("the bench totals account for the absences too",
+     after.popular.aye + after.popular.nay + after.popular.abstain +
+     after.popular.absent === after.popular.total,
+     after.popular.aye + "+" + after.popular.nay + "+" +
+     after.popular.abstain + "+" + after.popular.absent);
+
+  /* A plan cannot be made bigger than either side can honour, and asking
+     for the ceiling twice must not shrink it — pairable() reads the count
+     with this bill's own pairs taken out for exactly that reason. */
+  Engine.setPairs(st3, CONTENT, "divergence", foe.party, 999);
+  ok("a plan is capped at what both sides can honour",
+     st3.pairs.divergence[foe.party] === cap.max,
+     st3.pairs.divergence[foe.party] + " of " + cap.max);
+  ok("and the ceiling does not shrink as it is spent",
+     Engine.pairable(st3, CONTENT, "divergence", foe.party).max === cap.max);
+
+  Engine.clearPairs(st3, "divergence");
+  ok("clearing a plan puts the ayes back",
+     Engine.division(st3, CONTENT, "divergence").popular.aye === before.popular.aye);
+
+  /* A save written before pairing existed still loads. */
+  const old = JSON.parse(Engine.save(Engine.newGame(CONTENT)));
+  delete old.pairs; old.version = 11;
+  const back = Engine.load(JSON.stringify(old), CONTENT);
+  ok("a save from before pairing gets an empty plan",
+     back.pairs && Object.keys(back.pairs).length === 0 &&
+     back.version === Engine.STATE_VERSION, "v" + back.version);
+
+  if (bad) { console.log("\n" + bad + " PAIRING FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nTHE SETTLEMENTS (3.5.1):");
 (function(){
   let bad = 0;
