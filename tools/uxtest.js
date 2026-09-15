@@ -1301,6 +1301,32 @@ try {
   w.eval('UI.boot(Engine.load(window.__saved, CONTENT), CONTENT);');
   w.eval('window.__motion.length = 0;');
 
+  /* §12.13: A STRUCK THING STAYS ON THE PAPER AND LOSES ITS FORECAST.
+     A measure that has fallen cannot be divided on again, so a count
+     beside it is a number that can never come true. And it differs in
+     FORM as well as hue — a coloured edge speaks to someone who knows the
+     scheme; a rule through the title speaks to everyone. */
+  w.eval('window.__saved2 = Engine.save(UI.state());');
+  w.document.querySelector('.tab[data-t="cham"]').click();
+  const struck = w.eval(`(function () {
+    var st = UI.state();
+    var live = CONTENT.bills.filter(function (b) { return !st.bills[b.id].dead; })[0];
+    st.bills[live.id].dead = true; st.bills[live.id].stage = "defeated";
+    UI.boot(st, CONTENT);
+    var row = document.querySelector('#cham-bills tr[data-bill="' + live.id + '"]');
+    return { cls: row.className,
+             pop: row.cells[2].textContent.trim(),
+             func: row.cells[3].textContent.trim() };
+  })()`);
+  ok("a fallen measure is struck on the order paper", /st-dead/.test(struck.cls), struck.cls);
+  ok("and shows no forecast it can never meet",
+     struck.pop === "—" && struck.func === "—",
+     "pop " + struck.pop + " func " + struck.func);
+  const cssStruck = fs.readFileSync(path.join(root, "css/terminal.css"), "utf8");
+  ok("and differs in form, not only in hue",
+     /tr\.st-dead>td:first-child\{[^}]*line-through/.test(cssStruck));
+  w.eval('UI.boot(Engine.load(window.__saved2, CONTENT), CONTENT);');
+
   ok("and a change with no cross-screen consequence reports nothing",
      w.eval(`(function () {
        window.__motion.length = 0;

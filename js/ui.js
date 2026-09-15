@@ -2642,7 +2642,13 @@ const UI = (function () {
         `<td class="stage"><span class="stname ${state}">${bs.stage.replace(/_/g, " ")}</span>` +
           (dead ? "" : stageBar(bs, state)) +
           (ready ? ` <span class="rdy" data-tip="stage">ready</span>` : "") + `</td>` +
-        `<td class="n">${d.popular.aye}</td><td class="n">${b.dualMajority ? d.functional.aye : "&mdash;"}</td>` +
+        /* A STRUCK ROW LOSES ITS FORECAST (§12.13). A measure that has
+           fallen cannot be divided on again, so a count for it is a number
+           that can never come true — worse than no number at all. A carried
+           one keeps its figures: that is the division that actually
+           happened and it is the record. */
+        `<td class="n">${dead ? "&mdash;" : d.popular.aye}</td>` +
+        `<td class="n">${dead || !b.dualMajority ? "&mdash;" : d.functional.aye}</td>` +
         `<td><span class="flag ${b.dualMajority ? "bad" : ""}" data-tip="${b.dualMajority ? "dual" : "simple"}">` +
         `${b.dualMajority ? "DUAL" : "SIMPLE"}</span></td></tr>`;
     });

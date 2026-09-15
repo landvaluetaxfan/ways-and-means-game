@@ -1769,6 +1769,16 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
   #cham-bills tr.st-blocked>td:first-child{box-shadow:inset 3px 0 0 var(--warn);}
   #cham-bills tr.st-passed>td:first-child{box-shadow:inset 3px 0 0 var(--ok);}
   #cham-bills tr.st-dead>td:first-child{box-shadow:inset 3px 0 0 var(--alert);}
+  /* FORM AS WELL AS HUE (§12.13, and the note .sel earned in CLAUDE.md).
+     The coloured edge says the state to someone who knows the scheme; the
+     rule through the title says it to everyone, and says it the way an
+     order paper says it — a struck measure stays on the paper with a line
+     through it, because the record of what a government tried is part of
+     the record of what it is. */
+  #cham-bills tr.st-dead>td:first-child{
+    text-decoration:line-through;text-decoration-thickness:1px;
+    text-decoration-color:var(--alert);color:var(--ink-soft);
+  }
 
   .rdy{
     font-family:var(--f-ui);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;
