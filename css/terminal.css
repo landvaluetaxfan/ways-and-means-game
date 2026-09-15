@@ -2185,3 +2185,38 @@ body.no-motion .movecard{transition:none;}
 }
 /* the tab itself says it, so the card is a prompt and not the only signal */
 .tab.tab-moved{box-shadow:inset 0 -3px 0 var(--ok);}
+
+/* =============================================================
+   THE ROLL CALL — the lobbies filling, party by party.
+
+   A division resolves to counts and the tellers read counts out. This
+   is the other half, and it exists to show a thing the counts cannot:
+   that the three tiers are three different kinds of mandate. A
+   district member has a name and a seat and can rebel. A functional
+   member has a name and a register reference. A LIST MEMBER HAS
+   NEITHER, because a closed list is the party's, and the roll call
+   renders them as a bare mark on purpose — the absence is the lesson.
+
+   The block arrives with capt-in, the same .2s linear rise the caption
+   and the movecard use, because one easing across the interface is the
+   rule and a division is not an exception to it.
+   ============================================================= */
+.lroll{margin-top:6px;border-top:1px solid var(--ink-soft);padding-top:5px;}
+.lroll-h{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;}
+.lroll-h b{font-size:12.5px;letter-spacing:.02em;}
+.lroll-h span{font-size:11px;color:var(--ink-soft);margin-left:auto;
+  font-variant-numeric:tabular-nums;}
+.lroll-g{display:flex;flex-wrap:wrap;gap:2px;
+  max-height:96px;overflow:auto;min-height:0;}
+.lchip{font-size:10px;line-height:1.5;padding:0 3px;border:1px solid var(--ink-soft);
+  white-space:nowrap;max-width:104px;overflow:hidden;text-overflow:ellipsis;}
+.lchip.aye{background:var(--ok);border-color:var(--ok);color:#fff;}
+.lchip.nay{background:var(--alert);border-color:var(--alert);color:#fff;}
+.lchip.abstain{background:var(--warn);border-color:var(--warn);color:#fff;}
+.lchip.absent{background:transparent;color:var(--ink-soft);border-style:dashed;}
+/* A list seat is not a person, so it is not given the shape of one. */
+.lchip.list{width:11px;max-width:11px;padding:0;text-align:center;}
+.lchip.pay{font-weight:bold;}
+.lroll.arrive{opacity:0;transform:translateY(6px);
+  animation:capt-in .2s linear forwards;}
+body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}

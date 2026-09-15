@@ -1683,6 +1683,118 @@ const Engine = (function () {
 
   function clearPairs(st, billId) { delete st.pairs[billId]; }
 
+  /* ---------------------------------------------------------
+     THE ROLL CALL — who, by name, went which way.
+
+     A division currently resolves to counts, and counts are what the
+     tellers read out. This is the other half: the lobbies filling, with
+     names in them.
+
+     THE THREE TIERS DIFFER CONSTITUTIONALLY AND THIS IS WHERE A PLAYER
+     CAN SEE IT, which is the reason to build it at all rather than a
+     side effect:
+
+       district    a named member for a named seat. 141 of them exist in
+                   content and every one has a name. They can rebel,
+                   because a district member was elected by a place and
+                   not by a slate.
+       functional  a named member with a register reference (LS-1, MT-3).
+                   40 exist. Elected by an electorate of interest.
+       list        NO NAMES, and this is correct rather than missing. A
+                   closed list is the party's, so the list benches vote
+                   as the party and there is nobody to name. The player
+                   learning that from the roll call is the electoral
+                   system teaching itself.
+
+     DETERMINISTIC. The same division read twice names the same rebels,
+     because a rebel who is a different person each time is a dice roll
+     wearing a name. Nothing here draws.
+
+     THE PAYROLL VOTES FIRST. A minister who votes against the line has
+     resigned, so ministers, leaders and whips take the party line ahead
+     of anybody else and dissent comes off the BACK of the order. The
+     list benches take the line next, being the party's own. What is
+     left — a named backbencher for a named seat — is where a rebellion
+     lands, which is where rebellions land.
+     --------------------------------------------------------- */
+
+  const PAYROLL = ["pm", "minister", "opposition", "shadow", "leader", "whip"];
+
+  function rollCall(st, C, billId, d) {
+    d = d || division(st, C, billId);
+    const chars = C.characters || [];
+    /* seat name -> the cast member sitting for it, so a district row can
+       be upgraded from a bare name in the roll to a person with an office. */
+    const cast = {};
+    chars.forEach(ch => { if (ch.seat) cast[ch.seat] = ch; });
+
+    const parties = d.rows.map(r => {
+      const seats = [];
+
+      /* district: a named member per seat, from the roll. */
+      (C.constituencies || []).forEach(k => {
+        const held = (st.roll[k.id] || {}).held || {};
+        if ((st.roll[k.id] || {}).nonVoting) return;
+        for (let i = 0; i < (held[r.party] || 0); i++) {
+          const ch = cast[k.name];
+          seats.push({ tier: "district", name: (ch && ch.name) || k.member,
+                       seat: k.name, office: ch ? ch.office : null,
+                       payroll: !!(ch && PAYROLL.indexOf(ch.office) >= 0) });
+        }
+      });
+
+      /* list: the party's slate, unnamed on purpose. */
+      const listN = Math.max(0, r.popularSeats - seats.length);
+      for (let i = 0; i < listN; i++)
+        seats.push({ tier: "list", name: null, seat: null, payroll: false });
+
+      /* functional: named, with the register reference. */
+      const fseats = [];
+      (C.functional || []).forEach(fc => {
+        (fc.members || []).forEach(m => {
+          if (m.party !== r.party) return;
+          const ch = cast[m.name];
+          fseats.push({ tier: "functional", name: m.name, ref: m.ref,
+                        seat: fc.name, office: ch ? ch.office : null,
+                        payroll: !!(ch && PAYROLL.indexOf(ch.office) >= 0) });
+        });
+      });
+
+      return { party: r.party, row: r,
+               popular: assign(seats, r, "popular"),
+               functional: assign(fseats, r, "functional") };
+    });
+
+    return { bill: billId, dual: d.dual, parties: parties, division: d };
+  }
+
+  /* The order is the politics: payroll, then the list, then named
+     backbenchers, and within each a stable sort so the same seat is the
+     same vote every time this is read. The line fills from the front;
+     everything that is not the line falls off the back. */
+  function assign(seats, r, bench) {
+    const n = (k) => r[bench + k] || 0;
+    const aye = n("Aye"), abstain = n("Abstain"), absent = n("Absent");
+    const nay = Math.max(0, seats.length - aye - abstain - absent);
+    const line = r[bench + "Kind"] === "against" ? "nay" : "aye";
+
+    const rank = (s) => (s.payroll ? 0 : s.tier === "list" ? 1 : 2);
+    const ordered = seats.slice().sort((a, b) =>
+      rank(a) - rank(b) ||
+      String(a.seat || "").localeCompare(String(b.seat || "")) ||
+      String(a.name || "").localeCompare(String(b.name || "")));
+
+    /* the line first, then the quieter dissents, then the open one */
+    const queue = [];
+    const push = (vote, count) => { for (let i = 0; i < count; i++) queue.push(vote); };
+    push(line, line === "aye" ? aye : nay);
+    push("absent", absent);
+    push("abstain", abstain);
+    push(line === "aye" ? "nay" : "aye", line === "aye" ? nay : aye);
+
+    return ordered.map((s, i) => Object.assign({}, s, { vote: queue[i] || line }));
+  }
+
   function reportedRows(st, d) {
     return d.rows.map(r => {
       const out = Object.assign({}, r);
@@ -3108,6 +3220,7 @@ const Engine = (function () {
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
+    rollCall,
     settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
     snapshot, changes,
     prorogue, canDivide, candidates, vacancies, fillPost,

@@ -1269,6 +1269,31 @@ const UI = (function () {
      Waits are the ones every other reading-out uses, so a key skips it and the
      stall works; what changed is that the panel is a caption under the plan
      rather than a modal over it. */
+  /* THE CHIP MARKUP, as a pure function of the members, so that it can be
+     asserted without standing up a division and racing the caption's
+     teardown. Same precedent as Motion.__plan: the presentation logic worth
+     testing is the part that turns data into markup, and it should not need
+     a dialog to be alive to be checked. */
+  function rollChips(all) {
+    return all.map(m => {
+      /* A list seat carries no name because there is nobody to name; it
+         gets a mark and a tip saying why. */
+      if (m.tier === "list")
+        return `<i class="lchip list ${m.vote}" data-tip-title="List seat" ` +
+          `data-tip-body="A closed list is the party's. The list benches ` +
+          `vote as the party and no member is named for the seat.">\u00b7</i>`;
+      const who = String(m.name || "").replace(/^(Rt\. Hon\.|Hon\.)\s+/, "");
+      const last = who.replace(/\s+MP$/, "").split(/\s+/).pop();
+      const where = m.tier === "functional"
+        ? (m.ref ? m.ref + " \u00b7 " + m.seat : m.seat) : m.seat;
+      return `<i class="lchip ${m.vote}${m.payroll ? " pay" : ""}" ` +
+        `data-tip-title="${esc(who)}" ` +
+        `data-tip-body="${esc(where || "")}. ` +
+        `${m.office ? "Payroll vote \u2014 a minister who votes against the line has resigned. " : ""}` +
+        `Voted ${m.vote === "absent" ? "not at all" : m.vote}.">${esc(last)}</i>`;
+    }).join("");
+  }
+
   function countDivision(rows, out) {
     const order = (rows || []).filter(r => r.popularSeats + r.functionalSeats > 0);
     const r0 = out.result || {};
@@ -1327,6 +1352,53 @@ const UI = (function () {
       { label: "The doors are shut", ms: 620,
         run: () => setStatus("The doors are shut \u00b7 the lobbies are filling", "transient") }
     ];
+
+    /* THE LOBBIES FILL, PARTY BY PARTY, WITH NAMES IN THEM.
+
+       This is deliberately placed BEFORE the count and not inside it.
+       The note above is right that a division is not read out party by
+       party — that is the forecast's shape, and the tellers' declaration
+       below keeps the count's. But the lobbies genuinely do fill one
+       bench at a time, and that is the half of a division a player has
+       never been shown: not the arithmetic, the members walking.
+
+       So the roll call is the filling and the declaration is the count,
+       and the two do not compete for the same moment. */
+    /* THE SAME DIVISION, NOT A SECOND ONE. r0 is the result that was already
+       resolved on the click — passing it in is what makes the roll call and
+       the declaration provably the same event, and keeps the guarantee that a
+       division resolves identically whether its dialog is watched or skipped. */
+    const rc = Engine.rollCall(st, C, r0.bill, r0);
+    const rollEl = () => document.getElementById("dv-roll");
+    (rc.parties || [])
+      .filter(p => p.popular.length + p.functional.length > 0)
+      .sort((a, b) => (b.popular.length + b.functional.length) -
+                      (a.popular.length + a.functional.length))
+      .forEach(p => {
+        const all = p.popular.concat(p.functional);
+        const cnt = v => all.filter(m => m.vote === v).length;
+        steps.push({
+          label: pn(p.party) + " divides",
+          ms: 380,
+          run: () => {
+            const el = rollEl();
+            if (!el) return;
+            const parts = [];
+            ["aye", "nay", "abstain", "absent"].forEach(v => {
+              const n = cnt(v); if (n) parts.push(n + " " + (v === "absent" ? "away" : v));
+            });
+            el.className = "lroll arrive";
+            el.innerHTML =
+              `<div class="lroll-h"><b>${esc(pn(p.party))}</b>` +
+              `<span>${esc(parts.join(" \u00b7 "))}</span></div>` +
+              `<div class="lroll-g">` +
+              rollChips(all) +
+              `</div>`;
+            if (typeof Tips !== "undefined" && Tips.within) Tips.within("#dv-roll ");
+            cue("click");
+          }
+        });
+      });
     [0.42, 0.68, 0.85, 0.94, 0.985, 1].forEach((fr, i) => {
       const to = Math.round(P.aye * fr);
       steps.push({
@@ -1392,6 +1464,7 @@ const UI = (function () {
           `</div>` +
           (dual ? `<div class="note">The functional bench is counted separately: ` +
             `${F.aye} of ${F.total}, needing ${F.need}.</div>` : "") +
+          `<div class="lroll" id="dv-roll"></div>` +
           `<div class="lverdict" id="dv-verdict"></div>`;
         ayeEl = el.querySelector("#dv-aye"); noeEl = el.querySelector("#dv-noe");
         ayeN = el.querySelector("#dv-ayen"); noeN = el.querySelector("#dv-noen");
@@ -3379,5 +3452,5 @@ const UI = (function () {
      name, and it makes no sound — which is itself asserted, so exporting
      it cannot become a way to smuggle a cue into a renderer. */
   return { boot, state: () => st, annotate, setStatus, redraw: drawAll,
-           __test: { cabinetView, structure, reportMoves } };
+           __test: { cabinetView, structure, reportMoves, rollChips } };
 })();

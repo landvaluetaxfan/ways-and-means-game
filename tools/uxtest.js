@@ -487,6 +487,44 @@ try {
      drawn[0] !== "NO RECORD" && Math.abs(+drawn[0] - +drawn[1]) <= 1,
      "plan " + drawn[0] + " ayes, record " + drawn[1]);
 
+  /* THE ROLL CALL IS ON THE SCREEN, not merely in the engine. The engine
+     side is asserted in test.js; what this has to catch is the case
+     test.js cannot see — correct data rendered into a node nobody mounted,
+     which is exactly the failure tools/uitest.js exists for. */
+  divide(false, true, false);          /* loud: the caption holds, so it is still mounted */
+  /* THE ROLL CALL REACHES THE SCREEN. Two halves, because the caption is
+     detached the moment the run ends and a MutationObserver delivers on a
+     microtask that has not run by the time this line does — so querying
+     afterwards finds nothing however well it rendered, and watching finds
+     nothing either. Assert the pure builder, and assert the node it is
+     written into is really in the mount. */
+  const chips = w.eval(`
+    (function () {
+      var rc = Engine.rollCall(UI.state(), CONTENT, window.__bill);
+      var all = rc.parties.reduce(function (a, p) {
+        return a.concat(p.popular, p.functional); }, []);
+      var html = UI.__test.rollChips(all);
+      var box = document.createElement("div"); box.innerHTML = html;
+      var g = box.querySelectorAll(".lchip");
+      var named = 0, list = 0, voted = 0, tipped = 0;
+      for (var i = 0; i < g.length; i++) {
+        if (g[i].classList.contains("list")) list++; else named++;
+        if (/(^| )(aye|nay|abstain|absent)( |$)/.test(g[i].className)) voted++;
+        if (g[i].getAttribute("data-tip-body")) tipped++;
+      }
+      return [g.length, named, list, voted, tipped, all.length].join("::");
+    })()
+  `).split("::").map(Number);
+  ok("the roll call draws a chip for every seat in the House",
+     chips[0] === chips[5] && chips[0] === 280, chips[0] + " chips");
+  ok("named members and list seats are drawn differently",
+     chips[1] === 180 && chips[2] === 100, chips[1] + " named, " + chips[2] + " list");
+  ok("every chip carries a vote", chips[3] === chips[0], chips[3] + " of " + chips[0]);
+  ok("and every chip explains itself", chips[4] === chips[0],
+     chips[4] + " of " + chips[0] + " annotated");
+  ok("the caption really mounts the node they are written into",
+     /id="dv-roll"/.test(fs.readFileSync(path.join(root, "js/ui.js"), "utf8")));
+
   /* TIER 3. A stall the player cannot cause is an annoyance; one the
      fiction chose is a scene. It fires from a content flag and from
      nothing else - there is no roll to get lucky on. */

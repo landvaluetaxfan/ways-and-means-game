@@ -1659,6 +1659,49 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
      (Engine.checkSettlement(f, CONTENT) || {}).id === "federal_fudge",
      (Engine.checkSettlement(f, CONTENT) || {}).id);
 
+  /* ---- THE ROLL CALL ----
+     It renders names beside a count, so the one thing that must never be
+     true is that the names and the count disagree. */
+  (function () {
+    const rs = Engine.newGame(CONTENT);
+    const d = Engine.division(rs, CONTENT, "divergence");
+    const rc = Engine.rollCall(rs, CONTENT, "divergence", d);
+    const all = b => rc.parties.reduce((a, p) => a.concat(p[b]), []);
+    const cnt = (b, v) => all(b).filter(m => m.vote === v).length;
+
+    ok("the roll call seats the whole popular bench", all("popular").length, 240);
+    ok("and the whole functional bench", all("functional").length, 40);
+    ok("its ayes are the division's ayes", cnt("popular", "aye"), d.popular.aye);
+    ok("its functional ayes are the division's", cnt("functional", "aye"),
+       d.functional.aye);
+    ok("and every seat casts exactly one vote",
+       all("popular").every(m => ["aye","nay","abstain","absent"].indexOf(m.vote) >= 0));
+
+    /* A rebel who is a different person each time is a dice roll wearing a
+       name. Read twice, the same seats must go the same way. */
+    const again = Engine.rollCall(rs, CONTENT, "divergence", d);
+    ok("reading it twice names the same members the same way",
+       JSON.stringify(all("popular").map(m => [m.name, m.vote])) ===
+       JSON.stringify(again.parties.reduce((a, p) => a.concat(p.popular), [])
+         .map(m => [m.name, m.vote])));
+
+    /* The payroll votes the line: a minister who votes against it has
+       resigned, so dissent must never land on one. */
+    const offLine = rc.parties.filter(p => p.row.popularKind !== "mixed")
+      .reduce((a, p) => a.concat(p.popular.filter(m => m.payroll &&
+        m.vote !== (p.row.popularKind === "against" ? "nay" : "aye"))), []);
+    ok("no minister is recorded against their own party's line",
+       offLine.length === 0, offLine.map(m => m.name + " " + m.vote).join(", "));
+
+    /* A closed list is the party's, so a list seat has nobody to name. */
+    const list = all("popular").filter(m => m.tier === "list");
+    ok("the list benches are seated but unnamed", list.length === 100 &&
+       list.every(m => m.name == null), list.length + " list seats");
+    ok("and every district and functional seat IS named",
+       all("popular").concat(all("functional"))
+         .filter(m => m.tier !== "list").every(m => !!m.name));
+  })();
+
   /* Rule 3: closure and dissolution are failure modes, not settlements. */
   const lost = fresh(); lost.law.divergence_threshold_hours = 200;
   lost.bills.divergence.stage = "defeated"; lost.bills.divergence.dead = true;
