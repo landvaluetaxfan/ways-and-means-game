@@ -133,8 +133,9 @@ try {
 try {
   $("#tb-options").click();
   const boxes = w.document.querySelectorAll("#tb-optpanel [data-opt]").length;
-  /* eight: autosave, animations, confirm, explain, mute, room tone, music, type out */
-  ok("options panel opens", $("#tb-optpanel").classList.contains("on") && boxes === 8,
+  /* nine: autosave, animations, division on the plan, confirm, explain,
+     mute, room tone, music, type out */
+  ok("options panel opens", $("#tb-optpanel").classList.contains("on") && boxes === 9,
      boxes + " toggles");
 } catch (e) { ok("options panel opens", false, e.message); }
 

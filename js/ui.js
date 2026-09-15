@@ -788,20 +788,35 @@ const UI = (function () {
      bill's, and the engine already computes that distance for the division. */
   const AXIS_NAME = { ownership:"ownership", personhood:"personhood",
                       sovereignty:"sovereignty", closure:"closure" };
+  /* THREE LETTERS AND A SIGN. The reason a bench is where it is, in the
+     shortest form that is still a reason: `own+ sov+ per−` is "with it on
+     ownership and sovereignty, against on personhood", and the long form is
+     the hover card so nothing is lost by saying it short. */
+  const AXIS_CODE = { ownership:"own", personhood:"per",
+                      sovereignty:"sov", closure:"clo" };
 
   /* WHY A PARTY IS WHERE IT IS, read off the axes it and the bill share. A
      party with no settled position on an axis the bill moves says nothing
      about it, rather than being given a reason content did not. */
   function axisWhy(paxes, baxes) {
+    const out = [];
+    Object.keys(AXIS_CODE).forEach(a => {
+      if (!baxes || baxes[a] == null || !paxes || paxes[a] == null) return;
+      out.push(AXIS_CODE[a] + (paxes[a] === baxes[a] ? "+" : "\u2212"));
+    });
+    return out.join(" ");
+  }
+  /* The same thing said in words, for the hover card. */
+  function axisWhyLong(paxes, baxes) {
     const same = [], diff = [];
     Object.keys(AXIS_NAME).forEach(a => {
       if (!baxes || baxes[a] == null || !paxes || paxes[a] == null) return;
       (paxes[a] === baxes[a] ? same : diff).push(AXIS_NAME[a]);
     });
-    if (!same.length && !diff.length) return "";
-    if (diff.length && !same.length) return "against it on " + diff.join(" and ");
-    if (same.length && !diff.length) return "with it on " + same.join(" and ");
-    return "with it on " + same.join(" and ") + ", against on " + diff.join(" and ");
+    if (!same.length && !diff.length) return "No position on the axes this bill moves.";
+    if (diff.length && !same.length) return "Against it on " + diff.join(" and ") + ".";
+    if (same.length && !diff.length) return "With it on " + same.join(" and ") + ".";
+    return "With it on " + same.join(" and ") + ", against on " + diff.join(" and ") + ".";
   }
 
   /* WHAT THE BILL DOES, in the engine's own reading of its own effects.
@@ -860,15 +875,18 @@ const UI = (function () {
         : s && s.for != null ? `${s.for} for`
         : s && (s.popular != null || s.functional != null) ? "split by bench"
         : null;
-      const why = axisWhy(p.axes, b.axes) || (s == null ? "No stated position." : "");
+      const why = axisWhy(p.axes, b.axes);
       return `<tr><td>${mark(p.id)}${esc(ps(p.id))}</td>` +
         `<td class="st${s === "for" ? " yea" : s === "against" ? " nay" : ""}">` +
           `${read ? esc(read) : "inferred"}</td>` +
-        `<td class="wy">${esc(why)}</td></tr>`;
+        `<td class="wy" data-tip="billwhy" data-tip-title="${esc(p.name)}"` +
+          ` data-tip-body="${esc(axisWhyLong(p.axes, b.axes))}">${esc(why)}</td></tr>`;
     }).filter(Boolean).join("");
     if (!rows) return "";
     return `<div class="rulehead">Who is for it, and why</div>
-      <table class="billwhy"><tbody>${rows}</tbody></table>`;
+      <table class="billwhy"><tbody>${rows}</tbody></table>
+      <div class="note wykey">own / per / sov / clo \u2014 with it <b>+</b>, against it <b>\u2212</b>.
+        Hover a row for the long form.</div>`;
   }
 
   function drawBill(id) {
@@ -2432,6 +2450,11 @@ const UI = (function () {
      ones not yet called hold their party colour and no fill. Null the rest of
      the time, which is nearly all of it. */
   let chamberCount = null;
+  /* WHETHER THE HOUSE MOVES WHEN IT DIVIDES. An option rather than a constant,
+     because the gather is a taste: if it turns out to be wrong, the count
+     still works without it and no code has to change. Default on. */
+  const chamberMotion = () => (typeof Shell === "undefined" || !Shell.opt)
+    ? true : Shell.opt("chamberMotion") !== false;
   const CHCOLOURS = [["party", "by party"], ["vote", "by vote"]];
   const CHTOGGLES = [["group", "ayes together"], ["fold", "bench folded in"]];
   const chamberBill = () => chamberBare ? null : Focus.selected("cham-bills");
@@ -2692,6 +2715,11 @@ const UI = (function () {
        whip living on this tab is watching the benches change as you buy
        them. Opacity rather than a stroke, for the reason under glyph(). */
     const gov = [], opp = [], cross = [];
+    /* A STABLE KEY PER SEAT. The seats are drawn as keyed nodes so a division
+       can move them, and a key that changed when the benches were re-sorted
+       would make every seat a new node and the whole House a jump cut. The
+       seats are built in a fixed order, so a counter is a stable name. */
+    let seq = 0;
     const popular = (id, into) => {
       const s = st.parties[id].seats, col = C.partyById[id].colour;
       const r = rowOf(id);
@@ -2701,7 +2729,8 @@ const UI = (function () {
                   : (counting ? 0 : null);
       const whip = voted || !r ? 0 : Math.min(r.popularWhipped || 0, r.popularAye);
       const put = t => { const on = aye == null || aye-- > 0;
-                         into.push({ c: col, t: t, p: id, aye: aye == null ? null : on,
+                         into.push({ c: col, t: t, p: id, k: "s" + (seq++),
+                                     aye: aye == null ? null : on,
                                      wh: on && aye != null && aye < whip }); };
       for (let i = 0; i < s.district; i++) put("d");
       for (let i = 0; i < s.list; i++)     put("l");
@@ -2724,8 +2753,9 @@ const UI = (function () {
         ? (govIds.includes(id) ? gov : opp) : cross;
       for (let i = 0; i < s.functional; i++) {
         const on = aye == null || aye-- > 0;
-        into.push({ c: col, t: "f", p: id, aye: aye == null ? null : on,
-                     wh: on && aye != null && aye < whip });
+        into.push({ c: col, t: "f", p: id, k: "s" + (seq++),
+                    aye: aye == null ? null : on,
+                    wh: on && aye != null && aye < whip });
       }
     });
 
@@ -2733,18 +2763,52 @@ const UI = (function () {
        them read as a grey mesh with colour trapped inside it. Bare fills
        let the benches read as blocks of party at a glance, which is the
        only thing this diagram is for. */
-    const glyph = (x, y, s) => {
-      /* a seat that is not voting aye keeps its party and loses its fill */
-      const st_ = ` class="sg${s.aye === false ? " no" : s.wh ? " wh" : ""}" fill="${s.c}"`;
-      if (s.t === "d") return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4"${st_}/>`;
-      if (s.t === "l") return `<rect x="${(x-3).toFixed(1)}" y="${(y-3).toFixed(1)}" width="6" height="6"${st_}/>`;
-      return `<path d="M${x.toFixed(1)} ${(y-3.8).toFixed(1)}L${(x+3.6).toFixed(1)} ${(y+2.7).toFixed(1)}` +
-             `L${(x-3.6).toFixed(1)} ${(y+2.7).toFixed(1)}Z"${st_}/>`;
+    /* THE SEATS ARE KEYED, NOT REBUILT. Everything else on this panel can be
+       replaced wholesale on every draw; the seats cannot, because a division
+       MOVES them and a node that is destroyed and recreated cannot move. Each
+       seat carries a stable key — its bench, its party and its place in that
+       bench — so the same seat is the same node from one draw to the next, and
+       only its transform changes. */
+    const GLYPH = {
+      d: '<circle class="sg" cx="0" cy="0" r="3.4"/>',
+      l: '<rect class="sg" x="-3" y="-3" width="6" height="6"/>',
+      f: '<path class="sg" d="M0 -3.8L3.6 2.7L-3.6 2.7Z"/>'
     };
+    /* A RING, CARRIED BY EVERY SEAT AND SHOWN ONLY WHEN THE WHIP HAS BOUGHT IT.
+       The half-fill it replaces read as a nay, because a nay is also a seat
+       that has lost some of its colour: half and faint are the same signal.
+       A ring is a different signal — the seat keeps ALL its party colour and
+       wears a mark saying the government is paying for it. */
+    function paintSeats(list) {
+      const g = document.getElementById("chamber-seats");
+      if (!g) return;
+      const seen = Object.create(null);
+      list.forEach(s => {
+        seen[s.k] = 1;
+        let el = g.querySelector('[data-k="' + s.k + '"]');
+        if (!el) {
+          el = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          el.setAttribute("data-k", s.k);
+          el.innerHTML = '<circle class="ring" cx="0" cy="0" r="5.2"/>' +
+                         (GLYPH[s.t] || GLYPH.d);
+          g.appendChild(el);
+        }
+        el.setAttribute("transform",
+          "translate(" + s.x.toFixed(1) + "," + s.y.toFixed(1) + ")");
+        const st = s.aye === false ? " no" : s.wh ? " wh" : "";
+        el.setAttribute("class", "seat" + st);
+        const sg = el.querySelector(".sg");
+        sg.setAttribute("class", "sg" + st);
+        sg.setAttribute("fill", s.c);
+      });
+      [].slice.call(g.children).forEach(el => {
+        if (!seen[el.getAttribute("data-k")]) el.remove();
+      });
+    }
 
     /* PARTIES STACK HORIZONTALLY. Seats fill column by column, five deep,
        so a party occupies a contiguous block of columns and you read the
-       chamber left to right as party, party, party — which is how the
+       chamber left to right as party, party, party �?" which is how the
        benches actually work. Filling row-major instead made each party a
        horizontal band and stacked the parties vertically, which reads as a
        bar chart lying on its side rather than as a chamber. */
@@ -2755,15 +2819,6 @@ const UI = (function () {
        on the chamber, and a shared constant would drift the two apart. */
     const XCOLS = 5, XCW = 11, XRH = 10.5;
     const cols = n => Math.ceil(n / ROWS);
-
-    function bench(seats, x0, yFront, dir) {
-      let out = "";
-      seats.forEach((s, i) => {
-        const c = Math.floor(i / ROWS), r = i % ROWS;
-        out += glyph(x0 + c * CW, yFront + dir * r * RH, s);
-      });
-      return out;
-    }
 
     /* The bench at the Bar sits crosswise, so it fills the other way. */
     function crossbench(seats, x0, yTop) {
@@ -2816,7 +2871,17 @@ const UI = (function () {
        when a party crosses the floor rather than leaving a hole. */
     const govCols = Math.max(1, cols(gov.length));
     const oppCols = Math.max(1, cols(opp.length));
-    const benchW = Math.max(govCols, oppCols) * CW;
+    /* THE FLOOR WIDENS ONLY FOR THE GATHER. When the House divides, the ayes
+       stand in one aisle and the noes in the other, so it must be wide enough
+       for the larger of those — wider than either party block, and sizing it
+       that way the whole time shrank the ordinary House to two-thirds of the
+       panel. So the ordinary view keeps its own width and the floor widens for
+       the division, which is a change you are meant to notice. */
+    const partyW  = Math.max(govCols, oppCols) * CW;
+    const ayesN = gov.concat(opp, cross).filter(s => s.aye !== false).length;
+    const noesN = gov.length + opp.length + cross.length - ayesN;
+    const gatherW = Math.max(govCols, oppCols, cols(ayesN), cols(noesN)) * CW;
+    const benchW = (counting && chamberMotion()) ? gatherW : partyW;
     const crossRows = Math.max(1, Math.ceil(cross.length / XCOLS));
 
     const X0 = 66;                                    // clear of the Chair
@@ -2871,18 +2936,39 @@ const UI = (function () {
     const label = (x, y, t, cls) =>
       `<text x="${x.toFixed(0)}" y="${y.toFixed(0)}" text-anchor="middle" class="chlab${cls ? " " + cls : ""}">${t}</text>`;
 
+    /* WHERE EVERY SEAT STANDS. In the ordinary view a seat stands in its
+       party's block. During a division it stands where the vote puts it —
+       every aye in the government aisle and every noe in the opposition aisle
+       — which is what "the ayes have it" means when you can see the room
+       instead of reading the number. Same keys, different coordinates: the
+       whole move is one transform, and the stylesheet does the travelling. */
+    const all = govV.concat(oppV, crossV);
+    const layBench = (arr, front, dir) => arr.forEach((s, i) => {
+      s.x = X0 + Math.floor(i / ROWS) * CW;
+      s.y = front + dir * (i % ROWS) * RH;
+    });
+    const layBar = arr => arr.forEach((s, i) => {
+      s.x = crossX + (i % XCOLS) * XCW;
+      s.y = crossTop + Math.floor(i / XCOLS) * XRH;
+    });
+    if (counting && chamberMotion()) {
+      layBench(all.filter(s => s.aye !== false), govFront, -1);
+      layBench(all.filter(s => s.aye === false), oppFront, +1);
+    } else {
+      layBench(govV, govFront, -1);
+      layBench(oppV, oppFront, +1);
+      layBar(crossV);
+    }
+    if (chair) { chair.x = 30; chair.y = FLOOR; }
+
     $("#chamber").innerHTML =
-      /* the Chair holds the end, one member and not a piece of furniture */
-      (chair ? glyph(30, FLOOR, chair) : "") +
+      '<g id="chamber-seats"></g>' +
       label(30, FLOOR + 17, "SPEAKER") +
-      bench(govV, X0, govFront, -1) +
-      bench(oppV, X0, oppFront, +1) +
-      (hasBar ? crossbench(crossV, crossX, crossTop) : "") +
       label(CX, govTop - 12, "GOVERNMENT") +
       label(CX, oppBot + 22, "OPPOSITION") +
       (hasBar ? label(crossCX, crossTop - 14, "THE BENCH") : "") +
       (hasBar ? label(crossCX, crossBot + 22, "functional tier", "sub") : "");
-
+    paintSeats(chair ? all.concat([chair]) : all);
     const seatLine = (n, of) => `${n}<span class="of">/${of}</span>`;
     /* AISLES puts the functional forty into the aisles, so a popular
        denominator would read "169/240" and mean nothing. In that view the

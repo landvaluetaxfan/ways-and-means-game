@@ -187,7 +187,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    empty under the composition table. The order paper was the thing squeezed.
    Now: the plan keeps its 690, the reference is capped, and the order paper
    and the measure open on it absorb the rest. */
-.g-cham{grid-template-columns:minmax(340px,1fr) minmax(0,690px) minmax(330px,408px);}
+.g-cham{grid-template-columns:minmax(340px,520px) minmax(0,1fr) minmax(330px,432px);}
 /* THE TAB FITS. Nothing here scrolls the page: the screen takes the
    viewport's height, the single grid row divides it, and anything that
    cannot fit scrolls INSIDE its own panel with the terminal's drawn bar.
@@ -518,7 +518,9 @@ tr.vacant td{background:var(--chrome);color:var(--ink-soft);}
   white-space:nowrap;padding-right:9px;}
 .billwhy td.st.yea{color:var(--ok);}
 .billwhy td.st.nay{color:var(--alert);}
-.billwhy td.wy{color:var(--ink-soft);}
+.billwhy td.wy{color:var(--ink-soft);font-family:var(--f-data);font-size:10.5px;
+  white-space:nowrap;letter-spacing:.04em;}
+.wykey{margin-top:3px;font-size:10px;color:var(--ink-soft);}
 .rulehead:first-child{margin-top:0;}
 .flag{font-family:var(--f-data);font-size:10px;padding:0 3px;border:1px solid var(--rule);}
 .flag.bad{color:var(--alert);border-color:var(--alert);}
@@ -1674,10 +1676,20 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
    fill, so party and vote read in the same glance. Opacity rather than a
    grey: a grey seat would say "nobody", and the point is that it is
    somebody, on that bench, not with you. */
-.sg.no{fill-opacity:.16;}
-/* a seat the whip bought: solid is a bench that was always yours, half is
-   one you are paying for, empty is one you have not got */
-.sg.wh{fill-opacity:.5;}
+.seat .sgs{fill-opacity:1;}
+.seat.no .sgs{fill-opacity:.16;}
+/* A SEAT THE WHIP BOUGHT WEARS A RING, NOT A FADED FILL. Half-fill and
+   faint-fill are the same signal — the seat has lost some of its colour — so
+   the bought seat used to read as a nay. This keeps ALL the party colour,
+   because the member is yours, and marks it instead: a ring saying the
+   government is paying for this one. */
+.seat .ring{display:none;fill:none;stroke:var(--warn);stroke-width:1.1;}
+.seat.wh .ring{display:block;}
+/* THE MOVEMENT. A division gathers the House, and a seat that jumps is a chart
+   redrawing rather than a room emptying. The transition is on the transform,
+   which is the only thing that changes — the key is the seat's identity, so
+   the node survives and the travel is animated. */
+.seat{transition:transform .42s cubic-bezier(.4,0,.2,1);}
 .chpick{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
 .chpick b{font-family:var(--f-ui);font-size:10.5px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--ink-soft);font-weight:400;margin-right:3px;}

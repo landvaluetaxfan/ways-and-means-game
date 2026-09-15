@@ -49,6 +49,10 @@ const Shell = (function () {
      it, and the failure would be a volume of undefined. */
   const DEFAULTS = {
     autosave: true, motion: true, confirmDestructive: true,
+    /* The division gathers the House on the plan. A taste, so it is a control:
+       untick it and the count runs exactly as before, filling where the seats
+       stand. Default on; the off switch is the revert path. */
+    chamberMotion: true,
     mute: false, roomTone: true, music: true,
     gainUi: 0.55, gainRoom: 0.3, gainEvent: 0.7, gainMusic: 0.4,
     /* Text arrives a character at a time. Normal by default: fast reads
@@ -445,6 +449,7 @@ const Shell = (function () {
           <div class="opt-title">Interface</div>
           ${row("autosave", "Autosave", "Write to the slot after every sitting")}
           ${row("motion", "Animations", "The signature ceremony and transitions")}
+          ${row("chamberMotion", "Division on the plan", "Gather the House as the vote is counted")}
           ${row("confirmDestructive", "Confirm overwrites", "Ask before overwriting or deleting")}
           ${row("tips", "Explain the readouts", "Hover a column, flag or meter. ? to tab through.")}
         </div>
