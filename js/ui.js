@@ -297,7 +297,15 @@ const UI = (function () {
 
   /* ---------- title / status ---------- */
   function drawTitle() {
-    $("#tb-sys").textContent = `SESS ${st.session} / SITTING ${String(st.sitting).padStart(3, "0")} / ${st.date}`;
+    /* HOW LONG IS LEFT, WHERE THE CLOCK ALREADY IS. design/19: a player who
+       asks "how long until the House rises" should be able to answer by
+       looking. It was answerable on one panel of one tab; the topbar is on
+       every tab and already carries the sitting, so the count belongs beside
+       it. Order-paper time is the currency that cannot be topped up (bible
+       7.7) and this is the only place that says how much of it is left. */
+    const rise = st.sessionEnds != null
+      ? " / RISES IN " + Math.max(0, st.sessionEnds - st.sitting + 1) : "";
+    $("#tb-sys").textContent = `SESS ${st.session} / SITTING ${String(st.sitting).padStart(3, "0")} / ${st.date}${rise}`;
   }
   function drawStatus() {
     const conf = Engine.confidence(st), maj = Engine.majority(st);
@@ -625,7 +633,7 @@ const UI = (function () {
       btn.addEventListener("click", () => {
         const b = C.bills.find(x => x.id === btn.dataset.slot);
         acted(() => Engine.grantSlot(st, C, btn.dataset.slot));
-        cue("stamp"); if (typeof Wait !== "undefined") Wait.brief(240);
+        cue("stamp");
         setStatus("Order paper time granted to " + (b ? b.title : btn.dataset.slot) +
                   " \u00b7 " + (st.slots.total - st.slots.used) + " of " +
                   st.slots.total + " slots left", "transient");
@@ -660,7 +668,6 @@ const UI = (function () {
       if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); Dialog.alert(r.reason, { title: "Order refused" }); }
       else {
         cue("stamp"); score("order");
-        if (typeof Wait !== "undefined") Wait.brief(320);
         setStatus((si ? si.number : b.dataset.make) + " made \u2014 in force at once, and prayable",
                   "transient");
       }
@@ -676,7 +683,7 @@ const UI = (function () {
         ok => {
           if (!ok) return;
           acted(() => Engine.prayAgainst(st, C, b.dataset.pray));
-          cue(f.carries ? "aye" : "nay"); if (typeof Wait !== "undefined") Wait.brief(320);
+          cue(f.carries ? "aye" : "nay");
           /* A CARRIED PRAYER ANNULS THE GOVERNMENT'S OWN ORDER, so it
              fired the triumphant swell for the player losing something.
              Carried, the order goes out of force and the score walks the
@@ -759,7 +766,6 @@ const UI = (function () {
               if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
               const moved = Engine.changes(snap, Engine.snapshot(st), C);
               cue("stamp"); score("undertake");
-              if (typeof Wait !== "undefined") Wait.brief(420);
               setStatus("Appointed " + (ch ? ch.name : r.holder) +
                         (moved.length ? " \u00b7 " + moved.length + " indicator" +
                          (moved.length === 1 ? "" : "s") + " moved" : ""), "transient");
@@ -1689,10 +1695,30 @@ const UI = (function () {
      `acted` wraps the action instead of asking each handler to remember —
      a handler that forgets is the bug this replaces, and there is now one
      place to forget it rather than nine. */
+  /* EVERY DECISION TAKES A BEAT, AND IT IS NOT OPTIONAL.
+
+     The hourglass used to be eight hand-placed Wait.brief() calls, which
+     meant it was on the eight actions somebody remembered and off the
+     ninth the day it was written. It belongs here instead, because this
+     is already the choke point every mutating action goes through, so an
+     action added next year gets the beat without anybody deciding to
+     give it one.
+
+     It is not decoration. A state change the player did not watch happen
+     is a state change they have to go and find, and the beat is what
+     makes the link between the click and the consequence perceptible at
+     all. So the LENGTH FOLLOWS THE CONSEQUENCE: nothing moved is a tap,
+     one report is a beat, two is longer. An action that changed the
+     world should not feel like an action that did not.
+
+     Wait.brief clamps to 80-600ms itself, and body.no-motion is handled
+     inside it, so a player who turned motion off still gets the state
+     and never the theatre. */
   function acted(fn) {
     const before = structure(st);
     const out = fn();
-    reportMoves(before, structure(st));
+    const moved = reportMoves(before, structure(st)) || 0;
+    if (typeof Wait !== "undefined") Wait.brief(200 + moved * 160);
     return out;
   }
 
@@ -1770,6 +1796,8 @@ const UI = (function () {
     /* Two is a report; five is a wall. Anything past the first two is
        on the screen it belongs to anyway. */
     notes.slice(0, 2).forEach(n => Motion.notify(n));
+    /* How much moved, so the beat can be as long as the consequence. */
+    return notes.length;
   }
 
   const TONE_MARK = { good: "+", bad: "−", grave: "!", owed: "¤", plain: "·" };
@@ -2007,7 +2035,6 @@ const UI = (function () {
             const r = acted(() => Engine.take(st, C, b.dataset.take, +b.dataset.tempo));
             if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
             cue("stamp"); score("undertake");
-            if (typeof Wait !== "undefined") Wait.brief(420);
             initOpen = null;
             setStatus(i.title + " \u2014 an answer in " + r.after +
                       " sitting" + (r.after === 1 ? "" : "s"), "transient");

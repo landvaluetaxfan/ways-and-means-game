@@ -535,6 +535,24 @@ try {
 
   const src = fs.readFileSync(path.join(root, "js/wait.js"), "utf8");
   ok("and nothing in the dialog rolls dice", !/Math\.random/.test(src));
+
+  /* THE BEAT IS STRUCTURAL, NOT REMEMBERED. It used to be eight hand-placed
+     Wait.brief() calls, which is a convention and not a guarantee: the ninth
+     action written was the one that silently did without. It now lives in
+     acted(), so what has to stay true is that acted() still raises it and
+     that nobody has started hand-placing them back inside an acted() call. */
+  const ui = fs.readFileSync(path.join(root, "js/ui.js"), "utf8");
+  const body = ui.slice(ui.indexOf("function acted(fn) {"));
+  ok("every action that mutates takes a beat, from one place",
+     /Wait\.brief\(/.test(body.slice(0, body.indexOf("\n  }"))));
+  ok("and no acted() call site hand-places one beside it",
+     !/acted\(\([^]{0,400}?Wait\.brief/.test(ui));
+
+  /* design/19: how long until the House rises, answerable by looking. */
+  ok("the topbar carries how long the session has left",
+     /RISES IN/.test(ui) && w.eval(`/RISES IN \\d+/.test(
+       document.getElementById("tb-sys").textContent)`),
+     w.eval(`document.getElementById("tb-sys").textContent`));
 } catch (e) { ok("the division dialog", false, e.message); }
 
 /* STREAMING IS A PLAYER PREFERENCE, so it lives in Shell.opts with the

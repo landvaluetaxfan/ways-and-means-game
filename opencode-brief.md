@@ -216,13 +216,11 @@ The Concordance derives offices now (see `CLAUDE.md`), so a person article
 mostly writes itself once the person has done something; the missing half is
 that almost nobody has done anything.
 
-## T10 — [ ] Constituency prose
+## T10 — [x] Constituency prose  ·  **DONE**
 
-`content/constituencies.js`. The orbit tab's expanded row (`constituencyDetail()`)
-has room for a description and voting tendencies and currently shows numbers
-only. The author named this as next after the dossier row landed. 141 seats is
-too many to write individually — do the twenty that events and bills actually
-name, and leave the rest to their numbers.
+**Already landed — checked 15 September: 141 of 141 seats carry both
+`description` and `tendency`.** The brief asked for twenty and got all of them.
+Nothing to do; left here so nobody redoes it.
 
 ## T11 — [ ] Instrument and initiative prose
 
@@ -293,6 +291,59 @@ like a party. Give the six genuinely different positions, and then give a
 subset of them the Australian teal pattern: independents who are not a party,
 do not whip, and vote together anyway. The interest is that the bloc is
 *observed* rather than declared, so the player has to notice it.
+
+---
+
+## WHAT THE ENGINE GAINED THIS WEEK, AND WHAT IT ASKS OF YOU
+
+Four things landed on 15 September that change what your content is worth.
+Read this before picking a task, because two of them move a task's priority.
+
+**1. `Engine.rollCall()` — a division now names the members who cast it.**
+Party by party, as the lobbies fill, every seat in the House appears as a chip
+with the member's name and how they voted: aye, no, abstain, or away. This runs
+about twelve times a run and it is the single largest new surface your content
+has.
+
+What it means for you, concretely:
+
+- **The 141 district member names are now on screen**, not buried in a dossier.
+  They were already all written. They are now load-bearing.
+- **The 40 functional members appear with their register references** (LS-1,
+  MT-3). Same.
+- **The 100 list seats render as a bare mark with no name**, because a closed
+  list is the party's. That is deliberate and it is not a gap to fill — do not
+  invent list members. The tip explains why the seat has no name, and a player
+  learning the difference between the tiers from the roll call is the point.
+- **Dissent lands on named district backbenchers**, never on the payroll,
+  because a minister who votes against the line has resigned. So when you write
+  a rebellion in an event, the members who carry it are real people with real
+  seats and the player can see which ones. Naming a rebel in prose who then
+  appears in the roll call voting the other way is now a visible contradiction.
+
+**2. The settlement floor.** `substrate_neutrality` now requires the divergence
+Act to have *carried*, mirroring `restriction`, which requires it defeated. It
+was reachable at sitting 7 by nudging a number. This does not change T6's prose
+job; it changes what the prose is describing, so write the ending as the
+consequence of an Act rather than of a drift.
+
+**3. Every action takes a beat, from one place.** The hourglass moved out of
+eight hand-placed calls and into `acted()`. Nothing for you to do — noted so
+that if you add a content path that mutates state, you get the beat free and
+should not add one.
+
+**4. The topbar says how long the session has left.** `RISES IN n`. Relevant to
+T5: a quiet-sitting line that lands in the last three sittings of a session can
+say so, because the player can now see it coming.
+
+### The one thing to ask for rather than work around
+
+T13 (the substrate roster) is the task whose value went up most, because the
+roll call is where a member's category would *show*. A chip already carries a
+tip; once members have `category` and `status`, the tip can say that the member
+for Charter Green is an emulation voting on the divergence schedule, which is
+the entire game in one hover. **The engine side of that is one line and it is
+mine.** Write the field first; say so in OPEN REQUESTS; I will read it.
 
 ---
 
