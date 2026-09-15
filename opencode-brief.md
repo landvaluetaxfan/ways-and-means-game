@@ -181,6 +181,21 @@ or by attrition.
 `graduated_personhood` is, per §3.5.1, the most quietly horrifying of the four.
 It should not read as the sensible compromise.
 
+**Two of the four endings are currently unreachable, and that is yours.**
+`graduated_personhood` hangs on the flag `tribunal_established` and
+`federal_fudge` on `federal_schedule`, and **nothing in `content/` sets either
+one.** No event, no bill `onPass`, no instrument. So half the endings cannot
+happen however the player plays. `test.js` now asserts this gap explicitly, in
+the negative, so the day it closes is a day the build says so — when you land
+the content, those two assertions flip to the positive form and that is
+Claude's one-line follow-up, not a blocker on you.
+
+The third route, `substrate_neutrality`, was reachable at **sitting 7** until
+15 September and now requires the divergence Act to have carried. `restriction`
+requires it to have been defeated. So two endings hang on one bill and two hang
+on flags nobody sets — which means, until T6, the game has effectively **one
+ending with a coin-flip on it.**
+
 ## T7 — [ ] Currents for the parties that should have them
 
 `design/24` §B1. A party with no internal current is a bloc that votes. The

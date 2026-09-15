@@ -1605,11 +1605,43 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
      (Engine.checkSettlement(r, CONTENT) || {}).id === "restriction",
      (Engine.checkSettlement(r, CONTENT) || {}).id);
 
-  /* Substrate neutrality: the threshold low. */
+  /* Substrate neutrality: the Act carried AND the threshold still low.
+
+     THE FLOOR. A settlement is carried, not reached. Driving the engine
+     headless through four play policies found this one firing at sitting
+     7 — about five minutes — because its `when` asked only that the
+     number be low, and an event effect can move the number. So the first
+     assertion here is the negative one: the number alone is not an
+     ending, and the mirror of restriction is required. */
+  const nudged = fresh(); nudged.law.divergence_threshold_hours = 24;
+  ok("a threshold nudged low without an Act settles nothing",
+     Engine.checkSettlement(nudged, CONTENT) === null,
+     (Engine.checkSettlement(nudged, CONTENT) || {}).id);
+
   const sn = fresh(); sn.law.divergence_threshold_hours = 24;
-  ok("a threshold brought low is substrate neutrality",
+  sn.bills.divergence.stage = "assented"; sn.bills.divergence.dead = true;
+  ok("a threshold brought low by a carried Act is substrate neutrality",
      (Engine.checkSettlement(sn, CONTENT) || {}).id === "substrate_neutrality",
      (Engine.checkSettlement(sn, CONTENT) || {}).id);
+
+  /* And repealed back up is not this settlement either, which is why the
+     number is kept in the `when` beside the Act rather than replaced. */
+  const repealed = fresh();
+  repealed.bills.divergence.stage = "assented"; repealed.bills.divergence.dead = true;
+  repealed.law.divergence_threshold_hours = 120;
+  ok("an Act carried and then undone is not a settlement",
+     Engine.checkSettlement(repealed, CONTENT) === null,
+     (Engine.checkSettlement(repealed, CONTENT) || {}).id);
+
+  /* Two of the four endings hang on a flag that NO CONTENT SETS. That is
+     opencode's T6 and not an engine fault, but it is asserted here so the
+     day it stops being true is a day the build tells somebody. Flip these
+     to the positive form when the content lands. */
+  const setsFlag = (f0) => JSON.stringify(CONTENT.events || []).indexOf(f0) >= 0;
+  ok("KNOWN GAP: no event establishes a tribunal (opencode T6)",
+     !setsFlag("tribunal_established"));
+  ok("KNOWN GAP: no event lays a federal schedule (opencode T6)",
+     !setsFlag("federal_schedule"));
 
   /* Graduated personhood beats either: a tribunal takes the number out
      of law, so the threshold stops deciding anything. */
