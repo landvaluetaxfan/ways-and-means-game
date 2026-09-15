@@ -132,6 +132,15 @@ td.n{font-family:var(--f-data);font-variant-numeric:tabular-nums;white-space:now
 /* a row whose numbers are the argument, not the furniture */
 tr.warn td{background:rgba(138,109,34,.10);}
 tr.warn td.n{font-weight:700;}
+/* the hundred */
+span.sm{display:block;margin-top:3px;font-size:11.5px;line-height:1.45;opacity:.72;}
+td.ok{color:#2f5d34;}
+td.warn{background:rgba(138,109,34,.10);}
+th.n,td.n{text-align:right;}
+/* scoped: a bare h3 rule here would restyle the twelve item headings
+   in section IV, which are set by .item h3 above and appear first. */
+h3.sec{font-size:13px;letter-spacing:.06em;text-transform:uppercase;
+   margin:0 0 6px;font-weight:700;}
 .chain{margin:14px 0 8px;}
 /* what an item shipped, under the paragraph that asked for it */
 .ship{border-left:2px solid var(--ok);padding-left:9px;margin:7px 0 0;color:var(--ink-soft);}
@@ -159,17 +168,17 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--hair);
 <header class="mast">
   <div class="house">The Commonwealth of Habitats &middot; House of Commons</div>
   <h1>Order of Business</h1>
-  <div class="sub">Ways &amp; Means &mdash; what is built, what is next, and how long the game is.</div>
-  <div class="stamp">Session 4 &middot; 15 September 2287 &middot; 635 assertions green</div>
+  <div class="sub">Ways &amp; Means &mdash; what is built, what is next, how long the game is, and the hundred things it could become.</div>
+  <div class="stamp">Session 4 &middot; 15 September 2287 &middot; 660 assertions green</div>
 </header>
 
 <h2>I <span>Where the build stands</span></h2>
 <div class="figs">
-  <div class="fig"><b>21</b><i>events written</i><em>of 45&ndash;50 for a full playthrough</em></div>
+  <div class="fig"><b>24</b><i>events written</i><em>of 50&ndash;60; a run fires 9&ndash;13 and goes dry at sitting 9</em></div>
   <div class="fig"><b>14<span style="font-size:15px">/31</span></b><i>conditions used</i><em>the branching vocabulary is built and idle</em></div>
-  <div class="fig"><b>635</b><i>assertions</i><em>nine checks, all green</em></div>
-  <div class="fig"><b>25</b><i>design documents</i><em>plus a 134-section bible</em></div>
-  <div class="fig"><b>~2h</b><i>target playthrough</i><em>three sessions, one election</em></div>
+  <div class="fig"><b>660</b><i>assertions</i><em>nine checks, all green</em></div>
+  <div class="fig"><b>27</b><i>design documents</i><em>plus a 134-section bible</em></div>
+  <div class="fig"><b>45m&ndash;2h</b><i>target run</i><em>one, two or three sessions &middot; one election, in the middle</em></div>
 </div>
 
 <h2>II <span>The four chapters, to scale</span></h2>
@@ -449,8 +458,9 @@ should count, not merely exist.</p>
   the ambition of coverage.</li>
   <li><b>Foreign affairs as a map.</b> Light-lag as a chart is the version that never
   gets finished. Ship the price.</li>
-  <li><b>Opposition mode.</b> &sect;3.6 is LEANING and it is a second game. Decide against
-  it properly rather than leaving it open for years.</li>
+  <li><b>Opposition mode &mdash; deferred, not cut.</b> &sect;3.6 was LEANING. The
+  answer as of 15 September: not this run. It belongs to a later campaign, in the
+  Commonwealth this one leaves behind.</li>
 </ul>
 
 <h2>IX <span>Settled in canon</span></h2>
@@ -462,15 +472,153 @@ should count, not merely exist.</p>
       the list. Closure and dissolution are failure modes, not settlements.</td></tr>
     <tr><td class="n">7.7</td><td>Order-paper time is the pacing instrument, not merely a
       scarce good. Everything the House does costs it. A free division is a bug.</td></tr>
-    <tr><td class="n">1.7</td><td>Four chapters, three sessions, one election, one
-      settlement, about two hours. Replay is the other settlements and a second
-      leader &mdash; not length.</td></tr>
+    <tr><td class="n">1.7</td><td>Four chapters. A run is <b>45 minutes to two
+      hours</b> &mdash; one, two or three sessions of 24 sittings &mdash; with
+      <b>one election, in the middle</b>, where the player can lose. An election at
+      the end grades the player; one in the middle is played through.</td></tr>
+    <tr><td class="n">3.2</td><td><b>Unicameral.</b> No second chamber, decided rather
+      than merely unanswered. The three tiers are already the revising mechanism: a
+      dual majority makes a measure carry the popular benches and the functional forty
+      separately, so a senate would duplicate that check and halve its legibility.</td></tr>
+    <tr><td class="n">8.3</td><td>A party is named for a value, an interest, a place or a
+      founding event &mdash; almost never for its ideology, and never for what it
+      opposes. Three parties renamed under it.</td></tr>
   </tbody>
 </table></div>
 
+<h2>X <span>The hundred</span></h2>
+<p class="lede">A field, not a queue. Ninety-six in, one out, one undecided.</p>
+<p>On 15 September a hundred candidate ideas were written up across ten categories and
+the author went through all of them in one pass. The result was not a triage: almost
+everything survived, which means <em>selection has stopped being the constraint and
+ordering has become it</em>. What follows bundles them by category with the verdict
+count, what has already landed, and the one worth doing first. The full list, marked
+idea by idea, is <code>design/26</code>; the four replies that turned out to be new
+design rather than dispositions are <code>design/27</code>.</p>
+
+<div class="wrap"><table>
+  <thead><tr><th>Category</th><th class="n">In</th><th>Landed already</th><th>The one to do first</th></tr></thead>
+  <tbody>
+    <tr><td><b>I &middot; Procedure and the chamber</b><br><span class="sm">amendments, supply,
+      closure, the casting vote, committee stage, urgent questions</span></td>
+      <td class="n">9/10</td>
+      <td>&mdash;</td>
+      <td><b>Supply.</b> Two parties are propping the government up on a promise to vote
+        through a budget that does not exist.</td></tr>
+
+    <tr><td><b>II &middot; Parties, factions, members</b><br><span class="sm">the named
+      backbencher, defection, the letter, deselection, the payroll vote</span></td>
+      <td class="n">10/10</td>
+      <td class="ok">The roll call names every member of the House</td>
+      <td><b>The named backbencher.</b> The only idea on the list that changes what the
+        game <em>is</em> rather than how much of it there is.</td></tr>
+
+    <tr><td><b>III &middot; Money, lobbying, interests</b><br><span class="sm">the actor
+      store, donations with a memory, the revolving door, the register</span></td>
+      <td class="n">10/10</td>
+      <td>&mdash;</td>
+      <td><b>The actor store.</b> Prerequisite for seven of the other nine, and for
+        lobbying, without which substrate neutrality cannot be bought at any price.</td></tr>
+
+    <tr><td><b>IV &middot; Public, media, opinion</b><br><span class="sm">the pollster,
+      house effects, mastheads, salience, the scandal clock</span></td>
+      <td class="n">10/10</td>
+      <td>&mdash;</td>
+      <td><b>The pollster.</b> <code>reported()</code> already applies per-party error;
+        generalising it is most of a polling system.</td></tr>
+
+    <tr><td><b>V &middot; Elections and the franchise</b><br><span class="sm">the
+      parliament ending, the campaign, boundary review, the threshold as a weapon</span></td>
+      <td class="n">10/10</td>
+      <td>&mdash;</td>
+      <td class="warn"><b>The parliament ends.</b> There is no cap: a run that does not
+        settle runs forever. Measured at 190 empty sittings.</td></tr>
+
+    <tr><td><b>VI &middot; The executive and the state</b><br><span class="sm">collective
+      responsibility, the reshuffle, the civil service, judicial review</span></td>
+      <td class="n">10/10</td>
+      <td>&mdash;</td>
+      <td><b>Collective responsibility.</b> A minister who disagrees must resign or lie
+        &mdash; the executive/legislature split with teeth.</td></tr>
+
+    <tr><td><b>VII &middot; Stations, federalism, foreign</b><br><span class="sm">station
+      governments, internal migration, thermal as politics, trade</span></td>
+      <td class="n">10/10</td>
+      <td>&mdash;</td>
+      <td><b>Station government, derived not typed.</b> Thirty-five polities with
+        different constitutions is what makes the federal settlement mean something.</td></tr>
+
+    <tr><td><b>VIII &middot; Transhumanist, kept procedural</b><br><span class="sm">subjective
+      time, the proxy vote, continuity of membership, quorum with instances</span></td>
+      <td class="n">10/10</td>
+      <td>&mdash;</td>
+      <td class="warn"><b>The substrate roster.</b> Blocks all nine others. The population
+        is modelled to four decimals; <b>0 of 54 members carry any substrate field.</b></td></tr>
+
+    <tr><td><b>IX &middot; Interface and legibility</b><br><span class="sm">the held vote,
+      abstention shown, the bill's history, the diff, search</span></td>
+      <td class="n">10/10</td>
+      <td class="ok">Four: the vote holds until dismissed &middot; abstention and absence
+        are shown &middot; the roll call &middot; the clock in the topbar</td>
+      <td><b>A bill's history.</b> Every stage, every division, every amendment, on one
+        page.</td></tr>
+
+    <tr><td><b>X &middot; Run shape and replay</b><br><span class="sm">the settlement floor,
+      repeatable events, the record between runs, a named seed</span></td>
+      <td class="n">10/10</td>
+      <td class="ok">The settlement floor &mdash; an ending is <em>carried</em>, not reached</td>
+      <td><b>Events that fire more than once.</b> Twenty of twenty-four are <code>once</code>,
+        which is why the pool is dry by sitting nine.</td></tr>
+  </tbody>
+</table></div>
+
+<h3 class="sec" style="margin-top:18px">The dispositions that were not a plain yes</h3>
+<div class="wrap"><table>
+  <thead><tr><th>&there4;</th><th>Idea</th><th>What the author said</th></tr></thead>
+  <tbody>
+    <tr><td class="n">OUT</td><td>A second chamber</td><td>No. Unicameral, now canon at
+      &sect;3.2. Settles a question that had been left open rather than answered.</td></tr>
+    <tr><td class="n">?</td><td>Guillotine and closure</td><td>Held. The only undecided one
+      of the hundred.</td></tr>
+    <tr><td class="n">watch</td><td>Urgent questions &middot; the payroll vote &middot;
+      procurement</td><td>All three wanted, all three flagged as possible bloat. Urgent
+      questions survives on the author's own reasoning &mdash; <em>it gives the opposition
+      some teeth</em> &mdash; because the opposition has none.</td></tr>
+    <tr><td class="n">mod</td><td>The casting vote</td><td>It is <b>the Speaker's</b>. The
+      Chair is already a property of the seat rather than the person.</td></tr>
+    <tr><td class="n">mod</td><td>Independents</td><td>A wide range of opinion, plus a bloc
+      on the Australian teal pattern: not a party, no whip, votes together anyway.</td></tr>
+    <tr><td class="n">mod</td><td>Deselection</td><td>Becomes <b>preselection</b>, placed
+      before the mid-game election, where it shows opinion moving before the electorate
+      does.</td></tr>
+  </tbody>
+</table></div>
+
+<h3 class="sec" style="margin-top:18px">Three things that are built and cannot be reached</h3>
+<p>Every one found by measuring rather than reading, and every one a content fix rather
+than an engine one. This is now the sharpest single finding on the roadmap: <em>the
+engine is further ahead of the content than the event count alone suggests.</em></p>
+<div class="wrap"><table>
+  <thead><tr><th>Built</th><th>Why it cannot happen</th></tr></thead>
+  <tbody>
+    <tr><td><b>Abstention</b>, and absence through pairing</td>
+      <td>The engine has counted three ways since 14 September and four since the 15th.
+        <b>Not one bill's <code>stances</code> uses <code>abstain</code></b>, so the count
+        is built, tested, rendered and dead.</td></tr>
+    <tr><td><b>Graduated personhood</b> &mdash; the tribunal ending</td>
+      <td>Hangs on the flag <code>tribunal_established</code>. Nothing in content sets it.</td></tr>
+    <tr><td><b>The federal settlement</b></td>
+      <td>Hangs on <code>federal_schedule</code>. Nothing in content sets it. With two of
+        four endings unreachable and the other two hanging on one bill, the game currently
+        has <b>one ending with a coin-flip on it.</b></td></tr>
+  </tbody>
+</table></div>
+
+
 <footer>
-  Ways &amp; Means &middot; roadmap generated from the repository, 14 September 2026 &middot;
-  figures counted, not estimated &middot; see <code>design/22</code>&ndash;<code>25</code>
+  Ways &amp; Means &middot; roadmap generated from the repository, 15 September 2026 &middot;
+  figures counted, not estimated &middot; the hundred, marked idea by idea, is
+  <code>design/26</code>; the threads it opened are <code>design/27</code>
 </footer>
 
 </div>
