@@ -1440,6 +1440,68 @@ console.log("\nA DEFERRED FACT (the queue carries effects):");
    so this drives the four from constructed states rather than from
    anything the engine knows about them.
    ============================================================= */
+console.log("\nTHE THREE-WAY COUNT (aye, nay, abstain):");
+(function(){
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const st2 = Engine.newGame(CONTENT);
+  const d = Engine.division(st2, CONTENT, "divergence");
+
+  /* resolveStance() collapsed `against` and `abstain` to the same nought,
+     which is arithmetically right and politically blind: a party that
+     abstained is one you might move next time and a party that voted
+     against is not, and the count could not tell you which. */
+  ok("every bench accounts for all of its seats",
+     d.popular.aye + d.popular.nay + d.popular.abstain === d.popular.total,
+     d.popular.aye + "+" + d.popular.nay + "+" + d.popular.abstain +
+     " of " + d.popular.total);
+  ok("and so does the functional bench",
+     d.functional.aye + d.functional.nay + d.functional.abstain === d.functional.total);
+  ok("each party row does too",
+     d.rows.every(r => r.popularAye + r.popularNay + r.popularAbstain === r.popularSeats),
+     d.rows.filter(r => r.popularAye + r.popularNay + r.popularAbstain !== r.popularSeats)
+           .map(r => r.party).join(",") || "all");
+  ok("a party that is against reads as nay, not as absent",
+     d.rows.some(r => r.popularKind === "against" && r.popularNay > 0));
+
+  /* THE THRESHOLD IS UNCHANGED, and deliberately. A majority here is a
+     majority OF THE MEMBERS — §4.6.1's 21 of 40 is floor(40/2)+1 — so an
+     abstention still costs the government what a nay costs it. Staying
+     out of the lobby defeats a measure without being seen to, which is a
+     real parliamentary form under an absolute-majority rule. */
+  ok("the bar is a majority of the members, not of those voting",
+     d.popular.need === Math.floor(d.popular.total / 2) + 1 &&
+     d.functional.need === Math.floor(d.functional.total / 2) + 1,
+     d.popular.need + " of " + d.popular.total);
+
+  /* An authored abstention shows as one. */
+  const bill = JSON.parse(JSON.stringify(CONTENT.billById.divergence));
+  const victim = d.rows.find(r => r.popularKind === "against" && r.popularSeats > 0);
+  bill.stances[victim.party] = "abstain";
+  const C2 = Object.assign({}, CONTENT,
+    { billById: Object.assign({}, CONTENT.billById, { divergence: bill }) });
+  const d2 = Engine.division(st2, C2, "divergence");
+  const row2 = d2.rows.find(r => r.party === victim.party);
+  ok("a party told to abstain abstains whole",
+     row2.popularAbstain === row2.popularSeats && row2.popularNay === 0,
+     victim.party + ": " + row2.popularAbstain + " of " + row2.popularSeats);
+  ok("and it does not become an aye",
+     d2.popular.aye === d.popular.aye, d.popular.aye + " -> " + d2.popular.aye);
+  ok("so abstaining costs the government exactly what opposing cost it",
+     d2.popular.carries === d.popular.carries);
+
+  /* And the estimate must not disagree with its own breakdown. */
+  const rep = Engine.reported(st2, CONTENT, "divergence");
+  ok("the reported count accounts for every seat too",
+     rep.popular.aye + rep.popular.nay + rep.popular.abstain === rep.popular.total,
+     rep.popular.aye + "+" + rep.popular.nay + "+" + rep.popular.abstain);
+  ok("and its rows sum to its own benches, not to the true ones",
+     rep.rows.reduce((n, r) => n + r.popularAye, 0) === rep.popular.aye);
+
+  if (bad) { console.log("\n" + bad + " COUNT FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nTHE SETTLEMENTS (3.5.1):");
 (function(){
   let bad = 0;

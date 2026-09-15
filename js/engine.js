@@ -841,6 +841,33 @@ const Engine = (function () {
      {for:n} is a number the whips handed the Prime Minister, and
      attributing it to factions afterwards would be the interface
      inventing a reason the content did not give. */
+  /* WHAT THE PARTY SAID, as distinct from what it delivers.
+
+     resolveStance() answers "how many ayes" and collapses `against` and
+     `abstain` to the same nought, which is arithmetically right and
+     politically blind: a party that abstained is one you might move next
+     time, and a party that voted against is not. The count could not tell
+     you which, so the House could not either.
+
+     The threshold is unchanged and deliberately so. A majority here is a
+     majority OF THE MEMBERS — 121 of 240, 21 of 40 (§4.6.1) — not of those
+     voting, so an abstention still costs the government exactly what a nay
+     costs it. That is a real parliamentary form and not a fudge: under an
+     absolute-majority rule, staying out of the lobby is a way of defeating
+     something without being seen to. The information is the point.
+     Abstention becomes CHEAPER to buy than a vote, once there is anything
+     to buy it with (design/23). */
+  function stanceKind(st, C, bill, partyId, tier) {
+    let s = bill.stances && bill.stances[partyId];
+    if (s == null) s = inferStance(st, C, bill, partyId);
+    if (s && typeof s === "object" && (s.popular != null || s.functional != null))
+      s = (tier === "functional" ? s.functional : s.popular);
+    if (s === "abstain") return "abstain";
+    if (s === "against") return "against";
+    if (s === "for") return "for";
+    return "mixed";          /* {for:n}, {forPct}, {free} — a split bench */
+  }
+
   function resolveStance(st, C, bill, partyId, tier, detail) {
     const seats = tier === "functional" ? partyFunctional(st, partyId) : partyPopular(st, partyId);
     if (!seats) return 0;
@@ -1453,10 +1480,19 @@ const Engine = (function () {
       const pAye = Math.min(partyPopular(st, pid), pBase + (wp.popular || 0));
       const fAye = Math.min(partyFunctional(st, pid), fBase + (wp.functional || 0));
       popAye += pAye; funcAye += fAye;
+      /* An abstaining party abstains WHOLE — it is a line, not a turnout —
+         so the rest of a bench that is not aye and not abstaining is nay. */
+      const pKind = stanceKind(st, C, bill, pid, "popular");
+      const fKind = stanceKind(st, C, bill, pid, "functional");
+      const pSeats = partyPopular(st, pid), fSeats = partyFunctional(st, pid);
+      const pAbs = pKind === "abstain" ? Math.max(0, pSeats - pAye) : 0;
+      const fAbs = fKind === "abstain" ? Math.max(0, fSeats - fAye) : 0;
       rows.push({
         party: pid,
-        popularSeats: partyPopular(st, pid), popularAye: pAye, popularWhipped: wp.popular || 0,
-        functionalSeats: partyFunctional(st, pid), functionalAye: fAye, functionalWhipped: wp.functional || 0,
+        popularSeats: pSeats, popularAye: pAye, popularWhipped: wp.popular || 0,
+        popularAbstain: pAbs, popularNay: Math.max(0, pSeats - pAye - pAbs), popularKind: pKind,
+        functionalSeats: fSeats, functionalAye: fAye, functionalWhipped: wp.functional || 0,
+        functionalAbstain: fAbs, functionalNay: Math.max(0, fSeats - fAye - fAbs), functionalKind: fKind,
         /* Present only where the count came from the currents. Whipped seats
            are deliberately excluded — the whip buys members, not factions,
            until design/07 says otherwise. */
@@ -1472,10 +1508,13 @@ const Engine = (function () {
     const popCarries = popAye >= popNeed;
     const funcCarries = funcAye >= funcNeed;
 
+    const sum = (k) => rows.reduce((n, r) => n + (r[k] || 0), 0);
     return {
       bill: billId, dual: dual, rows: rows,
-      popular:   { aye: popAye,  total: popTotal,  need: popNeed,  carries: popCarries },
-      functional:{ aye: funcAye, total: funcTotal, need: funcNeed, carries: funcCarries },
+      popular:   { aye: popAye,  total: popTotal,  need: popNeed,  carries: popCarries,
+                   abstain: sum("popularAbstain"), nay: sum("popularNay") },
+      functional:{ aye: funcAye, total: funcTotal, need: funcNeed, carries: funcCarries,
+                   abstain: sum("functionalAbstain"), nay: sum("functionalNay") },
       carries: dual ? (popCarries && funcCarries) : popCarries
     };
   }
@@ -1560,6 +1599,12 @@ const Engine = (function () {
       ["popular", "functional"].forEach(bench => {
         const k = bench + "Aye", seats = r[bench + "Seats"];
         out[k] = Math.max(0, Math.min(seats, r[k] + reportError(st, r.party, bench)));
+        /* Nay is derived from the aye, so it has to be re-derived from the
+           REPORTED one or the estimate and the breakdown disagree by exactly
+           the error — the leak this function exists to close, reopened one
+           column to the right. Abstention is a stated position and not a
+           count, so it is not estimated. */
+        out[bench + "Nay"] = Math.max(0, seats - out[k] - (r[bench + "Abstain"] || 0));
       });
       if (r.benches) out.benches = reportedBenches(r, out);
       return out;
@@ -1588,12 +1633,15 @@ const Engine = (function () {
     const benchAye = bench =>
       Math.max(0, Math.min(d[bench].total,
         rows.reduce((n, r) => n + r[bench + "Aye"], 0)));
+    const benchSum = (bench, k) => rows.reduce((n, r) => n + (r[bench + k] || 0), 0);
     const p = benchAye("popular"), f = benchAye("functional");
     const pc = p >= d.popular.need, fc = f >= d.functional.need;
     return {
       dual: d.dual, true: d, rows: rows,
-      popular:    { aye: p, total: d.popular.total,    need: d.popular.need,    carries: pc },
-      functional: { aye: f, total: d.functional.total, need: d.functional.need, carries: fc },
+      popular:    { aye: p, total: d.popular.total,    need: d.popular.need,    carries: pc,
+                    abstain: benchSum("popular", "Abstain"), nay: benchSum("popular", "Nay") },
+      functional: { aye: f, total: d.functional.total, need: d.functional.need, carries: fc,
+                    abstain: benchSum("functional", "Abstain"), nay: benchSum("functional", "Nay") },
       carries: d.dual ? (pc && fc) : pc,
       /* what the number is and who said so. Present on every forecast shown. */
       prov: "Whips' count; partners' assurances; an estimate of the functional bench"

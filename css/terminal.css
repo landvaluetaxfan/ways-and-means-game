@@ -1386,6 +1386,17 @@ body.busy, body.busy *{cursor:progress;}
 .wait-back.bare .wait-dlg{
   width:min(660px,100%);border-bottom:0;
   box-shadow:0 -3px 0 rgba(27,29,25,.18);
+  /* THE SAME ARRIVAL AS THE MOVECARD, and for the same reason: a caption
+     that snaps into place reads as a page change, one that rises reads as
+     a thing being handed to you. The card uses .16s and three pixels; the
+     caption is larger and comes from the foot, so it takes six and a beat
+     longer. Nothing else differs — one easing across the interface. */
+  opacity:0;transform:translateY(6px);
+  animation:capt-in .2s linear forwards;
+}
+@keyframes capt-in{to{opacity:1;transform:translateY(0);}}
+body.no-motion .wait-back.bare .wait-dlg{
+  animation:none;opacity:1;transform:none;
 }
 /* THE TWO LOBBIES. A division is counted by lobby and not by party, so this is
    what a count looks like: two bars, the threshold notched on the ayes, and —

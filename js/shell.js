@@ -301,8 +301,8 @@ const Shell = (function () {
         electoral mechanics, set in the Circumterrestrial Commonwealth.</p>
         <p>Written and designed by Harper.</p>
         <p>Art and imagery by Harper.</p>
-        <p>Engine, editor and tooling built with Claude Code and DeepSeek V4
-        Flash Vision Exp.</p>
+        <p>Engine, editor and tooling built with Claude Code and
+        DeepSeek V4.1 Flash.</p>
       </div>
       <img class="studio" src="img/logos/retrograde.png" alt="Retrograde Softworks">
       <div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;

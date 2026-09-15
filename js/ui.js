@@ -3168,8 +3168,12 @@ const UI = (function () {
     const stored = Focus.selected("cons-table");
     const selCons = mine.some(k => k.id === stored) ? stored : mine[0].id;
     Focus.seed("cons-table", selCons);
-    /* A new station opens on its selected seat; the player may then close it. */
-    if (consOpenAt !== sid) { consOpenAt = sid; consOpen = selCons; }
+    /* A NEW STATION OPENS CLOSED. This used to expand the selected seat
+       automatically, which meant every visit to the orbit tab put a
+       dossier on screen for a constituency the player had not chosen —
+       the list is the subject and the dossier is what you ask for. The
+       selection still moves with the station; only the expansion waits. */
+    if (consOpenAt !== sid) { consOpenAt = sid; consOpen = null; }
     const openId = mine.some(k => k.id === consOpen) ? consOpen : null;
     $("#cons-table").innerHTML =
       "<thead><tr><th>Constituency and member</th><th class='n'>Electors</th>" +
