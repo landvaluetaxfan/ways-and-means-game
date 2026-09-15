@@ -225,6 +225,16 @@ B1 currents ─→ B2 when-blocks ─→ B3 unreached canon ─→ B4 people
    (no dependency on Lane A at any point)
 ```
 
+## And after that
+
+`design/25` carries eight pieces of real parliamentary procedure that this
+parliament does not have — supply, the programme speech, commencement, the
+ministerial direction, allocation of time, collective responsibility,
+amendments and select committees. Deferred, but costed, and two of them
+(commencement, amendments) are nearly free because the machinery is already
+allocated. Supply is the largest structural hole in the game and `design/13`
+has already done most of the thinking on it.
+
 ## What is explicitly not in this plan
 
 Committee, question time, by-elections, deputations, strikes, the Speaker and
