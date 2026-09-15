@@ -62,65 +62,31 @@ single most valuable thing in this file.** Everything else is finishing.
 
 ---
 
-## T1 — [ ] Bills get people on them
+## T1 — [x] Bills get people on them  ·  **DONE 15 Sep**
 
-A bill carries `owner`, which is a **party**. There is no person anywhere on a
-bill. Fifty-four characters exist and exactly one has ever appeared in an
-event, so nobody in this parliament has put their name to legislation.
+**Landed.** All seven bills carry `author` and `cosponsors`, every id from
+`content/characters.js`. Three bills take a cosponsor from another party —
+`divergence` (Herrera, NPP, with Lindegaard and Cutter), `thermal2` (Vellan,
+PSD, with Laughon) and `shedorder` (Halloran, PSD, with Kaunda). One bill is a
+backbencher's that its own party is lukewarm on: `shedorder` is Halloran's, sits
+`blocked`, and is the Czarnecki group's own grievance. Ministers author the
+government's bills (Vellan, Girard, Marin, Ivarsen, Herrera); Estevez's
+ratification has no owner because no party owns it.
 
-Add to each of the seven bills in `content/bills.js`:
+## T2 — [x] Descriptions that explain the politics, not the mechanism  ·  **DONE 15 Sep**
 
-```js
-author:     "character_id",        // the member in whose name it stands
-cosponsors: ["character_id", …],   // 0–4
-```
+**Landed.** All seven bills carry `contested` — one paragraph, the case for and
+the case against, neither written to win. Every one names who benefits, who
+pays, and the honest objection. The register aimed at was bible §9.1's: both
+things true at once and the game declining to resolve it.
 
-Rules that make this load-bearing rather than decorative:
+## T3 — [x] The references that make it a document  ·  **DONE 15 Sep**
 
-- **The author is a person and `owner` stays the party, and they may
-  disagree.** A backbencher's bill that their own party is lukewarm on is the
-  most interesting case available and there should be at least one.
-- **At least two bills take a cosponsor from outside the author's party.**
-  Cross-party sponsorship is the cheapest possible signal of where a measure
-  actually sits, and the only cheap way to show the chamber agreeing on
-  anything.
-- A **minister** as author means the government owns it. A **backbencher**
-  means it does not. Use both.
-- §2.7: the character roster is FROZEN. Every id must exist in
-  `content/characters.js`. Do not invent a person.
-
-## T2 — [ ] Descriptions that explain the politics, not the mechanism
-
-A bill has `summary` (what it does) and `effectNote` (what follows). A player
-reads *"Changes the law on divergence threshold hours"* and learns nothing
-about why anyone cares.
-
-Keep both, add a third:
-
-```js
-contested: "…"        // one short paragraph
-```
-
-**The case for and the case against, and neither written to win.** Name who
-benefits, who pays, and what the honest objection is. If a reader can tell
-which side the writer is on, it is not finished.
-
-The register, from bible §9.1 on the player's own party:
-
-> the Commons Union's restrictionism is a correct reading of material interest
-> rather than prejudice, which is exactly what makes the player's own party
-> uncomfortable rather than villainous
-
-Both things true at once, and the game declining to resolve it.
-
-§2.6 still binds: `contested` explains the politics of a mechanism already
-introduced. It must not introduce a second mechanism.
-
-## T3 — [ ] The references that make it a document
-
-While in each bill, check `ref` reads like a real paper number and `title`
-follows §3.9's naming scheme. The bill dossier is going to be headed like an
-in-world instrument and these are the lines that will sit under the letterhead.
+**Checked, nothing needed changing.** All seven `ref`s read as paper numbers in
+the House's own series (`HC 4/061` through `HC 4/133`, session 4, ascending), and
+every title is a subject with a parenthetical and "Bill" — which is what the
+House's instruments look like and what §3.9 permits. No institutional vocabulary
+the scheme forbids appears in any of them.
 
 ---
 
