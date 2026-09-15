@@ -1689,8 +1689,8 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
    fill, so party and vote read in the same glance. Opacity rather than a
    grey: a grey seat would say "nobody", and the point is that it is
    somebody, on that bench, not with you. */
-.seat .sgs{fill-opacity:1;}
-.seat.no .sgs{fill-opacity:.16;}
+.seat .sg{fill-opacity:1;}
+.seat.no .sg{fill-opacity:.2;}
 /* A SEAT THE WHIP BOUGHT WEARS A RING, NOT A FADED FILL. Half-fill and
    faint-fill are the same signal — the seat has lost some of its colour — so
    the bought seat used to read as a nay. This keeps ALL the party colour,

@@ -2739,28 +2739,35 @@ const UI = (function () {
       for (let i = 0; i < s.list; i++)     put("l");
     };
     const allIds = C.parties.map(p => p.id);
-    bySize(allIds.filter(id => govIds.includes(id))).forEach(id => popular(id, gov));
-    bySize(allIds.filter(id => !govIds.includes(id))).forEach(id => popular(id, opp));
-    bySize(allIds).forEach(id => {
+    /* A party's functional seats, wherever they are going. */
+    const functional = (id, into) => {
       const s = st.parties[id].seats, col = C.partyById[id].colour;
       const r = rowOf(id);
       let aye = r ? (counting ? spend(r.functionalAye) : r.functionalAye)
                   : (counting ? 0 : null);
       const whip = voted || !r ? 0 : Math.min(r.functionalWhipped || 0, r.functionalAye);
-      /* AISLES FOLDS THE BENCH IN. The functional forty sit at the Bar in
-         their own block because the dual test makes them a separate
-         question. For a simple measure they are only votes, and a bench of
-         their own says otherwise — so they join the side their party is on
-         and the Bar goes away. */
-      const into = chamberFold
-        ? (govIds.includes(id) ? gov : opp) : cross;
       for (let i = 0; i < s.functional; i++) {
         const on = aye == null || aye-- > 0;
         into.push({ c: col, t: "f", p: id, k: "s" + (seq++),
                     aye: aye == null ? null : on,
                     wh: on && aye != null && aye < whip });
       }
+    };
+    /* FOLDED IN, A PARTY'S FUNCTIONAL SEATS STAND BESIDE IT. The Bar is a block
+       at the end because the dual test makes the functional tier a separate
+       question; folding the bench in says it is not one, and the seats then
+       belong INSIDE the party's block — stacked at the end of the aisle they
+       read as one more party nobody has heard of, which is the opposite of
+       what folding them in is for. */
+    bySize(allIds.filter(id => govIds.includes(id))).forEach(id => {
+      popular(id, gov);
+      if (chamberFold) functional(id, gov);
     });
+    bySize(allIds.filter(id => !govIds.includes(id))).forEach(id => {
+      popular(id, opp);
+      if (chamberFold) functional(id, opp);
+    });
+    if (!chamberFold) bySize(allIds).forEach(id => functional(id, cross));
 
     /* No outline. A stroke on a 3px mark is a third of its area, so 280 of
        them read as a grey mesh with colour trapped inside it. Bare fills
