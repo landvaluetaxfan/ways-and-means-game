@@ -1149,8 +1149,20 @@ const UI = (function () {
           after();
         }));
     });
+    /* Pairing rides the same control: one bar, one behaviour, two plans. */
+    root.querySelectorAll(".whipbar[data-pp]").forEach(bar => {
+      const pp = bar.dataset.pp;
+      [...bar.querySelectorAll("i")].forEach((cell, i) =>
+        cell.addEventListener("click", () => {
+          const cur = ((st.pairs || {})[billId] || {})[pp] || 0;
+          Engine.setPairs(st, C, billId, pp, i + 1 === cur ? i : i + 1);
+          after();
+        }));
+    });
     const clr = root.querySelector("#btn-clearwhip");
     if (clr) clr.addEventListener("click", () => { Engine.clearWhips(st, billId); after(); });
+    const clp = root.querySelector("#btn-clearpair");
+    if (clp) clp.addEventListener("click", () => { Engine.clearPairs(st, billId); after(); });
   }
 
   /* THE DAY'S BUSINESS, AND WHAT IT WOULD TAKE.
@@ -1271,6 +1283,70 @@ const UI = (function () {
           `Charged when the division is called.` +
           `<button class="btn ed-x" id="btn-clearwhip">clear</button></div>`
         : `<div class="note">Drag to commit members. Nothing is charged until you divide.</div>`);
+  }
+
+  /* ---------- pairing ----------
+
+     THE ENGINE HAS DONE THIS SINCE 15 SEPTEMBER AND NOTHING COULD REACH IT.
+     `pairable`, `setPairs` and `clearPairs` were exported and no control in
+     the interface called any of them, so the fourth state of a vote — absent
+     — was unreachable by play. Seven parties are pairable on the Shed Order
+     bill today and the player could not have discovered one of them.
+
+     It is the whip's control, deliberately: the same segmented bar, the same
+     click-to-set, the same "nothing is charged until you divide". Pairing and
+     whipping are the same kind of bargaining done before the same division,
+     and giving them two different shapes would have said they were different
+     kinds of thing.
+
+     WHAT MAKES IT INTERESTING IS THAT IT IS A BAD DEAL, and the panel says so
+     rather than hiding it. In Westminster a pair is a courtesy that costs
+     neither side. Here a majority is a majority OF THE MEMBERS (§4.6.1), so
+     the threshold does not move when members are away: the government gives
+     up an aye it was counting and the other side gives up a nay that was
+     never counted against it. The player should be able to see that and do it
+     anyway, because the reason to pair is never arithmetic. */
+  function pairPanel(billId, b, d) {
+    if (st.bills[billId].dead) return "";
+    const plan = (st.pairs || {})[billId] || {};
+    let rows = "";
+    (C.parties || []).forEach(p => {
+      if (p.id === st.playerParty) return;
+      const cap = Engine.pairable(st, C, billId, p.id);
+      const cur = plan[p.id] || 0;
+      if (!cap.max && !cur) return;
+      /* A long bench makes a bar the width of the panel. Twelve is enough to
+         read as a quantity and the count beside it carries the rest. */
+      const pips = Math.min(cap.max, 12);
+      rows += `<tr><td>${mark(p.id)}${esc((C.partyById[p.id] || {}).short || p.id)}</td>` +
+        `<td>elected</td><td class="n">${cur} / ${cap.max}</td>` +
+        `<td class="n">&minus;${cap.costsYou}&thinsp;aye</td>` +
+        `<td class="mv"><div class="whipbar" data-pp="${p.id}"` +
+          priceTip("Pair with " + ps(p.id),
+            { note: "Each pair takes one of your ayes and one of their noes off " +
+                    "the floor. The threshold does not move, so it costs you a " +
+                    "vote and costs them one that was never counted. Up to " +
+                    cap.max + ". Nothing is settled until the division is called." },
+            cap.max ? null : (cap.reason || "nobody of theirs is against it")) +
+          ` data-whipped="${cur} of ${cap.max}">` +
+          Array.from({ length: pips }, (_, i) =>
+            `<i${i < cur ? ' class="on"' : ""}></i>`).join("") +
+        `</div></td></tr>`;
+    });
+    if (!rows) return "";
+
+    const total = Object.keys(plan).reduce((n, k) => n + plan[k], 0);
+    return `<table class="whiptab"><thead><tr><th>Pair with</th><th>Bench</th>` +
+      `<th class="n">Pairs</th><th class="n">Costs</th><th>Set</th></tr></thead>` +
+      `<tbody>${rows}</tbody></table>` +
+      (total
+        ? `<div class="whipcost">Paired: <b>${total}</b> on each side. ` +
+          `Your margin falls by ${total}; the threshold does not. ` +
+          `<button class="btn ed-x" id="btn-clearpair">clear</button></div>`
+        : `<div class="note">A pair is an arrangement, not a concession: two ` +
+          `members on opposite sides agree not to vote. Here it costs you more ` +
+          `than it costs them, because the threshold counts members and not ` +
+          `votes.</div>`);
   }
 
   function benchBar(label, r) {
@@ -2690,7 +2766,9 @@ const UI = (function () {
     if (panel) panel.hidden = !id;
     if (!id) { el.innerHTML = ""; return; }
     const b = C.billById[id], d = Engine.division(st, C, id);
-    const html = whipPanel(id, b, d);
+    const pairs = pairPanel(id, b, d);
+    const html = whipPanel(id, b, d) +
+      (pairs ? `<div class="pairsec"><h4>Pairing</h4>${pairs}</div>` : "");
     /* whipPanel says nothing about a fallen measure, and an empty panel
        is a frame around a hole. */
     if (panel) panel.hidden = !html;

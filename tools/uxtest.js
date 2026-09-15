@@ -548,6 +548,49 @@ try {
   ok("and no acted() call site hand-places one beside it",
      !/acted\(\([^]{0,400}?Wait\.brief/.test(ui));
 
+  /* PAIRING IS REACHABLE BY HAND. The engine has exported pairable/setPairs
+     since 15 September and no control called any of them, so the fourth
+     state of a vote was unreachable by play. What has to be true is not that
+     the functions exist — test.js covers that — but that a player clicking
+     the interface can arrive at an absent member. So this drives the DOM. */
+  const paired = w.eval(`
+    (function () {
+      var st = UI.state();
+      /* the bill somebody is actually pairable on */
+      var bill = null;
+      CONTENT.bills.forEach(function (b) {
+        if (bill || st.bills[b.id].dead) return;
+        CONTENT.parties.forEach(function (p) {
+          if (bill || p.id === st.playerParty) return;
+          if (Engine.pairable(st, CONTENT, b.id, p.id).max > 0) bill = b.id;
+        });
+      });
+      if (!bill) return "NO PAIRABLE BILL";
+      Focus.set("cham-bills", bill);
+      UI.redraw();
+      var bar = document.querySelector("#cham-whip .whipbar[data-pp]");
+      if (!bar) return "NO PAIR CONTROL";
+      var cells = bar.querySelectorAll("i");
+      if (!cells.length) return "NO CELLS";
+      cells[1].click();                       /* ask for two pairs */
+      var who = bar.getAttribute("data-pp");
+      var set = ((UI.state().pairs || {})[bill] || {})[who] || 0;
+      var d = Engine.division(UI.state(), CONTENT, bill);
+      var away = d.rows.reduce(function (n, r) { return n + (r.popularAbsent || 0); }, 0);
+      /* PUT IT BACK. A pair left standing here moved the ayes under the
+         faction-sum check further down and failed it — the shared-state trap
+         CLAUDE.md warns about, caught by the assertion it broke. */
+      Engine.clearPairs(UI.state(), bill);
+      UI.redraw();
+      return [bill, who, set, away].join("::");
+    })()
+  `).split("::");
+  ok("a pairable bill offers a pairing control", paired.length === 4,
+     paired[0]);
+  ok("clicking it sets the pair", +paired[2] === 2, paired[2] + " pairs with " + paired[1]);
+  ok("and members go absent in the division that follows", +paired[3] === 4,
+     paired[3] + " away, both sides");
+
   /* design/19: how long until the House rises, answerable by looking. */
   ok("the topbar carries how long the session has left",
      /RISES IN/.test(ui) && w.eval(`/RISES IN \\d+/.test(

@@ -2229,3 +2229,8 @@ body.no-motion .lchip{animation:none;}
 body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 /* A party that declined to take a side is not a party that lost the vote. */
 .n.offv{color:var(--warn);font-weight:bold;}
+/* Pairing sits under the whip because it is the same bargaining before the
+   same division; the rule says "also this", not "a different panel". */
+.pairsec{margin-top:10px;border-top:1px solid var(--ink-soft);padding-top:7px;}
+.pairsec h4{margin:0 0 5px;font-family:var(--f-ui);font-size:10.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:400;}
