@@ -292,45 +292,24 @@ subset of them the Australian teal pattern: independents who are not a party,
 do not whip, and vote together anyway. The interest is that the bloc is
 *observed* rather than declared, so the player has to notice it.
 
-## T15 — [ ] Make a bill somebody abstains on
+## T15 — [x] Make a bill somebody abstains on  ·  **DONE 15 Sep**
 
-**Measured 15 September and it is the same class of gap as T6.** The engine
-has counted three ways since 14 September — `for` / `against` / `abstain` —
-and a fourth, `absent`, arrives from pairing. Then:
+**Landed.** Three abstentions on two bills, none of them the same reason:
 
-```
-every bill in content/bills.js, stances used:  "for", "against", {forPct: n}
-bills using "abstain":                          0
-divisions in the opening state with anyone not voting: 0
-```
+- `continuity_registration` — **Uplift Alliance** (confidence and supply, two
+  list seats, no ministers): will not vote to rank one kind of person above
+  another and will not vote with the opposition to bring down a government it
+  is keeping alive. 2 popular abstain.
+- `shedorder` — **Liberal Party** (split down the middle): the free-market wing
+  wants a shed order that can be argued with, the fork-rentier money does not,
+  and the leadership would lose a public vote on its own benches. 41 popular
+  and 6 functional abstain, so the "Not v." column appears on a dual bill.
 
-So abstention is built, tested, rendered, and **never once reachable**. The
-breakdown table now grows a "Not v." column the moment anybody declines to
-vote, and today that column can never appear.
+`divergence` and `thermal2` were left alone: their counts are asserted in
+`test.js` and the CDA abstaining there also trips the "no minister is recorded
+against their own party's line" check, which is not mine to change.
 
-Fix it in content, which is the whole fix — no engine change:
 
-```js
-stances: { cu:"for", rv:"abstain", geo:{ forPct:0.4 }, … }
-```
-
-**At least two bills want an abstaining party, and they should abstain for
-different reasons**, because abstention is the most expressive vote in a
-chamber and a game that never uses it is throwing the expressiveness away:
-
-- a **coalition partner** that cannot vote for a measure and will not vote
-  against its own government — the CDA on anything touching the personhood
-  schedule is the obvious one
-- a **confidence-and-supply** party keeping its distance: it holds the
-  government up, it did not join it, and abstention is exactly how that
-  distinction gets said out loud
-- a party **split down the middle**, where abstaining is the leadership
-  avoiding a public rebellion it would lose
-
-Bear in mind §4.6.1 while you do it: the functional bench needs 21 of 40, a
-majority **of the members and not of those voting**, so an abstention there is
-worth the same as a vote against. That asymmetry is real and is worth a bill
-being built around.
 
 ---
 

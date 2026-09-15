@@ -58,7 +58,13 @@ const BILLS = [
     dualMajority:true,
     axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
     stances:{ cu:"for", psa:"for", rv:{for:11}, upl:"for", geo:"for",
-              gb:"against", hul:"against", fh:"against", cl:{forPct:0.2}, sc:{forPct:0.35} },
+              gb:"against", hul:"against", fh:"against",
+              /* THE PARTY SPLIT DOWN THE MIDDLE. The Liberal benches divide on
+                 this one — the free-market wing wants a shed order that can be
+                 argued with, and the fork-rentier money that pays for the other
+                 wing does not. The leadership can count, and it would lose, so
+                 the party declines to vote rather than lose in public. */
+              cl:"abstain", sc:{forPct:0.35} },
     onPass:[{law:{shed_order_authority:"statute"}},{move:{"public_standing":6}}],
     onFail:[{move:{"loyalty.cu_halloran":-8}}] },
 
@@ -95,7 +101,14 @@ const BILLS = [
     dualMajority:false,
     axes:{ownership:null,personhood:"restrictionist",sovereignty:"federal",closure:null},
     stances:{ rv:"for", cu:{forPct:0.65}, des:"for", hul:{forPct:0.7}, gb:{forPct:0.5},
-              psa:"against", cl:"against", upl:"against" },
+              psa:"against", cl:"against",
+              /* CONFIDENCE AND SUPPLY, KEEPING ITS DISTANCE. The Uplift
+                 Alliance holds this government up and did not join it, and
+                 abstention is how that distinction is said out loud: it will
+                 not vote to rank one kind of person above another, and it will
+                 not vote with the opposition to bring down an administration
+                 it is keeping alive. */
+              upl:"abstain" },
     onPass:[{move:{"loyalty.rv":18}},{move:{"loyalty.psa":-14}},
             {wire:"CONTINUITY REGISTER ESTABLISHED; SUBSTRATE LEFT VOTES AGAINST GOVERNMENT BILL"}],
     onFail:[{move:{"loyalty.rv":-16}}] },
