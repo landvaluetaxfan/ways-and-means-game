@@ -1161,6 +1161,17 @@ const UI = (function () {
     });
     const clr = root.querySelector("#btn-clearwhip");
     if (clr) clr.addEventListener("click", () => { Engine.clearWhips(st, billId); after(); });
+    root.querySelectorAll(".whipbar[data-lb]").forEach(bar => {
+      const lb = bar.dataset.lb;
+      [...bar.querySelectorAll("i")].forEach((cell, i) =>
+        cell.addEventListener("click", () => {
+          const cur = ((st.lobby || {})[billId] || {})[lb] || 0;
+          Engine.setLobby(st, C, billId, lb, i + 1 === cur ? i : i + 1);
+          after();
+        }));
+    });
+    const cll = root.querySelector("#btn-clearlobby");
+    if (cll) cll.addEventListener("click", () => { Engine.clearLobby(st, billId); after(); });
     const clp = root.querySelector("#btn-clearpair");
     if (clp) clp.addEventListener("click", () => { Engine.clearPairs(st, billId); after(); });
   }
@@ -1347,6 +1358,55 @@ const UI = (function () {
           `members on opposite sides agree not to vote. Here it costs you more ` +
           `than it costs them, because the threshold counts members and not ` +
           `votes.</div>`);
+  }
+
+  /* ---------- lobbying ----------
+
+     Third panel, same shape as the whip and the pair, because it is the
+     same kind of bargaining before the same division. What differs is the
+     price card, and it differs on purpose: the whip's says what you will
+     SPEND and this one says what you will PROMISE. Per design/24 A2 that
+     is the whole point of the mechanic, so the card names the ask in the
+     body's own words rather than showing a number. */
+  function lobbyPanel(billId, b, d) {
+    if (st.bills[billId].dead || !b.dualMajority) return "";
+    const plan = (st.lobby || {})[billId] || {};
+    let rows = "";
+    (C.actors || []).forEach(a => {
+      const cap = Engine.lobbyable(st, C, billId, a.id);
+      const cur = plan[a.id] || 0;
+      if (!cap.max && !cur) return;
+      const live = (st.actors || {})[a.id] || {};
+      rows += `<tr><td>${esc(a.name)}<span class="sm2">${esc(a.kind)}</span></td>` +
+        `<td class="n">${live.standing}</td>` +
+        `<td class="n">${cur} / ${cap.max}</td>` +
+        `<td class="mv"><div class="whipbar" data-lb="${a.id}"` +
+          priceTip("Ask " + a.name,
+            { note: "They want: " + (a.asks || "something unstated") + ". " +
+                    "Settling this does not spend a number \u2014 it opens an " +
+                    "undertaking, due before the House rises, and breaking it " +
+                    "is answered like any other broken promise. What they will " +
+                    "deliver rises with their standing." },
+            cap.max ? null : (cap.reason || "nothing to deliver")) +
+          ` data-whipped="${cur} of ${cap.max}">` +
+          Array.from({ length: Math.min(cap.max, 12) }, (_, i) =>
+            `<i${i < cur ? ' class="on"' : ""}></i>`).join("") +
+        `</div></td></tr>`;
+    });
+    if (!rows) return "";
+
+    const cost = Engine.lobbyCost(st, C, billId);
+    return `<table class="whiptab"><thead><tr><th>Body</th>` +
+      `<th class="n">Standing</th><th class="n">Seats</th><th>Ask</th></tr></thead>` +
+      `<tbody>${rows}</tbody></table>` +
+      (cost.seats
+        ? `<div class="whipcost">Asking for <b>${cost.seats}</b> functional seats. ` +
+          `You would owe: ` +
+          cost.promises.map(p => esc(p.text)).join("; ") + `. ` +
+          `<button class="btn ed-x" id="btn-clearlobby">clear</button></div>`
+        : `<div class="note">The functional benches have no whips and are not ` +
+          `yours to move. Somebody else can move them, and will want something ` +
+          `for it \u2014 not money, a promise.</div>`);
   }
 
   function benchBar(label, r) {
@@ -2820,9 +2880,10 @@ const UI = (function () {
     if (panel) panel.hidden = !id;
     if (!id) { el.innerHTML = ""; return; }
     const b = C.billById[id], d = Engine.division(st, C, id);
-    const pairs = pairPanel(id, b, d);
+    const pairs = pairPanel(id, b, d), lob = lobbyPanel(id, b, d);
     const html = whipPanel(id, b, d) +
-      (pairs ? `<div class="pairsec"><h4>Pairing</h4>${pairs}</div>` : "");
+      (pairs ? `<div class="pairsec"><h4>Pairing</h4>${pairs}</div>` : "") +
+      (lob ? `<div class="pairsec"><h4>Outside the chamber</h4>${lob}</div>` : "");
     /* whipPanel says nothing about a fallen measure, and an empty panel
        is a frame around a hole. */
     if (panel) panel.hidden = !html;

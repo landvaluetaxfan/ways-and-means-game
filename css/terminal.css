@@ -2234,3 +2234,6 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .pairsec{margin-top:10px;border-top:1px solid var(--ink-soft);padding-top:7px;}
 .pairsec h4{margin:0 0 5px;font-family:var(--f-ui);font-size:10.5px;
   letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:400;}
+/* what kind of body it is, under its name */
+.whiptab .sm2{display:block;font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-soft);}

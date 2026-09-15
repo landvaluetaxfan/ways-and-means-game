@@ -336,6 +336,30 @@ for Charter Green is an emulation voting on the divergence schedule, which is
 the entire game in one hover. **The engine side of that is one line and it is
 mine.** Write the field first; say so in OPEN REQUESTS; I will read it.
 
+## T16 — [ ] The actors have placeholder prose
+
+`content/actors.js` is new and it is mine — the engine needed a roster to
+seat, and `design/24` puts the store in Lane A. **The prose in it is not
+mine and should not stay.** Seven bodies, each with a one-line `note`
+written flat so the mechanism could be seen working.
+
+They are four kinds of power and they should not sound alike:
+
+- a **board** is the state's own creature until it is not (§4.6.4, LOCKED, and
+  called the sharpest tool in the game — the government appoints the boards and
+  the boards decide who votes in their seats)
+- a **consortium** owns the thing everyone needs and is patient about it
+- a **bloc** is people who cannot vote. The fork-rentiers are 210,000 of them
+  and §10.5's own line is that they "cannot vote and are therefore active by
+  other means" — that sentence is what the whole file exists to make true
+- a **union** is the strike weapon, and it is the player's own party's base
+
+Every name is canon: boards from §4.6.4, the fork-rentiers from §10.5,
+consortium names from the `consortium` pool in `content/names.js`. **Do not
+invent an eighth body** — §2.7 — but `asks` and `note` are yours, and `asks` in
+particular is read aloud by the interface as the price of a bench, so it wants
+to sound like something a real body would actually want.
+
 ---
 
 ## Do not

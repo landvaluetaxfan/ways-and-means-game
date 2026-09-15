@@ -52,7 +52,7 @@ w.URL.createObjectURL = () => "blob:x"; w.HTMLAnchorElement.prototype.click = fu
 const FILES = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js",
   "content/cabinet.js","content/instruments.js","content/initiatives.js","content/minutes.js","content/functional.js",
   "content/labour.js","content/names.js","content/characters.js","content/bills.js",
-  "content/glossary.js","content/events.js","content/encyclopedia.js","content/artifacts.js","content/business.js","content/settlements.js","content/index.js",
+  "content/glossary.js","content/events.js","content/encyclopedia.js","content/artifacts.js","content/business.js","content/settlements.js","content/actors.js","content/index.js",
   "js/audio.js","js/music.js","js/focus.js","js/stream.js","js/wait.js","js/dialog.js","js/tips.js","js/motion.js","js/artifacts.js","js/engine.js","js/orbitchart.js","js/papers.js","js/encyclopedia.js",
   "js/ui.js","js/shell.js"];
 FILES.forEach(f => {

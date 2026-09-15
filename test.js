@@ -2,7 +2,7 @@
 const fs = require("fs"), vm = require("vm");
 const files = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js","content/initiatives.js","content/minutes.js",
                "content/functional.js","content/labour.js","content/names.js",
-               "content/characters.js","content/bills.js","content/events.js","content/glossary.js","content/encyclopedia.js","content/business.js","content/settlements.js","content/index.js"];
+               "content/characters.js","content/bills.js","content/events.js","content/glossary.js","content/encyclopedia.js","content/business.js","content/settlements.js","content/actors.js","content/index.js"];
 const src = files.map(f => fs.readFileSync(f,"utf8")).join("\n") + "\n;globalThis.__C = CONTENT;";
 vm.runInThisContext(src);
 const CONTENT = globalThis.__C;
@@ -1723,6 +1723,88 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
        JSON.stringify(Engine.rollCall(rs, CONTENT, "divergence", d).parties
          .reduce((a, p) => a.concat(p.popular), [])
          .filter(m => m.tier === "list").map(m => m.name)));
+  })();
+
+  /* ---- LOBBYING, AND THE SETTLEMENT IT MAKES REACHABLE ----
+
+     design/24 A2 names one acceptance criterion for the whole feature:
+     "a test drives a state from the opening to a carried dual-majority
+     threshold bill using lobbying, and checkSettlement() returns it."
+     This is that test.
+
+     Substrate Neutrality needs the dual majority; the dual majority needs
+     21 of the functional 40; the whip cannot reach a bench outside the
+     coalition and says so. So until lobbying existed the engine offered a
+     settlement no legal sequence of moves could reach. */
+  (function () {
+    const L = Engine.newGame(CONTENT);
+
+    ok("every actor in content is seated at its standing",
+       (CONTENT.actors || []).length > 0 &&
+       (CONTENT.actors || []).every(a => L.actors[a.id] &&
+         L.actors[a.id].standing === a.standing),
+       Object.keys(L.actors).length + " actors");
+
+    /* No new verb: standing moves the way loyalty does. EFFECTS is at 21
+       against §15.5's line of twenty and this must not have made it 22. */
+    Engine.apply(L, CONTENT, [{ move: { "actor.lb_lifesupport": -4 } }]);
+    ok("move reaches an actor without a new verb",
+       L.actors.lb_lifesupport.standing === 50, L.actors.lb_lifesupport.standing);
+    Engine.apply(L, CONTENT, [{ move: { "actor.lb_lifesupport": 4 } }]);
+
+    /* THE FLOOR. What a body will deliver scales with what it thinks of
+       you, so the opening state is deliberately two seats short: lobbying
+       everybody available on sitting one must NOT be enough. */
+    const open = Engine.newGame(CONTENT);
+    (CONTENT.actors || []).forEach(a => {
+      const c = Engine.lobbyable(open, CONTENT, "divergence", a.id);
+      if (c.max) Engine.setLobby(open, CONTENT, "divergence", a.id, c.max);
+    });
+    const d0 = Engine.division(open, CONTENT, "divergence");
+    ok("lobbying everyone at opening standing is not enough",
+       !d0.carries && d0.functional.aye < d0.functional.need,
+       d0.functional.aye + " of " + d0.functional.need);
+
+    /* Earn the room first, then spend it. */
+    Engine.apply(L, CONTENT, [{ move: { "actor.forkrentiers": 25,
+                                        "actor.lb_substrate": 25,
+                                        "actor.anselm_elevator": 20 } }]);
+    (CONTENT.actors || []).forEach(a => {
+      const c = Engine.lobbyable(L, CONTENT, "divergence", a.id);
+      if (c.max) Engine.setLobby(L, CONTENT, "divergence", a.id, c.max);
+    });
+    const d1 = Engine.division(L, CONTENT, "divergence");
+    ok("a body better disposed to you delivers more",
+       d1.functional.aye > d0.functional.aye,
+       d0.functional.aye + " then " + d1.functional.aye);
+    ok("and the functional benches carry the measure", d1.functional.carries,
+       d1.functional.aye + " of " + d1.functional.need);
+    ok("the rows still sum to the count on the screen",
+       d1.rows.reduce((n, r) => n + r.functionalAye, 0) === d1.functional.aye);
+    ok("lobbied seats are counted apart from whipped ones",
+       d1.rows.some(r => (r.functionalLobbied || 0) > 0));
+
+    const owed = Engine.lobbyCost(L, CONTENT, "divergence").promises.length;
+    Engine.divide(L, CONTENT, "divergence");
+    ok("the price of a lobbied bench is a promise, not a payment",
+       (L.undertakings || []).filter(u => String(u.id).indexOf("lobby_") === 0)
+         .length === owed && owed > 0, owed + " promises now owed");
+    ok("and every one of them carries a deadline",
+       (L.undertakings || []).filter(u => String(u.id).indexOf("lobby_") === 0)
+         .every(u => u.state === "open" && u.owed_to));
+
+    /* Out through the President's referral to assent. */
+    for (let i = 0; i < 20 && L.bills.divergence.stage !== "assented"; i++)
+      Engine.advance(L, CONTENT);
+    ok("the Act carries and the threshold moves",
+       L.bills.divergence.stage === "assented" &&
+       L.law.divergence_threshold_hours < 49,
+       L.bills.divergence.stage + " / " + L.law.divergence_threshold_hours);
+
+    const settled = Engine.checkSettlement(L, CONTENT);
+    ok("SUBSTRATE NEUTRALITY IS REACHABLE (design/24 A2 acceptance)",
+       settled && settled.id === "substrate_neutrality",
+       settled ? settled.id : "nothing");
   })();
 
   /* Rule 3: closure and dissolution are failure modes, not settlements. */

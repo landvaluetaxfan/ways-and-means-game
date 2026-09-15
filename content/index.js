@@ -13,6 +13,7 @@ const CONTENT = (function () {
     archetypes: typeof ARCHETYPES !== "undefined" ? ARCHETYPES : [],
     business: typeof BUSINESS !== "undefined" ? BUSINESS : [],
     settlements: typeof SETTLEMENTS !== "undefined" ? SETTLEMENTS : [],
+    actors: typeof ACTORS !== "undefined" ? ACTORS : [],
     /* The name pools, so the engine can seat a list member without naming
        one itself. It indexes these; it does not contain them. */
     names: typeof NAMELISTS !== "undefined" ? NAMELISTS : {}
@@ -35,6 +36,7 @@ const CONTENT = (function () {
   C.notice = typeof NOTICE !== "undefined" ? NOTICE : null;
   C.encyclopediaById = ((C.encyclopedia||{}).articles||[]).reduce((m,a)=>(m[a.id]=a,m),{});
   C.settlementById = (C.settlements||[]).reduce((m,x)=>(m[x.id]=x,m),{});
+  C.actorById = (C.actors||[]).reduce((m,x)=>(m[x.id]=x,m),{});
   C.glossaryByTerm = GLOSSARY.reduce((m,g)=>(m[g.term.toLowerCase()]=g,m),{});
   return C;
 })();

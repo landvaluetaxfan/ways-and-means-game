@@ -1,0 +1,105 @@
+/* =============================================================
+   ACTORS — the bodies that are not in the chamber and not the state.
+
+   Bible §10.10: "Metanationals. Elevator consortiums, substrate
+   providers, consumables cartels as actors with NEAR PARTY-TIER
+   POWER, not lobbyists in the margins." Until now they had less
+   representation in state than a backbencher: parties carry
+   loyalty and characters carry a relationship, and a consortium
+   that can withhold a shipment carried nothing at all.
+
+   Every body here is named in canon. The four kinds:
+
+     board       a licensing board. §4.6.4, LOCKED and called the
+                 sharpest tool in the game: franchise in a functional
+                 constituency runs through professional licensure and
+                 the government appoints the boards, so a board is
+                 the gatekeeper of who votes in its seats.
+     consortium  a metanational. Names are taken from the
+                 `consortium` pool in content/names.js, which is
+                 canon; none is invented here.
+     bloc        an unenfranchised interest. The fork-rentiers
+                 (§10.5) are the worked example: they cannot vote,
+                 "and are therefore active by other means", which is
+                 the sentence this whole file exists to make true.
+     union       organised labour. content/labour.js models the
+                 workforce in detail and nothing represented it
+                 politically.
+
+   FIELDS
+
+     standing   0-100. How well disposed they are to the government.
+                It is NOT a resource the player spends: it is what
+                they think of you, and lobbying spends it.
+     patience   0-100. How long they will wait before acting on
+                their own. Read by design/23's third party; unread
+                by the engine today and deliberately present, so the
+                field exists before the behaviour needs it.
+     reach      the functional constituencies whose benches this body
+                can actually move, and by how many seats at most.
+                An actor with no reach can still be talked to and
+                cannot deliver anything.
+     wants      law keys this body cares about, and the direction.
+                Positive means they want the number higher.
+     asks       what they want in return, as an undertaking. The
+                price of a lobbied bench is never money: it is a
+                promise, and a promise has a deadline.
+
+   PROSE IS A PLACEHOLDER. Each `note` is one flat line so the
+   mechanism can be seen working. TODO opencode: these are four
+   kinds of power with four registers and none of them should sound
+   like the others.
+   ============================================================= */
+const ACTORS = [
+
+  { id: "lb_lifesupport", name: "Life Support Licensing Board", kind: "board",
+    standing: 54, patience: 70,
+    reach: { fc_lifesupport: 4 },
+    wants: { divergence_threshold_hours: 1 },
+    asks: "hold the certification schedule for a full session",
+    note: "Appointed by the government, and votes like it until it does not." },
+
+  { id: "lb_substrate", name: "Substrate Operations Licensing Board", kind: "board",
+    standing: 38, patience: 55,
+    reach: { fc_substrate: 5 },
+    wants: { divergence_threshold_hours: -1 },
+    asks: "a public stake in substrate provision, this session",
+    note: "The board that decides who is a substrate engineer, in the sector where that is the contested question." },
+
+  { id: "forkrentiers", name: "The Fork-Rentiers", kind: "bloc",
+    standing: 22, patience: 30,
+    reach: { fc_attestation: 3, fc_substrate: 2 },
+    wants: { divergence_threshold_hours: -1 },
+    asks: "no new attestation requirement before the House rises",
+    note: "Two hundred and ten thousand people who rent out their own instances. They cannot vote and are therefore active by other means." },
+
+  { id: "maintenance_union", name: "Combined Maintenance Trades", kind: "union",
+    standing: 61, patience: 45,
+    reach: { fc_maintenance: 4 },
+    wants: { divergence_threshold_hours: 1 },
+    asks: "no reduction in the embodied labour floor",
+    note: "The strike weapon, and the player's own party's base." },
+
+  { id: "anselm_elevator", name: "Anselm Elevator", kind: "consortium",
+    standing: 44, patience: 80,
+    reach: { fc_transit: 3, fc_anchors: 2 },
+    wants: { divergence_threshold_hours: 1 },
+    asks: "the anchorage concession ratified before the House rises",
+    note: "Owns the tether everything arrives on. Patient, because it can afford to be." },
+
+  { id: "standard_substrate", name: "Standard Substrate", kind: "consortium",
+    standing: 35, patience: 65,
+    reach: { fc_substrate: 3 },
+    wants: { divergence_threshold_hours: -1 },
+    asks: "leave the public substrate share where it is",
+    note: "Sells the substrate a person runs on, and would rather more people needed it." },
+
+  { id: "bellweather", name: "Bellweather Consumables", kind: "consortium",
+    standing: 49, patience: 60,
+    reach: { fc_consumables: 3 },
+    wants: {},
+    asks: "no consumables price intervention this session",
+    note: "Can withhold a shipment, which is the whole of its politics." }
+];
+
+if (typeof module !== "undefined") module.exports = ACTORS;

@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 12;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing
+  const STATE_VERSION = 13;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying
 
   /* ---------------------------------------------------------
      1. STATE
@@ -100,6 +100,26 @@ const Engine = (function () {
          division is called, exactly like the whips. */
       pairs: {},
 
+      /* ACTORS — the bodies that are not in the chamber and not the state.
+         Bible §10.10 gives metanationals "near party-tier power" and until
+         now a consortium that could withhold a shipment had less
+         representation in state than a backbencher. Seeded from content and
+         backfilled by reconcile(), exactly as parties and stations are.
+
+         `standing` is what they think of the government. It is NOT a purse:
+         the player does not spend it down to zero and top it up. Lobbying
+         costs standing because asking for a favour costs goodwill, and the
+         body that has run out of goodwill simply stops taking the call. */
+      actors: {},
+
+      /* LOBBYING — {billId: {actorId: seats}}. Parallel to st.whips in every
+         respect: planned, revisable, and NOT CHARGED UNTIL THE DIVISION IS
+         CALLED. The difference is what it costs. A whip spends capital or
+         loyalty, which are things you have. A lobby spends a PROMISE, which
+         is a thing you will owe — so settling one creates an undertaking
+         with a deadline rather than moving a number. */
+      lobby: {},
+
       /* PRICES — index numbers, 100 at the founding of the current series.
          Not a market simulation and deliberately not equities: there is no
          point pricing shares in an economy where goods are nearly free. These
@@ -167,6 +187,7 @@ const Engine = (function () {
 
     seedRoll(st, C);
     seedFunctional(st, C);
+    seedActors(st, C);
     return st;
   }
 
@@ -247,6 +268,15 @@ const Engine = (function () {
       if (!st.pairs) st.pairs = {};
       st.version = 12;
     }
+    if (st.version < 13) {                    // actors and lobbying
+      /* Left empty on purpose: reconcile() backfills every actor from
+         content on the next load, which is the same path a station added
+         after a save was written already takes. Seeding here would put the
+         roster in two places and let them drift. */
+      if (!st.actors) st.actors = {};
+      if (!st.lobby) st.lobby = {};
+      st.version = 13;
+    }
     return st;
   }
 
@@ -281,7 +311,13 @@ const Engine = (function () {
     const notes = { stationsAdded: [], stationsDropped: [], seatsAdded: [], seatsDropped: [],
                     partiesAdded: [], currentsAdded: [], cabinetAdded: [], cabinetRepaired: [],
                     functionalAdded: [], functionalDropped: [], instrumentsAdded: [],
-                    billsAdded: [], charactersAdded: [] };
+                    billsAdded: [], charactersAdded: [],
+                    actorsAdded: [], actorsDropped: [] };
+
+    /* An actor added to content after a save was written appears at its
+       content standing; one removed from content goes. Same contract as
+       stations: content owns identity, the save owns simulation. */
+    seedActors(st, C, notes);
 
     st.stations = st.stations || {};
     C.stations.forEach(s0 => {
@@ -433,6 +469,29 @@ const Engine = (function () {
      Vacancies are real. The chamber stays 280 seats and the majority
      stays 141, so an empty seat is a vote you do not have.
      --------------------------------------------------------- */
+
+  /* ONE BACKFILL, CALLED FROM BOTH ENDS. Seeding in newGame and backfilling
+     in reconcile from two copies of the same loop is how a new game and a
+     reloaded one come to disagree — which they did, and the save round-trip
+     check caught it on the first run: newGame left the roster empty, load
+     filled it, and the two states differed by seven actors. */
+  function seedActors(st, C, notes) {
+    st.actors = st.actors || {};
+    (C.actors || []).forEach(a => {
+      if (st.actors[a.id]) return;
+      st.actors[a.id] = { standing: a.standing == null ? 50 : a.standing,
+                          patience: a.patience == null ? 50 : a.patience,
+                          lastAct: null };
+      if (notes) notes.actorsAdded.push(a.id);
+    });
+    Object.keys(st.actors).forEach(id => {
+      if ((C.actorById || {})[id]) return;
+      delete st.actors[id];
+      if (notes) notes.actorsDropped.push(id);
+    });
+    st.lobby = st.lobby || {};
+    return st;
+  }
 
   function seedRoll(st, C) {
     st.roll = {};
@@ -1060,6 +1119,10 @@ const Engine = (function () {
     const b = C.billById[billId];
     const result = division(st, C, billId);     // whips still in place
     const paid = payWhips(st, C, billId);       // now charge for them
+    /* And the promises come due later, which is the point of them. Settled
+       after the count for the same reason the whips are: the result must be
+       computed with the plan still standing. */
+    const owed = payLobby(st, C, billId);
     const bs = st.bills[billId];
     /* THE HOUSE HAS VOTED, AND THAT IS NOW A FACT ABOUT THE BILL. The forecast
        is an estimate and stops being the truth the moment a division runs;
@@ -1527,6 +1590,27 @@ const Engine = (function () {
       });
     });
 
+    /* LOBBIED SEATS JOIN THE FUNCTIONAL AYE, and are attributed to the
+       parties holding benches that were not already with the measure, so
+       the breakdown still sums to the total on the screen. They are kept
+       in their own column: a whipped seat is a member the player moved and
+       a lobbied one is a bench somebody else moved for them, and a player
+       who cannot tell those apart cannot tell what they owe. */
+    const lob = lobbiedSeats(st, billId);
+    if (lob > 0) {
+      let left = lob;
+      rows.forEach(r => {
+        if (left <= 0) return;
+        const spare = Math.max(0, r.functionalSeats - r.functionalAye - (r.functionalAbstain || 0));
+        const take = Math.min(spare, left);
+        if (!take) return;
+        r.functionalAye += take;
+        r.functionalLobbied = (r.functionalLobbied || 0) + take;
+        r.functionalNay = Math.max(0, r.functionalSeats - r.functionalAye - (r.functionalAbstain || 0));
+        funcAye += take; left -= take;
+      });
+    }
+
     const popTotal = popularTotal(st), funcTotal = functionalTotal(st);
     const popNeed = Math.floor(popTotal / 2) + 1;
     const funcNeed = Math.floor(funcTotal / 2) + 1;
@@ -1682,6 +1766,157 @@ const Engine = (function () {
   }
 
   function clearPairs(st, billId) { delete st.pairs[billId]; }
+
+  /* ---------------------------------------------------------
+     LOBBYING — the bench somebody else moves for you.
+
+     THE PROBLEM IT EXISTS TO SOLVE, and it is a correctness problem
+     rather than a content gap. Substrate neutrality needs the dual
+     majority; the dual majority needs 21 of the functional 40; and
+     the whip cannot reach a bench outside the coalition — the panel
+     says so in as many words. So the engine offered a settlement the
+     player could not get to by any sequence of legal moves.
+
+     WHIPPED IS A MEMBER YOU MOVED. LOBBIED IS A BENCH SOMEBODY ELSE
+     MOVED FOR YOU. That distinction is the whole design, and it is why
+     the two are counted separately in every row.
+
+     WHAT IT COSTS IS NOT A NUMBER YOU HAVE. A whip spends capital or
+     loyalty. A lobby spends a PROMISE: settling one creates an
+     undertaking through the existing path, so the debt arrives with a
+     deadline, a responsible minister and an onBreach, and the player
+     pays for the bench in a later session rather than this one. An
+     ask that is never kept is the most expensive vote in the game.
+
+     Standing moves too, but downward and only a little: asking a body
+     for a favour costs goodwill whether or not you keep your word.
+     Breaking the promise is what actually ruins you, and that arrives
+     through breakUndertaking like every other broken promise.
+     --------------------------------------------------------- */
+
+  /* Which way a measure pushes the law this actor cares about, so a body
+     is never asked to deliver a bench against its own interest. Reads the
+     bill's own onPass rather than a hand-written alignment field: the
+     direction of a measure is a fact about the measure. */
+  function actorAlignment(C, bill, actor) {
+    const wants = (actor || {}).wants || {};
+    const keys = Object.keys(wants);
+    if (!keys.length) return 0;                 /* no view either way */
+    let score = 0;
+    [].concat(bill.onPass || []).forEach(e => {
+      if (!e || !e.law) return;
+      keys.forEach(k => {
+        if (e.law[k] === undefined) return;
+        score += 1;                             /* the measure touches it */
+      });
+    });
+    return score ? 1 : 0;
+  }
+
+  function lobbyable(st, C, billId, actorId) {
+    const bs = st.bills[billId], bill = C.billById[billId];
+    const a = (C.actorById || {})[actorId], live = (st.actors || {})[actorId];
+    if (!bs || bs.dead) return { max: 0, reason: "not before the House" };
+    if (!a || !live) return { max: 0, reason: "no such body" };
+    if (!bill || !bill.dualMajority)
+      return { max: 0, reason: "this measure does not need the functional bench" };
+    if (!actorAlignment(C, bill, a))
+      return { max: 0, reason: "this measure does not touch anything they want" };
+
+    /* A body with no goodwill left stops taking the call. Not a purse
+       being emptied: a relationship being spent. */
+    if (live.standing < 25)
+      return { max: 0, reason: "they will not take the call" };
+
+    /* Reach is capped by the seats in that constituency NOT already
+       voting for the measure — a body cannot deliver what is already
+       yours, and the ceiling must not shrink as the plan is made. */
+    const kept = (st.lobby || {})[billId];
+    if (kept) { st.lobby[billId] = {}; }
+    const d = division(st, C, billId);
+    if (kept) { st.lobby[billId] = kept; }
+    const spare = Math.max(0, d.functional.total - d.functional.aye);
+
+    /* WHAT THEY WILL DELIVER DEPENDS ON WHAT THEY THINK OF YOU, and this
+       is what puts a floor under the settlement rather than a gate.
+
+       The first cut let every aligned body deliver its full reach at
+       opening standing, so a player could lobby all six on sitting one,
+       carry the dual majority 34 to 21, and reach Substrate Neutrality by
+       SITTING FIVE — which is the same hole the settlement floor was
+       built to close a week ago, reopened from the other side.
+
+       Scaled by standing, the opening state delivers just enough and only
+       if nothing is wasted. A player who wants room has to go and earn it
+       first, which is the whole of the mechanic: the bench is not for
+       sale, it belongs to somebody who has to want to give it to you. */
+    let max = 0;
+    Object.keys(a.reach || {}).forEach(fc => {
+      const seats = ((C.functionalById || {})[fc] || {}).seats || 0;
+      max += Math.min(a.reach[fc], seats);
+    });
+    max = Math.floor(max * live.standing / 100);
+    max = Math.min(max, spare);
+    return { max: max,
+             reason: max ? null : "every bench they reach is already with you",
+             costStanding: 3,
+             asks: a.asks || "a favour, unspecified",
+             reach: a.reach || {} };
+  }
+
+  function setLobby(st, C, billId, actorId, n) {
+    const cap = lobbyable(st, C, billId, actorId);
+    const v = Math.max(0, Math.min(Math.round(n) || 0, cap.max));
+    const plan = st.lobby[billId] || (st.lobby[billId] = {});
+    if (v) plan[actorId] = v; else delete plan[actorId];
+    return { ok: true, seats: v, max: cap.max };
+  }
+
+  function clearLobby(st, billId) { delete st.lobby[billId]; }
+
+  /* What the plan will cost, stated as what is PROMISED rather than what
+     is spent, because that is the whole point of the mechanism. */
+  function lobbyCost(st, C, billId) {
+    const plan = (st.lobby || {})[billId] || {};
+    const out = { seats: 0, standing: {}, promises: [] };
+    Object.keys(plan).forEach(id => {
+      const a = (C.actorById || {})[id]; if (!a || !plan[id]) return;
+      out.seats += plan[id];
+      out.standing[id] = 3;
+      out.promises.push({ actor: id, name: a.name, text: a.asks });
+    });
+    return out;
+  }
+
+  /* Settled when the division is called, exactly like the whips. The
+     promise becomes a real undertaking through the existing verb, so it
+     carries a deadline and an answer for breaking it without lobbying
+     needing to know how either works. */
+  function payLobby(st, C, billId) {
+    const cost = lobbyCost(st, C, billId);
+    cost.promises.forEach(p => {
+      if (st.actors[p.actor])
+        st.actors[p.actor].standing = clamp(st.actors[p.actor].standing - 3, 0, 100);
+      EFFECTS.undertake(st, C, {
+        id: "lobby_" + billId + "_" + p.actor,
+        text: p.name + ": " + p.text,
+        owed_to: p.actor,
+        by: null                      /* before the House rises */
+      });
+    });
+    delete st.lobby[billId];
+    return cost;
+  }
+
+  /* How many functional seats the plan delivers, and to which parties.
+     Attributed to the parties holding non-aye seats in the constituencies
+     the body reaches, so the breakdown still sums. */
+  function lobbiedSeats(st, billId) {
+    const plan = (st.lobby || {})[billId] || {};
+    let total = 0;
+    Object.keys(plan).forEach(id => { total += plan[id] || 0; });
+    return total;
+  }
 
   /* ---------------------------------------------------------
      THE ROLL CALL — who, by name, went which way.
@@ -1967,6 +2202,12 @@ const Engine = (function () {
     capitalAbove:   (st, v) => Object.keys(v).every(k => (st.capital[k] || 0) > v[k]),
     capitalBelow:   (st, v) => Object.keys(v).every(k => (st.capital[k] || 0) < v[k]),
     slotsLeft:      (st, v) => (st.slots.total - st.slots.used) >= v,
+    /* Conditions are not under the twenty-verb cap (§15.5), so the world
+       may be read in as many ways as content needs. */
+    actorAbove:     (st, v) => Object.keys(v).every(id =>
+                      (st.actors[id] || {}).standing > v[id]),
+    actorBelow:     (st, v) => Object.keys(v).every(id =>
+                      (st.actors[id] || {}).standing < v[id]),
     chapterIs:      (st, v) => st.chapter === v,
     chapterAtLeast: (st, v) => st.chapter >= v,
     inGovernment:   (st, v) => st.inGovernment === v,
@@ -2051,6 +2292,13 @@ const Engine = (function () {
           st.prices[k] = clamp((st.prices[k] || 100) + d, 20, 400); break;
         case "capital":
           st.capital[k] = (st.capital[k] || 0) + d; break;
+        /* No new verb: an actor's standing moves the way a party's loyalty
+           does, which is what keeps EFFECTS at its twenty-one and off
+           §15.5's line for a twenty-second time. */
+        case "actor":
+          if (st.actors[k])
+            st.actors[k].standing = clamp(st.actors[k].standing + d, 0, 100);
+          break;
         default:
           st.log.unshift({ sitting: st.sitting, text:
             "IGNORED: a move effect named no such target: " + key + "." });
@@ -3299,7 +3547,7 @@ const Engine = (function () {
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
-    rollCall,
+    rollCall, lobbyable, setLobby, clearLobby, lobbyCost, payLobby, lobbiedSeats,
     settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
     snapshot, changes,
     prorogue, canDivide, candidates, vacancies, fillPost,

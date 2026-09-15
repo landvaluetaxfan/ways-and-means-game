@@ -581,6 +581,51 @@ try {
   ok("the roll call is not hurried", +dplan[5] > 8000 && +dplan[5] < 24000,
      dplan[5] + "ms across the benches");
 
+  /* LOBBYING IS REACHABLE BY HAND, for the same reason pairing had to be:
+     the engine offering a settlement is worth nothing if no control gets
+     the player there. Drives the DOM on a dual-majority bill. */
+  const lobbied = w.eval(`
+    (function () {
+      /* A fresh House. By this point the suite has divided the divergence
+         bill several times over and it is spent, so a lobbying control
+         would correctly refuse a measure no longer before the House.
+         Put the spent one back afterwards: a later check wants a measure
+         that has FALLEN, and booting a clean House under it failed that
+         check on the first run. Same shared-state trap as the pairing
+         block above, caught the same way. */
+      var keep = Engine.save(UI.state());
+      UI.boot(Engine.load(window.__snap, CONTENT), CONTENT);
+      var st = UI.state(), bill = null;
+      CONTENT.bills.forEach(function (b) {
+        if (bill || st.bills[b.id].dead || !b.dualMajority) return;
+        (CONTENT.actors || []).forEach(function (a) {
+          if (bill) return;
+          if (Engine.lobbyable(st, CONTENT, b.id, a.id).max > 0) bill = b.id;
+        });
+      });
+      if (!bill) return "NO LOBBYABLE BILL";
+      Focus.activate("cham-bills", bill); UI.redraw();
+      var bar = document.querySelector("#cham-whip .whipbar[data-lb]");
+      if (!bar) return "NO LOBBY CONTROL";
+      var cells = bar.querySelectorAll("i");
+      if (!cells.length) return "NO CELLS";
+      var before = Engine.division(UI.state(), CONTENT, bill).functional.aye;
+      cells[0].click();
+      var who = bar.getAttribute("data-lb");
+      var set = ((UI.state().lobby || {})[bill] || {})[who] || 0;
+      var after = Engine.division(UI.state(), CONTENT, bill).functional.aye;
+      Engine.clearLobby(UI.state(), bill);
+      UI.boot(Engine.load(keep, CONTENT), CONTENT);
+      return [bill, who, set, before, after].join("::");
+    })()
+  `).split("::");
+  ok("a dual-majority bill offers a lobbying control", lobbied.length === 5,
+     lobbied[0]);
+  ok("clicking it asks a body for a bench", +lobbied[2] === 1,
+     lobbied[2] + " seat from " + lobbied[1]);
+  ok("and the functional count moves for it", +lobbied[4] > +lobbied[3],
+     lobbied[3] + " then " + lobbied[4]);
+
   /* PAIRING IS REACHABLE BY HAND. The engine has exported pairable/setPairs
      since 15 September and no control called any of them, so the fourth
      state of a vote was unreachable by play. What has to be true is not that
