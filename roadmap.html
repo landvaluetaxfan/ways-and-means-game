@@ -160,15 +160,15 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--hair);
   <div class="house">The Commonwealth of Habitats &middot; House of Commons</div>
   <h1>Order of Business</h1>
   <div class="sub">Ways &amp; Means &mdash; what is built, what is next, and how long the game is.</div>
-  <div class="stamp">Session 4 &middot; 14 September 2287 &middot; 583 assertions green</div>
+  <div class="stamp">Session 4 &middot; 15 September 2287 &middot; 635 assertions green</div>
 </header>
 
 <h2>I <span>Where the build stands</span></h2>
 <div class="figs">
   <div class="fig"><b>21</b><i>events written</i><em>of 45&ndash;50 for a full playthrough</em></div>
   <div class="fig"><b>14<span style="font-size:15px">/31</span></b><i>conditions used</i><em>the branching vocabulary is built and idle</em></div>
-  <div class="fig"><b>583</b><i>assertions</i><em>nine checks, all green</em></div>
-  <div class="fig"><b>22</b><i>design documents</i><em>plus a 133-section bible</em></div>
+  <div class="fig"><b>635</b><i>assertions</i><em>nine checks, all green</em></div>
+  <div class="fig"><b>25</b><i>design documents</i><em>plus a 134-section bible</em></div>
   <div class="fig"><b>~2h</b><i>target playthrough</i><em>three sessions, one election</em></div>
 </div>
 
@@ -325,12 +325,81 @@ them.</b> The player will not meet all of them. Which one they drop is the game.
       long-lived emulated judges who personally remember the founding sitting on it.</p>
       <p>Cheap now: the queue carries facts, so a verdict is
       <code>{after, label, effects:[{law: &hellip;}]}</code> and needs no prose to exist.</p>
+      <p class="ship">Half shipped: the deferred queue landed on 14 Sep and a labelled
+      entry appears on the calendar as a thing the government knows is coming. What is
+      left is a court to author one.</p>
       <div class="who">content mostly &middot; the engine work is done</div></div>
     <span class="st soon">Soon</span></div>
 
 </div>
 
-<h2>V <span>The world is larger than the game</span></h2>
+
+<h2>V <span>Landed since the last revision</span></h2>
+<p>None of these were on the list above when it was written. Several came out of
+playing the thing rather than planning it.</p>
+<div class="wrap"><table>
+  <thead><tr><th>What</th><th>Why it mattered</th></tr></thead>
+  <tbody>
+    <tr><td><b>Order-paper time became a clock</b></td>
+        <td>It capped how much you could do and said nothing about when: all six slots
+        were spendable on sitting 1. The House now hears two divisions a day, and a
+        measure must have had its second reading &mdash; so a drafting bill costs two
+        grants and a division, half a session, and <code>Grant</code> is finally a step
+        rather than a favour.</td></tr>
+    <tr><td><b>The queue carries a fact, not only a story</b></td>
+        <td>Anything that happened later had to happen as an authored event, so a court
+        could not return a verdict without prose written first. That was the thing
+        standing between building the engine and writing content afterwards.</td></tr>
+    <tr><td><b>The game can be won</b></td>
+        <td><code>checkSettlement()</code> reads four <code>when</code> blocks and names
+        none of them. The first draft of the restriction block was satisfied by the
+        <em>opening state</em> &mdash; the Commonwealth had settled before the first
+        sitting, by doing nothing.</td></tr>
+    <tr><td><b>A division counts three ways, and pairs</b></td>
+        <td>Aye, nay, abstain &mdash; and absent, once pairing landed. A pair costs the
+        government an aye and the opposition a nay the threshold never counted, because
+        a majority here is a majority of the <em>members</em>. A Westminster courtesy
+        this chamber&rsquo;s arithmetic does not support.</td></tr>
+    <tr><td><b>&sect;12.13, and every action reporting itself</b></td>
+        <td>The cross-tab notice existed and <em>one</em> handler called it. Nine mutate
+        state. It also pointed at the wrong tab after the restructure.</td></tr>
+    <tr><td><b>Three parties renamed</b></td>
+        <td>&sect;8.3 was LOCKED and already said a party is named for who it is, not
+        what it opposes. The roster broke it twice.</td></tr>
+  </tbody>
+</table></div>
+
+<h2>VI <span>The procedure, deferred</span></h2>
+<p><code>design/25</code>. Eight things real parliaments have and this one does not.
+The transhumanist material gives the game its argument; procedure gives it its
+texture, and the texture is what has been thin.</p>
+<div class="wrap"><table>
+  <thead><tr><th>&nbsp;</th><th>What</th><th>State</th></tr></thead>
+  <tbody>
+    <tr class="warn"><td class="n">1</td><td><b>Supply.</b> <code>confidenceSupply</code>
+        is a promise to vote through a budget that does not exist.</td>
+        <td>largest hole; <code>design/13</code> has the answer</td></tr>
+    <tr><td class="n">2</td><td>The programme speech &mdash; declare the session&rsquo;s
+        business in advance and live with it.</td><td>small</td></tr>
+    <tr><td class="n">3</td><td><b>Commencement.</b> Pass a partner&rsquo;s bill and never
+        bring it into force. You did exactly what you promised.</td>
+        <td>nearly free &mdash; the queue does it</td></tr>
+    <tr><td class="n">4</td><td>The ministerial direction &mdash; a subordinate who cannot
+        stop you but can publish your override.</td><td>a check that is not a veto</td></tr>
+    <tr><td class="n">5</td><td>Allocation of time, and the filibuster.</td>
+        <td>free in the existing vocabulary</td></tr>
+    <tr><td class="n">6</td><td>Collective responsibility &mdash; an appointment becomes a
+        bet.</td><td>needs the actor store</td></tr>
+    <tr class="warn"><td class="n">7</td><td><b>Amendments.</b>
+        <code>amendments: []</code> is set on every bill at
+        <code>engine.js:158</code> and has never been read or written.</td>
+        <td>a dead field since the first build</td></tr>
+    <tr><td class="n">8</td><td>Select committees &mdash; consequences you did not choose
+        and cannot veto, on a schedule you can see.</td><td>a labelled deferred fact</td></tr>
+  </tbody>
+</table></div>
+
+<h2>VII <span>The world is larger than the game</span></h2>
 <div class="wrap"><table>
   <thead><tr><th>Built</th><th class="n">Exists</th><th class="n">Reached</th><th>Reading</th></tr></thead>
   <tbody>
@@ -371,7 +440,7 @@ decorative exit. &sect;7.9&rsquo;s own sentence &mdash; <em>a price nobody watch
 number nobody sees</em> &mdash; is satisfied on a technicality by all four. The check
 should count, not merely exist.</p>
 
-<h2>VI <span>What to cut, and what not to</span></h2>
+<h2>VIII <span>What to cut, and what not to</span></h2>
 <ul class="cut">
   <li><b>Not consumables.</b> The first draft of this list said cut it. That was wrong:
   &sect;7.2 is LOCKED and closure is the sovereignty number. <em>A dead number is more
@@ -384,7 +453,7 @@ should count, not merely exist.</p>
   it properly rather than leaving it open for years.</li>
 </ul>
 
-<h2>VII <span>Settled in canon today</span></h2>
+<h2>IX <span>Settled in canon</span></h2>
 <div class="wrap"><table>
   <thead><tr><th>&sect;</th><th>What it now says</th></tr></thead>
   <tbody>
@@ -401,7 +470,7 @@ should count, not merely exist.</p>
 
 <footer>
   Ways &amp; Means &middot; roadmap generated from the repository, 14 September 2026 &middot;
-  figures counted, not estimated &middot; see <code>design/17</code>&ndash;<code>19</code> and <code>design/22</code>
+  figures counted, not estimated &middot; see <code>design/22</code>&ndash;<code>25</code>
 </footer>
 
 </div>
