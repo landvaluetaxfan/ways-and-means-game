@@ -548,6 +548,39 @@ try {
   ok("and no acted() call site hand-places one beside it",
      !/acted\(\([^]{0,400}?Wait\.brief/.test(ui));
 
+  /* THE PACING OF A DIVISION. Two things were wrong and both are the kind
+     that come back: the largest bench was called first, so the result was
+     certain at bench six of twelve and six benches of anticlimax followed;
+     and every bench took the same 760ms whether two members were walking
+     or sixty-eight. */
+  const dplan = w.eval(`
+    (function () {
+      var rc = Engine.rollCall(UI.state(), CONTENT, window.__bill);
+      var p = UI.__test.rollPlan(rc.parties);
+      var d = Engine.division(UI.state(), CONTENT, window.__bill);
+      var asc = 1, prop = 1;
+      for (var i = 1; i < p.length; i++) {
+        if (p[i].seats < p[i-1].seats) asc = 0;
+        if (p[i].seats > p[i-1].seats && p[i].ms <= p[i-1].ms) prop = 0;
+      }
+      var last = p[p.length - 1] || {};
+      return [p.length, asc, prop, last.ayesTo, d.popular.aye,
+              p.reduce(function(n,x){return n+x.ms;}, 0),
+              new Set(p.map(function(x){return x.ms;})).size].join("::");
+    })()
+  `).split("::");
+  ok("the House is called smallest bench first", dplan[1] === "1",
+     dplan[0] + " benches");
+  ok("a bigger bench takes longer to divide than a smaller one", dplan[2] === "1");
+  ok("and the benches do not all take the same time", +dplan[6] > 1,
+     dplan[6] + " distinct durations");
+  ok("the running total ends on the division's own count",
+     dplan[3] === dplan[4], dplan[3] + " vs " + dplan[4]);
+  /* Twenty seconds was never the problem; a count that told you nothing
+     was. But it should not silently become four. */
+  ok("the roll call is not hurried", +dplan[5] > 8000 && +dplan[5] < 24000,
+     dplan[5] + "ms across the benches");
+
   /* PAIRING IS REACHABLE BY HAND. The engine has exported pairable/setPairs
      since 15 September and no control called any of them, so the fourth
      state of a vote was unreachable by play. What has to be true is not that

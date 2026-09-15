@@ -1378,6 +1378,34 @@ const UI = (function () {
      teardown. Same precedent as Motion.__plan: the presentation logic worth
      testing is the part that turns data into markup, and it should not need
      a dialog to be alive to be checked. */
+  /* THE ORDER THE HOUSE IS CALLED IN, AND HOW LONG EACH BENCH TAKES.
+
+     Pure, and beside rollChips for the same reason: the two things worth
+     asserting about a division's pacing are the order and the durations,
+     and neither should need a live caption to check.
+
+     Ascending by size, and the running tallies so the caller does not have
+     to keep them. Both are corrections to the first build, which called the
+     largest bench first — deciding the divergence bill at bench six of
+     twelve and leaving six benches of anticlimax — and gave every bench the
+     same 760ms whether two members were walking or sixty-eight. */
+  function rollPlan(parties) {
+    let aye = 0, nay = 0;
+    return (parties || [])
+      .filter(p => p.popular.length + p.functional.length > 0)
+      .sort((a, b) => (a.popular.length + a.functional.length) -
+                      (b.popular.length + b.functional.length))
+      .map(p => {
+        const seats = p.popular.length + p.functional.length;
+        aye += p.popular.filter(m => m.vote === "aye").length;
+        /* Abstentions and absences are neither bar: a member who declined
+           is not a noe, and the bars must never sum past the House. */
+        nay += p.popular.filter(m => m.vote === "nay").length;
+        return Object.assign({}, p, { seats: seats, ayesTo: aye, naysTo: nay,
+                 ms: Math.max(420, Math.min(2200, 500 + seats * 30)) });
+      });
+  }
+
   function rollChips(all) {
     /* MEMBERS FILE IN, THEY DO NOT APPEAR. A whole bench arriving on one
        frame reads as a table being printed; one arriving a few milliseconds
@@ -1445,12 +1473,21 @@ const UI = (function () {
        bill keeps its bench, because the bench is half the question. */
     const was = { colour: chamberColour, group: chamberGroup, fold: chamberFold };
     let ayeEl = null, noeEl = null, ayeN = null, noeN = null, vEl = null;
-    const paint = ayes => {
+    /* BOTH BARS RUN. The noes were painted at their final value on the
+       first frame and never moved again, which gave the whole nay total
+       away before a member had voted and left the ayes crawling along
+       beside a bar that was already full. Now each bench moves whichever
+       side it went to, so the two grow against each other and the
+       threshold mark is a thing being approached rather than a decoration.
+       Called with no second argument it paints the finished division,
+       which is what the declaration wants. */
+    const paint = (ayes, noesSoFar) => {
       if (!ayeEl) return;
+      const n = noesSoFar == null ? noes : noesSoFar;
       ayeEl.style.width = (ayes / P.total * 100) + "%";
-      noeEl.style.width = (noes / P.total * 100) + "%";
+      noeEl.style.width = (n / P.total * 100) + "%";
       ayeN.textContent = ayes + " / " + P.need + " to carry";
-      noeN.textContent = String(noes);
+      noeN.textContent = String(n);
     };
 
     /* THE SHAPE OF A COUNT, NOT A METRONOME. The bell; the doors; a fast start
@@ -1460,7 +1497,7 @@ const UI = (function () {
       { label: "The House divides", ms: 900, run: () => {
           chamberColour = "vote"; chamberGroup = true; chamberFold = !dual;
           chamberCount = { rows: order, ayes: 0 };
-          drawChamber(); paint(0); cue("knell");
+          drawChamber(); paint(0, 0); cue("knell");
         },
         stall: { flag: "division_stalled",
                  label: "The Clerk is recounting the functional bench", ms: 1400 } },
@@ -1484,25 +1521,45 @@ const UI = (function () {
        the declaration provably the same event, and keeps the guarantee that a
        division resolves identically whether its dialog is watched or skipped. */
     const rc = Engine.rollCall(st, C, r0.bill, r0);
+    /* THE COUNT IS THE ROLL CALL, not a second account of it.
+
+       The first build ran the two as separate phases: nine seconds of
+       members voting with the Ayes counter sitting at zero, then five
+       seconds of a bar filling in to report what the player had just
+       watched happen. Two sequential accounts of one event, the second
+       of which could tell them nothing. That — and not the duration,
+       which was already twenty seconds — is what read as unreal.
+
+       So the running total climbs bench by bench as the House is called,
+       the seat plan lights with it, and the tellers at the end confirm a
+       number the player has watched arrive rather than announcing one
+       they were kept from. This is the electronic-roll-call division
+       rather than the lobby one, which is the right choice here because
+       the roll call already names every member: a lobby division works
+       precisely because you CANNOT see how each member voted, and having
+       shown that, pretending to count afterwards is the incoherence.
+
+       A BENCH OF SIXTY-EIGHT AND A BENCH OF TWO TOOK THE SAME 760ms.
+       That was the other unreality, and the cheaper one to fix: the time
+       is now proportional to how many members are walking.
+
+       CALLED SMALLEST FIRST. Largest-first decided the divergence bill at
+       bench six of twelve and left six benches of anticlimax after the
+       result was already certain. Working up the roll keeps the count
+       live against the threshold mark until near the end, which is what
+       the mark is drawn for. */
+    const benches = rollPlan(rc.parties);
     const rollEl = () => document.getElementById("dv-roll");
-    (rc.parties || [])
-      .filter(p => p.popular.length + p.functional.length > 0)
-      .sort((a, b) => (b.popular.length + b.functional.length) -
-                      (a.popular.length + a.functional.length))
-      .forEach(p => {
-        const all = p.popular.concat(p.functional);
-        const cnt = v => all.filter(m => m.vote === v).length;
-        steps.push({
-          label: pn(p.party) + " divides",
-          /* HALF THE SPEED. At 380ms a bench was gone before it read as a
-             bench. A division is the slowest thing a parliament does on
-             purpose — the doors are locked and the members walk — and the
-             pacing should say so rather than hurry it. The caption can be
-             skipped, so a player who has seen it twelve times is not held. */
-          ms: 760,
-          run: () => {
-            const el = rollEl();
-            if (!el) return;
+    benches.forEach(p => {
+      const all = p.popular.concat(p.functional);
+      const cnt = v => all.filter(m => m.vote === v).length;
+      const to = p.ayesTo, toNay = p.naysTo;
+      steps.push({
+        label: pn(p.party) + " divides",
+        ms: p.ms,
+        run: () => {
+          const el = rollEl();
+          if (el) {
             const parts = [];
             ["aye", "nay", "abstain", "absent"].forEach(v => {
               const n = cnt(v); if (n) parts.push(n + " " + (v === "absent" ? "away" : v));
@@ -1511,25 +1568,22 @@ const UI = (function () {
             el.innerHTML =
               `<div class="lroll-h"><b>${esc(pn(p.party))}</b>` +
               `<span>${esc(parts.join(" \u00b7 "))}</span></div>` +
-              `<div class="lroll-g">` +
-              rollChips(all) +
-              `</div>`;
+              `<div class="lroll-g">` + rollChips(all) + `</div>`;
             if (typeof Tips !== "undefined" && Tips.within) Tips.within("#dv-roll ");
-            cue("click");
           }
-        });
-      });
-    [0.42, 0.68, 0.85, 0.94, 0.985, 1].forEach((fr, i) => {
-      const to = Math.round(P.aye * fr);
-      steps.push({
-        label: "The ayes are counted",
-        ms: i < 3 ? 260 : 480 + i * 220,
-        run: () => {
+          /* the total moves with the bench that moved it */
           chamberCount = { rows: order, ayes: to };
-          drawChamber(); paint(to); cue("click");
+          drawChamber(); paint(to, toNay); cue("click");
         }
       });
     });
+
+    /* The tellers are the last word and no longer the first account.
+       One beat to settle on the number the House has just produced. */
+    steps.push({ label: "The tellers take the numbers", ms: 900,
+      run: () => { chamberCount = { rows: order, ayes: P.aye };
+                   drawChamber(); paint(P.aye); } });
+
     notes.forEach(n => steps.push({ label: n, ms: 900,
       run: () => setStatus("A teller's note \u00b7 " + n, "transient") }));
     steps.push({ label: "The tellers confer", ms: 1100,
@@ -3595,5 +3649,5 @@ const UI = (function () {
      name, and it makes no sound — which is itself asserted, so exporting
      it cannot become a way to smuggle a cue into a renderer. */
   return { boot, state: () => st, annotate, setStatus, redraw: drawAll,
-           __test: { cabinetView, structure, reportMoves, rollChips } };
+           __test: { cabinetView, structure, reportMoves, rollChips, rollPlan } };
 })();
