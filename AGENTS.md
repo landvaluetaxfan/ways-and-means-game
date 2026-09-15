@@ -39,6 +39,16 @@ brief rather than writing placeholder narrative.
 6. Content is `.js`, not `.json`, so the game opens from `file://` where
    `fetch()` is blocked. Do not "modernise" this into modules or a build step.
 
+## Is there a work order waiting?
+
+`opencode-brief.md` in the repository root, when it exists, is a task written
+for you by Claude Code and committed rather than spoken — the author is often
+away from the machine that runs you and this is the only channel between the
+two agents. **Read it before starting anything.** Check the git log first: if
+the work is already in, the file is stale and should be deleted.
+
+A live instruction from the author always beats it.
+
 ## Before you finish
 
 ```
