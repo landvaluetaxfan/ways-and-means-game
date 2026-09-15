@@ -1139,7 +1139,17 @@ const UI = (function () {
   /* Click a block to commit up to it; click the last committed block again
      to release it. `after` is what to redraw, because the same control now
      lives on a tab that draws more than the bill detail. */
+  /* Which folded sections the player left open. A preference for the
+     session and not world state, so it lives here and not in the save
+     (CLAUDE.md: player preferences are not somebody else's save). */
+  const whipOpen = { pair: false, lobby: false };
+
   function wireWhipbars(root, billId, after) {
+    root.querySelectorAll("details.foldsec").forEach(dt => {
+      dt.addEventListener("toggle", () => {
+        whipOpen[dt.dataset.fold] = dt.open;
+      });
+    });
     root.querySelectorAll(".whipbar").forEach(bar => {
       const wp = bar.dataset.wp, wt = bar.dataset.wt;
       [...bar.querySelectorAll("i")].forEach((cell, i) =>
@@ -2880,10 +2890,33 @@ const UI = (function () {
     if (panel) panel.hidden = !id;
     if (!id) { el.innerHTML = ""; return; }
     const b = C.billById[id], d = Engine.division(st, C, id);
+    /* THREE CONTROLS, ONE PANEL, AND ONLY ONE OF THEM OPEN.
+
+       The whip, the pair and the lobby are the same bargaining before the
+       same division, which is why they share a panel and a control. But
+       three tables stacked needed 557px in a 386px box, so two of them
+       were below a scrollbar and the panel read as broken.
+
+       The whip stays open because it is the one a player uses every
+       division. The other two fold, and their summaries carry the count
+       so a folded section still says whether anything is planned in it —
+       a disclosure that hides whether it has contents is a worse trap
+       than the overflow it fixed. Open state is remembered per section
+       for the session, because a player who lobbies once will lobby
+       again. */
     const pairs = pairPanel(id, b, d), lob = lobbyPanel(id, b, d);
+    const fold = (key, title, sub, inner) => inner
+      ? `<details class="foldsec" data-fold="${key}"${whipOpen[key] ? " open" : ""}>` +
+        `<summary><b>${title}</b><span>${sub}</span></summary>${inner}</details>`
+      : "";
+    const pairN = Object.keys((st.pairs || {})[id] || {})
+      .reduce((n, k) => n + st.pairs[id][k], 0);
+    const lobN = Engine.lobbyCost(st, C, id).seats;
     const html = whipPanel(id, b, d) +
-      (pairs ? `<div class="pairsec"><h4>Pairing</h4>${pairs}</div>` : "") +
-      (lob ? `<div class="pairsec"><h4>Outside the chamber</h4>${lob}</div>` : "");
+      fold("pair", "Pairing",
+           pairN ? pairN + " arranged" : "none arranged", pairs) +
+      fold("lobby", "Outside the chamber",
+           lobN ? lobN + " seats asked for" : "nothing asked", lob);
     /* whipPanel says nothing about a fallen measure, and an empty panel
        is a frame around a hole. */
     if (panel) panel.hidden = !html;

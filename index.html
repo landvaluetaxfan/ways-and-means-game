@@ -138,15 +138,19 @@
           <div class="panel">
             <h2><span data-tip="benches">Parliament &mdash; House of Delegates</span> <em>district / list / functional</em></h2>
             <div class="pbody" id="cham-pick"></div>
-            <div class="pbody flush">
+            <div class="pbody flush scrolls" id="cham-house">
               <svg viewBox="0 0 720 348" role="img" aria-label="Seating plan of the House of Delegates">
                 <g id="chamber"></g>
               </svg>
               <div class="chtally" id="chamber-tally"></div>
               <div class="seatkey"><b>&#9679; district</b><b>&#9633; list</b><b>&#9650; functional</b></div>
               <div class="legend" id="chamber-legend"></div>
-              <div class="pbody" id="cham-forecast"></div>
             </div>
+            <!-- OUTSIDE THE SCROLLER. The forecast is the readout the whole
+                 panel exists to produce, so it must not be the thing that
+                 scrolls out of sight when the House is squeezed. It sits
+                 under the scrolling seat plan, always visible. -->
+            <div class="pbody" id="cham-forecast"></div>
           </div>
           <div class="panel" id="p-whip" hidden>
             <h2><span data-tip="whip">The whip</span> <em id="cham-whip-hdr"></em></h2>

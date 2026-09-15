@@ -412,6 +412,14 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
   border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
   border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
   display:flex;flex-direction:column;min-width:0;
+  /* A FLEX ITEM WILL NOT SHRINK BELOW ITS CONTENT unless told to, and
+     min-height defaults to auto, so a panel whose content was taller than
+     its grid row did not clip and did not scroll -- it PAINTED OVER THE
+     PANEL BELOW IT. Measured in Chromium: the House panel overflowed its
+     own box by 364px and the forecast bars landed 358px inside the whip
+     panel, on top of its table header. That is the collision in the
+     report, and it was never a density problem. */
+  min-height:0;
 }
 .panel > h2{
   margin:0;background:var(--bar);color:var(--bar-txt);
@@ -2237,3 +2245,31 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 /* what kind of body it is, under its name */
 .whiptab .sm2{display:block;font-size:10px;letter-spacing:.08em;
   text-transform:uppercase;color:var(--ink-soft);}
+
+/* The House is the one panel whose content genuinely cannot be made
+   shorter, so it is the one that scrolls. Everything else on the tab
+   fits; the page still never does (bible: an element in a tab may
+   scroll, never the page). */
+#cham-house{min-height:0;overflow:auto;}
+
+/* A folded control. The summary is a row like any other in this
+   interface -- it is a thing to click, so it looks like one -- and it
+   carries the count, because a disclosure that will not say whether it
+   has contents makes the player open it to find out. */
+.foldsec{border-top:1px solid var(--ink-soft);margin-top:7px;}
+.foldsec>summary{
+  list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;
+  padding:5px 4px;font-family:var(--f-ui);font-size:10.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);
+}
+.foldsec>summary::-webkit-details-marker{display:none;}
+/* the twisty, drawn rather than borrowed from the platform */
+.foldsec>summary::before{content:"\25B8";font-size:9px;opacity:.8;}
+.foldsec[open]>summary::before{content:"\25BE";}
+.foldsec>summary b{font-weight:700;color:var(--ink);}
+.foldsec>summary span{margin-left:auto;letter-spacing:0;text-transform:none;
+  font-family:var(--f-data);font-size:11px;}
+.foldsec>summary:hover{background:var(--field);}
+/* dotted, like every other focus ring here: one rule owns focus and a
+   solid outline is how a focused row comes to look like a selected one. */
+.foldsec>summary:focus-visible{outline:1px dotted var(--ink);outline-offset:-2px;}
