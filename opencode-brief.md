@@ -11,6 +11,14 @@ work is done and this file should have been deleted.
 
 ---
 
+## You can also be started from a phone
+
+`.github/workflows/opencode.yml` runs you headless on a fresh runner when the
+author comments `/opencode <instruction>` on any issue, or triggers the
+workflow by hand. A bare `/opencode` with no instruction means *do the work
+order in this file*. `npm run check` runs after you and before the push, so a
+run that breaks the build leaves nothing behind but a comment saying so.
+
 ## Lane
 
 `content/*.js` and prose. Do not touch `js/`, `tools/` or `test.js` —

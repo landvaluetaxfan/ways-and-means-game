@@ -1,0 +1,135 @@
+# =============================================================
+# OPENCODE, FROM A PHONE.
+#
+# The author is often away from the machine that runs opencode, and the
+# two agents have no channel to each other. This is the channel: comment
+# on any issue with `/opencode <instruction>` and opencode runs headless
+# on a fresh runner, works the content lane, and pushes if the checks
+# pass.
+#
+# THE FLAGS ARE FROM THE SOURCE, not from a blog. `opencode run` takes a
+# positional message, `--model provider/model`, `--agent`, and `--auto`,
+# whose own help text reads "auto-approve permissions that are not
+# explicitly denied (dangerous!)". Nothing can answer a permission prompt
+# on a runner, so --auto is not optional here; what makes it acceptable
+# is that the runner is disposable, the token is scoped to this repo, and
+# the association check below means only people who can already push are
+# able to start one.
+#
+# THE CHECKS ARE THE GATE. npm run check runs after opencode and before
+# the push, so a run that breaks the build leaves nothing behind but a
+# comment saying so. That is the whole safety model and it is the reason
+# pushing straight to main is defensible here.
+# =============================================================
+name: opencode
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "What should opencode do?"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  run:
+    # Only the people who could already push. An issue comment is world-
+    # writable on a public repo, and without this line anyone at all could
+    # spend the API key and commit to main.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (startsWith(github.event.comment.body, '/opencode') &&
+       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
+                github.event.comment.author_association))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+
+      - run: npm install
+
+      - name: Install opencode
+        run: |
+          curl -fsSL https://opencode.ai/install | bash
+          echo "$HOME/.opencode/bin" >> "$GITHUB_PATH"
+
+      - name: Work out the instruction
+        id: task
+        env:
+          COMMENT: ${{ github.event.comment.body }}
+          MANUAL: ${{ inputs.prompt }}
+        run: |
+          if [ -n "$MANUAL" ]; then
+            BODY="$MANUAL"
+          else
+            # strip the leading /opencode and any space after it
+            BODY="${COMMENT#/opencode}"
+            BODY="${BODY# }"
+          fi
+          # An empty instruction means "do the work order that is waiting".
+          if [ -z "$(echo "$BODY" | tr -d '[:space:]')" ]; then
+            BODY="Read opencode-brief.md in the repository root and do the work it describes."
+          fi
+          { echo "prompt<<__EOF__"; echo "$BODY"; echo "__EOF__"; } >> "$GITHUB_OUTPUT"
+
+      - name: Run opencode
+        env:
+          # The provider key. opencode reads the env var the models catalog
+          # names for each provider and prefers it over a stored login, so
+          # no `opencode auth login` is needed on a runner. Set whichever
+          # matches OPENCODE_MODEL below in Settings -> Secrets.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENCODE_DISABLE_AUTOUPDATE: "1"
+        run: |
+          MODEL="${OPENCODE_MODEL:-deepseek/deepseek-chat}"
+          opencode run --auto --model "$MODEL" \
+            "${{ steps.task.outputs.prompt }}"
+
+      - name: The checks are the gate
+        id: checks
+        run: npm run check
+
+      - name: Push whatever it changed
+        id: push
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "changed=no" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          git config user.name  "opencode"
+          git config user.email "opencode@users.noreply.github.com"
+          git add -A
+          git commit -m "opencode: ${{ steps.task.outputs.prompt }}" \
+                     -m "Run ${{ github.run_id }}, started from a comment. npm run check passed before this was pushed."
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "changed=yes" >> "$GITHUB_OUTPUT"
+
+      - name: Say what happened
+        if: always() && github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const ok = '${{ job.status }}' === 'success';
+            const changed = '${{ steps.push.outputs.changed }}' === 'yes';
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = ok
+              ? (changed
+                  ? `opencode ran, the checks passed, and it pushed to \`main\`. [Run](${run})`
+                  : `opencode ran and the checks passed, but it changed nothing. [Run](${run})`)
+              : `opencode did not finish, or the checks failed — **nothing was pushed**. [Run](${run})`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner, repo: context.repo.repo, body });
