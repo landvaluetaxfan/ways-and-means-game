@@ -2214,9 +2214,18 @@ body.no-motion .movecard{transition:none;}
 .lchip.nay{background:var(--alert);border-color:var(--alert);color:#fff;}
 .lchip.abstain{background:var(--warn);border-color:var(--warn);color:#fff;}
 .lchip.absent{background:transparent;color:var(--ink-soft);border-style:dashed;}
-/* A list seat is not a person, so it is not given the shape of one. */
-.lchip.list{width:11px;max-width:11px;padding:0;text-align:center;}
+/* A list seat IS a person -- they sit and they vote -- but the mandate is
+   the slate's and not a place's, so the chip says so with a hatched edge
+   rather than by withholding the name. */
+.lchip.list{border-style:dotted;}
+/* Members file in rather than appearing: the delay is set per chip in
+   js/ui.js so a bench of sixty and a bench of four both finish on time. */
+.lchip{animation:chip-in .16s linear backwards;}
+@keyframes chip-in{from{opacity:0;transform:translateY(3px);}}
+body.no-motion .lchip{animation:none;}
 .lchip.pay{font-weight:bold;}
 .lroll.arrive{opacity:0;transform:translateY(6px);
   animation:capt-in .2s linear forwards;}
 body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
+/* A party that declined to take a side is not a party that lost the vote. */
+.n.offv{color:var(--warn);font-weight:bold;}

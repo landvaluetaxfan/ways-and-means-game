@@ -1,7 +1,7 @@
 /* Headless check: does the division calculator reproduce the bible's numbers? */
 const fs = require("fs"), vm = require("vm");
 const files = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js","content/initiatives.js","content/minutes.js",
-               "content/functional.js","content/labour.js",
+               "content/functional.js","content/labour.js","content/names.js",
                "content/characters.js","content/bills.js","content/events.js","content/glossary.js","content/encyclopedia.js","content/business.js","content/settlements.js","content/index.js"];
 const src = files.map(f => fs.readFileSync(f,"utf8")).join("\n") + "\n;globalThis.__C = CONTENT;";
 vm.runInThisContext(src);
@@ -1693,13 +1693,36 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
     ok("no minister is recorded against their own party's line",
        offLine.length === 0, offLine.map(m => m.name + " " + m.vote).join(", "));
 
-    /* A closed list is the party's, so a list seat has nobody to name. */
+    /* A list member sits and votes like anybody else, so they get a name.
+       It is a placeholder, flagged as one, and never written to content —
+       §2.7's roster is untouched and no character has been invented. */
     const list = all("popular").filter(m => m.tier === "list");
-    ok("the list benches are seated but unnamed", list.length === 100 &&
-       list.every(m => m.name == null), list.length + " list seats");
-    ok("and every district and functional seat IS named",
+    ok("the list benches are seated and named", list.length === 100 &&
+       list.every(m => !!m.name), list.length + " list seats");
+    ok("and every one is flagged as a placeholder rather than as cast",
+       list.every(m => m.placeholder === true));
+    ok("every district and functional seat is named too",
        all("popular").concat(all("functional"))
          .filter(m => m.tier !== "list").every(m => !!m.name));
+
+    /* A placeholder that collides with the cast puts a real member in two
+       seats, and the roll call then shows them voting twice. */
+    const everyName = all("popular").concat(all("functional")).map(m => m.name);
+    ok("no two seats in the House carry the same name",
+       new Set(everyName).size === everyName.length,
+       (everyName.length - new Set(everyName).size) + " duplicates");
+    const cast = new Set((CONTENT.characters || []).map(c =>
+      String(c.name).replace(/^(Rt\. Hon\.|Hon\.)\s+/, "").replace(/\s+MP$/, "")));
+    ok("and no placeholder borrows a name from the cast",
+       list.every(m => !cast.has(m.name)),
+       list.filter(m => cast.has(m.name)).map(m => m.name).join(", "));
+
+    /* A name that changes when you look away is worse than no name. */
+    ok("a list member is the same person on the next reading",
+       JSON.stringify(list.map(m => m.name)) ===
+       JSON.stringify(Engine.rollCall(rs, CONTENT, "divergence", d).parties
+         .reduce((a, p) => a.concat(p.popular), [])
+         .filter(m => m.tier === "list").map(m => m.name)));
   })();
 
   /* Rule 3: closure and dissolution are failure modes, not settlements. */

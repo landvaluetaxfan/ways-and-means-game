@@ -1081,6 +1081,20 @@ const UI = (function () {
      the party stands on a card, which is what that change bought.  */
   function benchTableHTML(d) {
     const armed = !!d;
+    /* ABSTENTION AND ABSENCE, WHERE THE COUNT IS.
+
+       The engine has counted three ways since 14 September and four since
+       pairing landed on the 15th, and this table still rendered two: a
+       party that abstained was indistinguishable from a party that voted
+       against, which is the difference between declining to take a side
+       and taking one.
+
+       The column is CONDITIONAL, because most divisions have neither and a
+       permanently empty column is a worse lie than a missing one — it says
+       nobody ever abstains. It appears the moment anybody does. */
+    const off = (r) => (r.popularAbstain || 0) + (r.popularAbsent || 0) +
+                       (r.functionalAbstain || 0) + (r.functionalAbsent || 0);
+    const anyOff = armed && d.rows.some(r => off(r) > 0);
     const seatsOf = id => st.parties[id].seats;
     const cell = (aye, whipped) => whipped
       ? (aye - whipped) + `<span class="wh">+${whipped}</span>`
@@ -1090,6 +1104,11 @@ const UI = (function () {
       `<th class="n" data-tip="functional">F</th><th class="n" data-tip="seats">Tot</th>` +
       (armed ? `<th class="n" data-tip="popular">Aye</th>` +
                `<th class="n" data-tip="functional">F&#8239;aye</th>` : "") +
+      (anyOff ? `<th class="n" data-tip-title="Not voting" ` +
+        `data-tip-body="Abstentions and absences together. An abstention is a ` +
+        `stated position: the member is present and declines. An absence is a ` +
+        `pair \u2014 two members on opposite sides who agree not to vote, so ` +
+        `neither side loses by it.">Not&#8239;v.</th>` : "") +
       `</tr></thead><tbody>`;
     const govIds = st.coalition.concat(st.confidenceSupply);
     C.parties.forEach(p => {
@@ -1104,12 +1123,15 @@ const UI = (function () {
         `<td class="n"><b>${Engine.partyTotal(st, p.id)}</b></td>` +
         (armed ? `<td class="n">${r ? cell(r.popularAye, r.popularWhipped) : "&mdash;"}</td>` +
                  `<td class="n">${r ? cell(r.functionalAye, r.functionalWhipped) : "&mdash;"}</td>` : "") +
+        (anyOff ? `<td class="n${r && off(r) ? " offv" : ""}">` +
+          `${r && off(r) ? off(r) : "&mdash;"}</td>` : "") +
         `</tr>`;
       if (armed && r && r.benches) h += r.benches.map(b =>
         `<tr class="bench"><td>${esc(b.name)}</td><td class="n"></td><td class="n"></td>` +
         `<td class="n"></td><td class="n">${b.popularSeats + b.functionalSeats}</td>` +
         `<td class="n">${b.popularAye == null ? "&mdash;" : b.popularAye}</td>` +
-        `<td class="n">${b.functionalAye == null ? "&mdash;" : b.functionalAye}</td></tr>`).join("");
+        `<td class="n">${b.functionalAye == null ? "&mdash;" : b.functionalAye}</td>` +
+        (anyOff ? `<td class="n"></td>` : "") + `</tr>`).join("");
     });
     return h + `</tbody>`;
   }
@@ -1281,18 +1303,29 @@ const UI = (function () {
      testing is the part that turns data into markup, and it should not need
      a dialog to be alive to be checked. */
   function rollChips(all) {
-    return all.map(m => {
-      /* A list seat carries no name because there is nobody to name; it
-         gets a mark and a tip saying why. */
+    /* MEMBERS FILE IN, THEY DO NOT APPEAR. A whole bench arriving on one
+       frame reads as a table being printed; one arriving a few milliseconds
+       after the last reads as people walking through a door, which is what
+       a division is. The stagger is spread across the party's step so a
+       bench of sixty and a bench of four both finish on time. */
+    const step = Math.min(26, 640 / Math.max(1, all.length));
+    return all.map((m, i) => {
+      const d = ` style="animation-delay:${Math.round(i * step)}ms"`;
+      /* A LIST SEAT IS NAMED, and the name is a placeholder. The tip says
+         so, and says what the seat is, because the mandate really is the
+         party's even though the member is a person. */
       if (m.tier === "list")
-        return `<i class="lchip list ${m.vote}" data-tip-title="List seat" ` +
-          `data-tip-body="A closed list is the party's. The list benches ` +
-          `vote as the party and no member is named for the seat.">\u00b7</i>`;
+        return `<i class="lchip list ${m.vote}"${d} ` +
+          `data-tip-title="${esc(m.name || "List seat")}" ` +
+          `data-tip-body="List seat ${m.listIndex || ""}. A closed list is the ` +
+          `party's: the member sits and votes, but the mandate belongs to the ` +
+          `slate and not to a place. Voted ${m.vote === "absent" ? "not at all" : m.vote}.">` +
+          `${esc(String(m.name || "").split(/\s+/).pop())}</i>`;
       const who = String(m.name || "").replace(/^(Rt\. Hon\.|Hon\.)\s+/, "");
       const last = who.replace(/\s+MP$/, "").split(/\s+/).pop();
       const where = m.tier === "functional"
         ? (m.ref ? m.ref + " \u00b7 " + m.seat : m.seat) : m.seat;
-      return `<i class="lchip ${m.vote}${m.payroll ? " pay" : ""}" ` +
+      return `<i class="lchip ${m.vote}${m.payroll ? " pay" : ""}"${d} ` +
         `data-tip-title="${esc(who)}" ` +
         `data-tip-body="${esc(where || "")}. ` +
         `${m.office ? "Payroll vote \u2014 a minister who votes against the line has resigned. " : ""}` +
@@ -1385,7 +1418,12 @@ const UI = (function () {
         const cnt = v => all.filter(m => m.vote === v).length;
         steps.push({
           label: pn(p.party) + " divides",
-          ms: 380,
+          /* HALF THE SPEED. At 380ms a bench was gone before it read as a
+             bench. A division is the slowest thing a parliament does on
+             purpose — the doors are locked and the members walk — and the
+             pacing should say so rather than hurry it. The caption can be
+             skipped, so a player who has seen it twelve times is not held. */
+          ms: 760,
           run: () => {
             const el = rollEl();
             if (!el) return;

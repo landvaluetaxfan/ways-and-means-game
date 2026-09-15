@@ -1720,6 +1720,78 @@ const Engine = (function () {
 
   const PAYROLL = ["pm", "minister", "opposition", "shadow", "leader", "whip"];
 
+  /* A LIST MEMBER GETS A NAME, AND IT IS A PLACEHOLDER ON PURPOSE.
+
+     The first build rendered the hundred list seats as an unnamed mark,
+     on the argument that a closed list is the party's and there is
+     nobody to name. The argument is sound about the MANDATE and wrong
+     about the person: a list member is still a member, still sits, and
+     still shows up in a division. An unnamed mark says the seat is empty
+     rather than that the mandate is collective.
+
+     So they are named from `C.names`, which is `content/names.js` — the
+     pools that exist for exactly this, "when you need a name and do not
+     care which". Two properties make it safe under §2.7's frozen roster:
+
+       it is a PLACEHOLDER, flagged as one, and never written to content,
+       so no character has been invented and the cast is untouched;
+
+       it is STABLE, derived from a hash of the party and the seat's
+       index rather than from draw(), so the member for a given list seat
+       is the same person every division, every save and every session.
+       A name that changes when you look away is worse than no name.
+
+     Content may replace any of them by naming the member for real. */
+  function hash32(s0) {
+    let h = 2166136261;
+    for (let i = 0; i < s0.length; i++) {
+      h ^= s0.charCodeAt(i);
+      h = (h * 16777619) >>> 0;
+    }
+    return h;
+  }
+
+  function placeholderName(C, key, taken) {
+    const N = C.names || {};
+    const g = N.given || [], f = N.family || [], e = N.family_earthborn || [];
+    if (!g.length || !f.length) return null;
+    /* PROBE UNTIL IT IS NOBODY ELSE. The first version hashed once and
+       produced ninety-nine distinct names for a hundred seats, one of
+       which was Adaeze Fenwick — a sitting Commons Union minister. A
+       placeholder that collides with the cast is worse than no name at
+       all: it puts a real person in two seats and the roll call shows
+       them voting twice. So the hash is a starting point and the search
+       walks on from it, deterministically, until it lands on a name
+       nobody in this Commonwealth already answers to. */
+    for (let n = 0; n < 4096; n++) {
+      const h = hash32(key + (n ? "#" + n : ""));
+      /* A minority read as Earth-born, per bible §10.2 — nobody says so
+         out loud and everybody notices. One in nine keeps the proportion
+         a remark rather than a pattern. */
+      const fam = (e.length && (h >>> 28) % 9 === 0) ? e : f;
+      const name = g[h % g.length] + " " + fam[(h >>> 8) % fam.length];
+      if (!taken || !taken.has(name)) { if (taken) taken.add(name); return name; }
+    }
+    return null;
+  }
+
+  /* Every name this Commonwealth already uses, so a placeholder can avoid
+     all of them: the cast, the district members on the roll, and the
+     functional register. Bare of honorifics and the trailing MP, because
+     "Adriana Flash" and "Rt. Hon. Adriana Flash MP" are one person. */
+  function namesTaken(C) {
+    const bare = (x) => String(x || "")
+      .replace(/^(Rt\. Hon\.|Hon\.|Dr\.|Prof\.)\s+/, "")
+      .replace(/\s+MP$/, "").trim();
+    const t = new Set();
+    (C.characters || []).forEach(c => t.add(bare(c.name)));
+    (C.constituencies || []).forEach(k => t.add(bare(k.member)));
+    (C.functional || []).forEach(fc =>
+      (fc.members || []).forEach(m => t.add(bare(m.name))));
+    t.delete("");
+    return t;
+  }
+
   function rollCall(st, C, billId, d) {
     d = d || division(st, C, billId);
     const chars = C.characters || [];
@@ -1727,6 +1799,10 @@ const Engine = (function () {
        be upgraded from a bare name in the roll to a person with an office. */
     const cast = {};
     chars.forEach(ch => { if (ch.seat) cast[ch.seat] = ch; });
+
+    /* One set for the whole House, so two parties cannot seat the same
+       placeholder and no placeholder can be a member who already exists. */
+    const taken = namesTaken(C);
 
     const parties = d.rows.map(r => {
       const seats = [];
@@ -1743,10 +1819,13 @@ const Engine = (function () {
         }
       });
 
-      /* list: the party's slate, unnamed on purpose. */
+      /* list: the party's slate. Named from the pools, flagged as a
+         placeholder, stable across saves. See placeholderName. */
       const listN = Math.max(0, r.popularSeats - seats.length);
       for (let i = 0; i < listN; i++)
-        seats.push({ tier: "list", name: null, seat: null, payroll: false });
+        seats.push({ tier: "list", payroll: false, placeholder: true,
+                     name: placeholderName(C, r.party + ":list:" + i, taken),
+                     seat: null, listIndex: i + 1 });
 
       /* functional: named, with the register reference. */
       const fseats = [];

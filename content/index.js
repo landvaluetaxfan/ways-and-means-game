@@ -12,7 +12,10 @@ const CONTENT = (function () {
     functional: typeof FUNCTIONAL !== "undefined" ? FUNCTIONAL : [],
     archetypes: typeof ARCHETYPES !== "undefined" ? ARCHETYPES : [],
     business: typeof BUSINESS !== "undefined" ? BUSINESS : [],
-    settlements: typeof SETTLEMENTS !== "undefined" ? SETTLEMENTS : []
+    settlements: typeof SETTLEMENTS !== "undefined" ? SETTLEMENTS : [],
+    /* The name pools, so the engine can seat a list member without naming
+       one itself. It indexes these; it does not contain them. */
+    names: typeof NAMELISTS !== "undefined" ? NAMELISTS : {}
   };
   const idx = (arr) => arr.reduce((m, o) => (m[o.id] = o, m), {});
   C.partyById = idx(PARTIES);
