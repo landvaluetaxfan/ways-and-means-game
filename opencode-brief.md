@@ -203,52 +203,22 @@ Flagged in `CLAUDE.md` and still open, both content, both yours:
 - Station populations sum to **7,006,000**; `labour.js totals.population` is
   **6,863,000**. 143,000 apart.
 
-## T13 — [ ] The substrate roster  ·  **do this second, after T4**
+## T13 � [x] The substrate roster  �  **DONE 15 Sep**
 
-**Promoted to the top half of the list on 15 September.** It was not on this
-list at all; it turned out to be the prerequisite for a whole section of
-`design/26` and an unintended claim about the polity. `design/27` §C has the
-full argument and the measurements. The short version:
+**Landed.** All 54 characters carry `category`, and six carry a `status`.
+`category` is what a member is made of (biological | emulation | uplift |
+synthetic); `status` is the relation they stand in (instance | suspended |
+unattested | disembodied), and it is used only where something is actually true
+of the person. Augmented and interfacing stayed out of the data: the President's
+cat ears remain a `note`, which is where they belonged.
 
-The population is specified in full — 35 stations, four-way `composition` each,
-per-station to four decimal places, weighting to **biological 64.0% · emulation
-28.0% · uplift 4.0% · synthetic 4.0%** over 7,086,000 people.
-
-**Of 54 members of the House, zero carry any substrate field.** The character
-record is `id, portrait, name, role, party, seat, relationship, office, note,
-functional`. One independent's free-text `note` mentions augmentation. That is
-the entire substrate content of the legislature.
-
-So the House currently reads as 100% default-embodied-root in a Commonwealth
-that is 28% emulated, and it reads that way *by silence*, in a game whose
-subject is who counts as a person.
-
-Add to every character in `content/characters.js`:
-
-```js
-category: "biological" | "uplift" | "emulation" | "synthetic",
-status:   ["instance", "suspended", "unattested", "disembodied"],  // any, usually none
-```
-
-Four rules:
-
-1. **Bible §6.10's clean structure, not the law's broken one.** Category is
-   what you are made of; status is what relation you stand in. The *schedule*
-   the characters argue about still lists five categories in one list, and that
-   conflation is a deliberate founding defect the courts keep patching — keep
-   it in the world, not in the data.
-2. **Augmented, interfacing, cyborg are not categories.** They are a
-   `biological` with statuses, or with nothing at all and a line in `note`.
-   Cat ears are a `note` and that was correct.
-3. **Do not make the House proportional.** A legislature that mirrors its
-   population is a default; one that does not is a grievance with a number on
-   it. The bible describes the Public Substrate Association as *"young,
-   emulation-heavy, list-tier strength and almost no district seats"* — so
-   districts return the embodied and the list tier is where the emulated get
-   in. Make the roster confirm that sentence. Write down the figure you land on
-   in a comment at the head of the file so the next person can check it.
-4. §2.7: the roster is FROZEN. This adds fields to existing people. Do not
-   add, remove or recast anyone.
+**The roster is not proportional, on purpose.** 42 biological (77.8%), 9
+emulation (16.7%), 2 uplift (3.7%), 1 synthetic (1.9%) against a population of
+64/28/4/4 � emulation under-represented, and of the twelve who are not
+biological only four hold a district seat. Districts return the embodied and the
+list tier is where the emulated get in, which is �4.8's sentence about the
+Public Substrate Association. The figure is written at the head of
+`content/characters.js`.
 
 ## T14 — [ ] Independents with a range, and a bloc
 
