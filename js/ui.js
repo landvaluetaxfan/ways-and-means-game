@@ -1253,59 +1253,113 @@ const UI = (function () {
     const r0 = out.result || {};
     if (!order.length || typeof Wait === "undefined") return Promise.resolve();
     const b = C.billById[r0.bill] || {};
-    const tally = r => r.popularAye + " of " + r.popularSeats +
-      (r0.dual ? " \u00b7 " + r.functionalAye + " of " + r.functionalSeats + " functional" : "");
+    const dual = !!r0.dual;
+    const P = r0.popular, F = r0.functional;
+    const noes = P.total - P.aye;
+
+    /* WHAT THE WHIPS SAID. design/08 §7 gives the forecast an error and the
+       count is exact, so the two are usually different — the one piece of
+       genuine surprise a division has, and the plan should show it. */
+    const f = forecast(r0.bill) || {};
+    const fAye = (f.popular || {}).aye;
+    const showForecast = fAye != null && fAye !== P.aye;
+
+    /* TELLER'S NOTES. A division is not read out party by party — that is the
+       forecast's shape and not a count's. Two remarks is what a count has, and
+       they name the exceptions: a bench that went with the other side. */
+    const govIds = st.coalition.concat(st.confidenceSupply);
+    const notes = [];
+    const crosser = order.filter(r => !govIds.includes(r.party) && r.popularAye > 0)
+      .sort((a, c) => c.popularAye - a.popularAye)[0];
+    const rebel = order.filter(r => govIds.includes(r.party) &&
+        r.popularSeats - r.popularAye > 0)
+      .sort((a, c) => (c.popularSeats - c.popularAye) - (a.popularSeats - a.popularAye))[0];
+    if (crosser) notes.push(pn(crosser.party) + " goes with the government, " +
+      crosser.popularAye + " of " + crosser.popularSeats);
+    if (rebel) notes.push(pn(rebel.party) + " does not, " +
+      (rebel.popularSeats - rebel.popularAye) + " against its own side");
+
     /* THE COUNT SWITCHES THE PLAN TO THE VIEW THAT SHOWS A VOTE, and puts it
-       back afterwards because it is the player's setting and not ours. A
-       division is the one moment the drawing should be about ayes and noes and
-       nothing else; a dual bill keeps its bench, because the bench is half the
-       question it is asking. */
+       back afterwards because it is the player's setting and not ours. A dual
+       bill keeps its bench, because the bench is half the question. */
     const was = { colour: chamberColour, group: chamberGroup, fold: chamberFold };
-    const steps = [{
-      label: "The House divides",
-      ms: 900,
-      run: () => {
-        chamberColour = "vote";
-        chamberGroup = true;
-        chamberFold = !r0.dual;
-        chamberCount = { rows: order, n: 0 };
-        drawChamber();
-        cue("knell");
-      },
-      /* TIER 3. Content's, never a roll: it fires from a flag and nothing else. */
-      stall: { flag: "division_stalled",
-               label: "The Clerk is recounting the functional bench",
-               ms: 1400 }
-    }];
-    order.forEach((r, i) => steps.push({
-      label: pn(r.party) + " reports \u00b7 " + tally(r),
-      /* Long enough to watch a bench move, which is the whole point of doing
-         this on the plan instead of in a table. Skippable, as ever. */
-      ms: 420,
-      run: () => {
-        chamberCount = { rows: order, n: i + 1 };
-        drawChamber();
-        cue("click");
-        setStatus("The Clerk reports " + pn(r.party) + " \u00b7 " + tally(r), "transient");
-      }
-    }));
+    let ayeEl = null, noeEl = null, ayeN = null, noeN = null;
+    const paint = ayes => {
+      if (!ayeEl) return;
+      ayeEl.style.width = (ayes / P.total * 100) + "%";
+      noeEl.style.width = (noes / P.total * 100) + "%";
+      ayeN.textContent = ayes + " / " + P.need + " to carry";
+      noeN.textContent = String(noes);
+    };
+
+    /* THE SHAPE OF A COUNT, NOT A METRONOME. The bell; the doors; a fast start
+       as the lobbies fill and a slow finish as the ayes close on the number;
+       the tellers conferring; then the declaration. */
+    const steps = [
+      { label: "The House divides", ms: 900, run: () => {
+          chamberColour = "vote"; chamberGroup = true; chamberFold = !dual;
+          chamberCount = { rows: order, ayes: 0 };
+          drawChamber(); paint(0); cue("knell");
+        },
+        stall: { flag: "division_stalled",
+                 label: "The Clerk is recounting the functional bench", ms: 1400 } },
+      { label: "The doors are shut", ms: 620,
+        run: () => setStatus("The doors are shut \u00b7 the lobbies are filling", "transient") }
+    ];
+    [0.42, 0.68, 0.85, 0.94, 0.985, 1].forEach((fr, i) => {
+      const to = Math.round(P.aye * fr);
+      steps.push({
+        label: "The ayes are counted",
+        ms: i < 3 ? 260 : 480 + i * 220,
+        run: () => {
+          chamberCount = { rows: order, ayes: to };
+          drawChamber(); paint(to); cue("click");
+        }
+      });
+    });
+    notes.forEach(n => steps.push({ label: n, ms: 900,
+      run: () => setStatus("A teller's note \u00b7 " + n, "transient") }));
+    steps.push({ label: "The tellers confer", ms: 1100,
+      run: () => setStatus("The tellers confer with the Clerk", "transient") });
     steps.push({
-      label: r0.carries ? "Carried" : "Not carried",
-      ms: 1500,
+      label: r0.carries ? "The Ayes have it" : "The Noes have it",
+      ms: 1800,
       run: () => {
         chamberCount = null;
         chamberColour = was.colour; chamberGroup = was.group; chamberFold = was.fold;
-        drawChamber();
+        drawChamber(); paint(P.aye);
         cue(r0.carries ? "aye" : "nay");
         score(r0.carries ? "moment" : "defeat");
+        /* SAID THE WAY IT IS SAID. */
+        setStatus("The Ayes to the right: " + P.aye + ". The Noes to the left: " +
+          noes + ". " + (r0.carries ? "The Ayes have it." : "The Noes have it."),
+          "transient");
       }
     });
+
     return Wait.run({
       title: "Division",
       sub: b.title || "",
       bare: true,
-      stalled: f => !!(st.flags && st.flags[f]),
-      steps: steps
+      stalled: fl => !!(st.flags && st.flags[fl]),
+      steps: steps,
+      mount: el => {
+        el.innerHTML =
+          `<div class="lobbyl">` +
+            `<div class="lrow ayes"><b>Ayes</b><div class="lbar"><i id="dv-aye"></i>` +
+              `<span class="thr" style="left:${(P.need / P.total * 100).toFixed(1)}%"></span>` +
+              (showForecast
+                ? `<span class="fc" style="left:${(fAye / P.total * 100).toFixed(1)}%"></span>`
+                : "") +
+            `</div><span class="ln" id="dv-ayen">0 / ${P.need} to carry</span></div>` +
+            `<div class="lrow noes"><b>Noes</b><div class="lbar"><i id="dv-noe"></i></div>` +
+              `<span class="ln" id="dv-noen">${noes}</span></div>` +
+          `</div>` +
+          (dual ? `<div class="note">The functional bench is counted separately: ` +
+            `${F.aye} of ${F.total}, needing ${F.need}.</div>` : "");
+        ayeEl = el.querySelector("#dv-aye"); noeEl = el.querySelector("#dv-noe");
+        ayeN = el.querySelector("#dv-ayen"); noeN = el.querySelector("#dv-noen");
+      }
     });
   }
 
@@ -2600,16 +2654,19 @@ const UI = (function () {
        run there is no plan, only a vote, and the plan's marks would be a lie
        about members who have already been through the lobby. */
     const voted = counting || (shown ? houseVoted(shown) : false);
-    /* A party not yet called returns no row, which is the exact state a seat
-       is in before it is reported: its colour, and no fill. */
-    const rowOf = id => {
-      if (!fc) return null;
-      if (counting) {
-        const i = chamberCount.rows.findIndex(r => r.party === id);
-        if (i < 0 || i >= chamberCount.n) return null;
-      }
-      return fc.rows.find(r => r.party === id);
+    /* THE COUNT IS A SWEEP, NOT A LIST. A division is counted by LOBBY, so
+       during one the plan lights aye-seats from the front as the lobby fills —
+       what it shows is a quantity climbing, which is what the tellers are
+       counting. The budget is spent as the seats are drawn, so the sweep runs
+       in the order the benches are. Per-party detail is the analysis
+       afterwards, and the plan gives it once the House has voted. */
+    let ayeBudget = counting ? chamberCount.ayes : Infinity;
+    const spend = want => {
+      const n = Math.max(0, Math.min(want, ayeBudget));
+      ayeBudget -= n;
+      return n;
     };
+    const rowOf = id => fc && fc.rows.find(r => r.party === id);
     /* AND THE SEATS THE WHIP BOUGHT ARE NOT THE SEATS YOU HAD. A whipped
        member is an aye, so it filled like any other and committing three
        members changed a number in a table and nothing on the plan. They
@@ -2622,10 +2679,10 @@ const UI = (function () {
     const popular = (id, into) => {
       const s = st.parties[id].seats, col = C.partyById[id].colour;
       const r = rowOf(id);
-      /* A party not yet called in a division has NO ayes counted, which is not
-         the same as having no forecast at all: uncalled seats hold their
-         colour and no fill, so the plan visibly fills as the count runs. */
-      let aye = r ? r.popularAye : (counting ? 0 : null);
+      /* DURING A DIVISION the ayes come off a budget spent front to back, so
+         the bench lights as a lobby filling rather than as a party reporting. */
+      let aye = r ? (counting ? spend(r.popularAye) : r.popularAye)
+                  : (counting ? 0 : null);
       const whip = voted || !r ? 0 : Math.min(r.popularWhipped || 0, r.popularAye);
       const put = t => { const on = aye == null || aye-- > 0;
                          into.push({ c: col, t: t, p: id, aye: aye == null ? null : on,
@@ -2639,7 +2696,8 @@ const UI = (function () {
     bySize(allIds).forEach(id => {
       const s = st.parties[id].seats, col = C.partyById[id].colour;
       const r = rowOf(id);
-      let aye = r ? r.functionalAye : (counting ? 0 : null);
+      let aye = r ? (counting ? spend(r.functionalAye) : r.functionalAye)
+                  : (counting ? 0 : null);
       const whip = voted || !r ? 0 : Math.min(r.functionalWhipped || 0, r.functionalAye);
       /* AISLES FOLDS THE BENCH IN. The functional forty sit at the Bar in
          their own block because the dual test makes them a separate

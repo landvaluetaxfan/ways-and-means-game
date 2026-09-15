@@ -1372,6 +1372,24 @@ body.busy, body.busy *{cursor:progress;}
   width:min(660px,100%);border-bottom:0;
   box-shadow:0 -3px 0 rgba(27,29,25,.18);
 }
+/* THE TWO LOBBIES. A division is counted by lobby and not by party, so this is
+   what a count looks like: two bars, the threshold notched on the ayes, and —
+   where the whips' guess differed — their number left behind as a faint mark
+   the count moves away from. It is a caption under the plan rather than a
+   modal over it, so the House stays visible while the numbers come in. */
+.lobbyl{display:flex;flex-direction:column;gap:3px;margin-top:4px;}
+.lrow{display:flex;align-items:center;gap:8px;}
+.lrow b{flex:0 0 auto;width:40px;text-align:right;
+  font-family:var(--f-ui);font-size:10px;font-weight:400;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);}
+.lbar{position:relative;flex:1 1 auto;height:13px;background:var(--field);
+  border:1px solid var(--chrome-dk);overflow:hidden;}
+.lbar i{display:block;height:100%;width:0;}
+.lrow.ayes .lbar i{background:var(--ok);}
+.lrow.noes .lbar i{background:var(--alert);}
+.lbar .thr{position:absolute;top:0;bottom:0;width:2px;background:var(--ink);}
+.lbar .fc{position:absolute;top:0;bottom:0;width:1px;border-left:1px dashed var(--ink-soft);}
+.ln{flex:0 0 auto;width:122px;font-family:var(--f-data);font-size:10.5px;color:var(--ink-soft);}
 
 /* one chunk per sub-step, 1px apart, in a bevelled well */
 .wait-seg{
