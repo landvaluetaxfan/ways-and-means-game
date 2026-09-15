@@ -1390,6 +1390,19 @@ body.busy, body.busy *{cursor:progress;}
 .lbar .thr{position:absolute;top:0;bottom:0;width:2px;background:var(--ink);}
 .lbar .fc{position:absolute;top:0;bottom:0;width:1px;border-left:1px dashed var(--ink-soft);}
 .ln{flex:0 0 auto;width:122px;font-family:var(--f-data);font-size:10.5px;color:var(--ink-soft);}
+/* THE VERDICT. A carried division and a lost one must not look alike from
+   across the room, so this is a full band in the result's own colour and it is
+   the last thing on the panel. A sentence read out in the counting voice is a
+   sentence the player has to parse; this is not. */
+.lverdict{
+  display:none;margin-top:6px;padding:7px 10px;border:1px solid var(--rule);
+  font-family:var(--f-ui);font-size:13px;letter-spacing:.12em;text-transform:uppercase;
+}
+.lverdict.ok,.lverdict.bad{display:block;}
+.lverdict.ok{color:#fff;background:var(--ok);border-color:var(--ok);}
+.lverdict.bad{color:#fff;background:var(--alert);border-color:var(--alert);}
+.lverdict i{display:block;font-style:normal;font-family:var(--f-read);font-size:12px;
+  letter-spacing:0;text-transform:none;margin-top:3px;opacity:.92;}
 
 /* one chunk per sub-step, 1px apart, in a bevelled well */
 .wait-seg{

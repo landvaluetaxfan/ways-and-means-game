@@ -89,7 +89,9 @@ const Wait = (function () {
           '</div>' +
           '<div class="wait-step" id="wait-step">&nbsp;</div>' +
           '<div class="wait-body" id="wait-body"></div>' +
-          '<div class="note wait-skip">Any key or click to skip</div>' +
+          '<div class="note wait-skip">' +
+            (spec.hold ? "Any key or click to close" : "Any key or click to skip") +
+          '</div>' +
         '</div>' +
       '</div></div>';
 
@@ -101,7 +103,7 @@ const Wait = (function () {
     if (spec.mount) spec.mount(body);
 
     return new Promise(resolve => {
-      let i = 0, timer = null, over = false;
+      let i = 0, timer = null, over = false, holding = false;
 
       function close() {
         if (over) return;
@@ -123,6 +125,10 @@ const Wait = (function () {
       function skip() {
         if (over) return;
         clearTimeout(timer);
+        /* A HELD DIALOG CLOSES RATHER THAN SKIPS. There is nothing left to
+           run, and the key that would have skipped the rest is the key that
+           sends it away. */
+        if (holding) { close(); return; }
         for (; i < steps.length; i++) if (steps[i].run) steps[i].run();
         segs.forEach(s => s.className = "done");
         close();
@@ -130,7 +136,19 @@ const Wait = (function () {
 
       function step() {
         if (over) return;
-        if (i >= steps.length) { close(); return; }
+        /* HOLD. Some readings are worth reading twice - a division most of
+           all - so the last step can leave the panel standing until the
+           player sends it away. Nothing else changes: the state resolved
+           before the first chunk, so waiting here costs nothing. */
+        if (i >= steps.length) {
+          if (spec.hold) {
+            holding = true;
+            if (label) label.textContent = spec.holdText || "Any key or click to close";
+            segs.forEach(s => s.className = "done");
+            return;
+          }
+          close(); return;
+        }
         const s = steps[i];
         segs[i].className = "on";
         label.textContent = s.label || "";

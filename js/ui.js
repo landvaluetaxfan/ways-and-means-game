@@ -1283,7 +1283,7 @@ const UI = (function () {
        back afterwards because it is the player's setting and not ours. A dual
        bill keeps its bench, because the bench is half the question. */
     const was = { colour: chamberColour, group: chamberGroup, fold: chamberFold };
-    let ayeEl = null, noeEl = null, ayeN = null, noeN = null;
+    let ayeEl = null, noeEl = null, ayeN = null, noeN = null, vEl = null;
     const paint = ayes => {
       if (!ayeEl) return;
       ayeEl.style.width = (ayes / P.total * 100) + "%";
@@ -1330,6 +1330,16 @@ const UI = (function () {
         drawChamber(); paint(P.aye);
         cue(r0.carries ? "aye" : "nay");
         score(r0.carries ? "moment" : "defeat");
+        /* THE VERDICT, as a thing you cannot miss. A declaration read out in
+           the same voice as the count is a sentence you have to parse; a
+           carried division and a lost one should not look alike from across
+           the room. */
+        if (vEl) {
+          vEl.className = "lverdict " + (r0.carries ? "ok" : "bad");
+          vEl.innerHTML = (r0.carries ? "Carried" : "Not carried") +
+            `<i>The Ayes to the right: ${P.aye}. The Noes to the left: ${noes}. ` +
+            (r0.carries ? "The Ayes have it." : "The Noes have it.") + `</i>`;
+        }
         /* SAID THE WAY IT IS SAID. */
         setStatus("The Ayes to the right: " + P.aye + ". The Noes to the left: " +
           noes + ". " + (r0.carries ? "The Ayes have it." : "The Noes have it."),
@@ -1341,6 +1351,10 @@ const UI = (function () {
       title: "Division",
       sub: b.title || "",
       bare: true,
+      /* THE CAPTION STAYS until the player sends it away. A division is the
+         one reading-out worth reading twice, and the number is the whole
+         point of the screen. */
+      hold: true,
       stalled: fl => !!(st.flags && st.flags[fl]),
       steps: steps,
       mount: el => {
@@ -1356,9 +1370,11 @@ const UI = (function () {
               `<span class="ln" id="dv-noen">${noes}</span></div>` +
           `</div>` +
           (dual ? `<div class="note">The functional bench is counted separately: ` +
-            `${F.aye} of ${F.total}, needing ${F.need}.</div>` : "");
+            `${F.aye} of ${F.total}, needing ${F.need}.</div>` : "") +
+          `<div class="lverdict" id="dv-verdict"></div>`;
         ayeEl = el.querySelector("#dv-aye"); noeEl = el.querySelector("#dv-noe");
         ayeN = el.querySelector("#dv-ayen"); noeN = el.querySelector("#dv-noen");
+        vEl = el.querySelector("#dv-verdict");
       }
     });
   }
