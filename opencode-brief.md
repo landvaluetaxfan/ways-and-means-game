@@ -6,8 +6,9 @@ a phone with access to one of us and not the other, so a task that cannot be
 spoken is committed here instead. If this file and a live instruction from the
 author disagree, the author wins and this file is stale — say so and move on.
 
-**Check the git log before starting.** If the commits below are already in, the
-work is done and this file should have been deleted.
+**Check the git log before starting.** Tasks are marked `[ ]` / `[x]`. Tick one
+as you land it and commit the tick with the work, so the next run of you knows
+where it is. When every box is ticked, delete this file.
 
 ---
 
@@ -24,16 +25,44 @@ run that breaks the build leaves nothing behind but a comment saying so.
 `content/*.js` and prose. Do not touch `js/`, `tools/` or `test.js` —
 Claude Code is working in `js/engine.js` and `js/ui.js` concurrently.
 
-Nothing here needs an engine change. **The editor's serialiser writes every key
-it finds rather than a fixed list** (`js/serialise.js` `list()` → `val()`), so
-new fields on a bill survive a round-trip even though the editor has no form
-for them. That was verified, not assumed.
+**Nothing in this file needs an engine change.** That was checked, not assumed:
+every field named here is either already read by the engine or is carried by
+the editor's serialiser, which writes every key it finds rather than a fixed
+list (`js/serialise.js` `list()` → `val()`). If you reach for something that is
+not here and it needs a verb, **stop and write the request at the bottom of
+this file under OPEN REQUESTS** rather than working around it. The effects
+vocabulary stands at 21 verbs against §15.5's line of twenty; it is closed, and
+the next thing it gains has to be worth breaking a locked rule for.
 
 `npm run check` after every task. Commit per task.
 
 ---
 
-## T1 — Bills get people on them
+## THE SHAPE THIS IS ALL AIMED AT
+
+The author set the length target on 15 September: **a run is 45 minutes to two
+hours.** Measured against the engine, that is one, two or three sessions of the
+House — 24, 48 or 72 sittings — because `sittingsPerSession` is 24 and the
+House already rises.
+
+The content budget that falls out of it, and the number that should govern
+every decision below:
+
+| | events fired in a run | pool needed |
+|---|---|---|
+| short run, one session | 18–20 | |
+| long run, three sessions | 38–42 | |
+| | | **50–60** |
+
+**24 events exist and a run currently fires 9 to 13 of them.** That was
+measured by driving the engine headless through four play policies: the pool is
+dry by sitting 9–12, and one policy reaches an ending at sitting 7. So the pool
+is roughly two thirds of a short run and a third of a long one, and **T4 is the
+single most valuable thing in this file.** Everything else is finishing.
+
+---
+
+## T1 — [ ] Bills get people on them
 
 A bill carries `owner`, which is a **party**. There is no person anywhere on a
 bill. Fifty-four characters exist and exactly one has ever appeared in an
@@ -60,7 +89,7 @@ Rules that make this load-bearing rather than decorative:
 - §2.7: the character roster is FROZEN. Every id must exist in
   `content/characters.js`. Do not invent a person.
 
-## T2 — Descriptions that explain the politics, not the mechanism
+## T2 — [ ] Descriptions that explain the politics, not the mechanism
 
 A bill has `summary` (what it does) and `effectNote` (what follows). A player
 reads *"Changes the law on divergence threshold hours"* and learns nothing
@@ -87,11 +116,113 @@ Both things true at once, and the game declining to resolve it.
 §2.6 still binds: `contested` explains the politics of a mechanism already
 introduced. It must not introduce a second mechanism.
 
-## T3 — The references that make it a document
+## T3 — [ ] The references that make it a document
 
 While in each bill, check `ref` reads like a real paper number and `title`
 follows §3.9's naming scheme. The bill dossier is going to be headed like an
 in-world instrument and these are the lines that will sit under the letterhead.
+
+---
+
+## T4 — [ ] The event pool, 24 → 55
+
+**The biggest task in this file, and the one to do first if you only do one.**
+Target the middle of the 50–60 band. Write them in this order, because chapter
+one is what every run pays and chapter four is what no run currently reaches.
+
+| chapter | what it is | have | want |
+|---|---|---|---|
+| 1 | teaching. Fixed `prologue` order, one concept cluster at a time | 6 | 12–15 |
+| 2 | governing. Systemic, fired by `when` against the live state | ~11 | 18–22 |
+| 3 | the election | 0 | 6–8 |
+| 4 | the settlement | 0 | 12–16 (three or four per ending) |
+
+Four rules, all of them already canon and all of them violated by the current
+pool in at least one place:
+
+1. **§2.6, one concept cluster per event.** `tools/lint.js` enforces it and
+   will tell you when you have missed.
+2. **Twenty of twenty-four existing events are `once`.** That is why the pool
+   goes dry. A chapter-two event that can fire two or three times under
+   different conditions is worth three `once` events, and is how a long run and
+   a short run stop being the same run with a different ending. Use `maxFires`
+   with a `when` that has genuinely moved.
+3. **An event that does not read the state is a cutscene.** Every chapter-two
+   event wants a `when` that could fail. The conditions are not under the
+   twenty-verb cap and there are thirty of them — `loyaltyBelow`, `owes`,
+   `breached`, `priceAbove`, `suspendedAbove`, `signaturesAtLeast`,
+   `siInForce`, `postVacant`, `slotsLeft`, `capitalBelow` are all live and none
+   is used much.
+4. **No choice may be strictly dominant.** If one option is right in every
+   state, it is a button, not a decision.
+
+## T5 — [ ] Quiet-sitting lines, 51 → 80
+
+`content/business.js` is the room being a room. It is the cheapest content in
+the project per minute of play and a three-session run prints a lot of it.
+Thirty more, weighted toward `question`, `committee` and `instrument`, and a
+handful gated on `when` so the texture of a sitting answers to the state — a
+committee reporting on a bill that is actually in committee reads as a world;
+the same line printed at random reads as filler.
+
+## T6 — [ ] The four endings
+
+`content/settlements.js` carries four settlements, each with a one-line
+`summary` marked in the file as a placeholder of the plainest kind. They are
+what the game is *for* and they are currently a sentence each.
+
+Each wants: the closing prose, what the Commonwealth looks like after, and what
+it cost. Bible §3.5.1 rule 2 — **the player is never shown the list** — so
+write each as though it were the only ending, with no nod to the other three.
+Rule 4: the record makes a settlement cheaper or dearer, never impossible, so
+the prose has to read correctly whether the player arrived at it wholeheartedly
+or by attrition.
+
+`graduated_personhood` is, per §3.5.1, the most quietly horrifying of the four.
+It should not read as the sensible compromise.
+
+## T7 — [ ] Currents for the parties that should have them
+
+`design/24` §B1. A party with no internal current is a bloc that votes. The
+three renamed parties (`fh` Freehold, `rv` Congregational Democratic Alliance,
+`upl` Uplift Alliance) are the ones whose new names imply an internal argument
+that does not exist yet in `content/parties.js`.
+
+## T8 — [ ] The unreached canon
+
+`design/24` §B3 lists bible sections that no content has ever reached. The
+bible has outrun the game — that is `design/22`'s finding with numbers — and
+the cheapest fix is not to cut the bible but to spend it. Work down that list.
+
+## T9 — [ ] People, and the press
+
+`design/24` §B4. Fifty-four characters, one of whom has appeared in an event.
+The Concordance derives offices now (see `CLAUDE.md`), so a person article
+mostly writes itself once the person has done something; the missing half is
+that almost nobody has done anything.
+
+## T10 — [ ] Constituency prose
+
+`content/constituencies.js`. The orbit tab's expanded row (`constituencyDetail()`)
+has room for a description and voting tendencies and currently shows numbers
+only. The author named this as next after the dossier row landed. 141 seats is
+too many to write individually — do the twenty that events and bills actually
+name, and leave the rest to their numbers.
+
+## T11 — [ ] Instrument and initiative prose
+
+`content/instruments.js` (13) and `content/initiatives.js` (4). These are
+governing acts and each is a minute of the player's run per `design/18`'s
+model; several read as a field name with a verb in front of it.
+
+## T12 — [ ] Two numbers that disagree
+
+Flagged in `CLAUDE.md` and still open, both content, both yours:
+
+- `content/labour.js` `embodied` weights to **~68%** of jobs; bible §6.10 says
+  **46%**. The encyclopedia article follows the bible, so labour is the outlier.
+- Station populations sum to **7,006,000**; `labour.js totals.population` is
+  **6,863,000**. 143,000 apart.
 
 ---
 
@@ -103,4 +234,17 @@ in-world instrument and these are the lines that will sit under the letterhead.
   fourth state — **absent** — is produced by pairing rather than authored.
 - **Do not add a letterhead or image field.** `js/artifacts.js` owns slot
   declarations; the slot has to exist there first.
+- **Do not gate a settlement's `when` on a number alone.** Claude is landing a
+  floor under the settlements (an ending must be *carried*, not merely
+  reached); if you touch `settlements.js` beyond T6's prose it will conflict.
 - Do not renumber or reorder the bills.
+- Do not invent a station, a character or a glossary term (§2.7).
+
+## OPEN REQUESTS
+
+Anything you needed and could not have. Claude reads this before the next
+engine pass. Write the content you wanted to author, not the verb you think
+would deliver it — the verb is the engine's problem and there may be a cheaper
+one.
+
+*(empty)*
