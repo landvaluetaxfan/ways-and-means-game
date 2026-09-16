@@ -1590,7 +1590,8 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
   const ok = (l, c, extra) => { if (!c) bad++;
     console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
   const fresh = () => Engine.newGame(CONTENT);
-  ok("content carries four settlements", (CONTENT.settlements || []).length === 4,
+  ok("content carries the four settlements and the five Flash I tiers",
+     (CONTENT.settlements || []).length === 9,
      (CONTENT.settlements || []).length + " settlements");
   ok("and every one is a when block, not a branch",
      CONTENT.settlements.every(s0 => s0.when && typeof s0.when === "object"));
@@ -1694,6 +1695,26 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
   ok("and content can read which tier landed",
      Engine.matches(nt, { resolvedIs: "probe_nt" }) &&
      !Engine.matches(nt, { resolvedIs: "probe_other" }));
+
+  /* FLASH I: every tier is reachable from the opening state. The meters
+     are moved by the campaign's events once they are wired; here the
+     gates are driven directly, which is what "reachable" means for a
+     when-block. The canon pyrrhic tier must not end the run. */
+  const tier = (set) => { const s = fresh(); Object.assign(s.scalars, set); return s; };
+  const t1 = tier({ legitimacy: 80, solvency: 75, friction: 30 });
+  ok("critical triumph", (Engine.checkSettlement(t1, CONTENT) || {}).id === "f1_triumph");
+  const t2 = tier({ legitimacy: 60, solvency: 65, friction: 30 });
+  ok("maritime charter", (Engine.checkSettlement(t2, CONTENT) || {}).id === "f1_maritime");
+  const t3 = tier({ legitimacy: 70, solvency: 30, friction: 70 });
+  ok("sovereign debt trap", (Engine.checkSettlement(t3, CONTENT) || {}).id === "f1_pyrrhic");
+  const t4 = tier({ legitimacy: 50, solvency: 50, friction: 50 });
+  ok("joint mandate", (Engine.checkSettlement(t4, CONTENT) || {}).id === "f1_joint");
+  const t5 = tier({ legitimacy: 30, solvency: 50, friction: 80 });
+  ok("corporate re-entry", (Engine.checkSettlement(t5, CONTENT) || {}).id === "f1_capitulation");
+  const pEnd = Engine.checkEnd(t3, CONTENT);
+  ok("and the canon pyrrhic tier does not end the run",
+     pEnd.over === false && t3.resolvedAs === "f1_pyrrhic" && !t3.settledAs,
+     JSON.stringify({ over: pEnd.over, resolvedAs: t3.resolvedAs }));
 
   /* ---- THE ROLL CALL ----
      It renders names beside a count, so the one thing that must never be

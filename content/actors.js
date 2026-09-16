@@ -64,6 +64,17 @@
    vote and is therefore active by other means, and speaks like a crowd.
    A union is the strike weapon and the party's own base, and speaks like
    a shop floor. None of them sound alike, on purpose.
+
+   FLASH I adds a fifth kind, and it is a fifth register:
+
+     state       a foreign government. Outside the chamber and outside
+                 the Commonwealth, with no reach and no wants in the
+                 functional benches: it cannot deliver a vote. What it
+                 has is standing, patience and an ask, and the campaign
+                 reads those through events and the friction meter. The
+                 names below are placeholders for the author's Earth
+                 canon; the engine does not enumerate kinds, so a fifth
+                 is data, not machinery.
    ============================================================= */
 const ACTORS = [
 
@@ -152,7 +163,26 @@ const ACTORS = [
     reach: { fc_consumables: 3 },
     wants: { consumables_floor: 1, consumables_subsidy: 1, substrate_insurance: 1 },
     asks: "no consumables price intervention this session",
-    note: "Sells the food, air and water, and can stop a station by not loading a ship. Its politics is a schedule and a cold chain." }
+    note: "Sells the food, air and water, and can stop a station by not loading a ship. Its politics is a schedule and a cold chain." },
+
+  /* EARTH (Flash I). Two governments the crisis runs through: the bloc
+     that can sanction the Commonwealth, and the host state the abandoned
+     platform sits on. No reach, no wants: they deliver nothing in the
+     chamber. Their standing is read by events and mirrors the friction
+     meter, and their asks are the price of relief. Names are
+     placeholders for the author's Earth canon. */
+
+  { id: "earth_bloc", name: "The Earth Bloc", kind: "state",
+    standing: 50, patience: 60,
+    reach: {}, wants: {},
+    asks: "the platform's corporate debt is honoured before any annexation",
+    note: "PLACEHOLDER. The treaty-bound Earth governments, whose banks froze the platform's accounts and whose courts will hear the salvage law." },
+
+  { id: "earth_host", name: "The Host State", kind: "state",
+    standing: 55, patience: 40,
+    reach: {}, wants: {},
+    asks: "a repatriation corridor for its citizens, however long the process takes",
+    note: "PLACEHOLDER. The nation whose soil the platform's anchor stands on, and whose public procurement law makes a two-year rescue the fast one." }
 ];
 
 if (typeof module !== "undefined") module.exports = ACTORS;

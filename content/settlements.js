@@ -131,7 +131,63 @@ const SETTLEMENTS = [
              "first, in their registries and their rents and their schools. The chamber " +
              "does not feel it at all, which is the arrangement.\n\n" +
              "The Commonwealth has thirty-four answers now, and one of them is yours.",
-    when: { flags: ["federal_schedule"] } }
+    when: { flags: ["federal_schedule"] } },
+
+  /* =============================================================
+     FLASH I — the platform crisis, in six outcomes.
+
+     The campaign's tiers, gated on the four campaign meters (see
+     content/campaign_flash_i.example.js). Ranked most specific first:
+     a state that makes the Critical Triumph also makes the Maritime
+     Charter's numbers, so the triumph is read before it. The canon
+     Pyrrhic tier is terminal:false — it resolves the crisis and the
+     run continues to the election, where chapter three reads the tier
+     through `resolvedIs`. The meltdown is not here: it is a loss, and
+     losses end through the loyalty floor.
+
+     PROSE IS THE AUTHOR'S. These closings are two flat sentences each
+     so the mechanism can be played; the register is deliberately bare.
+     ============================================================= */
+  { id: "f1_triumph", rank: 0,
+    name: "Orbital Powerhouse",
+    summary: "Full annexation. Earth drops the debt claims under threat of satellite transit tariffs.",
+    closing: "The platform is Commonwealth territory, and Earth has dropped its claims. " +
+             "Heavy orbital manufacturing is unlocked, and Earth will remember this.",
+    when: { scalarAbove: { legitimacy: 75, solvency: 70 },
+            scalarBelow: { friction: 60 } } },
+
+  { id: "f1_maritime", rank: 1,
+    name: "Maritime Charter",
+    summary: "International courts recognise salvage rights. The platform becomes legal Federation territory.",
+    closing: "The courts recognise the salvage, and the platform is Commonwealth territory in law. " +
+             "The legal and administrative bill is heavy, and so is the trust it bought.",
+    when: { scalarAbove: { legitimacy: 55, solvency: 60 },
+            scalarBelow: { friction: 40 } } },
+
+  { id: "f1_pyrrhic", rank: 2,
+    name: "Sovereign Debt Trap",
+    terminal: false,
+    summary: "Annexed, and 300,000 workers saved. The Federation assumes the defaulted corporate bonds.",
+    closing: "The platform is annexed and its workers are saved, and the Commonwealth has assumed " +
+             "the defaulted bonds that paid for them. Three years of austerity begin at the next estimates.",
+    when: { scalarAbove: { legitimacy: 65, friction: 65 },
+            scalarBelow: { solvency: 35 } } },
+
+  { id: "f1_joint", rank: 3,
+    name: "UN/Orbital Joint Mandate",
+    summary: "A co-administered international free trade zone. No embargo, no territory, mild voter apathy.",
+    closing: "The platform is a co-administered free trade zone under a joint mandate. " +
+             "No embargo, no territory, and a country that shrugs.",
+    when: { scalarAbove: { legitimacy: 40, solvency: 40, friction: 40 },
+            scalarBelow: { legitimacy: 60, solvency: 60, friction: 60 } } },
+
+  { id: "f1_capitulation", rank: 4,
+    name: "Corporate Re-Entry",
+    summary: "The Federation declines the referendum. Earth corporate security reclaims and clears the platform.",
+    closing: "The referendum is declined, and corporate security reclaims the platform. " +
+             "The strikes on the outer habitats begin the same week.",
+    when: { scalarBelow: { legitimacy: 35 },
+            scalarAbove: { friction: 75 } } }
 ];
 
 if (typeof module !== "undefined") module.exports = SETTLEMENTS;
