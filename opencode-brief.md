@@ -203,7 +203,7 @@ Flagged in `CLAUDE.md` and still open, both content, both yours:
 - Station populations sum to **7,006,000**; `labour.js totals.population` is
   **6,863,000**. 143,000 apart.
 
-## T13 � [x] The substrate roster  �  **DONE 15 Sep**
+## T13 — [x] The substrate roster  ·  **DONE 15 Sep**
 
 **Landed.** All 54 characters carry `category`, and six carry a `status`.
 `category` is what a member is made of (biological | emulation | uplift |
@@ -214,9 +214,9 @@ cat ears remain a `note`, which is where they belonged.
 
 **The roster is not proportional, on purpose.** 42 biological (77.8%), 9
 emulation (16.7%), 2 uplift (3.7%), 1 synthetic (1.9%) against a population of
-64/28/4/4 � emulation under-represented, and of the twelve who are not
+64/28/4/4 — emulation under-represented, and of the twelve who are not
 biological only four hold a district seat. Districts return the embodied and the
-list tier is where the emulated get in, which is �4.8's sentence about the
+list tier is where the emulated get in, which is —4.8's sentence about the
 Public Substrate Association. The figure is written at the head of
 `content/characters.js`.
 
@@ -350,6 +350,31 @@ yesterday. Now that they bite:
 New bills from T4 want a `touches` too. A bill that touches nothing gets a
 simple majority, which is correct for most of them — do not reach for it out
 of habit.
+
+## BLOCKED, AND NOT BY YOU
+
+**T4's chapters three and four cannot be written yet, and that is mine.**
+Chapter 3 is the election and chapter 4 is the settlement, and neither has an
+engine to hook into: there is no dissolution, no campaign, and a run that does
+not settle currently runs forever — measured at 190 empty sittings. Writing
+election events against machinery that does not exist would produce content
+nobody can reach, which is the mistake this repo has made three times already.
+
+So T4 is **chapters one and two only** until that lands. That is still 24 → ~40
+events and by far the biggest thing on this list. When the parliament learns how
+to end, this section goes and the chapter table opens up.
+
+---
+
+## WHEN EVERY BOX IS TICKED
+
+Delete this file, and say so in the commit. Then the next thing is not on any
+list: **play it**. Start a new game, take it to a settlement, and write down
+every place the prose says something the mechanism does not do, or the
+mechanism does something the prose never mentions. That list is worth more than
+another ten events, and no check in the repo can produce it.
+
+---
 
 ## T18 — [ ] When supply exists, it is `test: "supply"`
 
