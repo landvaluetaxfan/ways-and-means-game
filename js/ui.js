@@ -1450,7 +1450,12 @@ const UI = (function () {
      is the whole point of the mechanic, so the card names the ask in the
      body's own words rather than showing a number. */
   function lobbyPanel(billId, b, d) {
-    if (st.bills[billId].dead || !b.dualMajority) return "";
+    /* Shown wherever a functional bench can answer for the measure —
+       the whole tier on a dual bill, or the constituencies that own its
+       subject on any other. Gating on dualMajority alone hid the control
+       on the five bills where it is the only reply to an objection. */
+    if (st.bills[billId].dead) return "";
+    if (!b.dualMajority && !((b.touches || []).length)) return "";
     const plan = (st.lobby || {})[billId] || {};
     let rows = "";
     (C.actors || []).forEach(a => {

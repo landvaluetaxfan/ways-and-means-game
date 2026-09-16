@@ -443,6 +443,25 @@ What that means for the prose: a budget carried against a hostile functional
 bench is a government in trouble although it won, because those are the people
 who have to deliver what was just appropriated. Write it that way.
 
+## T19 — [ ] Actors want more than one thing
+
+`content/actors.js` gives every body a `wants` naming only
+`divergence_threshold_hours`. Lobbying is offered on any measure a functional
+bench answers for — which since domain consent is **all seven bills** — but an
+actor will not lift a finger for a measure that touches nothing it wants, so
+in practice lobbying is available on exactly one bill.
+
+Measured 16 Sep, lobbyable seats per bill: divergence 11, **every other bill
+0.**
+
+Give each body two or three `wants` keys drawn from what it actually is. The
+underwriters care about risk pricing; the maintenance union about the embodied
+labour floor and essential services; the elevator consortium about the anchor
+concession and transit windows. A body with a stake in one number only is a
+single-issue pressure group, and none of these are that.
+
+The engine side is done and needs nothing.
+
 ---
 
 ## Do not

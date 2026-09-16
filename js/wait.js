@@ -95,8 +95,11 @@ const Wait = (function () {
              still work — the listeners are unchanged — so nothing is lost
              for a player who never reaches for it. */
           '<div class="wait-skip">' +
-            '<button type="button" class="btn wait-btn">' +
-            (spec.hold ? "Close" : "Skip") + '</button>' +
+            /* Skip while the reading runs, Close once it holds — one
+               control doing both jobs, relabelled at the hand-over. It
+               said Close from the first frame on a holding caption, which
+               offered to end a division that had not started. */
+            '<button type="button" class="btn wait-btn">Skip</button>' +
           '</div>' +
         '</div>' +
       '</div></div>';
@@ -166,6 +169,7 @@ const Wait = (function () {
         if (i >= steps.length) {
           if (spec.hold) {
             holding = true;
+            if (btn) btn.textContent = "Close";
             if (label) label.textContent = spec.holdText || "";
             segs.forEach(s => s.className = "done");
             return;
@@ -194,7 +198,7 @@ const Wait = (function () {
         }, ms);
       }
 
-      live = { skip: skip };
+      live = { skip: skip, buttonOnly: !!spec.buttonOnly };
       step();
     });
   }
@@ -205,7 +209,20 @@ const Wait = (function () {
       .replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  /* Wait.skip() is the PROGRAMMATIC skip and always works: the harness
+     drives divisions with it, and a caller that asks for the rest of a
+     run is entitled to it. */
   function skip() { if (live) live.skip(); }
+
+  /* The listener is not that. A caption marked buttonOnly is one the
+     player is meant to read, and the first version only stopped a stray
+     key from CLOSING it once it was holding — a key pressed while the
+     House was still dividing fast-forwarded the whole count and shut the
+     panel, which is the same complaint one step earlier. The listener now
+     leaves such a caption alone entirely, and its button is the only way
+     in or out. The button does both jobs: Skip while the count runs,
+     Close once it holds. */
+  function fromInput() { if (live && !live.buttonOnly) live.skip(); }
   function running() { return !!live; }
 
   /* Same capture-phase listeners as the text streamer, and for the same
@@ -214,8 +231,8 @@ const Wait = (function () {
   function wire() {
     if (wired || typeof document === "undefined") return;
     wired = true;
-    document.addEventListener("keydown", skip, true);
-    document.addEventListener("pointerdown", skip, true);
+    document.addEventListener("keydown", fromInput, true);
+    document.addEventListener("pointerdown", fromInput, true);
   }
 
   return { brief, run, skip, running, wire };

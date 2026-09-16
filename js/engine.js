@@ -2053,8 +2053,16 @@ const Engine = (function () {
     const a = (C.actorById || {})[actorId], live = (st.actors || {})[actorId];
     if (!bs || bs.dead) return { max: 0, reason: "not before the House" };
     if (!a || !live) return { max: 0, reason: "no such body" };
-    if (!bill || !bill.dualMajority)
-      return { max: 0, reason: "this measure does not need the functional bench" };
+    /* DUAL MAJORITY *OR* DOMAIN CONSENT. This asked only whether the
+       measure faced the whole functional tier, which was right until
+       domain consent landed: five of the seven bills are simple and every
+       one of them can now be stopped by the constituencies that own its
+       subject. So lobbying vanished from exactly the measures where it is
+       the only answer to an objection. */
+    const answersToBenches = bill &&
+      (bill.dualMajority || ((bill.touches || []).length > 0));
+    if (!answersToBenches)
+      return { max: 0, reason: "no functional bench answers for this measure" };
     if (!actorAlignment(C, bill, a))
       return { max: 0, reason: "this measure does not touch anything they want" };
 
