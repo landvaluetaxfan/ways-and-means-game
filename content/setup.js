@@ -61,6 +61,24 @@ const SETUP = {
      above it the caucus divides. */
   thresholds: { leadershipChallenge: 15, ballot: 12 },
 
+  /* THE METER PANEL. Which numbers the standing-indicators panel shows, in
+     what order, and which way is good — content declares it, so a campaign
+     shows the meters IT is about. Flash I is a foreign-affairs campaign and
+     diplomatic friction sits beside the rest; a campaign about something
+     else need not give it a column at all, and needs no engine change to
+     drop it. `soft` is where the bar turns amber; `invert` is for a meter
+     where HIGH is bad; `fatal` reads the engine's own threshold where one
+     exists. */
+  meters: [
+    { k:"party_loyalty",   label:"Party loyalty",       soft:25 },
+    { k:"public_standing", label:"Public standing",     soft:20 },
+    { k:"consumables",     label:"Consumables",         soft:25 },
+    { k:"thermal_margin",  label:"Thermal margin",      soft:12 },
+    { k:"solvency",        label:"Sovereign solvency",  soft:15 },
+    { k:"legitimacy",      label:"Legitimacy",          soft:30 },
+    { k:"friction",        label:"Diplomatic friction", soft:35, invert:true }
+  ],
+
   /* COUPLINGS — a meter that DRAGS another, so a meter is never a
      scoreboard (Flash I). While `meter` is above `above`, `drag` is
      applied to its targets every sitting: dearer imports, a thinner

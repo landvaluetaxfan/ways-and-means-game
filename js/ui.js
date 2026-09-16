@@ -676,15 +676,20 @@ const UI = (function () {
       party_loyalty: (C.setup.thresholds || {}).leadershipChallenge,
       thermal_margin: 0
     };
-    const meters = [
-      ["Party loyalty", "party_loyalty", 25], ["Public standing", "public_standing", 20],
-      ["Consumables", "consumables", 25], ["Thermal margin", "thermal_margin", 12],
-      ["Sovereign solvency", "solvency", 15],
-      /* Flash I's meters. friction is the one that is BAD when it rises,
-         so it carries a polarity flag and colours the other way. */
-      ["Legitimacy", "legitimacy", 30], ["Diplomatic friction", "friction", 35, true]
+    /* WHICH METERS, AND WHICH WAY IS BAD: content's list (setup.meters), so
+       a campaign shows the numbers it is about. The fatal lines are read
+       from the engine's own constants. */
+    const defs = (C.setup && C.setup.meters) || [
+      { k: "party_loyalty", label: "Party loyalty", soft: 25 },
+      { k: "public_standing", label: "Public standing", soft: 20 },
+      { k: "consumables", label: "Consumables", soft: 25 },
+      { k: "thermal_margin", label: "Thermal margin", soft: 12 },
+      { k: "solvency", label: "Sovereign solvency", soft: 15 },
+      { k: "legitimacy", label: "Legitimacy", soft: 30 },
+      { k: "friction", label: "Diplomatic friction", soft: 35, invert: true }
     ];
-    $("#gov-meters").innerHTML = meters.map(([lab, k, soft, inv]) => {
+    $("#gov-meters").innerHTML = defs.map(m => {
+      const k = m.k, lab = m.label, soft = m.soft, inv = m.invert;
       const v = st.scalars[k] == null ? 0 : st.scalars[k], f = fatal[k];
       const cls = inv
         ? (v >= soft ? "warn" : v <= 25 ? "good" : "")
