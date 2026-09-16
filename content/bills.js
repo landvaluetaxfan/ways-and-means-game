@@ -98,11 +98,11 @@ const BILLS = [
              "price is paid on every line of this bill.",
         levels:[
           { id:"tight",  label:"Held tight", cost:0,  note:"Released against last session's figure, and no more. The price rises to clear, and it lands on the stations with the thinnest margins.",
-            effects:[{ move:{ "price.thermal": 14, public_standing:-4 } }] },
+            effects:[{ move:{ "price.thermal": 14, public_standing:-4 } }, { law:{ thermal_release:"tight" } }] },
           { id:"steady", label:"As last session", cost:14, note:"Released at last session's figure. The price holds where the market has held it, and nobody can point to the vote.",
-            effects:[] },
+            effects:[{ law:{ thermal_release:"steady" } }] },
           { id:"open",   label:"Released", cost:34, note:"Released in full. The price falls to the cost of rejecting the heat, and the radiators become the limit on how many minds the Commonwealth can carry.",
-            effects:[{ move:{ "price.thermal": -16, thermal_margin:-5, public_standing:5 } }] }
+            effects:[{ move:{ "price.thermal": -16, thermal_margin:-5, public_standing:5 } }, { law:{ thermal_release:"open" } }] }
         ] },
       { id:"floor", name:"The consumables floor", default:"hold",
         note:"The air, water, calories and minimum volume guaranteed to every "+
@@ -130,11 +130,20 @@ const BILLS = [
              "in ten years, and it decides who can leave: raising a station's "+
              "closure is the same act as funding its secession.",
         levels:[
-          { id:"none", label:"Deferred", cost:0, note:"No works this session. The stations with the lowest closure are not carried further, and the deferral is the position.", effects:[] },
+          { id:"none", label:"Deferred", cost:0, note:"No works this session. The stations with the lowest closure are not carried further, and the deferral is the position.", effects:[{ law:{ capital_works:"none" } }] },
           { id:"some", label:"The ring band", cost:20, note:"Funded in the ring band, where the volume pressure is worst. Closure holds in the middle of the Commonwealth and the outer stations wait.",
-            effects:[{ move:{ "price.volume": -9, public_standing:3 } }] },
+            effects:[{ move:{ "price.volume": -9, public_standing:3 } }, { law:{ capital_works:"ring" } }] },
           { id:"outer", label:"The outer stations", cost:30, note:"Funded at the outer stations, where closure is lowest. Their closure rises, and so does the price at which they could one day leave.",
-            effects:[{ move:{ "price.volume": -5 } }, { station:{ ashfield:{ closure:0.04 } } }] }
+            effects:[{ move:{ "price.volume": -5 } }, { station:{ ashfield:{ closure:0.04 } } }, { law:{ capital_works:"outer" } }] }
+        ] },
+      { id:"transit", name:"Transit subsidy", default:"none",
+        note:"The fare the stations pay for a launch window, carried against the "+
+             "schedule. The anchor states and the outer stations are the ones "+
+             "whose schedules are other people's schedules.",
+        levels:[
+          { id:"none",    label:"Unsubsidised", cost:0,  note:"The fare is the market's. The outer stations pay what the schedule says, and the schedule is not the Commonwealth's.", effects:[{ law:{ transit_subsidy:"none" } }] },
+          { id:"anchors", label:"The anchor states", cost:10, note:"The differential is carried for the anchor states, where the tether is the only way in.", effects:[{ law:{ transit_subsidy:"anchors" } }, { move:{ "public_standing":3 } }] },
+          { id:"all",     label:"Every station", cost:22, note:"The differential is carried for every station, and the reserve pays for the ones the traffic does not reach.", effects:[{ law:{ transit_subsidy:"all" } }, { move:{ "public_standing":5, solvency:-4 } }] }
         ] } ],
     stances:{ cu:"for", psa:"for", rv:"for", upl:{forPct:0.5}, geo:{forPct:0.5},
               cl:"against", sc:{forPct:0.3}, hul:{forPct:0.4}, fh:"against",

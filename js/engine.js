@@ -3422,9 +3422,15 @@ const Engine = (function () {
   function tick(st, C) {
     const P = st.prices, marks = [];
 
-    /* thermal: scarce when the federal margin is thin */
+    /* thermal: scarce when the federal margin is thin, AND SET BY THE
+       APPROPRIATION. The quota the vote releases is the price's other
+       input, which §7.9 has said all along and the tick did not read:
+       the four prices are legislative outputs, and the appropriation is
+       the legislation (design/13 §2.3, design/28 §4). */
+    const rel = st.law.thermal_release;
+    const relBump = rel === "tight" ? 14 : rel === "open" ? -16 : 0;
     const pressure = (35 - st.scalars.thermal_margin) * 1.2;
-    P.thermal = clamp(P.thermal + drift(P.thermal, 100 + pressure), 20, 400);
+    P.thermal = clamp(P.thermal + drift(P.thermal, 100 + pressure + relBump), 20, 400);
 
     /* substrate: cheaper the more of it is publicly held, dearer as thermal rises */
     const pub = st.law.substrate_public_share == null ? 0.35 : st.law.substrate_public_share;
@@ -3445,12 +3451,17 @@ const Engine = (function () {
        money vote"), and that waits on the canon decision in
        design/13. This is the honest interim: continuous in the one
        input it actually has. */
+    const cw = st.law.capital_works;
+    const volBump = cw === "ring" ? -9 : cw === "outer" ? -5 : 0;
     P.volume = clamp(P.volume + drift(P.volume,
-      100 + (50 - st.scalars.solvency) * 0.28), 20, 400);
+      100 + (50 - st.scalars.solvency) * 0.28 + volBump), 20, 400);
 
-    /* transit: launch windows and delta-v */
+    /* transit: launch windows and delta-v, and the subsidy the budget
+       carries for the stations the traffic does not reach */
+    const ts = st.law.transit_subsidy;
+    const trBump = ts === "anchors" ? -8 : ts === "all" ? -14 : 0;
     P.transit = clamp(P.transit + drift(P.transit,
-      100 - (st.scalars.solvency - 50) * 0.3), 20, 400);
+      100 - (st.scalars.solvency - 50) * 0.3 + trBump), 20, 400);
 
     Object.keys(P).forEach(k => {
       P[k] = Math.round(P[k] * 10) / 10;

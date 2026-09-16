@@ -2154,13 +2154,16 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
      bill may have blanks. */
   (function () {
     const A = Engine.newGame(CONTENT);
-    const src = require("fs").readFileSync(__dirname + "/js/engine.js", "utf8");
+    /* The guard is about CODE: a comment naming the budget is not a special
+       case, and the engine's own notes name it on purpose. Comments are
+       stripped, as the other source-walking checks here do. */
+    const src = require("fs").readFileSync(__dirname + "/js/engine.js", "utf8")
+      .replace(/\/\*[^]*?\*\//g, "").replace(/\/\/.*/g, "");
     ok("the engine contains no special case for it (design/13 acceptance)",
        !/appropriation/i.test(src));
 
     const cls = Engine.clausesOf(CONTENT, "appropriation");
-    ok("the bill carries clauses the government fills in", cls.length === 4,
-       cls.length + "");
+    ok("the bill carries clauses the government fills in", cls.length === 5,       cls.length + "");
     ok("and it is a supply measure",
        CONTENT.billById.appropriation.test === "supply");
 
@@ -2210,6 +2213,41 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
     ok("and passing it applies the clauses the government chose",
        A.scalars.consumables !== cons && !!A.flags.supply_granted,
        "consumables " + cons + " -> " + A.scalars.consumables);
+  })();
+
+  /* ---- THE APPROPRIATION DRIVES THE FOUR PRICES ----
+     design/13 §2.3 found two of the four barely driven and the
+     appropriation driving none of them. design/28 §4 makes the clauses the
+     drivers: each sets a law key at every level and the tick reads them,
+     because the four prices are legislative outputs and the appropriation
+     is the legislation (§7.9). Asserted per clause. */
+  (function () {
+    const run = law => {
+      const s = Engine.newGame(CONTENT);
+      Object.assign(s.law, law || {});
+      for (let i = 0; i < 14; i++) Engine.advance(s, CONTENT);
+      return s.prices;
+    };
+    const base = run({});
+    const tight = run({ thermal_release: "tight" });
+    const open = run({ thermal_release: "open" });
+    const works = run({ capital_works: "outer" });
+    const subs = run({ transit_subsidy: "all" });
+
+    ok("the quota release the appropriation votes sets the thermal price",
+       tight.thermal > base.thermal + 5 && open.thermal < base.thermal - 5,
+       "tight " + tight.thermal + ", base " + base.thermal + ", open " + open.thermal);
+    ok("capital works move the volume price", works.volume < base.volume - 2,
+       base.volume + " -> " + works.volume);
+    ok("the transit subsidy moves the transit price", subs.transit < base.transit - 5,
+       base.transit + " -> " + subs.transit);
+
+    const market = ["thermal", "works", "transit"];
+    const missing = (CONTENT.billById.appropriation.clauses || [])
+      .filter(cl => market.indexOf(cl.id) >= 0)
+      .filter(cl => (cl.levels || []).some(lv => !(lv.effects || []).some(e => e.law)));
+    ok("and every level of every market clause sets its law key",
+       missing.length === 0, missing.map(c => c.id).join(", ") || "all three");
   })();
 
   /* ---- SUPPLY IS THE THING THAT CANNOT BE IGNORED ----

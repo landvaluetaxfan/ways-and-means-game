@@ -17,6 +17,12 @@ const SETUP = {
              legitimacy:48, friction:25 },
   law: { divergence_threshold_hours:168, civic_clock_minimum:0,
          suspension_debt_accrual:true, substrate_public_share:0.35, shed_order_authority:"engineering_authority",
+         /* THE APPROPRIATION'S FINGERPRINT ON THE MARKET (design/13 §2.3,
+            design/28 §4). Each clause of the budget sets one of these, and
+            the tick reads them where it used to read a scalar alone: the
+            four prices are legislative outputs, and the appropriation is
+            the legislation. Levels are the clause levels' own words. */
+         thermal_release:"steady", capital_works:"none", transit_subsidy:"none",
          tier_ratio_district:140, tier_ratio_list:100, threshold_pct:4,
          /* Bible 4.10: the divisor is a bill, not a constant. D'Hondt favours
             large parties, Sainte-Lague small ones, and the two tiers are two
