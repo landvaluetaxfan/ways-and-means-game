@@ -353,6 +353,18 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #func-table tr.funcdet .ostats{margin-bottom:4px;}
 #func-table tr.funcdet .ostats span{background:transparent;border-color:#e0d3a8;}
 #func-table tr.funcdet .rulehead{color:#7a6428;border-color:#e0d3a8;}
+/* An instrument opens the same way again. It carries the two things the row
+   cannot: what the order does, and what it does to the benches — `summary`
+   and `effect_note`, which existed in the data and were read by nothing. */
+#gov-si tr[data-si]{cursor:pointer;}
+#gov-si .caret{display:inline-block;width:0;height:0;margin-right:5px;
+  border-top:3px solid transparent;border-bottom:3px solid transparent;
+  border-left:4px solid var(--ink-soft);}
+#gov-si .caret.open{transform:rotate(90deg);}
+#gov-si tr[data-si].open>td{background:var(--chrome-lt);}
+#gov-si tr.si-d>td{background:#f7f1dd;border-color:#e0d3a8;padding:5px 9px 7px;}
+#gov-si tr.si-d p{margin:0 0 4px;}
+#gov-si tr.si-d p:last-child{margin-bottom:0;}
 /* the members of a functional seat, ref / party / name-and-office */
 .fmem{border-collapse:collapse;font-size:11.5px;margin-top:2px;}
 .fmem td{padding:1px 8px 1px 0;border:0;vertical-align:baseline;}
@@ -1025,7 +1037,7 @@ img.dith{display:block;}
    running away, which worked at one window height and overflowed the
    page by 138px at another. The screen takes the viewport and the panels
    divide it. */
-.g-pap{grid-template-columns:340px minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:100%;min-height:0;}
+.g-pap{grid-template-columns:minmax(380px,520px) minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:100%;min-height:0;}
 #s-pap.screen.on{height:100%;min-height:0;}
 .g-pap > .stack{min-height:0;}
 .g-pap .panel{min-height:0;}
