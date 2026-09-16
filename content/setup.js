@@ -23,6 +23,11 @@ const SETUP = {
             merges seats back into multi-member districts. */
          district_divisor:"fptp", list_divisor:"dhondt" },
   divisionsPerSitting: 2,
+  /* THE PARLIAMENT ACT NUMBER. Supply answers to the elected benches, but a
+     functional bench that votes it down delays it this many sittings -- paid
+     in the one currency 7.7 says cannot be topped up. They may hold up the
+     budget; they may not stop it. */
+  supplyDelaySittings: 3,
   slotsPerSession: 6,
   /* HOW LONG A SESSION RUNS, in sittings. The House rises at the end of it:
      order-paper time refills, business not carried falls, and anything owed

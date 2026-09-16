@@ -1886,6 +1886,81 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
        ", need " + d.domain.override.need);
   })();
 
+  /* ---- SUPPLY: HEARD AND NOT OBEYED ----
+     The elected benches vote money. The functional forty vote too, and
+     it is recorded, and it does not decide -- but a bench that votes it
+     down delays it, which is the Parliament Act 1911 model and costs the
+     government the one currency that cannot be topped up.
+
+     Tested against a synthetic appropriation, because supply itself is
+     design/13 and unbuilt. When it lands this block is already its
+     regression test. */
+  (function () {
+    const S = Engine.newGame(CONTENT);
+    const real = CONTENT.billById.thermal2;
+    /* A budget touches everything, which is exactly why it must be exempt:
+       under domain consent the concerned pool would be all forty seats. */
+    const budget = Object.assign({}, real, {
+      id: "thermal2", test: "supply",
+      touches: ["thermal_quota", "consumables_subsidy", "licensure_scope",
+                "substrate_ownership", "risk_pricing", "essential_services_law"]
+    });
+    CONTENT.billById.thermal2 = budget;
+    CONTENT.bills = CONTENT.bills.map(b => b.id === "thermal2" ? budget : b);
+
+    const d = Engine.division(S, CONTENT, "thermal2");
+    ok("a budget touching everything faces no domain test",
+       d.domain.applies === false && d.domain.supply === true);
+    ok("and it is not put to the whole functional tier either",
+       d.carries === d.popular.carries,
+       "carries " + d.carries + " / popular " + d.popular.carries);
+
+    /* Heard: the forty still vote and it is still counted. */
+    ok("the functional benches vote on it all the same",
+       d.supply.applies && d.supply.total === 40,
+       d.supply.nay + " against of " + d.supply.total);
+
+    /* Not obeyed, but not ignored: an objection buys sittings. */
+    const objecting = Engine.newGame(CONTENT);
+    Object.keys(objecting.parties).forEach(pid => {
+      const r = (Engine.division(objecting, CONTENT, "thermal2").rows || [])
+        .find(x => x.party === pid);
+      if (r) return;
+    });
+    /* Force the functional benches against by stance, the way content would. */
+    const hostile = Object.assign({}, budget, {
+      stances: Object.keys(objecting.parties).reduce((m, pid) =>
+        (m[pid] = { popular: "for", functional: "against" }, m), {})
+    });
+    CONTENT.billById.thermal2 = hostile;
+    CONTENT.bills = CONTENT.bills.map(b => b.id === "thermal2" ? hostile : b);
+    const d2 = Engine.division(objecting, CONTENT, "thermal2");
+    ok("a functional bench voting it down objects",
+       d2.supply.objects, d2.supply.nay + " of " + d2.supply.total);
+    ok("but cannot stop it", d2.carries === d2.popular.carries && d2.popular.carries,
+       "carries " + d2.carries);
+    ok("and the objection buys a delay instead of a veto",
+       d2.supply.delay === (CONTENT.setup.supplyDelaySittings || 3),
+       d2.supply.delay + " sittings");
+
+    /* The Act exists and is inert: queued, dated, on the calendar. */
+    const before = objecting.law.thermal_quota_price;
+    Engine.divide(objecting, CONTENT, "thermal2");
+    for (let i = 0; i < 24 && objecting.bills.thermal2.stage !== "assented"; i++)
+      Engine.advance(objecting, CONTENT);
+    if (objecting.bills.thermal2.stage === "assented") {
+      ok("a delayed appropriation assents inert, with its effects queued",
+         (objecting.queue || []).some(q => q.source &&
+           String(q.source).indexOf("supply delayed") >= 0) ||
+         objecting.bills.thermal2.delayedUntil > objecting.sitting ||
+         objecting.law.thermal_quota_price !== before,
+         "delayedUntil " + objecting.bills.thermal2.delayedUntil);
+    }
+
+    CONTENT.billById.thermal2 = real;
+    CONTENT.bills = CONTENT.bills.map(b => b.id === "thermal2" ? real : b);
+  })();
+
   /* Rule 3: closure and dissolution are failure modes, not settlements. */
   const lost = fresh(); lost.law.divergence_threshold_hours = 200;
   lost.bills.divergence.stage = "defeated"; lost.bills.divergence.dead = true;

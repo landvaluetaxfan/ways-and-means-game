@@ -351,6 +351,33 @@ New bills from T4 want a `touches` too. A bill that touches nothing gets a
 simple majority, which is correct for most of them — do not reach for it out
 of habit.
 
+## T18 — [ ] When supply exists, it is `test: "supply"`
+
+Not yours to build — `design/13` is the fiscal system and it is mine. This is
+here so that when you write the Appropriation Bill's prose you know the rule
+it runs under, because it is not the rule the other bills run under.
+
+```js
+{ id:"appropriation", test:"supply", … }
+```
+
+**The elected benches vote money.** A supply measure faces no whole-tier test
+and no domain consent, because a budget touches everything — §7.3's tax base is
+volume, thermal quota, substrate-hours and mass-to-orbit — and under domain
+consent the concerned pool would be all forty seats, making the budget the most
+vetoable measure in the game against a government whose working majority is
+nil.
+
+**But the forty vote anyway and it is recorded.** A second chamber divides on a
+money bill and cannot stop it; the division is real. And a bench voting it down
+**delays it three sittings** (Parliament Act 1911, and `setup.supplyDelaySittings`),
+paid in the one currency §7.7 says cannot be topped up. The Act is signed and
+inert, its effects queued to a date on the calendar.
+
+What that means for the prose: a budget carried against a hostile functional
+bench is a government in trouble although it won, because those are the people
+who have to deliver what was just appropriated. Write it that way.
+
 ---
 
 ## Do not

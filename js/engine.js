@@ -1123,6 +1123,10 @@ const Engine = (function () {
        after the count for the same reason the whips are: the result must be
        computed with the plan still standing. */
     const owed = payLobby(st, C, billId);
+    /* A referred bill assents later through reviewReturns(), which never
+       saw the division, so the delay is recorded on the bill rather than
+       passed down one of the two paths and dropped on the other. */
+    if ((result.supply || {}).delay) bs0supply(st, billId, result.supply.delay);
     const bs = st.bills[billId];
     /* THE HOUSE HAS VOTED, AND THAT IS NOW A FACT ABOUT THE BILL. The forecast
        is an estimate and stops being the truth the moment a division runs;
@@ -1189,13 +1193,31 @@ const Engine = (function () {
         text: "PRESIDENT REFERS " + b.title.toUpperCase() + " FOR CONSTITUTIONAL REVIEW" });
       return { referred: true, reasons: risk.reasons, returnsAt: bs.returnsAt };
     }
-    return assent(st, C, billId);
+    return assent(st, C, billId, (result.supply || {}).delay || 0);
   }
 
   /* Signing is where the effects land, and where the ceremony fires. */
-  function assent(st, C, billId) {
+  function bs0supply(st, billId, n) {
+    if (st.bills[billId]) st.bills[billId].supplyDelay = n;
+  }
+
+  function assent(st, C, billId, delay) {
     const b = C.billById[billId], bs = st.bills[billId];
-    apply(st, C, b.onPass);
+    if (delay == null) delay = bs.supplyDelay || 0;
+    /* A delayed appropriation is assented and INERT: the Act exists, and
+       what it does has not happened yet. Queued rather than applied, so
+       it arrives on the calendar as a dated fact and resolveDue() lands
+       it at the top of the sitting like any other. */
+    if (delay > 0) {
+      st.queue.push({ dueSitting: st.sitting + delay, effects: b.onPass,
+                      label: b.title + " takes effect",
+                      source: "supply delayed by the functional benches" });
+      bs.delayedUntil = st.sitting + delay;
+      st.log.unshift({ sitting: st.sitting, text:
+        "Supply delayed " + delay + " sittings by the functional benches: " + b.title });
+    } else {
+      apply(st, C, b.onPass);
+    }
     bs.stage = "assented"; bs.dead = true; bs.assentedAt = st.sitting;
     st.log.unshift({ sitting: st.sitting, text: "Assented: " + b.title });
     /* The ceremony is reserved for acts that cannot be undone, so it fires only
@@ -1647,7 +1669,17 @@ const Engine = (function () {
        after the pairs settle, because the override is measured against
        the popular count that actually happened. */
     const domain = domainTest(st, C, billId, rows, popAye, popTotal, lobFc);
+    /* Heard, recorded, and not obeyed — but counted, because the delay
+       has to be triggered by something and a bench that did not vote
+       cannot object. */
+    const supply = isSupply(bill) ? (function () {
+      const nay = sum("functionalNay"), total = functionalTotal(st);
+      const objects = total > 0 && nay > Math.floor(total / 2);
+      return { applies: true, nay: nay, total: total, objects: objects,
+               delay: objects ? (C.setup.supplyDelaySittings || 3) : 0 };
+    })() : { applies: false, objects: false, delay: 0 };
     return {
+      supply: supply,
       bill: billId, dual: dual, rows: rows, domain: domain,
       popular:   { aye: popAye,  total: popTotal,  need: popNeed,  carries: popCarriesAfter,
                    abstain: sum("popularAbstain"), nay: sum("popularNay"),
@@ -1655,7 +1687,9 @@ const Engine = (function () {
       functional:{ aye: funcAye, total: funcTotal, need: funcNeed, carries: funcCarries,
                    abstain: sum("functionalAbstain"), nay: sum("functionalNay"),
                    absent: 0 },
-      carries: (dual ? (popCarriesAfter && funcCarries) : popCarriesAfter) &&
+      /* Supply answers to the elected benches and to nothing else. */
+      carries: (isSupply(bill) ? popCarriesAfter
+                : (dual ? (popCarriesAfter && funcCarries) : popCarriesAfter)) &&
                domain.carries
     };
   }
@@ -1815,6 +1849,36 @@ const Engine = (function () {
 
   const OVERRIDE_PCT = 0.60;
 
+  /* SUPPLY IS A THIRD TEST: THE FORTY ARE HEARD AND NOT OBEYED.
+
+     A budget touches everything — §7.3 fixes the tax base as volume,
+     thermal quota, substrate-hours and mass-to-orbit, and §7.5.2 makes
+     the appropriation the thing that sets the thermal price — so under
+     domain consent the concerned pool would be every constituency and
+     all forty seats. That would make the budget the most vetoable
+     measure in the game, against a government whose working majority is
+     nil, which is the exact inverse of how a parliament works. The
+     elected benches vote money.
+
+     THEY VOTE ANYWAY, AND IT IS RECORDED. Excluding them would be the
+     less realistic option and the more expensive one: a second chamber
+     debates and divides on a money bill and cannot stop it, and the
+     division is real. It is also free information — forty members
+     registering an objection that changes nothing tells the player
+     exactly where the trades stand — and a budget carried against a
+     functional bench voting heavily against is a government in trouble
+     although it won, because those are the people who have to deliver
+     what was just appropriated.
+
+     AND BEING HEARD BUYS THEM TIME. The Parliament Act 1911 model: they
+     may delay supply, not kill it. The delay is paid in the one currency
+     §7.7 says cannot be topped up, so an objection costs the government
+     something it genuinely cannot get back, without being able to stop
+     it governing. Implemented through the deferred queue, so the held
+     appropriation appears on the calendar as a dated thing the
+     government knows is coming. */
+  function isSupply(bill) { return !!bill && bill.test === "supply"; }
+
   /* Distribute a party's functional votes across the constituencies it
      holds seats in, largest remainder, so the per-constituency tallies
      sum back to the party rows the breakdown prints. */
@@ -1861,6 +1925,7 @@ const Engine = (function () {
 
   function domainTest(st, C, billId, rows, popAye, popTotal, lobFc) {
     const bill = C.billById[billId];
+    if (isSupply(bill)) return { applies: false, carries: true, supply: true };
     const touches = (bill && bill.touches) || [];
     if (!touches.length) return { applies: false, carries: true };
 
@@ -3729,7 +3794,7 @@ const Engine = (function () {
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
     rollCall, lobbyable, setLobby, clearLobby, lobbyCost, payLobby, lobbiedSeats,
-    domainTest, functionalByConstituency, lobbiedByConstituency,
+    domainTest, functionalByConstituency, lobbiedByConstituency, isSupply,
     settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
     snapshot, changes,
     prorogue, canDivide, candidates, vacancies, fillPost,

@@ -1429,6 +1429,22 @@ const UI = (function () {
      made it is named, and the two ways out are stated: square the bench,
      or carry three-fifths of those voting and override it. */
   function domainNote(d) {
+    /* SUPPLY: heard and not obeyed. The objection changes no outcome, so
+       if it were not printed the forty would appear not to have voted at
+       all — and the delay it buys would arrive on the calendar with no
+       stated cause. */
+    const sp = d.supply;
+    if (sp && sp.applies) {
+      if (!sp.objects)
+        return `<div class="dmn ok"><b>Supply.</b> The elected benches vote money. ` +
+          `The functional benches divided ${sp.total - sp.nay}\u2013${sp.nay} and ` +
+          `did not object.</div>`;
+      return `<div class="dmn bad"><b>Supply, objected to.</b> The functional ` +
+        `benches divided ${sp.total - sp.nay}\u2013${sp.nay} against. They cannot ` +
+        `stop it: the elected benches vote money. They can hold it, and they have ` +
+        `— <b>${sp.delay} sittings</b> before it takes effect. The Act will be ` +
+        `signed and inert, and these are the members who have to deliver it.</div>`;
+    }
     const dm = d.domain;
     if (!dm || !dm.applies) return "";
     const who = dm.constituencies
