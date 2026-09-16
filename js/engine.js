@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 15;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends
+  const STATE_VERSION = 16;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters
 
   /* ---------------------------------------------------------
      1. STATE
@@ -305,6 +305,16 @@ const Engine = (function () {
       st.trends = st.trends || {};
       st.version = 15;
     }
+    if (st.version < 16) {                    // the campaign meters (Flash I)
+      /* `treasury` became `solvency`, and legitimacy and friction were
+         added. Carry the value across under the new name; reconcile()
+         fills any meter a save has never seen. */
+      st.scalars = st.scalars || {};
+      if (st.scalars.solvency == null && st.scalars.treasury != null)
+        st.scalars.solvency = st.scalars.treasury;
+      delete st.scalars.treasury;
+      st.version = 16;
+    }
     return st;
   }
 
@@ -346,6 +356,18 @@ const Engine = (function () {
        content standing; one removed from content goes. Same contract as
        stations: content owns identity, the save owns simulation. */
     seedActors(st, C, notes);
+
+    /* THE SCALARS CONTENT DECLARES. Content owns the ROSTER (which meters
+       exist); the save owns each meter's value, because every one of them
+       is play. A meter added to content since a save was written must
+       appear at its opening value — without this the meters panel renders
+       `width:undefined%` and the readout says "undefined", which is how
+       Flash I's three new meters arrived on every save written before
+       them. */
+    st.scalars = st.scalars || {};
+    Object.keys(C.setup.scalars || {}).forEach(k => {
+      if (st.scalars[k] == null) st.scalars[k] = C.setup.scalars[k];
+    });
 
     st.stations = st.stations || {};
     C.stations.forEach(s0 => {

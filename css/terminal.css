@@ -2085,6 +2085,22 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
 #s-sit .stack{min-height:0;display:flex;flex-direction:column;}
 #s-sit .stack > .panel:last-child{flex:1 1 auto;min-height:120px;}
 #s-sit .stack > .panel:last-child > .pbody{overflow:auto;}
+/* THE COLUMN SCROLLS; THE PANELS KEEP THEIR HEIGHT.
+
+   Every panel here could shrink and every body could grow, so the flex
+   distribution redrew itself whenever ANY panel's content changed height —
+   and the meter mirror lands a microtask after the paint, so each render
+   reflowed the whole column a second time. Today, the calendar, the docket
+   and the indicators all change size over a session, and between them the
+   column was a thing that moved while you read it.
+
+   Same rule the chamber's reference column already follows: the panels are
+   natural height and the COLUMN takes the overflow. Stable panels, one
+   scrollbar, and the drawn bar comes from `.scrolls` in the markup. */
+#s-sit .stack > .panel{flex:0 0 auto;min-height:0;}
+#s-sit .stack > .panel:last-child{flex:0 0 auto;min-height:0;}
+#s-sit .stack > .panel > .pbody{flex:0 0 auto;min-height:0;overflow:visible;}
+#s-sit .stack > .panel:last-child > .pbody{overflow:visible;}
 /* NONE OF WHICH SURVIVES ONE COLUMN. Filling the viewport is right for
    two columns side by side and wrong for five panels stacked: the row
    becomes a single screen-height box that everything below is pushed out

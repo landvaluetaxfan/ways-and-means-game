@@ -685,7 +685,7 @@ const UI = (function () {
       ["Legitimacy", "legitimacy", 30], ["Diplomatic friction", "friction", 35, true]
     ];
     $("#gov-meters").innerHTML = meters.map(([lab, k, soft, inv]) => {
-      const v = st.scalars[k], f = fatal[k];
+      const v = st.scalars[k] == null ? 0 : st.scalars[k], f = fatal[k];
       const cls = inv
         ? (v >= soft ? "warn" : v <= 25 ? "good" : "")
         : (f != null && v <= f + 10) || v <= soft ? "warn" : v >= 65 ? "good" : "";

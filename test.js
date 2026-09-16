@@ -472,6 +472,23 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     ok(`v${from} migrated save is playable`, played, why);
   }
 
+  /* THE CAMPAIGN METERS ARRIVE ON AN OLD SAVE (Flash I). Content owns the
+     roster of meters; the save owns the values. A save written before the
+     rename carries `treasury` across as `solvency`, and the meters it has
+     never seen appear at their opening values — otherwise the panel draws
+     `width:undefined%` and the readout says "undefined". */
+  {
+    const old = JSON.parse(Engine.save(Engine.newGame(CONTENT)));
+    old.version = 14;
+    delete old.scalars.solvency; delete old.scalars.legitimacy; delete old.scalars.friction;
+    old.scalars.treasury = 41;
+    const back = Engine.load(JSON.stringify(old), CONTENT);
+    ok("a save from before the campaign meters gets them anyway",
+       back.scalars.solvency === 41 && back.scalars.legitimacy === 48 &&
+       back.scalars.friction === 25 && back.scalars.treasury === undefined,
+       JSON.stringify(back.scalars));
+  }
+
   /* LABOUR RECONCILIATION.
      content/labour.js says the licensed counts in functional.js "are the hard
      constraint" and derives everything from population, adult roll and the
