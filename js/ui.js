@@ -184,7 +184,7 @@ const UI = (function () {
        against the previous state. Carrying them across a load would fire
        a cadence for a session the player never sat through, or swallow
        the knell for a government that has already fallen. */
-    lastSession = null; fallen = false; lastSigBand = null;
+    lastSession = null; fallen = false; lastSigBand = null; ended = null;
     if (wired) { drawAll(); reveal(); return; }   /* Shell re-boots on every load */
     wired = true;
     document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
@@ -482,7 +482,7 @@ const UI = (function () {
   /* Called after anything that moved the game on. A government falls once,
      so the knell is edge-triggered rather than drawn from the current state
      - which is also why this cannot live in drawStatus. */
-  let fallen = false, lastSession = null, lastSigBand = null;
+  let fallen = false, lastSession = null, lastSigBand = null, ended = null;
   function afterAction() {
     /* THE SIGNATURES AGAINST HER. Nine is a ballot and seven is the band
        the topbar turns red at — the most dramatic thing that can happen
@@ -517,6 +517,34 @@ const UI = (function () {
                        date: st.date, end: loss.reason });
       }
     } else if (!loss.lost) fallen = false;
+
+    /* THE RUN'S ENDING SURFACE. checkEnd is the one place that answers
+       "is this over, and how", and nothing called it, so a settlement or
+       an election arrived without ever being told to the player. Called
+       here, it also writes st.settledAs, which is what the `settled`
+       condition reads when chapter four's trigger fires. Each ending is
+       shown once; the terminal then stays open so the record can be read,
+       which is the placeholder the brief asked for, not the final screen. */
+    const end = Engine.checkEnd(st, C);
+    if (end.over && end.kind !== "loss" && ended !== end.kind) {
+      ended = end.kind;
+      score("sombre");
+      cue("knell");
+      if (end.kind === "settlement" && end.settlement) {
+        setStatus("Settled: " + end.settlement.name, "transient");
+        if (typeof Dialog !== "undefined") Dialog.alert(
+          end.settlement.closing || end.settlement.summary || "",
+          { title: end.settlement.name, yes: "Acknowledge" });
+        if (typeof Shell !== "undefined" && Shell.record)
+          Shell.record({ sitting: st.sitting, chapter: st.chapter,
+                         date: st.date, end: "settled \u2014 " + end.settlement.name });
+      } else if (end.kind === "election") {
+        setStatus("The Commonwealth has voted. The campaign is over.", "transient");
+        if (typeof Shell !== "undefined" && Shell.record)
+          Shell.record({ sitting: st.sitting, chapter: st.chapter,
+                         date: st.date, end: "election" });
+      }
+    }
   }
 
   /* ---------- scarcity prices ----------

@@ -1137,7 +1137,7 @@ he has already decided what he will say.`,
       result:"A letter answered in public is a letter that stops being theirs." }
   ]},
 
-{ id:"one_g_waiting", chapter:2, weight:59, once:true,
+  { id:"one_g_waiting", chapter:2, weight:59, once:true,
   when:{ loyaltyAbove:{ des:15 } },
   title:"The waiting list",
   speaker:"edelstein_powell",
@@ -1156,6 +1156,104 @@ budget."`,
     { label:"Say the list is not this session's business.",
       effects:[{ move:{ "loyalty.des":-6 } }, { move:{ "loyalty.hul":3 } }],
       result:"One-G heard the answer it is used to hearing. The waiting list is used to it too." }
+  ]},
+
+/* ============================================================
+   CHAPTERS THREE AND FOUR (T4, second half)
+
+   The triggers now exist: `dissolved` is set when the parliament ends
+   and `settled` reads the settlement flag the engine leaves. These are
+   the thin, correct placeholders the brief asked for: one event fires,
+   advances the chapter, and says the plainest true thing. A run ends at
+   the dissolution, so chapter three has very little room and chapter
+   four has whatever the settlement leaves.
+   ============================================================ */
+
+/* the campaign: parliament is dissolved, the country is asked */
+{ id:"ch3_dissolution", chapter:2, weight:96, once:true,
+  when:{ dissolved:true },
+  title:"The writs",
+  speaker:null,
+  body:`The proclamation is read and the House stands. The seats empty, the
+clerks cover the benches, and the building does the only thing it knows how
+to do: it hands the question to the country.
+
+The campaign is one session long by law, and the Commonwealth is now in it.
+Every member goes home to their station and their roll, and the government
+goes home to the record of what it did, which is what the electorate is
+about to be asked about.`,
+  choices:[
+    { label:"To the country.",
+      effects:[{ chapter:3 }],
+      result:"The writs are out. The campaign begins." }
+  ]},
+
+{ id:"ch3_the_campaign", chapter:3, prologue:1, once:true,
+  title:"The campaign",
+  speaker:"ceyhan",
+  body:`Thirty-four stations, one question each, and the same argument
+everywhere. The Spindle runs the numbers on its front page, and the numbers
+say the country is deciding between the record and the promise, which is
+every election.
+
+Ceyhan's column is short, and it ends where it always ends: that the
+campaign is one session long and a government that has used all of it has
+already made its case.`,
+  choices:[
+    { label:"Campaign on the record.",
+      effects:[{ move:{ "public_standing":4 } }, { move:{ "loyalty.cu_maintenance":4 } }],
+      result:"The record is what it is. You run on it because it is all a one-session government has." },
+    { label:"Campaign on the promise of the next session.",
+      effects:[{ move:{ "public_standing":3 } }, { move:{ "loyalty.psa":5 } }],
+      result:"The promise is newer than the record, which is its only advantage and it uses all of it." }
+  ]},
+
+{ id:"ch3_the_count", chapter:3, prologue:2, once:true,
+  title:"The count",
+  speaker:null,
+  body:`The returns come in by station, west to east, the way they always
+have. The stations that carried the government return it, and the stations
+that did not do not, and the arithmetic of the chamber is decided by
+midnight.
+
+The House that rises in the morning will be somebody else's arithmetic.
+This one is finished, and what it settled, it settled.`,
+  choices:[
+    { label:"Read the final numbers.",
+      effects:[{ wire:"RETURNS COMPLETE: THE NEW HOUSE WILL SIT NEXT SESSION" }],
+      result:"The numbers are read. The chapter closes." }
+  ]},
+
+/* the settlement: the argument was closed, and the Commonwealth after */
+{ id:"ch4_settled", chapter:2, weight:97, once:true,
+  when:{ settled:true },
+  title:"The question, closed",
+  speaker:null,
+  body:`The argument the whole session has been about is closed. Not
+paused, not deferred, not carried over: closed, in the form the record
+will show for a generation.
+
+The House will do the rest of its business in the shadow of the answer,
+which is how a settlement works. What follows is the Commonwealth after it.`,
+  choices:[
+    { label:"See it.",
+      effects:[{ chapter:4 }],
+      result:"The argument is closed." }
+  ]},
+
+{ id:"ch4_after", chapter:4, prologue:1, once:true,
+  title:"After",
+  speaker:null,
+  body:`The session runs on. Bills move or fall, ministers answer questions,
+and the register fills with the ordinary business of the House. The
+question that was settled stays settled, and the country gets used to the
+answer, and then it stops noticing there was ever a question at all.
+
+That is what a settlement is for.`,
+  choices:[
+    { label:"Close the chapter.",
+      effects:[],
+      result:"The record stands." }
   ]}
 
 ];

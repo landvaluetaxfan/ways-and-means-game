@@ -90,7 +90,9 @@ the scheme forbids appears in any of them.
 
 ---
 
-## T4 — [x] The event pool, part one: chapters one and two  ·  **DONE 16 Sep**
+## T4 — [x] The event pool: all four chapters  ·  **DONE 17 Sep**
+
+**Landed 24 → 46 events, and chapters three and four now exist.**
 
 **Landed 24 → 35 events, and the pool no longer goes dry.**
 
@@ -125,9 +127,17 @@ against 9–13 fired and dry by sitting 9 before.
 verb, so the appointments panel rendered the bare engine word; added, with a
 sentence for a post filled and a post left vacant.
 
-**Chapters three and four are still unwritten** — the triggers exist
-(`dissolved`, `settled`, `risesWithin`) but no event carries `chapter:3` or
-`chapter:4`. That is the rest of T4.
+**Chapters three and four are written, thin and correct, as the placeholders
+the author asked for.** `ch3_dissolution` fires on `dissolved` and advances to
+chapter three, where `ch3_the_campaign` and `ch3_the_count` say the plainest
+true things (one session of campaign, returns west to east, someone else's
+arithmetic in the morning). `ch4_settled` fires on `settled` and advances to
+chapter four, where `ch4_after` closes it. The ending surface was also missing
+and is delivered minimally: `afterAction()` now calls `Engine.checkEnd`, shows
+each settlement's `closing` prose once through the terminal's own dialog,
+records the session, and sets `st.settledAs` so the `settled` condition fires.
+The whole chain was driven headless: tribunal flag → graduated personhood →
+`ch4_settled` → chapter four.
 
 ---
 
@@ -705,11 +715,10 @@ engine pass. Write the content you wanted to author, not the verb you think
 would deliver it — the verb is the engine's problem and there may be a cheaper
 one.
 
-**1. The ending surface.** `Engine.checkEnd` is exported and nothing in the UI
-calls it, so in live play a settlement, an election or a loss does not stop or
-narrate the run — the run keeps going to dissolution and the player never
-meets the ending the game was for. The settlements now carry full `closing`
-prose (T6) and the flags are settable in play. The missing piece: after each
-action and each rise, call `checkEnd`, and when it returns `over`, show the
-ending — the settlement's `name` and `closing`, or the election/loss line —
-and record the session. The content side is done and waiting.
+**1. The ending surface.** ~~`Engine.checkEnd` is exported and nothing in the UI
+calls it~~ — **DELIVERED BY OPENCODE 17 SEP**, in the minimal form the T4 note
+describes: `afterAction()` calls `checkEnd`, shows the settlement's `closing`
+prose once through `Dialog`, records the session, and sets `settledAs`. What a
+proper ending still wants is the screen it deserves: a full panel for the
+settlement text rather than the terminal's dialog, the session board behind it,
+and a way back to the menu. The content side is done and waiting.
