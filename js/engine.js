@@ -134,8 +134,10 @@ const Engine = (function () {
 
          This is the causal chain the player is meant to watch:
          decision -> price -> station conditions -> event. */
-      prices: { thermal: 100, substrate: 100, volume: 100, transit: 100 },
-      priceHistory: { thermal: [100], substrate: [100], volume: [100], transit: [100] },
+      /* The scarce goods are content too, for the same reason. §7.3 names
+         four; a Commonwealth that came to price a fifth should not need
+         the engine recompiled to do it. */
+      prices: pricesOf(C), priceHistory: historyOf(C),
 
       president: Object.assign({}, C.setup.president),
 
@@ -214,9 +216,11 @@ const Engine = (function () {
       st.version = 2;
     }
     if (st.version < 3) {                     // scarcity prices
-      st.prices = st.prices || { thermal:100, substrate:100, volume:100, transit:100 };
-      st.priceHistory = st.priceHistory ||
-        { thermal:[100], substrate:[100], volume:[100], transit:[100] };
+      /* No content here: migrate() takes only the save, by design — an old
+         file is brought forward on its own terms and reconcile() adds
+         anything content has declared since. So the defaults, not C. */
+      st.prices = st.prices || pricesOf(null);
+      st.priceHistory = st.priceHistory || historyOf(null);
       st.version = 3;
     }
     if (st.version < 4) {                     // cabinet and instruments
@@ -817,7 +821,23 @@ const Engine = (function () {
      bill's own `axes`, so a new bill need not enumerate all of them.
      --------------------------------------------------------- */
 
-  const AXES = ["ownership", "personhood", "sovereignty", "closure"];
+  /* THE AXES AND THE SCARCE GOODS WERE LITERALS HERE, and that was the
+     one place the setting's weighting had genuinely leaked into the
+     machinery: adding a dimension the Commonwealth argues along — housing,
+     religion, labour — or a fifth thing it prices meant editing
+     js/engine.js, which is the rule this project is built on not doing.
+
+     The goods are read from content. The axes are not read from anywhere:
+     they are whatever a party and a bill both declare, which is stronger
+     than a list because it cannot go stale. */
+  const SCARCE_DEFAULT = ["thermal", "substrate", "volume", "transit"];
+  const scarceOf = (C) => (C && C.scarcities && C.scarcities.length)
+                            ? C.scarcities : SCARCE_DEFAULT;
+  const pricesOf  = (C) => scarceOf(C).reduce((m, k) => (m[k] = 100, m), {});
+  const historyOf = (C) => scarceOf(C).reduce((m, k) => (m[k] = [100], m), {});
+
+  /* (The axes need no constant here — see axisAgreement: they are read
+     off whatever the party and the bill both declare.) */
 
   /* ---------------------------------------------------------
      WHO ACTUALLY WALKS THROUGH THE LOBBY
@@ -921,7 +941,13 @@ const Engine = (function () {
 
   function axisAgreement(partyAxes, billAxes) {
     let score = 0, counted = 0;
-    AXES.forEach(a => {
+    /* NO LIST AT ALL, which is better than reading one from content: the
+       axes ARE whatever dimensions a party and a bill both declare a
+       position on. Add `housing` to both and it counts; add it to neither
+       and nothing here notices. The engine cannot name a dimension it has
+       never been told about, which is the rule working rather than being
+       enforced. */
+    Object.keys(partyAxes || {}).forEach(a => {
       if (billAxes[a] == null || partyAxes[a] == null) return;
       counted++;
       score += (partyAxes[a] === billAxes[a]) ? 1 : -1;

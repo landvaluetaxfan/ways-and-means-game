@@ -28,12 +28,37 @@ const UI = (function () {
      memorises, and the order paper's owner column is a swatch with no
      name beside it at all. The card is data rather than a keyed token, so
      it carries the live seat count and where the party stands. */
+  /* A PARTY HOVER IS A WIKIPEDIA HOVER, NOT A RESTATEMENT.
+
+     It used to say the party's name and where it sat, which is a caption
+     for a colour rather than an explanation of a party: a reader already
+     looking at "Freehold Party 17" learned nothing from a card that said
+     Freehold Party, 17 seats. It now carries the party's own note — what
+     it is FOR, which is the only thing the screen never says — its logo,
+     and a hand-off to its Concordance article.
+
+     The tip is on the NAME as well as the swatch (see pname). A four-pixel
+     square is a hard target and the wrong one; the name is what a reader
+     reaches for. */
+  function partyTip(id) {
+    const p = C && C.partyById && C.partyById[id];
+    if (!p) return "";
+    return ` data-tip-title="${esc(p.name)}"` +
+           ` data-tip-body="${esc(partyLine(id))}"` +
+           (p.logo ? ` data-tip-img="img/parties/${esc(p.logo)}"` : "") +
+           ` data-tip-go="${esc(p.id)}"`;
+  }
+
   const mark = id => {
     const p = C && C.partyById && C.partyById[id];
     if (!p) return sw(pc(id));
-    return `<i class="swatch" style="background:${pc(id)}"` +
-      ` data-tip-title="${esc(p.name)}" data-tip-body="${esc(partyLine(id))}"></i>`;
+    return `<i class="swatch" style="background:${pc(id)}"${partyTip(id)}></i>`;
   };
+
+  /* The party's name, annotated. Use this wherever a name is printed for a
+     reader rather than packed into a table cell that already has a tip. */
+  const pname = (id, text) =>
+    `<span class="pnm"${partyTip(id)}>${esc(text != null ? text : pn(id))}</span>`;
   function partyLine(id) {
     const seats = Engine.partyTotal(st, id);
     const loy = (st.parties[id] || {}).loyalty;
@@ -41,7 +66,12 @@ const UI = (function () {
       : st.coalition.indexOf(id) >= 0 ? "In the coalition."
       : st.confidenceSupply.indexOf(id) >= 0 ? "Confidence and supply."
       : "Opposition.";
-    return role + " " + seats + " seat" + (seats === 1 ? "" : "s") +
+    const p = (C.partyById || {})[id] || {};
+    /* The note first: what the party is for is the thing a reader cannot
+       get off the screen, and the seat count is the thing they already
+       have. Standing after, as the annotation. */
+    return (p.note ? p.note + " " : "") +
+      role + " " + seats + " seat" + (seats === 1 ? "" : "s") +
       (id !== st.playerParty && loy != null ? ", loyalty " + loy + "." : ".");
   }
   const logoMark = (id, cls) => {
@@ -934,6 +964,8 @@ const UI = (function () {
      Hansard's own form, and folded, because it is a record and not a
      readout — a player consults it when they want to know who, and the
      rest of the time it is one line saying a division happened. */
+  let dvlSeen = null;      /* which division's list has been shown open */
+
   function divisionList(id) {
     const bs = st.bills[id];
     if (!bs || !bs.lastDivision) return "";
@@ -961,7 +993,14 @@ const UI = (function () {
     };
 
     const d = bs.lastDivision;
-    return `<details class="dvl"><summary><b>Division list</b>` +
+    /* OPEN THE FIRST TIME. Folded by default it looked exactly like
+       nothing had been added — the one moment a player wants the names is
+       immediately after the division that produced them, and a closed
+       disclosure at the foot of a panel is not an answer to that. It
+       opens on the division just run and folds for every older one. */
+    const fresh = d.at === st.sitting && dvlSeen !== id + ":" + d.at;
+    if (fresh) dvlSeen = id + ":" + d.at;
+    return `<details class="dvl"${fresh ? " open" : ""}><summary><b>Division list</b>` +
       `<span>sitting ${d.at} &middot; ${d.carries ? "carried" : "not carried"} ` +
       `&middot; ${all.length} members</span></summary>` +
       section("Ayes", "aye", "aye") +
@@ -1195,7 +1234,7 @@ const UI = (function () {
         /* THE FULL NAME. There is room for it in this column — eleven rows of
            short numbers — and a composition table is the one place the reader
            wants to know which party, not which three letters. */
-        `<td class="pn">${mark(p.id)}${esc(pn(p.id))}</td>` +
+        `<td class="pn">${mark(p.id)}${pname(p.id)}</td>` +
         `<td class="n">${sq.district}</td><td class="n">${sq.list}</td>` +
         `<td class="n">${sq.functional}</td>` +
         `<td class="n"><b>${Engine.partyTotal(st, p.id)}</b></td>` +
@@ -1529,14 +1568,18 @@ const UI = (function () {
            is not a noe, and the bars must never sum past the House. */
         nay += p.popular.filter(m => m.vote === "nay").length;
         return Object.assign({}, p, { seats: seats, ayesTo: aye, naysTo: nay,
-                 /* QUICKER, NOW THAT THE NAMES ARE NOT CARRYING THE LOAD. The chips
-           were asked to be read and could not be: 280 names in fourteen
-           seconds is twenty a second. The division list does the naming,
-           so the animation is free to do the only thing it was ever good
-           at — the SHAPE of a bench going over and the count climbing at
-           the threshold. Still proportional to how many are walking, and
-           about a third shorter. */
-        ms: Math.max(330, Math.min(1500, 360 + seats * 20)) });
+                 /* SLOWER, AND ON PURPOSE. When the names had to be legible this
+           was a losing fight — 280 of them is twenty a second at any
+           length worth sitting through — and the answer was to move the
+           naming to the division list, not to hurry the House.
+
+           Shortening it as well was my error: a division is the slowest
+           thing a parliament does deliberately, and the weight is the
+           point. So the benches take longer than they ever have, and the
+           time is still proportional to how many members are walking:
+           a bench of two goes in under a second, the Commons Union's
+           eighty-two takes nearly three. */
+        ms: Math.max(520, Math.min(2900, 620 + seats * 38)) });
       });
   }
 
@@ -3496,7 +3539,10 @@ const UI = (function () {
     $("#chamber-legend").innerHTML = C.parties.map(p => {
       const tag = st.coalition.includes(p.id) ? ' <i class="ingov">GOV</i>'
                 : st.confidenceSupply.includes(p.id) ? ' <i class="ingov">C&amp;S</i>' : "";
-      return `<span>${mark(p.id)}${p.name} ${Engine.partyTotal(st, p.id)}${tag}</span>`;
+      /* The name carries the card too, because a reader reaches for the
+         name and not for a four-pixel square. */
+      return `<span>${mark(p.id)}${pname(p.id, p.name)} ` +
+             `${Engine.partyTotal(st, p.id)}${tag}</span>`;
     }).join("");
   }
 

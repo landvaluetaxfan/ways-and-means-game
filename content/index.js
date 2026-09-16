@@ -14,6 +14,13 @@ const CONTENT = (function () {
     business: typeof BUSINESS !== "undefined" ? BUSINESS : [],
     settlements: typeof SETTLEMENTS !== "undefined" ? SETTLEMENTS : [],
     actors: typeof ACTORS !== "undefined" ? ACTORS : [],
+    /* THE DIMENSIONS THIS POLITY ARGUES ALONG, and the goods it prices.
+       Both were literals in js/engine.js, which meant adding an axis the
+       Commonwealth cares about — housing, religion, labour — required
+       editing the engine. They are declared here instead, beside the
+       parties whose positions they describe (bible §7.3 for the goods). */
+    axes: ["ownership", "personhood", "sovereignty", "closure"],
+    scarcities: ["thermal", "substrate", "volume", "transit"],
     /* The name pools, so the engine can seat a list member without naming
        one itself. It indexes these; it does not contain them. */
     names: typeof NAMELISTS !== "undefined" ? NAMELISTS : {}

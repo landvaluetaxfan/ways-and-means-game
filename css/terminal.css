@@ -2366,3 +2366,11 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .dvl-n i{font-style:normal;font-family:var(--f-data);font-size:10px;
   color:var(--ink-soft);}
 .dvl-f{font-size:11px;color:var(--ink-soft);margin:4px 0 6px;}
+
+/* A party name is a thing you can hover, and says so on approach rather
+   than only once the card is already up. */
+.pnm{border-bottom:1px dotted var(--ink-soft);cursor:help;}
+/* The picture in a tip card. Small, and it never pushes the text around:
+   a missing file removes the node (js/tips.js imgLine). */
+#tipcard .tip-img{display:block;max-width:56px;max-height:40px;
+  margin:0 0 4px;image-rendering:pixelated;}

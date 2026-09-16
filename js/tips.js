@@ -314,6 +314,31 @@ const Tips = (function () {
     return '<table class="tipmem"><tbody>' + rows + '</tbody></table>';
   }
 
+  /* WHERE THE CARD HANDS OFF. The Concordance generates articles for
+     parties, stations and persons as well as carrying authored ones, and
+     this only ever looked in the AUTHORED map — so a party tip could name
+     a target and then decline to mention it, because the party's own
+     article is generated. It resolves a generated subject from its own
+     roster now, which is what turns a party hover into a hand-off rather
+     than a dead end. */
+  function goLine(go) {
+    if (!go || typeof CONTENT === "undefined") return "";
+    const subj = (CONTENT.encyclopediaById || {})[go] ||
+                 (CONTENT.partyById || {})[go] ||
+                 (CONTENT.stationById || {})[go];
+    if (!subj) return "";
+    return '<i>Concordance \u00b7 ' + esc(subj.title || subj.name) + '</i>';
+  }
+
+  /* An optional picture. Parties have a logo; a hover that shows the thing
+     it names beats another line of prose about it. Never required, and a
+     missing file removes itself rather than leaving a broken box. */
+  function imgLine(src) {
+    if (!src) return "";
+    return '<img class="tip-img" src="' + esc(src) + '" alt="" ' +
+      'onerror="this.onerror=null;this.remove()">';
+  }
+
   function show(el) {
     /* NOTHING ON THE MAIN MENU. The standing board reuses the game's
        panels and inherits their annotations with them, but the board is a
@@ -329,17 +354,16 @@ const Tips = (function () {
     const t = inline
       ? { title: el.getAttribute("data-tip-title") || "", body: inline,
           go: el.getAttribute("data-tip-go") || null,
+          img: el.getAttribute("data-tip-img") || null,
           members: parseMembers(el.getAttribute("data-tip-members")) }
       : find(el.getAttribute("data-tip"));
     if (!t) return;
     const c = build();
     c.innerHTML =
+      imgLine(t.img) +
       '<b>' + esc(t.title) + '</b>' +
       '<span>' + esc(t.body) + '</span>' +
-      (t.go && typeof CONTENT !== "undefined" && CONTENT.encyclopediaById &&
-       CONTENT.encyclopediaById[t.go]
-        ? '<i>Concordance · ' + esc(CONTENT.encyclopediaById[t.go].title) + '</i>'
-        : '') +
+      goLine(t.go) +
       membersTable(t.members);
     /* A member table carries a full office title in its last column, so the
        card is allowed to run wider than a one-line explanation needs. The

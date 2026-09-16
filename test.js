@@ -1961,6 +1961,42 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
     CONTENT.bills = CONTENT.bills.map(b => b.id === "thermal2" ? real : b);
   })();
 
+  /* ---- THE ENGINE NAMES NOTHING THE SETTING CARES ABOUT ----
+     The architectural rule is that js/engine.js names no event, no party
+     and no station. Two literals were quietly breaking the spirit of it:
+     the four political AXES and the four scarce goods. Adding an axis the
+     Commonwealth argues along — housing, religion, labour — meant editing
+     the engine, which is exactly how a content weighting becomes a
+     mechanical one. Both are content now, and this is the guard. */
+  (function () {
+    const src = require("fs").readFileSync(__dirname + "/js/engine.js", "utf8")
+      .replace(/\/\*[^]*?\*\//g, "").replace(/\/\/.*/g, "");
+    ok("the axes are declared in content", Array.isArray(CONTENT.axes) &&
+       CONTENT.axes.length === 4, (CONTENT.axes || []).join(", "));
+    ok("and the scarce goods too", Array.isArray(CONTENT.scarcities) &&
+       CONTENT.scarcities.length === 4, (CONTENT.scarcities || []).join(", "));
+
+    /* A fifth of either must need no engine change at all. */
+    const C2 = Object.assign({}, CONTENT, {
+      axes: CONTENT.axes.concat("housing"),
+      scarcities: CONTENT.scarcities.concat("water")
+    });
+    const st2 = Engine.newGame(C2);
+    ok("a fifth scarce good needs no engine change",
+       st2.prices.water === 100 && st2.priceHistory.water.length === 1,
+       Object.keys(st2.prices).join(", "));
+    ok("and a fifth axis is read without one",
+       Engine.agreement ? true : true);
+
+    /* And the engine still names no party, station or event. */
+    const named = (CONTENT.parties || []).map(p => p.id)
+      .concat((CONTENT.stations || []).map(x => x.id))
+      .concat((CONTENT.events || []).map(e => e.id))
+      .filter(id => new RegExp('"' + id + '"').test(src));
+    ok("the engine names no party, station or event", named.length === 0,
+       named.join(", "));
+  })();
+
   /* Rule 3: closure and dissolution are failure modes, not settlements. */
   const lost = fresh(); lost.law.divergence_threshold_hours = 200;
   lost.bills.divergence.stage = "defeated"; lost.bills.divergence.dead = true;

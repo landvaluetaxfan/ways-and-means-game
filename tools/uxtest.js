@@ -690,6 +690,31 @@ try {
   ok("sorted into sections rather than one run of names", +dlist[1] >= 2,
      dlist[1] + " sections");
 
+  /* A PARTY HOVER SAYS WHAT THE PARTY IS FOR, and hands off. The old card
+     repeated the name and the seat count, both of which the reader was
+     already looking at. */
+  const ptip = w.eval(`
+    (function () {
+      var el = document.querySelector("#chamber-legend .pnm");
+      if (!el) return "NO NAME ANCHOR";
+      var id = null;
+      CONTENT.parties.forEach(function (p) {
+        if (el.getAttribute("data-tip-title") === p.name) id = p.id; });
+      var body = el.getAttribute("data-tip-body") || "";
+      var note = id ? (CONTENT.partyById[id].note || "") : "";
+      return [ el.getAttribute("data-tip-go") || "", 
+               (note && body.indexOf(note.slice(0, 24)) >= 0) ? "1" : "0",
+               el.getAttribute("data-tip-img") ? "1" : "0" ].join("::");
+    })()
+  `).split("::");
+  ok("a party name is annotated, not just its swatch", ptip.length === 3,
+     ptip[0]);
+  ok("the card says what the party is for", ptip[1] === "1",
+     "the note is not in the body");
+  ok("it hands off to the Concordance", !!ptip[0] &&
+     w.eval('!!CONTENT.partyById["' + ptip[0] + '"]'), ptip[0]);
+  ok("and it can carry the party's logo", ptip[2] === "1");
+
   /* design/19: how long until the House rises, answerable by looking. */
   ok("the topbar carries how long the session has left",
      /RISES IN/.test(ui) && w.eval(`/RISES IN \\d+/.test(
