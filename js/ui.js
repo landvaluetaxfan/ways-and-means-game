@@ -3017,7 +3017,7 @@ const UI = (function () {
   function stageBar(bs, state) {
     const order = Engine.STAGE_ORDER || [];
     const at = bs.stage === "assented" ? order.length - 1 : order.indexOf(bs.stage);
-    return `<span class="sbar ${state}" aria-hidden="true">` + order.map((sg, i) => {
+    return `<span class="stagepips ${state}" aria-hidden="true">` + order.map((sg, i) => {
       const cls = i < at ? "done" : i === at ? "here" : "todo";
       return `<i class="${cls}${sg === Engine.DIVIDES_AT ? " dv" : ""}"></i>`;
     }).join("") + `</span>`;

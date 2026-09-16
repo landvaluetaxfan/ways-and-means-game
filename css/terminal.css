@@ -1769,20 +1769,28 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
   .stname.passed{color:var(--ok);}
   .stname.dead{color:var(--alert);}
 
-  .sbar{display:inline-flex;margin-left:6px;vertical-align:1px;border:1px solid var(--chrome-dk);}
-  .sbar i{display:block;width:6px;height:8px;background:var(--field);
+  /* NOT .sbar. That class already belonged to the terminal's DRAWN
+     SCROLLBAR (js/ui.js decorateScrollers, and `.sbwrap>.sbar` above), and
+     taking it for the stage pips meant `.sbar i{width:6px;height:8px}` hit
+     every scrollbar thumb in the game — which is an `<i>` — so every drawn
+     bar in Gecko shrank to six pixels. CLAUDE.md warns about exactly this
+     twice, in both directions: a class named for an appearance gets
+     borrowed, and an existing component's name gets taken for a new one.
+     Check whether a class exists before taking it. */
+  .stagepips{display:inline-flex;margin-left:6px;vertical-align:1px;border:1px solid var(--chrome-dk);}
+  .stagepips i{display:block;width:6px;height:8px;background:var(--field);
     border-right:1px solid var(--chrome-dk);}
-  .sbar i:last-child{border-right:0;}
-  .sbar i.dv{width:9px;}
-  .sbar i.done{background:currentColor;}
+  .stagepips i:last-child{border-right:0;}
+  .stagepips i.dv{width:9px;}
+  .stagepips i.done{background:currentColor;}
   /* the rung the bill is ON, told apart by a light top edge, not by a fainter
      colour — a faded mark is the one that disappears on the gold tint */
-  .sbar i.here{background:currentColor;box-shadow:inset 0 2px 0 rgba(255,255,255,.72);}
-  .sbar.live{color:var(--ink);}
-  .sbar.drafting{color:var(--chrome-dkr);}
-  .sbar.blocked{color:var(--warn);}
-  .sbar.passed{color:var(--ok);}
-  .sbar.dead{color:var(--alert);}
+  .stagepips i.here{background:currentColor;box-shadow:inset 0 2px 0 rgba(255,255,255,.72);}
+  .stagepips.live{color:var(--ink);}
+  .stagepips.drafting{color:var(--chrome-dkr);}
+  .stagepips.blocked{color:var(--warn);}
+  .stagepips.passed{color:var(--ok);}
+  .stagepips.dead{color:var(--alert);}
 
   #cham-bills tr.st-live>td:first-child{box-shadow:inset 3px 0 0 var(--ink-soft);}
   #cham-bills tr.st-drafting>td:first-child{box-shadow:inset 3px 0 0 var(--chrome-dk);}

@@ -669,6 +669,20 @@ try {
   ok("and members go absent in the division that follows", +paired[3] === 4,
      paired[3] + " away, both sides");
 
+  /* ONE CLASS, ONE COMPONENT. `.sbar` is the terminal's drawn scrollbar
+     track, built by decorateScrollers(). It was taken a second time for
+     the order paper's stage pips, and because the scrollbar's thumb is an
+     <i>, the newcomer's `.sbar i{width:6px}` shrank every drawn bar in
+     Gecko to six pixels. CLAUDE.md warns about this in both directions and
+     it happened anyway, so it is asserted now: outside the scrollbar's own
+     block, nothing may style a bare .sbar. */
+  const cssSrc = fs.readFileSync(path.join(root, "css/terminal.css"), "utf8");
+  const bare = (cssSrc.match(/(^|[\s,}])\.sbar(?![-\w])\s*\{/gm) || []);
+  ok("nothing borrows the scrollbar's class", bare.length === 0,
+     bare.length + " bare .sbar rules");
+  ok("and the drawn bar is still styled through its wrapper",
+     /\.sbwrap>\.sbar\{/.test(cssSrc));
+
   /* design/19: how long until the House rises, answerable by looking. */
   ok("the topbar carries how long the session has left",
      /RISES IN/.test(ui) && w.eval(`/RISES IN \\d+/.test(
