@@ -22,8 +22,8 @@ const root = path.join(__dirname, "..");
 const files = ["setup", "parties", "stations", "constituencies", "cabinet", "instruments","initiatives", "minutes", "characters", "bills", "events", "glossary", "encyclopedia", "labour"]
   .map(f => path.join(root, "content", f + ".js"));
 vm.runInThisContext(files.map(f => fs.readFileSync(f, "utf8")).join("\n") +
-  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES};");
-const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES } = globalThis.__G;
+  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP};");
+const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP } = globalThis.__G;
 
 const MAX_NEW_CLUSTERS = 1;  // per event. Raise this and you are choosing to confuse people.
 
@@ -392,6 +392,11 @@ try {
     const box = {}; require("vm").runInNewContext(src2 + ";this.__I = INSTRUMENTS;", box);
     (box.__I || []).forEach(i => { walkEffects(i.effects); walkWhen(i.when); });
   } catch (e) { /* instruments are optional to this check */ }
+  /* A coupling drags a scalar every sitting (Flash I). A number that moves
+     and is not watched is exactly the bug this audit exists to catch, so
+     the couplings are movers too. */
+  (SETUP.couplings || []).forEach(cp =>
+    Object.keys(cp.drag || {}).forEach(k => bump(moved, "scalar." + k)));
 
   const keys = [...new Set(Object.keys(moved).concat(Object.keys(gated)))].sort();
   keys.forEach(k => {

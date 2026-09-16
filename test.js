@@ -2360,3 +2360,97 @@ console.log("\nINITIATIVE:");
 
   if (bad) { console.log("\n" + bad + " INITIATIVE FAILURES"); process.exitCode = 1; }
 })();
+
+/* ---------------------------------------------------------------------
+   THE OPENING CANNOT BE BROKEN BY PLAYING WELL (Flash I).
+
+   `gb_approach` is the chapter-one to chapter-two transition, and it was
+   gated on the divergence bill still being in committee. Granting the
+   bill a slot — the obvious first move — moved it out, the beat could
+   never fire again, chapter two never opened, and the whole rest of the
+   campaign was unreachable for the player who actually governed. A
+   chapter advances on a DECISION (§1.7) and a prologue is an authored
+   sequence (design/21): its gate is the flag the sequence sets, nothing
+   the world can falsify.
+   --------------------------------------------------------------------- */
+console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  function open(aggressive) {
+    const st = Engine.newGame(CONTENT);
+    const fired = [];
+    for (let s = 0; s < 16; s++) {
+      const e = Engine.nextEvent(st, CONTENT);
+      if (e) {
+        fired.push(e.id);
+        /* take the first choice the engine will actually accept — a
+           disabled choice is not a decision and does not mark the event */
+        for (let i = 0; i < (e.choices || []).length; i++) {
+          if (Engine.choose(st, CONTENT, e, i) !== null) break;
+        }
+      }
+      if (aggressive) {
+        /* the worst case: every bill granted on sitting one, then divided
+           whenever the gate allows */
+        CONTENT.bills.forEach(b => {
+          if (!st.bills[b.id].dead) Engine.grantSlot(st, CONTENT, b.id);
+        });
+        CONTENT.bills.forEach(b => {
+          if (Engine.canDivide(st, CONTENT, b.id).ok) Engine.divide(st, CONTENT, b.id);
+        });
+      }
+      Engine.advance(st, CONTENT);
+    }
+    return { st, fired };
+  }
+
+  const idle = open(false);
+  ok("a passive player reaches chapter two", idle.st.chapter >= 2,
+     "chapter " + idle.st.chapter);
+
+  const busy = open(true);
+  ok("and so does one who grants every bill on sitting one",
+     busy.st.chapter >= 2, "chapter " + busy.st.chapter);
+  const later = busy.fired.filter(id => id.indexOf("ch2_") === 0 || id.indexOf("f1_") === 0);
+  ok("and the later pools fire for the busy player", later.length > 0,
+     later.join(", ") || "none");
+
+  /* FRICTION BITES (Flash I). A meter that only gets read at the finish
+     line is a scoreboard; the couplings in setup drag the margin every
+     sitting the meter is above its line, so the campaign's clock is the
+     campaign's clock. The highest matching line applies — worse is worse,
+     not worse-squared — and content declares the lines, not the engine. */
+  ok("content declares the couplings, not the engine",
+     Array.isArray(CONTENT.setup.couplings) && CONTENT.setup.couplings.length > 0,
+     (CONTENT.setup.couplings || []).length + " couplings");
+
+  const fr = Engine.newGame(CONTENT);
+  fr.scalars.friction = 45;
+  const m0 = fr.scalars.thermal_margin;
+  Engine.advance(fr, CONTENT);
+  ok("friction above its first line costs the margin every sitting",
+     fr.scalars.thermal_margin === m0 - 1, m0 + " -> " + fr.scalars.thermal_margin);
+
+  const fr2 = Engine.newGame(CONTENT);
+  fr2.scalars.friction = 90;
+  const m1 = fr2.scalars.thermal_margin, l1 = fr2.scalars.legitimacy,
+        s1 = fr2.scalars.solvency;
+  Engine.advance(fr2, CONTENT);
+  ok("and the worst line applies, not every line at once",
+     fr2.scalars.thermal_margin === m1 - 3 && fr2.scalars.legitimacy === l1 - 1 &&
+     fr2.scalars.solvency === s1,
+     "margin " + m1 + "->" + fr2.scalars.thermal_margin +
+     ", legitimacy " + l1 + "->" + fr2.scalars.legitimacy +
+     ", solvency " + s1 + "->" + fr2.scalars.solvency);
+
+  const fr3 = Engine.newGame(CONTENT);
+  const m2 = fr3.scalars.thermal_margin;
+  Engine.advance(fr3, CONTENT);
+  ok("and below the first line nothing drags at all",
+     fr3.scalars.thermal_margin === m2, m2 + " -> " + fr3.scalars.thermal_margin);
+
+  if (bad) { console.log("\n" + bad + " OPENING FAILURES"); process.exitCode = 1; }
+})();

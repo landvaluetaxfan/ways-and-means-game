@@ -3461,6 +3461,23 @@ const Engine = (function () {
       st.scalars[k] = clamp((st.scalars[k] || 0) + d, 0, 100);
     });
 
+    /* A METER THAT DRAGS ANOTHER (Flash I). Content declares the couplings
+       in setup: while the source meter is above a line, its drag lands
+       every sitting until somebody does something about it. The highest
+       line that matches is the one applied — worse is worse, not
+       worse-squared — and the wire says so once, when it starts. */
+    const cps = (C.setup.couplings || [])
+      .filter(cp => (st.scalars[cp.meter] || 0) > cp.above)
+      .sort((a, b) => (b.above || 0) - (a.above || 0));
+    if (cps.length) {
+      const cp = cps[0];
+      Object.keys(cp.drag || {}).forEach(k => {
+        st.scalars[k] = clamp((st.scalars[k] || 0) + cp.drag[k], 0, 100);
+      });
+      const key = "coupling_" + cp.meter + "_" + cp.above;
+      if (cp.mark && !st.flags[key]) { st.flags[key] = true; marks.push(cp.mark); }
+    }
+
     /* Stations answer to the substrate price. A habitat that cannot pay does
        not economise — it sheds people, and the shed order says which. */
     const strain = (P.substrate - 100) / 100;

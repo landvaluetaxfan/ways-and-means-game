@@ -107,7 +107,14 @@ undercut their wages, would rather you had paid a different price.`,
   ]},
 
 { id:"gb_approach", prologue:7, once:true,
-  when:{ billStage:{divergence:"committee"}, flagsAbsent:["gb_approached"] },
+  /* THE CHAPTER ADVANCE MUST NOT HINGE ON MUTABLE BILL STATE. This was
+     gated `billStage:{divergence:"committee"}`, and the obvious first move
+     — granting the divergence bill a slot — moved it out of committee, so
+     this beat could never fire again, chapter two never opened, and the
+     rest of the campaign was unplayable for the player who actually
+     governed. A prologue is an authored sequence (design/21 §3): the gate
+     is the flag the sequence itself sets, nothing the world can falsify. */
+  when:{ flagsAbsent:["gb_approached"] },
   title:"The Guild Bench will see you",
   speaker:"gb_chair",
   body:`She has agreed to eleven thirty and to nothing else. The panel chair is a
@@ -1378,6 +1385,34 @@ chamber is still arguing about the water.`,
     { label:"It was always going to end somewhere.",
       effects:[{ move:{ "party_loyalty":-100 } }],
       result:"The government falls. The terminal writes GOVERNMENT FALLEN." }
+  ]},
+
+/* THE SANCTIONS LAND. Friction above the top coupling's line has been
+   costing the margin every sitting since 40; this is the step where it
+   stops being a cost and becomes a fact. The couplings keep biting; this
+   is the prose that tells the player why. */
+{ id:"f1_accounts_freeze", chapter:2, weight:87, once:true,
+  when:{ scalarAbove:{ friction:70 } },
+  title:"The accounts are frozen",
+  speaker:"hatt",
+  body:`The wire says it at 06:00 and the Treasury confirms it by nine. The
+platform's corporate accounts are frozen under the host state's banking
+measures, and the freeze reaches the Commonwealth's own counterparties in
+three jurisdictions. Fuel, water and salaries are now things the government
+must find a way to pay for out of what it holds.
+
+Hatt puts the position in a sentence. "It is not an embargo yet. It is the
+price of one, and it is being charged to us by the hour."`,
+  choices:[
+    { label:"Pay for the platform out of the reserve.",
+      effects:[{ move:{ "solvency":-10 } }, { move:{ "legitimacy":6 } },
+               { move:{ "trend.friction":-1 } },
+               { wire:"COMMONWEALTH FUNDS THE PLATFORM FROM THE RESERVE; SANCTIONS STAND" }],
+      result:"The workers keep running and the reserve pays. The friction stops worsening, which is not the same as improving." },
+    { label:"Let the platform's suppliers carry the risk.",
+      effects:[{ move:{ "legitimacy":-8 } }, { move:{ "trend.friction":1 } },
+               { wire:"SUPPLIERS ASKED TO CARRY PLATFORM RISK; OUTER HABITATS OBJECT" }],
+      result:"The government keeps its money and loses the argument, and the sanctions deepen on their own." }
   ]},
 
 /* the canon election: the pyrrhic tier leads to the campaign's victory */

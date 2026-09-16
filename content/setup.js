@@ -54,7 +54,26 @@ const SETUP = {
      unwinnable and the government falls. ballot is the number of signatures
      that forces one (design/08 §2): below it the challenger is gathering,
      above it the caucus divides. */
-  thresholds: { leadershipChallenge: 15, ballot: 12 }
+  thresholds: { leadershipChallenge: 15, ballot: 12 },
+
+  /* COUPLINGS — a meter that DRAGS another, so a meter is never a
+     scoreboard (Flash I). While `meter` is above `above`, `drag` is
+     applied to its targets every sitting: dearer imports, a thinner
+     margin, a government that looks like it is losing. Content declares
+     them; the engine only reads the list, the way it reads prices. The
+     HIGHEST line that matches is applied — worse is worse, not
+     worse-squared — so these are a ladder, not a sum.
+
+     Diplomatic friction is the campaign's clock and this is what makes it
+     one: nothing here is a sanction yet, it is the cost of one landing. */
+  couplings: [
+    { meter: "friction", above: 40, drag: { thermal_margin: -1 },
+      mark: "Imports are dearer under the sanctions regime" },
+    { meter: "friction", above: 65, drag: { thermal_margin: -2, solvency: -1 },
+      mark: "Earth's banks are pricing the Commonwealth's risk" },
+    { meter: "friction", above: 85, drag: { thermal_margin: -3, legitimacy: -1 },
+      mark: "The blockade is beginning to bite" }
+  ]
 };
 
 /* =============================================================
