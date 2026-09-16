@@ -204,6 +204,13 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 /* The plan takes what the column has left; the whip under it is its own
    height and never squeezed. */
 .g-cham > .stack > .panel:first-child{flex:0 1 auto;min-height:0;}
+/* THE WHIP PANEL TAKES THE REST OF THE COLUMN. It used to size to its own
+   content and leave the room below it empty, so the division list — the one
+   thing in it that can be 280 names long — had to scroll inside a 132px box
+   of its own, with a native bar, while the space it needed sat unused
+   underneath. It fills what the plan leaves now, and its body is the
+   scroller, which is the drawn bar every other panel in the terminal uses. */
+.g-cham > .stack > #p-whip{flex:1 1 auto;min-height:0;}
 /* THE REFERENCE COLUMN SCROLLS, NOT ITS PANELS. Opening a functional seat
    should make the list LONGER — downward, into the room below it — rather than
    making it scroll inside itself, and it should not squeeze the composition
@@ -2386,8 +2393,11 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
    which is a disclosure taking space it was not given. The body is bounded
    and scrolls instead, so opening it changes nothing outside itself.
    In the division caption it has the room, so it takes more of it. */
-.dvl-b{max-height:132px;overflow:auto;min-height:0;}
-.dvl.incap .dvl-b{max-height:210px;}
+.dvl-b{min-height:0;}
+/* The caption is a strip and keeps its own bound; the copy in the whip panel
+   does not, because that column has the room and the panel's body already
+   scrolls with the drawn bar. */
+.dvl.incap .dvl-b{max-height:210px;overflow:auto;}
 .dvl.incap{border-top:0;margin-top:6px;}
 
 /* The blanks in a bill, drawn as clauses. Not a fiscal panel. */
