@@ -674,7 +674,7 @@ try {
       });
       if (!bill) return "NO DIVISION YET";
       Focus.activate("cham-bills", bill); UI.redraw();
-      var box = document.querySelector("#bill-detail .dvl");
+      var box = document.querySelector("#cham-whip .dvl");
       if (!box) return "NO DIVISION LIST";
       var secs = box.querySelectorAll(".dvl-s").length;
       var names = box.querySelectorAll(".dvl-n > span").length;
@@ -1927,8 +1927,13 @@ try {
     w.document.querySelector('#cham-bills tr[data-bill="divergence"]').click();
     ok("a stated forecast draws no faction rows",
        w.document.querySelectorAll("#comp-table tr.bench").length === 0);
+    /* A fallen measure loses the WHIP TABLE — there is nobody left to
+       move — but it may still carry its division list, which is a record
+       and the reason the panel stays. So the test is the control, not the
+       frame around it. */
     ok("and a measure that has fallen shows no whip",
-       w.document.querySelector("#p-whip").hidden);
+       !w.document.querySelector("#cham-whip .whiptab"),
+       w.document.querySelector("#p-whip").hidden ? "panel hidden" : "panel kept for the record");
 
     /* The whip is a control, so there is exactly one of it, and it sits
        under the plan rather than beside the bill. */

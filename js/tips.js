@@ -327,7 +327,13 @@ const Tips = (function () {
                  (CONTENT.partyById || {})[go] ||
                  (CONTENT.stationById || {})[go];
     if (!subj) return "";
-    return '<i>Concordance \u00b7 ' + esc(subj.title || subj.name) + '</i>';
+    /* A LINK, NOT A LABEL. It said "Concordance · Freehold Party" in
+       italic and did nothing, which is worse than silence: it names a
+       place and declines to take you there. data-go is the Concordance's
+       own navigation attribute, so this rides the handler every other
+       cross-reference in the game uses. */
+    return '<a class="cx-link tip-go" tabindex="0" data-go="' + esc(go) + '">' +
+           esc(subj.title || subj.name) + ' in the Concordance</a>';
   }
 
   /* An optional picture. Parties have a logo; a hover that shows the thing

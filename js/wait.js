@@ -89,8 +89,14 @@ const Wait = (function () {
           '</div>' +
           '<div class="wait-step" id="wait-step">&nbsp;</div>' +
           '<div class="wait-body" id="wait-body"></div>' +
-          '<div class="note wait-skip">' +
-            (spec.hold ? "Any key or click to close" : "Any key or click to skip") +
+          /* A BUTTON, NOT AN INSTRUCTION. "Any key or click to close" is a
+             line of prose asking the reader to discover a control; the
+             control is cheaper than the sentence. The key and the click
+             still work — the listeners are unchanged — so nothing is lost
+             for a player who never reaches for it. */
+          '<div class="wait-skip">' +
+            '<button type="button" class="btn wait-btn">' +
+            (spec.hold ? "Close" : "Skip") + '</button>' +
           '</div>' +
         '</div>' +
       '</div></div>';

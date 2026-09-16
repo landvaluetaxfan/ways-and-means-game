@@ -45,7 +45,10 @@ const UI = (function () {
     if (!p) return "";
     return ` data-tip-title="${esc(p.name)}"` +
            ` data-tip-body="${esc(partyLine(id))}"` +
-           (p.logo ? ` data-tip-img="img/parties/${esc(p.logo)}"` : "") +
+           /* img/logos, not img/parties — the first version pointed at a
+              directory that does not exist, the onerror removed the node,
+              and the card simply had no picture with nothing to say so. */
+           (p.logo ? ` data-tip-img="img/logos/${esc(p.logo)}"` : "") +
            ` data-tip-go="${esc(p.id)}"`;
   }
 
@@ -58,7 +61,8 @@ const UI = (function () {
   /* The party's name, annotated. Use this wherever a name is printed for a
      reader rather than packed into a table cell that already has a tip. */
   const pname = (id, text) =>
-    `<span class="pnm"${partyTip(id)}>${esc(text != null ? text : pn(id))}</span>`;
+    `<a class="pnm" tabindex="0" data-go="${esc(id)}"${partyTip(id)}>` +
+    `${esc(text != null ? text : pn(id))}</a>`;
   function partyLine(id) {
     const seats = Engine.partyTotal(st, id);
     const loy = (st.parties[id] || {}).loyalty;
@@ -964,7 +968,7 @@ const UI = (function () {
      Hansard's own form, and folded, because it is a record and not a
      readout — a player consults it when they want to know who, and the
      rest of the time it is one line saying a division happened. */
-  let dvlSeen = null;      /* which division's list has been shown open */
+  const dvlOpen = {};      /* which division lists the player has open */
 
   function divisionList(id) {
     const bs = st.bills[id];
@@ -993,14 +997,20 @@ const UI = (function () {
     };
 
     const d = bs.lastDivision;
-    /* OPEN THE FIRST TIME. Folded by default it looked exactly like
-       nothing had been added — the one moment a player wants the names is
-       immediately after the division that produced them, and a closed
-       disclosure at the foot of a panel is not an answer to that. It
-       opens on the division just run and folds for every older one. */
-    const fresh = d.at === st.sitting && dvlSeen !== id + ":" + d.at;
-    if (fresh) dvlSeen = id + ":" + d.at;
-    return `<details class="dvl"${fresh ? " open" : ""}><summary><b>Division list</b>` +
+    /* IT STAYS OPEN. The first attempt marked it open only on the render
+       that followed the division, so the next redraw — and a redraw
+       happens for any reason at all — replaced the node without the
+       attribute and the list vanished after a flash. Never seen again,
+       which is what was reported.
+
+       The open state is remembered per division instead, defaulting to
+       open for the one just run, and the player's own toggle wins from
+       then on. Keyed by bill and sitting, so a later division on the same
+       bill opens fresh rather than inheriting the last one's state. */
+    const key = id + ":" + d.at;
+    if (dvlOpen[key] === undefined) dvlOpen[key] = (d.at === st.sitting);
+    return `<details class="dvl" data-dvl="${esc(key)}"` +
+      `${dvlOpen[key] ? " open" : ""}><summary><b>Division list</b>` +
       `<span>sitting ${d.at} &middot; ${d.carries ? "carried" : "not carried"} ` +
       `&middot; ${all.length} members</span></summary>` +
       section("Ayes", "aye", "aye") +
@@ -1052,7 +1062,6 @@ const UI = (function () {
       `</div>` +
       whipLine(id) +
       dayLine(id, dchk) +
-      divisionList(id) +
       `<div class="btnrow">
          <button class="btn" id="btn-divide"${bs.dead ? " disabled" : ""}` +
            priceTip("Move to a division",
@@ -3021,6 +3030,10 @@ const UI = (function () {
        than the overflow it fixed. Open state is remembered per section
        for the session, because a player who lobbies once will lobby
        again. */
+    /* THE DIVISION LIST BELONGS IN THE MIDDLE, under the House it
+       describes, not in the left column beside the bill's text. It is a
+       record of what the chamber did and the chamber is here. */
+    const dvl = divisionList(id);
     const lob = lobbyPanel(id, b, d);
     const fold = (key, title, sub, inner) => inner
       ? `<details class="foldsec" data-fold="${key}"${whipOpen[key] ? " open" : ""}>` +
@@ -3038,9 +3051,12 @@ const UI = (function () {
          screen. It comes back when content gives a reason to pair: a
          courtesy that buys standing, or a member who asks. */
       fold("lobby", "Outside the chamber",
-           lobN ? lobN + " seats asked for" : "nothing asked", lob);
+           lobN ? lobN + " seats asked for" : "nothing asked", lob) +
+      dvl;
     /* whipPanel says nothing about a fallen measure, and an empty panel
-       is a frame around a hole. */
+       is a frame around a hole — but a measure that has DIVIDED is not a
+       hole: it has a record, and the record is the reason to keep the
+       panel. So the test is the whole contents and not the whip alone. */
     if (panel) panel.hidden = !html;
     if (!html) { el.innerHTML = ""; return; }
     const hdr = $("#cham-whip-hdr");
@@ -3445,7 +3461,14 @@ const UI = (function () {
     const oppPop = Engine.popularTotal(st) - govPop;
     const reservedCols = cols(Math.max(govPop, oppPop) +
                               Engine.functionalTotal(st));
-    const W = X0 + Math.max(benchW, reservedCols * CW) + Math.max(barW, 22);
+    /* AND THE DIVISION DOES NOT WIDEN IT EITHER. benchW swells to gatherW
+       while the count runs so the ayes can regroup, and feeding that into
+       the viewBox took it from 471 to 660 mid-division — every seat in the
+       House shrinking by a third at the exact moment the player is
+       watching it. The reservation already covers the gather (34 columns
+       against the 27 the ayes need), so the layout may swell and the box
+       does not. */
+    const W = X0 + reservedCols * CW + Math.max(barW, 22);
     /* Same for the height: the Bar's rows are reserved whether or not the
        Bar is occupied, so folding never reflows the chamber vertically
        either. Forty functional seats over five columns is the tallest the

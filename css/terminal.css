@@ -1492,7 +1492,8 @@ body.no-motion .wait-back.bare .wait-dlg{
   font-family:var(--f-data);font-size:11px;color:var(--ink-soft);
   min-height:13px;margin-bottom:6px;
 }
-.wait-skip{margin-top:7px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
+.wait-skip{margin-top:7px;display:flex;justify-content:flex-end;}
+.wait-btn{font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:3px 12px;}
 .wait-verdict{
   margin-top:6px;padding:3px 5px;font-family:var(--f-disp);font-size:15px;
   min-height:20px;border-top:1px solid var(--chrome-dk);
@@ -2367,9 +2368,13 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
   color:var(--ink-soft);}
 .dvl-f{font-size:11px;color:var(--ink-soft);margin:4px 0 6px;}
 
-/* A party name is a thing you can hover, and says so on approach rather
-   than only once the card is already up. */
-.pnm{border-bottom:1px dotted var(--ink-soft);cursor:help;}
+/* A party name is a thing you can hover and a thing you can click, and it
+   advertises neither until you are on it. The dotted rule under every name
+   was a fair instinct and an ugly one: twelve of them in a legend read as
+   a page of corrections. It shows itself on approach instead. */
+.pnm{color:inherit;text-decoration:none;cursor:pointer;}
+.pnm:hover,.pnm:focus-visible{color:var(--gold,var(--warn));}
+.pnm:focus-visible{outline:1px dotted var(--ink);outline-offset:1px;}
 /* The picture in a tip card. Small, and it never pushes the text around:
    a missing file removes the node (js/tips.js imgLine). */
 #tipcard .tip-img{display:block;max-width:56px;max-height:40px;
