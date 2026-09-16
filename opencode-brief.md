@@ -492,7 +492,27 @@ single-issue pressure group, and none of these are that.
 
 The engine side is done and needs nothing.
 
-## T20 — [ ] The Appropriation Bill's prose
+## T20 — [x] The Appropriation Bill's prose  ·  **DONE 16 Sep**
+
+**Landed.** All four clause notes and all twelve level notes rewritten as
+clauses of a budget rather than difficulty settings, against §7.5.2 (the quota
+as the price of permission to keep running), §7.4 (the floor; insurance that
+suspends people rather than cutting their income) and §7.2 (raising a station's
+closure is funding its secession). The §-citations left the player-facing prose
+and now sit in the file comment. Clause 2's head is "The consumables floor".
+
+**Costs untouched**, and the twelve levels were applied to a fresh state to prove
+it: 12 applied, 0 threw, defaults still sum to 48 against a treasury of 52.
+`touches` still `[]`.
+
+**One bug fixed in passing.** The `works` clause's "outer stations" level named
+`station:{ homestead: … }`, and `homestead` is not a station id (Homestead is
+`ashfield`), so choosing that level would dereference `st.stations.homestead`
+and throw. Corrected to `ashfield`.
+
+---
+
+### The task as written
 
 `design/13` landed on 16 Sep: the budget is a **bill, not a screen**, because
 §7.6 says that if the player needs a second window the model is too deep. So

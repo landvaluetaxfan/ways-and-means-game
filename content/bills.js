@@ -70,11 +70,19 @@ const BILLS = [
      functional forty are heard and not obeyed, and an objection delays
      it three sittings rather than killing it.
 
-     PROSE IS A PLACEHOLDER. Levels are named and costed so the mechanism
-     can be played and asserted; the register is flat on purpose.
-     TODO opencode (T20): a budget is the most-read document a government
-     publishes and these should sound like clauses of one, not like
-     difficulty settings.
+     CLAUSES AND THE CANON (T20). Each level is a stated position with a
+     stated cost, drawn like a clause in the bill rather than a slider
+     (design/13 §4.1). The prose is written against §7.5.2 (quota trading
+     is "a market in permission-to-exist-at-scale whose price is set by an
+     appropriation vote"), §7.4 (the consumables floor; substrate
+     insurance suspends people rather than cutting their income) and §7.2
+     (raising a poor station's closure funds its future secession).
+
+     DO NOT CHANGE THE COSTS. They are tuned against a treasury of 52 so
+     the defaults come to 48 and any upgrade is paid for by a cut; that
+     tension is the mechanic. `touches` stays empty on purpose: a supply
+     measure is exempt from domain consent because the elected benches
+     vote money (§7.3).
      ========================================================= */
   { id:"appropriation", ref:"HC 4/140", stage:"first_reading", owner:"cu",
     test:"supply", priority:true,
@@ -85,41 +93,48 @@ const BILLS = [
     touches:[],
     clauses:[
       { id:"thermal", name:"Thermal quota released", default:"steady",
-        note:"§7.5.2: a market in permission-to-exist-at-scale whose price is set by this vote.",
+        note:"The thermal quota released this session. The figure sets the price "+
+             "at which the right to keep running is bought and sold, and that "+
+             "price is paid on every line of this bill.",
         levels:[
-          { id:"tight",  label:"Held tight", cost:0,  note:"The price rises. Fewer minds can afford to run.",
+          { id:"tight",  label:"Held tight", cost:0,  note:"Released against last session's figure, and no more. The price rises to clear, and it lands on the stations with the thinnest margins.",
             effects:[{ move:{ "price.thermal": 14, public_standing:-4 } }] },
-          { id:"steady", label:"As last session", cost:14, note:"No change anybody can point to.",
+          { id:"steady", label:"As last session", cost:14, note:"Released at last session's figure. The price holds where the market has held it, and nobody can point to the vote.",
             effects:[] },
-          { id:"open",   label:"Released", cost:34, note:"The price falls and the radiators are the limit again.",
+          { id:"open",   label:"Released", cost:34, note:"Released in full. The price falls to the cost of rejecting the heat, and the radiators become the limit on how many minds the Commonwealth can carry.",
             effects:[{ move:{ "price.thermal": -16, thermal_margin:-5, public_standing:5 } }] }
         ] },
-      { id:"floor", name:"Consumables floor", default:"hold",
-        note:"§7.4's guarantee. Cutting it is visible within a week.",
+      { id:"floor", name:"The consumables floor", default:"hold",
+        note:"The air, water, calories and minimum volume guaranteed to every "+
+             "resident, and the rate at which the guarantee is carried.",
         levels:[
-          { id:"cut",  label:"Trimmed", cost:0,  note:"Saves money in a way the low-closure stations feel first.",
+          { id:"cut",  label:"Trimmed", cost:0,  note:"The guarantee is trimmed. The saving shows in this session's return, and the stations that cannot feed themselves show it in their closure by the end of the month.",
             effects:[{ move:{ consumables:-8, public_standing:-7 } }] },
-          { id:"hold", label:"Held", cost:16, note:"The guarantee as it stands.", effects:[] },
-          { id:"lift", label:"Lifted", cost:30, note:"The stations that cannot feed themselves are carried further.",
+          { id:"hold", label:"Held", cost:16, note:"The floor is held where it stands. Every resident is carried at the current rate and the vote pays for it.", effects:[] },
+          { id:"lift", label:"Lifted", cost:30, note:"The floor is raised. The stations with the lowest closure are carried further than the guarantee requires, and the difference comes out of the same vote.",
             effects:[{ move:{ consumables:9, public_standing:4, treasury:-4 } }] }
         ] },
       { id:"insurance", name:"Substrate insurance", default:"hold",
-        note:"§7.4: cutting this does not reduce anybody's income. It suspends people.",
+        note:"Cover for the residents who cannot pay for substrate. A reduction "+
+             "does not lower anybody's income; it moves people off the register "+
+             "of the insured and onto the register of the suspended.",
         levels:[
-          { id:"cut",  label:"Reduced", cost:0, note:"The third rail, touched.",
+          { id:"cut",  label:"Reduced", cost:0, note:"The appropriation is reduced and the means test stands. The people who fail the test stop running, and the saving is real.",
             effects:[{ move:{ public_standing:-11, "loyalty.cu":-6 } }] },
-          { id:"hold", label:"Held", cost:18, note:"Nobody is suspended for debt this session.", effects:[] },
-          { id:"wide", label:"Widened", cost:32, note:"Cover extends to the unattested.",
+          { id:"hold", label:"Held", cost:18, note:"The appropriation is held. No resident is suspended this session for a debt they cannot pay.", effects:[] },
+          { id:"wide", label:"Widened", cost:32, note:"The appropriation is widened and the means test set aside. Cover reaches the unattested, and the consortiums price the guarantee into every rent it touches.",
             effects:[{ move:{ public_standing:6, "loyalty.psa":7, "loyalty.fh":-5 } }] }
         ] },
       { id:"works", name:"Capital works", default:"none",
-        note:"Slow, and the only line here that helps in ten years. §7.2: it also funds the station's future secession.",
+        note:"The works funded this session. This is the only clause that helps "+
+             "in ten years, and it decides who can leave: raising a station's "+
+             "closure is the same act as funding its secession.",
         levels:[
-          { id:"none", label:"Deferred", cost:0, note:"Again.", effects:[] },
-          { id:"some", label:"The ring band", cost:20, note:"Volume where the pressure is worst.",
+          { id:"none", label:"Deferred", cost:0, note:"No works this session. The stations with the lowest closure are not carried further, and the deferral is the position.", effects:[] },
+          { id:"some", label:"The ring band", cost:20, note:"Funded in the ring band, where the volume pressure is worst. Closure holds in the middle of the Commonwealth and the outer stations wait.",
             effects:[{ move:{ "price.volume": -9, public_standing:3 } }] },
-          { id:"outer", label:"The outer stations", cost:30, note:"Closure where it is lowest, and the union's own dissolution funded with it.",
-            effects:[{ move:{ "price.volume": -5 } }, { station:{ homestead:{ closure:0.04 } } }] }
+          { id:"outer", label:"The outer stations", cost:30, note:"Funded at the outer stations, where closure is lowest. Their closure rises, and so does the price at which they could one day leave.",
+            effects:[{ move:{ "price.volume": -5 } }, { station:{ ashfield:{ closure:0.04 } } }] }
         ] } ],
     stances:{ cu:"for", psa:"for", rv:"for", upl:{forPct:0.5}, geo:{forPct:0.5},
               cl:"against", sc:{forPct:0.3}, hul:{forPct:0.4}, fh:"against",
