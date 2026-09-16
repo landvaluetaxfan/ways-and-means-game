@@ -443,7 +443,37 @@ What that means for the prose: a budget carried against a hostile functional
 bench is a government in trouble although it won, because those are the people
 who have to deliver what was just appropriated. Write it that way.
 
-## T19 — [ ] Actors want more than one thing
+## T19 — [x] Actors want more than one thing  ·  **DONE 16 Sep**
+
+**Landed, and the engine side was NOT done.** `actorAlignment` matched a
+body's `wants` only against a bill's `onPass` **law** keys, and only three of
+the eight bills move any law key at all (`divergence`, `shedorder`,
+`substrate_public_stake`). The brief described `wants` in subjects — "risk
+pricing", "essential services", "the anchor concession" — which are the bills'
+`touches`, not law keys. So no set of keys could have opened the other bills,
+and switching `wants` to subject names on its own made `actorAlignment` return
+0 everywhere and broke the `divergence` lobbying arithmetic in `test.js`.
+
+**Fixed additively:** `actorAlignment` now returns a body as moved when a
+measure **touches a subject it has a stake in** (`bill.touches`) **or** moves a
+law key it wants. Every body now carries two or three `wants`, drawn from the
+`interest` vocabulary in `content/functional.js` and the law keys that matter;
+the nine bodies that answered for `divergence` keep
+`divergence_threshold_hours`, so that bill's arithmetic is byte-identical.
+
+Measured on the opening state, lobbyable seats per bill: **divergence 11**
+(unchanged), **thermal2 1, shedorder 2, anchor_kepler 2, substrate_insurance 3,
+continuity_registration 1, substrate_public_stake 2**, appropriation 0 (supply:
+no `touches`, no law — correct). **1 bill → 7**, 11 seats → 22.
+
+`test.js` gained one assertion: *every measure but supply has a body with a
+stake in what it is about.* `js/engine.js` and `test.js` were edited by opencode
+because Claude is at the weekly usage limit; the change is one function and is
+commented as T19.
+
+---
+
+### The task as written
 
 `content/actors.js` gives every body a `wants` naming only
 `divergence_threshold_hours`. Lobbying is offered on any measure a functional

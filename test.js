@@ -1850,6 +1850,20 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
        (CONTENT.bills || []).flatMap(b => (b.touches || []).filter(t =>
          !(CONTENT.functional || []).some(f => (f.interest || []).indexOf(t) >= 0))).join(", "));
 
+    /* A STAKE IS NOT A SINGLE NUMBER (T19). Until actorAlignment read a
+       bill's declared subject, the only key any body watched was the
+       divergence threshold, so lobbying was offered on exactly one bill of
+       eight. Every measure that answers to a functional bench — every
+       measure but supply, which answers to the elected benches — must have
+       a body with a stake in what the measure is about. */
+    const stakeBills = (CONTENT.bills || []).filter(b => b.test !== "supply");
+    const noStake = stakeBills.filter(b =>
+      (CONTENT.actors || []).every(a =>
+        /does not touch anything they want/.test(
+          Engine.lobbyable(D, CONTENT, b.id, a.id).reason || "")));
+    ok("every measure but supply has a body with a stake in what it is",
+       noStake.length === 0, noStake.map(b => b.id).join(", "));
+
     /* THE GUARD THAT MATTERS MOST. A constituency no body can reach has an
        absolute veto and no counter-move. Legal, Medicine, Underwriting and
        the Residual all had exactly that until three bodies were added, and

@@ -2122,14 +2122,29 @@ const Engine = (function () {
      through breakUndertaking like every other broken promise.
      --------------------------------------------------------- */
 
-  /* Which way a measure pushes the law this actor cares about, so a body
-     is never asked to deliver a bench against its own interest. Reads the
-     bill's own onPass rather than a hand-written alignment field: the
-     direction of a measure is a fact about the measure. */
+  /* WHETHER A MEASURE IS ANYTHING TO THIS BODY (T19).
+
+     A body is moved by a SUBJECT it has a stake in — an interest a bill
+     declares in `touches` — or by a law key it wants moved. Reading
+     `touches` is what lets a body care about the thing it IS rather than
+     only a number a measure happens to set. Before this the only key any
+     body watched was the divergence threshold, so lobbying was offered on
+     exactly one bill of eight however the other measures read: an actor
+     whose whole stake is one number is a single-issue pressure group, and
+     none of these bodies are that.
+
+     Reads the bill's own declared subject and its own onPass rather than a
+     hand-written alignment field: what a measure is about is a fact about
+     the measure. A supply bill declares `touches: []` and moves no law, so
+     it answers to no body, which is correct — the elected benches vote
+     money. */
   function actorAlignment(C, bill, actor) {
     const wants = (actor || {}).wants || {};
     const keys = Object.keys(wants);
     if (!keys.length) return 0;                 /* no view either way */
+    /* the subject the measure is about */
+    if ((bill.touches || []).some(t => keys.indexOf(t) >= 0)) return 1;
+    /* or a law key the measure moves */
     let score = 0;
     [].concat(bill.onPass || []).forEach(e => {
       if (!e || !e.law) return;
