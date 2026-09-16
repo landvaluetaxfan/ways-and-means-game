@@ -1415,6 +1415,111 @@ price of one, and it is being charged to us by the hour."`,
       result:"The government keeps its money and loses the argument, and the sanctions deepen on their own." }
   ]},
 
+/* ============================================================
+   FOREIGN AFFAIRS, THE CHEAP LAYER (design/17 §4.3).
+
+   No state, no chart, no light-lag simulation: a PRICE the player does
+   not control, a CONCESSION that can be withdrawn, and the wire saying
+   how old the news is. `design/11`'s rule is the whole of it — a foreign
+   fact is never current — and it costs no new verb: `move`, `flag`,
+   `wire` and `queue` carry everything here. It closes a link in the
+   consequence chain too, because high transit prices now have an event
+   watching them.
+   ============================================================ */
+
+{ id:"fa_window_closes", chapter:2, weight:63, maxFires:3,
+  title:"The window closes",
+  speaker:null,
+  body:`The Earth-side launch authority has moved the departure window for
+tether traffic, and the Commonwealth was told by wire. The transit index
+takes the news the way the index takes everything: immediately, and as
+somebody else's decision.
+
+The anchor states and the outer stations feel it first, because they are
+the ones whose schedules are other people's schedules.`,
+  choices:[
+    { label:"Buy back the window with the reserve.",
+      effects:[{ move:{ "price.transit":4 } }, { move:{ "solvency":-8 } },
+               { move:{ "loyalty.cl":5 } },
+               { wire:"COMMONWEALTH PAYS TO KEEP THE EARTH-SIDE WINDOW OPEN (as of 9 days ago)" }],
+      result:"The window reopens and the reserve pays for a decision taken eleven days ago by somebody else." },
+    { label:"Chart the Commonwealth's own windows and stop asking.",
+      effects:[{ move:{ "price.transit":9 } }, { move:{ "public_standing":4 } },
+               { move:{ "loyalty.hul":6 } },
+               { wire:"PM: THE COMMONWEALTH WILL SCHEDULE ITS OWN TRANSIT (as of 9 days ago)" }],
+      result:"The line is popular and the price rises, because independence from another state's windows is a thing you pay for in delta-v." }
+  ]},
+
+{ id:"fa_freight_reacts", chapter:2, weight:66, maxFires:2,
+  when:{ priceAbove:{ transit:105 } },   /* the eye on the foreign price */
+  title:"The freight lines pass it on",
+  speaker:"hatt",
+  body:`The transit price has been above a hundred and five for a week, and
+the lines that move consumables have started pricing the difference into
+every station's quarterly. The Association's position is that this is not
+its decision and that it is not its fault, both of which are true.`,
+  choices:[
+    { label:"Subsidise the consumables run out of the reserve.",
+      effects:[{ move:{ "consumables":4 } }, { move:{ "solvency":-10 } },
+               { move:{ "loyalty.psa":5 } },
+               { wire:"TRANSIT DIFFERENTIAL SUBSIDISED FOR CONSUMABLES RUNS" }],
+      result:"The stations do not notice a price that was somebody else's decision." },
+    { label:"Let the price be the price.",
+      effects:[{ move:{ "public_standing":-5 } }, { move:{ "loyalty.cu_maintenance":-6 } },
+               { station:{ perigee:{ closure:-0.02 }, sinter:{ closure:-0.02 } } },
+               { wire:"PM DECLINES TRANSIT SUBSIDY; OUTER STATIONS WARN ON CLOSURE" }],
+      result:"Two stations' closure figures take the strain, which is the arithmetic of an index the government does not set." }
+  ]},
+
+{ id:"fa_anchor_terms", chapter:2, weight:64, once:true,
+  when:{ billStage:{ anchor_kepler:"assent" } },
+  title:"The anchor states its terms",
+  speaker:"landry",
+  body:`The host state has offered to renew the Tether 2 anchor concession
+without the Assembly's ratification, at a price. The price is eight points
+on transit and a review clause the Commonwealth does not get to see until
+it is invoked.
+
+"Ratify it and the price is as the bill says," the Foreign Minister tells
+you. "Decline, and the price is theirs. Their lawyers drafted the clause
+eleven days before we were told it existed."`,
+  choices:[
+    { label:"Take the terms. An anchor is not a negotiation between equals.",
+      effects:[{ move:{ "price.transit":12 } }, { move:{ "solvency":-6 } },
+               { move:{ "rel.landry":6 } },
+               { wire:"ANCHOR RENEWED ON THE HOST STATE'S TERMS; TRANSIT PRICE RISES" }],
+      result:"Tether 2 keeps running and the Commonwealth pays the rate for a lease it does not own." },
+    { label:"Refuse, and send the bill to the House instead.",
+      effects:[{ move:{ "price.transit":20 } }, { move:{ "public_standing":5 } },
+               { move:{ "loyalty.cu_maintenance":6 } },
+               { bill:{ anchor_kepler:{ stage:"second_reading", dead:false } } },
+               { wire:"PM REFERS THE ANCHOR CONCESSION TO THE HOUSE; HOST STATE PROTESTS" }],
+      result:"The question goes where the constitution says it belongs and the transit market reads the wire first." }
+  ]},
+
+{ id:"fa_two_fronts", chapter:2, weight:60, maxFires:2,
+  title:"Two audiences, one sentence",
+  speaker:"ceyhan",
+  body:`The Spindle leads with the platform's scrubbers and the government
+that looked away. The Earth-side services lead with a tragic industrial
+accident being politicised by opportunistic habitats, and quote a minister
+who has not been a minister for nine years.
+
+It is the same week in two places, and there is one sentence available to
+the government that will be read in both.`,
+  choices:[
+    { label:"Say it for the Federation: competence, not sentiment.",
+      effects:[{ move:{ "legitimacy":6 } }, { move:{ "actor.earth_bloc":-5 } },
+               { move:{ "friction":3 } },
+               { wire:"PM SPEAKS TO THE HABITATS; EARTH SERVICES CALL THE TONE 'MANAGERIAL'" }],
+      result:"The Federation hears a government in command. Earth hears a government that has stopped being polite." },
+    { label:"Say it for both: the accident, and the rescue.",
+      effects:[{ move:{ "actor.earth_bloc":6 } }, { move:{ "actor.earth_host":4 } },
+               { move:{ "legitimacy":-3 } }, { move:{ "friction":-2 } },
+               { wire:"PM ADDRESSES BOTH AUDIENCES ON THE PLATFORM (Earth services carry it in full)" }],
+      result:"Earth carries the sentence and the outer habitats notice that the government answered the people who do not vote for it." }
+  ]},
+
 /* the canon election: the pyrrhic tier leads to the campaign's victory */
 { id:"f1_pyrrhic_election", chapter:3, prologue:3, once:true,
   when:{ resolvedIs:"f1_pyrrhic" },
@@ -1431,6 +1536,33 @@ campaign had on offer.`,
     { label:"Read the final numbers.",
       effects:[{ wire:"RETURNS COMPLETE: THE GOVERNMENT IS RETURNED ON THE PYRRIHIC TICKET" }],
       result:"The numbers are read. The chapter closes." }
-  ]}
+  ]},
+
+/* AND THE FLOOR PRESSES. Consumables was moved by the closure tick and by
+   the budget's clauses and read by nothing, which is the wrong way round
+   for the one number that is the primary distribution mechanism (§7.4). */
+{ id:"the_floor_presses", chapter:2, weight:62, maxFires:2,
+  when:{ scalarBelow:{ consumables:52 } },
+  title:"The floor, and what it is carrying",
+  speaker:"ansar",
+  body:`The consumables figure has come down far enough that the quarterly
+lift is being cut on the stations that need it most, and the ninth deck has
+circulated the schedule again.
+
+"It is not the number," Ansar writes. "It is that the number is a schedule,
+and the schedule is a list of who is carried and who is not."`,
+  choices:[
+    { label:"Buy the lift back out of the reserve.",
+      effects:[{ move:{ "consumables":7 } }, { move:{ "solvency":-9 } },
+               { move:{ "loyalty.cu_maintenance":6 } }, { move:{ "loyalty.psa":5 } },
+               { wire:"QUARTERLY LIFT RESTORED FROM THE RESERVE" }],
+      result:"The schedule is restored and the reserve carries it, which is what a distribution mechanism is for." },
+    { label:"Let the stations that can pay, pay.",
+      effects:[{ move:{ "consumables":-3 } }, { move:{ "public_standing":-6 } },
+               { move:{ "loyalty.cu_maintenance":-8 } },
+               { station:{ ashfield:{ closure:-0.02 }, drift:{ closure:-0.02 } } },
+               { wire:"CONSUMABLES LIFT CUT ON THE LOW-CLOSURE STATIONS" }],
+      result:"The figure steadies and the stations with the least closure take the difference." }
+  ]},
 
 ];
