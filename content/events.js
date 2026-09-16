@@ -1042,7 +1042,7 @@ be settled in rooms, one case at a time, forever."`,
       result:"The suggestion is declined. It is declined in writing, which is the only way to decline the President's office." }
   ]},
 
-{ id:"the_federal_option", chapter:2, weight:72, once:true,
+  { id:"the_federal_option", chapter:2, weight:72, once:true,
   when:{ signaturesAtLeast:3,
          flagsAbsent:["tribunal_established","federal_schedule","federal_refused"] },
   title:"Thirty-four thresholds",
@@ -1068,6 +1068,94 @@ by nobody in this room."`,
       effects:[{ flag:"federal_refused" }, { move:{ "loyalty.sc":-8 } },
                { move:{ "public_standing":3 } }],
       result:"Home Rule heard the answer it expected. It will ask again in the next parliament, whichever government is in it." }
+  ]},
+
+/* PEOPLE, AND THE PRESS (T9). Fifty-four characters existed and ten had
+   ever spoken. These four give the opposition front bench, the coalition
+   deputy, the engineers' leader and One-G a voice, and each reads a
+   condition the pool had never used. */
+
+{ id:"the_opposition_asks", chapter:2, weight:60, maxFires:2,
+  when:{ scalarBelow:{ public_standing:40 } },
+  title:"The Leader of the Opposition asks",
+  speaker:"watkins",
+  body:`Watkins rises at questions and for once does not perform. He asks
+whether the government intends to govern, or intends to be carried through
+the session by the arithmetic of the coalition.
+
+It is not a question. It is a statement of the position the opposition
+intends to take until the number improves, and the benches behind him
+know it and stay seated.`,
+  choices:[
+    { label:"Answer him yourself, on your feet.",
+      effects:[{ move:{ "public_standing":3 } }, { move:{ "loyalty.cl":-4 } },
+               { wire:"PM ANSWERS OPPOSITION LEADER DIRECTLY AT QUESTIONS" }],
+      result:"You answer on your feet, which is the one place an answer cannot be taken back." },
+    { label:"Let the Chief Whip take it.",
+      effects:[{ move:{ "loyalty.cu":3 } }, { move:{ "public_standing":-2 } }],
+      result:"The whip's answer is shorter and duller, which was the point of giving it to him." }
+  ]},
+
+{ id:"the_deputy_warns", chapter:2, weight:69, once:true,
+  when:{ loyaltyBelow:{ psa:38 } },
+  title:"A word from the Deputy",
+  speaker:"trottier",
+  body:`The Deputy Prime Minister does not bring a complaint. She brings a
+count, and the count says her party's benches have stopped believing the
+government will ever pay the price they joined it for.
+
+"We have carried the government," she says. "Ask the conference what we
+have been carried in return."`,
+  choices:[
+    { label:"Promise her party the next slot on the order paper.",
+      effects:[{ move:{ "capital.psa":2 } }, { move:{ "loyalty.psa":8 } },
+               { move:{ "public_standing":-2 } }],
+      result:"The promise is made and written down, which is the only form of it that counts." },
+    { label:"Tell her the coalition is not for sale.",
+      effects:[{ move:{ "loyalty.psa":-6 } }, { move:{ "party_loyalty":3 } }],
+      result:"It was the answer her conference predicted, and the count on her benches will show it." }
+  ]},
+
+{ id:"the_engineers_write", chapter:2, weight:61, maxFires:2,
+  when:{ priceAbove:{ thermal:104 } },
+  title:"The engineers write",
+  speaker:"wilde_hayward",
+  body:`The Association of Engineers and Systems publishes an open letter on
+the quota price, signed by eleven hundred licensed members. It says the
+price is the symptom and the government is treating the symptom, and that
+the fault was certified repairable in April.
+
+Wilde-Hayward will be asked about the letter in the lobbies all day, and
+he has already decided what he will say.`,
+  choices:[
+    { label:"Meet the signatories and hear the complaint whole.",
+      effects:[{ move:{ "loyalty.hul":6 } }, { move:{ "public_standing":-2 } }],
+      result:"The meeting runs long and the complaint is heard. Eleven hundred engineers were told the government would think again." },
+    { label:"Publish the government's own reply.",
+      effects:[{ move:{ "loyalty.hul":-4 } }, { move:{ "public_standing":2 } },
+               { wire:"GOVERNMENT REPLIES TO ENGINEERS' LETTER ON THE QUOTA PRICE" }],
+      result:"A letter answered in public is a letter that stops being theirs." }
+  ]},
+
+{ id:"one_g_waiting", chapter:2, weight:59, once:true,
+  when:{ loyaltyAbove:{ des:15 } },
+  title:"The waiting list",
+  speaker:"edelstein_powell",
+  body:`The Leader of One-G speaks for the people the party exists for, and
+she brings their number with her: eleven thousand residents waiting for
+embodiment fitting, and the list growing by four hundred a month.
+
+"Every one of them would vote for the party that shortened the list," she
+says, "and every one of them knows it is the most expensive line in the
+budget."`,
+  choices:[
+    { label:"Promise the list a line in the next estimates.",
+      effects:[{ move:{ "loyalty.des":7 } }, { move:{ "public_standing":3 } },
+               { move:{ "treasury":-3 } }],
+      result:"The promise costs three now and is remembered when the estimates are drawn." },
+    { label:"Say the list is not this session's business.",
+      effects:[{ move:{ "loyalty.des":-6 } }, { move:{ "loyalty.hul":3 } }],
+      result:"One-G heard the answer it is used to hearing. The waiting list is used to it too." }
   ]}
 
 ];

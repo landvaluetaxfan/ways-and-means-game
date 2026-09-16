@@ -3,11 +3,13 @@
 
    What people actually do, and what proportion of them do it.
 
-   THE ANCHORS ARE ALREADY CANON. Population 6,863,000. Adult roll
-   4,149,803. Of those, 239,803 hold a functional franchise and
-   3,910,000 sit in the residual constituency. Every figure below is
-   derived from those and must stay consistent with them; the licensed
-   counts in functional.js are the hard constraint.
+   THE ANCHORS ARE ALREADY CANON. Population 7,086,000, which is the
+   station roster in content/stations.js and is compared against it by
+   tools/lint.js so the two cannot drift again. Adult roll 4,149,803.
+   Of those, 239,803 hold a functional franchise and 3,910,000 sit in
+   the residual constituency. Every figure below is derived from those
+   and must stay consistent with them; the licensed counts in
+   functional.js are the hard constraint.
 
    THREE FACTS THE TABLE IS BUILT TO CARRY:
 
@@ -34,12 +36,18 @@
    embodied   share of that category's work requiring a physical body
    licensed   holders of the relevant licence, where one exists
    forkable   how exposed the category is to instance labour
+
+   THE EMBODIED LINE IS 46 PER CENT (bible 6.10, LOCKED): "46% of jobs
+   require a body and biologicals hold nearly all of them." The
+   per-category figures are scaled so that the share-weighted average is
+   46, with gravity work held at 1.00 because the anchor terminals
+   literally cannot be staffed any other way.
    ============================================================= */
 
 const LABOUR = {
 
   totals: {
-    population: 6863000,
+    population: 7086000,
     adultRoll: 4149803,
     participation: 0.38,
     employed: 1577000,
@@ -50,98 +58,98 @@ const LABOUR = {
   categories: [
 
     { id:"care", name:"Care and personal support", share:16.0,
-      embodied:0.86, licensed:null, forkable:"low", sector:null,
+      embodied:0.58, licensed:null, forkable:"low", sector:null,
       note:"The largest thing anyone does. Childcare, and elder care complicated by the fact "+
            "that emulated elders do not die on schedule. Body care for the embodied, and "+
            "restoration nursing for the newly returned, who are missing time and know it." },
 
     { id:"maintenance", name:"Maintenance and trades", share:16.0,
-      embodied:0.94, licensed:214000, sector:"fc_maintenance", forkable:"medium",
+      embodied:0.63, licensed:214000, sector:"fc_maintenance", forkable:"medium",
       note:"Repair in awkward geometry, which is the work automation never took: irregular, "+
            "cramped, one-off, in variable gravity. 214,000 of roughly 252,000 are union "+
            "members, and the union holds a strike weapon amounting to a credible threat to "+
            "everyone's life support. Essential-services law exists because of it." },
 
     { id:"attestation", name:"Attestation and verification", share:9.0,
-      embodied:0.22, licensed:890, sector:"fc_attestation", forkable:"high",
+      embodied:0.15, licensed:890, sector:"fc_attestation", forkable:"high",
       note:"Unique-person proof is required to vote, to hold office, to contract, and to post. "+
            "Somebody performs that check. 142,000 people do; 890 hold the practising licence "+
            "and elect two MPs between them. The largest gap between doing the work and voting "+
            "in the seat that represents it." },
 
     { id:"hospitality", name:"Hospitality, food and corridor trade", share:8.0,
-      embodied:0.91, licensed:null, sector:null, forkable:"low",
+      embodied:0.61, licensed:null, sector:null, forkable:"low",
       note:"The bakery on the corridor. Not economically necessary and universally defended, "+
            "because a habitat where nobody sells anything to anybody is a facility rather than "+
            "a town." },
 
     { id:"administration", name:"Public administration", share:7.0,
-      embodied:0.35, licensed:null, sector:null, forkable:"high",
+      embodied:0.23, licensed:null, sector:null, forkable:"high",
       note:"The Ministries, the Bureau, the station authorities. Quietly the most fork-exposed "+
            "category in the table: committee work is done by fast-running staff and everyone "+
            "knows it." },
 
     { id:"agriculture", name:"Agriculture and consumables", share:7.0,
-      embodied:0.88, licensed:8900, sector:"fc_consumables", forkable:"low",
+      embodied:0.59, licensed:8900, sector:"fc_consumables", forkable:"low",
       note:"Enclosed-system horticulture is finicky in ways automation handles badly. The "+
            "agricultural decks are also the only place on most stations with green and open "+
            "sightlines, so the people who work them are tending the parks, the courting spots "+
            "and the funeral sites at the same time." },
 
     { id:"liability", name:"Law, adjudication and liability", share:6.0,
-      embodied:0.18, licensed:5200, sector:"fc_legal", forkable:"medium",
+      embodied:0.12, licensed:5200, sector:"fc_legal", forkable:"medium",
       note:"Automation can compute and cannot be liable. Reclassification is a branch of "+
            "practice in its own right because the Charter's schedule of persons was drafted "+
            "badly. 95,000 work in law; 5,200 are admitted." },
 
     { id:"education", name:"Education and instruction", share:5.0,
-      embodied:0.55, licensed:null, sector:null, forkable:"medium",
+      embodied:0.37, licensed:null, sector:null, forkable:"medium",
       note:"Complicated by clock rate: a class running at mixed rates is not a class. Schools "+
            "are among the few institutions that enforce a common tempo, which is where the "+
            "civic-clock-minimum argument was first made." },
 
     { id:"construction", name:"Construction and volume works", share:5.0,
-      embodied:0.96, licensed:null, sector:null, forkable:"low",
+      embodied:0.64, licensed:null, sector:null, forkable:"low",
       note:"New pressurised volume, on a schedule nobody can accelerate. The binding constraint "+
            "on housing, and therefore on everything." },
 
     { id:"lifesupport", name:"Life support operations", share:4.0,
-      embodied:0.72, licensed:4100, sector:"fc_lifesupport", forkable:"low",
+      embodied:0.48, licensed:4100, sector:"fc_lifesupport", forkable:"low",
       note:"Atmosphere chemistry, water cycling, thermal management. 63,000 do the work; 4,100 "+
            "hold the licence. The licensing board is appointed by the government of the day, "+
            "which means the electorate of this seat is set by regulation rather than by law." },
 
     { id:"medicine", name:"Medicine and physiology", share:4.0,
-      embodied:0.79, licensed:2700, sector:"fc_medicine", forkable:"low",
+      embodied:0.53, licensed:2700, sector:"fc_medicine", forkable:"low",
       note:"Bone density management, embodiment fitting, and the restoration of the suspended. "+
            "63,000 in the sector; 2,700 admitted physicians. Where continuity-of-soul arguments "+
            "arrive dressed as clinical guidance." },
 
     { id:"substrate", name:"Substrate operations", share:3.0,
-      embodied:0.44, licensed:null, sector:"fc_substrate", forkable:"high",
+      embodied:0.29, licensed:null, sector:"fc_substrate", forkable:"high",
       note:"Running the hardware that runs the people. The franchise here belongs to companies, "+
            "not to the 47,000 who operate it: 411 corporate voters, six of them "+
            "incorporated in the same week." },
 
     { id:"transit", name:"Transit and orbital mechanics", share:3.0,
-      embodied:0.68, licensed:3400, sector:"fc_transit", forkable:"low",
+      embodied:0.46, licensed:3400, sector:"fc_transit", forkable:"low",
       note:"Piloting, window scheduling, cargo handling, debris tracking. Takes Kessler risk "+
            "considerably more seriously than Parliament does." },
 
     { id:"culture", name:"Culture, media and attention", share:3.0,
-      embodied:0.30, licensed:null, sector:null, forkable:"high",
+      embodied:0.20, licensed:null, sector:null, forkable:"high",
       note:"Broadcast, press, performance, and the attention economy underneath. Structurally "+
            "fork-exposed: a wealthy actor can spin instances to manufacture apparent consensus, "+
            "which is why every post carries an attestation marker." },
 
     { id:"security", name:"Security and enforcement", share:2.0,
-      embodied:0.83, licensed:null, sector:null, forkable:"low",
+      embodied:0.56, licensed:null, sector:null, forkable:"low",
       note:"Small by the standards of any Earth state. The thing that actually enforces order "+
            "in a habitat is that everyone can be switched off, which is a fact nobody in the "+
            "sector is comfortable saying aloud." },
 
     { id:"underwriting", name:"Underwriting and actuarial", share:1.0,
-      embodied:0.12, licensed:140, sector:"fc_underwriting", forkable:"high",
+      embodied:0.08, licensed:140, sector:"fc_underwriting", forkable:"high",
       note:"In a place where failure kills everyone in the room, insurance prices everything "+
            "continuously. 140 corporate voters return three MPs. The only people in the "+
            "Commonwealth with accurate numbers on everything." },
@@ -154,7 +162,7 @@ const LABOUR = {
            "That is the whole of the nativist grievance, inverted." },
 
     { id:"other", name:"Everything else", share:0.2,
-      embodied:0.50, licensed:null, sector:null, forkable:"medium",
+      embodied:0.33, licensed:null, sector:null, forkable:"medium",
       note:"Registered occupations too small to enumerate. The Bureau publishes the list "+
            "annually and it is read only by the Bureau." }
   ],

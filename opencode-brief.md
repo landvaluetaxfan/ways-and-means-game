@@ -288,12 +288,15 @@ that does not exist yet in `content/parties.js`.
 bible has outrun the game — that is `design/22`'s finding with numbers — and
 the cheapest fix is not to cut the bible but to spend it. Work down that list.
 
-## T9 — [ ] People, and the press
+## T9 — [x] People, and the press  ·  **DONE 17 Sep, first pass**
 
-`design/24` §B4. Fifty-four characters, one of whom has appeared in an event.
-The Concordance derives offices now (see `CLAUDE.md`), so a person article
-mostly writes itself once the person has done something; the missing half is
-that almost nobody has done anything.
+**Landed.** Four new chapter-two events put the silent cast to work and each
+reads a condition the pool had never used: `the_opposition_asks` (Watkins, on
+`scalarBelow` standing), `the_deputy_warns` (Trottier, on `loyaltyBelow` psa),
+`the_engineers_write` (Wilde-Hayward, on `priceAbove` thermal) and
+`one_g_waiting` (Edelstein-Powell, on `loyaltyAbove`). Fourteen of fifty-four
+characters now speak. The rest is a standing job, not a task: each future event
+should reach for a silent character, which the editor's coverage report counts.
 
 ## T10 — [x] Constituency prose  ·  **DONE**
 
@@ -301,20 +304,30 @@ that almost nobody has done anything.
 `description` and `tendency`.** The brief asked for twenty and got all of them.
 Nothing to do; left here so nobody redoes it.
 
-## T11 — [ ] Instrument and initiative prose
+## T11 — [x] Instrument and initiative prose  ·  **CHECKED 17 Sep, nothing needed**
 
-`content/instruments.js` (13) and `content/initiatives.js` (4). These are
-governing acts and each is a minute of the player's run per `design/18`'s
-model; several read as a field name with a verb in front of it.
+`content/instruments.js` (13) already carries full `summary` and `effect_note`
+prose for every order — the licensing spine, the diversion, the lapse order and
+all nine ladder rungs read as instruments, not field names — and
+`content/initiatives.js` (4) carries proper `note`s with the tempo as the
+decision. Both were written flat at some point and have since been voiced.
+Nothing to change.
 
-## T12 — [ ] Two numbers that disagree
+## T12 — [x] Two numbers that disagree  ·  **DONE 17 Sep**
 
-Flagged in `CLAUDE.md` and still open, both content, both yours:
+**Landed.** `content/labour.js` now anchors to the bible on both:
 
-- `content/labour.js` `embodied` weights to **~68%** of jobs; bible §6.10 says
-  **46%**. The encyclopedia article follows the bible, so labour is the outlier.
-- Station populations sum to **7,006,000**; `labour.js totals.population` is
-  **6,863,000**. 143,000 apart.
+- `embodied` per-category weights are scaled so the share-weighted average is
+  **46%** (§6.10, LOCKED: "46% of jobs require a body"), down from 68%.
+  Gravity work stays 1.00 because the anchors literally cannot be staffed any
+  other way; the scaling is recorded in the file header.
+- `totals.population` is now **7,086,000**, the station roster's own sum
+  (`content/stations.js`), closing the 223,000 gap (the brief's 143,000 figure
+  predated the capital's 80,000 being added to the roster). `tools/lint.js`
+  compares the two and now reports "none".
+
+The adult roll (4,149,803) was left alone: it is asserted in `test.js` and is
+the voting-population half of §4.7's distinction.
 
 ## T13 — [x] The substrate roster  ·  **DONE 15 Sep**
 
