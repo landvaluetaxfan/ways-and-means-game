@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 16;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters
+  const STATE_VERSION = 17;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business
 
   /* ---------------------------------------------------------
      1. STATE
@@ -61,6 +61,10 @@ const Engine = (function () {
          for. This is the clock half: how much of it the House will hear
          in one day. Reset by advance(), never carried. */
       divisionsToday: 0,
+      /* The same for order-paper time: how many measures the House takes
+         a day, so six session slots are a budget spent over the session
+         rather than a lump sum spent on the first morning. */
+      grantsToday: 0,
 
       /* Czarnecki needs nine more names for a leadership ballot. Things the
          player does add to the counter; §3.5's second loss condition reads it. */
@@ -314,6 +318,10 @@ const Engine = (function () {
         st.scalars.solvency = st.scalars.treasury;
       delete st.scalars.treasury;
       st.version = 16;
+    }
+    if (st.version < 17) {                    // the day's order-paper business
+      if (st.grantsToday == null) st.grantsToday = 0;
+      st.version = 17;
     }
     return st;
   }
@@ -1375,6 +1383,16 @@ const Engine = (function () {
     const b = C.billById[billId], bs = st.bills[billId];
     if (!b || bs.dead) return { ok: false, reason: "not before Parliament" };
     if (bs.stage === DIVIDES_AT) return { ok: false, reason: "awaiting a division" };
+    /* AND THE HOUSE HEARS SO MUCH IN A DAY. Six slots spendable on sitting
+       one made the session budget a lump sum — the same fault the division
+       cap fixed from the other side. §7.7 calls order-paper time the
+       pacing instrument, so grants are capped per sitting as divisions
+       are, and the cap is content's number. */
+    const gcap = (C.setup && C.setup.grantsPerSitting) || 2;
+    if ((st.grantsToday || 0) >= gcap)
+      return { ok: false, full: true, cap: gcap,
+               reason: gcap === 1 ? "the House has taken one measure today"
+                                  : "the House has taken " + gcap + " measures today" };
     /* Order-paper time is the scarce good that generates capital, so a slot
        must never be consumed without moving something. A stage the engine
        does not recognise used to fall through every branch below and burn
@@ -1386,6 +1404,7 @@ const Engine = (function () {
     else if (i >= 0) { bs.stage = STAGE_ORDER[i + 1]; }
     else return { ok: false, reason: 'unknown stage "' + bs.stage + '"' };
     spendSlots(st, 1);
+    st.grantsToday = (st.grantsToday || 0) + 1;
     (st.slotsGranted || (st.slotsGranted = [])).push(billId);
     /* Two sittings' notice. Long enough for the benches to be worked,
        short enough that the session can still hold a division. */
@@ -4092,6 +4111,7 @@ const Engine = (function () {
   function advance(st, C) {
     st.sitting += 1;
     st.divisionsToday = 0;                    /* a new day's business */
+    st.grantsToday = 0;
     /* A promise not kept by its sitting is broken, once. Breaking it
        QUEUES AN EVENT and moves no number: the politics of a broken
        promise belongs where it can be written and argued with, not in a

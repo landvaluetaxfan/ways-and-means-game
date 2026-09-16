@@ -1158,7 +1158,12 @@ try {
   /* granting the last slot SETS a day rather than opening a window */
   const a = mk();
   let guard = 0;
-  while (a.bills.divergence.stage !== "third_reading" && guard++ < 8) E.grantSlot(a, Cx, "divergence");
+  /* the House takes so many measures a day, so the grants are spread over
+     sittings exactly as the player's would have to be */
+  while (a.bills.divergence.stage !== "third_reading" && guard++ < 8) {
+    E.grantSlot(a, Cx, "divergence");
+    E.advance(a, Cx);
+  }
   ok("reaching the division stage sets a day", a.bills.divergence.dividesOn > a.sitting,
      "sitting " + a.bills.divergence.dividesOn);
   ok("and the division is refused before it",

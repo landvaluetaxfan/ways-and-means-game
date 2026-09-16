@@ -716,28 +716,36 @@ const UI = (function () {
       "Positive means they owe you. Negative means you owe them. Nothing here decays.";
 
     const left = st.slots.total - st.slots.used;
+    const gcap = (C.setup && C.setup.grantsPerSitting) || 2;
+    const gtoday = st.grantsToday || 0;
+    /* TWO REFUSALS, BOTH SAID OUT LOUD: no time left this session, and the
+       day's business already done. The order paper hears so many measures a
+       day, exactly as the House divides so many times. */
+    const grantRefusal = !left ? "no order-paper time left this session"
+      : gtoday >= gcap ? "the House has taken " + gcap + " measures today" : null;
     const hdr = $("#gov-slots-hdr");
-    if (hdr) hdr.textContent = left + " of " + st.slots.total + " left this session";
+    if (hdr) hdr.textContent = left + " of " + st.slots.total + " left this session" +
+      (gtoday ? " \u00b7 " + gtoday + " of " + gcap + " today" : "");
     $("#gov-slots").innerHTML =
       `<div class="slotbar">${Array.from({length: st.slots.total}, (_, i) =>
         `<i class="${i < st.slots.used ? "spent" : ""}"></i>`).join("")}</div>` +
       `<div class="note" style="margin-top:4px">A slot is order-paper time: spend one and a measure moves one
-       stage closer to its vote. The session holds ${st.slots.total} and they refill when the House rises.
-       Give a slot to a partner's bill and the partner owes you for it. Give it to your own and only your
-       programme advances.</div>` +
+       stage closer to its vote. The session holds ${st.slots.total} and they refill when the House rises; the
+       House takes ${gcap} measure${gcap === 1 ? "" : "s"} a sitting, and no more. Give a slot to a partner's bill
+       and the partner owes you for it. Give it to your own and only your programme advances.</div>` +
       `<table><tbody>${C.bills.filter(b => !st.bills[b.id].dead).map(b =>
         `<tr><td>${b.owner ? mark(b.owner)
             : `<i class="swatch" style="background:var(--chrome-dk)" data-tip-title="No sponsor"` +
               ` data-tip-body="A measure the government did not bring forward."></i>`}${b.title.replace(/ Bill$/, "")}` +
         `${b.priority ? " <span class='flag' data-tip='priority'>PRIORITY</span>" : ""}</td>` +
         `<td class="n">${b.owner && b.owner !== st.playerParty ? "+" + (b.priority ? 3 : 2) : "&mdash;"}</td>` +
-        `<td class="n"><button class="btn slotbtn" data-slot="${b.id}"${left ? "" : " disabled"}` +
+        `<td class="n"><button class="btn slotbtn" data-slot="${b.id}"${grantRefusal ? " disabled" : ""}` +
           priceTip("Give time to " + b.title, { slots: 1,
             note: b.owner && b.owner !== st.playerParty
               ? "Moves it a stage and puts " + ps(b.owner) + " +" + (b.priority ? 3 : 2) +
                 " in your debt."
               : "Moves it a stage. Your own bill buys you no debt." },
-            left ? null : "no order-paper time left this session") + `>${grantLabel(b.id)}</button></td></tr>`
+            grantRefusal) + `>${grantLabel(b.id)}</button></td></tr>`
       ).join("")}</tbody></table>`;
     /* THE ORDER PAPER CARRIES UNDERTAKINGS TOO. An order paper lists the
        business, and a promise the government has made is business. This

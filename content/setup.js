@@ -27,6 +27,11 @@ const SETUP = {
             merges seats back into multi-member districts. */
          district_divisor:"fptp", list_divisor:"dhondt" },
   divisionsPerSitting: 2,
+  /* AND HOW MANY MEASURES THE HOUSE TAKES A DAY. Six slots spendable on
+     sitting one made the session budget a lump sum; order-paper time is
+     the pacing instrument (§7.7), so grants are capped per sitting as
+     divisions are. */
+  grantsPerSitting: 2,
   /* THE PARLIAMENT ACT NUMBER. Supply answers to the elected benches, but a
      functional bench that votes it down delays it this many sittings -- paid
      in the one currency 7.7 says cannot be topped up. They may hold up the

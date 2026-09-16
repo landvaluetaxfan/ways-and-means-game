@@ -445,7 +445,8 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
   const FIELDS_BY_VERSION = {
     2: ["capital", "slots", "whips"],
     3: ["prices", "priceHistory"],
-    4: ["cabinet", "instruments", "signatures"]
+    4: ["cabinet", "instruments", "signatures"],
+    17: ["grantsToday"]
   };
   const ALL_ADDED = Object.values(FIELDS_BY_VERSION).flat();
 
@@ -2451,6 +2452,26 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
   Engine.advance(fr3, CONTENT);
   ok("and below the first line nothing drags at all",
      fr3.scalars.thermal_margin === m2, m2 + " -> " + fr3.scalars.thermal_margin);
+
+  /* THE ORDER PAPER TAKES SO MANY MEASURES A DAY (Flash I). Six slots
+     spendable on sitting one made the session budget a lump sum, so the
+     scarcity §7.7 calls the pacing instrument paced nothing. */
+  {
+    const st = Engine.newGame(CONTENT);
+    const cap = CONTENT.setup.grantsPerSitting || 2;
+    const bills = CONTENT.bills.filter(b => !st.bills[b.id].dead);
+    let taken = 0, refused = null;
+    for (let i = 0; i < bills.length; i++) {
+      const r = Engine.grantSlot(st, CONTENT, bills[i].id);
+      if (r.ok) taken++; else if (!refused) refused = r;
+    }
+    ok("the order paper takes so many measures a day",
+       taken === cap && refused && refused.full === true && /today/.test(refused.reason || ""),
+       taken + " taken, then: " + (refused ? refused.reason : "nothing refused"));
+    Engine.advance(st, CONTENT);
+    const again = CONTENT.bills.find(b => Engine.grantSlot(st, CONTENT, b.id).ok);
+    ok("and a new sitting is a new day's business", !!again);
+  }
 
   if (bad) { console.log("\n" + bad + " OPENING FAILURES"); process.exitCode = 1; }
 })();
