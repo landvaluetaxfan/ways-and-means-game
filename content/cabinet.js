@@ -86,12 +86,12 @@ const CABINET = [
        here is invented; §2.7 freezes the roster and all three already
        exist. */
     holder:null, party:null, apart:true, vacatedBy:"flash",
-    brief:["treasury"],
+    brief:["solvency"],
     candidates:[
       { holder:"skye", party:"cu",
         note:"Your deputy at the Treasury for four years. Knows the file, and is owed nothing.",
         effects:[{move:{"loyalty.cu_loyalists":4}},
-                 {move:{treasury:3}},
+                 {move:{solvency:3}},
                  {wire:"SKYE CONFIRMED AT THE TREASURY; NO CHANGE OF DIRECTION SIGNALLED"}] },
       { holder:"halloran", party:"cu",
         note:"Leads the eleven members collecting signatures against you. Inside the tent, he cannot count them.",

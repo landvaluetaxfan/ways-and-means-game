@@ -228,8 +228,18 @@ const Tips = (function () {
             "produces heat, and heat is the hardest thing to get rid of in " +
             "vacuum. When this reaches zero, people die.",
       go: "the_permanent_emergency" },
-    treasury: { title: "Treasury",
-      body: "What the government can spend without asking the House for more." },
+    solvency: { title: "Sovereign solvency",
+      body: "The Commonwealth's ability to pay what it owes as it comes due: " +
+            "the reserve, the emergency facility, the debt it assumes. When it " +
+            "runs out, the government must beg, borrow or cut." },
+    legitimacy: { title: "Legitimacy",
+      body: "Whether the House and the stations still believe the government. " +
+            "Low legitimacy is strikes, walkouts and a no-confidence motion " +
+            "waiting for its moment." },
+    friction: { title: "Diplomatic friction",
+      body: "How far Earth's governments and banks are against you. High " +
+            "friction means sanctions, frozen accounts and dearer imports; " +
+            "it is the one meter that is bad when it rises." },
     scarcity: { title: "Scarcity index",
       body: "All four start at 100. Each one is set by legislation, not by a " +
             "market. A thermal appropriation moves the quota price, and the " +

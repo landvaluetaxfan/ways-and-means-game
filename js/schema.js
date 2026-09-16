@@ -99,7 +99,7 @@ const SCHEMA = {
   briefSubjects: ["scalars", "laws", "prices", "stationFields"],
 
   vocab: {
-    scalars: ["party_loyalty","public_standing","consumables","thermal_margin","treasury"],
+    scalars: ["party_loyalty","public_standing","consumables","thermal_margin","solvency","legitimacy","friction"],
     laws: ["divergence_threshold_hours","civic_clock_minimum","suspension_debt_accrual","substrate_public_share",
            "shed_order_authority","tier_ratio_district","tier_ratio_list","threshold_pct"],
     tiers: ["district","list","functional"],

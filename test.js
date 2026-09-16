@@ -1405,12 +1405,12 @@ console.log("\nA DEFERRED FACT (the queue carries effects):");
   const ok = (l, c, extra) => { if (!c) bad++;
     console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
   const m = Engine.newGame(CONTENT);
-  const before = m.scalars.treasury;
+  const before = m.scalars.solvency;
   Engine.apply(m, CONTENT, [{ queue: { after: 3, label: "The commission reports",
-                                       effects: [{ move: { treasury: -7 } }] } }]);
+                                       effects: [{ move: { solvency: -7 } }] } }]);
   ok("a fact can be put in the queue with no event attached",
      m.queue.length === 1 && !m.queue[0].eventId && !!m.queue[0].effects);
-  ok("and it has not happened yet", m.scalars.treasury === before);
+  ok("and it has not happened yet", m.scalars.solvency === before);
 
   /* It is on the calendar, because it is labelled — a commission is a
      thing the government knows is coming. */
@@ -1419,17 +1419,17 @@ console.log("\nA DEFERRED FACT (the queue carries effects):");
      dl.length + " entries");
 
   Engine.advance(m, CONTENT);
-  ok("and does not land early", m.scalars.treasury === before, "sitting " + m.sitting);
+  ok("and does not land early", m.scalars.solvency === before, "sitting " + m.sitting);
   Engine.advance(m, CONTENT); Engine.advance(m, CONTENT);
-  ok("it lands on its day", m.scalars.treasury === before - 7,
-     before + " -> " + m.scalars.treasury);
+  ok("it lands on its day", m.scalars.solvency === before - 7,
+     before + " -> " + m.scalars.solvency);
   ok("and leaves the queue", m.queue.filter(q => q.effects).length === 0);
   ok("and says so in the record",
      m.log.some(l => /commission reports/i.test(l.text)));
 
   /* An unlabelled one is nobody's business until it happens. */
   const n = Engine.newGame(CONTENT);
-  Engine.apply(n, CONTENT, [{ queue: { after: 2, effects: [{ move: { treasury: -1 } }] } }]);
+  Engine.apply(n, CONTENT, [{ queue: { after: 2, effects: [{ move: { solvency: -1 } }] } }]);
   ok("an unlabelled fact is on no calendar",
      Engine.deadlines(n, CONTENT).filter(d => d.kind === "expected").length === 0);
 
@@ -2102,7 +2102,7 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
        much, at the point where a line can still be traded for another. */
     const before = Engine.clauseCost(A, CONTENT, "appropriation");
     ok("the defaults are affordable", before.affordable,
-       before.total + " of " + before.treasury);
+       before.total + " of " + before.solvency);
     const over = Engine.setClause(A, CONTENT, "appropriation", "works", "outer");
     ok("an allocation the Treasury cannot fund is refused",
        over.ok === false && over.over > 0, over.reason);

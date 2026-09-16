@@ -54,7 +54,7 @@ const INITIATIVES = [
       { label: "A note from the department, this week", after: 2,
         effects: [ { flag: { review_thin: true } } ] },
       { label: "An independent inquiry, properly staffed", after: 8, cost: 1,
-        effects: [ { flag: { review_full: true } }, { move: { treasury: -3 } } ] }
+        effects: [ { flag: { review_full: true } }, { move: { solvency: -3 } } ] }
     ] },
 
   /* A PUBLIC COMMITMENT, which is the one that cannot be taken back.

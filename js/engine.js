@@ -1913,9 +1913,9 @@ const Engine = (function () {
     const plan = clausePlan(st, C, billId);
     let total = 0;
     Object.keys(plan).forEach(k => { total += plan[k].cost || 0; });
-    return { total: total, treasury: st.scalars.treasury,
-             over: Math.max(0, total - st.scalars.treasury),
-             affordable: total <= st.scalars.treasury };
+    return { total: total, solvency: st.scalars.solvency,
+             over: Math.max(0, total - st.scalars.solvency),
+             affordable: total <= st.scalars.solvency };
   }
 
   function setClause(st, C, billId, clauseId, levelId) {
@@ -2684,7 +2684,7 @@ const Engine = (function () {
        `price` and `capital`, which differed only in which table they
        reached into and what the bounds were:
 
-         {move:{ treasury:-5 }}              a bare key is a scalar
+         {move:{ solvency:-5 }}              a bare key is a scalar
          {move:{ "loyalty.psa":8 }}          a party OR a current
          {move:{ "rel.gb_chair":12 }}        a character, or "president"
          {move:{ "price.substrate":-10 }}
@@ -3098,15 +3098,20 @@ const Engine = (function () {
     for (const [t, w] of list) if (a >= t) return w;
     return "a little";
   }
-  /* A verb pair per scalar, because one template does not fit all five:
+  /* A verb pair per scalar, because one template does not fit all seven:
      "Costs you the treasury" is not a sentence anybody would write. */
   const SCALAR_SAY = {
     party_loyalty:   ["Steadies your own benches", "Costs you on your own benches"],
     public_standing: ["Improves how the government is seen", "Damages how the government is seen"],
     consumables:     ["Eases the consumables floor", "Presses on the consumables floor"],
     thermal_margin:  ["Widens the thermal margin", "Narrows the thermal margin"],
-    treasury:        ["Adds to the treasury", "Draws on the treasury"]
+    solvency:        ["Adds to your solvency", "Draws on your solvency"],
+    legitimacy:      ["The country believes you more", "The country believes you less"],
+    friction:        ["Earth's patience grows", "Earth turns against you more"]
   };
+  /* The one scalar that is BAD when it rises. describe() reads it so a
+     fall in friction is green and a rise is red, which is the world. */
+  const SCALAR_INVERTED = { friction: true };
 
   function describe(st, C, effects) {
     const out = [];
@@ -3130,10 +3135,12 @@ const Engine = (function () {
           const ns = dot < 0 ? "scalar" : key.slice(0, dot);
           const id = dot < 0 ? key : key.slice(dot + 1);
           if (ns === "scalar") {
+            const inv = !!SCALAR_INVERTED[id];
+            const good = inv ? d < 0 : d >= 0;
             const say = SCALAR_SAY[id];
-            const stem = say ? say[d >= 0 ? 0 : 1]
-                             : (d >= 0 ? "Improves " : "Costs you ") + id.replace(/_/g, " ");
-            out.push({ tone: d >= 0 ? "good" : "bad",
+            const stem = say ? say[good ? 0 : 1]
+                             : (good ? "Improves " : "Costs you ") + id.replace(/_/g, " ");
+            out.push({ tone: good ? "good" : "bad",
                        text: stem + (band(d) ? ", " + band(d) : "") });
           } else if (ns === "loyalty") {
             out.push({ tone: d >= 0 ? "good" : "bad",
@@ -3363,7 +3370,7 @@ const Engine = (function () {
     /* volume: pressurised cubic metres, capped by the construction
        schedule, which is bought out of the treasury.
 
-       CONTINUOUS, NOT A SWITCH. This was `treasury < 40 ? 14 : -4`, so
+       CONTINUOUS, NOT A SWITCH. This was `solvency < 40 ? 14 : -4`, so
        the volume price had exactly two target states and a treasury
        moving from 80 to 41 changed nothing at all. Under 7.9's design
        rule a price nothing meaningfully moves is a price no event can
@@ -3375,11 +3382,11 @@ const Engine = (function () {
        design/13. This is the honest interim: continuous in the one
        input it actually has. */
     P.volume = clamp(P.volume + drift(P.volume,
-      100 + (50 - st.scalars.treasury) * 0.28), 20, 400);
+      100 + (50 - st.scalars.solvency) * 0.28), 20, 400);
 
     /* transit: launch windows and delta-v */
     P.transit = clamp(P.transit + drift(P.transit,
-      100 - (st.scalars.treasury - 50) * 0.3), 20, 400);
+      100 - (st.scalars.solvency - 50) * 0.3), 20, 400);
 
     Object.keys(P).forEach(k => {
       P[k] = Math.round(P[k] * 10) / 10;

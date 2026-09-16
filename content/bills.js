@@ -78,7 +78,7 @@ const BILLS = [
      insurance suspends people rather than cutting their income) and §7.2
      (raising a poor station's closure funds its future secession).
 
-     DO NOT CHANGE THE COSTS. They are tuned against a treasury of 52 so
+     DO NOT CHANGE THE COSTS. They are tuned against a solvency of 52 so
      the defaults come to 48 and any upgrade is paid for by a cut; that
      tension is the mechanic. `touches` stays empty on purpose: a supply
      measure is exempt from domain consent because the elected benches
@@ -112,7 +112,7 @@ const BILLS = [
             effects:[{ move:{ consumables:-8, public_standing:-7 } }] },
           { id:"hold", label:"Held", cost:16, note:"The floor is held where it stands. Every resident is carried at the current rate and the vote pays for it.", effects:[] },
           { id:"lift", label:"Lifted", cost:30, note:"The floor is raised. The stations with the lowest closure are carried further than the guarantee requires, and the difference comes out of the same vote.",
-            effects:[{ move:{ consumables:9, public_standing:4, treasury:-4 } }] }
+            effects:[{ move:{ consumables:9, public_standing:4, solvency:-4 } }] }
         ] },
       { id:"insurance", name:"Substrate insurance", default:"hold",
         note:"Cover for the residents who cannot pay for substrate. A reduction "+
@@ -203,8 +203,8 @@ const BILLS = [
     dualMajority:false,
     axes:{ownership:"private",personhood:null,sovereignty:"federal",closure:"integrationist"},
     stances:{ cl:"for", cu:{forPct:0.7}, psa:{forPct:0.5}, sc:"against", hul:"against" },
-    onPass:[{move:{"treasury":8}},{station:{kepler:{closure:0.02}}},{move:{"price.transit":-11}}],
-    onFail:[{move:{"treasury":-6}},{wire:"KEPLER CONCESSION LAPSES; EARTH STATE SIGNALS REVIEW"}] },
+    onPass:[{move:{"solvency": 8}},{station:{kepler:{closure:0.02}}},{move:{"price.transit":-11}}],
+    onFail:[{move:{"solvency": -6}},{wire:"KEPLER CONCESSION LAPSES; EARTH STATE SIGNALS REVIEW"}] },
 
   { id:"substrate_insurance", ref:"HC 4/121", stage:"drafting", owner:"psa",
     touches:["substrate_insurance","risk_pricing"],
@@ -223,7 +223,7 @@ const BILLS = [
     axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
     stances:{ psa:"for", cu:{forPct:0.8}, upl:"for", geo:"for", rv:{forPct:0.6},
               fh:"against", cl:{forPct:0.25}, hul:"against" },
-    onPass:[{move:{"treasury":-11}},{move:{"public_standing":7}},{move:{"loyalty.psa":12}},
+    onPass:[{move:{"solvency": -11}},{move:{"public_standing":7}},{move:{"loyalty.psa":12}},
             {station:{ashfield:{suspended:-1800}}},{move:{"price.substrate":-14}},
             {wire:"SUBSTRATE INSURANCE UPRATED; MEANS TEST ABOLISHED"}],
     onFail:[{move:{"loyalty.psa":-13}}] },
@@ -278,7 +278,7 @@ const BILLS = [
     stances:{ psa:"for", cu:{forPct:0.85}, upl:"for", geo:{forPct:0.6}, rv:{forPct:0.4},
               cl:"against", fh:"against", hul:{forPct:0.3}, gb:{forPct:0.2} },
     onPass:[{law:{substrate_public_share:0.6}},{move:{"price.substrate":-26}},
-            {move:{"treasury":-19}},{move:{"public_standing":5}},{move:{"loyalty.psa":16}},{move:{"loyalty.cl":-20}},{move:{"loyalty.fh":-14}},
+            {move:{"solvency": -19}},{move:{"public_standing":5}},{move:{"loyalty.psa":16}},{move:{"loyalty.cl":-20}},{move:{"loyalty.fh":-14}},
             {wire:"PUBLIC STAKE TAKEN IN SUBSTRATE PROVIDERS; RENTS EXPECTED TO FALL"}],
     onFail:[{move:{"loyalty.psa":-11}},{move:{"price.substrate":6}}] }
 

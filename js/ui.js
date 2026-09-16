@@ -660,11 +660,16 @@ const UI = (function () {
     const meters = [
       ["Party loyalty", "party_loyalty", 25], ["Public standing", "public_standing", 20],
       ["Consumables", "consumables", 25], ["Thermal margin", "thermal_margin", 12],
-      ["Treasury", "treasury", 15]
+      ["Sovereign solvency", "solvency", 15],
+      /* Flash I's meters. friction is the one that is BAD when it rises,
+         so it carries a polarity flag and colours the other way. */
+      ["Legitimacy", "legitimacy", 30], ["Diplomatic friction", "friction", 35, true]
     ];
-    $("#gov-meters").innerHTML = meters.map(([lab, k, soft]) => {
+    $("#gov-meters").innerHTML = meters.map(([lab, k, soft, inv]) => {
       const v = st.scalars[k], f = fatal[k];
-      const cls = (f != null && v <= f + 10) || v <= soft ? "warn" : v >= 65 ? "good" : "";
+      const cls = inv
+        ? (v >= soft ? "warn" : v <= 25 ? "good" : "")
+        : (f != null && v <= f + 10) || v <= soft ? "warn" : v >= 65 ? "good" : "";
       const tick = f == null ? "" :
         `<span class="thr" style="left:${Math.max(0, f)}%"` +
         tipAttr(lab + " \u2014 the line",
@@ -1644,12 +1649,12 @@ const UI = (function () {
         const on = lv.id === now.id;
         const probe = on ? null : Engine.clauseCost(st, C, id);
         const would = cost.total - (now.cost || 0) + (lv.cost || 0);
-        const bad = !on && would > cost.treasury;
+        const bad = !on && would > cost.solvency;
         return `<button class="btn cl-opt${on ? " on" : ""}${bad ? " over" : ""}"` +
           ` data-cl="${esc(cl.id)}" data-lv="${esc(lv.id)}"` +
           ` data-tip-title="${esc(lv.label)}"` +
           ` data-tip-body="${esc((lv.note || "") + " Costs " + (lv.cost || 0) + "." +
-             (bad ? " The Treasury is short by " + (would - cost.treasury) + "." : ""))}"` +
+             (bad ? " The Treasury is short by " + (would - cost.solvency) + "." : ""))}"` +
           `>${esc(lv.label)}<i>${lv.cost || 0}</i></button>`;
       }).join("");
       return `<div class="cl-row"><b data-tip-title="${esc(cl.name)}" ` +
@@ -1658,7 +1663,7 @@ const UI = (function () {
     }).join("");
     return `<div class="clsec"><h4>The estimates</h4>${rows}` +
       `<div class="whipcost">Allocated <b>${cost.total}</b> of ` +
-      `${cost.treasury} the Treasury holds. A line the Treasury cannot ` +
+      `${cost.solvency} the Treasury holds. A line the Treasury cannot ` +
       `fund is refused; trade one against another.</div></div>`;
   }
 

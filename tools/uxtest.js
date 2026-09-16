@@ -1063,7 +1063,7 @@ try {
 try {
   const st = w.eval("JSON.parse(Engine.save(UI.state()))");
   const before = w.eval("Engine.save(UI.state())");
-  w.eval('window.__d = Engine.describe(UI.state(), CONTENT, [{move:{treasury:-8}},{move:{"loyalty.psa":5}}]);');
+  w.eval('window.__d = Engine.describe(UI.state(), CONTENT, [{move:{solvency:-8}},{move:{"loyalty.psa":5}}]);');
   ok("describe() mutates nothing", w.eval("Engine.save(UI.state())") === before);
   const d = w.eval("JSON.stringify(window.__d)");
   ok("describe() names the party rather than its id", /New Progressive/.test(d), d);
@@ -1372,7 +1372,7 @@ try {
   const E = w.eval("Engine"), Cx = w.eval("CONTENT");
   const at = t => {
     const s2 = w.eval("Engine.newGame(CONTENT)");
-    s2.scalars.treasury = t;
+    s2.scalars.solvency = t;
     for (let i = 0; i < 12; i++) E.advance(s2, Cx);
     return Math.round(s2.prices.volume * 10) / 10;
   };
@@ -1566,7 +1566,7 @@ try {
   const dated = w.eval(`(function () {
     var st = UI.state(), before = UI.__test.structure(st);
     Engine.apply(st, CONTENT, [{ queue: { after: 4, label: "The commission reports",
-      effects: [{ move: { treasury: -1 } }] } }]);
+      effects: [{ move: { solvency: -1 } }] } }]);
     UI.__test.reportMoves(before, UI.__test.structure(st));
     return window.__motion.slice();
   })()`);
@@ -2113,7 +2113,7 @@ try {
   ok("and it says what happens there",
      /no undo/i.test(thr.getAttribute("data-tip-body") || ""),
      thr.getAttribute("data-tip-body"));
-  const soft = rows.find(r => /treasury/i.test(r.textContent));
+  const soft = rows.find(r => /solvency/i.test(r.textContent));
   ok("an indicator with no fatal line draws none",
      !soft.querySelector(".meter>.thr"));
 
