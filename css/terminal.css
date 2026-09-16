@@ -2379,3 +2379,13 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
    a missing file removes the node (js/tips.js imgLine). */
 #tipcard .tip-img{display:block;max-width:56px;max-height:40px;
   margin:0 0 4px;image-rendering:pixelated;}
+
+/* THE LIST EXPANDS INTO ITS OWN SPACE, NOT INTO ITS NEIGHBOURS'. Opening
+   280 names inside a panel whose children share a fixed column squeezed
+   everything above it — the whip table, the lobby fold, the forecast —
+   which is a disclosure taking space it was not given. The body is bounded
+   and scrolls instead, so opening it changes nothing outside itself.
+   In the division caption it has the room, so it takes more of it. */
+.dvl-b{max-height:132px;overflow:auto;min-height:0;}
+.dvl.incap .dvl-b{max-height:210px;}
+.dvl.incap{border-top:0;margin-top:6px;}

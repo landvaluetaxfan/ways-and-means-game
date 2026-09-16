@@ -111,6 +111,16 @@ const Wait = (function () {
     return new Promise(resolve => {
       let i = 0, timer = null, over = false, holding = false;
 
+      /* The button had no handler at all: it looked like a control and was
+         actually just a label the global pointer listener happened to sit
+         under. That was harmless while any click closed the caption and
+         would have made it inert the moment one did not. */
+      const btn = h.querySelector(".wait-btn");
+      if (btn) btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (holding || !steps.length) close(); else skip();
+      });
+
       function close() {
         if (over) return;
         over = true;
@@ -128,13 +138,20 @@ const Wait = (function () {
          is a piece of the caller's presentation - a row appended, a total
          updated - and the screen has to end up where it would have ended
          up. Only the waiting is skipped. */
+      /* BUTTON ONLY. A caption that is HOLDING is waiting to be read, and
+         a stray keystroke or a click anywhere on the page took it away
+         mid-sentence. With `buttonOnly` the global key and pointer
+         listeners stop reaching it once it holds, and the Close button is
+         the way out. They still skip the RUN, so a player who does not
+         want to watch the count is not trapped in it — only the finished
+         reading waits. */
       function skip() {
         if (over) return;
         clearTimeout(timer);
         /* A HELD DIALOG CLOSES RATHER THAN SKIPS. There is nothing left to
            run, and the key that would have skipped the rest is the key that
            sends it away. */
-        if (holding) { close(); return; }
+        if (holding) { if (!spec.buttonOnly) close(); return; }
         for (; i < steps.length; i++) if (steps[i].run) steps[i].run();
         segs.forEach(s => s.className = "done");
         close();
@@ -149,7 +166,7 @@ const Wait = (function () {
         if (i >= steps.length) {
           if (spec.hold) {
             holding = true;
-            if (label) label.textContent = spec.holdText || "Any key or click to close";
+            if (label) label.textContent = spec.holdText || "";
             segs.forEach(s => s.className = "done");
             return;
           }

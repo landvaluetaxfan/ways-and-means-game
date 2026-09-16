@@ -970,7 +970,7 @@ const UI = (function () {
      rest of the time it is one line saying a division happened. */
   const dvlOpen = {};      /* which division lists the player has open */
 
-  function divisionList(id) {
+  function divisionList(id, inCaption) {
     const bs = st.bills[id];
     if (!bs || !bs.lastDivision) return "";
     const rc = Engine.rollCall(st, C, id, bs.lastDivision);
@@ -1007,18 +1007,28 @@ const UI = (function () {
        open for the one just run, and the player's own toggle wins from
        then on. Keyed by bill and sitting, so a later division on the same
        bill opens fresh rather than inheriting the last one's state. */
+    /* CLOSED BY DEFAULT, ALWAYS. The names are read in the caption at the
+       end of the division now, which is where a player wants them; this
+       is the copy they come back to, and a record you come back to should
+       be waiting quietly rather than already unrolled. The player's own
+       toggle is remembered per bill and sitting. */
     const key = id + ":" + d.at;
-    if (dvlOpen[key] === undefined) dvlOpen[key] = (d.at === st.sitting);
-    return `<details class="dvl" data-dvl="${esc(key)}"` +
-      `${dvlOpen[key] ? " open" : ""}><summary><b>Division list</b>` +
+    if (dvlOpen[key] === undefined) dvlOpen[key] = false;
+    /* In the caption it is the point of the screen, so it is open and it
+       does not touch the remembered state of the copy in the column. */
+    const open = inCaption ? true : dvlOpen[key];
+    return `<details class="dvl${inCaption ? " incap" : ""}"` +
+      `${inCaption ? "" : ` data-dvl="${esc(key)}"`}` +
+      `${open ? " open" : ""}><summary><b>Division list</b>` +
       `<span>sitting ${d.at} &middot; ${d.carries ? "carried" : "not carried"} ` +
       `&middot; ${all.length} members</span></summary>` +
+      `<div class="dvl-b">` +
       section("Ayes", "aye", "aye") +
       section("Noes", "nay", "nay") +
       section("Abstained", "abstain", "abs") +
       section("Did not vote", "absent", "away") +
       `<p class="dvl-f">Members returned on a list are shown in italic: the
-       seat is the party's and the name is the slate's.</p></details>`;
+       seat is the party's and the name is the slate's.</p></div></details>`;
   }
 
   function drawBill(id) {
@@ -1793,6 +1803,18 @@ const UI = (function () {
             `<i>The Ayes to the right: ${P.aye}. The Noes to the left: ${noes}. ` +
             (r0.carries ? "The Ayes have it." : "The Noes have it.") + `</i>`;
         }
+        /* AND THE LIST IS PUBLISHED, at the end and not before. It used to
+           go up in the bill panel the moment the division began, which is
+           the one moment it cannot be read and also gives the result away
+           before the House has been called. A division list is published
+           AFTER a division; that is what makes it a record. The caption is
+           holding by now, so there is as long as the player likes to read
+           it. */
+        const lst = document.getElementById("dv-list");
+        if (lst) {
+          lst.innerHTML = divisionList(r0.bill, true);
+          if (typeof Tips !== "undefined" && Tips.within) Tips.within("#dv-list ");
+        }
         /* SAID THE WAY IT IS SAID. */
         setStatus("The Ayes to the right: " + P.aye + ". The Noes to the left: " +
           noes + ". " + (r0.carries ? "The Ayes have it." : "The Noes have it."),
@@ -1808,6 +1830,9 @@ const UI = (function () {
          one reading-out worth reading twice, and the number is the whole
          point of the screen. */
       hold: true,
+      /* The button is the only way out: a stray key took the reading away
+         mid-sentence, and this is the one caption worth reading twice. */
+      buttonOnly: true,
       stalled: fl => !!(st.flags && st.flags[fl]),
       steps: steps,
       mount: el => {
@@ -1825,7 +1850,8 @@ const UI = (function () {
           (dual ? `<div class="note">The functional bench is counted separately: ` +
             `${F.aye} of ${F.total}, needing ${F.need}.</div>` : "") +
           `<div class="lroll" id="dv-roll"></div>` +
-          `<div class="lverdict" id="dv-verdict"></div>`;
+          `<div class="lverdict" id="dv-verdict"></div>` +
+          `<div id="dv-list"></div>`;
         ayeEl = el.querySelector("#dv-aye"); noeEl = el.querySelector("#dv-noe");
         ayeN = el.querySelector("#dv-ayen"); noeN = el.querySelector("#dv-noen");
         vEl = el.querySelector("#dv-verdict");
