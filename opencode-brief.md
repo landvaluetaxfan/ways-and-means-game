@@ -480,7 +480,17 @@ invent an eighth body** — §2.7 — but `asks` and `note` are yours, and `asks
 particular is read aloud by the interface as the price of a bench, so it wants
 to sound like something a real body would actually want.
 
-## T17 — [ ] Bills declare what they touch, and the interests get used
+## T17 — [x] Bills declare what they touch, and the interests get used  ·  **CHECKED 17 Sep**
+
+**Checked against the live interest map; nothing needed changing.** Every bill
+touches interests that are owned, and each lands on the right bench:
+`divergence` → attestation + legal (the two seats that own the subject),
+`thermal2` → substrate and thermal, `shedorder` → maintenance (the union's own
+grievance), `anchor_kepler` → elevator, `substrate_insurance` → underwriting
+(and consumables, which also owns the interest), `continuity_registration` →
+attestation + legal, `substrate_public_stake` → substrate. `appropriation`
+touches nothing, which is correct for supply. No interest is unowned, so none
+is a silent no-op, and `test.js` would have caught one anyway.
 
 `touches: [...]` is now on all seven bills and it decides which functional
 constituencies answer for a measure. I set the seven from the `interest`
