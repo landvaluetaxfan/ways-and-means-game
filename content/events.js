@@ -1623,4 +1623,41 @@ and the schedule is a list of who is carried and who is not."`,
       result:"The figure steadies and the stations with the least closure take the difference." }
   ]},
 
+/* A POSITION SETTLES (design/28 §3). The forward was sold for cash at a
+   price fixed on the day; this is the delivery, and what is handed over is
+   exactly what was sold. The tempo set the flag and the settle reads it,
+   which is the whole of a forward: the price was decided then, the
+   obligation is paid now, and what the session did to the margin in
+   between is the risk the government took. */
+{ id:"quota_forward_settles", queuedOnly:true, once:true,
+  title:"The forward comes due",
+  speaker:"hatt",
+  body:`The consortiums have come for the capacity. Whatever the margin has
+done since the forward was sold, the price was fixed then and the quota
+leaves now: a slice of it, or the whole of it, as the government agreed.
+
+"Fixed is fixed," Hatt says, in the tone of a man who was on the other side
+of the trade.`,
+  choices:[
+    { label:"Hand over the slice.",
+      when:{ flags:["quota_forward_small"] },
+      effects:[{ move:{ "thermal_margin":-4 } }, { move:{ "solvency":3 } },
+               { wire:"QUOTA FORWARD DELIVERED; THE MARGIN NARROWS A SLICE" }],
+      result:"A slice of the margin leaves with the consortiums, and the Commonwealth pays to buy the rest back at whatever the price is now." },
+    { label:"Hand over the margin.",
+      when:{ flags:["quota_forward_full"] },
+      effects:[{ move:{ "thermal_margin":-11 } }, { move:{ "solvency":6 } },
+               { wire:"FULL QUOTA FORWARD DELIVERED; THE MARGIN NARROWS SHARPLY" }],
+      result:"The consortiums take what was sold, and the government discovers what a fixed price costs when the market has moved against it." },
+    /* A safety net: the settle is queued and fires whatever the state is, so
+       it must always have one open choice. It cannot normally be reached —
+       the tempo sets one of the two flags — and content is better with a
+       door it never uses than with an event that can strand a sitting. */
+    { label:"Hand over what was agreed.",
+      when:{ flagsAbsent:["quota_forward_small", "quota_forward_full"] },
+      effects:[{ move:{ "thermal_margin":-2 } },
+               { wire:"QUOTA FORWARD DELIVERED" }],
+      result:"The delivery is smaller than any forward the government meant to sell." }
+  ]}
+
 ];

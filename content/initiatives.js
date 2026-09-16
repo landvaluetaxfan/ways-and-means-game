@@ -75,5 +75,31 @@ const INITIATIVES = [
                                   text: "Carry the threshold bill this session",
                                   by: null } },
                    { move: { public_standing: 3, "loyalty.cu_maintenance": -4 } } ] }
+    ] },
+
+  /* A POSITION, NOT A SCREEN (design/28 §3). The Commonwealth's quota sold
+     forward: cash this session, capacity delivered later at a fixed price.
+     The tempo IS the price — sell a slice and the cash is small, sell the
+     margin and the money is real — and the settle event hands over exactly
+     what was sold, reading the flags the tempo set. No new verb: `move`,
+     `flag` and the ordinary queued answer carry the whole instrument. */
+  { id: "quota_forward",
+    title: "Sell quota forward",
+    note: "The Commonwealth's quota sold forward to the consortiums: cash now, " +
+          "delivery at the term. The price is fixed today and the capacity leaves " +
+          "the margin later, which is either a hedge or a hole depending on what " +
+          "the session does next.",
+    cost: 1,
+    when: { flagsAbsent: ["quota_forward_sold"] },
+    event: "quota_forward_settles",
+    tempo: [
+      { label: "A cautious forward: a slice of the margin, a slice of the cash",
+        after: 4,
+        effects: [ { move: { solvency: 9 } },
+                   { flag: { quota_forward_small: true, quota_forward_sold: true } } ] },
+      { label: "A full forward: the whole margin, and the price to match",
+        after: 6, cost: 1,
+        effects: [ { move: { solvency: 22 } },
+                   { flag: { quota_forward_full: true, quota_forward_sold: true } } ] }
     ] }
 ];

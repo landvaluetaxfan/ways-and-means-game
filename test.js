@@ -2614,3 +2614,44 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
 
   if (bad) { console.log("\n" + bad + " OPENING FAILURES"); process.exitCode = 1; }
 })();
+
+/* ---------------------------------------------------------------------
+   THE ECONOMY (design/28). Phase 1: the appropriation drives the four
+   prices. Phase 2: a market is a POSITION — taken now, settled by an event
+   that hands over exactly what was sold — and it uses no new effect verb.
+   --------------------------------------------------------------------- */
+console.log("\nTHE ECONOMY:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  ok("content offers a position the government can take",
+     (CONTENT.initiatives || []).some(i => i.id === "quota_forward"),
+     (CONTENT.initiatives || []).map(i => i.id).join(", "));
+
+  const st = Engine.newGame(CONTENT);
+  const sol0 = st.scalars.solvency, m0 = st.scalars.thermal_margin;
+  const r = Engine.take(st, CONTENT, "quota_forward", 1);   /* the full forward */
+  ok("a forward pays at once", r.ok && st.scalars.solvency > sol0,
+     "solvency " + sol0 + " -> " + st.scalars.solvency);
+
+  let delivery = null, beforeDelivery = null;
+  for (let i = 0; i < 14 && !delivery; i++) {
+    const e = Engine.nextEvent(st, CONTENT);
+    if (e && e.id === "quota_forward_settles") {
+      beforeDelivery = st.scalars.thermal_margin;
+      /* the tempo set the flags; the settle opens the delivery it sold */
+      for (let k = 0; k < (e.choices || []).length; k++) {
+        if (Engine.choose(st, CONTENT, e, k) !== null) { delivery = k; break; }
+      }
+    }
+    Engine.advance(st, CONTENT);
+  }
+  ok("and it settles later", delivery !== null, delivery === null ? "never settled" : "choice " + delivery);
+  ok("and the delivery takes the margin that was sold",
+     delivery !== null && st.scalars.thermal_margin === beforeDelivery - 11,
+     beforeDelivery + " -> " + st.scalars.thermal_margin + " (margin at open " + m0 + ")");
+
+  if (bad) { console.log("\n" + bad + " ECONOMY FAILURES"); process.exitCode = 1; }
+})();
