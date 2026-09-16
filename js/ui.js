@@ -1145,9 +1145,20 @@ const UI = (function () {
   const whipOpen = { pair: false, lobby: false };
 
   function wireWhipbars(root, billId, after) {
+    /* AN ACCORDION, BECAUSE THE PANEL HAS ROOM FOR ONE. With both folds
+       open the lobbying table ran past the panel floor and took the
+       clear button with it — a control the player could see and not
+       reach. Opening one closes the other, which is also the honest
+       shape: they are two answers to the same question and a player is
+       making one of them at a time. */
     root.querySelectorAll("details.foldsec").forEach(dt => {
       dt.addEventListener("toggle", () => {
         whipOpen[dt.dataset.fold] = dt.open;
+        if (!dt.open) return;
+        root.querySelectorAll("details.foldsec").forEach(o => {
+          if (o === dt || !o.open) return;
+          o.open = false; whipOpen[o.dataset.fold] = false;
+        });
       });
     });
     root.querySelectorAll(".whipbar").forEach(bar => {
@@ -1387,7 +1398,7 @@ const UI = (function () {
       const cur = plan[a.id] || 0;
       if (!cap.max && !cur) return;
       const live = (st.actors || {})[a.id] || {};
-      rows += `<tr><td>${esc(a.name)}<span class="sm2">${esc(a.kind)}</span></td>` +
+      rows += `<tr><td>${esc(a.name)} <span class="sm2">${esc(a.kind)}</span></td>` +
         `<td class="n">${live.standing}</td>` +
         `<td class="n">${cur} / ${cap.max}</td>` +
         `<td class="mv"><div class="whipbar" data-lb="${a.id}"` +

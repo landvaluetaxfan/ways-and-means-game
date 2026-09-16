@@ -420,6 +420,19 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
      panel, on top of its table header. That is the collision in the
      report, and it was never a density problem. */
   min-height:0;
+  /* A PANEL IS A BOX AND ITS CONTENT NEVER PAINTS OUTSIDE IT.
+
+     min-height:0 alone was half a fix. It let a panel shrink below its
+     content, which stopped the House panel overflowing its grid row --
+     and then the content, still overflow:visible, painted over whatever
+     was beneath. Measured on the Government tab: ten panels escaping at
+     1000px wide, the Cabinet by 668px, the scarcity meters drawn across
+     the panel header below them.
+
+     So the panel clips, and every .pbody is a scroller, so that clipping
+     never costs the player anything they cannot reach. The page still
+     never scrolls; the thing inside the tab does. */
+  overflow:hidden;
 }
 .panel > h2{
   margin:0;background:var(--bar);color:var(--bar-txt);
@@ -2263,8 +2276,11 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .pairsec h4{margin:0 0 5px;font-family:var(--f-ui);font-size:10.5px;
   letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:400;}
 /* what kind of body it is, under its name */
-.whiptab .sm2{display:block;font-size:10px;letter-spacing:.08em;
+/* Inline, not on its own line: eight bodies at two lines each ran the
+   lobbying table past the panel floor and hid the clear button under it. */
+.whiptab .sm2{font-size:9.5px;letter-spacing:.08em;
   text-transform:uppercase;color:var(--ink-soft);}
+.whiptab td{padding-top:2px;padding-bottom:2px;}
 
 /* The House is the one panel whose content genuinely cannot be made
    shorter, so it is the one that scrolls. Everything else on the tab
@@ -2299,3 +2315,9 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .dmn i{font-style:normal;font-family:var(--f-data);opacity:.8;}
 .dmn.ok{border-left-color:var(--ok);}
 .dmn.bad{border-left-color:var(--alert);}
+/* The header is fixed, the body takes the rest. Without this the h2 wrapping
+   to a second line at a narrow width pushed the body past the panel's floor
+   and the last few pixels were clipped with no way to scroll to them. */
+.panel>h2{flex:0 0 auto;}
+.panel>.sbwrap,.panel>.pbody{flex:1 1 auto;min-height:0;}
+

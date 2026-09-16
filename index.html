@@ -50,12 +50,12 @@
         </div>
         <div class="stack">
           <div class="panel"><h2>Today <em><span id="today-sum">the order of the day</span></em></h2>
-            <div class="pbody" id="sit-today"></div></div>
+            <div class="pbody scrolls" id="sit-today"></div></div>
           <div class="panel"><h2>The parliamentary calendar <em>session <span id="cal-sess">4</span></em></h2>
-            <div class="pbody" id="sit-cal"></div></div>
+            <div class="pbody scrolls" id="sit-cal"></div></div>
           <div class="panel"><h2>Before the House <em>the docket</em></h2>
-            <div class="pbody" id="sit-docket"></div></div>
-          <div class="panel"><h2>Indicators</h2><div class="pbody" id="gov-meters-mirror"></div></div>
+            <div class="pbody scrolls" id="sit-docket"></div></div>
+          <div class="panel"><h2>Indicators</h2><div class="pbody scrolls" id="gov-meters-mirror"></div></div>
           <div class="panel"><h2><span data-tip="wire">Wire</span></h2><div class="pbody flush scrolls" id="gov-wire"></div></div>
         </div>
       </div>
@@ -66,50 +66,50 @@
         <div class="stack scrolls">
           <div class="panel">
             <h2>What the government will do <em id="gov-init-hdr">order-paper time</em></h2>
-            <div class="pbody" id="gov-init"></div>
+            <div class="pbody scrolls" id="gov-init"></div>
           </div>
           <div class="panel">
             <h2>Coalition <em id="gov-coalition-hdr"></em></h2>
-            <div class="pbody flush">
+            <div class="pbody flush scrolls">
               <table id="gov-coalition"></table>
-              <div class="pbody"><div class="note" id="gov-margin"></div></div>
+              <div class="pbody scrolls"><div class="note" id="gov-margin"></div></div>
             </div>
           </div>
           <div class="panel">
             <h2>Own party currents</h2>
-            <div class="pbody flush"><table id="gov-currents"></table></div>
+            <div class="pbody flush scrolls"><table id="gov-currents"></table></div>
           </div>
         </div>
         <div class="stack scrolls">
           <div class="panel">
             <h2>Coalition ledger <em>permanent</em></h2>
-            <div class="pbody flush">
+            <div class="pbody flush scrolls">
               <table id="gov-ledger"></table>
-              <div class="pbody"><div class="note" id="gov-ledger-note"></div></div>
+              <div class="pbody scrolls"><div class="note" id="gov-ledger-note"></div></div>
             </div>
           </div>
           <div class="panel">
             <h2><span data-tip="live">Presidency</span></h2>
-            <div class="pbody" id="gov-pres"></div>
+            <div class="pbody scrolls" id="gov-pres"></div>
           </div>
           <div class="panel">
             <h2>Undertakings <em>what the government has said it will do</em></h2>
-            <div class="pbody" id="gov-owed"></div>
+            <div class="pbody scrolls" id="gov-owed"></div>
           </div>
           <div class="panel">
             <h2>Order paper time <em>the currency that buys partners</em></h2>
-            <div class="pbody" id="gov-slots"></div>
+            <div class="pbody scrolls" id="gov-slots"></div>
           </div>
         </div>
         <div class="stack scrolls">
-          <div class="panel"><h2>Standing indicators</h2><div class="pbody" id="gov-meters"></div></div>
+          <div class="panel"><h2>Standing indicators</h2><div class="pbody scrolls" id="gov-meters"></div></div>
           <div class="panel">
             <h2><span data-tip="scarcity">Scarcity</span> <em data-tip="scarcity">index, 100 at open</em></h2>
-            <div class="pbody" id="gov-prices"></div>
+            <div class="pbody scrolls" id="gov-prices"></div>
           </div>
           <div class="panel">
             <h2><span data-tip="vacant">Cabinet</span></h2>
-            <div class="pbody flush"><div class="pbody" id="gov-appoint" hidden></div>
+            <div class="pbody flush scrolls"><div class="pbody scrolls" id="gov-appoint" hidden></div>
               <table id="gov-cabinet"></table></div>
           </div>
         </div>
@@ -137,7 +137,7 @@
         <div class="stack">
           <div class="panel">
             <h2><span data-tip="benches">Parliament &mdash; House of Delegates</span> <em>district / list / functional</em></h2>
-            <div class="pbody" id="cham-pick"></div>
+            <div class="pbody scrolls" id="cham-pick"></div>
             <div class="pbody flush scrolls" id="cham-house">
               <svg viewBox="0 0 720 348" role="img" aria-label="Seating plan of the House of Delegates">
                 <g id="chamber"></g>
@@ -150,7 +150,7 @@
                  panel exists to produce, so it must not be the thing that
                  scrolls out of sight when the House is squeezed. It sits
                  under the scrolling seat plan, always visible. -->
-            <div class="pbody" id="cham-forecast"></div>
+            <div class="pbody scrolls" id="cham-forecast"></div>
           </div>
           <div class="panel" id="p-whip" hidden>
             <h2><span data-tip="whip">The whip</span> <em id="cham-whip-hdr"></em></h2>
@@ -167,7 +167,7 @@
           <div class="panel">
             <h2><span data-tip="functional">Functional constituencies</span> <em data-tip="dual">40 seats, dual majority</em></h2>
             <div class="pbody flush scrolls"><table id="func-table"></table></div>
-            <div class="pbody"><div class="note" id="func-note"></div></div>
+            <div class="pbody scrolls"><div class="note" id="func-note"></div></div>
           </div>
         </div>
 
@@ -190,8 +190,8 @@
         </div>
         <div class="panel p-map">
           <h2><span data-tip="schematic">Habitat schematic</span> <em data-tip="band">altitude bands &middot; not to lateral scale</em></h2>
-          <div class="pbody flush plate" id="orbit-chart"></div>
-          <div class="pbody okeys" id="orbit-key"></div>
+          <div class="pbody flush plate scrolls" id="orbit-chart"></div>
+          <div class="pbody okeys scrolls" id="orbit-key"></div>
         </div>
       </div>
     </section>
@@ -203,7 +203,7 @@
             <h2><span data-tip="instrument">Instruments</span> <em>signed, not voted</em></h2>
             <div class="pbody flush scrolls">
               <table id="gov-si"></table>
-              <div class="pbody"><div class="note">A bill needs a majority and cannot be undone.
+              <div class="pbody scrolls"><div class="note">A bill needs a majority and cannot be undone.
                 An order needs no majority and can be revoked. Signing one puts it in force at
                 once; it stands unless the House prays against it inside the window.</div></div>
             </div>
@@ -225,7 +225,7 @@
     <section class="screen" id="s-cx">
       <div class="panel" style="height:calc(100vh - 130px);min-height:520px">
         <h2>Concordance <em>public reference &middot; attested editing</em></h2>
-        <div class="pbody flush" style="flex:1;min-height:0">
+        <div class="pbody flush scrolls" style="flex:1;min-height:0">
           <div class="cx-wrap">
             <div id="cx-side">
               <div class="cx-brand"><h3>Concordance</h3><p>the attested encyclopedia</p></div>
@@ -246,7 +246,7 @@
     <section class="screen" id="s-log">
       <div class="panel">
         <h2><span data-tip="log">Record of decisions</span></h2>
-        <div class="pbody flush"><table id="log-body"></table></div>
+        <div class="pbody flush scrolls"><table id="log-body"></table></div>
       </div>
     </section>
 
