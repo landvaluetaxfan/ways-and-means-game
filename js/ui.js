@@ -1419,6 +1419,34 @@ const UI = (function () {
           `for it \u2014 not money, a promise.</div>`);
   }
 
+  /* WHY IT FELL, WHEN THE REASON IS NOT THE ARITHMETIC.
+
+     A measure can carry the House, carry the whole functional tier, and
+     still fall because two members of Attestation and Registry own the
+     subject and object to it. That happens in the opening state of this
+     game. A player who loses a division to a rule they cannot see on the
+     screen has been cheated, so the objection is named, the bench that
+     made it is named, and the two ways out are stated: square the bench,
+     or carry three-fifths of those voting and override it. */
+  function domainNote(d) {
+    const dm = d.domain;
+    if (!dm || !dm.applies) return "";
+    const who = dm.constituencies
+      .map(c => `${esc(c.name)} <i>${c.aye}\u2013${c.nay}${
+        c.abstain ? " (" + c.abstain + " abs)" : ""}</i>`).join(", ");
+    if (!dm.objects)
+      return `<div class="dmn ok"><b>Consented</b> by the benches that own the ` +
+        `subject: ${who}. They need not carry it, only decline to block it.</div>`;
+    return `<div class="dmn bad"><b>Objected to</b> by the benches that own the ` +
+      `subject: ${who} \u2014 ${dm.against} of ${dm.seats} against, ` +
+      `${dm.blockAt} enough to block. ` +
+      (dm.override.ok
+        ? `The House overrides: ${dm.override.have} of ${dm.override.of} voting.`
+        : `To carry it anyway the House must return ${dm.override.need} of the ` +
+          `${dm.override.of} voting and has ${dm.override.have}. ` +
+          `Otherwise square the bench.`) + `</div>`;
+  }
+
   function benchBar(label, r) {
     const pct = Math.min(100, r.aye / r.total * 100);
     return `<div class="dm"><b>${label}</b><div class="dmbar">` +
@@ -2869,6 +2897,7 @@ const UI = (function () {
     el.innerHTML =
       benchBar(voted ? "Popular \u00b7 as voted" : "Popular", d.popular) +
       (b.dualMajority ? benchBar(voted ? "Functional \u00b7 as voted" : "Functional", d.functional) : "") +
+      domainNote(d) +
       `<div class="note">${b.dualMajority
         ? (d.carries ? "Carries both tests."
            : d.popular.carries ? "<b>Carries the House and fails the functional bench.</b>"

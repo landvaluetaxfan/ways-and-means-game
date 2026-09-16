@@ -330,6 +330,27 @@ invent an eighth body** — §2.7 — but `asks` and `note` are yours, and `asks
 particular is read aloud by the interface as the price of a bench, so it wants
 to sound like something a real body would actually want.
 
+## T17 — [ ] Bills declare what they touch, and the interests get used
+
+`touches: [...]` is now on all seven bills and it decides which functional
+constituencies answer for a measure. I set the seven from the `interest`
+arrays already in `content/functional.js`; **check them, they are a first
+guess, and they are now load-bearing** — a wrong interest sends a bill to the
+wrong bench.
+
+The twenty-two interests were authored long ago and read by nothing until
+yesterday. Now that they bite:
+
+- some are probably too broad (`essential_services_law` could be argued onto
+  half the order paper) and some too narrow
+- a bill may name more than one, and the pool is the union of the owners
+- **an interest no constituency owns is a silent no-op.** `test.js` fails the
+  build on one now, so you cannot introduce it by accident
+
+New bills from T4 want a `touches` too. A bill that touches nothing gets a
+simple majority, which is correct for most of them — do not reach for it out
+of habit.
+
 ---
 
 ## Do not

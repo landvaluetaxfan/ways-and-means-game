@@ -1596,6 +1596,7 @@ const Engine = (function () {
        in their own column: a whipped seat is a member the player moved and
        a lobbied one is a bench somebody else moved for them, and a player
        who cannot tell those apart cannot tell what they owe. */
+    const lobFc = lobbiedByConstituency(st, C, billId);
     const lob = lobbiedSeats(st, billId);
     if (lob > 0) {
       let left = lob;
@@ -1642,15 +1643,20 @@ const Engine = (function () {
     const popCarriesAfter = popAye >= popNeed;
 
     const sum = (k) => rows.reduce((n, r) => n + (r[k] || 0), 0);
+    /* The constituencies that own the subject answer for it. Computed
+       after the pairs settle, because the override is measured against
+       the popular count that actually happened. */
+    const domain = domainTest(st, C, billId, rows, popAye, popTotal, lobFc);
     return {
-      bill: billId, dual: dual, rows: rows,
+      bill: billId, dual: dual, rows: rows, domain: domain,
       popular:   { aye: popAye,  total: popTotal,  need: popNeed,  carries: popCarriesAfter,
                    abstain: sum("popularAbstain"), nay: sum("popularNay"),
                    absent: sum("popularAbsent"), paired: sum("popularAbsent") },
       functional:{ aye: funcAye, total: funcTotal, need: funcNeed, carries: funcCarries,
                    abstain: sum("functionalAbstain"), nay: sum("functionalNay"),
                    absent: 0 },
-      carries: dual ? (popCarriesAfter && funcCarries) : popCarriesAfter
+      carries: (dual ? (popCarriesAfter && funcCarries) : popCarriesAfter) &&
+               domain.carries
     };
   }
 
@@ -1766,6 +1772,136 @@ const Engine = (function () {
   }
 
   function clearPairs(st, billId) { delete st.pairs[billId]; }
+
+  /* ---------------------------------------------------------
+     DOMAIN CONSENT — the bench that owns the subject.
+
+     Every functional constituency has carried an `interest` array since
+     the roll was written: twenty-two named domains across eleven
+     constituencies, authored, editable, serialised, and READ BY NOTHING.
+     Meanwhile `dualMajority` was a boolean an author typed, true on two
+     bills of seven, so on five of seven measures the functional forty
+     were decoration — and the bill dossier already stated the rule in
+     prose ("bills touching life-support integrity must carry separately")
+     with nothing checking it.
+
+     This connects the two. A measure that touches an interest is answered
+     by the constituencies that own it, and by nobody else.
+
+     THREE THINGS KEEP IT FROM BECOMING A VETO ON ALL GOVERNMENT, which
+     is the failure mode and would be both tedious and politically flat:
+
+     1. IT IS CONSENT, NOT ENDORSEMENT. The concerned benches must not
+        OPPOSE the measure by a majority. They are not required to carry
+        it. Abstention and absence therefore count as consent, which is
+        what makes abstention worth something to a government rather than
+        only to an opposition — a professional body does not have to
+        approve, it has to decline to object.
+
+     2. THE HOUSE CAN OVERRIDE, AND IT COSTS. An objection is answered by
+        a reinforced majority of the ELECTED benches. So a domain
+        objection is a price — go and win more of the House — rather than
+        a wall. This is the guard that matters most: without it, two
+        members of Attestation and Registry could stop a government with
+        two hundred seats behind it.
+
+     3. ONLY WHAT IS TOUCHED IS TESTED. A bill that names no interest
+        faces a simple majority, and the pool is the union of the
+        concerned constituencies rather than all forty — usually two to
+        seven seats, not a second parliament.
+
+     The whole-tier dual majority (§4.6.1, 21 of 40) is a SEPARATE and
+     heavier test, unchanged, and stays for charter-level measures. */
+
+  const OVERRIDE_PCT = 0.60;
+
+  /* Distribute a party's functional votes across the constituencies it
+     holds seats in, largest remainder, so the per-constituency tallies
+     sum back to the party rows the breakdown prints. */
+  function functionalByConstituency(st, C, rows, lobFc) {
+    const out = {};
+    (C.functional || []).forEach(f => {
+      out[f.id] = { id: f.id, name: f.name, seats: 0, aye: 0, nay: 0, abstain: 0 };
+    });
+    rows.forEach(r => {
+      const held = {};
+      let total = 0;
+      Object.keys(st.functional || {}).forEach(fc => {
+        const n = ((st.functional[fc] || {}).held || {})[r.party] || 0;
+        if (n) { held[fc] = n; total += n; }
+      });
+      if (!total) return;
+      ["aye", "nay", "abstain"].forEach(kind => {
+        const want = r["functional" + kind.charAt(0).toUpperCase() + kind.slice(1)] || 0;
+        if (!want) return;
+        const share = [], base = {};
+        let given = 0;
+        Object.keys(held).forEach(fc => {
+          const exact = want * held[fc] / total;
+          base[fc] = Math.floor(exact);
+          given += base[fc];
+          share.push({ fc: fc, rem: exact - base[fc] });
+        });
+        share.sort((a, b) => b.rem - a.rem);
+        for (let i = 0; given < want && i < share.length; i++, given++)
+          base[share[i].fc] += 1;
+        Object.keys(base).forEach(fc => { if (out[fc]) out[fc][kind] += base[fc]; });
+      });
+      Object.keys(held).forEach(fc => { if (out[fc]) out[fc].seats += held[fc]; });
+    });
+    /* A lobbied bench is a bench that came over: it is an aye here and it
+       stops being a nay, or the body delivered nothing. */
+    Object.keys(lobFc || {}).forEach(fc => {
+      const t = out[fc]; if (!t) return;
+      const take = Math.min(lobFc[fc], t.nay);
+      t.aye += take; t.nay -= take;
+    });
+    return out;
+  }
+
+  function domainTest(st, C, billId, rows, popAye, popTotal, lobFc) {
+    const bill = C.billById[billId];
+    const touches = (bill && bill.touches) || [];
+    if (!touches.length) return { applies: false, carries: true };
+
+    const byFc = functionalByConstituency(st, C, rows, lobFc);
+    const concerned = (C.functional || []).filter(f =>
+      (f.interest || []).some(i => touches.indexOf(i) >= 0));
+    if (!concerned.length) return { applies: false, carries: true };
+
+    let seats = 0, against = 0, forIt = 0, abstained = 0;
+    const list = concerned.map(f => {
+      const t = byFc[f.id] || { seats: 0, aye: 0, nay: 0, abstain: 0 };
+      seats += t.seats; against += t.nay; forIt += t.aye; abstained += t.abstain;
+      return { id: f.id, name: f.name, seats: t.seats,
+               aye: t.aye, nay: t.nay, abstain: t.abstain };
+    });
+
+    /* A majority of the concerned seats, against. Of the MEMBERS, as
+       everywhere else in this chamber (§4.6.1) — so staying away is not
+       opposing, which is the whole of guard 1. */
+    const blockAt = Math.floor(seats / 2) + 1;
+    const objects = seats > 0 && against >= blockAt;
+
+    /* THE OVERRIDE IS OF THOSE VOTING, not of all members, and that is
+       deliberate. Three-fifths of the whole House is 144 against a
+       government holding 129, so an override measured against the roll
+       would be unreachable and domain consent would be an absolute veto
+       dressed as a price. Measured against those who actually voted, a
+       House where the objectors' allies stay away is a House that can
+       override — which is what abstention is FOR, and the one place in
+       the game where a member declining to vote helps the government. */
+    const voting = rows.reduce((n, r) =>
+      n + (r.popularAye || 0) + (r.popularNay || 0), 0) || popTotal;
+    const ovNeed = Math.ceil(voting * OVERRIDE_PCT);
+    const override = { need: ovNeed, have: popAye, of: voting,
+                       ok: popAye >= ovNeed };
+
+    return { applies: true, interests: touches, constituencies: list,
+             seats: seats, against: against, for: forIt, abstain: abstained,
+             blockAt: blockAt, objects: objects, override: override,
+             carries: !objects || override.ok };
+  }
 
   /* ---------------------------------------------------------
      LOBBYING — the bench somebody else moves for you.
@@ -1916,6 +2052,41 @@ const Engine = (function () {
     let total = 0;
     Object.keys(plan).forEach(id => { total += plan[id] || 0; });
     return total;
+  }
+
+  /* WHERE THE LOBBIED SEATS LAND, and this is the join that makes the two
+     systems one system rather than two.
+
+     The first build added them to whichever party had a spare functional
+     seat, which was arithmetically fine and politically meaningless: an
+     actor's `reach` names the CONSTITUENCIES it can move and the seats
+     were landing somewhere else entirely. So domain consent and lobbying
+     could not see each other, and the measured result was that domain
+     consent put Substrate Neutrality back out of reach the day after
+     lobbying brought it in.
+
+     Now a body delivers into its own benches, which means lobbying the
+     board that objects is the answer to the board that objects — and a
+     constituency nobody can reach is a constituency you have to win in
+     the House instead. */
+  function lobbiedByConstituency(st, C, billId) {
+    const plan = (st.lobby || {})[billId] || {};
+    const out = {};
+    Object.keys(plan).forEach(id => {
+      const a = (C.actorById || {})[id]; if (!a) return;
+      let want = plan[id] || 0;
+      const reach = Object.keys(a.reach || {});
+      /* Fill the benches it reaches, in the order the body declares them,
+         so the same plan always lands in the same seats. */
+      reach.forEach(fc => {
+        if (want <= 0) return;
+        const cap = Math.min(a.reach[fc], ((C.functionalById || {})[fc] || {}).seats || 0);
+        const take = Math.min(cap, want);
+        out[fc] = (out[fc] || 0) + take;
+        want -= take;
+      });
+    });
+    return out;
   }
 
   /* ---------------------------------------------------------
@@ -2153,15 +2324,25 @@ const Engine = (function () {
     const benchSum = (bench, k) => rows.reduce((n, r) => n + (r[bench + k] || 0), 0);
     const p = benchAye("popular"), f = benchAye("functional");
     const pc = p >= d.popular.need, fc = f >= d.functional.need;
+    /* THE FORECAST HAS TO FORECAST THE DOMAIN TEST TOO. Without this the
+       estimate said a measure carried and the division then lost it to an
+       objection the player was never shown — a forecast that contradicts
+       its own outcome, which is worse than no forecast at all.
+
+       Computed from the REPORTED rows, not the true ones, so it stays an
+       estimate: the whips' read of what the benches that own the subject
+       will do, wrong by the same per-party error as everything else here. */
+    const dom = domainTest(st, C, billId, rows, p, d.popular.total,
+                           lobbiedByConstituency(st, C, billId));
     return {
-      dual: d.dual, true: d, rows: rows,
+      dual: d.dual, true: d, rows: rows, domain: dom,
       popular:    { aye: p, total: d.popular.total,    need: d.popular.need,    carries: pc,
                     abstain: benchSum("popular", "Abstain"), nay: benchSum("popular", "Nay"),
                     absent: benchSum("popular", "Absent") },
       functional: { aye: f, total: d.functional.total, need: d.functional.need, carries: fc,
                     abstain: benchSum("functional", "Abstain"), nay: benchSum("functional", "Nay"),
                     absent: 0 },
-      carries: d.dual ? (pc && fc) : pc,
+      carries: (d.dual ? (pc && fc) : pc) && dom.carries,
       /* what the number is and who said so. Present on every forecast shown. */
       prov: "Whips' count; partners' assurances; an estimate of the functional bench"
     };
@@ -3548,6 +3729,7 @@ const Engine = (function () {
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
     rollCall, lobbyable, setLobby, clearLobby, lobbyCost, payLobby, lobbiedSeats,
+    domainTest, functionalByConstituency, lobbiedByConstituency,
     settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
     snapshot, changes,
     prorogue, canDivide, candidates, vacancies, fillPost,

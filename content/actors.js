@@ -82,7 +82,7 @@ const ACTORS = [
 
   { id: "anselm_elevator", name: "Anselm Elevator", kind: "consortium",
     standing: 44, patience: 80,
-    reach: { fc_transit: 3, fc_anchors: 2 },
+    reach: { fc_elevator: 3, fc_transit: 2 },
     wants: { divergence_threshold_hours: 1 },
     asks: "the anchorage concession ratified before the House rises",
     note: "Owns the tether everything arrives on. Patient, because it can afford to be." },
@@ -93,6 +93,44 @@ const ACTORS = [
     wants: { divergence_threshold_hours: -1 },
     asks: "leave the public substrate share where it is",
     note: "Sells the substrate a person runs on, and would rather more people needed it." },
+
+  /* THREE BODIES ADDED FOR A STRUCTURAL REASON, not a narrative one.
+
+     Domain consent lets the constituency that owns a subject refuse it,
+     and the answer to a refusal is to go and talk to the people whose
+     bench it is. A constituency NO BODY REACHES therefore has an
+     absolute veto and no counter-move, which is the failure mode the
+     whole design is trying to avoid. Measured before these were added:
+     Legal, Medicine and Embodiment, Insurance and Underwriting and the
+     Residual Constituency could be reached by nobody, and the divergence
+     bill was unpassable because Legal's three seats could not be moved
+     by any mechanic in the game.
+
+     test.js asserts the invariant now: every functional constituency is
+     reachable by at least one body. An eighth body added to content must
+     keep it true, and a twelfth constituency must come with somebody who
+     can talk to it. */
+
+  { id: "lb_legal", name: "Board of Legal Practice", kind: "board",
+    standing: 46, patience: 75,
+    reach: { fc_legal: 3 },
+    wants: { divergence_threshold_hours: -1 },
+    asks: "no ministerial direction over reclassification practice",
+    note: "Licenses the practitioners who argue what a person is, and is appointed by the government whose law they argue about." },
+
+  { id: "college_medicine", name: "College of Medicine and Embodiment", kind: "board",
+    standing: 57, patience: 50,
+    reach: { fc_medicine: 3 },
+    wants: { divergence_threshold_hours: 1 },
+    asks: "hold the embodiment access standard for a full session",
+    note: "Decides who may practise on a body, in a Commonwealth arguing about whether one is required." },
+
+  { id: "underwriters", name: "Circumterrestrial Underwriters", kind: "consortium",
+    standing: 41, patience: 85,
+    reach: { fc_underwriting: 3, fc_residual: 1 },
+    wants: { divergence_threshold_hours: 1 },
+    asks: "no statutory cap on substrate risk pricing",
+    note: "Prices the risk that a person stops running, and would rather the law did not decide when that has happened." },
 
   { id: "bellweather", name: "Bellweather Consumables", kind: "consortium",
     standing: 49, patience: 60,

@@ -21,6 +21,7 @@
 
 const BILLS = [
   { id:"divergence", ref:"HC 4/117", stage:"committee", owner:"psa", priority:true,
+    touches:["attestation_enforcement","reclassification_practice"],
     author:"herrera", cosponsors:["lindegaard","cutter"],
     referrable:true, signalled:true,   /* King has privately indicated he would refer this */
     title:"Divergence Threshold (Amendment) Bill",
@@ -56,6 +57,7 @@ const BILLS = [
             {wire:"THRESHOLD BILL FAILS ON THE FUNCTIONAL DIVISION"}] },
 
   { id:"thermal2", ref:"HC 4/094", stage:"second_reading", owner:"cu",
+    touches:["thermal_quota"],
     author:"vellan", cosponsors:["laughon"],
     title:"Thermal Quota Allocation (No. 2) Bill",
     summary:"Reallocates radiator capacity toward the middle band. Ember Ridge has been "+
@@ -76,6 +78,7 @@ const BILLS = [
     onFail:[{move:{"thermal_margin":-4}},{move:{"price.thermal":8}}] },
 
   { id:"shedorder", ref:"HC 4/061", stage:"blocked", owner:"cu", referrable:true,
+    touches:["shed_order_priority","essential_services_law"],
     author:"halloran", cosponsors:["kaunda"],
     title:"Shed Order (Civilian Oversight) Bill",
     summary:"Places the published shedding priority under civilian review. Touches "+
@@ -101,6 +104,7 @@ const BILLS = [
     onFail:[{move:{"loyalty.cu_halloran":-8}}] },
 
   { id:"anchor_kepler", ref:"HC 4/103", stage:"assent", owner:null,
+    touches:["anchor_concession"],
     author:"estevez",
     title:"Anchor Concession (Anchorage) Ratification Bill",
     summary:"Ratifies renewed terms for the Tether 2 anchor, which stands on the sovereign "+
@@ -118,6 +122,7 @@ const BILLS = [
     onFail:[{move:{"treasury":-6}},{wire:"KEPLER CONCESSION LAPSES; EARTH STATE SIGNALS REVIEW"}] },
 
   { id:"substrate_insurance", ref:"HC 4/121", stage:"drafting", owner:"psa",
+    touches:["substrate_insurance","risk_pricing"],
     author:"girard",
     title:"Substrate Insurance (Uprating) Bill",
     summary:"Raises the statutory floor on substrate insurance and removes the means test. "+
@@ -139,6 +144,7 @@ const BILLS = [
     onFail:[{move:{"loyalty.psa":-13}}] },
 
   { id:"continuity_registration", ref:"HC 4/129", stage:"drafting", owner:"rv", priority:true,
+    touches:["registry_powers","reclassification_practice"],
     author:"marin", cosponsors:["abadi"],
     title:"Continuity of Person (Registration) Bill",
     summary:"Requires a person to be entered on a continuity register before any instance may be "+
@@ -167,6 +173,7 @@ const BILLS = [
     onFail:[{move:{"loyalty.rv":-16}}] },
 
   { id:"substrate_public_stake", ref:"HC 4/133", stage:"drafting", owner:"psa",
+    touches:["substrate_ownership"],
     author:"ivarsen",
     title:"Substrate (Public Stake) Bill",
     summary:"Takes a controlling public stake in the three largest substrate providers. "+

@@ -1761,13 +1761,30 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
       if (c.max) Engine.setLobby(open, CONTENT, "divergence", a.id, c.max);
     });
     const d0 = Engine.division(open, CONTENT, "divergence");
-    ok("lobbying everyone at opening standing is not enough",
-       !d0.carries && d0.functional.aye < d0.functional.need,
-       d0.functional.aye + " of " + d0.functional.need);
+    ok("lobbying everyone at opening standing is not enough", !d0.carries,
+       d0.functional.aye + " of " + d0.functional.need + " functional");
+
+    /* AND THE WAY IT IS NOT ENOUGH IS THE INTERESTING PART. At opening
+       standing the whole-tier test can be WON — 23 of the 21 needed — and
+       the measure still falls, because the two seats of Attestation and
+       Registry own the subject and object to it. That is domain consent
+       doing the job the whole-tier majority cannot: it does not ask
+       whether you have the numbers, it asks whether you have squared the
+       people whose trade this is. */
+    ok("but the bench that owns the subject can still stop it",
+       d0.functional.carries && d0.domain.objects && !d0.domain.override.ok,
+       "tier " + (d0.functional.carries ? "carried" : "lost") +
+       ", domain " + (d0.domain.objects ? "objected" : "consented"));
 
     /* Earn the room first, then spend it. */
+    /* The divergence bill touches attestation and reclassification
+       practice, so Attestation and Registry and the Legal constituency
+       answer for it. Earn the room with the bodies whose benches those
+       are — which is the point of domain consent: it tells you WHO to
+       go and talk to. */
     Engine.apply(L, CONTENT, [{ move: { "actor.forkrentiers": 25,
                                         "actor.lb_substrate": 25,
+                                        "actor.lb_legal": 25,
                                         "actor.anselm_elevator": 20 } }]);
     (CONTENT.actors || []).forEach(a => {
       const c = Engine.lobbyable(L, CONTENT, "divergence", a.id);
@@ -1805,6 +1822,68 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
     ok("SUBSTRATE NEUTRALITY IS REACHABLE (design/24 A2 acceptance)",
        settled && settled.id === "substrate_neutrality",
        settled ? settled.id : "nothing");
+  })();
+
+  /* ---- DOMAIN CONSENT, AND THE GUARDS ON IT ----
+     The constituency that owns the subject answers for it. The danger is
+     obvious and was measured before the guards went in: turned on plain,
+     it put Substrate Neutrality back out of reach the day after lobbying
+     brought it in. */
+  (function () {
+    const D = Engine.newGame(CONTENT);
+
+    ok("every bill declares what it touches",
+       (CONTENT.bills || []).every(b => Array.isArray(b.touches) && b.touches.length),
+       (CONTENT.bills || []).filter(b => !(b.touches || []).length).map(b => b.id).join(", "));
+
+    ok("and every interest it names is owned by some constituency",
+       (CONTENT.bills || []).every(b => (b.touches || []).every(t =>
+         (CONTENT.functional || []).some(f => (f.interest || []).indexOf(t) >= 0))),
+       (CONTENT.bills || []).flatMap(b => (b.touches || []).filter(t =>
+         !(CONTENT.functional || []).some(f => (f.interest || []).indexOf(t) >= 0))).join(", "));
+
+    /* THE GUARD THAT MATTERS MOST. A constituency no body can reach has an
+       absolute veto and no counter-move. Legal, Medicine, Underwriting and
+       the Residual all had exactly that until three bodies were added, and
+       the divergence bill was unpassable because Legal's three seats could
+       not be moved by any mechanic in the game. */
+    const reach = new Set();
+    (CONTENT.actors || []).forEach(a =>
+      Object.keys(a.reach || {}).forEach(k => reach.add(k)));
+    const unreachable = (CONTENT.functional || []).filter(f => !reach.has(f.id));
+    ok("no functional constituency is beyond every mechanism",
+       unreachable.length === 0, unreachable.map(f => f.id).join(", "));
+
+    /* Guard 1: consent, not endorsement. A bench that stays out of it is
+       not a bench that opposed you. */
+    const d = Engine.division(D, CONTENT, "divergence");
+    ok("a measure that touches an interest is answered by its owners",
+       d.domain.applies && d.domain.constituencies.length === 2,
+       (d.domain.constituencies || []).map(c => c.name).join(", "));
+    ok("blocking takes a majority of the concerned seats, not one voice",
+       d.domain.blockAt === Math.floor(d.domain.seats / 2) + 1,
+       d.domain.blockAt + " of " + d.domain.seats);
+    ok("abstaining is not opposing",
+       d.domain.against + d.domain.for + d.domain.abstain === d.domain.seats,
+       d.domain.against + "+" + d.domain.for + "+" + d.domain.abstain +
+       " vs " + d.domain.seats);
+
+    /* Guard 3: a bill touching nothing faces no domain test at all. */
+    const plain = Object.assign({}, CONTENT.billById.thermal2, { touches: [] });
+    const saved = CONTENT.billById.thermal2;
+    CONTENT.billById.thermal2 = plain;
+    ok("a measure touching nobody's interest faces no domain test",
+       Engine.division(D, CONTENT, "thermal2").domain.applies === false);
+    CONTENT.billById.thermal2 = saved;
+
+    /* Guard 2: the override. Measured against those VOTING, because
+       three-fifths of the whole roll is 144 against a government holding
+       129 and would make consent an absolute veto dressed as a price. */
+    ok("an objection can be overridden by the elected benches",
+       d.domain.override && d.domain.override.need > 0 &&
+       d.domain.override.of <= d.popular.total,
+       d.domain.override.have + " of " + d.domain.override.of +
+       ", need " + d.domain.override.need);
   })();
 
   /* Rule 3: closure and dissolution are failure modes, not settlements. */

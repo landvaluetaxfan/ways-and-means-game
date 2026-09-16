@@ -2273,3 +2273,9 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 /* dotted, like every other focus ring here: one rule owns focus and a
    solid outline is how a focused row comes to look like a selected one. */
 .foldsec>summary:focus-visible{outline:1px dotted var(--ink);outline-offset:-2px;}
+/* Why a measure fell, when the reason is not the arithmetic. */
+.dmn{font-size:12px;line-height:1.45;padding:4px 6px;margin:4px 0 0;
+  border-left:3px solid var(--ink-soft);}
+.dmn i{font-style:normal;font-family:var(--f-data);opacity:.8;}
+.dmn.ok{border-left-color:var(--ok);}
+.dmn.bad{border-left-color:var(--alert);}
