@@ -677,7 +677,7 @@ try {
       var box = document.querySelector("#cham-whip .dvl");
       if (!box) return "NO DIVISION LIST";
       var secs = box.querySelectorAll(".dvl-s").length;
-      var names = box.querySelectorAll(".dvl-n > span").length;
+      var names = box.querySelectorAll(".dvl-n > i").length;
       var d = st.bills[bill].lastDivision;
       var seats = d.popular.total + d.functional.total;
       return [bill, secs, names, seats].join("::");

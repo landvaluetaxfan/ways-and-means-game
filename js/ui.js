@@ -1078,25 +1078,14 @@ const UI = (function () {
     const section = (label, vote, cls) => {
       const list = bucket(vote);
       if (!list.length) return "";
-      /* The names carry what the roll-call chips carried: hover one and
-         you learn the constituency, the register reference or the list
-         seat, and how the member voted. A record read at your own pace
-         should not know LESS than the count you could not pause. */
+      /* CHIPS, NOT A RUN OF NAMES. The count could not be read while it
+         ran, so the record is where the names go — and it should read
+         the way the count looked: one chip per member, green or red by
+         the way they went, and the same hover (constituency, register
+         reference, list seat). Same builder as the roll call, so the two
+         can never say different things about the same member. */
       return `<div class="dvl-s ${cls}"><b>${label}</b> <em>${list.length}</em>` +
-        `<div class="dvl-n">` + list.map(m => {
-          const who = bare0(m.name);
-          const where = m.tier === "functional"
-            ? (m.ref ? m.ref + " \u00b7 " + m.seat : m.seat) : m.seat;
-          if (m.tier === "list")
-            return `<span class="lst" data-tip-title="${esc(who)}" ` +
-              `data-tip-body="List seat. A closed list is the party's: the member ` +
-              `sits and votes, but the mandate belongs to the slate and not to a place.">${esc(who)}</span>`;
-          return `<span data-tip-title="${esc(who)}" ` +
-            `data-tip-body="${esc(where || "")}. Voted ` +
-            `${m.vote === "absent" ? "not at all" : m.vote}.">${esc(who)}` +
-            (m.tier === "functional" && m.ref ? ` <i>${esc(m.ref)}</i>` : "") +
-            `</span>`;
-        }).join("") + `</div></div>`;
+        `<div class="dvl-n">` + rollChips(list) + `</div></div>`;
     };
 
     const d = bs.lastDivision;

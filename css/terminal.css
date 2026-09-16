@@ -201,9 +201,12 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .g-cham{grid-template-rows:minmax(0,1fr);align-items:stretch;height:100%;min-height:0;}
 .g-cham > .stack{min-height:0;}
 .g-cham .panel{min-height:0;}
-/* The plan takes what the column has left; the whip under it is its own
-   height and never squeezed. */
-.g-cham > .stack > .panel:first-child{flex:0 1 auto;min-height:0;}
+/* THE PLAN KEEPS ITS HEIGHT; THE WHIP BELOW IT SCROLLS. The first panel
+   was shrinkable (0 1 auto), so when the whip grew — which it does the
+   moment the division list opens — the plan and the forecast bar above
+   it were squeezed to make room, and the forecast clipped. The plan is
+   the thing the screen is for; it does not give up height to a list. */
+.g-cham > .stack > .panel:first-child{flex:0 0 auto;min-height:0;}
 /* THE WHIP PANEL SIZES TO ITS CONTENT, except while its division list is
    open — then it takes the rest of the column. The list is the one thing in
    the panel that can be 280 names long, and the room it needs is the room
