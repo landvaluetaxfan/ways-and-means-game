@@ -17,6 +17,16 @@ const UI = (function () {
   let funcOpen = null;
   /* And an instrument opens in place. One id, for the same reason. */
   let siOpen = null;
+  /* WHILE THE COUNT RUNS, the chamber screen presents the bill AS IT WAS
+     when the division was called. The engine resolves the division on the
+     click (a division is skippable, so the arithmetic must be final before
+     the presentation), but the ORDER PAPER, the bill panel and the whip
+     must not paint the result before the tellers read it: that is the
+     spoiler. Renderers read the bill through bsOf(); the state itself is
+     untouched. */
+  let countFreeze = null;
+  const bsOf = id => (countFreeze && countFreeze.id === id)
+    ? Object.assign({}, st.bills[id], countFreeze) : st.bills[id];
 
   const $ = s => document.querySelector(s);
   const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
@@ -362,6 +372,12 @@ const UI = (function () {
       flashChanged(pendingMoves.before, pendingMoves.after);
       pendingMoves = null;
     }
+    /* A redraw is also the end of any frozen presentation. The count's own
+       steps repaint the plan directly and never call drawAll, so in play
+       the freeze lives exactly from the click to the declaration; if a
+       redraw happens anyway, the freeze goes with it rather than leaving
+       the bill stuck presenting the pre-division state. */
+    countFreeze = null;
   }
 
   /* ---------- title / status ---------- */
@@ -1044,7 +1060,7 @@ const UI = (function () {
   const dvlOpen = {};      /* which division lists the player has open */
 
   function divisionList(id, inCaption) {
-    const bs = st.bills[id];
+    const bs = bsOf(id);
     if (!bs || !bs.lastDivision) return "";
     const rc = Engine.rollCall(st, C, id, bs.lastDivision);
     const all = (rc.parties || []).reduce((a, p) =>
@@ -1062,11 +1078,25 @@ const UI = (function () {
     const section = (label, vote, cls) => {
       const list = bucket(vote);
       if (!list.length) return "";
+      /* The names carry what the roll-call chips carried: hover one and
+         you learn the constituency, the register reference or the list
+         seat, and how the member voted. A record read at your own pace
+         should not know LESS than the count you could not pause. */
       return `<div class="dvl-s ${cls}"><b>${label}</b> <em>${list.length}</em>` +
-        `<div class="dvl-n">` + list.map(m =>
-          `<span${m.tier === "list" ? ' class="lst"' : ""}>${esc(bare0(m.name))}` +
-          (m.tier === "functional" && m.ref ? ` <i>${esc(m.ref)}</i>` : "") +
-          `</span>`).join("") + `</div></div>`;
+        `<div class="dvl-n">` + list.map(m => {
+          const who = bare0(m.name);
+          const where = m.tier === "functional"
+            ? (m.ref ? m.ref + " \u00b7 " + m.seat : m.seat) : m.seat;
+          if (m.tier === "list")
+            return `<span class="lst" data-tip-title="${esc(who)}" ` +
+              `data-tip-body="List seat. A closed list is the party's: the member ` +
+              `sits and votes, but the mandate belongs to the slate and not to a place.">${esc(who)}</span>`;
+          return `<span data-tip-title="${esc(who)}" ` +
+            `data-tip-body="${esc(where || "")}. Voted ` +
+            `${m.vote === "absent" ? "not at all" : m.vote}.">${esc(who)}` +
+            (m.tier === "functional" && m.ref ? ` <i>${esc(m.ref)}</i>` : "") +
+            `</span>`;
+        }).join("") + `</div></div>`;
     };
 
     const d = bs.lastDivision;
@@ -1105,7 +1135,7 @@ const UI = (function () {
   }
 
   function drawBill(id) {
-    const b = C.billById[id], bs = st.bills[id], dchk = Engine.canDivide(st, C, id);
+    const b = C.billById[id], bs = bsOf(id), dchk = Engine.canDivide(st, C, id);
     /* The forecast is the REPORTED division, not the exact one (design/08 §7),
        and so is every other number the player is shown about it — the bars
        here, the seats on the Chamber plan, the breakdown beside them. The
@@ -1186,10 +1216,18 @@ const UI = (function () {
          saying they had. The promises are the price of the bench and the
          player should be told they are now owed. §12.13. */
       const beforeDiv = structure(st);
+      countFreeze = { id, stage: st.bills[id].stage, dead: st.bills[id].dead,
+                      dividesOn: st.bills[id].dividesOn,
+                      lastDivision: st.bills[id].lastDivision };
       const out = Engine.divide(st, C, id) || {};
       const r = out.result || {};
-      reportMoves(beforeDiv, structure(st));
       countDivision(r.rows, out).then(() => {
+        countFreeze = null;
+        /* THE RESULT IS SHOWN WHEN THE COUNT IS READ, not before: the
+           card, the redraw and the flash all wait for the declaration,
+           so nothing on the screen gives the division away while the
+           lobbies are still filling. */
+        reportMoves(beforeDiv, structure(st));
         /* A dual bill can carry the House and still fall, which is the
            whole argument of the game, so the line names BOTH tests and not
            just the verdict. Assent is a third gate again: carrying sends it
@@ -1215,7 +1253,7 @@ const UI = (function () {
      third of a session's time. A control that states its outcome cannot be
      spammed by accident, which is a cheaper fix than any animation. */
   function grantLabel(billId) {
-    const bs = st.bills[billId];
+    const bs = bsOf(billId);
     const i = Engine.STAGE_ORDER.indexOf(bs.stage);
     const next = bs.stage === "blocked" ? "second_reading"
                : i >= 0 && i < Engine.STAGE_ORDER.length - 1 ? Engine.STAGE_ORDER[i + 1]
@@ -1281,8 +1319,8 @@ const UI = (function () {
      are the same thing — an estimate — and after it they are not. The engine
      records the result on the bill the moment it runs, so the plan can show
      the House that actually voted rather than the one the whips guessed at. */
-  const houseVoted = id => !!(st.bills[id] && st.bills[id].lastDivision);
-  const houseRead  = id => (st.bills[id] && st.bills[id].lastDivision) || forecast(id);
+  const houseVoted = id => !!(bsOf(id) && bsOf(id).lastDivision);
+  const houseRead  = id => (bsOf(id) && bsOf(id).lastDivision) || forecast(id);
 
   /* THE HOUSE, BY PARTY — composition and forecast in one table.
 
@@ -1426,7 +1464,7 @@ const UI = (function () {
   function dayLine(billId, chk) {
     const cap = (C.setup && C.setup.divisionsPerSitting) || 2;
     const left = Math.max(0, cap - (st.divisionsToday || 0));
-    const bs = st.bills[billId];
+    const bs = bsOf(billId);
     const i = Engine.STAGE_ORDER.indexOf(bs.stage);
     const need = Engine.STAGE_ORDER.indexOf("second_reading");
     const away = i < 0 ? 1 : Math.max(0, need - i);
@@ -1448,7 +1486,7 @@ const UI = (function () {
      and what it will cost. The control that commits it is on the Chamber
      tab, next to the members it moves, and there is only one of it. */
   function whipLine(billId) {
-    if (st.bills[billId].dead) return "";
+    if (bsOf(billId).dead) return "";
     const cost = Engine.whipCost(st, C, billId);
     if (!cost.seats) return `<div class="note">No members whipped. ` +
       `The whip is below the plan, and the seats it buys fill as you commit them.</div>`;
@@ -1481,7 +1519,7 @@ const UI = (function () {
   }
 
   function whipPanel(billId, b, d) {
-    if (st.bills[billId].dead) return "";
+    if (bsOf(billId).dead) return "";
     const partners = [st.playerParty].concat(
       st.coalition.concat(st.confidenceSupply).filter(p => p !== st.playerParty));
     const tiers = b.dualMajority ? ["popular", "functional"] : ["popular"];
@@ -1549,7 +1587,7 @@ const UI = (function () {
        the whole tier on a dual bill, or the constituencies that own its
        subject on any other. Gating on dualMajority alone hid the control
        on the five bills where it is the only reply to an objection. */
-    if (st.bills[billId].dead) return "";
+    if (bsOf(billId).dead) return "";
     if (!b.dualMajority && !((b.touches || []).length)) return "";
     const plan = (st.lobby || {})[billId] || {};
     let rows = "";
@@ -1643,7 +1681,7 @@ const UI = (function () {
      the player can still trade one line against another. */
   function clausePanel(id) {
     const cls = Engine.clausesOf(C, id);
-    if (!cls.length || st.bills[id].dead) return "";
+    if (!cls.length || bsOf(id).dead) return "";
     const plan = Engine.clausePlan(st, C, id);
     const cost = Engine.clauseCost(st, C, id);
     const rows = cls.map(cl => {
@@ -1924,6 +1962,11 @@ const UI = (function () {
       label: r0.carries ? "The Ayes have it" : "The Noes have it",
       ms: 1800,
       run: () => {
+        /* THE DECLARATION IS WHERE THE FREEZE ENDS. The vote has
+           concluded: the tellers are reading the result, so the order
+           paper, the bill and the plan may show it now — the spoiler
+           rule is about the count, not the reading-out. */
+        countFreeze = null;
         chamberCount = null;
         chamberColour = was.colour; chamberGroup = was.group; chamberFold = was.fold;
         drawChamber(); paint(P.aye);
@@ -2818,7 +2861,7 @@ const UI = (function () {
     });
     /* A DIVISION HAS A DAY, and the day is business. */
     (C.bills || []).forEach(b => {
-      const bs = st.bills[b.id];
+      const bs = bsOf(b.id);
       if (!bs || bs.dead || bs.dividesOn == null) return;
       const away = bs.dividesOn - st.sitting;
       rows.push(`<div class="dk div${away <= 0 ? " late" : ""}">
@@ -3144,7 +3187,7 @@ const UI = (function () {
     el.innerHTML = `<div class="chpick">` + (b
       ? `<b>Showing</b><span class="chnow">${esc(b.title)}` +
         `${b.dualMajority ? ' <i class="dual">dual</i>' : ""}` +
-        `${st.bills[cur].dead ? ' <i class="dual">fallen</i>' : ""}</span>` +
+        `${bsOf(cur).dead ? ' <i class="dual">fallen</i>' : ""}</span>` +
         `<button class="chp" data-cb="">show the House at rest</button>`
       : `<b>Showing</b><span class="chnow">the House as it sits</span>` +
         `<i class="chhint">choose a measure on the order paper to colour the benches</i>`) +
@@ -3214,9 +3257,9 @@ const UI = (function () {
            explains rather than a paragraph reprinted under each one. */
         (voted
           ? `<i class="prov" data-tip-title="As the House voted" ` +
-            `data-tip-body="Sitting ${st.bills[id].lastDivision.at}. Filled seats are ` +
+            `data-tip-body="Sitting ${bsOf(id).lastDivision.at}. Filled seats are ` +
             `ayes; the rest are noes or absentees.">voted &middot; sitting ` +
-            `${st.bills[id].lastDivision.at}</i>`
+            `${bsOf(id).lastDivision.at}</i>`
           : `<i class="prov" data-tip-title="An estimate, not a count" ` +
             `data-tip-body="Filled seats are expected ayes, half-filled ones the whip ` +
             `has bought, and the count is by party rather than by member. ` +
@@ -3343,7 +3386,7 @@ const UI = (function () {
       "<th class='n' data-tip='popular'>Pop.</th><th class='n' data-tip='functional'>Func.</th>" +
       "<th data-tip='dual'>Test</th></tr></thead><tbody>";
     C.bills.forEach(b => {
-      const bs = st.bills[b.id];
+      const bs = bsOf(b.id);
       /* The estimate, like every other forecast the player is shown. This
          printed the TRUE count in the game's most-read table, two panels
          above bars that were carefully reporting a guess. */
