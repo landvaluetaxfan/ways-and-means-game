@@ -446,7 +446,8 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     2: ["capital", "slots", "whips"],
     3: ["prices", "priceHistory"],
     4: ["cabinet", "instruments", "signatures"],
-    17: ["grantsToday"]
+    17: ["grantsToday"],
+    18: ["actedThisSitting", "idleSittings"]
   };
   const ALL_ADDED = Object.values(FIELDS_BY_VERSION).flat();
 
@@ -2471,6 +2472,58 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
     Engine.advance(st, CONTENT);
     const again = CONTENT.bills.find(b => Engine.grantSlot(st, CONTENT, b.id).ok);
     ok("and a new sitting is a new day's business", !!again);
+  }
+
+  /* PRESSURE BY DEFAULT (Flash I). A government that only answers the
+     decisions put in front of it — that never uses a lever — drifts, after
+     content's grace. Chapter one is exempt: it is the teaching chapter. */
+  {
+    const idle = (CONTENT.setup.idleness || {});
+    const after = idle.after || 1;
+    const st = Engine.newGame(CONTENT);
+    st.chapter = 2;
+    const l0 = st.scalars.legitimacy;
+    for (let i = 0; i < after + 1; i++) Engine.advance(st, CONTENT);
+    ok("a government that uses no lever drifts", st.scalars.legitimacy < l0,
+       l0 + " -> " + st.scalars.legitimacy);
+
+    const st2 = Engine.newGame(CONTENT);
+    st2.chapter = 2;
+    const l1 = st2.scalars.legitimacy;
+    for (let i = 0; i < after + 1; i++) {
+      CONTENT.bills.find(b => Engine.grantSlot(st2, CONTENT, b.id).ok);
+      Engine.advance(st2, CONTENT);
+    }
+    ok("and a lever resets the clock", st2.scalars.legitimacy === l1,
+       l1 + " -> " + st2.scalars.legitimacy);
+
+    const ch1 = Engine.newGame(CONTENT);
+    const l2 = ch1.scalars.legitimacy;
+    for (let i = 0; i < after + 2; i++) Engine.advance(ch1, CONTENT);
+    ok("and the teaching chapter is exempt", ch1.scalars.legitimacy === l2,
+       l2 + " -> " + ch1.scalars.legitimacy);
+  }
+
+  /* A PROMISE SAYS WHERE IT IS KEPT (intuitiveness pass). An undertaking is
+     discharged on another screen — an order to sign, a bill to carry — and
+     the calendar, the undertakings panel and the order of the day all carry
+     that place, from one helper. */
+  {
+    const st = Engine.newGame(CONTENT);
+    Engine.apply(st, CONTENT, [{ undertake: { id: "probe_si", text: "Lay the order",
+      discharge: { si: "si_2287_44" }, by: 2 } }]);
+    const u = Engine.outstanding(st).find(x => x.id === "probe_si");
+    const w = Engine.undertakingWhere(CONTENT, u);
+    ok("an undertaking names the screen that keeps it",
+       w.tab === "pap" && /Life Support Engineering/.test(w.how), w.tab + " - " + w.how);
+    const dl = Engine.deadlines(st, CONTENT).find(d => d.kind === "owed" && d.text === "Lay the order");
+    ok("and its calendar item carries the same place",
+       dl && dl.tab === "pap" && !!dl.how, dl ? dl.tab + " - " + dl.how : "no item");
+    const t = Engine.today(st, CONTENT, false);
+    const item = t.items.find(i => i.kind === "owed");
+    ok("and the order of the day sends you there",
+       item && item.tab === "pap" && /Make the/.test(item.how || ""),
+       item ? item.tab + " - " + item.how : "no item");
   }
 
   if (bad) { console.log("\n" + bad + " OPENING FAILURES"); process.exitCode = 1; }

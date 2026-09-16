@@ -2055,6 +2055,10 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
 .opline.petition{border-left-color:var(--ok);}
 
 #sit-docket .dk{padding:3px 0;border-bottom:1px dotted var(--rule);}
+/* A docket row is a control: it says where it is answered and takes you
+   there, so it says so with the cursor and lights under the pointer. */
+#sit-docket .dk.goto{cursor:pointer;}
+#sit-docket .dk.goto:hover{background:var(--field);}
 #sit-docket .dk:last-child{border-bottom:0;}
 #sit-docket .dk b{display:block;font-size:12px;font-weight:400;}
 #sit-docket .dk i{display:block;font-style:normal;font-family:var(--f-data);

@@ -137,8 +137,8 @@ recognise. You are not reforming personhood. You are reforming us."`,
                {undertake:{ id:"licensure_carveout",
                             text:"Lay the licensing order carrying the carve-out",
                             owed_to:"gb_chair", by:4,
-                            discharge:{ si:"si_2287_44" },
-                            onBreach:"gb_approach" }},
+                             discharge:{ si:"si_2287_44" },
+                             onBreach:"gb_carveout_broken" }},
                {wire:"GOVERNMENT SIGNALS LICENSURE CARVE-OUT; SUBSTRATE LEFT FURIOUS"},
                {flag:"licensure_carveout_offered"}],
       result:"She does not say yes. She says she will take it to the panel, which from her is a great deal." },
@@ -1413,6 +1413,35 @@ price of one, and it is being charged to us by the hour."`,
       effects:[{ move:{ "legitimacy":-8 } }, { move:{ "trend.friction":1 } },
                { wire:"SUPPLIERS ASKED TO CARRY PLATFORM RISK; OUTER HABITATS OBJECT" }],
       result:"The government keeps its money and loses the argument, and the sanctions deepen on their own." }
+  ]},
+
+/* WHAT A BROKEN PROMISE LOOKS LIKE. `onBreach` used to point at
+   `gb_approach`, so a missed deadline replayed the meeting that made the
+   promise. The breach is its own scene, and it is gated on the broken
+   undertaking so the link is in the data and not in a comment. */
+{ id:"gb_carveout_broken", chapter:2, weight:88, once:true,
+  when:{ breached:["licensure_carveout"] },
+  title:"The order that was never laid",
+  speaker:"gb_chair",
+  body:`The panel waited the four sittings and the licensing order was not
+laid. The chair does not call it a breach. She calls it a schedule, which
+is what the panel calls everything, and says the sector will treat the
+question as settled.
+
+"You asked us for a carve-out," she says. "We did not ask you for
+anything. That is the difference between us that your government has now
+discovered."`,
+  choices:[
+    { label:"Lay the order next sitting and say the delay was yours.",
+      effects:[{ move:{ "rel.gb_chair":4 } }, { move:{ "legitimacy":-4 } },
+               { si:"si_2287_44" },
+               { wire:"PM CONCEDES THE LICENSING DELAY AND LAYS THE ORDER" }],
+      result:"The order is laid late and the government takes the blame publicly, which is the only coin the panel accepts." },
+    { label:"Let it stand. A promise missed is a promise missed.",
+      effects:[{ move:{ "rel.gb_chair":-8 } }, { move:{ "loyalty.gb":-8 } },
+               { move:{ "legitimacy":-6 } },
+               { wire:"GOVERNMENT ABANDONS THE CARVE-OUT; GUILD BENCH DISENGAGES" }],
+      result:"The panel treats the sector as a bench that answers no government, which costs the next dual majority more." }
   ]},
 
 /* ============================================================

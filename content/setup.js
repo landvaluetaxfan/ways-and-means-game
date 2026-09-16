@@ -78,7 +78,18 @@ const SETUP = {
       mark: "Earth's banks are pricing the Commonwealth's risk" },
     { meter: "friction", above: 85, drag: { thermal_margin: -3, legitimacy: -1 },
       mark: "The blockade is beginning to bite" }
-  ]
+  ],
+
+  /* PRESSURE BY DEFAULT (Flash I). A government that only answers the
+     decisions put in front of it — that never grants time, divides, makes
+     an order or starts anything — is not governing, and the country
+     notices. `after` sittings without a lever, the drag lands and keeps
+     landing until a lever is used again. Chapter one is exempt: it is the
+     teaching chapter and design/21 §5 makes it loss-proof. */
+  idleness: {
+    fromChapter: 2, after: 3, drag: { legitimacy: -1 },
+    mark: "The government has not been seen to do anything"
+  }
 };
 
 /* =============================================================

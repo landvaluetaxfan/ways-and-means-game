@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 17;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business
+  const STATE_VERSION = 18;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default
 
   /* ---------------------------------------------------------
      1. STATE
@@ -65,6 +65,13 @@ const Engine = (function () {
          a day, so six session slots are a budget spent over the session
          rather than a lump sum spent on the first morning. */
       grantsToday: 0,
+      /* PRESSURE BY DEFAULT: whether the government used a lever this
+         sitting (a grant, a division, an order, an initiative), and how
+         many sittings in a row it has not. A government that only answers
+         the decisions put in front of it drifts; content declares the
+         grace and the drag. Reset by advance(), never carried. */
+      actedThisSitting: false,
+      idleSittings: 0,
 
       /* Czarnecki needs nine more names for a leadership ballot. Things the
          player does add to the counter; §3.5's second loss condition reads it. */
@@ -322,6 +329,11 @@ const Engine = (function () {
     if (st.version < 17) {                    // the day's order-paper business
       if (st.grantsToday == null) st.grantsToday = 0;
       st.version = 17;
+    }
+    if (st.version < 18) {                    // pressure by default
+      if (st.actedThisSitting == null) st.actedThisSitting = false;
+      if (st.idleSittings == null) st.idleSittings = 0;
+      st.version = 18;
     }
     return st;
   }
@@ -1197,6 +1209,7 @@ const Engine = (function () {
        the day's divisions whichever way it goes. */
     spendSlots(st, 1);
     st.divisionsToday = (st.divisionsToday || 0) + 1;
+    st.actedThisSitting = true;
     const b = C.billById[billId];
     const result = division(st, C, billId);     // whips still in place
     const paid = payWhips(st, C, billId);       // now charge for them
@@ -1405,6 +1418,7 @@ const Engine = (function () {
     else return { ok: false, reason: 'unknown stage "' + bs.stage + '"' };
     spendSlots(st, 1);
     st.grantsToday = (st.grantsToday || 0) + 1;
+    st.actedThisSitting = true;
     (st.slotsGranted || (st.slotsGranted = [])).push(billId);
     /* Two sittings' notice. Long enough for the benches to be worked,
        short enough that the session can still hold a division. */
@@ -1460,6 +1474,7 @@ const Engine = (function () {
   function makeInstrument(st, C, siId) {
     const chk = canMake(st, C, siId);
     if (!chk.ok) return chk;
+    st.actedThisSitting = true;
     const si = C.instrumentById[siId], s = st.instruments[siId];
     s.made = true; s.revoked = false; s.madeAt = st.sitting;
     if (si.procedure === "affirmative") { s.inForce = false; s.awaitingApproval = true; }
@@ -3611,12 +3626,29 @@ const Engine = (function () {
      order paper read the SAME source. A deadline that appears on one
      and not the other is how a player learns not to trust either.
      --------------------------------------------------------- */
+  /* WHERE A PROMISE IS KEPT, and how, from its own discharge spec. One
+     place computes it, so the calendar, the undertakings panel and the
+     order that keeps it can never say different things. */
+  function undertakingWhere(C, u) {
+    let tab = "gov", how = "By taking the decision that discharges it";
+    const dz = (u && u.discharge) || {};
+    if (dz.si && C.instrumentById && C.instrumentById[dz.si]) {
+      tab = "pap";
+      how = "Make the " + (C.instrumentById[dz.si].title || dz.si);
+    } else if (dz.bill && C.billById && C.billById[dz.bill]) {
+      tab = "cham";
+      how = "Carry the " + (C.billById[dz.bill].title || dz.bill);
+    }
+    return { tab: tab, how: how };
+  }
+
   function deadlines(st, C) {
     const out = [];
-    const add = (sitting, kind, text) => {
+    const add = (sitting, kind, text, extra) => {
       if (sitting == null) return;
-      out.push({ sitting: sitting, date: dateOfSitting(C, sitting), kind: kind,
-                 text: text, away: sitting - st.sitting });
+      out.push(Object.assign({ sitting: sitting, date: dateOfSitting(C, sitting),
+                               kind: kind, text: text, away: sitting - st.sitting },
+                             extra || {}));
     };
     (C.bills || []).forEach(b => {
       const bs = st.bills[b.id];
@@ -3642,7 +3674,10 @@ const Engine = (function () {
        of the session, which is where the author meant it. */
     (st.undertakings || []).forEach(u => {
       if (u.state !== "open") return;
-      add(u.by == null ? st.sessionEnds : u.by, "owed", u.text);
+      /* Where it is kept, and how: one helper, so the calendar, the
+         undertakings panel and the order itself agree. */
+      add(u.by == null ? st.sessionEnds : u.by, "owed", u.text,
+          undertakingWhere(C, u));
     });
     /* A PRAYER WINDOW IS A DEADLINE. An order stands unless the House
        prays against it before the window closes, and until now that date
@@ -3741,8 +3776,14 @@ const Engine = (function () {
          calendar all session and would otherwise sit in this list for
          twenty-four sittings, which is how a list stops being read. */
       if (d.kind === "rises" && d.away > SOON) return;
-      push(d.kind, d.text,
-           { away: d.away, when: d.away < 0 ? "overdue" : d.away === 0 ? "now" : "soon" });
+      const o = { away: d.away, when: d.away < 0 ? "overdue"
+                        : d.away === 0 ? "now" : "soon" };
+      /* An undertaking carries the tab that KEEPS it and the line that
+         says how, so the row takes the player to the order that wants
+         signing rather than to the panel that lists the promise. */
+      if (d.tab) o.tab = d.tab;
+      if (d.how) o.how = d.how;
+      push(d.kind, d.text, o);
     });
 
     /* A ministry with no minister is an obligation with no date: it
@@ -3842,6 +3883,7 @@ const Engine = (function () {
     if (cost > st.slots.total - st.slots.used)
       return { ok: false, reason: "no order-paper time left this session" };
     st.slots.used += cost;
+    st.actedThisSitting = true;
 
     st.flags["init_" + i.id] = true;
     if (i.effects) apply(st, C, i.effects);
@@ -4112,6 +4154,30 @@ const Engine = (function () {
     st.sitting += 1;
     st.divisionsToday = 0;                    /* a new day's business */
     st.grantsToday = 0;
+    /* PRESSURE BY DEFAULT (Flash I). The sitting just finished either used
+       a lever — a grant, a division, an order, an initiative — or it did
+       not. After a content-declared number of leverless sittings the drag
+       lands, and keeps landing until one is used again. Chapter one is
+       exempt by content's own `fromChapter`: it is the teaching chapter and
+       design/21 §5 makes it loss-proof. */
+    if (C && C.setup.idleness &&
+        st.chapter >= (C.setup.idleness.fromChapter || 1)) {
+      const idle = C.setup.idleness;
+      if (st.actedThisSitting) st.idleSittings = 0;
+      else st.idleSittings = (st.idleSittings || 0) + 1;
+      if (st.idleSittings >= (idle.after || 1)) {
+        Object.keys(idle.drag || {}).forEach(k => {
+          st.scalars[k] = clamp((st.scalars[k] || 0) + idle.drag[k], 0, 100);
+        });
+        if (idle.mark && !st.flags._idle_mark) {
+          st.flags._idle_mark = true;
+          st.wire.unshift({ sitting: st.sitting, text: idle.mark.toUpperCase() });
+        }
+      }
+    } else {
+      st.idleSittings = 0;
+    }
+    st.actedThisSitting = false;
     /* A promise not kept by its sitting is broken, once. Breaking it
        QUEUES AN EVENT and moves no number: the politics of a broken
        promise belongs where it can be written and argued with, not in a
@@ -4280,6 +4346,7 @@ const Engine = (function () {
     domainTest, functionalByConstituency, lobbiedByConstituency, isSupply,
     lastSession, dissolve, checkEnd, supplyCarried, supplyPending,
     settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
+    undertakingWhere,
     snapshot, changes,
     prorogue, canDivide, candidates, vacancies, fillPost,
     federalSuspended,

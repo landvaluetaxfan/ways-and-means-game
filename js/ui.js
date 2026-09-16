@@ -757,10 +757,24 @@ const UI = (function () {
     const owed = Engine.outstanding(st);
     const ob = $("#gov-owed");
     if (ob) ob.innerHTML = owed.length
-      ? owed.map(u => `<div class="dk owed${u.by - st.sitting <= 1 ? " late" : ""}">` +
-          `<b>${esc(u.text)}</b><i>${u.by - st.sitting <= 0 ? "due this sitting"
-            : "by sitting " + u.by}</i></div>`).join("")
+      ? owed.map(u => {
+          /* A ROW THAT SAYS WHERE IT IS KEPT AND TAKES YOU THERE. An
+             undertaking is discharged on another screen — an order to
+             sign, a bill to carry — and a promise the player cannot act
+             on is a promise they will break by accident. */
+          const w = Engine.undertakingWhere(C, u);
+          const due = u.by - st.sitting <= 0 ? "due this sitting"
+                    : "by sitting " + u.by;
+          return `<button class="dk owed goto${u.by - st.sitting <= 1 ? " late" : ""}"` +
+            ` data-goto="${w.tab}"><b>${esc(u.text)}</b>` +
+            `<i>${esc(due)} \u00b7 ${esc(w.how)}</i></button>`;
+        }).join("")
       : `<div class="note">The government has given no undertakings.</div>`;
+    if (ob) ob.querySelectorAll("[data-goto]").forEach(b =>
+      b.addEventListener("click", () => {
+        const tab = document.querySelector('.tab[data-t="' + b.dataset.goto + '"]');
+        if (tab) tab.click();
+      }));
 
     $("#gov-slots").querySelectorAll(".slotbtn").forEach(btn =>
       btn.addEventListener("click", () => {
@@ -784,8 +798,17 @@ const UI = (function () {
       else if (s.awaitingApproval) { status = "awaiting approval"; }
       else status = si.procedure === "affirmative" ? "affirmative" : "negative";
       const open = siOpen === si.id;
+      /* AN ORDER THAT KEEPS A PROMISE SAYS SO. The carve-out promise is
+         discharged by signing one order, and a player reading a table of
+         thirteen orders should not have to know which. */
+      const keeps = Engine.outstanding(st).filter(u =>
+        (u.discharge || {}).si === si.id);
       const row = `<tr data-si="${si.id}" class="${s.inForce ? "inforce" : ""}${open ? " open" : ""}">
-        <td><i class="caret${open ? " open" : ""}"></i>${si.title.replace(/ Order 2287$/, "")}<div class="note">${si.number} &middot; ${si.author.replace(/_/g,' ')}</div></td>
+        <td><i class="caret${open ? " open" : ""}"></i>${si.title.replace(/ Order 2287$/, "")}` +
+          (keeps.length ? ` <span class="flag" data-tip-title="Keeps a promise" ` +
+            `data-tip-body="${esc(keeps.map(u => u.text).join("  \u00b7  "))}. ` +
+            `Signing it here discharges the undertaking.">PROMISE</span>` : "") +
+          `<div class="note">${si.number} &middot; ${si.author.replace(/_/g,' ')}</div></td>
         <td class="n"><span class="flag ${cls}" data-tip="${s.inForce ? "prayer" : "instrument"}">${status}</span></td>
         <td class="n">${s.made ? "" :
           `<button class="btn sibtn" data-make="${si.id}"${chk.ok ? "" : " disabled"}` +
@@ -2339,8 +2362,22 @@ const UI = (function () {
                    text: "An undertaking has been entered.",
                    detail: u ? u.text : null });
     } else if (after.owedOpen < before.owedOpen && before.owed !== after.owed) {
+      /* NAME IT. "An undertaking has been discharged" tells the player a
+         thing they cannot act on and cannot check; the card should say
+         which promise was kept, because that is the news. */
+      const was = {};
+      (before.owed || "").split("|").filter(Boolean).forEach(x => {
+        const p = x.split(":"); was[p[0]] = p[1];
+      });
+      const kept = (after.owed || "").split("|").filter(Boolean)
+        .map(x => x.split(":"))
+        .filter(p => was[p[0]] === "open" && p[1] !== "open")
+        .map(p => (st.undertakings || []).find(u => u.id === p[0]))
+        .filter(Boolean)[0];
       notes.push({ tab: "gov", where: "Undertakings",
-                   text: "An undertaking has been discharged." });
+                   text: kept ? "Promise kept: " + kept.text
+                              : "An undertaking has been discharged.",
+                   detail: kept ? "Discharged on the screen it was kept on." : null });
     }
 
     Object.keys(after.bills).forEach(id => {
@@ -2684,7 +2721,8 @@ const UI = (function () {
         : i.away === 1 ? "next sitting" : "in " + i.away + " sittings";
       return `<button class="tdo ${i.when}${i.required ? " req" : ""}" data-goto="${i.tab}">
         <b>${esc(i.text)}</b>
-        <i>${esc(TABNAME[i.tab] || i.tab)}${away ? " \u00b7 " + esc(away) : ""}</i>
+        <i>${esc(TABNAME[i.tab] || i.tab)}${away ? " \u00b7 " + esc(away) : ""}${
+          i.how ? " \u00b7 " + esc(i.how) : ""}</i>
       </button>`;
     }).join("");
   }
@@ -2848,29 +2886,30 @@ const UI = (function () {
     const bill = (C.bills || []).find(b => st.bills[b.id] && !st.bills[b.id].dead &&
       st.bills[b.id].stage !== "assented");
     const rows = [];
-    if (bill) rows.push(`<div class="dk bill"><b>${esc(bill.title)}</b>
-      <i>${esc(String(st.bills[bill.id].stage).replace(/_/g, " "))}</i></div>`);
+    if (bill) rows.push(`<div class="dk bill goto" data-goto="cham"><b>${esc(bill.title)}</b>
+      <i>${esc(String(st.bills[bill.id].stage).replace(/_/g, " "))} · Chamber — give it time on the order paper</i></div>`);
     owed.forEach(u => {
       const due = u.by - st.sitting;
-      rows.push(`<div class="dk owed${due <= 1 ? " late" : ""}"><b>${esc(u.text)}</b>
+      const w = Engine.undertakingWhere(C, u);
+      rows.push(`<div class="dk owed goto${due <= 1 ? " late" : ""}" data-goto="${w.tab}"><b>${esc(u.text)}</b>
         <i>${due <= 0 ? "due this sitting" : "by sitting " + u.by}${
-          u.owed_to ? " · " + esc(partyName(u.owed_to)) : ""}</i></div>`);
+          u.owed_to ? " · " + esc(partyName(u.owed_to)) : ""} · ${esc(w.how)}</i></div>`);
     });
     /* A DIVISION HAS A DAY, and the day is business. */
     (C.bills || []).forEach(b => {
       const bs = bsOf(b.id);
       if (!bs || bs.dead || bs.dividesOn == null) return;
       const away = bs.dividesOn - st.sitting;
-      rows.push(`<div class="dk div${away <= 0 ? " late" : ""}">
+      rows.push(`<div class="dk div goto${away <= 0 ? " late" : ""}" data-goto="cham">
         <b>Division: ${esc(b.title)}</b>
         <i>${away <= 0 ? "today" : "sitting " + bs.dividesOn +
-            " · " + away + " sitting" + (away === 1 ? "" : "s") + " away"}</i></div>`);
+            " · " + away + " sitting" + (away === 1 ? "" : "s") + " away"} · Chamber</i></div>`);
     });
     (C.instruments || []).forEach(si => {
       const x = st.instruments[si.id];
       if (x && x.inForce && x.prayerCloses != null && x.prayerCloses > st.sitting)
-        rows.push(`<div class="dk pray"><b>${esc(si.number)}</b>
-          <i>prayable for ${x.prayerCloses - st.sitting} more</i></div>`);
+        rows.push(`<div class="dk pray goto" data-goto="pap"><b>${esc(si.number)}</b>
+          <i>prayable for ${x.prayerCloses - st.sitting} more · Papers</i></div>`);
     });
     /* A POST THE GOVERNMENT HAS NOT FILLED IS BUSINESS. The appointment
        lives on the Government screen, but a player who never opens it
@@ -2882,8 +2921,8 @@ const UI = (function () {
          made; a vacancy is a hole in it. They look alike and they are not
          the same business, and sharing the class made the docket's own
          check count one as the other. */
-      rows.push(`<div class="dk post"><b>${esc(post ? post.title || post.name : pid)}
-        stands vacant</b><i>no holder · the department cannot make an order</i></div>`);
+      rows.push(`<div class="dk post goto" data-goto="gov"><b>${esc(post ? post.title || post.name : pid)}
+        stands vacant</b><i>no holder · the department cannot make an order · Government</i></div>`);
     });
 
     /* THE SESSION'S END IS ALWAYS ON THE PAPER. It is the cheapest
@@ -2919,7 +2958,14 @@ const UI = (function () {
 
   function drawSitting() {
     const dk = $("#sit-docket");
-    if (dk) dk.innerHTML = docketHTML();
+    if (dk) {
+      dk.innerHTML = docketHTML();
+      dk.querySelectorAll("[data-goto]").forEach(b =>
+        b.addEventListener("click", () => {
+          const tab = document.querySelector('.tab[data-t="' + b.dataset.goto + '"]');
+          if (tab) tab.click();
+        }));
+    }
     drawCalendar();
     drawToday();
 
