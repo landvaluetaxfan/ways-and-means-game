@@ -106,7 +106,7 @@ undercut their wages, would rather you had paid a different price.`,
       result:"The Substrate Left is delighted. Thirty-one of your own members were not consulted." }
   ]},
 
-{ id:"gb_approach", prologue:5, once:true,
+{ id:"gb_approach", prologue:7, once:true,
   when:{ billStage:{divergence:"committee"}, flagsAbsent:["gb_approached"] },
   title:"The Guild Bench will see you",
   speaker:"gb_chair",
@@ -145,7 +145,7 @@ recognise. You are not reforming personhood. You are reforming us."`,
       result:"You learn that the panel meets on Thursday morning, which is four hours before the division." }
   ]},
 
-{ id:"halloran_signatures", prologue:3,
+{ id:"halloran_signatures", prologue:4,
   when:{ loyaltyBelow:{cu_halloran:20}, flagsAbsent:["halloran_confronted"] },
   title:"Nine signatures",
   speaker:"halloran",
@@ -199,7 +199,7 @@ The ballot is called for the week after next.`,
       result:"You keep the leadership. The New Progressive Party meets tonight without you." }
   ]},
 
-{ id:"vantage_radiator", prologue:4,
+{ id:"vantage_radiator", prologue:5,
   when:{ scalarBelow:{thermal_margin:22}, flagsAbsent:["vantage_handled"] },
   title:"Ember Ridge, third day below reserve",
   speaker:null,
@@ -298,6 +298,60 @@ consensus. It is not clear that either is illegal.`,
       result:"Ceyhan runs it anyway, without you, and with a paragraph about what the government knew." }
   ]}
 ,
+
+/* ---------- CHAPTER ONE, TEACHING (design/21) ----------
+   Three things a player can reach chapter two without ever doing: reading the
+   order of the day, granting order-paper time, and committing a member to a
+   division. Each is taught here by the person who wants it done, in the world's
+   voice, one sitting at a time. The Chief Whip can say whatever he likes; the
+   prose never puts the tutorial in the Prime Minister's mouth. */
+
+{ id:"the_order_of_the_day", prologue:3,
+  when:{ flagsAbsent:["taught_the_day"] },
+  title:"The order of the day",
+  speaker:"okarie",
+  body:`The Chief Whip has the day's paper on the desk before you sit down, and
+he reads it the way he reads a division list: slowly, and out loud.
+
+"Everything the House is asking of you is on this sheet," he says. "One of the
+four is ours. A session holds six slots of order-paper time and a slot moves a
+measure one stage, so the question is never only whether you have the votes. It
+is whether you have the time, and the time runs out when the House rises.
+
+"Answer the sheet or do not. It will not ask twice."`,
+  choices:[
+    { label:"Walk the paper with him. Ask what each item wants.",
+      effects:[{ flag:"taught_the_day" }, { move:{ "rel.okarie":6 } }, { move:{ "loyalty.cu_loyalists":3 } }],
+      result:"He names the mover of each item and what each mover wants back. It is the same list every sitting, and nobody explains it twice." },
+    { label:"Read it alone and send him back to the lobbies.",
+      effects:[{ flag:"taught_the_day" }, { move:{ "rel.okarie":-4 } }, { move:{ "public_standing":2 } }],
+      result:"You will read the sheet alone every sitting. He says nothing about it, which is how he says everything." }
+  ]},
+
+{ id:"the_whip_list", prologue:6,
+  when:{ flagsAbsent:["whip_briefed"] },
+  title:"The list",
+  speaker:"okarie",
+  body:`The bill is called this session or the next, and the Chief Whip has come
+with one sheet. It has the members who are with the government, the members who
+are not, and the members who have not decided, which is the column he is
+interested in.
+
+"Two ways to move a vote," he says. "You can spend the party's goodwill on the
+benches that already sit behind you, and it comes back when the session next
+opens. Or you can go outside the coalition and ask a body for a favour. A favour
+is not money and it is not loyalty. A favour is a promise, and a promise has a
+date on it."
+
+He leaves the sheet on the desk and does not pick it up again.`,
+  choices:[
+    { label:"Hold what we have. Spend nothing yet.",
+      effects:[{ flag:"whip_briefed" }, { move:{ "loyalty.cu":5 } }, { move:{ "public_standing":-2 } }],
+      result:"The whips will hold the benches they have and wait. It is the cheaper order, and it leaves the decision where it was." },
+    { label:"Whip the party hard and take the measure now.",
+      effects:[{ flag:"whip_briefed" }, { move:{ "loyalty.cu":-6 } }, { move:{ "public_standing":3 } }, { flag:"whipped_own_side" }],
+      result:"It is the noisier order. Members who were asked twice remember it, and so does the public." }
+  ]},
 
 /* ---------- CHAPTER TWO — the division and its consequences ----------
    Every event below is tagged chapter:2, so none of them can fire until
@@ -417,7 +471,7 @@ which is eleven of yours.
    somebody. The `when` is the whole point; the prose is the delivery.
    ============================================================ */
 
-{ id:"shed_order_crisis", weight:95, once:true,
+{ id:"shed_order_crisis", chapter:2, weight:95, once:true,
   when:{ priceAbove:{substrate:106}, suspendedAbove:{federal:73000},
          flagsAbsent:["shed_crisis_seen"] },
   title:"Seventy-five thousand",
@@ -452,7 +506,7 @@ government has said nothing.`,
       result:"A review reports to a minister, the minister reports to you, and the number keeps climbing while it does." }
   ]},
 
-{ id:"thermal_squeeze", weight:70, once:true,
+{ id:"thermal_squeeze", chapter:2, weight:70, once:true,
   when:{ priceAbove:{thermal:112}, flagsAbsent:["thermal_squeeze_seen"] },
   title:"The quota is not a price until somebody cannot pay it",
   speaker:null,
@@ -482,7 +536,7 @@ bidding with money that came, in the end, from the appropriation.`,
       result:"The signal reaches the stations that cannot pay it, which is what a signal is for." }
   ]},
 
-{ id:"party_fracture", weight:80, once:true,
+{ id:"party_fracture", chapter:2, weight:80, once:true,
   when:{ scalarBelow:{party_loyalty:22}, flagsAbsent:["party_fracture_seen"] },
   title:"The tea room has a count",
   speaker:null,
@@ -510,7 +564,7 @@ against the party, and it has been shrinking for a month.`,
       result:"It is alive. It is also, increasingly, not yours." }
   ]},
 
-{ id:"reserve_low", weight:75, once:true,
+{ id:"reserve_low", chapter:2, weight:75, once:true,
   when:{ scalarBelow:{treasury:14}, flagsAbsent:["reserve_low_seen"] },
   title:"What is left of the reserve",
   speaker:null,
@@ -539,7 +593,7 @@ Commonwealth has already promised to pay for.`,
       result:"It is not dishonest. It is a bet that the bill comes due to somebody else." }
   ]},
 
-{ id:"standing_low", weight:78, once:true,
+{ id:"standing_low", chapter:2, weight:78, once:true,
   when:{ scalarBelow:{public_standing:26}, flagsAbsent:["standing_low_seen"] },
   title:"A government nobody is for",
   speaker:"ceyhan",
@@ -567,7 +621,7 @@ who would notice? Not who would be pleased. Who would notice."`,
       result:"The story resets and the people who made the government work are now the people briefing against it." }
   ]},
 
-{ id:"threshold_consequence", weight:85, once:true,
+{ id:"threshold_consequence", chapter:2, weight:85, once:true,
   when:{ lawBelow:{divergence_threshold_hours:100}, flagsAbsent:["threshold_seen"] },
   title:"Two million, and then the registers",
   speaker:null,
@@ -601,7 +655,7 @@ Registry has said, in writing, that it will not finish before the next election.
    signatures reach the threshold and decides it from the caucus arithmetic;
    this event is the prose for the one the Prime Minister survives. A lost one
    ends the government through the existing loss condition and is never read. */
-{ id:"leadership_ballot", weight:99, once:true,
+{ id:"leadership_ballot", chapter:2, weight:99, once:true,
   when:{ ballotHeld:true, ballotCarries:true, flagsAbsent:["ballot_seen"] },
   title:"The ballot",
   speaker:null,
@@ -628,7 +682,7 @@ that put you here intends to keep you.`,
    post when an undertaking naming it is broken, and sets `minister_resigned`;
    this is the prose for the aftermath. The resignation itself is not the
    player's to choose — that is the point of it. */
-{ id:"minister_resignation", weight:99, once:true,
+{ id:"minister_resignation", chapter:2, weight:99, once:true,
   when:{ flags:["minister_resigned"] },
   title:"A resignation",
   speaker:null,
@@ -737,6 +791,219 @@ Ceyhan has, which was always going to happen. The whip has, in a different colum
       effects:[{flag:"position_softened"},{move:{"rel.ceyhan":-8}},
                {move:{"loyalty.psa":-7}},{move:{"loyalty.cu_maintenance":5}}],
       result:"An answer at questions is easy to call a preference. It is also the second time the same audience has watched you do it." }
+  ]},
+
+/* ============================================================
+   CHAPTER TWO, THE POOL (T4)
+
+   The pool went dry by sitting 9 because twenty of twenty-four events were
+   `once`. These are the other shape: a `when` that reads the live state and a
+   `maxFires` that lets the same situation arrive twice, differently. Each uses
+   only conditions whose number something already moves, so none is a cutscene
+   and none breaks the consequence chain.
+
+   ECONOMY OF THE CHAIN: this file may move the four scalars, the two prices,
+   the station roll and one law key (divergence_threshold_hours) — the keys the
+   chain audit watches — and no others. A new price or scalar here is a number
+   nobody sees, and the build fails on it (tools/lint.js, 7.9).
+   ============================================================ */
+
+{ id:"thermal_drift", chapter:2, weight:66, maxFires:3,
+  when:{ priceAbove:{thermal:106} },
+  title:"The quota has found a new number",
+  speaker:"ceyhan",
+  body:`The thermal exchange has closed above last month's average for the
+third week running. It is not a fault and it is not yet a crisis.
+
+Ceyhan reads the market rather than the fault. A quota that is scarce in an
+ordinary month is a quota that will be very scarce in a bad one, and the
+quarterlies will be asking why nothing was done while there was still time.`,
+  choices:[
+    { label:"Sell quota out of the reserve and hold the price down.",
+      effects:[{ move:{ "price.thermal":-8 } }, { move:{ "treasury":6 } },
+               { move:{ "loyalty.hul":4 } },
+               { wire:"QUOTA SOLD FROM RESERVE; THERMAL PRICE EASES" }],
+      result:"The price eases and the reserve is thinner the next time something actually fails." },
+    { label:"Let the price stand and say why.",
+      effects:[{ move:{ "price.thermal":4 } }, { move:{ "public_standing":-3 } },
+               { move:{ "loyalty.hul":7 } },
+               { wire:"PM DEFENDS THERMAL PRICE AS THE COST OF SCARCITY" }],
+      result:"The engineers hear a government that understands a market. The stations paying the price hear something else." },
+    { label:"Announce a review of the exchange's pricing.",
+      effects:[{ move:{ "price.thermal":-2 } }, { move:{ "public_standing":3 } },
+               { flag:"reviewing_exchange" },
+               { wire:"REVIEW ANNOUNCED INTO THERMAL EXCHANGE PRICING" }],
+      result:"A review is a way of doing nothing and being seen to do it, which is sometimes the whole of the job." }
+  ]},
+
+{ id:"substrate_drift", chapter:2, weight:64, maxFires:3,
+  when:{ priceAbove:{substrate:104} },
+  title:"The index again",
+  speaker:null,
+  body:`The substrate index has been above a hundred and four for a fortnight.
+That is not the figure that suspends anybody. It is the figure the quarterlies
+record, and the quarterlies are read by the benches that answer for the
+suspensions when they come.`,
+  choices:[
+    { label:"Buy substrate forward against the next quarter.",
+      effects:[{ move:{ "price.substrate":-7 } }, { move:{ "treasury":-8 } },
+               { wire:"FORWARD SUBSTRATE PURCHASE TO HOLD THE INDEX" }],
+      result:"The index comes down and the money is committed a quarter before it is needed." },
+    { label:"Say the index is a market and leave it alone.",
+      effects:[{ move:{ "public_standing":-4 } }, { move:{ "loyalty.cl":5 } },
+               { wire:"PM: SUBSTRATE INDEX 'NOT A POLICY INSTRUMENT'" }],
+      result:"It is the answer the Liberal benches wanted, and the low band will remember the answer at the election." }
+  ]},
+
+{ id:"margin_thin", chapter:2, weight:72, maxFires:2,
+  when:{ scalarBelow:{ thermal_margin:8 } },
+  title:"Below ten",
+  speaker:"vellan",
+  body:`The margin between what the stations reject and what they generate is
+under ten points. Nothing has failed. The margin is the room in which nothing
+failing is possible, and it is thinner than the department will certify as safe
+for a full session.
+
+The Minister for Life Support does not ask for a decision. She asks for a
+number: how thin the government is willing to let it get.`,
+  choices:[
+    { label:"Buy margin now, whatever it costs.",
+      effects:[{ move:{ "thermal_margin":8 } }, { move:{ "treasury":-10 } },
+               { move:{ "loyalty.hul":6 } },
+               { wire:"EMERGENCY THERMAL PURCHASE TO WIDEN THE MARGIN" }],
+      result:"The margin widens and the reserve pays for it, which is the trade every time." },
+    { label:"Hold it and let the department record its warning.",
+      effects:[{ move:{ "thermal_margin":-2 } }, { move:{ "public_standing":-4 } },
+               { move:{ "loyalty.hul":-8 } },
+               { wire:"PM DECLINES THERMAL PURCHASE; DEPARTMENT WITHDRAWS CERTIFICATION" }],
+      result:"The warning is on the record now, and so is the decision that ignored it." }
+  ]},
+
+{ id:"order_paper_empty", chapter:2, weight:58, maxFires:2,
+  when:{ slotsLeft:0 },
+  title:"The session has no time left",
+  speaker:"okarie",
+  body:`Every slot the session holds has been given away. There is nothing
+discretionary left in the order paper, and a measure that wants a stage now
+waits for the House to rise and the slots to refill.
+
+"From here," the Chief Whip says, "everything is a division or a promise."`,
+  choices:[
+    { label:"Spend what is left on the whips.",
+      effects:[{ move:{ "loyalty.cu":4 } }, { move:{ "public_standing":-2 } }],
+      result:"What cannot be advanced can still be argued, and an argument is cheaper than a vote." },
+    { label:"Stop spending and let the House do what it will.",
+      effects:[{ move:{ "party_loyalty":-3 } }, { move:{ "public_standing":3 } }],
+      result:"A quiet order paper is not a quiet government, and both benches know it." }
+  ]},
+
+{ id:"the_vacant_post", chapter:2, weight:68, once:true,
+  when:{ postVacant:["treasury"] },
+  title:"The empty brief",
+  speaker:"whitlam",
+  body:`The Treasury has a department, a permanent staff and a set of questions
+being answered in a minister's absence. The absence has lasted long enough to
+stop being an accident.
+
+The Leader of the House states the rule rather than the politics. A post with no
+holder makes no instrument, so a budget whose Treasury is unheld is a budget
+argued by officials and signed by nobody.`,
+  choices:[
+    { label:"Fill it. Put a Treasurer in the brief today.",
+      effects:[{ cabinet:{ treasury:{ holder:"skye", party:"cu" } } },
+               { move:{ "public_standing":3 } },
+               { wire:"TREASURY BRIEF FILLED" }],
+      result:"The brief has a holder, which means it has a face for the questions and a name on the orders." },
+    { label:"Leave it empty. The work is being done.",
+      effects:[{ flag:"treasury_left_vacant" }, { move:{ "public_standing":-5 } }],
+      result:"No order comes out of that brief until somebody holds it, and the opposition has read the same rules you have." }
+  ]},
+
+{ id:"signatures_build", chapter:2, weight:74, once:true,
+  when:{ signaturesAtLeast:6 },
+  title:"The names on the paper",
+  speaker:"ceyhan",
+  body:`Six members have put their names to a letter that does not say what it
+is for. Six is not a ballot. It is the number that tells the whips a ballot is
+possible, and the number is in the lobby the same afternoon.
+
+Ceyhan asks the only question that matters: whether the government means to find
+out what the six want, or how many the six can become.`,
+  choices:[
+    { label:"Meet them. Ask what the letter is really about.",
+      effects:[{ move:{ "loyalty.cu_maintenance":7 } }, { move:{ "loyalty.cu_halloran":4 } },
+               { move:{ "public_standing":-3 } },
+               { wire:"PM MEETS SIGNATORIES OF BACKBENCH LETTER" }],
+      result:"Half of them wanted to be asked, and that is the half that stops signing." },
+    { label:"Warn them where this ends.",
+      effects:[{ move:{ "loyalty.cu_loyalists":6 } }, { move:{ "loyalty.cu_maintenance":-8 } },
+               { wire:"PM WARNS THE BACKBENCH OVER LEADERSHIP LETTER" }],
+      result:"The loyalists close ranks. So do the six, and one of them is now certain." }
+  ]},
+
+{ id:"a_partner_in_debt", chapter:2, weight:70, once:true,
+  when:{ capitalBelow:{ rv:-2 } },
+  title:"The ledger, read aloud",
+  speaker:"park",
+  body:`The Congregational Democratic Alliance's account with the government is
+negative, and it has been negative since the coalition formed. The party has
+supported three measures it did not write and holds no brief that pays for a
+fourth.
+
+"You are a partner who is owed," Park says, "not a partner who is owed to. The
+difference is the next bill."`,
+  choices:[
+    { label:"Give her party's bill the next slot on the order paper.",
+      effects:[{ move:{ "capital.rv":3 } }, { move:{ "loyalty.rv":9 } },
+               { move:{ "public_standing":-2 } }],
+      result:"The ledger moves toward zero and a slot of the session is gone. Both of those facts are the transaction." },
+    { label:"Tell her the account is the account.",
+      effects:[{ move:{ "capital.rv":-1 } }, { move:{ "loyalty.rv":-8 } },
+               { move:{ "party_loyalty":4 } }],
+      result:"Your own benches like it. Hers begin counting what they are owed, which is what a ledger is for." }
+  ]},
+
+{ id:"the_licensing_reaction", chapter:2, weight:82, once:true,
+  when:{ siInForce:["si_2287_44"] },
+  title:"What the order did to the panel",
+  speaker:"gb_chair",
+  body:`The panel has met and the sector has an answer to the licensing order.
+Widening the licence added electors to a constituency the panel used to decide,
+so the panel does not decide it any more.
+
+"I have certified life support for forty years," the chair says. "The order is
+lawful. The minister had the power and used it. The members I represent will
+remember which government did."`,
+  choices:[
+    { label:"Offer the panel the standards brief as compensation.",
+      effects:[{ move:{ "rel.gb_chair":10 } }, { move:{ "loyalty.gb":6 } },
+               { move:{ "public_standing":-3 } },
+               { wire:"STANDARDS BRIEF OFFERED TO THE LICENSING PANEL" }],
+      result:"It is real work and a real brief, and it does not give the panel its electorate back." },
+    { label:"Tell her the order stands.",
+      effects:[{ move:{ "rel.gb_chair":-8 } }, { move:{ "loyalty.hul":4 } }],
+      result:"She expected nothing else, which is why she came in person." }
+  ]},
+
+{ id:"the_delegation", chapter:2, weight:64, maxFires:2,
+  when:{ suspendedAbove:{ federal:74000 } },
+  title:"Seventy-four thousand, and a delegation",
+  speaker:"ansar",
+  body:`The delegation is from the coldest stations and it has one item of
+business. The federal figure for people suspended has passed seventy-four
+thousand, and the delegation wants the number read into the record.
+
+Sevi Ansar is with them and says what she said in the letter. Nobody voted for
+the schedule and nobody has been asked to defend it.`,
+  choices:[
+    { label:"Meet them and read the figure into the record.",
+      effects:[{ move:{ "public_standing":6 } }, { move:{ "loyalty.cu_maintenance":7 } },
+               { move:{ "loyalty.psa":6 } }, { flag:"read_the_figure" },
+               { wire:"FEDERAL SUSPENSION FIGURE READ INTO THE RECORD" }],
+      result:"The number is in the record now, and a number in the record is quoted for years." },
+    { label:"Receive them, and say nothing on the record.",
+      effects:[{ move:{ "public_standing":-4 } }, { move:{ "loyalty.cu_maintenance":-6 } }],
+      result:"They are heard and not answered, which from their side of the desk is worse than a refusal." }
   ]}
 
 ];

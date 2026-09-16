@@ -90,7 +90,48 @@ the scheme forbids appears in any of them.
 
 ---
 
-## T4 — [ ] The event pool, 24 → 55
+## T4 — [x] The event pool, part one: chapters one and two  ·  **DONE 16 Sep**
+
+**Landed 24 → 35 events, and the pool no longer goes dry.**
+
+| chapter | before | after | target |
+|---|---|---|---|
+| 1 (teaching) | 20 | **14** | 12–15 |
+| 2 (governing) | 4 | **21** | 18–22 |
+
+Two chapter-one beats were written for `design/21`'s gaps and inserted into the
+fixed prologue: `the_order_of_the_day` (3) and `the_whip_list` (6), both the
+Chief Whip's, teaching the order of the day, order-paper time and the whip. The
+prologue is now 1 `the_account`, 2 `briefing_divergence`, 3 order of the day,
+4 `halloran_signatures`, 5 `vantage_radiator`, 6 the list, 7 `gb_approach`
+(which still advances the chapter).
+
+**Eight chapter-two events were misfiled.** The comment said every event below
+it was `chapter:2`, but the consequence chain, the ballot and the resignation
+(`shed_order_crisis`, `thermal_squeeze`, `party_fracture`, `reserve_low`,
+`standing_low`, `threshold_consequence`, `leadership_ballot`,
+`minister_resignation`) carried no `chapter`, so they sat in chapter one. Tagged.
+
+Nine new chapter-two events, five of them `maxFires` rather than `once`, each
+gated on a number something already moves: `thermal_drift`, `substrate_drift`,
+`margin_thin`, `order_paper_empty`, `the_vacant_post`, `signatures_build`,
+`a_partner_in_debt`, `the_licensing_reaction`, `the_delegation`.
+
+**Measured.** Driving the engine headless through four play policies: a run now
+fires **24 events (18–20 distinct)** and the last event lands at **sitting 24**,
+against 9–13 fired and dry by sitting 9 before.
+
+**One engine line, again.** `Engine.describe` had no case for the `cabinet`
+verb, so the appointments panel rendered the bare engine word; added, with a
+sentence for a post filled and a post left vacant.
+
+**Chapters three and four are still unwritten** — the triggers exist
+(`dissolved`, `settled`, `risesWithin`) but no event carries `chapter:3` or
+`chapter:4`. That is the rest of T4.
+
+---
+
+### The task as written
 
 **The biggest task in this file, and the one to do first if you only do one.**
 Target the middle of the 50–60 band. Write them in this order, because chapter

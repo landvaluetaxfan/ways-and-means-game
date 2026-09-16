@@ -3186,6 +3186,15 @@ const Engine = (function () {
           if (v.remove) out.push({ tone: "grave", text: "Breaks the coalition" });
           if (v.add) out.push({ tone: "good", text: "Widens the coalition" });
           break;
+        /* A post filled or left empty. Without this the panel reads "cabinet",
+           which is an engine word, not a sentence about a government. */
+        case "cabinet": Object.keys(v).forEach(post => {
+          const title = nameOf("cabinet", post, "title");
+          out.push(v[post] === null
+            ? { tone: "grave", text: "Leaves the " + title + " vacant" }
+            : { tone: "good", text: "Appoints a " + title });
+        });
+          break;
         case "election": if (v) out.push({ tone: "grave", text: "Dissolves parliament" }); break;
         case "cross": case "vacate_seat": case "byelection":
           out.push({ tone: "grave", text: "Moves seats in the chamber" }); break;
