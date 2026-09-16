@@ -1094,32 +1094,33 @@ const UI = (function () {
     const bs = bsOf(id);
     if (!bs || !bs.lastDivision) return "";
     const rc = Engine.rollCall(st, C, id, bs.lastDivision);
-    const all = (rc.parties || []).reduce((a, p) =>
-      a.concat(p.popular, p.functional), []);
-    if (!all.length) return "";
+    const parties = (rc.parties || []).filter(p =>
+      (p.popular.length + p.functional.length) > 0);
+    if (!parties.length) return "";
 
-    const bare0 = n => String(n || "").replace(/^(Rt\. Hon\.|Hon\.)\s+/, "")
-                                     .replace(/\s+MP$/, "");
-    const bucket = (vote) => all.filter(m => m.vote === vote)
-      /* by party, then by name: the way a division list is printed, so
-         a bench reads as a bench rather than as an alphabet. */
-      .sort((a, b) => String(a.party || "").localeCompare(String(b.party || "")) ||
-                      bare0(a.name).localeCompare(bare0(b.name)));
-
-    const section = (label, vote, cls) => {
-      const list = bucket(vote);
-      if (!list.length) return "";
-      /* CHIPS, NOT A RUN OF NAMES. The count could not be read while it
-         ran, so the record is where the names go — and it should read
-         the way the count looked: one chip per member, green or red by
-         the way they went, and the same hover (constituency, register
-         reference, list seat). Same builder as the roll call, so the two
-         can never say different things about the same member. */
-      return `<div class="dvl-s ${cls}"><b>${label}</b> <em>${list.length}</em>` +
-        `<div class="dvl-n">` + rollChips(list) + `</div></div>`;
-    };
+    /* THE ROLL CALL, KEPT. The count filed the House in by party and showed
+       every member a chip; the record is the SAME PAGE with the same chips,
+       party by party, read at leisure — the vote is the chip's colour and
+       the tally is at the head of the bench. It used to re-sort the House
+       into Ayes and Noes and print the names as a run of text, so the one
+       screen that showed you the division was the one screen you could not
+       read it on: the names ran off the edge, and the chips' hover — the
+       constituency, the register reference, the list seat — was gone. */
+    const body = parties.map(p => {
+      const all = p.popular.concat(p.functional);
+      const cnt = v => all.filter(m => m.vote === v).length;
+      const parts = [];
+      ["aye", "nay", "abstain", "absent"].forEach(v => {
+        const n = cnt(v);
+        if (n) parts.push(n + " " + (v === "absent" ? "away" : v));
+      });
+      return `<div class="dvl-p"><div class="lroll-h"><b>${esc(pn(p.party))}</b>` +
+        `<span>${esc(parts.join(" \u00b7 "))}</span></div>` +
+        `<div class="lroll-g">${rollChips(all)}</div></div>`;
+    }).join("");
 
     const d = bs.lastDivision;
+    const total = parties.reduce((n, p) => n + p.popular.length + p.functional.length, 0);
     /* IT STAYS OPEN. The first attempt marked it open only on the render
        that followed the division, so the next redraw — and a redraw
        happens for any reason at all — replaced the node without the
@@ -1144,14 +1145,11 @@ const UI = (function () {
       `${inCaption ? "" : ` data-dvl="${esc(key)}"`}` +
       `${open ? " open" : ""}><summary><b>Division list</b>` +
       `<span>sitting ${d.at} &middot; ${d.carries ? "carried" : "not carried"} ` +
-      `&middot; ${all.length} members</span></summary>` +
-      `<div class="dvl-b">` +
-      section("Ayes", "aye", "aye") +
-      section("Noes", "nay", "nay") +
-      section("Abstained", "abstain", "abs") +
-      section("Did not vote", "absent", "away") +
-      `<p class="dvl-f">Members returned on a list are shown in italic: the
-       seat is the party's and the name is the slate's.</p></div></details>`;
+      `&middot; ${total} members</span></summary>` +
+      `<div class="dvl-b">` + body +
+      `<p class="dvl-f">Party by party, as the roll was called. Green is an
+       aye, red a no, amber an abstention and a dashed edge means the member
+       did not vote; hover a name for the seat it was cast for.</p></div></details>`;
   }
 
   function drawBill(id) {
@@ -2044,7 +2042,7 @@ const UI = (function () {
                 : "") +
             `</div><span class="ln" id="dv-ayen">0 / ${P.need} to carry</span></div>` +
             `<div class="lrow noes"><b>Noes</b><div class="lbar"><i id="dv-noe"></i></div>` +
-              `<span class="ln" id="dv-noen">${noes}</span></div>` +
+              `<span class="ln" id="dv-noen">0</span></div>` +
           `</div>` +
           (dual ? `<div class="note">The functional bench is counted separately: ` +
             `${F.aye} of ${F.total}, needing ${F.need}.</div>` : "") +
@@ -2054,6 +2052,16 @@ const UI = (function () {
         ayeEl = el.querySelector("#dv-aye"); noeEl = el.querySelector("#dv-noe");
         ayeN = el.querySelector("#dv-ayen"); noeN = el.querySelector("#dv-noen");
         vEl = el.querySelector("#dv-verdict");
+        /* THE FIRST FRAME IS A ZERO. The template carries the final noes
+           count, so between mounting and the first step's paint the noes
+           column reported a number the House had not reached — and with a
+           large nay it read as a finished count before the door had shut.
+           Both bars and both numbers are set to their starting values
+           here, so the strip opens at nothing and earns its number. */
+        if (ayeEl) ayeEl.style.width = "0%";
+        if (noeEl) noeEl.style.width = "0%";
+        if (ayeN) ayeN.textContent = "0 / " + P.need + " to carry";
+        if (noeN) noeN.textContent = "0";
       }
     });
   }

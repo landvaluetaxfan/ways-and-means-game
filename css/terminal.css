@@ -2406,6 +2406,15 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
   color:var(--ink-soft);}
 .dvl-f{font-size:11px;color:var(--ink-soft);margin:4px 0 6px;}
 
+/* THE LIST, PARTY BY PARTY. The record is the roll call, so each bench
+   gets the header the roll gave it (the party and its tally) and the same
+   chips; they wrap within the bench, so nothing runs off the edge and the
+   hover survives. `.dvl-s` rules above are kept for any older rendering
+   that still asks for a vote section. */
+.dvl-p{margin:6px 0 9px;}
+.dvl-p:first-of-type{margin-top:2px;}
+.dvl-p:last-of-type{margin-bottom:4px;}
+
 /* A party name is a thing you can hover and a thing you can click, and it
    advertises neither until you are on it. The dotted rule under every name
    was a fair instinct and an ugly one: twelve of them in a legend read as
