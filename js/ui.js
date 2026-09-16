@@ -526,11 +526,14 @@ const UI = (function () {
        shown once; the terminal then stays open so the record can be read,
        which is the placeholder the brief asked for, not the final screen. */
     const end = Engine.checkEnd(st, C);
-    if (end.over && end.kind !== "loss" && ended !== end.kind) {
+    if (end.kind !== "loss" && ended !== end.kind) {
       ended = end.kind;
-      score("sombre");
-      cue("knell");
       if (end.kind === "settlement" && end.settlement) {
+        /* A terminal settlement knells and sombres; a non-terminal one
+           resolves the crisis and the run goes on, so it scores like a
+           moment, not an ending. */
+        if (end.over) { score("sombre"); cue("knell"); }
+        else score("moment");
         setStatus("Settled: " + end.settlement.name, "transient");
         if (typeof Dialog !== "undefined") Dialog.alert(
           end.settlement.closing || end.settlement.summary || "",
@@ -538,7 +541,7 @@ const UI = (function () {
         if (typeof Shell !== "undefined" && Shell.record)
           Shell.record({ sitting: st.sitting, chapter: st.chapter,
                          date: st.date, end: "settled \u2014 " + end.settlement.name });
-      } else if (end.kind === "election") {
+      } else if (end.kind === "election" && end.over) {
         setStatus("The Commonwealth has voted. The campaign is over.", "transient");
         if (typeof Shell !== "undefined" && Shell.record)
           Shell.record({ sitting: st.sitting, chapter: st.chapter,

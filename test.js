@@ -1669,6 +1669,32 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
      (Engine.checkSettlement(f, CONTENT) || {}).id === "federal_fudge",
      (Engine.checkSettlement(f, CONTENT) || {}).id);
 
+  /* TERMINAL OR NOT (Flash I). A settlement ends the run by default; a
+     non-terminal one resolves the crisis and the run goes on to the
+     election, where content reads the tier through `resolvedIs`. */
+  const trm = fresh(); trm.bills.divergence.stage = "defeated";
+  trm.bills.divergence.dead = true; trm.law.divergence_threshold_hours = 200;
+  const endT = Engine.checkEnd(trm, CONTENT);
+  ok("a terminal settlement ends the run",
+     endT.over === true && endT.kind === "settlement" &&
+     endT.settlement.id === "restriction",
+     JSON.stringify(endT));
+
+  const Cnt = Object.assign({}, CONTENT, {
+    settlements: CONTENT.settlements.concat([
+      { id: "probe_nt", rank: 0, name: "Probe tier", summary: "probe",
+        terminal: false, when: { flags: ["probe_nt_flag"] } }]) });
+  const nt = Engine.newGame(Cnt); nt.flags.probe_nt_flag = true;
+  const endN = Engine.checkEnd(nt, Cnt);
+  ok("a non-terminal settlement resolves the crisis without ending the run",
+     endN.over === false && endN.kind === "settlement" &&
+     nt.resolvedAs === "probe_nt" && !nt.settledAs,
+     JSON.stringify({ over: endN.over, resolvedAs: nt.resolvedAs,
+                      settledAs: nt.settledAs }));
+  ok("and content can read which tier landed",
+     Engine.matches(nt, { resolvedIs: "probe_nt" }) &&
+     !Engine.matches(nt, { resolvedIs: "probe_other" }));
+
   /* ---- THE ROLL CALL ----
      It renders names beside a count, so the one thing that must never be
      true is that the names and the count disagree. */

@@ -76,15 +76,15 @@
      and ends through the existing loyalty floor: the meltdown event
      applies {move:{party_loyalty:-100}} and checkLoss does the rest.
 
-     PROPOSED ENGINE: `settlement.terminal`. By default a settlement
+     LANDED: `settlement.terminal`. By default a settlement
      ENDS the run: checkEnd returns over:true, the closing prose shows,
      and the session is recorded. That is correct for a game whose
      endings ARE settlements. The canon Pyrrhic tier is different: it
      resolves the CRISIS, not the CAMPAIGN. `terminal:false` records
-     the tier and lets the run continue to the election, where chapter
-     three's result event reads which tier was reached and narrates
-     the victory. `terminal:true` (the default) keeps the existing
-     behaviour, so nothing else changes. The meltdown is not a
+     the tier in `st.resolvedAs` (not `settledAs`, so the `settled`
+     condition stays quiet) and the run continues to the election,
+     where chapter three's result event reads which tier landed
+     through the `resolvedIs` condition. The meltdown is not a
      settlement at all: it is a loss, and ends through the loyalty
      floor, so no flag is needed there.
    ============================================================= */
@@ -112,8 +112,8 @@ const FLASH_I_TIERS = [
   { id: "f1_pyrrhic", rank: 1,
     name: "Sovereign Debt Trap",
     /* THE CANON ENDING. Non-terminal: it leads to the election, not the
-       credits. PROPOSED ENGINE: terminal:false is read by checkEnd, so
-       the settlement records and the run continues to dissolution. */
+       credits. LANDED: terminal:false records the tier in st.resolvedAs
+       and checkEnd returns over:false, so the run continues. */
     terminal: false,
     summary: "Annexed, and 300,000 workers saved. The Federation assumes the defaulted corporate bonds.",
     when: { scalarAbove: { legitimacy: 65, friction: 65 },

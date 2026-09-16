@@ -2631,6 +2631,9 @@ const Engine = (function () {
                          reads the flag the engine leaves when one lands */
                       return !!st.settledAs === !!v;
                     },
+    /* Which NON-TERMINAL tier resolved the crisis (Flash I): the election's
+       chapter-three events read this to narrate the result. */
+    resolvedIs:     (st, v) => st.resolvedAs === v,
     risesWithin:    (st, v) => st.sessionEnds != null &&
                       (st.sessionEnds - st.sitting) <= v,
     actorAbove:     (st, v) => Object.keys(v).every(id =>
@@ -3944,7 +3947,10 @@ const Engine = (function () {
     const lost = checkLoss(st, C);
     if (lost.lost) return { over: true, kind: "loss", reason: lost.reason };
     const s0 = checkSettlement(st, C);
-    if (s0) return { over: true, kind: "settlement", settlement: s0 };
+    /* A non-terminal settlement resolves the crisis and the run goes on to
+       the election; a terminal one is the ending. The reader is unchanged;
+       what changed is whether the record is also the last page (Flash I). */
+    if (s0) return { over: s0.terminal !== false, kind: "settlement", settlement: s0 };
     return { over: false };
   }
 
@@ -4120,8 +4126,17 @@ const Engine = (function () {
     /* A settlement that has landed is recorded so CONTENT can see that one
        has, through the `settled` condition, without the engine naming
        which — §3.5.1 rule 2 still holds and nothing here reports progress
-       toward one. */
-    if (found.length) st.settledAs = found[0].id;
+       toward one.
+
+       TERMINAL OR NOT (Flash I). By default a settlement ends the run.
+       `terminal:false` resolves the CRISIS, not the CAMPAIGN: it is
+       recorded in `resolvedAs` instead, so the `settled` condition stays
+       quiet and the run continues to the election, where content reads
+       which tier landed through the `resolvedIs` condition. */
+    if (found.length) {
+      if (found[0].terminal === false) st.resolvedAs = found[0].id;
+      else st.settledAs = found[0].id;
+    }
     return found.length ? found[0] : null;
   }
 
