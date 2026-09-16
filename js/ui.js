@@ -15,6 +15,8 @@ const UI = (function () {
      because only one row can be open and the alternative is a column of
      detail rows with no relationship to what is above them. */
   let funcOpen = null;
+  /* And an instrument opens in place. One id, for the same reason. */
+  let siOpen = null;
 
   const $ = s => document.querySelector(s);
   const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
@@ -650,8 +652,9 @@ const UI = (function () {
       else if (s.inForce) { status = window > 0 ? "in force · prayable " + window : "in force"; cls = "good"; }
       else if (s.awaitingApproval) { status = "awaiting approval"; }
       else status = si.procedure === "affirmative" ? "affirmative" : "negative";
-      return `<tr data-si="${si.id}" class="${s.inForce ? "inforce" : ""}">
-        <td>${si.title.replace(/ Order 2287$/, "")}<div class="note">${si.number} &middot; ${si.author.replace(/_/g,' ')}</div></td>
+      const open = siOpen === si.id;
+      const row = `<tr data-si="${si.id}" class="${s.inForce ? "inforce" : ""}${open ? " open" : ""}">
+        <td><i class="caret${open ? " open" : ""}"></i>${si.title.replace(/ Order 2287$/, "")}<div class="note">${si.number} &middot; ${si.author.replace(/_/g,' ')}</div></td>
         <td class="n"><span class="flag ${cls}" data-tip="${s.inForce ? "prayer" : "instrument"}">${status}</span></td>
         <td class="n">${s.made ? "" :
           `<button class="btn sibtn" data-make="${si.id}"${chk.ok ? "" : " disabled"}` +
@@ -661,7 +664,30 @@ const UI = (function () {
                      chk.ok ? null : chk.reason) + `>Make</button>`}
           ${s.inForce && window > 0 ? `<button class="btn sibtn" data-pray="${si.id}">Pray</button>` : ""}</td>
       </tr>`;
+      if (!open) return row;
+      /* WHAT THE ORDER DOES, and what it does to the benches. `summary` and
+         `effect_note` have been in the data since the ladder was written and
+         no surface ever read them — the row carries a title, a number and a
+         status and nothing else. This is the surface: the row opens onto its
+         own description, the way a seat and a functional constituency do. */
+      return row + `<tr class="si-d"><td colspan="3">
+        <p>${esc(si.summary || "")}</p>
+        ${si.effect_note ? `<p class="note">${esc(si.effect_note)}</p>` : ""}
+        <p class="note">${si.procedure === "affirmative"
+          ? "Affirmative: the House must approve it before it takes effect."
+          : "Negative: in force on being made, and prayable against for " +
+            (si.prayer_window || 6) + " sittings."}${si.revocable
+          ? " It may be revoked by a further order." : ""}</p>
+      </td></tr>`;
     }).join("");
+    /* A row opens onto its own description. The Make and Pray controls live
+       inside the row, so a click on one must not also toggle the detail. */
+    $("#gov-si").querySelectorAll("tr[data-si]").forEach(tr =>
+      tr.addEventListener("click", e => {
+        if (e.target.closest("button")) return;
+        siOpen = siOpen === tr.dataset.si ? null : tr.dataset.si;
+        drawGovernment();
+      }));
     $("#gov-si").querySelectorAll("[data-make]").forEach(b => b.addEventListener("click", () => {
       const si = (C.instruments || []).find(x => x.id === b.dataset.make);
       const r = acted(() => Engine.makeInstrument(st, C, b.dataset.make));
