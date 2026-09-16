@@ -365,6 +365,9 @@ try {
       if (dot < 0) return bump(moved, "scalar." + key);
       const ns = key.slice(0, dot), x = key.slice(dot + 1);
       if (ns === "price" || ns === "scalar") bump(moved, ns + "." + x);
+      /* a trend moves its scalar every sitting, so the chain must count
+         it as a mover of that scalar or a watched number goes invisible */
+      if (ns === "trend") bump(moved, "scalar." + x);
     });
   }));
   const walkWhen = w => w && Object.keys(w).forEach(k => {

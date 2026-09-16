@@ -1,5 +1,5 @@
-/* =============================================================
-   FLASH I — THE CAMPAIGN (placeholder scaffold, NOT WIRED)
+﻿/* =============================================================
+   FLASH I â€” THE CAMPAIGN (placeholder scaffold, NOT WIRED)
 
    This file is example content in the vein of the author's plan. It is
    loaded by NOTHING: the real campaign belongs in content/events.js,
@@ -14,9 +14,9 @@
      DL   legitimacy          NEW. The House and the stations behind you.
                               0-100. Low = strikes and no-confidence.
                               The author's call: the two existing
-                              domestic meters stay separate —
+                              domestic meters stay separate â€”
                               party_loyalty (the caucus) and
-                              public_standing (the country) — and
+                              public_standing (the country) â€” and
                               legitimacy is a third, the campaign's
                               own measure of the government being
                               believed. Events move all three.
@@ -40,13 +40,12 @@
                               death-line stays at 0: the government
                               falls when the stations go dark.
 
-   THE DRIFT RULE (proposed engine: `trends` + a `drift` effect)
+   THE DRIFT RULE (LANDED: `move` with a `trend.` namespace)
 
-     Micro-decisions alter TRENDS, not totals. `{drift:{lsm:-2}}` sets a
-     per-turn change that tick() applies every sitting, so cutting water
-     recycling reads as a slow leak rather than an instant crisis. Until
-     the verb exists, write the drift as a commented effect and it can be
-     swapped in mechanically.
+     Micro-decisions alter TRENDS, not totals. {move:{"trend.lsm":-2}}
+     leans the number that much each sitting; tick() applies it, and it
+     clamps at plus or minus ten. Cutting water recycling reads as a
+     slow leak rather than an instant crisis.
 
    COMPOUND TRIGGERS (engine: free)
 
@@ -72,7 +71,7 @@
    THE SIX TIERS (content/settlements.js, rank-ordered)
 
      Critical Triumph, Standard Victory, Pyrrhic Compromise, Managed
-     Stalemate, Strategic Capitulation, and Systemic Meltdown — which is
+     Stalemate, Strategic Capitulation, and Systemic Meltdown â€” which is
      a LOSS, not a settlement (3.5.1 rule 3), so it lives in the cascade
      and ends through the existing loyalty floor: the meltdown event
      applies {move:{party_loyalty:-100}} and checkLoss does the rest.
@@ -182,12 +181,12 @@ life-support bill and the embargo risk over the defaulted debt. Or decline,
 keep the short term, and explain the strikes.`,
     choices: [
       { label: "Move to annex.",
-        effects: [{ flag: "f1_annexing" }, { drift: { friction: 3 } }, /* PROPOSED VERB */
+        effects: [{ flag: "f1_annexing" }, { move: { "trend.friction": 3 } },
                   { move: { solvency: -6 } },
                   { wire: "GOVERNMENT MOVES TO ANNEX THE PLATFORM" }],
         result: "PLACEHOLDER: the annexation bill is set down." },
       { label: "Hold the line.",
-        effects: [{ drift: { legitimacy: -3 } }, /* PROPOSED VERB */
+        effects: [{ move: { "trend.legitimacy": -3 } },
                   { move: { friction: -4 } }],
         result: "PLACEHOLDER: the outer habitats have heard the answer." }
     ] },
@@ -206,10 +205,10 @@ recycling estimate: it holds, or it does not hold, and the difference is a
 funding line that will not be felt for a month.`,
     choices: [
       { label: "Fund it in full.",
-        effects: [{ move: { solvency: -3 } }, { drift: { lsm: 1 } }], /* PROPOSED VERB */
+        effects: [{ move: { solvency: -3 } }, { move: { "trend.lsm": 1 } } ],
         result: "PLACEHOLDER: the margin improves, a point at a time." },
       { label: "Trim it and take the margin.",
-        effects: [{ move: { solvency: 2 } }, { drift: { lsm: -2 } }], /* PROPOSED VERB */
+        effects: [{ move: { solvency: 2 } }, { move: { "trend.lsm": -2 } } ],
         result: "PLACEHOLDER: nothing happens. That is the point of a drift." }
     ] },
 
@@ -232,7 +231,7 @@ condition is the platform's mining leases.`,
                                  onBreach: "f1_debt_called" } }],
         result: "PLACEHOLDER: the solvency line recovers. The promise does not recover." },
       { label: "Refuse the rate.",
-        effects: [{ move: { legitimacy: 3 } }, { drift: { solvency: -1 } }], /* PROPOSED VERB */
+        effects: [{ move: { legitimacy: 3 } }, { move: { "trend.solvency": -1 } } ],
         result: "PLACEHOLDER: a solvent government would have refused it. This one is not solvent." }
     ] },
 

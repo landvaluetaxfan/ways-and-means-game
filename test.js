@@ -1762,6 +1762,23 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
        L.actors.lb_lifesupport.standing === 50, L.actors.lb_lifesupport.standing);
     Engine.apply(L, CONTENT, [{ move: { "actor.lb_lifesupport": 4 } }]);
 
+    /* TRENDS (Flash I): a micro-decision alters the rate, not the total.
+       Nothing crashes today; the number leans, a little, every sitting,
+       until somebody notices. */
+    const T = Engine.newGame(CONTENT);
+    const m0 = T.scalars.thermal_margin;
+    Engine.apply(T, CONTENT, [{ move: { "trend.thermal_margin": -2 } }]);
+    Engine.advance(T, CONTENT); Engine.advance(T, CONTENT);
+    ok("a trend moves its scalar a little each sitting",
+       T.scalars.thermal_margin === m0 - 4, m0 + " -> " + T.scalars.thermal_margin);
+    Engine.apply(T, CONTENT, [{ move: { "trend.thermal_margin": 4 } }]);
+    Engine.advance(T, CONTENT);
+    ok("and a reversed trend leans it back",
+       T.scalars.thermal_margin === m0 - 2, T.scalars.thermal_margin);
+    Engine.apply(T, CONTENT, [{ move: { "trend.thermal_margin": -20 } }]);
+    ok("a trend clamps at ten a sitting",
+       (T.trends.thermal_margin || 0) === -10, T.trends.thermal_margin);
+
     /* THE FLOOR. What a body will deliver scales with what it thinks of
        you, so the opening state is deliberately two seats short: lobbying
        everybody available on sitting one must NOT be enough. */

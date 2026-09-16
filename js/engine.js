@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 14;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends
+  const STATE_VERSION = 15;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends
 
   /* ---------------------------------------------------------
      1. STATE
@@ -77,6 +77,14 @@ const Engine = (function () {
       /* Planned whipping, per bill. Not spent until the division is called,
          so it can be revised or cleared. */
       whips: {},
+
+      /* TRENDS — a micro-decision alters the RATE, not the total (Flash I:
+         decreasing water recycling funding should not crash anything today;
+         it should lean on the margin, a little, every sitting, until
+         somebody notices). tick() applies each trend to its scalar once per
+         sitting; content sets and reverses them through
+         {move:{"trend.key":n}}. */
+      trends: {},
 
       /* PAIRING — a Westminster courtesy this chamber's arithmetic does
          not support, which is exactly why it is here.
@@ -292,6 +300,10 @@ const Engine = (function () {
     if (st.version < 14) {                    // the parliament has a length
       if (st.parliamentOpenedAt == null) st.parliamentOpenedAt = st.session;
       st.version = 14;
+    }
+    if (st.version < 15) {                    // trends (Flash I)
+      st.trends = st.trends || {};
+      st.version = 15;
     }
     return st;
   }
@@ -2709,6 +2721,13 @@ const Engine = (function () {
           st.prices[k] = clamp((st.prices[k] || 100) + d, 20, 400); break;
         case "capital":
           st.capital[k] = (st.capital[k] || 0) + d; break;
+        /* TRENDS (Flash I): {move:{"trend.lsm":-2}} leans the scalar that
+           much each sitting; tick() applies it. Clamped, because a trend
+           beyond ±10 a sitting is a switch wearing a dial. */
+        case "trend":
+          st.trends = st.trends || {};
+          st.trends[k] = clamp((st.trends[k] || 0) + d, -10, 10);
+          break;
         /* No new verb: an actor's standing moves the way a party's loyalty
            does, which is what keeps EFFECTS at its twenty-one and off
            §15.5's line for a twenty-second time. */
@@ -3131,6 +3150,10 @@ const Engine = (function () {
             out.push({ tone: d >= 0 ? "good" : "bad", cost: true,
               text: (d >= 0 ? "Puts " : "Spends credit with ") +
                     nameOf("parties", id, "name") + (d >= 0 ? " in your debt" : "") });
+          } else if (ns === "trend") {
+            out.push({ tone: d >= 0 ? "good" : "bad",
+              text: (d >= 0 ? "Steadies " : "Unsettles ") +
+                    id.replace(/_/g, " ") + ", a little, each sitting" });
           }
         });
           break;
@@ -3396,6 +3419,15 @@ const Engine = (function () {
           : "The consumables floor presses as closure falls");
       }
     })();
+
+    /* TRENDS APPLY AFTER THE MARKETS MOVE, so the same sitting shows both
+       what the world did and what the government's earlier decisions are
+       now leaning on, a little at a time. */
+    Object.keys(st.trends || {}).forEach(k => {
+      const d = st.trends[k];
+      if (!d) return;
+      st.scalars[k] = clamp((st.scalars[k] || 0) + d, 0, 100);
+    });
 
     /* Stations answer to the substrate price. A habitat that cannot pay does
        not economise — it sheds people, and the shed order says which. */
