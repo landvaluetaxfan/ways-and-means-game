@@ -129,5 +129,35 @@ const CURRENTS = [
   { id:"cu_deck",        party:"cu", name:"Deck cooperativists",   members:18, loyalty:54,
     axes:{ownership:"public",personhood:"restrictionist",sovereignty:"station",closure:"closurist"} },
   { id:"cu_halloran",    party:"cu", name:"Czarnecki group",        members:11, loyalty:12,
-    axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:"closurist"} }
+    axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:"closurist"} },
+
+  /* THE RENAMED PARTIES' ARGUMENTS (T7, design/24 B1). A party with no
+     internal current is a bloc that votes, and these three names imply an
+     argument that did not exist in the data. Members sum to popular seats
+     (district + list), the way the cu currents do. */
+
+  /* FREEHOLD: property absolutists who disagree on whose courts defend the
+     deed. The Title Caucus wants the Commonwealth to enforce title; the
+     Section Leagues want the station's own law and nothing federal near it. */
+  { id:"fh_title",     party:"fh", name:"The Title Caucus",        members:6, loyalty:38,
+    axes:{ownership:"private",personhood:"restrictionist",sovereignty:"federal",closure:null} },
+  { id:"fh_section",   party:"fh", name:"The Section Leagues",     members:5, loyalty:50,
+    axes:{ownership:"private",personhood:null,sovereignty:"station",closure:null} },
+
+  /* THE CDA: a church and a coalition partner, and the two argue. The
+     congregations made the party and voted the conference 71-29 against the
+     threshold; the ministerial wing holds the offices and votes like a
+     partner, which is why its members absented themselves rather than
+     divide against the leadership in public (8.5). */
+  { id:"rv_congregation", party:"rv", name:"The Congregations",     members:11, loyalty:62,
+    axes:{ownership:null,personhood:"restrictionist",sovereignty:null,closure:null} },
+  { id:"rv_ministerial",  party:"rv", name:"The Ministerial wing",  members:6, loyalty:40,
+    axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:null} },
+
+  /* UPLIFT: two seats and one question, whether they are there to witness or
+     to trade. Each current is one of the two members. */
+  { id:"upl_witness", party:"upl", name:"The Witness Caucus",       members:1, loyalty:70,
+    axes:{ownership:"public",personhood:"expansionist",sovereignty:null,closure:null} },
+  { id:"upl_bridge",  party:"upl", name:"The Bridge Caucus",        members:1, loyalty:50,
+    axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"} }
 ];

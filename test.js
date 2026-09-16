@@ -633,12 +633,22 @@ console.log("\nCURRENTS IN A DIVISION:");
      row("divergence", "cu").benches === null,
      "HC 4/117 states cu popular {for:68}");
 
-  /* Eleven of the twelve parties have no currents, and none of their
-     numbers may move. */
+  /* Parties WITH currents now report factions (T7 gave three more of them
+     currents), and parties without still report none. A party with
+     currents prints its working when it turns out FOR the measure; one
+     voting against keeps the row bare. */
+  const hasCur = pid => (CONTENT.currents || []).some(c => c.party === pid);
+  const votesFor = pid => (CONTENT.billById.thermal2.stances || {})[pid] === "for";
   const others = Engine.division(st, CONTENT, "thermal2").rows
     .filter(r => r.party !== "cu" && r.popularSeats);
-  ok("a party with no currents reports none",
-     others.every(r => r.benches === null), others.length + " parties");
+  ok("a party with currents that votes for the measure reports them",
+     others.filter(r => hasCur(r.party) && votesFor(r.party))
+           .every(r => r.benches !== null),
+     others.filter(r => hasCur(r.party) && votesFor(r.party))
+           .map(r => r.party + ":" + (r.benches ? r.benches.length : 0)).join(", "));
+  ok("a party without currents reports none",
+     others.filter(r => !hasCur(r.party)).every(r => r.benches === null),
+     others.filter(r => !hasCur(r.party)).length + " parties");
 
   /* Content states a faction's size; the roll states the party's, and an
      election moves the roll without touching the content. A current is

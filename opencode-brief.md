@@ -163,7 +163,23 @@ pool in at least one place:
 4. **No choice may be strictly dominant.** If one option is right in every
    state, it is a button, not a decision.
 
-## T5 — [ ] Quiet-sitting lines, 51 → 80
+## T5 — [x] Quiet-sitting lines, 51 → 80  ·  **DONE 17 Sep**
+
+**Landed.** `content/business.js` is now **80 entries** (21 question, 15
+committee, 11 instrument, 9 statement, 6 procedure, 5 petition, 13 colour).
+Twenty-nine added, weighted as asked, and the gated ones read the live state:
+committees report on the measure actually before the House
+(`billStage` on divergence in committee, thermal2 at second reading, the
+appropriation at first reading, the anchor at assent), the lapse order's first
+quarter once `si_2287_58` is in force, the drawdown and emergency powers orders
+laid once their rungs have been tried, and the budget's returns read like a
+newspaper once supply is granted. All eighty gates resolve against a fresh state
+(the first `business()` call throws on an unknown condition, so the draw itself
+is the proof).
+
+---
+
+### The task as written
 
 `content/business.js` is the room being a room. It is the cheapest content in
 the project per minute of play and a three-session run prints a lot of it.
@@ -203,7 +219,27 @@ requires it to have been defeated. So two endings hang on one bill and two hang
 on flags nobody sets — which means, until T6, the game has effectively **one
 ending with a coin-flip on it.**
 
-## T7 — [ ] Currents for the parties that should have them
+## T7 — [x] Currents for the parties that should have them  ·  **DONE 17 Sep**
+
+**Landed.** Six currents across the three renamed parties, members summing to
+popular seats: Freehold splits into the **Title Caucus** (6) and the **Section
+Leagues** (5) — property absolutists who disagree on whose courts defend the
+deed; the CDA into the **Congregations** (11) and the **Ministerial wing** (6) —
+§8.5's 71-29 conference and the ministers who absented themselves; Uplift into
+the **Witness Caucus** (1) and the **Bridge Caucus** (1) — the two seats and the
+one question of whether they are there to witness or to trade. `design/24`'s
+older B1 (AES constitutional/integrity, Home Rule mostly currents) is not done;
+the renamed three were the brief's ask.
+
+Two assertions learned the new shape: `test.js` now says *a party with currents
+that votes for the measure reports them, one without reports none* (the engine
+only prints faction workings for a party turning out FOR), and the two
+`uxtest.js` faction-sum blocks slice the governing party's own bench rows out
+from under its party row instead of summing every faction in the table.
+
+---
+
+### The task as written
 
 `design/24` §B1. A party with no internal current is a bloc that votes. The
 three renamed parties (`fh` Freehold, `rv` Congregational Democratic Alliance,

@@ -1882,7 +1882,12 @@ try {
     ok("composition carries the forecast when a measure is named",
        !!bd && />Aye</.test(bd.innerHTML));
     const bench = bd.querySelectorAll("tr.bench");
-    ok("which lists the factions under their party", bench.length === 4,
+    /* T7 gave three more parties currents, so the rows under them are
+       drawn here too: the expected count is read off the content, not
+       typed a second time. */
+    const expectedB = w.eval("(CONTENT.currents || []).filter(c => " +
+      "(CONTENT.billById.thermal2.stances || {})[c.party] === 'for').length");
+    ok("which lists the factions under their party", bench.length === expectedB,
        bench.length + " current rows");
     ok("named, not keyed",
        [...bench].every(tr => /[a-z]/.test(tr.cells[0].textContent) &&
@@ -1905,7 +1910,17 @@ try {
                   tr.cells.length === party.cells.length &&
                   tr.cells[0].textContent.indexOf("Socialists") >= 0);
     if (partyRow) {
-      const col = i => [...bench].reduce((n, tr) => n + num(tr, i), 0);
+      /* The governing party's own benches: the rows under it, up to the
+         next party row. With three parties split into currents, summing
+         every bench row into one party's line would mix the houses. */
+      const allRows = [...bd.querySelectorAll("tbody tr")];
+      const idx = allRows.indexOf(partyRow);
+      const cuB = [];
+      for (let i = idx + 1; i < allRows.length; i++) {
+        if (allRows[i].classList.contains("bench")) cuB.push(allRows[i]);
+        else break;
+      }
+      const col = i => cuB.reduce((n, tr) => n + num(tr, i), 0);
       ok("the printed faction seats sum to the printed party seats",
          col(COL.tot) === num(partyRow, COL.tot),
          col(COL.tot) + " = " + num(partyRow, COL.tot));
@@ -2131,13 +2146,20 @@ try {
        59 — the exact fault test.js §614 exists to catch, invisible until
        somebody actually whipped somebody. */
     const brk = doc.querySelector("#comp-table");
-    const bench2 = [...brk.querySelectorAll("tr.bench")];
     const prow = [...brk.querySelectorAll("tbody tr:not(.bench)")]
       .find(tr => /Socialists/.test(tr.cells[0].textContent));
-    if (bench2.length && prow) {
+    if (prow) {
       const n2 = (tr, i) => parseInt(tr.cells[i].textContent, 10) || 0;
+      /* Only the governing party's own benches, up to the next party row. */
+      const allRows2 = [...brk.querySelectorAll("tbody tr")];
+      const i2 = allRows2.indexOf(prow);
+      const cuB2 = [];
+      for (let i = i2 + 1; i < allRows2.length; i++) {
+        if (allRows2[i].classList.contains("bench")) cuB2.push(allRows2[i]);
+        else break;
+      }
       const base = n2(prow, 5);                       /* Pop aye */
-      const sum = bench2.reduce((n, tr) => n + n2(tr, 5), 0);
+      const sum = cuB2.reduce((n, tr) => n + n2(tr, 5), 0);
       ok("the factions still sum to the party row once members are whipped",
          base === sum, sum + " currents vs " + base + " printed");
       ok("and the whip is printed on top of that base, not inside it",
