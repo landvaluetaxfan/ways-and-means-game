@@ -57,10 +57,11 @@ const Tips = (function () {
       body: "The act of the story you are in. Chapters control which events can " +
             "fire. They do not advance on a timer." },
     slots: { title: "Order paper time",
-      body: "Debating time left this session. Give a slot to a partner's bill " +
-            "and it advances a stage and you earn capital with that partner. " +
-            "Give one to your own bill and you advance your programme instead. " +
-            "Slots refill when the House rises and the next session opens." },
+      body: "One slot moves one bill one stage closer to its division, and the " +
+            "session holds only a few. Give a slot to a partner's bill and you " +
+            "earn capital with that partner; spend one on your own and only your " +
+            "programme advances. Slots refill when the House rises and the next " +
+            "session opens." },
     signatures: { title: "Signatures",
       body: "Names Czarnecki has collected. At nine he can force a leadership " +
             "ballot. Your own conduct adds to this count: packing one licensing " +

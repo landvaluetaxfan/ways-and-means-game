@@ -357,6 +357,11 @@ const UI = (function () {
          back onto them */
       if (typeof Tips !== "undefined") Tips.remark();
     });
+    /* The same-screen flash runs after the redraw, never before it. */
+    if (pendingMoves) {
+      flashChanged(pendingMoves.before, pendingMoves.after);
+      pendingMoves = null;
+    }
   }
 
   /* ---------- title / status ---------- */
@@ -563,11 +568,11 @@ const UI = (function () {
     /* Every coalition partner is governing, not just the Prime Minister's
        party — the player's own row is still the one with no loyalty figure. */
     st.coalition.forEach(id => {
-      h += `<tr><td>${mark(id)}${pn(id)} <span class="flag" data-tip="gov">GOV</span></td>` +
+      h += `<tr data-pid="${id}"><td>${mark(id)}${pn(id)} <span class="flag" data-tip="gov">GOV</span></td>` +
            `<td class="n">${Engine.partyTotal(st, id)}</td><td class="n">${id === st.playerParty ? "&mdash;" : st.parties[id].loyalty}</td></tr>`;
     });
     st.confidenceSupply.forEach(id => {
-      h += `<tr><td>${mark(id)}${pn(id)} <span class="flag" data-tip="cs">C&amp;S</span></td>` +
+      h += `<tr data-pid="${id}"><td>${mark(id)}${pn(id)} <span class="flag" data-tip="cs">C&amp;S</span></td>` +
            `<td class="n">${Engine.partyTotal(st, id)}</td><td class="n">${st.parties[id].loyalty}</td></tr>`;
     });
     h += "</tbody>";
@@ -638,7 +643,7 @@ const UI = (function () {
           f <= 0 ? "At nought the stations go dark and the government falls. There is no undo."
                  : "At " + f + " or below the party removes you. There is no undo.") +
         `></span>`;
-      return `<div class="meterrow"><label data-tip="${k}">${lab}</label>` +
+      return `<div class="meterrow" data-key="${k}"><label data-tip="${k}">${lab}</label>` +
         `<div class="meter ${cls}"><i style="width:${v}%"></i>${tick}</div>` +
         `<output>${v}</output></div>`;
     }).join("");
@@ -651,7 +656,7 @@ const UI = (function () {
       partners.map(id => {
         const c = st.capital[id] || 0;
         const cls = c > 0 ? "good" : c < 0 ? "bad" : "";
-        return `<tr><td>${mark(id)}${pn(id)}</td>` +
+        return `<tr data-pid="${id}"><td>${mark(id)}${pn(id)}</td>` +
           `<td class="n"><span class="flag ${cls}" data-tip="ledger">${c > 0 ? "+" : ""}${c}</span></td>` +
           `<td class="n">${st.parties[id].loyalty}</td></tr>`;
       }).join("") + "</tbody>";
@@ -659,11 +664,15 @@ const UI = (function () {
       "Positive means they owe you. Negative means you owe them. Nothing here decays.";
 
     const left = st.slots.total - st.slots.used;
+    const hdr = $("#gov-slots-hdr");
+    if (hdr) hdr.textContent = left + " of " + st.slots.total + " left this session";
     $("#gov-slots").innerHTML =
       `<div class="slotbar">${Array.from({length: st.slots.total}, (_, i) =>
         `<i class="${i < st.slots.used ? "spent" : ""}"></i>`).join("")}</div>` +
-      `<div class="note" style="margin-top:4px">${left} of ${st.slots.total} slots left this session. ` +
-      `Giving a partner's bill time puts them in your debt. Giving your own advances nothing but your programme.</div>` +
+      `<div class="note" style="margin-top:4px">A slot is order-paper time: spend one and a measure moves one
+       stage closer to its vote. The session holds ${st.slots.total} and they refill when the House rises.
+       Give a slot to a partner's bill and the partner owes you for it. Give it to your own and only your
+       programme advances.</div>` +
       `<table><tbody>${C.bills.filter(b => !st.bills[b.id].dead).map(b =>
         `<tr><td>${b.owner ? mark(b.owner)
             : `<i class="swatch" style="background:var(--chrome-dk)" data-tip-title="No sponsor"` +
@@ -2148,11 +2157,17 @@ const UI = (function () {
     Object.keys(st.capital || {}).forEach(k => capital[k] = st.capital[k]);
     const dated = Engine.deadlines(st, C)
       .map(d => d.kind + "@" + d.sitting + ":" + (d.text || "")).join("|");
+    /* The numbers the same-screen flash reads: what the player can watch
+       move on this screen, not only what moved to another one. */
+    const scalars = Object.assign({}, st.scalars);
+    const loyalty = {};
+    Object.keys(st.parties).forEach(k => loyalty[k] = st.parties[k].loyalty);
     return { owed: (st.undertakings || []).map(u => u.id + ":" + u.state).join("|"),
              owedOpen: Engine.outstanding(st).length,
              bills: bills, si: si, posts: posts, capital: capital, dated: dated,
              datedList: Engine.deadlines(st, C),
-             slots: st.slots.total - st.slots.used };
+             slots: st.slots.total - st.slots.used,
+             scalars: scalars, loyalty: loyalty, sig: st.signatures || 0 };
   }
 
   /* EVERY ACTION REPORTS WHAT IT MOVED SOMEWHERE ELSE.
@@ -2193,7 +2208,52 @@ const UI = (function () {
     return out;
   }
 
+  /* ---------- the same-screen flash ----------
+
+     The movecard names what moved to ANOTHER tab. This marks what moved on
+     the one the player is standing on: the meter, the ledger line, the
+     loyalty figure, the order-paper marks. It runs at the end of drawAll,
+     never before it, because a pulse applied to a node the redraw is about
+     to replace is a pulse nobody saw. Killed with every other animation
+     under no-motion, like the card. */
+  let pendingMoves = null;
+
+  function flash(el) {
+    if (!el) return;
+    el.classList.remove("hit");
+    void el.offsetWidth;                       /* restart the keyframe */
+    el.classList.add("hit");
+    clearTimeout(el.__hitT);
+    el.__hitT = setTimeout(() => el.classList.remove("hit"), 900);
+  }
+
+  function flashChanged(before, after) {
+    const gov = screen === "gov", sit = screen === "sit";
+    if (before.slots !== after.slots) {
+      flash($("#sb-slots"));
+      if (gov) { flash($("#gov-slots .slotbar")); flash($("#gov-slots-hdr")); }
+    }
+    Object.keys(after.capital || {}).forEach(pid => {
+      if ((before.capital || {})[pid] === after.capital[pid]) return;
+      if (gov) flash($('#gov-ledger tr[data-pid="' + pid + '"]'));
+    });
+    Object.keys(after.loyalty || {}).forEach(pid => {
+      if ((before.loyalty || {})[pid] === after.loyalty[pid]) return;
+      if (gov) flash($('#gov-coalition tr[data-pid="' + pid + '"]'));
+    });
+    Object.keys(after.scalars || {}).forEach(k => {
+      if ((before.scalars || {})[k] === after.scalars[k]) return;
+      if (gov) flash($('#gov-meters .meterrow[data-key="' + k + '"]'));
+      /* The Sitting screen's copy is filled by a MutationObserver a beat
+         after the meters redraw; pulse it on the next tick or the pulse
+         dies with the nodes it was painted onto. */
+      if (sit) setTimeout(() => flash($('#gov-meters-mirror .meterrow[data-key="' + k + '"]')), 0);
+    });
+    if ((before.sig || 0) !== (after.sig || 0)) flash($("#sb-sig"));
+  }
+
   function reportMoves(before, after) {
+    pendingMoves = { before, after };
     if (typeof Motion === "undefined") return;
     const notes = [];
 
@@ -2264,8 +2324,11 @@ const UI = (function () {
               : "In " + d.away + " sittings." }));
     }
 
-    /* Two is a report; five is a wall. Anything past the first two is
-       on the screen it belongs to anyway. */
+    /* THE CONSEQUENCE THE PLAYER CAN SEE LEADS. A card under the tab they
+       are standing on says "this changed where you are looking"; a card for
+       another tab is a pointer, and pointers go second. Two is still the
+       cap: five is a wall. */
+    notes.sort((a, b) => (a.tab === screen ? 0 : 1) - (b.tab === screen ? 0 : 1));
     notes.slice(0, 2).forEach(n => Motion.notify(n));
     /* How much moved, so the beat can be as long as the consequence. */
     return notes.length;

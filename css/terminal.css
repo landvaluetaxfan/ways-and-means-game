@@ -204,13 +204,14 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 /* The plan takes what the column has left; the whip under it is its own
    height and never squeezed. */
 .g-cham > .stack > .panel:first-child{flex:0 1 auto;min-height:0;}
-/* THE WHIP PANEL TAKES THE REST OF THE COLUMN. It used to size to its own
-   content and leave the room below it empty, so the division list — the one
-   thing in it that can be 280 names long — had to scroll inside a 132px box
-   of its own, with a native bar, while the space it needed sat unused
-   underneath. It fills what the plan leaves now, and its body is the
-   scroller, which is the drawn bar every other panel in the terminal uses. */
-.g-cham > .stack > #p-whip{flex:1 1 auto;min-height:0;}
+/* THE WHIP PANEL SIZES TO ITS CONTENT, except while its division list is
+   open — then it takes the rest of the column. The list is the one thing in
+   the panel that can be 280 names long, and the room it needs is the room
+   the plan leaves underneath; filling all the time left a tall empty panel
+   when the list was closed. Its body is the scroller, which is the drawn
+   bar every other panel in the terminal uses; the list's own 132px box
+   with a native bar is gone. */
+.g-cham > .stack > #p-whip:has(.dvl[open]){flex:1 1 auto;min-height:0;}
 /* THE REFERENCE COLUMN SCROLLS, NOT ITS PANELS. Opening a functional seat
    should make the list LONGER — downward, into the room below it — rather than
    making it scroll inside itself, and it should not squeeze the composition
@@ -2246,6 +2247,13 @@ body.no-motion .movecard{transition:none;}
 }
 /* the tab itself says it, so the card is a prompt and not the only signal */
 .tab.tab-moved{box-shadow:inset 0 -3px 0 var(--ok);}
+/* A NUMBER THE PLAYER JUST CHANGED, marked on the screen it changed on.
+   The same-tab counterpart of the movecard: the card names what moved to
+   another tab, and this pulse marks the number that moved on this one.
+   js/ui.js flashChanged() applies it after the redraw. Killed with every
+   other animation under body.no-motion. */
+.hit{animation:hit .65s ease-out;}
+@keyframes hit{from{background:#e6d289;}to{background:transparent;}}
 
 /* =============================================================
    THE ROLL CALL — the lobbies filling, party by party.
