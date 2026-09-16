@@ -56,6 +56,76 @@ const BILLS = [
     onFail:[{move:{"loyalty.psa":-14}},
             {wire:"THRESHOLD BILL FAILS ON THE FUNCTIONAL DIVISION"}] },
 
+  /* =========================================================
+     THE APPROPRIATION BILL — design/13, and the spine of a session.
+
+     A budget is a BILL here and not a screen: §7.6 says if the player
+     needs a second window the model is too deep, so this uses the
+     machinery every other measure uses — stages, order-paper time,
+     whipping, division, the President — and what makes it a budget is
+     that four of its clauses are left blank for the government to fill
+     in before the House votes.
+
+     `test:"supply"` is the rule: the elected benches vote money, the
+     functional forty are heard and not obeyed, and an objection delays
+     it three sittings rather than killing it.
+
+     PROSE IS A PLACEHOLDER. Levels are named and costed so the mechanism
+     can be played and asserted; the register is flat on purpose.
+     TODO opencode (T20): a budget is the most-read document a government
+     publishes and these should sound like clauses of one, not like
+     difficulty settings.
+     ========================================================= */
+  { id:"appropriation", ref:"HC 4/140", stage:"first_reading", owner:"cu",
+    test:"supply", priority:true,
+    title:"Appropriation (Session 4) Bill",
+    summary:"The estimates for the session, and the quota released against them.",
+    effectNote:"Sets the thermal quota, the consumables floor, substrate insurance and capital works.",
+    contested:"Every party wants the floor raised and the quota released and neither paid for. The government's difficulty is that the two sides of that sentence are the same money.",
+    touches:[],
+    clauses:[
+      { id:"thermal", name:"Thermal quota released", default:"steady",
+        note:"§7.5.2: a market in permission-to-exist-at-scale whose price is set by this vote.",
+        levels:[
+          { id:"tight",  label:"Held tight", cost:0,  note:"The price rises. Fewer minds can afford to run.",
+            effects:[{ move:{ "price.thermal": 14, public_standing:-4 } }] },
+          { id:"steady", label:"As last session", cost:14, note:"No change anybody can point to.",
+            effects:[] },
+          { id:"open",   label:"Released", cost:34, note:"The price falls and the radiators are the limit again.",
+            effects:[{ move:{ "price.thermal": -16, thermal_margin:-5, public_standing:5 } }] }
+        ] },
+      { id:"floor", name:"Consumables floor", default:"hold",
+        note:"§7.4's guarantee. Cutting it is visible within a week.",
+        levels:[
+          { id:"cut",  label:"Trimmed", cost:0,  note:"Saves money in a way the low-closure stations feel first.",
+            effects:[{ move:{ consumables:-8, public_standing:-7 } }] },
+          { id:"hold", label:"Held", cost:16, note:"The guarantee as it stands.", effects:[] },
+          { id:"lift", label:"Lifted", cost:30, note:"The stations that cannot feed themselves are carried further.",
+            effects:[{ move:{ consumables:9, public_standing:4, treasury:-4 } }] }
+        ] },
+      { id:"insurance", name:"Substrate insurance", default:"hold",
+        note:"§7.4: cutting this does not reduce anybody's income. It suspends people.",
+        levels:[
+          { id:"cut",  label:"Reduced", cost:0, note:"The third rail, touched.",
+            effects:[{ move:{ public_standing:-11, "loyalty.cu":-6 } }] },
+          { id:"hold", label:"Held", cost:18, note:"Nobody is suspended for debt this session.", effects:[] },
+          { id:"wide", label:"Widened", cost:32, note:"Cover extends to the unattested.",
+            effects:[{ move:{ public_standing:6, "loyalty.psa":7, "loyalty.fh":-5 } }] }
+        ] },
+      { id:"works", name:"Capital works", default:"none",
+        note:"Slow, and the only line here that helps in ten years. §7.2: it also funds the station's future secession.",
+        levels:[
+          { id:"none", label:"Deferred", cost:0, note:"Again.", effects:[] },
+          { id:"some", label:"The ring band", cost:20, note:"Volume where the pressure is worst.",
+            effects:[{ move:{ "price.volume": -9, public_standing:3 } }] },
+          { id:"outer", label:"The outer stations", cost:30, note:"Closure where it is lowest, and the union's own dissolution funded with it.",
+            effects:[{ move:{ "price.volume": -5 } }, { station:{ homestead:{ closure:0.04 } } }] }
+        ] } ],
+    stances:{ cu:"for", psa:"for", rv:"for", upl:{forPct:0.5}, geo:{forPct:0.5},
+              cl:"against", sc:{forPct:0.3}, hul:{forPct:0.4}, fh:"against",
+              gb:{forPct:0.3}, des:{forPct:0.4}, ind:{forPct:0.5} },
+    onPass:[{ flag:"supply_granted" }],
+    onFail:[{ flag:"supply_refused" }] },
   { id:"thermal2", ref:"HC 4/094", stage:"second_reading", owner:"cu",
     touches:["thermal_quota"],
     author:"vellan", cosponsors:["laughon"],

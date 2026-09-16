@@ -462,6 +462,36 @@ single-issue pressure group, and none of these are that.
 
 The engine side is done and needs nothing.
 
+## T20 — [ ] The Appropriation Bill's prose
+
+`design/13` landed on 16 Sep: the budget is a **bill, not a screen**, because
+§7.6 says that if the player needs a second window the model is too deep. So
+the estimates are four clauses of a measure that goes through the House like
+any other — stages, order-paper time, whipping, division, the President — and
+the government fills the blanks in before the division.
+
+`content/bills.js` now has `appropriation`, and **its prose is mine and should
+not stay.** Four clauses, twelve levels, each with a `label`, a `cost` and a
+`note`, all written flat so the mechanism could be played and asserted.
+
+A budget is the most-read document a government publishes. These should sound
+like clauses of one, not like difficulty settings:
+
+- **Thermal quota released** — §7.5.2 calls this *"a market in
+  permission-to-exist-at-scale whose price is set by an appropriation vote."*
+  That sentence is the whole clause. Write it so the player feels it.
+- **The consumables floor** — §7.4's guarantee; cutting it is visible within a
+  week and the low-closure stations feel it first.
+- **Substrate insurance** — §7.4 again: cutting it does not reduce anybody's
+  income, **it suspends people.** The third rail.
+- **Capital works** — slow, the only line that helps in ten years, and §7.2's
+  dilemma exactly: raising a poor station's closure funds its future secession.
+
+Two things not to change. The `cost` numbers are balanced against a treasury of
+52 so that the defaults come to 48 and any upgrade must be paid for by a cut —
+that tension is the mechanic and it is tuned. And `touches: []` is deliberate:
+supply is exempt from domain consent because the elected benches vote money.
+
 ---
 
 ## Do not

@@ -1832,9 +1832,17 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
   (function () {
     const D = Engine.newGame(CONTENT);
 
+    /* Every bill EXCEPT a supply measure, which is exempt from domain
+       consent by design: the elected benches vote money. A budget touches
+       everything, which is exactly why it must answer to nobody's
+       particular bench. */
+    const domainBills = (CONTENT.bills || []).filter(b => b.test !== "supply");
     ok("every bill declares what it touches",
-       (CONTENT.bills || []).every(b => Array.isArray(b.touches) && b.touches.length),
-       (CONTENT.bills || []).filter(b => !(b.touches || []).length).map(b => b.id).join(", "));
+       domainBills.every(b => Array.isArray(b.touches) && b.touches.length),
+       domainBills.filter(b => !(b.touches || []).length).map(b => b.id).join(", "));
+    ok("and a supply measure declares that it touches nothing",
+       (CONTENT.bills || []).filter(b => b.test === "supply")
+         .every(b => Array.isArray(b.touches) && b.touches.length === 0));
 
     ok("and every interest it names is owned by some constituency",
        (CONTENT.bills || []).every(b => (b.touches || []).every(t =>
@@ -1995,6 +2003,106 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
       .filter(id => new RegExp('"' + id + '"').test(src));
     ok("the engine names no party, station or event", named.length === 0,
        named.join(", "));
+  })();
+
+  /* ---- CONSUMABLES IS CLOSURE, NATIONALLY ----
+     Roadmap item 7, and the last dead indicator: moved by nothing and
+     read by nothing. §7.2 makes closure the sovereignty number and
+     consumables its federal counterpart, so they are wired both ways. */
+  (function () {
+    const K = Engine.newGame(CONTENT);
+    const open = K.scalars.consumables;
+    Engine.advance(K, CONTENT);               /* seeds the index */
+
+    /* Raising a poor station's closure eases the federal floor — which is
+       §7.2's dilemma as arithmetic, since it also funds that station's
+       future secession. */
+    const poor = (CONTENT.stations || []).slice()
+      .sort((a, b) => (a.closure || 0) - (b.closure || 0))[0];
+    K.stations[poor.id].closure = Math.min(1, K.stations[poor.id].closure + 0.5);
+    for (let i = 0; i < 3; i++) Engine.advance(K, CONTENT);
+    ok("raising closure eases the consumables floor",
+       K.scalars.consumables > open,
+       open + " then " + K.scalars.consumables + " (" + poor.name + ")");
+
+    /* And it is read, not only written: a federation with no margin
+       cannot cushion the stations that depend on it. */
+    const src = require("fs").readFileSync(__dirname + "/js/engine.js", "utf8");
+    ok("and consumables now gates something",
+       /scalars\.consumables[^;]{0,80}cushion|cushion[^;]{0,80}scalars\.consumables/
+         .test(src.replace(/\s+/g, " ")));
+
+    /* The authored opening must not be silently rewritten: the weighted
+       closure is 0.609 and the opening is 71, so it tracks and does not
+       equal. */
+    ok("the opening state is left where content put it",
+       Engine.newGame(CONTENT).scalars.consumables ===
+       CONTENT.setup.scalars.consumables, open + "");
+  })();
+
+  /* ---- THE BUDGET IS A BILL, NOT A SCREEN ----
+     design/13 §4. A screen of line items fails §7.6 on sight, so the
+     estimates are clauses of a measure that goes through the House like
+     any other. The engine knows nothing about budgets; it knows that a
+     bill may have blanks. */
+  (function () {
+    const A = Engine.newGame(CONTENT);
+    const src = require("fs").readFileSync(__dirname + "/js/engine.js", "utf8");
+    ok("the engine contains no special case for it (design/13 acceptance)",
+       !/appropriation/i.test(src));
+
+    const cls = Engine.clausesOf(CONTENT, "appropriation");
+    ok("the bill carries clauses the government fills in", cls.length === 4,
+       cls.length + "");
+    ok("and it is a supply measure",
+       CONTENT.billById.appropriation.test === "supply");
+
+    /* The ceiling is the whole fiscal model: refused, and it says by how
+       much, at the point where a line can still be traded for another. */
+    const before = Engine.clauseCost(A, CONTENT, "appropriation");
+    ok("the defaults are affordable", before.affordable,
+       before.total + " of " + before.treasury);
+    const over = Engine.setClause(A, CONTENT, "appropriation", "works", "outer");
+    ok("an allocation the Treasury cannot fund is refused",
+       over.ok === false && over.over > 0, over.reason);
+    ok("and the refusal names the shortfall", /short by \d+/.test(over.reason || ""),
+       over.reason);
+    ok("a refused allocation does not change the plan",
+       Engine.clauseCost(A, CONTENT, "appropriation").total === before.total);
+
+    /* Which makes it a budget: you cannot have everything, so you trade. */
+    ok("cutting one line pays for another",
+       Engine.setClause(A, CONTENT, "appropriation", "floor", "cut").ok &&
+       Engine.setClause(A, CONTENT, "appropriation", "works", "some").ok,
+       Engine.clauseCost(A, CONTENT, "appropriation").total + " allocated");
+
+    /* And the choices are part of the Act. */
+    const eff = Engine.clauseEffects(A, CONTENT, "appropriation");
+    ok("the chosen levels are what the Act does", eff.length >= 2,
+       JSON.stringify(eff).slice(0, 60));
+    const cons = A.scalars.consumables;
+    /* It goes through the House like anything else, which is the point:
+       it opens at first reading and has to be given time on the order
+       paper before it can be divided on. */
+    for (let i = 0; i < 4 && Engine.canDivide(A, CONTENT, "appropriation").unread; i++)
+      Engine.grantSlot(A, CONTENT, "appropriation");
+    ok("it needed time on the order paper like any other measure",
+       !Engine.canDivide(A, CONTENT, "appropriation").unread,
+       A.bills.appropriation.stage);
+    Engine.divide(A, CONTENT, "appropriation");
+    /* The functional benches objected, so supply is DELAYED three sittings
+       rather than killed — the Act is signed and inert and its
+       allocations sit on the calendar. Which is the supply rule and the
+       deferred queue meeting, and the reason this advances past the
+       delay rather than reading the numbers the moment it assents. */
+    ok("a budget the benches voted down is delayed, not lost",
+       A.bills.appropriation.stage === "assented" &&
+       A.bills.appropriation.supplyDelay > 0,
+       A.bills.appropriation.supplyDelay + " sittings");
+    for (let i = 0; i < 8; i++) Engine.advance(A, CONTENT);
+    ok("and passing it applies the clauses the government chose",
+       A.scalars.consumables !== cons && !!A.flags.supply_granted,
+       "consumables " + cons + " -> " + A.scalars.consumables);
   })();
 
   /* Rule 3: closure and dissolution are failure modes, not settlements. */

@@ -1306,6 +1306,13 @@ const UI = (function () {
           after();
         }));
     });
+    root.querySelectorAll(".cl-opt").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const r = Engine.setClause(st, C, billId, btn.dataset.cl, btn.dataset.lv);
+        if (!r.ok) setStatus(r.reason, "transient");
+        after();
+      });
+    });
     const clr = root.querySelector("#btn-clearwhip");
     if (clr) clr.addEventListener("click", () => { Engine.clearWhips(st, billId); after(); });
     root.querySelectorAll(".whipbar[data-lb]").forEach(bar => {
@@ -1537,6 +1544,42 @@ const UI = (function () {
         : `To carry it anyway the House must return ${dm.override.need} of the ` +
           `${dm.override.of} voting and has ${dm.override.have}. ` +
           `Otherwise square the bench.`) + `</div>`;
+  }
+
+  /* ---------- the clauses of a bill the government fills in ----------
+     design/13: a budget is a bill, not a screen. So this is not a fiscal
+     panel — it is the blanks in a measure, drawn as clauses, in the
+     column where the measure already is. The ceiling is the whole of the
+     model: a level the Treasury cannot fund is refused at the point of
+     choosing and the refusal names the shortfall, because that is where
+     the player can still trade one line against another. */
+  function clausePanel(id) {
+    const cls = Engine.clausesOf(C, id);
+    if (!cls.length || st.bills[id].dead) return "";
+    const plan = Engine.clausePlan(st, C, id);
+    const cost = Engine.clauseCost(st, C, id);
+    const rows = cls.map(cl => {
+      const now = plan[cl.id] || {};
+      const opts = (cl.levels || []).map(lv => {
+        const on = lv.id === now.id;
+        const probe = on ? null : Engine.clauseCost(st, C, id);
+        const would = cost.total - (now.cost || 0) + (lv.cost || 0);
+        const bad = !on && would > cost.treasury;
+        return `<button class="btn cl-opt${on ? " on" : ""}${bad ? " over" : ""}"` +
+          ` data-cl="${esc(cl.id)}" data-lv="${esc(lv.id)}"` +
+          ` data-tip-title="${esc(lv.label)}"` +
+          ` data-tip-body="${esc((lv.note || "") + " Costs " + (lv.cost || 0) + "." +
+             (bad ? " The Treasury is short by " + (would - cost.treasury) + "." : ""))}"` +
+          `>${esc(lv.label)}<i>${lv.cost || 0}</i></button>`;
+      }).join("");
+      return `<div class="cl-row"><b data-tip-title="${esc(cl.name)}" ` +
+        `data-tip-body="${esc(cl.note || "")}">${esc(cl.name)}</b>` +
+        `<div class="cl-opts">${opts}</div></div>`;
+    }).join("");
+    return `<div class="clsec"><h4>The estimates</h4>${rows}` +
+      `<div class="whipcost">Allocated <b>${cost.total}</b> of ` +
+      `${cost.treasury} the Treasury holds. A line the Treasury cannot ` +
+      `fund is refused; trade one against another.</div></div>`;
   }
 
   function benchBar(label, r) {
@@ -3065,13 +3108,14 @@ const UI = (function () {
        describes, not in the left column beside the bill's text. It is a
        record of what the chamber did and the chamber is here. */
     const dvl = divisionList(id);
+    const cls = clausePanel(id);
     const lob = lobbyPanel(id, b, d);
     const fold = (key, title, sub, inner) => inner
       ? `<details class="foldsec" data-fold="${key}"${whipOpen[key] ? " open" : ""}>` +
         `<summary><b>${title}</b><span>${sub}</span></summary>${inner}</details>`
       : "";
     const lobN = Engine.lobbyCost(st, C, id).seats;
-    const html = whipPanel(id, b, d) +
+    const html = cls + whipPanel(id, b, d) +
       /* PAIRING IS NOT IN THE PANEL. The engine keeps it, and so do its
          assertions, because the mechanic is correct and the arithmetic
          behind it is one of the better things the chamber does. But under

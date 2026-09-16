@@ -2389,3 +2389,15 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .dvl-b{max-height:132px;overflow:auto;min-height:0;}
 .dvl.incap .dvl-b{max-height:210px;}
 .dvl.incap{border-top:0;margin-top:6px;}
+
+/* The blanks in a bill, drawn as clauses. Not a fiscal panel. */
+.clsec{margin-bottom:8px;}
+.clsec h4{margin:0 0 5px;font-family:var(--f-ui);font-size:10.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:400;}
+.cl-row{display:flex;gap:8px;align-items:baseline;margin-bottom:3px;}
+.cl-row>b{flex:0 0 118px;font-size:11.5px;font-weight:600;cursor:help;}
+.cl-opts{display:flex;gap:3px;flex-wrap:wrap;flex:1 1 auto;min-width:0;}
+.cl-opt{font-size:10.5px;padding:1px 6px;display:inline-flex;gap:5px;align-items:baseline;}
+.cl-opt>i{font-style:normal;font-family:var(--f-data);font-size:9.5px;opacity:.7;}
+.cl-opt.on{background:var(--ink);color:var(--field);border-color:var(--ink);}
+.cl-opt.over{opacity:.45;}

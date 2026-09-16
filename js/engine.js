@@ -123,13 +123,16 @@ const Engine = (function () {
          is a thing you will owe — so settling one creates an undertaking
          with a deadline rather than moving a number. */
       lobby: {},
+      /* What the government has written into the blanks of a bill that
+         has any. See clausesOf. */
+      clauses: {},
 
       /* PRICES — index numbers, 100 at the founding of the current series.
          Not a market simulation and deliberately not equities: there is no
          point pricing shares in an economy where goods are nearly free. These
          are the four things that are actually scarce, and every one of them is
          a legislative output rather than a market outcome. A thermal
-         appropriation moves the quota price; the quota price decides whether a
+         budget moves the quota price; the quota price decides whether a
          poor station can afford to keep its people running.
 
          This is the causal chain the player is meant to watch:
@@ -283,6 +286,7 @@ const Engine = (function () {
          roster in two places and let them drift. */
       if (!st.actors) st.actors = {};
       if (!st.lobby) st.lobby = {};
+      if (!st.clauses) st.clauses = {};
       st.version = 13;
     }
     if (st.version < 14) {                    // the parliament has a length
@@ -502,6 +506,7 @@ const Engine = (function () {
       if (notes) notes.actorsDropped.push(id);
     });
     st.lobby = st.lobby || {};
+    st.clauses = st.clauses || {};
     return st;
   }
 
@@ -1068,7 +1073,7 @@ const Engine = (function () {
        drawn the distinction; this is the first thing to read it.
 
        A bill declares itself supply or confidence in content. Until the
-       Appropriation Bill exists (design/13) nothing does, so today this
+       A money bill Bill exists (design/13) nothing does, so today this
        reads as "free on everything", which is the correct answer to a
        House with no budget in it. */
     if (inCS && !inCoalition && !own && !(bill && (bill.supply || bill.confidence)))
@@ -1238,7 +1243,7 @@ const Engine = (function () {
   function assent(st, C, billId, delay) {
     const b = C.billById[billId], bs = st.bills[billId];
     if (delay == null) delay = bs.supplyDelay || 0;
-    /* A delayed appropriation is assented and INERT: the Act exists, and
+    /* A delayed money bill is assented and INERT: the Act exists, and
        what it does has not happened yet. Queued rather than applied, so
        it arrives on the calendar as a dated fact and resolveDue() lands
        it at the top of the sitting like any other. */
@@ -1251,6 +1256,15 @@ const Engine = (function () {
         "Supply delayed " + delay + " sittings by the functional benches: " + b.title });
     } else {
       apply(st, C, b.onPass);
+    }
+    /* The clauses the government wrote in are part of the Act. Applied
+       after onPass and on the same schedule, so a delayed budget
+       delays its allocations with it. */
+    const cls = clauseEffects(st, C, billId);
+    if (cls.length) {
+      if (delay > 0) st.queue.push({ dueSitting: st.sitting + delay,
+        effects: cls, label: b.title + ": allocations take effect" });
+      else apply(st, C, cls);
     }
     bs.stage = "assented"; bs.dead = true; bs.assentedAt = st.sitting;
     st.log.unshift({ sitting: st.sitting, text: "Assented: " + b.title });
@@ -1842,6 +1856,85 @@ const Engine = (function () {
   function clearPairs(st, billId) { delete st.pairs[billId]; }
 
   /* ---------------------------------------------------------
+     CLAUSES — a bill the player fills in before the House votes on it.
+
+     design/13 asks for a budget and says the obvious design is wrong: a
+     screen of line items and sliders fails §7.6 on sight, because the
+     player would need a second window and the game would be a
+     spreadsheet with a parliament attached. So the budget is A BILL, and
+     what makes it a budget is that some of its clauses are left blank for
+     the government to fill in.
+
+     NOTHING HERE KNOWS WHAT A BUDGET IS. A clause is a choice between
+     stated levels, each with a cost and effects, and any bill may carry
+     them: a money bill is the obvious use and a treaty with
+     variable terms would be another. `grep budget js/engine.js`
+     returns nothing, which is design/13's own acceptance test.
+
+     The money is real in one direction only, per §7.6's depth rule: an
+     allocation the treasury cannot fund is REFUSED, and the refusal names
+     the shortfall. There is no deficit, no borrowing and no ledger — the
+     constraint is a ceiling, not an accounting system.
+     --------------------------------------------------------- */
+
+  function clausesOf(C, billId) {
+    const b = C.billById[billId];
+    return (b && b.clauses) || [];
+  }
+
+  /* What the government has settled on, defaulting to each clause's own
+     stated default so a bill is always in a passable state. */
+  function clausePlan(st, C, billId) {
+    const plan = (st.clauses || {})[billId] || {};
+    const out = {};
+    clausesOf(C, billId).forEach(cl => {
+      const chosen = plan[cl.id];
+      const lv = (cl.levels || []).find(l => l.id === chosen) ||
+                 (cl.levels || []).find(l => l.id === cl.default) ||
+                 (cl.levels || [])[0];
+      if (lv) out[cl.id] = lv;
+    });
+    return out;
+  }
+
+  function clauseCost(st, C, billId) {
+    const plan = clausePlan(st, C, billId);
+    let total = 0;
+    Object.keys(plan).forEach(k => { total += plan[k].cost || 0; });
+    return { total: total, treasury: st.scalars.treasury,
+             over: Math.max(0, total - st.scalars.treasury),
+             affordable: total <= st.scalars.treasury };
+  }
+
+  function setClause(st, C, billId, clauseId, levelId) {
+    const cl = clausesOf(C, billId).find(c => c.id === clauseId);
+    if (!cl) return { ok: false, reason: "no such clause" };
+    const lv = (cl.levels || []).find(l => l.id === levelId);
+    if (!lv) return { ok: false, reason: "no such level" };
+    const was = ((st.clauses || {})[billId] || {})[clauseId];
+    const store = st.clauses[billId] || (st.clauses[billId] = {});
+    store[clauseId] = levelId;
+    /* Refused rather than allowed into deficit: the ceiling is the whole
+       of the fiscal model and it has to bite at the point of choosing,
+       where the player can still do something about it. */
+    const cost = clauseCost(st, C, billId);
+    if (!cost.affordable) {
+      if (was) store[clauseId] = was; else delete store[clauseId];
+      return { ok: false, reason: "the Treasury is short by " + cost.over,
+               over: cost.over };
+    }
+    return { ok: true, level: lv, cost: cost };
+  }
+
+  /* Applied where a bill's own onPass is applied, so a clause is part of
+     the Act rather than a thing that happens near it. */
+  function clauseEffects(st, C, billId) {
+    const plan = clausePlan(st, C, billId);
+    return Object.keys(plan).reduce((a, k) =>
+      a.concat(plan[k].effects || []), []);
+  }
+
+  /* ---------------------------------------------------------
      DOMAIN CONSENT — the bench that owns the subject.
 
      Every functional constituency has carried an `interest` array since
@@ -1887,7 +1980,7 @@ const Engine = (function () {
 
      A budget touches everything — §7.3 fixes the tax base as volume,
      thermal quota, substrate-hours and mass-to-orbit, and §7.5.2 makes
-     the appropriation the thing that sets the thermal price — so under
+     the money bill the thing that sets the thermal price — so under
      domain consent the concerned pool would be every constituency and
      all forty seats. That would make the budget the most vetoable
      measure in the game, against a government whose working majority is
@@ -1909,7 +2002,7 @@ const Engine = (function () {
      §7.7 says cannot be topped up, so an objection costs the government
      something it genuinely cannot get back, without being able to stop
      it governing. Implemented through the deferred queue, so the held
-     appropriation appears on the calendar as a dated thing the
+     budget appears on the calendar as a dated thing the
      government knows is coming. */
   function isSupply(bill) { return !!bill && bill.test === "supply"; }
 
@@ -3229,9 +3322,9 @@ const Engine = (function () {
        rule a price nothing meaningfully moves is a price no event can
        honestly be gated on, which is most of why nothing is.
 
-       The real driver is the appropriation (7.5.2: "a market in
+       The real driver is the budget (7.5.2: "a market in
        permission-to-exist-at-scale whose price is set by an
-       appropriation vote"), and that waits on the canon decision in
+       money vote"), and that waits on the canon decision in
        design/13. This is the honest interim: continuous in the one
        input it actually has. */
     P.volume = clamp(P.volume + drift(P.volume,
@@ -3247,13 +3340,51 @@ const Engine = (function () {
       h.push(P[k]); if (h.length > 60) h.shift();
     });
 
+    /* CONSUMABLES IS CLOSURE, NATIONALLY. §7.2 makes the closure ratio the
+       sovereignty number — the fraction of a habitat's material cycle it
+       can run without imports — and consumables is its federal
+       counterpart: what the union has to send to the stations that cannot
+       feed themselves. They were two numbers and neither read the other,
+       which is why consumables was moved by nothing and gated nothing.
+
+       It TRACKS rather than equals. The authored opening is 71 and the
+       population-weighted closure is 0.609, so equating them would
+       silently rewrite the opening state; what is derived is the
+       MOVEMENT. Raise a poor station's closure and the federation has
+       less to carry. Which is §7.2's dilemma stated as arithmetic: the
+       same act that eases the consumables floor funds that station's
+       future secession. */
+    (function () {
+      let pop = 0, w = 0;
+      C.stations.forEach(s0 => {
+        const s = st.stations[s0.id]; if (!s) return;
+        const p = s.population || 0; pop += p; w += p * (s.closure || 0);
+      });
+      if (!pop) return;
+      const now = w / pop;
+      if (st.closureIndex == null) { st.closureIndex = now; return; }
+      const drift = Math.round((now - st.closureIndex) * 260);
+      if (drift) {
+        st.scalars.consumables = clamp(st.scalars.consumables + drift, 0, 100);
+        st.closureIndex = now;
+        marks.push(drift > 0
+          ? "The consumables floor eases as closure improves"
+          : "The consumables floor presses as closure falls");
+      }
+    })();
+
     /* Stations answer to the substrate price. A habitat that cannot pay does
        not economise — it sheds people, and the shed order says which. */
     const strain = (P.substrate - 100) / 100;
     if (Math.abs(strain) > 0.06) {
       C.stations.forEach(s0 => {
         const s = st.stations[s0.id];
-        const exposure = Math.max(0, 0.75 - s.closure);      // poor stations feel it first
+        /* And a federation with no consumables margin cannot cushion the
+           stations that depend on it, so the same price strain bites
+           harder. consumables gated nothing before this; now it decides
+           how much the exposed actually feel. */
+        const cushion = 0.6 + (st.scalars.consumables / 100) * 0.7;
+        const exposure = Math.max(0, 0.75 - s.closure) / cushion;
         const delta = Math.round(strain * exposure * s.population * 0.0012);
         if (!delta) return;
         const before = s.suspended;
@@ -3949,6 +4080,7 @@ const Engine = (function () {
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
     rollCall, lobbyable, setLobby, clearLobby, lobbyCost, payLobby, lobbiedSeats,
+    clausesOf, clausePlan, clauseCost, setClause, clauseEffects,
     domainTest, functionalByConstituency, lobbiedByConstituency, isSupply,
     lastSession, dissolve, checkEnd,
     settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
