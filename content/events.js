@@ -985,7 +985,7 @@ remember which government did."`,
       result:"She expected nothing else, which is why she came in person." }
   ]},
 
-{ id:"the_delegation", chapter:2, weight:64, maxFires:2,
+  { id:"the_delegation", chapter:2, weight:64, maxFires:2,
   when:{ suspendedAbove:{ federal:74000 } },
   title:"Seventy-four thousand, and a delegation",
   speaker:"ansar",
@@ -1004,6 +1004,70 @@ the schedule and nobody has been asked to defend it.`,
     { label:"Receive them, and say nothing on the record.",
       effects:[{ move:{ "public_standing":-4 } }, { move:{ "loyalty.cu_maintenance":-6 } }],
       result:"They are heard and not answered, which from their side of the desk is worse than a refusal." }
+  ]},
+
+/* THE TWO FLAG-ENDINGS' ROUTES (T6). Half the settlements hung on flags no
+   content set, so half the endings were unreachable. Each is an offer made
+   when the national argument is stalled or the government is under
+   pressure, and each decision is real: the tribunal and the schedule are
+   ways out that cost the government what it was holding onto. Taking one
+   settles the question, which ends the run the way every settlement does. */
+
+{ id:"the_tribunal", chapter:2, weight:74, once:true,
+  when:{ billStage:{ divergence:"committee" },
+         flagsAbsent:["tribunal_established","federal_schedule","tribunal_refused"] },
+  title:"The third way",
+  speaker:"fenwick",
+  body:`The Minister for Law and the Charter comes with a suggestion that
+is not her own, which she is careful to say. The President's office has
+asked, privately, whether the government would consider taking the
+threshold out of the House altogether.
+
+A tribunal. Not forty hours, not a hundred and sixty-eight. A panel that
+decides, case by case, what a person is, and publishes no schedule at all.
+She sets the shape of it on the desk.
+
+"The House can fight this bill for a year," she says. "Or the question can
+be settled in rooms, one case at a time, forever."`,
+  choices:[
+    { label:"Establish the tribunal.",
+      effects:[{ flag:"tribunal_established" },
+               { move:{ "public_standing":-6 } }, { move:{ "loyalty.psa":-12 } },
+               { move:{ "loyalty.gb":5 } },
+               { wire:"TRIBUNAL ESTABLISHED ON THE DIVERGENCE QUESTION" }],
+      result:"The question is administrative now. The partner that made the bill will not forgive the government that set it aside." },
+    { label:"Leave the question to the House.",
+      effects:[{ flag:"tribunal_refused" }, { move:{ "loyalty.cu_maintenance":5 } },
+               { move:{ "public_standing":2 } }],
+      result:"The suggestion is declined. It is declined in writing, which is the only way to decline the President's office." }
+  ]},
+
+{ id:"the_federal_option", chapter:2, weight:72, once:true,
+  when:{ signaturesAtLeast:3,
+         flagsAbsent:["tribunal_established","federal_schedule","federal_refused"] },
+  title:"Thirty-four thresholds",
+  speaker:"laughon",
+  body:`The Leader of Home Rule asks for the meeting and does not waste it.
+The government is being asked to answer the threshold question, and every
+answer it can give has a price attached. He is here to offer the one with
+no price in the chamber.
+
+"A schedule for each station," he says. "Let Anselm Ring set its own line
+and Homestead set its own, and let the Commonwealth say only that it is not
+the Commonwealth's business. The union survives by not asking the question
+nationally. That is all my party has ever asked for, and the price is paid
+by nobody in this room."`,
+  choices:[
+    { label:"Take the schedule. Let every station answer for itself.",
+      effects:[{ flag:"federal_schedule" },
+               { move:{ "loyalty.sc":8 } }, { move:{ "loyalty.cu_maintenance":-6 } },
+               { move:{ "public_standing":-4 } },
+               { wire:"FEDERAL SCHEDULE: EACH STATION TO SET ITS OWN THRESHOLD" }],
+      result:"There is no national question any more. The maintenance benches know exactly what was traded and exactly who was not asked." },
+    { label:"Refuse. One Commonwealth, one law.",
+      effects:[{ flag:"federal_refused" }, { move:{ "loyalty.sc":-8 } },
+               { move:{ "public_standing":3 } }],
+      result:"Home Rule heard the answer it expected. It will ask again in the next parliament, whichever government is in it." }
   ]}
 
 ];

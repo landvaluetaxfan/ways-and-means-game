@@ -1643,15 +1643,15 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
      Engine.checkSettlement(repealed, CONTENT) === null,
      (Engine.checkSettlement(repealed, CONTENT) || {}).id);
 
-  /* Two of the four endings hang on a flag that NO CONTENT SETS. That is
-     opencode's T6 and not an engine fault, but it is asserted here so the
-     day it stops being true is a day the build tells somebody. Flip these
-     to the positive form when the content lands. */
+  /* Two of the four endings hang on a flag, and T6 landed the content that
+     sets each one: an event that establishes the tribunal and one that
+     lays a federal schedule. Asserted positively so the day either route
+     disappears is a day the build says so. */
   const setsFlag = (f0) => JSON.stringify(CONTENT.events || []).indexOf(f0) >= 0;
-  ok("KNOWN GAP: no event establishes a tribunal (opencode T6)",
-     !setsFlag("tribunal_established"));
-  ok("KNOWN GAP: no event lays a federal schedule (opencode T6)",
-     !setsFlag("federal_schedule"));
+  ok("an event establishes a tribunal (opencode T6)",
+     setsFlag("tribunal_established"));
+  ok("an event lays a federal schedule (opencode T6)",
+     setsFlag("federal_schedule"));
 
   /* Graduated personhood beats either: a tribunal takes the number out
      of law, so the threshold stops deciding anything. */

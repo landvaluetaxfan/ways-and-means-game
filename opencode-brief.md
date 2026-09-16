@@ -188,7 +188,43 @@ handful gated on `when` so the texture of a sitting answers to the state — a
 committee reporting on a bill that is actually in committee reads as a world;
 the same line printed at random reads as filler.
 
-## T6 — [ ] The four endings
+## T6 — [x] The four endings  ·  **DONE 17 Sep**
+
+**Landed: the prose, and both missing routes.**
+
+Every settlement now carries a `closing` — the ending itself, what the
+Commonwealth looks like after, and what it cost — written under rule 2 (each
+reads as the ONLY ending, no nod to the other three) and rule 4 (it states the
+world, never the player's virtue, so it reads the same wholehearted or by
+attrition). `graduated_personhood` is written as the quiet horror §3.5.1 names:
+the argument does not stop, it moves indoors into a procedure nobody watches,
+and "two million cases are pending".
+
+**Both unreachable endings now have routes.** Two chapter-two events, each an
+offer made when the argument is stalled or the government pressed, each a real
+decision that costs what the government was holding onto:
+
+- `the_tribunal` — the Law Minister relays the President's office's suggestion
+  while `divergence` sits in committee. Establishing it sets
+  `tribunal_established` (graduated personhood), costs the NPP's trust and
+  standing; refusing sets `tribunal_refused` and the fight stays in the House.
+- `the_federal_option` — Home Rule offers thirty-four schedules once three
+  signatures are down. Taking it sets `federal_schedule` (the federal
+  settlement), costs the maintenance benches; refusing closes the route.
+
+`test.js`'s two "KNOWN GAP" assertions flipped to the positive form; the
+settlement suite now proves every route resolves (tribunal → graduated,
+schedule → federal, high threshold + defeated Act → restriction, assented +
+low → neutrality) and that the opening state settles nothing.
+
+**One engine ask landed in OPEN REQUESTS:** nothing in the UI calls
+`Engine.checkEnd`, so in live play a settlement, election or loss does not yet
+stop or narrate the run. The `closing` prose is ready for the surface that
+shows it.
+
+---
+
+### The task as written
 
 `content/settlements.js` carries four settlements, each with a one-line
 `summary` marked in the file as a placeholder of the plainest kind. They are
@@ -642,4 +678,11 @@ engine pass. Write the content you wanted to author, not the verb you think
 would deliver it — the verb is the engine's problem and there may be a cheaper
 one.
 
-*(empty)*
+**1. The ending surface.** `Engine.checkEnd` is exported and nothing in the UI
+calls it, so in live play a settlement, an election or a loss does not stop or
+narrate the run — the run keeps going to dissolution and the player never
+meets the ending the game was for. The settlements now carry full `closing`
+prose (T6) and the flags are settable in play. The missing piece: after each
+action and each rise, call `checkEnd`, and when it returns `over`, show the
+ending — the settlement's `name` and `closing`, or the election/loss line —
+and record the session. The content side is done and waiting.
