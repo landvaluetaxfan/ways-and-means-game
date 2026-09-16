@@ -169,16 +169,16 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--hair);
   <div class="house">The Commonwealth of Habitats &middot; House of Commons</div>
   <h1>Order of Business</h1>
   <div class="sub">Ways &amp; Means &mdash; what is built, what is next, how long the game is, and the hundred things it could become.</div>
-  <div class="stamp">Session 4 &middot; 15 September 2287 &middot; 660 assertions green</div>
+  <div class="stamp">Session 4 &middot; 15 September 2287 &middot; 711 assertions green</div>
 </header>
 
 <h2>I <span>Where the build stands</span></h2>
 <div class="figs">
   <div class="fig"><b>24</b><i>events written</i><em>of 50&ndash;60; a run fires 9&ndash;13 and goes dry at sitting 9</em></div>
   <div class="fig"><b>14<span style="font-size:15px">/31</span></b><i>conditions used</i><em>the branching vocabulary is built and idle</em></div>
-  <div class="fig"><b>660</b><i>assertions</i><em>nine checks, all green</em></div>
+  <div class="fig"><b>711</b><i>assertions</i><em>nine checks, all green</em></div>
   <div class="fig"><b>27</b><i>design documents</i><em>plus a 134-section bible</em></div>
-  <div class="fig"><b>45m&ndash;2h</b><i>target run</i><em>one, two or three sessions &middot; one election, in the middle</em></div>
+  <div class="fig"><b>~25</b><i>sittings a run</i><em>one parliament, one session &middot; measured, not projected</em></div>
 </div>
 
 <h2>II <span>The four chapters, to scale</span></h2>
@@ -472,10 +472,19 @@ should count, not merely exist.</p>
       the list. Closure and dissolution are failure modes, not settlements.</td></tr>
     <tr><td class="n">7.7</td><td>Order-paper time is the pacing instrument, not merely a
       scarce good. Everything the House does costs it. A free division is a bug.</td></tr>
-    <tr><td class="n">1.7</td><td>Four chapters. A run is <b>45 minutes to two
-      hours</b> &mdash; one, two or three sessions of 24 sittings &mdash; with
-      <b>one election, in the middle</b>, where the player can lose. An election at
-      the end grades the player; one in the middle is played through.</td></tr>
+    <tr><td class="n">1.7</td><td>Four chapters. <b>A campaign is one parliament
+      and one parliament is one session.</b> At the end of it the House is
+      dissolved and the electorate answers, so the election is the campaign's
+      terminus rather than an interruption &mdash; and the next campaign opens in
+      the Commonwealth that answer produced. A run finishes three ways and cannot
+      continue past them: a settlement, the election, or a loss.</td></tr>
+    <tr><td class="n">4.6.1a</td><td><b>Domain consent.</b> A measure that touches
+      an interest is answered by the functional constituencies that own it. It is
+      consent and not endorsement &mdash; they must not oppose, they need not
+      carry &mdash; and the House may override on three-fifths of those voting.
+      <b>Supply is exempt:</b> the elected benches vote money, the forty are heard
+      and not obeyed, and an objection delays it three sittings rather than killing
+      it.</td></tr>
     <tr><td class="n">3.2</td><td><b>Unicameral.</b> No second chamber, decided rather
       than merely unanswered. The three tiers are already the revising mechanism: a
       dual majority makes a measure carry the popular benches and the functional forty
@@ -615,8 +624,74 @@ engine is further ahead of the content than the event count alone suggests.</em>
 </table></div>
 
 
+<h2>XI <span>Since the hundred</span></h2>
+<p class="lede">The three that were built and unreachable are reachable. The run has a length.</p>
+<div class="wrap"><table>
+  <thead><tr><th>Landed</th><th>What it changed</th></tr></thead>
+  <tbody>
+    <tr><td><b>The roll call</b></td>
+        <td>A division names every member who cast it, party by party as the
+        lobbies fill. District members have a name and a seat; functional members
+        a register reference; list members a stable placeholder, because a list
+        member still sits. The count climbs with it &mdash; the old build showed
+        the names and then counted separately, two accounts of one event.</td></tr>
+    <tr><td><b>Pairing, reachable</b></td>
+        <td>Exported since 15 Sep with <em>no control in the interface calling
+        it</em>. Seven parties were pairable on a bill and the player could not
+        discover one.</td></tr>
+    <tr><td><b>Abstention, used</b></td>
+        <td>Counted three ways since 14 Sep and used by no bill. Two bills abstain
+        now, so the count is exercised by play.</td></tr>
+    <tr><td class="ok"><b>Lobbying, and ten actors</b></td>
+        <td>The correctness hole item 10 named. A whip spends capital; a lobby
+        spends a <b>promise</b>, so the bench is paid for next session through a
+        real undertaking. Reach scales with standing and delivers into the
+        constituencies the body actually holds. <b>Substrate Neutrality is
+        reachable</b> &mdash; design/24 A2's acceptance criterion, asserted.</td></tr>
+    <tr><td><b>Domain consent</b></td>
+        <td>Twenty-two authored interests that nothing read. Now the bench that
+        owns the subject answers for it, with three guards so it is a price and
+        not a veto &mdash; and an asserted invariant that no constituency is
+        beyond every mechanism.</td></tr>
+    <tr><td class="ok"><b>The parliament ends</b></td>
+        <td>Four loss conditions and a settlement still left a run that could go
+        on for ever. Dissolution, then the electorate. <b>Empty sittings: 190
+        &rarr; 9&ndash;15</b>, and every play policy now ends at sitting 25.</td></tr>
+    <tr><td><b>Triggers for chapters 3 and 4</b></td>
+        <td><code>dissolved</code>, <code>settled</code>, <code>risesWithin</code>.
+        Conditions, not engine behaviour, because &sect;1.7 is LOCKED and chapters
+        advance on a decision. opencode is unblocked.</td></tr>
+  </tbody>
+</table></div>
+
+<h3 class="sec" style="margin-top:18px">Open, and honest about it</h3>
+<div class="wrap"><table>
+  <thead><tr><th>&nbsp;</th><th>State</th></tr></thead>
+  <tbody>
+    <tr class="warn"><td><b>The content is now the whole bottleneck</b></td>
+        <td>A run ends at sitting 25 and fires 10&ndash;16 events. The engine
+        offers three endings and content reaches one and a half. Every remaining
+        gap on this page is prose.</td></tr>
+    <tr><td>Two settlements still unreachable</td>
+        <td><code>tribunal_established</code> and <code>federal_schedule</code>
+        are set by nothing. opencode's T6.</td></tr>
+    <tr><td>The lobbying panel overflows</td>
+        <td>With the fold open the body runs 210px past the panel floor. Two
+        attempts at re-proportioning the middle column were reverted &mdash; the
+        House panel cannot shrink below its non-scrolling parts. Needs a real
+        layout pass.</td></tr>
+    <tr><td>Three panels clip at 1000px</td>
+        <td>11&ndash;28px. Content cut off rather than painted over somebody
+        else's, which is the better failure but not the right one.</td></tr>
+    <tr><td>Supply itself</td>
+        <td>The rule is built and tested against a synthetic appropriation.
+        <code>design/13</code>'s fiscal system is not built.</td></tr>
+  </tbody>
+</table></div>
+
+
 <footer>
-  Ways &amp; Means &middot; roadmap generated from the repository, 15 September 2026 &middot;
+  Ways &amp; Means &middot; roadmap generated from the repository, 16 September 2026 &middot;
   figures counted, not estimated &middot; the hundred, marked idea by idea, is
   <code>design/26</code>; the threads it opened are <code>design/27</code>
 </footer>
