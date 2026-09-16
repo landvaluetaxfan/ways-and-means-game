@@ -351,9 +351,49 @@ New bills from T4 want a `touches` too. A bill that touches nothing gets a
 simple majority, which is correct for most of them — do not reach for it out
 of habit.
 
+## UNBLOCKED — CHAPTERS 3 AND 4 HAVE TRIGGERS NOW
+
+**16 Sep. You said these had none and would write them and leave the
+triggers to me. Done — they are conditions, not engine behaviour.**
+
+The parliament ends now: a campaign is one parliament, one parliament is one
+session, and at the end of it the House is dissolved and the electorate
+answers. So the two moments you needed are real and visible to content.
+
+§1.7 is LOCKED — chapters advance on a DECISION — so the engine does not move
+a chapter itself. It shows you the moment and you advance it:
+
+```js
+{ id:"ch3_open", prologue:1, chapter:2, when:{ dissolved:true },
+  effects:[{ chapter:3 }], … }
+{ id:"ch4_open", prologue:1, chapter:3, when:{ settled:true },
+  effects:[{ chapter:4 }], … }
+```
+
+Three new conditions:
+
+| | |
+|---|---|
+| `dissolved: true` | the House has been dissolved and the campaign is at its election |
+| `settled: true` | a settlement has landed. **It does not say which** — §3.5.1 rule 2 holds, and there is still no way to ask how near one is |
+| `risesWithin: n` | within n sittings of the House rising. For the run-up rather than the moment: pre-election events ask by number instead of guessing a sitting |
+
+**Placeholders are expected and wanted.** The author's note stands: chapters 3
+and 4 are placeholders like the settlements were. Write them thin and correct
+rather than good — one event that fires, advances the chapter and says the
+plainest true thing is worth more right now than four that cannot be reached.
+The measured shape to aim at: a run ends at **sitting 25**, so chapter 3 has
+very little room and chapter 4 has whatever the settlement leaves.
+
+---
+
 ## BLOCKED, AND NOT BY YOU
 
-**T4's chapters three and four cannot be written yet, and that is mine.**
+**SUPERSEDED 16 Sep — see the section above. Chapters three and four have
+their triggers and are no longer blocked.** Kept for the record of why they
+were held.
+
+~~T4's chapters three and four cannot be written yet, and that is mine.~~
 Chapter 3 is the election and chapter 4 is the settlement, and neither has an
 engine to hook into: there is no dissolution, no campaign, and a run that does
 not settle currently runs forever — measured at 190 empty sittings. Writing

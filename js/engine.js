@@ -2458,6 +2458,27 @@ const Engine = (function () {
     slotsLeft:      (st, v) => (st.slots.total - st.slots.used) >= v,
     /* Conditions are not under the twenty-verb cap (§15.5), so the world
        may be read in as many ways as content needs. */
+    /* THE TRIGGERS FOR CHAPTERS THREE AND FOUR.
+
+       §1.7 is LOCKED: chapters advance on a DECISION, so the engine must
+       not move one itself. What it can do is let content see the two
+       moments that were previously invisible, so an authored event can
+       fire on them and advance the chapter in the ordinary way:
+
+         { when:{ dissolved:true }, effects:[{chapter:3}] }
+         { when:{ settled:true },   effects:[{chapter:4}] }
+
+       `risesWithin` is for the run-up rather than the moment: an event
+       that wants to fire in the last few sittings before the House goes
+       to the country asks for it by number instead of guessing a sitting. */
+    dissolved:      (st, v) => !!st.dissolved === !!v,
+    settled:        (st, v) => {
+                      /* content cannot reach checkSettlement's C, so this
+                         reads the flag the engine leaves when one lands */
+                      return !!st.settledAs === !!v;
+                    },
+    risesWithin:    (st, v) => st.sessionEnds != null &&
+                      (st.sessionEnds - st.sitting) <= v,
     actorAbove:     (st, v) => Object.keys(v).every(id =>
                       (st.actors[id] || {}).standing > v[id]),
     actorBelow:     (st, v) => Object.keys(v).every(id =>
@@ -3630,6 +3651,16 @@ const Engine = (function () {
      recomputed by the existing generalElection(); what is new is that the
      run stops here rather than opening another session. */
   function dissolve(st, C) {
+    /* THE HOUSE RISES HERE TOO, AND MORE FINALLY THAN AT PROROGATION.
+       Everything owed "before the House rises" — by:null, which is every
+       promise lobbying makes — comes due. Without this a government could
+       buy the functional benches with undertakings and have the
+       dissolution quietly forgive all of them, which is the cheapest
+       possible way to win and was true for about twenty minutes. */
+    (st.undertakings || []).forEach(u => {
+      if (u.state !== "open" || u.by != null) return;
+      breakUndertaking(st, C, u, "dissolution");
+    });
     const before = Object.keys(st.parties).reduce((m, p) =>
       (m[p] = partyTotal(st, p), m), {});
     const res = generalElection(st, C);
@@ -3824,6 +3855,11 @@ const Engine = (function () {
     const found = (C.settlements || [])
       .filter(s0 => matches(st, s0.when))
       .sort((a, b) => (a.rank || 0) - (b.rank || 0));
+    /* A settlement that has landed is recorded so CONTENT can see that one
+       has, through the `settled` condition, without the engine naming
+       which — §3.5.1 rule 2 still holds and nothing here reports progress
+       toward one. */
+    if (found.length) st.settledAs = found[0].id;
     return found.length ? found[0] : null;
   }
 

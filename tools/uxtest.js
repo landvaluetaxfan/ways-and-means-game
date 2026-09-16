@@ -1207,7 +1207,20 @@ try {
   ok("so it does not break early", c.undertakings[0].state === "open");
   const cRise = c.sessionEnds + 2;
   while (c.sitting < cRise) E.advance(c, Cx);
-  ok("and breaks at prorogation", c.undertakings[0].state === "broken");
+  ok("and breaks when the House rises", c.undertakings[0].state === "broken");
+
+  /* AND AT DISSOLUTION, WHICH IS THE HOUSE RISING FOR GOOD. Every promise
+     lobbying makes is by:null, so without this a government could buy the
+     functional benches with undertakings and have the dissolution forgive
+     all of them — the cheapest possible way to win. */
+  const g = mk();
+  E.apply(g, Cx, [{ undertake: { id: "diss_probe", text: "before the House rises",
+                                 by: null, discharge: { flag: "never" } } }]);
+  const gRise = g.sessionEnds + 2;
+  while (g.sitting < gRise) E.advance(g, Cx);
+  ok("a promise owed before the House rises is judged at dissolution too",
+     !!g.dissolved && g.undertakings[0].state === "broken",
+     g.undertakings[0].state);
 
   /* the docket says when the House rises, always */
   w.eval('UI.boot(UI.state(), CONTENT);');
