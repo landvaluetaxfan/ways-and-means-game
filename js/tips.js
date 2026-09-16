@@ -368,8 +368,8 @@ const Tips = (function () {
     c.innerHTML =
       imgLine(t.img) +
       '<b>' + esc(t.title) + '</b>' +
-      '<span>' + esc(t.body) + '</span>' +
       goLine(t.go) +
+      '<span>' + esc(t.body) + '</span>' +
       membersTable(t.members);
     /* A member table carries a full office title in its last column, so the
        card is allowed to run wider than a one-line explanation needs. The

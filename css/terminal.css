@@ -2401,3 +2401,7 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .cl-opt>i{font-style:normal;font-family:var(--f-data);font-size:9.5px;opacity:.7;}
 .cl-opt.on{background:var(--ink);color:var(--field);border-color:var(--ink);}
 .cl-opt.over{opacity:.45;}
+/* The hand-off note sits under the title, not at the foot: at the bottom it
+   read as a link, and a link on a card you cannot enter is a broken promise. */
+#tipcard .tip-go{display:block;font-style:normal;font-size:10px;
+  letter-spacing:.04em;color:var(--ink-soft);margin:1px 0 3px;}

@@ -301,6 +301,34 @@ const UI = (function () {
       const g = e.target.closest("[data-go]");
       if (g) goCx(g.dataset.go, true);
     }, true);
+    /* A CROSS-REFERENCE FROM ANYWHERE ELSE IN THE GAME. Both handlers
+       above are scoped inside the Concordance, so a [data-go] anywhere
+       else — a party name on the Chamber tab, say — had no handler at all
+       and did nothing at all. It switches to the Concordance and opens the
+       article, which is what the attribute has always promised.
+
+       Scoped OUT of #cx-body and #cx-nav so it cannot double-fire with
+       them: two listeners for one action is the trap CLAUDE.md records
+       from the last time [data-go] was bound twice. */
+    document.addEventListener("click", e => {
+      const g = e.target.closest && e.target.closest("[data-go]");
+      if (!g || g.closest("#cx-body") || g.closest("#cx-nav")) return;
+      if (!C.partyById[g.dataset.go] && !C.stationById[g.dataset.go] &&
+          !C.encyclopediaById[g.dataset.go]) return;
+      e.preventDefault();
+      const tab = document.querySelector('.tab[data-t="cx"]');
+      if (tab) tab.click();
+      goCx(g.dataset.go, true);
+    });
+    /* And by keyboard, since these are focusable. */
+    document.addEventListener("keydown", e => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const g = e.target.closest && e.target.closest("[data-go]");
+      if (!g || g.closest("#cx-body") || g.closest("#cx-nav")) return;
+      if (!C.partyById[g.dataset.go]) return;
+      e.preventDefault(); g.click();
+    });
+
     $("#cx-back").addEventListener("click", () => goCx(Concordance.back(), false));
     document.getElementById("cx-nav").addEventListener("click", e => {
       const g = e.target.closest("[data-go]");
@@ -1106,8 +1134,16 @@ const UI = (function () {
          it is what makes the whole thing safe to skip: there is no state
          left inside the animation to lose. Presentation only - the
          arithmetic is untouched. */
+      /* A DIVISION IS AN ACTION AND IT REPORTS ITSELF LIKE ONE. Every
+         other mutating action goes through acted(), which is what raises
+         the cross-tab notice — so settling a lobby on the division opened
+         undertakings that appeared on the Government tab with nothing
+         saying they had. The promises are the price of the bench and the
+         player should be told they are now owed. §12.13. */
+      const beforeDiv = structure(st);
       const out = Engine.divide(st, C, id) || {};
       const r = out.result || {};
+      reportMoves(beforeDiv, structure(st));
       countDivision(r.rows, out).then(() => {
         /* A dual bill can carry the House and still fall, which is the
            whole argument of the game, so the line names BOTH tests and not
@@ -1297,7 +1333,14 @@ const UI = (function () {
         });
       });
     });
-    root.querySelectorAll(".whipbar").forEach(bar => {
+    /* [data-wp], NOT every .whipbar. The lobby bars reuse the control and
+       so match the bare class too, which meant every click on a lobbying
+       bar ALSO ran the whip handler with an undefined party — setWhip on
+       nobody, then a second redraw that dropped the fold the player had
+       just opened. Reusing a control is right; binding by its appearance
+       rather than by what it controls is the same trap this repo has hit
+       with .sel, .ticker and .sbar. Bind to the data, not the class. */
+    root.querySelectorAll(".whipbar[data-wp]").forEach(bar => {
       const wp = bar.dataset.wp, wt = bar.dataset.wt;
       [...bar.querySelectorAll("i")].forEach((cell, i) =>
         cell.addEventListener("click", () => {
