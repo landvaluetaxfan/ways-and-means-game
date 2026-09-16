@@ -3633,18 +3633,23 @@ const Engine = (function () {
      --------------------------------------------------------- */
   /* WHERE A PROMISE IS KEPT, and how, from its own discharge spec. One
      place computes it, so the calendar, the undertakings panel and the
-     order that keeps it can never say different things. */
+     order that keeps it can never say different things. `focus` is the
+     THING to open once the tab is up — an order to sign, a bill to carry —
+     so a row can take the player to the instrument and not merely to the
+     screen it lives on. */
   function undertakingWhere(C, u) {
-    let tab = "gov", how = "By taking the decision that discharges it";
+    let tab = "gov", how = "By taking the decision that discharges it", focus = null;
     const dz = (u && u.discharge) || {};
     if (dz.si && C.instrumentById && C.instrumentById[dz.si]) {
       tab = "pap";
       how = "Make the " + (C.instrumentById[dz.si].title || dz.si);
+      focus = "si:" + dz.si;
     } else if (dz.bill && C.billById && C.billById[dz.bill]) {
       tab = "cham";
       how = "Carry the " + (C.billById[dz.bill].title || dz.bill);
+      focus = "bill:" + dz.bill;
     }
-    return { tab: tab, how: how };
+    return { tab: tab, how: how, focus: focus };
   }
 
   function deadlines(st, C) {
@@ -3788,6 +3793,7 @@ const Engine = (function () {
          signing rather than to the panel that lists the promise. */
       if (d.tab) o.tab = d.tab;
       if (d.how) o.how = d.how;
+      if (d.focus) o.focus = d.focus;
       push(d.kind, d.text, o);
     });
 

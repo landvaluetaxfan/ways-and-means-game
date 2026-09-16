@@ -2524,6 +2524,9 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
     ok("and the order of the day sends you there",
        item && item.tab === "pap" && /Make the/.test(item.how || ""),
        item ? item.tab + " - " + item.how : "no item");
+    ok("and it names the order itself, not only the tab",
+       !!(item && /^si:si_2287_44$/.test(item.focus || "")),
+       item ? String(item.focus) : "no item");
   }
 
   /* THE CANON ENDING IS REACHABLE BY PLAY (balance pass). The campaign's one

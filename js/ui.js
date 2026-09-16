@@ -771,15 +771,12 @@ const UI = (function () {
           const due = u.by - st.sitting <= 0 ? "due this sitting"
                     : "by sitting " + u.by;
           return `<button class="dk owed goto${u.by - st.sitting <= 1 ? " late" : ""}"` +
-            ` data-goto="${w.tab}"><b>${esc(u.text)}</b>` +
+            ` data-goto="${w.tab}" data-open="${esc(w.focus || "")}"><b>${esc(u.text)}</b>` +
             `<i>${esc(due)} \u00b7 ${esc(w.how)}</i></button>`;
         }).join("")
       : `<div class="note">The government has given no undertakings.</div>`;
     if (ob) ob.querySelectorAll("[data-goto]").forEach(b =>
-      b.addEventListener("click", () => {
-        const tab = document.querySelector('.tab[data-t="' + b.dataset.goto + '"]');
-        if (tab) tab.click();
-      }));
+      b.addEventListener("click", () => openTarget(b)));
 
     $("#gov-slots").querySelectorAll(".slotbtn").forEach(btn =>
       btn.addEventListener("click", () => {
@@ -2721,6 +2718,29 @@ const UI = (function () {
   const TABNAME = { sit: "Sitting", gov: "Government", pap: "Papers", orb: "Orbit" };
   const WHENWORD = { overdue: "overdue", now: "today", soon: "soon" };
 
+  /* A ROW THAT NAMES A THING AS WELL AS A SCREEN. An undertaking is kept by
+     an ORDER and a bill is carried by a MEASURE, so the row opens the tab
+     and then the thing itself: the player lands on the instrument with its
+     Make button in front of them, rather than on a page of thirteen orders
+     and having to find the one the promise is about. */
+  function openTarget(btn) {
+    const tab = btn.dataset.goto &&
+      document.querySelector('.tab[data-t="' + btn.dataset.goto + '"]');
+    if (tab) tab.click();
+    const spec = btn.dataset.open;
+    if (!spec) return;
+    const c = spec.indexOf(":");
+    const kind = spec.slice(0, c), id = spec.slice(c + 1);
+    if (kind === "si") {
+      siOpen = id;
+      drawAll();
+      const row = document.querySelector('#gov-si tr[data-si="' + id + '"]');
+      if (row && row.scrollIntoView) row.scrollIntoView({ block: "center" });
+    } else if (kind === "bill" && typeof Focus !== "undefined") {
+      Focus.activate("cham-bills", id);
+    }
+  }
+
   function todayHTML() {
     const t = Engine.today(st, C, !!currentEvent || !!Engine.nextEvent(
       /* on a COPY: nextEvent takes the queue apart as it reads it */
@@ -2732,7 +2752,7 @@ const UI = (function () {
         : i.away < 0 ? Math.abs(i.away) + " sittings late"
         : i.away === 0 ? "today"
         : i.away === 1 ? "next sitting" : "in " + i.away + " sittings";
-      return `<button class="tdo ${i.when}${i.required ? " req" : ""}" data-goto="${i.tab}">
+      return `<button class="tdo ${i.when}${i.required ? " req" : ""}" data-goto="${i.tab}" data-open="${esc(i.focus || "")}">
         <b>${esc(i.text)}</b>
         <i>${esc(TABNAME[i.tab] || i.tab)}${away ? " \u00b7 " + esc(away) : ""}${
           i.how ? " \u00b7 " + esc(i.how) : ""}</i>
@@ -2750,10 +2770,7 @@ const UI = (function () {
       ? t.items.length + (t.items.length === 1 ? " thing asked" : " things asked")
       : "nothing asked";
     el.querySelectorAll("[data-goto]").forEach(b =>
-      b.addEventListener("click", () => {
-        const tab = document.querySelector('.tab[data-t="' + b.dataset.goto + '"]');
-        if (tab) tab.click();
-      }));
+      b.addEventListener("click", () => openTarget(b)));
     /* THE TAB STRIP CARRIES THE SAME TRUTH. A tab with something asked of
        it wears a mark, and it goes out when the thing is done — which is
        only possible because today() reports obligations and not what
@@ -2904,7 +2921,7 @@ const UI = (function () {
     owed.forEach(u => {
       const due = u.by - st.sitting;
       const w = Engine.undertakingWhere(C, u);
-      rows.push(`<div class="dk owed goto${due <= 1 ? " late" : ""}" data-goto="${w.tab}"><b>${esc(u.text)}</b>
+      rows.push(`<div class="dk owed goto${due <= 1 ? " late" : ""}" data-goto="${w.tab}" data-open="${esc(w.focus || "")}"><b>${esc(u.text)}</b>
         <i>${due <= 0 ? "due this sitting" : "by sitting " + u.by}${
           u.owed_to ? " · " + esc(partyName(u.owed_to)) : ""} · ${esc(w.how)}</i></div>`);
     });
@@ -2974,10 +2991,7 @@ const UI = (function () {
     if (dk) {
       dk.innerHTML = docketHTML();
       dk.querySelectorAll("[data-goto]").forEach(b =>
-        b.addEventListener("click", () => {
-          const tab = document.querySelector('.tab[data-t="' + b.dataset.goto + '"]');
-          if (tab) tab.click();
-        }));
+        b.addEventListener("click", () => openTarget(b)));
     }
     drawCalendar();
     drawToday();
