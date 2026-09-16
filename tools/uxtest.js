@@ -660,6 +660,36 @@ try {
        fs.readFileSync(path.join(root, "js/ui.js"), "utf8").replace(/\/\*[^]*?\*\//g, "")),
      "a control was re-added without re-reading why it went");
 
+  /* THE DIVISION LIST. The roll call cannot make 280 names legible -- 14
+     seconds at twenty a second -- so the names go where a parliament puts
+     them, in a list published after the fact. Asserted against the
+     division that just ran: every member in exactly one section, and the
+     sections summing to the House. */
+  const dlist = w.eval(`
+    (function () {
+      var st = UI.state();
+      var bill = null;
+      Object.keys(st.bills).forEach(function (k) {
+        if (!bill && st.bills[k].lastDivision) bill = k;
+      });
+      if (!bill) return "NO DIVISION YET";
+      Focus.activate("cham-bills", bill); UI.redraw();
+      var box = document.querySelector("#bill-detail .dvl");
+      if (!box) return "NO DIVISION LIST";
+      var secs = box.querySelectorAll(".dvl-s").length;
+      var names = box.querySelectorAll(".dvl-n > span").length;
+      var d = st.bills[bill].lastDivision;
+      var seats = d.popular.total + d.functional.total;
+      return [bill, secs, names, seats].join("::");
+    })()
+  `).split("::");
+  ok("a bill that has divided carries a division list", dlist.length === 4,
+     dlist[0]);
+  ok("and it names every member of the House exactly once",
+     +dlist[2] === +dlist[3], dlist[2] + " named, " + dlist[3] + " seats");
+  ok("sorted into sections rather than one run of names", +dlist[1] >= 2,
+     dlist[1] + " sections");
+
   /* design/19: how long until the House rises, answerable by looking. */
   ok("the topbar carries how long the session has left",
      /RISES IN/.test(ui) && w.eval(`/RISES IN \\d+/.test(

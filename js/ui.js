@@ -921,6 +921,57 @@ const UI = (function () {
         Hover a row for the long form.</div>`;
   }
 
+  /* THE DIVISION LIST — every member, by name, after the fact.
+
+     The roll call shows the House dividing and it cannot do this: two
+     hundred and eighty names go past in about fourteen seconds, which is
+     twenty a second, and nobody reads that. Trying to make the animation
+     legible was the wrong fix, because the animation is for the SHAPE —
+     the bench moving, the count climbing against the threshold. The names
+     belong where a parliament actually puts them: in a list published
+     afterwards, read at your own pace.
+
+     Hansard's own form, and folded, because it is a record and not a
+     readout — a player consults it when they want to know who, and the
+     rest of the time it is one line saying a division happened. */
+  function divisionList(id) {
+    const bs = st.bills[id];
+    if (!bs || !bs.lastDivision) return "";
+    const rc = Engine.rollCall(st, C, id, bs.lastDivision);
+    const all = (rc.parties || []).reduce((a, p) =>
+      a.concat(p.popular, p.functional), []);
+    if (!all.length) return "";
+
+    const bare0 = n => String(n || "").replace(/^(Rt\. Hon\.|Hon\.)\s+/, "")
+                                     .replace(/\s+MP$/, "");
+    const bucket = (vote) => all.filter(m => m.vote === vote)
+      /* by party, then by name: the way a division list is printed, so
+         a bench reads as a bench rather than as an alphabet. */
+      .sort((a, b) => String(a.party || "").localeCompare(String(b.party || "")) ||
+                      bare0(a.name).localeCompare(bare0(b.name)));
+
+    const section = (label, vote, cls) => {
+      const list = bucket(vote);
+      if (!list.length) return "";
+      return `<div class="dvl-s ${cls}"><b>${label}</b> <em>${list.length}</em>` +
+        `<div class="dvl-n">` + list.map(m =>
+          `<span${m.tier === "list" ? ' class="lst"' : ""}>${esc(bare0(m.name))}` +
+          (m.tier === "functional" && m.ref ? ` <i>${esc(m.ref)}</i>` : "") +
+          `</span>`).join("") + `</div></div>`;
+    };
+
+    const d = bs.lastDivision;
+    return `<details class="dvl"><summary><b>Division list</b>` +
+      `<span>sitting ${d.at} &middot; ${d.carries ? "carried" : "not carried"} ` +
+      `&middot; ${all.length} members</span></summary>` +
+      section("Ayes", "aye", "aye") +
+      section("Noes", "nay", "nay") +
+      section("Abstained", "abstain", "abs") +
+      section("Did not vote", "absent", "away") +
+      `<p class="dvl-f">Members returned on a list are shown in italic: the
+       seat is the party's and the name is the slate's.</p></details>`;
+  }
+
   function drawBill(id) {
     const b = C.billById[id], bs = st.bills[id], dchk = Engine.canDivide(st, C, id);
     /* The forecast is the REPORTED division, not the exact one (design/08 §7),
@@ -962,6 +1013,7 @@ const UI = (function () {
       `</div>` +
       whipLine(id) +
       dayLine(id, dchk) +
+      divisionList(id) +
       `<div class="btnrow">
          <button class="btn" id="btn-divide"${bs.dead ? " disabled" : ""}` +
            priceTip("Move to a division",
@@ -1477,7 +1529,14 @@ const UI = (function () {
            is not a noe, and the bars must never sum past the House. */
         nay += p.popular.filter(m => m.vote === "nay").length;
         return Object.assign({}, p, { seats: seats, ayesTo: aye, naysTo: nay,
-                 ms: Math.max(420, Math.min(2200, 500 + seats * 30)) });
+                 /* QUICKER, NOW THAT THE NAMES ARE NOT CARRYING THE LOAD. The chips
+           were asked to be read and could not be: 280 names in fourteen
+           seconds is twenty a second. The division list does the naming,
+           so the animation is free to do the only thing it was ever good
+           at — the SHAPE of a bench going over and the count climbing at
+           the threshold. Still proportional to how many are walking, and
+           about a third shorter. */
+        ms: Math.max(330, Math.min(1500, 360 + seats * 20)) });
       });
   }
 

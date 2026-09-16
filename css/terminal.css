@@ -2334,3 +2334,35 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .panel>.sbwrap,.panel>.pbody{flex:1 1 auto;min-height:0;}
 
 
+
+/* THE DIVISION LIST. A record, not a readout: folded by default, and set
+   as a printed list rather than a table because that is what it is. */
+.dvl{border-top:1px solid var(--ink-soft);margin-top:7px;}
+.dvl>summary{list-style:none;cursor:pointer;display:flex;gap:8px;align-items:baseline;
+  padding:5px 2px;font-family:var(--f-ui);font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-soft);}
+.dvl>summary::-webkit-details-marker{display:none;}
+.dvl>summary::before{content:"\25B8";font-size:9px;}
+.dvl[open]>summary::before{content:"\25BE";}
+.dvl>summary b{color:var(--ink);font-weight:700;}
+.dvl>summary span{margin-left:auto;letter-spacing:0;text-transform:none;
+  font-family:var(--f-data);font-size:11px;}
+.dvl>summary:hover{background:var(--field);}
+.dvl>summary:focus-visible{outline:1px dotted var(--ink);outline-offset:-2px;}
+.dvl-s{margin:4px 0 7px;}
+.dvl-s>b{font-family:var(--f-ui);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;}
+.dvl-s>em{font-style:normal;font-family:var(--f-data);font-size:11px;
+  color:var(--ink-soft);}
+.dvl-s.aye>b{color:var(--ok);}
+.dvl-s.nay>b{color:var(--alert);}
+.dvl-s.abs>b{color:var(--warn);}
+.dvl-s.away>b{color:var(--ink-soft);}
+.dvl-n{font-size:11.5px;line-height:1.5;color:var(--ink);}
+.dvl-n>span{display:inline;}
+.dvl-n>span::after{content:" \00B7 ";color:var(--ink-soft);}
+.dvl-n>span:last-child::after{content:"";}
+.dvl-n>span.lst{font-style:italic;}
+.dvl-n i{font-style:normal;font-family:var(--f-data);font-size:10px;
+  color:var(--ink-soft);}
+.dvl-f{font-size:11px;color:var(--ink-soft);margin:4px 0 6px;}
