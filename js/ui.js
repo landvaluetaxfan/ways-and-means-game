@@ -1196,16 +1196,6 @@ const UI = (function () {
           after();
         }));
     });
-    /* Pairing rides the same control: one bar, one behaviour, two plans. */
-    root.querySelectorAll(".whipbar[data-pp]").forEach(bar => {
-      const pp = bar.dataset.pp;
-      [...bar.querySelectorAll("i")].forEach((cell, i) =>
-        cell.addEventListener("click", () => {
-          const cur = ((st.pairs || {})[billId] || {})[pp] || 0;
-          Engine.setPairs(st, C, billId, pp, i + 1 === cur ? i : i + 1);
-          after();
-        }));
-    });
     const clr = root.querySelector("#btn-clearwhip");
     if (clr) clr.addEventListener("click", () => { Engine.clearWhips(st, billId); after(); });
     root.querySelectorAll(".whipbar[data-lb]").forEach(bar => {
@@ -1219,8 +1209,6 @@ const UI = (function () {
     });
     const cll = root.querySelector("#btn-clearlobby");
     if (cll) cll.addEventListener("click", () => { Engine.clearLobby(st, billId); after(); });
-    const clp = root.querySelector("#btn-clearpair");
-    if (clp) clp.addEventListener("click", () => { Engine.clearPairs(st, billId); after(); });
   }
 
   /* THE DAY'S BUSINESS, AND WHAT IT WOULD TAKE.
@@ -1341,70 +1329,6 @@ const UI = (function () {
           `Charged when the division is called.` +
           `<button class="btn ed-x" id="btn-clearwhip">clear</button></div>`
         : `<div class="note">Drag to commit members. Nothing is charged until you divide.</div>`);
-  }
-
-  /* ---------- pairing ----------
-
-     THE ENGINE HAS DONE THIS SINCE 15 SEPTEMBER AND NOTHING COULD REACH IT.
-     `pairable`, `setPairs` and `clearPairs` were exported and no control in
-     the interface called any of them, so the fourth state of a vote — absent
-     — was unreachable by play. Seven parties are pairable on the Shed Order
-     bill today and the player could not have discovered one of them.
-
-     It is the whip's control, deliberately: the same segmented bar, the same
-     click-to-set, the same "nothing is charged until you divide". Pairing and
-     whipping are the same kind of bargaining done before the same division,
-     and giving them two different shapes would have said they were different
-     kinds of thing.
-
-     WHAT MAKES IT INTERESTING IS THAT IT IS A BAD DEAL, and the panel says so
-     rather than hiding it. In Westminster a pair is a courtesy that costs
-     neither side. Here a majority is a majority OF THE MEMBERS (§4.6.1), so
-     the threshold does not move when members are away: the government gives
-     up an aye it was counting and the other side gives up a nay that was
-     never counted against it. The player should be able to see that and do it
-     anyway, because the reason to pair is never arithmetic. */
-  function pairPanel(billId, b, d) {
-    if (st.bills[billId].dead) return "";
-    const plan = (st.pairs || {})[billId] || {};
-    let rows = "";
-    (C.parties || []).forEach(p => {
-      if (p.id === st.playerParty) return;
-      const cap = Engine.pairable(st, C, billId, p.id);
-      const cur = plan[p.id] || 0;
-      if (!cap.max && !cur) return;
-      /* A long bench makes a bar the width of the panel. Twelve is enough to
-         read as a quantity and the count beside it carries the rest. */
-      const pips = Math.min(cap.max, 12);
-      rows += `<tr><td>${mark(p.id)}${esc((C.partyById[p.id] || {}).short || p.id)}</td>` +
-        `<td>elected</td><td class="n">${cur} / ${cap.max}</td>` +
-        `<td class="n">&minus;${cap.costsYou}&thinsp;aye</td>` +
-        `<td class="mv"><div class="whipbar" data-pp="${p.id}"` +
-          priceTip("Pair with " + ps(p.id),
-            { note: "Each pair takes one of your ayes and one of their noes off " +
-                    "the floor. The threshold does not move, so it costs you a " +
-                    "vote and costs them one that was never counted. Up to " +
-                    cap.max + ". Nothing is settled until the division is called." },
-            cap.max ? null : (cap.reason || "nobody of theirs is against it")) +
-          ` data-whipped="${cur} of ${cap.max}">` +
-          Array.from({ length: pips }, (_, i) =>
-            `<i${i < cur ? ' class="on"' : ""}></i>`).join("") +
-        `</div></td></tr>`;
-    });
-    if (!rows) return "";
-
-    const total = Object.keys(plan).reduce((n, k) => n + plan[k], 0);
-    return `<table class="whiptab"><thead><tr><th>Pair with</th><th>Bench</th>` +
-      `<th class="n">Pairs</th><th class="n">Costs</th><th>Set</th></tr></thead>` +
-      `<tbody>${rows}</tbody></table>` +
-      (total
-        ? `<div class="whipcost">Paired: <b>${total}</b> on each side. ` +
-          `Your margin falls by ${total}; the threshold does not. ` +
-          `<button class="btn ed-x" id="btn-clearpair">clear</button></div>`
-        : `<div class="note">A pair is an arrangement, not a concession: two ` +
-          `members on opposite sides agree not to vote. Here it costs you more ` +
-          `than it costs them, because the threshold counts members and not ` +
-          `votes.</div>`);
   }
 
   /* ---------- lobbying ----------
@@ -2956,11 +2880,20 @@ const UI = (function () {
            : d.popular.carries ? "<b>Carries the House and fails the functional bench.</b>"
            : "Fails.")
         : (d.popular.carries ? "Carries." : "Fails.")} ` +
+        /* ONE LINE. Three sentences of standing explanation sat under every
+           forecast: what a filled seat means, what a half-filled one means,
+           that the count is by party, and who the estimate came from. None
+           of it changes between bills, so it is a tip on the readout it
+           explains rather than a paragraph reprinted under each one. */
         (voted
-          ? `As the House voted at sitting ${st.bills[id].lastDivision.at}: filled seats are ayes, ` +
-            `the rest are noes or absentees.`
-          : `Filled seats are expected ayes, half-filled ones the whip has bought; ` +
-            `the count is by party, not by member. ${esc(d.prov || "")}.`) + `</div>`;
+          ? `<i class="prov" data-tip-title="As the House voted" ` +
+            `data-tip-body="Sitting ${st.bills[id].lastDivision.at}. Filled seats are ` +
+            `ayes; the rest are noes or absentees.">voted &middot; sitting ` +
+            `${st.bills[id].lastDivision.at}</i>`
+          : `<i class="prov" data-tip-title="An estimate, not a count" ` +
+            `data-tip-body="Filled seats are expected ayes, half-filled ones the whip ` +
+            `has bought, and the count is by party rather than by member. ` +
+            `${esc(d.prov || "")}.">estimate</i>`) + `</div>`;
   }
 
   /* The whip, where the members it moves are on screen. It reads the TRUE
@@ -2986,17 +2919,22 @@ const UI = (function () {
        than the overflow it fixed. Open state is remembered per section
        for the session, because a player who lobbies once will lobby
        again. */
-    const pairs = pairPanel(id, b, d), lob = lobbyPanel(id, b, d);
+    const lob = lobbyPanel(id, b, d);
     const fold = (key, title, sub, inner) => inner
       ? `<details class="foldsec" data-fold="${key}"${whipOpen[key] ? " open" : ""}>` +
         `<summary><b>${title}</b><span>${sub}</span></summary>${inner}</details>`
       : "";
-    const pairN = Object.keys((st.pairs || {})[id] || {})
-      .reduce((n, k) => n + st.pairs[id][k], 0);
     const lobN = Engine.lobbyCost(st, C, id).seats;
     const html = whipPanel(id, b, d) +
-      fold("pair", "Pairing",
-           pairN ? pairN + " arranged" : "none arranged", pairs) +
+      /* PAIRING IS NOT IN THE PANEL. The engine keeps it, and so do its
+         assertions, because the mechanic is correct and the arithmetic
+         behind it is one of the better things the chamber does. But under
+         an absolute-majority rule a pair costs the government an aye and
+         costs the other side a nay the threshold never counted, so there
+         is presently no reason for a player to use one — a control nobody
+         should press was taking a row of the tightest column on the
+         screen. It comes back when content gives a reason to pair: a
+         courtesy that buys standing, or a member who asks. */
       fold("lobby", "Outside the chamber",
            lobN ? lobN + " seats asked for" : "nothing asked", lob);
     /* whipPanel says nothing about a fallen measure, and an empty panel
@@ -3372,8 +3310,47 @@ const UI = (function () {
        Centring on crossX put both labels a column-width right of the bench. */
     const crossCX = crossX + ((XCOLS - 1) * XCW) / 2;
 
-    const W = hasBar ? crossX + XCOLS * XCW + 14 : X0 + benchW + 22;
-    const H = Math.max(oppBot + 26, hasBar ? crossBot + 26 : 0) + 8;
+    /* THE VIEWBOX IS THE SAME SIZE WHETHER THE BAR IS DRAWN OR NOT.
+
+       It used to be `hasBar ? … : …`, and an inline svg with a viewBox and
+       no width fills its container — so folding the functional bench into
+       the aisles shrank the coordinate space inside a box that stayed put,
+       and every seat in the House got BIGGER. Folding is a change of
+       arrangement and it should not be a change of scale: a player who
+       folds the bench to compare two readings had the whole diagram jump
+       size underneath them.
+
+       So the space is reserved either way. It costs a strip of empty
+       coordinate on the right when the bar is empty, which nobody can see,
+       and it buys a diagram that does not move. */
+    const barW = XCOLS * XCW + 14 + 30;
+    /* And the benches are reserved at their WIDEST ARRANGEMENT, not their
+       current one. Reserving the Bar alone was not enough: folding moves
+       the functional seats into the aisles, so the two sides grow by what
+       the Bar lost and the box got wider instead of narrower. Both states
+       are measured here and the larger wins, so the coordinate space is
+       identical either way and the seats never change size. Layout still
+       uses benchW — only the viewBox uses the reservation, which is why
+       the benches stay where they are and the slack falls on the right. */
+    /* Read from the ENGINE's totals, which do not move when the view
+       folds — gov/opp/cross are rebuilt per arrangement, so reserving
+       from them reserved a different amount in each one, which is the
+       bug rather than the fix. The widest a side can ever be is its own
+       popular bench plus the whole functional forty. */
+    const govPop = govIds.reduce((n, id) =>
+      n + ((st.parties[id] || { seats: {} }).seats.district || 0) +
+          ((st.parties[id] || { seats: {} }).seats.list || 0), 0);
+    const oppPop = Engine.popularTotal(st) - govPop;
+    const reservedCols = cols(Math.max(govPop, oppPop) +
+                              Engine.functionalTotal(st));
+    const W = X0 + Math.max(benchW, reservedCols * CW) + Math.max(barW, 22);
+    /* Same for the height: the Bar's rows are reserved whether or not the
+       Bar is occupied, so folding never reflows the chamber vertically
+       either. Forty functional seats over five columns is the tallest the
+       crossbench can be, and that is the height held. */
+    const maxCrossRows = Math.max(1, Math.ceil(Engine.functionalTotal(st) / XCOLS));
+    const reservedBot = FLOOR + ((maxCrossRows - 1) * XRH) / 2;
+    const H = Math.max(oppBot + 26, reservedBot + 26) + 8;
     /* An inline <svg> with a viewBox and no width defaults to the width of
        its container, so shrinking the coordinate space only magnified the
        drawing. Sizing it at 1:1 is what actually makes it smaller; the CSS
@@ -3438,13 +3415,18 @@ const UI = (function () {
     const sideOf = chamberFold
       ? Engine.popularTotal(st) + Engine.functionalTotal(st)
       : Engine.popularTotal(st);
+    /* ONE LINE. It was two: five labelled spans at full width wrapped, and
+       the second line was the Speaker and their seat — a standing fact that
+       does not change and did not earn a row of a column this tight. The
+       words are abbreviated because they are annotated, and the seat moves
+       into the tip with them. */
     $("#chamber-tally").innerHTML =
-      `<span class="ct gov" data-tip="government">Government ${seatLine(govN, sideOf)}</span>` +
-      `<span class="ct opp" data-tip="opposition">Opposition ${seatLine(oppN, sideOf)}</span>` +
-      (crossN ? `<span class="ct cross" data-tip="functional">Functional ${crossN}</span>` : "") +
-      `<span class="ct" data-tip="majority">Majority ${Engine.majority(st)}</span>` +
-      (chairName ? `<span class="ct" data-tip="speaker">Speaker ${chairParty ? mark(chairParty) : ""}` +
-                   `${esc(bare(chairName))}<i class="of"> ${esc(spkSeat.name)}</i></span>` : "");
+      `<span class="ct gov" data-tip="government">Gov ${seatLine(govN, sideOf)}</span>` +
+      `<span class="ct opp" data-tip="opposition">Opp ${seatLine(oppN, sideOf)}</span>` +
+      (crossN ? `<span class="ct cross" data-tip="functional">Func ${crossN}</span>` : "") +
+      `<span class="ct" data-tip="majority">Maj ${Engine.majority(st)}</span>` +
+      (chairName ? `<span class="ct" data-tip="speaker">Chair ` +
+                   `${chairParty ? mark(chairParty) : ""}${esc(bare(chairName))}</span>` : "");
 
     /* The legend names the two kinds of support — a partner in government and
        a party that only sustains it — while the diagram keeps both on the

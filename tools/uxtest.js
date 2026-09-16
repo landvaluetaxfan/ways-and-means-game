@@ -626,62 +626,39 @@ try {
   ok("and the functional count moves for it", +lobbied[4] > +lobbied[3],
      lobbied[3] + " then " + lobbied[4]);
 
-  /* PAIRING IS REACHABLE BY HAND. The engine has exported pairable/setPairs
-     since 15 September and no control called any of them, so the fourth
-     state of a vote was unreachable by play. What has to be true is not that
-     the functions exist — test.js covers that — but that a player clicking
-     the interface can arrive at an absent member. So this drives the DOM. */
-  const paired = w.eval(`
+  /* PAIRING IS DORMANT, NOT DELETED. The control left the whip panel on
+     16 Sep: under an absolute-majority rule a pair costs the government an
+     aye and the other side a nay the threshold never counted, so there is
+     no reason for a player to press it, and it was taking a row of the
+     tightest column on the screen. The MECHANIC stays, and so does this,
+     because the day content gives a reason to pair the engine must still
+     be able to. */
+  const pairing = w.eval(`
     (function () {
-      var st = UI.state();
-      /* the bill somebody is actually pairable on */
-      var bill = null;
+      var st = UI.state(), bill = null, who = null;
       CONTENT.bills.forEach(function (b) {
         if (bill || st.bills[b.id].dead) return;
         CONTENT.parties.forEach(function (p) {
           if (bill || p.id === st.playerParty) return;
-          if (Engine.pairable(st, CONTENT, b.id, p.id).max > 0) bill = b.id;
+          if (Engine.pairable(st, CONTENT, b.id, p.id).max > 0) { bill = b.id; who = p.id; }
         });
       });
       if (!bill) return "NO PAIRABLE BILL";
-      Focus.set("cham-bills", bill);
-      UI.redraw();
-      var bar = document.querySelector("#cham-whip .whipbar[data-pp]");
-      if (!bar) return "NO PAIR CONTROL";
-      var cells = bar.querySelectorAll("i");
-      if (!cells.length) return "NO CELLS";
-      cells[1].click();                       /* ask for two pairs */
-      var who = bar.getAttribute("data-pp");
-      var set = ((UI.state().pairs || {})[bill] || {})[who] || 0;
-      var d = Engine.division(UI.state(), CONTENT, bill);
-      var away = d.rows.reduce(function (n, r) { return n + (r.popularAbsent || 0); }, 0);
-      /* PUT IT BACK. A pair left standing here moved the ayes under the
-         faction-sum check further down and failed it — the shared-state trap
-         CLAUDE.md warns about, caught by the assertion it broke. */
-      Engine.clearPairs(UI.state(), bill);
-      UI.redraw();
-      return [bill, who, set, away].join("::");
+      var before = Engine.division(st, CONTENT, bill).rows
+        .reduce(function (n, r) { return n + (r.popularAbsent || 0); }, 0);
+      Engine.setPairs(st, CONTENT, bill, who, 2);
+      var after = Engine.division(st, CONTENT, bill).rows
+        .reduce(function (n, r) { return n + (r.popularAbsent || 0); }, 0);
+      Engine.clearPairs(st, bill);
+      return [bill, who, before, after].join("::");
     })()
   `).split("::");
-  ok("a pairable bill offers a pairing control", paired.length === 4,
-     paired[0]);
-  ok("clicking it sets the pair", +paired[2] === 2, paired[2] + " pairs with " + paired[1]);
-  ok("and members go absent in the division that follows", +paired[3] === 4,
-     paired[3] + " away, both sides");
-
-  /* ONE CLASS, ONE COMPONENT. `.sbar` is the terminal's drawn scrollbar
-     track, built by decorateScrollers(). It was taken a second time for
-     the order paper's stage pips, and because the scrollbar's thumb is an
-     <i>, the newcomer's `.sbar i{width:6px}` shrank every drawn bar in
-     Gecko to six pixels. CLAUDE.md warns about this in both directions and
-     it happened anyway, so it is asserted now: outside the scrollbar's own
-     block, nothing may style a bare .sbar. */
-  const cssSrc = fs.readFileSync(path.join(root, "css/terminal.css"), "utf8");
-  const bare = (cssSrc.match(/(^|[\s,}])\.sbar(?![-\w])\s*\{/gm) || []);
-  ok("nothing borrows the scrollbar's class", bare.length === 0,
-     bare.length + " bare .sbar rules");
-  ok("and the drawn bar is still styled through its wrapper",
-     /\.sbwrap>\.sbar\{/.test(cssSrc));
+  ok("the pairing engine still works", pairing.length === 4 && +pairing[3] === 4,
+     pairing[2] + " away, then " + pairing[3]);
+  ok("and its control is deliberately absent from the whip panel",
+     !/data-lb="[^"]*"[^]{0,40}data-pp|whipbar" data-pp/.test(
+       fs.readFileSync(path.join(root, "js/ui.js"), "utf8").replace(/\/\*[^]*?\*\//g, "")),
+     "a control was re-added without re-reading why it went");
 
   /* design/19: how long until the House rises, answerable by looking. */
   ok("the topbar carries how long the session has left",
