@@ -289,13 +289,15 @@ them.</b> The player will not meet all of them. Which one they drop is the game.
       <p class="ship">Shipped: <code>checkSettlement()</code> reads four <code>when</code> blocks in <code>content/settlements.js</code> through the same <code>matches()</code> every event uses. The engine names no settlement and nothing reports progress toward one &mdash; an ending named in advance is a quest marker (&sect;3.5.1 rule 2).</p><div class="who">engine &middot; small &middot; content declares the four</div></div>
     <span class="st done">Done</span></div>
 
-  <div class="item"><span class="no">7</span>
+  <div class="item is-done"><span class="no">7</span>
     <div><h3>Consumables derived from closure</h3>
       <p>One of five indicators is read by nothing. It is not unwanted &mdash; it is
       unwired: &sect;7.2 makes closure the sovereignty number and consumables its national
       counterpart. Derive one from the other and two dead numbers become one live one.</p>
+      <p class="ship">Shipped: <code>tick()</code> tracks the population-weighted closure
+      and moves the consumables floor with it, so the floor is a track, not a dial.</p>
       <div class="who">engine &middot; small</div></div>
-    <span class="st next">Next</span></div>
+    <span class="st done">Done</span></div>
 
   <div class="item is-done"><span class="no">8</span>
     <div><h3>The quiet sitting</h3>
@@ -398,6 +400,22 @@ playing the thing rather than planning it.</p>
     <tr><td><b>Three parties renamed</b></td>
         <td>&sect;8.3 was LOCKED and already said a party is named for who it is, not
         what it opposes. The roster broke it twice.</td></tr>
+    <tr><td><b>Flash I: trends, meters, and tiers (17 Sep)</b></td>
+        <td>The campaign&rsquo;s machinery landed whole: <code>trend.</code> moves on the
+        existing <code>move</code> verb drift a meter a little each sitting; the scalar
+        <code>treasury</code> became <code>solvency</code> and <code>legitimacy</code> and
+        <code>friction</code> joined the meters (&sect;7.6 amended); <code>terminal:
+        false</code> lets a settlement resolve the crisis without ending the run, recorded
+        in <code>resolvedAs</code> and read by <code>resolvedIs</code>; Earth&rsquo;s
+        governments seat as actors; and the six tiers in
+        <code>content/settlements.js</code> are proven reachable from the opening state,
+        with the pyrrhic one leading to the election. The crisis chain is wired and
+        playable, with the author&rsquo;s prose still to come.</td></tr>
+    <tr><td><b>The pool lasts the session, and chapters three and four exist</b></td>
+        <td>24 events went to 46 and a headless run now fires 24 of them, with the last
+        at sitting 24 &mdash; it used to go dry by sitting 9. The dissolution and the
+        settlement now advance the story into chapters three and four, and every action
+        checks <code>checkEnd()</code>, so the run meets its ending.</td></tr>
   </tbody>
 </table></div>
 
