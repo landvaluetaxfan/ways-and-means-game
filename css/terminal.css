@@ -1625,7 +1625,7 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .art img{display:block;width:100%;height:100%;object-fit:contain;
   image-rendering:pixelated;}
 
-.mbtn.cont i{display:block;font-style:normal;font-family:var(--f-data);
+.mbtn.cont i,.mbtn.adm i{display:block;font-style:normal;font-family:var(--f-data);
   font-size:9.5px;opacity:.72;margin-top:2px;letter-spacing:0;text-transform:none;}
 /* the inline options panel sits over the photograph in the main menu, so it
    carries its own dark ground and light ink. The popover in the bar keeps the

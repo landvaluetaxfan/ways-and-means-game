@@ -199,7 +199,8 @@ const Shell = (function () {
     document.body.classList.add("menu-on");
     m.innerHTML = menuShell(
       view === "load"    ? slotList("load")
-    : view === "new"     ? slotList("new")
+    : view === "new"     ? newGov()
+    : view === "slots"   ? slotList("new")
     : view === "credits" ? credits()
     : view === "options" ? menuOptions()
     : root());
@@ -248,6 +249,51 @@ const Shell = (function () {
      Continue is ABSENT rather than disabled when there is nothing to
      continue: a disabled button is a thing you are being refused, and on
      a first run there is nothing to refuse. */
+  /* ---------- administrations ----------
+
+     A campaign is one session; a government is a term and can span more than
+     one, so the government is chosen before the slot. content/setup.js
+     carries the list and the label is BUILT from the entry — the party's own
+     name, the leader's own surname — rather than stored a second time where
+     it could drift from the data it names. */
+  let chosenAdmin = null;
+
+  const bareName = n => String(n || "")
+    .replace(/^(Rt\. Hon\.|Hon\.)\s+/, "").replace(/\s+MP$/, "");
+
+  function adminLabel(a) {
+    if (!a) return "New government";
+    const p = (C && C.partyById && C.partyById[a.party]) || {};
+    const ch = (C && C.characterById && C.characterById[a.leader]) || {};
+    const surname = bareName(ch.name || a.leader).split(" ").pop() || a.leader;
+    const who = surname + (a.ordinal ? " " + a.ordinal : "");
+    const yrs = (a.from != null && a.to != null)
+      ? " \u2014 " + a.from + "\u2013" + a.to : "";
+    return (p.name || a.party) + " \u2014 " + who + yrs;
+  }
+
+  /* The content a state is built from. newGame reads setup and the tables
+     derived from it off the object it is handed, so a shallow copy with this
+     administration's setup merged over SETUP is a different opening with no
+     engine change. */
+  function contentFor(a) {
+    if (!a || !a.setup) return C;
+    return Object.assign({}, C, { setup: Object.assign({}, C.setup, a.setup) });
+  }
+
+  function newGov() {
+    const list = (C && C.administrations) || [];
+    if (!list.length)
+      return `<div class="menu-sub">New government</div>
+        <div class="menu-btns row"><button class="mbtn" data-go="slots">Choose a slot</button></div>
+        <div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
+    return `<div class="menu-sub">Choose a government</div>
+      <div class="menu-btns">${list.map(a =>
+        `<button class="mbtn adm" data-admin="${esc(a.id)}">${esc(adminLabel(a))}` +
+        `<i>Session ${a.session != null ? a.session : C.setup.session}</i></button>`).join("")}</div>
+      <div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
+  }
+
   function root() {
     const last = latest();
     const any = !!last;
@@ -337,16 +383,21 @@ const Shell = (function () {
     const first = m.querySelector("[data-cont]") || m.querySelector(".menu-btns .mbtn:not([disabled])");
     if (first && first.focus) first.focus({ preventScroll: true });
 
+    m.querySelectorAll("[data-admin]").forEach(b => b.addEventListener("click", () => {
+      chosenAdmin = (C.administrations || []).find(a => a.id === b.dataset.admin) || null;
+      showMenu("slots");
+    }));
+
     m.querySelectorAll("[data-new]").forEach(b => b.addEventListener("click", () => {
       const n = +b.dataset.new, existing = slot(n);
       const askName = () => Dialog.prompt("Name this game", {
         title: "New save",
-        value: existing ? existing.name : "New government",
+        value: existing ? existing.name : adminLabel(chosenAdmin),
         yes: "Start"
       }, answer => {
         const name = (answer || "").trim();
         if (!name) return;
-        start(n, name, null);
+        start(n, name, null, chosenAdmin);
       });
       if (existing && opts.confirmDestructive)
         Dialog.confirm(`Overwrite "${existing.name}"? This cannot be undone.`,
@@ -373,9 +424,9 @@ const Shell = (function () {
   }
 
   /* ---------- starting and saving ---------- */
-  function start(n, name, stateStr) {
+  function start(n, name, stateStr, admin) {
     let state;
-    try { state = stateStr ? Engine.load(stateStr, C) : Engine.newGame(C); }
+    try { state = stateStr ? Engine.load(stateStr, C) : Engine.newGame(contentFor(admin)); }
     catch (e) { Dialog.alert("That save could not be read: " + e.message,
                              { title: "Could not load" }); return; }
     current = { n: n, name: name };

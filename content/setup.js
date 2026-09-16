@@ -52,3 +52,30 @@ const SETUP = {
      above it the caucus divides. */
   thresholds: { leadershipChallenge: 15, ballot: 12 }
 };
+
+/* =============================================================
+   ADMINISTRATIONS — the governments a campaign can open as.
+
+   A CAMPAIGN IS ONE SESSION (sessionsPerParliament above). A GOVERNMENT is
+   one Prime Minister's term and can run across more than one session, so
+   the player chooses whose government this is and the label names the whole
+   term: party, leader and ordinal, and the years.
+
+     party    governing party id (content/parties.js)
+     leader   the Prime Minister (content/characters.js)
+     ordinal  which term of that leader's premiership ("I", "II", ...)
+     from/to  the term's years, for the label
+     session  which session of the term a campaign opens at
+     setup    overrides merged over SETUP when a campaign starts from here
+
+   The label is BUILT from these fields in js/shell.js, not stored here, so
+   it can never drift from the data it names. Flash I is the current
+   campaign and the rewrite's too; the bible's 11 April 2287 (§3.9) is a
+   placeholder older than the term, and this dates the campaign to the
+   term's own first year.
+   ============================================================= */
+const ADMINISTRATIONS = [
+  { id:"flash_i", party:"cu", leader:"flash", ordinal:"I",
+    from:2080, to:2084, session:4,
+    setup:{ startDate:"2080-04-11" } }
+];

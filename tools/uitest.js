@@ -23,6 +23,10 @@ ok("Load is disabled with no saves", !!$('[data-go="load"]').disabled);
 
 /* new game into slot 1 */
 $('[data-go="new"]').click();
+ok("a new government first offers the governments",
+   w.document.querySelectorAll("[data-admin]").length > 0,
+   w.document.querySelectorAll("[data-admin]").length + " administrations");
+$('[data-admin]').click();
 ok("slot list appears", w.document.querySelectorAll(".slot").length === 4);
 $('[data-new="1"]').click();
 ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.contains("on"));

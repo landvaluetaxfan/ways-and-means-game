@@ -3,6 +3,7 @@
 const CONTENT = (function () {
   const C = {
     setup: SETUP, parties: PARTIES, currents: CURRENTS,
+    administrations: typeof ADMINISTRATIONS !== "undefined" ? ADMINISTRATIONS : [],
     initiatives: typeof INITIATIVES !== "undefined" ? INITIATIVES : [],
     stations: STATIONS,
     constituencies: typeof CONSTITUENCIES !== "undefined" ? CONSTITUENCIES : [],

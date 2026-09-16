@@ -89,6 +89,9 @@ function boot() {
 }
 function newGame() {
   $('[data-go="new"]').click();
+  /* a government is chosen before the slot; take the first on offer */
+  const adm = w.document.querySelector("[data-admin]");
+  if (adm) adm.click();
   $('[data-new="1"]').click();
 }
 
