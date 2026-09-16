@@ -3392,6 +3392,11 @@ const Engine = (function () {
     if (!choiceOpen(st, C, ch)) return null;
     if (ch.cost && ch.cost.slot) st.slots.used += ch.cost.slot;
     apply(st, C, ch.effects);
+    /* Answering the House is governing. The idleness drag is for a
+       government that does nothing at all — not for one whose bills are
+       stuck at a division that will not carry and whose only remaining
+       move is the decision in front of it. */
+    st.actedThisSitting = true;
     st.seen[event.id] = (st.seen[event.id] || 0) + 1;
     st.log.unshift({ sitting: st.sitting, text: event.title + " — " + ch.label });
     settle(st, C);

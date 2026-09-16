@@ -1306,6 +1306,7 @@ wire."`,
   choices:[
     { label:"Recognise the referendum.",
       effects:[{ flag:"f1_referendum_carried" }, { move:{ "friction":10 } },
+               { move:{ "legitimacy":8 } },
                { wire:"FEDERATION RECOGNISES THE PLATFORM REFERENDUM" }],
       result:"The platform is the Commonwealth's question now, and Earth's banks are reading the same wire." },
     { label:"Decline to recognise it.",
@@ -1326,9 +1327,9 @@ Neither future is a vote the government can lose quietly.`,
   choices:[
     { label:"Move to annex.",
       effects:[{ flag:"f1_annexing" }, { move:{ "trend.friction":3 } },
-               { move:{ "solvency":-6 } },
+               { move:{ "solvency":-6 } }, { move:{ "legitimacy":12 } },
                { wire:"GOVERNMENT MOVES TO ANNEX THE PLATFORM" }],
-      result:"The annexation bill is set down. Earth notices, a little more, every sitting." },
+      result:"The annexation bill is set down. Acting is popular at home; Earth notices, a little more, every sitting." },
     { label:"Hold the line.",
       effects:[{ move:{ "trend.legitimacy":-3 } }, { move:{ "friction":-4 } }],
       result:"The outer habitats have heard the answer, and they will repeat it back every sitting." }
@@ -1344,8 +1345,9 @@ estimate. It holds, or it does not hold, and the difference is a funding
 line that will not be felt for a month. That is the whole of the warning.`,
   choices:[
     { label:"Fund it in full.",
-      effects:[{ move:{ "solvency":-3 } }, { move:{ "trend.thermal_margin":1 } }],
-      result:"The margin improves, a point at a time, and nobody notices, which was the point." },
+      effects:[{ move:{ "solvency":-3 } }, { move:{ "trend.thermal_margin":1 } },
+               { move:{ "legitimacy":4 } }],
+      result:"The margin improves, a point at a time, and the country sees a government paying for the platform it claimed." },
     { label:"Trim it and take the margin.",
       effects:[{ move:{ "solvency":2 } }, { move:{ "trend.thermal_margin":-2 } }],
       result:"Nothing happens today. That is what a drift is." }
@@ -1442,6 +1444,33 @@ discovered."`,
                { move:{ "legitimacy":-6 } },
                { wire:"GOVERNMENT ABANDONS THE CARVE-OUT; GUILD BENCH DISENGAGES" }],
       result:"The panel treats the sector as a bench that answers no government, which costs the next dual majority more." }
+  ]},
+
+/* THE OTHER WAY OUT. The couplings make high friction cost the margin every
+   sitting, so a government that wants friction DOWN needs something to do
+   about it that is not simply waiting: Earth's price for standing down, on
+   the table more than once, at a cost the player can see. */
+{ id:"fa_conciliate", chapter:2, weight:62, maxFires:3,
+  when:{ scalarAbove:{ friction:45 } },
+  title:"What Earth would take to stand down",
+  speaker:"landry",
+  body:`The Foreign Minister has a list from Earth's banks. Honour the
+corporate bonds the platform defaulted on. Accept an inspection of the
+salvage claim. Suspend the annexation question for a quarter. Do those
+three and the measures are lifted, for a quarter, and reviewed.
+
+It is not a bargain an ordinary year would take. This is not one.`,
+  choices:[
+    { label:"Pay the bond and take the suspension.",
+      effects:[{ move:{ "friction":-9 } }, { move:{ "solvency":-7 } },
+               { move:{ "legitimacy":-3 } },
+               { wire:"COMMONWEALTH PAYS THE BOND; EARTH SUSPENDS THE MEASURES FOR A QUARTER" }],
+      result:"The measures lift and the reserve pays for a suspension that lasts a quarter." },
+    { label:"Refuse, and wear the measures.",
+      effects:[{ move:{ "friction":2 } }, { move:{ "legitimacy":5 } },
+               { move:{ "loyalty.cu_maintenance":4 } },
+               { wire:"PM REFUSES EARTH'S TERMS: 'THE COMMONWEALTH DOES NOT PAY RANSOM' (as of 6 days ago)" }],
+      result:"The line is popular at home and the sanctions price it in, every sitting." }
   ]},
 
 /* ============================================================

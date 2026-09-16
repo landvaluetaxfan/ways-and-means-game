@@ -2526,5 +2526,50 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
        item ? item.tab + " - " + item.how : "no item");
   }
 
+  /* THE CANON ENDING IS REACHABLE BY PLAY (balance pass). The campaign's one
+     published ending is the sovereign debt trap: annex the platform, take
+     the friction, run the reserve down, and hold the country. A scripted
+     policy driven through the WIRED events lands the tier before the rise,
+     and the run then goes to the election — which is what `terminal:false`
+     is for. The other tiers hang on the same meters with gentler lines. */
+  {
+    const st = Engine.newGame(CONTENT);
+    const govern = s => {
+      CONTENT.bills.forEach(b => {
+        if (s.bills[b.id] && !s.bills[b.id].dead) Engine.grantSlot(s, CONTENT, b.id);
+      });
+      CONTENT.bills.forEach(b => {
+        if (!s.bills[b.id] || s.bills[b.id].dead) return;
+        if (Engine.canDivide(s, CONTENT, b.id).ok &&
+            (Engine.reported(s, CONTENT, b.id) || {}).carries) Engine.divide(s, CONTENT, b.id);
+      });
+      if (!s.instruments["si_2287_44"].made && Engine.canMake(s, CONTENT, "si_2287_44").ok)
+        Engine.makeInstrument(s, CONTENT, "si_2287_44");
+    };
+    const pick = { f1_stranded: 0, f1_referendum: 0, f1_dilemma: 0, f1_water: 0,
+      f1_loan: 1, f1_accounts_freeze: 0, fa_two_fronts: 0, fa_window_closes: 0,
+      fa_anchor_terms: 0, fa_conciliate: 1 };
+    let tier = null, end = null;
+    for (let s = 0; s < 26; s++) {
+      const e = Engine.nextEvent(st, CONTENT);
+      if (e) {
+        const n = (e.choices || []).length || 1;
+        const want = pick[e.id] == null ? 0 : Math.min(pick[e.id], n - 1);
+        let done = false;
+        for (let i = want; i < n; i++) if (Engine.choose(st, CONTENT, e, i) !== null) { done = true; break; }
+        if (!done) for (let i = 0; i < n; i++) if (Engine.choose(st, CONTENT, e, i) !== null) { done = true; break; }
+      }
+      govern(st);
+      Engine.advance(st, CONTENT);
+      const en = Engine.checkEnd(st, CONTENT);
+      if (en.settlement && !tier) tier = en.settlement;
+      if (en.over) { end = en; break; }
+    }
+    ok("the canon ending is reachable by play (the debt trap)",
+       !!tier && tier.id === "f1_pyrrhic", tier ? tier.id : "no tier landed");
+    ok("and it does not end the run: the campaign goes to the election",
+       !!end && end.kind === "election", end ? end.kind : "no end");
+  }
+
   if (bad) { console.log("\n" + bad + " OPENING FAILURES"); process.exitCode = 1; }
 })();
