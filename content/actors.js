@@ -56,10 +56,14 @@
                 price of a lobbied bench is never money: it is a
                 promise, and a promise has a deadline.
 
-   PROSE IS A PLACEHOLDER. Each `note` is one flat line so the
-   mechanism can be seen working. TODO opencode: these are four
-   kinds of power with four registers and none of them should sound
-   like the others.
+   PROSE, T16 — four kinds of power, four registers. A board is the
+   state's own creature until it is not, and speaks like an institution
+   that has outlived every government it has certified. A consortium owns
+   the thing everyone needs and is patient about it, and speaks like old
+   infrastructure: unhurried, commercial, long-horizon. A bloc cannot
+   vote and is therefore active by other means, and speaks like a crowd.
+   A union is the strike weapon and the party's own base, and speaks like
+   a shop floor. None of them sound alike, on purpose.
    ============================================================= */
 const ACTORS = [
 
@@ -68,42 +72,42 @@ const ACTORS = [
     reach: { fc_lifesupport: 4 },
     wants: { divergence_threshold_hours: 1, licensure_scope: 1, integrity_standards: 1 },
     asks: "hold the certification schedule for a full session",
-    note: "Appointed by the government, and votes like it until it does not." },
+    note: "The board that certifies who may work on a life-support system. It is appointed by the government and independent of it in every way that matters, and it has never needed to say which it is acting as." },
 
   { id: "lb_substrate", name: "Substrate Operations Licensing Board", kind: "board",
     standing: 38, patience: 55,
     reach: { fc_substrate: 5 },
     wants: { divergence_threshold_hours: -1, substrate_ownership: 1, thermal_quota: 1 },
     asks: "a public stake in substrate provision, this session",
-    note: "The board that decides who is a substrate engineer, in the sector where that is the contested question." },
+    note: "The board that decides who is a substrate engineer, in the sector where that is the contested question. Its appointments run for life, and it remembers every government that has tried to shorten one." },
 
   { id: "forkrentiers", name: "The Fork-Rentiers", kind: "bloc",
     standing: 22, patience: 30,
     reach: { fc_attestation: 3, fc_substrate: 2 },
     wants: { divergence_threshold_hours: -1, attestation_enforcement: -1, registry_powers: -1 },
     asks: "no new attestation requirement before the House rises",
-    note: "Two hundred and ten thousand people who rent out their own instances. They cannot vote and are therefore active by other means." },
+    note: "Two hundred and ten thousand people who rent out their own instances, cannot vote, and are therefore active by other means. They are not organised. They are numerous, which the chamber has learned is not the same thing." },
 
   { id: "maintenance_union", name: "Combined Maintenance Trades", kind: "union",
     standing: 61, patience: 45,
     reach: { fc_maintenance: 4 },
     wants: { divergence_threshold_hours: 1, essential_services_law: 1, shed_order_priority: 1 },
     asks: "no reduction in the embodied labour floor",
-    note: "The strike weapon, and the player's own party's base." },
+    note: "The strike weapon, and the player's own party's base. It is blunt, it is patient, and it has never forgotten that the party came out of the same sheds it did." },
 
   { id: "anselm_elevator", name: "Anselm Elevator", kind: "consortium",
     standing: 44, patience: 80,
     reach: { fc_elevator: 3, fc_transit: 2 },
     wants: { divergence_threshold_hours: 1, anchor_concession: 1, transit_windows: 1 },
     asks: "the anchorage concession ratified before the House rises",
-    note: "Owns the tether everything arrives on. Patient, because it can afford to be." },
+    note: "Owns the tether everything arrives on, and has owned it long enough to speak of it the way other people speak of the weather. It does not hurry, because it cannot lose, and it does not threaten, because it does not have to." },
 
   { id: "standard_substrate", name: "Standard Substrate", kind: "consortium",
     standing: 35, patience: 65,
     reach: { fc_substrate: 3 },
     wants: { divergence_threshold_hours: -1, substrate_ownership: -1, risk_pricing: 1 },
     asks: "leave the public substrate share where it is",
-    note: "Sells the substrate a person runs on, and would rather more people needed it." },
+    note: "Sells the substrate a person runs on, and its position is that more people should need it. Its patience is the market's patience, and it prices accordingly." },
 
   /* THREE BODIES ADDED FOR A STRUCTURAL REASON, not a narrative one.
 
@@ -127,28 +131,28 @@ const ACTORS = [
     reach: { fc_legal: 3 },
     wants: { divergence_threshold_hours: -1, reclassification_practice: 1, charter_interpretation: 1 },
     asks: "no ministerial direction over reclassification practice",
-    note: "Licenses the practitioners who argue what a person is, and is appointed by the government whose law they argue about." },
+    note: "Licenses the practitioners who argue what a person is, and is appointed by the government whose law they argue about. It has outlasted forty ministries, and it knows it." },
 
   { id: "college_medicine", name: "College of Medicine and Embodiment", kind: "board",
     standing: 57, patience: 50,
     reach: { fc_medicine: 3 },
     wants: { divergence_threshold_hours: 1, embodiment_access: 1, bone_density_standards: 1 },
     asks: "hold the embodiment access standard for a full session",
-    note: "Decides who may practise on a body, in a Commonwealth arguing about whether one is required." },
+    note: "Decides who may practise on a body, in a Commonwealth arguing about whether one is required. Its membership is ancient and its minutes are published two years late." },
 
   { id: "underwriters", name: "Circumterrestrial Underwriters", kind: "consortium",
     standing: 41, patience: 85,
     reach: { fc_underwriting: 3, fc_residual: 1 },
     wants: { divergence_threshold_hours: 1, risk_pricing: 1, substrate_insurance: 1 },
     asks: "no statutory cap on substrate risk pricing",
-    note: "Prices the risk that a person stops running, and would rather the law did not decide when that has happened." },
+    note: "Prices the risk that a person stops running, and holds the only complete numbers in the Commonwealth. It does not campaign, because the numbers do." },
 
   { id: "bellweather", name: "Bellweather Consumables", kind: "consortium",
     standing: 49, patience: 60,
     reach: { fc_consumables: 3 },
     wants: { consumables_floor: 1, consumables_subsidy: 1, substrate_insurance: 1 },
     asks: "no consumables price intervention this session",
-    note: "Can withhold a shipment, which is the whole of its politics." }
+    note: "Sells the food, air and water, and can stop a station by not loading a ship. Its politics is a schedule and a cold chain." }
 ];
 
 if (typeof module !== "undefined") module.exports = ACTORS;

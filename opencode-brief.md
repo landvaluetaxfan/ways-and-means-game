@@ -419,7 +419,21 @@ for Charter Green is an emulation voting on the divergence schedule, which is
 the entire game in one hover. **The engine side of that is one line and it is
 mine.** Write the field first; say so in OPEN REQUESTS; I will read it.
 
-## T16 — [ ] The actors have placeholder prose
+## T16 — [x] The actors have placeholder prose  ·  **DONE 17 Sep**
+
+**Landed.** All ten bodies (the brief says seven; three boards and consortiums
+were added later for domain-consent reach) now speak in their own register:
+the four boards sound like institutions that have outlived every government
+they have certified; the four consortiums like old infrastructure, unhurried
+and long-horizon; the fork-rentiers like a crowd that is numerous without
+being organised; the maintenance union like a shop floor that remembers the
+party came out of the same sheds. The header comment records the four
+registers. `asks` were kept: they already read like demands a body would
+actually make.
+
+---
+
+### The task as written
 
 `content/actors.js` is new and it is mine — the engine needed a roster to
 seat, and `design/24` puts the store in Lane A. **The prose in it is not
