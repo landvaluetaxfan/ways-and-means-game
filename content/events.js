@@ -1241,7 +1241,7 @@ which is how a settlement works. What follows is the Commonwealth after it.`,
       result:"The argument is closed." }
   ]},
 
-{ id:"ch4_after", chapter:4, prologue:1, once:true,
+  { id:"ch4_after", chapter:4, prologue:1, once:true,
   title:"After",
   speaker:null,
   body:`The session runs on. Bills move or fall, ministers answer questions,
@@ -1254,6 +1254,148 @@ That is what a settlement is for.`,
     { label:"Close the chapter.",
       effects:[],
       result:"The record stands." }
+  ]},
+
+/* ============================================================
+   FLASH I — THE PLATFORM CRISIS (the author's campaign, wired so it can
+   be played; every sentence here is a placeholder for the author's
+   prose, and the mechanics are the plan's: micro-decisions drift the
+   four meters, the tiers in content/settlements.js read them, panic
+   buttons are expensive, and the meltdown is a loss through the
+   loyalty floor. See content/campaign_flash_i.example.js for the
+   annotated plan.)
+   ============================================================ */
+
+{ id:"f1_stranded", chapter:2, weight:90, once:true,
+  title:"Three hundred thousand",
+  speaker:null,
+  body:`The host corporation has abandoned its platform, and the debt has
+not. Three hundred thousand workers are stranded on it with two months of
+air, and the host state's repatriation plan is fully funded, legally
+complete, and two years long.
+
+The platform has voted. The question is what the Commonwealth says.`,
+  choices:[
+    { label:"Send the survey team.",
+      effects:[{ flag:"f1_surveyed" }, { wire:"FEDERATION SURVEYS THE ABANDONED PLATFORM" }],
+      result:"The survey's first return is the scrubber schedule. The second is the debt." },
+    { label:"Wait for Earth's process.",
+      effects:[{ move:{ "legitimacy":-5 } }, { wire:"PM: THE REPATRIATION PLAN IS EARTH'S TO RUN" }],
+      result:"The outer stations read the delay as an answer, and it is not the one they wanted." }
+  ]},
+
+{ id:"f1_referendum", chapter:2, weight:88, once:true,
+  when:{ flags:["f1_surveyed"] },
+  title:"The vote",
+  speaker:"ceyhan",
+  body:`The workers have voted to join the Federation, and Ceyhan's column
+names the three reasons in one sentence: a two-year rescue, a
+repatriation nobody's body is ready for, and bank accounts frozen
+
+overnight on Earth's say-so.
+
+"The referendum is on your desk," he says. "Earth's is reading the same
+wire."`,
+  choices:[
+    { label:"Recognise the referendum.",
+      effects:[{ flag:"f1_referendum_carried" }, { move:{ "friction":10 } },
+               { wire:"FEDERATION RECOGNISES THE PLATFORM REFERENDUM" }],
+      result:"The platform is the Commonwealth's question now, and Earth's banks are reading the same wire." },
+    { label:"Decline to recognise it.",
+      effects:[{ move:{ "legitimacy":-8 } }, { move:{ "friction":-3 } }],
+      result:"The strikes start on the outer habitats before the sitting ends." }
+  ]},
+
+{ id:"f1_dilemma", chapter:2, weight:86, once:true,
+  when:{ flags:["f1_referendum_carried"] },
+  title:"The dilemma",
+  speaker:"fenwick",
+  body:`The Minister for Law and the Charter sets out the two futures in
+the plainest terms. Absorb the platform and take its industrial capacity,
+its life-support bill, and the embargo risk over the defaulted debt. Or
+decline, keep the short term, and explain the strikes.
+
+Neither future is a vote the government can lose quietly.`,
+  choices:[
+    { label:"Move to annex.",
+      effects:[{ flag:"f1_annexing" }, { move:{ "trend.friction":3 } },
+               { move:{ "solvency":-6 } },
+               { wire:"GOVERNMENT MOVES TO ANNEX THE PLATFORM" }],
+      result:"The annexation bill is set down. Earth notices, a little more, every sitting." },
+    { label:"Hold the line.",
+      effects:[{ move:{ "trend.legitimacy":-3 } }, { move:{ "friction":-4 } }],
+      result:"The outer habitats have heard the answer, and they will repeat it back every sitting." }
+  ]},
+
+/* one drift micro-decision: nothing crashes today; the margin leans */
+{ id:"f1_water", chapter:2, weight:60, maxFires:2,
+  when:{ flags:["f1_annexing"] },
+  title:"The recycling line",
+  speaker:"vellan",
+  body:`The Minister for Life Support brings the platform's water recycling
+estimate. It holds, or it does not hold, and the difference is a funding
+line that will not be felt for a month. That is the whole of the warning.`,
+  choices:[
+    { label:"Fund it in full.",
+      effects:[{ move:{ "solvency":-3 } }, { move:{ "trend.thermal_margin":1 } }],
+      result:"The margin improves, a point at a time, and nobody notices, which was the point." },
+    { label:"Trim it and take the margin.",
+      effects:[{ move:{ "solvency":2 } }, { move:{ "trend.thermal_margin":-2 } }],
+      result:"Nothing happens today. That is what a drift is." }
+  ]},
+
+/* a panic button: visible, expensive, and the way back from the cascade */
+{ id:"f1_loan", chapter:2, weight:84, maxFires:1,
+  when:{ scalarBelow:{ solvency:30 } },
+  title:"The emergency loan",
+  speaker:"hatt",
+  body:`The Alliance of Business and Government will carry the
+Commonwealth's short position, at a rate, for a term, on a condition.
+The condition is the platform's mining leases.
+
+The rate is printed. The term is printed. The condition is one line.`,
+  choices:[
+    { label:"Take the loan.",
+      effects:[{ move:{ "solvency":18 } }, { move:{ "legitimacy":-10 } },
+               { undertake:{ id:"f1_debt", text:"Honour the emergency facility",
+                             post:"treasury", by:null, onBreach:"f1_debt_called" } }],
+      result:"The solvency line recovers. The promise does not, and it has a date." },
+    { label:"Refuse the rate.",
+      effects:[{ move:{ "legitimacy":3 } }, { move:{ "trend.solvency":-1 } }],
+      result:"A solvent government could have refused it. This one is not solvent, and refusing costs a little, every sitting." }
+  ]},
+
+/* the meltdown: a LOSS through the loyalty floor, not a settlement */
+{ id:"f1_meltdown", chapter:2, weight:98, once:true,
+  when:{ scalarAbove:{ friction:85 },
+         scalarBelow:{ thermal_margin:20, solvency:20, legitimacy:20 } },
+  title:"The cascade",
+  speaker:null,
+  body:`The embargo lands. Life support fails on the platform and the
+strain reaches the ring. The vote of no confidence is tabled while the
+chamber is still arguing about the water.`,
+  choices:[
+    { label:"It was always going to end somewhere.",
+      effects:[{ move:{ "party_loyalty":-100 } }],
+      result:"The government falls. The terminal writes GOVERNMENT FALLEN." }
+  ]},
+
+/* the canon election: the pyrrhic tier leads to the campaign's victory */
+{ id:"f1_pyrrhic_election", chapter:3, prologue:3, once:true,
+  when:{ resolvedIs:"f1_pyrrhic" },
+  title:"The mandate",
+  speaker:null,
+  body:`The returns are complete, and they are a verdict on the debt the
+Commonwealth assumed. The country has decided that saving three hundred
+thousand people was worth the austerity, and that the government that did
+it deserves the session that follows.
+
+The victory is real and it is expensive, which is the only kind this
+campaign had on offer.`,
+  choices:[
+    { label:"Read the final numbers.",
+      effects:[{ wire:"RETURNS COMPLETE: THE GOVERNMENT IS RETURNED ON THE PYRRIHIC TICKET" }],
+      result:"The numbers are read. The chapter closes." }
   ]}
 
 ];
