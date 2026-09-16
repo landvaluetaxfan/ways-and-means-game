@@ -11,14 +11,30 @@
    -------------------------------------------------------------
    THE FOUR METERS (setup.scalars; two are new)
 
-     DL   legitimacy          the House and the stations behind you.
+     DL   legitimacy          NEW. The House and the stations behind you.
                               0-100. Low = strikes and no-confidence.
-     SS   solvency            the sovereign's credit. This is `treasury`
-                              renamed (bible 7.6 amendment first).
-                              0-100. Low = emergency tax hikes needed.
-     DF   friction            Earth's governments and banks against you.
-                              Drives embargo risk and import costs.
-                              0-100. High = sanctions, frozen accounts.
+                              The author's call: the two existing
+                              domestic meters stay separate —
+                              party_loyalty (the caucus) and
+                              public_standing (the country) — and
+                              legitimacy is a third, the campaign's
+                              own measure of the government being
+                              believed. Events move all three.
+     SS   solvency            treasury RENAMED (bible 7.6 amendment).
+                              0-100. The state's ability to pay
+                              obligations as they come due: the
+                              reserve, the emergency facility, the
+                              debt it assumes. "Solvency" rather than
+                              "treasury" because the campaign makes
+                              the number about credit and default, not
+                              about a purse; the deeper question of
+                              whether the value is an index or a
+                              denominated quantity (design/13 5) stays
+                              open either way.
+     DF   friction            NEW. Earth's governments and banks
+                              against you. Drives embargo risk and
+                              import costs. 0-100. High = sanctions,
+                              frozen accounts.
      LSM  thermal_margin      the life-support margin that already
                               exists, renamed in prose only. The
                               death-line stays at 0: the government
@@ -61,11 +77,17 @@
      and ends through the existing loyalty floor: the meltdown event
      applies {move:{party_loyalty:-100}} and checkLoss does the rest.
 
-     PROPOSED ENGINE: `settlement.terminal`. The canon Pyrrhic ending
-     records but does not end the run: the election happens, and chapter
-     three's result event reads which tier was reached and narrates the
-     victory. Until that field exists, the pyrrhic tier is annotated as
-     non-terminal and the run continues to dissolution.
+     PROPOSED ENGINE: `settlement.terminal`. By default a settlement
+     ENDS the run: checkEnd returns over:true, the closing prose shows,
+     and the session is recorded. That is correct for a game whose
+     endings ARE settlements. The canon Pyrrhic tier is different: it
+     resolves the CRISIS, not the CAMPAIGN. `terminal:false` records
+     the tier and lets the run continue to the election, where chapter
+     three's result event reads which tier was reached and narrates
+     the victory. `terminal:true` (the default) keeps the existing
+     behaviour, so nothing else changes. The meltdown is not a
+     settlement at all: it is a loss, and ends through the loyalty
+     floor, so no flag is needed there.
    ============================================================= */
 
 /* ---------------- the six tiers as settlement skeletons ----------------
