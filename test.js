@@ -2105,6 +2105,51 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
        "consumables " + cons + " -> " + A.scalars.consumables);
   })();
 
+  /* ---- SUPPLY IS THE THING THAT CANNOT BE IGNORED ----
+     Without it a player could rise from sitting after sitting, call no
+     division, grant no time and answer nothing, and reach the election
+     having simply declined to govern. Every other pressure in the game is
+     a cost you may choose to pay. */
+  (function () {
+    const idle = Engine.newGame(CONTENT);
+    let end = null;
+    for (let i = 0; i < 40 && !end; i++) {
+      const f = Engine.checkEnd(idle, CONTENT);
+      if (f.over) { end = f; break; }
+      Engine.advance(idle, CONTENT);
+    }
+    ok("a government that does nothing loses supply",
+       end && end.kind === "loss" && end.reason === "supply",
+       end ? end.kind + " " + (end.reason || "") : "never ended");
+
+    /* And it is the FAIR loss, because it is dated from the opening. */
+    const fresh = Engine.newGame(CONTENT);
+    const marks = Engine.deadlines(fresh, CONTENT);
+    ok("and the day it must carry by is on the calendar from sitting one",
+       marks.some(m => /must carry/.test(m.text || "")),
+       marks.map(m => m.text).join(" | ").slice(0, 70));
+
+    /* Carrying it buys the session, and then the election is the ending. */
+    const gov = Engine.newGame(CONTENT);
+    for (let i = 0; i < 4 &&
+         Engine.canDivide(gov, CONTENT, "appropriation").unread; i++)
+      Engine.grantSlot(gov, CONTENT, "appropriation");
+    Engine.divide(gov, CONTENT, "appropriation");
+    let e2 = null;
+    for (let i = 0; i < 40 && !e2; i++) {
+      const f = Engine.checkEnd(gov, CONTENT);
+      if (f.over) { e2 = f; break; }
+      Engine.advance(gov, CONTENT);
+    }
+    ok("a government that carries it goes to the country instead",
+       e2 && e2.kind === "election", e2 ? e2.kind : "never ended");
+
+    /* The engine still names no bill: supply is read off the test field. */
+    ok("supply is read generically, not by name",
+       Engine.supplyCarried(gov, CONTENT) === true &&
+       Engine.supplyCarried(Engine.newGame(CONTENT), CONTENT) === false);
+  })();
+
   /* Rule 3: closure and dissolution are failure modes, not settlements. */
   const lost = fresh(); lost.law.divergence_threshold_hours = 200;
   lost.bills.divergence.stage = "defeated"; lost.bills.divergence.dead = true;

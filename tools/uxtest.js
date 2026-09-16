@@ -1212,6 +1212,12 @@ try {
      opens, which is what makes the election its terminus. */
   ok("a one-session parliament sits its last session from the start",
      E.lastSession(e, Cx) === true);
+  /* Carry supply first, or the run ends on losing it rather than at the
+     election — which is correct behaviour and is asserted in test.js,
+     but it is not what this block is about. */
+  for (let i = 0; i < 4 && E.canDivide(e, Cx, "appropriation").unread; i++)
+    E.grantSlot(e, Cx, "appropriation");
+  E.divide(e, Cx, "appropriation");
   const endAt = e.sessionEnds + 2;
   while (e.sitting < endAt) E.advance(e, Cx);
   ok("the House is dissolved rather than prorogued", !!e.dissolved,

@@ -3499,6 +3499,20 @@ const Engine = (function () {
       if (bs && bs.dividesOn != null && !bs.dead)
         add(bs.dividesOn, "division", b.title + " divides");
     });
+    /* SUPPLY, ON THE CALENDAR FROM THE FIRST SITTING. Losing supply is the
+       only loss a player can see coming for a whole session, and that is
+       what makes it fair rather than punitive — so it is dated the day the
+       House rises and sits there from the opening, not raised as a warning
+       once it is too late to act. */
+    if (!supplyCarried(st, C) && st.sessionEnds != null) {
+      const sup = (C.bills || []).find(b => b.test === "supply" &&
+        !((st.bills[b.id] || {}).dead));
+      /* Its own kind, not "owed": an undertaking is a promise the player
+         made and this is a requirement they did not choose. Two tests
+         filter the calendar for owed and expect exactly the promises the
+         player entered into, and they were right to. */
+      if (sup) add(st.sessionEnds, "supply", sup.title + " must carry");
+    }
     /* An undertaking counts down in `by`, and an explicit null means
        "before the House rises" — so that one lands on the last sitting
        of the session, which is where the author meant it. */
@@ -3816,6 +3830,7 @@ const Engine = (function () {
      recomputed by the existing generalElection(); what is new is that the
      run stops here rather than opening another session. */
   function dissolve(st, C) {
+    testSupply(st, C);
     /* THE HOUSE RISES HERE TOO, AND MORE FINALLY THAN AT PROROGATION.
        Everything owed "before the House rises" — by:null, which is every
        promise lobbying makes — comes due. Without this a government could
@@ -3854,6 +3869,14 @@ const Engine = (function () {
        confidence vote in a chamber that has been dissolved. Once the
        writs are out the campaign is over and the electorate's answer is
        the outcome, whatever the arithmetic of the last parliament says. */
+    /* LOSING SUPPLY BEATS THE ELECTION, and only this does. The general
+       rule below is that dissolution is read first — you cannot lose a
+       confidence vote in a House that no longer exists — but supply is
+       lost AT THE RISE, in the parliament that was still sitting, and
+       with one session to a parliament the rise and the dissolution are
+       the same instant. Read the other way round, a government that never
+       brought a budget went to the country as though it had governed. */
+    if (st.supplyLost) return { over: true, kind: "loss", reason: "supply" };
     if (st.dissolved) return { over: true, kind: "election", result: st.dissolved };
     const lost = checkLoss(st, C);
     if (lost.lost) return { over: true, kind: "loss", reason: lost.reason };
@@ -3862,7 +3885,18 @@ const Engine = (function () {
     return { over: false };
   }
 
+  /* Called the moment the House rises, whichever way it rises. */
+  function testSupply(st, C) {
+    if (!C || !supplyPending(st, C) && !supplyCarried(st, C)) return;
+    if (supplyCarried(st, C)) return;
+    st.supplyLost = true;
+    st.log.unshift({ sitting: st.sitting, text:
+      "The House rises without supply. The government cannot pay for itself." });
+    st.wire.unshift({ sitting: st.sitting, text: "SUPPLY NOT GRANTED" });
+  }
+
   function prorogue(st, C) {
+    testSupply(st, C);
     const fell = [];
     (C.bills || []).forEach(b => {
       const bs = st.bills[b.id];
@@ -4028,7 +4062,32 @@ const Engine = (function () {
     return found.length ? found[0] : null;
   }
 
+  /* Has a money bill been carried in this session? Read generically: any
+     measure whose test is "supply". The engine names no bill. */
+  function supplyCarried(st, C) {
+    return (C.bills || []).some(b => b.test === "supply" &&
+      (st.bills[b.id] || {}).stage === "assented");
+  }
+  function supplyPending(st, C) {
+    return (C.bills || []).some(b => b.test === "supply" &&
+      !((st.bills[b.id] || {}).dead));
+  }
+
   function checkLoss(st, C) {
+    /* SUPPLY IS THE THING THAT CANNOT BE IGNORED.
+
+       Without this a player could rise from sitting after sitting, call no
+       division, grant no time and answer nothing, and reach the election
+       having simply declined to govern. Every other pressure in the game
+       is a cost you may choose to pay; a government that does not carry
+       its budget is not a government that made a hard choice, it is one
+       that has lost supply, and that is the sharpest confidence test there
+       is (design/13 §4).
+
+       It is also the fairest, because it is the one loss a player can see
+       coming for a whole session: the bill is on the order paper from
+       sitting one and the calendar carries the day it must be done by. */
+    if (C && st.supplyLost) return { lost: true, reason: "supply" };
     if (confidence(st) < majority(st)) return { lost: true, reason: "confidence" };
     /* A ballot the Prime Minister lost is the end, through the same reason the
        old loyalty floor used, so there is one leadership loss and not two. */
@@ -4082,7 +4141,7 @@ const Engine = (function () {
     rollCall, lobbyable, setLobby, clearLobby, lobbyCost, payLobby, lobbiedSeats,
     clausesOf, clausePlan, clauseCost, setClause, clauseEffects,
     domainTest, functionalByConstituency, lobbiedByConstituency, isSupply,
-    lastSession, dissolve, checkEnd,
+    lastSession, dissolve, checkEnd, supplyCarried, supplyPending,
     settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
     snapshot, changes,
     prorogue, canDivide, candidates, vacancies, fillPost,
