@@ -2559,8 +2559,10 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
        dl && dl.tab === "pap" && !!dl.how, dl ? dl.tab + " - " + dl.how : "no item");
     const t = Engine.today(st, CONTENT, false);
     const item = t.items.find(i => i.kind === "owed");
+    /* THE NUMBER, NOT THE YEAR: every order is "... Order 2287", so the SI
+       number is the only part of the title that tells one from another. */
     ok("and the order of the day sends you there",
-       item && item.tab === "pap" && /Make the/.test(item.how || ""),
+       item && item.tab === "pap" && /Make SI 2287\/44/.test(item.how || ""),
        item ? item.tab + " - " + item.how : "no item");
     ok("and it names the order itself, not only the tab",
        !!(item && /^si:si_2287_44$/.test(item.focus || "")),

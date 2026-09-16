@@ -2069,6 +2069,30 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
 #sit-docket .dk.owed.late i{color:var(--warn,#8a3b2a);}
 #sit-docket .dk.pray i{font-style:italic;}
 
+/* ---------- the undertakings panel is a list of ROWS, not a stack of buttons
+   A promise, the date it is due, and the place it is kept is the same object
+   the docket lists, so the government tab's copy is drawn the same way: no
+   chrome, a bold title over a data-face meta line, a left rule while it is
+   outstanding, and the field lightening under the pointer. It is a <button>
+   because the row is the other end of the order-of-the-day deep link and has
+   to be clickable — and an unstyled button draws the browser's own bevel,
+   which is what made this panel look pasted in from a different program. */
+#gov-owed .dk{
+  display:block;width:100%;margin:0;padding:4px 0;text-align:left;
+  font:inherit;color:inherit;background:transparent;border:0;
+  border-bottom:1px dotted var(--rule);
+}
+#gov-owed .dk b{display:block;font-size:12px;font-weight:400;line-height:1.35;}
+#gov-owed .dk i{display:block;font-style:normal;font-family:var(--f-data);
+  font-size:9.5px;letter-spacing:.03em;color:var(--ink-soft);}
+#gov-owed .dk.owed{border-left:3px solid var(--ink);padding-left:6px;}
+#gov-owed .dk.owed b{font-weight:700;}
+#gov-owed .dk.owed.late{border-left-color:var(--warn,#8a3b2a);}
+#gov-owed .dk.owed.late i{color:var(--warn,#8a3b2a);}
+#gov-owed .dk.goto{cursor:pointer;}
+#gov-owed .dk.goto:hover{background:var(--field);}
+#gov-owed .dk:last-child{border-bottom:0;}
+
 /* The sitting screen fills the viewport. It was content-height, so a short
    event left a third of the screen as bare chrome under the panel — the
    one screen the player spends most of their time on, and the emptiest.
@@ -2105,6 +2129,14 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
 #s-sit .stack > .panel:last-child{flex:0 0 auto;min-height:0;}
 #s-sit .stack > .panel > .pbody{flex:0 0 auto;min-height:0;overflow:visible;}
 #s-sit .stack > .panel:last-child > .pbody{overflow:visible;}
+/* THE LEFT COLUMN IS A STACK TOO. The decision fills and the wire sits under
+   it in a box of its own, at the reading column's full width — a feed is
+   prose and reads badly at the 320px the reference column gives it, which is
+   why it read as a grey tail. Bounded, so the decision cannot be pushed off
+   the top by a busy sitting. */
+#s-sit .stack.stackmain > .panel:first-child{flex:1 1 auto;min-height:0;}
+#s-sit .stack.stackmain > .panel:last-child{flex:0 0 auto;min-height:0;}
+#s-sit .stack.stackmain > .panel:last-child > .pbody{max-height:24vh;overflow:auto;}
 /* NONE OF WHICH SURVIVES ONE COLUMN. Filling the viewport is right for
    two columns side by side and wrong for five panels stacked: the row
    becomes a single screen-height box that everything below is pushed out
@@ -2116,6 +2148,7 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
   #s-sit .grid{flex:none;}
   #s-sit #sitting-body,#s-sit .stack>.panel:last-child>.pbody{overflow:visible;}
   #s-sit .stack>.panel:last-child{flex:none;min-height:0;}
+  #s-sit .stack.stackmain>.panel:last-child>.pbody{max-height:none;overflow:visible;}
 }
 #sb-owed{border-left:3px solid currentColor;padding-left:5px;font-weight:700;}
 /* the second button on a quiet sitting carries its distance */

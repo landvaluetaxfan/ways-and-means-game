@@ -2735,7 +2735,20 @@ const UI = (function () {
       siOpen = id;
       drawAll();
       const row = document.querySelector('#gov-si tr[data-si="' + id + '"]');
-      if (row && row.scrollIntoView) row.scrollIntoView({ block: "center" });
+      if (row) {
+        if (row.scrollIntoView) row.scrollIntoView({ block: "center" });
+        /* THE ROW IS THE ANSWER, SO IT PULSES. Landing on the Papers tab
+           with thirteen orders and no mark on the one that matters reads as
+           a dead link; the row the player was sent to says it was the row.
+           And if the promise needs the order to be LAID first, the status
+           line says so — the row opens onto its Make button either way. */
+        flash(row);
+        const si = (C.instruments || []).find(x => x.id === id);
+        const s = st.instruments[id];
+        if (si && s && !s.made)
+          setStatus("This promise is kept by " + (si.number || si.id) +
+            ". Press Make to lay it.", "transient");
+      }
     } else if (kind === "bill" && typeof Focus !== "undefined") {
       Focus.activate("cham-bills", id);
     }

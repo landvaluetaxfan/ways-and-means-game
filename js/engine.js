@@ -3652,8 +3652,14 @@ const Engine = (function () {
     let tab = "gov", how = "By taking the decision that discharges it", focus = null;
     const dz = (u && u.discharge) || {};
     if (dz.si && C.instrumentById && C.instrumentById[dz.si]) {
+      const si = C.instrumentById[dz.si];
       tab = "pap";
-      how = "Make the " + (C.instrumentById[dz.si].title || dz.si);
+      /* THE NUMBER, NOT THE YEAR. Every order in the ladder is titled
+         "... Order 2287", so the year names nothing; the SI number is what
+         the papers table, the search and the order itself are indexed by,
+         and it is the only part of the title that is different. */
+      how = "Make " + (si.number ? si.number + " \u2014 " : "") +
+            (si.title || dz.si).replace(/ Order 2287$/, "");
       focus = "si:" + dz.si;
     } else if (dz.bill && C.billById && C.billById[dz.bill]) {
       tab = "cham";
