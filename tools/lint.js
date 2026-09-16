@@ -19,11 +19,11 @@
 
 const fs = require("fs"), vm = require("vm"), path = require("path");
 const root = path.join(__dirname, "..");
-const files = ["setup", "parties", "stations", "constituencies", "cabinet", "instruments","initiatives", "minutes", "characters", "bills", "events", "glossary", "encyclopedia", "labour"]
+const files = ["setup", "parties", "stations", "constituencies", "cabinet", "instruments","initiatives", "minutes", "characters", "bills", "events", "glossary", "encyclopedia", "labour", "actors"]
   .map(f => path.join(root, "content", f + ".js"));
 vm.runInThisContext(files.map(f => fs.readFileSync(f, "utf8")).join("\n") +
-  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP};");
-const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP } = globalThis.__G;
+  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS};");
+const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS } = globalThis.__G;
 
 const MAX_NEW_CLUSTERS = 1;  // per event. Raise this and you are choosing to confuse people.
 
@@ -162,6 +162,70 @@ try {
 } catch (e) { verbBad.push("could not read the vocabulary: " + e.message); }
 
 section("RETIRED EFFECT VERBS IN CONTENT", verbBad, x => x);
+
+/* =============================================================
+   MOVE TARGETS THAT NAME NOTHING (design/17 §1.3)
+
+   `{move:{"rel.nobody":5}}` fails silently — the rel case finds no
+   character and does nothing — and a bare-key typo is worse: the scalar
+   case CREATES the number, so `{move:{treasuring:5}}` quietly adds a meter
+   nobody declared and the panel draws a number content never wrote. Every
+   namespaced target is resolved against the roster; a station effect's
+   ids against the stations; a law key against the declared law. Hard
+   failure: a typo that moves nothing is content the player paid for and
+   never got.
+   ============================================================= */
+const targetBad = [];
+try {
+  const partyIds = new Set(PARTIES.map(p => p.id));
+  const currentIds = new Set((CURRENTS || []).map(c => c.id));
+  const charIds = new Set(CHARACTERS.map(c => c.id));
+  const actorIds = new Set((ACTORS || []).map(a => a.id));
+  const stationIds = new Set(STATIONS.map(s => s.id));
+  const scalarIds = new Set(Object.keys(SETUP.scalars || {}));
+  const lawIds = new Set(Object.keys(SETUP.law || {}));
+  const priceIds = new Set(["thermal", "substrate", "volume", "transit"]);
+  const checkEffects = (effs, tag) => [].concat(effs || []).forEach(e => {
+    if (!e || typeof e !== "object") return;
+    if (e.move) Object.keys(e.move).forEach(key => {
+      const dot = key.indexOf(".");
+      const ns = dot < 0 ? "scalar" : key.slice(0, dot);
+      const k = dot < 0 ? key : key.slice(dot + 1);
+      const okTarget =
+        ns === "scalar" || ns === "trend" ? scalarIds.has(k)
+        : ns === "loyalty" ? (partyIds.has(k) || currentIds.has(k))
+        : ns === "rel" ? (k === "president" || charIds.has(k))
+        : ns === "actor" ? actorIds.has(k)
+        : ns === "capital" ? partyIds.has(k)
+        : ns === "price" ? priceIds.has(k)
+        : true;              /* an unmodelled namespace is the engine's business */
+      if (!okTarget) targetBad.push(tag + ": move." + key + " names nothing");
+    });
+    if (e.station) Object.keys(e.station).forEach(id => {
+      if (!stationIds.has(id)) targetBad.push(tag + ": station." + id + " is not a station");
+    });
+    if (e.law) Object.keys(e.law).forEach(k => {
+      if (!lawIds.has(k)) targetBad.push(tag + ": law." + k + " is not a declared law key");
+    });
+  });
+  EVENTS.forEach(ev => {
+    checkEffects(ev.effects, "event " + ev.id);
+    (ev.choices || []).forEach((c, i) =>
+      checkEffects(c.effects, "event " + ev.id + " choice " + (i + 1)));
+  });
+  (INSTRUMENTS || []).forEach(si => {
+    checkEffects(si.effects, "instrument " + si.id);
+    checkEffects(si.reverse, "instrument " + si.id + " reverse");
+    checkEffects(si.political_cost, "instrument " + si.id + " cost");
+  });
+  (BILLS || []).forEach(b => {
+    checkEffects(b.onPass, "bill " + b.id + " onPass");
+    checkEffects(b.onFail, "bill " + b.id + " onFail");
+    (b.clauses || []).forEach(cl => (cl.levels || []).forEach(lv =>
+      checkEffects(lv.effects, "bill " + b.id + " clause " + cl.id + "/" + lv.id)));
+  });
+} catch (e) { targetBad.push("could not resolve the targets: " + e.message); }
+section("MOVE TARGETS THAT NAME NOTHING", targetBad, x => x);
 
 /* =============================================================
    UNDEFINED CUSTOM PROPERTIES
@@ -542,4 +606,4 @@ console.log(R.join("\n"));
    edit and a content fix, not a call a linter gets to make, and a check that
    fails from the day it lands gets disabled rather than fixed. */
 if (artBad.length || chainBad.length || cssBad.length || verbBad.length ||
-    parseBad.length || initBad.length || gridBad.length) process.exit(1);
+    parseBad.length || initBad.length || gridBad.length || targetBad.length) process.exit(1);
