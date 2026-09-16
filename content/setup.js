@@ -35,6 +35,13 @@ const SETUP = {
      currency that cannot be topped up — this is the period it cannot be
      topped up WITHIN. */
   sittingsPerSession: 24,
+  /* A CAMPAIGN IS ONE PARLIAMENT AND ONE PARLIAMENT IS ONE SESSION. At the end
+     of it the House is dissolved and the electorate answers, which makes the
+     election the backstop ending rather than an interruption: a run finishes on
+     a settlement, on the election, or on a loss, and cannot run past them.
+     Raise this and the parliament sits for more sessions before going to the
+     country. */
+  sessionsPerParliament: 1,
   /* opening ledger. Positive means they owe you. */
   capital: { psa: 2, rv: -3, upl: 0, geo: 1 },
   president: { id:"tenaya", relationship:22,

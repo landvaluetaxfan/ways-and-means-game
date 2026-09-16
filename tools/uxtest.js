@@ -1140,8 +1140,13 @@ try {
   ok("and allowed on the day", E.canDivide(a, Cx, "divergence").ok === true);
   ok("the division then resolves", !!E.divide(a, Cx, "divergence").result);
 
-  /* prorogation */
+  /* PROROGATION, which is now the case where the parliament has another
+     session left in it. With sessionsPerParliament at 1 the first rise
+     dissolves instead, so this asks for a two-session parliament to test
+     the behaviour it is about — and the dissolution is tested below. */
   const b = mk();
+  b.parliamentOpenedAt = b.session - 0;
+  Cx.setup.sessionsPerParliament = 2;
   const liveBefore = Object.keys(b.bills).filter(k => !b.bills[k].dead).length;
   const drafting = Object.keys(b.bills).filter(k => b.bills[k].stage === "drafting").length;
   const si = (Cx.instruments || [])[0].id;
@@ -1163,6 +1168,34 @@ try {
   ok("and an instrument in force survives it",
      b.instruments[si].inForce || b.instruments[si].made);
   ok("the next rise is scheduled", b.sessionEnds > b.sitting);
+  Cx.setup.sessionsPerParliament = 1;
+
+  /* THE PARLIAMENT ENDS. Four loss conditions and a settlement still left
+     a run that could go on for ever: a play reaching no settlement was
+     measured running 190 empty sittings. A campaign is one parliament and
+     one parliament is one session, so the House is dissolved at the end
+     of it and the electorate answers. */
+  const e = mk();
+  /* A one-session parliament is on its last session from the day it
+     opens, which is what makes the election its terminus. */
+  ok("a one-session parliament sits its last session from the start",
+     E.lastSession(e, Cx) === true);
+  const endAt = e.sessionEnds + 2;
+  while (e.sitting < endAt) E.advance(e, Cx);
+  ok("the House is dissolved rather than prorogued", !!e.dissolved,
+     "session " + e.session);
+  ok("and the electorate answers", e.dissolved &&
+     typeof e.dissolved.held === "number",
+     e.dissolved ? e.dissolved.was + " seats to " + e.dissolved.held : "");
+  const fin = E.checkEnd(e, Cx);
+  ok("the run is over, and the election is how", fin.over && fin.kind === "election",
+     fin.kind);
+  /* and it stays over: advancing past dissolution must not open a session */
+  const wasSession = e.session;
+  for (let i = 0; i < 30; i++) E.advance(e, Cx);
+  ok("nothing opens another session after dissolution", e.session === wasSession,
+     "session " + e.session);
+  ok("a run therefore cannot go on for ever", E.checkEnd(e, Cx).over === true);
 
   /* an undertaking owed before the House rises */
   const c = mk();

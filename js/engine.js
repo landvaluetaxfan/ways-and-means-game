@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 13;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying
+  const STATE_VERSION = 14;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends
 
   /* ---------------------------------------------------------
      1. STATE
@@ -99,6 +99,10 @@ const Engine = (function () {
          {billId: {partyId: n}}. Planned, revisable, and settled when the
          division is called, exactly like the whips. */
       pairs: {},
+      /* Which session this parliament opened in, so its length is counted
+         from here rather than from the campaign's absolute session number
+         (the opening state is session 4 of an older parliament). */
+      parliamentOpenedAt: C.setup.session,
 
       /* ACTORS — the bodies that are not in the chamber and not the state.
          Bible §10.10 gives metanationals "near party-tier power" and until
@@ -276,6 +280,10 @@ const Engine = (function () {
       if (!st.actors) st.actors = {};
       if (!st.lobby) st.lobby = {};
       st.version = 13;
+    }
+    if (st.version < 14) {                    // the parliament has a length
+      if (st.parliamentOpenedAt == null) st.parliamentOpenedAt = st.session;
+      st.version = 14;
     }
     return st;
   }
@@ -3585,6 +3593,79 @@ const Engine = (function () {
     return out;
   }
 
+  /* ---------------------------------------------------------
+     THE PARLIAMENT ENDS.
+
+     checkLoss() has had four conditions since the first build and
+     checkSettlement() gained a fifth answer in September, and between
+     them they still left a run that could go on forever: prorogue()
+     opened session after session with nothing counting them, and a play
+     that reached no settlement was measured running 190 empty sittings
+     and would have run for ever.
+
+     A CAMPAIGN IS ONE PARLIAMENT AND ONE PARLIAMENT IS ONE SESSION
+     (setup.sessionsPerParliament). At the end of it the House is
+     dissolved, the electorate answers, and the campaign is over — which
+     makes the election the BACKSTOP ENDING rather than an interruption.
+     A run therefore has three ways to finish and no way to continue
+     past them:
+
+       a settlement   the argument was closed (§3.5.1)
+       the election   time ran out and the electorate answered
+       a loss         confidence, leadership, or cascade
+
+     The election is not a failure. Reaching it means governing for a
+     full parliament without settling the question, which is what most
+     governments do. */
+  /* Asked at the moment the House rises: is this the last session of the
+     parliament, or is there another? Not "has the parliament finished" —
+     a one-session parliament is on its last session from the day it
+     opens, which is the point. */
+  function lastSession(st, C) {
+    const per = (C.setup && C.setup.sessionsPerParliament) || 1;
+    return (st.session - (st.parliamentOpenedAt || st.session) + 1) >= per;
+  }
+
+  /* Dissolution, the election, and the end of the campaign. The seats are
+     recomputed by the existing generalElection(); what is new is that the
+     run stops here rather than opening another session. */
+  function dissolve(st, C) {
+    const before = Object.keys(st.parties).reduce((m, p) =>
+      (m[p] = partyTotal(st, p), m), {});
+    const res = generalElection(st, C);
+    const after = Object.keys(st.parties).reduce((m, p) =>
+      (m[p] = partyTotal(st, p), m), {});
+    const mine = st.playerParty;
+    st.dissolved = { at: st.sitting, session: st.session,
+                     before: before, after: after,
+                     held: after[mine] || 0, was: before[mine] || 0 };
+    st.log.unshift({ sitting: st.sitting,
+      text: "The House is dissolved. The Commonwealth goes to the country." });
+    st.wire.unshift({ sitting: st.sitting, text: "PARLIAMENT DISSOLVED" });
+    return res;
+  }
+
+  /* The one place that answers "is this run over, and how". Losing is
+     read first, then the settlement, then the clock — a government that
+     has fallen has not been re-elected, and a settlement reached in the
+     last sitting is still a settlement. */
+  function checkEnd(st, C) {
+    /* DISSOLUTION IS READ FIRST, and finding out why was worth the test.
+       The first order read loss, then settlement, then the clock — and a
+       run taken to dissolution came back "loss", because the election had
+       redistributed the seats and the old coalition no longer held a
+       majority in a House THAT NO LONGER EXISTS. You cannot lose a
+       confidence vote in a chamber that has been dissolved. Once the
+       writs are out the campaign is over and the electorate's answer is
+       the outcome, whatever the arithmetic of the last parliament says. */
+    if (st.dissolved) return { over: true, kind: "election", result: st.dissolved };
+    const lost = checkLoss(st, C);
+    if (lost.lost) return { over: true, kind: "loss", reason: lost.reason };
+    const s0 = checkSettlement(st, C);
+    if (s0) return { over: true, kind: "settlement", settlement: s0 };
+    return { over: false };
+  }
+
   function prorogue(st, C) {
     const fell = [];
     (C.bills || []).forEach(b => {
@@ -3690,7 +3771,11 @@ const Engine = (function () {
        must all see it, so it resolves at the top of the sitting and not
        at the point somebody happens to look. */
     if (C) resolveDue(st, C);
-    if (C && st.sessionEnds != null && st.sitting > st.sessionEnds) prorogue(st, C);
+    if (C && st.sessionEnds != null && st.sitting > st.sessionEnds && !st.dissolved) {
+      /* The House rises. Whether it meets again is the whole question. */
+      if (lastSession(st, C)) dissolve(st, C);
+      else prorogue(st, C);
+    }
     if (C) reviewReturns(st, C);
     if (C) tick(st, C).forEach(m =>
       st.wire.unshift({ sitting: st.sitting, text: m.toUpperCase() }));
@@ -3795,6 +3880,7 @@ const Engine = (function () {
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
     rollCall, lobbyable, setLobby, clearLobby, lobbyCost, payLobby, lobbiedSeats,
     domainTest, functionalByConstituency, lobbiedByConstituency, isSupply,
+    lastSession, dissolve, checkEnd,
     settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
     snapshot, changes,
     prorogue, canDivide, candidates, vacancies, fillPost,
