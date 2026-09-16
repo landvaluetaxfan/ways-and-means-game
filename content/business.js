@@ -169,6 +169,95 @@ const BUSINESS = [
   /* a promise is running out of time */
   { id:"f_owed", kind:"colour",
     when:{ owes:"licensure_carveout" },
-    text:"A member asks, on a point of order, when the government intends to keep its word." }
+    text:"A member asks, on a point of order, when the government intends to keep its word." },
+
+  /* ---- the rest of the pool (T5: 51 to 80) ----
+     Weighted toward question, committee and instrument, and the gated
+     lines read the live state: a committee reporting on a bill that is
+     actually in committee is the world; the same line at random is
+     filler. */
+
+  /* questions: a member asks a minister, and the answer is a letter */
+  { id:"q_quota_price", kind:"question",
+    text:"Oral question: whether the quota price is set by the market or by the appropriation." },
+  { id:"q_tiers", kind:"question",
+    text:"Written question: the tier register, and how many of the suspended have attested addresses." },
+  { id:"q_insure", kind:"question",
+    text:"Oral question, the Uplift Alliance: default suspensions averted by the insurance floor." },
+  { id:"q_volume", kind:"question",
+    text:"Written question: volume rationing in the ring band, by station and by month." },
+  { id:"q_anchor", kind:"question",
+    text:"Oral question, One-G: the indemnity under the anchor concession if Tether 2 fails." },
+  { id:"q_vacant", kind:"question",
+    text:"Oral question: which minister answers for a vacant brief, and why none has been named." },
+  { id:"q_labour", kind:"question",
+    text:"Written question, the maintenance benches: the embodied labour floor and the quota schedule." },
+  { id:"q_transit", kind:"question",
+    text:"Written question: transit windows after the diversion, and who pays the difference." },
+
+  /* committees: a room, a report, a recommendation nobody must follow.
+     The gated ones report on the measure that is actually before the
+     House, which is what makes them the world instead of wallpaper. */
+  { id:"c_divergence", kind:"committee",
+    when:{ billStage:{ divergence:"committee" } },
+    text:"The Committee on Persons and Continuity takes evidence on the divergence schedule." },
+  { id:"c_thermal2", kind:"committee",
+    when:{ billStage:{ thermal2:"second_reading" } },
+    text:"The Committee on Life Support takes evidence on the quota reallocation." },
+  { id:"c_anchor", kind:"committee",
+    when:{ billStage:{ anchor_kepler:"assent" } },
+    text:"The Committee on Trade and the Anchors reports on the renewed Tether 2 terms." },
+  { id:"c_insurance_draft", kind:"committee",
+    when:{ billStage:{ substrate_insurance:"drafting" } },
+    text:"The Committee on Substrate and Thermal considers the insurance uprating in draft." },
+  { id:"c_appropriation_clause", kind:"committee",
+    when:{ billStage:{ appropriation:"first_reading" } },
+    text:"The Estimates Committee takes evidence on the thermal clause of the Appropriation Bill." },
+  { id:"c_forklabour", kind:"committee",
+    text:"The Committee on Labour hears evidence on fork wages in the ring band." },
+  { id:"c_lapse", kind:"committee",
+    when:{ siInForce:["si_2287_58"] },
+    text:"The Committee on Attestation reports on the lapse order's first quarter." },
+  { id:"c_supply_paid", kind:"committee",
+    when:{ flags:["supply_granted"] },
+    text:"The Estimates Committee confirms the session's appropriation has been paid in." },
+
+  /* instruments: laid, not debated, and in force unless prayed */
+  { id:"i_prayer", kind:"instrument",
+    text:"A prayer is entered against a standing order, and the debate is set for the next sitting." },
+  { id:"i_printed", kind:"instrument",
+    text:"An instrument is laid under the Attestation Act and printed before the sitting ends." },
+  { id:"i_standards", kind:"instrument",
+    text:"The engineering authority lays its annual performance standards. The House does not debate them." },
+  { id:"i_drawdown", kind:"instrument",
+    when:{ flags:["rung6_tried"] },
+    text:"The substrate insurance drawdown order is laid, and the fund's balance is not stated." },
+  { id:"i_powers", kind:"instrument",
+    when:{ flags:["rung8_tried"] },
+    text:"The emergency powers order is laid before the House as the Allocation Act requires." },
+  { id:"i_revoke", kind:"instrument",
+    text:"An order is revoked by a further order. Neither is debated." },
+
+  /* statements: a member says a thing on the record */
+  { id:"s_guild", kind:"statement",
+    when:{ siInForce:["si_2287_44"] },
+    text:"The Minister for Substrate and Thermal makes a statement on the licensing order." },
+  { id:"s_lowband", kind:"statement",
+    text:"A member for the low band makes a personal statement on the shed register." },
+
+  /* petitions and procedure, the room's own weather */
+  { id:"p_leadside", kind:"petition",
+    text:"A petition from Leadside is presented and ordered to be considered on a future day." },
+  { id:"pr_count", kind:"procedure",
+    text:"A count is called. The chamber is counted, and business continues." },
+
+  /* colour */
+  { id:"x_lobby", kind:"colour",
+    text:"The lobbies are fuller than the chamber, and the whips are counting." },
+  { id:"x_bells", kind:"colour",
+    text:"The sitting runs long. The division bells are tested twice." },
+  { id:"x_returns", kind:"colour",
+    when:{ flags:["supply_granted"] },
+    text:"The order paper lists the budget's returns. The House reads them like a newspaper." }
 
 ];
