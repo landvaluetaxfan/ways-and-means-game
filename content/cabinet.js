@@ -91,7 +91,7 @@ const CABINET = [
       { holder:"skye", party:"cu",
         note:"Your deputy at the Treasury for four years. Knows the file, and is owed nothing.",
         effects:[{move:{"loyalty.cu_loyalists":4}},
-                 {move:{solvency:3}},
+                 {move:{solvency:3000}},
                  {wire:"SKYE CONFIRMED AT THE TREASURY; NO CHANGE OF DIRECTION SIGNALLED"}] },
       { holder:"halloran", party:"cu",
         note:"Leads the eleven members collecting signatures against you. Inside the tent, he cannot count them.",

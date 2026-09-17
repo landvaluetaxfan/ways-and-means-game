@@ -85,8 +85,8 @@ const BILLS = [
      insurance suspends people rather than cutting their income) and §7.2
      (raising a poor station's closure funds its future secession).
 
-     DO NOT CHANGE THE COSTS. They are tuned against a solvency of 52 so
-     the defaults come to 48 and any upgrade is paid for by a cut; that
+     DO NOT CHANGE THE COSTS. They are tuned against a solvency of 52,000 so
+     the defaults come to 48,000 and any upgrade is paid for by a cut; that
      tension is the mechanic. `touches` stays empty on purpose: a supply
      measure is exempt from domain consent because the elected benches
      vote money (§7.3).
@@ -106,9 +106,9 @@ const BILLS = [
         levels:[
           { id:"tight",  label:"Held tight", cost:0,  note:"Released against last session's figure, and no more. The price rises to clear, and it lands on the stations with the thinnest margins.",
             effects:[{ move:{ "price.thermal": 14, public_standing:-4 } }, { law:{ thermal_release:"tight" } }] },
-          { id:"steady", label:"As last session", cost:14, note:"Released at last session's figure. The price holds where the market has held it, and nobody can point to the vote.",
+          { id:"steady", label:"As last session", cost:14000, note:"Released at last session's figure. The price holds where the market has held it, and nobody can point to the vote.",
             effects:[{ law:{ thermal_release:"steady" } }] },
-          { id:"open",   label:"Released", cost:34, note:"Released in full. The price falls to the cost of rejecting the heat, and the radiators become the limit on how many minds the Commonwealth can carry.",
+          { id:"open",   label:"Released", cost:34000, note:"Released in full. The price falls to the cost of rejecting the heat, and the radiators become the limit on how many minds the Commonwealth can carry.",
             effects:[{ move:{ "price.thermal": -16, thermal_margin:-5, public_standing:5 } }, { law:{ thermal_release:"open" } }] }
         ] },
       { id:"floor", name:"The consumables floor", default:"hold",
@@ -117,9 +117,9 @@ const BILLS = [
         levels:[
           { id:"cut",  label:"Trimmed", cost:0,  note:"The guarantee is trimmed. The saving shows in this session's return, and the stations that cannot feed themselves show it in their closure by the end of the month.",
             effects:[{ move:{ consumables:-8, public_standing:-7 } }] },
-          { id:"hold", label:"Held", cost:16, note:"The floor is held where it stands. Every resident is carried at the current rate and the vote pays for it.", effects:[] },
-          { id:"lift", label:"Lifted", cost:30, note:"The floor is raised. The stations with the lowest closure are carried further than the guarantee requires, and the difference comes out of the same vote.",
-            effects:[{ move:{ consumables:9, public_standing:4, solvency:-4 } }] }
+          { id:"hold", label:"Held", cost:16000, note:"The floor is held where it stands. Every resident is carried at the current rate and the vote pays for it.", effects:[] },
+          { id:"lift", label:"Lifted", cost:30000, note:"The floor is raised. The stations with the lowest closure are carried further than the guarantee requires, and the difference comes out of the same vote.",
+            effects:[{ move:{ consumables:9, public_standing:4, solvency:-4000 } }] }
         ] },
       { id:"insurance", name:"Substrate insurance", default:"hold",
         note:"Cover for the residents who cannot pay for substrate. A reduction "+
@@ -128,8 +128,8 @@ const BILLS = [
         levels:[
           { id:"cut",  label:"Reduced", cost:0, note:"The appropriation is reduced and the means test stands. The people who fail the test stop running, and the saving is real.",
             effects:[{ move:{ public_standing:-11, "loyalty.cu":-6 } }] },
-          { id:"hold", label:"Held", cost:18, note:"The appropriation is held. No resident is suspended this session for a debt they cannot pay.", effects:[] },
-          { id:"wide", label:"Widened", cost:32, note:"The appropriation is widened and the means test set aside. Cover reaches the unattested, and the consortiums price the guarantee into every rent it touches.",
+          { id:"hold", label:"Held", cost:18000, note:"The appropriation is held. No resident is suspended this session for a debt they cannot pay.", effects:[] },
+          { id:"wide", label:"Widened", cost:32000, note:"The appropriation is widened and the means test set aside. Cover reaches the unattested, and the consortiums price the guarantee into every rent it touches.",
             effects:[{ move:{ public_standing:6, "loyalty.psa":7, "loyalty.fh":-5 } }] }
         ] },
       { id:"works", name:"Capital works", default:"none",
@@ -138,9 +138,9 @@ const BILLS = [
              "closure is the same act as funding its secession.",
         levels:[
           { id:"none", label:"Deferred", cost:0, note:"No works this session. The stations with the lowest closure are not carried further, and the deferral is the position.", effects:[{ law:{ capital_works:"none" } }] },
-          { id:"some", label:"The ring band", cost:20, note:"Funded in the ring band, where the volume pressure is worst. Closure holds in the middle of the Commonwealth and the outer stations wait.",
+          { id:"some", label:"The ring band", cost:20000, note:"Funded in the ring band, where the volume pressure is worst. Closure holds in the middle of the Commonwealth and the outer stations wait.",
             effects:[{ move:{ "price.volume": -9, public_standing:3 } }, { law:{ capital_works:"ring" } }] },
-          { id:"outer", label:"The outer stations", cost:30, note:"Funded at the outer stations, where closure is lowest. Their closure rises, and so does the price at which they could one day leave.",
+          { id:"outer", label:"The outer stations", cost:30000, note:"Funded at the outer stations, where closure is lowest. Their closure rises, and so does the price at which they could one day leave.",
             effects:[{ move:{ "price.volume": -5 } }, { station:{ ashfield:{ closure:0.04 } } }, { law:{ capital_works:"outer" } }] }
         ] },
       { id:"transit", name:"Transit subsidy", default:"none",
@@ -149,8 +149,8 @@ const BILLS = [
              "whose schedules are other people's schedules.",
         levels:[
           { id:"none",    label:"Unsubsidised", cost:0,  note:"The fare is the market's. The outer stations pay what the schedule says, and the schedule is not the Commonwealth's.", effects:[{ law:{ transit_subsidy:"none" } }] },
-          { id:"anchors", label:"The anchor states", cost:10, note:"The differential is carried for the anchor states, where the tether is the only way in.", effects:[{ law:{ transit_subsidy:"anchors" } }, { move:{ "public_standing":3 } }] },
-          { id:"all",     label:"Every station", cost:22, note:"The differential is carried for every station, and the reserve pays for the ones the traffic does not reach.", effects:[{ law:{ transit_subsidy:"all" } }, { move:{ "public_standing":5, solvency:-4 } }] }
+          { id:"anchors", label:"The anchor states", cost:10000, note:"The differential is carried for the anchor states, where the tether is the only way in.", effects:[{ law:{ transit_subsidy:"anchors" } }, { move:{ "public_standing":3 } }] },
+          { id:"all",     label:"Every station", cost:22000, note:"The differential is carried for every station, and the reserve pays for the ones the traffic does not reach.", effects:[{ law:{ transit_subsidy:"all" } }, { move:{ "public_standing":5, solvency:-4000 } }] }
         ] } ],
     stances:{ cu:"for", psa:"for", rv:"for", upl:{forPct:0.5}, geo:{forPct:0.5},
               cl:"against", sc:{forPct:0.3}, hul:{forPct:0.4}, fh:"against",
@@ -219,8 +219,8 @@ const BILLS = [
     dualMajority:false,
     axes:{ownership:"private",personhood:null,sovereignty:"federal",closure:"integrationist"},
     stances:{ cl:"for", cu:{forPct:0.7}, psa:{forPct:0.5}, sc:"against", hul:"against" },
-    onPass:[{move:{"solvency": 8}},{station:{kepler:{closure:0.02}}},{move:{"price.transit":-11}}],
-    onFail:[{move:{"solvency": -6}},{wire:"KEPLER CONCESSION LAPSES; EARTH STATE SIGNALS REVIEW"}] },
+    onPass:[{move:{"solvency": 8000}},{station:{kepler:{closure:0.02}}},{move:{"price.transit":-11}}],
+    onFail:[{move:{"solvency": -6000}},{wire:"KEPLER CONCESSION LAPSES; EARTH STATE SIGNALS REVIEW"}] },
 
   { id:"substrate_insurance", ref:"HC 4/121", stage:"drafting", owner:"psa",
     touches:["substrate_insurance","risk_pricing"],
@@ -239,7 +239,7 @@ const BILLS = [
     axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
     stances:{ psa:"for", cu:{forPct:0.8}, upl:"for", geo:"for", rv:{forPct:0.6},
               fh:"against", cl:{forPct:0.25}, hul:"against" },
-    onPass:[{move:{"solvency": -11}},{move:{"public_standing":7}},{move:{"loyalty.psa":12}},
+    onPass:[{move:{"solvency": -11000}},{move:{"public_standing":7}},{move:{"loyalty.psa":12}},
             {station:{ashfield:{suspended:-1800}}},{move:{"price.substrate":-14}},
             {wire:"SUBSTRATE INSURANCE UPRATED; MEANS TEST ABOLISHED"}],
     onFail:[{move:{"loyalty.psa":-13}}] },
@@ -295,7 +295,7 @@ const BILLS = [
     stances:{ psa:"for", cu:{forPct:0.85}, upl:"for", geo:{forPct:0.6}, rv:{forPct:0.4},
               cl:"against", fh:"against", hul:{forPct:0.3}, gb:{forPct:0.2} },
     onPass:[{law:{substrate_public_share:0.6}},{move:{"price.substrate":-26}},
-            {move:{"solvency": -19}},{move:{"public_standing":5}},{move:{"loyalty.psa":16}},{move:{"loyalty.cl":-20}},{move:{"loyalty.fh":-14}},
+            {move:{"solvency": -19000}},{move:{"public_standing":5}},{move:{"loyalty.psa":16}},{move:{"loyalty.cl":-20}},{move:{"loyalty.fh":-14}},
             {wire:"PUBLIC STAKE TAKEN IN SUBSTRATE PROVIDERS; RENTS EXPECTED TO FALL"}],
     onFail:[{move:{"loyalty.psa":-11}},{move:{"price.substrate":6}}] }
 

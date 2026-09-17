@@ -1377,13 +1377,14 @@ try {
   const E = w.eval("Engine"), Cx = w.eval("CONTENT");
   const at = t => {
     const s2 = w.eval("Engine.newGame(CONTENT)");
+    // solvency is denominated in MW-years now (design/28 phase 4)
     s2.scalars.solvency = t;
     for (let i = 0; i < 12; i++) E.advance(s2, Cx);
     return Math.round(s2.prices.volume * 10) / 10;
   };
-  const lo = at(20), mid = at(50), hi = at(80);
+  const lo = at(20000), mid = at(50000), hi = at(80000);
   ok("the volume price answers continuously to the treasury",
-     lo > mid && mid > hi, `treasury 20 → ${lo}, 50 → ${mid}, 80 → ${hi}`);
+     lo > mid && mid > hi, `treasury 20,000 -> ${lo}, 50,000 -> ${mid}, 80,000 -> ${hi}`);
 } catch (e) { ok("the volume price", false, e.message); }
 
 

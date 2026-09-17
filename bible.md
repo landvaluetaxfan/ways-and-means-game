@@ -121,83 +121,83 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 - §7.5.2 · L1010 — The financial sector  *LOCKED*
 - §7.5.3 · L1028 — Money  *LOCKED*
 - §7.6 · L1050 — Model depth, and the state object  *LOCKED*
-- §7.7 · L1095 — Order-paper time  *LOCKED*
-- §7.8 · L1120 — Discipline and the whip  *LOCKED*
-- §7.9 · L1152 — Scarcity prices  *LOCKED*
+- §7.7 · L1101 — Order-paper time  *LOCKED*
+- §7.8 · L1126 — Discipline and the whip  *LOCKED*
+- §7.9 · L1158 — Scarcity prices  *LOCKED*
 
-**Part VIII — AXES AND PARTIES** · L1194
-- §8.1 · L1196 — The four axes  *LOCKED*
-- §8.2 · L1205 — Depth budget  *LOCKED*
-- §8.3 · L1214 — Naming register  *LOCKED*
-- §8.4 · L1239 — The seated parties  *LOCKED (280 seats*
-- §8.5 · L1259 — Party notes
-- §8.6 · L1283 — Parties available but not currently seated  *LOCKED as reserve material*
-- §8.7 · L1319 — Extraparliamentary  *LOCKED*
-- §8.8 · L1325 — Historical and defunct  *LOCKED*
-- §8.9 · L1331 — Ideologies as doctrines  *LOCKED*
+**Part VIII — AXES AND PARTIES** · L1200
+- §8.1 · L1202 — The four axes  *LOCKED*
+- §8.2 · L1211 — Depth budget  *LOCKED*
+- §8.3 · L1220 — Naming register  *LOCKED*
+- §8.4 · L1245 — The seated parties  *LOCKED (280 seats*
+- §8.5 · L1265 — Party notes
+- §8.6 · L1289 — Parties available but not currently seated  *LOCKED as reserve material*
+- §8.7 · L1325 — Extraparliamentary  *LOCKED*
+- §8.8 · L1331 — Historical and defunct  *LOCKED*
+- §8.9 · L1337 — Ideologies as doctrines  *LOCKED*
 
-**Part IX — THE PLAYER'S PARTY** · L1343
-- §9.1 · L1345 — Which party  *LEANING (Commons Union)*
-- §9.2 · L1358 — Inherited platform  *LOCKED*
-- §9.3 · L1362 — Two alliance structures  *LOCKED*
-- §9.4 · L1371 — Refraction  *LOCKED as a writing principle*
-- §9.5 · L1375 — Current caucus (Commons Union, 82)  *LOCKED*
+**Part IX — THE PLAYER'S PARTY** · L1349
+- §9.1 · L1351 — Which party  *LEANING (Commons Union)*
+- §9.2 · L1364 — Inherited platform  *LOCKED*
+- §9.3 · L1368 — Two alliance structures  *LOCKED*
+- §9.4 · L1377 — Refraction  *LOCKED as a writing principle*
+- §9.5 · L1381 — Current caucus (Commons Union, 82)  *LOCKED*
 
-**Part X — SOCIETY, CULTURE, LAW** · L1390
-- §10.1 · L1392 — Aesthetic register — orbital warmth  *LOCKED*
-- §10.2 · L1404 — Nativism, inverted  *LOCKED*
-- §10.3 · L1410 — Labour  *LOCKED*
-- §10.3.1 · L1434 — Four overlays that matter more than the sectors  *LOCKED*
-- §10.4 · L1463 — Who is not in paid work  *LOCKED*
-- §10.5 · L1501 — Fork-rentiers  *LOCKED*
-- §10.6 · L1516 — Labour conflict  *LOCKED*
-- §10.7 · L1524 — Media and information  *LOCKED*
-- §10.8 · L1530 — Courts and law  *LOCKED*
-- §10.9 · L1536 — Religion  *LOCKED*
-- §10.10 · L1540 — External pressures  *LOCKED*
+**Part X — SOCIETY, CULTURE, LAW** · L1396
+- §10.1 · L1398 — Aesthetic register — orbital warmth  *LOCKED*
+- §10.2 · L1410 — Nativism, inverted  *LOCKED*
+- §10.3 · L1416 — Labour  *LOCKED*
+- §10.3.1 · L1440 — Four overlays that matter more than the sectors  *LOCKED*
+- §10.4 · L1469 — Who is not in paid work  *LOCKED*
+- §10.5 · L1507 — Fork-rentiers  *LOCKED*
+- §10.6 · L1522 — Labour conflict  *LOCKED*
+- §10.7 · L1530 — Media and information  *LOCKED*
+- §10.8 · L1536 — Courts and law  *LOCKED*
+- §10.9 · L1542 — Religion  *LOCKED*
+- §10.10 · L1546 — External pressures  *LOCKED*
 
-**Part XI — NAMED CANON** · L1548
-- §11.1 · L1552 — The polity
-- §11.2 · L1573 — Persons
-- §11.3 · L1607 — Stations and constituencies
-- §11.4 · L1675 — The functional roster  *LOCKED*
-- §11.5 · L1697 — The live bill
-- §11.6 · L1706 — Other business on the order paper
+**Part XI — NAMED CANON** · L1554
+- §11.1 · L1558 — The polity
+- §11.2 · L1579 — Persons
+- §11.3 · L1613 — Stations and constituencies
+- §11.4 · L1681 — The functional roster  *LOCKED*
+- §11.5 · L1703 — The live bill
+- §11.6 · L1712 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L1719
-- §12.1 · L1721 — The core principle  *LOCKED*
-- §12.2 · L1725 — Split visual language  *LOCKED*
-- §12.3 · L1732 — Chrome direction  *LOCKED*
-- §12.4 · L1738 — Screens  *LOCKED*
-- §12.5 · L1742 — Election night  *LOCKED*
-- §12.6 · L1751 — The orbital map  *LOCKED*
-- §12.7 · L1779 — The parliament diagram  *LOCKED*
-- §12.8 · L1805 — Documents  *LOCKED*
-- §12.9 · L1811 — The feed  *LOCKED*
-- §12.10 · L1815 — Build cost  *LOCKED*
-- §12.11 · L1819 — Images  *LOCKED*
-- §12.12 · L1847 — Existing artifact
-- §12.13 · L1859 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L1725
+- §12.1 · L1727 — The core principle  *LOCKED*
+- §12.2 · L1731 — Split visual language  *LOCKED*
+- §12.3 · L1738 — Chrome direction  *LOCKED*
+- §12.4 · L1744 — Screens  *LOCKED*
+- §12.5 · L1748 — Election night  *LOCKED*
+- §12.6 · L1757 — The orbital map  *LOCKED*
+- §12.7 · L1785 — The parliament diagram  *LOCKED*
+- §12.8 · L1811 — Documents  *LOCKED*
+- §12.9 · L1817 — The feed  *LOCKED*
+- §12.10 · L1821 — Build cost  *LOCKED*
+- §12.11 · L1825 — Images  *LOCKED*
+- §12.12 · L1853 — Existing artifact
+- §12.13 · L1865 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L1918
-- §13.1 · L1920 — Scandal taxonomy  *LOCKED*
-- §13.2 · L1933 — The spine  *LEANING*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L1924
+- §13.1 · L1926 — Scandal taxonomy  *LOCKED*
+- §13.2 · L1939 — The spine  *LEANING*
 
-**Part XIV — PRIOR ART** · L1939
-- §14.1 · L1941 — The gap  *LOCKED*
-- §14.2 · L1945 — Works
-- §14.3 · L1953 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L1945
+- §14.1 · L1947 — The gap  *LOCKED*
+- §14.2 · L1951 — Works
+- §14.3 · L1959 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L1966
-- §15.1 · L1968 — Team  *LOCKED*
-- §15.2 · L1974 — Documentation  *LOCKED*
-- §15.3 · L1990 — Where this gets hard  *LOCKED*
-- §15.4 · L2001 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2018 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L1972
+- §15.1 · L1974 — Team  *LOCKED*
+- §15.2 · L1980 — Documentation  *LOCKED*
+- §15.3 · L1996 — Where this gets hard  *LOCKED*
+- §15.4 · L2007 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2024 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2055
+**Part XVI — OPEN DECISIONS** · L2061
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2085
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2091
 
 <!-- /TOC -->
 
@@ -1063,6 +1063,12 @@ solvency          // THE QUOTA THE STATE HOLDS, in the unit of §7.5.3.
                   //   arithmetic. (Was `treasury`, an index of "capacity to
                   //   act"; renamed and denominated for the economy pass,
                   //   design/13 §5 and design/28.)
+                  //   One point of the old index is a thousand MW-years, so
+                  //   the Commonwealth opens holding 52,000 and the whole
+                  //   appropriation is read in the same unit: the defaults
+                  //   come to 48,000 of it. Floor at nought, no ceiling — a
+                  //   government that runs out does not default, it sheds
+                  //   people (§7.9).
 legitimacy        // Flash I: the government being believed, at home
 friction          // Flash I: Earth's governments and banks against you.
                   //   The one meter that is BAD when it rises.

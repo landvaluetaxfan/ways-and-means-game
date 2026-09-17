@@ -10,7 +10,7 @@ const SETUP = {
   coalition: ["cu","psa","rv"],
   confidenceSupply: ["upl","geo"],
   scalars: { party_loyalty:38, public_standing:44, consumables:71,
-             thermal_margin:17, solvency:52,
+             thermal_margin:17, solvency:52000,
              /* Flash I's own meters. legitimacy: the government being
                 believed, at home. friction: Earth's governments and banks
                 against the Commonwealth — higher is worse. */
@@ -73,14 +73,16 @@ const SETUP = {
      diplomatic friction sits beside the rest; a campaign about something
      else need not give it a column at all, and needs no engine change to
      drop it. `soft` is where the bar turns amber; `invert` is for a meter
-     where HIGH is bad; `fatal` reads the engine's own threshold where one
-     exists. */
+     where HIGH is bad; `max` is the bar's full scale where a meter is not
+     nought-to-a-hundred (solvency is a quantity, design/28 phase 4), and
+     `good` is where the bar turns green if not the default two-thirds.
+     `fatal` reads the engine's own threshold where one exists. */
   meters: [
     { k:"party_loyalty",   label:"Party loyalty",       soft:25 },
     { k:"public_standing", label:"Public standing",     soft:20 },
     { k:"consumables",     label:"Consumables",         soft:25 },
     { k:"thermal_margin",  label:"Thermal margin",      soft:12 },
-    { k:"solvency",        label:"Sovereign solvency",  soft:15 },
+    { k:"solvency",        label:"Sovereign solvency",  soft:15000, max:100000 },
     { k:"legitimacy",      label:"Legitimacy",          soft:30 },
     { k:"friction",        label:"Diplomatic friction", soft:35, invert:true }
   ],
@@ -98,7 +100,7 @@ const SETUP = {
   couplings: [
     { meter: "friction", above: 40, drag: { thermal_margin: -1 },
       mark: "Imports are dearer under the sanctions regime" },
-    { meter: "friction", above: 65, drag: { thermal_margin: -2, solvency: -1 },
+    { meter: "friction", above: 65, drag: { thermal_margin: -2, solvency: -1000 },
       mark: "Earth's banks are pricing the Commonwealth's risk" },
     { meter: "friction", above: 85, drag: { thermal_margin: -3, legitimacy: -1 },
       mark: "The blockade is beginning to bite" }

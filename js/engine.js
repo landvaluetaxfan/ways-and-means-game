@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 18;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default
+  const STATE_VERSION = 19;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury
 
   /* ---------------------------------------------------------
      1. STATE
@@ -334,6 +334,20 @@ const Engine = (function () {
       if (st.actedThisSitting == null) st.actedThisSitting = false;
       if (st.idleSittings == null) st.idleSittings = 0;
       st.version = 18;
+    }
+    if (st.version < 19) {                    // the denominated treasury
+      /* `solvency` was an index of "capacity to act" on a nought-to-a-hundred
+         scale; it is now the quota the state holds, in the MW-year rejected
+         (bible 7.5.3, design/28 phase 4). One index point is a thousand
+         MW-years, so an old save's 52 becomes 52,000 and every ratio in it
+         is preserved exactly. A save that came through v16 has `solvency`
+         and a save older still has `treasury`; both are indices, so both
+         scale. The trend, if one is running, is a rate and scales too. */
+      st.scalars = st.scalars || {};
+      if (st.scalars.solvency != null) st.scalars.solvency *= 1000;
+      st.trends = st.trends || {};
+      if (st.trends.solvency != null) st.trends.solvency *= 1000;
+      st.version = 19;
     }
     return st;
   }
@@ -2770,8 +2784,17 @@ const Engine = (function () {
      5. EFFECTS — the closed vocabulary choices may apply
      --------------------------------------------------------- */
 
-  const EFFECTS = {
-    /* MOVE — one verb for every number that is clamp-and-add against a
+  /* THE DENOMINATED SCALARS (design/28 phase 4, bible 7.5.3).
+     `solvency` is the quota the state holds in MW-years rejected, so it is
+     a quantity: floor at nought, no ceiling, and one unit of the old index
+     is a thousand of these. The exceptions live here rather than in a
+     second scalar namespace, so a bare `{move:{solvency:n}}` still reaches
+     the same table it always did. */
+  const SCALAR_MAX   = { solvency: Infinity };
+  const TREND_MAX    = { solvency: 10000 };
+  const MONEY_SCALE  = { solvency: 1000 };
+
+  const EFFECTS = {    /* MOVE — one verb for every number that is clamp-and-add against a
        keyed table. It replaced `scalar`, `loyalty`, `relationship`,
        `price` and `capital`, which differed only in which table they
        reached into and what the bounds were:
@@ -2786,6 +2809,12 @@ const Engine = (function () {
        clamp 0-100, prices clamp 20-400, and capital is unbounded and
        signed because 7.6 says nothing decays and nothing is forgiven.
 
+       ONE SCALAR IS DENOMINATED, and the bound has to know it. `solvency`
+       is the quota the state holds in MW-years (7.5.3), a quantity with a
+       floor at nought and no ceiling; clamping it to a hundred would have
+       made the re-cost silently do nothing. SCALAR_MAX carries the
+       exceptions and nothing else changes.
+
        ONE PAIR PER OBJECT is the house style, and it is not cosmetic:
        the editor renders one key-value row per effect, so a multi-key
        object used to lose every key after the first when a human opened
@@ -2799,7 +2828,8 @@ const Engine = (function () {
       const k  = dot < 0 ? key : key.slice(dot + 1);
       switch (ns) {
         case "scalar":
-          st.scalars[k] = clamp((st.scalars[k] || 0) + d, 0, 100); break;
+          st.scalars[k] = clamp((st.scalars[k] || 0) + d, 0,
+            SCALAR_MAX[k] == null ? 100 : SCALAR_MAX[k]); break;
         case "loyalty": {
           const t = st.currents[k] || st.parties[k];
           if (t) t.loyalty = clamp(t.loyalty + d, 0, 100);
@@ -2815,10 +2845,14 @@ const Engine = (function () {
           st.capital[k] = (st.capital[k] || 0) + d; break;
         /* TRENDS (Flash I): {move:{"trend.lsm":-2}} leans the scalar that
            much each sitting; tick() applies it. Clamped, because a trend
-           beyond ±10 a sitting is a switch wearing a dial. */
+           beyond ±10 a sitting is a switch wearing a dial. A denominated
+           scalar leans in its own unit, so its cap is the same ten points
+           of the old index: ten thousand MW-years a sitting. */
         case "trend":
           st.trends = st.trends || {};
-          st.trends[k] = clamp((st.trends[k] || 0) + d, -10, 10);
+          st.trends[k] = clamp((st.trends[k] || 0) + d,
+            -(TREND_MAX[k] == null ? 10 : TREND_MAX[k]),
+             (TREND_MAX[k] == null ? 10 : TREND_MAX[k]));
           break;
         /* No new verb: an actor's standing moves the way a party's loyalty
            does, which is what keeps EFFECTS at its twenty-one and off
@@ -3232,8 +3266,12 @@ const Engine = (function () {
             const say = SCALAR_SAY[id];
             const stem = say ? say[good ? 0 : 1]
                              : (good ? "Improves " : "Costs you ") + id.replace(/_/g, " ");
+            /* THE BAND IS READ IN INDEX TERMS. A denominated scalar's delta
+               is in MW-years, and banding forty thousand against a scale
+               built for twelve would call every effect "badly". */
+            const b = band(d / (MONEY_SCALE[id] || 1));
             out.push({ tone: good ? "good" : "bad",
-                       text: stem + (band(d) ? ", " + band(d) : "") });
+                       text: stem + (b ? ", " + b : "") });
           } else if (ns === "loyalty") {
             out.push({ tone: d >= 0 ? "good" : "bad",
               text: (d >= 0 ? "Pleases " : "Costs you with ") +
@@ -3260,8 +3298,9 @@ const Engine = (function () {
           const say = SCALAR_SAY[sk];
           const stem = say ? say[v[sk] >= 0 ? 0 : 1]
                            : (v[sk] >= 0 ? "Improves " : "Costs you ") + sk.replace(/_/g, " ");
+          const b = band(v[sk] / (MONEY_SCALE[sk] || 1));
           out.push({ tone: v[sk] >= 0 ? "good" : "bad",
-                     text: stem + (band(v[sk]) ? ", " + band(v[sk]) : "") });
+                     text: stem + (b ? ", " + b : "") });
         });
           break;
         case "loyalty": Object.keys(v).forEach(pk => out.push({
@@ -3486,15 +3525,19 @@ const Engine = (function () {
        input it actually has. */
     const cw = st.law.capital_works;
     const volBump = cw === "ring" ? -9 : cw === "outer" ? -5 : 0;
+    /* The price targets are index arithmetic; solvency is now the quota in
+       MW-years, so it is read back through its scale here. The proportion
+       is unchanged, which is the whole point of the denomination. */
+    const solv = st.scalars.solvency / (MONEY_SCALE.solvency || 1);
     P.volume = clamp(P.volume + drift(P.volume,
-      100 + (50 - st.scalars.solvency) * 0.28 + volBump), 20, 400);
+      100 + (50 - solv) * 0.28 + volBump), 20, 400);
 
     /* transit: launch windows and delta-v, and the subsidy the budget
        carries for the stations the traffic does not reach */
     const ts = st.law.transit_subsidy;
     const trBump = ts === "anchors" ? -8 : ts === "all" ? -14 : 0;
     P.transit = clamp(P.transit + drift(P.transit,
-      100 - (st.scalars.solvency - 50) * 0.3 + trBump), 20, 400);
+      100 - (solv - 50) * 0.3 + trBump), 20, 400);
 
     Object.keys(P).forEach(k => {
       P[k] = Math.round(P[k] * 10) / 10;

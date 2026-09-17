@@ -697,17 +697,25 @@ const UI = (function () {
     $("#gov-meters").innerHTML = defs.map(m => {
       const k = m.k, lab = m.label, soft = m.soft, inv = m.invert;
       const v = st.scalars[k] == null ? 0 : st.scalars[k], f = fatal[k];
+      /* A DENOMINATED METER IS STILL A BAR. `solvency` is a quantity with no
+         ceiling, so its bar is drawn against the meter's own `max` (a
+         hundred thousand MW-years, the same full-scale the old index had)
+         and the number is printed exactly beneath it. `soft` and `good` stay
+         in the meter's own unit. */
+      const max = m.max || 100;
+      const pc = Math.max(0, Math.min(100, (v / max) * 100));
+      const good = m.good != null ? m.good : max * 0.65;
       const cls = inv
-        ? (v >= soft ? "warn" : v <= 25 ? "good" : "")
-        : (f != null && v <= f + 10) || v <= soft ? "warn" : v >= 65 ? "good" : "";
+        ? (v >= soft ? "warn" : v <= max * 0.25 ? "good" : "")
+        : (f != null && v <= f + 10) || v <= soft ? "warn" : v >= good ? "good" : "";
       const tick = f == null ? "" :
-        `<span class="thr" style="left:${Math.max(0, f)}%"` +
+        `<span class="thr" style="left:${Math.max(0, Math.min(100, (f / max) * 100))}%"` +
         tipAttr(lab + " \u2014 the line",
           f <= 0 ? "At nought the stations go dark and the government falls. There is no undo."
                  : "At " + f + " or below the party removes you. There is no undo.") +
         `></span>`;
       return `<div class="meterrow" data-key="${k}"><label data-tip="${k}">${lab}</label>` +
-        `<div class="meter ${cls}"><i style="width:${v}%"></i>${tick}</div>` +
+        `<div class="meter ${cls}"><i style="width:${pc}%"></i>${tick}</div>` +
         `<output>${v}</output></div>`;
     }).join("");
 

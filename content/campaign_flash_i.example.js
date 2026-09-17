@@ -52,7 +52,7 @@
      One bad meter = a manageable crisis (a single gated event). Two bad
      meters = the severe political emergency (an event whose `when`
      carries both). The `when` vocabulary already does this:
-     { scalarBelow:{ solvency:35, legitimacy:35 } }.
+     { scalarBelow:{ solvency:35000, legitimacy:35 } }.
 
    THE CASCADE (engine: free, via flags + queue)
 
@@ -99,14 +99,14 @@ const FLASH_I_TIERS = [
     name: "Orbital Powerhouse",
     terminal: true,
     summary: "Full annexation. Earth drops the debt claims under threat of satellite transit tariffs.",
-    when: { scalarAbove: { legitimacy: 75, solvency: 70 },
+    when: { scalarAbove: { legitimacy: 75, solvency: 70000 },
             scalarBelow: { friction: 60 } } },
 
   { id: "f1_maritime", rank: 0,
     name: "Maritime Charter",
     terminal: true,
     summary: "International courts recognise salvage rights. The platform becomes legal Federation territory.",
-    when: { scalarAbove: { legitimacy: 55, solvency: 60 },
+    when: { scalarAbove: { legitimacy: 55, solvency: 60000 },
             scalarBelow: { friction: 40 } } },
 
   { id: "f1_pyrrhic", rank: 1,
@@ -117,14 +117,14 @@ const FLASH_I_TIERS = [
     terminal: false,
     summary: "Annexed, and 300,000 workers saved. The Federation assumes the defaulted corporate bonds.",
     when: { scalarAbove: { legitimacy: 65, friction: 65 },
-            scalarBelow: { solvency: 35 } } },
+            scalarBelow: { solvency: 35000 } } },
 
   { id: "f1_joint", rank: 2,
     name: "UN/Orbital Joint Mandate",
     terminal: true,
     summary: "A co-administered international free trade zone. No embargo, no territory, mild voter apathy.",
-    when: { scalarAbove: { legitimacy: 40, solvency: 40, friction: 40 },
-            scalarBelow: { legitimacy: 60, solvency: 60, friction: 60 } } },
+    when: { scalarAbove: { legitimacy: 40, solvency: 40000, friction: 40 },
+            scalarBelow: { legitimacy: 60, solvency: 60000, friction: 60 } } },
 
   { id: "f1_capitulation", rank: 3,
     name: "Corporate Re-Entry",
@@ -182,7 +182,7 @@ keep the short term, and explain the strikes.`,
     choices: [
       { label: "Move to annex.",
         effects: [{ flag: "f1_annexing" }, { move: { "trend.friction": 3 } },
-                  { move: { solvency: -6 } },
+                  { move: { solvency: -6000 } },
                   { wire: "GOVERNMENT MOVES TO ANNEX THE PLATFORM" }],
         result: "PLACEHOLDER: the annexation bill is set down." },
       { label: "Hold the line.",
@@ -205,10 +205,10 @@ recycling estimate: it holds, or it does not hold, and the difference is a
 funding line that will not be felt for a month.`,
     choices: [
       { label: "Fund it in full.",
-        effects: [{ move: { solvency: -3 } }, { move: { "trend.lsm": 1 } } ],
+        effects: [{ move: { solvency: -3000 } }, { move: { "trend.lsm": 1 } } ],
         result: "PLACEHOLDER: the margin improves, a point at a time." },
       { label: "Trim it and take the margin.",
-        effects: [{ move: { solvency: 2 } }, { move: { "trend.lsm": -2 } } ],
+        effects: [{ move: { solvency: 2000 } }, { move: { "trend.lsm": -2 } } ],
         result: "PLACEHOLDER: nothing happens. That is the point of a drift." }
     ] },
 
@@ -217,7 +217,7 @@ funding line that will not be felt for a month.`,
      the cascade. A promise with a brutal onBreach, not a free undo. */
 
   { id: "f1_loan", chapter: 2, weight: 84, maxFires: 1,
-    when: { scalarBelow: { solvency: 30 } },
+    when: { scalarBelow: { solvency: 30000 } },
     title: "The emergency loan",
     speaker: "hatt",
     body: `PLACEHOLDER. The Alliance of Business and Government will carry the
@@ -225,13 +225,13 @@ Commonwealth's short position, at a rate, for a term, on a condition. The
 condition is the platform's mining leases.`,
     choices: [
       { label: "Take the loan.",
-        effects: [{ move: { solvency: 18 } }, { move: { legitimacy: -10 } },
+        effects: [{ move: { solvency: 18000 } }, { move: { legitimacy: -10 } },
                   { undertake: { id: "f1_debt", text: "Honour the emergency facility",
                                  post: "treasury", by: null,
                                  onBreach: "f1_debt_called" } }],
         result: "PLACEHOLDER: the solvency line recovers. The promise does not recover." },
       { label: "Refuse the rate.",
-        effects: [{ move: { legitimacy: 3 } }, { move: { "trend.solvency": -1 } } ],
+        effects: [{ move: { legitimacy: 3 } }, { move: { "trend.solvency": -1000 } } ],
         result: "PLACEHOLDER: a solvent government would have refused it. This one is not solvent." }
     ] },
 
@@ -242,7 +242,7 @@ condition is the platform's mining leases.`,
 
   { id: "f1_meltdown", chapter: 2, weight: 98, once: true,
     when: { scalarAbove: { friction: 85 },
-            scalarBelow: { thermal_margin: 20, solvency: 20, legitimacy: 20 } },
+            scalarBelow: { thermal_margin: 20, solvency: 20000, legitimacy: 20 } },
     title: "The cascade",
     speaker: null,
     body: `PLACEHOLDER. The embargo lands. Life support fails. The vote of no

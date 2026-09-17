@@ -64,7 +64,7 @@ const INSTRUMENTS = [
               { flag:"vantage_diverted" },
               { wire:"EMERGENCY THERMAL DIVERSION APPROVED FOR VANTAGE HIGH" } ],
     reverse:[ {move:{"thermal_margin":-7}}, {move:{"price.thermal":9}} ],
-    political_cost:[ {move:{"solvency": -6}} ],
+    political_cost:[ {move:{"solvency": -6000}} ],
     prayer_stances:{ cu:"against", psa:"against", cl:"for", fh:"for" } },
 
   { id:"si_2287_58",
@@ -173,10 +173,10 @@ const INSTRUMENTS = [
             "market asks. The reserve was built for exactly this and has never been spent on it.",
     effect_note:"The first rung that spends real money, and the first that needs the House to "+
                 "approve it before it takes effect.",
-    effects:[ {move:{"thermal_margin":7}}, {move:{"solvency": -12}}, { flag:"rung4_tried" },
+    effects:[ {move:{"thermal_margin":7}}, {move:{"solvency": -12000}}, { flag:"rung4_tried" },
               { wire:"EMERGENCY THERMAL APPROPRIATION APPROVED" } ],
-    reverse:[ {move:{"thermal_margin":-7}}, {move:{"solvency": 12}}, { flag:{ rung4_tried:false } } ],
-    political_cost:[ {move:{"solvency": -10}}, {move:{"public_standing":-3}} ] },
+    reverse:[ {move:{"thermal_margin":-7}}, {move:{"solvency": 12000}}, { flag:{ rung4_tried:false } } ],
+    political_cost:[ {move:{"solvency": -10000}}, {move:{"public_standing":-3}} ] },
 
   { id:"rung5_purchase",
     title:"Thermal Quota (Market Purchase) Order 2287", number:"SI 2287/65",
@@ -185,12 +185,12 @@ const INSTRUMENTS = [
     summary:"Buys quota on the open exchange and holds it off the market. It works, it works at "+
             "once, and it is the rung the engineers have been asking for since the fault.",
     effect_note:"A hard spend for a real result. The reserve does not come back.",
-    effects:[ {move:{"thermal_margin":9}}, {move:{"price.thermal":-14}}, {move:{"solvency": -18}},
+    effects:[ {move:{"thermal_margin":9}}, {move:{"price.thermal":-14}}, {move:{"solvency": -18000}},
               { flag:"rung5_tried" },
               { wire:"GOVERNMENT BUYS THERMAL QUOTA AT MARKET; PRICE FALLS" } ],
-    reverse:[ {move:{"thermal_margin":-9}}, {move:{"price.thermal":14}}, {move:{"solvency": 18}},
+    reverse:[ {move:{"thermal_margin":-9}}, {move:{"price.thermal":14}}, {move:{"solvency": 18000}},
               { flag:{ rung5_tried:false } } ],
-    political_cost:[ {move:{"solvency": -14}} ] },
+    political_cost:[ {move:{"solvency": -14000}} ] },
 
   { id:"rung6_drawdown",
     title:"Substrate Insurance (Drawdown) Order 2287", number:"SI 2287/66",

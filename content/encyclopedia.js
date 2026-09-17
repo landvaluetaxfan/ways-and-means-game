@@ -365,7 +365,67 @@ const ENCYCLOPEDIA = {
         "lawfully do the work and lawfully be excluded from the constituency that represents "+
         "it. The Registry does not treat this as a franchise question." }
     ],
-    see:["functional_constituency","gb"] }
+    see:["functional_constituency","gb"] },
+
+  { id:"quota_forwarding", title:"Quota trading and forwarding", category:"Economy",
+    banners:["neutrality"],
+    edited:{ by:"multiple", attested:true, note:"the fraud section is the most edited on the Concordance" },
+    summary:"**Quota trading** is the market in the MW-year rejected, the unit in which the "+"Commonwealth keeps its accounts. The quota is the money: the state issues it, the "+"appropriation divides it, and a claim on radiator capacity is a claim on room for "+"someone to be alive.",
+    sections:[
+      { h:"The unit", body:
+        "Rejection capacity is the limiting resource of the orbital economy. Energy is "+"trivial to gather and hard to discard, so the right to dump waste heat binds "+"before any other. The Commonwealth therefore keeps its accounts in the MW-year "+"rejected and names no coin.\n\n"+
+        "The consequence is that the franchise and the budget are one question. To "+"hold quota is to hold a claim on how many minds a station may run." },
+      { h:"Forwarding", body:
+        "A **[[quota_forward|quota forward]]** fixes a price now for capacity delivered at a "+"named sitting. The seller takes the money today and hands over the margin later. "+"Into a tight release the sale is a hedge; into a loose one it is a hole, and the "+"consortiums price the difference because they hold the only complete numbers." },
+      { h:"Fraud", body:
+        "The market has been traded, hedged, forwarded and defrauded since the Charter, "+"and the Commonwealth has legislated against the fourth of those four times. The "+"offence is not the sale of capacity that does not exist. It is the sale of the "+"same capacity twice, which the Registry can detect and the courts cannot." },
+      { h:"The Commonwealth's position", body:
+        "The state is the issuer of the quota and a participant in the market for it. "+"Critics of the arrangement note that a government which sets the release also "+"trades on it. The Treasury's answer is that the release is set by a division and "+"the trading is not." }
+    ],
+    see:["quota_forward","thermal_margin","commonwealth","perigee_charter"] },
+
+  { id:"underwriting", title:"Underwriting", category:"Economy",
+    banners:["single"],
+    edited:{ by:"unattested", attested:true, note:"" },
+    summary:"**Underwriting** is the pricing of failure. The Circumterrestrial Underwriters "+"carry a named risk for a term against a premium paid now, and they are the only "+"body in the Commonwealth holding complete figures on how often people stop running.",
+    sections:[
+      { h:"The firm", body:
+        "The Underwriters began as a mutual of habitat operators insuring one another "+"against a bulkhead failure. They hold the actuarial record of every suspension, "+"restoration and default since the Charter, and they do not publish it.\n\n"+
+        "They do not campaign and they do not lobby. Their position in a dispute is "+"expressed by repricing, which they do without an announcement." },
+      { h:"The indemnity", body:
+        "An **[[indemnity]]** is a premium paid now and a payout if the named risk "+"happens before the term. The government buys cover against the events it cannot "+"decide: a freeze, a blockade, a station shedding its register." },
+      { h:"The politics", body:
+        "Because the Underwriters price the continuation of persons, their rates are "+"read as a judgement on policy. A rise in the Commonwealth's premium is treated "+"by the House as a criticism, and by the Underwriters as arithmetic." }
+    ],
+    see:["indemnity","suspension","substrate","commonwealth"] },
+
+  { id:"volume_leases", title:"Volume leases", category:"Economy",
+    banners:["cleanup"],
+    edited:{ by:"multiple", attested:true, note:"inheritance law is unsettled" },
+    summary:"A **volume lease** is a long-dated right to occupy pressurised volume, let by "+"the Commonwealth to a station or a body for a term. It is the principal store of "+"household wealth in the outer bands and the instrument by which stations buy the "+"time to close their own cycles.",
+    sections:[
+      { h:"Volume", body:
+        "Volume is positional. Ring-band volume is dear because everyone wants to be "+"there; low-band volume is nearly free because nobody does. A lease converts that "+"difference into a term of years." },
+      { h:"The lease", body:
+        "The rent is paid in one of two currencies: cash, or work on the station's own "+"material cycle. The second is worth more and is not guaranteed, which is what "+"makes a lease a political instrument rather than a conveyance. A station that "+"raises its closure under a lease needs less of the federal lift, and is closer to "+"feeding itself in the event of a separation." },
+      { h:"Inheritance", body:
+        "Leases are inheritable, and the law of inheritance as it applies to reabsorbed "+"and suspended persons is unsettled. The leading case is before the Tribunal. "+"Meanwhile the market prices the uncertainty and not the law." }
+    ],
+    see:["volume_lease","closure","ashfield","substrate"] },
+
+  { id:"substrate_futures", title:"Substrate futures and debt", category:"Economy",
+    banners:["contested"],
+    edited:{ by:"multiple", attested:true, note:"the platform section reflects an active dispute" },
+    summary:"**Substrate futures** are forward contracts on mind-hours, and the debt written "+"against them is secured by the continuation of the persons who run. Where a "+"platform is abandoned, its debt survives its residents, and the choice between "+"assuming that debt and writing it off is a choice about who is owed.",
+    sections:[
+      { h:"The contract", body:
+        "A substrate future fixes a price now for computation delivered later. Because "+"clock rates differ twentyfold between persons, the contract is written on "+"objective hours and settled in MW-years rather than in subjective experience." },
+      { h:"The debt", body:
+        "**Credit secured against your own continuation** is the ordinary financing of a "+"habitat. A station borrows against the productive capacity of its residents, who "+"are the collateral. When the station fails, the lenders' claim runs against the "+"people rather than the place." },
+      { h:"The platform", body:
+        "The abandoned platform and its three hundred thousand residents are the present "+"case. The debt has not failed with the platform; it has been assigned. A "+"government that assumes it pays for people it does not own. A government that "+"[[write-off|writes it off]] has told the lenders what its word is worth." }
+    ],
+    see:["write-off","substrate","suspension","commonwealth"] }
 
   ]
 };

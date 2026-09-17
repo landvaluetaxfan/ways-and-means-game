@@ -14,6 +14,16 @@ this document reverses.*
 > in the model. What §6 was protecting — no supply-chain solver, no second
 > window — is now a constraint ON this document rather than a reason
 > against it.
+>
+> **LANDED.** Phase 1 (the appropriation drives the four prices), phase 2
+> (the quota forward), and phase 3 (underwriting, volume leases and the
+> substrate debt, with their glossary terms) are in, all content-only after
+> phase 1. Phase 4 (the denominated treasury) landed on the author's
+> decision that the old index point is a thousand MW-years: the
+> Commonwealth opens holding 52,000, the appropriation's defaults come to
+> 48,000, and every solvency effect in content is re-costed at that scale.
+> Because it is a pure rescale, no balance ratio moved. Phase 5 (the
+> Concordance) is next.
 
 ---
 

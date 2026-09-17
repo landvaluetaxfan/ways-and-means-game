@@ -54,7 +54,7 @@ const INITIATIVES = [
       { label: "A note from the department, this week", after: 2,
         effects: [ { flag: { review_thin: true } } ] },
       { label: "An independent inquiry, properly staffed", after: 8, cost: 1,
-        effects: [ { flag: { review_full: true } }, { move: { solvency: -3 } } ] }
+        effects: [ { flag: { review_full: true } }, { move: { solvency: -3000 } } ] }
     ] },
 
   /* A PUBLIC COMMITMENT, which is the one that cannot be taken back.
@@ -95,11 +95,11 @@ const INITIATIVES = [
     tempo: [
       { label: "A cautious forward: a slice of the margin, a slice of the cash",
         after: 4,
-        effects: [ { move: { solvency: 9 } },
+        effects: [ { move: { solvency: 9000 } },
                    { flag: { quota_forward_small: true, quota_forward_sold: true } } ] },
       { label: "A full forward: the whole margin, and the price to match",
         after: 6, cost: 1,
-        effects: [ { move: { solvency: 22 } },
+        effects: [ { move: { solvency: 22000 } },
                    { flag: { quota_forward_full: true, quota_forward_sold: true } } ] }
     ] },
 
@@ -119,11 +119,11 @@ const INITIATIVES = [
     event: "indemnity_settles",
     tempo: [
       { label: "Cover the suppliers' exposure", after: 6,
-        effects: [ { move: { "solvency": -3 } },
+        effects: [ { move: { "solvency": -3000 } },
                    { move: { "actor.underwriters": 3 } },
                    { flag: { indemnity_suppliers: true, indemnity_taken: true } } ] },
       { label: "Cover the whole life-support line", after: 8, cost: 1,
-        effects: [ { move: { "solvency": -7 } }, { move: { "legitimacy": 2 } },
+        effects: [ { move: { "solvency": -7000 } }, { move: { "legitimacy": 2 } },
                    { move: { "actor.underwriters": 5 } },
                    { flag: { indemnity_lifesupport: true, indemnity_taken: true } } ] }
     ] },
@@ -144,7 +144,7 @@ const INITIATIVES = [
     event: "volume_charter_settles",
     tempo: [
       { label: "Let it on the standard terms, for cash", after: 4,
-        effects: [ { move: { "solvency": 6 } }, { move: { "price.volume": 3 } },
+        effects: [ { move: { "solvency": 6000 } }, { move: { "price.volume": 3 } },
                    { flag: { charter_cash: true, volume_chartered: true } } ] },
       { label: "Let it against closure, at a lower rent", after: 6, cost: 1,
         effects: [ { station: { ashfield: { closure: 0.05 } } },
@@ -168,11 +168,11 @@ const INITIATIVES = [
     event: "substrate_debt_settles",
     tempo: [
       { label: "Write it off", after: 3,
-        effects: [ { move: { "solvency": 4 } }, { move: { "legitimacy": -6 } },
+        effects: [ { move: { "solvency": 4000 } }, { move: { "legitimacy": -6 } },
                    { move: { "friction": 6 } }, { move: { "actor.underwriters": 6 } },
                    { flag: { debt_written_off: true, substrate_debt_dealt: true } } ] },
       { label: "Assume it", after: 5,
-        effects: [ { move: { "solvency": -12 } }, { move: { "legitimacy": 8 } },
+        effects: [ { move: { "solvency": -12000 } }, { move: { "legitimacy": 8 } },
                    { move: { "friction": -4 } }, { move: { "actor.underwriters": -4 } },
                    { flag: { debt_assumed: true, substrate_debt_dealt: true } } ] }
     ] }

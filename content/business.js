@@ -160,7 +160,7 @@ const BUSINESS = [
     text:"The Registry's first return under the new threshold is laid, and it is late." },
   /* the reserve is thin and somebody has noticed */
   { id:"f_reserve_thin", kind:"question",
-    when:{ scalarBelow:{ solvency:20 } },
+    when:{ scalarBelow:{ solvency:20000 } },
     text:"Written question: the Treasury is asked to confirm the reserve figure in the House." },
   /* the Guild Bench has stopped taking meetings */
   { id:"f_guild", kind:"colour",

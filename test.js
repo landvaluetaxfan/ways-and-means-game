@@ -486,7 +486,7 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     old.scalars.treasury = 41;
     const back = Engine.load(JSON.stringify(old), CONTENT);
     ok("a save from before the campaign meters gets them anyway",
-       back.scalars.solvency === 41 && back.scalars.legitimacy === 48 &&
+       back.scalars.solvency === 41000 && back.scalars.legitimacy === 48 &&
        back.scalars.friction === 25 && back.scalars.treasury === undefined,
        JSON.stringify(back.scalars));
   }
@@ -703,7 +703,13 @@ console.log("\nTHE ESCALATION LADDER:");
 
   const rungs = (CONTENT.instruments || []).filter(i => /^rung\d/.test(i.id))
     .sort((a, b) => a.id.localeCompare(b.id));
-  const num = e => Object.keys(e.move || {}).reduce((n, k) => n + Math.abs(e.move[k]), 0);
+  /* Costs on the ladder are spent in different currencies, so the sum is
+     read back in the index the ladder was tuned against: a solvency cost is
+     denominated in MW-years now (design/28 phase 4) and is divided by its
+     scale. Without this, one rung paying ten index points of quota would
+     outweigh every other rung's whole bargain. */
+  const num = e => Object.keys(e.move || {}).reduce((n, k) =>
+    n + Math.abs(e.move[k]) / (k === "solvency" ? 1000 : 1), 0);
   const cost = i => [].concat(i.political_cost || []).reduce((n, e) => n + num(e), 0);
   const relief = i => [].concat(i.effects || []).reduce((n, e) =>
     n + ((e.move || {})["thermal_margin"] || 0), 0);
@@ -1758,15 +1764,15 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
      gates are driven directly, which is what "reachable" means for a
      when-block. The canon pyrrhic tier must not end the run. */
   const tier = (set) => { const s = fresh(); Object.assign(s.scalars, set); return s; };
-  const t1 = tier({ legitimacy: 80, solvency: 75, friction: 30 });
+  const t1 = tier({ legitimacy: 80, solvency: 75000, friction: 30 });
   ok("critical triumph", (Engine.checkSettlement(t1, CONTENT) || {}).id === "f1_triumph");
-  const t2 = tier({ legitimacy: 60, solvency: 65, friction: 30 });
+  const t2 = tier({ legitimacy: 60, solvency: 65000, friction: 30 });
   ok("maritime charter", (Engine.checkSettlement(t2, CONTENT) || {}).id === "f1_maritime");
-  const t3 = tier({ legitimacy: 70, solvency: 30, friction: 70 });
+  const t3 = tier({ legitimacy: 70, solvency: 30000, friction: 70 });
   ok("sovereign debt trap", (Engine.checkSettlement(t3, CONTENT) || {}).id === "f1_pyrrhic");
-  const t4 = tier({ legitimacy: 50, solvency: 50, friction: 50 });
+  const t4 = tier({ legitimacy: 50, solvency: 50000, friction: 50 });
   ok("joint mandate", (Engine.checkSettlement(t4, CONTENT) || {}).id === "f1_joint");
-  const t5 = tier({ legitimacy: 30, solvency: 50, friction: 80 });
+  const t5 = tier({ legitimacy: 30, solvency: 50000, friction: 80 });
   ok("corporate re-entry", (Engine.checkSettlement(t5, CONTENT) || {}).id === "f1_capitulation");
   const pEnd = Engine.checkEnd(t3, CONTENT);
   ok("and the canon pyrrhic tier does not end the run",
