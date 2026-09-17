@@ -2655,5 +2655,87 @@ console.log("\nTHE ECONOMY:");
      delivery !== null && st.scalars.thermal_margin === beforeDelivery - 11,
      beforeDelivery + " -> " + st.scalars.thermal_margin + " (margin at open " + m0 + ")");
 
+  /* PHASE 3 (design/28 §3). The other three markets are positions too:
+     underwriting, volume leases, and the substrate debt. Every settle
+     BRANCHES ON THE STATE AT THE DAY IT LANDS, and the branches are
+     EXHAUSTIVE — a queued settle whose every condition failed would open
+     an empty Decision and strand the sitting, so for each pair of outcomes
+     the test asserts exactly one door is open, in BOTH directions. */
+  const three = ["take_indemnity", "charter_volume", "assume_substrate_debt"];
+  ok("content offers the other three markets",
+     three.every(id => (CONTENT.initiatives || []).some(i => i.id === id)),
+     three.filter(id => !(CONTENT.initiatives || []).some(i => i.id === id)).join(", ") || "all three");
+
+  /* openChoices against a crafted state. `want` pushes the federal
+     suspended total and `price` sets one of the four prices, because those
+     are the two readings a settle does on the day. */
+  const doors = (evId, flags, want, price) => {
+    const s = Engine.newGame(CONTENT);
+    Object.assign(s.flags, flags || {});
+    const ids = Object.keys(s.stations);
+    if (want != null) {
+      const big = ids.reduce((a, b) => s.stations[a].suspended >= s.stations[b].suspended ? a : b);
+      const now = ids.reduce((n, k) => n + s.stations[k].suspended, 0);
+      s.stations[big].suspended = Math.max(0, s.stations[big].suspended + (want - now));
+    }
+    if (price) s.prices[price.key] = price.value;
+    return Engine.openChoices(s, CONTENT, CONTENT.eventById[evId]).map(x => x.index);
+  };
+  const only = (doors, i) => doors.length === 1 && doors[0] === i;
+
+  /* UNDERWRITING: the cover pays only if the risk its term named happened. */
+  ok("an indemnity pays when the risk fired",
+     only(doors("indemnity_settles", { indemnity_lifesupport: true, f1_frozen: true }), 1),
+     doors("indemnity_settles", { indemnity_lifesupport: true, f1_frozen: true }).join("/"));
+  ok("and the premium is spent when it did not",
+     only(doors("indemnity_settles", { indemnity_lifesupport: true }), 2),
+     doors("indemnity_settles", { indemnity_lifesupport: true }).join("/"));
+
+  /* VOLUME LEASES: the price of volume at the term decides which currency
+     the Commonwealth actually got, and 108.0 and 108.1 fall on either side
+     of the split without opening two doors or none. */
+  for (const [v, cash, work] of [[120, 0, 2], [100, 1, 3]]) {
+    ok("a volume lease settles on the price (volume " + v + ")",
+       only(doors("volume_charter_settles", { charter_cash: true }, null, { key: "volume", value: v }), cash),
+       doors("volume_charter_settles", { charter_cash: true }, null, { key: "volume", value: v }).join("/"));
+    ok("and the closure rent is read the same way (volume " + v + ")",
+       only(doors("volume_charter_settles", { charter_closure: true }, null, { key: "volume", value: v }), work),
+       doors("volume_charter_settles", { charter_closure: true }, null, { key: "volume", value: v }).join("/"));
+  }
+  ok("the price split leaves no value without a door",
+     [108.0, 108.1, 107.9, 108.2].every(v => {
+       const a = doors("volume_charter_settles", { charter_cash: true }, null, { key: "volume", value: v });
+       return a.length === 1;
+     }), "108.0/108.1/107.9/108.2");
+
+  /* SUBSTRATE DEBT: the debt was secured on people, so the settle reads how
+     many are suspended. Integer counts, so the split at 72000 has no gap. */
+  ok("an assumed debt that held is paid by the platform",
+     only(doors("substrate_debt_settles", { debt_assumed: true }, 71000), 0),
+     doors("substrate_debt_settles", { debt_assumed: true }, 71000).join("/"));
+  ok("and one that did not hold is a hole",
+     only(doors("substrate_debt_settles", { debt_assumed: true }, 73000), 1),
+     doors("substrate_debt_settles", { debt_assumed: true }, 73000).join("/"));
+  ok("a write-off is repriced when the substrate rises",
+     only(doors("substrate_debt_settles", { debt_written_off: true }, null, { key: "substrate", value: 120 }), 2),
+     doors("substrate_debt_settles", { debt_written_off: true }, null, { key: "substrate", value: 120 }).join("/"));
+  ok("and it holds when the substrate is steady",
+     only(doors("substrate_debt_settles", { debt_written_off: true }, null, { key: "substrate", value: 100 }), 3),
+     doors("substrate_debt_settles", { debt_written_off: true }, null, { key: "substrate", value: 100 }).join("/"));
+  ok("the suspension split leaves no value without a door",
+     [71000, 72000, 72001, 73000].every(v => {
+       const a = doors("substrate_debt_settles", { debt_assumed: true }, v);
+       return a.length === 1;
+     }), "71000/72000/72001/73000");
+
+  /* AND THE POSITION IS ON THE BOOKS. Taking one queues its answer, so the
+     settle arrives from the queue and not from the weighted pool. */
+  const ind = Engine.newGame(CONTENT);
+  ind.chapter = 2; ind.flags.f1_accounts_freeze = true;
+  const took = Engine.take(ind, CONTENT, "take_indemnity", 1);
+  ok("taking a position queues its settle",
+     took.ok && ind.queue.some(q => q.eventId === "indemnity_settles"),
+     took.ok ? "queued" : took.reason);
+
   if (bad) { console.log("\n" + bad + " ECONOMY FAILURES"); process.exitCode = 1; }
 })();

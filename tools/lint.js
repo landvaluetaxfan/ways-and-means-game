@@ -449,6 +449,16 @@ try {
     walkWhen(e.when);
     (e.choices || []).forEach(c => { walkEffects(c.effects); walkWhen(c.when); });
   });
+  /* AN INITIATIVE MOVES NUMBERS TOO, and this walk predated it carrying
+     effects: `tempo[].effects` was invisible here, so a decision made on
+     the Government screen could move a price and the chain would still
+     call it unseen. Same omission the `move` consolidation note above
+     describes, one content file over. */
+  (INITIATIVES || []).forEach(i => {
+    walkWhen(i.when);
+    walkEffects(i.effects);
+    (i.tempo || []).forEach(t => { walkEffects(t.effects); walkWhen(t.when); });
+  });
   /* instruments carry effects too, and an order that moves a price is
      exactly the kind of thing that needs an event watching it */
   try {

@@ -101,5 +101,79 @@ const INITIATIVES = [
         after: 6, cost: 1,
         effects: [ { move: { solvency: 22 } },
                    { flag: { quota_forward_full: true, quota_forward_sold: true } } ] }
+    ] },
+
+  /* UNDERWRITING (design/28 §3). The Underwriters hold the only complete
+     numbers on failure, so they do not campaign and they do not negotiate:
+     they quote a premium and carry one named risk for a term. The named
+     risk is the freeze, which is why the instrument only exists once the
+     crisis is running. The premium is certain and the payout is not, and
+     that is the whole trade. */
+  { id: "take_indemnity",
+    title: "Take an indemnity",
+    note: "The Underwriters will carry the platform's running costs for one " +
+          "term. The premium is quoted now and the cover runs from today. At " +
+          "the end of the term they settle against what actually happened.",
+    cost: 1,
+    when: { flagsAbsent: ["indemnity_taken"], chapterAtLeast: 2 },
+    event: "indemnity_settles",
+    tempo: [
+      { label: "Cover the suppliers' exposure", after: 6,
+        effects: [ { move: { "solvency": -3 } },
+                   { move: { "actor.underwriters": 3 } },
+                   { flag: { indemnity_suppliers: true, indemnity_taken: true } } ] },
+      { label: "Cover the whole life-support line", after: 8, cost: 1,
+        effects: [ { move: { "solvency": -7 } }, { move: { "legitimacy": 2 } },
+                   { move: { "actor.underwriters": 5 } },
+                   { flag: { indemnity_lifesupport: true, indemnity_taken: true } } ] }
+    ] },
+
+  /* VOLUME LEASES (design/28 §3). A lease is long-dated and it can be
+     paid in two currencies. Cash is certain and small; work on the
+     station's own material cycle is worth more and is not guaranteed,
+     and the price of volume at the term decides which of the two the
+     Commonwealth actually got. */
+  { id: "charter_volume",
+    title: "Charter volume forward",
+    note: "The Commonwealth holds volume on every band and can let it " +
+          "forward to a station for a term. Homestead has asked for the " +
+          "lease. It will pay in cash, or in the work that raises its own " +
+          "closure, and it would rather pay in work.",
+    cost: 1,
+    when: { flagsAbsent: ["volume_chartered"] },
+    event: "volume_charter_settles",
+    tempo: [
+      { label: "Let it on the standard terms, for cash", after: 4,
+        effects: [ { move: { "solvency": 6 } }, { move: { "price.volume": 3 } },
+                   { flag: { charter_cash: true, volume_chartered: true } } ] },
+      { label: "Let it against closure, at a lower rent", after: 6, cost: 1,
+        effects: [ { station: { ashfield: { closure: 0.05 } } },
+                   { move: { "legitimacy": 4 } }, { move: { "price.volume": 4 } },
+                   { flag: { charter_closure: true, volume_chartered: true } } ] }
+    ] },
+
+  /* SUBSTRATE FUTURES AND DEBT (design/28 §3). The abandoned platform's
+     debt is secured against the continuation of the people on it. The
+     Commonwealth can take that debt onto its own books or cancel it.
+     Flash I's pyrrhic tier is the worked example of what happens when it
+     is left where it is. The survey has to have found the debt first. */
+  { id: "assume_substrate_debt",
+    title: "Deal with the platform's substrate debt",
+    note: "The debt runs against the instances and the substrate of the " +
+          "three hundred thousand people on the platform. The Commonwealth " +
+          "can assume it, or write it off, and the Underwriters will price " +
+          "the difference either way.",
+    cost: 1,
+    when: { flags: ["f1_surveyed"], flagsAbsent: ["substrate_debt_dealt"] },
+    event: "substrate_debt_settles",
+    tempo: [
+      { label: "Write it off", after: 3,
+        effects: [ { move: { "solvency": 4 } }, { move: { "legitimacy": -6 } },
+                   { move: { "friction": 6 } }, { move: { "actor.underwriters": 6 } },
+                   { flag: { debt_written_off: true, substrate_debt_dealt: true } } ] },
+      { label: "Assume it", after: 5,
+        effects: [ { move: { "solvency": -12 } }, { move: { "legitimacy": 8 } },
+                   { move: { "friction": -4 } }, { move: { "actor.underwriters": -4 } },
+                   { flag: { debt_assumed: true, substrate_debt_dealt: true } } ] }
     ] }
 ];

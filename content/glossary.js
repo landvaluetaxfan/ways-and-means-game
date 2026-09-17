@@ -88,6 +88,25 @@ const GLOSSARY = [
     handle:"The Commons, with a different name and a third tier.",
     introduced:"gb_approach" },
 
+  /* THE FOUR MARKET INSTRUMENTS (design/28 §3). Each is a position the
+     government can take, and each is taught by its own settle event — the
+     first sitting where the player meets what the position actually was.
+     They share one cluster because they are one lesson: a market here is
+     something taken now and settled later, priced by the votes already
+     cast. No event introduces more than one cluster. */
+  { term:"quota forward", cluster:"markets", gloss:"Quota sold now for delivery at a named sitting, at a price fixed on the day.",
+    handle:"A farmer selling the harvest in spring.",
+    introduced:"quota_forward_settles" },
+  { term:"indemnity", cluster:"markets", gloss:"A premium paid now, and a payout if the named risk happens before the term.",
+    handle:"Insurance, written by the only firm that holds the numbers.",
+    introduced:"indemnity_settles" },
+  { term:"volume lease", cluster:"markets", gloss:"Volume let forward to a station for a term, paid in cash or in work on its own cycle.",
+    handle:"A long lease on a shop, paid in rent or in repairs.",
+    introduced:"volume_charter_settles" },
+  { term:"write-off", cluster:"markets", gloss:"Debt secured against a person's continuation, cancelled rather than honoured.",
+    handle:"Tearing up the invoice because the debtor is the collateral.",
+    introduced:"substrate_debt_settles" },
+
   { term:"Perigee", gloss:"Metonym for the government, from the Charter signed there.",
     handle:"Washington or Whitehall: the place standing in for the people in it.",
     assumed:true },

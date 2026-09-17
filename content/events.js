@@ -1630,7 +1630,7 @@ and the schedule is a list of who is carried and who is not."`,
    obligation is paid now, and what the session did to the margin in
    between is the risk the government took. */
 { id:"quota_forward_settles", queuedOnly:true, once:true,
-  title:"The forward comes due",
+  title:"The quota forward comes due",
   speaker:"hatt",
   body:`The consortiums have come for the capacity. Whatever the margin has
 done since the forward was sold, the price was fixed then and the quota
@@ -1658,6 +1658,138 @@ of the trade.`,
       effects:[{ move:{ "thermal_margin":-2 } },
                { wire:"QUOTA FORWARD DELIVERED" }],
       result:"The delivery is smaller than any forward the government meant to sell." }
+  ]},
+
+/* THE OTHER THREE MARKETS SETTLE (design/28 §3). Each is a position taken
+   in content/initiatives.js: a move now, a queued term, and this event,
+   which reads the state on the day it lands. No new effect verb and no
+   engine change: the condition vocabulary already reads flags, prices and
+   the station counts, and conditions are not under the twenty-verb cap. */
+
+/* UNDERWRITING. The cover ran for the term the government bought, and the
+   Underwriters settle against the one risk they wrote. The branches are
+   the risk and the tempo, and between them they cover every state: the
+   freeze happened or it did not, and the cover was on the suppliers or on
+   the whole line. */
+{ id:"indemnity_settles", queuedOnly:true, once:true,
+  title:"The indemnity comes to term",
+  speaker:"hatt",
+  body:`The Underwriters do not argue and they do not negotiate. They send a
+single page with the premium paid at the top and one line at the foot saying
+what was covered.
+
+"Frozen or not frozen," Hatt says. "That was the whole policy. They wrote
+it that way because they could read the numbers and we could not."`,
+  choices:[
+    { label:"The accounts froze. The cover answers the suppliers.",
+      when:{ flags:["indemnity_suppliers","f1_frozen"] },
+      effects:[{ move:{ "solvency":9 } }, { move:{ "actor.underwriters":-2 } },
+               { wire:"UNDERWRITERS PAY ON THE FROZEN ACCOUNTS" }],
+      result:"The payout arrives after the freeze and it is smaller than the freeze. The reserve ends the term nine points better than the sanctions left it." },
+    { label:"The accounts froze. The cover carries the whole line.",
+      when:{ flags:["indemnity_lifesupport","f1_frozen"] },
+      effects:[{ move:{ "solvency":18 } }, { move:{ "legitimacy":3 } },
+               { move:{ "actor.underwriters":-5 } },
+               { wire:"UNDERWRITERS CARRY THE PLATFORM'S LIFE SUPPORT" }],
+      result:"The Underwriters pay for the air and the water on the platform for the term. The premium was large and the payout is larger." },
+    { label:"Nothing froze. The premium is spent.",
+      when:{ flagsAbsent:["f1_frozen"] },
+      effects:[{ move:{ "actor.underwriters":4 } },
+               { wire:"INDEMNITY EXPIRES UNUSED; THE UNDERWRITERS KEEP THE PREMIUM" }],
+      result:"The risk stayed away for the whole term. The Underwriters keep the premium, which is the business they are in." },
+    /* The safety net every queued settle carries. A door content never uses
+       is better than an event that can strand a sitting. */
+    { label:"The term ends.",
+      when:{ flagsAbsent:["indemnity_suppliers","indemnity_lifesupport"] },
+      effects:[{ wire:"THE INDEMNITY TERM ENDS" }],
+      result:"The cover closes with nothing written against it." }
+  ]},
+
+/* VOLUME LEASES. A lease is settled in the currency it was written in, and
+   the price of volume on the day decides what the Commonwealth actually
+   got. The two branches per tempo are exhaustive rather than approximate:
+   prices carry one decimal, so `above X` and `below X + 0.1` between them
+   cover every value the tick can produce, and a player is never left with
+   an empty Decision. */
+{ id:"volume_charter_settles", queuedOnly:true, once:true,
+  title:"The volume lease comes to term",
+  speaker:"vellan",
+  body:`Homestead has held the volume for the whole term and the surveyors
+have filed. The file is short. The station kept its side or it did not, and
+the price of volume has moved since the lease was written.
+
+"The lease says what follows either way," Vellan says. "It was written by
+people who expected the price to move."`,
+  choices:[
+    { label:"The lease is renewed. The price ran against it.",
+      when:{ flags:["charter_cash"], priceAbove:{ volume:108 } },
+      effects:[{ move:{ "solvency":-5 } },
+               { wire:"VOLUME LEASE RENEWED AS THE PRICE CLIMBS" }],
+      result:"The Commonwealth sold forward at a price the market has passed. Homestead takes the volume for another term at the old rate." },
+    { label:"The lease is renewed at the same terms.",
+      when:{ flags:["charter_cash"], priceBelow:{ volume:108.1 } },
+      effects:[{ move:{ "solvency":2 } },
+               { wire:"VOLUME LEASE RENEWED; HOMESTEAD PAYS IN CASH" }],
+      result:"The rent clears and the volume passes to Homestead for another term. The Commonwealth takes the cash." },
+    { label:"Homestead did the work, and the price made it cheap.",
+      when:{ flags:["charter_closure"], priceAbove:{ volume:108 } },
+      effects:[{ move:{ "solvency":-4 } }, { move:{ "legitimacy":3 } },
+               { wire:"HOMESTEAD RENEWS; THE OUTER BENCHES READ THE TERMS" }],
+      result:"The station closed part of its own cycle with the volume it was let, and it got that volume at a price the market has left behind. The outer benches can read a lease." },
+    { label:"Homestead did the work.",
+      when:{ flags:["charter_closure"], priceBelow:{ volume:108.1 } },
+      effects:[{ move:{ "legitimacy":5 } },
+               { wire:"HOMESTEAD'S CYCLE CLOSES FURTHER UNDER THE LEASE" }],
+      result:"The station has raised its closure with the volume it was let, and it pays the Commonwealth in the one currency that outlasts the term." },
+    { label:"The term ends.",
+      when:{ flagsAbsent:["charter_cash","charter_closure"] },
+      effects:[{ wire:"THE VOLUME LEASE TERM ENDS" }],
+      result:"The lease closes with no rent and no work against it." }
+  ]},
+
+/* SUBSTRATE FUTURES AND DEBT. The debt was secured against the
+   continuation of the people on the platform, so the settle reads the
+   platform's own numbers: how many were suspended at the term, and what
+   the substrate was worth. Suspensions are whole numbers, so `below T + 1`
+   and `above T` cover every value; prices carry one decimal, so
+   `below X + 0.1` and `above X` do the same. */
+{ id:"substrate_debt_settles", queuedOnly:true, once:true,
+  title:"The substrate debt comes to term",
+  speaker:"ceyhan",
+  body:`The Commonwealth took the debt onto its books or it cancelled it, and
+either way the term has come. The number that settles it is on the platform
+rather than in the Treasury: how many people are suspended, and what the
+substrate they run on is worth.
+
+"Two ways to answer a debt secured on people," Ceyhan says. "You can pay it,
+or you can say it was never owed. The platform has been counting either
+way."`,
+  choices:[
+    { label:"The platform kept running. The assumption held.",
+      when:{ flags:["debt_assumed"], suspendedBelow:{ federal:72001 } },
+      effects:[{ move:{ "legitimacy":6 } }, { move:{ "solvency":5 } },
+               { move:{ "actor.underwriters":3 } },
+               { wire:"PLATFORM SUSPENSIONS FALL UNDER COMMONWEALTH DEBT" }],
+      result:"Fewer people stopped running than at the start of the term. The debt the Commonwealth took on is backed by a platform that is working." },
+    { label:"The platform kept shedding. The assumption did not hold.",
+      when:{ flags:["debt_assumed"], suspendedAbove:{ federal:72000 } },
+      effects:[{ move:{ "solvency":-7 } }, { move:{ "friction":2 } },
+               { wire:"SUSPENSIONS RISE; THE DEBT IS A HOLE" }],
+      result:"More people were suspended at the term than at the start. The Commonwealth owns the debt of a platform that is still failing." },
+    { label:"The write-off was cheaper than the debt.",
+      when:{ flags:["debt_written_off"], priceAbove:{ substrate:110 } },
+      effects:[{ move:{ "actor.underwriters":-6 } }, { move:{ "legitimacy":-3 } },
+               { wire:"SUBSTRATE RISES; THE WRITE-OFF LOOKS EXPENSIVE" }],
+      result:"The substrate is worth more than the Commonwealth allowed when it cancelled the debt, and the Underwriters have repriced the Commonwealth's word." },
+    { label:"The write-off holds.",
+      when:{ flags:["debt_written_off"], priceBelow:{ substrate:110.1 } },
+      effects:[{ move:{ "solvency":2 } }, { move:{ "actor.underwriters":2 } },
+               { wire:"SUBSTRATE STEADY; THE WRITE-OFF HOLDS" }],
+      result:"The substrate did not move against the cancellation. The Commonwealth's books are lighter by the debt it refused." },
+    { label:"The term ends.",
+      when:{ flagsAbsent:["debt_assumed","debt_written_off"] },
+      effects:[{ wire:"THE SUBSTRATE DEBT TERM ENDS" }],
+      result:"The debt comes to term with nothing done about it." }
   ]}
 
 ];
