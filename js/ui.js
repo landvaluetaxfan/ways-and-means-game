@@ -3681,6 +3681,25 @@ const UI = (function () {
     const XCOLS = 5, XCW = 11, XRH = 10.5;
     const cols = n => Math.ceil(n / ROWS);
 
+    /* THE WIDTH NOTHING MAY DRAW OUTSIDE OF. The viewBox is sized to the
+       widest arrangement the House can hold, and the widest a single bench
+       can be is the WHOLE HOUSE: on a division every aye stands in one lobby
+       and every noe in the other, and a measure the opposition agrees with
+       puts nearly 280 seats in one block. Reserving only the party blocks
+       covered the ordinary view and let the division draw past the right
+       edge of the box, which is the aisle running off the screen. The lobbies
+       are WRAPPED to these columns instead (gatherRows), so nothing is ever
+       laid outside the reservation, and the reservation is read from the
+       ENGINE's totals, which do not move when the view folds. */
+    const govPop = govIds.reduce((n, id) =>
+      n + ((st.parties[id] || { seats: {} }).seats.district || 0) +
+          ((st.parties[id] || { seats: {} }).seats.list || 0), 0);
+    const oppPop = Engine.popularTotal(st) - govPop;
+    const reservedCols = cols(Math.max(govPop, oppPop) +
+                              Engine.functionalTotal(st));
+    /* The rows a lobby needs for its seats to fit the reserved columns. */
+    const gatherRows = n => Math.max(ROWS, Math.ceil(n / reservedCols));
+
     /* The bench at the Bar sits crosswise, so it fills the other way. */
     function crossbench(seats, x0, yTop) {
       let out = "";
@@ -3741,8 +3760,14 @@ const UI = (function () {
     const partyW  = Math.max(govCols, oppCols) * CW;
     const ayesN = gov.concat(opp, cross).filter(s => s.aye !== false).length;
     const noesN = gov.length + opp.length + cross.length - ayesN;
-    const gatherW = Math.max(govCols, oppCols, cols(ayesN), cols(noesN)) * CW;
-    const benchW = (counting && chamberMotion()) ? gatherW : partyW;
+    /* THE FLOOR WIDENS FOR THE GATHER, and only to the reservation. The
+       lobbies are wrapped to the reserved columns, so the division needs
+       exactly that width on the floor and never more. */
+    const standing = counting && chamberMotion();
+    const ayesRows = standing ? gatherRows(ayesN) : ROWS;
+    const noesRows = standing ? gatherRows(noesN) : ROWS;
+    const gatherW = reservedCols * CW;
+    const benchW = standing ? gatherW : partyW;
     const crossRows = Math.max(1, Math.ceil(cross.length / XCOLS));
 
     const X0 = 66;                                    // clear of the Chair
@@ -3793,24 +3818,16 @@ const UI = (function () {
        identical either way and the seats never change size. Layout still
        uses benchW — only the viewBox uses the reservation, which is why
        the benches stay where they are and the slack falls on the right. */
-    /* Read from the ENGINE's totals, which do not move when the view
-       folds — gov/opp/cross are rebuilt per arrangement, so reserving
-       from them reserved a different amount in each one, which is the
-       bug rather than the fix. The widest a side can ever be is its own
-       popular bench plus the whole functional forty. */
-    const govPop = govIds.reduce((n, id) =>
-      n + ((st.parties[id] || { seats: {} }).seats.district || 0) +
-          ((st.parties[id] || { seats: {} }).seats.list || 0), 0);
-    const oppPop = Engine.popularTotal(st) - govPop;
-    const reservedCols = cols(Math.max(govPop, oppPop) +
-                              Engine.functionalTotal(st));
-    /* AND THE DIVISION DOES NOT WIDEN IT EITHER. benchW swells to gatherW
-       while the count runs so the ayes can regroup, and feeding that into
-       the viewBox took it from 471 to 660 mid-division — every seat in the
-       House shrinking by a third at the exact moment the player is
-       watching it. The reservation already covers the gather (34 columns
-       against the 27 the ayes need), so the layout may swell and the box
-       does not. */
+    /* The reservation (reservedCols) is read from the ENGINE's totals at the
+       top of this function, where the base metrics are declared, because the
+       lobby wrap needs it before the layout is built. */
+    /* AND THE DIVISION DOES NOT WIDEN THE BOX EITHER. benchW swells to
+       gatherW while the count runs so the ayes can regroup, and feeding that
+       into the viewBox took it from 471 to 660 mid-division — every seat in
+       the House shrinking by a third at the exact moment the player is
+       watching it. The reservation already covers every column a lobby can
+       need, because the lobbies are wrapped to it (gatherRows), so the
+       layout may swell and the box does not. */
     const W = X0 + reservedCols * CW + Math.max(barW, 22);
     /* Same for the height: the Bar's rows are reserved whether or not the
        Bar is occupied, so folding never reflows the chamber vertically
@@ -3818,7 +3835,15 @@ const UI = (function () {
        crossbench can be, and that is the height held. */
     const maxCrossRows = Math.max(1, Math.ceil(Engine.functionalTotal(st) / XCOLS));
     const reservedBot = FLOOR + ((maxCrossRows - 1) * XRH) / 2;
-    const H = Math.max(oppBot + 26, reservedBot + 26) + 8;
+    /* THE STANDING HOUSE IS TALLER, NOT WIDER. Wrapping the lobbies to the
+       reserved columns lifts the ayes into the headroom, so the drawing is
+       shifted down by however much the top block rises above its label. The
+       seat scale does not change (the box is width-driven) and the panel
+       scrolls, so a division costs height and never a jump in size. */
+    const standingTop = standing ? govFront - (ayesRows - 1) * RH : govTop;
+    const standingBot = standing ? oppFront + (noesRows - 1) * RH : oppBot;
+    const topShift = Math.max(0, 14 - standingTop);
+    const H = topShift + Math.max(standingBot + 26, reservedBot + 26) + 8;
     /* An inline <svg> with a viewBox and no width defaults to the width of
        its container, so shrinking the coordinate space only magnified the
        drawing. Sizing it at 1:1 is what actually makes it smaller; the CSS
@@ -3850,31 +3875,39 @@ const UI = (function () {
        instead of reading the number. Same keys, different coordinates: the
        whole move is one transform, and the stylesheet does the travelling. */
     const all = govV.concat(oppV, crossV);
-    const layBench = (arr, front, dir) => arr.forEach((s, i) => {
-      s.x = X0 + Math.floor(i / ROWS) * CW;
-      s.y = front + dir * (i % ROWS) * RH;
+    /* A bench is laid column by column, `rows` deep. The ordinary view uses
+       ROWS; a standing lobby uses however many rows its seats need to fit
+       the reserved columns (ayesRows/noesRows), so the ayes are never laid
+       outside the box. */
+    const layBench = (arr, front, dir, rows) => arr.forEach((s, i) => {
+      s.x = X0 + Math.floor(i / rows) * CW;
+      s.y = front + dir * (i % rows) * RH;
     });
     const layBar = arr => arr.forEach((s, i) => {
       s.x = crossX + (i % XCOLS) * XCW;
       s.y = crossTop + Math.floor(i / XCOLS) * XRH;
     });
-    if (counting && chamberMotion()) {
-      layBench(all.filter(s => s.aye !== false), govFront, -1);
-      layBench(all.filter(s => s.aye === false), oppFront, +1);
+    if (standing) {
+      layBench(all.filter(s => s.aye !== false), govFront, -1, ayesRows);
+      layBench(all.filter(s => s.aye === false), oppFront, +1, noesRows);
     } else {
-      layBench(govV, govFront, -1);
-      layBench(oppV, oppFront, +1);
+      layBench(govV, govFront, -1, ROWS);
+      layBench(oppV, oppFront, +1, ROWS);
       layBar(crossV);
     }
     if (chair) { chair.x = 30; chair.y = FLOOR; }
 
+    /* THE STANDING HOUSE IS SHIFTED DOWN so its labels stay in the box; the
+       shift is zero in the ordinary view, so nothing there moves. */
     $("#chamber").innerHTML =
+      '<g' + (topShift ? ' transform="translate(0,' + topShift.toFixed(1) + ')"' : '') + '>' +
       '<g id="chamber-seats"></g>' +
       label(30, FLOOR + 17, "SPEAKER") +
-      label(CX, govTop - 12, "GOVERNMENT") +
-      label(CX, oppBot + 22, "OPPOSITION") +
+      label(CX, standingTop - 12, "GOVERNMENT") +
+      label(CX, standingBot + 22, "OPPOSITION") +
       (hasBar ? label(crossCX, crossTop - 14, "THE BENCH") : "") +
-      (hasBar ? label(crossCX, crossBot + 22, "functional tier", "sub") : "");
+      (hasBar ? label(crossCX, crossBot + 22, "functional tier", "sub") : "") +
+      '</g>';
     paintSeats(chair ? all.concat([chair]) : all);
     const seatLine = (n, of) => `${n}<span class="of">/${of}</span>`;
     /* AISLES puts the functional forty into the aisles, so a popular
