@@ -94,9 +94,19 @@ const BILLS = [
   { id:"appropriation", ref:"HC 4/140", stage:"first_reading", owner:"cu",
     test:"supply", priority:true,
     title:"Appropriation (Session 4) Bill",
-    summary:"The estimates for the session, and the quota released against them.",
-    effectNote:"Sets the thermal quota, the consumables floor, substrate insurance and capital works.",
-    contested:"Every party wants the floor raised and the quota released and neither paid for. The government's difficulty is that the two sides of that sentence are the same money.",
+    summary:"The estimates for the session, and the quota released against them. "+
+            "A money bill: the elected benches vote money, and the functional forty "+
+            "divide and are recorded.",
+    effectNote:"Sets the thermal quota, the consumables floor, substrate insurance, "+
+            "capital works and the transit subsidy. Whatever it appropriates, the "+
+            "benches that divide on it are the benches that have to deliver it.",
+    contested:"Every party wants the floor raised and the quota released and neither "+
+            "paid for. The government's difficulty is that the two sides of that "+
+            "sentence are the same money. The forty cannot stop the bill and they can "+
+            "hold it: a functional bench that votes the appropriation down delays the "+
+            "whole of it by three sittings, and the same benches are the ones who have "+
+            "to deliver what was just voted. A budget carried against a hostile "+
+            "functional bench is a government in trouble having won.",
     touches:[],
     clauses:[
       { id:"thermal", name:"Thermal quota released", default:"steady",

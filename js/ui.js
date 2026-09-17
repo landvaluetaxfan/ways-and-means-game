@@ -489,7 +489,8 @@ const UI = (function () {
     const id = Focus.selected("cham-bills");
     const b = (C.bills || []).find(x => x.id === id);
     if (!b) return note;
-    return b.title + " \u2014 " + (b.dualMajority ? "dual test applies" : "simple majority");
+    return b.title + " \u2014 " + (b.test === "supply" ? "supply: the elected benches vote money"
+      : b.dualMajority ? "dual test applies" : "simple majority");
   }
 
   /* ---------- cues ----------
@@ -1044,8 +1045,32 @@ const UI = (function () {
         `<li class="${esc(l.tone || "")}">${esc(l.text)}</li>`).join("")}</ul>`;
   }
 
+  /* THE RULE THE MEASURE RUNS UNDER, said before the division rather than
+     discovered in it. Three rules and no more: supply, the dual test, and
+     the ordinary majority. A supply bill is the one that cannot be stopped
+     and can be held, which is the whole of T18 and the reason the forty
+     appear in a money division at all. */
+  function billRuleHTML(b) {
+    if (b.test === "supply")
+      return `<div class="rulehead">The rule</div><div class="note">` +
+        `A money bill. The elected benches vote money, so it needs a majority of ` +
+        `the 240 and nothing else: a budget touches every subject there is, so the ` +
+        `domain test is not applied to it. The functional forty divide and are ` +
+        `recorded. They cannot stop it, and a bench that votes it down holds it ` +
+        `for three sittings — paid in the one currency that cannot be topped up.</div>`;
+    if (b.dualMajority)
+      return `<div class="rulehead">The rule</div><div class="note">` +
+        `The dual test applies. It must carry separately among the 240 elected ` +
+        `members and among the functional forty, and a functional constituency ` +
+        `whose subject the measure touches may object to it. A bill can carry ` +
+        `the House and fail the bench.</div>`;
+    return `<div class="rulehead">The rule</div><div class="note">` +
+      `A simple majority of the 240 elected members. The functional forty do not ` +
+      `divide on it.</div>`;
+  }
+
   /* WHICH WAY IT MOVES THE ARGUMENT. A bill is positioned on the same four
-     axes as the parties are, and those axes are what the fight is about —
+     axes as the parties are, and those axes are what the fight is about -
      so this is the measure's direction in the terms the rest of the game
      argues in, read off its own stance rather than written beside it. */
   const AXIS_DIR = {
@@ -1257,6 +1282,7 @@ const UI = (function () {
           (b.effectNote ? `<div class="rulehead">Effect</div><div class="note">${b.effectNote}</div>` : "") +
           billAxesHTML(b) +
           billDoesHTML(b) +
+          billRuleHTML(b) +
           /* NOT THE FORECAST. It is drawn under the plan, a hand's width to
              the right on the same screen, where it doubles as the legend for
              the seat colouring. Two copies of one number is not emphasis. */

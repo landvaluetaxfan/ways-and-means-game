@@ -599,11 +599,21 @@ another ten events, and no check in the repo can produce it.
 
 ---
 
-## T18 — [ ] When supply exists, it is `test: "supply"`
+## T18 — [x] When supply exists, it is `test: "supply"`  ·  **DONE 17 Sep**
 
-Not yours to build — `design/13` is the fiscal system and it is mine. This is
-here so that when you write the Appropriation Bill's prose you know the rule
-it runs under, because it is not the rule the other bills run under.
+The fiscal system is `design/13`'s and the rule landed with it. This is the
+prose half, and it is done: the appropriation carries `test:"supply"`, and the
+bill dossier now states **the rule it runs under** before the division rather
+than leaving it to be discovered in one — supply, the dual test, or the simple
+majority, on every bill. For a money bill the line reads: the elected benches
+vote money, so it needs a majority of the 240 and nothing else; the domain test
+is not applied to a budget, because a budget touches every subject there is;
+the functional forty divide and are recorded, cannot stop it, and a bench that
+votes it down holds it three sittings, paid in the one currency that cannot be
+topped up. The status line says `supply: the elected benches vote money`
+instead of `simple majority`, and the appropriation's own `contested` prose
+carries the T18 reading: *a budget carried against a hostile functional bench
+is a government in trouble having won.*
 
 ```js
 { id:"appropriation", test:"supply", … }
