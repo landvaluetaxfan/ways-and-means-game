@@ -292,11 +292,22 @@ three renamed parties (`fh` Freehold, `rv` Congregational Democratic Alliance,
 `upl` Uplift Alliance) are the ones whose new names imply an internal argument
 that does not exist yet in `content/parties.js`.
 
-## T8 — [ ] The unreached canon
+## T8 — [x] The unreached canon  ·  **DONE 17 Sep**
 
 `design/24` §B3 lists bible sections that no content has ever reached. The
 bible has outrun the game — that is `design/22`'s finding with numbers — and
 the cheapest fix is not to cut the bible but to spend it. Work down that list.
+
+**Landed.** Five events, all chapter two, no engine work: `the_minimum_berth`
+and `the_sublet_market` (volume, §6.10 — density, a statutory floor, the
+register a sublet would need); `the_old_judge` (the courts, §10.8 — a judge
+emulated in 2249 and reclassification as a question of fact or a branch of
+practice); `the_agricultural_deck` and `the_deck_again` (consumables, §10.1 —
+a deck at Harvest, and the second estimate that follows a deferral); and
+`the_congregations` (the CDA's fourteen rented halls, §10.9 — attestation for
+a marriage, a burial or a school place). Every one moves a number the chain
+already watches, and each of the four themes is now reachable by play rather
+than only by reading.
 
 ## T9 — [x] People, and the press  ·  **DONE 17 Sep, first pass**
 

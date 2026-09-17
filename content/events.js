@@ -1836,6 +1836,212 @@ way."`,
       when:{ flagsAbsent:["debt_assumed","debt_written_off"] },
       effects:[{ wire:"THE SUBSTRATE DEBT TERM ENDS" }],
       result:"The debt comes to term with nothing done about it." }
+  ]},
+
+/* ===========================================================
+   FOUR LOCKED THEMES NO EVENT HAD EVER REACHED (design/24 B3,
+   work order T8). Volume, the courts, consumables and the
+   congregations are each in the bible and in nothing else. No
+   engine work is needed: `station` moves any numeric field, and
+   the rest is `move`, `flag`, `undertake` and the wire.
+   =========================================================== */
+
+/* VOLUME (bible 6.10). The fundamental scarce good, and the fight about
+   it is a biological politics: density, minimum standards, subletting,
+   a berth cut into six. The ring band is dear because everyone wants to
+   be there; the low band is nearly free because nobody does. */
+{ id:"the_minimum_berth", chapter:2, weight:64, once:true,
+  title:"The minimum berth",
+  speaker:"vellan",
+  body:`The Ministry has measured the berths on the low band and a third of them
+are under the standard of 2279. Most of the shortfall is in the last six years,
+and most of it is one landlord.
+
+Vellan puts the two readings of the same figure. "Either a berth is a home and
+there is a floor under it, or it is a cubic metre with a lock on the door. The
+House has to say which, because the market will not."`,
+  choices:[
+    { label:"Set the floor, and enforce it",
+      note:"A minimum volume in law turns a lease into a home and puts the cost " +
+           "of the partition on the landlord. The low band's associations will " +
+           "carry it for you; the rentiers will price it into every let they " +
+           "still write.",
+      effects:[{ flag:"minimum_berth_laid" },
+               { move:{ "price.volume": 5 } }, { move:{ "actor.forkrentiers": -8 } },
+               { move:{ "loyalty.hul": 6 } }, { move:{ "loyalty.des": 4 } },
+               { move:{ "public_standing": 4 } },
+               { wire:"MINIMUM BERTH STANDARD LAID; LANDLORDS TO RECONFIGURE OR LOSE THE LET" }],
+      result:"The standard is on the book from the next quarter. Half the partitioned berths on the low band are now unlawful and the landlords have six months to say what they will do about it." },
+    { label:"Leave it to the lease. A tenant can read a plan",
+      note:"No new duty and no new cost. Density stays a matter between landlord " +
+           "and tenant, and the densest berths stay where the work is.",
+      effects:[{ move:{ "price.volume": -6 } }, { move:{ "actor.forkrentiers": 6 } },
+               { move:{ "consumables": -4 } }, { move:{ "loyalty.cu": -3 } },
+               { wire:"GOVERNMENT DECLINES A MINIMUM BERTH; THE PARTITION STANDS" }],
+      result:"The rentiers write the quarter's lets on the old terms. The low band's associations note who decided, and the deck crews note that the densest berths are the ones the air reaches last." }
+  ]},
+
+{ id:"the_sublet_market", chapter:2, weight:57, once:true,
+  when:{ flagsAbsent:["sublet_ruled"] },
+  title:"Under the berth",
+  speaker:"okarie",
+  body:`A berth on the ring band has been sublet eleven times in a year, and the
+eleventh tenant is the fourth to run a shift from it. The landlord has taken a
+share of each let. None of it is unlawful, because nothing addressed it.
+
+"Half my members are renting a corner of somebody else's home to sleep in,"
+Okarie says. "The other half are the landlord. I can hold the lobby on the
+first half. I cannot hold it if you make them choose."`,
+  choices:[
+    { label:"Regulate the sublet: register it, cap the share",
+      note:"Registration makes the sublet visible and the cap makes it survivable. " +
+           "It also makes every sublet a thing the Registry knows about, which " +
+           "is the part the ring band will not like.",
+      effects:[{ flag:"sublet_ruled" }, { move:{ "price.volume": 3 } },
+               { move:{ "loyalty.hul": 5 } }, { move:{ "loyalty.cu_loyalists": -4 } },
+               { move:{ "consumables": 3 } },
+               { wire:"SUBLETS TO BE REGISTERED; SHARE OF THE LET CAPPED" }],
+      result:"Registration opens next quarter. The eleventh tenant keeps the shift and the landlord keeps a smaller share of it." },
+    { label:"Set the cap and leave the registry out of it",
+      note:"The saving to the tenant without the register. The Registry has been " +
+           "the subject of a division once already this session, and nobody wants " +
+           "a second one about a room.",
+      effects:[{ flag:"sublet_ruled" }, { move:{ "loyalty.cu": 4 } },
+               { move:{ "loyalty.hul": 3 } }, { move:{ "public_standing": -2 } },
+               { wire:"SUBLET SHARE CAPPED; NO REGISTER TO BE KEPT" }],
+      result:"The cap binds and nothing else changes. The tenancy associations call it half a reform and take it." }
+  ]},
+
+/* THE COURTS (bible 10.8). Emulated judges who personally remember the
+   founding, and reclassification as a branch of practice rather than a
+   question of fact. The Tribunal exists if the player established it. */
+{ id:"the_old_judge", chapter:2, weight:71, once:true,
+  title:"The judge who remembers",
+  speaker:"fenwick",
+  body:`The presiding judge of the Tribunal was emulated in 2249 and has sat
+continuously since. She remembers the founding arguments as arguments, which is
+to say she was in the room for some of them.
+
+She has asked the Minister for Law for a reference on a narrow point: whether
+reclassification, the practice of moving a person between legal categories, is
+a question of fact for the courts or a branch of professional practice for the
+licensing boards.
+
+"The boards certify the work," Fenwick says. "She is asking who owns the
+question. If it is the boards, the courts will not see a reclassification case
+again."`,
+  choices:[
+    { label:"Refer it to the boards. They know the practice",
+      note:"A reference to the boards keeps the question where the expertise is " +
+           "and keeps the courts out of a technical argument. It also hands the " +
+           "boards the power to decide what a person is.",
+      effects:[{ flag:"reclassification_to_boards" },
+               { move:{ "actor.lb_legal": -6 } },
+               { move:{ "loyalty.gb": 6 } }, { move:{ "loyalty.rv": -4 } },
+               { move:{ "public_standing": -2 } },
+               { wire:"RECLASSIFICATION REFERRED TO THE LICENSING BOARDS" }],
+      result:"The reference goes to the boards, which will report in their own time. The judge notes the answer and does not comment on it." },
+    { label:"It is a question of fact, and the courts will hear it",
+      note:"The courts keep the question. The boards lose it, and the Guild will " +
+           "read the reference as the government saying so.",
+      effects:[{ flag:"reclassification_to_courts" },
+               { move:{ "actor.lb_legal": 7 } }, { move:{ "rel.gb_chair": -5 } },
+               { move:{ "loyalty.rv": 5 } }, { move:{ "loyalty.gb": -5 } },
+               { wire:"RECLASSIFICATION IS A QUESTION OF FACT FOR THE COURTS" }],
+      result:"The judge has her jurisdiction and the boards have a grievance. The first reclassification case is listed for next session." }
+  ]},
+
+/* CONSUMABLES (bible 10.1). The agricultural decks, "the emotional centre of
+   any station", and the material floor one of the six scalars is named for. */
+{ id:"the_agricultural_deck", chapter:2, weight:66, once:true,
+  title:"The deck at Harvest",
+  speaker:null,
+  body:`The number one agricultural deck at Harvest has a root-rot in the protein
+vats that the station has been treating for a month without saying so. The
+treatment is holding. The replacement is a keel-level refit that takes the deck
+out of production for eleven weeks.
+
+The station's closing ratio is 0.44. Every station in the middle band is
+watching what the Commonwealth does about a deck it cannot feed itself from.`,
+  choices:[
+    { label:"Fund the refit and carry the station's shortfall",
+      note:"Eleven weeks of buying in what the deck cannot grow, paid out of the " +
+           "same vote that funds everything else. The middle band will read it " +
+           "as the Commonwealth being willing to carry a deck.",
+      effects:[{ move:{ "solvency": -7000 } }, { move:{ "consumables": 6 } },
+               { station:{ wickstead:{ closure: 0.05 } } },
+               { move:{ "public_standing": 5 } },
+               { wire:"COMMONWEALTH FUNDS HARVEST DECK REFIT; SHORTFALL CARRIED" }],
+      result:"The refit is funded and the deck comes back in three months better than it went in. The station's ratio rises with it, which is the part that will be read on the other forty." },
+    { label:"Treat it where it stands and say nothing",
+      note:"A holding treatment and a quiet quarter. Cheaper now, and the deck " +
+           "is one bad month from the same emergency with a larger bill.",
+      effects:[{ move:{ "consumables": -5 } }, { move:{ "solvency": 2000 } },
+               { move:{ "loyalty.hul": -4 } },
+               { queue:[{ event:"the_deck_again", after:5 }] },
+               { wire:"HARVEST DECK HELD WITH TREATMENT; NO REFIT FUNDED" }],
+      result:"The treatment holds for the quarter. The station's engineers file a second estimate and file it quietly." }
+  ]},
+
+{ id:"the_deck_again", queuedOnly:true, once:true,
+  title:"The deck again",
+  speaker:null,
+  body:`The protein vats at Harvest have failed. The station is buying in the
+whole of its protein from the low band, and the low band has noticed what its
+own prices are doing.
+
+The second estimate is larger than the first by the cost of the quarter spent
+treating vats that were going to fail.`,
+  choices:[
+    { label:"Fund the refit now, at the second estimate",
+      effects:[{ move:{ "solvency": -11000 } }, { move:{ "consumables": 5 } },
+               { station:{ wickstead:{ closure: 0.04 } } },
+               { move:{ "public_standing": 2 } },
+               { wire:"HARVEST REFIT FUNDED AT THE SECOND ESTIMATE" }],
+      result:"The deck comes back. Nothing about the bill is read as a triumph, which the station expected." },
+    { label:"Carry the shortfall and defer the refit again",
+      effects:[{ move:{ "consumables": -8 } }, { station:{ wickstead:{ suspended: 900 } } },
+               { move:{ "public_standing": -6 } }, { move:{ "loyalty.hul": -8 } },
+               { wire:"HARVEST BUYS IN ALL PROTEIN; DECK REFIT DEFERRED" }],
+      result:"Nine hundred of the station's residents come off the deck's payroll and onto the register. The middle band draws its conclusion." }
+  ]},
+
+/* CONGREGATIONS (bible 10.9, LOCKED and thin: the section that named the
+   CDA). A cross-confessional bloc of non-recognisers, economically left and
+   culturally immovable, whose objection is to reclassification itself. */
+{ id:"the_congregations", chapter:2, weight:60, once:true,
+  title:"The rented hall",
+  speaker:"marin",
+  body:`The Congregational Democratic Alliance does not meet in a cathedral. It
+meets in fourteen rented halls across the low and middle bands, and its
+congregations are not one confession. They are the people who do not recognise
+a reclassification, in the way that a pacifist does not recognise a war.
+
+They have sent Marin with one question, in writing. Whether the Commonwealth
+intends to require an attestation of the register for a marriage, a burial or a
+school place.
+
+"It is not a franchise question to them," she says. "It is a question about
+what a body is, and they will lose an election before they will answer it your
+way."`,
+  choices:[
+    { label:"Say no. The register is not required for any of the three",
+      note:"A written answer that costs nothing and buys the congregations " +
+           "without touching the bill. It commits the government on a point the " +
+           "Registry has not conceded.",
+      effects:[{ flag:"congregations_answered" },
+               { move:{ "loyalty.rv": 9 } }, { move:{ "actor.lb_legal": -3 } },
+               { move:{ "public_standing": 3 } },
+               { wire:"REGISTER NOT REQUIRED FOR MARRIAGE, BURIAL OR SCHOOLING" }],
+      result:"Marin takes the answer to the fourteen halls. The Registry notes, without objecting, that the question is not the law's to settle for long." },
+    { label:"Leave it to the register. Attestation is attestation",
+      note:"The Registry's position, said out loud. The congregations lose the " +
+           "answer and gain a grievance they are extremely good at keeping.",
+      effects:[{ flag:"congregations_refused" },
+               { move:{ "loyalty.rv": -12 } }, { move:{ "loyalty.psa": 4 } },
+               { move:{ "actor.lb_legal": 4 } }, { move:{ "public_standing": -4 } },
+               { wire:"GOVERNMENT LEAVES THE SACRAMENTS TO THE REGISTER" }],
+      result:"The congregations are told that the register applies. Fourteen halls hear it on the same evening, and the CDA's conference has a reason to meet early." }
   ]}
 
 ];
