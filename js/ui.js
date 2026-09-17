@@ -130,12 +130,17 @@ const UI = (function () {
      a column of its own, so nothing is ever covered. Engines that can bevel
      keep their native bar, which already matches. The track only lifts when
      the body actually overflows. */
-  function decorateScrollers() {
+  function decorateScrollers(root, force) {
     if (typeof document === "undefined" || typeof window === "undefined") return;
+    root = root || document;
     let bevel = false;
     try { bevel = !!(window.CSS && CSS.supports && CSS.supports("selector(::-webkit-scrollbar)")); }
     catch (e) { bevel = false; }
-    if (bevel) return;
+    /* FORCED, the element gets the drawn bar on any engine. The division
+       list in the caption is the one scroller that is built after boot and
+       inside a control the terminal does not otherwise wrap, so it asked for
+       the drawn bar by name rather than inheriting the engine's own. */
+    if (bevel && !force) return;
     /* A MARKER CLASS, NOT A LIST OF PANELS.
 
        This named two orbit panels by selector, so every scrolling body
@@ -143,7 +148,8 @@ const UI = (function () {
        one — the hardcoded-list fault this repo has been bitten by twice
        already. Anything that scrolls inside the terminal's chrome now
        says `.scrolls` in the markup and gets the drawn bar for free. */
-    document.querySelectorAll(".scrolls").forEach(box => {
+    const sel = force ? ".scrolls.forcebar" : ".scrolls";
+    root.querySelectorAll(sel).forEach(box => {
       if (box._sb) return;
       box._sb = true;
       const wrap = document.createElement("div");
@@ -1091,6 +1097,11 @@ const UI = (function () {
      readout — a player consults it when they want to know who, and the
      rest of the time it is one line saying a division happened. */
   const dvlOpen = {};      /* which division lists the player has open */
+  /* HOW THE LIST IS ORDERED. Party is the roll's own order and the default;
+     by vote is the shape of the result, which is the other thing a player
+     opens a division to see. The choice is the player's and it holds for
+     every list, so the record reads the same way wherever it is opened. */
+  let dvlSort = "party";
 
   function divisionList(id, inCaption) {
     const bs = bsOf(id);
@@ -1100,29 +1111,65 @@ const UI = (function () {
       (p.popular.length + p.functional.length) > 0);
     if (!parties.length) return "";
 
-    /* THE ROLL CALL, KEPT. The count filed the House in by party and showed
-       every member a chip; the record is the SAME PAGE with the same chips,
-       party by party, read at leisure — the vote is the chip's colour and
-       the tally is at the head of the bench. It used to re-sort the House
-       into Ayes and Noes and print the names as a run of text, so the one
-       screen that showed you the division was the one screen you could not
-       read it on: the names ran off the edge, and the chips' hover — the
-       constituency, the register reference, the list seat — was gone. */
-    const body = parties.map(p => {
-      const all = p.popular.concat(p.functional);
-      const cnt = v => all.filter(m => m.vote === v).length;
-      const parts = [];
-      ["aye", "nay", "abstain", "absent"].forEach(v => {
-        const n = cnt(v);
-        if (n) parts.push(n + " " + (v === "absent" ? "away" : v));
-      });
-      return `<div class="dvl-p"><div class="lroll-h"><b>${esc(pn(p.party))}</b>` +
-        `<span>${esc(parts.join(" \u00b7 "))}</span></div>` +
-        `<div class="lroll-g">${rollChips(all)}</div></div>`;
-    }).join("");
+    /* EVERY MEMBER, WITH THE PARTY THAT RETURNED THEM. The roll groups by
+       party and carries the party on the group; the vote order needs it on
+       the member, or the benches vanish from the one view that is about
+       how the House divided. */
+    const house = [];
+    parties.forEach(p => p.popular.concat(p.functional).forEach(m =>
+      house.push(Object.assign({}, m, { party: p.party }))));
+
+    const head = (label, sub) =>
+      `<div class="lroll-h"><b>${label}</b><span>${sub}</span></div>`;
+
+    let body;
+    if (dvlSort === "vote") {
+      const TITLE = { aye: "Ayes", nay: "Noes",
+                      abstain: "Abstentions", absent: "No vote recorded" };
+      body = ["aye", "nay", "abstain", "absent"].map(v => {
+        const members = house.filter(m => m.vote === v);
+        if (!members.length) return "";
+        return `<div class="dvl-p">` +
+          head(TITLE[v], members.length + (members.length === 1 ? " member" : " members")) +
+          `<div class="lroll-g">${rollChips(members)}</div></div>`;
+      }).join("");
+    } else {
+      /* THE ROLL CALL, KEPT. The count filed the House in by party and showed
+         every member a chip; the record is the SAME PAGE with the same chips,
+         party by party, read at leisure — the vote is the chip's colour and
+         the tally is at the head of the bench. It used to re-sort the House
+         into Ayes and Noes and print the names as a run of text, so the one
+         screen that showed you the division was the one screen you could not
+         read it on: the names ran off the edge, and the chips' hover — the
+         constituency, the register reference, the list seat — was gone. */
+      body = parties.map(p => {
+        const all = p.popular.concat(p.functional);
+        const cnt = v => all.filter(m => m.vote === v).length;
+        const parts = [];
+        ["aye", "nay", "abstain", "absent"].forEach(v => {
+          const n = cnt(v);
+          if (n) parts.push(n + " " + (v === "absent" ? "away" : v));
+        });
+        return `<div class="dvl-p">` +
+          head(esc(pn(p.party)), esc(parts.join(" \u00b7 "))) +
+          `<div class="lroll-g">${rollChips(all)}</div></div>`;
+      }).join("");
+    }
+
+    /* THE ORDER IS A CONTROL, not a setting buried elsewhere: it changes what
+       the page in front of the player says and it is the only thing on the
+       page that does. Two radios, the same construction the chamber's view
+       controls use. */
+    const sortCtl = `<div class="dvl-sort" role="radiogroup" aria-label="Order of the division list">` +
+      `<span class="dvl-sort-l">Order</span>` +
+      `<button class="chv rad${dvlSort === "party" ? " on" : ""}" role="radio" ` +
+        `aria-checked="${dvlSort === "party"}" data-dvlsort="party">By party</button>` +
+      `<button class="chv rad${dvlSort === "vote" ? " on" : ""}" role="radio" ` +
+        `aria-checked="${dvlSort === "vote"}" data-dvlsort="vote">By vote</button>` +
+      `</div>`;
 
     const d = bs.lastDivision;
-    const total = parties.reduce((n, p) => n + p.popular.length + p.functional.length, 0);
+    const total = house.length;
     /* IT STAYS OPEN. The first attempt marked it open only on the render
        that followed the division, so the next redraw — and a redraw
        happens for any reason at all — replaced the node without the
@@ -1143,15 +1190,33 @@ const UI = (function () {
     /* In the caption it is the point of the screen, so it is open and it
        does not touch the remembered state of the copy in the column. */
     const open = inCaption ? true : dvlOpen[key];
+    /* THE CAPTION'S COPY WEARS ITS OWN BAR. It is the one division list with
+       a bounded height and its own overflow, and it is built after boot, so
+       it asks for the terminal's drawn scrollbar by name (`.forcebar`) and
+       is decorated when it is inserted. */
     return `<details class="dvl${inCaption ? " incap" : ""}"` +
       `${inCaption ? "" : ` data-dvl="${esc(key)}"`}` +
       `${open ? " open" : ""}><summary><b>Division list</b>` +
       `<span>sitting ${d.at} &middot; ${d.carries ? "carried" : "not carried"} ` +
       `&middot; ${total} members</span></summary>` +
-      `<div class="dvl-b">` + body +
+      `<div class="dvl-b${inCaption ? " scrolls forcebar" : ""}">` + sortCtl + body +
       `<p class="dvl-f">Party by party, as the roll was called. Green is an
        aye, red a no, amber an abstention and a dashed edge means the member
        did not vote; hover a name for the seat it was cast for.</p></div></details>`;
+  }
+
+  /* The order radios, wired wherever the list was just inserted. `rerender`
+     is the caller's own way of drawing the list again — the caption redraws
+     its own node, the whip panel redraws the chamber. */
+  function wireDvl(root, rerender) {
+    if (!root) return;
+    root.querySelectorAll("[data-dvlsort]").forEach(b =>
+      b.addEventListener("click", () => {
+        if (dvlSort === b.dataset.dvlsort) return;
+        dvlSort = b.dataset.dvlsort;
+        cue("click");
+        rerender();
+      }));
   }
 
   function drawBill(id) {
@@ -1805,13 +1870,18 @@ const UI = (function () {
     const step = Math.min(26, 640 / Math.max(1, all.length));
     return all.map((m, i) => {
       const d = ` style="animation-delay:${Math.round(i * step)}ms"`;
+      /* THE PARTY IS NAMED WHEN THE CHIP IS READ OUT OF ITS BENCH. Grouped by
+         vote the chips no longer sit under a party heading, so the tip is the
+         only place the party survives — and a member's party is half of who
+         they are in a division. */
+      const who0 = m.party ? pn(m.party) + ". " : "";
       /* A LIST SEAT IS NAMED, and the name is a placeholder. The tip says
          so, and says what the seat is, because the mandate really is the
          party's even though the member is a person. */
       if (m.tier === "list")
         return `<i class="lchip list ${m.vote}"${d} ` +
           `data-tip-title="${esc(m.name || "List seat")}" ` +
-          `data-tip-body="List seat ${m.listIndex || ""}. A closed list is the ` +
+          `data-tip-body="${esc(who0)}List seat ${m.listIndex || ""}. A closed list is the ` +
           `party's: the member sits and votes, but the mandate belongs to the ` +
           `slate and not to a place. Voted ${m.vote === "absent" ? "not at all" : m.vote}.">` +
           `${esc(String(m.name || "").split(/\s+/).pop())}</i>`;
@@ -1821,7 +1891,7 @@ const UI = (function () {
         ? (m.ref ? m.ref + " \u00b7 " + m.seat : m.seat) : m.seat;
       return `<i class="lchip ${m.vote}${m.payroll ? " pay" : ""}"${d} ` +
         `data-tip-title="${esc(who)}" ` +
-        `data-tip-body="${esc(where || "")}. ` +
+        `data-tip-body="${esc(who0 + (where || ""))}. ` +
         `${m.office ? "Payroll vote \u2014 a minister who votes against the line has resigned. " : ""}` +
         `Voted ${m.vote === "absent" ? "not at all" : m.vote}.">${esc(last)}</i>`;
     }).join("");
@@ -2011,8 +2081,13 @@ const UI = (function () {
            it. */
         const lst = document.getElementById("dv-list");
         if (lst) {
-          lst.innerHTML = divisionList(r0.bill, true);
-          if (typeof Tips !== "undefined" && Tips.within) Tips.within("#dv-list ");
+          const render = () => {
+            lst.innerHTML = divisionList(r0.bill, true);
+            wireDvl(lst, render);
+            decorateScrollers(lst, true);
+            if (typeof Tips !== "undefined" && Tips.within) Tips.within("#dv-list ");
+          };
+          render();
         }
         /* SAID THE WAY IT IS SAID. */
         setStatus("The Ayes to the right: " + P.aye + ". The Noes to the left: " +
@@ -3406,6 +3481,8 @@ const UI = (function () {
     if (hdr) hdr.textContent = b.title;
     el.innerHTML = html;
     wireWhipbars(el, id, () => { drawChamber(); drawBill(id); drawStatus(); });
+    /* The record's own order control, redrawing the chamber it sits in. */
+    wireDvl(el, () => { drawChamber(); drawBill(id); });
   }
 
   /* One table, drawn from whichever state the House is in. */

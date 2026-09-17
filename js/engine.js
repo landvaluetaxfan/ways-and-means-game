@@ -1041,9 +1041,31 @@ const Engine = (function () {
     if (s && typeof s === "object" && (s.popular != null || s.functional != null))
       s = (tier === "functional" ? s.functional : s.popular);
     if (s === "abstain") return "abstain";
+    /* A party may abstain AND lose members to absence: `{abstain:true,
+       absent:n}`. The abstention is still whole — it is a line — and the
+       absent are not counted as abstentions (stanceAbsent takes them out
+       first). */
+    if (s && typeof s === "object" && s.abstain) return "abstain";
     if (s === "against") return "against";
     if (s === "for") return "for";
     return "mixed";          /* {for:n}, {forPct}, {free} — a split bench */
+  }
+
+  /* A MEMBER WHO DID NOT VOTE. The fourth thing a seat can be, and the one
+     the model had no way for content to say: pairing produced absences and
+     nothing else did, so a bill could never state that a bench's members
+     were away. A stance may now carry `absent` (seats) or `absentPct`, the
+     same shape as `for`/`forPct`. It is additive and defaults to nought, so
+     every number in the bible is the number it was. */
+  function stanceAbsent(st, C, bill, partyId, tier, seats) {
+    let s = bill.stances && bill.stances[partyId];
+    if (s == null) s = inferStance(st, C, bill, partyId);
+    if (s && typeof s === "object" && (s.popular != null || s.functional != null))
+      s = (tier === "functional" ? s.functional : s.popular);
+    if (!s || typeof s !== "object") return 0;
+    if (s.absentPct != null) return Math.max(0, Math.min(seats, Math.round(seats * s.absentPct)));
+    if (s.absent != null) return Math.max(0, Math.min(seats, s.absent));
+    return 0;
   }
 
   function resolveStance(st, C, bill, partyId, tier, detail) {
@@ -1712,15 +1734,22 @@ const Engine = (function () {
       const pKind = stanceKind(st, C, bill, pid, "popular");
       const fKind = stanceKind(st, C, bill, pid, "functional");
       const pSeats = partyPopular(st, pid), fSeats = partyFunctional(st, pid);
-      const pAbs = pKind === "abstain" ? Math.max(0, pSeats - pAye) : 0;
-      const fAbs = fKind === "abstain" ? Math.max(0, fSeats - fAye) : 0;
+      /* A MEMBER WHO DID NOT VOTE, declared by content and defaulting to
+         nought. It comes out of the bench before abstention does, so a
+         party that abstains and loses members to absence still reads
+         honestly: the absent are not counted as abstentions. */
+      const pAway = stanceAbsent(st, C, bill, pid, "popular", pSeats);
+      const fAway = stanceAbsent(st, C, bill, pid, "functional", fSeats);
+      const pAbs = pKind === "abstain" ? Math.max(0, pSeats - pAye - pAway) : 0;
+      const fAbs = fKind === "abstain" ? Math.max(0, fSeats - fAye - fAway) : 0;
       rows.push({
         party: pid,
         popularSeats: pSeats, popularAye: pAye, popularWhipped: wp.popular || 0,
-        popularAbstain: pAbs, popularNay: Math.max(0, pSeats - pAye - pAbs),
-        popularAbsent: 0, popularKind: pKind,
+        popularAbstain: pAbs, popularNay: Math.max(0, pSeats - pAye - pAbs - pAway),
+        popularAbsent: pAway, popularPaired: 0, popularKind: pKind,
         functionalSeats: fSeats, functionalAye: fAye, functionalWhipped: wp.functional || 0,
-        functionalAbstain: fAbs, functionalNay: Math.max(0, fSeats - fAye - fAbs), functionalKind: fKind,
+        functionalAbstain: fAbs, functionalNay: Math.max(0, fSeats - fAye - fAbs - fAway),
+        functionalAbsent: fAway, functionalKind: fKind,
         /* Present only where the count came from the currents. Whipped seats
            are deliberately excluded — the whip buys members, not factions,
            until design/07 says otherwise. */
@@ -1740,12 +1769,14 @@ const Engine = (function () {
       let left = lob;
       rows.forEach(r => {
         if (left <= 0) return;
-        const spare = Math.max(0, r.functionalSeats - r.functionalAye - (r.functionalAbstain || 0));
+        const spare = Math.max(0, r.functionalSeats - r.functionalAye -
+                              (r.functionalAbstain || 0) - (r.functionalAbsent || 0));
         const take = Math.min(spare, left);
         if (!take) return;
         r.functionalAye += take;
         r.functionalLobbied = (r.functionalLobbied || 0) + take;
-        r.functionalNay = Math.max(0, r.functionalSeats - r.functionalAye - (r.functionalAbstain || 0));
+        r.functionalNay = Math.max(0, r.functionalSeats - r.functionalAye -
+          (r.functionalAbstain || 0) - (r.functionalAbsent || 0));
         funcAye += take; left -= take;
       });
     }
@@ -1775,7 +1806,9 @@ const Engine = (function () {
         mine ? mine.popularAye : 0, other ? other.popularNay : 0));
       if (!n || !other || !mine) return;
       mine.popularAye -= n;  mine.popularAbsent = (mine.popularAbsent || 0) + n;
+      mine.popularPaired = (mine.popularPaired || 0) + n;
       other.popularNay -= n; other.popularAbsent = (other.popularAbsent || 0) + n;
+      other.popularPaired = (other.popularPaired || 0) + n;
       popAye -= n;
     });
     const popCarriesAfter = popAye >= popNeed;
@@ -1799,10 +1832,10 @@ const Engine = (function () {
       bill: billId, dual: dual, rows: rows, domain: domain,
       popular:   { aye: popAye,  total: popTotal,  need: popNeed,  carries: popCarriesAfter,
                    abstain: sum("popularAbstain"), nay: sum("popularNay"),
-                   absent: sum("popularAbsent"), paired: sum("popularAbsent") },
+                   absent: sum("popularAbsent"), paired: sum("popularPaired") },
       functional:{ aye: funcAye, total: funcTotal, need: funcNeed, carries: funcCarries,
                    abstain: sum("functionalAbstain"), nay: sum("functionalNay"),
-                   absent: 0 },
+                   absent: sum("functionalAbsent") },
       /* Supply answers to the elected benches and to nothing else. */
       carries: (isSupply(bill) ? popCarriesAfter
                 : (dual ? (popCarriesAfter && funcCarries) : popCarriesAfter)) &&

@@ -1520,6 +1520,44 @@ console.log("\nTHE THREE-WAY COUNT (aye, nay, abstain):");
   ok("so abstaining costs the government exactly what opposing cost it",
      d2.popular.carries === d.popular.carries);
 
+  /* A MEMBER WHO DID NOT VOTE, declared by content. The fourth thing a seat
+     can be, and the model had no way for a bill to say it: pairing produced
+     absences and nothing else did. It comes out of the bench before
+     abstention does, and it is neither an aye nor an abstention. */
+  const awayParty = d.rows.find(r => r.popularKind === "against" && r.popularSeats > 3);
+  const c3 = JSON.parse(JSON.stringify(CONTENT.billById.divergence));
+  c3.stances[awayParty.party] = { absent: 2 };
+  const d3 = Engine.division(st2, Object.assign({}, CONTENT,
+    { billById: Object.assign({}, CONTENT.billById, { divergence: c3 }) }), "divergence");
+  const row3 = d3.rows.find(r => r.party === awayParty.party);
+  ok("a bill can put members down as not voting",
+     row3.popularAbsent === 2 && row3.popularNay === row3.popularSeats - 2,
+     awayParty.party + ": " + row3.popularAbsent + " away of " + row3.popularSeats);
+  ok("and an absence is not an aye and not an abstention",
+     d3.popular.aye === d.popular.aye && row3.popularAbstain === 0);
+  ok("and the four categories account for every seat",
+     d3.popular.aye + d3.popular.nay + d3.popular.abstain + d3.popular.absent === d3.popular.total,
+     d3.popular.aye + "+" + d3.popular.nay + "+" + d3.popular.abstain + "+" + d3.popular.absent);
+
+  /* A party that abstains whole and is short of members on the day. */
+  const c4 = JSON.parse(JSON.stringify(CONTENT.billById.divergence));
+  c4.stances[awayParty.party] = { abstain: true, absent: 3 };
+  const d4 = Engine.division(st2, Object.assign({}, CONTENT,
+    { billById: Object.assign({}, CONTENT.billById, { divergence: c4 }) }), "divergence");
+  const row4 = d4.rows.find(r => r.party === awayParty.party);
+  ok("a party can abstain and be short of members",
+     row4.popularAbstain === row4.popularSeats - 3 && row4.popularAbsent === 3 &&
+     row4.popularNay === 0,
+     row4.popularAbstain + " abstain, " + row4.popularAbsent + " away of " + row4.popularSeats);
+
+  /* AND THE SHIPPED BILLS EXERCISE IT, so a division the player can call
+     shows all four outcomes and the record's order control has something to
+     order. */
+  const withAway = CONTENT.bills.filter(b =>
+    Engine.division(st2, CONTENT, b.id).popular.absent > 0).map(b => b.id);
+  ok("the current bills put members down as not voting",
+     withAway.length > 0, withAway.join(", ") || "none");
+
   /* And the estimate must not disagree with its own breakdown. */
   const rep = Engine.reported(st2, CONTENT, "divergence");
   ok("the reported count accounts for every seat too",

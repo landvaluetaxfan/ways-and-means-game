@@ -17,6 +17,13 @@
             honest objection. Both cases, neither written to win.
  `stances` overrides axis inference per party.
    Stance forms: "for" | "against" | "abstain" | {for:n} | {forPct:0..1} | {free:true}
+   An object may also carry `absent:n` or `absentPct:0..1`, which puts that
+   many of the bench down as members who did not vote. It is the fourth
+   thing a seat can be (pairing produces it too), it comes out of the bench
+   before abstention does, and it defaults to nought, so a bill that says
+   nothing about it counts exactly as it always did.
+   {abstain:true, absent:n} is a party that abstains whole and loses n of
+   its members to absence on the way.
    dualMajority:true means it must carry separately on both benches. */
 
 const BILLS = [
@@ -193,7 +200,7 @@ const BILLS = [
                  argued with, and the fork-rentier money that pays for the other
                  wing does not. The leadership can count, and it would lose, so
                  the party declines to vote rather than lose in public. */
-              cl:"abstain", sc:{forPct:0.35} },
+              cl:{abstain:true, absent:2}, sc:{forPct:0.35} },
     onPass:[{law:{shed_order_authority:"statute"}},{move:{"public_standing":6}}],
     onFail:[{move:{"loyalty.cu_halloran":-8}}] },
 
@@ -260,8 +267,9 @@ const BILLS = [
                  abstention is how that distinction is said out loud: it will
                  not vote to rank one kind of person above another, and it will
                  not vote with the opposition to bring down an administration
-                 it is keeping alive. */
-              upl:"abstain" },
+                   it is keeping alive. Two of its members are away and are
+                   not counted as abstentions. */
+              upl:{abstain:true, absent:2} },
     onPass:[{move:{"loyalty.rv":18}},{move:{"loyalty.psa":-14}},
             {wire:"CONTINUITY REGISTER ESTABLISHED; SUBSTRATE LEFT VOTES AGAINST GOVERNMENT BILL"}],
     onFail:[{move:{"loyalty.rv":-16}}] },

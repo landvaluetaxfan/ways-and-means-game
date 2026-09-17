@@ -2473,6 +2473,14 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .dvl.incap .dvl-b{max-height:210px;overflow:auto;}
 .dvl.incap{border-top:0;margin-top:6px;}
 
+/* The order control: two radios, the construction the chamber's own view
+   controls use, so the record's order reads as the same kind of switch. */
+.dvl-sort{display:flex;align-items:center;margin:6px 0 7px;}
+.dvl-sort-l{font-family:var(--f-ui);font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-soft);margin-right:7px;}
+.dvl-sort .chv + .chv{margin-left:-1px;}
+.dvl-sort .chv.on{position:relative;z-index:1;}
+
 /* The blanks in a bill, drawn as clauses. Not a fiscal panel. */
 .clsec{margin-bottom:8px;}
 .clsec h4{margin:0 0 5px;font-family:var(--f-ui);font-size:10.5px;
