@@ -56,7 +56,7 @@ const BILLS = [
       geo: { popular:{for:3},  functional:"against" },
       cl:  { popular:{for:12}, functional:"against" }, /* expansionist in principle, cheap fork-labour in practice */
       sc:  { popular:{for:6},  functional:"against" },
-      hul:"against", fh:"against", gb:"against", ind:"against", des:"against"
+      hul:"against", fh:"against", gb:"against", des:"against"
     },
     onPass:[{law:{divergence_threshold_hours:40}},
             {wire:"DIVERGENCE THRESHOLD CUT TO FORTY HOURS; CENSUS BUREAU BEGINS REGISTRATION"}],
@@ -154,7 +154,7 @@ const BILLS = [
         ] } ],
     stances:{ cu:"for", psa:"for", rv:"for", upl:{forPct:0.5}, geo:{forPct:0.5},
               cl:"against", sc:{forPct:0.3}, hul:{forPct:0.4}, fh:"against",
-              gb:{forPct:0.3}, des:{forPct:0.4}, ind:{forPct:0.5} },
+              gb:{forPct:0.3}, des:{forPct:0.4} },
     onPass:[{ flag:"supply_granted" }],
     onFail:[{ flag:"supply_refused" }] },
   { id:"thermal2", ref:"HC 4/094", stage:"second_reading", owner:"cu",

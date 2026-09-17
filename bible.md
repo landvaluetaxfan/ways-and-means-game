@@ -1705,7 +1705,7 @@ Corporate seats are controlled by whoever controls the companies (§4.6.2).
 **Divergence Threshold (Amendment) Bill, HC 4/117.** Committee stage.
 - Current: 168 subjective hours. Proposed: 40.
 - Census effect: +1.9M legal persons estimated. Redistribution in six districts.
-- Popular division forecast: 128 of 240, needs 121. **Carries.**
+- Popular division forecast: 130 of 240, needs 121. **Carries.**
 - Functional division forecast: 12 of 40, needs 21. **Fails.**
 - The Guild Bench will not divide with the government on any measure touching licensure. The whips do not believe money will move them.
 

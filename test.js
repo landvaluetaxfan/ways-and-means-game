@@ -32,7 +32,7 @@ expect("majority", Engine.majority(st), 141);
 expect("confidence", Engine.confidence(st), 141);
 expect("popular total", d.popular.total, 240);
 expect("functional total", d.functional.total, 40);
-expect("popular aye", d.popular.aye, 128);
+expect("popular aye", d.popular.aye, 130);
 expect("functional aye", d.functional.aye, 12);
 expect("popular need", d.popular.need, 121);
 expect("functional need", d.functional.need, 21);
@@ -591,8 +591,10 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
    of the project and NOTHING READ IT — the four factions inside the
    governing party were a loyalty dial and a paragraph in the
    Concordance, and a division treated all eighty-two members as one
-   voice. The bible's 128 is unaffected and asserted above, because that
-   forecast is stated in content rather than derived.
+   voice. The forecast is stated in content and asserted above, and it is
+   130 rather than 128 since T14: the six independents have no caucus line
+   any more, so the two on the station question who agree with the bill
+   count themselves in.
    --------------------------------------------------------------------- */
 console.log("\nCURRENTS IN A DIVISION:");
 (function () {
@@ -1571,6 +1573,43 @@ console.log("\nTHE THREE-WAY COUNT (aye, nay, abstain):");
      rep.popular.aye + "+" + rep.popular.nay + "+" + rep.popular.abstain);
   ok("and its rows sum to its own benches, not to the true ones",
      rep.rows.reduce((n, r) => n + r.popularAye, 0) === rep.popular.aye);
+
+  /* THE INDEPENDENTS ARE SIX MEMBERS, NOT A PARTY (T14, design/26 #15). Six
+     currents, one per seat, so a bill can move some of them and not others;
+     a party with no axes has no line and votes free; and the localist bloc
+     on the station question is OBSERVED from the rows rather than declared
+     anywhere. */
+  const indC = (CONTENT.currents || []).filter(c => c.party === "ind");
+  ok("the independents are six members and six currents",
+     indC.length === 6 &&
+     indC.reduce((n, c) => n + c.members, 0) === CONTENT.partyById.ind.seats.district,
+     indC.length + " currents, " + CONTENT.partyById.ind.seats.district + " seats");
+
+  const probe = billId => ({ id: billId, title: "probe", ref: "",
+    axes: { ownership: null, personhood: null, sovereignty: "station", closure: "closurist" },
+    stances: {} });
+  const withBill = (id, b) => Object.assign({}, CONTENT,
+    { billById: Object.assign({}, CONTENT.billById, { [id]: b }) });
+  const indRow = b => Engine.division(st2, withBill(b.id, b), b.id).rows.find(r => r.party === "ind");
+  const byCur = r => (r.benches || []).reduce((m, x) => (m[x.id] = x, m), {});
+  const bloc = ["ind_kettering", "ind_castellan", "ind_merrick"];
+  const rest = ["ind_grimsby", "ind_kirilenko", "ind_vasquez"];
+  const ayes = (m, ids) => ids.reduce((n, id) => n + ((m[id] || {}).popularAye || 0), 0);
+
+  const station = probe("probe_ind_station");
+  const mStation = byCur(indRow(station));
+  ok("the station bloc is the three on the station question",
+     bloc.every(id => mStation[id]), Object.keys(mStation).join(", "));
+  ok("and on that question it carries more of itself than the rest do",
+     ayes(mStation, bloc) > ayes(mStation, rest),
+     "bloc " + ayes(mStation, bloc) + " of 3, rest " + ayes(mStation, rest) + " of 3");
+
+  const federal = Object.assign({}, probe("probe_ind_federal"),
+    { axes: { ownership: null, personhood: null, sovereignty: "federal", closure: "integrationist" } });
+  const mFed = byCur(indRow(federal));
+  ok("and on the federal question the rest outvote the bloc",
+     ayes(mFed, rest) > ayes(mFed, bloc),
+     "bloc " + ayes(mFed, bloc) + ", rest " + ayes(mFed, rest));
 
   if (bad) { console.log("\n" + bad + " COUNT FAILURES"); process.exitCode = 1; }
 })();

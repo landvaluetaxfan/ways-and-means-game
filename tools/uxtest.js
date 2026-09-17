@@ -1890,11 +1890,11 @@ try {
     ok("composition carries the forecast when a measure is named",
        !!bd && />Aye</.test(bd.innerHTML));
     const bench = bd.querySelectorAll("tr.bench");
-    /* T7 gave three more parties currents, so the rows under them are
-       drawn here too: the expected count is read off the content, not
-       typed a second time. */
-    const expectedB = w.eval("(CONTENT.currents || []).filter(c => " +
-      "(CONTENT.billById.thermal2.stances || {})[c.party] === 'for').length");
+    /* T7 gave three more parties currents, and T14 made the independents a
+       free bench, so the expected count is read off the ENGINE's own
+       division rather than typed here. */
+    const expectedB = w.eval("(function(){ var d = Engine.division(UI.state(), CONTENT, 'thermal2');" +
+      " return d.rows.reduce(function (n, r) { return n + ((r.benches || []).length); }, 0); })()");
     ok("which lists the factions under their party", bench.length === expectedB,
        bench.length + " current rows");
     ok("named, not keyed",
@@ -1952,10 +1952,14 @@ try {
     ok("and the forecast is drawn once, under the plan it explains",
        w.document.querySelectorAll("#bill-detail .dmbar").length === 0);
 
-    /* A fallen measure keeps its row and loses the whip. */
+    /* A measure whose counts are stated draws rows only for the benches
+       that are actually free to move. Since T14 that is the independents,
+       whose six currents vote on their own axes and nothing else. */
     w.document.querySelector('#cham-bills tr[data-bill="divergence"]').click();
-    ok("a stated forecast draws no faction rows",
-       w.document.querySelectorAll("#comp-table tr.bench").length === 0);
+    const dvb = [...w.document.querySelectorAll("#comp-table tr.bench")];
+    ok("a stated forecast draws faction rows only for the free bench",
+       dvb.length === 6 && dvb.every(tr => !/Socialists|Progressive|Home Rule/.test(tr.cells[0].textContent)),
+       dvb.length + " bench rows");
     /* A fallen measure loses the WHIP TABLE — there is nobody left to
        move — but it may still carry its division list, which is a record
        and the reason the panel stays. So the test is the control, not the

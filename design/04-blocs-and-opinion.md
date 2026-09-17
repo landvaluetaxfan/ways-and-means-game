@@ -170,8 +170,9 @@ Three properties, each asserted in `test.js`:
 - **A stated forecast is not attributed to the factions.** `{for: 68}` is a
   number the whips handed the Prime Minister. Splitting it across currents
   afterwards would be the interface inventing a reason the content did not give,
-  so the engine returns no breakdown for a stated count. The bible's 128 is
-  untouched for exactly this reason.
+  so the engine returns no breakdown for a stated count. The forecast is 130
+  rather than 128 since T14, when the six independents stopped taking a caucus
+  line and started counting themselves.
 - **Every column sums.** Faction seats sum to the party's seats and faction ayes
   to the party's ayes, by largest remainder, in the engine and on the screen.
 

@@ -116,7 +116,10 @@ const PARTIES = [
     seats:{district:6,list:0,functional:0},
     kind:"national", loyalty:50,
     axes:{},
-    note:"District independents. No caucus position, no whip, no leader." }
+    note:"District independents. No caucus position, no whip, no leader. Six members " +
+         "and six arguments: the seats on Sinter share one, and the others share " +
+         "nothing. Where three of them vote together it is something to notice in " +
+         "the division list rather than anything the House was told." }
 ];
 
 /* CURRENTS — factions inside a party. Same four axes; a current that
@@ -159,5 +162,29 @@ const CURRENTS = [
   { id:"upl_witness", party:"upl", name:"The Witness Caucus",       members:1, loyalty:70,
     axes:{ownership:"public",personhood:"expansionist",sovereignty:null,closure:null} },
   { id:"upl_bridge",  party:"upl", name:"The Bridge Caucus",        members:1, loyalty:50,
-    axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"} }
+    axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"} },
+
+  /* THE INDEPENDENTS (T14, design/26 #15 as amended). Six district
+     members with no caucus, no whip and no leader, and six different
+     arguments. Each current is one member, named for the seat.
+
+     TWO OF THEM ARE THE SAME ARGUMENT ON PURPOSE. Kettering and Castellan
+     hold the two seats on Sinter on the localist case, and Merrick holds
+     the yard seat on the Dredge on the same case with the personhood line
+     added. They are not a party and they do not whip: they share a position
+     on station sovereignty and closure, and the bloc is something the
+     player has to NOTICE in a division list rather than read on a rostrum.
+     The other three share nothing with each other or with the bloc. */
+  { id:"ind_grimsby",   party:"ind", name:"Homestead A",         members:1, loyalty:68,
+    axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:"closurist"} },
+  { id:"ind_kirilenko", party:"ind", name:"Clearmont & Sowerby", members:1, loyalty:55,
+    axes:{ownership:"public",personhood:"expansionist",sovereignty:"station",closure:"integrationist"} },
+  { id:"ind_vasquez",   party:"ind", name:"Stanbridge",          members:1, loyalty:62,
+    axes:{ownership:null,personhood:"restrictionist",sovereignty:"federal",closure:"closurist"} },
+  { id:"ind_kettering", party:"ind", name:"Colonnade",           members:1, loyalty:70,
+    axes:{ownership:null,personhood:null,sovereignty:"station",closure:"closurist"} },
+  { id:"ind_castellan", party:"ind", name:"Wrenfield-Aubrey",    members:1, loyalty:74,
+    axes:{ownership:null,personhood:null,sovereignty:"station",closure:"closurist"} },
+  { id:"ind_merrick",   party:"ind", name:"John Henry",          members:1, loyalty:66,
+    axes:{ownership:"public",personhood:"restrictionist",sovereignty:"station",closure:"closurist"} }
 ];

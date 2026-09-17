@@ -1116,6 +1116,14 @@ const Engine = (function () {
   function inferStance(st, C, bill, partyId) {
     const def = C.partyById[partyId];
     if (!def || !bill.axes) return "against";
+    /* A PARTY WITH NO POSITIONS HAS NO LINE (T14). The Independents declare
+       no axes at all, because six members with six arguments do not have a
+       caucus view to infer. Their stance is therefore a FREE vote: each of
+       the six votes on its own axes and its own conviction, and the bloc on
+       the station question is emergent from those axes rather than written
+       down anywhere. Without this they were half the bench on every bill,
+       which is a party in all but name. */
+    if (!def.axes || !Object.keys(def.axes).length) return { free: true };
     const a = axisAgreement(def.axes, bill.axes);
     if (a > 0.25) return "for";
     if (a < -0.25) return "against";

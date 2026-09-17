@@ -367,13 +367,25 @@ list tier is where the emulated get in, which is —4.8's sentence about the
 Public Substrate Association. The figure is written at the head of
 `content/characters.js`.
 
-## T14 — [ ] Independents with a range, and a bloc
+## T14 — [x] Independents with a range, and a bloc  ·  **DONE 17 Sep**
 
 `design/26` #15, as amended by the author. `ind` holds six seats and behaves
 like a party. Give the six genuinely different positions, and then give a
 subset of them the Australian teal pattern: independents who are not a party,
 do not whip, and vote together anyway. The interest is that the bloc is
 *observed* rather than declared, so the player has to notice it.
+
+**Landed.** Six currents, one per seat, each with its own axes, and the party's
+blanket line is gone: `inferStance` returns a FREE vote for a party that
+declares no axes at all, so the six vote on their own conviction rather than as
+half a bench on every bill. Two of them are the same argument on purpose (the
+seat pair on Sinter, plus the yard seat on the Dredge on the same localist
+case), and the bloc on the station question is emergent from their axes: the
+division rows show it and nothing in the chamber is told it.
+
+The cost is one number: the divergence bill's forecast moves from 128 to 130,
+because the independents who agree with it now count themselves in. The bible,
+`design/04` and the checks are updated with it.
 
 ## T15 — [x] Make a bill somebody abstains on  ·  **DONE 15 Sep**
 
