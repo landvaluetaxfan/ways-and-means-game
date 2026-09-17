@@ -326,6 +326,7 @@ const Editor = (function () {
         <button class="btn ed-x" data-act="choice-del" data-ci="${i}">×</button>
       </div>
       <label class="ed-res">Result <input class="ed-f" data-f="result" type="text" value="${esc(c.result || "")}" placeholder="Line shown after the choice"></label>
+      <label class="ed-res">Note <textarea class="ed-f ed-noteta" data-f="note" rows="3" placeholder="A paragraph shown beside 'what this does'">${esc(c.note || "")}</textarea></label>
       <div class="ed-effhd">Effects <button class="btn ed-add" data-act="eff-add" data-ci="${i}">+ effect</button></div>
       <div class="ed-effs">${explodeEffects(c.effects).map((eff, ei) => effRow(eff, i, ei)).join("")}</div>
     </div>`;
@@ -355,6 +356,8 @@ const Editor = (function () {
       const q = f => n.querySelector(`:scope > * [data-f="${f}"], :scope > [data-f="${f}"]`);
       const ch = { label: n.querySelector('[data-f="label"]').value,
                    effects: [], result: n.querySelector('[data-f="result"]').value || undefined };
+      const note = n.querySelector('[data-f="note"]');
+      if (note && note.value.trim()) ch.note = note.value;
       n.querySelectorAll(".ed-eff").forEach(en => {
         const r = { verb: en.querySelector('[data-f="verb"]').value };
         en.querySelectorAll("[data-f]").forEach(f => { if (f.dataset.f !== "verb") r[f.dataset.f] = f.value; });

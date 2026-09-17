@@ -176,7 +176,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .choice:hover{background:#dfe4d3;}
 #gov-wire .post{border-bottom:1px solid var(--chrome-dk);padding:4px 6px;background:var(--field);}
 #gov-wire .post p{margin:0;font-family:var(--f-read);font-size:12px;}
-.g-sit{grid-template-columns:minmax(0,1fr) 320px;}
+.g-sit{grid-template-columns:minmax(190px,240px) minmax(0,1fr) 320px;}
 /* THE HOUSE IS THE SUBJECT OF THE SCREEN, so it takes the middle and the
    surplus. Left is what is before the House — the order paper and the
    measure open on it. Right is reference: how the benches are counted,
@@ -1701,7 +1701,13 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 }
 .ch.open .ch-head:hover{background:#eeddA4;}
 .ch-arrow{font-family:var(--f-data);font-size:10px;opacity:.7;flex:0 0 auto;}
-.ch-label{flex:1 1 auto;min-width:0;}
+.ch-head-txt{flex:1 1 auto;min-width:0;display:block;}
+.ch-label{display:block;}
+/* THE TRADE, BEFORE THE ROW IS OPENED. Two effect lines under the label, so
+   a list of decisions can be read without opening each one in turn. */
+.ch-peek{display:block;font-size:11px;line-height:1.35;color:var(--ink-soft);
+  margin-top:2px;}
+.ch.open .ch-peek{color:#6b5a1e;}
 .ch-strip{flex:0 0 auto;display:flex;gap:5px;}
 /* the marks. Form as well as hue, because 12.2 and because a colour-only
    signal is no signal at all for a good number of players. */
@@ -1715,6 +1721,11 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .ch.open .cm{border-color:#c9a227;}
 
 .ch-body{padding:8px 10px 10px;border-top:1px solid var(--rule);}
+/* THE CHOICE IN PROSE, above the numbers it moves. The effects say what the
+   engine will do; the note says what the decision is, and content writes one
+   where the arithmetic does not carry the meaning on its own. */
+.ch-note{margin:0 0 8px;font-family:var(--f-read);font-size:12.5px;line-height:1.55;
+  color:var(--ink);max-width:64ch;}
 .ch-sec + .ch-sec{margin-top:9px;}
 .ch-sec h4{
   margin:0 0 3px;font-family:var(--f-data);font-size:9px;font-weight:400;
@@ -1910,14 +1921,21 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
   color:var(--ink-soft);margin-top:2px;}
 
 /* ORDER-PAPER TIME AS PIPS. "4 of 6" is a number; six marks with two
-   struck through is a quantity you read before you count it. */
-.pips.slots{display:inline-flex;gap:2px;vertical-align:middle;}
-.pips.slots s{
+   struck through is a quantity you read before you count it.
+   THE BASE CLASS IS `.pips` AND NOTHING ELSE. It was `.pips.slots`, and
+   `slots` is the menu's own row class — `.slots{flex-direction:column}`
+   won on the property `.pips.slots` never set, so every row of pips in the
+   game rendered as a vertical stack. A class named for one thing must not
+   be borrowed for another, and a modifier that collides is worse than the
+   collision it hides. `flex-direction` is set here so no future rule can
+   turn the row again. */
+.pips{display:inline-flex;flex-direction:row;gap:2px;vertical-align:middle;}
+.pips s{
   display:block;width:7px;height:7px;text-decoration:none;border-radius:0;
   border:1px solid var(--rule);background:transparent;
 }
-.pips.slots s.spent{background:var(--rule);}
-.pips.slots s.want{background:var(--warn);border-color:var(--warn);}
+.pips s.spent{background:var(--rule);}
+.pips s.want{background:var(--warn);border-color:var(--warn);}
 
 /* ---------- the order of the day ----------
    Obligations, not opportunities. Each row is a control that takes the
@@ -1982,13 +2000,13 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 }
 .calgrid i.pad{visibility:hidden;}
 .calgrid i.cd{
-  position:relative;display:block;aspect-ratio:1;min-height:22px;
+  position:relative;display:block;aspect-ratio:1;min-height:28px;
   background:var(--field);border:1px solid var(--chrome-dk);
   font-style:normal;cursor:default;
 }
 .calgrid i.cd b{
   position:absolute;top:1px;left:2px;font-weight:400;
-  font-family:var(--f-data);font-size:9.5px;color:var(--ink);
+  font-family:var(--f-data);font-size:10px;color:var(--ink);
 }
 /* the sitting number, small and quiet: it is the game's clock, not the world's */
 .calgrid i.cd u{
@@ -2000,16 +2018,30 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .calgrid i.cd.past{opacity:.5;}
 .calgrid i.cd.now{background:var(--ink);border-color:var(--ink);}
 .calgrid i.cd.now b,.calgrid i.cd.now u{color:var(--field);}
+/* THE DAY'S EDGE CARRIES ITS MOST IMPORTANT MARK. A dot four pixels across
+   said only "something"; the kind lived in the hover card, so a month could
+   not be read at a glance. A division beats the rise, the rise beats a
+   promise, a promise beats a prayer window, and the whole month reads as
+   coloured days. The dots then say how many things are on the day. */
+.calgrid i.cd.top-division{border-left:3px solid var(--alert);}
+.calgrid i.cd.top-rises   {border-left:3px solid var(--ink);}
+.calgrid i.cd.top-owed    {border-left:3px solid var(--ok);}
+.calgrid i.cd.top-prayer  {border-left:3px solid var(--warn);}
+.calgrid i.cd.top-expected{border-left:3px solid var(--chrome-dkr);}
+.calgrid i.cd.now.top-division{border-left-color:var(--alert);}
+.calgrid i.cd.now.top-rises   {border-left-color:var(--field);}
+.calgrid i.cd.now.top-owed    {border-left-color:var(--ok);}
+.calgrid i.cd.now.top-prayer  {border-left-color:var(--warn);}
 /* ONE PIP PER THING DOWN FOR THAT DAY, not one flag per day. A single
    corner flag said "something happens here" and lost both the count and,
    where two kinds fell together, the colour. A row of pips reads as a
    quantity and a kind at a glance, which is the whole job. */
 .calgrid i.cd .pips{
-  position:absolute;left:2px;right:2px;bottom:1px;
-  display:flex;gap:1.5px;justify-content:flex-start;pointer-events:none;
+  position:absolute;left:3px;right:3px;bottom:3px;
+  display:flex;gap:2px;justify-content:flex-start;pointer-events:none;
 }
 .calgrid s{
-  display:block;width:4px;height:4px;text-decoration:none;flex:0 0 auto;
+  display:block;width:6px;height:6px;text-decoration:none;flex:0 0 auto;
   background:var(--rule);border-radius:50%;
 }
 s.p-division{background:var(--alert);}
@@ -2025,7 +2057,7 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
   color:var(--ink-soft);align-items:center;flex-wrap:wrap;
 }
 .calkey span{display:flex;align-items:center;gap:3px;}
-.calkey s{width:5px;height:5px;}
+.calkey s{width:6px;height:6px;}
 .calnext{margin-top:7px;border-top:1px solid var(--chrome-dk);padding-top:5px;}
 .calnext .cn{padding:2px 0;}
 .calnext .cn b{display:block;font-size:11.5px;font-weight:400;}
@@ -2129,16 +2161,16 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
 #s-sit .stack > .panel:last-child{flex:0 0 auto;min-height:0;}
 #s-sit .stack > .panel > .pbody{flex:0 0 auto;min-height:0;overflow:visible;}
 #s-sit .stack > .panel:last-child > .pbody{overflow:visible;}
-/* THE LEFT COLUMN IS A STACK TOO. The decision fills and the wire sits under
-   it in a box of its own, at the reading column's full width — a feed is
-   prose and reads badly at the 320px the reference column gives it, which is
-   why it read as a grey tail. Bounded, so the decision cannot be pushed off
-   the top by a busy sitting. */
-#s-sit .stack.stackmain > .panel:first-child{flex:1 1 auto;min-height:0;}
-#s-sit .stack.stackmain > .panel:last-child{flex:0 0 auto;min-height:0;}
-#s-sit .stack.stackmain > .panel:last-child > .pbody{max-height:24vh;overflow:auto;}
+/* THE WIRE IS A COLUMN, NOT A STRIP. It was moved to the foot of the reading
+   column, which made every post a full-width band under a decision window
+   that was already too wide for its own text. A wire is a feed of short,
+   dated items and reads as a feed when it is vertical: the posts stack, the
+   date sits over its line, and the decision keeps a readable measure instead
+   of stretching to the window. Its own column, to the left, so the eye meets
+   the day's traffic before the decision rather than under it. */
+#s-sit .stack.stackmain > .panel{flex:1 1 auto;min-height:0;}
 /* NONE OF WHICH SURVIVES ONE COLUMN. Filling the viewport is right for
-   two columns side by side and wrong for five panels stacked: the row
+   columns side by side and wrong for five panels stacked: the row
    becomes a single screen-height box that everything below is pushed out
    of. This has to sit AFTER the rules it undoes — the shared breakpoint
    is 1100 lines above and would lose to them on source order alone. */
@@ -2148,7 +2180,6 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
   #s-sit .grid{flex:none;}
   #s-sit #sitting-body,#s-sit .stack>.panel:last-child>.pbody{overflow:visible;}
   #s-sit .stack>.panel:last-child{flex:none;min-height:0;}
-  #s-sit .stack.stackmain>.panel:last-child>.pbody{max-height:none;overflow:visible;}
 }
 #sb-owed{border-left:3px solid currentColor;padding-left:5px;font-weight:700;}
 /* the second button on a quiet sitting carries its distance */

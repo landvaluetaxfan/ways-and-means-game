@@ -47,6 +47,9 @@ is which part of it you intend to be known for.`,
   choices:[
     { label:"Because the last government could not run it, and I can",
       act:"Say it",
+      note:"You put your weight behind competence. The engineers and the Guild hear " +
+           "a government that will be administered. The maintenance benches hear " +
+           "the accusation they have lived with for thirty years.",
       effects:[{flag:"led_on_competence"},
                {move:{public_standing:5}},
                {move:{"loyalty.cu_maintenance":-6}},
@@ -56,6 +59,9 @@ is which part of it you intend to be known for.`,
 
     { label:"Because I am what this party has always been",
       act:"Say it",
+      note:"You claim the movement's inheritance. It is the line the maintenance bloc " +
+           "will carry into every meeting for a year, and the line your partners will " +
+           "ask you to clarify before the week is out.",
       effects:[{flag:"led_on_continuity"},
                {move:{"loyalty.cu_maintenance":11}},
                {move:{"loyalty.cu_loyalists":4}},
@@ -66,6 +72,9 @@ is which part of it you intend to be known for.`,
 
     { label:"Because the party had to change and I changed it",
       act:"Say it",
+      note:"You claim the break. It is the answer the country wants, and it is the " +
+           "answer your own benches will quote back at you the first time you need " +
+           "them to hold a line.",
       effects:[{flag:"led_on_break"},
                {move:{public_standing:7}},
                {move:{"loyalty.psa":9}},
@@ -95,11 +104,16 @@ Your own maintenance members, who have spent thirty years watching copies
 undercut their wages, would rather you had paid a different price.`,
   choices:[
     { label:"Read the whips' count before deciding anything",
+      note:"Reading costs nothing and commits you to nothing. It tells you where the " +
+           "measure dies before you have said a word about it in public.",
       effects:[{flag:"read_the_count"},],
       result:"It carries among elected members and dies among the functional ones. You will need to know why." },
     { label:"Say publicly that the government stands behind it",
       act:"Say it",
       cost:{ slot:1 },
+      note:"A public commitment spends order-paper time and your standing with the " +
+           "maintenance benches to buy the Substrate Left. There is no quiet way to " +
+           "take it back.",
       effects:[{flag:"read_the_count"},{move:{"public_standing":3}},
                {move:{"loyalty.psa":8}},{move:{"loyalty.cu_maintenance":-9}},
                {wire:"PM COMMITS GOVERNMENT TO FORTY-HOUR THRESHOLD"}],
@@ -129,6 +143,9 @@ recognise. You are not reforming personhood. You are reforming us."`,
   choices:[
     { label:"Offer a licensure carve-out: the threshold moves, licensure does not",
       act:"Offer it",
+      note:"The threshold moves and licensure does not, which is the one thing the " +
+           "panel actually asked for. It buys the chair's goodwill and the Substrate " +
+           "Left's fury, and it puts a promise on the order paper with a date.",
       /* MECHANICAL PLACEHOLDER, opencode's to reword: the undertaking's
          `text` is the line the order paper carries and the wording is
          prose. The shape is right — this choice is a promise made to a
@@ -143,11 +160,15 @@ recognise. You are not reforming personhood. You are reforming us."`,
                {flag:"licensure_carveout_offered"}],
       result:"She does not say yes. She says she will take it to the panel, which from her is a great deal." },
     { label:"Remind her the sunset clause has been extended four times and will not be a fifth",
+      note:"A threat made to the one person in the room who can count. It plays well " +
+           "outside the panel and costs you the panel.",
       effects:[{flag:"gb_approached"},{chapter:2},{move:{"rel.gb_chair":-15}},{move:{"loyalty.gb":-8}},
                {move:{"public_standing":3}},{flag:"threatened_guild_bench"},
                {wire:"PM RAISES FUNCTIONAL SUNSET IN PRIVATE MEETING, SOURCES SAY"}],
       result:"\"Extend it a fifth time,\" she says, \"or don't. Either way I have the votes and you do not.\"" },
     { label:"Say nothing that can be repeated. Listen.",
+      note:"You leave with no commitment and one fact worth having: the panel meets " +
+           "on Thursday morning, four hours before the division.",
       effects:[{flag:"gb_approached"},{chapter:2},{move:{"rel.gb_chair":4}},],
       result:"You learn that the panel meets on Thursday morning, which is four hours before the division." }
   ]},
@@ -168,16 +189,23 @@ who wakes up," he says. "And the bill you are whipping me on is about how many
 hours make a stranger. Give me the shed order. Give me anything on the shed order."`,
   choices:[
     { label:"Commit to bringing the Shed Order Bill back this session",
+      note:"A promise made in a lobby with forty witnesses. It buys Halloran's bloc " +
+           "and Halloran's loyalty, and it puts a bill second on the book that your " +
+           "partners will vote against.",
       effects:[{move:{"loyalty.cu_halloran":22}},{move:{"loyalty.cu_maintenance":9}},{move:{"party_loyalty":7}},
                {flag:"halloran_confronted"},{flag:"shed_order_promised"},
                {bill:{shedorder:{stage:"second_reading"}}}],
       result:"He writes nothing down. He does not need to; you said it in a lobby with forty witnesses." },
     { label:"Offer her a junior ministry and the silence that comes with it",
+      note:"An office buys the leader and not the group. The members who followed him " +
+           "are left with a grievance and nobody to carry it into the chamber.",
       effects:[{move:{"loyalty.cu_halloran":14}},{move:{"party_loyalty":4}},{move:{"public_standing":-3}},
                {flag:"halloran_confronted"},{flag:"halloran_bought"},
                {wire:"CZARNECKI TIPPED FOR OFFICE; ASHFIELD DELEGATION SEEKS ASSURANCES"}],
       result:"He takes it. His group does not all follow him, and the ones who don't now have a grievance and no leader." },
     { label:"Refuse. He does not have the nine and you both know it.",
+      note:"You keep the office and the money. He goes looking for the ninth name, and " +
+           "the session gives him four weeks to find it.",
       effects:[{move:{"loyalty.cu_halloran":-11}},{move:{"loyalty.cu_maintenance":-6}},{move:{"party_loyalty":-6}},
                {flag:"halloran_confronted"},{queue:[{event:"halloran_finds_nine",after:4}]}],
       result:"\"No,\" he agrees. \"Not today.\"" }
@@ -221,16 +249,24 @@ minister being told first.
 There are four thousand two hundred suspended persons on Ember Ridge.`,
   choices:[
     { label:"Authorise emergency thermal transfer from Anselm Ring",
+      note:"The margin recovers today. The quota comes out of your own constituency, " +
+           "which is where your majority lives.",
       effects:[{move:{"thermal_margin":11}},{move:{"solvency": -9}},{move:{"public_standing":-4}},
                {station:{vantage:{closure:0.03}}},{flag:"vantage_handled"},
                {wire:"ANSELM RING QUOTA DIVERTED TO VANTAGE HIGH; RING MEMBERS OBJECT"}],
       result:"Your own constituency pays for it, which your own constituency will notice." },
     { label:"Let the authority act under the Act and say so publicly",
+      note:"The margin recovers by half and the Association of Engineers and Systems " +
+           "stays with you. The Substrate Left and the maintenance benches hear a " +
+           "government that will not use the power it holds.",
       effects:[{move:{"thermal_margin":5}},{move:{"public_standing":-11}},{move:{"loyalty.hul":8}},{move:{"loyalty.psa":-12}},{move:{"loyalty.cu_halloran":-9}},
                {flag:"vantage_handled"},{flag:"deferred_to_authority"},
                {wire:"GOVERNMENT DECLINES TO INTERVENE; ENGINEERING AUTHORITY TO EXERCISE S.12 POWERS"}],
       result:"You have conceded, in public, that the authority's word is final on the one question the charter left open." },
     { label:"Do nothing yet. The fault may clear.",
+      note:"Waiting keeps your hands clean and your options open. It also leaves four " +
+           "thousand two hundred people under a register the authority can shed " +
+           "without telling you first.",
       effects:[{move:{"thermal_margin":-6}},{queue:[{event:"vantage_cascade",after:3}]}],
       result:"The fault does not clear." }
   ]},
@@ -328,9 +364,14 @@ is whether you have the time, and the time runs out when the House rises.
 "Answer the sheet or do not. It will not ask twice."`,
   choices:[
     { label:"Walk the paper with him. Ask what each item wants.",
+      note:"The Chief Whip explains the day once, and this is the hour he does it. It " +
+           "costs you nothing and buys his confidence for the session.",
       effects:[{ flag:"taught_the_day" }, { move:{ "rel.okarie":6 } }, { move:{ "loyalty.cu_loyalists":3 } }],
       result:"He names the mover of each item and what each mover wants back. It is the same list every sitting, and nobody explains it twice." },
     { label:"Read it alone and send him back to the lobbies.",
+      note:"You keep the hour and you read your own brief. The whips note that you did " +
+           "not ask, and the country hears that the paper is read before the lobbies " +
+           "are worked.",
       effects:[{ flag:"taught_the_day" }, { move:{ "rel.okarie":-4 } }, { move:{ "public_standing":2 } }],
       result:"You will read the sheet alone every sitting. He says nothing about it, which is how he says everything." }
   ]},
@@ -353,9 +394,14 @@ date on it."
 He leaves the sheet on the desk and does not pick it up again.`,
   choices:[
     { label:"Hold what we have. Spend nothing yet.",
+      note:"The whips hold the benches already with the government and spend none of " +
+           "the party's patience. The decision stays where it is, and there is still " +
+           "goodwill in hand for a harder day.",
       effects:[{ flag:"whip_briefed" }, { move:{ "loyalty.cu":5 } }, { move:{ "public_standing":-2 } }],
       result:"The whips will hold the benches they have and wait. It is the cheaper order, and it leaves the decision where it was." },
     { label:"Whip the party hard and take the measure now.",
+      note:"Whipping your own side spends its goodwill to buy the measure today. " +
+           "Members who were asked twice remember the asking.",
       effects:[{ flag:"whip_briefed" }, { move:{ "loyalty.cu":-6 } }, { move:{ "public_standing":3 } }, { flag:"whipped_own_side" }],
       result:"It is the noisier order. Members who were asked twice remember it, and so does the public." }
   ]},

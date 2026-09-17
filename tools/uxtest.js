@@ -1712,7 +1712,7 @@ try {
   ok("the government screen offers things to set in motion", inis.length >= 3,
      inis.length + " initiatives");
   ok("and each shows what it costs in order-paper time",
-     [...inis].every(b => b.querySelector(".pips.slots") || b.disabled));
+     [...inis].every(b => b.querySelector(".pips") || b.disabled));
 
   /* TEMPO IS THE DECISION, so it must be visible before committing —
      not hidden behind a select the player opens after choosing. */
@@ -1725,9 +1725,9 @@ try {
      tempi[0] && tempi[0].textContent.replace(/\s+/g, " ").trim());
 
   /* SPENDING IT MUST BE VISIBLE AS SPENDING. The pips are the point. */
-  const pipsBefore = w.document.querySelectorAll("#gov-init .pips.slots s.spent").length;
+  const pipsBefore = w.document.querySelectorAll("#gov-init .pips s.spent").length;
   tempi[0].click();
-  const pipsAfter = w.document.querySelectorAll("#gov-init .pips.slots s.spent").length;
+  const pipsAfter = w.document.querySelectorAll("#gov-init .pips s.spent").length;
   ok("taking one spends time you can see", pipsAfter > pipsBefore,
      pipsBefore + " spent -> " + pipsAfter);
   ok("and it stops being on offer",
@@ -1810,13 +1810,15 @@ try {
   }
 
   /* ONE PIP PER THING. A single corner flag lost the count, and lost the
-     colour where two kinds fell on one day. */
+     colour where two kinds fell on one day. The card names each kind in
+     words, one sentence to a line, so the count of lines is the count of
+     things and the pip count reads against it. */
   const marked = [...cells].filter(c => c.querySelector(".pips"));
   ok("a day with something down for it is marked", marked.length > 0,
      marked.length + " marked days");
   ok("and carries one pip per thing, not one flag per day",
      marked.every(c => c.querySelectorAll(".pips s").length ===
-       ((c.getAttribute("data-tip-body") || "").split("\u2014").length)),
+       ((c.getAttribute("data-tip-body") || "").split("\n").length)),
      marked.map(c => c.querySelectorAll(".pips s").length).join(","));
 
   /* The session end must appear as a square, not only as a sentence in

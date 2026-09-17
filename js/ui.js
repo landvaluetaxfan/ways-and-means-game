@@ -971,8 +971,10 @@ const UI = (function () {
         `<tr><td style="text-transform:capitalize">${p}</td><td class="n"><span class="flag ${st.president.relationship < 35 ? "bad" : ""}" data-tip="live">${st.president.relationship < 35 ? "LIVE" : "DORMANT"}</span></td></tr>`
       ).join("")}</tbody></table>`;
 
+    /* A VERTICAL FEED HOLDS MORE THAN A STRIP DID, and the column scrolls,
+       so the wire shows the session's traffic rather than its tail. */
     $("#gov-wire").innerHTML = st.wire.length
-      ? st.wire.slice(0, 8).map(w => `<div class="post"><div class="meta">SITTING ${w.sitting}</div><p>${w.text}</p></div>`).join("")
+      ? st.wire.slice(0, 16).map(w => `<div class="post"><div class="meta">SITTING ${w.sitting}</div><p>${w.text}</p></div>`).join("")
       : `<div class="pbody"><div class="note">No traffic this session.</div></div>`;
   }
 
@@ -1556,7 +1558,7 @@ const UI = (function () {
     const pips = Array.from({ length: cap }, (_, n) =>
       `<s class="${n < cap - left ? "spent" : ""}"></s>`).join("");
     return `<div class="note dayline">` +
-      `<span class="pips slots" ` +
+      `<span class="pips" ` +
       tipAttr("The day's business",
         "The House divides at most " + cap + (cap === 1 ? " time" : " times") + " a sitting. " +
         (left ? left + " left today." : "None left today; the rest keeps until tomorrow.")) +
@@ -2653,14 +2655,24 @@ const UI = (function () {
       grave && !owed.length && !(c.cost && c.cost.slot)
         ? `<span class="cm grave">significant</span>` : ""
     ].join("");
+    /* WHAT IT DOES, WHILE IT IS STILL SHUT. A list of four decisions where
+       three say only their own name is a list you have to open four times
+       and hold in your head. The first two effects sit under the label, so
+       the trade is legible before the row is expanded; the row still opens
+       onto the full reading. */
+    const peek = cl.filter(x => !x.owed).slice(0, 2).map(x => x.text).join(" \u00b7 ");
 
     return `<div class="ch${open ? " open" : ""}" data-ch="${i}">
       <button class="ch-head" data-expand="${i}" aria-expanded="${open}">
         <span class="ch-arrow">${open ? "▾" : "▸"}</span>
-        <span class="ch-label">${esc(c.label)}</span>
+        <span class="ch-head-txt">
+          <span class="ch-label">${esc(c.label)}</span>
+          ${peek ? `<span class="ch-peek">${esc(peek)}</span>` : ""}
+        </span>
         ${strip ? `<span class="ch-strip">${strip}</span>` : ""}
       </button>
       ${open ? `<div class="ch-body">
+        ${c.note ? `<p class="ch-note">${esc(c.note)}</p>` : ""}
         <div class="ch-sec"><h4>What this does</h4>
           ${cl.filter(x => !x.owed).length
             ? `<ul class="ch-eff">${cl.filter(x => !x.owed).map(x =>
@@ -2711,7 +2723,7 @@ const UI = (function () {
     let out = "";
     for (let i = 0; i < total; i++)
       out += `<s class="${i < used ? "spent" : i < used + (need || 0) ? "want" : ""}"></s>`;
-    return `<span class="pips slots">${out}</span>`;
+    return `<span class="pips">${out}</span>`;
   }
 
   function initHTML() {
@@ -2936,7 +2948,17 @@ const UI = (function () {
       if (!d.sits) cls.push("dark");
       if (d.past) cls.push("past");
       if (d.today) cls.push("now");
-      d.marks.forEach(m => cls.push("m-" + m.kind));
+      /* THE DAY CARRIES ITS MOST IMPORTANT MARK AS A COLOUR. A row of dots
+         four pixels across said "something" and nothing more, and the kind
+         was only in the hover card, so a month could not be read at a
+         glance, which is the only reason a calendar is on the screen. The
+         dominant mark (a division beats a promise beats a prayer) now tints
+         the day's edge, and the dots say how many. */
+      const PRIORITY = { division: 0, rises: 1, owed: 2, prayer: 3, expected: 4 };
+      const dom = d.marks.slice().sort((a, b) =>
+        (PRIORITY[a.kind] == null ? 9 : PRIORITY[a.kind]) -
+        (PRIORITY[b.kind] == null ? 9 : PRIORITY[b.kind]))[0];
+      if (dom) cls.push("top-" + dom.kind);
       /* ONE MARK PER THING, NOT ONE FLAG PER DAY. A single corner flag
          said "something happens here" and lost both the count and, when
          two kinds landed together, the colour — the classes stacked and
@@ -2949,15 +2971,20 @@ const UI = (function () {
          native title= — slow, unstyled, and a second tooltip system in a
          build that spent a commit removing one. */
       const title = d.sitting != null ? "Sitting " + d.sitting : "The House does not sit";
+      /* THE CARD LEADS WITH THE THING, IN WORDS, ONE PER LINE. It was a run
+         of "Name: text — Name: text" joined by dashes, which is a sentence
+         you parse rather than a thing you read. Each mark gets its own
+         sentence and its own line, and the kind is named first so the
+         colour of the dot has a word to match it to. */
       const body = d.marks.length
-        ? d.marks.map(m => MARKNAME[m.kind] + ": " + m.text).join(" \u2014 ")
+        ? d.marks.map(m => MARKNAME[m.kind] + ". " + m.text).join("\n")
         : (d.sitting != null ? "Nothing is down for this day."
-                             : "The House sits " + SITDAYS + " days in seven.");
+                             : "The House sits " + SITDAYS + " days in seven. This is not one of them.");
       /* data-tip draws the card for a pointer; aria-label is what a screen
          reader gets, and it has to carry the same sentence. Swapping the
          native title= for the project's own card quietly dropped the
          second one, which the checks caught. */
-      const said = title + ", " + dayLabel(d.date) + ". " + body;
+      const said = title + ", " + dayLabel(d.date) + ". " + body.replace(/\n/g, " ");
       cells += `<i class="${cls.join(" ")}" aria-label="${esc(said)}"` +
                ` data-tip-title="${esc(title)} \u00b7 ${esc(dayLabel(d.date))}"` +
                ` data-tip-body="${esc(body)}">` +
