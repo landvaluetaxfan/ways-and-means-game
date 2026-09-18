@@ -66,6 +66,12 @@ const SETUP = {
      that forces one (design/08 §2): below it the challenger is gathering,
      above it the caucus divides. */
   thresholds: { leadershipChallenge: 15, ballot: 12 },
+  /* AN ENDING MUST BE CARRIED (design/26 #91). No settlement before this
+     sitting, whatever the meters say: without the floor the crisis resolved
+     at sitting 7 on one play policy and 13 on another, which is a third of
+     the session spent deciding a run the player had not yet governed. The
+     tiers are separately gated on the crisis flags they follow from. */
+  settlementFloorSittings: 15,
 
   /* THE METER PANEL. Which numbers the standing-indicators panel shows, in
      what order, and which way is good — content declares it, so a campaign

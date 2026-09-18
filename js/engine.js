@@ -4371,6 +4371,15 @@ const Engine = (function () {
      modes, not settlements (rule 3). */
   function checkSettlement(st, C) {
     if (checkLoss(st, C).lost) return null;
+    /* AN ENDING MUST BE CARRIED (design/26 #91). Without a floor a settlement
+       lands in the first third of a session — measured at sitting 7 on one
+       play policy and 13 on another — so the crisis resolves before the
+       government has done anything to resolve it, and the meters decide the
+       run instead of the player. The floor is content's, and each tier is
+       also gated on the crisis flag it follows from, so a government that
+       never engaged the crisis cannot settle it. */
+    const floor = (C.setup && C.setup.settlementFloorSittings) || 0;
+    if (st.sitting < floor) return null;
     const found = (C.settlements || [])
       .filter(s0 => matches(st, s0.when))
       .sort((a, b) => (a.rank || 0) - (b.rank || 0));

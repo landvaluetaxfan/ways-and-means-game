@@ -153,7 +153,8 @@ const SETTLEMENTS = [
     summary: "Full annexation. Earth drops the debt claims under threat of satellite transit tariffs.",
     closing: "The platform is Commonwealth territory, and Earth has dropped its claims. " +
              "Heavy orbital manufacturing is unlocked, and Earth will remember this.",
-    when: { scalarAbove: { legitimacy: 75, solvency: 70000 },
+    when: { flags: ["f1_annexing"],
+            scalarAbove: { legitimacy: 75, solvency: 70000 },
             scalarBelow: { friction: 60 } } },
 
   { id: "f1_maritime", rank: 1,
@@ -161,7 +162,8 @@ const SETTLEMENTS = [
     summary: "International courts recognise salvage rights. The platform becomes legal Federation territory.",
     closing: "The courts recognise the salvage, and the platform is Commonwealth territory in law. " +
              "The legal and administrative bill is heavy, and so is the trust it bought.",
-    when: { scalarAbove: { legitimacy: 55, solvency: 60000 },
+    when: { flags: ["f1_annexing"],
+            scalarAbove: { legitimacy: 55, solvency: 60000 },
             scalarBelow: { friction: 40 } } },
 
   { id: "f1_pyrrhic", rank: 2,
@@ -170,7 +172,8 @@ const SETTLEMENTS = [
     summary: "Annexed, and 300,000 workers saved. The Federation assumes the defaulted corporate bonds.",
     closing: "The platform is annexed and its workers are saved, and the Commonwealth has assumed " +
              "the defaulted bonds that paid for them. Three years of austerity begin at the next estimates.",
-    when: { scalarAbove: { legitimacy: 65, friction: 65 },
+    when: { flags: ["f1_annexing"],
+            scalarAbove: { legitimacy: 65, friction: 65 },
             scalarBelow: { solvency: 35000 } } },
 
   { id: "f1_joint", rank: 3,
@@ -178,7 +181,8 @@ const SETTLEMENTS = [
     summary: "A co-administered international free trade zone. No embargo, no territory, mild voter apathy.",
     closing: "The platform is a co-administered free trade zone under a joint mandate. " +
              "No embargo, no territory, and a country that shrugs.",
-    when: { scalarAbove: { legitimacy: 40, solvency: 40000, friction: 40 },
+    when: { flags: ["f1_referendum_carried"],
+            scalarAbove: { legitimacy: 40, solvency: 40000, friction: 40 },
             scalarBelow: { legitimacy: 60, solvency: 60000, friction: 60 } } },
 
   { id: "f1_capitulation", rank: 4,
@@ -186,7 +190,8 @@ const SETTLEMENTS = [
     summary: "The Federation declines the referendum. Earth corporate security reclaims and clears the platform.",
     closing: "The referendum is declined, and corporate security reclaims the platform. " +
              "The strikes on the outer habitats begin the same week.",
-    when: { scalarBelow: { legitimacy: 35 },
+    when: { flags: ["f1_surveyed"],
+            scalarBelow: { legitimacy: 35 },
             scalarAbove: { friction: 75 } } }
 ];
 

@@ -1691,7 +1691,14 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
   let bad = 0;
   const ok = (l, c, extra) => { if (!c) bad++;
     console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
-  const fresh = () => Engine.newGame(CONTENT);
+  /* PAST THE FLOOR. An ending must be carried (design/26 #91), so no tier can
+     land before `settlementFloorSittings`; a state still on sitting one is
+     not a state a settlement is reachable from, which is the rule itself. */
+  const fresh = () => {
+    const s = Engine.newGame(CONTENT);
+    s.sitting = (CONTENT.setup.settlementFloorSittings || 0) + 1;
+    return s;
+  };
   ok("content carries the four settlements and the five Flash I tiers",
      (CONTENT.settlements || []).length === 9,
      (CONTENT.settlements || []).length + " settlements");
@@ -1790,6 +1797,7 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
       { id: "probe_nt", rank: 0, name: "Probe tier", summary: "probe",
         terminal: false, when: { flags: ["probe_nt_flag"] } }]) });
   const nt = Engine.newGame(Cnt); nt.flags.probe_nt_flag = true;
+  nt.sitting = (Cnt.setup.settlementFloorSittings || 0) + 1;
   const endN = Engine.checkEnd(nt, Cnt);
   ok("a non-terminal settlement resolves the crisis without ending the run",
      endN.over === false && endN.kind === "settlement" &&
@@ -1800,20 +1808,25 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
      Engine.matches(nt, { resolvedIs: "probe_nt" }) &&
      !Engine.matches(nt, { resolvedIs: "probe_other" }));
 
-  /* FLASH I: every tier is reachable from the opening state. The meters
-     are moved by the campaign's events once they are wired; here the
-     gates are driven directly, which is what "reachable" means for a
-     when-block. The canon pyrrhic tier must not end the run. */
-  const tier = (set) => { const s = fresh(); Object.assign(s.scalars, set); return s; };
-  const t1 = tier({ legitimacy: 80, solvency: 75000, friction: 30 });
+  /* FLASH I: every tier is reachable from the opening state. The meters are
+     moved by the campaign's events once they are wired, and each tier is
+     gated on the crisis flag it follows from (a government that never engaged
+     the crisis cannot settle it), so the gates are driven directly here too.
+     The canon pyrrhic tier must not end the run. */
+  const tier = (set, flags) => {
+    const s = fresh(); Object.assign(s.scalars, set);
+    (flags || []).forEach(f => s.flags[f] = true);
+    return s;
+  };
+  const t1 = tier({ legitimacy: 80, solvency: 75000, friction: 30 }, ["f1_annexing"]);
   ok("critical triumph", (Engine.checkSettlement(t1, CONTENT) || {}).id === "f1_triumph");
-  const t2 = tier({ legitimacy: 60, solvency: 65000, friction: 30 });
+  const t2 = tier({ legitimacy: 60, solvency: 65000, friction: 30 }, ["f1_annexing"]);
   ok("maritime charter", (Engine.checkSettlement(t2, CONTENT) || {}).id === "f1_maritime");
-  const t3 = tier({ legitimacy: 70, solvency: 30000, friction: 70 });
+  const t3 = tier({ legitimacy: 70, solvency: 30000, friction: 70 }, ["f1_annexing"]);
   ok("sovereign debt trap", (Engine.checkSettlement(t3, CONTENT) || {}).id === "f1_pyrrhic");
-  const t4 = tier({ legitimacy: 50, solvency: 50000, friction: 50 });
+  const t4 = tier({ legitimacy: 50, solvency: 50000, friction: 50 }, ["f1_referendum_carried"]);
   ok("joint mandate", (Engine.checkSettlement(t4, CONTENT) || {}).id === "f1_joint");
-  const t5 = tier({ legitimacy: 30, solvency: 50000, friction: 80 });
+  const t5 = tier({ legitimacy: 30, solvency: 50000, friction: 80 }, ["f1_surveyed"]);
   ok("corporate re-entry", (Engine.checkSettlement(t5, CONTENT) || {}).id === "f1_capitulation");
   const pEnd = Engine.checkEnd(t3, CONTENT);
   ok("and the canon pyrrhic tier does not end the run",
@@ -1988,8 +2001,10 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
        (L.undertakings || []).filter(u => String(u.id).indexOf("lobby_") === 0)
          .every(u => u.state === "open" && u.owed_to));
 
-    /* Out through the President's referral to assent. */
-    for (let i = 0; i < 20 && L.bills.divergence.stage !== "assented"; i++)
+    /* Out through the President's referral to assent, and past the settlement
+       floor: an ending must be carried (design/26 #91). */
+    for (let i = 0; i < 30 && (L.bills.divergence.stage !== "assented" ||
+         L.sitting < (CONTENT.setup.settlementFloorSittings || 0) + 1); i++)
       Engine.advance(L, CONTENT);
     ok("the Act carries and the threshold moves",
        L.bills.divergence.stage === "assented" &&
