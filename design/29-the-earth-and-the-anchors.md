@@ -201,91 +201,94 @@ dispute can state its case in one sentence that the player cannot refute.
 
 ---
 
-## 4. The corporation: Halcyon Extraction Group
+## 4. The corporation: Cordell
 
-Proposed in full, because a corporation the player never meets by name is a
-force rather than an antagonist.
+> **LOCKED 18 SEPTEMBER 2026 — the author has taken Cordell, chartered in
+> Gabon.** The longer slate that preceded this decision is kept at the end of
+> the section, because the reasoning is worth having and a name is the easiest
+> thing in this document to change late.
 
-### The wider slate of names
+### 4.1 The names, and which is which
 
-The setting's existing corporations are **[name] + [sector noun]** —
-*Bellweather Consumables*, *Anselm Elevator*, *Standard Substrate*,
-*Circumterrestrial Underwriters* — and real extraction companies name
-themselves one of four ways: a **founder**, a **place**, a **claim**, or a
-**legal form**. Fourteen options across all four, in the register the file
-already uses:
+A corporation of this age has four names and uses all of them, and a player
+learns who is speaking from which one is on the page.
 
-**Founder-named** (the commonest, and the coldest when the founder is long dead)
-1. **Cordell Extraction** — one man's name on 300,000 people's contracts.
-2. **Vandeleur & Sons** — a family firm grown to a metanational. "& Sons" reads
-   very differently once the parent has walked away from a workforce.
-3. **The Bellamy Concern** — a founder's name given the old corporate form.
-4. **Bergstrom Group** — plain, northern, establishment.
+| where | the name |
+|---|---|
+| **The charter** | **The Cordell Extraction Company** — the name on the Act of the Gabonese Assembly that created it in 2044, and the name in every contract it has ever signed |
+| **The listed parent** | **Cordell Group S.A.** — the *société anonyme* on the exchange, in the annual report, and in the sentence "Cordell Group S.A. confirms that Ashen Reach Operations was a separate legal person." |
+| **Business as** | **Cordell** — one word, on the hull plates, the pay slips and the platform canteens. The company uses the short form wherever it wants to be liked. |
+| **What the workers call it** | **Cordell** too, and the tone is the whole difference. This is the company town's name for the company, and it is not affectionate. |
+| **What the benches call it** | **"the Cordell crowd"**, in the House; **"the Consortium"**, in the *Spindle*, which is a century out of date and knows it |
 
-**Place-named** (a company that took the name of what it dug)
-5. **Ashen Reach Holdings** — named for the platform itself. Ruthless and
-   plausible: the company took the asset's name and then the asset's name is
-   the first thing a player ever hears.
-6. **Port-Gentil Extractive** — named for its home port, which puts the Gabon
-   charter in the name.
-7. **Ostrava Mineral** — an industrial city's name, European-facing, which is
-   useful if the author wants the company to look like the bloc's creature
-   rather than the host's.
+**Cordell** is the founder's name and there is no founder left to soften it. The
+company has outlived the man by two hundred years, which is what makes it a
+corporation rather than a business: the family sold out in the 2080s, the
+charter state bought in during the 2110s when it wanted a national champion, and
+what remains is a name, a charter and eleven platforms.
 
-**Claim-named** (a name that is a boast — and, in this game, a lie)
-8. **Aurelia Resources** — *golden*. The most ordinary name on the list, which
-   is an argument for it.
-9. **Terra Nova Extraction** — *new land*, the colonial boast, and the one that
-   most invites the accusation the story is actually about.
-10. **Halcyon Extraction Group** — *halcyon*: calm, prosperous, idyllic.
-    Recommended as the working name precisely because the irony is quiet enough
-    to be a company's own choice rather than the author's joke.
-11. **Prima Materia** — the alchemists' first substance. Grandiose, and the kind
-    of name a corporation gives itself when it has a research division.
+### 4.2 A successor, and to what
 
-**Legal-form** (a Konzern, a trust — European and slightly archaic)
-12. **The Ostrava Concern** — a *Konzern* in the German sense: a parent with
-    dozens of subsidiaries, which is the exact structure the story turns on.
-13. **The Bergstrom Trust** — a trust rather than a company, which makes the
-    ring-fencing look like a duty rather than a scheme.
-14. **Cordell & Reyes, Charterers** — a partnership form, old-fashioned, and a
-    good fit for an elevator concession house that later diversified.
+The author's question was whether the corporation should be the **direct
+successor of a prominent present-day company**. It is — in structure and
+history, and not in trademark.
 
-**Recommendation.** **Halcyon Extraction Group** for the working name, with
-**The Ostrava Concern** as the strongest alternative: the *Concern* form almost
-explains the ring-fenced subsidiary by itself, and if the author wants the
-corporation to feel like a European metropole's instrument rather than a
-Gabonese national champion, it does that in one word.
+**It is the successor to the charter houses, not to a single firm.** Its own
+origin story, which it tells in the first paragraph of the annual report, is
+that it was chartered in 2044 to do what the chartered extraction companies had
+always done: **open ground nobody else would, under a state's protection, and
+keep the leases when the state changed.** It descends from the East Africa and
+Rio Tinto pattern, from the charter companies that ran territories, and from the
+sovereign-linked miners that replaced them — not from one of them.
 
-**The shape.**
+That lineage does three things for the story, and they are why I would keep it:
 
-- **Charter and home.** Incorporated in **Gabon** (a state that has run on
-  extraction for two centuries) as a *société anonyme*, listed in London and
-  Singapore, and majority-held by the Gabonese sovereign fund plus a pension
-  consortium. Its competitors call it a national champion. It calls itself a
+1. **The player understands it instantly.** A chartered extraction company with
+   a national fund on the register and a history of operating where refusal was
+   expensive needs no explanation. The recognition is the point; the name is not
+   the point.
+2. **It makes the 2287 grievance continuous with now.** The extraction logic did
+   not change between the twenty-first century and the twenty-third. Only the
+   property did. Ashen Reach is a depleted mine and a workforce that has become
+   the liability, and that is a story the present already has.
+3. **It gives the corporation its own defence, and it is a good one.** *"We were
+   chartered in 2044 and we have kept every term we signed. The Commonwealth has
+   not."* The company is not lying. That sentence is true, and it is the reason
+   the ring-fenced wind-up is the whole villainy: **it did not break the law, it
+   used it**, which is what a corporation is for.
+
+### 4.3 The shape
+
+- **Charter and home.** **Chartered in Gabon in 2044**, incorporated as a
+  *société anonyme*, listed in London and Singapore, and majority-held by the
+  **Gabonese sovereign fund** plus a pension consortium. Gabon has run on
+  extraction for two centuries and it is the one country in the dispute with a
+  national champion rather than a grievance — which is the more interesting
+  politics, and which makes the Commonwealth the imperial tenant rather than
+  the underdog. Its competitors call it a national champion. It calls itself a
   resource company.
 - **Business.** Substrate feedstock, regolith metals and thermal management —
   the three things a habitat cannot make for itself quickly. It operates
-  **eleven extraction platforms** and holds **two anchor concessions**, of
-  which Tether 8 at Port-Gentil is the oldest.
-- **The platform.** *Ashen Reach*, a processing platform of 300,000 workers
-  over a depleted feedstock body, served by the host state's anchor and
-  leased from the host state on a fifty-year term. It is not a failure. It is
-  a legacy asset whose ore grade has fallen for a decade and whose workforce
+  **eleven extraction platforms** and holds **two anchor concessions**, of which
+  the Port-Gentil line at Tether 8 is the oldest.
+- **The platform.** *Ashen Reach*, a processing platform of 300,000 workers over
+  a depleted feedstock body, served by the **International Earth-Orbit
+  Elevator** and leased from Kenya on a fifty-year term. It is not a failure. It
+  is a legacy asset whose ore grade has fallen for a decade and whose workforce
   is the most senior, most unionised and most expensive in the group.
 - **The abandonment, and why it is not villainy.** The platform is operated
   through a **special-purpose subsidiary**, *Ashen Reach Operations*, whose
-  liabilities are ring-fenced from the parent. When the substrate price moved
-  and the ore grade fell, the board's advisers produced two plans: a
+  liabilities are ring-fenced from the parent. When the substrate price moved and
+  the ore grade fell, the board's advisers produced two plans: a
   **decommissioning** (eleven years, and the workers are carried) and a
-  **solvent wind-up** (the subsidiary is liquidated, the workers' claims rank
-  as unsecured creditors, and the parent's exposure ends). The board took the
-  second and took it legally. This is the single most important sentence in
-  the corporation's characterisation: **it did not break the law, it used it**,
+  **solvent wind-up** (the subsidiary is liquidated, the workers' claims rank as
+  unsecured creditors, and the parent's exposure ends). The board took the
+  second and took it legally. This is the single most important sentence in the
+  corporation's characterisation: **it did not break the law, it used it**,
   which is what a corporation is for.
-- **The debt, and who holds it.** The wind-up left bonds outstanding, secured
-  on the feedstock leases and on the **instance and substrate collateral of
-  the workforce** — the rents people pay to keep running. **Circumterrestrial
+- **The debt, and who holds it.** The wind-up left bonds outstanding, secured on
+  the feedstock leases and on the **instance and substrate collateral of the
+  workforce** — the rents people pay to keep running. **Circumterrestrial
   Underwriters** hold the senior tranche and have already repriced the
   Commonwealth's own premium; the Earth banks hold the rest. That is why the
   crisis reaches the Commonwealth's solvency without a shot being fired.
@@ -294,6 +297,23 @@ Gabonese national champion, it does that in one word.
   who has never lost a case by answering a question directly. They are not
   cackling. They believe the wind-up was the correct allocation of capital,
   and they can defend it at a hearing without saying anything untrue.
+
+### 4.4 The names that were not taken
+
+Kept because a name is the easiest thing here to change and the reasoning is not.
+Fourteen options in the register the setting's other corporations use — *[name] +
+[sector noun]*, as in *Bellweather Consumables*, *Anselm Elevator*, *Standard
+Substrate* — grouped by how real extraction companies name themselves:
+
+**Founder-named** (coldest when the founder is long dead): **Cordell Extraction**
+(taken), *Vandeleur & Sons*, *The Bellamy Concern*, *Bergstrom Group*.
+**Place-named** (a company that took the name of what it dug): *Ashen Reach
+Holdings*, *Port-Gentil Extractive*, *Ostrava Mineral*.
+**Claim-named** (a boast, and in this game a lie): *Aurelia Resources*, *Terra
+Nova Extraction*, *Halcyon Extraction Group* (the working name), *Prima Materia*.
+**Legal-form** (a *Konzern*, a trust — European and slightly archaic): *The
+Ostrava Concern*, *The Bergstrom Trust*, *Cordell & Reyes, Charterers*.
+
 - **The levers it holds.** It is a **metanational**, so it belongs in
   `st.foreign` and not `st.parties`: it cannot be whipped, and it buys
   functional seats at home (the **Anchor Party** and the consortium Liberals

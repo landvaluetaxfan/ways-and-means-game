@@ -19,6 +19,43 @@
    ============================================================= */
 
 const WORLD = {
+
+  /* =============================================================
+     THE QUESTION THE CAMPAIGN IS ABOUT.
+
+     The Bellamy Almanac Works is NOT a station of the Commonwealth. It is
+     not in the roster, it returns no members, and it is not in the
+     apportionment — because the campaign BEGINS before the question of
+     annexing it is settled. That is the whole shape of the story: whether
+     the Works should come in, and on what terms, is what the session is
+     for.
+
+     So it is a FOREIGN body, and it lives here rather than in
+     content/stations.js. Its operator holds its charter; its workforce is
+     the largest single employer outside the Commonwealth's jurisdiction;
+     and its annexation is the act that would force a reapportionment —
+     which is a consequence of the ending, not a premise of the opening.
+     Engine's tier totals read `st.stations`, so a body that is not in the
+     roster simply does not count, which is exactly right.
+     ============================================================= */
+  foreign: [
+    { id:"almanac_works", name:"The Bellamy Almanac Works, Brant & Vane",
+      short:"the Almanac",
+      operator:"Cordell",            /* absorbed the Bellamy concern, kept the name */
+      site:"Tether 11, the Chimborazo line", lat:-2.9, lng:-79.1,
+      population:184000, workforce:97000,
+      closure:0.44, suspended:7100, attested:0.66,
+      composition:{ biological:0.74, emulation:0.2, uplift:0.04, synthetic:0.02 },
+      charter:"A private charter held by the operator and not granted by any Commonwealth.",
+      note:"A works station built by the Bellamy concern and absorbed by Cordell, which kept the name " +
+           "because the name is the brand. It is the largest single employer outside the Commonwealth's " +
+           "jurisdiction and it is not in the apportionment: it returns no members, it pays no federal " +
+           "consumables levy, and its constitution is a contract between a company and its workforce. " +
+           "Whether it should come in — and on what terms, and who pays for the charter to be " +
+           "surrendered — is the question the session is for.",
+      grievance:"That everyone in the House has an opinion about it and nobody has read the charter.",
+      interests:["shed_order_priority", "essential_services_law", "consumables_subsidy"] }
+  ],
   /* tether: the name the Commonwealth uses; formal: the instrument's name. */
   anchors: [
     { id:"tether_1",  tether:"The Beanstalk", formal:"",                               station:"anselm",       site:"Macapá, Brazil",          lat:  0.03, lng: -51.07, host:"Brazil",               mine:true },

@@ -1112,8 +1112,6 @@ const UI = (function () {
         `<tr><td style="text-transform:capitalize">${p}</td><td class="n"><span class="flag ${st.president.relationship < 35 ? "bad" : ""}" data-tip="live">${st.president.relationship < 35 ? "LIVE" : "DORMANT"}</span></td></tr>`
       ).join("")}</tbody></table>`;
 
-    $("#gov-foreign").innerHTML = foreignHTML();
-
     /* A VERTICAL FEED HOLDS MORE THAN A STRIP DID, and the column scrolls,
        so the wire shows the session's traffic rather than its tail. */
     $("#gov-wire").innerHTML = st.wire.length
@@ -3483,6 +3481,8 @@ const UI = (function () {
      content and no anchor says so plainly rather than showing an empty frame,
      which is the difference between a map and a gazetteer. */
   function worldSideHTML() {
+    const body = World.selectedBody();
+    if (body) return worldBodyHTML(body);
     const sel = World.selected();
     const anchors = WORLD.anchors || [];
     const cName = sel ? countryName(sel) : "";
@@ -3529,6 +3529,33 @@ const UI = (function () {
     const f = (typeof WORLD_COUNTRIES !== "undefined" ? WORLD_COUNTRIES : [])
       .find(c => c.i === iso);
     return f ? f.n : iso;
+  }
+
+  /* THE WORKS, when its mark is clicked: the thing the campaign is about. It is
+     not a station of the Commonwealth and the window says so, because a player
+     who thinks it is a member will misread every argument about it. */
+  function worldBodyHTML(id) {
+    const b = Engine.foreignBody(C, id);
+    if (!b) return `<div class="note">No such body.</div>`;
+    const home = Engine.isAnnexed(st, C, id);
+    const a = (C.actors || []).find(x => x.id === b.operator);
+    const live = (st.actors || {})[b.operator] || {};
+    return `<div class="w-c-h"><b>${esc(b.name)}</b><span class="w-c-iso">${home ? "annexed" : "outside"}</span></div>` +
+      (b.note ? `<div class="note">${esc(b.note)}</div>` : "") +
+      `<div class="ostats">` +
+        `<span><b>${(b.population || 0).toLocaleString()}</b><i>population</i></span>` +
+        `<span><b>${(b.workforce || 0).toLocaleString()}</b><i>workforce</i></span>` +
+        `<span data-tip="closure"><b>${(b.closure || 0).toFixed(2)}</b><i>closure</i></span>` +
+        `<span><b>${(b.suspended || 0).toLocaleString()}</b><i>suspended</i></span>` +
+      `</div>` +
+      `<div class="rulehead">The charter</div><div class="note">${esc(b.charter || "")}</div>` +
+      `<div class="rulehead">The operator</div><div class="note">` +
+        `${esc(a ? a.name : b.operator)}` +
+        `${a ? " &mdash; standing " + (live.standing == null ? a.standing : live.standing) +
+          (a.lag ? ", " + a.lag + " sitting" + (a.lag === 1 ? "" : "s") + " behind" : "") : ""}. ` +
+        `Wants: ${esc((a && a.asks) || "the charter honoured")}.</div>` +
+      (b.grievance ? `<div class="rulehead">Grievance</div><div class="note">${esc(b.grievance)}</div>` : "") +
+      `<div class="rulehead">Interests</div><div class="note">${esc((b.interests || []).join("  \u00b7  "))}</div>`;
   }
   function stationName(id) {
     const s = (C.stations || []).find(x => x.id === id);

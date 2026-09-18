@@ -70,7 +70,8 @@ const Tips = (function () {
     country: { title: "Countries",
       body: "Click a country on the globe for what it is to the Commonwealth: the " +
             "anchors on its territory and the modelled state's standing and ask. " +
-            "The foreign panel below orders the powers by how stale their news is." },
+            "A country with no anchor on it says so, which is a fact as load-bearing " +
+            "as the ones with one." },
     tribunal: { title: "The Tribunal",
       body: "The bench that hears what the orders do. It is not elected and " +
             "cannot be whipped, so the numbers in the House do not reach it. Its " +

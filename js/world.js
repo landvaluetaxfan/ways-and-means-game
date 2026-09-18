@@ -40,10 +40,21 @@ const World = (function () {
      selection directly and the reference column went on showing the roster. */
   let onChange = null;
   function select(iso) {
+    view.body = null;
     view.sel = (iso && iso !== view.sel) ? iso : (iso === view.sel ? null : iso);
     if (onChange) onChange();
     return view.sel;
   }
+  /* THE CAMPAIGN'S SUBJECT IS SELECTABLE TOO. A foreign body is not a country
+     and not an anchor: it is the thing the session is about, and clicking its
+     mark opens it in the same window a country uses. */
+  function selectBody(id) {
+    view.sel = null;
+    view.body = (id && id !== view.body) ? id : (id === view.body ? null : id);
+    if (onChange) onChange();
+    return view.body;
+  }
+  function selectedBody() { return view.body || null; }
   function onSelect(fn) { onChange = fn; }
   function auto(on) { view.auto = on === undefined ? !view.auto : !!on; return view.auto; }
 
@@ -174,7 +185,29 @@ const World = (function () {
       `<path class="w-grat" d="${graticule()}"/>` +
       countries +
       anchors.map(anchorMark).join("") +
+      ((WORLD.foreign || []).map(foreignMark).join("")) +
       `</svg>`;
+  }
+
+  /* A FOREIGN BODY IS NOT AN ANCHOR. The Bellamy Almanac Works is the object of
+     the campaign: it is orbital, so it is drawn standing OFF its tether's base
+     rather than as a pin in a country, and it is drawn in the warning colour
+     because it is the one thing here that is not yet the Commonwealth's. Annex
+     it and it turns gold — the story told in one colour change. */
+  function foreignMark(b) {
+    const p = project(b.lng, b.lat);
+    if (!p.vis) return "";
+    const home = !!(st && st.flags && st.flags["annexed_" + b.id]);
+    const len = 44 * (view.zoom || 1);
+    const dx = view.mode === "globe" ? (p.x - W / 2) : 0;
+    const dy = view.mode === "globe" ? (p.y - H / 2) : -1;
+    const m = Math.hypot(dx, dy) || 1;
+    const ux = dx / m, uy = view.mode === "globe" ? dy / m : -1;
+    const q = { x: p.x + ux * len, y: p.y + uy * len };
+    return `<g class="w-body${home ? " in" : ""}" data-body="${b.id}">` +
+      `<line x1="${p.x.toFixed(1)}" y1="${p.y.toFixed(1)}" x2="${q.x.toFixed(1)}" y2="${q.y.toFixed(1)}"/>` +
+      `<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="4.2"/>` +
+      `</g>`;
   }
 
   /* ---------- the turn and the spin ---------- */
@@ -205,10 +238,11 @@ const World = (function () {
     root.addEventListener("pointerup", up);
     root.addEventListener("pointercancel", up);
     root.addEventListener("click", e => {
+      const b = e.target.closest && e.target.closest("[data-body]");
+      if (b) { selectBody(b.dataset.body); return; }
       const p = e.target.closest && e.target.closest("[data-iso]");
       if (!p) return;
       select(p.dataset.iso);
-      redraw();
     });
 
     let t = null;
@@ -224,5 +258,5 @@ const World = (function () {
     return () => { if (t) clearInterval(t); };
   }
 
-  return { render, wire, set, toggle, mode, selected, select, onSelect, auto, view };
+  return { render, wire, set, toggle, mode, selected, select, selectBody, selectedBody, onSelect, auto, view };
 })();

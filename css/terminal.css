@@ -191,6 +191,12 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .w-anchor.mine circle{stroke:var(--gold,#c9a227);}
 .w-anchor.mine circle:first-of-type{fill:var(--gold,#c9a227);}
 .w-anchor.sel circle{stroke:#f0e6c8;}
+/* THE FOREIGN BODY. Warning colour while it is outside the Commonwealth, gold
+   once it has been annexed — the campaign's question answered in one colour. */
+.w-body line{stroke:var(--warn,#a4632a);stroke-width:1.2;stroke-dasharray:3 2;}
+.w-body circle{fill:var(--warn,#a4632a);stroke:#12150f;stroke-width:1;cursor:pointer;}
+.w-body.in line{stroke:var(--gold,#c9a227);stroke-dasharray:none;}
+.w-body.in circle{fill:var(--gold,#c9a227);}
 /* THE SELECTED COUNTRY'S HEAD. Bigger than a rulehead, because it is a window
    and the country is the subject of it. */
 .w-c-h{display:flex;align-items:baseline;gap:6px;border-bottom:1px solid var(--ink-soft);

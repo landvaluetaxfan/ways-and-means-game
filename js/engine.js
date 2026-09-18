@@ -2929,6 +2929,34 @@ const Engine = (function () {
       line: `Wide powers and one council, on a charter the Commonwealth grants and could withdraw.` };
   }
 
+  /* ---------------------------------------------------------
+     A FOREIGN BODY IS NOT A STATION (design/29 §4, the campaign's premise)
+
+     The Bellamy Almanac Works is the object of the campaign and not a
+     member of the Commonwealth: it returns no members, it is not in the
+     apportionment, and `st.stations` does not contain it, which is what
+     keeps the chamber at 280 until the question is settled. These two
+     readers are the whole of the engine's part in that: is it inside the
+     Commonwealth, and what did annexing it cost.
+
+     ANNEXATION IS A CONTENT ACT. There is no `annex` verb and there does
+     not need to be: content sets a flag and, if the ending takes the
+     Works in, the seat arithmetic is a `seats` effect like any other. What
+     the engine owes content is a way to ASK, which is what these are.
+     --------------------------------------------------------- */
+  function foreignBodies(C) {
+    return ((C.world || {}).foreign) || [];
+  }
+  function foreignBody(C, id) {
+    return foreignBodies(C).find(x => x.id === id) || null;
+  }
+  /* Inside the Commonwealth: a flag, because annexation is a decision and
+     not a number. The flag is content's and the reader names it once. */
+  function isAnnexed(st, C, id) {
+    const b = foreignBody(C, id);
+    return !b ? false : !!(st.flags && st.flags["annexed_" + id]);
+  }
+
   function federalSuspended(st) {
     let n = 0;
     for (const id in st.stations) n += st.stations[id].suspended || 0;
@@ -4733,6 +4761,7 @@ const Engine = (function () {
     snapshot, changes,
     prorogue, canDivide, candidates, vacancies, fillPost,
     federalSuspended, stationGovernment,
+    foreignBodies, foreignBody, isAnnexed,
     CONDITIONS, EFFECTS
   };
 })();
