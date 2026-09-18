@@ -376,6 +376,56 @@ is whether you have the time, and the time runs out when the House rises.
       result:"You will read the sheet alone every sitting. He says nothing about it, which is how he says everything." }
   ]},
 
+/* THE RULES OF THE HOUSE (the tutorial the author deferred until chapter one of
+   the new story). The opening teaches the SITTING — the paper, the slots, the
+   whip, the approach — and never once says what a division is or why the
+   functional forty matter, which is the one thing a player cannot infer from
+   the interface, because it is the thing the interface is about. The Chief Whip
+   explains his own chamber, in the register he would use for a leader who has
+   never sat on the benches, having run the whips for years and watched prime
+   ministers lose votes they were entitled to win. */
+{ id:"the_rules_of_the_house", prologue:8, once:true,
+  when:{ flagsAbsent:["taught_the_house"] },
+  title:"The three ways a government loses a vote",
+  speaker:"okarie",
+  body:`He does not sit down. He has been running whips since before you were first
+returned and he has come to explain his own chamber, which means he has decided
+you do not know it.
+
+"Three ways a measure fails, and they are not the same way twice. First, the
+House. Two hundred and forty elected members and a hundred and twenty-one is a
+majority. Nothing else matters to that number. Not the partners, not the polls,
+not the argument. Count.
+
+"Second, the bench. Forty members sit for trades and professions and not for
+places, and a measure that touches what they do has to carry among them as well.
+That is the dual test. Their benches are smaller than some parties and they are
+the reason a bill can win the chamber and die on the same afternoon.
+
+"Third, the objection. A bench that owns the subject of a bill can refuse it.
+Not defeat it. Refuse it. That is why the bill you inherited dies among the
+professions and carries among the counties, and why I have been telling you
+about the licensing boards since Tuesday.
+
+"Everything else in this building is arithmetic and who owes whom."`,
+  choices:[
+    { label:"Ask him which of the three is the problem for the bill you inherited.",
+      note:"The Chief Whip has run the benches for years and has watched " +
+           "prime ministers lose votes they were entitled to win. Asking him " +
+           "which test will kill the threshold bill costs nothing and is the " +
+           "one answer the interface cannot give you.",
+      effects:[{ flag:"taught_the_house" }, { move:{ "rel.okarie":5 } },
+               { move:{ "loyalty.cu_loyalists":2 } },
+               { flag:"knows_the_tests" }],
+      result:"\"The second and the third,\" he says. \"You can carry the country on Tuesday and lose the bench on Thursday, and the bench is where it will happen.\"" },
+    { label:"Thank him. You have read the standing orders.",
+      note:"You keep the hour and he keeps his opinion, which is how the " +
+           "whips' office works and always has.",
+      effects:[{ flag:"taught_the_house" }, { move:{ "rel.okarie":-3 } },
+               { move:{ "public_standing":1 } }],
+      result:"He accepts it the way he accepts everything, which is to say he goes back to the lobbies and works the benches himself." }
+  ]},
+
 { id:"the_whip_list", prologue:6,
   when:{ flagsAbsent:["whip_briefed"] },
   title:"The list",
