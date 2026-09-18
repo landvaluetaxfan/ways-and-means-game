@@ -4087,6 +4087,58 @@ const Engine = (function () {
   }
 
   /* ---------------------------------------------------------
+     AMENDMENTS — committee is where a bill is CHANGED (design/25 §7)
+
+     `amendments: []` has been allocated on every bill since the first build
+     and nothing has ever read or written it. A bill now declares its own
+     amendments in content, the government may adopt one at COMMITTEE, and it
+     is applied then and there like any other effect and recorded on the bill.
+
+     No new verb: an amendment IS effects. The politics is the design's — you
+     do not defeat a measure, you amend it until its own sponsor stops wanting
+     it — so an amendment that buys one bench pays for it somewhere else, and
+     the price is written in content next to the thing it buys.
+     --------------------------------------------------------- */
+  function amendmentList(st, C, billId) {
+    const b = C.billById[billId], bs = st.bills[billId];
+    if (!b || !bs) return [];
+    const taken = (bs.amendments || []).map(x => x.id);
+    return (b.amendments || []).filter(a => taken.indexOf(a.id) < 0);
+  }
+
+  function canAmend(st, C, billId) {
+    const bs = st.bills[billId];
+    if (!bs) return { ok: false, reason: "no such bill", list: [] };
+    const list = amendmentList(st, C, billId);
+    if (!list.length) return { ok: false, reason: "nothing left to move", list: [] };
+    if (bs.dead) return { ok: false, reason: "the bill is dead", list: list };
+    if (bs.stage !== "committee")
+      return { ok: false, reason: "amendments are moved at committee", list: list };
+    if (st.slots.total - st.slots.used < 1)
+      return { ok: false, reason: "no order-paper time left this session", list: list };
+    return { ok: true, list: list };
+  }
+
+  function amendBill(st, C, billId, amId) {
+    const b = C.billById[billId], bs = st.bills[billId];
+    const a = (b && (b.amendments || [])).find(x => x.id === amId);
+    if (!a) return { ok: false, reason: "no such amendment" };
+    if ((bs.amendments || []).some(x => x.id === amId))
+      return { ok: false, reason: "that amendment has already been moved" };
+    const chk = canAmend(st, C, billId);
+    if (!chk.ok) return { ok: false, reason: chk.reason };
+    spendSlots(st, 1);
+    st.actedThisSitting = true;
+    apply(st, C, a.effects || []);
+    (bs.amendments = bs.amendments || []).push({ id: a.id, label: a.label, at: st.sitting });
+    billLog(st, billId, "amendment", "Amended: " + (a.label || a.id));
+    st.log.unshift({ sitting: st.sitting,
+      text: "Amendment moved to " + b.title + ": " + (a.label || a.id) });
+    settle(st, C);
+    return { ok: true, amendment: a };
+  }
+
+  /* ---------------------------------------------------------
      AND THE DAY OF A DIVISION IS HERS TOO.
 
      dividesOn was st.sitting + 2, an engine constant nobody chose. The
@@ -4556,6 +4608,7 @@ const Engine = (function () {
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
+    amendmentList, canAmend, amendBill,
     rollCall, lobbyable, setLobby, clearLobby, lobbyCost, payLobby, lobbiedSeats,
     clausesOf, clausePlan, clauseCost, setClause, clauseEffects,
     domainTest, functionalByConstituency, lobbiedByConstituency, isSupply,

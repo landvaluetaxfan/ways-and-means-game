@@ -221,6 +221,10 @@ try {
   (BILLS || []).forEach(b => {
     checkEffects(b.onPass, "bill " + b.id + " onPass");
     checkEffects(b.onFail, "bill " + b.id + " onFail");
+    /* Committees amend (design/25 §7): an amendment's effects are content,
+       so a target that names nothing has to fail here like any other. */
+    (b.amendments || []).forEach(a =>
+      checkEffects(a.effects, "bill " + b.id + " amendment " + a.id));
     (b.clauses || []).forEach(cl => (cl.levels || []).forEach(lv =>
       checkEffects(lv.effects, "bill " + b.id + " clause " + cl.id + "/" + lv.id)));
   });

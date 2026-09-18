@@ -598,6 +598,14 @@ tr.vacant td{background:var(--chrome);color:var(--ink-soft);}
   white-space:nowrap;}
 .bhist-b tr.k-division td{color:var(--ink);}
 .bhist-b tr.k-assent td,.bhist-b tr.k-struck td{font-weight:700;}
+/* AMENDMENTS. One block per declared amendment, the price of it in prose beside
+   the thing it buys, and a moved one marked and left on the page. */
+.amd{border-left:3px solid var(--rule);padding:4px 0 6px 7px;margin-top:6px;}
+.amd.done{border-left-color:var(--ok);}
+.amd-h{display:flex;align-items:baseline;gap:6px;}
+.amd-h b{font-size:12.5px;}
+.amd .note{max-width:62ch;}
+.amdbtn{margin-top:4px;}
 
 .note{font-family:var(--f-read);font-size:12px;color:var(--ink-soft);line-height:1.4;}
 .rulehead{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);border-bottom:1px solid var(--chrome-dk);padding-bottom:1px;margin:6px 0 4px;}

@@ -1357,6 +1357,35 @@ const UI = (function () {
         `<td>${esc(x.text)}</td></tr>`).join("")}</tbody></table></div></details>`;
   }
 
+  /* AMENDMENTS (design/25 §7). A bill declares its own in content; the
+     government moves one at COMMITTEE. Moving it spends order-paper time,
+     applies its effects at once and goes on the bill's own record. The panel
+     names the reason a move is refused rather than hiding the options, and a
+     moved amendment stays on the page wearing its flag. */
+  function amendmentsHTML(b, bs) {
+    const all = b.amendments || [];
+    if (!all.length) return "";
+    const chk = Engine.canAmend(st, C, b.id);
+    const taken = bs.amendments || [];
+    const rows = all.map(a => {
+      const done = taken.some(x => x.id === a.id);
+      const can = chk.ok && !done;
+      return `<div class="amd${done ? " done" : ""}">` +
+        `<div class="amd-h"><b>${esc(a.label)}</b>` +
+        (done ? ` <span class="flag good">MOVED</span>` : "") + `</div>` +
+        (a.note ? `<div class="note">${esc(a.note)}</div>` : "") +
+        (done ? "" : `<button class="btn amdbtn" data-amend="${esc(a.id)}" ` +
+          `data-bill="${esc(b.id)}"${can ? "" : " disabled"}` +
+          tipAttr("Move the amendment", can
+            ? "Spends one order-paper slot and applies at once. The bill keeps " +
+              "its own record of it, and the benches move as its effects say."
+            : chk.reason) + `>Move</button>`) +
+        `</div>`;
+    }).join("");
+    return `<div class="rulehead">Amendments <em>moved at committee</em></div>` +
+      (chk.ok ? "" : `<div class="note">${esc(chk.reason)}.</div>`) + rows;
+  }
+
   function drawBill(id) {
     const b = C.billById[id], bs = bsOf(id), dchk = Engine.canDivide(st, C, id);
     /* The forecast is the REPORTED division, not the exact one (design/08 §7),
@@ -1386,6 +1415,7 @@ const UI = (function () {
           billAxesHTML(b) +
           billDoesHTML(b) +
           billRuleHTML(b) +
+          amendmentsHTML(b, bs) +
           /* NOT THE FORECAST. It is drawn under the plan, a hand's width to
              the right on the same screen, where it doubles as the legend for
              the seat colouring. Two copies of one number is not emphasis. */
@@ -1510,6 +1540,17 @@ const UI = (function () {
         const away = day - st.sitting;
         setStatus(b.title + " set down for sitting " + day + " \u00b7 " + away +
                   " sitting" + (away === 1 ? "" : "s") + " away", "transient");
+        drawAll(); afterAction();
+      }));
+
+    /* Moving an amendment: an action, so it goes through acted(). */
+    det.querySelectorAll(".amdbtn").forEach(btn =>
+      btn.addEventListener("click", () => {
+        const r = acted(() => Engine.amendBill(st, C, btn.dataset.bill, btn.dataset.amend));
+        if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
+        cue("stamp"); score("undertake");
+        setStatus("Amendment moved: " + (r.amendment.label || btn.dataset.amend) +
+                  " \u2014 applied at once", "transient");
         drawAll(); afterAction();
       }));
   }

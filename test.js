@@ -1656,6 +1656,40 @@ console.log("\nA BILL'S HISTORY:");
 })();
 
 /* ---------------------------------------------------------------------
+   AMENDMENTS (design/25 §7). `amendments: []` was allocated on every bill
+   since the first build and read by nothing. A bill declares them, committee
+   moves them, and each is effects and nothing else.
+   --------------------------------------------------------------------- */
+console.log("\nAMENDMENTS:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const st = Engine.newGame(CONTENT);
+  st.bills.divergence.stage = "committee";
+  const chk = Engine.canAmend(st, CONTENT, "divergence");
+  ok("a bill declares its own amendments", chk.ok && chk.list.length === 2,
+     chk.ok ? chk.list.length + " declared" : chk.reason);
+  const before = st.parties.psa.loyalty;
+  const r = Engine.amendBill(st, CONTENT, "divergence", "div_delay");
+  ok("moving one applies its effects at once",
+     r.ok && st.parties.psa.loyalty < before, before + " -> " + st.parties.psa.loyalty);
+  ok("and the bill records it",
+     (st.bills.divergence.amendments || []).length === 1);
+  ok("and its own history carries the amendment",
+     (st.bills.divergence.history || []).some(x => x.kind === "amendment"),
+     JSON.stringify((st.bills.divergence.history || []).map(x => x.text)));
+  const again = Engine.amendBill(st, CONTENT, "divergence", "div_delay");
+  ok("and the same amendment cannot be moved twice", !again.ok, again.reason);
+  const st2 = Engine.newGame(CONTENT);
+  st2.bills.divergence.stage = "second_reading";
+  const chk2 = Engine.canAmend(st2, CONTENT, "divergence");
+  ok("amendments are moved at committee",
+     !chk2.ok && /committee/.test(chk2.reason || ""), chk2.reason);
+  if (bad) { console.log("\n" + bad + " AMENDMENT FAILURES"); process.exitCode = 1; }
+})();
+
+/* ---------------------------------------------------------------------
    THE TRIBUNAL (design/30). The bench that hears what the orders do: an
    actor, so its disposition moves with the existing verb; a case is a
    queued event with a date; and a ruling is a condition, never a roll.

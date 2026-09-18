@@ -58,6 +58,31 @@ const BILLS = [
       sc:  { popular:{for:6},  functional:"against" },
       hul:"against", fh:"against", gb:"against", des:"against"
     },
+    /* AMENDMENTS (design/25 §7). Committee is where a bill is CHANGED rather
+       than killed, and the `amendments` array has been allocated on every bill
+       since the first build and read by nothing. Each of these is effects and
+       nothing else — no new verb — applied when it is moved and recorded on
+       the bill. You do not defeat a measure, you amend it until its own sponsor
+       stops wanting it, so every price is written next to the thing it buys. */
+    amendments:[
+      { id:"div_delay", label:"Commence at the next session",
+        note:"The threshold moves to forty hours and commencement is put off a "+
+             "session, which gives every employer a year to come into line and "+
+             "every maintenance bench a year of not being undercut. The "+
+             "Substrate Left made the bill the price of the coalition and will "+
+             "read the delay as a payment on account.",
+        effects:[ { flag:{ divergence_delayed:true } },
+                  { move:{ "loyalty.cu_maintenance":7 } },
+                  { move:{ "loyalty.psa":-7 } }, { move:{ "capital.psa":-2 } } ] },
+      { id:"div_boards", label:"Carve the licensing boards out",
+        note:"The Guild's own ask, moved as an amendment rather than carried as "+
+             "a promise: the threshold binds the boards' members and not their "+
+             "licensure. It buys the functional bench, and the Substrate Left "+
+             "reads it as the government selling the bill behind them.",
+        effects:[ { flag:{ divergence_boards:true } },
+                  { move:{ "loyalty.gb":7 } }, { move:{ "rel.gb_chair":5 } },
+                  { move:{ "loyalty.psa":-6 } } ] }
+    ],
     onPass:[{law:{divergence_threshold_hours:40}},
             {wire:"DIVERGENCE THRESHOLD CUT TO FORTY HOURS; CENSUS BUREAU BEGINS REGISTRATION"}],
     onFail:[{move:{"loyalty.psa":-14}},
@@ -183,6 +208,17 @@ const BILLS = [
     dualMajority:false,
     axes:{ownership:"public",personhood:null,sovereignty:"federal",closure:"integrationist"},
     stances:{ cu:"for", psa:"for", rv:"for", upl:"for", geo:"for", sc:{forPct:0.4}, cl:{forPct:0.3} },
+    amendments:[
+      { id:"th2_ring", label:"Release to the ring band first",
+        note:"The quota is reallocated to the ring first and the outer stations "+
+             "take what is left. The ring's benches have asked for it since the "+
+             "diversion, and the outer stations will read the order of release "+
+             "as the government's real schedule.",
+        effects:[ { flag:{ thermal2_ring_first:true } },
+                  { move:{ "loyalty.cl":4 } }, { move:{ "loyalty.hul":5 } },
+                  { move:{ "loyalty.sc":-5 } },
+                  { station:{ vantage:{ closure:0.02 } } } ] }
+    ],
     onPass:[{station:{vantage:{closure:0.04}}},{move:{"thermal_margin":9}},
             {move:{"price.thermal":-22}},
             {wire:"THERMAL QUOTA REALLOCATED; QUOTA PRICE FALLS SHARPLY"}],
