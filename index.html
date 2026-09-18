@@ -35,6 +35,7 @@
     <button class="tab" role="tab" aria-selected="false" data-t="gov">Government</button>
     <button class="tab" role="tab" aria-selected="false" data-t="cham">Chamber</button>
     <button class="tab" role="tab" aria-selected="false" data-t="orb">Orbit</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="world">World</button>
     <button class="tab" role="tab" aria-selected="false" data-t="pap">Papers</button>
     <button class="tab" role="tab" aria-selected="false" data-t="cx">Concordance</button>
     <button class="tab" role="tab" aria-selected="false" data-t="log">Record</button>
@@ -238,6 +239,23 @@
       </div>
     </section>
 
+    <!-- THE WORLD: the ground the anchors stand on, and the foreign panel that
+         used to share a column on the Government tab. -->
+    <section class="screen" id="s-world">
+      <div class="grid g-world">
+        <div class="panel">
+          <h2><span data-tip="globe">The Earth</span> <em>anchor territory, foreign sovereignty</em></h2>
+          <div class="pbody scrolls" id="w-map"></div>
+        </div>
+        <div class="stack scrolls">
+          <div class="panel">
+            <h2><span data-tip="country">Countries</span> <em>ordered by delay in the panel below</em></h2>
+            <div class="pbody scrolls" id="w-side"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="screen" id="s-cx">
       <div class="panel" style="height:calc(100vh - 130px);min-height:520px">
         <h2>Concordance <em>public reference &middot; attested editing</em></h2>
@@ -302,6 +320,8 @@
 <script src="content/artifacts.js"></script>
 <script src="content/business.js"></script>
 <script src="content/settlements.js"></script>
+<script src="content/geo/world-countries.js"></script>
+<script src="content/world.js"></script>
 <script src="content/actors.js"></script>
 <script src="content/index.js"></script>
 <script src="js/engine.js"></script>
@@ -315,6 +335,7 @@
 <script src="js/motion.js"></script>
 <script src="js/artifacts.js"></script>
 <script src="js/orbitchart.js"></script>
+<script src="js/world.js"></script>
 <script src="js/papers.js"></script>
 <script src="js/encyclopedia.js"></script>
 <script src="js/ui.js"></script>

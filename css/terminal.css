@@ -154,6 +154,36 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    government four columns of roughly equal width at a 1440 window: what it can
    do, who it is dealing with, what it has promised, and how it stands. */
 .g-gov{grid-template-columns:minmax(230px,280px) minmax(0,1fr) minmax(0,1fr) minmax(260px,320px);}
+/* THE WORLD. The globe takes what is left; the country panel is a reference
+   column the width of the orbit screen's, because it holds the same sort of
+   thing: what a place is, and what it wants. */
+.g-world{grid-template-columns:minmax(0,1fr) minmax(300px,380px);height:100%;min-height:0;}
+#s-world.screen.on{display:flex;flex-direction:column;height:100%;min-height:0;}
+#s-world .grid{flex:1 1 auto;min-height:0;}
+#s-world .panel{min-height:0;display:flex;flex-direction:column;}
+#s-world .panel>.pbody{flex:1 1 auto;min-height:0;overflow:auto;}
+#s-world .stack>.panel{flex:0 0 auto;}
+/* THE GLOBE'S OWN HAND: sea, coastline, an anchor that is ours lit and theirs
+   plain. Drawn in the terminal's palette like everything else, so it reads as
+   the orbit chart's sibling rather than as a data-visualisation demo. */
+.w-head{display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  border-bottom:1px solid var(--chrome-dk);padding-bottom:5px;margin-bottom:5px;}
+.w-hint{margin-left:auto;font-family:var(--f-data);font-size:9px;color:var(--ink-soft);}
+.w-canvas{background:#12150f;cursor:grab;overflow:hidden;}
+.w-canvas:active{cursor:grabbing;}
+#world-svg{display:block;width:100%;height:auto;}
+.w-ocean{fill:#1b211a;}
+.w-grat{fill:none;stroke:#2b3226;stroke-width:.5;}
+.w-c{fill:#3a4433;stroke:#6f7a63;stroke-width:.4;cursor:pointer;}
+.w-c:hover{fill:#4d5a42;}
+.w-c.has{fill:#55502f;}
+.w-c.sel{fill:#c9a227;stroke:#f0e6c8;stroke-width:.8;}
+.w-anchor line{stroke:#7f8a72;stroke-width:.8;stroke-dasharray:2 2;}
+.w-anchor circle{fill:none;stroke:#8f9a80;stroke-width:1;}
+.w-anchor.mine line{stroke:var(--gold,#c9a227);stroke-dasharray:none;stroke-width:1.4;}
+.w-anchor.mine circle{stroke:var(--gold,#c9a227);}
+.w-anchor.mine circle:first-of-type{fill:var(--gold,#c9a227);}
+.w-anchor.sel circle{stroke:#f0e6c8;}
 @media (max-width:1340px){
   .g-gov{grid-template-columns:minmax(200px,230px) minmax(0,1fr) minmax(0,1fr) minmax(220px,270px);}
 }

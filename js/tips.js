@@ -61,6 +61,16 @@ const Tips = (function () {
             "time refills, business not carried falls, and every undertaking due " +
             "before the rise comes due at once. It is the deadline everything " +
             "else on the board is measured against." },
+    globe: { title: "The Earth",
+      body: "Every anchor in the dozen stands on somebody else's soil. The globe " +
+            "turns and can be dragged; the map is the same drawing in a different " +
+            "projection. The gold anchors are the Commonwealth's four, the plain " +
+            "ones belong to other states, and a station is orbital, so it is not " +
+            "drawn at a point on the ground." },
+    country: { title: "Countries",
+      body: "Click a country on the globe for what it is to the Commonwealth: the " +
+            "anchors on its territory and the modelled state's standing and ask. " +
+            "The foreign panel below orders the powers by how stale their news is." },
     tribunal: { title: "The Tribunal",
       body: "The bench that hears what the orders do. It is not elected and " +
             "cannot be whipped, so the numbers in the House do not reach it. Its " +

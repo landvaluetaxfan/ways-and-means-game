@@ -1,0 +1,217 @@
+/* =============================================================
+   THE WORLD — the globe, and the map it can become.
+
+   Route B of the design: an ORTHOGRAPHIC projection on SVG, not WebGL.
+   A sphere with drag-to-turn and a slow spin, country outlines from
+   Natural Earth, the anchors of the twelve elevators and a stub of
+   tether standing off each one — and, one projection away, the same
+   renderer as a flat map. The toggle is a projection change and not a
+   second implementation, which is the whole argument for doing it this
+   way: no texture to vendor, no CORS under file://, a hundred kilobytes
+   instead of a megabyte, and it is drawn in the terminal's own hand.
+
+   WHAT IT DELIBERATELY IS NOT. It does not simulate orbits. A station is
+   not at a point on Earth and pretending otherwise would be a lie the
+   rest of the game does not tell; the stations are counted, named and
+   priced in text, and the globe is the GROUND. What it fixes is the one
+   thing the fiction has asserted twelve times and never shown: the
+   anchors stand on somebody else's soil.
+   ============================================================= */
+
+const World = (function () {
+  "use strict";
+  let st = null, C = null;
+  const D2R = Math.PI / 180;
+  const view = { lat: 14, lng: 18, mode: "globe", auto: true, sel: null, zoom: 1 };
+  let W = 720, H = 520, R = 210;
+
+  function set(state, content) { st = state; C = content; }
+  function mode() { return view.mode; }
+  function toggle() {
+    view.mode = view.mode === "globe" ? "map" : "globe";
+    view.auto = view.mode === "globe";
+    return view.mode;
+  }
+  function selected() { return view.sel; }
+  function select(iso) { view.sel = view.sel === iso ? null : iso; return view.sel; }
+  function auto(on) { view.auto = on === undefined ? !view.auto : !!on; return view.auto; }
+
+  /* ---------- projection ---------- */
+  /* Orthographic: the unit sphere turned to the view, then flattened. The
+     visible hemisphere is cos(c) > 0, c the angular distance from the centre
+     of the view, and that sign is the only clipping the globe needs. */
+  function cosc(lng, lat) {
+    const lam = (lng - view.lng) * D2R, phi = lat * D2R, phi0 = view.lat * D2R;
+    return Math.sin(phi0) * Math.sin(phi) + Math.cos(phi0) * Math.cos(phi) * Math.cos(lam);
+  }
+  function project(lng, lat) {
+    if (view.mode === "map") {
+      let dl = lng - view.lng;
+      while (dl > 180) dl -= 360;
+      while (dl < -180) dl += 360;
+      const k = W / 360;
+      return { x: W / 2 + dl * k, y: H / 2 - lat * k, vis: true, lng: lng, lat: lat };
+    }
+    const lam = (lng - view.lng) * D2R, phi = lat * D2R, phi0 = view.lat * D2R;
+    const x = R * Math.cos(phi) * Math.sin(lam);
+    const y = R * (Math.cos(phi0) * Math.sin(phi) - Math.sin(phi0) * Math.cos(phi) * Math.cos(lam));
+    return { x: W / 2 + x * view.zoom, y: H / 2 - y * view.zoom, vis: cosc(lng, lat) > 0 };
+  }
+  /* Where the segment a->b crosses the limb, by bisection. Twelve halvings is
+     half a kilometre at this scale, which is finer than the path is drawn. */
+  function limb(a, b) {
+    let lo = 0, hi = 1;
+    const av = cosc(a[0], a[1]) > 0;
+    for (let i = 0; i < 12; i++) {
+      const m = (lo + hi) / 2;
+      const v = cosc(a[0] + (b[0] - a[0]) * m, a[1] + (b[1] - a[1]) * m) > 0;
+      if (v === av) lo = m; else hi = m;
+    }
+    const m = (lo + hi) / 2;
+    return [a[0] + (b[0] - a[0]) * m, a[1] + (b[1] - a[1]) * m];
+  }
+  const pt = p => p.x.toFixed(1) + " " + p.y.toFixed(1);
+
+  /* A ring as an SVG path, broken at the limb. Every edge is walked and the
+     path is lifted whenever it crosses: a coast that runs off the far side of
+     the world has to stop, or the fill closes across the middle of the globe. */
+  function ringD(ring) {
+    if (!ring || ring.length < 3) return "";
+    let d = "", pen = false;
+    const n = ring.length;
+    for (let i = 0; i < n; i++) {
+      const a = ring[i], b = ring[(i + 1) % n];
+      if (view.mode === "map") {
+        const p = project(b[0], b[1]);
+        const jump = Math.abs(p.x - project(a[0], a[1]).x) > W / 3;
+        d += (pen && !jump ? "L" : "M") + pt(p);
+        pen = true;
+        continue;
+      }
+      const av = cosc(a[0], a[1]) > 0, bv = cosc(b[0], b[1]) > 0;
+      if (av && bv) { d += (pen ? "L" : "M") + pt(project(b[0], b[1])); pen = true; }
+      else if (av && !bv) { d += (pen ? "L" : "M") + pt(project(...limb(a, b))); pen = false; }
+      else if (!av && bv) {
+        d += "M" + pt(project(...limb(b, a)));
+        d += "L" + pt(project(b[0], b[1]));
+        pen = true;
+      }
+    }
+    return d;
+  }
+
+  /* ---------- the things on it ---------- */
+  function graticule() {
+    let d = "";
+    for (let lng = -180; lng < 180; lng += 30) {
+      const ring = [];
+      for (let lat = -90; lat <= 90; lat += 3) ring.push([lng, lat]);
+      d += ringD(ring) + " ";
+    }
+    for (let lat = -60; lat <= 60; lat += 30) {
+      const ring = [];
+      for (let lng = -180; lng <= 180; lng += 3) ring.push([lng, lat]);
+      d += ringD(ring) + " ";
+    }
+    return d;
+  }
+
+  /* An anchor: a mark on the ground, and a stub of tether standing off it.
+     The stub points away from the centre of the globe in globe mode — that is
+     the radial direction, which is what a geostationary tether does — and
+     straight up in map mode, where there is no centre. */
+  function anchorMark(a) {
+    const p = project(a.lng, a.lat);
+    if (!p.vis) return "";
+    const mine = a.mine;
+    const len = 26 * (view.zoom || 1);
+    const dx = view.mode === "globe" ? (p.x - W / 2) : 0;
+    const dy = view.mode === "globe" ? (p.y - H / 2) : -1;
+    const m = Math.hypot(dx, dy) || 1;
+    const ux = dx / m, uy = view.mode === "globe" ? dy / m : -1;
+    const q = { x: p.x + ux * len, y: p.y + uy * len };
+    const cls = "w-anchor" + (mine ? " mine" : "") + (view.sel && a.host === view.sel ? " sel" : "");
+    return `<g class="${cls}">` +
+      `<line x1="${p.x.toFixed(1)}" y1="${p.y.toFixed(1)}" x2="${q.x.toFixed(1)}" y2="${q.y.toFixed(1)}"/>` +
+      `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${mine ? 3.1 : 2.2}"/>` +
+      `<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="1.8"/>` +
+      `</g>`;
+  }
+
+  /* ---------- the whole drawing ---------- */
+  function render(state, content) {
+    if (state) set(state, content);
+    const anchors = (WORLD.anchors || []);
+    const sel = view.sel;
+    let countries = "";
+    (typeof WORLD_COUNTRIES !== "undefined" ? WORLD_COUNTRIES : []).forEach(c => {
+      const lit = !!sel && c.i === sel;
+      const has = anchors.some(a => a.host === c.n) || !!((WORLD.states || {})[c.i] || {}).actor;
+      let d = "";
+      (c.g || []).forEach(rings => rings.forEach(r => d += ringD(r) + " "));
+      if (!d.trim()) return;
+      countries += `<path class="w-c${lit ? " sel" : ""}${has ? " has" : ""}" ` +
+        `data-iso="${c.i}" data-name="${(c.n || "").replace(/"/g, "")}" d="${d.trim()}"/>`;
+    });
+
+    const ocean = view.mode === "globe"
+      ? `<circle class="w-ocean" cx="${W / 2}" cy="${H / 2}" r="${(R * view.zoom).toFixed(1)}"/>`
+      : `<rect class="w-ocean" x="0" y="0" width="${W}" height="${H}"/>`;
+
+    return `<svg id="world-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="The Earth, and where the elevators stand">` +
+      ocean +
+      `<path class="w-grat" d="${graticule()}"/>` +
+      countries +
+      anchors.map(anchorMark).join("") +
+      `</svg>`;
+  }
+
+  /* ---------- the turn and the spin ---------- */
+  /* Drag turns the view; the spin is one degree a frame and stops under
+     no-motion, the same rule every other animation in the terminal follows. */
+  function wire(root, redraw) {
+    if (!root) return;
+    let dragging = false, lx = 0, ly = 0;
+    const motion = () => typeof Shell === "undefined" || !Shell.opt
+      ? true : Shell.opt("chamberMotion") !== false;
+    root.addEventListener("pointerdown", e => {
+      if (!root.querySelector("#world-svg")) return;
+      dragging = true; lx = e.clientX; ly = e.clientY;
+      if (root.setPointerCapture) try { root.setPointerCapture(e.pointerId); } catch (x) {}
+    });
+    root.addEventListener("pointermove", e => {
+      if (!dragging) return;
+      const dx = e.clientX - lx, dy = e.clientY - ly;
+      lx = e.clientX; ly = e.clientY;
+      const k = view.mode === "map" ? 0.25 : 0.3;
+      view.lng -= dx * k;
+      if (view.mode === "globe") view.lat = Math.max(-85, Math.min(85, view.lat + dy * k));
+      while (view.lng > 180) view.lng -= 360;
+      while (view.lng < -180) view.lng += 360;
+      redraw();
+    });
+    const up = () => { dragging = false; };
+    root.addEventListener("pointerup", up);
+    root.addEventListener("pointercancel", up);
+    root.addEventListener("click", e => {
+      const p = e.target.closest && e.target.closest("[data-iso]");
+      if (!p) return;
+      select(p.dataset.iso);
+      redraw();
+    });
+
+    let t = null;
+    if (view.auto && motion() && typeof setInterval === "function") {
+      t = setInterval(() => {
+        if (!view.auto || !motion()) return;
+        if (typeof document !== "undefined" && document.hidden) return;
+        view.lng += 1.2;
+        while (view.lng > 180) view.lng -= 360;
+        redraw();
+      }, 90);
+    }
+    return () => { if (t) clearInterval(t); };
+  }
+
+  return { render, wire, set, toggle, mode, selected, select, auto, view };
+})();

@@ -211,6 +211,9 @@ const UI = (function () {
       $("#viewport").scrollTop = 0;
       screen = t.dataset.t;
       setStatus(ambient(), "ambient");
+      /* The globe is drawn lazily: it is the one expensive thing on the
+         screen and there is no reason to build it before the tab is opened. */
+      if (screen === "world") drawWorld();
     }));
 
     /* THE TERMINAL'S OWN CLICK, delegated once.
@@ -372,6 +375,10 @@ const UI = (function () {
       drawTitle(); drawPrices(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawStatus();
       if (typeof Concordance !== "undefined") Concordance.render(st, C, cxCurrent, false);
       if (typeof Papers !== "undefined") Papers.render(st, C);
+      /* The globe only redraws when it is the screen the player is on: it is
+         the one expensive drawing in the game and a hidden tab does not need
+         it. Switching to it draws it. */
+      if (screen === "world") drawWorld();
       /* the annotated nodes are all new, so explain mode has to be put
          back onto them */
       if (typeof Tips !== "undefined") Tips.remark();
@@ -3360,6 +3367,92 @@ const UI = (function () {
   /* THE END OF THE RUN, AS A PAGE. The record of what the government did, the
      answer the country gave it, and nothing to press: a run that has ended
      must not offer a control that advances it. */
+  /* ---------- the world ----------
+
+     The globe, and the foreign panel beside it. Foreign affairs lived on the
+     Government tab, where four panels had to share a column; it belongs with
+     the ground the anchors stand on, which is what the foreign layer has been
+     about since the fiction first asserted that the lifeline is in somebody
+     else's hands. The toggle at the head is a projection change and not a
+     second renderer (js/world.js), so the 2D map is the same drawing in a
+     different geometry. */
+  function drawWorld() {
+    const map = $("#w-map"), side = $("#w-side");
+    if (!map) return;
+    map.innerHTML = `<div class="w-head">` +
+      `<button class="chv rad${World.mode() === "globe" ? " on" : ""}" data-wmode="globe">Globe</button>` +
+      `<button class="chv rad${World.mode() === "map" ? " on" : ""}" data-wmode="map">Map</button>` +
+      `<button class="chv${World.view.auto ? " on" : ""}" data-wspin="1">${World.view.auto ? "Spinning" : "Still"}</button>` +
+      `<span class="w-hint">Drag to turn it. Click a country.</span>` +
+      `</div><div class="w-canvas" id="w-canvas">` + World.render() + `</div>`;
+    map.querySelectorAll("[data-wmode]").forEach(b => b.addEventListener("click", () => {
+      if (World.mode() === b.dataset.wmode) return;
+      World.toggle(); cue("click"); drawWorld();
+    }));
+    map.querySelectorAll("[data-wspin]").forEach(b => b.addEventListener("click", () => {
+      World.auto(); cue("click"); drawWorld();
+    }));
+    World.wire($("#w-canvas"), () => {
+      const c = $("#w-canvas");
+      if (c) c.innerHTML = World.render();
+      /* A country was picked, so the reference column has to be redrawn with
+         it. This is the same rule the orbit chart follows for a station chip:
+         a click on the drawing changes the panel beside it, or the drawing is
+         a picture rather than an instrument. */
+      const sd = $("#w-side");
+      if (sd) {
+        sd.innerHTML = worldSideHTML();
+        sd.querySelectorAll("[data-goto]").forEach(b =>
+          b.addEventListener("click", () => openTarget(b)));
+      }
+    });
+
+    if (side) side.innerHTML = worldSideHTML();
+    const sel = World.selected();
+    side && side.querySelectorAll("[data-goto]").forEach(b =>
+      b.addEventListener("click", () => openTarget(b)));
+  }
+
+  /* WHAT A COUNTRY IS, when you click it: the ground, the anchors on it, the
+     state's own summary from content, and the modelled actor's relationship if
+     it has one. Nothing here is derived from a live simulation, because the
+     foreign layer is deliberately a price and a debt and not a map of troops. */
+  function worldSideHTML() {
+    const sel = World.selected();
+    const anchors = WORLD.anchors || [];
+    let h = "";
+    if (!sel) {
+      h = `<div class="note">Every anchor in the dozen stands on somebody else's
+        soil. Click a country for what it is to the Commonwealth.</div>`;
+    } else {
+      const s = (WORLD.states || {})[sel] || {};
+      const here = anchors.filter(a => a.host === sel);
+      h = `<div class="rulehead">${esc(sel)}</div>`;
+      if (s.note) h += `<div class="note">${esc(s.note)}</div>`;
+      if (here.length) {
+        h += `<div class="rulehead">Anchors</div>` + here.map(a =>
+          `<div class="fgn"><div class="fgn-h"><b>${esc(a.tether)}</b>` +
+          `<span class="fgn-lag">${a.mine ? (a.leased ? "leased" : "held") : "foreign"}</span></div>` +
+          `<div class="note">${esc(a.site)}${a.formal ? " &middot; " + esc(a.formal) : ""}` +
+          `${a.station ? " &middot; serves the " + esc(stationName(a.station)) : ""}</div></div>`).join("");
+      }
+      if (s.actor) {
+        const a = (C.actors || []).find(x => x.id === s.actor);
+        const live = (st.actors || {})[s.actor] || {};
+        if (a) h += `<div class="rulehead">The relationship</div>` +
+          `<div class="note">${esc(a.name)} &mdash; standing ${live.standing == null ? a.standing : live.standing}, ` +
+          `${a.lag ? a.lag + " sitting" + (a.lag === 1 ? "" : "s") + " behind" : "nearly current"}. ` +
+          `Wants: ${esc(a.asks || "something unstated")}.</div>`;
+      }
+    }
+    h += `<div class="rulehead">Foreign</div><div class="pbody scrolls">${foreignHTML()}</div>`;
+    return h;
+  }
+  function stationName(id) {
+    const s = (C.stations || []).find(x => x.id === id);
+    return s ? s.name : id;
+  }
+
   function settlementName(id) {
     const s = (C.settlements || []).find(x => x.id === id);
     return s ? s.name : String(id).replace(/_/g, " ");
