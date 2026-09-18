@@ -148,7 +148,15 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 /* The middle was 1.3fr to hold the order paper and the bill open on it.
    Those are the legislature's and live on the Chamber tab now, so the
    three columns are even again: the ministry, its business, its state. */
-.g-gov{grid-template-columns:minmax(280px,330px) minmax(0,1fr) minmax(300px,360px);}
+/* FOUR COLUMNS. The middle column held five panels and ran to twice the width
+   of either side, so the Presidency and the Foreign readouts sat in a band a
+   thousand pixels wide with two words on each line. Splitting it gives the
+   government four columns of roughly equal width at a 1440 window: what it can
+   do, who it is dealing with, what it has promised, and how it stands. */
+.g-gov{grid-template-columns:minmax(230px,280px) minmax(0,1fr) minmax(0,1fr) minmax(260px,320px);}
+@media (max-width:1340px){
+  .g-gov{grid-template-columns:minmax(200px,230px) minmax(0,1fr) minmax(0,1fr) minmax(220px,270px);}
+}
 /* The seating plan is drawn at a fixed size and the composition tables were
    cramped into 300px beside it, so the one panel that could not use its
    width had most of it and the two that could had none. Three columns
