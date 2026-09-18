@@ -3132,8 +3132,11 @@ const Engine = (function () {
     return st.seed / 4294967296;
   }
 
-  function nextEvent(st, C) {
-    /* Only entries that ARE an event. A pure-effects entry has already
+  /* event -> position in its content list, per content object, for the seeded
+     lean in nextEvent(). Stable under renaming, built once per content. */
+  const ORD = new WeakMap();
+
+  function nextEvent(st, C) {    /* Only entries that ARE an event. A pure-effects entry has already
        been resolved by resolveDue() in advance(); it is not a story and
        must not be mistaken for one. */
     const due = st.queue.filter(q => q.dueSitting <= st.sitting && q.eventId);
@@ -3159,14 +3162,48 @@ const Engine = (function () {
     });
     if (!pool.length) return null;
 
-    pool.sort((a, b) => (b.weight || 1) - (a.weight || 1) || (a.id < b.id ? -1 : 1));
+    /* A SEEDED LEAN, SO THE POOL IS NOT ORDERED BY WEIGHT ALONE.
+
+       Measured: fifteen events were eligible at almost every sitting of every
+       run and never once won, because the top of the pool is weight 90-99 and
+       everything the author wrote at 57-67 simply lost. The same runs also
+       played out identically from different seeds, since the draw only ever
+       broke exact ties and the weights are nearly all distinct. Both are one
+       fault: a weighted pool whose top is that steep has a fixed answer.
+
+       Each event gets a lean, deterministic from its id and the seed, added
+       to its weight for selection only. The authored weight still governs —
+       a 99 still beats a 60 most of the time — but a different seed leans a
+       different dozen of the middle of the pool up, so two runs are two runs
+       and the tail of the pool is reached across a few of them. Same seed,
+       same run: A1.5 holds and the checks stay reproducible.
+       C.setup.weightJitter sets the size of the lean, and 0 turns it off. */
+    const jit = (C.setup && C.setup.weightJitter) || 0;
+    /* KEYED ON POSITION, NOT ON THE ID. The rename-fidelity check renames every
+       entity in content and asserts the run is unchanged; a lean hashed from
+       the event's id would move a dozen events' order the moment an author
+       renamed one. The position in the events list is stable under renaming and
+       changes only if content is reordered, which is a real edit. */
+    const lean = e => {
+      if (!jit) return 0;
+      let m = ORD.get(C);
+      if (!m) {
+        m = new Map(); (C.events || []).forEach((x, i) => m.set(x, i)); ORD.set(C, m);
+      }
+      let h = 2166136261 ^ (st.seed >>> 0);
+      const n = m.get(e) || 0;
+      h ^= n; h = Math.imul(h, 16777619);
+      return (h >>> 0) % (jit + 1);
+    };
+    const W = e => (e.weight || 1) + lean(e);
+    pool.sort((a, b) => W(b) - W(a) || (a.id < b.id ? -1 : 1));
     /* Ties used to break on id, which meant the same state always played
        the same sitting in the same order. They break on a draw now; the
        id ordering above still decides everything the draw does not, and
        a save with no seed cannot reach here because migrate() gives it
        the default. */
-    const top = (pool[0].weight || 1);
-    const tied = pool.filter(e => (e.weight || 1) === top);
+    const top = W(pool[0]);
+    const tied = pool.filter(e => W(e) === top);
     return tied.length > 1 ? tied[Math.floor(draw(st) * tied.length)] : pool[0];
   }
 

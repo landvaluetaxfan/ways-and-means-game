@@ -72,6 +72,13 @@ const SETUP = {
      the session spent deciding a run the player had not yet governed. The
      tiers are separately gated on the crisis flags they follow from. */
   settlementFloorSittings: 15,
+  /* A SEEDED LEAN ON THE EVENT POOL'S ORDER. Each openable event gets a lean
+     of 0..n, deterministic from its id and the save's seed, added to its
+     weight for selection only. Without it the steep top of the pool plays the
+     same dozen events every run and fifteen events that are eligible at every
+     sitting never win once. Same seed, same run, so the checks hold. Set 0 to
+     order the pool by weight alone again. */
+  weightJitter: 14,
 
   /* THE METER PANEL. Which numbers the standing-indicators panel shows, in
      what order, and which way is good — content declares it, so a campaign
