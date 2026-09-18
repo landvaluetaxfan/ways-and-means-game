@@ -67,7 +67,7 @@ const STATIONS = [
     closure:0.71, suspended:2110, attested:0.91,
     composition:{biological:0.63,emulation:0.29,uplift:0.04,synthetic:0.04},
     material_interest:["tether_traffic", "substrate_supply"],
-    dependency:"Tether 5 traffic rights it does not own.",
+    dependency:"The Clothesline's traffic rights, which it does not own.",
     grievance:"Anselm sets the schedule." },
 
   { id:"corvus", name:"Rookworks—Anselm", band:"ring", type:"single", form:"torus",
@@ -83,7 +83,7 @@ const STATIONS = [
     closure:0.66, suspended:1800, attested:0.88,
     composition:{biological:0.66,emulation:0.26,uplift:0.05,synthetic:0.03},
     material_interest:["tether_traffic", "consumables_subsidy"],
-    dependency:"Tether 9, which is leased rather than owned.",
+    dependency:"The Bond, which is leased rather than owned.",
     grievance:"The lease terms, signed when the station was smaller and worse advised." },
 
   { id:"halvard", name:"Halvard Works", band:"ring", type:"single", form:"torus",
@@ -224,7 +224,7 @@ const STATIONS = [
     closure:0.54, suspended:2050, attested:0.85,
     composition:{biological:0.74,emulation:0.19,uplift:0.04,synthetic:0.03},
     material_interest:["tether_traffic", "anchor_concession"],
-    dependency:"Tether 2, whose anchor stands on foreign soil.",
+    dependency:"The International Earth-Orbit Elevator, whose anchor stands on Kenyan soil.",
     grievance:"That the lifeline is in another state's jurisdiction." },
 
   { id:"slagworks", name:"Hardie", band:"low", type:"single", form:"drum",

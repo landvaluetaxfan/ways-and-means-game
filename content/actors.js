@@ -178,29 +178,29 @@ const ACTORS = [
      of when it was last heard and says how long ago that was. Earth is
      nearly current; Mars is eleven sittings behind, and the whole point
      of the layer is that the two feel different in the same list. */
-  { id: "earth_bloc", name: "The Earth Bloc", kind: "state", foreign: true, lag: 2,
+  { id: "earth_bloc", name: "The European Union", kind: "state", foreign: true, lag: 2,
     standing: 50, patience: 60,
     reach: {}, wants: {},
     asks: "the platform's corporate debt is honoured before any annexation",
-    note: "The treaty-bound Earth governments, whose banks froze the platform's accounts and whose courts will hear the salvage law. Two sittings between a decision in New York and the Commonwealth hearing of it." },
+    note: "The treaty union that sanctioned the Commonwealth, and the only power in the dispute that is also a landlord: it holds Tether 4 at Kourou on its own territory. Its grievance is not the platform. It is that the orbital franchises undercut European labour and personhood law, and that European courts cannot reach them. Two sittings between a decision in Brussels and the Commonwealth hearing of it." },
 
-  { id: "earth_host", name: "The Host State", kind: "state", foreign: true, lag: 1,
+  { id: "earth_host", name: "Kenya", kind: "state", foreign: true, lag: 1,
     standing: 55, patience: 40,
     reach: {}, wants: {},
     asks: "a repatriation corridor for its citizens, however long the process takes",
-    note: "The nation whose soil the platform's anchor stands on, and whose public procurement law makes a two-year rescue the fast one. Its business reaches the Commonwealth inside a sitting, which is why its terms always seem to arrive first." },
+    note: "The state whose soil the International Earth-Orbit Elevator stands on, and whose procurement law makes a two-year rescue the fast one. A middle power with a real bureaucracy and a serious space programme, doing what a state does: it will not carry the cost of a corporation's wind-up, and it will not let a foreign government annex the platform at the foot of its own tether. Its business reaches the Commonwealth inside a sitting." },
 
-  { id: "mars", name: "The Martian Concord", kind: "state", foreign: true, lag: 11,
+  { id: "mars", name: "Chryse Basin and Nili Republic", kind: "state", foreign: true, lag: 11,
     standing: 44, patience: 80,
     reach: {}, wants: {},
     asks: "the Commonwealth's position on the metanationals, stated rather than implied",
-    note: "Eleven sittings away. It buys substrate and sells nothing the Commonwealth needs this session, and everything the Commonwealth hears from it is a fortnight old. Nothing it says can be current." },
+    note: "Eleven sittings away, and permanently divided at home: the Chryse Basin wants to dig, and Nili, where Mars' strongest evidence of ancient life sits, will not let it. It buys from the same extraction companies that abandoned the platform, and it has been watching. Everything the Commonwealth hears from it is a fortnight old." },
 
-  { id: "metanationals", name: "The Elevator Consortiums", kind: "metanational", foreign: true, lag: 3,
+  { id: "metanationals", name: "Halcyon Extraction Group", kind: "metanational", foreign: true, lag: 3,
     standing: 47, patience: 70,
     reach: {}, wants: {},
     asks: "the anchor concessions renewed without ratification, on their terms",
-    note: "Quasi-sovereign, and the one foreign actor that is also a domestic lobbyist: it holds anchors on foreign soil and buys functional seats at home. It cannot be whipped and it does not need to be." }
+    note: "Quasi-sovereign, and the one foreign actor that is also a domestic lobbyist: the corporation that abandoned the Ashen Reach platform through a ring-fenced subsidiary, holds two anchor concessions, and buys functional seats at home through the Anchor Party. It cannot be whipped and it does not need to be. Its position is not that it was wrong. It is that it was entitled." }
 ];
 
 if (typeof module !== "undefined") module.exports = ACTORS;

@@ -160,44 +160,44 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 - §11.1 · L1558 — The polity
 - §11.2 · L1579 — Persons
 - §11.3 · L1613 — Stations and constituencies
-- §11.4 · L1681 — The functional roster  *LOCKED*
-- §11.5 · L1703 — The live bill
-- §11.6 · L1712 — Other business on the order paper
+- §11.4 · L1686 — The functional roster  *LOCKED*
+- §11.5 · L1708 — The live bill
+- §11.6 · L1717 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L1725
-- §12.1 · L1727 — The core principle  *LOCKED*
-- §12.2 · L1731 — Split visual language  *LOCKED*
-- §12.3 · L1738 — Chrome direction  *LOCKED*
-- §12.4 · L1744 — Screens  *LOCKED*
-- §12.5 · L1748 — Election night  *LOCKED*
-- §12.6 · L1757 — The orbital map  *LOCKED*
-- §12.7 · L1785 — The parliament diagram  *LOCKED*
-- §12.8 · L1811 — Documents  *LOCKED*
-- §12.9 · L1817 — The feed  *LOCKED*
-- §12.10 · L1821 — Build cost  *LOCKED*
-- §12.11 · L1825 — Images  *LOCKED*
-- §12.12 · L1853 — Existing artifact
-- §12.13 · L1865 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L1730
+- §12.1 · L1732 — The core principle  *LOCKED*
+- §12.2 · L1736 — Split visual language  *LOCKED*
+- §12.3 · L1743 — Chrome direction  *LOCKED*
+- §12.4 · L1749 — Screens  *LOCKED*
+- §12.5 · L1753 — Election night  *LOCKED*
+- §12.6 · L1762 — The orbital map  *LOCKED*
+- §12.7 · L1790 — The parliament diagram  *LOCKED*
+- §12.8 · L1816 — Documents  *LOCKED*
+- §12.9 · L1822 — The feed  *LOCKED*
+- §12.10 · L1826 — Build cost  *LOCKED*
+- §12.11 · L1830 — Images  *LOCKED*
+- §12.12 · L1858 — Existing artifact
+- §12.13 · L1870 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L1924
-- §13.1 · L1926 — Scandal taxonomy  *LOCKED*
-- §13.2 · L1939 — The spine  *LEANING*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L1929
+- §13.1 · L1931 — Scandal taxonomy  *LOCKED*
+- §13.2 · L1944 — The spine  *LEANING*
 
-**Part XIV — PRIOR ART** · L1945
-- §14.1 · L1947 — The gap  *LOCKED*
-- §14.2 · L1951 — Works
-- §14.3 · L1959 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L1950
+- §14.1 · L1952 — The gap  *LOCKED*
+- §14.2 · L1956 — Works
+- §14.3 · L1964 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L1972
-- §15.1 · L1974 — Team  *LOCKED*
-- §15.2 · L1980 — Documentation  *LOCKED*
-- §15.3 · L1996 — Where this gets hard  *LOCKED*
-- §15.4 · L2007 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2024 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L1977
+- §15.1 · L1979 — Team  *LOCKED*
+- §15.2 · L1985 — Documentation  *LOCKED*
+- §15.3 · L2001 — Where this gets hard  *LOCKED*
+- §15.4 · L2012 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2029 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2061
+**Part XVI — OPEN DECISIONS** · L2066
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2091
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2096
 
 <!-- /TOC -->
 
@@ -1675,8 +1675,13 @@ asserted in prose. It was flat at ~1.04 across all 140 seats until v4.
 - **Sanctuary** — 1 seats, 11,000, sphere, closure 0.91, 120 suspended, attested 95%.
 
 **Infrastructure:**
-- Tether 2 — Anchorage. Tether 5 — Meridian. Tether 9 — Bondsville (leased).
-- Lofstrom Loop A, Loop C.
+- **The Beanstalk** — Anselm Ring. **The International Earth-Orbit Elevator** —
+  Anchorage. **The Clothesline** — Meridian. **The Bond** — Bondsville (leased).
+- The other elevators in the dozen lead somewhere else: the GEO free ports, the
+  belt cyclers, and other states' orbital works. Lofstrom Loop A, Loop C.
+- The elevator names are the named ones. Each has an institutional name and the
+  name the people who work it use; the International is the only treaty
+  instrument of the four, which is why it is the one with a letterhead.
 
 ## 11.4 The functional roster — LOCKED
 

@@ -1323,10 +1323,10 @@ That is what a settlement is for.`,
 { id:"f1_stranded", chapter:2, weight:90, once:true,
   title:"Three hundred thousand",
   speaker:null,
-  body:`The host corporation has abandoned its platform, and the debt has
-not. Three hundred thousand workers are stranded on it with two months of
-air, and the host state's repatriation plan is fully funded, legally
-complete, and two years long.
+  body:`Halcyon Extraction Group has abandoned the Ashen Reach platform, and the
+debt has not. Three hundred thousand workers are stranded on it with two months
+of air, and Kenya's repatriation plan is fully funded, legally complete, and two
+years long.
 
 The platform has voted. The question is what the Commonwealth says.`,
   choices:[
@@ -1370,6 +1370,10 @@ the plainest terms. Absorb the platform and take its industrial capacity,
 its life-support bill, and the embargo risk over the defaulted debt. Or
 decline, keep the short term, and explain the strikes.
 
+Halcyon did not break the law. It wound up the subsidiary that employed them,
+kept the leases, and left the parent's exposure at nothing, which is what a
+company is for.
+
 Neither future is a vote the government can lose quietly.`,
   choices:[
     { label:"Move to annex.",
@@ -1407,7 +1411,7 @@ line that will not be felt for a month. That is the whole of the warning.`,
   speaker:"hatt",
   body:`The Alliance of Business and Government will carry the
 Commonwealth's short position, at a rate, for a term, on a condition.
-The condition is the platform's mining leases.
+The condition is Halcyon's mining leases.
 
 The rate is printed. The term is printed. The condition is one line.`,
   choices:[
@@ -1580,7 +1584,7 @@ its decision and that it is not its fault, both of which are true.`,
   when:{ billStage:{ anchor_kepler:"assent" } },
   title:"The anchor states its terms",
   speaker:"landry",
-  body:`The host state has offered to renew the Tether 2 anchor concession
+  body:`The host state has offered to renew the International's anchor concession
 without the Assembly's ratification, at a price. The price is eight points
 on transit and a review clause the Commonwealth does not get to see until
 it is invoked.
@@ -1593,7 +1597,7 @@ eleven days before we were told it existed."`,
       effects:[{ move:{ "price.transit":12 } }, { move:{ "solvency":-6000 } },
                { move:{ "rel.landry":6 } },
                { wire:"ANCHOR RENEWED ON THE HOST STATE'S TERMS; TRANSIT PRICE RISES" }],
-      result:"Tether 2 keeps running and the Commonwealth pays the rate for a lease it does not own." },
+      result:"The International keeps running and the Commonwealth pays the rate for a lease it does not own." },
     { label:"Refuse, and send the bill to the House instead.",
       effects:[{ move:{ "price.transit":20 } }, { move:{ "public_standing":5 } },
                { move:{ "loyalty.cu_maintenance":6 } },
@@ -1667,7 +1671,7 @@ The fourth paragraph is the one the Foreign Minister reads twice.`,
   when:{ flags:["anchor_refused"], flagsAbsent:["anchor_gone"] },
   title:"The concession lapses",
   speaker:"landry",
-  body:`The host state has let the Tether 2 concession lapse rather than renew it
+  body:`The host state has let the International concession lapse rather than renew it
 on the Commonwealth's terms, and the decision was taken nine days ago. The
 traffic that uses the anchor is now traffic the Commonwealth cannot schedule.
 
@@ -1679,7 +1683,7 @@ people's schedules.`,
            "is worth, which is the number the next negotiation starts from.",
       effects:[{ flag:"anchor_gone" }, { move:{ "price.transit":14 } },
                { move:{ "solvency":-14000 } }, { move:{ "actor.earth_host":8 } },
-               { wire:"COMMONWEALTH BUYS BACK THE TETHER 2 CONCESSION AT THE HOST STATE'S RATE" }],
+               { wire:"COMMONWEALTH BUYS BACK THE INTERNATIONAL CONCESSION AT KENYA'S RATE" }],
       result:"The anchor is running again before the quarter is out and the rate is on the record." },
     { label:"Let it go, and build the Commonwealth's own windows.",
       note:"The strongest line available and the most expensive one: two yards " +

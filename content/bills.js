@@ -218,10 +218,10 @@ const BILLS = [
     touches:["anchor_concession"],
     author:"estevez",
     title:"Anchor Concession (Anchorage) Ratification Bill",
-    summary:"Ratifies renewed terms for the Tether 2 anchor, which stands on the sovereign "+
+    summary:"Ratifies renewed terms for the International Earth-Orbit Elevator, whose anchor stands on Kenyan "+
             "territory of an Earth state.",
     contested:"The anchor stands on soil the Commonwealth does not own, so the choice is "+
-            "not between good terms and better ones. Ratifying keeps Tether 2 running and "+
+            "not between good terms and better ones. Ratifying keeps the International running and "+
             "puts eight points into the year; refusing is a statement of sovereignty that a "+
             "station of two hundred and thirty-one thousand people cannot eat. The honest "+
             "objection is that a lease renewed is still a lease, and the price is paid again "+
