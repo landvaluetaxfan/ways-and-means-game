@@ -2310,6 +2310,48 @@ court's own record runs to eleven pages. The last page is the order.`,
                { move:{ "legitimacy":3 } }, { move:{ "public_standing":2 } },
                { wire:"TRIBUNAL UPHOLDS THE LICENSING ORDER" }],
       result:"The judgment runs long on the government's competence to make the order and short on everything else. The order stands as made." }
+  ]},
+
+/* ===========================================================
+   THE NAMES ON THE PAPER (design/08 §2, design/26 #11). The
+   leadership ballot needs twelve signatures and content could
+   supply five, so it could not fire in any run. The paper is a
+   MEMBER-level thing now: `Engine.signableMembers` walks the
+   player's own benches and offers the ones closest to signing,
+   and `collectSignature` takes one at a time. Czarnecki's group
+   is the natural mover, and the panel is in his corner.
+   =========================================================== */
+
+{ id:"the_paper", chapter:2, weight:73, once:true,
+  when:{ loyaltyBelow:{cu_halloran:26}, flagsAbsent:["paper_opened"] },
+  title:"The paper",
+  speaker:"halloran",
+  body:`Czarnecki has a sheet of paper and four names on it, and he has stopped
+pretending it is not a sheet of paper. He puts it on the desk between you and
+says the only thing he has come to say.
+
+"Every name on this is a member who has decided the party would be better run
+by somebody else, and every one of them has a reason you gave them. You can go
+and ask them. Some will sign to your face because they are brave, or because
+they are finished with you, or because they want you to know."
+
+"Twelve and I am the leader of the opposition," he says. "Eleven and I am a
+man with a list."`,
+  choices:[
+    { label:"Open the paper. Let them come and say it.",
+      note:"The names are collected one member at a time in the whip panel, on " +
+           "the Chamber tab, under the whip. A minister will not sign and a " +
+           "loyal member will not; the ones who will are the ones closest to " +
+           "the door, and every signature is a member you have lost.",
+      effects:[{ flag:"paper_opened" }, { move:{ "rel.halloran":3 } },
+               { move:{ "loyalty.cu_loyalists":-3 } },
+               { wire:"CZARNECKI'S PAPER IS ON THE DESK; MEMBERS SAY WHETHER THEY WILL SIGN" }],
+      result:"He leaves the sheet. The first name is on it before the afternoon, and it is not a name you would have guessed." },
+    { label:"Refuse to dignify it. He has four names.",
+      effects:[{ move:{ "rel.halloran":-6 } }, { move:{ "loyalty.cu_halloran":-4 } },
+               { move:{ "loyalty.cu_maintenance":-3 } },
+               { wire:"PM DECLINES TO DISCUSS CZARNECKI'S LIST" }],
+      result:"Nothing is opened and nothing is answered. The sheet stays in his pocket, which is where a list of four names ought to be, and he collects the rest in his own time." }
   ]}
 
 ];

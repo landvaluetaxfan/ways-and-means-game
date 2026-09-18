@@ -1928,17 +1928,42 @@ const UI = (function () {
           `Charged when the division is called.` +
           `<button class="btn ed-x" id="btn-clearwhip">clear</button></div>`
         : `<div class="note">Drag to commit members. Nothing is charged until you divide.</div>`) +
-      pairPanel(billId, b, d);
+      pairPanel(billId, b, d) +
+      signaturePanel(billId);
   }
 
-  /* PAIRING IS A COURTESY, AND IT HAS TO BE OFFERED BEFORE IT IS A CONTROL.
-     Under a majority of the members a pair costs the government an aye and
-     costs the other side a nay the threshold never counted, so it is never
-     good arithmetic and can only ever be a kindness. The engine has kept the
-     mechanic since 15 September and no screen showed it, because a control
-     nobody should press is a trap. It appears when content gives a reason — a
-     member who cannot attend and a whip who asks — and the panel says plainly
-     what it costs, so the player is choosing the goodwill and not the number. */
+  /* THE NAMES ON THE PAPER (design/26 #11). A ballot needs twelve signatures
+     and content could supply five; the paper is a member-level thing now. The
+     panel offers the members closest to signing, one at a time, and says what
+     each of them costs. It appears only once content has opened the paper, so
+     a government whose benches are content is never shown a trap. */
+  function signaturePanel(billId) {
+    if (!st.flags.paper_opened) return "";
+    const list = Engine.signableMembers(st, C).slice(0, 8);
+    if (!list.length) return "";
+    const have = st.signatures || 0;
+    const need = (C.setup.thresholds && C.setup.thresholds.ballot) || 12;
+    return `<details class="foldsec sigfold"${have >= need - 2 ? " open" : ""}>` +
+      `<summary><b>The paper</b><span>${have} of ${need} names</span></summary>` +
+      `<div class="note">A signature is a member who has decided the party would ` +
+      `be better run by somebody else. At ${need} the caucus divides, and the ` +
+      `division is the party's own arithmetic, not the House's. A minister will ` +
+      `not sign to your face; the members below will.</div>` +
+      list.map(m => `<div class="sigrow"><span class="sig-n">${esc(bare(m.name))}` +
+        `<i>${esc(m.current ? currentName(m.current) : "no current")}</i></span>` +
+        `<span class="sig-w">${m.will >= 55 ? "inclined" : m.will >= 35 ? "may" : "will not"}</span>` +
+        `<button class="btn sigbtn" data-sign="${esc(m.id)}"` +
+        tipAttr("Ask " + bare(m.name),
+          "Adding a name to the paper. It is a member lost and a step toward " +
+          "the ballot that removes you; ask too many and the paper is the story.") +
+        `>Ask</button></div>`).join("") +
+      `</details>`;
+  }
+  function currentName(id) {
+    const c = (C.currents || []).find(x => x.id === id);
+    return c ? c.name : String(id).replace(/_/g, " ");
+  }
+
   function pairPanel(billId, b, d) {
     const plan = st.pairs[billId] || {};
     const anyPlan = Object.keys(plan).some(k => plan[k]);
@@ -3941,14 +3966,23 @@ const UI = (function () {
     el.innerHTML = html;
     wireWhipbars(el, id, () => { drawChamber(); drawBill(id); drawStatus(); });
     /* The pairing steppers. A pair is an action, so it goes through acted(). */
-    el.querySelectorAll(".pair-b").forEach(btn => btn.addEventListener("click", () => {
-      const n = Math.max(0, +btn.dataset.pn);
+    el.querySelectorAll(".pair-b").forEach(btn => btn.addEventListener("click", () => {      const n = Math.max(0, +btn.dataset.pn);
       const r = acted(() => Engine.setPairs(st, C, id, btn.dataset.pair, n));
       if (!r.ok) { cue("deny"); setStatus(r.reason || "cannot pair", "transient"); return; }
       cue("click");
       setStatus(n ? "Paired " + n + " with " + ps(btn.dataset.pair) + " on this division"
                   : "Pair withdrawn from " + ps(btn.dataset.pair), "transient");
       drawChamber(); drawBill(id); drawStatus();
+    }));
+
+    /* Asking a member to sign the paper. An action, and a member lost. */
+    el.querySelectorAll("[data-sign]").forEach(btn => btn.addEventListener("click", () => {
+      const r = acted(() => Engine.collectSignature(st, C, btn.dataset.sign));
+      if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
+      cue("stamp");
+      setStatus(bare(r.member.name) + " has signed the paper \u00b7 " +
+                r.signatures + " names", "transient");
+      drawAll(); afterAction();
     }));
     /* The record's own order control, redrawing the chamber it sits in. */
     wireDvl(el, () => { drawChamber(); drawBill(id); });

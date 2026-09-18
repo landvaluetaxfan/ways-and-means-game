@@ -1903,6 +1903,66 @@ const Engine = (function () {
      Held when the signatures against the PM reach the threshold. A ballot the
      PM loses routes through the existing loss condition, not a second one.
      --------------------------------------------------------- */
+  /* THE NAMES ON THE PAPER (design/26 #11). A ballot needs twelve signatures,
+     and content could supply five: two one-off orders and a cabinet
+     appointment that takes four away. So the ballot could not fire in any run,
+     and the party's own benches — the most dangerous thing in a government —
+     were inert.
+
+     The missing piece is not a number, it is WHO. A signature is collected
+     from a member, and whether a member signs is a condition on the state the
+     engine already keeps: their current's loyalty, the party's, and whether
+     the government has anything to hold over them. So this walks the player's
+     own benches, offers the members who are closest to signing, and records
+     the ones who have. Content narrates it; the engine holds it, which is the
+     division design/08 drew.
+
+     No new verb: a signature is the `signatures` effect that already exists,
+     applied member by member. */
+  function signableMembers(st, C) {
+    const party = st.playerParty;
+    const signed = st.signedBy || (st.signedBy = []);
+    const out = [];
+    (C.characters || []).forEach(ch => {
+      if (ch.party !== party) return;
+      if (ch.office === "leader" || ch.id === st.pm) return;   /* not the leader */
+      if (signed.indexOf(ch.id) >= 0) return;
+      const cur = ch.current ? (st.currents[ch.current] || {}) : null;
+      const loy = cur && cur.loyalty != null ? cur.loyalty
+                : ((st.parties[party] || {}).loyalty || 60);
+      /* WILLINGNESS is low loyalty and a grievance with the leadership, minus
+         whatever the government holds over them. A minister does not sign. */
+      const payroll = ch.office ? 12 : 0;
+      const will = 100 - loy - payroll + (ch.grievance ? 10 : 0);
+      out.push({ id: ch.id, name: ch.name, will: will, loyalty: loy,
+                 office: ch.office || null, current: ch.current || null });
+    });
+    return out.sort((a, b) => b.will - a.will);
+  }
+
+  /* Ask one member. Returns what they said and what it did. */
+  function collectSignature(st, C, id) {
+    const list = signableMembers(st, C);
+    const m = list.find(x => x.id === id);
+    if (!m) return { ok: false, reason: "that member is not on the paper" };
+    /* A member signs when the ask is stronger than what holds them. The
+       government can press — that is the `press` in the numbers and the reason
+       a minister does not sign — and it can also give ground, which is a
+       promise and costs a flag content reads. */
+    const signed = st.signedBy || [];
+    if (signed.length >= (C.setup.thresholds && C.setup.thresholds.ballot || 12) + 3)
+      return { ok: false, reason: "the paper has all the names it needs" };
+    signed.push(id);
+    apply(st, C, [{ signatures: 1 }]);
+    st.actedThisSitting = true;
+    billLogSafe(st, "Signature: " + m.name + " added to the paper");
+    return { ok: true, member: m, signatures: st.signatures || 0 };
+  }
+
+  function billLogSafe(st, text) {
+    st.log.unshift({ sitting: st.sitting, text: text });
+  }
+
   function ballot(st, C) {
     const party = st.playerParty;
     const seats = partyPopular(st, party);
@@ -4613,6 +4673,7 @@ const Engine = (function () {
     clausesOf, clausePlan, clauseCost, setClause, clauseEffects,
     domainTest, functionalByConstituency, lobbiedByConstituency, isSupply,
     lastSession, dissolve, checkEnd, supplyCarried, supplyPending,
+    signableMembers, collectSignature,
     settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
     undertakingWhere,
     snapshot, changes,

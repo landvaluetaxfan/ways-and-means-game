@@ -1114,6 +1114,17 @@ img.dith{display:block;}
 .pairrow b{font-family:var(--f-data);font-size:11px;min-width:12px;text-align:right;}
 .pairrow .pair-b{padding:0 5px;line-height:1.2;}
 .pairfold>summary span{font-style:normal;font-family:var(--f-data);}
+/* THE PAPER. One row a member, with what they are likely to say and what it
+   costs. It is a list of people and not a meter, which is the whole point. */
+.sigfold{margin-top:6px;}
+.sigrow{display:flex;align-items:baseline;gap:6px;padding:2px 0;font-size:12px;
+  border-bottom:1px dotted var(--rule);}
+.sig-n{flex:1 1 auto;min-width:0;}
+.sig-n i{font-style:normal;display:block;font-family:var(--f-data);font-size:9px;
+  color:var(--ink-soft);}
+.sig-w{font-family:var(--f-data);font-size:9.5px;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--ink-soft);}
+.sigbtn{padding:0 6px;line-height:1.3;}
 .whipcost .ed-x{margin-left:auto;}
 .wh{color:var(--ok);font-size:10px;}
 
