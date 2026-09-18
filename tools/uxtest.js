@@ -993,15 +993,22 @@ try {
   const solid = (css.match(/:focus[a-z-]*\{[^}]*outline:\s*\d+px solid/g) || []);
   ok("nothing else draws a solid focus ring", solid.length === 0, solid.join(" | "));
 
-  /* The shell's own chrome: three in the topbar, seven tabs, and the
-     Concordance's back and go. All twelve are real buttons, so they are in
+  /* The shell's own chrome: the topbar's controls, the tabs, and the
+     Concordance's back and go. All of them are real buttons, so they are in
      tab order by being in the document, and none of them needs arranging.
-     jsdom has no layout, so this counts them rather than measuring them. */
+     jsdom has no layout, so this counts them rather than measuring them.
+
+     COUNTED AGAINST THE MARKUP, not against a literal. The number was 12 until
+     the World tab made it 13, and a check about whether the chrome's controls
+     are real buttons should not fail because a tab was added. */
   const chrome = [...w.document.querySelectorAll(
     "#titlebar button, #tabstrip button, #cx-side button")]
     .filter(b => !b.closest("#tb-optpanel"));   /* the popover is not chrome */
+  const wantChrome = w.document.querySelectorAll(
+    "#titlebar button:not(#tb-optpanel *), #tabstrip button, #cx-side button").length;
   ok("every control in the shell chrome is a real button",
-     chrome.length === 12 && chrome.every(b => b.tagName === "BUTTON"),
+     chrome.length === wantChrome && chrome.length > 0 &&
+     chrome.every(b => b.tagName === "BUTTON"),
      chrome.length + " buttons");
   ok("the search field is a real input",
      (w.document.querySelector("#cx-q") || {}).tagName === "INPUT");

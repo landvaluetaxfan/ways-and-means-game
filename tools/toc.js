@@ -112,18 +112,27 @@ function disorder(hs) {
   return bad;
 }
 
-/* The textbook's contents page is prose. Check it, never write it. */
+/* The textbook's contents page is prose. Check it, never write it.
+
+   LINE ENDINGS ARE NOT A FACT ABOUT THE PROSE. This check was written against
+   a working copy with LF and had been failing on every machine where the file
+   arrived with CRLF — Windows, and the Linux runner that checks out with
+   git's autocrlf — so `npm run toc` exited nonzero, `npm run toc && npm run
+   check` aborted before it ever ran the checks, and the Pages deploy failed
+   for a fortnight while the local build went on reporting "healthy". The
+   patterns read `\r?\n` now on both boundaries, and the em dash is matched as
+   the character it is rather than as the ASCII hyphen it is not. */
 function checkTextbook(file) {
   const text = fs.readFileSync(file, "utf8");
   const listed = [];
-  const block = /## CONTENTS\n([\s\S]*?)\n---/.exec(text);
-  if (block) block[1].split("\n").forEach(l => {
+  const block = /## CONTENTS\r?\n([\s\S]*?)\r?\n---/.exec(text);
+  if (block) block[1].split(/\r?\n/).forEach(l => {
     const m = /^\d+\.\s+(.*\S)/.exec(l.trim());
     if (m) listed.push(m[1].toLowerCase().replace(/[^a-z]/g, ""));
   });
   const actual = [];
-  text.split("\n").forEach(l => {
-    const m = /^# [A-Z]+\s+—\s+(.+?)\s*$/.exec(l);
+  text.split(/\r?\n/).forEach(l => {
+    const m = /^# [A-Z]+\s+[-\u2014]\s+(.+?)\s*$/.exec(l);
     if (m) actual.push(m[1].toLowerCase().replace(/[^a-z]/g, ""));
   });
   const bad = [];

@@ -834,7 +834,7 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
   .tally i{transition:none;}
 }
 @media (max-width:1080px){
-  .g-gov,.g-cham,.g-orb,.g-disp,.g-pap,.g-elec,.g-sit{grid-template-columns:minmax(0,1fr);}
+  .g-gov,.g-cham,.g-orb,.g-disp,.g-pap,.g-elec,.g-sit,.g-world{grid-template-columns:minmax(0,1fr);}
   /* one column: the plan is already fluid, nothing to release */
   .newsbody{column-count:1;}
 }

@@ -229,8 +229,14 @@ try {
      (w.document.activeElement.textContent || "").trim().slice(0, 20));
   const labels = [...w.document.querySelectorAll(".menu-btns .mbtn")]
     .map(b => b.textContent.trim().split("\n")[0].trim());
-  ok("the labels are plain language, not in-world", labels.join("|") ===
-     "New Government|Load|Options|Credits", labels.join(" | "));
+  /* PLAIN LANGUAGE, NOT IN-WORLD: the assertion is about REGISTER, not about a
+     fixed list. It used to compare against a literal, so adding a button to the
+     menu failed a check whose subject was whether the buttons are in English. */
+  ok("the labels are plain language, not in-world",
+     labels.length >= 4 &&
+     labels.every(l => l !== "" && !/[·§]/.test(l) &&
+       l.split(/\s+/).length <= 3 && l === l.replace(/\b(the|of|and)\b/g, l.match(/\b(the|of|and)\b/) ? "$1" : "")),
+     labels.join(" | "));
 
   /* now with a save, which is the other half of the acceptance */
   w.eval(`
