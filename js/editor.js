@@ -185,7 +185,8 @@ const Editor = (function () {
                         r.value = v[r.key][r.field]; break;
       case "scalarVal": r.value = [].concat(v)[0]; break;
       case "coalition": r.field = Object.keys(v)[0]; r.value = [].concat(v[r.field])[0]; break;
-      case "queue":     { const q = [].concat(v)[0]; r.value = q.event; r.delta = q.after || 1; break; }
+      case "queue":     { const q = [].concat(v)[0]; r.value = q.event; r.delta = q.after || 1;
+                          r.label = q.label || ""; break; }
     }
     return r;
   }
@@ -214,7 +215,9 @@ const Editor = (function () {
       case "nestedSet": return { [r.verb]: { [r.key]: { [r.field]: n(r.value) } } };
       case "scalarVal": return { [r.verb]: r.verb === "chapter" ? (+r.value || 1) : r.value };
       case "coalition": return { [r.verb]: { [r.field]: [r.value] } };
-      case "queue":     return { [r.verb]: [{ event: r.value, after: +r.delta || 1 }] };
+      case "queue":     { const q = { event: r.value, after: +r.delta || 1 };
+                          if (r.label) q.label = r.label;
+                          return { [r.verb]: [q] }; }
     }
   }
 

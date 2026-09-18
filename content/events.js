@@ -1496,7 +1496,7 @@ discovered."`,
    sitting, so a government that wants friction DOWN needs something to do
    about it that is not simply waiting: Earth's price for standing down, on
    the table more than once, at a cost the player can see. */
-{ id:"fa_conciliate", chapter:2, weight:62, maxFires:3,
+{ id:"fa_conciliate", chapter:2, weight:74, maxFires:3,
   when:{ scalarAbove:{ friction:45 } },
   title:"What Earth would take to stand down",
   speaker:"landry",
@@ -1531,7 +1531,7 @@ It is not a bargain an ordinary year would take. This is not one.`,
    watching them.
    ============================================================ */
 
-{ id:"fa_window_closes", chapter:2, weight:63, maxFires:3,
+{ id:"fa_window_closes", chapter:2, weight:70, maxFires:3,
   title:"The window closes",
   speaker:null,
   body:`The Earth-side launch authority has moved the departure window for
@@ -1554,7 +1554,7 @@ the ones whose schedules are other people's schedules.`,
       result:"The line is popular and the price rises, because independence from another state's windows is a thing you pay for in delta-v." }
   ]},
 
-{ id:"fa_freight_reacts", chapter:2, weight:66, maxFires:2,
+{ id:"fa_freight_reacts", chapter:2, weight:68, maxFires:2,
   when:{ priceAbove:{ transit:105 } },   /* the eye on the foreign price */
   title:"The freight lines pass it on",
   speaker:"hatt",
@@ -1575,7 +1575,7 @@ its decision and that it is not its fault, both of which are true.`,
       result:"Two stations' closure figures take the strain, which is the arithmetic of an index the government does not set." }
   ]},
 
-{ id:"fa_anchor_terms", chapter:2, weight:64, once:true,
+{ id:"fa_anchor_terms", chapter:2, weight:76, once:true,
   when:{ billStage:{ anchor_kepler:"assent" } },
   title:"The anchor states its terms",
   speaker:"landry",
@@ -1596,12 +1596,102 @@ eleven days before we were told it existed."`,
     { label:"Refuse, and send the bill to the House instead.",
       effects:[{ move:{ "price.transit":20 } }, { move:{ "public_standing":5 } },
                { move:{ "loyalty.cu_maintenance":6 } },
+               { flag:"anchor_refused" },
                { bill:{ anchor_kepler:{ stage:"second_reading", dead:false } } },
                { wire:"PM REFERS THE ANCHOR CONCESSION TO THE HOUSE; HOST STATE PROTESTS" }],
       result:"The question goes where the constitution says it belongs and the transit market reads the wire first." }
   ]},
 
-{ id:"fa_two_fronts", chapter:2, weight:60, maxFires:2,
+/* LIGHT-LAG, DEMONSTRATED (design/11 §1). A dispatch to Mars takes eleven
+   sittings to arrive and eleven to be answered, so the reply reads a world
+   that has moved in the meantime: the Concord answers a question the
+   Commonwealth has since settled. `queue` is the whole of the mechanic — no
+   new verb — and the label puts the dispatch on the foreign panel as IN
+   FLIGHT and on the calendar with a date, which is the anxiety the light-lag
+   rule exists to produce. */
+{ id:"fa_dispatch_mars", chapter:2, weight:67, once:true,
+  when:{ actorBelow:{ mars:60 }, flagsAbsent:["mars_asked"] },
+  title:"Eleven sittings away",
+  speaker:"landry",
+  body:`The Martian Concord has not been told what the Commonwealth thinks of the
+metanationals, and it has asked twice. The Foreign Minister has a draft and no
+strong view about it.
+
+"Whatever we send," Landry says, "they will read it a fortnight after we wrote
+it and answer from wherever they have got to by then. That is the whole
+relationship. We can be fast or we can be right."`,
+  choices:[
+    { label:"Send it now, and send it plainly.",
+      note:"The dispatch leaves tonight and the answer arrives in eleven " +
+           "sittings, which is eleven sittings of events the Concord will not " +
+           "have heard about. Doing nothing also sends a message, and it " +
+           "travels at exactly the same speed.",
+      effects:[{ flag:"mars_asked" },
+               { queue:[{ event:"fa_mars_reply", after:11,
+                          label:"A dispatch to the Martian Concord" }] },
+               { wire:"COMMONWEALTH DISPATCHES ITS POSITION ON THE METANATIONALS TO MARS" }],
+      result:"The dispatch leaves on the next favourable window. The answer will be written by a Concord that has had eleven sittings to change its mind." },
+    { label:"Send nothing until the position is settled at home.",
+      note:"The Commonwealth says nothing, and the silence travels.",
+      effects:[{ flag:"mars_asked" }, { move:{ "actor.mars":-4 } },
+               { move:{ "public_standing":2 } },
+               { wire:"NO DISPATCH TO MARS; THE POSITION IS NOT YET SETTLED" }],
+      result:"Nothing goes. The Concord notes the silence, which arrives anyway and always has." }
+  ]},
+
+{ id:"fa_mars_reply", queuedOnly:true, once:true,
+  title:"The reply",
+  speaker:null,
+  body:`The dispatch has been answered. The Concord's note is four paragraphs long
+and the first three concern a metanational matter the Commonwealth's courts
+settled a month ago, which is what eleven sittings of lag looks like: a careful
+answer to a question that has moved.
+
+The fourth paragraph is the one the Foreign Minister reads twice.`,
+  choices:[
+    { label:"Publish it, with the dates attached.",
+      effects:[{ move:{ "actor.mars":6 } }, { move:{ "public_standing":2 } },
+               { wire:"THE COMMONWEALTH PUBLISHES THE MARTIAN REPLY IN FULL, WITH DATES" }],
+      result:"The note goes out stamped with the day it was written. A foreign fact is never current, and the government has now said so on the record." },
+    { label:"Answer it as though it were current.",
+      effects:[{ move:{ "actor.mars":2 } }, { move:{ "friction":-2 } },
+               { wire:"PM ANSWERS MARS; THE CORRESPONDENCE CONTINUES AT ONE EXCHANGE A FORTNIGHT" }],
+      result:"The exchange runs at a dispatch a fortnight in each direction, which is what a relationship eleven sittings wide actually is." }
+  ]},
+
+/* THE CONCESSION CAN BE WITHDRAWN (design/17 §4.3). `fa_anchor_terms` is the
+   offer; this is the host state meaning the refusal. A flag, a price, and the
+   two yards whose schedules are somebody else's. */
+{ id:"fa_anchor_withdrawn", chapter:2, weight:72, once:true,
+  when:{ flags:["anchor_refused"], flagsAbsent:["anchor_gone"] },
+  title:"The concession lapses",
+  speaker:"landry",
+  body:`The host state has let the Tether 2 concession lapse rather than renew it
+on the Commonwealth's terms, and the decision was taken nine days ago. The
+traffic that uses the anchor is now traffic the Commonwealth cannot schedule.
+
+The stations that live off it are the ones whose schedules were already other
+people's schedules.`,
+  choices:[
+    { label:"Buy the concession back at whatever the rate is.",
+      note:"The anchor runs again and the Commonwealth learns what its access " +
+           "is worth, which is the number the next negotiation starts from.",
+      effects:[{ flag:"anchor_gone" }, { move:{ "price.transit":14 } },
+               { move:{ "solvency":-14000 } }, { move:{ "actor.earth_host":8 } },
+               { wire:"COMMONWEALTH BUYS BACK THE TETHER 2 CONCESSION AT THE HOST STATE'S RATE" }],
+      result:"The anchor is running again before the quarter is out and the rate is on the record." },
+    { label:"Let it go, and build the Commonwealth's own windows.",
+      note:"The strongest line available and the most expensive one: two yards " +
+           "carry the schedule while the Commonwealth learns to hold its own.",
+      effects:[{ flag:"anchor_gone" }, { flag:"anchor_independent" },
+               { move:{ "price.transit":22 } }, { move:{ "public_standing":5 } },
+               { move:{ "loyalty.hul":7 } },
+               { station:{ perigee:{ closure:-0.03 }, nasmyth:{ closure:-0.03 } } },
+               { wire:"PM: THE COMMONWEALTH WILL NOT RENT ITS LIFELINE (as of nine days ago)" }],
+      result:"It is the best sentence the government has said all session, and two yards' closure figures pay for it." }
+  ]},
+
+{ id:"fa_two_fronts", chapter:2, weight:69, maxFires:2,
   title:"Two audiences, one sentence",
   speaker:"ceyhan",
   body:`The Spindle leads with the platform's scrubbers and the government

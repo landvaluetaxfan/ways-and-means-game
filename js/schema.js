@@ -51,7 +51,13 @@ const SCHEMA = {
                    {k:"value", type:"int", label:"Chapter"}], shape:"scalarVal" },
     queue:       { label:"Queue a later event", args:[
                    {k:"value", type:"enum", src:"events", label:"Event"},
-                   {k:"delta", type:"int", label:"After N sittings", def:1}],
+                   {k:"delta", type:"int", label:"After N sittings", def:1},
+                   /* OPTIONAL, AND CARRIED. A label is what the queue entry
+                      is called on the calendar and on the foreign panel
+                      ("A dispatch to the Martian Concord"); without the arg
+                      the editor's round-trip dropped it, which the encoding
+                      check caught. */
+                   {k:"label", type:"text", label:"Label", optional:true}],
                    shape:"queue" },
     /* Seats move only by these. A district count is derived from the roll,
        so writing one directly is refused by the engine. */

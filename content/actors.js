@@ -169,20 +169,38 @@ const ACTORS = [
      that can sanction the Commonwealth, and the host state the abandoned
      platform sits on. No reach, no wants: they deliver nothing in the
      chamber. Their standing is read by events and mirrors the friction
-     meter, and their asks are the price of relief. Names are
-     placeholders for the author's Earth canon. */
+     meter, and their asks are the price of relief.
 
-  { id: "earth_bloc", name: "The Earth Bloc", kind: "state",
+     FOREIGN ACTORS (design/11). `foreign:true` puts them on the foreign
+     panel and not in the lobby table, and `lag` is the organising axis:
+     sittings between what they decide and what the Commonwealth is told.
+     A foreign fact is never current, so the panel prints the standing as
+     of when it was last heard and says how long ago that was. Earth is
+     nearly current; Mars is eleven sittings behind, and the whole point
+     of the layer is that the two feel different in the same list. */
+  { id: "earth_bloc", name: "The Earth Bloc", kind: "state", foreign: true, lag: 2,
     standing: 50, patience: 60,
     reach: {}, wants: {},
     asks: "the platform's corporate debt is honoured before any annexation",
-    note: "PLACEHOLDER. The treaty-bound Earth governments, whose banks froze the platform's accounts and whose courts will hear the salvage law." },
+    note: "The treaty-bound Earth governments, whose banks froze the platform's accounts and whose courts will hear the salvage law. Two sittings between a decision in New York and the Commonwealth hearing of it." },
 
-  { id: "earth_host", name: "The Host State", kind: "state",
+  { id: "earth_host", name: "The Host State", kind: "state", foreign: true, lag: 1,
     standing: 55, patience: 40,
     reach: {}, wants: {},
     asks: "a repatriation corridor for its citizens, however long the process takes",
-    note: "PLACEHOLDER. The nation whose soil the platform's anchor stands on, and whose public procurement law makes a two-year rescue the fast one." }
+    note: "The nation whose soil the platform's anchor stands on, and whose public procurement law makes a two-year rescue the fast one. Its business reaches the Commonwealth inside a sitting, which is why its terms always seem to arrive first." },
+
+  { id: "mars", name: "The Martian Concord", kind: "state", foreign: true, lag: 11,
+    standing: 44, patience: 80,
+    reach: {}, wants: {},
+    asks: "the Commonwealth's position on the metanationals, stated rather than implied",
+    note: "Eleven sittings away. It buys substrate and sells nothing the Commonwealth needs this session, and everything the Commonwealth hears from it is a fortnight old. Nothing it says can be current." },
+
+  { id: "metanationals", name: "The Elevator Consortiums", kind: "metanational", foreign: true, lag: 3,
+    standing: 47, patience: 70,
+    reach: {}, wants: {},
+    asks: "the anchor concessions renewed without ratification, on their terms",
+    note: "Quasi-sovereign, and the one foreign actor that is also a domestic lobbyist: it holds anchors on foreign soil and buys functional seats at home. It cannot be whipped and it does not need to be." }
 ];
 
 if (typeof module !== "undefined") module.exports = ACTORS;

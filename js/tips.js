@@ -198,6 +198,12 @@ const Tips = (function () {
       body: "Held by the President and available now. Dissolution, formation, " +
             "referral and appointments are constitutional powers. They do not " +
             "need the House's agreement.", go: "perigee_charter" },
+    foreign: { title: "Foreign affairs",
+      body: "Powers outside the Commonwealth, ordered by delay: the nearer the " +
+            "row, the fresher the news. A foreign fact is never current, so each " +
+            "standing is what it was when it was last heard, and a dispatch from " +
+            "one of them arrives on a named sitting. Their standing decides what " +
+            "they will do for you, and the transit price is theirs to set." },
 
     /* ---- instruments ---- */
     instrument: { title: "Statutory instrument",

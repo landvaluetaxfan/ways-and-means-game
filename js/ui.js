@@ -612,6 +612,49 @@ const UI = (function () {
   }
 
   /* ---------- government ---------- */
+  /* ---------- foreign ----------
+
+     THE SAME INSTRUMENT ON A DIFFERENT AXIS (design/11 §5). The orbital
+     chart orders the stations by ALTITUDE; this orders the powers by DELAY,
+     because a foreign fact is never current. Nearest first, and every
+     standing is stamped with how long ago it was heard rather than printed
+     as a live figure, which is the whole mechanic: the anxiety is not that
+     you do not know what Mars thinks, it is that you know what Mars thought
+     eleven sittings ago. */
+  function foreignHTML() {
+    const actors = (C.actors || []).filter(a => a.foreign)
+      .sort((a, b) => (a.lag || 0) - (b.lag || 0));
+    if (!actors.length)
+      return `<div class="note">No power outside the Commonwealth is in play this campaign.</div>`;
+    const rows = actors.map(a => {
+      const live = (st.actors || {})[a.id] || {};
+      const v = live.standing == null ? a.standing : live.standing;
+      const cls = v >= 60 ? "good" : v <= 30 ? "bad" : "";
+      const lag = a.lag || 0;
+      return `<div class="fgn">` +
+        `<div class="fgn-h"><b>${esc(a.name)}</b><span class="sm2">${esc(a.kind)}</span>` +
+        `<span class="fgn-lag">${lag === 0 ? "as it happens"
+          : lag + " sitting" + (lag === 1 ? "" : "s") + " behind"}</span></div>` +
+        `<div class="fgn-b"><span class="meter ${cls}"><i style="width:${
+          Math.max(0, Math.min(100, v))}%"></i></span><output>${v}</output></div>` +
+        `<div class="note">Wants: ${esc(a.asks || "something unstated")}.</div></div>`;
+    }).join("");
+    /* IN FLIGHT. A dispatch reaches the Commonwealth on a named sitting, and
+       the ones the player has not yet read are the ones that matter. */
+    const flight = (st.queue || []).filter(q => /^fa_/.test(q.eventId || ""));
+    const flying = flight.length
+      ? `<div class="rulehead">In flight</div>` + flight.map(q =>
+          `<div class="cn"><b>${esc(q.label || "A dispatch")}</b><i>arrives sitting ` +
+          `${q.dueSitting}${q.dueSitting > st.sitting
+            ? " · " + (q.dueSitting - st.sitting) + " away" : " · today"}</i></div>`).join("")
+      : "";
+    return rows + flying +
+      `<div class="rulehead">The foreign price</div>` +
+      `<div class="note">Transit <b>${Math.round(st.prices.transit)}</b>. The fare the ` +
+      `stations pay for a launch window, set by schedules that are not the ` +
+      `Commonwealth's.</div>`;
+  }
+
   function drawGovernment() {
     drawInitiatives();
     const conf = Engine.confidence(st), maj = Engine.majority(st);
@@ -979,6 +1022,8 @@ const UI = (function () {
       `<table><tbody>${st.president.powers.map(p =>
         `<tr><td style="text-transform:capitalize">${p}</td><td class="n"><span class="flag ${st.president.relationship < 35 ? "bad" : ""}" data-tip="live">${st.president.relationship < 35 ? "LIVE" : "DORMANT"}</span></td></tr>`
       ).join("")}</tbody></table>`;
+
+    $("#gov-foreign").innerHTML = foreignHTML();
 
     /* A VERTICAL FEED HOLDS MORE THAN A STRIP DID, and the column scrolls,
        so the wire shows the session's traffic rather than its tail. */
