@@ -3180,6 +3180,45 @@ const UI = (function () {
       `</div>`;
   }
 
+  /* THE END OF THE RUN, AS A PAGE. The record of what the government did, the
+     answer the country gave it, and nothing to press: a run that has ended
+     must not offer a control that advances it. */
+  function settlementName(id) {
+    const s = (C.settlements || []).find(x => x.id === id);
+    return s ? s.name : String(id).replace(/_/g, " ");
+  }
+  function endBoardHTML(end) {
+    const seatsOf = map => Object.keys(map || {}).sort((a, b) => map[b] - map[a])
+      .map(id => `${mark(id)}${esc(ps(id))} ${map[id]}`).join(" &middot; ");
+    let head, body = "";
+    if (end.kind === "election" && end.result) {
+      const r = end.result, was = r.was || 0, held = r.held || 0;
+      head = "The Commonwealth has voted";
+      body =
+        `<div class="rulehead">The answer</div><div class="note">` +
+          `The government went to the country with <b>${was}</b> seat${was === 1 ? "" : "s"} and ` +
+          `came back with <b>${held}</b>. ` +
+          (held > was ? "It gained." : held < was ? "It lost." : "It held where it stood.") +
+        `</div>` +
+        `<div class="rulehead">The House it returns</div><div class="note">${seatsOf(r.after)}</div>` +
+        (st.settledAs ? `<div class="rulehead">What the session settled</div>` +
+          `<div class="note">${esc(settlementName(st.settledAs))}.</div>` : "") +
+        (st.resolvedAs ? `<div class="rulehead">How the crisis resolved</div>` +
+          `<div class="note">${esc(settlementName(st.resolvedAs))}.</div>` : "");
+    } else if (end.kind === "settlement" && end.settlement) {
+      head = end.settlement.name;
+      body = `<div class="note">${esc(end.settlement.closing || end.settlement.summary || "")}</div>`;
+    } else {
+      head = "The government has fallen";
+      body = `<div class="note">${esc(end.reason || "It lost the House.")}</div>`;
+    }
+    return `<div class="endboard"><h3>The end of the session</h3>` +
+      `<div class="rulehead">${esc(head)}</div>` + body +
+      `<div class="rulehead">The record</div><div class="note">` +
+        `${st.log.length} entries, sitting ${st.sitting}, session ${st.session}. ` +
+        `Every decision is on the Record tab, and nothing here can be taken back.</div></div>`;
+  }
+
   function drawSitting() {
     const dk = $("#sit-docket");
     if (dk) {
@@ -3197,6 +3236,12 @@ const UI = (function () {
         `Reason: ${loss.reason}. Sitting ${st.sitting}.</div>`;
       return;
     }
+    /* THE RUN IS OVER, AND THIS IS THE LAST PAGE. checkEnd already knew it
+       and nothing drew it, so a finished run kept advancing into empty
+       sittings with the Rise button still live. The board comes BEFORE the
+       event draw: a run that has ended has no business offering a decision. */
+    const ending = Engine.checkEnd(st, C);
+    if (ending.over) { box.innerHTML = endBoardHTML(ending); return; }
     if (!currentEvent) currentEvent = Engine.nextEvent(st, C);
     if (!currentEvent) {
       /* A QUIET SITTING IS NOT THE SAME AS AN EMPTY GAME, and the screen

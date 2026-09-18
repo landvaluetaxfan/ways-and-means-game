@@ -1772,16 +1772,18 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
      (Engine.checkSettlement(f, CONTENT) || {}).id === "federal_fudge",
      (Engine.checkSettlement(f, CONTENT) || {}).id);
 
-  /* TERMINAL OR NOT (Flash I). A settlement ends the run by default; a
-     non-terminal one resolves the crisis and the run goes on to the
-     election, where content reads the tier through `resolvedIs`. */
+  /* THE RISE ENDS THE RUN (endgame pass). A settlement of either kind
+     resolves the crisis and is recorded; the run ends at the election, which
+     is the backstop ending the design names. A terminal settlement used to
+     end the run on the sitting it landed, which cut the session off and made
+     chapter four — the aftermath — unreachable. */
   const trm = fresh(); trm.bills.divergence.stage = "defeated";
   trm.bills.divergence.dead = true; trm.law.divergence_threshold_hours = 200;
   const endT = Engine.checkEnd(trm, CONTENT);
-  ok("a terminal settlement ends the run",
-     endT.over === true && endT.kind === "settlement" &&
-     endT.settlement.id === "restriction",
-     JSON.stringify(endT));
+  ok("a settlement resolves the crisis and does not end the run",
+     endT.over === false && endT.kind === "settlement" &&
+     endT.settlement.id === "restriction" && trm.settledAs === "restriction",
+     JSON.stringify({ over: endT.over, settledAs: trm.settledAs }));
 
   const Cnt = Object.assign({}, CONTENT, {
     settlements: CONTENT.settlements.concat([
@@ -2676,7 +2678,7 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
       f1_loan: 1, f1_accounts_freeze: 0, fa_two_fronts: 0, fa_window_closes: 0,
       fa_anchor_terms: 0, fa_conciliate: 1 };
     let tier = null, end = null;
-    for (let s = 0; s < 26; s++) {
+    for (let s = 0; s < 45; s++) {
       const e = Engine.nextEvent(st, CONTENT);
       if (e) {
         const n = (e.choices || []).length || 1;

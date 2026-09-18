@@ -1230,15 +1230,22 @@ try {
   ok("and the electorate answers", e.dissolved &&
      typeof e.dissolved.held === "number",
      e.dissolved ? e.dissolved.was + " seats to " + e.dissolved.held : "");
+  /* DISSOLUTION ENDS THE PARLIAMENT, NOT THE RUN: chapter three is the
+     campaign and it plays after the writs (endgame pass). The run is over
+     once the campaign has been counted, or once a campaign's worth of
+     sittings has gone by, whichever comes first. */
   const fin = E.checkEnd(e, Cx);
-  ok("the run is over, and the election is how", fin.over && fin.kind === "election",
-     fin.kind);
+  ok("dissolution ends the parliament and opens the campaign",
+     fin.kind === "election" && !!fin.result && fin.over === false,
+     fin.kind + " over=" + fin.over);
   /* and it stays over: advancing past dissolution must not open a session */
   const wasSession = e.session;
   for (let i = 0; i < 30; i++) E.advance(e, Cx);
   ok("nothing opens another session after dissolution", e.session === wasSession,
      "session " + e.session);
-  ok("a run therefore cannot go on for ever", E.checkEnd(e, Cx).over === true);
+  const after = E.checkEnd(e, Cx);
+  ok("a run therefore cannot go on for ever",
+     after.over === true && after.kind === "election", after.kind);
 
   /* an undertaking owed before the House rises */
   const c = mk();

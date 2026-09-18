@@ -1273,7 +1273,8 @@ The House that rises in the morning will be somebody else's arithmetic.
 This one is finished, and what it settled, it settled.`,
   choices:[
     { label:"Read the final numbers.",
-      effects:[{ wire:"RETURNS COMPLETE: THE NEW HOUSE WILL SIT NEXT SESSION" }],
+      effects:[{ flag:"campaign_done" },
+               { wire:"RETURNS COMPLETE: THE NEW HOUSE WILL SIT NEXT SESSION" }],
       result:"The numbers are read. The chapter closes." }
   ]},
 

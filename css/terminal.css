@@ -742,6 +742,11 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 .decl .sub{font-family:var(--f-data);font-size:10.5px;color:var(--ink-soft);}
 .waiting{background:#f0e6c8;border:1px solid #a08b45;padding:5px 6px;font-size:12px;line-height:1.4;}
 .waiting b{letter-spacing:.06em;}
+/* THE LAST PAGE OF A RUN. Paper stock and a heavier rule, because it is the
+   one surface in the game that is a record rather than a control. */
+.endboard{background:#f0e6c8;border:1px solid #a08b45;padding:8px 10px;max-width:70ch;}
+.endboard h3{margin:0 0 7px;font-family:var(--f-read);font-size:15px;font-weight:700;}
+.endboard .note{font-family:var(--f-read);font-size:13px;line-height:1.55;max-width:64ch;}
 
 @media (prefers-reduced-motion:reduce){
   .ticker div{animation:none;padding-left:0;}

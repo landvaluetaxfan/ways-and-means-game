@@ -4155,14 +4155,28 @@ const Engine = (function () {
        the same instant. Read the other way round, a government that never
        brought a budget went to the country as though it had governed. */
     if (st.supplyLost) return { over: true, kind: "loss", reason: "supply" };
-    if (st.dissolved) return { over: true, kind: "election", result: st.dissolved };
+    if (st.dissolved) {
+      /* THE WRITS ARE OUT AND THE CAMPAIGN RUNS. Chapter three IS the
+         campaign and it plays after dissolution, so dissolution cannot be
+         the end of the run: it is the end of the PARLIAMENT. The run is
+         over when the count has been read — `campaign_done`, set by
+         ch3_the_count — or when a campaign's worth of sittings has gone by,
+         so a missing or gated chapter can never leave a run open for ever. */
+      const done = !!(st.flags && st.flags.campaign_done);
+      const ran = st.dissolved.at != null && st.sitting >= st.dissolved.at + 12;
+      return { over: done || ran, kind: "election", result: st.dissolved };
+    }
     const lost = checkLoss(st, C);
     if (lost.lost) return { over: true, kind: "loss", reason: lost.reason };
     const s0 = checkSettlement(st, C);
-    /* A non-terminal settlement resolves the crisis and the run goes on to
-       the election; a terminal one is the ending. The reader is unchanged;
-       what changed is whether the record is also the last page (Flash I). */
-    if (s0) return { over: s0.terminal !== false, kind: "settlement", settlement: s0 };
+    /* A SETTLEMENT RESOLVES THE CRISIS; THE RISE ENDS THE RUN. A terminal
+       settlement used to end the run on the sitting it landed, which cut
+       the session off mid-sitting and made chapter four — the aftermath,
+       written and wired — unreachable. Both kinds now record and let the
+       session run on to the election, which is the backstop ending the
+       design names, and a terminal one is still the settlement the record
+       shows. */
+    if (s0) return { over: false, kind: "settlement", settlement: s0 };
     return { over: false };
   }
 
