@@ -1998,7 +1998,22 @@ const Engine = (function () {
     const cap = pairable(st, C, billId, partyId);
     const v = Math.max(0, Math.min(Math.round(n) || 0, cap.max));
     const plan = st.pairs[billId] || (st.pairs[billId] = {});
+    const before = plan[partyId] || 0;
     if (v) plan[partyId] = v; else delete plan[partyId];
+    /* A PAIR IS A RECORD AS WELL AS A NUMBER. Under a majority of the members
+       a pair costs the government an aye and costs the other side a nay the
+       threshold never counted, so it is never good arithmetic and can only
+       ever be a courtesy. The courtesy has to be visible to content or the
+       mechanic stays a control nobody should press: the House has now seen
+       one, and says so where an event can read it. */
+    if (v !== before) {
+      st.flags = st.flags || {};
+      if (v > 0) st.flags.paired = true;
+      st.log.unshift({ sitting: st.sitting,
+        text: (v > before ? "Paired " + (v - before) : "Unpaired " + (before - v)) +
+              " with " + String(partyId).toUpperCase() +
+              " on the division of " + ((C.billById[billId] || {}).title || billId) });
+    }
     return { ok: true, pairs: v, max: cap.max };
   }
 

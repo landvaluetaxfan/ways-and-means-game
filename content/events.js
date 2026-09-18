@@ -2137,6 +2137,68 @@ way."`,
                { move:{ "actor.lb_legal": 4 } }, { move:{ "public_standing": -4 } },
                { wire:"GOVERNMENT LEAVES THE SACRAMENTS TO THE REGISTER" }],
       result:"The congregations are told that the register applies. Fourteen halls hear it on the same evening, and the CDA's conference has a reason to meet early." }
+  ]},
+
+/* ===========================================================
+   PAIRING (design/26 #83). A pair sends one member of each side home
+   together. Under a majority OF THE MEMBERS it is never arithmetic: it
+   costs the government an aye and costs the other side a nay the
+   threshold never counted, so the bar does not move. It can only ever be
+   a courtesy, and a courtesy needs a reason before the control that
+   offers it is worth a row of the tightest column on the screen. This is
+   the reason. The control appears in the whip panel the moment the offer
+   is made, and says plainly what it costs.
+   =========================================================== */
+
+{ id:"the_pairing_offer", chapter:2, weight:59, once:true,
+  when:{ flagsAbsent:["pair_offered"] },
+  title:"A pair, for the member for Hardie",
+  speaker:"okarie",
+  body:`One of the Liberals is going under for a reabsorption on Thursday, and
+the division is set for the same afternoon. He cannot attend and his whips
+cannot make him. His whip has come to Okarie, which he has not done in two
+years.
+
+"A pair sends one of ours home with one of theirs," Okarie says. "It costs us a
+vote and it costs them one, and the bar does not move for either. It is not a
+favour. It is a kindness, and it is the kind of thing that is remembered when
+we want something that is not arithmetic."`,
+  choices:[
+    { label:"Grant the courtesy.",
+      note:"The control is in the whip panel on the Chamber tab, under the " +
+           "whip. Pairing one of yours with one of theirs costs an aye and " +
+           "buys the other side's goodwill. The arithmetic does not improve, " +
+           "which is exactly the point of doing it.",
+      effects:[{ flag:"pair_offered" }, { move:{ "rel.okarie":4 } },
+               { move:{ "loyalty.cu_loyalists":2 } },
+               { wire:"GOVERNMENT WHIPS AGREE TO A COURTESY PAIR FOR THURSDAY'S DIVISION" }],
+      result:"Okarie passes it to the other side without comment, which is how a thing like this is done." },
+    { label:"No. Every vote counts and their side knows it.",
+      effects:[{ move:{ "rel.okarie":-5 } }, { move:{ "loyalty.cl":-5 } },
+               { move:{ "public_standing":-3 } },
+               { wire:"GOVERNMENT REFUSES A COURTESY PAIR; THE BENCHES NOTE IT" }],
+      result:"The refusal is within the rules, and everyone on the other side now knows where the government stands on a small thing." }
+  ]},
+
+{ id:"the_pairing_kept", chapter:2, weight:56, once:true,
+  when:{ flags:["paired"] },
+  title:"The kindness, remembered",
+  speaker:null,
+  body:`The member came back from the reabsorption on the Tuesday, and the
+division that had gone to a pair passed without him on either side of it. The
+whips on the other side have not mentioned it.
+
+They have mentioned it to their benches, which is where a kindness actually
+gets banked.`,
+  choices:[
+    { label:"Leave it. A courtesy is not an invoice.",
+      effects:[{ move:{ "loyalty.cl":4 } }, { move:{ "public_standing":3 } },
+               { wire:"THE COURTESY PAIR IS BANKED AND NOT MENTIONED" }],
+      result:"Nothing is asked for and something is owed. It sits where such things sit." },
+    { label:"Ask for their benches on the next division.",
+      effects:[{ move:{ "loyalty.cl":-5 } }, { move:{ "public_standing":-2 } },
+               { wire:"GOVERNMENT CALLS IN THE PAIR; THE OTHER SIDE PRICES IT" }],
+      result:"The favour is spent, and the other side now knows the government's kindnesses have a price. That makes them cheaper to refuse next time." }
   ]}
 
 ];

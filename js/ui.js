@@ -1841,7 +1841,39 @@ const UI = (function () {
           (cost.loyalty ? `Own party loyalty &minus;${cost.loyalty}. ` : "") +
           `Charged when the division is called.` +
           `<button class="btn ed-x" id="btn-clearwhip">clear</button></div>`
-        : `<div class="note">Drag to commit members. Nothing is charged until you divide.</div>`);
+        : `<div class="note">Drag to commit members. Nothing is charged until you divide.</div>`) +
+      pairPanel(billId, b, d);
+  }
+
+  /* PAIRING IS A COURTESY, AND IT HAS TO BE OFFERED BEFORE IT IS A CONTROL.
+     Under a majority of the members a pair costs the government an aye and
+     costs the other side a nay the threshold never counted, so it is never
+     good arithmetic and can only ever be a kindness. The engine has kept the
+     mechanic since 15 September and no screen showed it, because a control
+     nobody should press is a trap. It appears when content gives a reason — a
+     member who cannot attend and a whip who asks — and the panel says plainly
+     what it costs, so the player is choosing the goodwill and not the number. */
+  function pairPanel(billId, b, d) {
+    const plan = st.pairs[billId] || {};
+    const anyPlan = Object.keys(plan).some(k => plan[k]);
+    if (!st.flags.pair_offered && !anyPlan) return "";
+    let rows = "";
+    C.parties.map(p => p.id).filter(id => id !== st.playerParty).forEach(pid => {
+      const cap = Engine.pairable(st, C, billId, pid);
+      const cur = plan[pid] || 0;
+      if (!cap.max && !cur) return;
+      rows += `<div class="pairrow"><span class="pair-p">${mark(pid)}${esc(ps(pid))}</span>` +
+        `<button class="btn ed-x pair-b" data-pair="${esc(pid)}" data-pn="${cur - 1}">&minus;</button>` +
+        `<b>${cur}</b>/<span>${cap.max}</span>` +
+        `<button class="btn ed-x pair-b" data-pair="${esc(pid)}" data-pn="${cur + 1}">+</button></div>`;
+    });
+    if (!rows) return "";
+    return `<details class="foldsec pairfold"${anyPlan ? " open" : ""}>` +
+      `<summary><b>Pairing</b><span>${anyPlan ? "agreed" : "offered"}</span></summary>` +
+      `<div class="note">A pair sends one of yours and one of theirs home together. It costs ` +
+      `you an aye and costs them a nay, and the bar does not move for either, so it is never ` +
+      `arithmetic and only ever a courtesy. What it buys is the other side's goodwill.</div>` +
+      rows + `</details>`;
   }
 
   /* ---------- lobbying ----------
@@ -3736,6 +3768,16 @@ const UI = (function () {
     if (hdr) hdr.textContent = b.title;
     el.innerHTML = html;
     wireWhipbars(el, id, () => { drawChamber(); drawBill(id); drawStatus(); });
+    /* The pairing steppers. A pair is an action, so it goes through acted(). */
+    el.querySelectorAll(".pair-b").forEach(btn => btn.addEventListener("click", () => {
+      const n = Math.max(0, +btn.dataset.pn);
+      const r = acted(() => Engine.setPairs(st, C, id, btn.dataset.pair, n));
+      if (!r.ok) { cue("deny"); setStatus(r.reason || "cannot pair", "transient"); return; }
+      cue("click");
+      setStatus(n ? "Paired " + n + " with " + ps(btn.dataset.pair) + " on this division"
+                  : "Pair withdrawn from " + ps(btn.dataset.pair), "transient");
+      drawChamber(); drawBill(id); drawStatus();
+    }));
     /* The record's own order control, redrawing the chamber it sits in. */
     wireDvl(el, () => { drawChamber(); drawBill(id); });
   }

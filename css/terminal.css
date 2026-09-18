@@ -1060,6 +1060,14 @@ img.dith{display:block;}
   font-size:12px;line-height:1.45;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;
 }
 .whipcost .od{color:var(--alert);font-weight:bold;}
+/* PAIRING. One stepper per pairable bench, shown only once content has offered
+   a pair, so the control never appears without a reason to press it. */
+.pairfold{margin-top:6px;}
+.pairrow{display:flex;align-items:center;gap:5px;padding:1px 0;font-size:12px;}
+.pair-p{min-width:92px;}
+.pairrow b{font-family:var(--f-data);font-size:11px;min-width:12px;text-align:right;}
+.pairrow .pair-b{padding:0 5px;line-height:1.2;}
+.pairfold>summary span{font-style:normal;font-family:var(--f-data);}
 .whipcost .ed-x{margin-left:auto;}
 .wh{color:var(--ok);font-size:10px;}
 

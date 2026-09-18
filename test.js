@@ -1692,6 +1692,13 @@ console.log("\nPAIRING (a courtesy the arithmetic does not support):");(function
   const them = after.rows.find(r => r.party === foe.party);
   ok("a paired member is absent, not aye and not nay",
      me.popularAbsent === 6 && them.popularAbsent === 6);
+  /* A PAIR IS A RECORD AS WELL AS A NUMBER (design/26 #83). It can only ever
+     be a courtesy, so the courtesy has to be visible to content: the House has
+     seen one and `paired` says so where an event can read it. */
+  ok("and the House records that a pair was given", st3.flags.paired === true);
+  ok("and the log names the bench it was given to",
+     (st3.log || []).some(x => /Paired 6 with/.test(x.text || "")),
+     (st3.log || []).find(x => /Paired/.test(x.text || ""))?.text || "nothing");
   ok("and every seat is still accounted for on both sides",
      me.popularAye + me.popularNay + me.popularAbstain + me.popularAbsent === me.popularSeats &&
      them.popularAye + them.popularNay + them.popularAbstain + them.popularAbsent === them.popularSeats);
