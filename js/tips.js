@@ -61,6 +61,13 @@ const Tips = (function () {
             "time refills, business not carried falls, and every undertaking due " +
             "before the rise comes due at once. It is the deadline everything " +
             "else on the board is measured against." },
+    tribunal: { title: "The Tribunal",
+      body: "The bench that hears what the orders do. It is not elected and " +
+            "cannot be whipped, so the numbers in the House do not reach it. Its " +
+            "disposition is how generously it reads the government's orders, and " +
+            "that moves on whether a reference is answered, a case is defended " +
+            "and a ruling is complied with. A case before it is due on a named " +
+            "sitting, and it can strike an order, read it narrowly, or uphold it." },
     slots: { title: "Order paper time",
       body: "One slot moves one bill one stage closer to its division, and the " +
             "session holds only a few. Give a slot to a partner's bill and you " +

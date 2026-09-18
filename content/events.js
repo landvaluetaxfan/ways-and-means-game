@@ -2199,6 +2199,117 @@ gets banked.`,
       effects:[{ move:{ "loyalty.cl":-5 } }, { move:{ "public_standing":-2 } },
                { wire:"GOVERNMENT CALLS IN THE PAIR; THE OTHER SIDE PRICES IT" }],
       result:"The favour is spent, and the other side now knows the government's kindnesses have a price. That makes them cheaper to refuse next time." }
+  ]},
+
+/* ===========================================================
+   THE TRIBUNAL (design/30). The bench that hears what the orders do.
+   It is an ACTOR, so its disposition is moved by the existing verb and
+   nothing new was added: `move:{"actor.tribunal":n}`. A case is a QUEUED
+   EVENT with a label, so the calendar already carries it and the Papers
+   panel reads the same queue. No randomness: a ruling is a condition on
+   the state, like every other mechanic here.
+   =========================================================== */
+
+/* THE REFERENCE. The judge who remembers asked the government a question it
+   has not answered. Answering it costs order-paper time and binds the
+   government to its own answer; ignoring it is free and the bench remembers. */
+{ id:"tr_reference", chapter:2, weight:68, once:true,
+  when:{ flags:["reclassification_to_courts"], flagsAbsent:["tr_referenced"] },
+  title:"The reference",
+  speaker:"fenwick",
+  body:`The Tribunal has put its question in writing, which it does about once
+a decade. Reclassification, the practice of moving a person between legal
+categories, is either a question of fact for the courts or a branch of
+professional practice for the licensing boards. The bench will proceed on
+whichever answer the government gives, and until it is given the bench will
+proceed on its own.
+
+"It is four paragraphs," Fenwick says. "Answering it takes a day and settles
+it for a generation. Not answering it takes no time at all, and settles
+nothing."`,
+  choices:[
+    { label:"Answer it, in full, on the record.",
+      cost:{ slot:1 },
+      note:"A day of order-paper time and the government is bound by its own " +
+           "answer for the rest of the campaign. The bench will read every " +
+           "later order in the light of it.",
+      effects:[{ flag:"tr_referenced" }, { flag:"reference_answered" },
+               { move:{ "actor.tribunal":10 } }, { move:{ "legitimacy":4 } },
+               { wire:"GOVERNMENT ANSWERS THE TRIBUNAL'S REFERENCE IN FULL" }],
+      result:"The answer is four paragraphs, it is on the record, and it is now the government's position whether the government likes it or not." },
+    { label:"Let it lie. The bench can proceed on its own.",
+      effects:[{ flag:"tr_referenced" }, { flag:"reference_ignored" },
+               { move:{ "actor.tribunal":-12 } }, { move:{ "legitimacy":-3 } },
+               { wire:"GOVERNMENT DECLINES TO ANSWER THE TRIBUNAL'S REFERENCE" }],
+      result:"Nothing is answered. The bench notes the date it asked and the date nothing came back, which is the sort of thing a bench keeps." }
+  ]},
+
+/* THE CHALLENGE. The opposition does not need a majority to hurt an order, it
+   needs counsel. An order the government made is challenged in the Tribunal. */
+{ id:"tr_challenge_lodged", chapter:2, weight:66, once:true,
+  when:{ siInForce:["si_2287_44"], flagsAbsent:["tr_challenged"] },
+  title:"The order is challenged",
+  speaker:"fenwick",
+  body:`The Liberals have taken the licensing order to the Tribunal. The
+argument is narrow and it is not about licensure: it is that the order was made
+under a power the Act of Union reserved to the boards, and that a minister may
+not exercise a board's jurisdiction by order.
+
+"The bench will hear it in four sittings," Fenwick says. "We can brief counsel
+or we can let it run. If we brief it, we are in a courtroom arguing with the
+government's own name on it. If we do not, the order will be read by people who
+heard one side."`,
+  choices:[
+    { label:"Brief counsel. The order is worth defending.",
+      note:"A proper defence costs attention and it is heard. A court is not a " +
+           "lobby: the numbers in the House do not reach it, and the only thing " +
+           "that moves the bench is whether the government turned up.",
+      effects:[{ flag:"tr_challenged" }, { flag:"tr_defended" },
+               { move:{ "actor.tribunal":4 } }, { move:{ "legitimacy":2 } },
+               { queue:[{ event:"tr_ruling", after:4,
+                          label:"The Tribunal rules on the licensing order" }] },
+               { wire:"COMMONWEALTH BRIEFS COUNSEL AGAINST THE CHALLENGE TO THE LICENSING ORDER" }],
+      result:"Counsel is briefed and the case is listed for the fourth sitting. The order stands until the bench says otherwise." },
+    { label:"Let it run. The order was lawfully made.",
+      note:"No defence, and no cost. The bench will hear the challenge alone, " +
+           "which is a thing a bench notices about a government that is certain " +
+           "and uninterested.",
+      effects:[{ flag:"tr_challenged" }, { flag:"tr_undefended" },
+               { move:{ "actor.tribunal":-6 } }, { move:{ "public_standing":-2 } },
+               { queue:[{ event:"tr_ruling", after:4,
+                          label:"The Tribunal rules on the licensing order" }] },
+               { wire:"GOVERNMENT DECLINES TO DEFEND THE LICENSING ORDER; CASE HEARD ONE SIDE" }],
+      result:"The case is listed and nobody appears for the government. The bench hears it in an hour." }
+  ]},
+
+/* THE RULING. Three doors, disjoint, and every one of them openable: an order
+   struck, an order narrowed, and an order upheld. Which door is open is a
+   condition on the bench's disposition, which the government has been moving
+   all session by whether it answered, briefed, complied and revoked. */
+{ id:"tr_ruling", queuedOnly:true, once:true,
+  title:"The ruling",
+  speaker:null,
+  body:`The Tribunal hands down its judgment at the start of the sitting, and the
+court's own record runs to eleven pages. The last page is the order.`,
+  choices:[
+    { label:"The order is struck.",
+      when:{ actorBelow:{ tribunal:46 } },
+      effects:[{ flag:"tr_struck" }, { flag:"licensing_order_struck" },
+               { move:{ "actor.tribunal":-4 } }, { move:{ "legitimacy":-5 } },
+               { wire:"TRIBUNAL STRIKES THE LICENSING ORDER; THE GOVERNMENT MAY REVOKE OR DEFY" }],
+      result:"The order is unlawful as made. It stays on the book until the government revokes it or refuses to, and refusing is a decision the bench will record." },
+    { label:"The order is read narrowly.",
+      when:{ actorAbove:{ tribunal:45 }, actorBelow:{ tribunal:58 } },
+      effects:[{ flag:"tr_narrowed" }, { flag:"licensing_order_narrowed" },
+               { move:{ "actor.tribunal":2 } },
+               { wire:"TRIBUNAL READS THE LICENSING ORDER NARROWLY, WITHIN THE BOARDS' JURISDICTION" }],
+      result:"The order stands and does less. The carve-out reaches the panel's own members and nobody the board did not already licence." },
+    { label:"The order stands.",
+      when:{ actorAbove:{ tribunal:57 } },
+      effects:[{ flag:"tr_upheld" }, { move:{ "actor.tribunal":3 } },
+               { move:{ "legitimacy":3 } }, { move:{ "public_standing":2 } },
+               { wire:"TRIBUNAL UPHOLDS THE LICENSING ORDER" }],
+      result:"The judgment runs long on the government's competence to make the order and short on everything else. The order stands as made." }
   ]}
 
 ];

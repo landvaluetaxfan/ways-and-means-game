@@ -33,6 +33,32 @@ const Papers = (function () {
     key: tr => tr.dataset.doc,
     activate: () => render(st, C)
   });
+  /* THE BENCH (design/30). An actor, so no new state shape and no new verb:
+     its standing is its disposition toward the government, moved by whether
+     references are answered and rulings complied with. A case is a queued
+     event with a label, so the calendar already carries it and this panel
+     reads the same queue. */
+  function tribunalHTML() {
+    const a = (C.actors || []).find(x => x.id === "tribunal");
+    if (!a) return `<div class="note">No bench sits in this campaign.</div>`;
+    const live = (st.actors || {}).tribunal || {};
+    const v = live.standing == null ? a.standing : live.standing;
+    const cls = v >= 65 ? "good" : v <= 35 ? "bad" : "";
+    const cases = (st.queue || []).filter(q => /^tr_/.test(q.eventId || ""));
+    const flight = cases.length
+      ? cases.map(q => `<div class="cn"><b>${esc(q.label || "A case")}</b><i>sitting ` +
+          `${q.dueSitting}${q.dueSitting > st.sitting
+            ? " · " + (q.dueSitting - st.sitting) + " away" : " · today"}</i></div>`).join("")
+      : `<div class="note">Nothing is before the bench.</div>`;
+    return `<div class="fgn"><div class="fgn-h"><b>Disposition</b>` +
+      `<span class="fgn-lag">${v >= 55 ? "reads the government generously"
+        : "reads it narrowly"}</span></div>` +
+      `<div class="fgn-b"><span class="meter ${cls}"><i style="width:${
+        Math.max(0, Math.min(100, v))}%"></i></span><output>${v}</output></div>` +
+      `<div class="note">Wants: ${esc(a.asks || "a reference answered")}.</div></div>` +
+      `<div class="rulehead">Before the bench</div>` + flight;
+  }
+
   const chosen = () => Focus.selected("pp-list");
 
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c =>
@@ -324,6 +350,13 @@ const Papers = (function () {
 
     document.getElementById("pp-list").querySelectorAll("[data-doc]").forEach(n =>
       n.addEventListener("click", () => Focus.activate("pp-list", n.dataset.doc)));
+
+    /* THE BENCH (design/30). The orders are judged here, so the bench sits
+       beside them: its disposition toward the government, the cases before it
+       with the sitting each is due, and nothing to press. It is not elected and
+       cannot be whipped, which is the whole reason it earns a panel. */
+    const trib = document.getElementById("pp-tribunal");
+    if (trib) trib.innerHTML = tribunalHTML();
 
     const it = list.find(i => i.id === sel);
     const box = document.getElementById("pp-doc");

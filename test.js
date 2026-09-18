@@ -1655,6 +1655,58 @@ console.log("\nA BILL'S HISTORY:");
   if (bad) { console.log("\n" + bad + " HISTORY FAILURES"); process.exitCode = 1; }
 })();
 
+/* ---------------------------------------------------------------------
+   THE TRIBUNAL (design/30). The bench that hears what the orders do: an
+   actor, so its disposition moves with the existing verb; a case is a
+   queued event with a date; and a ruling is a condition, never a roll.
+   --------------------------------------------------------------------- */
+console.log("\nTHE TRIBUNAL:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const bench = (CONTENT.actors || []).find(a => a.id === "tribunal");
+  ok("the bench is an actor, so no new state shape was needed",
+     !!bench && bench.kind === "court", bench ? bench.kind : "none");
+
+  const st = Engine.newGame(CONTENT);
+  ok("nothing is challengeable before an order is made",
+     !Engine.matches(st, CONTENT.eventById.tr_challenge_lodged.when));
+  Engine.makeInstrument(st, CONTENT, "si_2287_44");
+  ok("and an order in force is challengeable",
+     Engine.matches(st, CONTENT.eventById.tr_challenge_lodged.when),
+     "si_2287_44 in force");
+
+  /* THE RULING BRANCHES ON THE BENCH, not on a die. Both directions. */
+  const ev = CONTENT.eventById.tr_ruling;
+  const openIdx = s => Engine.openChoices(s, CONTENT, ev).map(x => x.index);
+  const hostile = Engine.newGame(CONTENT); hostile.actors.tribunal.standing = 30;
+  const friendly = Engine.newGame(CONTENT); friendly.actors.tribunal.standing = 80;
+  ok("a hostile bench strikes the order",
+     openIdx(hostile).join(",") === "0", openIdx(hostile).join(","));
+  ok("and a friendly one upholds it",
+     openIdx(friendly).join(",") === "2", openIdx(friendly).join(","));
+  const mid = Engine.newGame(CONTENT); mid.actors.tribunal.standing = 50;
+  ok("and a middling one reads it narrowly",
+     openIdx(mid).join(",") === "1", openIdx(mid).join(","));
+
+  /* THE REFERENCE MOVES THE BENCH, which is the only thing that moves it. */
+  const r1 = Engine.newGame(CONTENT); r1.chapter = 2;
+  r1.flags.reclassification_to_courts = true;
+  Engine.choose(r1, CONTENT, CONTENT.eventById.tr_reference, 0);
+  ok("answering the reference raises the bench's disposition",
+     r1.actors.tribunal.standing > bench.standing &&
+     r1.flags.reference_answered === true, r1.actors.tribunal.standing);
+  const r2 = Engine.newGame(CONTENT); r2.chapter = 2;
+  r2.flags.reclassification_to_courts = true;
+  Engine.choose(r2, CONTENT, CONTENT.eventById.tr_reference, 1);
+  ok("and ignoring it lowers it",
+     r2.actors.tribunal.standing < bench.standing &&
+     r2.flags.reference_ignored === true, r2.actors.tribunal.standing);
+
+  if (bad) { console.log("\n" + bad + " TRIBUNAL FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nPAIRING (a courtesy the arithmetic does not support):");(function(){
   let bad = 0;
   const ok = (l, c, extra) => { if (!c) bad++;

@@ -165,6 +165,12 @@ const ACTORS = [
     asks: "no consumables price intervention this session",
     note: "Sells the food, air and water, and can stop a station by not loading a ship. Its politics is a schedule and a cold chain." },
 
+  { id: "tribunal", name: "The Tribunal", kind: "court",
+    standing: 55, patience: 90,
+    reach: {}, wants: {},
+    asks: "that a reference is answered rather than ignored",
+    note: "The bench that hears what the orders do. Its standing is its disposition toward the government and not its quality: a bench at seventy reads an order generously, and a bench at thirty has been given reasons to read it narrowly. It cannot be whipped, it is not elected, and it remembers." },
+
   /* EARTH (Flash I). Two governments the crisis runs through: the bloc
      that can sanction the Commonwealth, and the host state the abandoned
      platform sits on. No reach, no wants: they deliver nothing in the
