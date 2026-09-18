@@ -1246,6 +1246,17 @@ const Engine = (function () {
      result must be computed while the whip plan is still attached, because
      paying for it clears it. Callers use this rather than sequencing it
      themselves. */
+  /* A BILL'S OWN RECORD (design/26 #84). The session log is global and the
+     dossier showed only the LAST division, so a measure carried at sitting 6,
+     defeated at 14 and re-read at 20 had no page that said so. This is
+     written at the same moments the global log is, never derived, and it is
+     what a player reads when deciding whether to give a bill more time. */
+  function billLog(st, billId, kind, text) {
+    const bs = st.bills && st.bills[billId];
+    if (!bs) return;
+    (bs.history = bs.history || []).unshift({ sitting: st.sitting, kind: kind, text: text });
+  }
+
   function divide(st, C, billId) {
     const chk = canDivide(st, C, billId);
     if (!chk.ok) return { ok: false, reason: chk.reason, result: null, paid: null, assent: null };
@@ -1279,6 +1290,8 @@ const Engine = (function () {
     if (!result.carries) {
       apply(st, C, b.onFail);
       bs.stage = "defeated"; bs.dead = true;
+      billLog(st, billId, "division", "Defeated on a division" +
+        (paid.seats ? ", " + paid.seats + " whipped" : ""));
       st.log.unshift({ sitting: st.sitting, text: "Division: " + b.title + " defeated" +
         (paid.seats ? " (" + paid.seats + " whipped)" : "") });
       return { result: result, paid: paid, assent: null };
@@ -1292,6 +1305,10 @@ const Engine = (function () {
     bs.stage = "awaiting_assent";
     bs.carriedAt = st.sitting;
     bs.contested = !!(b.dualMajority && result.functional.aye < result.functional.need + 3);
+    billLog(st, billId, "division", "Carried on a division" +
+      (result.popular ? " " + result.popular.aye + "/" + result.popular.need : "") +
+      (b.dualMajority && result.functional ? " popular, " + result.functional.aye + "/" +
+        result.functional.need + " functional" : ""));
     st.log.unshift({ sitting: st.sitting, text: "Division: " + b.title + " carried" +
       (paid.seats ? " (" + paid.seats + " whipped)" : "") });
     const a = presidentDecides(st, C, billId, result);
@@ -1326,6 +1343,7 @@ const Engine = (function () {
     if (risk.willRefer) {
       bs.stage = "referred";
       bs.returnsAt = st.sitting + 4 + (bs.contested ? 4 : 0);
+      billLog(st, billId, "referral", "Referred for constitutional review, due sitting " + bs.returnsAt);
       st.log.unshift({ sitting: st.sitting, text: "Referred for constitutional review: " + b.title });
       st.wire.unshift({ sitting: st.sitting,
         text: "PRESIDENT REFERS " + b.title.toUpperCase() + " FOR CONSTITUTIONAL REVIEW" });
@@ -1366,6 +1384,9 @@ const Engine = (function () {
       else apply(st, C, cls);
     }
     bs.stage = "assented"; bs.dead = true; bs.assentedAt = st.sitting;
+    billLog(st, billId, "assent", delay > 0
+      ? "Assented, and in force in " + delay + " sittings (held by the functional benches)"
+      : "Assented");
     st.log.unshift({ sitting: st.sitting, text: "Assented: " + b.title });
     /* The ceremony is reserved for acts that cannot be undone, so it fires only
        on a bill that needed more than a simple majority. Six or eight times a
@@ -1388,6 +1409,7 @@ const Engine = (function () {
       if (struck) {
         bs.stage = "struck"; bs.dead = true;
         apply(st, C, b.onFail);
+        billLog(st, id, "struck", "Struck down on presidential review");
         st.log.unshift({ sitting: st.sitting, text: "Struck on review: " + b.title });
         st.wire.unshift({ sitting: st.sitting, text: "COURT STRIKES " + b.title.toUpperCase() });
         out.push({ bill: id, struck: true });
@@ -1460,13 +1482,17 @@ const Engine = (function () {
     else if (i === STAGE_ORDER.length - 1) return { ok: false, reason: "already awaiting assent" };
     else if (i >= 0) { bs.stage = STAGE_ORDER[i + 1]; }
     else return { ok: false, reason: 'unknown stage "' + bs.stage + '"' };
+    billLog(st, billId, "stage", "Advanced to " + String(bs.stage).replace(/_/g, " "));
     spendSlots(st, 1);
     st.grantsToday = (st.grantsToday || 0) + 1;
     st.actedThisSitting = true;
     (st.slotsGranted || (st.slotsGranted = [])).push(billId);
     /* Two sittings' notice. Long enough for the benches to be worked,
        short enough that the session can still hold a division. */
-    if (bs.stage === DIVIDES_AT && bs.dividesOn == null) bs.dividesOn = st.sitting + 2;
+    if (bs.stage === DIVIDES_AT && bs.dividesOn == null) {
+      bs.dividesOn = st.sitting + 2;
+      billLog(st, billId, "day", "Set down for sitting " + bs.dividesOn);
+    }
     let gained = 0;
     const owner = b.owner;
     if (owner && owner !== st.playerParty && st.capital[owner] != null) {
@@ -4032,6 +4058,7 @@ const Engine = (function () {
     if (on < first) return { ok: false, reason: "the House cannot divide before sitting " + first };
     if (on > last) return { ok: false, reason: "the House rises at sitting " + last };
     bs.dividesOn = on;
+    billLog(st, billId, "day", "Set down for sitting " + on);
     st.log.unshift({ sitting: st.sitting, text:
       (C.billById[billId] || {}).title + " set down for sitting " + on });
     return { ok: true, on: on };
@@ -4203,6 +4230,7 @@ const Engine = (function () {
          from wiping the whole legislative programme on the first pass. */
       if (bs.stage === "drafting") return;
       bs.stage = "fallen"; bs.dead = true; bs.dividesOn = null;
+      billLog(st, b.id, "fallen", "Fell when the House rose");
       fell.push(b.title);
     });
 

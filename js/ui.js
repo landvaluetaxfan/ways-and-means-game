@@ -1314,6 +1314,20 @@ const UI = (function () {
       }));
   }
 
+  /* A BILL'S OWN RECORD (design/26 #84). Every advance, every division, every
+     referral and its date, newest first. Folded, because it is a record rather
+     than a readout and the dossier already says where the bill is; open, it is
+     the page that answers "what has this measure actually been through". */
+  function billHistoryHTML(bs) {
+    const h = (bs && bs.history) || [];
+    if (!h.length) return "";
+    return `<details class="bhist"><summary><b>History</b>` +
+      `<span>${h.length} entr${h.length === 1 ? "y" : "ies"}</span></summary>` +
+      `<div class="bhist-b"><table><tbody>${h.map(x =>
+        `<tr class="k-${esc(x.kind || "")}"><td class="n">s${x.sitting}</td>` +
+        `<td>${esc(x.text)}</td></tr>`).join("")}</tbody></table></div></details>`;
+  }
+
   function drawBill(id) {
     const b = C.billById[id], bs = bsOf(id), dchk = Engine.canDivide(st, C, id);
     /* The forecast is the REPORTED division, not the exact one (design/08 §7),
@@ -1362,7 +1376,8 @@ const UI = (function () {
                     Object.assign({ slots: 1 }, Engine.whipCost(st, C, id)),
                     bs.dead ? "the bill is dead" : dchk.ok ? null : dchk.reason) + `>Move to a division</button>
        </div>` +
-      daySetterHTML(id, bs);
+      daySetterHTML(id, bs) +
+      billHistoryHTML(bs);
 
     /* THE DAY OF A DIVISION IS HERS (design/18 §4). The engine has been able
        to set and move the day since the day it landed — `setDivision` writes

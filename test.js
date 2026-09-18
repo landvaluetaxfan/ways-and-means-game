@@ -1614,8 +1614,33 @@ console.log("\nTHE THREE-WAY COUNT (aye, nay, abstain):");
   if (bad) { console.log("\n" + bad + " COUNT FAILURES"); process.exitCode = 1; }
 })();
 
-console.log("\nPAIRING (a courtesy the arithmetic does not support):");
-(function(){
+/* ---------------------------------------------------------------------
+   A BILL'S OWN RECORD (design/26 #84). The session log is global and the
+   dossier showed only the last division; a measure's own history is what a
+   player reads when deciding whether to give it more time.
+   --------------------------------------------------------------------- */
+console.log("\nA BILL'S HISTORY:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const h = Engine.newGame(CONTENT);
+  Engine.grantSlot(h, CONTENT, "thermal2");
+  ok("a bill records its own advances",
+     (h.bills.thermal2.history || []).some(x => x.kind === "stage"),
+     JSON.stringify((h.bills.thermal2.history || []).map(x => x.text)));
+  Engine.divide(h, CONTENT, "thermal2");
+  ok("and its own divisions",
+     (h.bills.thermal2.history || []).some(x => x.kind === "division"),
+     JSON.stringify((h.bills.thermal2.history || []).slice(0, 2).map(x => x.text)));
+  Engine.setDivision(h, CONTENT, "divergence", 6);
+  ok("and the day it is set down for",
+     (h.bills.divergence.history || []).some(x => x.kind === "day"),
+     JSON.stringify((h.bills.divergence.history || []).map(x => x.text)));
+  if (bad) { console.log("\n" + bad + " HISTORY FAILURES"); process.exitCode = 1; }
+})();
+
+console.log("\nPAIRING (a courtesy the arithmetic does not support):");(function(){
   let bad = 0;
   const ok = (l, c, extra) => { if (!c) bad++;
     console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
