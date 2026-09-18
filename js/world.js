@@ -23,7 +23,7 @@ const World = (function () {
   let st = null, C = null;
   const D2R = Math.PI / 180;
   const view = { lat: 14, lng: 18, mode: "globe", auto: true, sel: null, zoom: 1 };
-  let W = 720, H = 520, R = 210;
+  let W = 720, H = 480, R = 200;
 
   function set(state, content) { st = state; C = content; }
   function mode() { return view.mode; }
@@ -33,7 +33,18 @@ const World = (function () {
     return view.mode;
   }
   function selected() { return view.sel; }
-  function select(iso) { view.sel = view.sel === iso ? null : iso; return view.sel; }
+  /* THE SELECTION NOTIFIES, and it is the same notification a click gives. A
+     caller that selects from outside (a test, a link) must redraw the panel
+     beside the globe exactly as a click would, or the drawing and the window
+     disagree — which is precisely what happened when a harness set the
+     selection directly and the reference column went on showing the roster. */
+  let onChange = null;
+  function select(iso) {
+    view.sel = (iso && iso !== view.sel) ? iso : (iso === view.sel ? null : iso);
+    if (onChange) onChange();
+    return view.sel;
+  }
+  function onSelect(fn) { onChange = fn; }
   function auto(on) { view.auto = on === undefined ? !view.auto : !!on; return view.auto; }
 
   /* ---------- projection ---------- */
@@ -213,5 +224,5 @@ const World = (function () {
     return () => { if (t) clearInterval(t); };
   }
 
-  return { render, wire, set, toggle, mode, selected, select, auto, view };
+  return { render, wire, set, toggle, mode, selected, select, onSelect, auto, view };
 })();

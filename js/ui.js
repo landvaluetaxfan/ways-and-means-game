@@ -3455,19 +3455,19 @@ const UI = (function () {
     map.querySelectorAll("[data-wspin]").forEach(b => b.addEventListener("click", () => {
       World.auto(); cue("click"); drawWorld();
     }));
-    World.wire($("#w-canvas"), () => {
+    World.onSelect(() => {
       const c = $("#w-canvas");
       if (c) c.innerHTML = World.render();
-      /* A country was picked, so the reference column has to be redrawn with
-         it. This is the same rule the orbit chart follows for a station chip:
-         a click on the drawing changes the panel beside it, or the drawing is
-         a picture rather than an instrument. */
       const sd = $("#w-side");
       if (sd) {
         sd.innerHTML = worldSideHTML();
         sd.querySelectorAll("[data-goto]").forEach(b =>
           b.addEventListener("click", () => openTarget(b)));
       }
+    });
+    World.wire($("#w-canvas"), () => {
+      const c = $("#w-canvas");
+      if (c) c.innerHTML = World.render();
     });
 
     if (side) side.innerHTML = worldSideHTML();
@@ -3476,13 +3476,16 @@ const UI = (function () {
       b.addEventListener("click", () => openTarget(b)));
   }
 
-  /* WHAT A COUNTRY IS, when you click it: the ground, the anchors on it, the
-     state's own summary from content, and the modelled actor's relationship if
-     it has one. Nothing here is derived from a live simulation, because the
-     foreign layer is deliberately a price and a debt and not a map of troops. */
+  /* WHAT A COUNTRY IS, when you click it. The column is the window: the
+     state's own summary from content, the anchors on its territory with which
+     are held and which are foreign, the modelled actor's standing and ask, and
+     what the Commonwealth buys from it if it buys anything. A country with no
+     content and no anchor says so plainly rather than showing an empty frame,
+     which is the difference between a map and a gazetteer. */
   function worldSideHTML() {
     const sel = World.selected();
     const anchors = WORLD.anchors || [];
+    const cName = sel ? countryName(sel) : "";
     let h = "";
     if (!sel) {
       h = `<div class="note">Every anchor in the dozen stands on somebody else's
@@ -3490,14 +3493,18 @@ const UI = (function () {
     } else {
       const s = (WORLD.states || {})[sel] || {};
       const here = anchors.filter(a => a.host === sel);
-      h = `<div class="rulehead">${esc(sel)}</div>`;
+      h = `<div class="w-c-h"><b>${esc(cName)}</b><span class="w-c-iso">${esc(sel)}</span></div>`;
       if (s.note) h += `<div class="note">${esc(s.note)}</div>`;
       if (here.length) {
-        h += `<div class="rulehead">Anchors</div>` + here.map(a =>
+        h += `<div class="rulehead">Anchors <em>${here.length}</em></div>` + here.map(a =>
           `<div class="fgn"><div class="fgn-h"><b>${esc(a.tether)}</b>` +
           `<span class="fgn-lag">${a.mine ? (a.leased ? "leased" : "held") : "foreign"}</span></div>` +
           `<div class="note">${esc(a.site)}${a.formal ? " &middot; " + esc(a.formal) : ""}` +
           `${a.station ? " &middot; serves the " + esc(stationName(a.station)) : ""}</div></div>`).join("");
+      } else {
+        h += `<div class="rulehead">Anchors</div><div class="note">None. The Commonwealth ` +
+          `depends on this state for nothing it cannot get elsewhere, which is a fact as ` +
+          `load-bearing as the ones above it.</div>`;
       }
       if (s.actor) {
         const a = (C.actors || []).find(x => x.id === s.actor);
@@ -3507,9 +3514,21 @@ const UI = (function () {
           `${a.lag ? a.lag + " sitting" + (a.lag === 1 ? "" : "s") + " behind" : "nearly current"}. ` +
           `Wants: ${esc(a.asks || "something unstated")}.</div>`;
       }
+      if (s.markets) h += `<div class="rulehead">What it sells</div><div class="note">${esc(s.markets)}</div>`;
     }
-    h += `<div class="rulehead">Foreign</div><div class="pbody scrolls">${foreignHTML()}</div>`;
+    /* THE FULL LIST OF POWERS, folded. The column is a WINDOW on whatever is
+       selected; the roster of everyone is a reference and belongs beneath it,
+       closed, so selecting a country does not have to scroll past four other
+       governments to read about the one just clicked. */
+    h += `<details class="w-allfold"><summary><b>All the powers</b>` +
+      `<span>ordered by delay</span></summary>` +
+      `<div class="pbody scrolls">${foreignHTML()}</div></details>`;
     return h;
+  }
+  function countryName(iso) {
+    const f = (typeof WORLD_COUNTRIES !== "undefined" ? WORLD_COUNTRIES : [])
+      .find(c => c.i === iso);
+    return f ? f.n : iso;
   }
   function stationName(id) {
     const s = (C.stations || []).find(x => x.id === id);

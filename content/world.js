@@ -38,17 +38,29 @@ const WORLD = {
   /* The countries worth a summary. `actor` links the country to a modelled
      foreign actor, so clicking it shows the relationship the game keeps. */
   states: {
-    "BRA": { note:"Granted the Anselm anchor on a ninety-nine-year term in the 2230s and has watched the traffic grow past the fee ever since. It has its own launch range and its own orbital programme, and it wants the Commonwealth as a customer rather than a dependent." },
-    "KEN": { actor:"earth_host", note:"The host state. Its soil carries the International Earth-Orbit Elevator, and its procurement law is why its own repatriation plan is two years long. It will not carry the cost of a corporation's wind-up and it will not let a foreign government annex a platform at the foot of its own tether." },
-    "IDN": { note:"Non-aligned, archipelagic, and the largest state on the equator. Its anchor was granted in a decade when it needed the money, and it has been renegotiating since." },
-    "FRA": { actor:"earth_bloc", note:"The Kourou vertical stands on European Union territory, which is why the Union is the only power in the dispute that is also a landlord. Its grievance is not the platform: it is that the orbital franchises undercut European labour and personhood law, and European courts cannot reach them." },
-    "STP": { note:"Its entire revenue is the anchor concession. The smallest actor in the dispute and the one with the most to lose from a renegotiation it did not ask for." },
-    "COL": { note:"The Leticia corridor crosses a tri-border the state barely administers. It sells the concession and not the sovereignty, and it has said so in writing." },
-    "SOM": { note:"A federal authority holding an equatorial coast that has been contested for a century. The anchor is one of the few things in the district that pays." },
-    "GAB": { note:"Halcyon Extraction Group's charter state. It has run on extraction for two centuries, and it is the one country in the list with a national champion in the dispute rather than a grievance." },
-    "KIR": { note:"The Bond is leased and not granted, which is why it is the one elevator the Commonwealth holds outright. A mid-Pacific state whose highest ground is its own tether base." },
-    "UGA": { note:"The only inland anchor. Its corridor crosses its neighbours' airspace, which makes every renewal a regional negotiation." },
-    "ECU": { note:"The classic equatorial site, and a state with a long history of being paid badly for what it sells." },
-    "MDV": { note:"A low-lying island state whose tether base is also the highest ground it owns." }
+    "BRA": { note:"Granted the Anselm anchor on a ninety-nine-year term in the 2230s and has watched the traffic grow past the fee ever since. It has its own launch range and its own orbital programme, and it wants the Commonwealth as a customer rather than a dependent.",
+             markets:"Soy, iron, and launch capacity it would rather the Commonwealth bought than built." },
+    "KEN": { actor:"earth_host", note:"The host state. Its soil carries the International Earth-Orbit Elevator, and its procurement law is why its own repatriation plan is two years long. It will not carry the cost of a corporation's wind-up and it will not let a foreign government annex a platform at the foot of its own tether.",
+             markets:"Tea, geothermal power, and the corridor rights to the Malindi base — the last of which it is the only seller of." },
+    "IDN": { note:"Non-aligned, archipelagic, and the largest state on the equator. Its anchor was granted in a decade when it needed the money, and it has been renegotiating since.",
+             markets:"Nickel, palm, and the busiest equatorial corridor on the planet." },
+    "FRA": { actor:"earth_bloc", note:"The Kourou vertical stands on European Union territory, which is why the Union is the only power in the dispute that is also a landlord. Its grievance is not the platform: it is that the orbital franchises undercut European labour and personhood law, and European courts cannot reach them.",
+             markets:"Instruments, aircraft, and the European market the Commonwealth's compute exports want in." },
+    "STP": { note:"Its entire revenue is the anchor concession. The smallest actor in the dispute and the one with the most to lose from a renegotiation it did not ask for.",
+             markets:"Cocoa and the concession. That is the whole balance of payments." },
+    "COL": { note:"The Leticia corridor crosses a tri-border the state barely administers. It sells the concession and not the sovereignty, and it has said so in writing.",
+             markets:"Coffee, cut flowers, and the corridor into the Amazon basin." },
+    "SOM": { note:"A federal authority holding an equatorial coast that has been contested for a century. The anchor is one of the few things in the district that pays.",
+             markets:"Livestock, frankincense, and the Kismayo roadstead." },
+    "GAB": { note:"Halcyon Extraction Group's charter state. It has run on extraction for two centuries, and it is the one country in the list with a national champion in the dispute rather than a grievance.",
+             markets:"Manganese, oil, and the Port-Gentil anchor." },
+    "KIR": { note:"The Bond is leased and not granted, which is why it is the one elevator the Commonwealth holds outright. A mid-Pacific state whose highest ground is its own tether base.",
+             markets:"Fishing licences, and the ground the Bond's base stands on." },
+    "UGA": { note:"The only inland anchor. Its corridor crosses its neighbours' airspace, which makes every renewal a regional negotiation.",
+             markets:"Coffee, and the corridor the Equator crosses." },
+    "ECU": { note:"The classic equatorial site, and a state with a long history of being paid badly for what it sells.",
+             markets:"Bananas, oil, and the Chimborazo corridor." },
+    "MDV": { note:"A low-lying island state whose tether base is also the highest ground it owns.",
+             markets:"Tuna and tourism. Its tether is the only industry it has that does not sink." }
   }
 };
