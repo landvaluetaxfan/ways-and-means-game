@@ -891,7 +891,8 @@ const UI = (function () {
                      { free: "Costs no order-paper time. That is the point of an order: " +
                              "it is in force at once, and prayable." },
                      chk.ok ? null : chk.reason) + `>Make</button>`}
-          ${s.inForce && window > 0 ? `<button class="btn sibtn" data-pray="${si.id}">Pray</button>` : ""}</td>
+          ${s.inForce && window > 0 ? `<button class="btn sibtn" data-pray="${si.id}">Pray</button>` : ""}
+          ${s.inForce && si.revocable ? `<button class="btn sibtn" data-revoke="${si.id}">Revoke</button>` : ""}</td>
       </tr>`;
       if (!open) return row;
       /* WHAT THE ORDER DOES, and what it does to the benches. `summary` and
@@ -951,6 +952,31 @@ const UI = (function () {
           drawAll(); afterAction();
         });
     }));
+    /* ---- the government revokes its own order ---- */
+    /* THE OTHER DOOR, AND THE ONLY ONE THE GOVERNMENT HOLDS. A revocable order
+       can be taken out of force by the minister who made it, without a division
+       and without the House. `revokeInstrument` has been able to do it since
+       the instrument landed; nothing offered it, so an order was a one-way
+       door and the only route out was the opposition's prayer. */
+    $("#gov-si").querySelectorAll("[data-revoke]").forEach(b =>
+      b.addEventListener("click", () => {
+        const si = (C.instruments || []).find(x => x.id === b.dataset.revoke);
+        Dialog.confirm(
+          "Revoke " + (si ? si.number + " \u2014 " + si.title : b.dataset.revoke) + "?\n\n" +
+          "It goes out of force at once and whatever it did is undone. The benches " +
+          "that asked for it will notice, and nothing stops the government making " +
+          "it again later.",
+          { title: "Revoke the order?", yes: "Revoke", danger: true },
+          okd => {
+            if (!okd) return;
+            const r = acted(() => Engine.revokeInstrument(st, C, b.dataset.revoke));
+            if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
+            cue("stamp"); score("revoke");
+            setStatus((si ? si.number : b.dataset.revoke) +
+                      " revoked \u2014 out of force, and the record says so", "transient");
+            drawAll(); afterAction();
+          });
+      }));
 
     /* ---- cabinet ---- */
     /* The Prime Minister chairs it, so she heads the list — but she is not a

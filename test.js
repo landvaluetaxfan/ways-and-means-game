@@ -138,6 +138,21 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
   ok("a prayed-against SI is revoked and its effects reversed",
      pr.carried && afterFn < beforeFn, beforeFn + " -> " + afterFn);
 
+  /* THE GOVERNMENT'S OWN DOOR (design/26 #83's neighbour). An order can be
+     revoked by the minister who made it, out of force at once, with no
+     division and no House. It has been in the engine since the instrument
+     landed and nothing offered it. */
+  let rv = Engine.newGame(CONTENT);
+  Engine.makeInstrument(rv, CONTENT, "si_2287_44");
+  const rvBefore = Engine.division(rv, CONTENT, "divergence").functional.aye;
+  const rr = Engine.revokeInstrument(rv, CONTENT, "si_2287_44");
+  const rvAfter = Engine.division(rv, CONTENT, "divergence").functional.aye;
+  ok("the government can revoke its own revocable order",
+     rr.ok && !rv.instruments.si_2287_44.inForce && rvAfter < rvBefore,
+     rr.ok ? rvBefore + " -> " + rvAfter : rr.reason);
+  const rbad = Engine.revokeInstrument(rv, CONTENT, "si_2287_44");
+  ok("and revoking it twice is refused", !rbad.ok, rbad.reason);
+
   let w = Engine.newGame(CONTENT);
   Engine.makeInstrument(w, CONTENT, "si_2287_44");
   w.sitting = 40;
