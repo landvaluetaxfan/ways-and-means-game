@@ -404,6 +404,21 @@ const UI = (function () {
     $("#sb-margin").textContent = `MARGIN ${conf - maj >= 0 ? "+" : ""}${conf - maj}`;
     $("#sb-thermal").textContent = `THERMAL ${st.scalars.thermal_margin}%`;
     $("#sb-chapter").textContent = `CHAPTER ${st.chapter}`;
+    /* THE CLOCK, ON EVERY SCREEN (design/26 #88). The session's end is the one
+       deadline that governs everything else on the board — order-paper time
+       refills when the House rises, business not carried falls, and every
+       undertaking due "before the House rises" comes due at once — and it was
+       only ever visible on the calendar, on one tab, halfway down a column.
+       It is a chip in the status bar now, and it turns red inside three. */
+    const rise = $("#sb-rise");
+    if (rise) {
+      if (st.sessionEnds == null) { rise.textContent = ""; }
+      else {
+        const left = st.sessionEnds - st.sitting;
+        rise.textContent = left <= 0 ? "RISE TODAY" : `RISE IN ${left}`;
+        rise.style.color = left <= 3 ? "var(--alert)" : "";
+      }
+    }
     /* ORDER-PAPER TIME AS MARKS, NOT A FRACTION (design/19 §5.1). "4 of 6" is
        a number; six marks with two dark is a quantity the eye has before it
        reads. The tooltip still says what the marks mean. */

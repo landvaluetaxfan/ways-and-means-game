@@ -56,6 +56,11 @@ const Tips = (function () {
     chapter: { title: "Chapter",
       body: "The act of the story you are in. Chapters control which events can " +
             "fire. They do not advance on a timer." },
+    rise: { title: "The House rises",
+      body: "The sittings left before the session ends. When it does, order-paper " +
+            "time refills, business not carried falls, and every undertaking due " +
+            "before the rise comes due at once. It is the deadline everything " +
+            "else on the board is measured against." },
     slots: { title: "Order paper time",
       body: "One slot moves one bill one stage closer to its division, and the " +
             "session holds only a few. Give a slot to a partner's bill and you " +
