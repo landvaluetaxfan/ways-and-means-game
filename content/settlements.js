@@ -130,6 +130,16 @@ const SETTLEMENTS = [
              "jurisdiction that will have them. The stations at the crossings feel it " +
              "first, in their registries and their rents and their schools. The chamber " +
              "does not feel it at all, which is the arrangement.\n\n" +
+             /* WHAT IT DEVOLVES TO IS NOT ONE THING (design/27 B). A ring-band
+                state with a legislature of its own is a different act from a
+                low-band station whose government is an officer and a meeting. */
+             "And what each of them answers WITH is not one thing either. Anselm Ring has " +
+             "a chamber of its own and has legislated before breakfast. The ring's dense " +
+             "single hulls answer as city-states, one council and no subdivision. The " +
+             "mid-size charters have the powers and have never had the money. Homestead's " +
+             "ten settlements share a delegation and disagree about everything, which is " +
+             "the hardest federalism of the thirty-four. The low band appoints an officer " +
+             "and holds meetings that outrank him.\n\n" +
              "The Commonwealth has thirty-four answers now, and one of them is yours.",
     when: { flags: ["federal_schedule"] } },
 

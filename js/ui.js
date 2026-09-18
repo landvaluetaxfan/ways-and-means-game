@@ -4644,6 +4644,9 @@ const UI = (function () {
         uplift ${(s.composition.uplift*100).toFixed(0)}% &middot;
         synthetic ${(s.composition.synthetic*100).toFixed(0)}%</div>` : ""}
       <div class="rulehead">Material interest</div><div class="note">${esc(s.material_interest.join(" \u00b7 "))}</div>
+      ${(() => { const g = Engine.stationGovernment(st, C, s.id);
+        return g ? `<div class="rulehead">Government <em>${esc(g.who)}</em></div>` +
+          `<div class="note">${esc(g.line)}</div>` : ""; })()}
       <div class="rulehead">Dependency</div><div class="note">${esc(s.dependency)}</div>
       <div class="rulehead">Grievance</div><div class="note">${esc(s.grievance)}</div>`;
   }

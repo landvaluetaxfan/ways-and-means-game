@@ -2875,6 +2875,60 @@ const Engine = (function () {
                       (st.undertakings || []).some(u => u.id === id && u.state === "broken"))
   };
 
+  /* ---------------------------------------------------------
+     STATION GOVERNMENT IS NOT ONE THING (design/27 B)
+
+     A reader, not a stored field, which is why it costs nothing against the
+     verb cap: a station's constitution follows from what the station already
+     is. A ring-band station with fifteen seats is a state with municipalities
+     under it; a large dense single station is a city-state; the mid-size are
+     home-rule charters; the low band is administered or meets. The one already
+     true exception is the capital, which is its own thing and does not vote.
+
+     This is what makes the federal settlement mean something specific rather
+     than an administrative rearrangement: to devolve to Anselm Ring, which has
+     a legislature of its own, is a different act from devolving to Homestead,
+     which has a town meeting.
+     --------------------------------------------------------- */
+  const GIFT = ["the shelf", "every berth", "the berth", "every deck", "the deck"];
+  function stationGovernment(st, C, id) {
+    const s0 = (C.stations || []).find(x => x.id === id);
+    const s = (st.stations || {})[id];
+    if (!s0 || !s) return null;
+    /* THE CAPITAL IS ITS OWN THING. Its seat is non-voting, and the flag for
+       that lives on the constituency rather than the station, so it is read
+       there: a station whose only seat does not vote is the capital. */
+    const cons = (C.constituencies || []).filter(k => k.station === id);
+    const nonVoting = cons.length > 0 && cons.every(k => k.nonVoting);
+    if (nonVoting) return { form: "capital", name: "the Capital Territory",
+      seats: 0, who: "direct administration",
+      line: "Administered directly by the Commonwealth, and non-voting. The Charter made it so." };
+    const seats = s0.seats || 0;
+    const pop = s0.population || 0;
+    if (s0.type === "bundled") return { form: "federal", name: "a bunded union",
+      seats: seats, who: "a delegation of settlements",
+      line: `${s0.settlements || "several"} settlements sharing one delegation and almost nothing else, ` +
+            `which is what ${pop.toLocaleString()} people call a government.` };
+    if (s0.band === "ring" && seats >= 6) return { form: "state", name: "a state government",
+      seats: seats, who: "a chamber of its own, with municipalities beneath it",
+      line: `A state with ${seats} members and municipalities under it. It legislates on ${GIFT[0]} and ` +
+            `settles the rest locally.` };
+    if (pop >= 200000 && seats >= 4) return { form: "city", name: "a city-state",
+      seats: seats, who: "one council, no subdivision",
+      line: `One government for the whole hull and no subdivision, which is what ${pop.toLocaleString()} ` +
+            `people in one cylinder does to a constitution.` };
+    if (pop >= 100000) return { form: "charter", name: "a home-rule charter",
+      seats: seats, who: "a single elected council",
+      line: `Wide powers and one council, on a charter the Commonwealth grants and could withdraw.` };
+    if (s0.band === "low") return { form: "meeting", name: "direct administration",
+      seats: seats, who: "the federal officer and, in practice, a meeting",
+      line: `Too small to charter and too far to ignore. The Commonwealth appoints an officer and the ` +
+            `${pop.toLocaleString()} residents hold meetings that outrank him.` };
+    return { form: "charter", name: "a home-rule charter",
+      seats: seats, who: "a single elected council",
+      line: `Wide powers and one council, on a charter the Commonwealth grants and could withdraw.` };
+  }
+
   function federalSuspended(st) {
     let n = 0;
     for (const id in st.stations) n += st.stations[id].suspended || 0;
@@ -4678,7 +4732,7 @@ const Engine = (function () {
     undertakingWhere,
     snapshot, changes,
     prorogue, canDivide, candidates, vacancies, fillPost,
-    federalSuspended,
+    federalSuspended, stationGovernment,
     CONDITIONS, EFFECTS
   };
 })();

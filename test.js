@@ -1741,6 +1741,42 @@ console.log("\nTHE TRIBUNAL:");
   if (bad) { console.log("\n" + bad + " TRIBUNAL FAILURES"); process.exitCode = 1; }
 })();
 
+/* ---------------------------------------------------------------------
+   STATION GOVERNMENT IS NOT ONE THING (design/27 B). A reader, not a
+   stored field: the form follows from what the station already is.
+   --------------------------------------------------------------------- */
+console.log("\nSTATION GOVERNMENT:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const st = Engine.newGame(CONTENT);
+  const forms = {};
+  CONTENT.stations.forEach(s0 => {
+    const g = Engine.stationGovernment(st, CONTENT, s0.id);
+    forms[g ? g.form : "none"] = (forms[g ? g.form : "none"] || 0) + 1;
+  });
+  ok("every station has a government", !forms.none,
+     Object.keys(forms).map(k => k + " " + forms[k]).join(", "));
+  ok("and they are not all the same shape",
+     Object.keys(forms).filter(k => k !== "none").length >= 3,
+     Object.keys(forms).join(", "));
+  const ring = CONTENT.stations.find(s0 => s0.band === "ring" && s0.seats >= 6);
+  ok("a ring-band state has a chamber of its own",
+     Engine.stationGovernment(st, CONTENT, ring.id).form === "state", ring.name);
+  const low = CONTENT.stations.find(s0 => s0.band === "low" && s0.population < 100000);
+  ok("and a small low-band station meets",
+     ["meeting","charter"].indexOf(Engine.stationGovernment(st, CONTENT, low.id).form) >= 0,
+     low.name + " " + Engine.stationGovernment(st, CONTENT, low.id).form);
+  const cap = (CONTENT.constituencies || []).find(k => k.nonVoting);
+  if (cap) {
+    const g = Engine.stationGovernment(st, CONTENT, cap.station);
+    ok("and the capital is its own thing and non-voting",
+       g.form === "capital" && g.seats === 0, g.form);
+  }
+  if (bad) { console.log("\n" + bad + " STATION GOVERNMENT FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nPAIRING (a courtesy the arithmetic does not support):");(function(){
   let bad = 0;
   const ok = (l, c, extra) => { if (!c) bad++;
