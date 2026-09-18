@@ -15,6 +15,12 @@ const CONTENT = (function () {
     business: typeof BUSINESS !== "undefined" ? BUSINESS : [],
     settlements: typeof SETTLEMENTS !== "undefined" ? SETTLEMENTS : [],
     actors: typeof ACTORS !== "undefined" ? ACTORS : [],
+    /* THE EARTH, and the anchors on it (design/29). Not read by the engine:
+       the foreign layer is a price and a debt, and the globe is the ground it
+       stands on. The World screen reads it, and `content/world.js` is where the
+       coordinates live so nothing in js/ names a country. */
+    world: typeof WORLD !== "undefined" ? WORLD : null,
+    achievements: typeof ACHIEVEMENTS !== "undefined" ? ACHIEVEMENTS : [],
     /* THE DIMENSIONS THIS POLITY ARGUES ALONG, and the goods it prices.
        Both were literals in js/engine.js, which meant adding an axis the
        Commonwealth cares about — housing, religion, labour — required

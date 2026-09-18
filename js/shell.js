@@ -202,6 +202,7 @@ const Shell = (function () {
     : view === "new"     ? newGov()
     : view === "slots"   ? slotList("new")
     : view === "credits" ? credits()
+    : view === "awards"  ? awards()
     : view === "options" ? menuOptions()
     : root());
     paintMenu();
@@ -228,6 +229,72 @@ const Shell = (function () {
     opts.sessions = l.slice(0, 20);
     saveOpts();
   }
+
+  /* ---------- achievements ----------
+
+     Evaluated against the RECORD, never while playing. `earned` is a flat
+     map of id to the date it was first earned, kept under its own storage
+     key so deleting a slot never loses it — the same reasoning as the
+     session log, and the same shallow-merge safety.
+
+     The facts come from the ending the UI recorded plus the finished save,
+     which is why the UI passes the state and not just a sentence: an
+     achievement like the supercanon needs the arithmetic, not the ending. */
+  function earnedMap() { return (opts.earned && typeof opts.earned === "object") ? opts.earned : {}; }
+  function earned() { return Object.keys(earnedMap()); }
+
+  /* Does a finished run answer this entry's `when`? Every field is an AND,
+     and an entry with no `when` is never awarded by accident. */
+  function meets(when, facts) {
+    if (!when) return false;
+    for (const k of Object.keys(when)) {
+      const want = when[k];
+      if (k === "end") { if (facts.end !== want) return false; }
+      else if (k === "reason") { if (facts.reason !== want) return false; }
+      else if (k === "resolved") { if (facts.resolved !== want) return false; }
+      else if (k === "settled") { if (facts.settled !== want) return false; }
+      else if (k === "seats") {
+        if (want === "held" && !(facts.held > 0)) return false;
+        if (want === "lost" && !(facts.was > 0)) return false;
+      }
+      else if (k === "flags") {
+        if (![].concat(want).every(f => !!facts.flags[f])) return false;
+      }
+      else if (k === "flagsAny") {
+        if (![].concat(want).some(f => !!facts.flags[f])) return false;
+      }
+      else if (k === "log") {
+        if (![].concat(want).every(t =>
+          (facts.log || []).some(x => String(x).indexOf(t) >= 0))) return false;
+      }
+      else if (k === "logAbsent") {
+        if ([].concat(want).some(t =>
+          (facts.log || []).some(x => String(x).indexOf(t) >= 0))) return false;
+      }
+    }
+    return true;
+  }
+
+  /* Award on an ending, from the finished state. Returns the entry so the
+     caller can say what was earned; a repeat award is silent. */
+  function award(facts) {
+    const list = (typeof ACHIEVEMENTS !== "undefined" ? ACHIEVEMENTS : []);
+    const map = Object.assign({}, earnedMap());
+    const fresh = [];
+    list.forEach(a => {
+      if (map[a.id]) return;
+      if (meets(a.when, facts)) { map[a.id] = Date.now(); fresh.push(a); }
+    });
+    if (fresh.length) { opts.earned = map; saveOpts(); }
+    return fresh;
+  }
+
+  const stat = () => {
+    const list = (typeof ACHIEVEMENTS !== "undefined" ? ACHIEVEMENTS : []);
+    const map = earnedMap();
+    return { have: list.filter(a => map[a.id]).length, of: list.length,
+             canon: !!map.supercanon, list: list, map: map };
+  };
 
   /* The most recent save by when it was written, which is what
      "Continue" has to mean. */
@@ -297,15 +364,43 @@ const Shell = (function () {
   function root() {
     const last = latest();
     const any = !!last;
+    const sc = stat();
     return `<div class="menu-btns">
       ${last ? `<button class="mbtn cont" data-cont="${last.n}">Continue
           <i>${esc(last.name)} &middot; sitting ${last.sitting} &middot; chapter ${last.chapter}${
             last.date ? " &middot; " + esc(last.date) : ""}</i></button>` : ""}
       <button class="mbtn" data-go="new">New Government</button>
       <button class="mbtn${any ? "" : " off"}" data-go="load"${any ? "" : " disabled"}>Load</button>
+      <button class="mbtn" data-go="awards">Achievements
+        <i>${sc.have} of ${sc.of}${sc.canon ? " &middot; Ways and Means" : ""}</i></button>
       <button class="mbtn" data-go="options">Options</button>
       <button class="mbtn" data-go="credits">Credits</button>
     </div>`;
+  }
+
+  /* THE BOARD. Every achievement, earned or not, with what it is. An
+     achievement a player cannot see the shape of is a scoreboard; a locked
+     one that says what it wants is a thing to play for. The canon is marked,
+     because it is the one the campaign was written around. */
+  function awards() {
+    const sc = stat();
+    const TIER = { canon:"Canon", ending:"Endings", settlement:"Settlements",
+                   action:"The session" };
+    const order = ["canon","ending","settlement","action"];
+    const byTier = t => sc.list.filter(a => a.tier === t);
+    return `<div class="menu-sub">Achievements <em>${sc.have} of ${sc.of}</em></div>` +
+      order.filter(t => byTier(t).length).map(t =>
+        `<div class="aw-tier">${TIER[t]}</div>` +
+        byTier(t).map(a => {
+          const has = !!sc.map[a.id];
+          return `<div class="aw${has ? " has" : ""}${a.tier === "canon" ? " canon" : ""}">` +
+            `<b>${has ? esc(a.name) : "\\u2014 locked \\u2014"}</b>` +
+            `<span>${esc(a.note || "")}</span>` +
+            (has && sc.map[a.id] && typeof sc.map[a.id] === "number"
+              ? `<i>${new Date(sc.map[a.id]).toISOString().slice(0, 10)}</i>` : "") +
+            `</div>`;
+        }).join("")).join("") +
+      `<div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
   }
 
   /* The same Control Panel as the topbar's, rendered here rather than
@@ -660,5 +755,6 @@ const Shell = (function () {
            opt: opt, setOpt: setOpt, flash: flash,
            /* the session log: written when a government ends, read by the
               board. Outside every save on purpose. */
-           record: record, sessions: log };
+           record: record, sessions: log,
+          award: award, earned: earned, stat: stat };
 })();

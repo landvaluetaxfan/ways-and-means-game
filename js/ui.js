@@ -595,7 +595,45 @@ const UI = (function () {
           Shell.record({ sitting: st.sitting, chapter: st.chapter,
                          date: st.date, end: "election" });
       }
+      /* WHAT THIS GOVERNMENT IS REMEMBERED FOR. Evaluated once, on the ending,
+         against the finished state — an achievement is a fact about a run and
+         the arithmetic is part of the fact, which is why the state goes across
+         and not a sentence. The board is on the menu; this only says, once,
+         what was earned. */
+      earnedNow = awardNow(end);
+      if (earnedNow.length) {
+        const names = earnedNow.map(a => a.name).join(" \u00b7 ");
+        setStatus((earnedNow.some(a => a.tier === "canon") ? "WAYS AND MEANS \u00b7 " : "") +
+                  "Remembered: " + names, "transient");
+      }
     }
+  }
+
+  /* Evaluate the achievements against the finished run, and hand the state
+     itself across so the supercanon can read the arithmetic and not only the
+     ending. Returns the freshly earned entries. */
+  let earnedNow = [];
+  function awardNow(end) {
+    if (typeof Shell === "undefined" || !Shell.award) return [];
+    const d = st.dissolved || {};
+    const was = d.was || 0, held = d.held || 0;
+    const facts = {
+      end: end.kind,
+      reason: end.reason || null,
+      resolved: st.resolvedAs || null,
+      settled: st.settledAs || null,
+      seats: held || was ? { was: was, held: held } : null,
+      was: was, held: was ? held - was : 0,
+      flags: st.flags || {},
+      log: (st.log || []).map(x => x.text || "")
+    };
+    /* The election is the ending here, so `seats:"held"` means the government
+       came back larger than it went in. A run that ended before an election
+       has no arithmetic and cannot earn the supercanon, which is correct: the
+       canon result is an election result. */
+    facts.held = Math.max(0, held - was);
+    facts.was = was;
+    return Shell.award(facts);
   }
 
   /* ---------- scarcity prices ----------

@@ -1301,6 +1301,20 @@ body.menu-on{background:#0b1826;}
 .menu-text{max-width:600px;font-family:var(--f-doc);font-size:14px;line-height:1.55;color:#e6e7de;
   text-shadow:0 1px 8px rgba(0,0,0,.5);}
 .menu-text p{margin:0 0 10px;}
+/* THE AWARDS BOARD. Every achievement, earned or not. A locked one says what
+   it wants, because a board whose empty rows say nothing is a scoreboard; the
+   canon is marked because it is the one the campaign was written around. */
+.aw-tier{font-family:var(--f-ui);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:#8f9a80;margin:10px 0 3px;border-bottom:1px solid #3a4433;padding-bottom:2px;}
+.aw{background:rgba(20,23,18,.5);border-left:3px solid #3a4433;padding:4px 8px;margin-bottom:3px;
+  max-width:660px;}
+.aw.has{border-left-color:var(--gold,#c9a227);}
+.aw.canon{border-left-width:5px;}
+.aw.canon.has{background:rgba(201,162,39,.14);}
+.aw b{font-family:var(--f-doc);font-size:14px;color:#e6e7de;}
+.aw.has b{color:#f0e6c8;}
+.aw span{display:block;font-size:12.5px;line-height:1.45;color:#b9bcb2;font-family:var(--f-doc);}
+.aw i{font-style:normal;font-family:var(--f-data);font-size:9.5px;color:#8f9a80;}
 .menu-text .dim{color:#b9bcb2;font-size:13.5px;}
 /* the studio's card, on the white the mark is drawn for */
 .studio{display:block;width:110px;height:auto;margin:20px 0 4px;background:#fff;
