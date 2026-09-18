@@ -172,8 +172,51 @@ const Concordance = (function () {
     };
   }
 
-  function billArticle(b) {
-    const bs = st.bills[b.id], d = Engine.division(st, C, b.id);
+  /* A SEAT, AND THE PERSON WHO HOLDS IT (design/26 #87). There were articles
+     for fifty-four characters and thirty stations and NOTHING for the 141
+     constituencies, so a member could be found by name in the Concordance and
+     the place they sat for could not be found at all. Generated from the
+     constituency's own record, which has carried a description, a tendency and
+     an electorate since the roll was written and had no reader. */
+  function constituencyArticle(k) {
+    const s0 = (C.stations || []).find(x => x.id === k.station);
+    const s = st.stations[k.station] || {};
+    const party = Object.keys(k.held || {}).sort((a, b) =>
+      (k.held[b] || 0) - (k.held[a] || 0))[0] || null;
+    const pName = id => {
+      const p = (C.parties || []).find(x => x.id === id);
+      return p ? p.name : String(id).replace(/_/g, " ");
+    };
+    const sections = [];
+    if (k.description) sections.push({ h: "The seat", body: k.description });
+    if (k.tendency) sections.push({ h: "How it votes", body: k.tendency });
+    sections.push({ h: "Returns", body:
+      `Magnitude ${k.magnitude}, on a roll of ${(k.electorate || 0).toLocaleString()}. ` +
+      (k.at_large ? "Elected at large: the whole station is the constituency. " : "") +
+      (party ? `Held by [[${party}|${pName(party)}]]. ` : "") +
+      `The recorded material interests are ${(k.material_interest || [])
+        .map(x => String(x).replace(/_/g, " ")).join(", ") || "none recorded"}.` });
+    return {
+      id: k.id, title: k.name + (k.at_large ? " (at large)" : ""),
+      category: "Constituencies", generated: true,
+      banners: [], edited: { by: "Census Bureau returns", attested: true, note: k.parent || "" },
+      summary: `A district of ${s0 ? s0.name : "the Commonwealth"}` +
+        `${k.member ? ", held by " + k.member : ""}, returning ${k.magnitude} member` +
+        `${k.magnitude === 1 ? "" : "s"}.`,
+      sections,
+      infobox: { title: k.name, rows: [
+        ["Station", s0 ? s0.name : k.station],
+        ["Band", k.band || ""],
+        ["Magnitude", String(k.magnitude)],
+        ["Electorate", (k.electorate || 0).toLocaleString()],
+        ["Member", k.member || "\u2014"],
+        ["Held by", party ? pName(party) : "\u2014"]
+      ]},
+      see: [k.station, party].filter(Boolean)
+    };
+  }
+
+  function billArticle(b) {    const bs = st.bills[b.id], d = Engine.division(st, C, b.id);
     const sections = [{ h: "Provisions", body: b.summary }];
     if (b.effectNote) sections.push({ h: "Estimated effect", body: b.effectNote });
     sections.push({ h: "Division forecast", body:
@@ -270,6 +313,9 @@ const Concordance = (function () {
     const gen = [];
     C.parties.forEach(p => { if (!handIds.has(p.id)) gen.push(partyArticle(p)); });
     C.stations.forEach(s => { if (!handIds.has(s.id)) gen.push(stationArticle(s)); });
+    (C.constituencies || []).forEach(k => {
+      if (!handIds.has(k.id)) gen.push(constituencyArticle(k));
+    });
     C.bills.forEach(b => { if (!handIds.has("bill_" + b.id)) gen.push(billArticle(b)); });
     C.characters.forEach(c => { if (!handIds.has("person_" + c.id)) gen.push(personArticle(c)); });
     (C.glossary || []).forEach(g => {
@@ -299,7 +345,8 @@ const Concordance = (function () {
     const cats = {};
     all.forEach(a => (cats[a.category] ||= []).push(a));
     const order = ["Institutions", "Constitutional theory", "Elections", "Legislation",
-                   "Personhood", "Parties", "Stations", "Persons", "History", "Definitions"];
+                   "Personhood", "Parties", "Stations", "Constituencies", "Persons",
+                   "History", "Definitions"];
     const keys = Object.keys(cats).sort((x, y) => {
       const ix = order.indexOf(x), iy = order.indexOf(y);
       return (ix < 0 ? 99 : ix) - (iy < 0 ? 99 : iy);
@@ -381,11 +428,48 @@ const Concordance = (function () {
     return hit ? hit.id : null;
   }
 
+  /* EVERY MATCH, NOT THE BEST ONE (design/26 #87). The search returned a
+     single article — the first whose title matched — so a player looking for
+     "Concord" got the bill, or the seat, or neither, and had no way to ask
+     which. It returns every match now, ranked by how it matched, and the
+     screen shows the list. The list is written into the article pane so the
+     delegated [data-go] handler that every other cross-reference uses opens
+     the one that was meant. */
+  function hits(q) {
+    q = String(q || "").trim().toLowerCase();
+    if (!q) return [];
+    const rank = a => {
+      const t = a.title.toLowerCase(), s = (a.summary || "").toLowerCase();
+      if (t === q) return 0;
+      if (t.startsWith(q)) return 1;
+      if (t.includes(q)) return 2;
+      if (s.includes(q)) return 3;
+      return 4;
+    };
+    return all.map(a => ({ a: a, r: rank(a) }))
+      .filter(x => x.r < 4)
+      .sort((x, y) => x.r - y.r || x.a.title.localeCompare(y.a.title))
+      .slice(0, 40).map(x => x.a);
+  }
+
+  function renderHits(list, q) {
+    const esc0 = s => String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    document.getElementById("cx-body").innerHTML =
+      `<h2 class="cx-title">Search</h2>` +
+      `<p class="cx-lead">${list.length} article${list.length === 1 ? "" : "s"} ` +
+      `matching <b>${esc0(q)}</b>.</p>` +
+      `<ul class="cx-hits">` + list.map(a =>
+        `<li><a class="cx-link" tabindex="0" data-go="${esc0(a.id)}">${esc0(a.title)}</a>` +
+        `<span class="cx-hitsc">${esc0(a.category)}${a.generated ? "" : " &middot; written"}</span></li>`
+      ).join("") + `</ul>`;
+  }
+
   function back() {
     if (history.length < 2) return null;
     history.pop();
     return history[history.length - 1];
   }
 
-  return { render, search, back };
+  return { render, search, hits, renderHits, back };
 })();

@@ -897,6 +897,14 @@ img.dith{display:block;}
 .cx-navlink:hover{text-decoration:underline;background:#e8e9e2;}
 .cx-navlink.on{background:#e0e4d6;color:#1b1d19;font-weight:bold;}
 .cx-navlink em{font-style:normal;color:#9a9c92;}
+/* THE SEARCH LIST. Every match, ranked, with its category beside it. */
+.cx-hits{list-style:none;margin:8px 0 0;padding:0;max-width:64ch;}
+.cx-hits li{display:flex;align-items:baseline;gap:8px;padding:3px 0;
+  border-bottom:1px dotted #c9ccc2;}
+.cx-hits .cx-link{cursor:pointer;color:#2b4a7a;font-size:14px;}
+.cx-hits .cx-link:hover{text-decoration:underline;}
+.cx-hitsc{margin-left:auto;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  color:#6a6d64;white-space:nowrap;}
 
 #cx-body{padding:14px 22px 40px;overflow:auto;font-family:var(--f-doc);color:#17140e;max-width:none;}
 .cx-title{

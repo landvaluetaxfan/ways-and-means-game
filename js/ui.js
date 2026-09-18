@@ -307,8 +307,11 @@ const UI = (function () {
       const a = $("#cx-article"); if (a) a.focus({ preventScroll: true });
     };
     const goSearch = () => {
-      const hit = Concordance.search($("#cx-q").value);
-      if (hit) goCx(hit, true); else $("#cx-q").select();
+      const q = $("#cx-q").value;
+      const found = Concordance.hits(q);
+      if (found.length === 1) goCx(found[0].id, true);
+      else if (found.length) Concordance.renderHits(found, q);
+      else $("#cx-q").select();
     };
     $("#cx-goto").addEventListener("click", goSearch);
     $("#cx-q").addEventListener("keydown", e => { if (e.key === "Enter") goSearch(); });
