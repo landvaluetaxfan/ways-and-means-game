@@ -1346,7 +1346,37 @@ const UI = (function () {
            priceTip("Move to a division",
                     Object.assign({ slots: 1 }, Engine.whipCost(st, C, id)),
                     bs.dead ? "the bill is dead" : dchk.ok ? null : dchk.reason) + `>Move to a division</button>
-       </div>`;
+       </div>` +
+      daySetterHTML(id, bs);
+
+    /* THE DAY OF A DIVISION IS HERS (design/18 §4). The engine has been able
+       to set and move the day since the day it landed — `setDivision` writes
+       `bs.dividesOn`, the calendar and the docket carry it, and `canDivide`
+       refuses to divide before it. No screen ever called it, so the date was
+       the engine's own `sitting + 2` and the most consequential piece of
+       timing a government controls was not a decision. Name it early and you
+       divide on the whips you have; name it late and the other side has the
+       time too. */
+    function daySetterHTML(billId, bs) {
+      if (bs.dead || bs.stage === "drafting" || bs.stage === "assented") return "";
+      if (st.sessionEnds == null) return "";
+      const last = st.sessionEnds;
+      const first = st.sitting + 1;
+      if (first > last) return "";
+      let btns = "";
+      for (let d = first; d <= last; d++)
+        btns += `<button class="daybtn${bs.dividesOn === d ? " on" : ""}"` +
+          ` data-day="${d}" data-bill="${esc(billId)}"` +
+          tipAttr("Sitting " + d, bs.dividesOn === d
+            ? "The division is set for this sitting. Naming another moves it."
+            : "Set the division down for sitting " + d + ". The House divides " +
+              "on its day, and not before.") + `>${d}</button>`;
+      return `<div class="dayset"><span class="dayset-l">` +
+        (bs.dividesOn != null ? "Division set for sitting " + bs.dividesOn + ". Move it"
+                              : "Set the day") +
+        `</span><span class="dayset-b">${btns}</span>` +
+        `<span class="dayset-h">the House rises at sitting ${last}</span></div>`;
+    }
 
     /* A division that has been SET happens on its day. The button says
        when rather than going quiet: a control that is merely dead tells
@@ -1408,6 +1438,21 @@ const UI = (function () {
         drawAll(); afterAction();
       });
     });
+
+    /* The day picker. Naming a day is an action like any other, so it goes
+       through acted() and reports itself on the status line. */
+    det.querySelectorAll(".daybtn").forEach(btn =>
+      btn.addEventListener("click", () => {
+        if (btn.classList.contains("on")) return;
+        const day = +btn.dataset.day;
+        const r = acted(() => Engine.setDivision(st, C, btn.dataset.bill, day));
+        if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
+        cue("click");
+        const away = day - st.sitting;
+        setStatus(b.title + " set down for sitting " + day + " \u00b7 " + away +
+                  " sitting" + (away === 1 ? "" : "s") + " away", "transient");
+        drawAll(); afterAction();
+      }));
   }
 
   /* THE BUTTON NAMES THE DESTINATION.

@@ -557,6 +557,21 @@ tr.vacant td{background:var(--chrome);color:var(--ink-soft);}
 .btn:active{border-top-color:var(--chrome-dkr);border-left-color:var(--chrome-dkr);border-bottom-color:var(--chrome-lt);border-right-color:var(--chrome-lt);}
 .btn[disabled]{color:var(--chrome-dkr);cursor:default;}
 .btnrow{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;}
+/* THE DAY OF A DIVISION. A row of sitting numbers, the chosen day lit, so the
+   most consequential timing in the game is a thing you can point at. */
+.dayset{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:5px;
+  border-top:1px dotted var(--rule);padding-top:4px;}
+.dayset-l{font-family:var(--f-ui);font-size:9.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-soft);}
+.dayset-b{display:flex;flex-wrap:wrap;gap:1px;}
+.dayset-h{font-family:var(--f-data);font-size:9px;color:var(--chrome-dkr);margin-left:auto;}
+.daybtn{
+  font:inherit;font-family:var(--f-data);font-size:9.5px;line-height:1;
+  padding:1px 4px;cursor:pointer;color:var(--ink-soft);
+  background:var(--field);border:1px solid var(--chrome-dk);
+}
+.daybtn:hover{background:var(--chrome-lt);color:var(--ink);}
+.daybtn.on{background:var(--ink);border-color:var(--ink);color:var(--field);font-weight:700;}
 
 .note{font-family:var(--f-read);font-size:12px;color:var(--ink-soft);line-height:1.4;}
 .rulehead{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);border-bottom:1px solid var(--chrome-dk);padding-bottom:1px;margin:6px 0 4px;}
