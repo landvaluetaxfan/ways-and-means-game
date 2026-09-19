@@ -122,11 +122,12 @@ between them** — and they are the campaign, the count and the aftermath, which
 is to say they are the part a playtester will remember. The ending is the
 thinnest and least exercised thing in the build.
 
-Four mechanical strategies over 60 sittings reached 39 of 81 events. The other
-42 did not fire. **That is not the same as unreachable** — most are gated on
-states a blind strategy never creates (low standing, a vacancy, a pairing
-offer, a settlement). Do not treat the list below as dead content. Treat it as
-the question *"can a player actually get here, and is it worth the trip?"*
+Four mechanical strategies over 60 sittings reached **37 of 81** events. The
+other 44 did not fire. **That is not the same as unreachable** — most are gated
+on states a blind strategy never creates (low standing, a vacancy, a pairing
+offer, a particular settlement). Do not treat the list below as dead content.
+Treat it as the question *"can a player actually get here, and is it worth the
+trip?"*
 
 Never fired in those runs, by chapter:
 
@@ -134,20 +135,28 @@ Never fired in those runs, by chapter:
   `position_lands`, `fa_mars_reply`, `quota_forward_settles`,
   `indemnity_settles`, `volume_charter_settles`, `substrate_debt_settles`,
   `the_deck_again`, `tr_ruling`
-- **ch2 (29)** — `party_fracture`, `standing_low`, `leadership_ballot`,
+- **ch2 (32)** — `ch2_carveout_price`, `ch2_psa_conference`, `party_fracture`,
+  `standing_low`, `threshold_consequence`, `leadership_ballot`,
   `minister_resignation`, `substrate_drift`, `order_paper_empty`,
-  `the_vacant_post`, `signatures_build`, `the_delegation`, `the_federal_option`,
-  `the_opposition_asks`, `the_engineers_write`, `one_g_waiting`, `ch4_settled`,
-  `f1_water`, `f1_meltdown`, `f1_accounts_freeze`, `fa_anchor_withdrawn`,
-  `fa_two_fronts`, `the_floor_presses`, `the_minimum_berth`,
-  `the_sublet_market`, `the_agricultural_deck`, `the_congregations`,
-  `the_pairing_offer`, `the_pairing_kept`, `tr_reference`,
-  `tr_challenge_lodged`, `the_paper`
+  `the_vacant_post`, `signatures_build`, `the_licensing_reaction`,
+  `the_delegation`, `the_federal_option`, `the_opposition_asks`,
+  `the_engineers_write`, `one_g_waiting`, `f1_water`, `f1_meltdown`,
+  `f1_accounts_freeze`, `fa_anchor_withdrawn`, `fa_two_fronts`,
+  `the_floor_presses`, `the_minimum_berth`, `the_sublet_market`,
+  `the_agricultural_deck`, `the_congregations`, `the_pairing_offer`,
+  `the_pairing_kept`, `tr_reference`, `tr_challenge_lodged`, `the_paper`
 - **ch3 (1)** — `f1_pyrrhic_election`
-- **ch4 (1)** — `ch4_after`
 
-`ch4_settled` and `ch4_after` are the aftermath and **neither fires**. That is
-the first thing to look at.
+**The aftermath is fine — do not go looking for a bug there.** An earlier draft
+of this brief said `ch4_settled` and `ch4_after` never fire. That was wrong, and
+it was wrong for an instructive reason: the measuring harness was not calling
+`Engine.checkEnd()`, and `checkEnd` is what sets `st.settledAs`, which is what
+the `settled:true` gate reads. Drive it the way `afterAction()` does and both
+events fire, chapter four is reached, and a settlement lands (`f1_joint` on two
+of the four strategies). The gate is correct; the probe was not. Corrected here
+rather than quietly, because a work order that sends you hunting a phantom is
+the same failure as the encoding test in Part 0 — a measurement that could only
+ever have returned the answer it returned.
 
 ---
 
@@ -167,11 +176,15 @@ Chapter three is the campaign and the count; chapter four is the aftermath.
 Write toward **8–10 events for ch3 and 5–6 for ch4**, drawn from what the run
 actually did: the settlement reached (or not), the seats lost, the undertakings
 kept and broken, who was in the cabinet at the rise. The machinery to read all
-of that already exists — `settled`, `dissolved`, `campaign_done` and the
-undertaking ledger are all conditions you can gate on today.
+of that already exists — `settled`, `dissolved`, `campaign_done`, `resolvedIs`
+and the undertaking ledger are all conditions you can gate on today.
 
-Start by finding out why `ch4_settled` and `ch4_after` never fire. If the gate
-is wrong, that is one line of content and the whole aftermath opens up.
+Nothing is broken here; there is simply almost nothing written. Chapter four is
+one event long, and it is the last page of the game. Two of the four measured
+strategies reached a settlement (`f1_joint`) and two ended at the count with no
+settlement at all — those are two different endings and both currently read
+almost identically. Start there: make the settled ending and the unsettled one
+feel like different outcomes.
 
 ## T22 — [ ] Find out which of the 42 are reachable, and prune or open the rest
 
@@ -187,9 +200,9 @@ to re-derive this.
 
 ## T23 — [ ] A run repeats itself before it ends
 
-In a rotating-choice run, `fa_window_closes` fired three times and
-`fa_conciliate` twice inside 24 sittings, while 42 other events never fired at
-all. A weighted pool with no memory reaches for the same high-weight event
+`fa_window_closes` fired six times across the four measured runs — three times
+inside a single 24-sitting session — while 44 other events never fired at all.
+A weighted pool with no memory reaches for the same high-weight event
 whenever its condition holds, so the tail of the pool is never seen — that is
 the "nothing new is happening" feeling in a build that has 81 events in it.
 
