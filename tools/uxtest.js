@@ -1702,7 +1702,11 @@ try {
      the sentence if it actually renders, and a panel that draws nothing
      passes every static check in this project. */
   w.document.querySelector('.tab[data-t="sit"]').click();
-  const cells = w.document.querySelectorAll("#sit-cal .calgrid i.cd");
+  /* NOT TAG-QUALIFIED. A day that leads somewhere is a <button> and a day
+     that does not is an <i>, so `i.cd` selected exactly the days with
+     nothing on them — and the marked-day assertion below went to zero while
+     the calendar was working perfectly. Same trap the stylesheet had. */
+  const cells = w.document.querySelectorAll("#sit-cal .calgrid .cd");
   ok("the calendar draws a month of days", cells.length >= 28,
      cells.length + " days");
   ok("and exactly one of them is today",
@@ -1828,6 +1832,16 @@ try {
      colour where two kinds fell on one day. The card names each kind in
      words, one sentence to a line, so the count of lines is the count of
      things and the pip count reads against it. */
+  /* A DAY YOU CAN ACT ON IS A DOOR. The calendar is where the month is read,
+     so a day carrying a division or a prayer window navigates to where the
+     thing is done — and a day whose only mark is the rise does not, because
+     there is nothing to go and do about it. */
+  const doors = [...cells].filter(c => c.hasAttribute("data-goto"));
+  ok("a day you can act on leads somewhere", doors.length > 0,
+     doors.length + " of " + cells.length + " days");
+  ok("and it is a real button, not an improvised one",
+     doors.every(c => c.tagName === "BUTTON"),
+     doors.length ? doors[0].tagName : "none");
   const marked = [...cells].filter(c => c.querySelector(".pips"));
   ok("a day with something down for it is marked", marked.length > 0,
      marked.length + " marked days");

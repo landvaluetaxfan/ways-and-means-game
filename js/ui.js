@@ -3328,12 +3328,29 @@ const UI = (function () {
          native title= for the project's own card quietly dropped the
          second one, which the checks caught. */
       const said = title + ", " + dayLabel(d.date) + ". " + body.replace(/\n/g, " ");
-      cells += `<i class="${cls.join(" ")}" aria-label="${esc(said)}"` +
+      /* A DAY IS A DOOR WHEN SOMETHING ON IT CAN BE DONE. The next-three list
+         below already navigates; the grid is where the player actually reads
+         the month, so a day carrying a division or a prayer window should go
+         there too. Several marks can land on one day, so it follows the same
+         PRIORITY the tint does — the dominant ACTIONABLE mark wins, and a day
+         whose only marks are the rise or a thing merely expected stays inert
+         and stays an <i>, because it is not a control. */
+      const door = d.marks.slice().filter(m => m.tab).sort((a, b) =>
+        (PRIORITY[a.kind] == null ? 9 : PRIORITY[a.kind]) -
+        (PRIORITY[b.kind] == null ? 9 : PRIORITY[b.kind]))[0];
+      const tag = door ? "button" : "i";
+      cells += `<${tag} class="${cls.join(" ")}${door ? " goto" : ""}"` +
+               ` aria-label="${esc(said + (door ? ". " + door.how : ""))}"` +
+               (door ? ` data-goto="${esc(door.tab)}" data-open="${esc(door.focus || "")}"` : "") +
                ` data-tip-title="${esc(title)} \u00b7 ${esc(dayLabel(d.date))}"` +
+               /* The card stays ONE LINE PER MARK — uxtest counts pips against
+                  the lines in this body, and a "how" line broke that
+                  invariant. The destination rides the aria-label and the
+                  hover affordance instead, which is what the docket does. */
                ` data-tip-body="${esc(body)}">` +
                `<b>${d.dom}</b>` +
                (d.sitting != null ? `<u>${d.sitting}</u>` : "") +
-               (pips ? `<span class="pips">${pips}</span>` : "") + `</i>`;
+               (pips ? `<span class="pips">${pips}</span>` : "") + `</${tag}>`;
     });
     const next = Engine.deadlines(st, C).filter(x => x.away >= 0).slice(0, 3);
     return `<div class="calhead">
