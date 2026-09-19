@@ -237,17 +237,18 @@
 
     <!-- THE WORLD: the ground the anchors stand on, and the foreign panel that
          used to share a column on the Government tab. -->
+    <!-- THE WORLD. The globe fills its panel and never scrolls: it is bounded
+         by BOTH dimensions so the panel's height decides its size, and the
+         reference column beside it is the window on whatever is selected. -->
     <section class="screen" id="s-world">
       <div class="grid g-world">
         <div class="panel">
           <h2><span data-tip="globe">The Earth</span> <em>anchor territory, foreign sovereignty</em></h2>
-          <div class="pbody scrolls" id="w-map"></div>
+          <div class="pbody" id="w-map"></div>
         </div>
-        <div class="stack scrolls">
-          <div class="panel">
-            <h2><span data-tip="country">Countries</span> <em data-tip="foreign">ordered by delay</em></h2>
-            <div class="pbody scrolls" id="w-side"></div>
-          </div>
+        <div class="panel">
+          <h2><span data-tip="actors">Relevant actors</span> <em data-tip="foreign">ordered by delay</em></h2>
+          <div class="pbody scrolls" id="w-side"></div>
         </div>
       </div>
     </section>

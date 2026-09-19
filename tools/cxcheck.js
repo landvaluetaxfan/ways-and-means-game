@@ -19,7 +19,9 @@ counts.gen = PARTIES.length+STATIONS.length+BILLS.length+CHARACTERS.length+GLOSS
 
 ENCYCLOPEDIA.articles.forEach(a=>{
   const text=[a.summary,...(a.sections||[]).map(s=>s.body)].join(" ");
-  [...text.matchAll(/\[\[([a-z0-9_]+)/gi)].forEach(m=>{ if(!ids.has(m[1])) bad.push(a.id+" → [["+m[1]+"]]"); });
+  /* hyphens included, matching the renderer: write-off is a term and the old
+     class stopped at the hyphen and reported the first half as broken */
+  [...text.matchAll(/\[\[([a-z0-9_-]+)/gi)].forEach(m=>{ if(!ids.has(m[1])) bad.push(a.id+" → [["+m[1]+"]]"); });
   (a.see||[]).forEach(s=>{ if(!ids.has(s)) bad.push(a.id+" → see:"+s); });
   (a.banners||[]).forEach(b=>{ if(!ENCYCLOPEDIA.banners[b]) bad.push(a.id+" → banner:"+b); });
 });

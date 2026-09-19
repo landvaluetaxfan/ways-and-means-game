@@ -1,5 +1,5 @@
-/* =============================================================
-   UI — rendering only. No game rules live here.
+﻿/* =============================================================
+   UI â€” rendering only. No game rules live here.
    Reads state, writes DOM, calls Engine for anything decided.
    ============================================================= */
 
@@ -43,8 +43,8 @@ const UI = (function () {
      It used to say the party's name and where it sat, which is a caption
      for a colour rather than an explanation of a party: a reader already
      looking at "Freehold Party 17" learned nothing from a card that said
-     Freehold Party, 17 seats. It now carries the party's own note — what
-     it is FOR, which is the only thing the screen never says — its logo,
+     Freehold Party, 17 seats. It now carries the party's own note â€” what
+     it is FOR, which is the only thing the screen never says â€” its logo,
      and a hand-off to its Concordance article.
 
      The tip is on the NAME as well as the swatch (see pname). A four-pixel
@@ -55,7 +55,7 @@ const UI = (function () {
     if (!p) return "";
     return ` data-tip-title="${esc(p.name)}"` +
            ` data-tip-body="${esc(partyLine(id))}"` +
-           /* img/logos, not img/parties — the first version pointed at a
+           /* img/logos, not img/parties â€” the first version pointed at a
               directory that does not exist, the onerror removed the node,
               and the card simply had no picture with nothing to say so. */
            (p.logo ? ` data-tip-img="img/logos/${esc(p.logo)}"` : "") +
@@ -101,7 +101,7 @@ const UI = (function () {
   const ps = id => (C.partyById[id] || {}).short || id;
 
   /* Office badges. An office is a one-word mark on the seat table, not a job
-     title — `role` carries the title. The key belongs to content; the label
+     title â€” `role` carries the title. The key belongs to content; the label
      and the class are presentation's, which is why this map lives here and not
      in the engine. The Speaker is not in it: the Chair is a property of the
      seat (`speaker:true`), because it belongs to the House, not the person. */
@@ -145,7 +145,7 @@ const UI = (function () {
 
        This named two orbit panels by selector, so every scrolling body
        added afterwards silently got the OS bar while orbit had a drawn
-       one — the hardcoded-list fault this repo has been bitten by twice
+       one â€” the hardcoded-list fault this repo has been bitten by twice
        already. Anything that scrolls inside the terminal's chrome now
        says `.scrolls` in the markup and gets the drawn bar for free. */
     const sel = force ? ".scrolls.forcebar" : ".scrolls";
@@ -231,7 +231,7 @@ const UI = (function () {
       if (!t) return;
       cue(t.disabled ? "deny" : t.classList.contains("tab") ? "tab" : "click");
     }, true);
-    /* Saving, loading and starting a game belong to Shell now — they are
+    /* Saving, loading and starting a game belong to Shell now â€” they are
        session concerns, not rendering ones, and they live in the topbar. */
 
     /* THE THREE TABLES WHOSE ROWS ARE CONTROLS. A region is the container,
@@ -279,7 +279,7 @@ const UI = (function () {
       activate: id => pickConstituency(id)
     });
     /* The functional tier is a region too. It uses the seat list's own
-       pattern — a row that opens under itself — rather than the hover card it
+       pattern â€” a row that opens under itself â€” rather than the hover card it
        used to carry: a card cannot be read with a keyboard, cannot stay open
        while you compare two seats, and put the tier's whole information
        budget in a mechanism the player has to discover. */
@@ -325,18 +325,26 @@ const UI = (function () {
     }, true);
     /* A CROSS-REFERENCE FROM ANYWHERE ELSE IN THE GAME. Both handlers
        above are scoped inside the Concordance, so a [data-go] anywhere
-       else — a party name on the Chamber tab, say — had no handler at all
+       else â€” a party name on the Chamber tab, say â€” had no handler at all
        and did nothing at all. It switches to the Concordance and opens the
        article, which is what the attribute has always promised.
 
        Scoped OUT of #cx-body and #cx-nav so it cannot double-fire with
        them: two listeners for one action is the trap CLAUDE.md records
        from the last time [data-go] was bound twice. */
+    /* ASK THE CONCORDANCE, DO NOT KEEP A LIST. This whitelisted parties,
+       stations and hand-written articles, so a cross-reference to anything the
+       Concordance GENERATES — a constituency, an anchor, a foreign actor, a
+       foreign body — fell through and did nothing, which is the fault the
+       attribute exists to fix. `Concordance.knows` is the one source of truth
+       for what has an article, and every generated id is in it. */
+    const cxKnows = id =>
+      typeof Concordance !== "undefined" && Concordance.knows
+        ? Concordance.knows(id) : false;
     document.addEventListener("click", e => {
       const g = e.target.closest && e.target.closest("[data-go]");
       if (!g || g.closest("#cx-body") || g.closest("#cx-nav")) return;
-      if (!C.partyById[g.dataset.go] && !C.stationById[g.dataset.go] &&
-          !C.encyclopediaById[g.dataset.go]) return;
+      if (!cxKnows(g.dataset.go)) return;
       e.preventDefault();
       const tab = document.querySelector('.tab[data-t="cx"]');
       if (tab) tab.click();
@@ -347,7 +355,7 @@ const UI = (function () {
       if (e.key !== "Enter" && e.key !== " ") return;
       const g = e.target.closest && e.target.closest("[data-go]");
       if (!g || g.closest("#cx-body") || g.closest("#cx-nav")) return;
-      if (!C.partyById[g.dataset.go]) return;
+      if (!cxKnows(g.dataset.go)) return;
       e.preventDefault(); g.click();
     });
 
@@ -415,9 +423,9 @@ const UI = (function () {
     $("#sb-thermal").textContent = `THERMAL ${st.scalars.thermal_margin}%`;
     $("#sb-chapter").textContent = `CHAPTER ${st.chapter}`;
     /* THE CLOCK, ON EVERY SCREEN (design/26 #88). The session's end is the one
-       deadline that governs everything else on the board — order-paper time
+       deadline that governs everything else on the board â€” order-paper time
        refills when the House rises, business not carried falls, and every
-       undertaking due "before the House rises" comes due at once — and it was
+       undertaking due "before the House rises" comes due at once â€” and it was
        only ever visible on the calendar, on one tab, halfway down a column.
        It is a chip in the status bar now, and it turns red inside three. */
     const rise = $("#sb-rise");
@@ -429,7 +437,7 @@ const UI = (function () {
         rise.style.color = left <= 3 ? "var(--alert)" : "";
       }
     }
-    /* ORDER-PAPER TIME AS MARKS, NOT A FRACTION (design/19 §5.1). "4 of 6" is
+    /* ORDER-PAPER TIME AS MARKS, NOT A FRACTION (design/19 Â§5.1). "4 of 6" is
        a number; six marks with two dark is a quantity the eye has before it
        reads. The tooltip still says what the marks mean. */
     const sUsed = st.slots.used, sTot = st.slots.total;
@@ -533,7 +541,7 @@ const UI = (function () {
   let fallen = false, lastSession = null, lastSigBand = null, ended = null;
   function afterAction() {
     /* THE SIGNATURES AGAINST HER. Nine is a ballot and seven is the band
-       the topbar turns red at — the most dramatic thing that can happen
+       the topbar turns red at â€” the most dramatic thing that can happen
        short of losing, and the score did not notice it at all. Edge
        triggered on the way UP only: it is news when it gets worse, and
        silence when a signature is withdrawn. */
@@ -596,7 +604,7 @@ const UI = (function () {
                          date: st.date, end: "election" });
       }
       /* WHAT THIS GOVERNMENT IS REMEMBERED FOR. Evaluated once, on the ending,
-         against the finished state — an achievement is a fact about a run and
+         against the finished state â€” an achievement is a fact about a run and
          the arithmetic is part of the fact, which is why the state goes across
          and not a sentence. The board is on the menu; this only says, once,
          what was earned. */
@@ -643,7 +651,7 @@ const UI = (function () {
   const PRICE_META = [
     { k:"thermal",   label:"Thermal quota", unit:"per MW-year rejected" },
     { k:"substrate", label:"Substrate rent", unit:"per mind-year, standard clock" },
-    { k:"volume",    label:"Volume",         unit:"per pressurised m³, annual" },
+    { k:"volume",    label:"Volume",         unit:"per pressurised mÂ³, annual" },
     { k:"transit",   label:"Transit",        unit:"per tonne to the ring" }
   ];
 
@@ -677,7 +685,7 @@ const UI = (function () {
   /* ---------- government ---------- */
   /* ---------- foreign ----------
 
-     THE SAME INSTRUMENT ON A DIFFERENT AXIS (design/11 §5). The orbital
+     THE SAME INSTRUMENT ON A DIFFERENT AXIS (design/11 Â§5). The orbital
      chart orders the stations by ALTITUDE; this orders the powers by DELAY,
      because a foreign fact is never current. Nearest first, and every
      standing is stamped with how long ago it was heard rather than printed
@@ -695,7 +703,7 @@ const UI = (function () {
       const cls = v >= 60 ? "good" : v <= 30 ? "bad" : "";
       const lag = a.lag || 0;
       return `<div class="fgn">` +
-        `<div class="fgn-h"><b>${esc(a.name)}</b><span class="sm2">${esc(a.kind)}</span>` +
+        `<div class="fgn-h"><b>${cxlink("actor_" + a.id, a.name)}</b><span class="sm2">${esc(a.kind)}</span>` +
         `<span class="fgn-lag">${lag === 0 ? "as it happens"
           : lag + " sitting" + (lag === 1 ? "" : "s") + " behind"}</span></div>` +
         `<div class="fgn-b"><span class="meter ${cls}"><i style="width:${
@@ -709,7 +717,7 @@ const UI = (function () {
       ? `<div class="rulehead">In flight</div>` + flight.map(q =>
           `<div class="cn"><b>${esc(q.label || "A dispatch")}</b><i>arrives sitting ` +
           `${q.dueSitting}${q.dueSitting > st.sitting
-            ? " · " + (q.dueSitting - st.sitting) + " away" : " · today"}</i></div>`).join("")
+            ? " Â· " + (q.dueSitting - st.sitting) + " away" : " Â· today"}</i></div>`).join("")
       : "";
     return rows + flying +
       `<div class="rulehead">The foreign price</div>` +
@@ -726,7 +734,7 @@ const UI = (function () {
     let h = "<thead><tr><th>Party</th><th class='n' data-tip='seats'>Seats</th>" +
       "<th class='n' data-tip='loyalty'>Loy</th></tr></thead><tbody>";
     /* Every coalition partner is governing, not just the Prime Minister's
-       party — the player's own row is still the one with no loyalty figure. */
+       party â€” the player's own row is still the one with no loyalty figure. */
     st.coalition.forEach(id => {
       h += `<tr data-pid="${id}"><td>${mark(id)}${pn(id)} <span class="flag" data-tip="gov">GOV</span></td>` +
            `<td class="n">${Engine.partyTotal(st, id)}</td><td class="n">${id === st.playerParty ? "&mdash;" : st.parties[id].loyalty}</td></tr>`;
@@ -774,9 +782,9 @@ const UI = (function () {
 
     /* THE LINE THAT MATTERS IS DRAWN ON THE BAR.
 
-       Two of these five end the game — checkLoss() falls the government
+       Two of these five end the game â€” checkLoss() falls the government
        at party_loyalty <= the leadership-challenge threshold and at
-       thermal_margin <= 0 — and the bars said so only by turning amber at
+       thermal_margin <= 0 â€” and the bars said so only by turning amber at
        a number this renderer had made up. A player could not tell a bad
        reading from a fatal one, and the amber could disagree with the
        engine the moment content moved the threshold.
@@ -877,7 +885,7 @@ const UI = (function () {
        business, and a promise the government has made is business. This
        is the other end of the docket on the Sitting screen: the item
        appears there when you promise and disappears from both when you
-       keep it — by doing the thing, on this screen, with the button that
+       keep it â€” by doing the thing, on this screen, with the button that
        already exists. There is deliberately no control here that marks
        one done. */
     const owed = Engine.outstanding(st);
@@ -885,8 +893,8 @@ const UI = (function () {
     if (ob) ob.innerHTML = owed.length
       ? owed.map(u => {
           /* A ROW THAT SAYS WHERE IT IS KEPT AND TAKES YOU THERE. An
-             undertaking is discharged on another screen — an order to
-             sign, a bill to carry — and a promise the player cannot act
+             undertaking is discharged on another screen â€” an order to
+             sign, a bill to carry â€” and a promise the player cannot act
              on is a promise they will break by accident. */
           const w = Engine.undertakingWhere(C, u);
           const due = u.by - st.sitting <= 0 ? "due this sitting"
@@ -917,7 +925,7 @@ const UI = (function () {
       const window = s.inForce && s.prayerCloses != null ? (s.prayerCloses - st.sitting) : null;
       let status, cls = "";
       if (s.revoked) { status = "revoked"; cls = "bad"; }
-      else if (s.inForce) { status = window > 0 ? "in force · prayable " + window : "in force"; cls = "good"; }
+      else if (s.inForce) { status = window > 0 ? "in force Â· prayable " + window : "in force"; cls = "good"; }
       else if (s.awaitingApproval) { status = "awaiting approval"; }
       else status = si.procedure === "affirmative" ? "affirmative" : "negative";
       const open = siOpen === si.id;
@@ -945,7 +953,7 @@ const UI = (function () {
       if (!open) return row;
       /* WHAT THE ORDER DOES, and what it does to the benches. `summary` and
          `effect_note` have been in the data since the ladder was written and
-         no surface ever read them — the row carries a title, a number and a
+         no surface ever read them â€” the row carries a title, a number and a
          status and nothing else. This is the surface: the row opens onto its
          own description, the way a seat and a functional constituency do. */
       return row + `<tr class="si-d"><td colspan="3">
@@ -1027,7 +1035,7 @@ const UI = (function () {
       }));
 
     /* ---- cabinet ---- */
-    /* The Prime Minister chairs it, so she heads the list — but she is not a
+    /* The Prime Minister chairs it, so she heads the list â€” but she is not a
        post: a post has an author for instruments and can fall vacant, and she
        is neither appointable nor dismissable by the player. */
     const pmCh = C.characterById[C.setup.pm];
@@ -1048,7 +1056,7 @@ const UI = (function () {
 
        A vacancy the player fills, once. It is not a menu: each name
        carries what appointing them costs, and the cost is paid the
-       moment it is made. Leaving it empty is also a decision — a post
+       moment it is made. Leaving it empty is also a decision â€” a post
        with no holder cannot make a statutory instrument. */
     const vac = Engine.vacancies(st, C);
     const vbox = $("#gov-appoint");
@@ -1126,7 +1134,7 @@ const UI = (function () {
   const AXIS_NAME = { ownership:"ownership", personhood:"personhood",
                       sovereignty:"sovereignty", closure:"closure" };
   /* THREE LETTERS AND A SIGN. The reason a bench is where it is, in the
-     shortest form that is still a reason: `own+ sov+ per−` is "with it on
+     shortest form that is still a reason: `own+ sov+ perâˆ’` is "with it on
      ownership and sovereignty, against on personhood", and the long form is
      the hover card so nothing is lost by saying it short. */
   const AXIS_CODE = { ownership:"own", personhood:"per",
@@ -1158,7 +1166,7 @@ const UI = (function () {
 
   /* WHAT THE BILL DOES, in the engine's own reading of its own effects.
      Engine.describe() is the same function the choice labels use, so a bill
-     cannot claim an effect it does not have — the words are read off onPass
+     cannot claim an effect it does not have â€” the words are read off onPass
      rather than written beside it. */
   function billDoesHTML(b) {
     /* MATERIAL EFFECTS ONLY. A wire headline and a flag are bookkeeping: a
@@ -1189,7 +1197,7 @@ const UI = (function () {
         `the 240 and nothing else: a budget touches every subject there is, so the ` +
         `domain test is not applied to it. The functional forty divide and are ` +
         `recorded. They cannot stop it, and a bench that votes it down holds it ` +
-        `for three sittings — paid in the one currency that cannot be topped up.</div>`;
+        `for three sittings â€” paid in the one currency that cannot be topped up.</div>`;
     if (b.dualMajority)
       return `<div class="rulehead">The rule</div><div class="note">` +
         `The dual test applies. It must carry separately among the 240 elected ` +
@@ -1250,18 +1258,18 @@ const UI = (function () {
         Hover a row for the long form.</div>`;
   }
 
-  /* THE DIVISION LIST — every member, by name, after the fact.
+  /* THE DIVISION LIST â€” every member, by name, after the fact.
 
      The roll call shows the House dividing and it cannot do this: two
      hundred and eighty names go past in about fourteen seconds, which is
      twenty a second, and nobody reads that. Trying to make the animation
-     legible was the wrong fix, because the animation is for the SHAPE —
+     legible was the wrong fix, because the animation is for the SHAPE â€”
      the bench moving, the count climbing against the threshold. The names
      belong where a parliament actually puts them: in a list published
      afterwards, read at your own pace.
 
      Hansard's own form, and folded, because it is a record and not a
-     readout — a player consults it when they want to know who, and the
+     readout â€” a player consults it when they want to know who, and the
      rest of the time it is one line saying a division happened. */
   const dvlOpen = {};      /* which division lists the player has open */
   /* HOW THE LIST IS ORDERED. Party is the roll's own order and the default;
@@ -1303,12 +1311,12 @@ const UI = (function () {
     } else {
       /* THE ROLL CALL, KEPT. The count filed the House in by party and showed
          every member a chip; the record is the SAME PAGE with the same chips,
-         party by party, read at leisure — the vote is the chip's colour and
+         party by party, read at leisure â€” the vote is the chip's colour and
          the tally is at the head of the bench. It used to re-sort the House
          into Ayes and Noes and print the names as a run of text, so the one
          screen that showed you the division was the one screen you could not
-         read it on: the names ran off the edge, and the chips' hover — the
-         constituency, the register reference, the list seat — was gone. */
+         read it on: the names ran off the edge, and the chips' hover â€” the
+         constituency, the register reference, the list seat â€” was gone. */
       body = parties.map(p => {
         const all = p.popular.concat(p.functional);
         const cnt = v => all.filter(m => m.vote === v).length;
@@ -1338,8 +1346,8 @@ const UI = (function () {
     const d = bs.lastDivision;
     const total = house.length;
     /* IT STAYS OPEN. The first attempt marked it open only on the render
-       that followed the division, so the next redraw — and a redraw
-       happens for any reason at all — replaced the node without the
+       that followed the division, so the next redraw â€” and a redraw
+       happens for any reason at all â€” replaced the node without the
        attribute and the list vanished after a flash. Never seen again,
        which is what was reported.
 
@@ -1373,7 +1381,7 @@ const UI = (function () {
   }
 
   /* The order radios, wired wherever the list was just inserted. `rerender`
-     is the caller's own way of drawing the list again — the caption redraws
+     is the caller's own way of drawing the list again â€” the caption redraws
      its own node, the whip panel redraws the chamber. */
   function wireDvl(root, rerender) {
     if (!root) return;
@@ -1400,7 +1408,7 @@ const UI = (function () {
         `<td>${esc(x.text)}</td></tr>`).join("")}</tbody></table></div></details>`;
   }
 
-  /* AMENDMENTS (design/25 §7). A bill declares its own in content; the
+  /* AMENDMENTS (design/25 Â§7). A bill declares its own in content; the
      government moves one at COMMITTEE. Moving it spends order-paper time,
      applies its effects at once and goes on the bill's own record. The panel
      names the reason a move is refused rather than hiding the options, and a
@@ -1431,8 +1439,8 @@ const UI = (function () {
 
   function drawBill(id) {
     const b = C.billById[id], bs = bsOf(id), dchk = Engine.canDivide(st, C, id);
-    /* The forecast is the REPORTED division, not the exact one (design/08 §7),
-       and so is every other number the player is shown about it — the bars
+    /* The forecast is the REPORTED division, not the exact one (design/08 Â§7),
+       and so is every other number the player is shown about it â€” the bars
        here, the seats on the Chamber plan, the breakdown beside them. The
        true count is reached only where a MECHANIC needs it: what a seat
        costs to whip, and the division itself. */
@@ -1481,8 +1489,8 @@ const UI = (function () {
       daySetterHTML(id, bs) +
       billHistoryHTML(bs);
 
-    /* THE DAY OF A DIVISION IS HERS (design/18 §4). The engine has been able
-       to set and move the day since the day it landed — `setDivision` writes
+    /* THE DAY OF A DIVISION IS HERS (design/18 Â§4). The engine has been able
+       to set and move the day since the day it landed â€” `setDivision` writes
        `bs.dividesOn`, the calendar and the docket carry it, and `canDivide`
        refuses to divide before it. No screen ever called it, so the date was
        the engine's own `sitting + 2` and the most consequential piece of
@@ -1520,8 +1528,8 @@ const UI = (function () {
          disabled button with its old label on it reads as broken. */
       dbtn.disabled = true;
       if (dchk.on != null) dbtn.textContent = "Division set for sitting " + dchk.on;
-      /* A division is House time (design/18 §3), so no time is a reason
-         to refuse — and a refusal the player cannot see is a bug report. */
+      /* A division is House time (design/18 Â§3), so no time is a reason
+         to refuse â€” and a refusal the player cannot see is a bug report. */
       else if (dchk.noTime) dbtn.textContent = "No order-paper time left";
       else if (dchk.unread) dbtn.textContent = "Not yet read a second time";
       else if (dchk.full)   dbtn.textContent = "The House has finished for today";
@@ -1539,10 +1547,10 @@ const UI = (function () {
          arithmetic is untouched. */
       /* A DIVISION IS AN ACTION AND IT REPORTS ITSELF LIKE ONE. Every
          other mutating action goes through acted(), which is what raises
-         the cross-tab notice — so settling a lobby on the division opened
+         the cross-tab notice â€” so settling a lobby on the division opened
          undertakings that appeared on the Government tab with nothing
          saying they had. The promises are the price of the bench and the
-         player should be told they are now owed. §12.13. */
+         player should be told they are now owed. Â§12.13. */
       const beforeDiv = structure(st);
       countFreeze = { id, stage: st.bills[id].stage, dead: st.bills[id].dead,
                       dividesOn: st.bills[id].dividesOn,
@@ -1603,7 +1611,7 @@ const UI = (function () {
      It said "Grant", which is a verb with no object: a new player can
      press it repeatedly without ever learning that it moves a bill one
      stage along a ladder, that the ladder is what the division gate reads,
-     or that a measure at drafting is two grants and a division away — a
+     or that a measure at drafting is two grants and a division away â€” a
      third of a session's time. A control that states its outcome cannot be
      spammed by accident, which is a cheaper fix than any animation. */
   function grantLabel(billId) {
@@ -1623,7 +1631,7 @@ const UI = (function () {
      four; this costs two slots and you have one.
 
      Before this you learned the price by paying it, and a disabled
-     button said nothing at all — canDivide has returned a reason since
+     button said nothing at all â€” canDivide has returned a reason since
      design/18 and only the divide button used it, through a native
      title=, which js/tips.js forbids in as many words: slow, unstyled,
      invisible to a keyboard, and it cannot say two things at once. Three
@@ -1670,13 +1678,13 @@ const UI = (function () {
   }
 
   /* HOW THE HOUSE WENT, OR HOW IT IS EXPECTED TO GO. Up to the division these
-     are the same thing — an estimate — and after it they are not. The engine
+     are the same thing â€” an estimate â€” and after it they are not. The engine
      records the result on the bill the moment it runs, so the plan can show
      the House that actually voted rather than the one the whips guessed at. */
   const houseVoted = id => !!(bsOf(id) && bsOf(id).lastDivision);
   const houseRead  = id => (bsOf(id) && bsOf(id).lastDivision) || forecast(id);
 
-  /* THE HOUSE, BY PARTY — composition and forecast in one table.
+  /* THE HOUSE, BY PARTY â€” composition and forecast in one table.
 
      These were two panels, 745px of a 818px column between them, and the
      second one's "of" columns WERE the first one: seats per party per
@@ -1699,7 +1707,7 @@ const UI = (function () {
        and taking one.
 
        The column is CONDITIONAL, because most divisions have neither and a
-       permanently empty column is a worse lie than a missing one — it says
+       permanently empty column is a worse lie than a missing one â€” it says
        nobody ever abstains. It appears the moment anybody does. */
     const off = (r) => (r.popularAbstain || 0) + (r.popularAbsent || 0) +
                        (r.functionalAbstain || 0) + (r.functionalAbsent || 0);
@@ -1723,8 +1731,8 @@ const UI = (function () {
     C.parties.forEach(p => {
       const sq = seatsOf(p.id), r = armed && d.rows.find(x => x.party === p.id);
       h += `<tr${govIds.includes(p.id) ? ' class="govrow"' : ""}>` +
-        /* THE FULL NAME. There is room for it in this column — eleven rows of
-           short numbers — and a composition table is the one place the reader
+        /* THE FULL NAME. There is room for it in this column â€” eleven rows of
+           short numbers â€” and a composition table is the one place the reader
            wants to know which party, not which three letters. */
         `<td class="pn">${mark(p.id)}${pname(p.id)}</td>` +
         `<td class="n">${sq.district}</td><td class="n">${sq.list}</td>` +
@@ -1756,7 +1764,7 @@ const UI = (function () {
   function wireWhipbars(root, billId, after) {
     /* AN ACCORDION, BECAUSE THE PANEL HAS ROOM FOR ONE. With both folds
        open the lobbying table ran past the panel floor and took the
-       clear button with it — a control the player could see and not
+       clear button with it â€” a control the player could see and not
        reach. Opening one closes the other, which is also the honest
        shape: they are two answers to the same question and a player is
        making one of them at a time. */
@@ -1772,7 +1780,7 @@ const UI = (function () {
     });
     /* [data-wp], NOT every .whipbar. The lobby bars reuse the control and
        so match the bare class too, which meant every click on a lobbying
-       bar ALSO ran the whip handler with an undefined party — setWhip on
+       bar ALSO ran the whip handler with an undefined party â€” setWhip on
        nobody, then a second redraw that dropped the fold the player had
        just opened. Reusing a control is right; binding by its appearance
        rather than by what it controls is the same trap this repo has hit
@@ -1813,7 +1821,7 @@ const UI = (function () {
      Order-paper time is two limits now and the player has to be able to
      see both: how much the House will hear today, and how far this
      measure still is from a division. A bill at drafting needs two
-     grants and then the division itself — half a session's time — which
+     grants and then the division itself â€” half a session's time â€” which
      is the fact that makes granting a step rather than a favour. */
   function dayLine(billId, chk) {
     const cap = (C.setup && C.setup.divisionsPerSitting) || 2;
@@ -1857,7 +1865,7 @@ const UI = (function () {
      position, which is what keeps the four axes load-bearing. What it costs
      comes out of the ledger, and overdrawing costs loyalty. */
   /* The factions under their party in the division breakdown. Only present
-     where the engine actually derived the count from them — a stated
+     where the engine actually derived the count from them â€” a stated
      forecast belongs to the whips who wrote it, not to the currents, and
      the engine returns no benches in that case. Each column sums to the
      party row above it. */
@@ -1994,7 +2002,7 @@ const UI = (function () {
      is the whole point of the mechanic, so the card names the ask in the
      body's own words rather than showing a number. */
   function lobbyPanel(billId, b, d) {
-    /* Shown wherever a functional bench can answer for the measure —
+    /* Shown wherever a functional bench can answer for the measure â€”
        the whole tier on a dual bill, or the constituencies that own its
        subject on any other. Gating on dualMajority alone hid the control
        on the five bills where it is the only reply to an objection. */
@@ -2051,7 +2059,7 @@ const UI = (function () {
   function domainNote(d) {
     /* SUPPLY: heard and not obeyed. The objection changes no outcome, so
        if it were not printed the forty would appear not to have voted at
-       all — and the delay it buys would arrive on the calendar with no
+       all â€” and the delay it buys would arrive on the calendar with no
        stated cause. */
     const sp = d.supply;
     if (sp && sp.applies) {
@@ -2062,7 +2070,7 @@ const UI = (function () {
       return `<div class="dmn bad"><b>Supply, objected to.</b> The functional ` +
         `benches divided ${sp.total - sp.nay}\u2013${sp.nay} against. They cannot ` +
         `stop it: the elected benches vote money. They can hold it, and they have ` +
-        `— <b>${sp.delay} sittings</b> before it takes effect. The Act will be ` +
+        `â€” <b>${sp.delay} sittings</b> before it takes effect. The Act will be ` +
         `signed and inert, and these are the members who have to deliver it.</div>`;
     }
     const dm = d.domain;
@@ -2085,7 +2093,7 @@ const UI = (function () {
 
   /* ---------- the clauses of a bill the government fills in ----------
      design/13: a budget is a bill, not a screen. So this is not a fiscal
-     panel — it is the blanks in a measure, drawn as clauses, in the
+     panel â€” it is the blanks in a measure, drawn as clauses, in the
      column where the measure already is. The ceiling is the whole of the
      model: a level the Treasury cannot fund is refused at the point of
      choosing and the refusal names the shortfall, because that is where
@@ -2131,14 +2139,14 @@ const UI = (function () {
      THE DIVISION IS THE PLAN VOTING.
 
      It used to be a modal table of numbers floating over the one screen in
-     the game that has a picture of the House on it — covering up the thing
+     the game that has a picture of the House on it â€” covering up the thing
      the Chamber tab exists to show, at the only moment it matters. Now the
      plan fills in party by party as the Clerk calls them: a called party's
      ayes light, the rest hold their colour and no fill, and the verdict lands
      under a House that shows what happened.
 
      Nothing is charged or decided here. Engine.divide() has already run, so
-     this is the reading-out of a result that is already final — which is what
+     this is the reading-out of a result that is already final â€” which is what
      makes it safe to look away from, and impossible to desynchronise. The
      Waits are the ones every other reading-out uses, so a key skips it and the
      stall works; what changed is that the panel is a caption under the plan
@@ -2156,8 +2164,8 @@ const UI = (function () {
 
      Ascending by size, and the running tallies so the caller does not have
      to keep them. Both are corrections to the first build, which called the
-     largest bench first — deciding the divergence bill at bench six of
-     twelve and leaving six benches of anticlimax — and gave every bench the
+     largest bench first â€” deciding the divergence bill at bench six of
+     twelve and leaving six benches of anticlimax â€” and gave every bench the
      same 760ms whether two members were walking or sixty-eight. */
   function rollPlan(parties) {
     let aye = 0, nay = 0;
@@ -2173,8 +2181,8 @@ const UI = (function () {
         nay += p.popular.filter(m => m.vote === "nay").length;
         return Object.assign({}, p, { seats: seats, ayesTo: aye, naysTo: nay,
                  /* SLOWER, AND ON PURPOSE. When the names had to be legible this
-           was a losing fight — 280 of them is twenty a second at any
-           length worth sitting through — and the answer was to move the
+           was a losing fight â€” 280 of them is twenty a second at any
+           length worth sitting through â€” and the answer was to move the
            naming to the division list, not to hurry the House.
 
            Shortening it as well was my error: a division is the slowest
@@ -2198,7 +2206,7 @@ const UI = (function () {
       const d = ` style="animation-delay:${Math.round(i * step)}ms"`;
       /* THE PARTY IS NAMED WHEN THE CHIP IS READ OUT OF ITS BENCH. Grouped by
          vote the chips no longer sit under a party heading, so the tip is the
-         only place the party survives — and a member's party is half of who
+         only place the party survives â€” and a member's party is half of who
          they are in a division. */
       const who0 = m.party ? pn(m.party) + ". " : "";
       /* A LIST SEAT IS NAMED, and the name is a placeholder. The tip says
@@ -2232,14 +2240,14 @@ const UI = (function () {
     const P = r0.popular, F = r0.functional;
     const noes = P.total - P.aye;
 
-    /* WHAT THE WHIPS SAID. design/08 §7 gives the forecast an error and the
-       count is exact, so the two are usually different — the one piece of
+    /* WHAT THE WHIPS SAID. design/08 Â§7 gives the forecast an error and the
+       count is exact, so the two are usually different â€” the one piece of
        genuine surprise a division has, and the plan should show it. */
     const f = forecast(r0.bill) || {};
     const fAye = (f.popular || {}).aye;
     const showForecast = fAye != null && fAye !== P.aye;
 
-    /* TELLER'S NOTES. A division is not read out party by party — that is the
+    /* TELLER'S NOTES. A division is not read out party by party â€” that is the
        forecast's shape and not a count's. Two remarks is what a count has, and
        they name the exceptions: a bench that went with the other side. */
     const govIds = st.coalition.concat(st.confidenceSupply);
@@ -2295,7 +2303,7 @@ const UI = (function () {
 
        This is deliberately placed BEFORE the count and not inside it.
        The note above is right that a division is not read out party by
-       party — that is the forecast's shape, and the tellers' declaration
+       party â€” that is the forecast's shape, and the tellers' declaration
        below keeps the count's. But the lobbies genuinely do fill one
        bench at a time, and that is the half of a division a player has
        never been shown: not the arithmetic, the members walking.
@@ -2303,7 +2311,7 @@ const UI = (function () {
        So the roll call is the filling and the declaration is the count,
        and the two do not compete for the same moment. */
     /* THE SAME DIVISION, NOT A SECOND ONE. r0 is the result that was already
-       resolved on the click — passing it in is what makes the roll call and
+       resolved on the click â€” passing it in is what makes the roll call and
        the declaration provably the same event, and keeps the guarantee that a
        division resolves identically whether its dialog is watched or skipped. */
     const rc = Engine.rollCall(st, C, r0.bill, r0);
@@ -2313,8 +2321,8 @@ const UI = (function () {
        members voting with the Ayes counter sitting at zero, then five
        seconds of a bar filling in to report what the player had just
        watched happen. Two sequential accounts of one event, the second
-       of which could tell them nothing. That — and not the duration,
-       which was already twenty seconds — is what read as unreal.
+       of which could tell them nothing. That â€” and not the duration,
+       which was already twenty seconds â€” is what read as unreal.
 
        So the running total climbs bench by bench as the House is called,
        the seat plan lights with it, and the tellers at the end confirm a
@@ -2380,7 +2388,7 @@ const UI = (function () {
       run: () => {
         /* THE DECLARATION IS WHERE THE FREEZE ENDS. The vote has
            concluded: the tellers are reading the result, so the order
-           paper, the bill and the plan may show it now — the spoiler
+           paper, the bill and the plan may show it now â€” the spoiler
            rule is about the count, not the reading-out. */
         countFreeze = null;
         chamberCount = null;
@@ -2457,7 +2465,7 @@ const UI = (function () {
         vEl = el.querySelector("#dv-verdict");
         /* THE FIRST FRAME IS A ZERO. The template carries the final noes
            count, so between mounting and the first step's paint the noes
-           column reported a number the House had not reached — and with a
+           column reported a number the House had not reached â€” and with a
            large nay it read as a finished count before the door had shut.
            Both bars and both numbers are set to their starting values
            here, so the strip opens at nothing and earns its number. */
@@ -2501,12 +2509,12 @@ const UI = (function () {
            paragraph around and behaved like nothing else in the game.
            js/tips.js already draws a floating card on hover and on
            focus, hides on Escape and on scroll, and is deliberately
-           neither focusable nor clickable — so a term simply carries the
+           neither focusable nor clickable â€” so a term simply carries the
            attributes that card reads and the second system is gone. */
         parts[i] = parts[i].replace(re, m =>
           /* NO PERMANENT tabindex. Every other annotation enters the tab
-             order only in explain mode, on the visible screen — that is
-             what `?` is for — and a glossary term is an annotated
+             order only in explain mode, on the visible screen â€” that is
+             what `?` is for â€” and a glossary term is an annotated
              readout like any other. Permanently tabbable prose puts
              dozens of stops between a keyboard user and the decision. */
           `<span class="gl" data-tip="term:${esc(g.term)}"` +
@@ -2526,15 +2534,15 @@ const UI = (function () {
       .replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
-  /* A name is stored with its formal title. A table does not repeat the title —
-     every row is a member — but the Concordance keeps it, because that is the
+  /* A name is stored with its formal title. A table does not repeat the title â€”
+     every row is a member â€” but the Concordance keeps it, because that is the
      one place a member sits beside the President, the press and the civilian. */
   function bare(n) {
     return String(n == null ? "" : n).replace(/^Rt\. Hon\. /, "").replace(/ MP$/, "");
   }
 
   /* bindGlossary is gone. A glossary term is a [data-tip] now and
-     js/tips.js does the rest — see annotate(). Calls to it were removed
+     js/tips.js does the rest â€” see annotate(). Calls to it were removed
      with it; if one comes back, the term will still work and the extra
      call will not. */
 
@@ -2542,7 +2550,7 @@ const UI = (function () {
 
      THE SLOT IS FILLED WHETHER OR NOT THE FILE EXISTS. js/artifacts.js
      has said for a long time that a slot is a reserved box and an empty
-     one is an invisible box of the declared size — but these two helpers
+     one is an invisible box of the declared size â€” but these two helpers
      predate it and did the opposite: they returned "" with no character
      and DELETED THEMSELVES on a 404. Six characters declare a portrait
      and one file exists, so five decisions in six drew the box, its
@@ -2634,7 +2642,7 @@ const UI = (function () {
   /* ---------- what moved somewhere else ----------
 
      A decision on this screen can put an item on the order paper, fill
-     a post, move a bill or make an order — all of which live on other
+     a post, move a bill or make an order â€” all of which live on other
      tabs, none of which the player has any reason to look at. This
      names the change and points at the tab that now holds it.
 
@@ -2659,8 +2667,8 @@ const UI = (function () {
     (C.cabinet || []).forEach(p => { posts[p.id] = (st.cabinet[p.id] || {}).holder || ""; });
     /* THE LEDGER AND THE CALENDAR were the two destinations this was blind
        to, and they are the two most acted upon. Capital moves whenever a
-       partner is paid or put in debt, and a DATED thing — a division set,
-       a prayer window, an initiative answering — lands on a day the player
+       partner is paid or put in debt, and a DATED thing â€” a division set,
+       a prayer window, an initiative answering â€” lands on a day the player
        is not looking at. Four different actions put something on the
        calendar and not one of them said so. */
     const capital = {};
@@ -2688,7 +2696,7 @@ const UI = (function () {
      appointing a minister and setting a division all change something on
      a tab the player is not looking at, and all of them said nothing.
 
-     `acted` wraps the action instead of asking each handler to remember —
+     `acted` wraps the action instead of asking each handler to remember â€”
      a handler that forgets is the bug this replaces, and there is now one
      place to forget it rather than nine. */
   /* EVERY DECISION TAKES A BEAT, AND IT IS NOT OPTIONAL.
@@ -2829,12 +2837,12 @@ const UI = (function () {
                    detail: "Now " + (after.capital[pid] > 0 ? "+" : "") + after.capital[pid] + "." });
     });
 
-    /* A DATED THING LANDS ON A DAY THE PLAYER IS NOT LOOKING AT — but only
+    /* A DATED THING LANDS ON A DAY THE PLAYER IS NOT LOOKING AT â€” but only
        report the ones nothing else here covers, or one fact gets two cards.
        An undertaking is already an `owed` deadline and has its own note
        above; a division set is in `bills`; a prayer window is in `si`.
        What is left is `expected`: a commission reporting, a dispatch due,
-       an initiative answering — a fact the queue is holding for a day, and
+       an initiative answering â€” a fact the queue is holding for a day, and
        the one dated thing nothing announced. */
     if (before.dated !== after.dated) {
       const was = new Set((before.datedList || []).map(d => d.kind + "@" + d.sitting + ":" + (d.text || "")));
@@ -2858,7 +2866,7 @@ const UI = (function () {
     return notes.length;
   }
 
-  const TONE_MARK = { good: "+", bad: "−", grave: "!", owed: "¤", plain: "·" };
+  const TONE_MARK = { good: "+", bad: "âˆ’", grave: "!", owed: "Â¤", plain: "Â·" };
 
   /* The commit button says the ACT. The terminal does not ask whether
      you are sure; you either do the thing or you do not. Content may
@@ -2883,8 +2891,8 @@ const UI = (function () {
   function cabinetView(effects) {
     /* WHO SPEAKS, in two passes.
 
-       FIRST BY BRIEF. A minister owns subjects — content/cabinet.js says
-       which — and a choice that moves one of them is a choice in their
+       FIRST BY BRIEF. A minister owns subjects â€” content/cabinet.js says
+       which â€” and a choice that moves one of them is a choice in their
        department. That is the strong signal and it is why the field
        exists: the Minister for Substrate and Thermal should answer on
        substrate because it is hers, not because her party happens to be
@@ -2961,7 +2969,7 @@ const UI = (function () {
        lone voice is arbitrary and reads as the game telling you the
        answer. A minister answering on their OWN DEPARTMENT is not that:
        it is the department reporting, and suppressing it means a
-       decision purely about substrate hears from nobody at all — which
+       decision purely about substrate hears from nobody at all â€” which
        is what the first version of this did. */
     if (byBrief.length === 1 && rows.length === 1) return byBrief;
     if (rows.length >= 2) return rows.slice(0, 2);
@@ -2988,7 +2996,7 @@ const UI = (function () {
 
     return `<div class="ch${open ? " open" : ""}" data-ch="${i}">
       <button class="ch-head" data-expand="${i}" aria-expanded="${open}">
-        <span class="ch-arrow">${open ? "▾" : "▸"}</span>
+        <span class="ch-arrow">${open ? "â–¾" : "â–¸"}</span>
         <span class="ch-head-txt">
           <span class="ch-label">${esc(c.label)}</span>
           ${peek ? `<span class="ch-peek">${esc(peek)}</span>` : ""}
@@ -3000,7 +3008,7 @@ const UI = (function () {
         <div class="ch-sec"><h4>What this does</h4>
           ${cl.filter(x => !x.owed).length
             ? `<ul class="ch-eff">${cl.filter(x => !x.owed).map(x =>
-                `<li class="t-${x.tone}"><i>${TONE_MARK[x.tone] || "·"}</i>${esc(x.text)}</li>`
+                `<li class="t-${x.tone}"><i>${TONE_MARK[x.tone] || "Â·"}</i>${esc(x.text)}</li>`
               ).join("")}</ul>`
             /* A choice can be entirely a position taken: nothing moves and
                the House hears you say it. An empty panel reads as broken,
@@ -3098,7 +3106,7 @@ const UI = (function () {
           { title: "Set it in motion", yes: "Do it" },
           okd => {
             if (!okd) return;
-            /* An initiative answers on a named sitting — a dated thing on a
+            /* An initiative answers on a named sitting â€” a dated thing on a
                tab the player is not on. */
             const r = acted(() => Engine.take(st, C, b.dataset.take, +b.dataset.tempo));
             if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
@@ -3114,8 +3122,8 @@ const UI = (function () {
   /* ---------------------------------------------------------------
      THE ORDER OF THE DAY.
 
-     The sitting screen could have listed what was AVAILABLE — six bills
-     can advance, five orders can be made — and that is equally true on
+     The sitting screen could have listed what was AVAILABLE â€” six bills
+     can advance, five orders can be made â€” and that is equally true on
      day one and day forty, so it is a menu rather than business. A day
      only has a shape if something is ASKED of it.
 
@@ -3123,7 +3131,7 @@ const UI = (function () {
      House first, then the government's own business, then the papers.
      Each row says where it is answered and takes the player there, so
      the tabs stop being places you might look and become places the day
-     sends you. And every item CLEARS when it is dealt with — a mark
+     sends you. And every item CLEARS when it is dealt with â€” a mark
      that never goes out teaches a player to stop reading it.
      --------------------------------------------------------------- */
   const TABNAME = { sit: "Sitting", gov: "Government", pap: "Papers", orb: "Orbit" };
@@ -3152,7 +3160,7 @@ const UI = (function () {
            with thirteen orders and no mark on the one that matters reads as
            a dead link; the row the player was sent to says it was the row.
            And if the promise needs the order to be LAID first, the status
-           line says so — the row opens onto its Make button either way. */
+           line says so â€” the row opens onto its Make button either way. */
         flash(row);
         const si = (C.instruments || []).find(x => x.id === id);
         const s = st.instruments[id];
@@ -3196,7 +3204,7 @@ const UI = (function () {
     el.querySelectorAll("[data-goto]").forEach(b =>
       b.addEventListener("click", () => openTarget(b)));
     /* THE TAB STRIP CARRIES THE SAME TRUTH. A tab with something asked of
-       it wears a mark, and it goes out when the thing is done — which is
+       it wears a mark, and it goes out when the thing is done â€” which is
        only possible because today() reports obligations and not what
        happens to be available. */
     document.querySelectorAll(".tab").forEach(tab => {
@@ -3207,7 +3215,7 @@ const UI = (function () {
       if (old) old.remove();
       if (!asked) return;
       /* The count is a REAL element rather than a ::after, so that it can
-         carry the project's own hover card — a pseudo-element cannot. Hovering
+         carry the project's own hover card â€” a pseudo-element cannot. Hovering
          it says WHAT is asked, in the same words the order of the day uses, so
          the number stops being an unexplained red box. */
       const n = document.createElement("span");
@@ -3236,7 +3244,7 @@ const UI = (function () {
   /* ---------------------------------------------------------------
      THE PARLIAMENTARY CALENDAR.
 
-     Pacing was a number in a sentence — "4 sittings left of session 4" —
+     Pacing was a number in a sentence â€” "4 sittings left of session 4" â€”
      and a number in a sentence is something you read, not something you
      feel. A month grid is something you feel: you can see how much time
      is left, that the House does not sit every day, and exactly which
@@ -3252,7 +3260,7 @@ const UI = (function () {
   const SITDAYS = "four";
   let calMonth = 0;                    /* months from the current sitting */
 
-  /* "Thursday 14 April" — the card names the day, because a player
+  /* "Thursday 14 April" â€” the card names the day, because a player
      reading a date wants the weekday as much as the number. */
   function dayLabel(iso) {
     const [y, m, d] = String(iso).split("-").map(Number);
@@ -3285,18 +3293,18 @@ const UI = (function () {
       if (dom) cls.push("top-" + dom.kind);
       /* ONE MARK PER THING, NOT ONE FLAG PER DAY. A single corner flag
          said "something happens here" and lost both the count and, when
-         two kinds landed together, the colour — the classes stacked and
+         two kinds landed together, the colour â€” the classes stacked and
          the last one won. A row of pips says how many and which. */
       const pips = d.marks.slice(0, 4).map(m =>
         `<s class="p-${m.kind}"></s>`).join("") +
         (d.marks.length > 4 ? '<s class="p-more"></s>' : "");
 
       /* AND THE PROJECT'S OWN HOVER CARD, not the browser's. This was a
-         native title= — slow, unstyled, and a second tooltip system in a
+         native title= â€” slow, unstyled, and a second tooltip system in a
          build that spent a commit removing one. */
       const title = d.sitting != null ? "Sitting " + d.sitting : "The House does not sit";
       /* THE CARD LEADS WITH THE THING, IN WORDS, ONE PER LINE. It was a run
-         of "Name: text — Name: text" joined by dashes, which is a sentence
+         of "Name: text â€” Name: text" joined by dashes, which is a sentence
          you parse rather than a thing you read. Each mark gets its own
          sentence and its own line, and the kind is named first so the
          colour of the dot has a word to match it to. */
@@ -3356,13 +3364,13 @@ const UI = (function () {
       st.bills[b.id].stage !== "assented");
     const rows = [];
     if (bill) rows.push(`<div class="dk bill goto" data-goto="cham"><b>${esc(bill.title)}</b>
-      <i>${esc(String(st.bills[bill.id].stage).replace(/_/g, " "))} · Chamber — give it time on the order paper</i></div>`);
+      <i>${esc(String(st.bills[bill.id].stage).replace(/_/g, " "))} Â· Chamber â€” give it time on the order paper</i></div>`);
     owed.forEach(u => {
       const due = u.by - st.sitting;
       const w = Engine.undertakingWhere(C, u);
       rows.push(`<div class="dk owed goto${due <= 1 ? " late" : ""}" data-goto="${w.tab}" data-open="${esc(w.focus || "")}"><b>${esc(u.text)}</b>
         <i>${due <= 0 ? "due this sitting" : "by sitting " + u.by}${
-          u.owed_to ? " · " + esc(partyName(u.owed_to)) : ""} · ${esc(w.how)}</i></div>`);
+          u.owed_to ? " Â· " + esc(partyName(u.owed_to)) : ""} Â· ${esc(w.how)}</i></div>`);
     });
     /* A DIVISION HAS A DAY, and the day is business. */
     (C.bills || []).forEach(b => {
@@ -3372,17 +3380,17 @@ const UI = (function () {
       rows.push(`<div class="dk div goto${away <= 0 ? " late" : ""}" data-goto="cham">
         <b>Division: ${esc(b.title)}</b>
         <i>${away <= 0 ? "today" : "sitting " + bs.dividesOn +
-            " · " + away + " sitting" + (away === 1 ? "" : "s") + " away"} · Chamber</i></div>`);
+            " Â· " + away + " sitting" + (away === 1 ? "" : "s") + " away"} Â· Chamber</i></div>`);
     });
     (C.instruments || []).forEach(si => {
       const x = st.instruments[si.id];
       if (x && x.inForce && x.prayerCloses != null && x.prayerCloses > st.sitting)
         rows.push(`<div class="dk pray goto" data-goto="pap"><b>${esc(si.number)}</b>
-          <i>prayable for ${x.prayerCloses - st.sitting} more · Papers</i></div>`);
+          <i>prayable for ${x.prayerCloses - st.sitting} more Â· Papers</i></div>`);
     });
     /* A POST THE GOVERNMENT HAS NOT FILLED IS BUSINESS. The appointment
        lives on the Government screen, but a player who never opens it
-       would never learn there was one — and the docket is where this
+       would never learn there was one â€” and the docket is where this
        game says what is outstanding. */
     Engine.vacancies(st, C).forEach(pid => {
       const post = (C.cabinet || []).find(p => p.id === pid);
@@ -3391,7 +3399,7 @@ const UI = (function () {
          the same business, and sharing the class made the docket's own
          check count one as the other. */
       rows.push(`<div class="dk post goto" data-goto="gov"><b>${esc(post ? post.title || post.name : pid)}
-        stands vacant</b><i>no holder · the department cannot make an order · Government</i></div>`);
+        stands vacant</b><i>no holder Â· the department cannot make an order Â· Government</i></div>`);
     });
 
     /* THE SESSION'S END IS ALWAYS ON THE PAPER. It is the cheapest
@@ -3400,7 +3408,7 @@ const UI = (function () {
     if (st.sessionEnds != null) {
       const left = st.sessionEnds - st.sitting + 1;
       rows.push(`<div class="dk rises${left <= 3 ? " late" : ""}">
-        <b>The House rises</b><i>sitting ${st.sessionEnds} · ${left} sitting${
+        <b>The House rises</b><i>sitting ${st.sessionEnds} Â· ${left} sitting${
           left === 1 ? "" : "s"} left of session ${st.session}</i></div>`);
     }
     return rows.length ? rows.join("")
@@ -3416,7 +3424,7 @@ const UI = (function () {
      meeting whether or not the player is the story. Nothing here is a control,
      nothing moves a number, and nothing is gated on being read. It is the room
      being a room, and it is what stops a quiet sitting reading as a gap in the
-     build — which is exactly how the empty version read (design/17 §2.2). */
+     build â€” which is exactly how the empty version read (design/17 Â§2.2). */
   function orderPaperHTML(list) {
     if (!list || !list.length) return "";
     return `<div class="op"><div class="ophead">Order paper` +
@@ -3453,6 +3461,12 @@ const UI = (function () {
     map.querySelectorAll("[data-wspin]").forEach(b => b.addEventListener("click", () => {
       World.auto(); cue("click"); drawWorld();
     }));
+    /* THE SELECTION REDRAWS THE WINDOW, NOT THE WHOLE SCREEN. `onChange` used
+       to rebuild the canvas as well, which destroyed the node the click was on
+       and lost its handler â€” the reason clicking a country did nothing. The
+       canvas only needs repainting when the geographic SELECTION shows on the
+       map (a lit country, an annexed body); the window needs redrawing every
+       time. So: repaint the canvas in place, then the window. */
     World.onSelect(() => {
       const c = $("#w-canvas");
       if (c) c.innerHTML = World.render();
@@ -3480,24 +3494,41 @@ const UI = (function () {
      what the Commonwealth buys from it if it buys anything. A country with no
      content and no anchor says so plainly rather than showing an empty frame,
      which is the difference between a map and a gazetteer. */
+  /* RELEVANT ACTORS, not "countries".
+
+     The author's correction, and it is the right shape: Kenya, the European
+     Union, Cordell and the Chryse Basin and Nili Republic do not MATTER until
+     the campaign's central event â€” the station question â€” makes them matter.
+     A panel headed "Countries" that opens on four governments with standing
+     bars tells the player those four are the game before the game has said so.
+
+     So the column is the RELEVANT ACTORS: whoever the current chapter and the
+     crisis have actually put in play. Before the station issue is raised, that
+     is the Commonwealth's own institutions and its neighbours in the roster;
+     once it is raised, the four powers come in with it, in the order the
+     campaign introduces them. Content decides what is relevant â€” the flag
+     `station_issue` is the gate â€” and the panel reads it. */
+  function foreignOpen() {
+    return !!(st.flags && st.flags.station_issue);
+  }
+
   function worldSideHTML() {
     const body = World.selectedBody();
     if (body) return worldBodyHTML(body);
     const sel = World.selected();
-    const anchors = WORLD.anchors || [];
     const cName = sel ? countryName(sel) : "";
     let h = "";
     if (!sel) {
       h = `<div class="note">Every anchor in the dozen stands on somebody else's
-        soil. Click a country for what it is to the Commonwealth.</div>`;
+        soil. Click one for what the Commonwealth depends on it for.</div>`;
     } else {
       const s = (WORLD.states || {})[sel] || {};
-      const here = anchors.filter(a => a.host === sel);
+      const here = (WORLD.anchors || []).filter(a => a.host === sel);
       h = `<div class="w-c-h"><b>${esc(cName)}</b><span class="w-c-iso">${esc(sel)}</span></div>`;
       if (s.note) h += `<div class="note">${esc(s.note)}</div>`;
       if (here.length) {
         h += `<div class="rulehead">Anchors <em>${here.length}</em></div>` + here.map(a =>
-          `<div class="fgn"><div class="fgn-h"><b>${esc(a.tether)}</b>` +
+          `<div class="fgn"><div class="fgn-h"><b>${cxlink("anchor_" + a.id, a.tether)}</b>` +
           `<span class="fgn-lag">${a.mine ? (a.leased ? "leased" : "held") : "foreign"}</span></div>` +
           `<div class="note">${esc(a.site)}${a.formal ? " &middot; " + esc(a.formal) : ""}` +
           `${a.station ? " &middot; serves the " + esc(stationName(a.station)) : ""}</div></div>`).join("");
@@ -3516,19 +3547,33 @@ const UI = (function () {
       }
       if (s.markets) h += `<div class="rulehead">What it sells</div><div class="note">${esc(s.markets)}</div>`;
     }
-    /* THE FULL LIST OF POWERS, folded. The column is a WINDOW on whatever is
-       selected; the roster of everyone is a reference and belongs beneath it,
-       closed, so selecting a country does not have to scroll past four other
-       governments to read about the one just clicked. */
-    h += `<details class="w-allfold"><summary><b>All the powers</b>` +
-      `<span>ordered by delay</span></summary>` +
-      `<div class="pbody scrolls">${foreignHTML()}</div></details>`;
+    /* THE ACTORS, and the list is the campaign's own cast â€” gated, so the four
+       powers are not presented as the game before the story has introduced
+       them. Before the station issue the panel says what it is waiting for. */
+    if (!foreignOpen()) {
+      h += `<div class="rulehead">Relevant actors</div>` +
+        `<div class="note">The powers outside the Commonwealth are not yet in play. ` +
+        `They become relevant when the station question is raised, and not before.</div>`;
+    } else {
+      h += `<details class="w-allfold" open><summary><b>Relevant actors</b>` +
+        `<span>ordered by delay</span></summary>` +
+        `<div class="pbody scrolls">${foreignHTML()}</div></details>`;
+    }
     return h;
   }
   function countryName(iso) {
     const f = (typeof WORLD_COUNTRIES !== "undefined" ? WORLD_COUNTRIES : [])
       .find(c => c.i === iso);
     return f ? f.n : iso;
+  }
+
+  /* A LINK INTO THE CONCORDANCE, from the world panel. The encyclopedia
+     already draws `[[id]]` links and every screen reaches it through the
+     delegated [data-go] handler, so this is the same markup the articles use
+     â€” one linker, so a name in the panel and a name in an article open the
+     same page. */
+  function cxlink(id, label) {
+    return `<a class="cx-link" tabindex="0" data-go="${esc(id)}">${esc(label)}</a>`;
   }
 
   /* THE WORKS, when its mark is clicked: the thing the campaign is about. It is
@@ -3541,6 +3586,8 @@ const UI = (function () {
     const a = (C.actors || []).find(x => x.id === b.operator);
     const live = (st.actors || {})[b.operator] || {};
     return `<div class="w-c-h"><b>${esc(b.name)}</b><span class="w-c-iso">${home ? "annexed" : "outside"}</span></div>` +
+      `<div class="note">${cxlink("body_" + b.id, "Concordance")} &middot; ` +
+        `operated by ${cxlink("actor_" + (b.operator || ""), a ? a.name : b.operator)}</div>` +
       (b.note ? `<div class="note">${esc(b.note)}</div>` : "") +
       `<div class="ostats">` +
         `<span><b>${(b.population || 0).toLocaleString()}</b><i>population</i></span>` +
@@ -3626,7 +3673,7 @@ const UI = (function () {
       /* A QUIET SITTING IS NOT THE SAME AS AN EMPTY GAME, and the screen
          used to say the same sentence for both. A player met "nothing
          demands a decision this sitting", pressed Rise, met it again,
-         and pressed Rise thirty times before anything happened —
+         and pressed Rise thirty times before anything happened â€”
          reading it as a missing placeholder rather than as the state of
          the world, which is a fair reading of it.
 
@@ -3663,7 +3710,7 @@ const UI = (function () {
         currentEvent = null; lastResult = null;
         cue("stamp");
         if (typeof Wait !== "undefined") Wait.brief(520);
-        setStatus("The House sat " + (st.sitting - from) + " times without a division · sitting " +
+        setStatus("The House sat " + (st.sitting - from) + " times without a division Â· sitting " +
                   st.sitting, "transient");
         drawAll(); saved(); afterAction(); reveal();
       });
@@ -3676,7 +3723,7 @@ const UI = (function () {
 
     /* TWO BLOCKS: what you are reading, and what you are deciding.
        The reading block is ONE element so the portrait's float still
-       wraps the prose inside it — a flex column would otherwise make
+       wraps the prose inside it â€” a flex column would otherwise make
        the portrait and the text siblings and the float would wrap
        nothing. The decision block is pushed to the foot of the panel by
        margin-top:auto, so a short event leaves its space between the
@@ -3700,7 +3747,7 @@ const UI = (function () {
      Expanding a row used to redraw the whole sitting body, which
      destroyed and rebuilt the speaker's <img>. Measured: the node was
      replaced and the replacement reported complete:false, so for a frame
-     the portrait was its empty box — the flicker. Only this block is
+     the portrait was its empty box â€” the flicker. Only this block is
      rewritten now, so the picture above it is never touched. */
   function drawDecision() {
     const foot = $("#sit-decide");
@@ -3768,7 +3815,7 @@ const UI = (function () {
 
   /* HOW FAR AWAY THE NEXT DECISION IS, without taking it.
 
-     Engine.nextEvent MUTATES — it pulls a due event off the queue — so
+     Engine.nextEvent MUTATES â€” it pulls a due event off the queue â€” so
      this looks ahead on a COPY of the state and never on the live one.
      A read that quietly consumed the next event would be a very hard
      bug to find. */
@@ -3789,7 +3836,7 @@ const UI = (function () {
     Engine.advance(st, C); currentEvent = null; lastResult = null;
     lastChanges = null;
     openRow = { event: null, i: -1 };
-    setStatus("The House rises · sitting " + st.sitting, "transient");
+    setStatus("The House rises Â· sitting " + st.sitting, "transient");
     if (typeof Wait !== "undefined") Wait.brief(200);
     drawAll(); saved(); afterAction(); reveal();
   }
@@ -3821,8 +3868,8 @@ const UI = (function () {
      A CONTROL APPEARS ON EXACTLY ONE. A scoreboard belongs wherever you
      are standing; a lever in two rooms is two levers that disagree.
 
-     So the forecast BARS are on both — the minister steering a bill wants
-     to know whether it passes without leaving the room — and the whip and
+     So the forecast BARS are on both â€” the minister steering a bill wants
+     to know whether it passes without leaving the room â€” and the whip and
      the party breakdown, which are how you WORK the numbers, are here,
      beside the benches they move. Government is what you command:
      coalition, currents, ledger, cabinet, undertakings, order-paper time,
@@ -3844,8 +3891,8 @@ const UI = (function () {
      bench in AND group the ayes is the view a whip wants for a simple
      measure.
 
-     The interface says which is which — a segmented control for the choice, a
-     row of toggles for the set — because two controls that look alike and
+     The interface says which is which â€” a segmented control for the choice, a
+     row of toggles for the set â€” because two controls that look alike and
      behave differently is the bug, not the feature. */
   let chamberColour = "party";     /* party | vote */
   let chamberGroup = false;        /* ayes contiguous within each aisle */
@@ -3868,7 +3915,7 @@ const UI = (function () {
     const cur = chamberBill();
     const b = cur ? C.billById[cur] : null;
     /* ONE LINE, TWO STATES. This was a wrapping grid of one button per
-       measure — seven buttons over four lines, a second order paper
+       measure â€” seven buttons over four lines, a second order paper
        above the first. The order paper beside it does the choosing now,
        so all this has to say is what the House is currently drawn for
        and how to put it back at rest. */
@@ -3918,7 +3965,7 @@ const UI = (function () {
      functional forty, and 4.6.7 says both are on screen throughout.
 
      The numbers are the REPORTED ones, the same estimate the Government
-     tab prints (design/08 §7). Colouring the seats from the true count
+     tab prints (design/08 Â§7). Colouring the seats from the true count
      would have handed the player the exact division by counting marks. */
   function drawChamberForecast() {
     const el = $("#cham-forecast"); if (!el) return;
@@ -3972,7 +4019,7 @@ const UI = (function () {
 
        The whip stays open because it is the one a player uses every
        division. The other two fold, and their summaries carry the count
-       so a folded section still says whether anything is planned in it —
+       so a folded section still says whether anything is planned in it â€”
        a disclosure that hides whether it has contents is a worse trap
        than the overflow it fixed. Open state is remembered per section
        for the session, because a player who lobbies once will lobby
@@ -3994,7 +4041,7 @@ const UI = (function () {
          behind it is one of the better things the chamber does. But under
          an absolute-majority rule a pair costs the government an aye and
          costs the other side a nay the threshold never counted, so there
-         is presently no reason for a player to use one — a control nobody
+         is presently no reason for a player to use one â€” a control nobody
          should press was taking a row of the tightest column on the
          screen. It comes back when content gives a reason to pair: a
          courtesy that buys standing, or a member who asks. */
@@ -4002,7 +4049,7 @@ const UI = (function () {
            lobN ? lobN + " seats asked for" : "nothing asked", lob) +
       dvl;
     /* whipPanel says nothing about a fallen measure, and an empty panel
-       is a frame around a hole — but a measure that has DIVIDED is not a
+       is a frame around a hole â€” but a measure that has DIVIDED is not a
        hole: it has a record, and the record is the reason to keep the
        panel. So the test is the whole contents and not the whip alone. */
     if (panel) panel.hidden = !html;
@@ -4050,11 +4097,11 @@ const UI = (function () {
      legislature's business belongs with the legislature: what is before
      the House, what stage it is at, how it is expected to go, and the
      instrument for changing that, all on one screen. The Government tab
-     keeps the executive — the coalition, the ledger, the cabinet, the
+     keeps the executive â€” the coalition, the ledger, the cabinet, the
      programme and what it costs. */
   /* THE STATE OF A BILL, in one word, so the stage column and anything else
      that colours a bill agree on what colour it is. `passed` and `dead` reuse
-     the Papers register's own terminal colours — good and bad — and two more
+     the Papers register's own terminal colours â€” good and bad â€” and two more
      are named for the states a register does not rank: a bill still in
      drafting has not been introduced, and a blocked bill is on the book and
      going nowhere. */
@@ -4102,7 +4149,7 @@ const UI = (function () {
       const d = forecast(b.id);
       const state = billState(bs);
       const dead = state === "dead";
-      /* CAN THE HOUSE ACT ON IT TODAY — not merely "is it at a stage". The
+      /* CAN THE HOUSE ACT ON IT TODAY â€” not merely "is it at a stage". The
          engine already answers this for the button; the row borrows the
          answer rather than guessing at one, so the mark and the control can
          never disagree. */
@@ -4113,9 +4160,9 @@ const UI = (function () {
         `<td class="stage"><span class="stname ${state}">${bs.stage.replace(/_/g, " ")}</span>` +
           (dead ? "" : stageBar(bs, state)) +
           (ready ? ` <span class="rdy" data-tip="stage">ready</span>` : "") + `</td>` +
-        /* A STRUCK ROW LOSES ITS FORECAST (§12.13). A measure that has
+        /* A STRUCK ROW LOSES ITS FORECAST (Â§12.13). A measure that has
            fallen cannot be divided on again, so a count for it is a number
-           that can never come true — worse than no number at all. A carried
+           that can never come true â€” worse than no number at all. A carried
            one keeps its figures: that is the division that actually
            happened and it is the record. */
         `<td class="n">${dead ? "&mdash;" : d.popular.aye}</td>` +
@@ -4148,7 +4195,7 @@ const UI = (function () {
        THE CHAMBER AS THE WHIP'S MAP.
 
        The plan was a diagram: here is the House, in party colours, and
-       nothing to do with it. Naming a bill turns it into an instrument —
+       nothing to do with it. Naming a bill turns it into an instrument â€”
        every seat recolours to how that party's bench is expected to go,
        and the two majorities the measure has to clear are drawn under it.
 
@@ -4158,7 +4205,7 @@ const UI = (function () {
        a number in a table.
 
        WHICH member votes which way is not modelled and this does not
-       pretend otherwise — the engine returns a count per party per tier,
+       pretend otherwise â€” the engine returns a count per party per tier,
        so the first n seats of each block are filled. The block is honest;
        the individual seat is a convenience of drawing. */
     const shown = chamberBill();
@@ -4174,7 +4221,7 @@ const UI = (function () {
        about members who have already been through the lobby. */
     const voted = counting || (shown ? houseVoted(shown) : false);
     /* THE COUNT IS A SWEEP, NOT A LIST. A division is counted by LOBBY, so
-       during one the plan lights aye-seats from the front as the lobby fills —
+       during one the plan lights aye-seats from the front as the lobby fills â€”
        what it shows is a quantity climbing, which is what the tellers are
        counting. The budget is spent as the seats are drawn, so the sweep runs
        in the order the benches are. Per-party detail is the analysis
@@ -4233,7 +4280,7 @@ const UI = (function () {
     /* FOLDED IN, A PARTY'S FUNCTIONAL SEATS STAND BESIDE IT. The Bar is a block
        at the end because the dual test makes the functional tier a separate
        question; folding the bench in says it is not one, and the seats then
-       belong INSIDE the party's block — stacked at the end of the aisle they
+       belong INSIDE the party's block â€” stacked at the end of the aisle they
        read as one more party nobody has heard of, which is the opposite of
        what folding them in is for. */
     bySize(allIds.filter(id => govIds.includes(id))).forEach(id => {
@@ -4253,8 +4300,8 @@ const UI = (function () {
     /* THE SEATS ARE KEYED, NOT REBUILT. Everything else on this panel can be
        replaced wholesale on every draw; the seats cannot, because a division
        MOVES them and a node that is destroyed and recreated cannot move. Each
-       seat carries a stable key — its bench, its party and its place in that
-       bench — so the same seat is the same node from one draw to the next, and
+       seat carries a stable key â€” its bench, its party and its place in that
+       bench â€” so the same seat is the same node from one draw to the next, and
        only its transform changes. */
     const GLYPH = {
       d: '<circle class="sg" cx="0" cy="0" r="3.4"/>',
@@ -4264,7 +4311,7 @@ const UI = (function () {
     /* A RING, CARRIED BY EVERY SEAT AND SHOWN ONLY WHEN THE WHIP HAS BOUGHT IT.
        The half-fill it replaces read as a nay, because a nay is also a seat
        that has lost some of its colour: half and faint are the same signal.
-       A ring is a different signal — the seat keeps ALL its party colour and
+       A ring is a different signal â€” the seat keeps ALL its party colour and
        wears a mark saying the government is paying for it. */
     function paintSeats(list) {
       const g = document.getElementById("chamber-seats");
@@ -4295,7 +4342,7 @@ const UI = (function () {
 
     /* PARTIES STACK HORIZONTALLY. Seats fill column by column, five deep,
        so a party occupies a contiguous block of columns and you read the
-       chamber left to right as party, party, party �?" which is how the
+       chamber left to right as party, party, party ï¿½?" which is how the
        benches actually work. Filling row-major instead made each party a
        horizontal band and stacked the parties vertically, which reads as a
        bar chart lying on its side rather than as a chamber. */
@@ -4338,7 +4385,7 @@ const UI = (function () {
     /* THE CHAIR. One constituency in content carries `speaker:true`; the
        member for it takes the Chair. The glyph is the same district circle
        as everyone else's, in the colour of whichever party holds that seat
-       on the roll — impartial in the House, partisan on the map, which is
+       on the roll â€” impartial in the House, partisan on the map, which is
        the true state of affairs. Drawing it as a piece of furniture said
        the chamber contained a chair; drawing it as a member says the
        chamber contains a member who is not on either bench.
@@ -4379,7 +4426,7 @@ const UI = (function () {
     const oppCols = Math.max(1, cols(opp.length));
     /* THE FLOOR WIDENS ONLY FOR THE GATHER. When the House divides, the ayes
        stand in one aisle and the noes in the other, so it must be wide enough
-       for the larger of those — wider than either party block, and sizing it
+       for the larger of those â€” wider than either party block, and sizing it
        that way the whole time shrank the ordinary House to two-thirds of the
        panel. So the ordinary view keeps its own width and the floor widens for
        the division, which is a change you are meant to notice. */
@@ -4424,8 +4471,8 @@ const UI = (function () {
 
     /* THE VIEWBOX IS THE SAME SIZE WHETHER THE BAR IS DRAWN OR NOT.
 
-       It used to be `hasBar ? … : …`, and an inline svg with a viewBox and
-       no width fills its container — so folding the functional bench into
+       It used to be `hasBar ? â€¦ : â€¦`, and an inline svg with a viewBox and
+       no width fills its container â€” so folding the functional bench into
        the aisles shrank the coordinate space inside a box that stayed put,
        and every seat in the House got BIGGER. Folding is a change of
        arrangement and it should not be a change of scale: a player who
@@ -4442,14 +4489,14 @@ const UI = (function () {
        the Bar lost and the box got wider instead of narrower. Both states
        are measured here and the larger wins, so the coordinate space is
        identical either way and the seats never change size. Layout still
-       uses benchW — only the viewBox uses the reservation, which is why
+       uses benchW â€” only the viewBox uses the reservation, which is why
        the benches stay where they are and the slack falls on the right. */
     /* The reservation (reservedCols) is read from the ENGINE's totals at the
        top of this function, where the base metrics are declared, because the
        lobby wrap needs it before the layout is built. */
     /* AND THE DIVISION DOES NOT WIDEN THE BOX EITHER. benchW swells to
        gatherW while the count runs so the ayes can regroup, and feeding that
-       into the viewBox took it from 471 to 660 mid-division — every seat in
+       into the viewBox took it from 471 to 660 mid-division â€” every seat in
        the House shrinking by a third at the exact moment the player is
        watching it. The reservation already covers every column a lobby can
        need, because the lobbies are wrapped to it (gatherRows), so the
@@ -4495,9 +4542,9 @@ const UI = (function () {
       `<text x="${x.toFixed(0)}" y="${y.toFixed(0)}" text-anchor="middle" class="chlab${cls ? " " + cls : ""}">${t}</text>`;
 
     /* WHERE EVERY SEAT STANDS. In the ordinary view a seat stands in its
-       party's block. During a division it stands where the vote puts it —
+       party's block. During a division it stands where the vote puts it â€”
        every aye in the government aisle and every noe in the opposition aisle
-       — which is what "the ayes have it" means when you can see the room
+       â€” which is what "the ayes have it" means when you can see the room
        instead of reading the number. Same keys, different coordinates: the
        whole move is one transform, and the stylesheet does the travelling. */
     const all = govV.concat(oppV, crossV);
@@ -4543,7 +4590,7 @@ const UI = (function () {
       ? Engine.popularTotal(st) + Engine.functionalTotal(st)
       : Engine.popularTotal(st);
     /* ONE LINE. It was two: five labelled spans at full width wrapped, and
-       the second line was the Speaker and their seat — a standing fact that
+       the second line was the Speaker and their seat â€” a standing fact that
        does not change and did not earn a row of a column this tight. The
        words are abbreviated because they are annotated, and the seat moves
        into the tip with them. */
@@ -4555,8 +4602,8 @@ const UI = (function () {
       (chairName ? `<span class="ct" data-tip="speaker">Chair ` +
                    `${chairParty ? mark(chairParty) : ""}${esc(bare(chairName))}</span>` : "");
 
-    /* The legend names the two kinds of support — a partner in government and
-       a party that only sustains it — while the diagram keeps both on the
+    /* The legend names the two kinds of support â€” a partner in government and
+       a party that only sustains it â€” while the diagram keeps both on the
        government side of the floor, which is where confidence and supply sits. */
     drawChamberForecast();
     drawChamberWhip();
@@ -4737,7 +4784,7 @@ const UI = (function () {
     Focus.seed("cons-table", selCons);
     /* A NEW STATION OPENS CLOSED. This used to expand the selected seat
        automatically, which meant every visit to the orbit tab put a
-       dossier on screen for a constituency the player had not chosen —
+       dossier on screen for a constituency the player had not chosen â€”
        the list is the subject and the dossier is what you ask for. The
        selection still moves with the station; only the expansion waits. */
     if (consOpenAt !== sid) { consOpenAt = sid; consOpen = null; }
@@ -4750,7 +4797,7 @@ const UI = (function () {
         const r = Engine.seatsFor(st, k.id);
         const held = Object.keys(r.held).sort((a, b) => r.held[b] - r.held[a]);
         const ch = (C.characters || []).find(c => c.seat === k.name);
-        /* The Chair first — it is the seat's office — then the member's. */
+        /* The Chair first â€” it is the seat's office â€” then the member's. */
         const off = !r.vacant && ch && OFFICE[ch.office];
         const badge = k.speaker
           ? ` <i class="chair">Speaker</i>`
@@ -4891,7 +4938,7 @@ const UI = (function () {
           `<td class="n">${f.seats}</td><td class="hcell">${held.length
             /* THE ACRONYM WITH THE COUNT. Three letters and a number is what a
                whip actually writes down, and this column is wide enough for
-               it — the marks alone were a colour the player had to decode. */
+               it â€” the marks alone were a colour the player had to decode. */
             ? held.map(pid => `${mark(pid)}<i class="hs">${esc(ps(pid))}</i>` +
                 ` <span class="hn">${h[pid]}</span>`).join("  ")
             : "&mdash;"}</td></tr>`;
@@ -4910,7 +4957,7 @@ const UI = (function () {
        once, here, where the sentence is actually about them. IT STANDS DOWN
        WHEN A ROW IS OPEN: the detail is longer than the note and the note is
        not what the reader is on, so leaving it there pushed the thing they
-       opened off the bottom of the column. Hidden, not removed — it is also
+       opened off the bottom of the column. Hidden, not removed â€” it is also
        where `electors` and `franchise` are anchored, and a tip nobody carries
        is a tip nobody can reach. */
     const fn = $("#func-note");
@@ -4937,8 +4984,9 @@ const UI = (function () {
   /* setStatus is exported so that Shell and, later, the induction pack can
      write the line without reaching into #sb-msg themselves. */
   /* redraw is exported for the checks only. It is drawAll under another
-     name, and it makes no sound — which is itself asserted, so exporting
+     name, and it makes no sound â€” which is itself asserted, so exporting
      it cannot become a way to smuggle a cue into a renderer. */
   return { boot, state: () => st, annotate, setStatus, redraw: drawAll,
            __test: { cabinetView, structure, reportMoves, rollChips, rollPlan } };
 })();
+

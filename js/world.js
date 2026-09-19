@@ -215,17 +215,27 @@ const World = (function () {
      no-motion, the same rule every other animation in the terminal follows. */
   function wire(root, redraw) {
     if (!root) return;
-    let dragging = false, lx = 0, ly = 0;
+    let dragging = false, moved = false, lx = 0, ly = 0;
     const motion = () => typeof Shell === "undefined" || !Shell.opt
       ? true : Shell.opt("chamberMotion") !== false;
     root.addEventListener("pointerdown", e => {
       if (!root.querySelector("#world-svg")) return;
-      dragging = true; lx = e.clientX; ly = e.clientY;
+      dragging = true; moved = false; lx = e.clientX; ly = e.clientY;
       if (root.setPointerCapture) try { root.setPointerCapture(e.pointerId); } catch (x) {}
     });
+    /* A CLICK IS NOT A DRAG. Every press set `dragging`, and the first
+       `pointermove` — which even a stationary click produces, because a real
+       pointer jitters a pixel — called redraw() and replaced the whole SVG.
+       The node the click was aimed at was gone by the time the click event
+       fired, so `e.target.closest("[data-iso]")` found nothing and selecting a
+       country did nothing at all. The drag now starts only past a threshold,
+       and a press that never crosses it leaves the drawing alone so the click
+       lands on the thing that was clicked. */
     root.addEventListener("pointermove", e => {
       if (!dragging) return;
       const dx = e.clientX - lx, dy = e.clientY - ly;
+      if (!moved && Math.abs(dx) + Math.abs(dy) < 4) return;
+      moved = true;
       lx = e.clientX; ly = e.clientY;
       const k = view.mode === "map" ? 0.25 : 0.3;
       view.lng -= dx * k;
@@ -238,6 +248,7 @@ const World = (function () {
     root.addEventListener("pointerup", up);
     root.addEventListener("pointercancel", up);
     root.addEventListener("click", e => {
+      if (moved) { moved = false; return; }        /* a drag is not a selection */
       const b = e.target.closest && e.target.closest("[data-body]");
       if (b) { selectBody(b.dataset.body); return; }
       const p = e.target.closest && e.target.closest("[data-iso]");

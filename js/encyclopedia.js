@@ -19,7 +19,12 @@ const Concordance = (function () {
   function links(text) {
     return String(text).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
                        .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-                       .replace(/\[\[([a-z0-9_]+)(?:\|([^\]]+))?\]\]/gi, (m, id, label) => {
+                       /* `[a-z0-9_-]`, because a term may contain a hyphen: the
+                          glossary has write-off, and the old class stopped at the
+                          hyphen and linked the first half of the word to an
+                          article that does not exist — a red link in the game and
+                          a broken reference in the checker, from the same fault. */
+                       .replace(/\[\[([a-z0-9_-]+)(?:\|([^\]]+))?\]\]/gi, (m, id, label) => {
       const a = byId[id];
       return a
         ? `<a class="cx-link" tabindex="0" data-go="${id}">${label || a.title}</a>`
@@ -216,6 +221,84 @@ const Concordance = (function () {
     };
   }
 
+  /* AN ANCHOR, from the world data: where it stands, whose soil that is, and
+     which station depends on it. Every number is read from content. */
+  function anchorArticle(a) {
+    const st0 = (C.stations || []).find(x => x.id === a.station);
+    const hostState = ((C.world || {}).states || {})[a.host] || {};
+    const rows = [["Site", a.site], ["Host", a.host]];
+    if (a.formal) rows.push(["Instrument", a.formal]);
+    if (st0) rows.push(["Serves", st0.name]);
+    rows.push(["Held by", a.mine ? (a.leased ? "the Commonwealth, leased" : "the Commonwealth") : "a foreign power"]);
+    return {
+      id: "anchor_" + a.id, title: a.tether, category: "Anchors", generated: true,
+      banners: [], edited: { by: "Committee on Trade and the Anchors", attested: true, note: "" },
+      summary: `An orbital elevator whose base is at ${a.site}, on the territory of ${a.host}. ` +
+        (st0 ? `It serves ${st0.name}. ` : "") +
+        (a.mine ? "The Commonwealth holds the concession." : "The concession is held by a foreign power."),
+      sections: [
+        { h: "The base", body: `A tether's base must be equatorial, stable and able to give a ` +
+          `corridor, which is why the dozen are where they are and not wherever the traffic is. ` +
+          `This one stands at ${a.site}.` },
+        hostState.note ? { h: "The host", body: hostState.note } : null,
+        (a.mine ? { h: "The concession", body: "Held by the Commonwealth" +
+          (a.leased ? ", on a lease rather than a grant, which is why it is the one the " +
+            "Commonwealth holds outright." : ".") } : null)
+      ].filter(Boolean),
+      infobox: { title: a.tether, rows: rows },
+      see: [a.station, a.host].filter(Boolean)
+    };
+  }
+
+  /* A FOREIGN BODY: the Works, and anything else that is outside the
+     Commonwealth and on the campaign's table. */
+  function foreignBodyArticle(b) {
+    return {
+      id: "body_" + b.id, title: b.name, category: "The Earth", generated: true,
+      banners: ["contested"], edited: { by: "multiple", attested: true, note: "the charter is not public" },
+      summary: b.note || `A body outside the Commonwealth's jurisdiction.`,
+      sections: [
+        { h: "The charter", body: b.charter || "" },
+        { h: "The operator", body: `Operated by [[actor_${b.operator}|${b.operator}]].` },
+        b.grievance ? { h: "Grievance", body: b.grievance } : null,
+        { h: "The numbers", body: `Population ${(b.population || 0).toLocaleString()}, ` +
+          `workforce ${(b.workforce || 0).toLocaleString()}, closure ${(b.closure || 0).toFixed(2)}, ` +
+          `${(b.suspended || 0).toLocaleString()} suspended. It returns no members and is not in the ` +
+          `apportionment, because it is not a station of the Commonwealth.` }
+      ].filter(Boolean),
+      infobox: { title: b.short || b.name, rows: [
+        ["Population", (b.population || 0).toLocaleString()],
+        ["Workforce", (b.workforce || 0).toLocaleString()],
+        ["Closure", (b.closure || 0).toFixed(2)],
+        ["Suspended", (b.suspended || 0).toLocaleString()],
+        ["Operator", b.operator]
+      ]},
+      see: ["actor_" + b.operator].concat(b.interests || [])
+    };
+  }
+
+  /* A POWER OUTSIDE THE COMMONWEALTH. It is an actor in the engine, so its
+     standing and appetite are live; the article is generated from them. */
+  function foreignActorArticle(a) {
+    return {
+      id: "actor_" + a.id, title: a.name, category: "The Earth", generated: true,
+      banners: [], edited: { by: "Foreign Office", attested: true, note: "as of the last dispatch" },
+      summary: a.note || `A power outside the Commonwealth.`,
+      sections: [
+        a.asks ? { h: "What it wants", body: a.asks } : null,
+        { h: "Delay", body: a.lag
+          ? `Eleven sittings of lag would be extreme and this is ${a.lag}. Everything the ` +
+            `Commonwealth hears from it is ${a.lag} sitting${a.lag === 1 ? "" : "s"} old, which is ` +
+            `the organising fact of the relationship.`
+          : `Its news is nearly current.` }
+      ].filter(Boolean),
+      infobox: { title: a.name, rows: [
+        ["Kind", a.kind], ["Delay", (a.lag || 0) + " sittings"]
+      ]},
+      see: ["commonwealth"]
+    };
+  }
+
   function billArticle(b) {    const bs = st.bills[b.id], d = Engine.division(st, C, b.id);
     const sections = [{ h: "Provisions", body: b.summary }];
     if (b.effectNote) sections.push({ h: "Estimated effect", body: b.effectNote });
@@ -322,6 +405,21 @@ const Concordance = (function () {
       const id = "term_" + g.term.toLowerCase().replace(/\s+/g, "_");
       if (!handIds.has(id) && !handIds.has(g.term.toLowerCase())) gen.push(termArticle(g));
     });
+    /* THE WORLD (design/29). The anchors, the states and the foreign bodies
+       are content now, so they get articles like everything else — generated,
+       so no number in an article can disagree with the game. The four Earth
+       powers and Cordell also answer to their actor id, which is how the
+       foreign panel links to them. */
+    const W = C.world || {};
+    (W.anchors || []).forEach(a => {
+      if (!handIds.has("anchor_" + a.id)) gen.push(anchorArticle(a));
+    });
+    (W.foreign || []).forEach(b => {
+      if (!handIds.has("body_" + b.id)) gen.push(foreignBodyArticle(b));
+    });
+    (C.actors || []).filter(a => a.foreign).forEach(a => {
+      if (!handIds.has("actor_" + a.id)) gen.push(foreignActorArticle(a));
+    });
     all = hand.concat(gen);
     byId = all.reduce((m, a) => (m[a.id] = a, m), {});
     /* alias hand-written ids that generated ones also answer to */
@@ -345,8 +443,8 @@ const Concordance = (function () {
     const cats = {};
     all.forEach(a => (cats[a.category] ||= []).push(a));
     const order = ["Institutions", "Constitutional theory", "Elections", "Legislation",
-                   "Personhood", "Parties", "Stations", "Constituencies", "Persons",
-                   "History", "Definitions"];
+                   "Personhood", "Parties", "Stations", "Constituencies", "The Earth",
+                   "Anchors", "Persons", "History", "Definitions"];
     const keys = Object.keys(cats).sort((x, y) => {
       const ix = order.indexOf(x), iy = order.indexOf(y);
       return (ix < 0 ? 99 : ix) - (iy < 0 ? 99 : iy);

@@ -67,11 +67,12 @@ const Tips = (function () {
             "projection. The gold anchors are the Commonwealth's four, the plain " +
             "ones belong to other states, and a station is orbital, so it is not " +
             "drawn at a point on the ground." },
-    country: { title: "Countries",
-      body: "Click a country on the globe for what it is to the Commonwealth: the " +
-            "anchors on its territory and the modelled state's standing and ask. " +
-            "A country with no anchor on it says so, which is a fact as load-bearing " +
-            "as the ones with one." },
+    actors: { title: "Relevant actors",
+      body: "Whoever the state of the campaign has actually put in play. The four " +
+            "powers outside the Commonwealth are not relevant until the station " +
+            "question is raised, and the panel says so until then. Before that, " +
+            "clicking a country on the globe shows what the Commonwealth depends " +
+            "on it for — anchors, standing, and what it sells." },
     tribunal: { title: "The Tribunal",
       body: "The bench that hears what the orders do. It is not elected and " +
             "cannot be whipped, so the numbers in the House do not reach it. Its " +
