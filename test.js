@@ -3095,5 +3095,23 @@ console.log("\nTHE ECONOMY:");
   ok("and the law officer's opinion takes sittings to come back",
      c != null && c - b >= 2, "referendum " + b + " -> dilemma " + c);
 
+  /* AND A DEADLINE KNOWS WHERE IT IS KEPT. The calendar showed five kinds of
+     mark and could act on none of them, because only undertakings carried a
+     destination. A mark that names a place a player can go must carry one;
+     the rise must not, because there is nothing to go and do about it. */
+  const dl = Engine.newGame(CONTENT);
+  dl.bills.divergence.dividesOn = dl.sitting + 3;
+  const ms = Engine.deadlines(dl, CONTENT) || [];
+  const kindOf = k => ms.filter(m => m.kind === k);
+  const actionable = ["division", "supply"];
+  actionable.forEach(k => {
+    const got = kindOf(k);
+    ok("a " + k + " deadline says where it is kept",
+       got.length > 0 && got.every(m => m.tab && m.how),
+       got.length ? got[0].tab + " / " + got[0].how : "no " + k + " mark");
+  });
+  ok("the rise is a statement, not an instruction",
+     kindOf("rises").every(m => !m.tab), "no destination");
+
   if (bad) { console.log("\n" + bad + " CLOCK FAILURES"); process.exitCode = 1; }
 })();

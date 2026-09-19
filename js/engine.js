@@ -4020,10 +4020,19 @@ const Engine = (function () {
                                kind: kind, text: text, away: sitting - st.sitting },
                              extra || {}));
     };
+    /* EVERY DEADLINE KNOWS WHERE IT IS KEPT. `undertakingWhere` worked this
+       out for one kind of mark and the docket used it; the calendar showed
+       all five kinds and could act on none of them, so the one screen that
+       says WHEN was the one screen with no HOW. A mark that names a place
+       carries {tab, how, focus} and the interface can send the player to it.
+       A mark with nowhere to go — the rise, a thing merely expected — carries
+       nothing, and is a statement rather than an instruction. */
     (C.bills || []).forEach(b => {
       const bs = st.bills[b.id];
       if (bs && bs.dividesOn != null && !bs.dead)
-        add(bs.dividesOn, "division", b.title + " divides");
+        add(bs.dividesOn, "division", b.title + " divides",
+            { tab: "cham", how: "Whip and divide on " + b.title,
+              focus: "bill:" + b.id });
     });
     /* SUPPLY, ON THE CALENDAR FROM THE FIRST SITTING. Losing supply is the
        only loss a player can see coming for a whole session, and that is
@@ -4037,7 +4046,9 @@ const Engine = (function () {
          made and this is a requirement they did not choose. Two tests
          filter the calendar for owed and expect exactly the promises the
          player entered into, and they were right to. */
-      if (sup) add(st.sessionEnds, "supply", sup.title + " must carry");
+      if (sup) add(st.sessionEnds, "supply", sup.title + " must carry",
+                   { tab: "cham", how: "Carry the " + sup.title,
+                     focus: "bill:" + sup.id });
     }
     /* An undertaking counts down in `by`, and an explicit null means
        "before the House rises" — so that one lands on the last sitting
@@ -4055,7 +4066,9 @@ const Engine = (function () {
     (C.instruments || []).forEach(si => {
       const s0 = st.instruments[si.id];
       if (s0 && s0.inForce && !s0.revoked && s0.prayerCloses != null)
-        add(s0.prayerCloses, "prayer", "Last day to pray against " + (si.number || si.id));
+        add(s0.prayerCloses, "prayer", "Last day to pray against " + (si.number || si.id),
+            { tab: "pap", how: "Pray against " + (si.number || si.id),
+              focus: "si:" + si.id });
     });
     /* SOMETHING THE PLAYER SET IN MOTION IS COMING BACK. Content decides
        whether it is foreseeable: an event with a `foreseen` label appears

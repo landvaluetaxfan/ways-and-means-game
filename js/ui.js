@@ -3338,10 +3338,25 @@ const UI = (function () {
         <span><s class="p-expected"></s>expected</span>
         <span><s class="p-rises"></s>rises</span>
       </div>` +
+      /* THE NEXT THREE DEADLINES ARE NOW DOORS. They were inert text on the
+         one screen that knows when things are due and cannot do any of them —
+         every mark pointed at another tab and the player had to go and find
+         it. The docket has carried `data-goto`/`data-open` since it was
+         built; this is the same pattern on the same shared openTarget(), not
+         a second way of navigating. A mark with no `tab` (the rise, a thing
+         merely expected) stays inert, because it is a statement and there is
+         nothing to go and do about it. */
       (next.length ? '<div class="calnext">' + next.map(m =>
-        `<div class="cn ${m.kind}${m.away <= 2 ? " late" : ""}"><b>${esc(m.text)}</b>` +
+        /* A REAL BUTTON, not a div wearing role="button" — uxtest calls that
+           an improvised control and it is right to. An inert mark stays a
+           div, because it is not a control at all. */
+        `<${m.tab ? "button" : "div"} class="cn ${m.kind}` +
+        `${m.away <= 2 ? " late" : ""}${m.tab ? " goto" : ""}"` +
+        (m.tab ? ` data-goto="${esc(m.tab)}" data-open="${esc(m.focus || "")}"` : "") +
+        `><b>${esc(m.text)}</b>` +
         `<i>${m.away === 0 ? "today" : m.away === 1 ? "next sitting"
-            : "in " + m.away + " sittings"} \u00b7 ${m.date}</i></div>`).join("") + "</div>"
+            : "in " + m.away + " sittings"} \u00b7 ${m.date}${
+            m.how ? " \u00b7 " + esc(m.how) : ""}</i></${m.tab ? "button" : "div"}>`).join("") + "</div>"
        : "");
   }
 
@@ -3349,6 +3364,9 @@ const UI = (function () {
     const el = $("#sit-cal"); if (!el) return;
     el.innerHTML = calendarHTML();
     const ss = $("#cal-sess"); if (ss) ss.textContent = st.session;
+    /* One listener, and a real <button> brings its own keyboard. */
+    el.querySelectorAll("[data-goto]").forEach(b =>
+      b.addEventListener("click", () => openTarget(b)));
     el.querySelectorAll("[data-cal]").forEach(b =>
       b.addEventListener("click", () => {
         calMonth += +b.dataset.cal;
