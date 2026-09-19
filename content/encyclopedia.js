@@ -1,9 +1,9 @@
-﻿/* =============================================================
-   THE CONCORDANCE â€” in-world encyclopedia.
+/* =============================================================
+   THE CONCORDANCE — in-world encyclopedia.
 
    ARCHITECTURE: this is a VIEW over content that already exists.
    Parties, stations, characters, bills and glossary terms all get
-   articles generated from their own data â€” seat counts, closure
+   articles generated from their own data — seat counts, closure
    ratios and division forecasts come live from state, so the
    encyclopedia is never out of date and never contradicts canon.
 
@@ -27,7 +27,7 @@ const ENCYCLOPEDIA = {
             "by the Registry, whose independence is the subject of ongoing litigation."
   },
 
-  /* Banner types. Keep this list short â€” each one is a piece of characterisation. */
+  /* Banner types. Keep this list short — each one is a piece of characterisation. */
   banners: {
     neutrality:  { cls:"warn", text:"The neutrality of this article is disputed. See the talk record." },
     single:      { cls:"warn", text:"This article relies largely on a single source." },
@@ -429,4 +429,3 @@ const ENCYCLOPEDIA = {
 
   ]
 };
-
