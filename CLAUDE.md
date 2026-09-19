@@ -226,6 +226,21 @@ npm run check    # all ten, about three seconds
 **Run them after any content change.** They are the only playtester this project
 has until a human one arrives.
 
+### And one that is not in `check`
+
+```
+npm run layout   # needs a real browser; measures what jsdom cannot
+```
+
+`tools/laycheck.js` boots the game in headless Chromium, walks all eight tabs
+and reports content that is **clipped** (the player never sees it) or that
+**escapes its own border**. Every CSS trap listed below was found by measuring
+rather than reading, and jsdom has no layout engine — `npm run ui` can prove a
+panel exists and never that it fits. It is out of `npm run check` deliberately:
+the ten there need only node and jsdom, and a check that silently skips when a
+runner has no browser reads as coverage and is not. Run it when you touch the
+stylesheet or a panel, and before a playtest build.
+
 ## Layout
 
 ```
