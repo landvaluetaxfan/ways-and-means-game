@@ -296,17 +296,28 @@ terms, and who pays for the charter to be surrendered — is the question the
 session is for." That is the premise. The three chain events
 (`f1_stranded`, `f1_referendum`, `f1_dilemma`) still tell the other one.
 
-**Halcyon vs Cordell is the part to be careful with.** `content/actors.js`
-names the metanational actor "Halcyon Extraction Group" and its note says it
-"abandoned the Ashen Reach platform". design/29 §4.1 gives Cordell four names
-and is explicit about which is used where. Do not invent a reconciliation:
-either Halcyon is a placeholder for Cordell and the actor is renamed, or they
-are two corporations and the chain says which is which. Ask the author.
+**ANSWERED BY THE AUTHOR, 19 September.** Both were placeholders, and both
+resolve:
 
-One canon wrinkle you will hit: design/29 §4.1 keeps "Ashen Reach Operations"
-as the name of the **ring-fenced subsidiary** Cordell wound up. That may be
-deliberate — a subsidiary named for a different platform — or another
-placeholder. Ask rather than assume.
+| placeholder | the real name |
+|---|---|
+| the Ashen Reach platform | **The Bellamy Almanac Works, Brant & Vane** |
+| Halcyon Extraction Group | **Cordell** |
+
+So `content/actors.js`'s metanational actor is Cordell, and design/29 §4 —
+"The corporation: Cordell" — is the canon for how it is named. §4.1 gives it
+four names and says which is used where: **Cordell** on the hull plates and in
+the House, *The Cordell Extraction Company* on the charter, *Cordell Group
+S.A.* in the annual report. Use the short form unless the sentence is about a
+contract or a filing.
+
+One wrinkle to leave alone: design/29 §4.1 still contains the sentence
+"Cordell Group S.A. confirms that Ashen Reach Operations was a separate legal
+person", naming the wound-up subsidiary. Do not rename that in the design
+document — a subsidiary keeps the name it was registered under, and a company
+that named its ring-fenced vehicle after a different platform is exactly the
+kind of detail the fiction wants. If it needs renaming it is the author's
+call, not a consistency sweep.
 
 ## 25.2 The Act cannot yet be carried, and the settlements are waiting on it
 
