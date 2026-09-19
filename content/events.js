@@ -1384,19 +1384,18 @@ That is what a settlement is for.`,
    officer's opinion takes three. The player can see both coming and has to
    govern around them, which is the whole point of order-paper time. */
 { id:"f1_stranded", chapter:2, at:8, once:true,
-  title:"Three hundred thousand",
+  title:"A hundred and eighty-four thousand",
   speaker:null,
-  body:`Halcyon Extraction Group has abandoned the Ashen Reach platform, and the
-debt has not. Three hundred thousand workers are stranded on it with two months
-of air, and Kenya's repatriation plan is fully funded, legally complete, and two
-years long.
+  body:`Cordell has abandoned the Almanac Works, and the debt has not. A hundred
+and eighty-four thousand people are on it with two months of air, and Kenya's
+repatriation plan is fully funded, legally complete, and two years long.
 
-The platform has voted. The question is what the Commonwealth says.`,
+The Works has voted. The question is what the Commonwealth says.`,
   choices:[
     { label:"Send the survey team.",
       effects:[{ flag:"f1_surveyed" }, { wire:"FEDERATION SURVEYS THE ABANDONED PLATFORM" },
                { queue:[{ event:"f1_referendum", after:2,
-                          label:"The survey team reports from Ashen Reach" }] }],
+                          label:"The survey team reports from the Almanac" }] }],
       result:"The survey's first return is the scrubber schedule. The second is the debt." },
     { label:"Wait for Earth's process.",
       effects:[{ move:{ "legitimacy":-5 } }, { wire:"PM: THE REPATRIATION PLAN IS EARTH'S TO RUN" }],
@@ -1421,7 +1420,7 @@ wire."`,
                { wire:"FEDERATION RECOGNISES THE PLATFORM REFERENDUM" },
                { queue:[{ event:"f1_dilemma", after:2,
                           label:"Law and the Charter reports on the platform" }] }],
-      result:"The platform is the Commonwealth's question now, and Earth's banks are reading the same wire." },
+      result:"The Works is the Commonwealth's question now, and Earth's banks are reading the same wire." },
     { label:"Decline to recognise it.",
       effects:[{ move:{ "legitimacy":-8 } }, { move:{ "friction":-3 } }],
       result:"The strikes start on the outer habitats before the sitting ends." }
@@ -1431,11 +1430,11 @@ wire."`,
   title:"The dilemma",
   speaker:"fenwick",
   body:`The Minister for Law and the Charter sets out the two futures in
-the plainest terms. Absorb the platform and take its industrial capacity,
+the plainest terms. Absorb the Works and take its industrial capacity,
 its life-support bill, and the embargo risk over the defaulted debt. Or
 decline, keep the short term, and explain the strikes.
 
-Halcyon did not break the law. It wound up the subsidiary that employed them,
+Cordell did not break the law. It wound up the subsidiary that employed them,
 kept the leases, and left the parent's exposure at nothing, which is what a
 company is for.
 
@@ -1491,7 +1490,7 @@ line that will not be felt for a month. That is the whole of the warning.`,
   speaker:"hatt",
   body:`The Alliance of Business and Government will carry the
 Commonwealth's short position, at a rate, for a term, on a condition.
-The condition is Halcyon's mining leases.
+The condition is Cordell's mining leases.
 
 The rate is printed. The term is printed. The condition is one line.`,
   choices:[

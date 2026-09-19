@@ -202,11 +202,11 @@ const ACTORS = [
     asks: "the Commonwealth's position on the metanationals, stated rather than implied",
     note: "Eleven sittings away, and permanently divided at home: the Chryse Basin wants to dig, and Nili, where Mars' strongest evidence of ancient life sits, will not let it. It buys from the same extraction companies that abandoned the platform, and it has been watching. Everything the Commonwealth hears from it is a fortnight old." },
 
-  { id: "metanationals", name: "Halcyon Extraction Group", kind: "metanational", foreign: true, lag: 3,
+  { id: "metanationals", name: "Cordell", kind: "metanational", foreign: true, lag: 3,
     standing: 47, patience: 70,
     reach: {}, wants: {},
     asks: "the anchor concessions renewed without ratification, on their terms",
-    note: "Quasi-sovereign, and the one foreign actor that is also a domestic lobbyist: the corporation that abandoned the Ashen Reach platform through a ring-fenced subsidiary, holds two anchor concessions, and buys functional seats at home through the Anchor Party. It cannot be whipped and it does not need to be. Its position is not that it was wrong. It is that it was entitled." }
+    note: "Quasi-sovereign, and the one foreign actor that is also a domestic lobbyist: the corporation that abandoned the Almanac Works through a ring-fenced subsidiary, holds two anchor concessions, and buys functional seats at home through the Anchor Party. It cannot be whipped and it does not need to be. Its position is not that it was wrong. It is that it was entitled." }
 ];
 
 if (typeof module !== "undefined") module.exports = ACTORS;

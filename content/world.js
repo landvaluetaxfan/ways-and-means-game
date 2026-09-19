@@ -89,7 +89,7 @@ const WORLD = {
              markets:"Coffee, cut flowers, and the corridor into the Amazon basin." },
     "SOM": { note:"A federal authority holding an equatorial coast that has been contested for a century. The anchor is one of the few things in the district that pays.",
              markets:"Livestock, frankincense, and the Kismayo roadstead." },
-    "GAB": { note:"Halcyon Extraction Group's charter state. It has run on extraction for two centuries, and it is the one country in the list with a national champion in the dispute rather than a grievance.",
+    "GAB": { note:"Cordell's charter state. It has run on extraction for two centuries, and it is the one country in the list with a national champion in the dispute rather than a grievance.",
              markets:"Manganese, oil, and the Port-Gentil anchor." },
     "KIR": { note:"The Bond is leased and not granted, which is why it is the one elevator the Commonwealth holds outright. A mid-Pacific state whose highest ground is its own tether base.",
              markets:"Fishing licences, and the ground the Bond's base stands on." },
