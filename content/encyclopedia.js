@@ -116,14 +116,14 @@ const ENCYCLOPEDIA = {
         "Perigee, and a person is said to be from their station.\n\n"+
         "The far-band delegations objected at the founding that the word described a geometry "+
         "rather than a country. That was the objection, and it is also why the word was adopted." },
-      { h:"The absence of a demonym", body:
-        "There is no settled demonym for a citizen of the Commonwealth. *Circumterrestrials* "+
-        "appears in four Charter-era documents and is not used in speech. Several alternatives "+
-        "have been proposed and have failed.\n\n"+
-        "The absence is usually attributed to the nature of the union. A federation held "+
-        "together by shared identity acquires a demonym without effort. One held together by "+
-        "metabolic dependency does not, because what is shared was not chosen. Asked what they "+
-        "are, most residents name a station." },
+      { h:"The demonym", body:
+        "**Commonwealther** is the most-used demonym for a citizen of the Commonwealth, and the "+
+        "one the papers and the House use. *Circumterrestrials* is the Charter-era form: it "+
+        "appears in four founding documents and is not used in speech. Several alternatives have "+
+        "been proposed and have failed.\n\n"+
+        "The word caught on slowly, because the union is held together by shared metabolism "+
+        "rather than shared identity. Asked what they are, many residents still name a station "+
+        "first, and add Commonwealther second, as though the two answered different questions." },
       { h:"Composition", body:
         "The Commonwealth has thirty stations across four altitude bands, and five external "+
         "constituencies. Anselm Ring holds more residents than the seven smallest stations "+
@@ -178,8 +178,9 @@ const ENCYCLOPEDIA = {
         "refuse. Control of the order paper matters most in practice, because a session has a "+
         "fixed number of slots." },
       { h:"Style", body:
-        "The office is styled *the Right Honourable*, and *Secretary-General* on instruments of "+
-        "appointment. Neither is used in speech." }
+        "The office is styled *the Right Honourable*, and is *Prime Minister* on every "+
+        "instrument of appointment. The honorific is spoken in the House; the office does the "+
+        "work in writing." }
     ],
     see:["cabinet","parliament","person_tenaya"] },
 
@@ -208,11 +209,10 @@ const ENCYCLOPEDIA = {
         "practice the convention is observed by absence more often than by resignation. Two "+
         "Congregational Democratic Alliance ministers were absent from the threshold division rather than vote "+
         "against the leadership." },
-      { h:"The Secretary-General", body:
-        "The Perigee Charter calls the office the *Secretary-General of the Commonwealth*. "+
-        "That was its title when the Commonwealth was a treaty organisation between stations, "+
-        "not a state. The usage survives on instruments of appointment and is not used in "+
-        "speech. No holder has been addressed by it since 2206." }
+      { h:"The Treasury", body:
+        "The Treasury sits apart from the ministries and reports directly to the Prime Minister. "+
+        "It answers for the appropriation, and a post left vacant is a budget argued by "+
+        "officials and signed by nobody." }
     ],
     see:["prime_minister","parliament","perigee_charter","person_tenaya"] },
 

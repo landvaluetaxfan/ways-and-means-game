@@ -27,8 +27,8 @@
      Prime Minister      head of government, chairs Cabinet
      Ministry            an executive department
      Minister for X      heads a Ministry and sits in Cabinet
-   Not: Secretary of State, Department, Secretary-General. The Charter still
-   calls the office Secretary-General; nobody has used it in eighty years.
+   Not: Secretary of State, Department. The head of government is Prime
+   Minister on every instrument of appointment, and nothing else.
    seat — the constituency a member sits for. It must be a real one:
    two of these previously named constituencies that did not exist
    ("Anselm Ring N & Central", "Homestead A-D"), each straddling two,
