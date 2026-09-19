@@ -215,12 +215,21 @@ const World = (function () {
      no-motion, the same rule every other animation in the terminal follows. */
   function wire(root, redraw) {
     if (!root) return;
-    let dragging = false, moved = false, lx = 0, ly = 0;
+    let dragging = false, moved = false, spinPaused = false, downTarget = null, lx = 0, ly = 0;
     const motion = () => typeof Shell === "undefined" || !Shell.opt
       ? true : Shell.opt("chamberMotion") !== false;
     root.addEventListener("pointerdown", e => {
       if (!root.querySelector("#world-svg")) return;
       dragging = true; moved = false; lx = e.clientX; ly = e.clientY;
+      downTarget = e.target;
+      /* THE SPIN STOPS UNDER THE POINTER. The globe replaces its whole SVG every
+         90ms while it turns, so between the press and the click the element the
+         player pressed was destroyed and rebuilt two or three times. The click
+         then fired on the container — `closest("[data-iso]")` on the container
+         finds nothing — and selecting a country did nothing at all. The spin
+         pauses for the press and resumes on release, so the thing that was
+         clicked is still there when the click lands. */
+      spinPaused = true;
       if (root.setPointerCapture) try { root.setPointerCapture(e.pointerId); } catch (x) {}
     });
     /* A CLICK IS NOT A DRAG. Every press set `dragging`, and the first
@@ -244,22 +253,35 @@ const World = (function () {
       while (view.lng < -180) view.lng += 360;
       redraw();
     });
-    const up = () => { dragging = false; };
+    const up = e => {
+      if (dragging && !moved && downTarget) {
+        /* SELECT ON THE RELEASE, not on the click event. A click is two events
+           the browser agrees to fire on a common ancestor, and it does not owe
+           us one: the spin had already replaced the element between press and
+           release once, and a pointer sequence that ends on a repainted node
+           can land the click on the container. The press that never crossed the
+           drag threshold selects what it pressed — the target is remembered from
+           the pointerdown, so it is the right element even if the drawing was
+           repainted underneath. */
+        const b = downTarget.closest && downTarget.closest("[data-body]");
+        if (b) selectBody(b.dataset.body);
+        else {
+          const p = downTarget.closest && downTarget.closest("[data-iso]");
+          if (p) select(p.dataset.iso);
+        }
+      }
+      dragging = false; spinPaused = false; downTarget = null;
+    };
     root.addEventListener("pointerup", up);
-    root.addEventListener("pointercancel", up);
-    root.addEventListener("click", e => {
-      if (moved) { moved = false; return; }        /* a drag is not a selection */
-      const b = e.target.closest && e.target.closest("[data-body]");
-      if (b) { selectBody(b.dataset.body); return; }
-      const p = e.target.closest && e.target.closest("[data-iso]");
-      if (!p) return;
-      select(p.dataset.iso);
+    root.addEventListener("pointercancel", () => {
+      dragging = false; spinPaused = false; downTarget = null;
     });
 
     let t = null;
     if (view.auto && motion() && typeof setInterval === "function") {
       t = setInterval(() => {
         if (!view.auto || !motion()) return;
+        if (spinPaused) return;        /* the pointer is down: the drawing holds still */
         if (typeof document !== "undefined" && document.hidden) return;
         view.lng += 1.2;
         while (view.lng > 180) view.lng -= 360;
