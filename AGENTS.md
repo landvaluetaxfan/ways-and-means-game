@@ -57,3 +57,20 @@ npm run check    # all nine, about three seconds
 ```
 
 All six must pass. They are the only playtester this project has.
+
+## Windows: never read or write source through the shell
+
+PowerShell 5.1 decodes UTF-8 as Windows-1252, so `Get-Content`, `Select-String`
+and `Out-File` DISPLAY correct UTF-8 (em dashes, minus signs, middle dots, the
+section mark) as mojibake. That display is a lie about the file. Worse, the
+`Set-Content` "fix" for it writes the corruption in for real.
+
+- READ source with the editor `read` tool, or `node -e`. Both decode UTF-8
+  correctly. Never `Get-Content`, never `Select-String`, when the bytes matter.
+- WRITE source with the editor `edit`/`write` tools, or `node -e` with
+  `fs.writeFileSync`. Never `Set-Content`/`Out-File` on `.js`, `.css`, `.html`
+  or `.md` — PowerShell 5.1's `Set-Content -Encoding UTF8` also adds a BOM.
+- To test a file for real corruption, count the double-encoded byte sequences
+  with node and ignore whatever the console printed:
+  `node -e "const s=require('fs').readFileSync(p,'utf8');console.log((s.match(/\u00c3[\u0080-\u00bf]/g)||[]).length)"`
+  A count of 0 means the file is clean.
