@@ -384,7 +384,8 @@ is whether you have the time, and the time runs out when the House rises.
    explains his own chamber, in the register he would use for a leader who has
    never sat on the benches, having run the whips for years and watched prime
    ministers lose votes they were entitled to win. */
-{ id:"the_rules_of_the_house", prologue:8, once:true,
+/* REACH: was cut off: gb_approach (P7, ch1) advances to chapter 2, so a P8 chapter-1 event could never fire. Retagged chapter:2 prologue:1 so it opens chapter two as the brief intends. */
+{ id:"the_rules_of_the_house", chapter:2, prologue:1, once:true,
   when:{ flagsAbsent:["taught_the_house"] },
   title:"The three ways a government loses a vote",
   speaker:"okarie",
@@ -484,6 +485,7 @@ The bill is called at two. You have the morning.`,
       result:"The Substrate Left understands exactly what you have decided." }
   ]},
 
+/* REACH: gb_approach's licensure carve-out choice sets licensure_carveout_offered. */
 { id:"ch2_carveout_price", chapter:2, weight:80, once:true,
   when:{ flags:["licensure_carveout_offered"] },
   title:"What the carve-out costs",
@@ -513,6 +515,7 @@ The New Progressive Party will read the clause within the hour.`,
       result:"It fails on the second bench, 12 to 40, exactly as the count said it would." }
   ]},
 
+/* REACH: queued by ch2_carveout_price's 'take it' choice. */
 { id:"ch2_psa_conference", chapter:2, queuedOnly:true, once:true,
   title:"The conference votes",
   speaker:null,
@@ -639,6 +642,7 @@ bidding with money that came, in the end, from the appropriation.`,
       result:"The signal reaches the stations that cannot pay it, which is what a signal is for." }
   ]},
 
+/* REACH: party_loyalty below 22; whipping and defeats drive it down. */
 { id:"party_fracture", chapter:2, weight:80, once:true,
   when:{ scalarBelow:{party_loyalty:22}, flagsAbsent:["party_fracture_seen"] },
   title:"The tea room has a count",
@@ -696,6 +700,7 @@ Commonwealth has already promised to pay for.`,
       result:"It is not dishonest. It is a bet that the bill comes due to somebody else." }
   ]},
 
+/* REACH: public_standing below 26; the drift and hard choices drive it down. */
 { id:"standing_low", chapter:2, weight:78, once:true,
   when:{ scalarBelow:{public_standing:26}, flagsAbsent:["standing_low_seen"] },
   title:"A government nobody is for",
@@ -724,6 +729,7 @@ who would notice? Not who would be pleased. Who would notice."`,
       result:"The story resets and the people who made the government work are now the people briefing against it." }
   ]},
 
+/* REACH: taking the carve-out sets divergence_threshold_hours to 40. */
 { id:"threshold_consequence", chapter:2, weight:85, once:true,
   when:{ lawBelow:{divergence_threshold_hours:100}, flagsAbsent:["threshold_seen"] },
   title:"Two million, and then the registers",
@@ -758,6 +764,7 @@ Registry has said, in writing, that it will not finish before the next election.
    signatures reach the threshold and decides it from the caucus arithmetic;
    this event is the prose for the one the Prime Minister survives. A lost one
    ends the government through the existing loss condition and is never read. */
+/* REACH: twelve signatures in the whip panel, then a ballot the engine holds and the PM survives. */
 { id:"leadership_ballot", chapter:2, weight:99, once:true,
   when:{ ballotHeld:true, ballotCarries:true, flagsAbsent:["ballot_seen"] },
   title:"The ballot",
@@ -785,6 +792,7 @@ that put you here intends to keep you.`,
    post when an undertaking naming it is broken, and sets `minister_resigned`;
    this is the prose for the aftermath. The resignation itself is not the
    player's to choose — that is the point of it. */
+/* REACH: the engine sets minister_resigned when an undertaking naming a post breaks. */
 { id:"minister_resignation", chapter:2, weight:99, once:true,
   when:{ flags:["minister_resigned"] },
   title:"A resignation",
@@ -822,6 +830,7 @@ do is stay empty by itself.`,
    with it, and that is the whole of the tempo decision.
    ============================================================ */
 
+/* REACH: queued by the approach_guild initiative. */
 { id:"guild_answers", queuedOnly:true, once:true,
   title:"The panel's answer",
   speaker:"gb_chair",
@@ -845,6 +854,7 @@ She is not angry about it, which is the difficulty. She has been doing this long
       result:"\"Extend it a fifth time,\" she says. \"You will need us for that too.\"" }
   ]},
 
+/* REACH: queued by the commission_review initiative. */
 { id:"review_reports", queuedOnly:true, once:true,
   title:"What the standing orders have shed",
   speaker:null,
@@ -872,6 +882,7 @@ It is not a scandal. It is a schedule. That is the part that will be quoted.`,
       result:"The file joins the others. Someone on the maintenance benches will ask for it by name within the month." }
   ]},
 
+/* REACH: queued by the state_the_position initiative. */
 { id:"position_lands", queuedOnly:true, once:true,
   title:"What saying it did",
   speaker:"ceyhan",
@@ -939,6 +950,7 @@ quarterlies will be asking why nothing was done while there was still time.`,
       result:"A review is a way of doing nothing and being seen to do it, which is sometimes the whole of the job." }
   ]},
 
+/* REACH: substrate price above 104; the price drifts there. */
 { id:"substrate_drift", chapter:2, weight:52, maxFires:2,
   when:{ priceAbove:{substrate:104} },
   title:"The index again",
@@ -982,6 +994,7 @@ number: how thin the government is willing to let it get.`,
       result:"The warning is on the record now, and so is the decision that ignored it." }
   ]},
 
+/* REACH: slotsLeft:0 reads 'at least zero left', so this is always eligible in ch2; it loses on weight, not on eligibility. */
 { id:"order_paper_empty", chapter:2, weight:58, maxFires:2,
   when:{ slotsLeft:0 },
   title:"The session has no time left",
@@ -1000,6 +1013,7 @@ waits for the House to rise and the slots to refill.
       result:"A quiet order paper is not a quiet government, and both benches know it." }
   ]},
 
+/* REACH: treasury is vacant at the opening; fires once the appointment control is left alone. */
 { id:"the_vacant_post", chapter:2, weight:68, once:true,
   when:{ postVacant:["treasury"] },
   title:"The empty brief",
@@ -1022,6 +1036,7 @@ argued by officials and signed by nobody.`,
       result:"No order comes out of that brief until somebody holds it, and the opposition has read the same rules you have." }
   ]},
 
+/* REACH: six signatures on Czarnecki's paper (the_paper's open choice). */
 { id:"signatures_build", chapter:2, weight:74, once:true,
   when:{ signaturesAtLeast:6 },
   title:"The names on the paper",
@@ -1066,6 +1081,7 @@ difference is the next bill."`,
       result:"Your own benches like it. Hers begin counting what they are owed, which is what a ledger is for." }
   ]},
 
+/* REACH: SI 2287/44 in force; the carve-out undertaking discharges it. */
 { id:"the_licensing_reaction", chapter:2, weight:82, once:true,
   when:{ siInForce:["si_2287_44"] },
   title:"What the order did to the panel",
@@ -1088,6 +1104,7 @@ remember which government did."`,
       result:"She expected nothing else, which is why she came in person." }
   ]},
 
+  /* REACH: federal suspensions above 74,000 as the price rises. */
   { id:"the_delegation", chapter:2, weight:64, maxFires:2,
   when:{ suspendedAbove:{ federal:74000 } },
   title:"Seventy-four thousand, and a delegation",
@@ -1145,6 +1162,7 @@ be settled in rooms, one case at a time, forever."`,
       result:"The suggestion is declined. It is declined in writing, which is the only way to decline the President's office." }
   ]},
 
+  /* REACH: three signatures; reachable once the paper is opened. */
   { id:"the_federal_option", chapter:2, weight:72, once:true,
   when:{ signaturesAtLeast:3,
          flagsAbsent:["tribunal_established","federal_schedule","federal_refused"] },
@@ -1178,6 +1196,7 @@ by nobody in this room."`,
    deputy, the engineers' leader and One-G a voice, and each reads a
    condition the pool had never used. */
 
+/* REACH: public_standing below 40. */
 { id:"the_opposition_asks", chapter:2, weight:60, maxFires:2,
   when:{ scalarBelow:{ public_standing:40 } },
   title:"The Leader of the Opposition asks",
@@ -1219,6 +1238,7 @@ have been carried in return."`,
       result:"It was the answer her conference predicted, and the count on her benches will show it." }
   ]},
 
+/* REACH: thermal price above 104. */
 { id:"the_engineers_write", chapter:2, weight:61, maxFires:2,
   when:{ priceAbove:{ thermal:104 } },
   title:"The engineers write",
@@ -1240,6 +1260,7 @@ he has already decided what he will say.`,
       result:"A letter answered in public is a letter that stops being theirs." }
   ]},
 
+  /* REACH: des loyalty above 15; it starts there. */
   { id:"one_g_waiting", chapter:2, weight:59, once:true,
   when:{ loyaltyAbove:{ des:15 } },
   title:"The waiting list",
@@ -1697,6 +1718,7 @@ Neither future is a vote the government can lose quietly.`,
   ]},
 
 /* one drift micro-decision: nothing crashes today; the margin leans */
+/* REACH: the annexation choice in f1_dilemma sets f1_annexing. */
 { id:"f1_water", chapter:2, weight:60, maxFires:2,
   when:{ flags:["f1_annexing"] },
   title:"The recycling line",
@@ -1736,6 +1758,7 @@ The rate is printed. The term is printed. The condition is one line.`,
   ]},
 
 /* the meltdown: a LOSS through the loyalty floor, not a settlement */
+/* REACH: a collapse: friction above 85 with all three floors breached; a loss, not a settlement. */
 { id:"f1_meltdown", chapter:2, weight:98, once:true,
   when:{ scalarAbove:{ friction:85 },
          scalarBelow:{ thermal_margin:20, solvency:20000, legitimacy:20 } },
@@ -1754,6 +1777,7 @@ chamber is still arguing about the water.`,
    costing the margin every sitting since 40; this is the step where it
    stops being a cost and becomes a fact. The couplings keep biting; this
    is the prose that tells the player why. */
+/* REACH: friction above 70; the couplings ramp it there. */
 { id:"f1_accounts_freeze", chapter:2, weight:87, once:true,
   when:{ scalarAbove:{ friction:70 } },
   title:"The accounts are frozen",
@@ -1954,6 +1978,7 @@ relationship. We can be fast or we can be right."`,
       result:"Nothing goes. The Concord notes the silence, which arrives anyway and always has." }
   ]},
 
+/* REACH: queued by fa_dispatch_mars (send it now), +11 sittings. */
 { id:"fa_mars_reply", queuedOnly:true, once:true,
   title:"The reply",
   speaker:null,
@@ -1977,6 +2002,7 @@ The fourth paragraph is the one the Foreign Minister reads twice.`,
 /* THE CONCESSION CAN BE WITHDRAWN (design/17 §4.3). `fa_anchor_terms` is the
    offer; this is the host state meaning the refusal. A flag, a price, and the
    two yards whose schedules are somebody else's. */
+/* REACH: refuse the anchor terms (fa_anchor_terms choice 2), then the concession lapses. */
 { id:"fa_anchor_withdrawn", chapter:2, weight:72, once:true,
   when:{ flags:["anchor_refused"], flagsAbsent:["anchor_gone"] },
   title:"The concession lapses",
@@ -2006,6 +2032,7 @@ people's schedules.`,
       result:"It is the best sentence the government has said all session, and two yards' closure figures pay for it." }
   ]},
 
+/* REACH: no gate; always eligible in ch2 and loses on weight. */
 { id:"fa_two_fronts", chapter:2, weight:57, maxFires:2,
   title:"Two audiences, one sentence",
   speaker:"ceyhan",
@@ -2050,6 +2077,7 @@ campaign had on offer.`,
 /* AND THE FLOOR PRESSES. Consumables was moved by the closure tick and by
    the budget's clauses and read by nothing, which is the wrong way round
    for the one number that is the primary distribution mechanism (§7.4). */
+/* REACH: consumables below 52. */
 { id:"the_floor_presses", chapter:2, weight:62, maxFires:2,
   when:{ scalarBelow:{ consumables:52 } },
   title:"The floor, and what it is carrying",
@@ -2080,6 +2108,7 @@ and the schedule is a list of who is carried and who is not."`,
    which is the whole of a forward: the price was decided then, the
    obligation is paid now, and what the session did to the margin in
    between is the risk the government took. */
+/* REACH: queued by the quota_forward initiative. */
 { id:"quota_forward_settles", queuedOnly:true, once:true,
   title:"The quota forward comes due",
   speaker:"hatt",
@@ -2122,6 +2151,7 @@ of the trade.`,
    the risk and the tempo, and between them they cover every state: the
    freeze happened or it did not, and the cover was on the suppliers or on
    the whole line. */
+/* REACH: queued by the take_indemnity initiative. */
 { id:"indemnity_settles", queuedOnly:true, once:true,
   title:"The indemnity comes to term",
   speaker:"hatt",
@@ -2162,6 +2192,7 @@ it that way because they could read the numbers and we could not."`,
    prices carry one decimal, so `above X` and `below X + 0.1` between them
    cover every value the tick can produce, and a player is never left with
    an empty Decision. */
+/* REACH: queued by the charter_volume initiative. */
 { id:"volume_charter_settles", queuedOnly:true, once:true,
   title:"The volume lease comes to term",
   speaker:"vellan",
@@ -2204,6 +2235,7 @@ people who expected the price to move."`,
    the substrate was worth. Suspensions are whole numbers, so `below T + 1`
    and `above T` cover every value; prices carry one decimal, so
    `below X + 0.1` and `above X` do the same. */
+/* REACH: queued by the assume_substrate_debt initiative. */
 { id:"substrate_debt_settles", queuedOnly:true, once:true,
   title:"The substrate debt comes to term",
   speaker:"ceyhan",
@@ -2255,6 +2287,7 @@ way."`,
    it is a biological politics: density, minimum standards, subletting,
    a berth cut into six. The ring band is dear because everyone wants to
    be there; the low band is nearly free because nobody does. */
+/* REACH: no gate; always eligible in ch2. */
 { id:"the_minimum_berth", chapter:2, weight:64, once:true,
   title:"The minimum berth",
   speaker:"vellan",
@@ -2286,6 +2319,7 @@ House has to say which, because the market will not."`,
       result:"The rentiers write the quarter's lets on the old terms. The low band's associations note who decided, and the deck crews note that the densest berths are the ones the air reaches last." }
   ]},
 
+/* REACH: no gate beyond flagsAbsent sublet_ruled; always eligible until it fires. */
 { id:"the_sublet_market", chapter:2, weight:57, once:true,
   when:{ flagsAbsent:["sublet_ruled"] },
   title:"Under the berth",
@@ -2358,6 +2392,7 @@ again."`,
 
 /* CONSUMABLES (bible 10.1). The agricultural decks, "the emotional centre of
    any station", and the material floor one of the six scalars is named for. */
+/* REACH: no gate; always eligible in ch2. */
 { id:"the_agricultural_deck", chapter:2, weight:66, once:true,
   title:"The deck at Harvest",
   speaker:null,
@@ -2388,6 +2423,7 @@ watching what the Commonwealth does about a deck it cannot feed itself from.`,
       result:"The treatment holds for the quarter. The station's engineers file a second estimate and file it quietly." }
   ]},
 
+/* REACH: queued by the_agricultural_deck's 'treat it where it stands' choice. */
 { id:"the_deck_again", queuedOnly:true, once:true,
   title:"The deck again",
   speaker:null,
@@ -2414,6 +2450,7 @@ treating vats that were going to fail.`,
 /* CONGREGATIONS (bible 10.9, LOCKED and thin: the section that named the
    CDA). A cross-confessional bloc of non-recognisers, economically left and
    culturally immovable, whose objection is to reclassification itself. */
+/* REACH: no gate; always eligible in ch2. */
 { id:"the_congregations", chapter:2, weight:60, once:true,
   title:"The rented hall",
   speaker:"marin",
@@ -2460,6 +2497,7 @@ way."`,
    is made, and says plainly what it costs.
    =========================================================== */
 
+/* REACH: no gate; always eligible once ch2 opens. */
 { id:"the_pairing_offer", chapter:2, weight:59, once:true,
   when:{ flagsAbsent:["pair_offered"] },
   title:"A pair, for the member for Hardie",
@@ -2490,6 +2528,7 @@ we want something that is not arithmetic."`,
       result:"The refusal is within the rules, and everyone on the other side now knows where the government stands on a small thing." }
   ]},
 
+/* REACH: the flag is set by the pairing control in the whip panel (a UI action), not by content. */
 { id:"the_pairing_kept", chapter:2, weight:56, once:true,
   when:{ flags:["paired"] },
   title:"The kindness, remembered",
@@ -2523,6 +2562,7 @@ gets banked.`,
 /* THE REFERENCE. The judge who remembers asked the government a question it
    has not answered. Answering it costs order-paper time and binds the
    government to its own answer; ignoring it is free and the bench remembers. */
+/* REACH: take 'it is a question of fact' in the_old_judge, which sets reclassification_to_courts. */
 { id:"tr_reference", chapter:2, weight:68, once:true,
   when:{ flags:["reclassification_to_courts"], flagsAbsent:["tr_referenced"] },
   title:"The reference",
@@ -2556,6 +2596,7 @@ nothing."`,
 
 /* THE CHALLENGE. The opposition does not need a majority to hurt an order, it
    needs counsel. An order the government made is challenged in the Tribunal. */
+/* REACH: SI 2287/44 in force. */
 { id:"tr_challenge_lodged", chapter:2, weight:66, once:true,
   when:{ siInForce:["si_2287_44"], flagsAbsent:["tr_challenged"] },
   title:"The order is challenged",
@@ -2596,6 +2637,7 @@ heard one side."`,
    struck, an order narrowed, and an order upheld. Which door is open is a
    condition on the bench's disposition, which the government has been moving
    all session by whether it answered, briefed, complied and revoked. */
+/* REACH: queued by either choice of tr_challenge_lodged. */
 { id:"tr_ruling", queuedOnly:true, once:true,
   title:"The ruling",
   speaker:null,
@@ -2632,6 +2674,7 @@ court's own record runs to eleven pages. The last page is the order.`,
    is the natural mover, and the panel is in his corner.
    =========================================================== */
 
+/* REACH: cu_halloran loyalty below 26; his bloc drifts away. */
 { id:"the_paper", chapter:2, weight:73, once:true,
   when:{ loyaltyBelow:{cu_halloran:26}, flagsAbsent:["paper_opened"] },
   title:"The paper",
