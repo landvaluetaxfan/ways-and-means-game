@@ -530,7 +530,7 @@ coalition. It is not binding. Nothing at a conference ever is.`,
       result:"The whip reports that it went as well as it could have. The whip reports this about everything." }
   ]},
 
-{ id:"substrate_price_bite", chapter:2, weight:88,
+{ id:"substrate_price_bite", chapter:2, weight:88, once:true,
   when:{ priceAbove:{substrate:112}, flagsAbsent:["substrate_bite_seen"] },
   title:"What the rent did",
   speaker:"ansar",
@@ -911,7 +911,7 @@ Ceyhan has, which was always going to happen. The whip has, in a different colum
    nobody sees, and the build fails on it (tools/lint.js, 7.9).
    ============================================================ */
 
-{ id:"thermal_drift", chapter:2, weight:66, maxFires:3,
+{ id:"thermal_drift", chapter:2, weight:54, maxFires:2,
   when:{ priceAbove:{thermal:106} },
   title:"The quota has found a new number",
   speaker:"ceyhan",
@@ -939,7 +939,7 @@ quarterlies will be asking why nothing was done while there was still time.`,
       result:"A review is a way of doing nothing and being seen to do it, which is sometimes the whole of the job." }
   ]},
 
-{ id:"substrate_drift", chapter:2, weight:64, maxFires:3,
+{ id:"substrate_drift", chapter:2, weight:52, maxFires:2,
   when:{ priceAbove:{substrate:104} },
   title:"The index again",
   speaker:null,
@@ -1581,7 +1581,7 @@ discovered."`,
    sitting, so a government that wants friction DOWN needs something to do
    about it that is not simply waiting: Earth's price for standing down, on
    the table more than once, at a cost the player can see. */
-{ id:"fa_conciliate", chapter:2, weight:74, maxFires:3,
+{ id:"fa_conciliate", chapter:2, weight:62, maxFires:2,
   when:{ scalarAbove:{ friction:45 } },
   title:"What Earth would take to stand down",
   speaker:"landry",
@@ -1616,7 +1616,7 @@ It is not a bargain an ordinary year would take. This is not one.`,
    watching them.
    ============================================================ */
 
-{ id:"fa_window_closes", chapter:2, weight:70, maxFires:3,
+{ id:"fa_window_closes", chapter:2, weight:58, maxFires:2,
   title:"The window closes",
   speaker:null,
   body:`The Earth-side launch authority has moved the departure window for
@@ -1639,7 +1639,7 @@ the ones whose schedules are other people's schedules.`,
       result:"The line is popular and the price rises, because independence from another state's windows is a thing you pay for in delta-v." }
   ]},
 
-{ id:"fa_freight_reacts", chapter:2, weight:68, maxFires:2,
+{ id:"fa_freight_reacts", chapter:2, weight:56, maxFires:2,
   when:{ priceAbove:{ transit:105 } },   /* the eye on the foreign price */
   title:"The freight lines pass it on",
   speaker:"hatt",
@@ -1776,7 +1776,7 @@ people's schedules.`,
       result:"It is the best sentence the government has said all session, and two yards' closure figures pay for it." }
   ]},
 
-{ id:"fa_two_fronts", chapter:2, weight:69, maxFires:2,
+{ id:"fa_two_fronts", chapter:2, weight:57, maxFires:2,
   title:"Two audiences, one sentence",
   speaker:"ceyhan",
   body:`The Spindle leads with the platform's scrubbers and the government
