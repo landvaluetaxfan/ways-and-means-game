@@ -268,3 +268,81 @@ would deliver it — the verb is the engine's problem and there may be a cheaper
 one.
 
 *(empty — add here)*
+
+---
+
+# T25 — [ ] THE ALMANAC WORKS: the premise, the name, and the Act
+
+**Added 19 September by Claude Code, mid-task, at the author's direction.**
+Engine side is landed; what is left is prose and balance, which is your lane.
+Read the git log entry *"Annexation is a bill, a crisis brings its own time"*
+first — it says what is built and, more usefully, what was built and reverted.
+
+## 25.1 Ashen Reach is a placeholder. The subject is the Bellamy Almanac Works.
+
+Confirmed by the author. This is **not a find-and-replace** — the two have
+different premises and the numbers do not match:
+
+| | Ashen Reach (in `content/events.js` today) | The Bellamy Almanac Works (`content/world.js`, design/29) |
+|---|---|---|
+| what it is | a platform **abandoned** by its operator | an **operating** works station and company town |
+| people | 300,000 stranded, two months of air | 184,000 residents, 97,000 workforce |
+| operator | Halcyon Extraction Group | **Cordell** (design/29 §4 is titled "The corporation: Cordell") |
+| the question | rescue before they suffocate | should the charter be surrendered and the Works come in, and on what terms |
+
+`content/world.js` already holds the Almanac as a foreign body with all its
+real figures, and its own header says "whether it should come in — and on what
+terms, and who pays for the charter to be surrendered — is the question the
+session is for." That is the premise. The three chain events
+(`f1_stranded`, `f1_referendum`, `f1_dilemma`) still tell the other one.
+
+**Halcyon vs Cordell is the part to be careful with.** `content/actors.js`
+names the metanational actor "Halcyon Extraction Group" and its note says it
+"abandoned the Ashen Reach platform". design/29 §4.1 gives Cordell four names
+and is explicit about which is used where. Do not invent a reconciliation:
+either Halcyon is a placeholder for Cordell and the actor is renamed, or they
+are two corporations and the chain says which is which. Ask the author.
+
+One canon wrinkle you will hit: design/29 §4.1 keeps "Ashen Reach Operations"
+as the name of the **ring-fenced subsidiary** Cordell wound up. That may be
+deliberate — a subsidiary named for a different platform — or another
+placeholder. Ask rather than assume.
+
+## 25.2 The Act cannot yet be carried, and the settlements are waiting on it
+
+The Annexation Bill (`annexation`, HC 4/163) is in `content/bills.js` and the
+dilemma sets it down and grants five slots for it. Traced over a full run it
+still **stalls at second reading**, with friction reaching 100 and solvency 0,
+so it never assents.
+
+The three annexation settlements therefore still gate on `f1_annexing` — the
+flag the Prime Minister sets by *deciding*. They should gate on
+`almanac_annexed`, which the bill's `onPass` sets when it assents. That is two
+words in `content/settlements.js` and the reasoning is written into the file
+above the tiers. **Do not make that change until the bill can actually be
+carried**, or the canon ending becomes unreachable instead of earned; it was
+made and reverted once for exactly that reason.
+
+So the task is balance, in this order:
+
+1. Find out why it stalls. Slots, the whips' forecast (`Engine.reported`
+   returned `carries: false` while the true division carried 129/240), or the
+   friction ramp making the House ungovernable by sitting 20.
+2. Fix it in content — the stances, the crisis slot grant, or the scalar costs
+   on the dilemma's own choice.
+3. **Then** add `almanac_annexed` to the three tiers and confirm
+   `npm run check` still reports the canon ending reachable by play.
+
+A warning from this session: `test.js`'s balance run grants order-paper time in
+content order and divides on the whips' forecast. It is a deliberately
+indifferent player. Making it smarter to get a pass is the wrong move — it
+changed which settlement landed first and broke the test in a different way.
+Change the content, not the player.
+
+## 25.3 The prose pass
+
+The author has said a lot of the written prose reads too AI, and wants a
+do-over. Do not start it here — the mechanics under these three events are
+still moving. But when it happens, this chain is the place to start, because
+rewriting it for the Almanac premise is a rewrite anyway.
+
