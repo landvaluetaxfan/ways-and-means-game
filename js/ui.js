@@ -698,14 +698,25 @@ const UI = (function () {
     if (!actors.length)
       return `<div class="note">No power outside the Commonwealth is in play this campaign.</div>`;
     const rows = actors.map(a => {
-      const live = (st.actors || {})[a.id] || {};
-      const v = live.standing == null ? a.standing : live.standing;
+      /* WHAT WE HEARD, NOT WHAT IS TRUE. This printed the live standing with
+         "11 sittings behind" beside it, which was the interface asserting a
+         mechanic the engine did not have. reportedActor() returns the figure
+         as of when it was sent, and the label now says which sitting that
+         was — a date rather than a vague delay, because the whole point of
+         design/11 is that the staleness is exact and knowable. */
+      const rep = Engine.reportedActor(st, a.id);
+      const v = rep.standing == null ? a.standing : rep.standing;
       const cls = v >= 60 ? "good" : v <= 30 ? "bad" : "";
-      const lag = a.lag || 0;
+      const lag = rep.lag || 0;
+      const asOf = !lag ? "as it happens"
+        : rep.lastHeard <= 0 ? "as of the opening"
+        : "as of sitting " + rep.lastHeard;
       return `<div class="fgn">` +
         `<div class="fgn-h"><b>${cxlink("actor_" + a.id, a.name)}</b><span class="sm2">${esc(a.kind)}</span>` +
-        `<span class="fgn-lag">${lag === 0 ? "as it happens"
-          : lag + " sitting" + (lag === 1 ? "" : "s") + " behind"}</span></div>` +
+        `<span class="fgn-lag"${lag ? ` data-tip-title="A foreign fact is never current"` +
+          ` data-tip-body="This is what the ${esc(a.name)} reported, and it took ` +
+          `${lag} sitting${lag === 1 ? "" : "s"} to reach the Commonwealth. What they think now is not knowable."` : ""
+        }>${esc(asOf)}</span></div>` +
         `<div class="fgn-b"><span class="meter ${cls}"><i style="width:${
           Math.max(0, Math.min(100, v))}%"></i></span><output>${v}</output></div>` +
         `<div class="note">Wants: ${esc(a.asks || "something unstated")}.</div></div>`;

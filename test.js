@@ -3115,3 +3115,53 @@ console.log("\nTHE ECONOMY:");
 
   if (bad) { console.log("\n" + bad + " CLOCK FAILURES"); process.exitCode = 1; }
 })();
+
+/* ============ A FOREIGN FACT IS NEVER CURRENT (design/11 §1) ============
+   Content gave the four foreign bodies a `lag` and the panel printed
+   "11 sittings behind" next to a LIVE number. These assert the mechanic the
+   interface was already claiming. */
+(function () {
+  let bad = 0;
+  const ok = (label, cond, extra) => {
+    if (!cond) bad++;
+    console.log((cond ? "  ok   " : "  FAIL ") + label + (extra ? "  " + extra : ""));
+  };
+  console.log("\nFOREIGN AFFAIRS: LIGHT-LAG");
+  console.log("=".repeat(56));
+
+  const far = (CONTENT.actors || []).find(a => (a.lag || 0) >= 5);
+  const near = (CONTENT.actors || []).find(a => !(a.lag || 0));
+  if (!far) { console.log("  (no lagged actor in content)"); return; }
+
+  const s = Engine.newGame(CONTENT);
+  const open = Engine.reportedActor(s, far.id).standing;
+  ok("a lagged body reports its opening standing at the opening",
+     open === s.actors[far.id].standing, "reported " + open);
+
+  /* Move the truth, then let time pass by less than the lag. */
+  s.actors[far.id].standing = 5;
+  Engine.advance(s, CONTENT);
+  const rep = Engine.reportedActor(s, far.id);
+  ok("moving a far body's standing does not move what we have heard",
+     rep.standing !== 5 && s.actors[far.id].standing === 5,
+     "true 5, heard " + rep.standing);
+  ok("and the reading is dated, not merely delayed",
+     rep.lastHeard === s.sitting - rep.age && rep.age > 0,
+     "as of sitting " + rep.lastHeard + " (" + rep.age + " behind)");
+
+  /* Past the lag, the news arrives. */
+  for (let i = 0; i < (far.lag || 0) + 1; i++) Engine.advance(s, CONTENT);
+  ok("once the lag has run, the news has arrived",
+     Engine.reportedActor(s, far.id).standing === 5,
+     "heard " + Engine.reportedActor(s, far.id).standing);
+
+  /* A domestic actor has no lag and must be untouched: lobbying reads it. */
+  if (near) {
+    const d = Engine.newGame(CONTENT);
+    d.actors[near.id].standing = 77;
+    ok("a body with no lag reports as it happens",
+       Engine.reportedActor(d, near.id).standing === 77);
+  }
+
+  if (bad) { console.log("\n" + bad + " FOREIGN FAILURES"); process.exitCode = 1; }
+})();

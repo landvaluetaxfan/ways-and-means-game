@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 19;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury
+  const STATE_VERSION = 20;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard
 
   /* ---------------------------------------------------------
      1. STATE
@@ -134,6 +134,9 @@ const Engine = (function () {
          costs standing because asking for a favour costs goodwill, and the
          body that has run out of goodwill simply stops taking the call. */
       actors: {},
+      /* What the Commonwealth has HEARD about each foreign body, as opposed
+         to what is true. See reportedActor(). */
+      foreign: {},
 
       /* LOBBYING — {billId: {actorId: seats}}. Parallel to st.whips in every
          respect: planned, revisable, and NOT CHARGED UNTIL THE DIVISION IS
@@ -348,6 +351,13 @@ const Engine = (function () {
       st.trends = st.trends || {};
       if (st.trends.solvency != null) st.trends.solvency *= 1000;
       st.version = 19;
+    }
+    if (st.version < 20) {                    // what the Commonwealth has heard
+      /* Left empty on purpose, like v13's actors: reconcile() prefills every
+         trail from content on the next load, and seeding here would put the
+         roster in two places and let them drift. */
+      if (!st.foreign) st.foreign = {};
+      st.version = 20;
     }
     return st;
   }
@@ -567,6 +577,23 @@ const Engine = (function () {
                           patience: a.patience == null ? 50 : a.patience,
                           lastAct: null };
       if (notes) notes.actorsAdded.push(a.id);
+    });
+    /* THE TRAIL IS PREFILLED, so the opening reading is the opening standing
+       rather than a live number that quietly goes stale over the first
+       eleven sittings. Backfilled here for the same reason stations are:
+       a save written before this existed has no trail, and a body added to
+       content after it was written has none either. */
+    st.foreign = st.foreign || {};
+    (C.actors || []).forEach(a => {
+      const live = st.actors[a.id]; if (!live) return;
+      const lag = a.lag || 0;
+      const f = st.foreign[a.id] || (st.foreign[a.id] = { trail: [] });
+      f.lag = lag;
+      if (!f.trail.length)
+        for (let i = 0; i <= lag; i++) f.trail.push(live.standing);
+    });
+    Object.keys(st.foreign).forEach(id => {
+      if (!st.actors[id]) delete st.foreign[id];
     });
     Object.keys(st.actors).forEach(id => {
       if ((C.actorById || {})[id]) return;
@@ -2848,10 +2875,15 @@ const Engine = (function () {
     resolvedIs:     (st, v) => st.resolvedAs === v,
     risesWithin:    (st, v) => st.sessionEnds != null &&
                       (st.sessionEnds - st.sitting) <= v,
+    /* ON WHAT WAS HEARD, NOT ON WHAT IS TRUE. design/11 §3 is explicit that
+       this is the point rather than a wrinkle to route around: an event
+       fires because the last thing you heard was bad, and it may not be
+       true any more. A domestic actor has no lag, so this is the live
+       figure for everything except the four foreign bodies. */
     actorAbove:     (st, v) => Object.keys(v).every(id =>
-                      (st.actors[id] || {}).standing > v[id]),
+                      reportedActor(st, id).standing > v[id]),
     actorBelow:     (st, v) => Object.keys(v).every(id =>
-                      (st.actors[id] || {}).standing < v[id]),
+                      reportedActor(st, id).standing < v[id]),
     chapterIs:      (st, v) => st.chapter === v,
     chapterAtLeast: (st, v) => st.chapter >= v,
     inGovernment:   (st, v) => st.inGovernment === v,
@@ -4613,8 +4645,63 @@ const Engine = (function () {
     return { ok: true };
   }
 
+  /* =============================================================
+     A FOREIGN FACT IS NEVER CURRENT. design/11 §1, LOCKED, and until now
+     it was only drawn: content gave Mars a `lag` of eleven sittings, the
+     panel printed "11 sittings behind" beside its standing, and the number
+     it printed was the LIVE one. The interface was making a claim the
+     engine did not support, which is worse than not having the mechanic.
+
+     So each foreign body keeps a trail of what was true, newest first, and
+     what the player is shown is the entry `lag` sittings back. Nothing is
+     hidden and nothing is random: you know exactly what Mars said and
+     exactly how old it is, and you do not know what Mars thinks now. That
+     is a different and better anxiety than uncertainty, and it is what the
+     light-lag axis is for.
+
+     The trail is prefilled at reconcile, so the opening reading is the
+     opening standing rather than a number that quietly becomes stale over
+     the first eleven sittings. A body with no lag — every domestic actor —
+     reports itself, so lobbying is untouched. */
+  function sampleForeign(st, C) {
+    st.foreign = st.foreign || {};
+    (C.actors || []).forEach(a => {
+      const live = (st.actors || {})[a.id];
+      if (!live) return;
+      const lag = a.lag || 0;
+      const f = st.foreign[a.id] || (st.foreign[a.id] = { trail: [] });
+      /* The lag is carried IN STATE so a condition can read it. Conditions
+         are called as (st, value) and threading content through matches()
+         to reach four numbers would touch every call site for nothing;
+         reconcile() keeps this in step with content the same way it keeps
+         the station roster in step. */
+      f.lag = lag;
+      f.trail.unshift(live.standing);
+      if (f.trail.length > lag + 1) f.trail.length = lag + 1;
+    });
+  }
+
+  /* What the government knows about a body, and when it knew it. */
+  function reportedActor(st, id) {
+    const live = (st.actors || {})[id] || {};
+    const f = (st.foreign || {})[id] || {};
+    const lag = f.lag || 0;
+    const trail = f.trail || [];
+    /* NO LAG MEANS AS IT HAPPENS, and that has to mean the live figure, not
+       the trail's newest entry. The trail is only sampled on advance(), so
+       reading it for a lagless body reported a value up to a sitting old —
+       which broke the Tribunal, whose bench is an ordinary domestic actor
+       whose standing is set and read inside the same sitting. Every
+       domestic actor takes this path, so lobbying is untouched. */
+    if (!lag || !trail.length)
+      return { standing: live.standing, lastHeard: st.sitting, age: 0, lag: lag };
+    const i = Math.min(lag, trail.length - 1);
+    return { standing: trail[i], lastHeard: st.sitting - i, age: i, lag: lag };
+  }
+
   function advance(st, C) {
     st.sitting += 1;
+    if (C) sampleForeign(st, C);
     st.divisionsToday = 0;                    /* a new day's business */
     st.grantsToday = 0;
     /* PRESSURE BY DEFAULT (Flash I). The sitting just finished either used
@@ -4798,7 +4885,7 @@ const Engine = (function () {
   }
 
   return {
-    STATE_VERSION, newGame, migrate, save, load, chapters,
+    STATE_VERSION, newGame, migrate, save, load, chapters, reportedActor,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal,
     division, reported, ballot, resolveDue, pairable, setPairs, clearPairs, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss, checkSettlement,
