@@ -13,10 +13,11 @@
     "ui": "node tools/uitest.js",
     "ux": "node tools/uxtest.js",
     "tocheck": "node tools/toc.js --check",
+    "enc": "node tools/enccheck.js",
     "bundle": "node tools/bundle.js",
     "build": "node tools/build.js",
     "tracesig": "node tools/tracesig.js",
-    "check": "npm run test && npm run lint && npm run cx && npm run roundtrip && npm run rename && npm run editor && npm run ui && npm run ux && npm run tocheck",
+    "check": "npm run test && npm run lint && npm run cx && npm run roundtrip && npm run rename && npm run editor && npm run ui && npm run ux && npm run tocheck && npm run enc",
     "toc": "node tools/toc.js"
   },
   "devDependencies": {

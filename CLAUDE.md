@@ -207,7 +207,7 @@ Content is `.js` rather than `.json` on purpose: `fetch()` is blocked on
 
 ```
 npm install      # once, for jsdom
-npm run check    # all nine, about three seconds
+npm run check    # all ten, about three seconds
 ```
 
 | | |
@@ -221,6 +221,7 @@ npm run check    # all nine, about three seconds
 | `tools/uitest.js` | menu into a running game, every screen renders, saves round-trip |
 | `tools/uxtest.js` | focus, tips, audio, streaming, the division dialog |
 | `tools/toc.js --check` | the bible's section index is current |
+| `tools/enccheck.js` | every source file is UTF-8, no BOM, LF, no bad decode |
 
 **Run them after any content change.** They are the only playtester this project
 has until a human one arrives.
@@ -332,10 +333,30 @@ version of any of them is in the header of the file it names.
   `XMLHttpRequest` both fail. Base64 in a `.js` file through `atob` into
   `decodeAudioData` is the route that works.
 
-Every one of these is asserted somewhere in `npm run check`. Two of the checks
+**Text and encoding**
+
+- A console that misreads UTF-8 will talk you into corrupting a file. PowerShell
+  5.1 printed a correct em dash as the three characters U+00E2 U+20AC U+201D;
+  the `Set-Content` "fix" for that phantom wrote the mojibake in for real, with
+  a BOM, and `js/ui.js` shipped with `TONE_MARK`'s `−` and `·` expanded into
+  that wreckage — so the live dossier printed it between every field. Never
+  judge bytes by what a terminal drew. `npm run enc` is the only verdict.
+  (This file names the damage by code point on purpose: prose that spells it
+  out literally IS mojibake, and trips the check it is trying to explain.)
+- The obvious test for that corruption is wrong, which is how it shipped after
+  being verified: a scan for `Ã` in DECODED text finds nothing, because
+  double-encoded UTF-8 decodes to `Â`. `Ã` is the raw-byte spelling. So
+  `tools/enccheck.js` reverses the damage rather than matching it — a run is
+  mojibake iff re-encoding it as CP1252 yields one valid non-ASCII character —
+  and the reversal is also the repair. It works per RUN, not per file, because
+  `js/ui.js` was only partly mangled and a whole-file reversal would have
+  destroyed what was still right.
+
+Every one of these is asserted somewhere in `npm run check`. Three of the checks
 exist because of a specific miss: `tools/edtest.js` because a form function was
-referenced in the editor and never defined, and `tools/uitest.js` because a
-blank screen is invisible to every static check.
+referenced in the editor and never defined, `tools/uitest.js` because a blank
+screen is invisible to every static check, and `tools/enccheck.js` because
+mojibake is invisible to a reviewer reading the same broken console.
 
 ## Authoring
 

@@ -53,10 +53,10 @@ A live instruction from the author always beats it.
 
 ```
 npm install      # once, for jsdom
-npm run check    # all nine, about three seconds
+npm run check    # all ten, about three seconds
 ```
 
-All six must pass. They are the only playtester this project has.
+All ten must pass. They are the only playtester this project has.
 
 ## Windows: never read or write source through the shell
 
@@ -70,7 +70,18 @@ section mark) as mojibake. That display is a lie about the file. Worse, the
 - WRITE source with the editor `edit`/`write` tools, or `node -e` with
   `fs.writeFileSync`. Never `Set-Content`/`Out-File` on `.js`, `.css`, `.html`
   or `.md` — PowerShell 5.1's `Set-Content -Encoding UTF8` also adds a BOM.
-- To test a file for real corruption, count the double-encoded byte sequences
-  with node and ignore whatever the console printed:
-  `node -e "const s=require('fs').readFileSync(p,'utf8');console.log((s.match(/\u00c3[\u0080-\u00bf]/g)||[]).length)"`
-  A count of 0 means the file is clean.
+- To test for real corruption, run `npm run enc` (`tools/enccheck.js`) and
+  ignore whatever the console printed. It reads every tracked text file with
+  node, and `--fix` repairs what it finds.
+
+**Do not hand-roll that test.** The obvious version of it is wrong, and it is
+why this corruption shipped *after* being verified. The check that cleared it
+scanned the decoded text for `\u00c3` (`\u00c3`) followed by a continuation byte \u2014
+but that spelling belongs to the raw bytes. Once node has decoded the file,
+double-encoded UTF-8 reads `\u00c2`, not `\u00c3`. The test matched nothing, and a
+mangled `js/ui.js` was declared clean and left live.
+
+`tools/enccheck.js` does not pattern-match the damage at all. It tries to
+REVERSE it \u2014 a run is mojibake if and only if re-encoding it as CP1252 yields
+bytes that decode as one valid non-ASCII character. That is decidable, and it
+is also the repair.

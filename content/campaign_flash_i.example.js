@@ -1,5 +1,5 @@
-﻿/* =============================================================
-   FLASH I â€” THE CAMPAIGN (placeholder scaffold, NOT WIRED)
+/* =============================================================
+   FLASH I — THE CAMPAIGN (placeholder scaffold, NOT WIRED)
 
    This file is example content in the vein of the author's plan. It is
    loaded by NOTHING: the real campaign belongs in content/events.js,
@@ -14,9 +14,9 @@
      DL   legitimacy          NEW. The House and the stations behind you.
                               0-100. Low = strikes and no-confidence.
                               The author's call: the two existing
-                              domestic meters stay separate â€”
+                              domestic meters stay separate —
                               party_loyalty (the caucus) and
-                              public_standing (the country) â€” and
+                              public_standing (the country) — and
                               legitimacy is a third, the campaign's
                               own measure of the government being
                               believed. Events move all three.
@@ -71,7 +71,7 @@
    THE SIX TIERS (content/settlements.js, rank-ordered)
 
      Critical Triumph, Standard Victory, Pyrrhic Compromise, Managed
-     Stalemate, Strategic Capitulation, and Systemic Meltdown â€” which is
+     Stalemate, Strategic Capitulation, and Systemic Meltdown — which is
      a LOSS, not a settlement (3.5.1 rule 3), so it lives in the cascade
      and ends through the existing loyalty floor: the meltdown event
      applies {move:{party_loyalty:-100}} and checkLoss does the rest.
