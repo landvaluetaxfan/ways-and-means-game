@@ -1,0 +1,17 @@
+# LINE ENDINGS ARE LF, EVERYWHERE, ALWAYS.
+#
+# This is not housekeeping. A Windows checkout with core.autocrlf=true rewrote
+# the tree to CRLF, and `tools/toc.js` — which matched on LF and an ASCII
+# hyphen — started failing on it. Because the Pages workflow runs the checks
+# before it deploys, that failure silently held the live site back for weeks
+# while every local run looked fine.
+#
+# `eol=lf` settles it in the repository rather than in each clone's config: the
+# working tree is LF on every platform, so a Windows editor cannot quietly
+# reintroduce CRLF and no one has to remember a git setting. `npm run enc`
+# still checks, because a file can arrive by other routes than a checkout.
+* text=auto eol=lf
+
+# Binary, so git never applies the above and never tries to diff or merge them.
+*.png binary
+*.jpg binary
