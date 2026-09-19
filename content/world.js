@@ -52,7 +52,8 @@ const WORLD = {
            "jurisdiction and it is not in the apportionment: it returns no members, it pays no federal " +
            "consumables levy, and its constitution is a contract between a company and its workforce. " +
            "Whether it should come in — and on what terms, and who pays for the charter to be " +
-           "surrendered — is the question the session is for.",
+           "surrendered — is the question the session is for. These are the last figures filed: " +
+           "nobody files a return after abandoning a station.",
       grievance:"That everyone in the House has an opinion about it and nobody has read the charter.",
       interests:["shed_order_priority", "essential_services_law", "consumables_subsidy"] }
   ],
