@@ -39,6 +39,8 @@
     <button class="tab" role="tab" aria-selected="false" data-t="pap">Papers</button>
     <button class="tab" role="tab" aria-selected="false" data-t="cx">Concordance</button>
     <button class="tab" role="tab" aria-selected="false" data-t="log">Record</button>
+    <!-- Shown only under the Sandbox government (js/ui.js reveals it). -->
+    <button class="tab" role="tab" aria-selected="false" data-t="sbx" id="tab-sbx" hidden>Sandbox</button>
   </div>
 
   <div id="viewport" class="scrolls">
@@ -278,6 +280,17 @@
       <div class="panel">
         <h2><span data-tip="log">Record of decisions</span></h2>
         <div class="pbody flush scrolls"><table id="log-body"></table></div>
+      </div>
+    </section>
+
+    <section class="screen" id="s-sbx">
+      <div class="grid g-sbx">
+        <div class="stack scrolls">
+          <div class="panel">
+            <h2><span data-tip="state">Sandbox</span> <em>testing controls &middot; not part of the story</em></h2>
+            <div class="pbody scrolls" id="sbx-body"></div>
+          </div>
+        </div>
       </div>
     </section>
 

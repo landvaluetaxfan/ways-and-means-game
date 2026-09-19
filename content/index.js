@@ -21,6 +21,9 @@ const CONTENT = (function () {
        coordinates live so nothing in js/ names a country. */
     world: typeof WORLD !== "undefined" ? WORLD : null,
     achievements: typeof ACHIEVEMENTS !== "undefined" ? ACHIEVEMENTS : [],
+    /* THE SANDBOX CONTROLS (T26): the one list the Sandbox tab and the queued
+       test_console event both press. Owned by content/events.js. */
+    sandbox: typeof SANDBOX !== "undefined" ? SANDBOX : [],
     /* THE DIMENSIONS THIS POLITY ARGUES ALONG, and the goods it prices.
        Both were literals in js/engine.js, which meant adding an axis the
        Commonwealth cares about — housing, religion, labour — required

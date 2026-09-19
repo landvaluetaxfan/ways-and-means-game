@@ -2754,3 +2754,13 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
    read as a link, and a link on a card you cannot enter is a broken promise. */
 #tipcard .tip-go{display:block;font-style:normal;font-size:10px;
   letter-spacing:.04em;color:var(--ink-soft);margin:1px 0 3px;}
+
+/* ---------- the Sandbox tab (T26) ----------
+   The controls are full-width rows, the way a choice row is; the readout
+   underneath is the ordinary .kv grid. No .g-* grid is introduced, so the
+   one-column breakpoint has nothing new to collapse. */
+.sbxbtns{display:flex;flex-direction:column;gap:4px;margin:6px 0 10px;}
+.sbxbtn{text-align:left;height:auto;min-height:0;padding:5px 8px;display:block;width:100%;}
+.sbxbtn b{display:block;font-weight:600;}
+.sbxbtn i{display:block;font-style:normal;font-size:10px;opacity:.7;margin-top:1px;}
+.sbxflags{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 8px;}

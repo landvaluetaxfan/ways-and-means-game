@@ -524,6 +524,10 @@ const Shell = (function () {
     try { state = stateStr ? Engine.load(stateStr, C) : Engine.newGame(contentFor(admin)); }
     catch (e) { Dialog.alert("That save could not be read: " + e.message,
                              { title: "Could not load" }); return; }
+    /* THE SANDBOX IS A STATE, NOT A SETUP FIELD. newGame starts flags empty,
+       so the Sandbox tab's gate is marked here, once, when the government is
+       chosen. A loaded save carries whatever flag it was made with. */
+    if (!stateStr && admin && admin.id === "sandbox") state.flags.sandbox = true;
     current = { n: n, name: name };
 
     /* THE ONE TRANSITION THAT EARNS ITSELF. Leaving the menu for a

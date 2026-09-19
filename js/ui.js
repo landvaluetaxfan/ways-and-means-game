@@ -380,7 +380,7 @@ const UI = (function () {
       /* A tip is positioned in viewport coordinates against a node that is
          about to be replaced. Take it down first. */
       if (typeof Tips !== "undefined") Tips.hide();
-      drawTitle(); drawPrices(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawStatus();
+      drawTitle(); drawPrices(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
       if (typeof Concordance !== "undefined") Concordance.render(st, C, cxCurrent, false);
       if (typeof Papers !== "undefined") Papers.render(st, C);
       /* The globe only redraws when it is the screen the player is on: it is
@@ -513,7 +513,8 @@ const UI = (function () {
     orb:  "Thirty-four habitats by altitude band and closure",
     pap:  "Instruments in force, and the register of what has been done",
     cx:   "Public reference \u00b7 attestation is a political act",
-    log:  "Every decision this government has taken"
+    log:  "Every decision this government has taken",
+    sbx:  "Testing controls \u00b7 sandbox only"
   };
 
   function ambient() {
@@ -5025,6 +5026,56 @@ const UI = (function () {
     $("#log-body").innerHTML = st.log.length
       ? "<tbody>" + st.log.slice(0, 40).map(l => `<tr><td class="n">${l.sitting}</td><td>${l.text}</td></tr>`).join("") + "</tbody>"
       : "<tbody><tr><td>No decisions recorded.</td></tr></tbody>";
+  }
+
+  /* ---------- the Sandbox tab (T26) ----------
+     Shown only under the Sandbox government (js/shell.js sets
+     `st.flags.sandbox`) or once the test console has opened
+     (`test_mode`), or on the opening solvency only the sandbox has. The
+     controls are `CONTENT.sandbox`, the same list the queued test_console
+     event presses, so a control added to content appears here with no js
+     change. Nothing on this screen carries a `data-tip`: it lives in a
+     hidden .screen on every other government, and an annotated node in a
+     hidden screen is exactly the leak tools/uxtest.js checks for. */
+  function inSandbox() {
+    if (st.flags && (st.flags.sandbox || st.flags.test_mode)) return true;
+    return !!(st.scalars && st.scalars.solvency > 900000);
+  }
+
+  function drawSandbox() {
+    const tab = document.getElementById("tab-sbx");
+    const body = $("#sbx-body");
+    const on = inSandbox();
+    if (tab) tab.hidden = !on;
+    if (!body) return;
+    if (!on) { body.innerHTML = ""; return; }
+    const controls = (C.sandbox || []).filter(c => !c.close);
+    const meters = ["party_loyalty", "public_standing", "consumables",
+                    "thermal_margin", "solvency", "legitimacy", "friction"];
+    const flags = Object.keys(st.flags || {}).filter(f => st.flags[f]).sort();
+    let h = `<div class="note">These controls set state directly. They are not a ` +
+      `scene and they never appear outside the Sandbox government. Each button ` +
+      `applies at once, and every tab redraws after it.</div>`;
+    h += `<div class="sbxbtns">` + controls.map(c =>
+      `<button class="btn sbxbtn" data-sbx="${esc(c.id)}"><b>${esc(c.label)}</b>` +
+      (c.note ? `<i>${esc(c.note)}</i>` : "") + `</button>`).join("") + `</div>`;
+    h += `<h3>Indicators</h3><div class="kv">` + meters.map(k =>
+      `<b>${esc(k.replace(/_/g, " "))}</b><span>${esc(String(st.scalars[k]))}</span>`).join("") + `</div>`;
+    h += `<h3>Flags set</h3>` + (flags.length
+      ? `<div class="sbxflags">` + flags.map(f => `<span class="flag">${esc(f)}</span>`).join("") + `</div>`
+      : `<div class="note">None.</div>`);
+    h += `<div class="note">Chapter ${st.chapter} \u00b7 sitting ${st.sitting} \u00b7 ` +
+      `${st.slots.total - st.slots.used} of ${st.slots.total} order-paper slots left.</div>`;
+    body.innerHTML = h;
+    body.querySelectorAll("[data-sbx]").forEach(b =>
+      b.addEventListener("click", () => {
+        const c = (C.sandbox || []).find(x => x.id === b.dataset.sbx);
+        if (!c) return;
+        acted(() => Engine.apply(st, C, c.effects));
+        cue("stamp");
+        setStatus("Sandbox: " + c.label, "transient");
+        drawAll(); saved(); afterAction();
+      }));
   }
 
   /* setStatus is exported so that Shell and, later, the induction pack can
