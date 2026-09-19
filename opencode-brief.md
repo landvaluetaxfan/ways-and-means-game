@@ -278,6 +278,38 @@ Engine side is landed; what is left is prose and balance, which is your lane.
 Read the git log entry *"Annexation is a bill, a crisis brings its own time"*
 first — it says what is built and, more usefully, what was built and reverted.
 
+## 25.0 THE CANON, SETTLED 19 SEPTEMBER. Read this before 25.1.
+
+An earlier draft of this brief said the rename was a "premise change" because
+`content/events.js` tells an abandonment and `content/world.js` describes a
+going concern. **That was wrong, and the author has corrected it.** The
+abandonment IS the story: Cordell walks away from the Bellamy Almanac Works,
+and the Commonwealth has to decide whether to pick up the people left on it.
+`world.js` is not a contradiction of that — it is the position BEFORE Cordell
+walks, which is also the last return anybody filed, because nobody files after
+they abandon a station.
+
+So the only real conflict was a number, and it is now settled:
+
+**The Works holds 184,000 residents, of whom 97,000 are on Cordell's books.**
+`content/world.js` is right. `f1_stranded`'s "three hundred thousand" is wrong
+as a fact.
+
+Why 184,000 and not 300,000, so nobody reopens it: the district tier is 140
+seats over the bible's 4,149,803 adults, about 29,600 adults a seat. 184,000
+residents is roughly 108,000 adults and therefore **about four seats** — enough
+to decide a majority in a House whose confidence threshold is 141, which makes
+annexation a partisan calculation every bench has to do. Three hundred thousand
+WORKERS implies half a million residents and ten to twelve seats, which is not
+an argument but an existential threat, and a vote nobody could lose on its
+merits. Four seats is where the whipping is interesting. `world.js`'s other
+figures — closure 0.44, suspended 7,100, attested 0.66, the 74/20/4/2
+composition — are all tuned against 184,000 and do not have to move.
+
+**"Three hundred thousand" may survive as a QUOTE.** A politician inflating a
+figure on the wire is a real thing and the Concordance holds the true number
+against it. Use it that way if it earns its place; do not use it as a fact.
+
 ## 25.1 Ashen Reach is a placeholder. The subject is the Bellamy Almanac Works.
 
 Confirmed by the author. This is **not a find-and-replace** — the two have
