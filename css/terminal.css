@@ -124,7 +124,32 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    the viewport's own scroll, which is what they were built against. */
 #s-gov.screen.on{height:100%;min-height:0;overflow:hidden;}
 #s-gov .grid{height:100%;min-height:0;grid-auto-rows:minmax(0,1fr);}
+/* AND IT IS NEVER CRUSHED BELOW ITS OWN TABLE HEAD. Even scrolling, a 30px
+   whip panel shows a title bar and one clipped row of column headings, which
+   reads as broken rather than as scrollable. A floor keeps it legible; the
+   stack it sits in gives up the height because the plan above it is
+   flex:0 0 auto and the grid row absorbs the rest. */
+#cham-mid > #p-whip{min-height:96px;}
+
 #s-gov .stack{min-height:0;overflow:auto;}
+/* A PANEL IN A COLUMN THAT SCROLLS MUST NOT SHRINK.
+
+   `.panel` carries min-height:0 and overflow:hidden, both of which were
+   fixes for a panel in a column that must FIT: shrink rather than overflow,
+   clip rather than paint over the panel below. In a column that SCROLLS the
+   same pair is the bug. The panel is still a flex item with the default
+   flex-shrink:1, so it gave up its height to the column -- and then clipped
+   the content it no longer had room for, which is the one outcome the player
+   cannot recover from.
+
+   Measured at 1000px before this rule: Undertakings squeezed to a 14px box
+   with 14px of its content cut off, the scarcity index to 21px, the standing
+   indicators to 23px. Headings with their own panels cut off under them.
+
+   flex:0 0 auto gives each panel its content height and lets the COLUMN
+   scroll, which is what `overflow:auto` on the stack was already for. Same
+   shape as .g-cham > .stack.cref > .panel above. */
+#s-gov .stack > .panel{flex:0 0 auto;}
 
 #statusbar{
   flex:0 0 auto;
@@ -539,6 +564,17 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
   padding:2px 6px;display:flex;justify-content:space-between;gap:8px;
 }
 .panel > h2 em{font-style:normal;font-weight:normal;opacity:.65;font-family:var(--f-data);letter-spacing:0;text-transform:none;}
+/* A SCROLLING BODY ABSORBS ITS PANEL'S SHRINK. `.panel` clips on purpose and
+   the note there says the clipping costs nothing "because every .pbody is a
+   scroller" -- but .pbody carried no flex sizing, so it kept its content
+   height as its flex basis and the PANEL did the clipping instead of the body
+   doing the scrolling. The content was then unreachable, which is the one
+   thing that construction was supposed to rule out.
+
+   Measured at 1280px: the whip panel squeezed to 30px with its table header
+   12px outside it and no way to scroll to it. flex:1 1 auto + min-height:0
+   lets the body take what the panel has left and scroll the rest. */
+.panel > .pbody.scrolls{flex:1 1 auto;min-height:0;}
 .pbody{padding:5px;}
 .pbody.flush{padding:0;}
 

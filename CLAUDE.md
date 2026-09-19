@@ -318,6 +318,21 @@ version of any of them is in the header of the file it names.
   pushed exactly one screen right and off the edge — rendering correctly,
   present in the DOM, invisible. Found by measuring: a span at x=1195 in a
   container ending at x=1195. Check whether a class exists before taking it.
+- A fix for a column that must FIT is a bug in a column that SCROLLS. `.panel`
+  carries `min-height:0` and `overflow:hidden` so it shrinks-and-clips instead
+  of painting over its neighbour — correct in a grid row, wrong inside
+  `#s-gov .stack`, which scrolls: the panels gave up their height to the column
+  and then clipped what no longer fit. Undertakings measured 14px of content
+  cut off inside a 14px box. Panels in a scrolling column are `flex:0 0 auto`.
+- `.panel` clipping is only safe because "every `.pbody` is a scroller" — and
+  `.pbody` carried no flex sizing, so it kept its content height as its basis
+  and the PANEL clipped instead of the BODY scrolling. The content became
+  unreachable, which is the one outcome that construction exists to prevent.
+  `.panel > .pbody.scrolls` is `flex:1 1 auto;min-height:0`.
+- `npm run layout` measures all of the above. It also learned not to cry wolf:
+  `scrollHeight` counts absolutely positioned children, and this interface
+  hangs things proud on purpose (the dual-majority threshold tick sits at
+  `top:-2px`), so a fault is confirmed against IN-FLOW children only.
 
 **Interface**
 

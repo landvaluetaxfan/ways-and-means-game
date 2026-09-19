@@ -94,6 +94,18 @@ const PROBE = `
     return s;
   }
 
+  /* A selector is not enough to FIND the thing: three boxes on the Government
+     tab all report as div.panel. So carry the panel's own heading, and the
+     position among its siblings, which together name it on the glass. */
+  function where(el) {
+    var head = el.querySelector("h1,h2,h3,.rulehead,.phead,b,legend");
+    var label = head ? head.textContent.trim().replace(/\\s+/g, " ").slice(0, 40) : "";
+    var sibs = el.parentNode ? [].slice.call(el.parentNode.children) : [];
+    var nth = sibs.indexOf(el) + 1;
+    var par = el.parentNode && el.parentNode.nodeType === 1 ? name(el.parentNode) : "";
+    return { label: label, nth: nth + "/" + sibs.length, parent: par };
+  }
+
   /* A border on any edge means the element draws a frame content must stay
      inside. Without one, overflow is just flow and is not a fault. */
   function framed(cs) {
@@ -102,6 +114,36 @@ const PROBE = `
   }
 
   var TOL = 2;                       /* sub-pixel rounding is not a defect */
+
+  /* DECORATION THAT OVERHANGS ON PURPOSE IS NOT A FAULT. scrollHeight counts
+     absolutely positioned descendants, and this interface deliberately hangs
+     things proud of their box: the dual-majority threshold tick is drawn at
+     top:-2px;bottom:-2px with a triangle above that, so every .dmbar reported
+     as escaping its border by 3px. It is doing exactly what it was written to
+     do.
+
+     So a flagged element is confirmed by looking for IN-FLOW content past the
+     content box. Out-of-flow children (absolute, fixed) are the author saying
+     "put this where I said"; static and relative children past the edge are
+     the bug. A check that cries wolf gets switched off, which costs more than
+     the fault it was reporting. */
+  function realOverflow(el, cs, axis) {
+    var r = el.getBoundingClientRect();
+    var edge = axis === "y"
+      ? r.top  + parseFloat(cs.borderTopWidth)  + el.clientHeight
+      : r.left + parseFloat(cs.borderLeftWidth) + el.clientWidth;
+    var kids = el.querySelectorAll("*");
+    for (var i = 0; i < kids.length; i++) {
+      var pos = getComputedStyle(kids[i]).position;
+      if (pos === "absolute" || pos === "fixed") continue;
+      var k = kids[i].getBoundingClientRect();
+      if (!k.width && !k.height) continue;
+      if ((axis === "y" ? k.bottom : k.right) > edge + TOL)
+        return name(kids[i]) + (kids[i].textContent || "").trim()
+                 .replace(/\s+/g, " ").slice(0, 30).replace(/^/, ' "') + '"';
+    }
+    return null;
+  }
   function measure(tab) {
     var hits = [], screen = document.querySelector(".screen.on");
     if (!screen) return hits;
@@ -118,7 +160,7 @@ const PROBE = `
       var clipsX   = ox === "hidden" || ox === "clip";
       var dy = el.scrollHeight - el.clientHeight;
       var dx = el.scrollWidth  - el.clientWidth;
-      var fr = framed(cs);
+      var fr = framed(cs), culprit = null;
 
       /* A CLOSED FOLD IS NOT A CLIPPED PANEL. A box collapsed to nothing on
          the measured axis is holding its content back ON PURPOSE, which is
@@ -126,12 +168,14 @@ const PROBE = `
          all. The guard is per AXIS: an element can be a real box across and
          collapsed down, and testing the element as a whole reported every
          closed fold in the interface as a bug. */
-      if (dy > TOL && !scrollsY && (clipsY || fr) && el.clientHeight > 0)
-        hits.push({ tab: tab, el: name(el), axis: "y", by: dy,
-                    kind: clipsY ? "CLIPPED" : "ESCAPES", box: el.clientHeight });
-      if (dx > TOL && !scrollsX && (clipsX || fr) && el.clientWidth > 0)
-        hits.push({ tab: tab, el: name(el), axis: "x", by: dx,
-                    kind: clipsX ? "CLIPPED" : "ESCAPES", box: el.clientWidth });
+      if (dy > TOL && !scrollsY && (clipsY || fr) && el.clientHeight > 0 &&
+          (culprit = realOverflow(el, cs, "y")))
+        hits.push({ tab: tab, el: name(el), axis: "y", by: dy, at: where(el),
+                    kind: clipsY ? "CLIPPED" : "ESCAPES", box: el.clientHeight, by_what: culprit });
+      if (dx > TOL && !scrollsX && (clipsX || fr) && el.clientWidth > 0 &&
+          (culprit = realOverflow(el, cs, "x")))
+        hits.push({ tab: tab, el: name(el), axis: "x", by: dx, at: where(el),
+                    kind: clipsX ? "CLIPPED" : "ESCAPES", box: el.clientWidth, by_what: culprit });
     }
     return hits;
   }
@@ -197,10 +241,15 @@ for (const width of WIDTHS) {
 
   fail += hits.length;
   const show = ALL ? hits : hits.slice(0, 10);
-  for (const h of show)
+  for (const h of show) {
+    const at = h.at || {};
     console.log(`    ${h.kind === "CLIPPED" ? "CLIP" : "OVER"} [${h.tab}] ${h.el}` +
-                `\n         ${h.axis === "y" ? "content is" : "content is"} ${h.by}px past a ${h.box}px box` +
-                ` (${h.kind === "CLIPPED" ? "clipped — the player never sees it" : "drawn outside its own border"})`);
+                (at.label ? `  "${at.label}"` : "") +
+                `\n         ${h.by}px past a ${h.box}px box on ${h.axis}` +
+                ` (${h.kind === "CLIPPED" ? "clipped — the player never sees it" : "drawn outside its own border"})` +
+                `\n         child ${at.nth} of ${at.parent}` +
+                (h.by_what ? `\n         overflowed by ${h.by_what}` : ""));
+  }
   if (!ALL && hits.length > show.length)
     console.log(`    ... and ${hits.length - show.length} more (--all)`);
 }
