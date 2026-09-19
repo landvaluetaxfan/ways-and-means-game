@@ -1311,7 +1311,134 @@ already made its case.`,
       result:"The promise is newer than the record, which is its only advantage and it uses all of it." }
   ]},
 
-{ id:"ch3_the_count", chapter:3, prologue:2, once:true,
+{ id:"ch3_open_question", chapter:3, prologue:2, once:true,
+  title:"The question on the ballot",
+  speaker:null,
+  body:`The writs are out and the question the House could not close is now the
+country's. Nothing was settled. That is what this election is about, whatever
+the parties would rather it were about.
+
+Every candidate is asked the same thing at every door, and every answer is a
+position now, because a campaign is where a preference becomes a promise.`,
+  choices:[
+    { label:"Make the election about the question.",
+      act:"Say it",
+      effects:[{ move:{ "public_standing":4 } }, { move:{ "loyalty.psa":5 } },
+               { move:{ "loyalty.cu_maintenance":-4 } },
+               { wire:"PM PUTS THE OPEN QUESTION AT THE CENTRE OF THE CAMPAIGN" }],
+      result:"The country is asked to answer what the chamber would not, which is either courage or a gamble and will be judged as one of them." },
+    { label:"Run on the record. Let the question wait.",
+      effects:[{ move:{ "public_standing":2 } }, { move:{ "loyalty.cu_maintenance":4 } },
+               { move:{ "loyalty.psa":-5 } },
+               { wire:"PM CAMPAIGNS ON THE RECORD, NOT THE QUESTION" }],
+      result:"The record is what the government did. The question is what it did not, and the other side will name it at every stop." }
+  ]},
+
+{ id:"ch3_manifestos", chapter:3, prologue:3, once:true,
+  title:"The manifestos",
+  speaker:"ceyhan",
+  body:`Four documents, published within a day of each other, and none of them
+says what it means. Ceyhan reads them the way he reads everything: for the
+sentence that was left out.
+
+"You cannot put a question on the ballot and keep the answer off the paper,"
+he writes. "Somebody will notice, and it will not be you."`,
+  choices:[
+    { label:"Print the answer the government would give.",
+      effects:[{ move:{ "public_standing":3 } }, { move:{ "loyalty.cu_maintenance":-3 } },
+               { wire:"GOVERNMENT PRINTS ITS ANSWER TO THE OPEN QUESTION" }],
+      result:"The paper has an answer on it, which is the hardest thing to take back and the easiest thing for the other side to quote." },
+    { label:"Print the programme and leave the question open.",
+      effects:[{ move:{ "party_loyalty":4 } }, { move:{ "public_standing":-3 } },
+               { wire:"GOVERNMENT MANIFESTO AVOIDS THE QUESTION; BENCHES DIVIDED" }],
+      result:"The benches are relieved and the columnists are not. A manifesto that does not answer the question is a promise to answer it later." }
+  ]},
+
+{ id:"ch3_the_wire", chapter:3, prologue:4, once:true,
+  when:{ scalarAbove:{ friction:50 } },
+  title:"What Earth is watching",
+  speaker:"landry",
+  body:`The campaign is being read abroad. Whatever the parties say about the
+question at home, the Earth-side services carry a different story, and the
+measures the session left standing are on the ballot whether anyone listed them.
+
+"Every hour of this campaign is being priced somewhere," Landry says. "We can
+campaign as though it is not, but it is."`,
+  choices:[
+    { label:"Answer the foreign story directly.",
+      effects:[{ move:{ "friction":-3 } }, { move:{ "legitimacy":3 } },
+               { wire:"PM ANSWERS THE FOREIGN READING OF THE CAMPAIGN" }],
+      result:"The answer travels at the speed of the wire, which is faster than the campaign and slower than the truth." },
+    { label:"Keep the campaign at home.",
+      effects:[{ move:{ "friction":2 } }, { move:{ "public_standing":3 } },
+               { wire:"PM KEEPS THE CAMPAIGN DOMESTIC; THE WIRE KEEPS SCORE" }],
+      result:"The country hears a government that will not be lectured to. The exchange keeps its own tally." }
+  ]},
+
+{ id:"ch3_the_benches", chapter:3, prologue:5, once:true,
+  when:{ scalarBelow:{ party_loyalty:40 } },
+  title:"The benches on the trail",
+  speaker:"okarie",
+  body:`Half the parliamentary party is in the marginals and the other half has
+found reasons to be elsewhere. The Chief Whip has counted both halves and does
+not like the arithmetic of either.
+
+"A campaign is a whip operation with worse hotels," Okarie says. "If they will
+not knock on doors for you now, they will not vote for you after."`,
+  choices:[
+    { label:"Send the whole party out.",
+      effects:[{ move:{ "party_loyalty":5 } }, { move:{ "public_standing":2 } },
+               { move:{ "solvency":-3000 } },
+               { wire:"GOVERNMENT PUTS THE WHOLE PARTY INTO THE CAMPAIGN" }],
+      result:"Every member is on a train and every marginal has a minister in it. The bill for it arrives before the count." },
+    { label:"Campaign from the centre and leave them to it.",
+      effects:[{ move:{ "loyalty.cu_loyalists":3 } }, { move:{ "party_loyalty":-3 } },
+               { wire:"PM CAMPAIGNS FROM THE CENTRE; BENCHES LEFT TO THEMSELVES" }],
+      result:"The centre holds and the marginals are fought by whoever was already there. Some benches will remember being left." }
+  ]},
+
+{ id:"ch3_the_airwaves", chapter:3, prologue:6, once:true,
+  title:"The debate",
+  speaker:"watkins",
+  body:`The leaders meet once, on the airwaves, for an hour, and the question
+gets the last ten minutes of it. Watkins asks whether the government intends to
+govern the question or to be carried past it, which is a question the campaign
+has made fair.
+
+The country watches this hour together. It is the only hour of the campaign
+anyone watches together.`,
+  choices:[
+    { label:"Defend the record.",
+      effects:[{ move:{ "public_standing":3 } }, { move:{ "loyalty.cu_maintenance":3 } },
+               { wire:"PM DEFENDS THE RECORD IN THE LEADERS' DEBATE" }],
+      result:"The record is what the government has. It is defended well and it is shorter than the argument against it." },
+    { label:"Attack the other side's answer.",
+      effects:[{ move:{ "public_standing":2 } }, { move:{ "legitimacy":-3 } },
+               { move:{ "loyalty.psa":4 } },
+               { wire:"PM ATTACKS THE OPPOSITION'S ANSWER IN THE DEBATE" }],
+      result:"It lands. It also tells the country what the government is against and not what it is for." }
+  ]},
+
+{ id:"ch3_the_ground", chapter:3, prologue:8, once:true,
+  title:"The last week",
+  speaker:null,
+  body:`The last week of a one-session campaign is the only part of it anyone
+remembers. The parties spend what they have left, and the government spends the
+record it has, and both of those run out on the same day.
+
+The count is a week away and the question is still open.`,
+  choices:[
+    { label:"Put everything into the marginals.",
+      effects:[{ move:{ "public_standing":4 } }, { move:{ "solvency":-4000 } },
+               { wire:"GOVERNMENT SPENDS THE LAST WEEK IN THE MARGINALS" }],
+      result:"The money goes where the seats are. Whether the seats were there to be had is what the count is for." },
+    { label:"Hold the ground the government has.",
+      effects:[{ move:{ "loyalty.cu_maintenance":3 } }, { move:{ "party_loyalty":2 } },
+               { wire:"GOVERNMENT HOLDS ITS GROUND IN THE LAST WEEK" }],
+      result:"A campaign that defends is a campaign that thinks it is ahead, and the other side reads it that way." }
+  ]},
+
+{ id:"ch3_the_count", chapter:3, prologue:9, once:true,
   title:"The count",
   speaker:null,
   body:`The returns come in by station, west to east, the way they always
@@ -1320,7 +1447,8 @@ that did not do not, and the arithmetic of the chamber is decided by
 midnight.
 
 The House that rises in the morning will be somebody else's arithmetic.
-This one is finished, and what it settled, it settled.`,
+This one is finished, and what it settled stands, and what it did not settle
+is now the country's to carry.`,
   choices:[
     { label:"Read the final numbers.",
       effects:[{ flag:"campaign_done" },
@@ -1358,6 +1486,109 @@ That is what a settlement is for.`,
     { label:"Close the chapter.",
       effects:[],
       result:"The record stands." }
+  ]},
+
+/* ---- THE AFTERMATH (T21). Chapter four is reached only when a settlement
+   closed the question (ch4_settled gates on `settled`). Where chapter three
+   leaves the question open, this chapter lives with an answer: the argument
+   does not reopen, and the cost arrives afterwards. */
+
+{ id:"ch4_the_answer", chapter:4, prologue:2, once:true,
+  title:"The answer",
+  speaker:null,
+  body:`The country has an answer now, and the ordinary business is done in its
+shadow. That is what makes it an answer: not that it is right, but that the
+argument about it is over and the government has to administer it.
+
+Ministers answer questions about everything else, and when the question comes
+back, they say what the government decided, in the past tense.`,
+  choices:[
+    { label:"Defend the answer in public.",
+      effects:[{ move:{ "public_standing":4 } }, { move:{ "loyalty.psa":3 } },
+               { wire:"PM DEFENDS THE SETTLEMENT IN PUBLIC" }],
+      result:"It is the government's answer and it is defended as one. The people who lost hear a government that has stopped pretending to listen." },
+    { label:"Let the answer speak for itself.",
+      effects:[{ move:{ "loyalty.cu_maintenance":4 } }, { move:{ "public_standing":-2 } },
+               { wire:"PM LETS THE SETTLEMENT STAND WITHOUT A CAMPAIGN" }],
+      result:"A settled question does not need a press tour. It needs a government that will not reopen it, and that is what it has." }
+  ]},
+
+{ id:"ch4_the_losers", chapter:4, prologue:3, once:true,
+  title:"The people who lost",
+  speaker:"watkins",
+  body:`The benches that argued the other way have not changed their minds. They
+have changed their subject, which is the most you can ask and the least you can
+trust.
+
+Watkins says it plainly: the answer is the government's until the country
+decides to give it to somebody else, and that decision is years away.`,
+  choices:[
+    { label:"Give them a share of the administration.",
+      effects:[{ move:{ "loyalty.cl":6 } }, { move:{ "loyalty.cu_loyalists":-3 } },
+               { wire:"GOVERNMENT SHARES THE SETTLEMENT'S ADMINISTRATION WITH THE LOSERS" }],
+      result:"They take the work and keep their argument. A losing side that administers the answer is a losing side that cannot campaign against it." },
+    { label:"Press the advantage while it is warm.",
+      effects:[{ move:{ "party_loyalty":4 } }, { move:{ "loyalty.cl":-4 } },
+               { move:{ "public_standing":3 } },
+               { wire:"GOVERNMENT PRESSES ITS ADVANTAGE AFTER THE SETTLEMENT" }],
+      result:"The benches behind the government want it, and the benches against it will remember. Both of those are the normal politics of an answer." }
+  ]},
+
+{ id:"ch4_the_ledger", chapter:4, prologue:4, once:true,
+  when:{ scalarBelow:{ solvency:45000 } },
+  title:"The bill for the answer",
+  speaker:"hatt",
+  body:`Every settlement has a cost, and the cost does not arrive with the
+argument. It arrives at the estimates, and the estimates are drawn now.
+
+"The answer is paid for in the ordinary way," Hatt says. "By people who are
+not in this room."`,
+  choices:[
+    { label:"Pay it now, and say so.",
+      effects:[{ move:{ "public_standing":3 } }, { move:{ "legitimacy":3 } },
+               { move:{ "solvency":-6000 } },
+               { wire:"GOVERNMENT PAYS THE SETTLEMENT'S BILL AT THE ESTIMATES" }],
+      result:"The bill is paid in the open. It is not popular and it is honest, which the benches can live with." },
+    { label:"Spread the cost across the next session.",
+      effects:[{ move:{ "loyalty.cu_maintenance":-5 } }, { move:{ "public_standing":-3 } },
+               { wire:"SETTLEMENT COSTS DEFERRED TO THE NEXT SESSION" }],
+      result:"The current position looks better and the next one looks worse. That is what a schedule is for." }
+  ]},
+
+{ id:"ch4_the_next", chapter:4, prologue:5, once:true,
+  title:"The next question",
+  speaker:"ansar",
+  body:`A settled question makes room for the next one. The ninth deck has one,
+and so does every delegation that spent the session waiting for this one to be
+over.
+
+"It is not that the answer is wrong," Ansar writes. "It is that the answer is
+finished, and things that are finished are what a government moves on from."`,
+  choices:[
+    { label:"Take up the next question now.",
+      effects:[{ move:{ "loyalty.psa":4 } }, { move:{ "public_standing":-2 } },
+               { wire:"GOVERNMENT OPENS THE NEXT QUESTION AFTER THE SETTLEMENT" }],
+      result:"A government that is always arguing is a government that is alive. It is also a government that never gets to rest on an answer." },
+    { label:"Govern quietly. The session has earned it.",
+      effects:[{ move:{ "loyalty.cu_maintenance":5 } }, { move:{ "party_loyalty":3 } },
+               { wire:"GOVERNMENT CHOOSES A QUIET SESSION AFTER THE SETTLEMENT" }],
+      result:"The House does its ordinary business and the country stops watching, which is the reward for having closed a question." }
+  ]},
+
+{ id:"ch4_the_record", chapter:4, prologue:6, once:true,
+  title:"The record",
+  speaker:null,
+  body:`The session closes on the answer. Everything that moved in it is in the
+record, and the record is what the next parliament argues with.
+
+The question was put and carried, defeated, or taken out of the House's hands,
+and the form of the answer is the form the record will show for a generation.
+What follows is somebody else's session.`,
+  choices:[
+    { label:"Close the record.",
+      effects:[{ flag:"campaign_done" },
+               { wire:"SESSION CLOSES ON THE SETTLEMENT" }],
+      result:"The record stands. The answer is the government's, and the next argument starts from it." }
   ]},
 
 /* ============================================================
@@ -1799,7 +2030,7 @@ the government that will be read in both.`,
   ]},
 
 /* the canon election: the pyrrhic tier leads to the campaign's victory */
-{ id:"f1_pyrrhic_election", chapter:3, prologue:3, once:true,
+{ id:"f1_pyrrhic_election", chapter:3, prologue:7, once:true,
   when:{ resolvedIs:"f1_pyrrhic" },
   title:"The mandate",
   speaker:null,
