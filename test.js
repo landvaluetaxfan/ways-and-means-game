@@ -3008,3 +3008,92 @@ console.log("\nTHE ECONOMY:");
 
   if (bad) { console.log("\n" + bad + " ECONOMY FAILURES"); process.exitCode = 1; }
 })();
+
+/* ================= A DATED EVENT KEEPS ITS DATE =================
+   `prologue` is an order and the queue is a delay; neither is a date, so
+   until `at` the session had no fixed points and the crisis arrived whenever
+   the weighted pool reached it. These assert the four things that make a
+   date a date: it waits, it fires, it does not get drawn early by weight,
+   and the player can see it coming. */
+(function () {
+  let bad = 0;
+  const ok = (label, cond, extra) => {
+    if (!cond) bad++;
+    console.log((cond ? "  ok   " : "  FAIL ") + label + (extra ? "  " + extra : ""));
+  };
+  console.log("\nTHE CLOCK: EVENTS WITH A DATE");
+  console.log("=".repeat(56));
+
+  /* A throwaway content object: the engine names no event, so a test may. */
+  const dated = {
+    id: "t_dated", at: 6, once: true, foreseen: "The commission reports",
+    title: "Dated", body: "x",
+    choices: [{ label: "ok", effects: [], result: "r" }]
+  };
+  const C2 = Object.assign({}, CONTENT, {
+    events: CONTENT.events.concat([dated])
+  });
+  C2.eventById = Object.assign({}, CONTENT.eventById, { t_dated: dated });
+
+  const s = Engine.newGame(C2);
+  let firedAt = null;
+  for (let i = 0; i < 12 && firedAt == null; i++) {
+    const e = Engine.nextEvent(s, C2);
+    if (e && e.id === "t_dated") { firedAt = s.sitting; break; }
+    if (e) Engine.choose(s, C2, e, 0);
+    Engine.advance(s, C2);
+  }
+  ok("an event dated to a sitting does not fire before it",
+     firedAt == null || firedAt >= 6, "fired at " + firedAt);
+  ok("and it does fire once that sitting is reached",
+     firedAt != null, firedAt == null ? "never fired" : "sitting " + firedAt);
+
+  /* It must not ALSO be drawable from the weighted pool, or the date is a
+     suggestion. eligible() is internal, so this asks the question the way a
+     player would: before its date, is it ever what nextEvent returns? */
+  const s2 = Engine.newGame(C2);
+  let early = false;
+  for (let i = 0; i < 5; i++) {
+    const e = Engine.nextEvent(s2, C2);
+    if (e && e.id === "t_dated") early = true;
+    if (e) Engine.choose(s2, C2, e, 0);
+    Engine.advance(s2, C2);
+  }
+  ok("a dated event is never drawn early by weight", !early);
+
+  /* And a date the player cannot see is just an interruption. */
+  const s3 = Engine.newGame(C2);
+  const marks = Engine.deadlines(s3, C2) || [];
+  ok("a foreseeable dated event is on the calendar",
+     marks.some(m => m.label === "The commission reports" || m.text === "The commission reports"),
+     marks.length + " marks");
+
+  /* AND THE CHAIN IT WAS BUILT FOR ACTUALLY HAS GAPS. The Flash I steps used
+     to be flag-gated at weights 84-90, so each arrived the sitting after the
+     one before it and the session's central argument was over in three days.
+     This asserts the schedule rather than the mechanism: if someone re-gates
+     the chain on flags, the gaps collapse and this goes red. */
+  const chain = Engine.newGame(CONTENT);
+  const when = {};
+  for (let i = 0; i < 30; i++) {
+    const e = Engine.nextEvent(chain, CONTENT);
+    if (e) {
+      if (when[e.id] == null && /^f1_/.test(e.id)) when[e.id] = chain.sitting;
+      Engine.choose(chain, CONTENT, e, 0);
+    }
+    Engine.advance(chain, CONTENT);
+  }
+  const a = when.f1_stranded, b = when.f1_referendum, c = when.f1_dilemma;
+  /* Its date is a FLOOR, not a promise of the exact day: chapter two's own
+     prologue holds sitting 8, and a prologue outranks a date. So the test is
+     that it cannot come early and cannot drift far — which is what a date in
+     a parliament is worth. */
+  ok("the crisis opens on its date, not when the pool reaches it",
+     a >= 8 && a <= 10, "f1_stranded at " + a + " (dated 8)");
+  ok("the survey takes sittings to report",
+     b != null && b - a >= 2, "stranded " + a + " -> referendum " + b);
+  ok("and the law officer's opinion takes sittings to come back",
+     c != null && c - b >= 2, "referendum " + b + " -> dilemma " + c);
+
+  if (bad) { console.log("\n" + bad + " CLOCK FAILURES"); process.exitCode = 1; }
+})();

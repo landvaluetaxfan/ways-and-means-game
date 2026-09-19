@@ -3223,6 +3223,7 @@ const Engine = (function () {
       const fired = st.seen[e.id] || 0;
       if (e.queuedOnly) return;          // reachable only via a queue effect
       if (e.prologue) return;            // handled by the authored opening sequence
+      if (e.at != null) return;          // has a date; nextScheduled() owns it
       if (e.chapter != null && e.chapter !== st.chapter) return;
       if (e.once && fired) return;
       if (e.maxFires && fired >= e.maxFires) return;
@@ -3230,6 +3231,42 @@ const Engine = (function () {
       out.push(e);
     });
     return out;
+  }
+
+  /* AN EVENT WITH A DATE KEEPS IT.
+
+     `prologue` is an ORDER (the third scripted thing you meet) and the queue is
+     a DELAY (four sittings after you asked). Neither is a date, and until this
+     the session had no fixed points at all: everything outside the opening
+     arrived when the weighted pool got round to it.
+
+     That is what made the crisis feel like it had no schedule. The Flash I
+     chain gates each step on a flag the previous step sets, and every step sits
+     at weight 84-90, so the whole central argument of the session fired on
+     consecutive sittings the moment the player kept saying yes — measured at
+     sittings 9, 10 and 11 of a 24-sitting session. Nothing was ever DUE; things
+     merely became available, and the pool is steep enough that available means
+     next.
+
+     `at: N` is a sitting. The event fires on it, or on the first sitting after
+     it if N was spent on something already dated — the queue behaves the same
+     way, and a fixed point that silently vanishes because the House was busy is
+     worse than one that slips a day. Its `when` still has to pass: a date says
+     when the House will hear a thing, not that the thing happened.
+
+     Earliest date first, and it outranks the weighted pool, because the whole
+     point is that it does not have to win a contest to happen. */
+  function nextScheduled(st, C) {
+    const due = C.events.filter(e => {
+      if (e.at == null || e.at > st.sitting) return false;
+      const fired = st.seen[e.id] || 0;
+      if (e.chapter != null && e.chapter !== st.chapter) return false;
+      if (e.once && fired) return false;
+      if (e.maxFires && fired >= e.maxFires) return false;
+      return matches(st, e.when);
+    });
+    if (!due.length) return null;
+    return due.sort((a, b) => a.at - b.at)[0];
   }
 
   /* A prologue is an authored sequence at the head of a CHAPTER — not a weighted
@@ -3289,6 +3326,8 @@ const Engine = (function () {
     }
     const pro = nextPrologue(st, C);
     if (pro) return pro;
+    const sch = nextScheduled(st, C);
+    if (sch) return sch;
     let pool = eligible(st, C);
     if (!pool.length) return null;
 
@@ -4030,6 +4069,17 @@ const Engine = (function () {
       if (q.label) { add(q.dueSitting, "expected", q.label); return; }
       const e = C.eventById && C.eventById[q.eventId];
       if (e && e.foreseen) add(q.dueSitting, "expected", e.foreseen);
+    });
+    /* A DATED EVENT IS ON THE CALENDAR, if content says it is foreseeable.
+       Same rule as the queue above: `foreseen` is the label, and an event
+       without one is an ambush and stays off the calendar. A date the player
+       cannot see is just an unexplained interruption. */
+    (C.events || []).forEach(e => {
+      if (e.at == null || !e.foreseen) return;
+      if (st.seen[e.id]) return;
+      if (e.chapter != null && e.chapter !== st.chapter) return;
+      if (e.at < st.sitting) return;
+      add(e.at, "expected", e.foreseen);
     });
     if (st.sessionEnds != null)
       add(st.sessionEnds, "rises", "The House rises \u2014 session " + st.session);

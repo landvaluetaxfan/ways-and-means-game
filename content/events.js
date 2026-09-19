@@ -1370,7 +1370,20 @@ That is what a settlement is for.`,
    annotated plan.)
    ============================================================ */
 
-{ id:"f1_stranded", chapter:2, weight:90, once:true,
+/* THE FLASH I CHAIN RUNS ON A CLOCK, NOT ON A FLAG.
+
+   Every step used to be gated on a flag the step before it set, at weights
+   84-90, so the central argument of the session fired on consecutive
+   sittings the moment the player kept saying yes -- measured at 9, 10 and 11
+   of a 24-sitting session. Nothing was ever DUE; it merely became available,
+   and the pool is steep enough that available means next.
+
+   Now: the crisis OPENS on a date (`at`), and each step is queued by the
+   choice that causes it, with the time that thing would actually take and a
+   label so it lands on the calendar. A survey takes four sittings. A law
+   officer's opinion takes three. The player can see both coming and has to
+   govern around them, which is the whole point of order-paper time. */
+{ id:"f1_stranded", chapter:2, at:8, once:true,
   title:"Three hundred thousand",
   speaker:null,
   body:`Halcyon Extraction Group has abandoned the Ashen Reach platform, and the
@@ -1381,15 +1394,16 @@ years long.
 The platform has voted. The question is what the Commonwealth says.`,
   choices:[
     { label:"Send the survey team.",
-      effects:[{ flag:"f1_surveyed" }, { wire:"FEDERATION SURVEYS THE ABANDONED PLATFORM" }],
+      effects:[{ flag:"f1_surveyed" }, { wire:"FEDERATION SURVEYS THE ABANDONED PLATFORM" },
+               { queue:[{ event:"f1_referendum", after:2,
+                          label:"The survey team reports from Ashen Reach" }] }],
       result:"The survey's first return is the scrubber schedule. The second is the debt." },
     { label:"Wait for Earth's process.",
       effects:[{ move:{ "legitimacy":-5 } }, { wire:"PM: THE REPATRIATION PLAN IS EARTH'S TO RUN" }],
       result:"The outer stations read the delay as an answer, and it is not the one they wanted." }
   ]},
 
-{ id:"f1_referendum", chapter:2, weight:88, once:true,
-  when:{ flags:["f1_surveyed"] },
+{ id:"f1_referendum", chapter:2, queuedOnly:true, once:true,
   title:"The vote",
   speaker:"ceyhan",
   body:`The workers have voted to join the Federation, and Ceyhan's column
@@ -1404,15 +1418,16 @@ wire."`,
     { label:"Recognise the referendum.",
       effects:[{ flag:"f1_referendum_carried" }, { move:{ "friction":10 } },
                { move:{ "legitimacy":8 } },
-               { wire:"FEDERATION RECOGNISES THE PLATFORM REFERENDUM" }],
+               { wire:"FEDERATION RECOGNISES THE PLATFORM REFERENDUM" },
+               { queue:[{ event:"f1_dilemma", after:2,
+                          label:"Law and the Charter reports on the platform" }] }],
       result:"The platform is the Commonwealth's question now, and Earth's banks are reading the same wire." },
     { label:"Decline to recognise it.",
       effects:[{ move:{ "legitimacy":-8 } }, { move:{ "friction":-3 } }],
       result:"The strikes start on the outer habitats before the sitting ends." }
   ]},
 
-{ id:"f1_dilemma", chapter:2, weight:86, once:true,
-  when:{ flags:["f1_referendum_carried"] },
+{ id:"f1_dilemma", chapter:2, queuedOnly:true, once:true,
   title:"The dilemma",
   speaker:"fenwick",
   body:`The Minister for Law and the Charter sets out the two futures in
