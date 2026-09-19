@@ -2705,6 +2705,117 @@ man with a list."`,
                { move:{ "loyalty.cu_maintenance":-3 } },
                { wire:"PM DECLINES TO DISCUSS CZARNECKI'S LIST" }],
       result:"Nothing is opened and nothing is answered. The sheet stays in his pocket, which is where a list of four names ought to be, and he collects the rest in his own time." }
+  ]},
+
+/* ============================================================
+   THE SANDBOX TEST CONSOLE (T26)
+
+   Not a scene. The Sandbox government in content/setup.js opens with a
+   solvency no real campaign can earn; these two events read that value to
+   know they are in the sandbox, then live on the QUEUE so a tester can
+   stack controls without the weighted pool ever interfering.
+
+   `test_console_open` fires once and opens the list. `test_console` is the
+   list: every control sets state directly and re-queues the list, so a
+   station question, an annexation, a carried or defeated threshold bill, a
+   tribunal, a federal schedule, a sanction, a drained reserve or a forced
+   fall can each be reached without playing the session that would have
+   reached it. The last control closes the list.
+
+   NOTHING HERE IS REACHABLE IN FLASH I. The opening gate is
+   `solvency > 900000`, which no real opening or earning reaches;
+   `test_mode` is only ever set by the opener. ============================================================ */
+
+{ id:"test_console_open", weight:500, once:true,
+  when:{ scalarAbove:{ solvency:900000 }, flagsAbsent:["test_mode"] },
+  title:"Test console",
+  speaker:null,
+  body:`SANDBOX ONLY. This is the testing console, not a scene. The choices
+opened from it set state directly, so a branch can be tried without playing the
+session that would have reached it.
+
+It is gated on an opening solvency the real campaign cannot earn, so it never
+appears in Flash I.`,
+  choices:[
+    { label:"Open the test console.",
+      effects:[{ flag:"test_mode" },
+               { queue:[{ event:"test_console", after:1, label:"Test console" }] }],
+      result:"The console is open. Its controls are the next thing on the order of the day." }
+  ]},
+
+{ id:"test_console", queuedOnly:true,
+  when:{ flags:["test_mode"] },
+  title:"Test console",
+  speaker:null,
+  body:`SANDBOX ONLY. Choose a control. Every control but the last re-opens this
+list on the next sitting, so the controls can be stacked; close it when you are
+done and the game carries on with whatever state you left it in.`,
+  choices:[
+    { label:"Raise the station question.",
+      effects:[{ flag:"station_issue" }, { flag:"f1_surveyed" },
+               { queue:[{ event:"f1_referendum", after:2, label:"The survey reports" }] },
+               { queue:[{ event:"test_console", after:1, label:"Test console" }] },
+               { wire:"SANDBOX: THE STATION QUESTION IS RAISED" }],
+      result:"The foreign panel opens and the survey chain is queued. The Works stays outside the roster." },
+    { label:"Annex the Works outright.",
+      effects:[{ flag:"station_issue" }, { flag:"annexed_almanac_works" },
+               { flag:"f1_annexing" },
+               { bill:{ annexation:{ stage:"first_reading" } } },
+               { slots:{ total:5 } },
+               { queue:[{ event:"test_console", after:1, label:"Test console" }] },
+               { wire:"SANDBOX: THE WORKS IS ANNEXED" }],
+      result:"The Works is inside the Commonwealth and the annexation bill is set down with its crisis time." },
+    { label:"Drop the threshold to forty and carry the bill.",
+      effects:[{ law:{ divergence_threshold_hours:40 } },
+               { bill:{ divergence:{ stage:"assented", dead:false } } },
+               { queue:[{ event:"test_console", after:1, label:"Test console" }] },
+               { wire:"SANDBOX: THE THRESHOLD BILL IS CARRIED" }],
+      result:"The reform is assented at forty hours; the neutrality settlement can land once the floor allows." },
+    { label:"Defeat the threshold bill.",
+      effects:[{ law:{ divergence_threshold_hours:168 } },
+               { bill:{ divergence:{ stage:"defeated", dead:true } } },
+               { queue:[{ event:"test_console", after:1, label:"Test console" }] },
+               { wire:"SANDBOX: THE THRESHOLD BILL IS DEFEATED" }],
+      result:"The restriction settlement can land once the floor allows." },
+    { label:"Open the tribunal.",
+      effects:[{ flag:"tribunal_established" },
+               { queue:[{ event:"test_console", after:1, label:"Test console" }] },
+               { wire:"SANDBOX: THE TRIBUNAL IS ESTABLISHED" }],
+      result:"The graduated-personhood ending is in reach, and the restriction settlement is now blocked." },
+    { label:"Impose the federal schedule.",
+      effects:[{ flag:"federal_schedule" },
+               { queue:[{ event:"test_console", after:1, label:"Test console" }] },
+               { wire:"SANDBOX: THE FEDERAL SCHEDULE IS IMPOSED" }],
+      result:"The federal settlement is in reach." },
+    { label:"Make the licensing order.",
+      effects:[{ si:"si_2287_44" }, { flag:"licensure_carveout_offered" },
+               { queue:[{ event:"test_console", after:1, label:"Test console" }] },
+               { wire:"SANDBOX: THE LICENSING ORDER IS IN FORCE" }],
+      result:"The order is in force, which opens its reaction and the challenge at the tribunal." },
+    { label:"Push friction toward a sanction.",
+      effects:[{ move:{ friction:40 } }, { move:{ legitimacy:-10 } },
+               { queue:[{ event:"test_console", after:1, label:"Test console" }] },
+               { wire:"SANDBOX: FRICTION IS PUSHED UP" }],
+      result:"The couplings begin to bite and the freeze event comes into reach." },
+    { label:"Drain the reserve.",
+      effects:[{ move:{ solvency:-970000 } },
+               { queue:[{ event:"test_console", after:1, label:"Test console" }] },
+               { wire:"SANDBOX: THE RESERVE IS DRAINED" }],
+      result:"Solvency is under thirty thousand, so the emergency loan and the low-reserve events are in reach." },
+    { label:"Open Czarnecki's paper.",
+      effects:[{ flag:"paper_opened" }, { move:{ "loyalty.cu_halloran":-40 } },
+               { signatures:12 },
+               { queue:[{ event:"test_console", after:1, label:"Test console" }] },
+               { wire:"SANDBOX: THE PAPER IS OPEN" }],
+      result:"The paper is open with the signatures already counted, so the ballot and its prose are in reach." },
+    { label:"Force the government's collapse.",
+      effects:[{ move:{ party_loyalty:-80 } },
+               { queue:[{ event:"test_console", after:1, label:"Test console" }] },
+               { wire:"SANDBOX: THE PARTY'S LOYALTY IS ZEROED" }],
+      result:"Party loyalty is at the floor, so the next loss check ends the run. Useful for reading the fall." },
+    { label:"Close the console.",
+      effects:[],
+      result:"The controls are put away and the pool takes the sitting back." }
   ]}
 
 ];

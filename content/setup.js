@@ -155,5 +155,32 @@ const SETUP = {
 const ADMINISTRATIONS = [
   { id:"flash_i", party:"cu", leader:"flash", ordinal:"I",
     from:2080, to:2084, session:4,
-    setup:{ startDate:"2080-04-11" } }
+    setup:{ startDate:"2080-04-11" } },
+
+  /* THE SANDBOX. A second government that exists only to be played with, so a
+     tester can reach a branch without playing the session that would have
+     reached it. Its overrides are all setup fields the engine already reads:
+     no pool jitter, a settlement may land as soon as its `when` holds, the
+     idleness drag is off, order-paper time and divisions are effectively
+     unlimited, and the meters open high enough not to lose by accident.
+
+     Its opening SOLVENCY is the tell. It is set far above anything the real
+     campaign can earn, and the test-console events in content/events.js are
+     gated on `scalarAbove:{solvency:900000}`, which is how the console knows
+     it is in the sandbox and stays out of Flash I. No new files, no engine
+     change: `contentFor()` in js/shell.js merges this over SETUP. */
+  { id:"sandbox", party:"cu", leader:"flash", ordinal:"(sandbox)",
+    from:2080, to:2084, session:4,
+    setup:{
+      weightJitter: 0,
+      settlementFloorSittings: 1,
+      slotsPerSession: 99,
+      divisionsPerSitting: 99,
+      grantsPerSitting: 99,
+      idleness: { fromChapter: 99, after: 3, drag: { legitimacy: -1 },
+                  mark: "Sandbox: the idleness pressure is off" },
+      scalars: { party_loyalty: 80, public_standing: 70, consumables: 80,
+                 thermal_margin: 60, solvency: 999999,
+                 legitimacy: 70, friction: 10 } }
+  }
 ];
