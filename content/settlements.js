@@ -158,6 +158,21 @@ const SETTLEMENTS = [
      PROSE IS THE AUTHOR'S. These closings are two flat sentences each
      so the mechanism can be played; the register is deliberately bare.
      ============================================================= */
+  /* THESE STILL GATE ON THE INTENTION, NOT THE ACT, and they should not.
+     `f1_annexing` is a flag the Prime Minister sets by deciding, so the
+     Commonwealth annexes 184,000 people with no reading, no division and no
+     Act — in a game whose thesis is that things happen by parliamentary act.
+
+     The Annexation Bill now exists (content/bills.js) and its onPass sets
+     `almanac_annexed`. Adding that flag here is a two-word change and it was
+     made and then REVERTED, because the Act cannot yet be carried: traced
+     over a full run the bill stalls at second reading, friction reaches 100
+     and solvency 0, and the canon ending becomes unreachable rather than
+     earned. Gating on an Act nobody can pass is worse than gating on an
+     intention.
+
+     So the balance comes first and the gate follows it. See the work order
+     in opencode-brief.md: this is one line once the bill can be carried. */
   { id: "f1_triumph", rank: 0,
     name: "Orbital Powerhouse",
     summary: "Full annexation. Earth drops the debt claims under threat of satellite transit tariffs.",

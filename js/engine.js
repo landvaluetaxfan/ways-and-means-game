@@ -4523,6 +4523,28 @@ const Engine = (function () {
        the same instant. Read the other way round, a government that never
        brought a budget went to the country as though it had governed. */
     if (st.supplyLost) return { over: true, kind: "loss", reason: "supply" };
+    /* A CRISIS CAN RESOLVE AFTER THE WRITS ARE OUT. This sat below the
+       dissolution branch, which returns, so checkSettlement was never
+       reached once the House was dissolved and the twelve sittings of the
+       campaign were a dead zone no settlement could land in. That was not a
+       decision anybody took; it fell out of the order of two returns.
+
+       It mattered because the Flash I tiers discriminate on scalars that
+       RAMP — the pyrrhic ending wants friction above 65, and annexation sets
+       a trend of +3 a sitting rather than a step — so the conditions for the
+       canon ending converge around sitting 25 in a session that rises at 24.
+       The ending was one sitting the wrong side of a boundary nobody had
+       written down, and a two-sitting change to the crisis chain was enough
+       to make it unreachable.
+
+       The settlement branch returns {over:false}: recording that the crisis
+       resolved never ends the run, before or after dissolution. The election
+       still ends it, on the same terms as before. */
+    const sEarly = checkSettlement(st, C);
+    if (sEarly && st.dissolved)
+      return { over: !!(st.flags && st.flags.campaign_done) ||
+                     (st.dissolved.at != null && st.sitting >= st.dissolved.at + 12),
+               kind: "election", result: st.dissolved, settlement: sEarly };
     if (st.dissolved) {
       /* THE WRITS ARE OUT AND THE CAMPAIGN RUNS. Chapter three IS the
          campaign and it plays after dissolution, so dissolution cannot be

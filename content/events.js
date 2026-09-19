@@ -1442,9 +1442,24 @@ company is for.
 Neither future is a vote the government can lose quietly.`,
   choices:[
     { label:"Move to annex.",
+      /* AND THE BILL IS ACTUALLY SET DOWN. The result line has always said
+         it was; until now nothing was, and the annexation settlements gated
+         on the flag this choice sets rather than on any Act. Moving it out
+         of `drafting` is what "set down" means to the engine. */
       effects:[{ flag:"f1_annexing" }, { move:{ "trend.friction":3 } },
                { move:{ "solvency":-6000 } }, { move:{ "legitimacy":12 } },
-               { wire:"GOVERNMENT MOVES TO ANNEX THE PLATFORM" }],
+               { bill:{ annexation:{ stage:"first_reading" } } },
+               /* AND THE HOUSE WILL SIT FOR IT. Six slots is the whole
+                  session's order-paper time and it is spoken for long
+                  before this bill exists, so an annexation set down at
+                  sitting thirteen could never reach a division: the canon
+                  ending was gated on time the player had already spent.
+                  A crisis measure brings its own time, which is what an
+                  emergency debate IS. Five is what it costs: four grants to
+                  carry it from first reading to where it can be voted, and
+                  one more for the division itself. */
+               { slots:{ total:5 } },
+               { wire:"GOVERNMENT MOVES TO ANNEX THE WORKS" }],
       result:"The annexation bill is set down. Acting is popular at home; Earth notices, a little more, every sitting." },
     { label:"Hold the line.",
       effects:[{ move:{ "trend.legitimacy":-3 } }, { move:{ "friction":-4 } }],
