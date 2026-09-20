@@ -83,6 +83,9 @@ const PROBE = `
     document.querySelector('[data-go="new"]').click();
     var adm = document.querySelector("[data-admin]");
     if (adm) adm.click();
+    /* The introduction stands between the government and the slots. */
+    var spGo = document.querySelector("[data-sp-go]");
+    if (spGo) spGo.click();
     document.querySelector('[data-new="1"]').click();
   } catch (e) { return done({ error: "boot: " + (e && e.message) }); }
 

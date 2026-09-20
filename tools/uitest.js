@@ -27,6 +27,15 @@ ok("a new government first offers the governments",
    w.document.querySelectorAll("[data-admin]").length > 0,
    w.document.querySelectorAll("[data-admin]").length + " administrations");
 $('[data-admin]').click();
+/* An administration with an introduction shows it BEFORE the slots now
+   (design/31 §5), so the walk reads it the way a player does. Asserted and
+   not merely skipped: a silently missing introduction would otherwise look
+   exactly like a working one from here. */
+ok("and choosing one introduces the government",
+   w.document.querySelectorAll(".menu-setpiece .sp-epigraph").length === 1,
+   w.document.querySelectorAll(".menu-setpiece").length + " introductions");
+const spGo = w.document.querySelector("[data-sp-go]");
+if (spGo) spGo.click();
 ok("slot list appears", w.document.querySelectorAll(".slot").length === 4);
 $('[data-new="1"]').click();
 ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.contains("on"));
