@@ -28,6 +28,11 @@
 
    WHAT COUNTS AS A FAULT. Two things, both unambiguous:
 
+     MENU      the main menu's printed band has taken more than 28% of a
+               short screen, or the plate's content is being drawn on top
+               of it. The menu is measured before the boot, because after
+               the boot it is gone — which is why it went unmeasured for as
+               long as this tool existed.
      CLIPPED   the element clips its overflow and there is overflow, so
                content the player is meant to read is simply not on the
                glass. Always a bug.
@@ -114,8 +119,47 @@ const PROBE = `
     Dialog.alert   = function (m, o, cb) { var f = typeof o === "function" ? o : cb; if (f) f(); };
   } catch (e) {}
 
+  /* THE MENU IS A SCREEN TOO, and this walked straight past it into a game
+     for as long as it existed. It cost the main menu two faults nobody could
+     see from a 1440p desktop: a printed band that grew from 12% of the glass
+     to 34% as the screen shrank, and menu buttons running underneath it on
+     the commonest laptop panel there is. Measured here, before the boot,
+     because after it the menu is gone. */
+  var menu = null;
   try {
     Shell.boot(CONTENT);
+    menu = (function () {
+      var out = [];
+      var band = document.querySelector(".menu-footer");
+      var plate = document.querySelector(".menu-plate");
+      var vh = document.documentElement.clientHeight;
+      if (!band || !plate) return out;
+      var br = band.getBoundingClientRect();
+
+      /* A BAND THAT GROWS AS THE GLASS SHRINKS. It is furniture, not content,
+         so a third of a short screen is a fault however correct its CSS. */
+      if (br.height > vh * 0.28)
+        out.push({ what: "the printed band", detail: Math.round(br.height) +
+                   "px is " + Math.round(br.height / vh * 100) + "% of a " + vh + "px screen" });
+
+      /* AND IT MUST NOT BE PAINTED OVER. The plate is z-index 2 and the band
+         is not, so a plate that cannot fit draws straight through it. Check
+         the plate's real content rather than the plate box, which carries
+         padding the band may legitimately sit inside. */
+      var kids = plate.querySelectorAll(".menu-title, .menu-tagline, .menu-btns, .menu-warn, .menu-text");
+      for (var i = 0; i < kids.length; i++) {
+        var kr = kids[i].getBoundingClientRect();
+        if (!kr.height) continue;
+        if (kr.bottom > br.top + 1)
+          out.push({ what: "." + (kids[i].className.split(" ")[0] || "?"),
+                     detail: "ends at y=" + Math.round(kr.bottom) +
+                             ", under a band that starts at y=" + Math.round(br.top) });
+      }
+      return out;
+    })();
+  } catch (e) { return done({ error: "menu: " + (e && e.message) }); }
+
+  try {
     document.querySelector('[data-go="new"]').click();
     var adm = document.querySelector("[data-admin]");
     if (adm) adm.click();
@@ -243,7 +287,7 @@ const PROBE = `
   var de = document.documentElement;
   var pageX = de.scrollWidth - de.clientWidth;
 
-  done({ hits: found, tabs: drawn, pageX: pageX, vw: de.clientWidth });
+  done({ hits: found, tabs: drawn, pageX: pageX, vw: de.clientWidth, menu: menu });
 })();
 `;
 
@@ -285,8 +329,13 @@ for (const [width, height] of SHAPES) {
   const missing = (r.tabs || []).filter(t => /NOT DRAWN/.test(t));
   if (missing.length) { console.log("    FAIL tabs that drew nothing: " + missing.join(", ")); fail++; }
 
+  for (const m of (r.menu || [])) {
+    console.log("    MENU " + m.what + "  " + m.detail);
+    fail++;
+  }
+
   const hits = (r.hits || []).sort((a, b) => b.by - a.by);
-  if (!hits.length) { console.log(`    ok   ${(r.tabs || []).length} tabs, nothing clipped, nothing escapes its frame`); continue; }
+  if (!hits.length) { console.log(`    ok   the menu, then ${(r.tabs || []).length} tabs, nothing clipped, nothing escapes its frame`); continue; }
 
   fail += hits.length;
   const show = ALL ? hits : hits.slice(0, 10);

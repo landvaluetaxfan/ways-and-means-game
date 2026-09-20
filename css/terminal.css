@@ -1352,26 +1352,39 @@ body.menu-on{background:#0b1826;}
 .menu-stage::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
   background:
     linear-gradient(90deg, rgba(12,14,11,.88) 0%, rgba(12,14,11,.6) 34%, rgba(12,14,11,.06) 68%, rgba(12,14,11,0) 100%);}
-.menu-plate{position:relative;z-index:2;max-width:700px;padding:52px 44px 96px 56px;}
+/* THE PLATE GIVES WAY ON A SHORT SCREEN. Every vertical quantity here was
+   fixed, so the plate could not shrink and painted OVER the printed band
+   instead: measured at 1366x768 — the commonest laptop panel there is —
+   the menu buttons ended at y=508 with the band starting at y=504, and at
+   1024x640 a full hundred pixels of them was behind it. This is the .panel
+   trap in CLAUDE.md from the other side: a column that cannot fit must
+   shrink or scroll, never paint over its neighbour.
+
+   Scaled against vh rather than vw because HEIGHT is the axis that is
+   short, and the coefficients are set so every clamp reaches its maximum at
+   900px tall — the plate is pixel-identical to what it was on any panel
+   that size or taller. */
+.menu-plate{position:relative;z-index:2;max-width:700px;
+  padding:clamp(24px,5.8vh,52px) 44px clamp(32px,10.7vh,96px) clamp(28px,3.9vw,56px);}
 /* the wordmark: Georgia for the words, Garamond for the ampersand */
 .menu-title{font-family:Georgia,"Liberation Serif","Times New Roman",Times,serif;color:#fff;line-height:.84;
   text-transform:uppercase;text-shadow:0 2px 24px rgba(0,0,0,.72);}
-.menu-title .w{display:block;font-size:66px;letter-spacing:.06em;}
+.menu-title .w{display:block;font-size:clamp(40px,7.33vh,66px);letter-spacing:.06em;}
 .menu-title .a{font-family:Garamond,"EB Garamond","Times New Roman",serif;
-  font-size:40px;letter-spacing:0;padding-right:8px;}
-.menu-title .m{font-size:66px;letter-spacing:.04em;}
-.menu-tagline{font-family:var(--f-ui);font-size:15px;letter-spacing:.05em;
-  color:#dfe2d6;margin-top:18px;text-shadow:0 1px 8px rgba(0,0,0,.6);}
-.menu-body{margin-top:46px;}
+  font-size:clamp(25px,4.44vh,40px);letter-spacing:0;padding-right:8px;}
+.menu-title .m{font-size:clamp(40px,7.33vh,66px);letter-spacing:.04em;}
+.menu-tagline{font-family:var(--f-ui);font-size:clamp(12.5px,1.67vh,15px);letter-spacing:.05em;
+  color:#dfe2d6;margin-top:clamp(9px,2vh,18px);text-shadow:0 1px 8px rgba(0,0,0,.6);}
+.menu-body{margin-top:clamp(20px,5.1vh,46px);}
 .menu-sub{font-family:var(--f-ui);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
   color:#c9ccc2;margin-bottom:10px;text-shadow:0 1px 8px rgba(0,0,0,.6);}
-.menu-btns{display:flex;flex-direction:column;gap:10px;align-items:flex-start;}
+.menu-btns{display:flex;flex-direction:column;gap:clamp(6px,1.1vh,10px);align-items:flex-start;}
 .menu-btns.row{flex-direction:row;margin-top:16px;}
 /* glass buttons, bevelled like the terminal's chrome: light on the top and
    left, dark on the bottom and right, so the plate shows through but they
    still read as raised metal. All one width; Continue is no longer wider. */
-.mbtn{font-family:var(--f-ui);font-size:19px;color:#f2f2ec;text-align:left;
-  background:rgba(20,23,18,.52);padding:9px 16px;width:306px;
+.mbtn{font-family:var(--f-ui);font-size:clamp(15px,2.1vh,19px);color:#f2f2ec;text-align:left;
+  background:rgba(20,23,18,.52);padding:clamp(6px,1vh,9px) 16px;width:306px;
   border-top:1px solid rgba(242,242,236,.55);
   border-left:1px solid rgba(242,242,236,.4);
   border-bottom:1px solid rgba(8,10,8,.72);
@@ -1450,19 +1463,35 @@ body.menu-on{background:#0b1826;}
 /* the printed band under the plate, on the same stock as an instrument. The
    text sits toward the head of the band and the mark on the foot, so the copy
    is not pushed down by the mark's height. */
-.menu-footer{position:relative;flex:0 0 auto;background:#f1f0ea;color:#1d1d1b;
-  font-family:"Times New Roman",Times,Georgia,serif;padding:20px 56px 44px;}
-.menu-footer .mf-text{max-width:min(860px,calc(100% - 340px));}
-.menu-footer h1{margin:0 0 12px;font-size:21px;font-weight:400;}
-.menu-footer p{margin:0;font-size:13px;line-height:1.45;}
+/* EVERY QUANTITY HERE SCALES, and it did not. The band was fixed pixels
+   throughout with one breakpoint at 700px — below every real screen but a
+   phone — so it did not merely fail to shrink, it GREW: measured at 178px
+   tall and 12% of the glass on a 2560x1440 panel, and 215px tall and 34% of
+   the glass at 1024x640. The mark was 300px at all seven shapes, 12% of the
+   width on the big panel and 37% on a tablet, and `.mf-text`s
+   `calc(100% - 340px)` reserved room for a mark that never gave any back, so
+   the copy was strangled to 368px while the logo kept its 300.
+
+   The mark's width is now a custom property because TWO rules need it: the
+   band reserves space for it and the mark fills that space. They were two
+   independent numbers and they drifted, which is the apportionment_ratio
+   mistake in a stylesheet. */
+.menu-footer{--mf-mark:clamp(150px,19vw,300px);
+  --mf-side:clamp(20px,4.4vw,56px);
+  position:relative;flex:0 0 auto;background:#f1f0ea;color:#1d1d1b;
+  font-family:"Times New Roman",Times,Georgia,serif;
+  padding:clamp(14px,1.6vw,20px) var(--mf-side) clamp(26px,3.4vw,44px);}
+.menu-footer .mf-text{max-width:min(860px,calc(100% - var(--mf-mark) - 40px));}
+.menu-footer h1{margin:0 0 clamp(7px,1vw,12px);font-size:clamp(16px,1.5vw,21px);font-weight:400;}
+.menu-footer p{margin:0;font-size:clamp(11px,1vw,13px);line-height:1.45;}
 /* the government's own mark, at the foot of the printed band */
-.menu-footer .mf-gov{position:absolute;right:56px;bottom:26px;width:300px;height:auto;opacity:.92;}
+.menu-footer .mf-gov{position:absolute;right:var(--mf-side);bottom:clamp(14px,2vw,26px);
+  width:var(--mf-mark);height:auto;opacity:.92;}
+/* Under 700 the mark stops sharing the line and sits in the band's own
+   bottom padding, with the copy taking the full width above it. */
 @media (max-width:700px){
-  .menu-footer{padding:18px 20px 76px;}
+  .menu-footer{--mf-mark:clamp(130px,26vw,200px);padding-bottom:calc(var(--mf-mark) * .34 + 34px);}
   .menu-footer .mf-text{max-width:100%;}
-  .menu-footer h1{font-size:18px;}
-  .menu-footer p{font-size:12px;}
-  .menu-footer .mf-gov{right:20px;bottom:18px;width:200px;}
 }
 
 /* Options > Animations off. The ceremony still resolves, it just does not draw. */
