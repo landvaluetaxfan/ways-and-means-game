@@ -86,7 +86,7 @@ const SetPiece = (function () {
       const d = (typeof Papers !== "undefined" && Papers.SIG_PATH) || "";
       return `<div class="sp-sec sp-signature"><div class="sigline">` +
         `<div class="rule">` +
-        (d ? `<svg width="240" height="52" viewBox="0 0 240 52" aria-hidden="true">` +
+        (d ? `<svg width="228" height="63" viewBox="0 0 228 63" aria-hidden="true">` +
              `<path class="sigpath" d="${d}"/></svg>` : "") +
         `</div>` +
         `<div class="cap">${esc(sec.head || "")}</div>` +

@@ -874,7 +874,11 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 .paper li{margin-bottom:5px;}
 .sigblock{margin-top:26px;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;}
 .sigline{flex:0 0 250px;}
-.sigline .rule{border-bottom:1px solid #17140e;height:52px;position:relative;}
+/* The rule is the line she signs ON; the signature itself is 228x63 and
+   hangs above it with overflow:visible, so the descenders are not clipped.
+   tools/tracesig.js prints the viewBox it produced and says to check here
+   when it changes — it did, from 52 to 63, when the real signature landed. */
+.sigline .rule{border-bottom:1px solid #17140e;height:63px;position:relative;}
 .sigline svg{position:absolute;left:4px;bottom:1px;overflow:visible;}
 .sigline .cap{font-family:var(--f-ui);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#4e4838;padding-top:3px;}
 #sigpath,.sigpath{fill:none;stroke:#1b2a5c;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}

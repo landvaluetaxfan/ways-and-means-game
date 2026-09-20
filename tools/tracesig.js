@@ -164,9 +164,34 @@ function run(img) {
   thin(g, TW, TH);
   let lines = polylines(g, TW, TH);
 
-  /* Longest first: the ceremony draws in order, and the main sweep should
-     arrive before the diacritics. */
-  lines.sort((a, b) => b.length - a.length);
+  /* LEFT TO RIGHT, BECAUSE A SIGNATURE IS WRITTEN AND NOT ASSEMBLED.
+
+     This sorted longest-first, so the ceremony drew the biggest sweep before
+     everything else wherever it happened to sit on the page. With a real
+     signature that is forty-odd subpaths, the stroke-dashoffset animation
+     then reads as fragments appearing all over the line at once rather than
+     as a hand moving across it — which is exactly the complaint: the
+     signature does not get signed, it arrives.
+
+     Ordering by leftmost x makes the sweep travel the way the pen did. A
+     crossed t or a dotted i lands with the part of the name it belongs to
+     rather than at the end, which is also how it is actually written: you
+     do not cross every t after finishing the surname.
+
+     Ties break on the topmost point, so two strokes starting at the same x
+     draw in a stable order rather than whichever way the walk happened to
+     find them — the trace has to be reproducible.
+
+     AND EACH STROKE IS ORIENTED BEFORE IT IS ORDERED. The walk starts from
+     whichever endpoint it found first, so about a fifth of the strokes came
+     out right-to-left — they drew backwards, and they sorted by a leftmost
+     point that was not where they began, which left the sequence out of
+     order in nine places even after sorting. Reversing them first makes the
+     start of every stroke its leftmost point, so the ordering is exact and
+     each stroke is drawn in the direction a pen would move. */
+  lines.forEach(l => { if (l[l.length - 1][0] < l[0][0]) l.reverse(); });
+  const topmost = l => l.reduce((m, p) => Math.min(m, p[1]), Infinity);
+  lines.sort((a, b) => (a[0][0] - b[0][0]) || (topmost(a) - topmost(b)));
 
   const sx = W / TW, sy = sx;                  // uniform, so nothing distorts
   const H = Math.min(HMAX, Math.round(TH * sy));
