@@ -1499,6 +1499,68 @@ console.log("\nA DEFERRED FACT (the queue carries effects):");
   if (bad) { console.log("\n" + bad + " DEFERRED-FACT FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nNO PARTY IS CALLED BY A NAME IT NO LONGER HAS:");
+(function(){
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  /* THE IDS ARE THE INITIALS OF NAMES THAT ARE GONE. `cu` was the Commons
+     Union, `psa` the Public Substrate Association, `cl` the Consortium
+     Liberals; `fh` was the Party of Property Owners, `rv` the Democratic
+     Centre and `upl` Common Kind until 14 September 2026. So an id is a poor
+     guide to what a party is now called, and the old names went on living in
+     prose nobody re-read \u2014 thirty of them in bible.md alone, including two
+     section headings and a person roster in which one member appeared twice
+     under two different ministries.
+
+     The bible and the design notes may still SAY the old names where the
+     passage is about the renaming itself, which is a record and not a
+     mistake. Content, the engine, the interface and the tools may not: there
+     the name is either describing the present or it is wrong. */
+  const GONE = {
+    "Commons Union": "cu", "Public Substrate Association": "psa",
+    "Consortium Liberals": "cl", "Party of Property Owners": "fh",
+    "Democratic Centre": "rv", "Common Kind": "upl",
+    "Station Confederacy": "sc", "Habitat Union League": "hul"
+  };
+  const LOOK = ["js", "content", "tools"];
+  const hits = [];
+  LOOK.forEach(dir => fs.readdirSync(dir)
+    .filter(f => /\.js$/.test(f))
+    .forEach(f => {
+      const p = dir + "/" + f;
+      const src = fs.readFileSync(p, "utf8");
+      Object.keys(GONE).forEach(name => {
+        if (src.indexOf(name) >= 0) hits.push(p + ": " + name);
+      });
+    }));
+  ["test.js"].forEach(p => {
+    /* this file names them on purpose, in the table above */
+  });
+
+  ok("the parties have current names in content, the engine and the tools",
+     hits.length === 0, hits.slice(0, 8).join("; ") || "clean");
+
+  /* and every current name is actually the one in content */
+  const names = new Set((CONTENT.parties || []).map(p => p.name));
+  ok("and the twelve names are content's own", names.size === (CONTENT.parties || []).length,
+     names.size + " distinct of " + (CONTENT.parties || []).length);
+
+  /* nobody holds two offices */
+  const held = {};
+  const twice = [];
+  (CONTENT.cabinet || []).forEach(p => {
+    if (!p.holder) return;
+    if (held[p.holder]) twice.push(p.holder + ": " + held[p.holder] + " and " + p.id);
+    held[p.holder] = p.id;
+  });
+  ok("and no one holds two ministries at once", twice.length === 0,
+     twice.join("; ") || "all distinct");
+
+  if (bad) { console.log("\n" + bad + " STALE NAME FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nTHE OPPOSITION TABLES A MOTION:");
 (function(){
   let bad = 0;

@@ -137,11 +137,11 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 - §8.9 · L1372 — Ideologies as doctrines  *LOCKED*
 
 **Part IX — THE PLAYER'S PARTY** · L1384
-- §9.1 · L1386 — Which party  *LEANING (Commons Union)*
+- §9.1 · L1386 — Which party  *LEANING (Party of Socialists and Democrats)*
 - §9.2 · L1399 — Inherited platform  *LOCKED*
 - §9.3 · L1403 — Two alliance structures  *LOCKED*
 - §9.4 · L1412 — Refraction  *LOCKED as a writing principle*
-- §9.5 · L1416 — Current caucus (Commons Union, 82)  *LOCKED*
+- §9.5 · L1416 — Current caucus (Party of Socialists and Democrats, 82)  *LOCKED*
 
 **Part X — SOCIETY, CULTURE, LAW** · L1431
 - §10.1 · L1433 — Aesthetic register — orbital warmth  *LOCKED*
@@ -587,7 +587,7 @@ This solves the "sometimes cliché, sometimes high concept" worry by formalising
 
 - **The list tier does not correct district malapportionment.** Unlike MMP. Disproportionality is baked in and permanent — thematically perfect for a federation of unequal stations.
 - **Over-rewards the largest party** (district sweep stacks on proportional list share).
-- **A pure list party is viable** — strong nationally, zero districts, no roots. The shape of the Public Substrate Association and the Georgists. Opponents call them rootless with some justification.
+- **A pure list party is viable** — strong nationally, zero districts, no roots. The shape of the New Progressive Party and the Georgists. Opponents call them rootless with some justification.
 - **Split-ticket voting is measurable.** Ticket-splitting rate as a surfaced state variable: vote for the local incumbent you like, vote the party you believe in. A cheap, readable signal about where a coalition is soft. Currently running 21.4%, four points above the last general election.
 
 ## 4.4 The tier ratio is amendable — LOCKED
@@ -598,7 +598,7 @@ The district:list ratio **is** the disproportionality dial, so changing it is a 
 
 Candidates may stand on the district ballot and the list simultaneously. District losers can be resurrected via the list, ranked by **how narrowly they lost** (Japan's *sekihairitsu* best-loser system), under s.44 of the Representation Act.
 
-Revenants owe their seat to the party rather than any constituency. They whip perfectly and have no local base to defend. **A caucus full of them is loyal and brittle** — a fact for a PM to discover at the wrong moment. Nine currently sit for the Commons Union.
+Revenants owe their seat to the party rather than any constituency. They whip perfectly and have no local base to defend. **A caucus full of them is loyal and brittle** — a fact for a PM to discover at the wrong moment. Nine currently sit for the Party of Socialists and Democrats.
 
 ## 4.6 Functional constituencies — LOCKED
 
@@ -608,7 +608,7 @@ Forty seats. Modelled on Hong Kong, but the justification is actually true here:
 
 **The sectors:** Life Support · Maintenance and Trades (union bloc vote) · Substrate and Hosting · Consumables and Agriculture · Transit and Orbital Mechanics · Tether and Anchorage · Medicine and Embodiment · Attestation and Registry · Insurance and Underwriting · Legal.
 
-**These are not uniformly right-wing.** The labour panels are solidly Commons Union. The player's own party benefits from a system the player's own party is committed to abolishing. The good kind of hypocrisy to hand a protagonist.
+**These are not uniformly right-wing.** The labour panels are solidly Party of Socialists and Democrats. The player's own party benefits from a system the player's own party is committed to abolishing. The good kind of hypocrisy to hand a protagonist.
 
 ### 4.6.1 Dual majority — LOCKED
 
@@ -782,7 +782,7 @@ Computing hardware hosting emulated minds. Three properties: **capacity** (how m
 
 **Running slow is what poverty looks like.** A poor emulation at 0.3x experiences a four-year parliament as fourteen subjective months. They miss things. News arrives compressed. A campaign happens around them faster than they can follow. Not disenfranchised on paper — simply unable to participate in a conversation moving at eight times their speed.
 
-**Therefore: a minimum civic clock rate**, publicly subsidised, so every citizen experiences the campaign at a comparable pace. A franchise-equality argument with no real-world analogue. Expensive, thermally constrained, and resented by the Commons Union's embodied base who pay for it. Excellent bill.
+**Therefore: a minimum civic clock rate**, publicly subsidised, so every citizen experiences the campaign at a comparable pace. A franchise-equality argument with no real-world analogue. Expensive, thermally constrained, and resented by the PSD's embodied base who pay for it. Excellent bill.
 
 ## 6.4 Forking and the divergence threshold — LOCKED, and the single best mechanic here
 
@@ -797,8 +797,8 @@ A fork is a running copy. The moment two copies have different experiences they 
 
 **Every party has a position on the number:**
 - Instance Rights League: zero.
-- Consortium Liberals: high enough to keep fork-labour cheap, and embarrassed about it.
-- **Commons Union: high, for a completely different reason** — a high threshold means fewer legal fork-workers competing with its embodied base. This puts the player's own party in accidental alliance with employers. Very good material.
+- Liberal Party: high enough to keep fork-labour cheap, and embarrassed about it.
+- **Party of Socialists and Democrats: high, for a completely different reason** — a high threshold means fewer legal fork-workers competing with its embodied base. This puts the player's own party in accidental alliance with employers. Very good material.
 
 Criminal-law mess follows: who serves a sentence when the instance that committed the act has been reabsorbed, and whether reabsorption of a criminal instance is evidence destruction.
 
@@ -853,7 +853,7 @@ shed_order_authority             // statute | contract | engineering_authority
 ## 6.10 The biological position — LOCKED
 
 The setting drifts emulation-heavy if left alone, and that weakens the politics.
-Biologicals hold four structural positions, and the Commons Union's base sits on
+Biologicals hold four structural positions, and the PSD's base sits on
 all four.
 
 **They do the embodied work, and that work is not low-status.** 46% of jobs
@@ -869,12 +869,12 @@ kill everyone. This is a labour aristocracy, closer to an aircraft mechanic than
 a labourer. Part of why the emulated poor are poor is precisely that they have no
 body and cannot afford to rent one.
 
-This is why the Commons Union and the Public Substrate Association have opposed
+This is why the Party of Socialists and Democrats and the New Progressive Party have opposed
 material interests while sharing an economic programme (§8.5).
 
 **They pay for substrate and do not use it.** Thermal taxation funds the
 insurance that keeps emulated citizens running, while fork-labour undercuts
-embodied wages. The Commons Union's restrictionism is therefore a correct reading
+embodied wages. The the PSD's restrictionism is therefore a correct reading
 of material interest rather than prejudice, which is exactly what makes the
 player's own party uncomfortable rather than villainous (§9.1).
 
@@ -904,7 +904,7 @@ setting rather than a piece of colour.
 
 | | volume rent | can be switched off | politics |
 |---|---|---|---|
-| Embodied, employed | yes | no | Commons Union: secure, organised, essential |
+| Embodied, employed | yes | no | Party of Socialists and Democrats: secure, organised, essential |
 | Embodied, on the floor | cheap, low band | no | poor but not precarious |
 | Emulated, high tier | no | not really | the accumulating gerontocracy (§10.4) |
 | Emulated, low tier | no | **yes** | the shed register |
@@ -1281,9 +1281,9 @@ a lie is a slogan.
 
 | Party | Dist | List | Func | Total | Axes |
 |---|---|---|---|---|---|
-| Commons Union | 48 | 25 | 9 | **82** | Public · Restrictionist · Federal · mixed |
-| Consortium Liberals | 22 | 19 | 6 | **47** | Private · Expansionist · Federal · Integrationist |
-| Public Substrate Association | 6 | 28 | 2 | **36** | Public · Expansionist · Federal · Integrationist |
+| Party of Socialists and Democrats | 48 | 25 | 9 | **82** | Public · Restrictionist · Federal · mixed |
+| Liberal Party | 22 | 19 | 6 | **47** | Private · Expansionist · Federal · Integrationist |
+| New Progressive Party | 6 | 28 | 2 | **36** | Public · Expansionist · Federal · Integrationist |
 | Station Compact | 26 | 8 | 0 | **34** | mixed · mixed · Station · Closurist |
 | Hullists | 9 | 6 | 7 | **22** | mixed · Restrictionist · mixed · Closurist |
 | Congregational Democratic Alliance | 12 | 5 | 1 | **18** | mixed · Restrictionist · mixed · mixed |
@@ -1293,17 +1293,17 @@ a lie is a slogan.
 | Georgists | 0 | 3 | 0 | **3** | mixed · — · Federal · — |
 | Uplift Alliance | 0 | 2 | 0 | **2** | Public · Expansionist · — · — |
 
-**Government:** Commons Union 82 + Public Substrate Association 36 + the CDA 18 = 136, plus confidence-and-supply from the Uplift Alliance (2) and Georgists (3) = **141 exactly.** Working majority of nil.
+**Government:** Party of Socialists and Democrats 82 + New Progressive Party 36 + the CDA 18 = 136, plus confidence-and-supply from the Uplift Alliance (2) and Georgists (3) = **141 exactly.** Working majority of nil.
 
 **Dual majority position:** coalition holds 12 of 40 functional seats. Needs 21. Structurally cannot carry an integrity bill or a charter amendment. This is the trap the campaign is built on.
 
 ## 8.5 Party notes
 
-**Commons Union** — old left, embodied maintenance labour, the party of the strike weapon. Personhood-restrictionist because its base is undercut by fork-labour. Descended with the Consortium Liberals from the Founding Coalition; both still claim the inheritance.
+**Party of Socialists and Democrats** — old left, embodied maintenance labour, the party of the strike weapon. Personhood-restrictionist because its base is undercut by fork-labour. Descended with the Liberal Party from the Founding Coalition; both still claim the inheritance.
 
-**Public Substrate Association** ("the Substrate Left") — public substrate as a right, thermal expansion, abolition of suspension for debt. Young, emulation-heavy, list-tier strength and almost no district seats. Shares the Commons Union's economics and despises its personhood line. **The best intra-coalition friction available** — and the friction has a demographic foundation, not merely an ideological one (§6.10): the two parties' bases have opposed material interests on substrate funding, volume, and fork-labour while agreeing on ownership.
+**New Progressive Party** ("the Substrate Left") — public substrate as a right, thermal expansion, abolition of suspension for debt. Young, emulation-heavy, list-tier strength and almost no district seats. Shares the PSD's economics and despises its personhood line. **The best intra-coalition friction available** — and the friction has a demographic foundation, not merely an ideological one (§6.10): the two parties' bases have opposed material interests on substrate funding, volume, and fork-labour while agreeing on ownership.
 
-**Consortium Liberals** — cosmopolitan market party. Personhood-expansionist for commercial reasons: more legal persons, more contracts, more counterparties. Elevator and shipping money.
+**Liberal Party** — cosmopolitan market party. Personhood-expansionist for commercial reasons: more legal persons, more contracts, more counterparties. Elevator and shipping money.
 
 **Station Compact** — confederalist, closurist, deeply local. Ideologically incoherent across stations, which is realistic and mechanically fun: they cannot whip their own members.
 
@@ -1323,7 +1323,7 @@ a lie is a slogan.
 
 ## 8.6 Parties available but not currently seated — LOCKED as reserve material
 
-**Deck Cooperatives** *[Public · Restrictionist · Station · Closurist]* — agricultural-deck syndicates. Food sovereignty, deep localism, hostile to imported consumables. Left-closurist, culturally conservative, the warmest and most parochial voice available. Currently a current inside the Commons Union rather than a party.
+**Deck Cooperatives** *[Public · Restrictionist · Station · Closurist]* — agricultural-deck syndicates. Food sovereignty, deep localism, hostile to imported consumables. Left-closurist, culturally conservative, the warmest and most parochial voice available. Currently a current inside the Party of Socialists and Democrats rather than a party.
 
 **The Continuity Federation** *[Public · Expansionist · Federal · Integrationist]* — built entirely around defending substrate insurance. Nominally single-issue, potentially enormous, cross-class in a way nothing else is.
 
@@ -1367,7 +1367,7 @@ a lie is a slogan.
 
 **The party of the failed revolution** — banned, or reduced to a rump everyone treats as an embarrassment, whose surviving figures are now respectable elsewhere. **Every current alignment traces back to where people stood on it.** From Robinson: one event pre-loading every relationship in the roster. Currently **THIN** — needs a date, a cause, and a list of who was where.
 
-**The Founding Coalition** — the original charter party, split long ago into the Commons Union and the Consortium Liberals.
+**The Founding Coalition** — the original charter party, split long ago into the Party of Socialists and Democrats and the Liberal Party.
 
 ## 8.9 Ideologies as doctrines — LOCKED
 
@@ -1383,12 +1383,12 @@ a lie is a slogan.
 
 # PART IX — THE PLAYER'S PARTY
 
-## 9.1 Which party — LEANING (Commons Union)
+## 9.1 Which party — LEANING (Party of Socialists and Democrats)
 
 **The case:** economically left but personhood-restrictionist, because its base is embodied maintenance labour threatened by emulation wage competition. **The player's own party is uncomfortable from turn one.** Not villainous, not heroic — defending real people with real grievances by holding a position the game clearly shows is unjust. A much better place to put a protagonist than a party you agree with.
 
 It stacks well:
-- The coalition partner is the Public Substrate Association, which shares your economics and despises your personhood position, so the friction is inside your government rather than across the aisle.
+- The coalition partner is the New Progressive Party, which shares your economics and despises your personhood position, so the friction is inside your government rather than across the aisle.
 - Your base holds a strike weapon amounting to a credible threat to kill everyone.
 - Closure spending — the bill that funds a station's eventual secession — lands hardest on exactly your voters.
 - Your party has promised functional-tier abolition four times and structurally cannot deliver it.
@@ -1413,7 +1413,7 @@ So you can pact with one party in districts and govern with another, and the pac
 
 Other ideologies are refracted through the player's party's view of them. Hullists appear the way the caucus talks about Hullists — as a threat, a temptation during a crisis, and a caricature that some of your own MPs privately half-agree with. Cheaper to write than neutral encyclopedia entries, and better prose.
 
-## 9.5 Current caucus (Commons Union, 82) — LOCKED
+## 9.5 Current caucus (Party of Socialists and Democrats, 82) — LOCKED
 
 | Current | MPs | Loyalty |
 |---|---|---|
@@ -1530,7 +1530,7 @@ cutting it does not reduce their income, it ends them.
 fourteen subjective months. Not disenfranchised — simply unable to follow a
 conversation moving at eight times their speed, and unemployable at speed because
 responses take a week. The minimum civic clock rate bill is about these 560,000
-people, and the Commons Union's embodied base resents paying for it.
+people, and the PSD's embodied base resents paying for it.
 
 **The unattested** are outside the formal economy by construction: employment
 requires attestation and attestation is what they refuse. They cannot vote and
@@ -1613,29 +1613,29 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
 
 ## 11.2 Persons
 
-- **Rt. Hon. Adriana Flash MP** — Prime Minister. Commons Union. Member for Anselm Ring.
+- **Rt. Hon. Adriana Flash MP** — Prime Minister. Party of Socialists and Democrats. Member for Anselm Ring.
 - **Mandelina Trottier MP** — Deputy Prime Minister; Leader, New Progressive
   Party. The junior coalition partner's price.
 - **President Jaco van Ryneveld** — independent. Elected 2284, direct, 51.4%. Relations with the government: cold. Has privately indicated a threshold bill carried on a contested dual majority would be referred for constitutional review.
-- **Dan Czarnecki MP** — Ashfield. Commons Union. Leads the eleven-member Czarnecki group, loyalty 12. Needs nine more signatures for a leadership ballot.
-- **Suravaram Vidyasagar MP** — Minister for Life Support. Commons Union, member for
+- **Dan Czarnecki MP** — Ashfield. Party of Socialists and Democrats. Leads the eleven-member Czarnecki group, loyalty 12. Needs nine more signatures for a leadership ballot.
+- **Suravaram Vidyasagar MP** — Minister for Life Support. Party of Socialists and Democrats, member for
   Fore River Yards. Career maintenance union. The only member of Cabinet the Guild
   Bench will take a meeting with.
-- **Anil Devi MP** — Chief Whip. Commons Union, member for Anselm Ring Outer
+- **Anil Devi MP** — Chief Whip. Party of Socialists and Democrats, member for Anselm Ring Outer
   Decks. Reports that things went as well as they could have; reports this about
   everything.
-- **Ferran Dulac MP** — Minister for Labour and Participation. Commons Union.
-  Owns participation and the divergence threshold as labour policy.
+- **Jason Herrera MP** — Minister for Labour and Participation. New Progressive
+  Party. Owns participation and the divergence threshold as labour policy.
 - **Marit Ivarsen MP** — Minister for Trade and the Anchors. New Progressive
   Party. Owns the trade balance and the anchor concessions.
-- **Adaeze Fenwick MP** — Minister for Law and the Charter. Commons Union. The
+- **Adaeze Fenwick MP** — Minister for Law and the Charter. Party of Socialists and Democrats. The
   Law Officer in cabinet.
-- **Imre Whitlam MP** — Leader of the House. Commons Union. Owns the order paper.
+- **Imre Whitlam MP** — Leader of the House. Party of Socialists and Democrats. Owns the order paper.
 - **Sunniva Brakk MP** — Minister for Home Affairs and Contingencies. Commons
   Union. The civilian answer to the engineering authority.
-- **Ferran Dulac MP** — Minister for Defence. Commons Union. The maintenance
+- **Ferran Dulac MP** — Minister for Defence. Party of Socialists and Democrats. The maintenance
   bloc's man, brought back in.
-- **Kosta Piastri MP** — Minister for Education. Commons Union. Deck
+- **Kosta Piastri MP** — Minister for Education. Party of Socialists and Democrats. Deck
   cooperativist, and photographs well.
 - **Kazuya Tanako MP** — Chair, Life Support panel. Functional tier, Alliance of
   Business and Government. Position unchanged since 2279.
@@ -1758,10 +1758,10 @@ Corporate seats are controlled by whoever controls the companies (§4.6.2).
 - Thermal Quota Allocation No. 2 — second reading, 147, simple majority.
 - Anchor Concession (Anchorage) Ratification — Lords stage, 161, simple.
 - Substrate Insurance Uprating — drafting.
-- Shed Order (Civilian Oversight) — blocked. 134 popular, 9 functional. Dual test. Owner: Commons Union.
-- Substrate Insurance (Uprating) — drafting. Owner: Public Substrate Association.
+- Shed Order (Civilian Oversight) — blocked. 134 popular, 9 functional. Dual test. Owner: Party of Socialists and Democrats.
+- Substrate Insurance (Uprating) — drafting. Owner: New Progressive Party.
 - Continuity of Person (Registration) — drafting. Owner: the CDA, their priority.
-- Substrate (Public Stake) — drafting. Owner: Public Substrate Association. Takes
+- Substrate (Public Stake) — drafting. Owner: New Progressive Party. Takes
   the public share from 0.35 to 0.6 and knocks 26 points off the substrate index.
 
 ---

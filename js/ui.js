@@ -2688,7 +2688,7 @@ const UI = (function () {
            thing a parliament does deliberately, and the weight is the
            point. So the benches take longer than they ever have, and the
            time is still proportional to how many members are walking:
-           a bench of two goes in under a second, the Commons Union's
+           a bench of two goes in under a second, the PSD's
            eighty-two takes nearly three. */
         ms: Math.max(520, Math.min(2900, 620 + seats * 38)) });
       });

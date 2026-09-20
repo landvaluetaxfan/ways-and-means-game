@@ -37,7 +37,7 @@ const taught = new Set(GLOSSARY.filter(g => g.assumed).map(g => g.term.toLowerCa
 const byTerm = GLOSSARY.reduce((m, g) => (m[g.term.toLowerCase()] = g, m), {});
 const problems = { early: [], overload: [], orphan: [], untaught: [] };
 
-/* Proper nouns are not vocabulary. "Public Substrate Association" is a party
+/* Proper nouns are not vocabulary. "New Progressive Party" is a party
    name, not a lesson about substrate, so strip known names before matching. */
 const PROPER = [...(typeof PARTIES !== "undefined" ? PARTIES.flatMap(p => [p.name, ...(p.aliases || [])]) : []),
                 ...(typeof CHARACTERS !== "undefined" ? CHARACTERS.map(c => c.name) : []),

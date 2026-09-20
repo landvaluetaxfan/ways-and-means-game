@@ -53,7 +53,7 @@
    biological only FOUR hold a district seat (Herrera, Vasmer, Trottier,
    Ivarsen); the rest are functional or list. Districts return the embodied,
    the list tier is where the emulated get in — bible §4.8's sentence about
-   the Public Substrate Association, made checkable. */
+   the New Progressive Party, made checkable. */
 const CHARACTERS = [
   /* ---- the government ---- */
   { id:"flash", portrait:"flash.png",   name:"Rt. Hon. Adriana Flash MP", role:"Prime Minister",
