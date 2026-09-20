@@ -17,11 +17,14 @@ const SCHEMA = {
                    {k:"key",   type:"enum", src:"moveTargets", label:"Target"},
                    {k:"delta", type:"int",  label:"Change", hint:"+ or −"}],
                    shape:"keyed" },
+    /* ONE NUMBER, because the editor round-trips scalarVal and does not
+        round-trip a bespoke object — tools/roundtrip.js caught the first
+        version, which declared shape:"object" and had no editor support
+        behind it. The engine still accepts the long form for an author
+        writing by hand; this is the canonical one. */
     motion:      { label:"The opposition tables a confidence motion", args:[
-                   {k:"after", type:"int",  label:"Sittings from now", hint:"the House divides then"},
-                   {k:"by",    type:"enum", src:"parties", label:"Tabled by", opt:true},
-                   {k:"label", type:"str",  label:"How the paper names it", opt:true}],
-                   shape:"object" },
+                   {k:"value", type:"int", label:"Sittings until the division", hint:"the House divides then"}],
+                   shape:"scalarVal" },
     law:         { label:"Set a law value", args:[
                    {k:"key", type:"enum", src:"laws", label:"Law"},
                    {k:"value", type:"any", label:"New value"}],

@@ -3303,7 +3303,10 @@ const Engine = (function () {
 
        `{motion:{after:3, by:"cl"}}` tables one. */
     motion: (st, C, v) => {
-      const o = (v && typeof v === "object") ? v : {};
+      /* A NUMBER OR AN OBJECT. The number is what the editor writes and what
+         content uses; the object is for an author who wants to name the
+         paper or say who tabled it. */
+      const o = (v && typeof v === "object") ? v : { after: Number(v) };
       st.motion = { on: st.sitting + (o.after == null ? 2 : o.after),
                     by: o.by || null, tabledAt: st.sitting,
                     label: o.label || "Motion of no confidence" };
@@ -3827,6 +3830,17 @@ const Engine = (function () {
           tone: "grave", text: "Makes " + nameOf("instruments", id, "number") }));
           break;
         case "wire": out.push({ tone: "plain", text: "Puts it on the wire" }); break;
+        /* THE PLAYER MUST KNOW WHAT IT COSTS BEFORE SHE AGREES TO IT, and
+           a division on the government's own existence is the largest thing
+           this vocabulary can say. “grave” is the tone the dissolution uses. */
+        case "motion": {
+          const n = (v && typeof v === "object") ? v.after : Number(v);
+          out.push({ tone: "grave",
+            text: "The opposition tables a motion of no confidence" +
+                  (n ? ", and the House divides on it in " + n +
+                       " sitting" + (n === 1 ? "" : "s") : "") });
+          break;
+        }
         /* A number that moves and is not described renders as its own
            verb name — "signatures" — which teaches the player the
            engine's vocabulary instead of the world's. */

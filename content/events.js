@@ -2883,7 +2883,7 @@ answer.`,
   choices:[
     { text:"Note the motion, and go and count.",
       effects:[
-        { motion:{ after:3, by:"cl", label:"Motion of no confidence" } }
+        { motion:3 }
       ],
       result:"The motion is on the paper for Thursday. The House will divide on whether the government continues." }
   ] },
