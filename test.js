@@ -1499,6 +1499,77 @@ console.log("\nA DEFERRED FACT (the queue carries effects):");
   if (bad) { console.log("\n" + bad + " DEFERRED-FACT FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nEVERY ENFRANCHISED SECTOR HAS A MINISTER:");
+(function(){
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  /* THE TEST THAT FOUND THE HOLE, kept so it cannot reopen. A functional
+     constituency is a sector the Commonwealth has ENFRANCHISED \u2014 it returns
+     members, it is consulted on any bill that touches its domain, and it can
+     stop one. A sector with seats in Parliament and no Minister facing it is
+     a government that has given somebody a vote and nobody to use it on.
+
+     Two were in exactly that position until 20 September 2026: Medicine and
+     Embodiment, which is where \u00a77.4's third rail and \u00a76.10.3's uploading
+     decision both live, and Insurance and Underwriting, which \u00a77.5.2 calls
+     the dominant institution of the whole economy.
+
+     The map is DECLARED rather than inferred, so adding a functional
+     constituency fails this until somebody says which Minister answers to
+     it. That is the point: it is a question the author should have to
+     answer, not one a string match should guess at. */
+  const ANSWERS_TO = {
+    fc_lifesupport:  "life_support",
+    fc_maintenance:  "labour_participation",
+    fc_substrate:    "substrate_thermal",
+    fc_consumables:  "consumables_agriculture",
+    fc_transit:      "transit_orbital",
+    fc_elevator:     "trade_anchors",
+    fc_medicine:     "persons_continuity",
+    fc_attestation:  "attestation_registry",
+    fc_underwriting: "treasury",
+    fc_legal:        "law_charter",
+    /* By construction the residual constituency is everyone the other rolls
+       missed, so no single department owns it. Declared, not omitted. */
+    fc_residual:     null
+  };
+
+  const ministries = new Set((CONTENT.cabinet || []).map(m => m.id));
+  const fcs = CONTENT.functional || [];
+  ok("the functional roll is not empty", fcs.length > 0, fcs.length + " constituencies");
+
+  const unmapped = fcs.filter(f => !(f.id in ANSWERS_TO));
+  ok("every functional constituency says which Minister answers to it",
+     unmapped.length === 0,
+     unmapped.map(f => f.id).join(", ") || "all declared");
+
+  const orphaned = fcs.filter(f => ANSWERS_TO[f.id] && !ministries.has(ANSWERS_TO[f.id]));
+  ok("and that Minister exists", orphaned.length === 0,
+     orphaned.map(f => f.name + " -> " + ANSWERS_TO[f.id]).join("; ") || "all present");
+
+  const stale = Object.keys(ANSWERS_TO).filter(k => !fcs.some(f => f.id === k));
+  ok("and the map names no constituency that is gone", stale.length === 0,
+     stale.join(", ") || "none");
+
+  /* AND THE RATIO THE CABINET ASKS A READER TO CARRY. \u00a72.6 makes explanation
+     cost the real budget, and sixteen posts of which eleven were unfamiliar
+     spent it all in one panel. This does not police prose; it asserts that
+     a reasonable share of the cabinet is a portfolio somebody already
+     understands, so the screen has somewhere for the eye to land. */
+  const FAMILIAR = ["deputy_pm", "treasury", "external_relations", "defence",
+                    "education", "law_charter", "contingencies",
+                    "persons_continuity", "labour_participation",
+                    "trade_anchors", "business_house"];
+  const have = FAMILIAR.filter(id => ministries.has(id));
+  ok("and enough of the cabinet is a portfolio a reader already knows",
+     have.length >= ministries.size / 2,
+     have.length + " of " + ministries.size);
+
+  if (bad) { console.log("\n" + bad + " CABINET COVERAGE FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nWAYS AND MEANS (the state has an income):");
 (function(){
   let bad = 0;

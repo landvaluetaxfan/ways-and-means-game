@@ -64,7 +64,7 @@ const BUSINESS = [
   { id:"c_appropriation", kind:"committee",
     text:"The Public Accounts Committee takes evidence on the emergency thermal appropriation." },
   { id:"c_reclass", kind:"committee",
-    text:"The Committee on Persons and Continuity reports on the reclassification register." },
+    text:"The Committee on Persons, Health and Continuity reports on the reclassification register." },
   { id:"c_lift", kind:"committee",
     text:"The Committee on Consumables sits on the quarterly lift schedule." },
   { id:"c_charter", kind:"committee",
@@ -200,7 +200,7 @@ const BUSINESS = [
      House, which is what makes them the world instead of wallpaper. */
   { id:"c_divergence", kind:"committee",
     when:{ billStage:{ divergence:"committee" } },
-    text:"The Committee on Persons and Continuity takes evidence on the divergence schedule." },
+    text:"The Committee on Persons, Health and Continuity takes evidence on the divergence schedule." },
   { id:"c_thermal2", kind:"committee",
     when:{ billStage:{ thermal2:"second_reading" } },
     text:"The Committee on Life Support takes evidence on the quota reallocation." },

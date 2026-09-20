@@ -194,9 +194,10 @@ const ENCYCLOPEDIA = {
       { h:"The ministries", body:
         "The Cabinet is made up of the ministers for Life Support, Substrate and Thermal, "+
         "Consumables and Agriculture, Volume and Housing, Transit and Orbital Mechanics, "+
-        "Attestation and the Registry, Persons and Continuity, Labour and Participation, Trade "+
+        "Attestation and the Registry, Persons, Health and Continuity, Defence, Education, "+
+        "Labour and Participation, Trade "+
         "and the Anchors, Closure and Development, Law and the Charter, Business of the House, "+
-        "Contingencies and Civil Authority, and External Relations. The Treasury sits apart and "+
+        "Home Affairs and Contingencies, and External Relations. The Treasury sits apart and "+
         "reports directly to the Prime Minister.\n\n"+
         "Life Support is the senior post. It is the only ministry whose minister can be "+
         "summoned by the engineering authority. In every other brief, the minister does the "+
