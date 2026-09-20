@@ -172,7 +172,52 @@ const SETUP = {
 const ADMINISTRATIONS = [
   { id:"flash_i", party:"cu", leader:"flash", ordinal:"I",
     from:2080, to:2084, session:4,
-    setup:{ startDate:"2080-04-11" } },
+    setup:{ startDate:"2080-04-11" },
+    /* THE INTRODUCTION (design/31 §5). Rendered through js/setpiece.js, so
+       the sections and their kinds are the frame's vocabulary: epigraph,
+       lede, body, signature. It is the first thing a player reads, and the
+       last thing in it is the signature that will sign every Act she passes.
+
+       DATES, settled with the author. The draft put her arrival in 2081 and
+       the governorship in 2082, which cannot stand: Flash I opens 11 April
+       2080 and she is already Prime Minister. She comes up in 2070 and takes
+       the Bank in 2071, which gives her nine years as Governor before the
+       premiership — long enough to be a record, recent enough that the
+       people she priced are still sitting in the chamber. The bible's 2287
+       is a placeholder older than the term and is not the year. */
+    intro:{
+      mood:"state",
+      title:"Adriana Eireann Flash",
+      art:"flash_intro",
+      sections:[
+        { kind:"epigraph",
+          body:"All the rivers run into the sea; yet the sea is not full.",
+          source:"Ecclesiastes 1:7" },
+
+        { kind:"lede", body:
+`Adriana Eireann Flash is perhaps an example of uncertainty: an unexpected candidate for Prime Minister, a defiance of odds. She had never held elected office before her ascension to the premiership, and yet at this moment she seems to be the best answer the Commonwealth has to the question of who ought to lead it. With the world unsettled and confidence in its old certainties beginning to fray, she stands now at the edge of history.` },
+
+        { kind:"body", head:"The banker", body:
+`When the Circumterrestrial Commonwealth emerged out of the primordial soup that was humanity extending into the heavens — first into orbit around Earth, and then further out into the solar system — Adriana Eireann Flash was a banker for Alphabet-JPMorgan Omni, making a name for herself in the latter half of a century that had been defined, economically, by an upheaval in the institutions of the old order as climate change forced their hand.
+
+She came up to the Winter Garden in 2070, in the Commonwealth's springtime, when orbital industry was finding its flourishing and nobody yet knew what any of it was worth. A year later she was Governor of the Reserve Bank of the Circumterrestrial Commonwealth. She was to be the first in a line of faceless bankers who would set the precedent for the composed monetary policy of this novel polity.
+
+That could have been the whole of it. A decade of steady hands and unread minutes, a portrait in a corridor, a pension. But a polity that has to manufacture its own air does not leave its technicians alone for long, and the record she made at the Bank is a record either way. She held the consumables floor through a winter when holding it cost more than letting it fall, and the stations that are still inhabited are the argument for that; she also priced the substrate facility, and there are benches that have not forgiven her for it. Nothing she did at the Bank is deniable. All of it is filed.` },
+
+        { kind:"body", head:"How she came to it", body:
+`The Party of Socialists and Democrats did not choose her because she was one of them. It chose her because the arithmetic of the chamber had stopped working, and hers was the only name several benches could say without flinching. She took First Spin at the election that made her Prime Minister, which is the first seat she has ever held.
+
+So she is a banker at the head of the party of maintenance labour, and both halves of that sentence are true on every day she governs. The members who put her there did it to keep a government; they did not do it because they trust her, and they have not pretended otherwise.` },
+
+        { kind:"body", head:"What she inherits", body:
+`The Commonwealth is thirty stations and something near seven million people, governed from a garden that returns no member to the House it houses. Her government carries the chamber on the exact number it needs, which means confidence is arithmetic rather than sentiment and one defection is the end of it. Her partner's price is on the order paper already, in a threshold bill her own party's instincts are against.
+
+And beyond the tariff wall, at the foot of the Chimborazo line, Cordell has stopped filing returns on the Bellamy Almanac Works. A hundred and eighty-four thousand people live on it, under a charter granted by no Commonwealth and answerable to no House, and the company that wrote that charter has walked away from it. Whether they come in — on what terms, and who pays for the charter to be surrendered — is what this session is for.
+
+She has four years. The first session of them opens on the eleventh of April, and the House is already sitting.` },
+
+        { kind:"signature", head:"Adriana Eireann Flash \u00b7 Prime Minister" }
+      ] } },
 
   /* THE SANDBOX. A second government that exists only to be played with, so a
      tester can reach a branch without playing the session that would have
