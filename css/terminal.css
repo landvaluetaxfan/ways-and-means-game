@@ -239,6 +239,12 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
   grid-template-rows:minmax(0,1fr);height:100%;min-height:0;}
 #s-log.screen.on{height:100%;min-height:0;}
 .g-log .panel{min-height:0;}
+/* the dismissal: a small, deliberately unglamorous control in the last
+   column of the cabinet, because sacking a minister should not look fun */
+.btn.tiny{font-size:9.5px;padding:0 5px;letter-spacing:.06em;}
+.btn.tiny.sack{border-color:rgba(224,144,127,.55);}
+.btn.tiny.sack:disabled{opacity:.35;}
+#gov-cabinet td:last-child{width:1%;white-space:nowrap;}
 .expbtns{display:flex;gap:6px;margin:5px 0;}
 #exp-text{width:100%;min-height:340px;flex:1 1 auto;resize:vertical;
   font-family:var(--f-data);font-size:10.5px;line-height:1.45;

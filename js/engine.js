@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 20;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard
+  const STATE_VERSION = 21;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard
 
   /* ---------------------------------------------------------
      1. STATE
@@ -358,6 +358,13 @@ const Engine = (function () {
          roster in two places and let them drift. */
       if (!st.foreign) st.foreign = {};
       st.version = 20;
+    }
+    if (st.version < 21) {                    // when an event last fired
+      /* Recurring events need to know WHEN, and st.seen only counts. An
+         empty table is correct for an old save: nothing has recurred yet,
+         and the first sitting after the load sets it. */
+      if (!st.lastFired) st.lastFired = {};
+      st.version = 21;
     }
     return st;
   }
@@ -1712,6 +1719,93 @@ const Engine = (function () {
     st.log.unshift({ sitting: st.sitting,
       text: "Ministerial vacancy: " + postId.replace(/_/g, " ") + (reason ? ", " + reason : "") });
     return { ok: true };
+  }
+
+  /* ---------------------------------------------------------
+     THE RESHUFFLE (design/33 §3).
+
+     The most Westminster lever there is, and it was nearly free: `cabinet`,
+     `appoint` and `vacate` all existed, and `postVacant` was a condition
+     content had never used. What was missing is the player being able to do
+     it deliberately rather than it happening to her.
+
+     A DISMISSAL IS A VACANCY, so this writes no new appointment path. It
+     empties the post, the existing vacancy panel offers the existing
+     candidates, and the appointment is paid for the way appointments already
+     are. One mechanism, two halves, and the half that existed is untouched.
+
+     IT COSTS A SLOT, because §7.7 says it must: "any future power the player
+     gains must be priced in slots or it will be pressed on every sitting."
+
+     AND THE REST OF THE COST IS NOT A NUMBER, it is the relationship. The
+     sacked minister's regard collapses and does not recover, their current
+     reads it as an attack on them, and they are now on the back benches with
+     a reason. That is what makes an appointment a bet: a seat buys a
+     faction's loyalty and silences its most credible critic, and the
+     resignation, when it comes, is a weapon precisely because they were
+     inside.
+     --------------------------------------------------------- */
+  function canReshuffle(st, C, postId) {
+    const p = st.cabinet[postId];
+    if (!p) return { ok: false, reason: "no such post" };
+    if (!p.holder) return { ok: false, reason: "the post is already vacant" };
+    if (postId === (C.setup && C.setup.pmPost)) return { ok: false, reason: "the Prime Minister cannot dismiss herself" };
+    const post0 = (C.cabinet || []).find(x => x.id === postId) || {};
+    if (st.slots.used >= st.slots.total)
+      return { ok: false, reason: "no order-paper time left this session" };
+    /* AND THERE HAS TO BE SOMEBODY TO APPOINT. Content declares who may hold
+       a post (§15.5) and there is no other way to fill one, so dismissing
+       from a post with no declared candidates would leave it permanently
+       empty — and a post with no holder cannot make a statutory instrument.
+       That is not a vacancy, it is a ministry destroyed by a button.
+
+       A Prime Minister with nobody to appoint cannot sack anybody, which is
+       also true. The refusal names the reason, so when content declares
+       candidates for a post the power simply appears there. */
+    /* READ CONTENT, NOT candidates(). `candidates()` answers "who may be
+       appointed RIGHT NOW", and it deliberately returns nothing for a post
+       that is already filled — the appointment is spent (design/08 §3). So
+       gating on it meant the reshuffle could never fire on an occupied post,
+       which is the only kind there is. What matters here is whether content
+       declares anybody OTHER than the incumbent. */
+    const bench = (post0.candidates || []).filter(c => c.holder !== p.holder);
+    if (!bench.length)
+      return { ok: false, reason: "nobody is declared eligible for this post, and an empty one cannot be filled" };
+    return { ok: true };
+  }
+
+  function reshuffle(st, C, postId) {
+    const gate = canReshuffle(st, C, postId);
+    if (!gate.ok) return gate;
+    const p = st.cabinet[postId];
+    const who = p.holder, party = p.party;
+    const post = (C.cabinet || []).find(x => x.id === postId) || {};
+    const ch = (C.characters || []).find(x => x.id === who);
+
+    st.slots.used += 1;
+
+    /* the regard goes, and nothing gives it back */
+    const rec = st.characters[who];
+    if (rec) rec.relationship = clamp((rec.relationship || 50) - 34, 0, 100);
+
+    /* their current takes it personally */
+    const cur = (C.currents || []).find(cu => cu.party === party &&
+      ch && ch.current === cu.id);
+    if (cur && st.loyalty) st.loyalty[cur.id] = clamp((st.loyalty[cur.id] == null
+      ? cur.loyalty : st.loyalty[cur.id]) - 18, 0, 100);
+    else if (party && st.parties[party])
+      st.parties[party].loyalty = clamp(st.parties[party].loyalty - 6, 0, 100);
+
+    /* and the House notices */
+    st.scalars.party_loyalty = clamp((st.scalars.party_loyalty || 0) - 4, 0, 100);
+
+    vacate(st, C, postId, "dismissed");
+    const name = ch ? ch.name : who;
+    st.wire = st.wire || [];
+    st.wire.unshift({ sitting: st.sitting,
+      text: String(name).toUpperCase().replace(/ MP$/, "") + " DISMISSED FROM " +
+            String(post.name || postId).toUpperCase() });
+    return { ok: true, who: who, post: postId, name: name };
   }
 
   /* ---------------------------------------------------------
@@ -3335,9 +3429,28 @@ const Engine = (function () {
 
      Earliest date first, and it outranks the weighted pool, because the whole
      point is that it does not have to win a contest to happen. */
+  /* A DATED EVENT CAN RECUR. `at` holds one sitting, which is right for a
+     thing that happens once and wrong for the House's standing business:
+     Question Time is not an incident, it is the calendar. `every: N` beside
+     `at` means "this sitting and every Nth after it", which nextScheduled
+     can read without a new verb and without touching the pools.
+
+     ITS OWN DEDUPE. `st.seen` counts firings and cannot say WHEN, so a
+     recurring event would come due again the moment its sitting was
+     re-evaluated. `st.lastFired` carries the sitting each event last went
+     off, which is also the thing the calendar wants in order to say when the
+     next one is due. */
+  function dueThisSitting(st, e) {
+    if (e.at == null) return false;
+    if (e.every == null) return e.at <= st.sitting;
+    if (st.sitting < e.at) return false;
+    if ((st.sitting - e.at) % e.every !== 0) return false;
+    return (st.lastFired || {})[e.id] !== st.sitting;
+  }
+
   function nextScheduled(st, C) {
     const due = C.events.filter(e => {
-      if (e.at == null || e.at > st.sitting) return false;
+      if (!dueThisSitting(st, e)) return false;
       const fired = st.seen[e.id] || 0;
       if (e.chapter != null && e.chapter !== st.chapter) return false;
       if (e.once && fired) return false;
@@ -3345,7 +3458,9 @@ const Engine = (function () {
       return matches(st, e.when);
     });
     if (!due.length) return null;
-    return due.sort((a, b) => a.at - b.at)[0];
+    /* A recurring item yields to a one-off on the same sitting: the standing
+       business of the House is never the most important thing happening. */
+    return due.sort((a, b) => (a.every ? 1 : 0) - (b.every ? 1 : 0) || a.at - b.at)[0];
   }
 
   /* A prologue is an authored sequence at the head of a CHAPTER — not a weighted
@@ -3816,6 +3931,7 @@ const Engine = (function () {
        move is the decision in front of it. */
     st.actedThisSitting = true;
     st.seen[event.id] = (st.seen[event.id] || 0) + 1;
+    (st.lastFired || (st.lastFired = {}))[event.id] = st.sitting;
     st.log.unshift({ sitting: st.sitting, text: event.title + " — " + ch.label });
     settle(st, C);
     return ch.result || null;
@@ -5090,7 +5206,7 @@ const Engine = (function () {
     lastReconcile: () => lastReconcile, nationalShares, vacantSeats, seatsFor,
     vacateSeat, crossFloor, byElection, generalElection, shares, swungShares,
     divisorAllocate,
-    assent, presidentDecides, referralRisk, reviewReturns,
+    reshuffle, canReshuffle, assent, presidentDecides, referralRisk, reviewReturns,
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,

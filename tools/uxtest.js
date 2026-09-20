@@ -1190,7 +1190,15 @@ try {
   /* THE ONE THAT MATTERS. A promise is discharged by keeping it, in the
      place where keeping it happens — never by a control that marks it
      done. If this ever finds one, the mechanic has been built away. */
+  /* THE CABINET IS EXEMPT, and only the cabinet. "Dismiss" was in this list
+     to catch a control that dismisses a REMINDER, and a Prime Minister
+     dismissing a minister is the word doing its actual job \u2014 the reshuffle
+     is a real power with a real price, not a way of marking a promise done.
+     Scoped rather than renamed: the rule is about undertakings, so it should
+     say so, and renaming the button to dodge a regex would leave the next
+     person to rediscover why it is called something odd. */
   const marks = [].slice.call(w.document.querySelectorAll("button,a,input"))
+    .filter(n => !n.closest("#gov-cabinet"))
     .filter(n => /\b(mark|tick|complete|done|discharge|dismiss)\b/i.test(n.textContent || ""));
   ok("no control anywhere marks an undertaking done", marks.length === 0,
      marks.map(n => n.textContent.trim()).join(", "));

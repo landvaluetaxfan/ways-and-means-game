@@ -2848,6 +2848,61 @@ be stacked, and closing it hands the sitting back to the pool.`,
       ? []
       : [{ queue:[{ event:"test_console", after:1, label:"Test console" }] }]),
     result: c.result
-  }))}
+  }))},
+
+/* QUESTION TIME — the standing business of the House (design/33 §2).
+
+   THE ONE RECURRING OBLIGATION WHERE THE OPPOSITION ACTS ON THE GOVERNMENT.
+   Everything else in this file happens TO the Prime Minister or is chosen BY
+   her; this is the other side of the chamber taking its turn, on a schedule
+   she does not set and cannot cancel.
+
+   `every: 4` beside `at: 4` is the new engine reading: this sitting and
+   every fourth after it. It is also the session's pulse. A fixed weekly beat
+   is a schedule the player feels without being told there is one, which is
+   what the loop has been missing.
+
+   THE EVENT COSTS NOTHING AND THE ANSWER COSTS SOMETHING, which is the whole
+   design. The House takes Questions whether the government likes it or not
+   (§7.7 prices what the government CHOOSES to do, and this is not chosen).
+   Answering it properly is a day's work and is priced as one; the two ways
+   of not answering it are free and are paid for somewhere else. */
+{ id:"question_time", at:4, every:4,
+  title:"Questions to the Prime Minister",
+  speaker:"watkins",
+  body:`The Leader of the Opposition has the first three and has clearly had
+them written for a week.
+
+"The Prime Minister told this House the reserve was sound. Will she tell us
+today what it stands at, or will she tell us again that the figure is a matter
+for the Treasurer, who is also not answering?"
+
+The benches behind you do the arithmetic before you do. The ones in front of
+you already have.`,
+  choices:[
+    { text:"Answer it. Take the afternoon and answer all of it.",
+      cost:{ slot:1 },
+      note:"A day of the order paper, spent on the one thing nobody can amend.",
+      effects:[
+        { move:{ public_standing:4, party_loyalty:3 } },
+        { wire:"PRIME MINISTER TAKES QUESTIONS FOR NINETY MINUTES; NO FIGURE WITHHELD" }
+      ],
+      result:"You answered the three, and the eleven behind them. The House went home late and nobody said the government was hiding." },
+    { text:"Refer him to the Treasurer and move to the next question.",
+      note:"Costs nothing today.",
+      effects:[
+        { move:{ public_standing:-4, party_loyalty:-2 } },
+        { wire:"PRIME MINISTER REFERS RESERVE QUESTION TO THE TREASURY AGAIN" }
+      ],
+      result:"It cost nothing today. It is the fourth time, and the fourth time is the one the gallery counted." },
+    { text:"Ask him what he would have done, and keep asking.",
+      note:"The benches will like it. The gallery has heard it.",
+      effects:[
+        { move:{ party_loyalty:5, public_standing:-2 } },
+        { move:{ "relationship.watkins":-6 } },
+        { wire:"NOISY EXCHANGES AT QUESTIONS; NEITHER LEADER ANSWERS THE OTHER" }
+      ],
+      result:"Your own side enjoyed it enormously. Nobody outside the chamber could say afterwards what the reserve stands at." }
+  ] },
 
 ];

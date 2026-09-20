@@ -1499,6 +1499,119 @@ console.log("\nA DEFERRED FACT (the queue carries effects):");
   if (bad) { console.log("\n" + bad + " DEFERRED-FACT FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nRECURRING BUSINESS, AND THE RESHUFFLE:");
+(function(){
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  /* \u2014\u2014 every: N \u2014\u2014
+     `at` holds one sitting, which is right for an incident and wrong for the
+     standing business of the House. Question Time is not a thing that
+     happens; it is the calendar. */
+  const qt = (CONTENT.events || []).find(e => e.every != null);
+  ok("content has a recurring item", !!qt, qt ? qt.id + " every " + qt.every : "none");
+  if (qt) {
+    const st = Engine.newGame(CONTENT);
+    const fired = [];
+    for (let i = 0; i < 24; i++) {
+      /* ANSWER WHATEVER COMES. The first version only answered Question
+         Time, so every other event sat unresolved and was handed back
+         forever — and the scheduled item, which nextEvent reaches only
+         after the prologue, never got a turn at all. */
+      const e = Engine.nextEvent(st, CONTENT);
+      if (e) {
+        if (e.id === qt.id) fired.push(st.sitting);
+        for (let k = 0; k < (e.choices || []).length; k++)
+          if (Engine.choose(st, CONTENT, e, k) !== null) break;
+      }
+      Engine.advance(st, CONTENT);
+    }
+    ok("it fires more than once", fired.length > 1, "sittings " + fired.join(", "));
+    ok("and never twice on the same sitting",
+       new Set(fired).size === fired.length, fired.join(", "));
+    const gaps = fired.slice(1).map((n, i) => n - fired[i]);
+    ok("and on its own cadence, not every sitting",
+       gaps.every(g => g % qt.every === 0), "gaps " + (gaps.join(", ") || "none"));
+    ok("and not before the sitting it starts on",
+       fired.every(n => n >= qt.at), "first at " + fired[0] + ", declared " + qt.at);
+  }
+
+  /* \u2014\u2014 the reshuffle \u2014\u2014
+     A dismissal is a VACANCY, which is why it needed no new appointment
+     path: the existing panel fills it with the existing candidates. */
+  const st2 = Engine.newGame(CONTENT);
+  /* APPOINT, THEN DISMISS, THEN APPOINT AGAIN — the whole loop, because the
+     reshuffle is only half a mechanism on its own. Only the Treasury
+     declares candidates today and it OPENS VACANT (it is the post the Prime
+     Minister held until last week), so the test fills it first. The engine
+     refuses a dismissal it cannot fill; see canReshuffle. */
+  const post = (CONTENT.cabinet || []).find(p => (p.candidates || []).length);
+  if (post && !st2.cabinet[post.id].holder) Engine.fillPost(st2, CONTENT, post.id, 0);
+  ok("there is a minister to dismiss",
+     !!post && !!st2.cabinet[post.id].holder, post ? post.id : "none");
+  if (post) {
+    const who = st2.cabinet[post.id].holder;
+    const before = (st2.characters[who] || {}).relationship;
+    const slots = st2.slots.used;
+    const vacBefore = Engine.vacancies(st2, CONTENT).length;
+
+    ok("the engine will allow it", Engine.canReshuffle(st2, CONTENT, post.id).ok);
+    const r = Engine.reshuffle(st2, CONTENT, post.id);
+    ok("and it goes through", r && r.ok === true, r && r.reason);
+    ok("the post is empty afterwards", !st2.cabinet[post.id].holder);
+    ok("which is a vacancy the existing panel can fill",
+       Engine.vacancies(st2, CONTENT).length === vacBefore + 1);
+    ok("it costs a slot of order-paper time (\u00a77.7)",
+       st2.slots.used === slots + 1, slots + " -> " + st2.slots.used);
+    ok("and the regard is gone and not coming back",
+       (st2.characters[who] || {}).relationship < before,
+       before + " -> " + (st2.characters[who] || {}).relationship);
+    ok("dismissing an empty post is refused",
+       Engine.canReshuffle(st2, CONTENT, post.id).ok === false,
+       Engine.canReshuffle(st2, CONTENT, post.id).reason);
+
+    /* and with no time left it cannot be pressed anyway */
+    const st3 = Engine.newGame(CONTENT);
+    st3.slots.used = st3.slots.total;
+    const g = Engine.canReshuffle(st3, CONTENT, post.id);
+    ok("and with no time left the House will not hear it", g.ok === false, g.reason);
+  }
+
+  if (bad) { console.log("\n" + bad + " MECHANISM FAILURES"); process.exitCode = 1; }
+})();
+
+console.log("\nTHE MIGRATION GUARD IS ASCENDING:");
+(function(){
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  /* CLAUDE.md records this happening once: a descending guard let a v1 save
+     match `< 4`, get stamped 4, and skip every earlier block. It then
+     happened a second time, on 20 September 2026, when the v21 block was
+     inserted above v20 instead of below it \u2014 a v19 save would have matched
+     21 first and skipped v20 entirely.
+
+     Twice is a pattern, and a pattern is what a check is for. This reads the
+     order of the guards out of the source, because the ORDER is the bug and
+     no amount of running migrations forward will show it: each block is
+     individually correct. */
+  const src = fs.readFileSync("./js/engine.js", "utf8");
+  const seen = [];
+  src.replace(/if \(st\.version < (\d+)\)/g, (m, n) => { seen.push(Number(n)); return m; });
+  ok("the engine has migration guards to check", seen.length > 3, seen.length + " blocks");
+  const out = seen.filter((n, i) => i > 0 && n < seen[i - 1]);
+  ok("and every one is at or above the one before it", out.length === 0,
+     out.length ? "out of order at " + out.join(", ") + " in [" + seen.join(", ") + "]"
+                : seen[0] + " .. " + seen[seen.length - 1]);
+  ok("and the last of them is STATE_VERSION",
+     seen[seen.length - 1] === Engine.STATE_VERSION,
+     "last guard " + seen[seen.length - 1] + ", STATE_VERSION " + Engine.STATE_VERSION);
+
+  if (bad) { console.log("\n" + bad + " MIGRATION ORDER FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nTHE PARTY OUTSIDE PARLIAMENT:");
 (function(){
   let bad = 0;

@@ -1487,12 +1487,47 @@ const UI = (function () {
     $("#gov-cabinet").innerHTML = pmRow + (C.cabinet || []).map(p => {
       const s = st.cabinet[p.id];
       const ch = s.holder ? C.characterById[s.holder] : null;
+      /* THE DISMISSAL. A minister the player can move, which is what makes
+         an appointment a bet rather than a menu: the seat bought a faction's
+         loyalty, and taking it back costs the relationship that came with
+         it. The engine says whether it can be done and why not, so the
+         refusal is the engine's sentence and not a second opinion. */
+      const gate = Engine.canReshuffle ? Engine.canReshuffle(st, C, p.id) : { ok: false };
+      const sack = s.holder
+        ? `<button class="btn tiny sack" data-sack="${p.id}"${gate.ok ? "" : " disabled"}` +
+          priceTip("Dismiss " + (ch ? bare(ch.name) : p.name),
+            { slots: 1, note: "They go to the back benches and do not forgive it. " +
+              "Their current reads it as an attack on them." },
+            gate.ok ? null : gate.reason) + `>Dismiss</button>`
+        : "";
       return `<tr class="${s.holder ? "" : "vacant"}">
         <td>${p.name}${p.senior ? " <span class='flag' data-tip='senior'>SENIOR</span>" : ""}</td>
         <td>${s.holder ? (ch ? bare(ch.name) : s.holder.replace(/_/g," "))
                        : "<span class='flag bad' data-tip='vacant'>VACANT</span>"}</td>
-        <td class="n">${s.party ? mark(s.party) : ""}</td></tr>`;
+        <td class="n">${s.party ? mark(s.party) : ""}</td>
+        <td class="n">${sack}</td></tr>`;
     }).join("");
+
+    $("#gov-cabinet").querySelectorAll("[data-sack]").forEach(btn =>
+      btn.addEventListener("click", () => {
+        const pid = btn.dataset.sack;
+        const post = (C.cabinet || []).find(x => x.id === pid) || {};
+        const s = st.cabinet[pid];
+        const ch = s && s.holder ? C.characterById[s.holder] : null;
+        Dialog.confirm(
+          "Dismiss " + (ch ? bare(ch.name) : "the minister") + " from " +
+          (post.name || pid) + "? It costs a slot of order-paper time, and " +
+          "they will not forgive it.",
+          { title: "Reshuffle", ok: "Dismiss" },
+          (yes) => {
+            if (!yes) return;
+            acted(() => Engine.reshuffle(st, C, pid));
+            cue("stamp");
+            setStatus((ch ? bare(ch.name) : "The minister") + " has been dismissed from " +
+                      (post.name || pid), "transient");
+            drawAll(); afterAction();
+          });
+      }));
 
     /* ---- the appointment ----
 
