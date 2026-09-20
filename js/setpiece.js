@@ -42,6 +42,15 @@ const SetPiece = (function () {
      back to plain body rather than inventing a style. */
   const KINDS = ["epigraph", "lede", "body", "voices", "document", "signature"];
 
+  /* THE PM'S HAND, AS AN IMAGE. img/signature-ink.png is the author's scan
+     cropped to its ink, transparent behind it and coloured to the page's
+     ink. `h` is the display height at `w` wide — the source is 830x478, so
+     the two move together if the scan is ever replaced. */
+  const SIG_IMG = { src: "img/signature-ink.png", w: 228, h: 131 };
+  /* HOW LONG THE REVEAL TAKES, in milliseconds. Slow on purpose: a
+     signature that arrives in a blink is a logo, not a hand. */
+  const WRITE_MS = 4200;
+
   function section(sec) {
     const kind = KINDS.indexOf(sec.kind) >= 0 ? sec.kind : "body";
     const head = sec.head
@@ -83,20 +92,16 @@ const SetPiece = (function () {
          If Papers is not loaded the block still draws its rule and caption,
          because a missing signature must read as a blank line and not as a
          broken page. */
-      const box = (typeof Papers !== "undefined" && Papers.SIG_BOX) || { w: 228, h: 63 };
-      const d = (typeof Papers !== "undefined" && Papers.SIG_PATH) || "";
-      /* ONE <path> PER STROKE, so the signature can be WRITTEN. A single
-         path of many subpaths animated by one dash offset reveals whole
-         strokes at a time — each letter fading in — because every subpath
-         is far shorter than the global dash length. Split, each stroke
-         draws over its own length, and arm() staggers them in trace order. */
-      const strokes = d ? d.split(/(?=M)/) : [];
-      const svg = strokes.length
-        ? `<svg width="${box.w}" height="${box.h}" viewBox="0 0 ${box.w} ${box.h}" aria-hidden="true">` +
-          strokes.map(p => `<path class="sigpath" d="${p}"/>`).join("") + `</svg>`
-        : "";
+      /* THE HAND IS THE SCAN ITSELF. It is cropped to its ink and baked to
+         the page's ink colour by the same pixel pass tools/tracesig.js uses
+         (img/signature-ink.png), and the reveal is a left-to-right clip.
+         A clip needs no path, so it cannot suffer the fragmentation a
+         centreline trace brings, and the hand stays exactly the author's. */
       return `<div class="sp-sec sp-signature"><div class="sigline">` +
-        `<div class="rule" style="height:${box.h}px">` + svg + `</div>` +
+        `<div class="rule" style="height:${SIG_IMG.h}px">` +
+        `<span class="sigimg" style="width:${SIG_IMG.w}px;height:${SIG_IMG.h}px">` +
+        `<img src="${SIG_IMG.src}" alt=""></span>` +
+        `</div>` +
         `<div class="cap">${esc(sec.head || "")}</div>` +
         `</div></div>`;
     }
@@ -176,40 +181,23 @@ const SetPiece = (function () {
      motion and not sound, so the no-cue-in-a-renderer rule does not apply —
      but `body.no-motion` and prefers-reduced-motion both already switch the
      transition off in CSS, so a player who asked for stillness gets it. */
-  /* HOW LONG THE WHOLE SIGNATURE TAKES, in milliseconds. Slow on purpose:
-     a signature that arrives in a blink is a logo, not a hand. */
-  const WRITE_MS = 4800;
-
-  /* ARM WITHOUT WRITING. Every stroke is measured and set to its own full
-     dash offset, so the signature is INVISIBLE and waiting; the stroke's
-     share of the total sets how long it draws and when it starts, so the
-     pen moves at a constant speed and the strokes run back to back in
-     trace order. Returns the total writing time in ms, or 0 where the
-     path cannot be measured (jsdom, a browser without getTotalLength). */
+  /* ARM WITHOUT WRITING. The clip starts closed, so the hand is INVISIBLE
+     and waiting. Returns the reveal time in ms, or 0 where there is no
+     layout to animate (jsdom, a headless walk) — the caller then leaves at
+     once rather than holding a page nothing is drawing on. */
   function arm(root) {
     if (!root || typeof root.querySelector !== "function") return 0;
     const box = root.querySelector(".sp-signature");
-    if (!box) return 0;
-    const paths = [].slice.call(box.querySelectorAll(".sigpath"));
-    if (!paths.length) return 0;
-    const lens = paths.map(p => {
-      try { return p.getTotalLength ? p.getTotalLength() : 0; } catch (e) { return 0; }
-    });
-    const total = lens.reduce((a, b) => a + b, 0);
-    if (!total) return 0;
-    let cum = 0;
-    paths.forEach((p, i) => {
-      p.style.setProperty("--len", lens[i]);
-      p.style.setProperty("--dur", (lens[i] / total * WRITE_MS / 1000).toFixed(3) + "s");
-      p.style.setProperty("--delay", (cum / total * WRITE_MS / 1000).toFixed(3) + "s");
-      cum += lens[i];
-    });
+    const wrap = box && box.querySelector(".sigimg");
+    if (!box || !wrap) return 0;
+    const r = wrap.getBoundingClientRect ? wrap.getBoundingClientRect() : null;
+    if (!r || !r.width) return 0;               /* not on the glass: nothing to reveal */
     box.classList.add("sig-armed");
     return WRITE_MS;
   }
 
-  /* THE PEN MOVES. A signature armed by arm() is written now, over the
-     per-stroke CSS transitions, which is the one place the timings live. */
+  /* THE PEN MOVES. A signature armed by arm() is revealed now, over the
+     CSS clip transition, which is the one place the duration lives. */
   function write(root) {
     const box = root && typeof root.querySelector === "function"
       ? root.querySelector(".sp-signature") : null;

@@ -2869,14 +2869,18 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
   text-transform:uppercase;color:var(--ink-soft);margin-top:6px;}
 
 .sp-signature{display:flex;justify-content:center;margin-top:22px;}
-.sp-signature .sigpath{fill:none;stroke:var(--ink);stroke-width:1.4;
-  stroke-linecap:round;stroke-linejoin:round;}
+/* THE HAND IS AN IMAGE AND THE REVEAL IS A CLIP. The wrapper is the
+   clipper: it is the size of the drawing, and clip-path opens from its
+   left edge, so the scan is revealed left to right with no path to
+   animate and nothing to fragment. */
+.sp-signature .sigimg{position:absolute;left:4px;bottom:-16px;z-index:2;
+  clip-path:inset(0 0 0 0);}
+.sp-signature .sigimg img{display:block;width:100%;height:100%;}
 /* AND IT IS WRITTEN LOW, so the descenders cross the rule and land on the
    typed name — ink over print, the way a signature sits on a document. The
-   svg is absolute inside .rule; the cap is its sibling, so the stroke is
+   image is absolute inside .rule; the cap is its sibling, so the ink is
    layered over it rather than hidden under it. */
 .sp-signature .sigline .rule{overflow:visible;}
-.sp-signature .sigline svg{bottom:-16px;z-index:2;}
 .sp-signature .sigline .cap{position:relative;z-index:1;}
 
 .sp-choices{flex:0 0 auto;display:flex;flex-wrap:wrap;gap:6px;
@@ -2901,15 +2905,15 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
    stroke-dashoffset sweep the assent ceremony uses, armed and released by
    SetPiece.sign(). The transition lives here rather than on .sigpath so the
    no-motion and reduced-motion rules above still switch it off. */
-.sp-signature.sig-armed .sigpath{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);}
-/* Each stroke draws over its own share of the total at a constant speed,
-   and starts when the strokes before it have finished (arm() sets --dur
-   and --delay per path). Linear, because a pen does not ease. */
-.sp-signature.sig-draw .sigpath{stroke-dasharray:var(--len);stroke-dashoffset:0;
-  transition:stroke-dashoffset var(--dur,.8s) linear var(--delay,0s);}
-body.no-motion .sp-signature.sig-draw .sigpath{transition:none;}
+.sp-signature.sig-armed .sigimg{clip-path:inset(0 100% 0 0);}
+/* The clip opens at a constant rate, left to right. Linear, because a
+   pen does not ease, and the duration lives in js/setpiece.js (WRITE_MS)
+   so the hold before the page dissolves is the same number. */
+.sp-signature.sig-draw .sigimg{clip-path:inset(0 0 0 0);
+  transition:clip-path 4.2s linear;}
+body.no-motion .sp-signature.sig-draw .sigimg{transition:none;}
 @media (prefers-reduced-motion:reduce){
-  .sp-signature.sig-draw .sigpath{transition:none;stroke-dashoffset:0;}
+  .sp-signature.sig-draw .sigimg{transition:none;}
 }
 
 /* A government is a face and a party mark, not a line of text. The face box

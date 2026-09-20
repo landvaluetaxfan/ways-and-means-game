@@ -61,13 +61,20 @@ html = html.replace(/<script src=["']([^"']+)["']><\/script>/g, (m, src) => {
    lookup the UI can consult, and let the existing onerror fallbacks handle
    anything not present. */
 const assets = {};
-["img/logos", "img/portraits", "img/events", "img/menu"].forEach(dir => {
+["img/logos", "img/portraits", "img/events", "img/menu", "img/artifacts"].forEach(dir => {
   const d = path.join(root, dir);
   if (!fs.existsSync(d)) return;
   fs.readdirSync(d).forEach(f => {
     const rel = dir + "/" + f, uri = dataURI(rel);
     if (uri) { assets[rel] = uri; inlined.img++; }
   });
+});
+/* The PM's hand, which lives at the img root because it is paper rather
+   than an artifact slot. The set piece draws it at run time, so it reaches
+   the page through the same lookup as the logos. */
+["img/signature-ink.png"].forEach(rel => {
+  const uri = dataURI(rel);
+  if (uri) { assets[rel] = uri; inlined.img++; }
 });
 
 /* Resolve any src that points into img/ through the table, before the
