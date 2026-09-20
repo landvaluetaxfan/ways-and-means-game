@@ -84,7 +84,7 @@ function repair(s) {                    /* twice-encoded files need two passes *
   return { text: cur, hits };
 }
 
-const BINARY = /\.(png|jpg|jpeg|gif|webp|ico|woff2?|ttf|otf|mp3|ogg|wav|pdf|zip)$/i;
+const BINARY = /\.(png|jpg|jpeg|gif|webp|ico|woff2?|ttf|otf|mp3|ogg|wav|mid|midi|pdf|zip)$/i;
 const files = execSync("git ls-files", { encoding: "utf8" })
   .trim().split("\n").filter(f => f && !BINARY.test(f));
 

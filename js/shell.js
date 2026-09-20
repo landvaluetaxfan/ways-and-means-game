@@ -592,8 +592,19 @@ const Shell = (function () {
        action; the renderer never makes a sound. */
     const BEDS = ["tension", "moment", "defeat", "rise", "sombre",
                   "undertake", "order", "revoke", "threat", "prorogue"];
-    const mood = !stateStr && admin && admin.intro && admin.intro.mood;
-    if (mood && BEDS.indexOf(mood) >= 0 &&
+    /* WHOSE INTRODUCTION THIS IS, whether the government was just chosen or
+       was loaded from a slot that never got past the page. The introduction
+       names a recorded track and the bed steps aside for it; a build where
+       the recording is not encoded yet falls back to the mood. */
+    const adm = admin || (C.administrations || []).find(a => a.id === state.admin);
+    const introUnread = !!(adm && adm.intro) && !((state.flags || {})._introRead);
+    let anthemOn = false;
+    if (introUnread && adm.intro.anthem &&
+        typeof Music !== "undefined" && typeof Music.anthem === "function") {
+      try { anthemOn = Music.anthem(adm.intro.anthem); } catch (e) { anthemOn = false; }
+    }
+    const mood = !stateStr && adm && adm.intro && adm.intro.mood;
+    if (!anthemOn && mood && BEDS.indexOf(mood) >= 0 &&
         typeof Music !== "undefined" && typeof Music[mood] === "function") {
       try { Music[mood](); } catch (e) {}
     }

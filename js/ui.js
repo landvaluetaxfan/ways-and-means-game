@@ -3722,14 +3722,40 @@ const UI = (function () {
       if (adm && adm.intro && typeof SetPiece !== "undefined") {
         box.innerHTML = SetPiece.html({ setpiece: adm.intro },
                                       { go: "Take office" }).html;
+        /* ARMED WITH THE PAGE, WRITTEN ON THE CLICK. `armed` is false where
+           the path cannot be measured (jsdom, a browser without
+           getTotalLength); then there is no stroke to wait for, so the click
+           leaves at once — which is also what a headless walk needs. */
+        const armed = SetPiece.arm ? SetPiece.arm(box) : false;
         const go = box.querySelector("[data-sp-go]");
         if (go) go.addEventListener("click", () => {
-          st.flags._introRead = true;
+          /* THE HAND MOVES ON THE CLICK, not on the draw. The signature was
+             armed (invisible) with the page; taking office is what writes
+             it. It holds a beat so it is seen, then the terminal writes the
+             next screen in. */
+          const wrote = armed && SetPiece.write ? SetPiece.write(box) : false;
           cue("stamp");
-          saved(); drawAll(); reveal();
+          const leave = () => {
+            const swap = () => {
+              st.flags._introRead = true;
+              /* Leaving fades the anthem out and the bed back in. Cued
+                 HERE, on the action, because drawing makes no sound. */
+              if (typeof Music !== "undefined" && Music.anthem) {
+                try { Music.anthem(null); } catch (e) {}
+              }
+              saved(); drawAll(); reveal();
+            };
+            /* The dither is for the player who watched the stroke; a
+               no-motion player, or a machine that could not arm the
+               signature at all, arrives without the theatre. */
+            if (wrote && !still && typeof Motion !== "undefined")
+              Motion.dissolve(swap, null, 520);
+            else swap();
+          };
+          const still = typeof Motion !== "undefined" && Motion.reduced && Motion.reduced();
+          if (still || !wrote) leave();
+          else setTimeout(leave, 2600);   /* the stroke is 2.1s; hold it a beat */
         });
-        /* Her signature writes itself, the way the assent ceremony's does. */
-        if (SetPiece.sign) SetPiece.sign(box);
         return;
       }
     }

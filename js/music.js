@@ -79,6 +79,13 @@ const Music = (function () {
 
   let ctx = null, out = null, send = null, gains = {}, NOISE = null;
   let playing = false, step = 0, nextTime = 0, timer = null;
+  /* THE ONE RECORDED PIECE. It is not a layer: a buffer source cannot be
+     remixed bar by bar, so it owns a gain of its own on the music bus and
+     the bed steps aside while it plays. */
+  let anthemId = null, anthemSrc = null, anthemGain = null, anthemToken = 0;
+  /* A track that is asked for but not yet decoded still owns the bus, so
+     rise() must not swell the bed over a recording that is one frame away. */
+  let anthemWanted = false;
 
   function pref(k) {
     if (typeof Shell !== "undefined" && Shell.opt) {
@@ -91,6 +98,10 @@ const Music = (function () {
 
   /* ---------- the graph ---------- */
   function build() {
+    /* Idempotent, because the anthem may need the graph before the onReady
+       callback that normally builds it has run — the click that starts a
+       government is also the gesture that creates the context. */
+    if (ctx && out) return true;
     ctx = Sound.context(); out = Sound.musicOut();
     if (!ctx || !out) return false;
     /* a dotted-eighth echo, so the bed is not dry */
@@ -352,7 +363,10 @@ const Music = (function () {
     if (playing || !ctx || !out) return;
     if (ctx.state === "suspended" && ctx.resume) { try { ctx.resume(); } catch (e) {} }
     playing = true; step = 0; nextTime = ctx.currentTime + 0.1;
-    ["pad", "bass", "rhodes", "guitar", "keys", "reed", "shaker"].forEach(id => ramp(id, level(id), ctx.currentTime, 1.5));
+    /* A recording that is already up owns the bus: the bed does not climb
+       back over it when the player toggles music on mid-anthem. */
+    ["pad", "bass", "rhodes", "guitar", "keys", "reed", "shaker"]
+      .forEach(id => ramp(id, anthemSrc ? 0 : level(id), ctx.currentTime, 1.5));
     loop();
   }
   function stop() {
@@ -364,6 +378,7 @@ const Music = (function () {
        this module promises not to throw on. */
     if (!ctx) return;
     LAYERS.forEach(l => ramp(l.id, 0, ctx.currentTime, 0.6));
+    anthemOff(0.6);
   }
 
   /* ---------------------------------------------------------------
@@ -543,6 +558,8 @@ const Music = (function () {
      they settle back and leave the room */
   function rise() {
     if (!playing || !ctx) return;
+    /* The anthem is the opening while it is up; nothing swells over it. */
+    if (anthemSrc || anthemWanted) return;
     const t = ctx.currentTime, dur = 6 * BEATS * SPB;
     ["pad", "bass", "keys", "reed"].forEach(id => ramp(id, level(id), t, 1.5));
     ramp("drums", 0.20, t, 1.0);
@@ -558,6 +575,102 @@ const Music = (function () {
     ramp("lead",  0, t, 0.4);
     ramp("keys",  level("keys") * 0.4, t, 0.6);
     ramp("keys",  level("keys"), t + 5, 2.5);
+  }
+
+  /* ---------------------------------------------------------------
+     THE ANTHEM.
+
+     One recorded track, named by content and embedded as base64 because
+     file:// will not fetch a file. It is NOT a bed: a bed is remixed
+     bar by bar and a recording cannot be, so the recording takes a gain
+     of its own on the music bus and the bed steps out of its way. The
+     transition in both directions is a fade, and the sequencer is never
+     stopped — so coming back out of an anthem the bed resumes mid-phrase
+     rather than restarting, which is what makes it seamless.
+
+     NOTHING HERE MAY THROW, like everything else in this file. A missing
+     recording, absent Web Audio, a blocked context or a browser without
+     atob all resolve to "the bed carries on".
+     --------------------------------------------------------------- */
+  function trackFor(id) {
+    const A = (typeof ANTHEM !== "undefined" && ANTHEM) || {};
+    return (id && A[id]) || null;
+  }
+  /* base64 -> ArrayBuffer, for decodeAudioData. */
+  function b64buf(b64) {
+    if (typeof atob !== "function") return null;
+    const bin = atob(b64), n = bin.length, u = new Uint8Array(n);
+    for (let i = 0; i < n; i++) u[i] = bin.charCodeAt(i);
+    return u.buffer;
+  }
+  /* The bed steps back or returns, as a whole, on the one glide. */
+  function bed(factor, glide) {
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    LAYERS.forEach(l => ramp(l.id, level(l.id) * factor, now, glide || 1.2));
+  }
+  function anthemOff(glide) {
+    const g = glide || 1.2;
+    anthemToken++;                              /* a decode still in flight is dead */
+    anthemWanted = false;
+    const src = anthemSrc, gain = anthemGain;
+    anthemSrc = null; anthemGain = null; anthemId = null;
+    if (src && gain && ctx) {
+      try {
+        gain.gain.cancelScheduledValues(ctx.currentTime);
+        gain.gain.setValueAtTime(gain.gain.value, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + g);
+      } catch (e) {}
+      try { src.stop(ctx.currentTime + g + 0.05); } catch (e) {}
+    }
+    if (playing) bed(1, g);
+    return true;
+  }
+  /* anthem(id) plays a track and ducks the bed; anthem(null) fades the
+     track out and brings the bed back. Returns false when there is no
+     recording, so the caller can fall back to a mood. */
+  function anthem(id) {
+    if (!id) return anthemOff();
+    const t = trackFor(id);
+    if (!t || !t.data) return false;            /* not encoded yet: the bed carries */
+    if (pref("music") === false) return false;
+    const my = ++anthemToken;
+    anthemWanted = true;
+    const begin = () => {
+      if (my !== anthemToken) return;
+      /* THE CLICK THAT STARTS A GOVERNMENT IS ALSO THE GESTURE THAT BUILDS
+         THE GRAPH, and build() is normally queued behind the context's own
+         resume(). Build it here if it is not up yet; if even Sound has no
+         context, wait for the one that unlocks it. */
+      if (!build()) {
+        if (typeof Sound !== "undefined" && Sound.onReady && !Sound.available())
+          Sound.onReady(begin);
+        else anthemWanted = false;
+        return;
+      }
+      let buf;
+      try { buf = b64buf(t.data); } catch (e) { return; }
+      if (!buf) return;
+      const play = audio => {
+        if (my !== anthemToken || !ctx || !out) return;
+        try {
+          const src = ctx.createBufferSource(), g = ctx.createGain();
+          src.buffer = audio; src.loop = true;
+          g.gain.setValueAtTime(0.0001, ctx.currentTime);
+          g.gain.linearRampToValueAtTime(t.level || 0.85, ctx.currentTime + 1.2);
+          src.connect(g); g.connect(out);
+          src.start();
+          anthemSrc = src; anthemGain = g; anthemId = id;
+          bed(0, 1.2);
+        } catch (e) {}
+      };
+      try {
+        const p = ctx.decodeAudioData(buf, play, () => {});
+        if (p && p.then) p.then(play, () => {});
+      } catch (e) {}
+    };
+    begin();
+    return true;
   }
 
   /* the Options toggle: a start/stop. The volume is the music bus gain,
@@ -580,6 +693,8 @@ const Music = (function () {
     tension: tension, moment: moment, defeat: defeat, rise: rise, sombre: sombre,
     undertake: undertake, order: order, revoke: revoke, threat: threat,
     prorogue: prorogue, swell: swell,
+    /* the one recorded track; null stops it and returns the bed */
+    anthem: anthem,
     available: () => !!ctx,
     /* for the checks and for the Options readout: what the bed is
        actually doing, as opposed to what it was told to do */
@@ -587,6 +702,7 @@ const Music = (function () {
       playing: playing,
       context: ctx ? ctx.state : null,
       bar: playing ? (Math.floor(step / 8) % BARS) + 1 : null,
+      anthem: anthemId,
       levels: LAYERS.reduce((o, l) => {
         o[l.id] = gains[l.id] ? Math.round(gains[l.id].gain.value * 1000) / 1000 : null;
         return o;

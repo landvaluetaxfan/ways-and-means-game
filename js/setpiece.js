@@ -168,7 +168,10 @@ const SetPiece = (function () {
      motion and not sound, so the no-cue-in-a-renderer rule does not apply —
      but `body.no-motion` and prefers-reduced-motion both already switch the
      transition off in CSS, so a player who asked for stillness gets it. */
-  function sign(root) {
+  /* ARM WITHOUT WRITING. The path is measured and set to its full dash
+     offset, so the signature is INVISIBLE and waiting. The introduction
+     uses this: the page is drawn, the hand has not moved yet. */
+  function arm(root) {
     if (!root || typeof root.querySelector !== "function") return false;
     const box = root.querySelector(".sp-signature");
     const path = box && box.querySelector(".sigpath");
@@ -178,13 +181,30 @@ const SetPiece = (function () {
     if (!len) return false;
     box.style.setProperty("--len", len);
     box.classList.add("sig-armed");
-    const go = () => { box.classList.remove("sig-armed"); box.classList.add("sig-draw"); };
+    return true;
+  }
+
+  /* THE PEN MOVES. A signature armed by arm() is written now, over the
+     CSS transition, which is the one place the duration lives. */
+  function write(root) {
+    const box = root && typeof root.querySelector === "function"
+      ? root.querySelector(".sp-signature") : null;
+    if (!box) return false;
+    box.classList.remove("sig-armed");
+    box.classList.add("sig-draw");
+    return true;
+  }
+
+  function sign(root) {
+    if (!arm(root)) return false;
+    const box = root.querySelector(".sp-signature");
+    const go = () => write(root);
     if (typeof requestAnimationFrame !== "function") { go(); return true; }
     requestAnimationFrame(() => requestAnimationFrame(go));
     return true;
   }
 
-  return { is, html, KINDS, sign };
+  return { is, html, KINDS, sign, arm, write };
 })();
 
 if (typeof module !== "undefined") module.exports = SetPiece;

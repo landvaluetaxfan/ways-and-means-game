@@ -2835,6 +2835,18 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .sp-sec p{margin:0 0 9px;line-height:1.55;}
 .sp-lede p{font-size:14.5px;line-height:1.6;}
 
+/* THE INTRODUCTION IS READ, NOT SCANNED. It is the only set piece that does
+   not take the screen — it sits in the sitting panel with the wire and the
+   calendar around it (design/31 §5) — so the type is sized for a page of
+   prose rather than for a panel that reads at a glance. Scoped to the
+   chromed case (a real set piece wears #s-sit.setpiece) so a turn the world
+   takes keeps the measure it was laid out with. The measure widens with the
+   size, or the longer lines undo the gain. */
+#s-sit:not(.setpiece) .sp-page{max-width:72ch;}
+#s-sit:not(.setpiece) .sp-title{font-size:18px;letter-spacing:0;}
+#s-sit:not(.setpiece) .sp-sec p{font-size:14.5px;line-height:1.62;}
+#s-sit:not(.setpiece) .sp-sec.sp-lede p{font-size:16px;line-height:1.66;}
+
 /* An epigraph is centred and carries its source, because one without a
    source is a slogan. */
 .sp-epigraph{margin:6px 0 22px;padding:0 4ch;text-align:center;border:0;}
@@ -2856,9 +2868,16 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .sp-source{font-family:var(--f-ui);font-size:10px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--ink-soft);margin-top:6px;}
 
-.sp-signature{display:flex;justify-content:flex-end;margin-top:22px;}
+.sp-signature{display:flex;justify-content:center;margin-top:22px;}
 .sp-signature .sigpath{fill:none;stroke:var(--ink);stroke-width:1.4;
   stroke-linecap:round;stroke-linejoin:round;}
+/* AND IT IS WRITTEN LOW, so the descenders cross the rule and land on the
+   typed name — ink over print, the way a signature sits on a document. The
+   svg is absolute inside .rule; the cap is its sibling, so the stroke is
+   layered over it rather than hidden under it. */
+.sp-signature .sigline .rule{overflow:visible;}
+.sp-signature .sigline svg{bottom:-16px;z-index:2;}
+.sp-signature .sigline .cap{position:relative;z-index:1;}
 
 .sp-choices{flex:0 0 auto;display:flex;flex-wrap:wrap;gap:6px;
   justify-content:center;padding:9px 6px;border-top:1px solid var(--chrome-dk);}

@@ -187,8 +187,13 @@ const ADMINISTRATIONS = [
        is a placeholder older than the term and is not the year. */
     intro:{
       /* A BED, not the readout. js/music.js exports its moods by name and
-         `state` is the state readout, so it was never going to play. */
+         `state` is the state readout, so it was never going to play.
+         `anthem` names a recorded track in content/anthem.js: while the
+         introduction is up it plays and the bed steps aside, and leaving it
+         fades the recording out and the bed back in. `mood` is the fallback
+         for a build where the recording is not encoded yet. */
       mood:"moment",
+      anthem:"la_bionda",
       title:"Adriana Eireann Flash",
       art:"flash_intro",
       sections:[
@@ -204,19 +209,19 @@ const ADMINISTRATIONS = [
 
 She came up to the Winter Garden in 2070, in the Commonwealth's springtime, when orbital industry was finding its flourishing and nobody yet knew what any of it was worth. A year later she was Governor of the Reserve Bank of the Circumterrestrial Commonwealth. She was to be the first in a line of faceless bankers who would set the precedent for the composed monetary policy of this novel polity.
 
-That could have been the whole of it. A decade of steady hands and unread minutes, a portrait in a corridor, a pension. But a polity that has to manufacture its own air does not leave its technicians alone for long, and the record she made at the Bank is a record either way. She held the consumables floor through a winter when holding it cost more than letting it fall, and the stations that are still inhabited are the argument for that; she also priced the substrate facility, and there are benches that have not forgiven her for it. Nothing she did at the Bank is deniable. All of it is filed.` },
+That could have been the whole of it. A decade of steady hands and unread minutes, a portrait in a corridor, a pension. But it's not like every capable leader was evidently destined to do it beforehand.` },
 
         { kind:"body", head:"How she came to it", body:
-`The Party of Socialists and Democrats did not choose her because she was one of them. It chose her because the arithmetic of the chamber had stopped working, and hers was the only name several benches could say without flinching. She took First Spin at the election that made her Prime Minister, which is the first seat she has ever held.
+`The Party of Socialists and Democrats did not choose her because she was one of them. It chose her because the party was seemingly in between worlds, in constant melancholic turmoil, unsure of what was to come next. And so, dark horse she was, she hammered her way to the leadership election, and then she won it. She took First Spin at the election that made her Prime Minister, which is the first elected office she has ever held.
 
-So she is a banker at the head of the party of maintenance labour, and both halves of that sentence are true on every day she governs. The members who put her there did it to keep a government; they did not do it because they trust her, and they have not pretended otherwise.` },
+So she is a banker at the head of the party of maintenance labour, which occasionally mitigates the two facts; occasionally it exemplifies it. The members who put her there did it to keep a government.` },
 
         { kind:"body", head:"What she inherits", body:
-`The Commonwealth is thirty stations and something near seven million people, governed from a garden that returns no member to the House it houses. Her government carries the chamber on the exact number it needs, which means confidence is arithmetic rather than sentiment and one defection is the end of it. Her partner's price is on the order paper already, in a threshold bill her own party's instincts are against.
+`Her government is a coalition of the Party of Socialists and Democrats and the New Progressive Party, and with confidence and supply, they lead a minority government with exactly 1 seat enough to stay in power. One defection or unfortunate by-election could possibly end everything. And with that, while the New Progressive Party may align with the PSD on many elements of economic policy, the issue of personhood is one that lies in wait, a test for the shaky alliance.
 
-And beyond the tariff wall, at the foot of the Chimborazo line, Cordell has stopped filing returns on the Bellamy Almanac Works. A hundred and eighty-four thousand people live on it, under a charter granted by no Commonwealth and answerable to no House, and the company that wrote that charter has walked away from it. Whether they come in — on what terms, and who pays for the charter to be surrendered — is what this session is for.
+The PSD are in power because of labour and trade unions. Expanding personhood is a natural threat against that. The New Progressive Party sees otherwise.
 
-She has four years. The first session of them opens on the eleventh of April, and the House is already sitting.` },
+She has four years. The session that opens on the eleventh of April is the fourth, and the House is already sitting.` },
 
         { kind:"signature", head:"Adriana Eireann Flash \u00b7 Prime Minister" }
       ] } },

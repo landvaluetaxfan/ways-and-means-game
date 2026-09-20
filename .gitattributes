@@ -15,3 +15,5 @@
 # Binary, so git never applies the above and never tries to diff or merge them.
 *.png binary
 *.jpg binary
+*.mid binary
+*.midi binary

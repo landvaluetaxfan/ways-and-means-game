@@ -123,6 +123,29 @@ function rdp(pts, eps) {
   return rdp(pts.slice(0, idx + 1), eps).slice(0, -1).concat(rdp(pts.slice(idx), eps));
 }
 
+/* A HAND IS SMOOTH AND A SKELETON IS NOT. Thinning leaves a staircase along
+   every stroke, and the Catmull-Rom fit faithfully turns that staircase into
+   visible wobble — the signature read as scratchy rather than written. So the
+   simplified points are relaxed toward their neighbours before fitting. Two
+   things matter: the endpoints are held, so strokes still begin and end where
+   they were traced; and it runs AFTER the RDP, so the points being smoothed
+   are the ones the curve actually passes through. A subpath of fewer than four
+   points (a dot, a crossed t) has no interior to move and is left alone. */
+const SMOOTH_ITERS = 4, SMOOTH_W = 0.5, TENSION = 0.7;
+function smooth(pts) {
+  let p = pts.map(q => q.slice());
+  for (let it = 0; it < SMOOTH_ITERS; it++) {
+    const n = p.length; if (n < 4) break;
+    const np = p.map(q => q.slice());
+    for (let i = 1; i < n - 1; i++) {
+      np[i][0] = (1 - SMOOTH_W) * p[i][0] + SMOOTH_W * (p[i-1][0] + p[i+1][0]) / 2;
+      np[i][1] = (1 - SMOOTH_W) * p[i][1] + SMOOTH_W * (p[i-1][1] + p[i+1][1]) / 2;
+    }
+    p = np;
+  }
+  return p;
+}
+
 /* Smooth a polyline into a cubic chain (Catmull-Rom), so the drawn stroke
    reads as a hand rather than as a chain of line segments. */
 function toBezier(p) {
@@ -130,8 +153,10 @@ function toBezier(p) {
   const q = [p[0]].concat(p, [p[p.length - 1]]);
   let d = "M" + p[0][0].toFixed(1) + " " + p[0][1].toFixed(1);
   for (let i = 1; i < q.length - 2; i++) {
-    const c1 = [q[i][0] + (q[i+1][0] - q[i-1][0]) / 6, q[i][1] + (q[i+1][1] - q[i-1][1]) / 6];
-    const c2 = [q[i+1][0] - (q[i+2][0] - q[i][0]) / 6, q[i+1][1] - (q[i+2][1] - q[i][1]) / 6];
+    const c1 = [q[i][0] + (q[i+1][0] - q[i-1][0]) * TENSION / 6,
+                q[i][1] + (q[i+1][1] - q[i-1][1]) * TENSION / 6];
+    const c2 = [q[i+1][0] - (q[i+2][0] - q[i][0]) * TENSION / 6,
+                q[i+1][1] - (q[i+2][1] - q[i][1]) * TENSION / 6];
     d += "C" + c1[0].toFixed(1) + " " + c1[1].toFixed(1) + "," +
                 c2[0].toFixed(1) + " " + c2[1].toFixed(1) + "," +
                 q[i+1][0].toFixed(1) + " " + q[i+1][1].toFixed(1);
@@ -195,7 +220,7 @@ function run(img) {
 
   const sx = W / TW, sy = sx;                  // uniform, so nothing distorts
   const H = Math.min(HMAX, Math.round(TH * sy));
-  const d = lines.map(l => toBezier(rdp(l, 0.9).map(p => [p[0] * sx, p[1] * sy]))).join(" ");
+  const d = lines.map(l => toBezier(smooth(rdp(l, 0.9).map(p => [p[0] * sx, p[1] * sy])))).join(" ");
 
   return { d: d, w: W, h: Math.max(H, Math.ceil(TH * sy)),
            strokes: lines.length, inkPx: ink, src: TW + "x" + TH };

@@ -88,7 +88,12 @@ const SANDBOX = [
 const EVENTS = [
 
 { id:"the_account", prologue:1, once:true,
-  title:"The first question",
+  /* THE CAMPAIGN'S OWN NAME, carried on the first sitting's header rather
+     than a scene label. The author's choice; swap the part after the dash
+     for another reading. (Alternatives offered: A Defiance of Odds · The
+     Arithmetic of Confidence · Steady Hands and Unread Minutes · The Fourth
+     Session · One for You, One for Me · Why You? · The Winter Garden.) */
+  title:"Adriana Eireann Flash \u2014 The Edge of History",
   speaker:"ceyhan",
   /* THE EMPHASIS. Her record is FIXED (design/14 §2) — this does not
      change a thing she did. It decides which reading of it she puts her
