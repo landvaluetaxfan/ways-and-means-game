@@ -11,6 +11,11 @@ const UI = (function () {
      was opened under. A station change resets the open row to the selected
      seat; the player can close it by clicking it again. */
   let consOpen = null, consOpenAt = null;
+  /* WHICH PARTY IN THE COMPOSITION TABLE IS SHOWING ITS CURRENTS. A view
+     preference for the session, not world state, so it lives here and not in
+     the save. One at a time: the panel has room for one, and a table with
+     every party opened is the tall column this was meant to fix. */
+  let compOpen = null;
   /* The functional tier opens in place the same way a seat does. One id,
      because only one row can be open and the alternative is a column of
      detail rows with no relationship to what is above them. */
@@ -249,6 +254,15 @@ const UI = (function () {
          the whip, with the order paper insisting a bill was open. */
       activate: () => { chamberBare = false; drawChamber(); drawStatus(); }
     });
+    /* The party list is a region like the order paper: its rows are
+       controls, it carries .sel, and the selection has to survive a
+       re-render by KEY rather than by index. */
+    Focus.region("party-table", {
+      rows: "tr[data-party]",
+      key: tr => tr.dataset.party,
+      fallback: () => ((C.parties || [])[0] || {}).id,
+      activate: () => drawParties()
+    });
     Focus.region("orbit-table", {
       rows: "tr[data-station]",
       key: tr => tr.dataset.station,
@@ -370,7 +384,7 @@ const UI = (function () {
       /* A tip is positioned in viewport coordinates against a node that is
          about to be replaced. Take it down first. */
       if (typeof Tips !== "undefined") Tips.hide();
-      drawTitle(); drawPrices(); drawReceipts(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
+      drawTitle(); drawPrices(); drawReceipts(); drawParties(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
       if (typeof Concordance !== "undefined") Concordance.render(st, C, cxCurrent, false);
       if (typeof Papers !== "undefined") Papers.render(st, C);
       /* The globe only redraws when it is the screen the player is on: it is
@@ -679,6 +693,109 @@ const UI = (function () {
     const col = last > first ? "var(--alert)" : last < first ? "var(--ok)" : "var(--rule)";
     return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" class="sparkline">` +
       `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.2"/></svg>`;
+  }
+
+  /* ---------- the parties ----------
+     A PARTY IS NOT A COLOUR. Twelve of them exist in content and the only
+     place any of it was legible was a tint in the seating plan and a row in
+     the coalition table — so the government's own currents lived on the
+     Government tab, the opposition's nowhere at all, and who actually sits
+     for a party could not be asked.
+
+     Everything here is derived. Seats come from Engine, which counts the
+     live roll rather than the frozen numbers in content (a by-election has
+     to show up); offices come from the cabinet, the way js/encyclopedia.js
+     already derives them, so a reshuffle reaches this screen without anybody
+     editing it. Nothing is stored. */
+  function partySel() {
+    const list = C.parties || [];
+    const want = Focus.selected("party-table");
+    return list.find(p => p.id === want) || list[0] || null;
+  }
+
+  /* The office a member holds, from the cabinet and the party leaderships —
+     not from a typed role, which drifts the moment anybody is moved. */
+  function officeOfMember(id) {
+    const post = (C.cabinet || []).find(m => m.holder === id);
+    if (post) return post.title || post.name;
+    const led = (C.parties || []).find(p => p.leader === id);
+    if (led) return "Leader, " + (led.name || led.id);
+    const ch = (C.characters || []).find(c => c.id === id);
+    return (ch && ch.role) || "";
+  }
+
+  function drawParties() {
+    const tbl = $("#party-table"); if (!tbl) return;
+    const list = C.parties || [];
+    const sel = partySel();
+    const count = $("#party-count");
+    if (count) count.textContent = list.length + " in the House";
+
+    tbl.innerHTML = `<thead><tr><th></th><th>Party</th><th class="n">Seats</th>` +
+      `<th class="n">Loyalty</th></tr></thead><tbody>` +
+      list.map(p => {
+        const seats = Engine.partyTotal(st, p.id);
+        const loy = (st.loyalty && st.loyalty[p.id] != null) ? st.loyalty[p.id] : p.loyalty;
+        return `<tr data-party="${p.id}"${sel && sel.id === p.id ? ' class="sel"' : ""}>` +
+          `<td><i class="pdot" style="background:${p.colour}"></i></td>` +
+          `<td><b>${esc(p.short || p.id)}</b> ${esc(p.name)}</td>` +
+          `<td class="n">${seats}</td><td class="n">${loy == null ? "—" : loy}</td></tr>`;
+      }).join("") + `</tbody>`;
+    tbl.querySelectorAll("[data-party]").forEach(tr =>
+      tr.addEventListener("click", () => {
+        Focus.seed("party-table", tr.dataset.party); cue("click"); drawParties();
+      }));
+
+    if (!sel) return;
+    const hdr = $("#party-hdr"), sub = $("#party-sub");
+    if (hdr) hdr.textContent = sel.name;
+    if (sub) sub.textContent = (sel.short || "") + " · " + (sel.kind || "");
+
+    /* the detail: who leads it, what it holds, what it believes */
+    const leader = (C.characters || []).find(c => c.id === sel.leader);
+    const pop = Engine.partyPopular(st, sel.id), fun = Engine.partyFunctional(st, sel.id);
+    const ax = sel.axes || {};
+    const axRows = Object.keys(ax).filter(k => ax[k])
+      .map(k => `<div class="prow"><div class="plab">${esc(k)}</div>` +
+                `<div class="pval">${esc(ax[k])}</div></div>`).join("");
+    const det = $("#party-detail");
+    if (det) det.innerHTML =
+      (leader ? `<div class="rulehead">Leader</div><div class="note"><b>${esc(leader.name)}</b>` +
+        ` — ${esc(officeOfMember(leader.id))}${leader.seat ? " · sits for " + esc(leader.seat) : ""}.</div>`
+        : `<div class="rulehead">Leader</div><div class="note">None. The independents are not a party and do not choose one.</div>`) +
+      `<div class="rulehead">Seats <em>${pop + fun}</em></div>` +
+      `<div class="note">${pop} popular · ${fun} functional. ` +
+      `Content declares ${(sel.seats && (sel.seats.district + sel.seats.list + sel.seats.functional)) || 0} at the opening; ` +
+      `this is the live roll.</div>` +
+      (axRows ? `<div class="rulehead">Where it stands</div>${axRows}` : "") +
+      (sel.note ? `<div class="rulehead">In a sentence</div><div class="note">${esc(sel.note)}</div>` : "");
+
+    /* the currents */
+    const curs = (C.currents || []).filter(c => c.party === sel.id);
+    const ch = $("#party-cur-hdr");
+    if (ch) ch.textContent = curs.length ? curs.length + " inside the party"
+                                         : "none declared";
+    const ct = $("#party-currents");
+    if (ct) ct.innerHTML = !curs.length
+      ? `<tbody><tr><td class="note">No current is declared for this party. A party ` +
+        `with no internal current is a bloc that votes.</td></tr></tbody>`
+      : `<thead><tr><th>Current</th><th class="n">Members</th><th class="n">Loyalty</th></tr></thead><tbody>` +
+        curs.map(cu => {
+          const loy = (st.loyalty && st.loyalty[cu.id] != null) ? st.loyalty[cu.id] : cu.loyalty;
+          return `<tr><td>${esc(cu.name)}</td><td class="n">${cu.members}</td>` +
+            `<td class="n ${loy < 35 ? "warn" : ""}">${loy}</td></tr>`;
+        }).join("") + `</tbody>`;
+
+    /* the members */
+    const mps = (C.characters || []).filter(c => c.party === sel.id);
+    const mh = $("#party-mp-hdr");
+    if (mh) mh.textContent = mps.length + " in the record";
+    const mt = $("#party-mps");
+    if (mt) mt.innerHTML = !mps.length
+      ? `<tbody><tr><td class="note">No member of this party is named in the record yet.</td></tr></tbody>`
+      : `<thead><tr><th>Member</th><th>Seat</th><th>Office</th></tr></thead><tbody>` +
+        mps.map(c => `<tr><td>${esc(c.name)}</td><td>${esc(c.seat || "—")}</td>` +
+          `<td>${esc(officeOfMember(c.id)) || "Backbench"}</td></tr>`).join("") + `</tbody>`;
   }
 
   /* ---------- ways and means ----------
@@ -1786,11 +1903,17 @@ const UI = (function () {
     const govIds = st.coalition.concat(st.confidenceSupply);
     C.parties.forEach(p => {
       const sq = seatsOf(p.id), r = armed && d.rows.find(x => x.party === p.id);
-      h += `<tr${govIds.includes(p.id) ? ' class="govrow"' : ""}>` +
+      const mine = (C.currents || []).filter(cu => cu.party === p.id);
+      const open = compOpen === p.id && mine.length;
+      h += `<tr class="${govIds.includes(p.id) ? "govrow " : ""}` +
+        `${mine.length ? "compable" : ""}${open ? " compopen" : ""}"` +
+        `${mine.length ? ` data-comp="${p.id}"` : ""}>` +
         /* THE FULL NAME. There is room for it in this column — eleven rows of
            short numbers — and a composition table is the one place the reader
            wants to know which party, not which three letters. */
-        `<td class="pn">${mark(p.id)}${pname(p.id)}</td>` +
+        `<td class="pn">${mark(p.id)}${pname(p.id)}` +
+        (mine.length ? `<span class="compcar" aria-hidden="true">${open ? "−" : "+"}</span>` : "") +
+        `</td>` +
         `<td class="n">${sq.district}</td><td class="n">${sq.list}</td>` +
         `<td class="n">${sq.functional}</td>` +
         `<td class="n"><b>${Engine.partyTotal(st, p.id)}</b></td>` +
@@ -1799,6 +1922,22 @@ const UI = (function () {
         (anyOff ? `<td class="n${r && off(r) ? " offv" : ""}">` +
           `${r && off(r) ? off(r) : "&mdash;"}</td>` : "") +
         `</tr>`;
+      /* THE CURRENTS, UNDER THE PARTY THEY BELONG TO. The author asked for
+         the individual parties to open rather than the whole table to
+         collapse — which is right: a composition table nobody can see is
+         not shorter, it is gone. The same construction as the
+         constituency dossier inside #cons-table: a detail ROW, not a
+         second panel. */
+      if (open) {
+        const cols = 5 + (armed ? 2 : 0) + (anyOff ? 1 : 0);
+        h += `<tr class="compdet"><td colspan="${cols}">` +
+          `<div class="cdet">` + mine.map(cu => {
+            const loy = (st.loyalty && st.loyalty[cu.id] != null) ? st.loyalty[cu.id] : cu.loyalty;
+            return `<div class="cdrow"><b>${esc(cu.name)}</b>` +
+              `<span class="cdn">${cu.members} member${cu.members === 1 ? "" : "s"}</span>` +
+              `<span class="cdl${loy < 35 ? " warn" : ""}">loyalty ${loy}</span></div>`;
+          }).join("") + `</div></td></tr>`;
+      }
       if (armed && r && r.benches) h += r.benches.map(b =>
         `<tr class="bench"><td>${esc(b.name)}</td><td class="n"></td><td class="n"></td>` +
         `<td class="n"></td><td class="n">${b.popularSeats + b.functionalSeats}</td>` +
@@ -4280,6 +4419,13 @@ const UI = (function () {
     const id = chamberBill();
     if (hdr) hdr.textContent = id ? "by tier, and how they are expected to go" : "by tier";
     el.innerHTML = benchTableHTML(id ? forecast(id) : null);
+    /* A player action, so it may make a sound. Clicking the open party
+       again closes it. */
+    el.querySelectorAll("[data-comp]").forEach(tr =>
+      tr.addEventListener("click", () => {
+        compOpen = compOpen === tr.dataset.comp ? null : tr.dataset.comp;
+        cue("click"); drawBenchTable();
+      }));
   }
 
   /* THE ORDER PAPER IS THE PICKER.

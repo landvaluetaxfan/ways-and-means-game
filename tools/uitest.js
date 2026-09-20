@@ -100,6 +100,55 @@ try {
      [...w.document.querySelectorAll(".screen.on")].map(s => s.id).join(" "));
 } catch (e) { ok("save round-trip", false, e.message); }
 
+/* THE PARTIES TAB, AND A COMPOSITION ROW THAT OPENS. Both are new, and both
+   are the kind of thing every static check passes and nobody can use: a
+   panel that renders blank, or a click handler wired to a function that does
+   not exist. The second is not hypothetical \u2014 this handler shipped calling
+   drawComposition(), and the renderer is called drawBenchTable(). Nothing
+   failed; the row simply did not open. tools/edtest.js exists for exactly
+   this in the editor. */
+try {
+  w.document.querySelector('.tab[data-t="party"]').click();
+  const prows = [...w.document.querySelectorAll("#party-table tr[data-party]")];
+  ok("the parties tab lists every party", prows.length === CONTENT.parties.length,
+     prows.length + " of " + CONTENT.parties.length);
+  ok("and opens on one of them",
+     (w.document.querySelector("#party-detail").textContent || "").trim().length > 40);
+  const first = w.document.querySelector("#party-hdr").textContent;
+  const mpsFirst = w.document.querySelectorAll("#party-mps tbody tr").length;
+  if (prows[1]) {
+    prows[1].click();
+    ok("choosing another party changes the page",
+       w.document.querySelector("#party-hdr").textContent !== first,
+       first + " -> " + w.document.querySelector("#party-hdr").textContent);
+    ok("and its members with it",
+       w.document.querySelectorAll("#party-mps tbody tr").length !== mpsFirst ||
+       mpsFirst === 0, mpsFirst + " -> " + w.document.querySelectorAll("#party-mps tbody tr").length);
+    ok("and the selection is marked on the row that was clicked",
+       (w.document.querySelector("#party-table tr.sel") || {}) === prows[1] ||
+       !!w.document.querySelector("#party-table tr.sel"));
+  }
+
+  w.document.querySelector('.tab[data-t="cham"]').click();
+  const comp = [...w.document.querySelectorAll("#comp-table tr[data-comp]")];
+  ok("parties with currents open inside the composition table", comp.length > 0,
+     comp.length + " expandable");
+  ok("and nothing is open to begin with",
+     w.document.querySelectorAll("#comp-table tr.compdet").length === 0);
+  if (comp.length) {
+    comp[0].click();
+    const det = [...w.document.querySelectorAll("#comp-table tr.compdet")];
+    ok("clicking one shows its currents", det.length === 1,
+       det.length + " detail rows");
+    ok("and names them with their loyalty",
+       det.length > 0 && /loyalty/.test(det[0].textContent),
+       det.length ? det[0].textContent.trim().slice(0, 60) : "nothing");
+    w.document.querySelector("#comp-table tr[data-comp]").click();
+    ok("and clicking again closes it",
+       w.document.querySelectorAll("#comp-table tr.compdet").length === 0);
+  }
+} catch (e) { ok("the parties tab and the composition fold", false, e.message); }
+
 /* WAYS AND MEANS IS ON THE GLASS. The state grew an income; a revenue the
    player cannot see is the same bug from the other side. And a panel that
    renders blank is invisible to every static check \u2014 which is the whole

@@ -102,7 +102,7 @@ const SHAPES =
 : VIEWPORTS;
 
 /* The tabs, in the order the interface presents them. */
-const TABS = ["sit", "gov", "cham", "orb", "world", "cx", "log"];
+const TABS = ["sit", "gov", "cham", "party", "orb", "world", "cx", "log"];
 
 /* Runs inside the page. Boots the shell into a running game exactly as
    tools/harness.js does, then measures each tab in turn. */

@@ -34,6 +34,7 @@
     <button class="tab" role="tab" aria-selected="true"  data-t="sit">Sitting</button>
     <button class="tab" role="tab" aria-selected="false" data-t="gov">Government</button>
     <button class="tab" role="tab" aria-selected="false" data-t="cham">Chamber</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="party">Parties</button>
     <button class="tab" role="tab" aria-selected="false" data-t="orb">Orbit</button>
     <button class="tab" role="tab" aria-selected="false" data-t="world">World</button>
     <button class="tab" role="tab" aria-selected="false" data-t="cx">Concordance</button>
@@ -215,10 +216,10 @@
             <summary>Own party currents <em>fold</em></summary>
             <div class="pbody flush scrolls"><table id="gov-currents"></table></div>
           </details>
-          <details class="panel pfold">
-            <summary>Composition <em id="comp-hdr">by tier</em></summary>
+          <div class="panel">
+            <h2>Composition <em id="comp-hdr">by tier</em></h2>
             <div class="pbody flush scrolls"><table id="comp-table"></table></div>
-          </details>
+          </div>
           <div class="panel">
             <h2><span data-tip="functional">Functional constituencies</span> <em data-tip="dual">40 seats, dual majority</em></h2>
             <div class="pbody flush scrolls"><table id="func-table"></table></div>
@@ -226,6 +227,38 @@
           </div>
         </div>
 
+      </div>
+    </section>
+
+    <!-- THE PARTIES. Twelve of them, and until now the only place any of
+         this was legible was a colour in the seating plan and a row in the
+         coalition table. A party is a leader, a bloc of seats across three
+         tiers, a set of internal currents that may or may not follow the
+         leader, and a list of members who each sit for somewhere. -->
+    <section class="screen" id="s-party">
+      <div class="grid g-party">
+        <div class="stack scrolls">
+          <div class="panel">
+            <h2>Parties <em id="party-count"></em></h2>
+            <div class="pbody flush scrolls"><table id="party-table"></table></div>
+          </div>
+        </div>
+        <div class="stack scrolls">
+          <div class="panel">
+            <h2><span id="party-hdr">The party</span> <em id="party-sub"></em></h2>
+            <div class="pbody scrolls" id="party-detail"></div>
+          </div>
+          <div class="panel">
+            <h2><span data-tip="currents">Currents</span> <em id="party-cur-hdr">inside the party</em></h2>
+            <div class="pbody flush scrolls"><table id="party-currents"></table></div>
+          </div>
+        </div>
+        <div class="stack scrolls">
+          <div class="panel">
+            <h2>Members <em id="party-mp-hdr"></em></h2>
+            <div class="pbody flush scrolls"><table id="party-mps"></table></div>
+          </div>
+        </div>
       </div>
     </section>
 

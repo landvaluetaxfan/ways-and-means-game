@@ -171,6 +171,12 @@ const Tips = (function () {
       body: "Enrolled electors, not population. The functional roll and the " +
             "district roll count different people." },
 
+    currents: { title: "Currents",
+      body: "The factions inside a party, with how many members each carries " +
+            "and how loyal each is to its leadership. A party's own row is an " +
+            "average of these; a division is not. A current far below its " +
+            "party's loyalty is where a rebellion comes from." },
+
     waysmeans: { title: "Ways and means",
       body: "What the state takes in, every sitting, on each of the four " +
             "bases it taxes. The appropriation sets the rate; the scarcity " +

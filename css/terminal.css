@@ -201,6 +201,26 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    overflow of its own, the canvas takes every pixel the panel can give, and the
    SVG is capped by BOTH dimensions — so the smaller of width and height wins
    and it is never larger than the space it is in. */
+/* THE PARTIES. A list narrow enough to read at a glance, the party itself in
+   the middle where the prose is, and its members on the right. */
+.g-party{grid-template-columns:minmax(300px,420px) minmax(280px,380px) minmax(0,1fr);
+  grid-template-rows:minmax(0,1fr);height:100%;min-height:0;}
+#s-party.screen.on{height:100%;min-height:0;}
+.g-party > .stack{min-height:0;}
+.g-party .panel{min-height:0;}
+.pdot{display:inline-block;width:9px;height:9px;border:1px solid var(--rule);}
+/* A PARTY THAT OPENS ONTO ITS CURRENTS. Not .sel — this is a fold, not a
+   selection, and .sel means one thing (uxtest asserts it). */
+tr.compable{cursor:pointer;}
+tr.compable:hover{background:var(--field);}
+.compcar{float:right;font-family:var(--f-data);opacity:.7;padding-left:6px;}
+tr.compopen{background:var(--field);}
+.compdet > td{padding:0;}
+.cdet{border-left:2px solid var(--rule);margin:0 0 3px 10px;padding:3px 0 3px 8px;}
+.cdrow{display:flex;gap:8px;align-items:baseline;font-size:11.5px;padding:1px 0;}
+.cdrow b{flex:1 1 auto;font-weight:600;}
+.cdrow .cdn,.cdrow .cdl{font-family:var(--f-data);font-size:10.5px;color:var(--ink-soft);}
+.cdrow .cdl.warn{color:var(--alert);}
 .g-world{grid-template-columns:minmax(0,1fr) minmax(260px,330px) minmax(230px,300px);height:100%;min-height:0;
   align-items:stretch;grid-template-rows:minmax(0,1fr);}
 #s-world.screen.on{display:flex;flex-direction:column;height:100%;min-height:0;}
@@ -331,11 +351,15 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    it were squeezed to make room, and the forecast clipped. The plan is
    the thing the screen is for; it does not give up height to a list. */
 .g-cham > .stack > .panel:first-child{flex:0 0 auto;min-height:0;}
-/* THE CLOCK IS A READOUT AND THE ORDER PAPER IS THE LIST. Order-paper time
-   came over from the Government tab at its old size — 302px measured — and
-   pushed the order paper into a scroller on a screen with room for it. The
-   clock is capped and the paper under it takes what is left. */
-#cham-biz #gov-slots{max-height:148px;}
+/* THE ORDER PAPER GETS A FLOOR, AND THAT IS THE WHOLE FIX. Order-paper
+   time came over from the Government tab and the order paper under it went
+   into a scroller on a screen with room for it. The first attempt capped the
+   clock at 148px, which worked and made the clock cramped — and it turned
+   out the cap was never doing the work: the order paper was being squeezed
+   because nothing gave it a minimum, so the measure detail below it took the
+   surplus. Give the paper its floor and the clock can keep its full height.
+   Measured at 1600x1000: clock 302px, order paper 240 of content in a 240
+   box, no scrollbar. */
 #cham-biz > .panel:nth-child(2){flex:1 1 auto;min-height:260px;}
 /* THE WHIP PANEL SIZES TO ITS CONTENT, except while its division list is
    open — then it takes the rest of the column. The list is the one thing in
@@ -959,7 +983,7 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
   .tally i{transition:none;}
 }
 @media (max-width:1080px){
-  .g-gov,.g-cham,.g-orb,.g-disp,.g-elec,.g-sit,.g-world{grid-template-columns:minmax(0,1fr);}
+  .g-gov,.g-cham,.g-orb,.g-disp,.g-elec,.g-sit,.g-world,.g-party{grid-template-columns:minmax(0,1fr);}
 
   /* ONE COLUMN MEANS THE PAGE SCROLLS, and it did not. Every screen is
      height:100% with grid-template-rows:minmax(0,1fr) — ONE row, sized to
@@ -976,8 +1000,8 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
      gets a floor so a stacked column reads as a page rather than as a row
      of slots. */
   #s-sit.screen.on,#s-gov.screen.on,#s-cham.screen.on,
-  #s-orb.screen.on,#s-world.screen.on{height:auto;min-height:0;}
-  .g-sit,.g-gov,.g-cham,.g-orb,.g-world{
+  #s-orb.screen.on,#s-world.screen.on,#s-party.screen.on{height:auto;min-height:0;}
+  .g-sit,.g-gov,.g-cham,.g-orb,.g-world,.g-party{
     grid-template-rows:none;height:auto;min-height:0;}
   .g-sit > .stack,.g-gov > .stack,.g-cham > .stack,
   .g-orb > .panel,.g-world > .panel{overflow:visible;}
