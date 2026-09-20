@@ -2902,8 +2902,11 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
    SetPiece.sign(). The transition lives here rather than on .sigpath so the
    no-motion and reduced-motion rules above still switch it off. */
 .sp-signature.sig-armed .sigpath{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);}
+/* Each stroke draws over its own share of the total at a constant speed,
+   and starts when the strokes before it have finished (arm() sets --dur
+   and --delay per path). Linear, because a pen does not ease. */
 .sp-signature.sig-draw .sigpath{stroke-dasharray:var(--len);stroke-dashoffset:0;
-  transition:stroke-dashoffset 2.1s cubic-bezier(.55,.06,.3,1);}
+  transition:stroke-dashoffset var(--dur,.8s) linear var(--delay,0s);}
 body.no-motion .sp-signature.sig-draw .sigpath{transition:none;}
 @media (prefers-reduced-motion:reduce){
   .sp-signature.sig-draw .sigpath{transition:none;stroke-dashoffset:0;}

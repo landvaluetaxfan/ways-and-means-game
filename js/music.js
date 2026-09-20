@@ -609,21 +609,33 @@ const Music = (function () {
     const now = ctx.currentTime;
     LAYERS.forEach(l => ramp(l.id, level(l.id) * factor, now, glide || 1.2));
   }
-  function anthemOff(glide) {
+  /* a fade on any gain node, holding the value it is actually at — an
+     assigned .value is not an event, and cancelScheduledValues alone
+     would snap a ramp in flight back to its start. */
+  function fade(gain, target, glide) {
+    if (!gain || !ctx) return;
+    const now = ctx.currentTime, v = gain.gain.value;
+    try {
+      if (gain.gain.cancelAndHoldAtTime) gain.gain.cancelAndHoldAtTime(now);
+      else { gain.gain.cancelScheduledValues(now); gain.gain.setValueAtTime(v, now); }
+    } catch (e) {
+      try { gain.gain.cancelScheduledValues(now); gain.gain.setValueAtTime(v, now); } catch (e2) {}
+    }
+    try { gain.gain.linearRampToValueAtTime(target, now + (glide || 1.2)); } catch (e) {}
+  }
+  /* keepBed: a caller replacing one anthem with another must not un-duck
+     the bed in the gap between them. */
+  function anthemOff(glide, keepBed) {
     const g = glide || 1.2;
     anthemToken++;                              /* a decode still in flight is dead */
     anthemWanted = false;
     const src = anthemSrc, gain = anthemGain;
     anthemSrc = null; anthemGain = null; anthemId = null;
     if (src && gain && ctx) {
-      try {
-        gain.gain.cancelScheduledValues(ctx.currentTime);
-        gain.gain.setValueAtTime(gain.gain.value, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + g);
-      } catch (e) {}
+      fade(gain, 0.0001, g);
       try { src.stop(ctx.currentTime + g + 0.05); } catch (e) {}
     }
-    if (playing) bed(1, g);
+    if (playing && !keepBed) bed(1, g);
     return true;
   }
   /* anthem(id) plays a track and ducks the bed; anthem(null) fades the
@@ -634,6 +646,10 @@ const Music = (function () {
     const t = trackFor(id);
     if (!t || !t.data) return false;            /* not encoded yet: the bed carries */
     if (pref("music") === false) return false;
+    /* ONE RECORDING AT A TIME. Starting a second without stopping the
+       first left the first looping for ever — the stack heard after
+       returning to the menu and beginning another government. */
+    if (anthemSrc || anthemWanted) anthemOff(0.4, true);
     const my = ++anthemToken;
     anthemWanted = true;
     const begin = () => {
@@ -656,12 +672,15 @@ const Music = (function () {
         try {
           const src = ctx.createBufferSource(), g = ctx.createGain();
           src.buffer = audio; src.loop = true;
-          g.gain.setValueAtTime(0.0001, ctx.currentTime);
-          g.gain.linearRampToValueAtTime(t.level || 0.85, ctx.currentTime + 1.2);
+          /* IN GENTLY. The recording is a full-scale master and the bed is
+             mixed quiet, so it also sits well below the bus. */
+          const now = ctx.currentTime, target = t.level || 0.3;
+          g.gain.setValueAtTime(0.0001, now);
+          g.gain.linearRampToValueAtTime(target, now + 2.0);
           src.connect(g); g.connect(out);
           src.start();
           anthemSrc = src; anthemGain = g; anthemId = id;
-          bed(0, 1.2);
+          bed(0, 2.0);
         } catch (e) {}
       };
       try {

@@ -3754,7 +3754,7 @@ const UI = (function () {
           };
           const still = typeof Motion !== "undefined" && Motion.reduced && Motion.reduced();
           if (still || !wrote) leave();
-          else setTimeout(leave, 2600);   /* the stroke is 2.1s; hold it a beat */
+          else setTimeout(leave, wrote + 900);   /* hold the finished name a beat */
         });
         return;
       }

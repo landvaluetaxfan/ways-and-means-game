@@ -194,6 +194,12 @@ const Shell = (function () {
   }
 
   function showMenu(view) {
+    /* NO GOVERNMENT IS BEING INTRODUCED FROM THE MENU, so the anthem does
+       not outlive the game that opened it. This is the one place every way
+       back — the menu button, Load, a second boot — passes through. */
+    if (typeof Music !== "undefined" && Music.anthem) {
+      try { Music.anthem(null); } catch (e) {}
+    }
     const m = document.getElementById("menu");
     m.classList.add("on");
     document.body.classList.add("menu-on");

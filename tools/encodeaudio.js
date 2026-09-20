@@ -82,7 +82,7 @@ const out =
 "  " + JSON.stringify(id) + ": {\n" +
 "    title: " + JSON.stringify(title || id) + ",\n" +
 "    mime: " + JSON.stringify(mime) + ",\n" +
-"    level: 0.85,\n" +
+"    level: 0.3,\n" +
 "    data:\n" + data + "\n" +
 "  }\n" +
 "};\n";

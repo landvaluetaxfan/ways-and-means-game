@@ -84,11 +84,19 @@ const SetPiece = (function () {
          because a missing signature must read as a blank line and not as a
          broken page. */
       const d = (typeof Papers !== "undefined" && Papers.SIG_PATH) || "";
+      /* ONE <path> PER STROKE, so the signature can be WRITTEN. A single
+         path of forty-five subpaths animated by one dash offset reveals
+         whole strokes at a time — each letter fading in — because every
+         subpath is far shorter than the global dash length. Split, each
+         stroke draws over its own length, and arm() staggers them in the
+         order they were traced, which is left to right. */
+      const strokes = d ? d.split(/(?=M)/) : [];
+      const svg = strokes.length
+        ? `<svg width="228" height="63" viewBox="0 0 228 63" aria-hidden="true">` +
+          strokes.map(p => `<path class="sigpath" d="${p}"/>`).join("") + `</svg>`
+        : "";
       return `<div class="sp-sec sp-signature"><div class="sigline">` +
-        `<div class="rule">` +
-        (d ? `<svg width="228" height="63" viewBox="0 0 228 63" aria-hidden="true">` +
-             `<path class="sigpath" d="${d}"/></svg>` : "") +
-        `</div>` +
+        `<div class="rule">` + svg + `</div>` +
         `<div class="cap">${esc(sec.head || "")}</div>` +
         `</div></div>`;
     }
@@ -168,43 +176,58 @@ const SetPiece = (function () {
      motion and not sound, so the no-cue-in-a-renderer rule does not apply —
      but `body.no-motion` and prefers-reduced-motion both already switch the
      transition off in CSS, so a player who asked for stillness gets it. */
-  /* ARM WITHOUT WRITING. The path is measured and set to its full dash
-     offset, so the signature is INVISIBLE and waiting. The introduction
-     uses this: the page is drawn, the hand has not moved yet. */
+  /* HOW LONG THE WHOLE SIGNATURE TAKES, in milliseconds. Slow on purpose:
+     a signature that arrives in a blink is a logo, not a hand. */
+  const WRITE_MS = 4800;
+
+  /* ARM WITHOUT WRITING. Every stroke is measured and set to its own full
+     dash offset, so the signature is INVISIBLE and waiting; the stroke's
+     share of the total sets how long it draws and when it starts, so the
+     pen moves at a constant speed and the strokes run back to back in
+     trace order. Returns the total writing time in ms, or 0 where the
+     path cannot be measured (jsdom, a browser without getTotalLength). */
   function arm(root) {
-    if (!root || typeof root.querySelector !== "function") return false;
+    if (!root || typeof root.querySelector !== "function") return 0;
     const box = root.querySelector(".sp-signature");
-    const path = box && box.querySelector(".sigpath");
-    if (!box || !path || typeof path.getTotalLength !== "function") return false;
-    let len = 0;
-    try { len = path.getTotalLength(); } catch (e) { return false; }
-    if (!len) return false;
-    box.style.setProperty("--len", len);
+    if (!box) return 0;
+    const paths = [].slice.call(box.querySelectorAll(".sigpath"));
+    if (!paths.length) return 0;
+    const lens = paths.map(p => {
+      try { return p.getTotalLength ? p.getTotalLength() : 0; } catch (e) { return 0; }
+    });
+    const total = lens.reduce((a, b) => a + b, 0);
+    if (!total) return 0;
+    let cum = 0;
+    paths.forEach((p, i) => {
+      p.style.setProperty("--len", lens[i]);
+      p.style.setProperty("--dur", (lens[i] / total * WRITE_MS / 1000).toFixed(3) + "s");
+      p.style.setProperty("--delay", (cum / total * WRITE_MS / 1000).toFixed(3) + "s");
+      cum += lens[i];
+    });
     box.classList.add("sig-armed");
-    return true;
+    return WRITE_MS;
   }
 
   /* THE PEN MOVES. A signature armed by arm() is written now, over the
-     CSS transition, which is the one place the duration lives. */
+     per-stroke CSS transitions, which is the one place the timings live. */
   function write(root) {
     const box = root && typeof root.querySelector === "function"
       ? root.querySelector(".sp-signature") : null;
-    if (!box) return false;
+    if (!box) return 0;
     box.classList.remove("sig-armed");
     box.classList.add("sig-draw");
-    return true;
+    return WRITE_MS;
   }
 
   function sign(root) {
     if (!arm(root)) return false;
-    const box = root.querySelector(".sp-signature");
     const go = () => write(root);
     if (typeof requestAnimationFrame !== "function") { go(); return true; }
     requestAnimationFrame(() => requestAnimationFrame(go));
     return true;
   }
 
-  return { is, html, KINDS, sign, arm, write };
+  return { is, html, KINDS, sign, arm, write, WRITE_MS };
 })();
 
 if (typeof module !== "undefined") module.exports = SetPiece;
