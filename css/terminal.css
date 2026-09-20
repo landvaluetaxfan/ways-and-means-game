@@ -201,6 +201,14 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    overflow of its own, the canvas takes every pixel the panel can give, and the
    SVG is capped by BOTH dimensions — so the smaller of width and height wins
    and it is never larger than the space it is in. */
+/* THE ECONOMY. The treasury and what it takes on the left, the prices and
+   the law that sets them in the middle, what people do on the right. */
+.g-econ{grid-template-columns:minmax(280px,360px) minmax(280px,380px) minmax(0,1fr);
+  grid-template-rows:minmax(0,1fr);height:100%;min-height:0;}
+#s-econ.screen.on{height:100%;min-height:0;}
+.g-econ > .stack{min-height:0;}
+.g-econ .panel{min-height:0;}
+
 /* THE PARTIES. A list narrow enough to read at a glance, the party itself in
    the middle where the prose is, and its members on the right. */
 .g-party{grid-template-columns:minmax(300px,420px) minmax(280px,380px) minmax(0,1fr);
@@ -942,7 +950,11 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 .sigline .sigimg img{display:block;width:100%;height:100%;}
 .sigline .cap{font-family:var(--f-ui);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#4e4838;padding-top:3px;}
 .sig-armed .sigimg{clip-path:inset(0 100% 0 0);}
-.sig-draw .sigimg{clip-path:inset(0 0 0 0);transition:clip-path 2.1s linear;}
+/* The clip opens at a constant rate, left to right — linear, because a pen
+   does not ease. The DURATION belongs to js/setpiece.js, which writes it here
+   as --sig-ms; the fallback is only for a signature nothing armed. */
+.sig-draw .sigimg{clip-path:inset(0 0 0 0);
+  transition:clip-path var(--sig-ms,520ms) linear;}
 .sig-done .sigimg{clip-path:inset(0 0 0 0);}
 .stamp{
   border:2px solid #8a3222;color:#8a3222;padding:5px 12px;
@@ -983,7 +995,7 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
   .tally i{transition:none;}
 }
 @media (max-width:1080px){
-  .g-gov,.g-cham,.g-orb,.g-disp,.g-elec,.g-sit,.g-world,.g-party{grid-template-columns:minmax(0,1fr);}
+  .g-gov,.g-cham,.g-orb,.g-disp,.g-elec,.g-sit,.g-world,.g-party,.g-econ{grid-template-columns:minmax(0,1fr);}
 
   /* ONE COLUMN MEANS THE PAGE SCROLLS, and it did not. Every screen is
      height:100% with grid-template-rows:minmax(0,1fr) — ONE row, sized to
@@ -1000,8 +1012,9 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
      gets a floor so a stacked column reads as a page rather than as a row
      of slots. */
   #s-sit.screen.on,#s-gov.screen.on,#s-cham.screen.on,
-  #s-orb.screen.on,#s-world.screen.on,#s-party.screen.on{height:auto;min-height:0;}
-  .g-sit,.g-gov,.g-cham,.g-orb,.g-world,.g-party{
+  #s-orb.screen.on,#s-world.screen.on,#s-party.screen.on,
+  #s-econ.screen.on{height:auto;min-height:0;}
+  .g-sit,.g-gov,.g-cham,.g-orb,.g-world,.g-party,.g-econ{
     grid-template-rows:none;height:auto;min-height:0;}
   .g-sit > .stack,.g-gov > .stack,.g-cham > .stack,
   .g-orb > .panel,.g-world > .panel{overflow:visible;}
@@ -3022,11 +3035,10 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
    write(). The transition lives here rather than on the image so the
    no-motion and reduced-motion rules above still switch it off. */
 .sp-signature.sig-armed .sigimg{clip-path:inset(0 100% 0 0);}
-/* The clip opens at a constant rate, left to right. Linear, because a
-   pen does not ease, and the duration matches js/setpiece.js (WRITE_MS)
-   so the hold before the page dissolves is the same number. */
+/* Same rate and the same single source for it: js/setpiece.js writes
+   --sig-ms onto the box when it arms the hand. */
 .sp-signature.sig-draw .sigimg{clip-path:inset(0 0 0 0);
-  transition:clip-path 2.1s linear;}
+  transition:clip-path var(--sig-ms,520ms) linear;}
 body.no-motion .sp-signature.sig-draw .sigimg{transition:none;}
 @media (prefers-reduced-motion:reduce){
   .sp-signature.sig-draw .sigimg{transition:none;}

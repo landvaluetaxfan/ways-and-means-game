@@ -42,9 +42,22 @@ const SetPiece = (function () {
      back to plain body rather than inventing a style. */
   const KINDS = ["epigraph", "lede", "body", "voices", "document", "signature"];
 
-  /* HOW LONG THE REVEAL TAKES, in milliseconds. One number, so the hold
-     before the page dissolves and the CSS transition agree. */
-  const WRITE_MS = 2100;
+  /* HOW LONG THE REVEAL TAKES, in milliseconds.
+
+     FAST, ON PURPOSE. This was 2100ms, which gave the eye long enough to
+     work out that a left-to-right clip is all it is. A real hand crosses a
+     page in about half a second, and at that speed the reveal reads as a
+     signature rather than as a wipe. The theatre is not in the stroke; it is
+     in the pause AFTER it, which is why the caller holds the finished name
+     for the best part of two seconds before the page dissolves.
+
+     ONE NUMBER, AND THE STYLESHEET READS IT. The duration used to be
+     written twice — here, and again as `2.1s` in two CSS rules — with a
+     comment asking the next person to keep them in step. That is the
+     apportionment_ratio mistake: two copies of one fact, which drift.
+     arm() now writes it onto the element as --sig-ms and the CSS
+     transitions against that, so there is one place to change it. */
+  const WRITE_MS = 520;
 
   function section(sec) {
     const kind = KINDS.indexOf(sec.kind) >= 0 ? sec.kind : "body";
@@ -190,6 +203,7 @@ const SetPiece = (function () {
     if (!box || !wrap) return 0;
     const r = wrap.getBoundingClientRect ? wrap.getBoundingClientRect() : null;
     if (!r || !r.width) return 0;               /* not on the glass: nothing to reveal */
+    box.style.setProperty("--sig-ms", WRITE_MS + "ms");
     box.classList.add("sig-armed");
     return WRITE_MS;
   }

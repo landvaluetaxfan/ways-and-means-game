@@ -138,6 +138,36 @@ try {
      w.eval('Shell.opt("gainEvent")') === 0.25);
 } catch (e) { ok("audio preferences persist in Shell.opts", false, e.message); }
 
+/* THE HAND IS FAST AND THE PAUSE IS LONG.
+
+   The reveal was 2100ms, which is long enough for the eye to work out that a
+   left-to-right clip is all it is. Fast hides that; the theatre moves into
+   the pause AFTER the name is finished.
+
+   What is asserted is that the three numbers still agree. The duration used
+   to be written twice \u2014 once in js/setpiece.js and again as a literal in two
+   CSS rules, with a comment asking the next person to keep them in step \u2014
+   which is the apportionment_ratio mistake in a stylesheet. setpiece now
+   writes it onto the element as --sig-ms and the CSS transitions against
+   that, so a literal duration coming back is a regression. */
+try {
+  const sp = require(path.join(root, "js", "setpiece.js"));
+  ok("the signature is written fast", sp.WRITE_MS > 0 && sp.WRITE_MS <= 900,
+     sp.WRITE_MS + "ms");
+  const sheet3 = fs.readFileSync(path.join(root, "css", "terminal.css"), "utf8");
+  const draws = sheet3.match(/\.sig-draw[^{]*\{[^}]*transition:clip-path[^;}]*/g) || [];
+  ok("and both signature rules take their duration from the script",
+     draws.length === 2 && draws.every(d => /var\(--sig-ms/.test(d)),
+     draws.length + " rules, " + draws.filter(d => /var\(--sig-ms/.test(d)).length + " reading --sig-ms");
+  ok("with no duration written a second time in the stylesheet",
+     !draws.some(d => /clip-path\s+[\d.]+m?s/.test(d)),
+     draws.join(" ;; ").slice(0, 90));
+  const uisrc = fs.readFileSync(path.join(root, "js", "ui.js"), "utf8");
+  const hold = (uisrc.match(/setTimeout\(leave,\s*wrote \+ (\d+)\)/) || [])[1];
+  ok("and the finished name is held a beat before the page dissolves",
+     hold && Number(hold) >= 1200, hold ? hold + "ms after the stroke" : "no hold found");
+} catch (e) { ok("the signature's timing", false, e.message); }
+
 /* SELECTION MEANS ONE THING.
 
    .sel is the solid inverted block, and it belongs only to a row that a click

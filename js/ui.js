@@ -384,7 +384,7 @@ const UI = (function () {
       /* A tip is positioned in viewport coordinates against a node that is
          about to be replaced. Take it down first. */
       if (typeof Tips !== "undefined") Tips.hide();
-      drawTitle(); drawPrices(); drawReceipts(); drawParties(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
+      drawTitle(); drawPrices(); drawReceipts(); drawEconomy(); drawParties(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
       if (typeof Concordance !== "undefined") Concordance.render(st, C, cxCurrent, false);
       if (typeof Papers !== "undefined") Papers.render(st, C);
       /* The globe only redraws when it is the screen the player is on: it is
@@ -693,6 +693,101 @@ const UI = (function () {
     const col = last > first ? "var(--alert)" : last < first ? "var(--ok)" : "var(--rule)";
     return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" class="sparkline">` +
       `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.2"/></svg>`;
+  }
+
+  /* ---------- the economy ----------
+     A PROTOTYPE, AND DELIBERATELY NOT A MODEL. §7.6 is explicit: shallow
+     simulation, deep consequence, and the test is whether the player can
+     hold the whole state in their head and still be surprised. So there is
+     no debt here, no credit rating and no inflation number — the four
+     scarcity prices ARE the inflation, per good, and a second way of saying
+     that is how .sel came to mean four things.
+
+     What earns the screen is that the budget now has two sides. It shows
+     what the state holds, what it takes every sitting, what it has committed
+     to spend, and the arithmetic between them; the prices and the LAW that
+     sets them, because §7.9 says they are legislative outputs and not a
+     market; and the population all of it is levied from. */
+  function drawEconomy() {
+    const box = $("#econ-treasury");
+    if (box) {
+      const r = Engine.receipts(st);
+      const solv = st.scalars.solvency || 0;
+      /* What the appropriation's settled clauses come to, from the engine's
+         own costing — not a second sum that can drift from it. */
+      let spend = 0;
+      try { spend = (Engine.clauseCost(st, C, "appropriation") || {}).total || 0; }
+      catch (e) { spend = 0; }
+      const runway = r.total > 0 ? Math.floor(solv / Math.max(1, r.total)) : null;
+      const row = (lab, val, sub, cls) =>
+        `<div class="prow"><div class="plab">${esc(lab)}${sub ? `<em>${esc(sub)}</em>` : ""}</div>` +
+        `<div class="pval ${cls || ""}">${val}</div></div>`;
+      box.innerHTML =
+        row("Held", solv.toLocaleString(), "the quota the state has") +
+        row("Receipts", "+" + r.total.toLocaleString(), "every sitting", "down") +
+        (spend ? row("The appropriation", spend.toLocaleString(),
+                     "what the settled clauses cost", spend > solv ? "up" : "") : "") +
+        `<div class="note">` +
+        (spend > solv
+          ? `The budget as it stands costs more than the Commonwealth holds. ` +
+            `It cannot be carried without either the reserve it does not have ` +
+            `or a rate it has not set.`
+          : `At the present rates the state takes ${r.total.toLocaleString()} a ` +
+            `sitting. A government that stops taking it does not default; it ` +
+            `sheds people.`) + `</div>` +
+        (runway != null ? `<div class="note">Nothing coming in, and what is held ` +
+          `would cover ${runway} sitting${runway === 1 ? "" : "s"} of the same spending.</div>` : "");
+    }
+
+    /* THE PRICES ARE LEGISLATION. §7.9, and the tick reads exactly these. */
+    const law = $("#econ-law");
+    if (law) {
+      const L = st.law || {};
+      const WORD = {
+        thermal_release: { tight:"held tight", steady:"as last session", open:"released" },
+        capital_works:   { none:"deferred", ring:"the ring band", some:"the ring band", outer:"the outer stations" },
+        transit_subsidy: { none:"unsubsidised", anchors:"the anchor states", all:"every station" }
+      };
+      const rows = [
+        ["Thermal quota released", "thermal_release", "sets the thermal price"],
+        ["Capital works",          "capital_works",   "sets the volume price"],
+        ["Transit subsidy",        "transit_subsidy", "sets the transit price"]
+      ].map(([lab, k, why]) =>
+        `<div class="prow"><div class="plab">${esc(lab)}<em>${esc(why)}</em></div>` +
+        `<div class="pval">${esc((WORD[k] || {})[L[k]] || String(L[k] == null ? "—" : L[k]))}</div></div>`
+      ).join("");
+      const pub = L.substrate_public_share;
+      law.innerHTML = rows +
+        `<div class="prow"><div class="plab">Substrate publicly held<em>sets the substrate price</em></div>` +
+        `<div class="pval">${pub == null ? "—" : Math.round(pub * 100) + "%"}</div></div>` +
+        `<div class="note">None of these is a market. Every one is a line of the ` +
+        `appropriation, which is why a price here can be argued with.</div>`;
+    }
+
+    /* WHAT PEOPLE DO. content/labour.js, which nothing in the interface has
+       ever read — it existed to be canon and to be argued with, and the
+       player could not see a line of it. */
+    const lt = $("#econ-labour");
+    if (lt && typeof LABOUR !== "undefined") {
+      const T = LABOUR.totals || {};
+      const hdr = $("#econ-lab-hdr");
+      if (hdr) hdr.textContent =
+        (T.employed ? (T.employed / 1e6).toFixed(2) + "M in work" : "what people do") +
+        (T.participation ? " · " + Math.round(T.participation * 100) + "% participation" : "");
+      const cats = (LABOUR.categories || []).slice()
+        .sort((a, b) => (b.share || 0) - (a.share || 0));
+      lt.innerHTML =
+        `<thead><tr><th>What people do</th><th class="n">Share</th>` +
+        `<th class="n" data-tip-title="Embodied" data-tip-body="The proportion of ` +
+        `this work done by people in bodies rather than as emulations. A body is ` +
+        `an economic asset, not a class marker.">Embodied</th>` +
+        `<th class="n">Licensed</th></tr></thead><tbody>` +
+        cats.map(c => `<tr><td>${esc(c.name)}</td>` +
+          `<td class="n">${(c.share || 0).toFixed(1)}%</td>` +
+          `<td class="n">${c.embodied == null ? "—" : Math.round(c.embodied * 100) + "%"}</td>` +
+          `<td class="n">${c.licensed ? (c.licensed / 1000).toFixed(0) + "k" : "—"}</td></tr>`).join("") +
+        `</tbody>`;
+    }
   }
 
   /* ---------- the parties ----------
@@ -3960,8 +4055,12 @@ const UI = (function () {
             else swap();
           };
           const still = typeof Motion !== "undefined" && Motion.reduced && Motion.reduced();
+          /* THE PAUSE IS THE THEATRE, NOT THE STROKE. The hand crosses the
+             page fast enough that nobody reads it as a wipe; what the moment
+             needs is the finished name sitting there for a second or two
+             before the terminal dissolves it. */
           if (still || !wrote) leave();
-          else setTimeout(leave, wrote + 900);   /* hold the finished name a beat */
+          else setTimeout(leave, wrote + 1600);
         });
         return;
       }

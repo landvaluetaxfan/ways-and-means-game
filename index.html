@@ -34,6 +34,7 @@
     <button class="tab" role="tab" aria-selected="true"  data-t="sit">Sitting</button>
     <button class="tab" role="tab" aria-selected="false" data-t="gov">Government</button>
     <button class="tab" role="tab" aria-selected="false" data-t="cham">Chamber</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="econ">Economy</button>
     <button class="tab" role="tab" aria-selected="false" data-t="party">Parties</button>
     <button class="tab" role="tab" aria-selected="false" data-t="orb">Orbit</button>
     <button class="tab" role="tab" aria-selected="false" data-t="world">World</button>
@@ -135,14 +136,6 @@
         <div class="stack scrolls">
           <div class="panel"><h2>Standing indicators</h2><div class="pbody scrolls" id="gov-meters"></div></div>
           <div class="panel">
-            <h2><span data-tip="scarcity">Scarcity</span> <em data-tip="scarcity">index, 100 at open</em></h2>
-            <div class="pbody scrolls" id="gov-prices"></div>
-          </div>
-          <div class="panel">
-            <h2><span data-tip="waysmeans">Ways and means</span> <em>MW-years a sitting</em></h2>
-            <div class="pbody scrolls" id="gov-receipts"></div>
-          </div>
-          <div class="panel">
             <h2><span data-tip="vacant">Cabinet</span></h2>
             <div class="pbody flush scrolls"><div class="pbody scrolls" id="gov-appoint" hidden></div>
               <table id="gov-cabinet"></table></div>
@@ -227,6 +220,44 @@
           </div>
         </div>
 
+      </div>
+    </section>
+
+    <!-- THE ECONOMY. A PROTOTYPE, and it exists because the state acquired
+         an income. While solvency only fell there was nothing here but two
+         readouts on the corner of the Government tab; now there is a budget
+         with two sides, four bases it is levied on, and a population it is
+         levied from. The rule it must not break is §7.6: shallow simulation,
+         deep consequence. Nothing on this screen is a model. Every number is
+         either state, a table the engine already computes, or content. -->
+    <section class="screen" id="s-econ">
+      <div class="grid g-econ">
+        <div class="stack scrolls">
+          <div class="panel">
+            <h2><span data-tip="solvency">The Treasury</span> <em>MW-years rejected</em></h2>
+            <div class="pbody scrolls" id="econ-treasury"></div>
+          </div>
+          <div class="panel">
+            <h2><span data-tip="waysmeans">Ways and means</span> <em>every sitting</em></h2>
+            <div class="pbody scrolls" id="gov-receipts"></div>
+          </div>
+        </div>
+        <div class="stack scrolls">
+          <div class="panel">
+            <h2><span data-tip="scarcity">Scarcity</span> <em data-tip="scarcity">index, 100 at open</em></h2>
+            <div class="pbody scrolls" id="gov-prices"></div>
+          </div>
+          <div class="panel">
+            <h2>What sets the prices <em>the law, not a market</em></h2>
+            <div class="pbody scrolls" id="econ-law"></div>
+          </div>
+        </div>
+        <div class="stack scrolls">
+          <div class="panel">
+            <h2>Labour <em id="econ-lab-hdr">what people do</em></h2>
+            <div class="pbody flush scrolls"><table id="econ-labour"></table></div>
+          </div>
+        </div>
       </div>
     </section>
 
