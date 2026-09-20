@@ -384,7 +384,7 @@ const UI = (function () {
       /* A tip is positioned in viewport coordinates against a node that is
          about to be replaced. Take it down first. */
       if (typeof Tips !== "undefined") Tips.hide();
-      drawTitle(); drawPrices(); drawReceipts(); drawEconomy(); drawParties(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
+      drawTitle(); drawPrices(); drawReceipts(); drawEconomy(); drawParties(); drawExport(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
       if (typeof Concordance !== "undefined") Concordance.render(st, C, cxCurrent, false);
       if (typeof Papers !== "undefined") Papers.render(st, C);
       /* The globe only redraws when it is the screen the player is on: it is
@@ -693,6 +693,111 @@ const UI = (function () {
     const col = last > first ? "var(--alert)" : last < first ? "var(--ok)" : "var(--rule)";
     return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" class="sparkline">` +
       `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.2"/></svg>`;
+  }
+
+  /* ---------- the transcript ----------
+     THE OTHER HALF OF tools/playtest.js, pointed at the player instead of at
+     the balance. It is the same idea: a run that ends and leaves nothing
+     behind is a run nobody can learn from.
+
+     PLAIN TEXT, IN A BOX THEY CAN SELECT. There is no clipboard worth
+     relying on from file:// and no server to post to, so the record is
+     written where a tester can select it and paste it into wherever they
+     are reporting. The download is a Blob, which does work from file://,
+     and is a convenience rather than the mechanism.
+
+     IT READS STATE AND WRITES NONE. */
+  /* The date, if the engine will give one. It is the one line here whose
+     call signature is worth being careful about: guessing at it is what
+     took the whole renderer down the first time, and a renderer that throws
+     takes every renderer after it with it. */
+  function dateLine() {
+    try {
+      const d = Engine.dateOfSitting(st, C, st.sitting);
+      return typeof d === "string" ? d : (d && d.text) || String(d || "\u2014");
+    } catch (e) { return "\u2014"; }
+  }
+
+  function transcript() {
+    const L = [];
+    const rule = (s) => { L.push(""); L.push(s); L.push("-".repeat(s.length)); };
+    const d = st.dissolved || {};
+
+    L.push("WAYS AND MEANS — PLAYTEST TRANSCRIPT");
+    L.push("=".repeat(58));
+    L.push("sitting      " + st.sitting + " of the session, chapter " + st.chapter);
+    L.push("date         " + dateLine());
+
+    rule("WHERE IT STANDS");
+    L.push("confidence        " + Engine.confidence(st) + " of " + Engine.majority(st) + " needed");
+    ["party_loyalty","public_standing","consumables","thermal_margin",
+     "legitimacy","friction"].forEach(k =>
+      L.push(k.padEnd(18) + (st.scalars[k] == null ? "—" : st.scalars[k])));
+    L.push("solvency          " + (st.scalars.solvency || 0).toLocaleString() + " MW-years");
+    try {
+      const r = Engine.receipts(st);
+      L.push("receipts          " + r.total.toLocaleString() + " a sitting");
+    } catch (e) {}
+
+    rule("THE PRICES");
+    Object.keys(st.prices || {}).forEach(k =>
+      L.push(("  " + k).padEnd(18) + st.prices[k]));
+
+    rule("MEASURES");
+    (C.bills || []).forEach(b => {
+      const bs = st.bills[b.id]; if (!bs) return;
+      L.push("  " + String(b.ref || b.id).padEnd(12) + String(bs.stage).padEnd(16) +
+             (bs.dead ? "dead" : "") + "  " + b.title);
+    });
+
+    const owed = Engine.outstanding(st) || [];
+    rule("UNDERTAKINGS OUTSTANDING (" + owed.length + ")");
+    if (!owed.length) L.push("  none");
+    owed.forEach(o => L.push("  by sitting " + o.by + "   " + o.text));
+
+    rule("WHAT WAS DECIDED");
+    (st.log || []).forEach(l =>
+      L.push("  sitting " + String(l.sitting == null ? "?" : l.sitting).padStart(3) +
+             "   " + (l.text || "")));
+
+    if (st.settledAs) { rule("THE SESSION SETTLED"); L.push("  " + st.settledAs); }
+    if (d.at) { rule("DISSOLUTION"); L.push("  at sitting " + d.at); }
+
+    rule("NOTES FROM THE TESTER");
+    L.push("  (what was confusing, what you wanted to do and could not,");
+    L.push("   where you stopped reading)");
+    L.push("");
+    return L.join("\n");
+  }
+
+  function drawExport() {
+    const box = $("#log-export"); if (!box) return;
+    if (box.dataset.built === String(st.sitting) && box.querySelector("textarea")) return;
+    box.dataset.built = String(st.sitting);
+    box.innerHTML =
+      `<div class="note">The run so far, as plain text. Select it and paste it ` +
+      `into your report, or take the file.</div>` +
+      `<div class="expbtns"><button class="btn" id="exp-sel">Select all</button>` +
+      `<button class="btn" id="exp-dl">Download</button></div>` +
+      `<textarea id="exp-text" readonly spellcheck="false"></textarea>`;
+    const ta = $("#exp-text");
+    ta.value = transcript();
+    const sel = $("#exp-sel"), dl = $("#exp-dl");
+    if (sel) sel.addEventListener("click", () => {
+      ta.focus(); ta.select();
+      setStatus("The transcript is selected — copy it", "transient");
+    });
+    if (dl) dl.addEventListener("click", () => {
+      try {
+        const blob = new Blob([ta.value], { type: "text/plain" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "ways-and-means-sitting-" + st.sitting + ".txt";
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        setStatus("Transcript written", "transient");
+      } catch (e) { setStatus("This browser would not write the file — select and copy instead", "transient"); }
+    });
   }
 
   /* ---------- the economy ----------

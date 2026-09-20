@@ -129,7 +129,29 @@ try {
        !!w.document.querySelector("#party-table tr.sel"));
   }
 
-  /* EVERY MEMBER, NOT JUST THE CAST. This listed C.characters filtered by
+  /* THE TRANSCRIPT A TESTER TAKES AWAY. Asserted because the first version of
+   it called two engine functions with signatures it had guessed at, threw,
+   and took every renderer AFTER it in drawAll down with it \u2014 the visible
+   symptom was the chamber drawing zero seats, three renderers away. A
+   renderer that throws is not a local failure. */
+try {
+  w.document.querySelector('.tab[data-t="log"]').click();
+  const ta = w.document.querySelector("#exp-text");
+  ok("the record tab offers a transcript", !!ta);
+  const text = ta ? ta.value : "";
+  ok("and it has the run in it", text.length > 300, text.length + " characters");
+  for (const want of ["PLAYTEST TRANSCRIPT", "WHERE IT STANDS", "MEASURES",
+                      "WHAT WAS DECIDED", "NOTES FROM THE TESTER"])
+    ok("  it carries the " + want.toLowerCase() + " section", text.indexOf(want) >= 0);
+  ok("and the meters are in it with their numbers",
+     /confidence\s+\d+ of \d+ needed/.test(text),
+     (text.match(/confidence.*/) || [""])[0]);
+  ok("and nothing after it in drawAll was skipped",
+     w.document.querySelectorAll("#chamber .seat, #chamber circle, #chamber rect").length > 0 ||
+     (w.document.querySelector("#gov-cabinet") || {}).innerHTML.length > 0);
+} catch (e) { ok("the playtest transcript", false, e.message); }
+
+/* EVERY MEMBER, NOT JUST THE CAST. This listed C.characters filtered by
      party \u2014 the fifty-odd people the story names \u2014 so the Liberals showed
      nineteen against forty-seven seats. The table now seats the whole House
      through Engine.benchRoll, and the count that proves it is the party's

@@ -384,9 +384,19 @@
     </section>
 
     <section class="screen" id="s-log">
-      <div class="panel">
-        <h2><span data-tip="log">Record of decisions</span></h2>
-        <div class="pbody flush scrolls"><table id="log-body"></table></div>
+      <div class="grid g-log">
+        <div class="panel">
+          <h2><span data-tip="log">Record of decisions</span></h2>
+          <div class="pbody flush scrolls"><table id="log-body"></table></div>
+        </div>
+        <!-- WHAT THE TESTER TAKES AWAY. A playtest run that ends and leaves
+             nothing behind wastes most of what a tester is worth: you get
+             "I liked it" and "I got stuck somewhere". Everything needed is
+             already in the state. -->
+        <div class="panel">
+          <h2>Transcript <em>for a playtest report</em></h2>
+          <div class="pbody scrolls" id="log-export"></div>
+        </div>
       </div>
     </section>
 

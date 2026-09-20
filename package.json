@@ -15,6 +15,7 @@
     "tocheck": "node tools/toc.js --check",
     "enc": "node tools/enccheck.js",
     "layout": "node tools/laycheck.js",
+    "playtest": "node tools/playtest.js",
     "bundle": "node tools/bundle.js",
     "build": "node tools/build.js",
     "inksig": "node tools/inksig.js",

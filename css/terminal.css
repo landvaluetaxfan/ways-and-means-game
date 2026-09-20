@@ -234,6 +234,15 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 /* the tier glyph column, and the members the story has not named yet */
 #party-mps .tg{width:14px;text-align:center;color:var(--ink-soft);font-size:9px;}
 /* the party outside Parliament: a name, what they are, and one line on why */
+/* the playtest transcript: a box the tester can select out of */
+.g-log{grid-template-columns:minmax(0,1fr) minmax(320px,460px);
+  grid-template-rows:minmax(0,1fr);height:100%;min-height:0;}
+#s-log.screen.on{height:100%;min-height:0;}
+.g-log .panel{min-height:0;}
+.expbtns{display:flex;gap:6px;margin:5px 0;}
+#exp-text{width:100%;min-height:340px;flex:1 1 auto;resize:vertical;
+  font-family:var(--f-data);font-size:10.5px;line-height:1.45;
+  background:var(--field);color:var(--ink);border:1px solid var(--rule);padding:6px;}
 .orgrow{padding:3px 0 5px;border-bottom:1px dotted var(--rule);}
 .orgrow:last-child{border-bottom:none;}
 .orgrow b{font-size:12.5px;}
@@ -1031,7 +1040,8 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
   .tally i{transition:none;}
 }
 @media (max-width:1080px){
-  .g-gov,.g-cham,.g-orb,.g-disp,.g-elec,.g-sit,.g-world,.g-party,.g-econ{grid-template-columns:minmax(0,1fr);}
+  .g-gov,.g-cham,.g-orb,.g-disp,.g-elec,.g-sit,.g-world,.g-party,.g-econ,
+  .g-log{grid-template-columns:minmax(0,1fr);}
 
   /* ONE COLUMN MEANS THE PAGE SCROLLS, and it did not. Every screen is
      height:100% with grid-template-rows:minmax(0,1fr) — ONE row, sized to
