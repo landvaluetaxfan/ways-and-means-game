@@ -388,18 +388,29 @@ const Shell = (function () {
                    action:"The session" };
     const order = ["canon","ending","settlement","action"];
     const byTier = t => sc.list.filter(a => a.tier === t);
+    const earnedOn = a => {
+      const m = sc.map[a.id];
+      return (m && typeof m === "number") ? new Date(m).toISOString().slice(0, 10) : "";
+    };
+    /* A two-letter monogram stands in for a portrait: no achievement ships
+       with art, and an empty frame would read as a missing picture. */
+    const crest = a => String(a.name || a.id).replace(/[^A-Za-z0-9 ]/g, "")
+      .split(/\s+/).filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
     return `<div class="menu-sub">Achievements <em>${sc.have} of ${sc.of}</em></div>` +
       order.filter(t => byTier(t).length).map(t =>
-        `<div class="aw-tier">${TIER[t]}</div>` +
+        `<div class="aw-tier">${TIER[t]}</div><div class="awgroup">` +
         byTier(t).map(a => {
           const has = !!sc.map[a.id];
-          return `<div class="aw${has ? " has" : ""}${a.tier === "canon" ? " canon" : ""}">` +
-            `<b>${has ? esc(a.name) : "\\u2014 locked \\u2014"}</b>` +
-            `<span>${esc(a.note || "")}</span>` +
-            (has && sc.map[a.id] && typeof sc.map[a.id] === "number"
-              ? `<i>${new Date(sc.map[a.id]).toISOString().slice(0, 10)}</i>` : "") +
-            `</div>`;
-        }).join("")).join("") +
+          const when = earnedOn(a);
+          return `<button type="button" class="aw${has ? " has" : ""}` +
+            `${a.tier === "canon" ? " canon" : ""}" data-aw="${esc(a.id)}" aria-expanded="false">` +
+            `<span class="aw-crest" aria-hidden="true">${esc(crest(a))}</span>` +
+            `<b>${esc(a.name || a.id)}</b>` +
+            `<span class="aw-mark">${has ? "earned" : "locked"}</span>` +
+            `<span class="aw-desc">${esc(a.note || "")}</span>` +
+            (when ? `<i class="aw-date">${when}</i>` : "") +
+            `</button>`;
+        }).join("") + `</div>`).join("") +
       `<div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
   }
 
@@ -482,6 +493,14 @@ const Shell = (function () {
       chosenAdmin = (C.administrations || []).find(a => a.id === b.dataset.admin) || null;
       showMenu("slots");
     }));
+
+    /* The awards board opens one tile at a sitting, so the wall of names
+       stays a wall and the description is behind the click. */
+    m.querySelectorAll("[data-aw]").forEach(b =>
+      b.addEventListener("click", () => {
+        const open = b.classList.toggle("open");
+        b.setAttribute("aria-expanded", open ? "true" : "false");
+      }));
 
     m.querySelectorAll("[data-new]").forEach(b => b.addEventListener("click", () => {
       const n = +b.dataset.new, existing = slot(n);

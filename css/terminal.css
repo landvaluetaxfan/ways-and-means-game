@@ -1386,20 +1386,37 @@ body.menu-on{background:#0b1826;}
 .menu-text{max-width:600px;font-family:var(--f-doc);font-size:14px;line-height:1.55;color:#e6e7de;
   text-shadow:0 1px 8px rgba(0,0,0,.5);}
 .menu-text p{margin:0 0 10px;}
-/* THE AWARDS BOARD. Every achievement, earned or not. A locked one says what
-   it wants, because a board whose empty rows say nothing is a scoreboard; the
-   canon is marked because it is the one the campaign was written around. */
+/* THE AWARDS BOARD. A wall of small portrait tiles; the description is
+   behind a click, because a board whose empty rows say nothing is a
+   scoreboard and a board that prints every essay at once is a wall of text.
+   The canon is marked because it is the one the campaign was written around. */
 .aw-tier{font-family:var(--f-ui);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
-  color:#8f9a80;margin:10px 0 3px;border-bottom:1px solid #3a4433;padding-bottom:2px;}
-.aw{background:rgba(20,23,18,.5);border-left:3px solid #3a4433;padding:4px 8px;margin-bottom:3px;
-  max-width:660px;}
+  color:#8f9a80;margin:10px 0 4px;border-bottom:1px solid #3a4433;padding-bottom:2px;}
+.awgroup{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));
+  gap:6px;align-items:start;max-width:660px;margin-bottom:4px;}
+.aw{font:inherit;color:inherit;text-align:left;cursor:pointer;appearance:none;
+  display:flex;flex-direction:column;align-items:flex-start;gap:3px;
+  min-height:104px;padding:7px 8px;background:rgba(20,23,18,.5);
+  border:1px solid rgba(233,234,226,.16);border-left:3px solid #3a4433;
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
+.aw:hover{background:rgba(60,64,56,.6);}
 .aw.has{border-left-color:var(--gold,#c9a227);}
 .aw.canon{border-left-width:5px;}
 .aw.canon.has{background:rgba(201,162,39,.14);}
-.aw b{font-family:var(--f-doc);font-size:14px;color:#e6e7de;}
+.aw:not(.has){opacity:.62;}
+.aw-crest{display:flex;align-items:center;justify-content:center;width:30px;height:30px;
+  border-radius:50%;border:1px solid rgba(233,234,226,.35);
+  font-family:var(--f-data);font-size:11px;color:#c9ccc2;}
+.aw.has .aw-crest{border-color:var(--gold,#c9a227);color:#f0e6c8;}
+.aw b{font-family:var(--f-doc);font-size:11.5px;line-height:1.2;color:#e6e7de;}
 .aw.has b{color:#f0e6c8;}
-.aw span{display:block;font-size:12.5px;line-height:1.45;color:#b9bcb2;font-family:var(--f-doc);}
-.aw i{font-style:normal;font-family:var(--f-data);font-size:9.5px;color:#8f9a80;}
+.aw-mark{font-family:var(--f-data);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:#8f9a80;}
+.aw-desc{display:none;font-family:var(--f-doc);font-size:11.5px;line-height:1.5;color:#b9bcb2;}
+.aw.open{grid-column:1/-1;background:rgba(20,23,18,.72);}
+.aw.open .aw-desc{display:block;}
+.aw-date{display:none;font-style:normal;font-family:var(--f-data);font-size:9px;color:#8f9a80;}
+.aw.open .aw-date{display:block;}
 .menu-text .dim{color:#b9bcb2;font-size:13.5px;}
 /* the studio's card, on the white the mark is drawn for */
 .studio{display:block;width:110px;height:auto;margin:20px 0 4px;background:#fff;
