@@ -342,9 +342,15 @@ const Shell = (function () {
     const p = (C && C.partyById && C.partyById[a.party]) || {};
     const ch = (C && C.characterById && C.characterById[a.leader]) || {};
     const gone = ' onerror="this.remove()"';
+    /* THE MARK IS UNDERNEATH AND THE PORTRAIT COVERS IT. Order matters: at
+       render time nothing can know whether a portrait file exists, so the
+       party mark is laid down first and the portrait paints over it when it
+       loads. A government with no portrait drawn yet shows its party's mark
+       rather than an empty white square with a badge in the corner, which is
+       what flash.png being undrawn actually looked like. */
     return `<span class="adm-face">` +
-      (ch.portrait ? `<img class="adm-por" src="img/portraits/${esc(ch.portrait)}" alt=""${gone}>` : "") +
       (p.logo ? `<img class="adm-logo" src="img/logos/${esc(p.logo)}" alt=""${gone}>` : "") +
+      (ch.portrait ? `<img class="adm-por" src="img/portraits/${esc(ch.portrait)}" alt=""${gone}>` : "") +
       `</span>`;
   }
 
