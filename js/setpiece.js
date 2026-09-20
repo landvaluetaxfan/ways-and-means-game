@@ -151,7 +151,40 @@ const SetPiece = (function () {
              mood: sp.mood || null };
   }
 
-  return { is, html, KINDS };
+  /* AND IT WRITES ITSELF. The assent ceremony has drawn its signature with a
+     stroke-dashoffset sweep since it was built; the introduction ended on a
+     signature that simply appeared, which is the thing the author objected to
+     in the first place.
+
+     Same machinery, because there is only one right way to do it: measure the
+     path at run time with getTotalLength (the length is geometry and cannot be
+     known from the file), hand it to CSS as --len, and let the existing
+     .sig-armed / .sig-draw rules do the rest. The double rAF is not
+     superstition — the armed state has to be painted before the transition is
+     allowed to start, or the browser coalesces both into one frame and the
+     signature appears instantly, which is the bug wearing a different hat.
+
+     Called by whoever rendered the page, because it follows an action. It is
+     motion and not sound, so the no-cue-in-a-renderer rule does not apply —
+     but `body.no-motion` and prefers-reduced-motion both already switch the
+     transition off in CSS, so a player who asked for stillness gets it. */
+  function sign(root) {
+    if (!root || typeof root.querySelector !== "function") return false;
+    const box = root.querySelector(".sp-signature");
+    const path = box && box.querySelector(".sigpath");
+    if (!box || !path || typeof path.getTotalLength !== "function") return false;
+    let len = 0;
+    try { len = path.getTotalLength(); } catch (e) { return false; }
+    if (!len) return false;
+    box.style.setProperty("--len", len);
+    box.classList.add("sig-armed");
+    const go = () => { box.classList.remove("sig-armed"); box.classList.add("sig-draw"); };
+    if (typeof requestAnimationFrame !== "function") { go(); return true; }
+    requestAnimationFrame(() => requestAnimationFrame(go));
+    return true;
+  }
+
+  return { is, html, KINDS, sign };
 })();
 
 if (typeof module !== "undefined") module.exports = SetPiece;

@@ -30,6 +30,7 @@
    ============================================================= */
 
 const ARTIFACTS = {
+  flash_intro:     "flash-intro.png",  /*  2:3   480px  broadcast */
   /* crest:           "seal.png",        1:1   128px  registry  */
   /* department_mark: "cabinet.png",     1:1    64px  registry  */
   /* notice_plate:    "plate.png",      12:5   640px  registry  */

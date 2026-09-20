@@ -541,6 +541,13 @@ const Shell = (function () {
     m.querySelectorAll("[data-sp-go]").forEach(b =>
       b.addEventListener("click", () => showMenu("slots")));
 
+    /* THE SIGNATURE WRITES ITSELF, the way the assent ceremony's does. It
+       follows the click that opened the introduction, so it belongs here
+       and not in the renderer. */
+    if (view === "intro" && typeof SetPiece !== "undefined" && SetPiece.sign) {
+      SetPiece.sign(m);
+    }
+
     /* The awards board opens one tile at a sitting, so the wall of names
        stays a wall and the description is behind the click. */
     m.querySelectorAll("[data-aw]").forEach(b =>

@@ -2818,8 +2818,16 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .sp-page{max-width:60ch;margin:0 auto;padding:18px 10px 8px;}
 .sp-title{font-family:var(--f-disp);font-size:21px;letter-spacing:.02em;
   margin:0 0 14px;font-weight:400;text-align:center;}
-.sp-art{margin:0 0 16px;}
-.sp-art img{width:100%;height:auto;display:block;}
+/* THE SLOT IS ABSOLUTE BY DESIGN — that is what makes filling one shift
+   nothing — so it needs a box with a declared shape to be absolute inside.
+   Without one the picture rendered at zero width: `width:100%` of an inline
+   span is nothing, and the photograph was in the DOM, correct, and invisible.
+   The box keeps the 2:3 the slot declares, so it reserves the same space
+   whether or not there is a file in it. */
+.sp-art{position:relative;width:min(240px,55%);margin:0 auto 18px;
+  aspect-ratio:2/3;border:1px solid var(--chrome-dkr);background:var(--field);}
+.sp-art .art{position:absolute;inset:0;}
+.sp-art img{display:block;width:100%;height:100%;object-fit:cover;}
 .sp-sec{margin:0 0 15px;}
 .sp-head{font-family:var(--f-ui);font-size:10.5px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--ink-soft);font-weight:400;
@@ -2869,3 +2877,15 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
   margin:6px 0 10px;}
 .menu-setpiece .sp-page{padding:14px 12px 10px;}
 .menu-setpiece .sp-choices{border-top:0;}
+
+/* The introduction's signature is written, not printed: the same
+   stroke-dashoffset sweep the assent ceremony uses, armed and released by
+   SetPiece.sign(). The transition lives here rather than on .sigpath so the
+   no-motion and reduced-motion rules above still switch it off. */
+.sp-signature.sig-armed .sigpath{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);}
+.sp-signature.sig-draw .sigpath{stroke-dasharray:var(--len);stroke-dashoffset:0;
+  transition:stroke-dashoffset 2.1s cubic-bezier(.55,.06,.3,1);}
+body.no-motion .sp-signature.sig-draw .sigpath{transition:none;}
+@media (prefers-reduced-motion:reduce){
+  .sp-signature.sig-draw .sigpath{transition:none;stroke-dashoffset:0;}
+}

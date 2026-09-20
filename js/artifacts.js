@@ -37,7 +37,13 @@ const Artifacts = (function () {
     crest:           { aspect: "1:1",  width: 128, palette: "registry" },
     department_mark: { aspect: "1:1",  width: 64,  palette: "registry" },
     notice_plate:    { aspect: "12:5", width: 640, palette: "registry" },
-    backdrop:        { aspect: null,   width: 0,   palette: "registry", tile: true }
+    backdrop:        { aspect: null,   width: 0,   palette: "registry", tile: true },
+    /* THE ONE PHOTOGRAPH IN THE BUILD. Portrait, because it is a person and
+       not a plate, and 2:3 because that is the shape the picture came in —
+       a slot exists to PIN a shape, so it takes the one the image has rather
+       than cropping a face to suit a grid. `broadcast` rather than
+       `registry`: this is a press photograph, not machine output. */
+    flash_intro:     { aspect: "2:3",  width: 480, palette: "broadcast" }
   };
 
   const DIR = "img/artifacts/";

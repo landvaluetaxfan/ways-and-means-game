@@ -273,8 +273,16 @@ try {
    must leave no gap and a filled one must shift nothing, so each is
    toggled INDIVIDUALLY and the page measured against itself. */
 try {
-  ok("every slot ships empty",
-     w.eval("Artifacts.names().filter(function(n){return Artifacts.file(n);}).length") === 0);
+  /* WHICH SLOTS SHIP ART IS A DECISION, so it is named here rather than
+     counted. This asserted that NO slot ships a file, which was true while
+     the build had no pictures in it and stopped being true the day the
+     first one landed. Deleting it would have lost the point; the point is
+     that art arrives deliberately and never by accident, so adding a
+     picture has to come with a line in this list. */
+  const filled = w.eval(
+    "Artifacts.names().filter(function(n){return Artifacts.file(n);}).join(',')");
+  ok("the slots that ship art are the ones we meant to",
+     filled === "flash_intro", filled || "none");
 
   const shape = () => w.eval(`
     [].slice.call(document.querySelectorAll(".menu-plate, .menu-title, .menu-btns"))
