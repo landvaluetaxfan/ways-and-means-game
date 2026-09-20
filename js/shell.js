@@ -200,7 +200,6 @@ const Shell = (function () {
     m.innerHTML = menuShell(
       view === "load"    ? slotList("load")
     : view === "new"     ? newGov()
-    : view === "intro"   ? adminIntro()
     : view === "slots"   ? slotList("new")
     : view === "credits" ? credits()
     : view === "awards"  ? awards()
@@ -329,6 +328,26 @@ const Shell = (function () {
   const bareName = n => String(n || "")
     .replace(/^(Rt\. Hon\.|Hon\.)\s+/, "").replace(/\s+MP$/, "");
 
+  /* THE FACE AND THE COLOURS, on the button that chooses a government. A row
+     of text labels made four-year terms look like settings; a portrait and a
+     party mark make them look like governments.
+
+     BOTH IMAGES CARRY onerror, the same guard the artifact slots use, because
+     neither file is guaranteed: characters declare a portrait whether or not
+     one has been drawn (flash.png is declared and does not exist yet), and a
+     party added later has no mark until someone draws it. A missing picture
+     removes itself and leaves the label, rather than leaving the browser's
+     broken-image box on the first screen of the game. */
+  function admFace(a) {
+    const p = (C && C.partyById && C.partyById[a.party]) || {};
+    const ch = (C && C.characterById && C.characterById[a.leader]) || {};
+    const gone = ' onerror="this.remove()"';
+    return `<span class="adm-face">` +
+      (ch.portrait ? `<img class="adm-por" src="img/portraits/${esc(ch.portrait)}" alt=""${gone}>` : "") +
+      (p.logo ? `<img class="adm-logo" src="img/logos/${esc(p.logo)}" alt=""${gone}>` : "") +
+      `</span>`;
+  }
+
   function adminLabel(a) {
     if (!a) return "New government";
     const p = (C && C.partyById && C.partyById[a.party]) || {};
@@ -357,30 +376,12 @@ const Shell = (function () {
         <div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
     return `<div class="menu-sub">Choose a government</div>
       <div class="menu-btns">${list.map(a =>
-        `<button class="mbtn adm" data-admin="${esc(a.id)}">${esc(adminLabel(a))}` +
-        `<i>Session ${a.session != null ? a.session : C.setup.session}</i></button>`).join("")}</div>
+        `<button class="mbtn adm" data-admin="${esc(a.id)}">` +
+        admFace(a) +
+        `<span class="adm-t">${esc(adminLabel(a))}` +
+        `<i>Session ${a.session != null ? a.session : C.setup.session}</i></span>` +
+        `</button>`).join("")}</div>
       <div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
-  }
-
-  /* THE GOVERNMENT YOU ARE ABOUT TO BE (design/31 §5).
-
-     An administration is the one thing in this menu that is a CHARACTER
-     rather than a setting, and it was a button with a label. Where there is
-     only one on offer — which is usually true of a scenario — the page is
-     not a choice at all but an INTRODUCTION, and that is the better use of
-     it anyway.
-
-     It is the set piece's frame, so the sections and their kinds are the
-     frame's vocabulary and this function writes no markup of its own beyond
-     the shell. An administration with no `intro` skips straight to the
-     slots, which is what the sandbox does. */
-  function adminIntro() {
-    if (!chosenAdmin || !chosenAdmin.intro || typeof SetPiece === "undefined")
-      return slotList("new");
-    const page = SetPiece.html({ setpiece: chosenAdmin.intro },
-                               { go: "Continue" });
-    return `<div class="menu-setpiece">${page.html}</div>` +
-      `<div class="menu-btns row"><button class="mbtn" data-go="new">Back</button></div>`;
   }
 
   function root() {
@@ -516,37 +517,8 @@ const Shell = (function () {
 
     m.querySelectorAll("[data-admin]").forEach(b => b.addEventListener("click", () => {
       chosenAdmin = (C.administrations || []).find(a => a.id === b.dataset.admin) || null;
-      /* THE MOOD IS CUED HERE, on the action, and never in the renderer.
-         SetPiece returns the bed it wants and refuses to play it for exactly
-         this reason — drawing makes no sound.
-
-         A MOOD IS A FUNCTION NAME, not an argument: js/music.js exports
-         `rise`, `sombre`, `moment` and the rest individually. It also
-         exports `state`, `init` and `available`, which are NOT beds — the
-         first is the readout — so content naming one of those would call
-         something that is not music. Hence the list rather than a bare
-         lookup: an unknown mood plays nothing, quietly, which is the right
-         failure for sound. */
-      const BEDS = ["tension", "moment", "defeat", "rise", "sombre",
-                    "undertake", "order", "revoke", "threat", "prorogue"];
-      const mood = chosenAdmin && chosenAdmin.intro && chosenAdmin.intro.mood;
-      if (mood && BEDS.indexOf(mood) >= 0 &&
-          typeof Music !== "undefined" && typeof Music[mood] === "function") {
-        try { Music[mood](); } catch (e) {}
-      }
-      showMenu(chosenAdmin && chosenAdmin.intro ? "intro" : "slots");
+      showMenu("slots");
     }));
-
-    /* One way forward, and it is the frame's own button. */
-    m.querySelectorAll("[data-sp-go]").forEach(b =>
-      b.addEventListener("click", () => showMenu("slots")));
-
-    /* THE SIGNATURE WRITES ITSELF, the way the assent ceremony's does. It
-       follows the click that opened the introduction, so it belongs here
-       and not in the renderer. */
-    if (view === "intro" && typeof SetPiece !== "undefined" && SetPiece.sign) {
-      SetPiece.sign(m);
-    }
 
     /* The awards board opens one tile at a sitting, so the wall of names
        stays a wall and the description is behind the click. */
@@ -601,6 +573,24 @@ const Shell = (function () {
        so the Sandbox tab's gate is marked here, once, when the government is
        chosen. A loaded save carries whatever flag it was made with. */
     if (!stateStr && admin && admin.id === "sandbox") state.flags.sandbox = true;
+    /* WHOSE GOVERNMENT THIS IS, so the sitting screen can introduce it. Set
+       here rather than in newGame for the same reason the sandbox flag is:
+       the administration is a menu choice and the engine has no opinion
+       about it. A save written before this has no `admin` and shows no
+       introduction, which is correct — it has already begun. */
+    if (!stateStr && admin) state.admin = admin.id;
+
+    /* THE BED OPENS WITH THE GOVERNMENT. A mood is a function name in
+       js/music.js, not an argument, and `state`/`init`/`available` are not
+       beds — hence the list. Cued here because starting a government is an
+       action; the renderer never makes a sound. */
+    const BEDS = ["tension", "moment", "defeat", "rise", "sombre",
+                  "undertake", "order", "revoke", "threat", "prorogue"];
+    const mood = !stateStr && admin && admin.intro && admin.intro.mood;
+    if (mood && BEDS.indexOf(mood) >= 0 &&
+        typeof Music !== "undefined" && typeof Music[mood] === "function") {
+      try { Music[mood](); } catch (e) {}
+    }
     current = { n: n, name: name };
 
     /* THE ONE TRANSITION THAT EARNS ITSELF. Leaving the menu for a

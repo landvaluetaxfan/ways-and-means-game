@@ -88,7 +88,7 @@ function boot() {
   try { w.eval("Shell.boot(CONTENT)"); return true; }
   catch (e) { ok("Shell.boot()", false, e.message); process.exit(1); }
 }
-const seen = { intro: false, epigraph: false };
+const seen = { intro: false, epigraph: false, chromed: false };
 function newGame() {
   $('[data-go="new"]').click();
   /* a government is chosen before the slot; take the first on offer */
@@ -97,15 +97,18 @@ function newGame() {
   /* An administration with an introduction shows it before the slots, so
      the walk has to read it the way a player does. Conditional, because the
      sandbox has no introduction and goes straight through. */
-  const go = w.document.querySelector("[data-sp-go]");
-  /* Recorded, because the walk passing does not prove the page RENDERED:
-     adminIntro() falls through to the slots when SetPiece is missing, and
-     the sequence would still complete with the introduction silently
-     skipped. uxtest asserts this flag for exactly that reason. */
-  seen.intro = !!go;
-  seen.epigraph = !!(go && w.document.querySelector(".menu-setpiece .sp-epigraph"));
-  if (go) go.click();
   $('[data-new="1"]').click();
+  /* THE INTRODUCTION IS THE GAME'S FIRST BEAT, in the sitting panel with the
+     rest of the terminal around it — not a menu screen. Recorded here
+     because the walk would pass either way: with no introduction drawn the
+     sitting simply shows its first event, which looks exactly like a working
+     one from outside. uxtest asserts these. */
+  const intro = w.document.querySelector("#sitting-body .sp-page");
+  seen.intro = !!intro;
+  seen.epigraph = !!(intro && intro.querySelector(".sp-epigraph"));
+  seen.chromed = !!(intro && !w.document.querySelector("#s-sit.setpiece"));
+  const go = w.document.querySelector("#sitting-body [data-sp-go]");
+  if (go) go.click();
 }
 
 /* `const CONTENT` inside a script is a lexical global, not a window

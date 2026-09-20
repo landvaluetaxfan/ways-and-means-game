@@ -3703,6 +3703,37 @@ const UI = (function () {
     drawToday();
 
     const box = $("#sitting-body");
+
+    /* THE GOVERNMENT INTRODUCES ITSELF, IN THE TERMINAL (design/31 §5).
+
+       This was a menu screen between choosing a government and choosing a
+       slot, which made it a thing you got through before the game rather
+       than the game's first beat. It belongs here: the same set-piece page,
+       in the sitting panel, with the wire and the calendar and the docket
+       around it — so the first thing a player reads is already inside the
+       chrome they are about to govern from.
+
+       It deliberately does NOT take the screen. Everywhere else a set piece
+       collapses the columns either side, because a turn the world takes
+       should; an introduction is the opposite, and is better for being
+       surrounded by the instrument panel it is teaching you to read. */
+    if (!(st.flags || {})._introRead) {
+      const adm = (C.administrations || []).find(a => a.id === st.admin);
+      if (adm && adm.intro && typeof SetPiece !== "undefined") {
+        box.innerHTML = SetPiece.html({ setpiece: adm.intro },
+                                      { go: "Take office" }).html;
+        const go = box.querySelector("[data-sp-go]");
+        if (go) go.addEventListener("click", () => {
+          st.flags._introRead = true;
+          cue("stamp");
+          saved(); drawAll(); reveal();
+        });
+        /* Her signature writes itself, the way the assent ceremony's does. */
+        if (SetPiece.sign) SetPiece.sign(box);
+        return;
+      }
+    }
+
     const loss = Engine.checkLoss(st, C);
     if (loss.lost) {
       box.innerHTML = `<div class="waiting"><b>The government has fallen.</b><br>` +

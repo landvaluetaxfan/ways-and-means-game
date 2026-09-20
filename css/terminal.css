@@ -2889,3 +2889,33 @@ body.no-motion .sp-signature.sig-draw .sigpath{transition:none;}
 @media (prefers-reduced-motion:reduce){
   .sp-signature.sig-draw .sigpath{transition:none;stroke-dashoffset:0;}
 }
+
+/* A government is a face and a party mark, not a line of text. The face box
+   keeps its size whether or not either image loaded, so a missing portrait
+   leaves the row where it was rather than reflowing the menu. */
+.mbtn.adm{display:flex;align-items:center;gap:10px;text-align:left;}
+.adm-face{flex:0 0 auto;position:relative;width:46px;height:46px;
+  background:var(--field);border:1px solid var(--chrome-dkr);overflow:hidden;}
+.adm-por{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.adm-logo{position:absolute;right:-1px;bottom:-1px;width:18px;height:18px;
+  object-fit:contain;background:var(--chrome);padding:1px;
+  border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);}
+.adm-t{flex:1 1 auto;min-width:0;}
+
+/* IN THE PANEL, THE PANEL SCROLLS. A set piece that takes the screen owns its
+   own scroller; the introduction sits inside #sitting-body, which is already
+   a .scrolls pbody, so .sp-scroll must not also claim a flex height there or
+   it overflows the panel it is inside. Measured: the page hung out of the
+   sitting body until this rule. */
+#sitting-body .sp-scroll{flex:none;overflow:visible;}
+#sitting-body .sp-page{padding-top:6px;}
+
+/* AND THE PANEL OWNS THE SCROLL, not the column. .stackmain carries .scrolls,
+   so with a long page inside it the COLUMN scrolled and the panel simply grew
+   to its content — 1,185px of it past a 719px box, clipped, because .panel
+   clips by design. Short sitting prose never revealed it; the introduction
+   did. The column holds its height, the panel fills it, and #sitting-body is
+   the scroller, which is the same shape every other panel here uses. */
+#s-sit .stackmain{overflow:hidden;}
+#s-sit .stackmain > .panel{flex:1 1 auto;min-height:0;}
+#s-sit #sitting-body{flex:1 1 auto;min-height:0;overflow:auto;}

@@ -18,10 +18,12 @@ H.newGame();
    either way: adminIntro() falls through to the slot list when SetPiece is
    missing, so a silently skipped introduction looks exactly like a working
    one from the outside. */
-H.ok("choosing a government shows its introduction, not just a slot list",
-     H.seen.intro, H.seen.intro ? "the page was there" : "walked straight to the slots");
+H.ok("the government introduces itself on the first sitting",
+     H.seen.intro, H.seen.intro ? "the page was there" : "the sitting opened on an event");
 H.ok("and the introduction opens on its epigraph",
-     H.seen.epigraph, H.seen.epigraph ? "rendered" : "no .sp-epigraph in the menu");
+     H.seen.epigraph, H.seen.epigraph ? "rendered" : "no .sp-epigraph in the sitting");
+H.ok("and it is surrounded by the terminal, not taking the screen",
+     H.seen.chromed, H.seen.chromed ? "the columns stayed" : "#s-sit went full-bleed");
 
 
 /* =============================================================
