@@ -28,23 +28,16 @@ Read `CLAUDE.md` and `AGENTS.md` first. Everything below is measured against
 
 ## THE THREE THAT MATTER, in order
 
-### 1. Friction runs away and nothing damps it
+### 1. ~~Friction runs away~~ — FIXED 20 Sep
 
-Traced over a full playthrough taking the annexation line: the run ends at
-**friction 100, solvency 0**. `f1_dilemma`'s annex choice sets
-`{move:{"trend.friction":3}}` — a TREND — and nothing ever pulls it back.
-Trends have no decay, no ceiling behaviour and no counter-pressure.
+Trends applied every sitting for ever, so `{trend.friction:+3}` drove the
+annexation line to friction 100 and solvency 0. They now step toward zero
+every `setup.trendDecay` sittings (four). Friction peaks at 65.
 
-A player who does the central thing the campaign asks of them ends up
-governing a House that is arithmetically impossible. That reads as a broken
-game rather than a hard one.
-
-It is also the root cause of **T25.2** in `opencode-brief.md` (the Annexation
-Act stalls at second reading), so fixing this unblocks the settlement gate
-that is waiting on it. Do this before anything else.
-
-Re-take it: play 45 sittings headlessly the way `test.js`'s balance block
-does, taking choice 0 on the `f1_` chain, and print `st.scalars` each sitting.
+Fixing it put the canon ending out of reach, because `f1_pyrrhic` wants
+friction above 65 and only the runaway ever delivered it — the tiers had been
+tuned against broken behaviour. Annexing now costs {friction:+12} at once,
+because Earth reacts that week, and the +3 trend is the deterioration after.
 
 ### 2. The endgame is a dialog box
 
@@ -54,15 +47,30 @@ with the settlement text, the session board behind it, and a way back to the
 menu. This is the LAST THING A PLAYTESTER SEES and it currently looks like an
 error message. The content exists and is waiting; this is interface work only.
 
-### 3. The whips' forecast may be miscalibrated
+### 3. ~~The whips' forecast~~ — measured and cleared, but it found a real bug
 
-`Engine.reported()` returned `carries: false` on the annexation bill while the
-true division carried **129 of 240**. The forecast is supposed to carry an
-error (design/08 §7) and that is deliberate — but if it is systematically
-pessimistic the player cannot plan, and whipping stops being a decision.
+The forecast is fine. Measured across three bills the error is +2, +2 and +5,
+small and OPTIMISTIC — not the pessimism suspected.
 
-Measure the error's distribution across every bill before changing anything.
-It may be correct and merely unlucky on this one.
+What the measurement actually found: `annexation` reported `carries:false` on
+the TRUE division with popular 129 of 121, because **domain consent** blocked
+it. A bill's `touches` names domains; the functional constituencies whose
+interest matches are the concerned benches; a majority of THOSE seats against
+makes the domain object. It is not a functional majority — the bill now
+carries on 13 of 40 — and `touches` is therefore not decoration, it names who
+can stop you. Fixed by turning the Liberals' functional bench.
+
+### 3a. STILL OPEN — should crisis slots be earmarked?
+
+`f1_dilemma` grants five order-paper slots for the annexation, and they go
+into the COMMON POOL, where bills declared earlier in `content/bills.js` take
+them first. So the Act is set down at sitting thirteen and never reaches a
+division in an indifferent run. A player who wants it gives it the time.
+
+Decide whether a measure that brings its own time should have that time
+earmarked to it. Until then the three annexation settlements stay gated on the
+intention (`f1_annexing`) rather than the Act (`almanac_annexed`), and moving
+that gate will fail the canon-ending test.
 
 ---
 

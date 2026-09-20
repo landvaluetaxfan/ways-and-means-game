@@ -351,36 +351,32 @@ that named its ring-fenced vehicle after a different platform is exactly the
 kind of detail the fiction wants. If it needs renaming it is the author's
 call, not a consistency sweep.
 
-## 25.2 The Act cannot yet be carried, and the settlements are waiting on it
+## 25.2 The Act CAN be carried now. What is left is order-paper time.
 
-The Annexation Bill (`annexation`, HC 4/163) is in `content/bills.js` and the
-dilemma sets it down and grants five slots for it. Traced over a full run it
-still **stalls at second reading**, with friction reaching 100 and solvency 0,
-so it never assents.
+**Updated 20 September — the earlier text here is superseded.** It said the
+bill stalls at second reading with friction at 100 and solvency 0. Both causes
+are fixed and neither was content's:
 
-The three annexation settlements therefore still gate on `f1_annexing` — the
-flag the Prime Minister sets by *deciding*. They should gate on
-`almanac_annexed`, which the bill's `onPass` sets when it assents. That is two
-words in `content/settlements.js` and the reasoning is written into the file
-above the tiers. **Do not make that change until the bill can actually be
-carried**, or the canon ending becomes unreachable instead of earned; it was
-made and reverted once for exactly that reason.
+- **Trends ran for ever.** `{trend.friction:+3}` was never taken off by
+  anything, so the annexation line ended at friction 100. Trends now step
+  toward zero every four sittings (`setup.trendDecay`). Friction peaks at 65.
+- **The bill could not pass at all.** It `touches` essential_services_law and
+  anchor_concession, and the functional constituencies concerned with those
+  had a blocking majority against, so the domain objected every time. The
+  Liberals' functional bench now votes for it and the division carries on
+  129 popular and 13 functional.
 
-So the task is balance, in this order:
+What still stops it in a measured run: it is set down at sitting thirteen and
+never gets ORDER-PAPER TIME. The five crisis slots the dilemma grants go into
+the common pool, and the bills declared earlier in `content/bills.js` take them
+first. A player who wants the Act gives it the time; an indifferent one never
+does, and `test.js`'s balance run is deliberately indifferent.
 
-1. Find out why it stalls. Slots, the whips' forecast (`Engine.reported`
-   returned `carries: false` while the true division carried 129/240), or the
-   friction ramp making the House ungovernable by sitting 20.
-2. Fix it in content — the stances, the crisis slot grant, or the scalar costs
-   on the dilemma's own choice.
-3. **Then** add `almanac_annexed` to the three tiers and confirm
-   `npm run check` still reports the canon ending reachable by play.
-
-A warning from this session: `test.js`'s balance run grants order-paper time in
-content order and divides on the whips' forecast. It is a deliberately
-indifferent player. Making it smarter to get a pass is the wrong move — it
-changed which settlement landed first and broke the test in a different way.
-Change the content, not the player.
+**So the settlement gate is still on the intention, and still should not move
+yet.** Adding `almanac_annexed` to the three tiers would make the canon-ending
+test fail again, for a new reason. Whoever takes this next should decide
+whether crisis slots ought to be EARMARKED to the measure that granted them
+rather than thrown into the pool — that is an engine question, not yours.
 
 ## 25.3 The prose pass
 

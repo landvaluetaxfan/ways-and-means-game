@@ -406,7 +406,25 @@ const BILLS = [
       cu:  { popular:{for:66}, functional:"for" },  /* seven rebels: the maintenance bloc */
       psa: { popular:{for:34}, functional:"for" },
       rv:  { popular:{for:9},  functional:"for" },  /* the ministers; the conference is split */
-      cl:  { popular:{for:8},  functional:"against" },  /* free trade in principle, the bill in practice */
+      /* DOMAIN CONSENT IS WHAT DECIDES THIS, not a functional majority.
+         The bill `touches` essential_services_law and anchor_concession, so
+         the functional constituencies whose interest matches those are the
+         CONCERNED benches, and a majority of THOSE seats voting against
+         makes the domain object (there is an override, at three-fifths of
+         those voting). The whole forty never has to reach 21 — the measured
+         division carries on 13 of 40, because the benches that own the
+         subject did not block it.
+
+         Authored first with the Liberals against, which blocked the domain
+         and made the campaign's central Act unpassable: it stalled at second
+         reading every run. They are the right split to turn: free trade says
+         bring the Works inside the tariff wall, while their popular benches
+         mostly will not wear the cost — a party divided against itself by
+         bench, which is exactly what the functional tier exists to produce.
+
+         So the lesson for the next bill, which cost a session to learn:
+         `touches` is not decoration. It names who can stop you. */
+      cl:  { popular:{for:8},  functional:"for" },
       sc:  { popular:{for:5},  functional:"against" },  /* Home Rule will not centralise for free */
       ind: { popular:{for:2},  functional:"against" },
       upl: "for", geo: "for",
