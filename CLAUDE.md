@@ -49,13 +49,11 @@ composition was rebalanced so the population-weighted composition is the bible's
 count, functional-electorate range, the full cabinet ministry list, "two
 Congregational Democratic Alliance Ministers", a doubled "the").
 
-**Two inconsistencies left open, both content, both flagged here:**
-
-- `content/labour.js` `embodied` values weight to **~68%** of jobs; bible §6.10
-  says **46%**. The encyclopedia article follows the bible, so the labour table
-  is the outlier.
-- Station populations sum to **7,006,000**; `labour.js totals.population` is
-  **6,863,000**. 143,000 apart.
+**Both inconsistencies that were open here are now closed** (checked 20 Sep 2026,
+by measuring rather than by reading a commit message): `content/labour.js`
+`embodied` weights to **46.1%** of jobs against bible §6.10's **46%**, and both
+population figures are **7,086,000**. Leaving the paragraph as a record that they
+were real, and that content fixed them.
 
 **Also landed since that handoff:** row selection is now the gold tint in every
 table (`.sel` was the dark inverted block; the `#cons-table` override is gone and
@@ -148,6 +146,40 @@ changed and are still the initials of the pre-rename names** — `cu` for Common
 Union, `psa` for Public Substrate Association, and so on — so an id is a poor
 guide to what a party is now called. Read `content/parties.js`.
 
+## THE TABS, AS OF 20 SEPTEMBER 2026
+
+Nine, and the arrangement is younger than most of this file, so trust this
+list over any older sentence here that implies a different one:
+
+| | |
+|---|---|
+| **Sitting** | the event, the docket, the calendar, and the one indicator panel |
+| **Government** | instruments · the document · what it can do · the ledger and cabinet, with the Tribunal and the Presidency folded at the edge |
+| **Chamber** | order-paper time, the order paper, the House, the whip, and who is counted |
+| **Economy** | the treasury, the prices and the law that sets them, labour |
+| **Parties** | twelve parties, their currents, every member, and the party outside Parliament |
+| **Orbit**, **World**, **Concordance**, **Record** | unchanged |
+
+**Papers is gone**, folded into Government — an instrument, the register it
+lands in, the court that can quash it and the office that assents to it are one
+subject. Nothing named `pap` survives; `js/engine.js` used to emit `tab:"pap"`
+targets and now emits `"gov"`.
+
+**The indicator panel is on the Sitting screen and there is only one.** It used
+to be drawn on Government and copied here by a `MutationObserver`. Do not
+reintroduce the copy.
+
+Three things worth knowing before you touch the engine:
+
+- `Engine.receipts(st)` is the revenue side of the budget (bible §7.3), and
+  `tick()` is the only place in the engine that ADDS to `solvency`. Everything
+  else that touches it is a content effect spending it.
+- `Engine.benchRoll(st, C)` seats the whole House without a division. It is the
+  first half of `rollCall` lifted out; do not write a second way to seat it.
+- `CONTENT.partyOrg` is the party outside Parliament. Officers are deliberately
+  NOT in `content/characters.js` — they hold no seat — but `namesTaken` reads
+  them so the list-tier name generator cannot reuse one.
+
 ## Finding things without reading everything
 
 `bible.md` is ~1,700 lines and `textbook.md` ~750. Reading either in full to
@@ -232,7 +264,8 @@ has until a human one arrives.
 npm run layout   # needs a real browser; measures what jsdom cannot
 ```
 
-`tools/laycheck.js` boots the game in headless Chromium, walks all eight tabs
+`tools/laycheck.js` boots the game in headless Chromium, measures the main menu,
+walks all eight in-game tabs
 and reports content that is **clipped** (the player never sees it) or that
 **escapes its own border**. Every CSS trap listed below was found by measuring
 rather than reading, and jsdom has no layout engine — `npm run ui` can prove a
