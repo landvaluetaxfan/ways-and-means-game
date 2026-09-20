@@ -1,9 +1,9 @@
 /* =============================================================
    LAYOUT, MEASURED.
 
-     node tools/laycheck.js                 the three widths below
-     node tools/laycheck.js --width 1000    one width
-     node tools/laycheck.js --all           every finding, not the worst ten
+     node tools/laycheck.js                  every viewport shape below
+     node tools/laycheck.js --size 1366x768  one shape
+     node tools/laycheck.js --all            every finding, not the worst ten
 
    CLAUDE.md keeps a list of CSS traps and every one of them ends with the
    same sentence: found by measuring rather than reading. A screen that is
@@ -57,8 +57,44 @@ if (!CHROME) {
 
 const argv = process.argv.slice(2);
 const ALL = argv.includes("--all");
+
+/* THE SHAPES, NOT THE WIDTHS. This measured three widths at one height, and
+   the height was always 900 — so the 900px and 700px breakpoints in the
+   stylesheet had never been measured at all, and the VERTICAL axis had never
+   been varied once.
+
+   Height is the axis that actually bites, and it bites for a reason nobody
+   would notice from the inside: the interface is developed on a 27-inch
+   1440p panel, where there are 1,440 vertical pixels. A common laptop has
+   768. Every screen here is height:100% with its own internal scrollers, so
+   it SHOULD degrade — and "should" is the word this repo has been burned by
+   twice. A panel that fits at 900 and clips at 768 is invisible to the
+   author and invisible to the check.
+
+   So: real shapes, including the ones people actually have. 2560x1440 is the
+   author's monitor; 1366x768 is the commonest laptop panel in the world;
+   820x1180 is a tablet held upright, which is the only portrait case and the
+   one that exercises the single-column collapse.
+
+     node tools/laycheck.js                  every shape below
+     node tools/laycheck.js --size 1366x768  one of them
+     node tools/laycheck.js --width 1000     one width, at 900 as before */
+const VIEWPORTS = [
+  [2560, 1440],   /* the author's monitor */
+  [1600, 1200],   /* wide and tall */
+  [1440, 900],    /* the common laptop above the fold */
+  [1366, 768],    /* the commonest laptop panel there is */
+  [1280, 800],    /* small laptop */
+  [1024, 640],    /* below the 1080 collapse, and short with it */
+  [820, 1180]     /* a tablet upright: the portrait case */
+];
+
+const sArg = argv.indexOf("--size");
 const wArg = argv.indexOf("--width");
-const WIDTHS = wArg >= 0 ? [Number(argv[wArg + 1])] : [1000, 1280, 1600];
+const SHAPES =
+  sArg >= 0 ? [String(argv[sArg + 1]).split("x").map(Number)]
+: wArg >= 0 ? [[Number(argv[wArg + 1]), 900]]
+: VIEWPORTS;
 
 /* The tabs, in the order the interface presents them. */
 const TABS = ["sit", "gov", "cham", "pap", "orb", "world", "cx", "log"];
@@ -135,15 +171,25 @@ const PROBE = `
     var edge = axis === "y"
       ? r.top  + parseFloat(cs.borderTopWidth)  + el.clientHeight
       : r.left + parseFloat(cs.borderLeftWidth) + el.clientWidth;
-    var kids = el.querySelectorAll("*");
-    for (var i = 0; i < kids.length; i++) {
-      var pos = getComputedStyle(kids[i]).position;
-      if (pos === "absolute" || pos === "fixed") continue;
-      var k = kids[i].getBoundingClientRect();
-      if (!k.width && !k.height) continue;
-      if ((axis === "y" ? k.bottom : k.right) > edge + TOL)
-        return name(kids[i]) + (kids[i].textContent || "").trim()
-                 .replace(/\s+/g, " ").slice(0, 30).replace(/^/, ' "') + '"';
+    /* PRUNE THE SUBTREE, not just the node. This skipped an out-of-flow child
+       and then went on checking ITS children, which are just as out of flow:
+       the signature is an <img> inside an absolutely positioned span, so the
+       image was reported as escaping a box it was never in, at every viewport
+       at once. An element positioned out of flow takes its whole subtree with
+       it, so the walk has to stop there rather than step over one node. */
+    var stack = [], kids = el.children;
+    for (var n = 0; n < kids.length; n++) stack.push(kids[n]);
+    while (stack.length) {
+      var kid = stack.pop();
+      var pos = getComputedStyle(kid).position;
+      if (pos === "absolute" || pos === "fixed") continue;   /* and its subtree */
+      var k = kid.getBoundingClientRect();
+      if (k.width || k.height) {
+        if ((axis === "y" ? k.bottom : k.right) > edge + TOL)
+          return name(kid) + (kid.textContent || "").trim()
+                   .replace(/\s+/g, " ").slice(0, 30).replace(/^/, ' "') + '"';
+      }
+      for (var m = 0; m < kid.children.length; m++) stack.push(kid.children[m]);
     }
     return null;
   }
@@ -201,7 +247,7 @@ const PROBE = `
 })();
 `;
 
-function run(width) {
+function run(width, height) {
   /* The temp page lives in the repo root so index.html's relative
      <script src> paths resolve exactly as they do for a player. */
   const tmp = path.join(root, "_laycheck." + process.pid + ".html");
@@ -214,7 +260,7 @@ function run(width) {
     dom = cp.execSync(
       `"${CHROME}" --headless --disable-gpu --no-sandbox --hide-scrollbars ` +
       `--allow-file-access-from-files --virtual-time-budget=20000 ` +
-      `--window-size=${width},900 --dump-dom "${tmp}" 2>/dev/null`,
+      `--window-size=${width},${height} --dump-dom "${tmp}" 2>/dev/null`,
       { maxBuffer: 64 * 1024 * 1024 }).toString();
   } finally { try { fs.unlinkSync(tmp); } catch {} }
 
@@ -230,9 +276,9 @@ console.log("LAYOUT CHECK");
 console.log("=".repeat(62));
 
 let fail = 0;
-for (const width of WIDTHS) {
-  const r = run(width);
-  console.log("\n  " + width + "px");
+for (const [width, height] of SHAPES) {
+  const r = run(width, height);
+  console.log("\n  " + width + "x" + height);
   if (r.error) { console.log("    FAIL " + r.error); fail++; continue; }
 
   if (r.pageX > 2) { console.log(`    FAIL the page scrolls sideways by ${r.pageX}px`); fail++; }
