@@ -277,7 +277,18 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .choice:hover{background:#dfe4d3;}
 #gov-wire .post{border-bottom:1px solid var(--chrome-dk);padding:4px 6px;background:var(--field);}
 #gov-wire .post p{margin:0;font-family:var(--f-read);font-size:12px;}
-.g-sit{grid-template-columns:minmax(190px,240px) minmax(0,1fr) 320px;}
+/* THE MIDDLE WAS TAKING SPACE IT DID NOT USE. The wire was capped at 240
+   and the right column fixed at 320, so at a wide window the sitting event —
+   a title, a paragraph and a few choices — was handed sixty-four per cent of
+   the screen and left most of it white. The columns either side had the
+   opposite problem: a headline in a 240px wire can only ever be a headline.
+
+   Both sides roughly 1.6x, and both now flex rather than one being pinned:
+   the wire gets room to become what it wants to be (an in-universe wire
+   item with a byline and a standfirst, not a line of text), and the right
+   column gets room for the calendar and the docket to breathe. The middle
+   still takes the surplus, it just no longer takes it by default. */
+.g-sit{grid-template-columns:minmax(300px,380px) minmax(0,1fr) minmax(360px,440px);}
 /* THE HOUSE IS THE SUBJECT OF THE SCREEN, so it takes the middle and the
    surplus. Left is what is before the House — the order paper and the
    measure open on it. Right is reference: how the benches are counted,
