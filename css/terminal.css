@@ -850,6 +850,12 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 .att.c{color:#7a5c00;border-color:#7a5c00;background:#f4eddb;}
 .post .meta{font-family:var(--f-data);font-size:10px;color:var(--ink-soft);margin-top:3px;}
 
+/* the ways and means table: the same row as a scarcity price, without the
+   sparkline, and the total ruled off from the bases that make it. */
+.prow.wmrow .pval,.prow.wmtot .pval{font-variant-numeric:tabular-nums;}
+.prow.wmtot{border-top:1px solid var(--rule);margin-top:4px;padding-top:5px;}
+.prow.wmtot .plab{font-weight:600;}
+
 /* ---------- ticker ---------- */
 .ticker{background:var(--bar);color:var(--bar-txt);overflow:hidden;white-space:nowrap;padding:2px 0;font-family:var(--f-data);font-size:11px;}
 .ticker div{display:inline-block;padding-left:100%;animation:tick 46s linear infinite;}

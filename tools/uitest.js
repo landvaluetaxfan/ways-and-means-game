@@ -100,6 +100,26 @@ try {
      [...w.document.querySelectorAll(".screen.on")].map(s => s.id).join(" "));
 } catch (e) { ok("save round-trip", false, e.message); }
 
+/* WAYS AND MEANS IS ON THE GLASS. The state grew an income; a revenue the
+   player cannot see is the same bug from the other side. And a panel that
+   renders blank is invisible to every static check \u2014 which is the whole
+   reason this file exists \u2014 so read the rows back and make them add up. */
+try {
+  const rows = [...w.document.querySelectorAll("#gov-receipts .prow")];
+  ok("the ways and means panel draws", rows.length === 5, rows.length + " rows");
+  const num = el => Number((el.querySelector(".pval").textContent || "").replace(/[^0-9-]/g, ""));
+  const bases = rows.slice(0, 4).map(num), total = num(rows[4]);
+  ok("it prints a yield for every base the Commonwealth taxes",
+     bases.length === 4 && bases.every(n => n > 0), bases.join(" + "));
+  ok("and the printed rows add up to the printed total",
+     bases.reduce((a, b) => a + b, 0) === total, bases.join("+") + " = " + total);
+  ok("which is the engine's number and not the interface's",
+     total === w.eval("Engine.receipts(UI.state()).total"), total + "");
+  ok("and it names the rate each base is charged at",
+     rows.slice(0, 4).every(r => /levied|reduced|standing rate|raised/.test(r.textContent)),
+     rows[0].textContent.trim());
+} catch (e) { ok("the ways and means panel", false, e.message); }
+
 /* THE BILL LIFECYCLE TRACK. An assented act must show the road it took, not
    just its end state — and the terminal branch must be drawn off the end of
    the track rather than as a position on it. */

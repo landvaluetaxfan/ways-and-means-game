@@ -23,6 +23,13 @@ const SETUP = {
             four prices are legislative outputs, and the appropriation is
             the legislation. Levels are the clause levels' own words. */
          thermal_release:"steady", capital_works:"none", transit_subsidy:"none",
+         /* WAYS AND MEANS (bible §7.3). The four bases the Commonwealth
+            taxes — volume, thermal quota, substrate-hours, mass to orbit —
+            each at a rate the appropriation sets. Levels: none | low |
+            standard | high. At standard on all four the state raises
+            exactly what the appropriation's own defaults cost. */
+         rate_volume:"standard", rate_thermal:"standard",
+         rate_substrate:"standard", rate_transit:"standard",
          tier_ratio_district:140, tier_ratio_list:100, threshold_pct:4,
          /* Bible 4.10: the divisor is a bill, not a constant. D'Hondt favours
             large parties, Sainte-Lague small ones, and the two tiers are two

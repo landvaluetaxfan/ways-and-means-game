@@ -186,6 +186,53 @@ const BILLS = [
           { id:"none",    label:"Unsubsidised", cost:0,  note:"The fare is the market's. The outer stations pay what the schedule says, and the schedule is not the Commonwealth's.", effects:[{ law:{ transit_subsidy:"none" } }] },
           { id:"anchors", label:"The anchor states", cost:10000, note:"The differential is carried for the anchor states, where the tether is the only way in.", effects:[{ law:{ transit_subsidy:"anchors" } }, { move:{ "public_standing":3 } }] },
           { id:"all",     label:"Every station", cost:22000, note:"The differential is carried for every station, and the reserve pays for the ones the traffic does not reach.", effects:[{ law:{ transit_subsidy:"all" } }, { move:{ "public_standing":5, solvency:-4000 } }] }
+        ] },
+
+      /* THE OTHER HALF OF A BUDGET. Everything above is spending; bible
+         §7.3 names the revenue — volume, thermal quota, substrate-hours and
+         mass to orbit, not income — and until now the bill had no revenue
+         side at all, which is how the Commonwealth came to be a treasury
+         that could only fall.
+
+         A rate is a LAW, not a cost, so these clauses carry cost 0: they do
+         not spend, they set what the tick collects every sitting. At the
+         standing rate on all four the state raises exactly what the
+         defaults above cost.
+
+         PROSE IS PROVISIONAL and is opencode's to take further (see
+         design/33). The mechanism and the levels are settled; the notes are
+         serviceable and no more. */
+      { id:"rate_volume", name:"Ways and Means: volume", default:"standard",
+        note:"The levy on habitable volume, charged on the lease and not on what is done inside it. What it falls on is position inside a habitat, which nobody made.",
+        levels:[
+          { id:"none", label:"Not levied", cost:0, note:"The lease is charged nothing. The Commonwealth forgoes its largest single base.", effects:[{ law:{ rate_volume:"none" } }, { move:{ "public_standing":3 } }] },
+          { id:"low", label:"Reduced", cost:0, note:"Charged at half. The holders of the long leases keep the difference.", effects:[{ law:{ rate_volume:"low" } }, { move:{ "public_standing":1 } }] },
+          { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_volume:"standard" } }] },
+          { id:"high", label:"Raised", cost:0, note:"Charged half again. The lease is dearer to hold and no dearer to live in, which is the whole of the argument and is not believed.", effects:[{ law:{ rate_volume:"high" } }, { move:{ "public_standing":-2 } }] }
+        ] },
+      { id:"rate_thermal", name:"Ways and Means: thermal quota", default:"standard",
+        note:"The levy on quota rejected. It is charged on the right to run, so it is paid by everything that runs, and it is in every price downstream.",
+        levels:[
+          { id:"none", label:"Not levied", cost:0, note:"Quota is charged nothing. The price falls and the reserve falls with it.", effects:[{ law:{ rate_thermal:"none" } }, { move:{ "public_standing":4 } }] },
+          { id:"low", label:"Reduced", cost:0, note:"Charged at half.", effects:[{ law:{ rate_thermal:"low" } }, { move:{ "public_standing":2 } }] },
+          { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_thermal:"standard" } }] },
+          { id:"high", label:"Raised", cost:0, note:"Charged half again, and passed on within the session to everyone buying the right to keep running.", effects:[{ law:{ rate_thermal:"high" } }, { move:{ "public_standing":-5 } }] }
+        ] },
+      { id:"rate_substrate", name:"Ways and Means: substrate-hours", default:"standard",
+        note:"The levy on mind-hours run. It is charged on the hour, so it is charged hardest on those who exist only as hours.",
+        levels:[
+          { id:"none", label:"Not levied", cost:0, note:"The hour is charged nothing.", effects:[{ law:{ rate_substrate:"none" } }, { move:{ "public_standing":3 } }] },
+          { id:"low", label:"Reduced", cost:0, note:"Charged at half.", effects:[{ law:{ rate_substrate:"low" } }, { move:{ "public_standing":2 } }] },
+          { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_substrate:"standard" } }] },
+          { id:"high", label:"Raised", cost:0, note:"Charged half again. The rent on continuing to be a person goes up, and it goes up for the people with the least of anything else.", effects:[{ law:{ rate_substrate:"high" } }, { move:{ "public_standing":-6, "legitimacy":-2 } }] }
+        ] },
+      { id:"rate_transit", name:"Ways and Means: mass to orbit", default:"standard",
+        note:"The levy on mass lifted and moved. Charged at the tether and carried into the price of everything the outer stations cannot make.",
+        levels:[
+          { id:"none", label:"Not levied", cost:0, note:"Mass moves untaxed.", effects:[{ law:{ rate_transit:"none" } }, { move:{ "public_standing":2 } }] },
+          { id:"low", label:"Reduced", cost:0, note:"Charged at half.", effects:[{ law:{ rate_transit:"low" } }, { move:{ "public_standing":1 } }] },
+          { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_transit:"standard" } }] },
+          { id:"high", label:"Raised", cost:0, note:"Charged half again. It reaches the stations at the end of the schedule first and hardest.", effects:[{ law:{ rate_transit:"high" } }, { move:{ "public_standing":-3 } }] }
         ] } ],
     stances:{ cu:"for", psa:"for", rv:"for", upl:{forPct:0.5}, geo:{forPct:0.5},
               cl:"against", sc:{forPct:0.3}, hul:{forPct:0.4}, fh:"against",

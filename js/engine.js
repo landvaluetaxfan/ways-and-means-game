@@ -409,6 +409,15 @@ const Engine = (function () {
        Flash I's three new meters arrived on every save written before
        them. */
     st.scalars = st.scalars || {};
+    /* LAW IS CONTENT-OWNED TOO, and was not backfilled. Adding a law key
+       left every existing save holding `undefined` for it, exactly as adding
+       a station once left a hole in st.stations — and a law key the tick does
+       arithmetic on would have carried that undefined into solvency as NaN.
+       Same rule as the scalars below: content owns the key, the save owns
+       whatever the government has since done to it. */
+    Object.keys(C.setup.law || {}).forEach(k => {
+      if (st.law[k] === undefined) st.law[k] = C.setup.law[k];
+    });
     Object.keys(C.setup.scalars || {}).forEach(k => {
       if (st.scalars[k] == null) st.scalars[k] = C.setup.scalars[k];
     });
@@ -3790,6 +3799,70 @@ const Engine = (function () {
      rather than snapping to it. Politics happens in the lag. */
   function drift(now, target) { return (target - now) * 0.2; }
 
+  /* =========================================================
+     WAYS AND MEANS — where the money comes from.
+
+     The state had no income. `solvency` moved only when a content effect
+     moved it: the Commonwealth opened holding 52,000, the appropriation
+     spent 48,000 of it, and nothing ever put anything back. A treasury that
+     only falls is a health bar, and it made the four scarcity prices
+     decorative — the tick READ solvency to set them and nothing ever read
+     them, which is why the comment on the volume price says a price nothing
+     moves is a price no event can honestly be gated on.
+
+     Bible 7.3 has named the revenue all along: volume, thermal quota,
+     substrate-hours and mass-to-orbit. Not income. Those four bases ARE the
+     four prices, so the loop closes with no new simulation: the budget sets
+     the rates, the rates fund the state, and the prices are what the rates
+     are levied on.
+
+     THE CALIBRATION IS ONE SENTENCE. At standard rates on all four bases,
+     with every price at its index of 100, the state takes 1,200 a sitting —
+     so across a full run of forty sittings it raises 48,000, which is what
+     the appropriation's own defaults cost. Standard rates pay for the
+     default budget and not a unit more. Cut them and the government runs
+     down toward the point where it stops being able to pay and starts, in
+     7.9's words, shedding people. Raise them and it accumulates, at a price.
+
+     AND THE PRICE IS PASS-THROUGH, EXCEPT ON VOLUME. A levy on thermal,
+     substrate or transit is a levy on the cost of producing the thing, and
+     it lands on the people buying it. A levy on volume does not, because
+     what it falls on is position inside a habitat, which nobody made and
+     nobody can move — unearned in exactly the sense 7.5.2 says it is. So
+     volume alone raises money without raising the cost of living. That is
+     not a balance decision dressed as fiction; it is the Georgist claim,
+     and the Single Tax Party exists in this world to make it. The player
+     can find it by reading the table, and the table does not explain it.
+     ========================================================= */
+  const TAX_BASES = [
+    { k: "volume",    weight: 480, passthrough: 0,  name: "Volume" },
+    { k: "thermal",   weight: 300, passthrough: 26, name: "Thermal quota" },
+    { k: "substrate", weight: 280, passthrough: 24, name: "Substrate-hours" },
+    { k: "transit",   weight: 140, passthrough: 20, name: "Mass to orbit" }
+  ];
+  /* The levels are the clause levels' own words, like every other law value. */
+  const RATE_STEP = { none: 0, low: 0.5, standard: 1, high: 1.6 };
+
+  function rateOf(st, k) {
+    const v = (st.law || {})["rate_" + k];
+    return RATE_STEP[v] == null ? RATE_STEP.standard : RATE_STEP[v];
+  }
+
+  /* The whole revenue side, as a table rather than a number, because the
+     player is owed the arithmetic and not the answer (7.6). Reads state and
+     writes none, so the interface may call it on any draw. */
+  function receipts(st) {
+    const rows = TAX_BASES.map(b => {
+      const factor = rateOf(st, b.k);
+      const price = (st.prices || {})[b.k] == null ? 100 : st.prices[b.k];
+      return { base: b.k, name: b.name,
+               rate: (st.law || {})["rate_" + b.k] || "standard",
+               factor: factor, price: price,
+               yield: Math.round(factor * (price / 100) * b.weight) };
+    });
+    return { rows: rows, total: rows.reduce((a, r) => a + r.yield, 0) };
+  }
+
   function tick(st, C) {
     const P = st.prices, marks = [];
 
@@ -3801,12 +3874,16 @@ const Engine = (function () {
     const rel = st.law.thermal_release;
     const relBump = rel === "tight" ? 14 : rel === "open" ? -16 : 0;
     const pressure = (35 - st.scalars.thermal_margin) * 1.2;
-    P.thermal = clamp(P.thermal + drift(P.thermal, 100 + pressure + relBump), 20, 400);
+    /* the levy, passed through to whoever buys the thing. Nought at the
+       standard rate, so the calibration of everything above is unmoved. */
+    const taxT = (rateOf(st, "thermal") - 1) * 26;
+    P.thermal = clamp(P.thermal + drift(P.thermal, 100 + pressure + relBump + taxT), 20, 400);
 
     /* substrate: cheaper the more of it is publicly held, dearer as thermal rises */
     const pub = st.law.substrate_public_share == null ? 0.35 : st.law.substrate_public_share;
     P.substrate = clamp(P.substrate + drift(P.substrate,
-      70 + (1 - pub) * 60 + (P.thermal - 100) * 0.4), 20, 400);
+      70 + (1 - pub) * 60 + (P.thermal - 100) * 0.4 +
+      (rateOf(st, "substrate") - 1) * 24), 20, 400);
 
     /* volume: pressurised cubic metres, capped by the construction
        schedule, which is bought out of the treasury.
@@ -3828,6 +3905,9 @@ const Engine = (function () {
        MW-years, so it is read back through its scale here. The proportion
        is unchanged, which is the whole point of the denomination. */
     const solv = st.scalars.solvency / (MONEY_SCALE.solvency || 1);
+    /* AND NO TAX TERM. The other three carry one; volume does not, because
+       a levy on position inside a habitat has nowhere to be passed on to.
+       See the Ways and Means note above — this blank line is the mechanic. */
     P.volume = clamp(P.volume + drift(P.volume,
       100 + (50 - solv) * 0.28 + volBump), 20, 400);
 
@@ -3836,7 +3916,7 @@ const Engine = (function () {
     const ts = st.law.transit_subsidy;
     const trBump = ts === "anchors" ? -8 : ts === "all" ? -14 : 0;
     P.transit = clamp(P.transit + drift(P.transit,
-      100 - (solv - 50) * 0.3 + trBump), 20, 400);
+      100 - (solv - 50) * 0.3 + trBump + (rateOf(st, "transit") - 1) * 20), 20, 400);
 
     Object.keys(P).forEach(k => {
       P[k] = Math.round(P[k] * 10) / 10;
@@ -3875,6 +3955,16 @@ const Engine = (function () {
           ? "The consumables floor eases as closure improves"
           : "The consumables floor presses as closure falls");
       }
+    })();
+
+    /* AND THE STATE TAKES ITS REVENUE, on the prices this sitting has just
+       set rather than last sitting's. This is the only place in the engine
+       that ADDS to solvency: everything else that touches it is a content
+       effect spending it. See the Ways and Means note above tick(). */
+    (function () {
+      const r = receipts(st);
+      if (!r.total) return;
+      st.scalars.solvency = Math.max(0, (st.scalars.solvency || 0) + r.total);
     })();
 
     /* TRENDS APPLY AFTER THE MARKETS MOVE, so the same sitting shows both
@@ -4951,7 +5041,7 @@ const Engine = (function () {
   }
 
   return {
-    STATE_VERSION, newGame, migrate, save, load, chapters, reportedActor,
+    STATE_VERSION, newGame, migrate, save, load, chapters, reportedActor, receipts,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal,
     division, reported, ballot, resolveDue, pairable, setPairs, clearPairs, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss, checkSettlement,

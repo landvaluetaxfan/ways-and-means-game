@@ -171,6 +171,14 @@ const Tips = (function () {
       body: "Enrolled electors, not population. The functional roll and the " +
             "district roll count different people." },
 
+    waysmeans: { title: "Ways and means",
+      body: "What the state takes in, every sitting, on each of the four " +
+            "bases it taxes. The appropriation sets the rate; the scarcity " +
+            "index above is what the rate is charged on. At the standing " +
+            "rate on all four it raises about what the budget's own " +
+            "defaults cost, so a government that cuts a rate is spending " +
+            "its reserve to do it." },
+
     /* ---- the orbit ---- */
     schematic: { title: "The habitat schematic",
       body: "This is a chart, not a map. Vertical position is altitude band. " +

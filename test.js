@@ -1441,12 +1441,27 @@ console.log("\nTHE ORDER OF THE DAY:");
    one thing standing between building the engine and writing content
    afterwards rather than the other way round.
    ============================================================= */
+/* SOLVENCY IS NO LONGER AN INERT TRACER. Several tests below used it to
+   watch something else happen — a queued fact landing, a coupling charging
+   — because it was the one quantity nothing moved on its own. Ways and
+   Means gave the state an income, so a sitting now adds to it, and those
+   assertions were reading the revenue rather than their own subject.
+
+   The subject did not change and neither did the assertion: the test turns
+   the revenue OFF, so the only thing that can move solvency is the thing
+   being tested. Setting every rate to none is a law value like any other. */
+function noRevenue(st) {
+  st.law.rate_volume = st.law.rate_thermal =
+  st.law.rate_substrate = st.law.rate_transit = "none";
+  return st;
+}
+
 console.log("\nA DEFERRED FACT (the queue carries effects):");
 (function(){
   let bad = 0;
   const ok = (l, c, extra) => { if (!c) bad++;
     console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
-  const m = Engine.newGame(CONTENT);
+  const m = noRevenue(Engine.newGame(CONTENT));
   const before = m.scalars.solvency;
   Engine.apply(m, CONTENT, [{ queue: { after: 3, label: "The commission reports",
                                        effects: [{ move: { solvency: -7 } }] } }]);
@@ -1482,6 +1497,106 @@ console.log("\nA DEFERRED FACT (the queue carries effects):");
   ok("and a queued EVENT is still a story, not a fact",
      Engine.nextEvent(q, CONTENT) === e0);
   if (bad) { console.log("\n" + bad + " DEFERRED-FACT FAILURES"); process.exitCode = 1; }
+})();
+
+console.log("\nWAYS AND MEANS (the state has an income):");
+(function(){
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  /* THE TREASURY USED TO ONLY FALL. Nothing in the engine added to solvency:
+     the Commonwealth opened holding 52,000, the appropriation spent 48,000
+     and nothing put anything back, which also left the four scarcity prices
+     decorative \u2014 the tick read solvency to SET them and nothing ever read
+     them. Bible \u00a77.3 named the four bases all along. */
+  const a = Engine.newGame(CONTENT);
+  const s0 = a.scalars.solvency;
+  Engine.advance(a, CONTENT);
+  ok("a sitting raises revenue", a.scalars.solvency > s0,
+     s0 + " -> " + a.scalars.solvency);
+
+  const z = noRevenue(Engine.newGame(CONTENT));
+  const z0 = z.scalars.solvency;
+  Engine.advance(z, CONTENT);
+  ok("and raises none when nothing is levied", z.scalars.solvency === z0,
+     z0 + " -> " + z.scalars.solvency);
+
+  /* THE CALIBRATION IS THE POINT, and it is one sentence: at the standing
+     rate on all four bases the state raises what the appropriation's own
+     defaults cost, over a run, and not a unit more. Below that the
+     government runs down; above it, it accumulates at a political price. */
+  const spend = (Engine.clausesOf(CONTENT, "appropriation") || []).reduce((sum, c) => {
+    const d = (c.levels || []).find(l => l.id === c.default);
+    return sum + ((d && d.cost) || 0);
+  }, 0);
+  const run = Engine.newGame(CONTENT);
+  const r0 = run.scalars.solvency;
+  for (let i = 0; i < 40; i++) Engine.advance(run, CONTENT);
+  const raised = run.scalars.solvency - r0;
+  ok("the appropriation's defaults are a real number", spend > 0, spend + "");
+  ok("and forty sittings at the standing rate raise about that much",
+     Math.abs(raised - spend) < spend * 0.35,
+     "raised " + raised + " against " + spend + " of default spending");
+
+  /* PASS-THROUGH, AND THE ONE BASE THAT HAS NONE. A levy on thermal is a
+     levy on the cost of producing the thing and it lands on whoever buys
+     it. A levy on volume falls on position inside a habitat, which nobody
+     made and nobody can move, so it has nowhere to be passed on to. That
+     is the Georgist claim (\u00a77.5.2) as arithmetic rather than as a slogan. */
+  function priceAfter(base, rate, n) {
+    const st = Engine.newGame(CONTENT);
+    st.law["rate_" + base] = rate;
+    for (let i = 0; i < n; i++) Engine.advance(st, CONTENT);
+    return st.prices[base];
+  }
+  const thHigh = priceAfter("thermal", "high", 12),
+        thStd  = priceAfter("thermal", "standard", 12);
+  ok("taxing thermal quota raises what thermal quota costs",
+     thHigh > thStd + 2, thStd.toFixed(1) + " -> " + thHigh.toFixed(1));
+
+  const voHigh = priceAfter("volume", "high", 12),
+        voStd  = priceAfter("volume", "standard", 12);
+  /* AND IT CAME OUT STRONGER THAN THE ASSERTION WAS WRITTEN FOR. This first
+     asked for no movement at all and measured 96.3 against 97.0: taxing
+     volume makes volume CHEAPER. Nothing was written to do that. The volume
+     price reads the treasury because the construction schedule is bought out
+     of it, so a levy that falls on position inside a habitat funds the
+     pressurised volume that makes position less scarce. That is the Georgist
+     case arriving as arithmetic rather than as a slogan, out of two rules
+     that were already here, and it is the one base with the property. */
+  ok("taxing volume raises revenue and does NOT raise the cost of living",
+     voHigh <= voStd, voStd.toFixed(1) + " -> " + voHigh.toFixed(1));
+
+  const hiV = Engine.newGame(CONTENT); hiV.law.rate_volume = "high";
+  ok("and it does raise revenue", Engine.receipts(hiV).total >
+     Engine.receipts(Engine.newGame(CONTENT)).total);
+
+  /* THE TABLE, NOT THE ANSWER (\u00a77.6). The player is owed the arithmetic. */
+  const tb = Engine.receipts(Engine.newGame(CONTENT));
+  ok("the revenue is readable base by base", tb.rows.length === 4 &&
+     tb.rows.every(r => r.name && r.rate && typeof r.yield === "number"),
+     tb.rows.map(r => r.name + " " + r.yield).join(", "));
+  ok("and the rows sum to the total",
+     tb.rows.reduce((s, r) => s + r.yield, 0) === tb.total, tb.total + "");
+
+  /* A SAVE WRITTEN BEFORE ANY OF THIS still has to load. reconcile backfills
+     law from content exactly as it does the scalars and the station roster \u2014
+     it did not, and a missing rate would have carried undefined into
+     solvency as NaN on the first sitting. */
+  const old = Engine.newGame(CONTENT);
+  delete old.law.rate_volume; delete old.law.rate_thermal;
+  delete old.law.rate_substrate; delete old.law.rate_transit;
+  const back = Engine.load(Engine.save(old), CONTENT);
+  ok("a save with no rates gets them back from content",
+     back.law.rate_volume === "standard" && back.law.rate_transit === "standard");
+  const b0 = back.scalars.solvency;
+  Engine.advance(back, CONTENT);
+  ok("and its treasury is a number afterwards, not NaN",
+     isFinite(back.scalars.solvency) && back.scalars.solvency > b0,
+     b0 + " -> " + back.scalars.solvency);
+
+  if (bad) { console.log("\n" + bad + " WAYS AND MEANS FAILURES"); process.exitCode = 1; }
 })();
 
 /* =============================================================
@@ -2432,7 +2547,18 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
        !/appropriation/i.test(src));
 
     const cls = Engine.clausesOf(CONTENT, "appropriation");
-    ok("the bill carries clauses the government fills in", cls.length === 5,       cls.length + "");
+    ok("the bill carries clauses the government fills in", cls.length >= 5,       cls.length + "");
+    /* AND BOTH HALVES OF A BUDGET. This asserted a count of five, which is
+       the wrong question — a count cannot tell you that all five were
+       SPENDING and the bill had no revenue side, which is exactly what was
+       true and is how the Commonwealth came to hold a treasury that only
+       fell. What a budget needs is money going out and money coming in. */
+    const spends = cls.filter(c => (c.levels || []).some(l => (l.cost || 0) > 0));
+    const raises = cls.filter(c => (c.levels || []).some(l =>
+      (l.effects || []).some(ef => ef.law &&
+        Object.keys(ef.law).some(k => /^rate_/.test(k)))));
+    ok("the spending side is there", spends.length >= 4, spends.length + " clauses");
+    ok("and so is the ways and means side", raises.length >= 4, raises.length + " clauses");
     ok("and it is a supply measure",
        CONTENT.billById.appropriation.test === "supply");
 
@@ -2743,7 +2869,7 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
   ok("friction above its first line costs the margin every sitting",
      fr.scalars.thermal_margin === m0 - 1, m0 + " -> " + fr.scalars.thermal_margin);
 
-  const fr2 = Engine.newGame(CONTENT);
+  const fr2 = noRevenue(Engine.newGame(CONTENT));
   fr2.scalars.friction = 90;
   const m1 = fr2.scalars.thermal_margin, l1 = fr2.scalars.legitimacy,
         s1 = fr2.scalars.solvency;

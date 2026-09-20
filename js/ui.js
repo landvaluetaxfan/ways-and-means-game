@@ -370,7 +370,7 @@ const UI = (function () {
       /* A tip is positioned in viewport coordinates against a node that is
          about to be replaced. Take it down first. */
       if (typeof Tips !== "undefined") Tips.hide();
-      drawTitle(); drawPrices(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
+      drawTitle(); drawPrices(); drawReceipts(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
       if (typeof Concordance !== "undefined") Concordance.render(st, C, cxCurrent, false);
       if (typeof Papers !== "undefined") Papers.render(st, C);
       /* The globe only redraws when it is the screen the player is on: it is
@@ -679,6 +679,36 @@ const UI = (function () {
     const col = last > first ? "var(--alert)" : last < first ? "var(--ok)" : "var(--rule)";
     return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" class="sparkline">` +
       `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.2"/></svg>`;
+  }
+
+  /* ---------- ways and means ----------
+     WHERE THE MONEY COMES FROM, base by base. The state had no income at
+     all until the tick learned to collect one, and a revenue nobody can see
+     is the same bug from the other side: the player is owed the arithmetic
+     and not the answer (\u00a77.6), so this prints the rate, the base it is
+     charged on and what each one yields, and lets them add up.
+
+     IT IS A PANEL AND NOT A TAB, deliberately. Debt, credit ratings and an
+     inflation number would each be a second way of saying something the
+     state already says \u2014 the four prices ARE the inflation, per good \u2014 and
+     \u00a77.6 draws the line at a model the player cannot hold in their head.
+
+     The engine hands back a table; nothing is recomputed here, because two
+     places that compute one number is how apportionment_ratio drifted. */
+  function drawReceipts() {
+    const box = $("#gov-receipts"); if (!box) return;
+    const r = Engine.receipts(st);
+    const RATE = { none: "not levied", low: "reduced",
+                   standard: "standing rate", high: "raised" };
+    box.innerHTML = r.rows.map(row =>
+      `<div class="prow wmrow">
+        <div class="plab">${esc(row.name)}<em>${esc(RATE[row.rate] || row.rate)}</em></div>
+        <div class="pval">${row.yield.toLocaleString()}</div>
+      </div>`).join("") +
+      `<div class="prow wmtot">
+        <div class="plab">Total receipts<em>every sitting</em></div>
+        <div class="pval">${r.total.toLocaleString()}</div>
+      </div>`;
   }
 
   function drawPrices() {
