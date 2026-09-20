@@ -2861,3 +2861,11 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .sp-go:hover{color:var(--gold,#c9a227);}
 .sp-go:active{border-color:var(--chrome-dkr) var(--chrome-dkr) var(--chrome-lt) var(--chrome-lt);}
 .sp-go:focus-visible{outline:1px dotted var(--ink);outline-offset:2px;}
+
+/* The introduction is a set piece inside the menu shell, so it gets the
+   menu's width rather than the sitting panel's and scrolls within it. */
+.menu-setpiece{max-height:62vh;overflow:auto;text-align:left;
+  border-top:1px solid var(--chrome-dk);border-bottom:1px solid var(--chrome-dk);
+  margin:6px 0 10px;}
+.menu-setpiece .sp-page{padding:14px 12px 10px;}
+.menu-setpiece .sp-choices{border-top:0;}

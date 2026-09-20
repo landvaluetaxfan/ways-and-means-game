@@ -186,7 +186,9 @@ const ADMINISTRATIONS = [
        people she priced are still sitting in the chamber. The bible's 2287
        is a placeholder older than the term and is not the year. */
     intro:{
-      mood:"state",
+      /* A BED, not the readout. js/music.js exports its moods by name and
+         `state` is the state readout, so it was never going to play. */
+      mood:"moment",
       title:"Adriana Eireann Flash",
       art:"flash_intro",
       sections:[

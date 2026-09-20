@@ -54,6 +54,7 @@ const FILES = ["content/setup.js","content/parties.js","content/stations.js","co
   "content/labour.js","content/names.js","content/characters.js","content/bills.js",
   "content/glossary.js","content/events.js","content/encyclopedia.js","content/artifacts.js","content/business.js","content/settlements.js","content/actors.js","content/index.js",
   "js/audio.js","js/music.js","js/focus.js","js/stream.js","js/wait.js","js/dialog.js","js/tips.js","js/motion.js","js/artifacts.js","js/engine.js","js/orbitchart.js","js/papers.js","js/encyclopedia.js",
+  "js/setpiece.js",
   "js/ui.js","js/shell.js"];
 FILES.forEach(f => {
   const p = path.join(root, f);
@@ -87,11 +88,23 @@ function boot() {
   try { w.eval("Shell.boot(CONTENT)"); return true; }
   catch (e) { ok("Shell.boot()", false, e.message); process.exit(1); }
 }
+const seen = { intro: false, epigraph: false };
 function newGame() {
   $('[data-go="new"]').click();
   /* a government is chosen before the slot; take the first on offer */
   const adm = w.document.querySelector("[data-admin]");
   if (adm) adm.click();
+  /* An administration with an introduction shows it before the slots, so
+     the walk has to read it the way a player does. Conditional, because the
+     sandbox has no introduction and goes straight through. */
+  const go = w.document.querySelector("[data-sp-go]");
+  /* Recorded, because the walk passing does not prove the page RENDERED:
+     adminIntro() falls through to the slots when SetPiece is missing, and
+     the sequence would still complete with the introduction silently
+     skipped. uxtest asserts this flag for exactly that reason. */
+  seen.intro = !!go;
+  seen.epigraph = !!(go && w.document.querySelector(".menu-setpiece .sp-epigraph"));
+  if (go) go.click();
   $('[data-new="1"]').click();
 }
 
@@ -114,4 +127,4 @@ function finish(healthy) {
   process.exit(fail ? 1 : 0);
 }
 
-module.exports = { fs, path, root, w, $, ok, CONTENT, JSDOM, boot, newGame, banner, finish };
+module.exports = { fs, path, root, w, $, ok, CONTENT, JSDOM, boot, newGame, banner, finish, seen };

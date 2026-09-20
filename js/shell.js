@@ -200,6 +200,7 @@ const Shell = (function () {
     m.innerHTML = menuShell(
       view === "load"    ? slotList("load")
     : view === "new"     ? newGov()
+    : view === "intro"   ? adminIntro()
     : view === "slots"   ? slotList("new")
     : view === "credits" ? credits()
     : view === "awards"  ? awards()
@@ -361,6 +362,27 @@ const Shell = (function () {
       <div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
   }
 
+  /* THE GOVERNMENT YOU ARE ABOUT TO BE (design/31 §5).
+
+     An administration is the one thing in this menu that is a CHARACTER
+     rather than a setting, and it was a button with a label. Where there is
+     only one on offer — which is usually true of a scenario — the page is
+     not a choice at all but an INTRODUCTION, and that is the better use of
+     it anyway.
+
+     It is the set piece's frame, so the sections and their kinds are the
+     frame's vocabulary and this function writes no markup of its own beyond
+     the shell. An administration with no `intro` skips straight to the
+     slots, which is what the sandbox does. */
+  function adminIntro() {
+    if (!chosenAdmin || !chosenAdmin.intro || typeof SetPiece === "undefined")
+      return slotList("new");
+    const page = SetPiece.html({ setpiece: chosenAdmin.intro },
+                               { go: "Continue" });
+    return `<div class="menu-setpiece">${page.html}</div>` +
+      `<div class="menu-btns row"><button class="mbtn" data-go="new">Back</button></div>`;
+  }
+
   function root() {
     const last = latest();
     const any = !!last;
@@ -494,8 +516,30 @@ const Shell = (function () {
 
     m.querySelectorAll("[data-admin]").forEach(b => b.addEventListener("click", () => {
       chosenAdmin = (C.administrations || []).find(a => a.id === b.dataset.admin) || null;
-      showMenu("slots");
+      /* THE MOOD IS CUED HERE, on the action, and never in the renderer.
+         SetPiece returns the bed it wants and refuses to play it for exactly
+         this reason — drawing makes no sound.
+
+         A MOOD IS A FUNCTION NAME, not an argument: js/music.js exports
+         `rise`, `sombre`, `moment` and the rest individually. It also
+         exports `state`, `init` and `available`, which are NOT beds — the
+         first is the readout — so content naming one of those would call
+         something that is not music. Hence the list rather than a bare
+         lookup: an unknown mood plays nothing, quietly, which is the right
+         failure for sound. */
+      const BEDS = ["tension", "moment", "defeat", "rise", "sombre",
+                    "undertake", "order", "revoke", "threat", "prorogue"];
+      const mood = chosenAdmin && chosenAdmin.intro && chosenAdmin.intro.mood;
+      if (mood && BEDS.indexOf(mood) >= 0 &&
+          typeof Music !== "undefined" && typeof Music[mood] === "function") {
+        try { Music[mood](); } catch (e) {}
+      }
+      showMenu(chosenAdmin && chosenAdmin.intro ? "intro" : "slots");
     }));
+
+    /* One way forward, and it is the frame's own button. */
+    m.querySelectorAll("[data-sp-go]").forEach(b =>
+      b.addEventListener("click", () => showMenu("slots")));
 
     /* The awards board opens one tile at a sitting, so the wall of names
        stays a wall and the description is behind the click. */

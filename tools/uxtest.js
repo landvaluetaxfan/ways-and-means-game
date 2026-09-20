@@ -12,6 +12,18 @@ H.banner("INTERFACE AND INTERACTION");
 H.boot();
 H.newGame();
 
+/* THE GOVERNMENT YOU ARE ABOUT TO BE (design/31 §5). The administration was a
+   button with a label; it is now an introduction — an epigraph, the character,
+   the situation, and her signature. Asserted because the boot walk would pass
+   either way: adminIntro() falls through to the slot list when SetPiece is
+   missing, so a silently skipped introduction looks exactly like a working
+   one from the outside. */
+H.ok("choosing a government shows its introduction, not just a slot list",
+     H.seen.intro, H.seen.intro ? "the page was there" : "walked straight to the slots");
+H.ok("and the introduction opens on its epigraph",
+     H.seen.epigraph, H.seen.epigraph ? "rendered" : "no .sp-epigraph in the menu");
+
+
 /* =============================================================
    UI-0: THE STATUS BAR, THE AUDIO BUS, FOCUS AND TAB ORDER
    ============================================================= */
