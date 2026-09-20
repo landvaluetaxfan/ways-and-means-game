@@ -392,25 +392,28 @@ const Shell = (function () {
       const m = sc.map[a.id];
       return (m && typeof m === "number") ? new Date(m).toISOString().slice(0, 10) : "";
     };
-    /* A two-letter monogram stands in for a portrait: no achievement ships
-       with art, and an empty frame would read as a missing picture. */
-    const crest = a => String(a.name || a.id).replace(/[^A-Za-z0-9 ]/g, "")
-      .split(/\s+/).filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+    /* A TIER IS A FOLD. Twenty-six tiles at once is a wall that scrolls off
+       the plate; the board is four sections, the first open, so the whole of
+       it fits and the player opens the tier they care about. */
     return `<div class="menu-sub">Achievements <em>${sc.have} of ${sc.of}</em></div>` +
-      order.filter(t => byTier(t).length).map(t =>
-        `<div class="aw-tier">${TIER[t]}</div><div class="awgroup">` +
-        byTier(t).map(a => {
-          const has = !!sc.map[a.id];
-          const when = earnedOn(a);
-          return `<button type="button" class="aw${has ? " has" : ""}` +
-            `${a.tier === "canon" ? " canon" : ""}" data-aw="${esc(a.id)}" aria-expanded="false">` +
-            `<span class="aw-crest" aria-hidden="true">${esc(crest(a))}</span>` +
-            `<b>${esc(a.name || a.id)}</b>` +
-            `<span class="aw-mark">${has ? "earned" : "locked"}</span>` +
-            `<span class="aw-desc">${esc(a.note || "")}</span>` +
-            (when ? `<i class="aw-date">${when}</i>` : "") +
-            `</button>`;
-        }).join("") + `</div>`).join("") +
+      order.filter(t => byTier(t).length).map((t, i) => {
+        const list = byTier(t);
+        const got = list.filter(a => sc.map[a.id]).length;
+        return `<details class="awsec"${i === 0 ? " open" : ""}>` +
+          `<summary><b>${TIER[t]}</b><span>${got} of ${list.length}</span></summary>` +
+          `<div class="awgroup">` + list.map(a => {
+            const has = !!sc.map[a.id];
+            const when = earnedOn(a);
+            return `<button type="button" class="aw${has ? " has" : ""}` +
+              `${a.tier === "canon" ? " canon" : ""}" data-aw="${esc(a.id)}" aria-expanded="false">` +
+              `<span class="aw-badge" aria-hidden="true"></span>` +
+              `<b>${esc(a.name || a.id)}</b>` +
+              `<span class="aw-mark">${has ? "earned" : "locked"}</span>` +
+              `<span class="aw-desc">${esc(a.note || "")}</span>` +
+              (when ? `<i class="aw-date">${when}</i>` : "") +
+              `</button>`;
+          }).join("") + `</div></details>`;
+      }).join("") +
       `<div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
   }
 

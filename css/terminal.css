@@ -1386,17 +1386,23 @@ body.menu-on{background:#0b1826;}
 .menu-text{max-width:600px;font-family:var(--f-doc);font-size:14px;line-height:1.55;color:#e6e7de;
   text-shadow:0 1px 8px rgba(0,0,0,.5);}
 .menu-text p{margin:0 0 10px;}
-/* THE AWARDS BOARD. A wall of small portrait tiles; the description is
-   behind a click, because a board whose empty rows say nothing is a
-   scoreboard and a board that prints every essay at once is a wall of text.
-   The canon is marked because it is the one the campaign was written around. */
-.aw-tier{font-family:var(--f-ui);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
-  color:#8f9a80;margin:10px 0 4px;border-bottom:1px solid #3a4433;padding-bottom:2px;}
-.awgroup{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));
-  gap:6px;align-items:start;max-width:660px;margin-bottom:4px;}
+/* THE AWARDS BOARD. Four folds, one per tier; inside, a wall of small
+   portrait tiles whose description is behind a click. A board that prints
+   every essay at once is a wall of text, and twenty-six tiles at once is a
+   wall that scrolls off the plate, so the tier is the fold. */
+.awsec{max-width:660px;margin:0 0 5px;}
+.awsec>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;
+  font-family:var(--f-ui);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:#8f9a80;border-bottom:1px solid #3a4433;padding:4px 0 2px;}
+.awsec>summary::-webkit-details-marker{display:none;}
+.awsec>summary b{font-weight:normal;color:#c9ccc2;}
+.awsec>summary span{margin-left:auto;font-family:var(--f-data);font-size:9.5px;}
+.awsec[open]>summary{color:#e6e7de;}
+.awgroup{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));
+  gap:6px;align-items:start;margin:5px 0 4px;}
 .aw{font:inherit;color:inherit;text-align:left;cursor:pointer;appearance:none;
   display:flex;flex-direction:column;align-items:flex-start;gap:3px;
-  min-height:104px;padding:7px 8px;background:rgba(20,23,18,.5);
+  min-height:92px;padding:7px 8px;background:rgba(20,23,18,.5);
   border:1px solid rgba(233,234,226,.16);border-left:3px solid #3a4433;
   backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
 .aw:hover{background:rgba(60,64,56,.6);}
@@ -1404,10 +1410,11 @@ body.menu-on{background:#0b1826;}
 .aw.canon{border-left-width:5px;}
 .aw.canon.has{background:rgba(201,162,39,.14);}
 .aw:not(.has){opacity:.62;}
-.aw-crest{display:flex;align-items:center;justify-content:center;width:30px;height:30px;
-  border-radius:50%;border:1px solid rgba(233,234,226,.35);
-  font-family:var(--f-data);font-size:11px;color:#c9ccc2;}
-.aw.has .aw-crest{border-color:var(--gold,#c9a227);color:#f0e6c8;}
+.aw-badge{position:relative;flex:0 0 auto;width:22px;height:22px;border-radius:50%;
+  border:1px solid rgba(233,234,226,.3);}
+.aw.has .aw-badge{border-color:var(--gold,#c9a227);}
+.aw.has .aw-badge::after{content:"";position:absolute;inset:5px;border-radius:50%;
+  background:var(--gold,#c9a227);}
 .aw b{font-family:var(--f-doc);font-size:11.5px;line-height:1.2;color:#e6e7de;}
 .aw.has b{color:#f0e6c8;}
 .aw-mark{font-family:var(--f-data);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;
