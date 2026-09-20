@@ -1499,6 +1499,65 @@ console.log("\nA DEFERRED FACT (the queue carries effects):");
   if (bad) { console.log("\n" + bad + " DEFERRED-FACT FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nTHE OPPOSITION TABLES A MOTION:");
+(function(){
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  /* Confidence used to be something the government LOST PASSIVELY: the
+     arithmetic went wrong and checkLoss noticed. The opposition decided
+     nothing, which is most of why the chamber read as weather. */
+  const st = Engine.newGame(CONTENT);
+  Engine.apply(st, CONTENT, [{ motion: { after: 3, by: "cl" } }]);
+  ok("a motion can be tabled", !!st.motion && st.motion.on === st.sitting + 3,
+     st.motion ? "sitting " + st.motion.on : "none");
+  ok("and it is on the calendar before it lands",
+     Engine.deadlines(st, CONTENT).some(d => d.kind === "division" && /confidence/i.test(d.how || "")));
+  ok("and the run is not over yet", !Engine.checkEnd(st, CONTENT).over);
+
+  Engine.advance(st, CONTENT);
+  ok("it does not land early", !st.motion.resolved, "sitting " + st.sitting);
+  Engine.advance(st, CONTENT); Engine.advance(st, CONTENT);
+  ok("it lands on its day", !!st.motion.resolved, "sitting " + st.sitting);
+
+  /* A MOTION THAT FAILS STRENGTHENS THE GOVERNMENT, which is what a
+     confidence vote is for, and is what makes tabling one a gamble. */
+  ok("a government with the numbers survives it", st.motion.carried === false,
+     st.motion.have + " against " + st.motion.need);
+  ok("and is stronger for it, not merely unharmed",
+     st.scalars.party_loyalty > Engine.newGame(CONTENT).scalars.party_loyalty,
+     Engine.newGame(CONTENT).scalars.party_loyalty + " -> " + st.scalars.party_loyalty);
+  ok("and the run continues", !Engine.checkEnd(st, CONTENT).over);
+  ok("and it says so in the record",
+     (st.log || []).some(l => /no confidence was defeated/i.test(l.text || "")));
+
+  /* and the other way */
+  const st2 = Engine.newGame(CONTENT);
+  Engine.apply(st2, CONTENT, [{ motion: { after: 1 } }]);
+  /* strip the government's own benches so the arithmetic genuinely fails */
+  st2.coalition = []; st2.confidenceSupply = [];
+  Engine.advance(st2, CONTENT);
+  ok("a government without them does not",
+     st2.motion.resolved && st2.motion.carried === true,
+     st2.motion.have + " against " + st2.motion.need);
+  const end = Engine.checkEnd(st2, CONTENT);
+  ok("and the run ends on it", end.over && end.reason === "no confidence",
+     end.kind + ": " + end.reason);
+
+  /* it resolves ONCE */
+  const was = st2.motion.resolved;
+  Engine.advance(st2, CONTENT);
+  ok("and a resolved motion is not taken again", st2.motion.resolved === was);
+
+  /* content can actually reach it */
+  const ev = (CONTENT.events || []).find(e =>
+    (e.choices || []).some(c => (c.effects || []).some(f => f.motion)));
+  ok("content has an event that tables one", !!ev, ev ? ev.id : "none");
+
+  if (bad) { console.log("\n" + bad + " CONFIDENCE MOTION FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nRECURRING BUSINESS, AND THE RESHUFFLE:");
 (function(){
   let bad = 0;

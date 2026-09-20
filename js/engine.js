@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 21;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard
+  const STATE_VERSION = 22;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard
 
   /* ---------------------------------------------------------
      1. STATE
@@ -365,6 +365,14 @@ const Engine = (function () {
          and the first sitting after the load sets it. */
       if (!st.lastFired) st.lastFired = {};
       st.version = 21;
+    }
+    if (st.version < 22) {                    // the confidence motion
+      /* Left empty deliberately, like v13's actors and v20's foreign trails.
+         `st.motion` and `st.noConfidence` are read as `st.x && ...`
+         everywhere, so ABSENT is the correct value for a save written before
+         any motion existed. Seeding them would be inventing a motion that
+         was never tabled. */
+      st.version = 22;
     }
     return st;
   }
@@ -3277,6 +3285,33 @@ const Engine = (function () {
     /* One verb, not two. `{flag:"x"}` sets, `{flag:{x:false}}` clears.
        The old `unflag` verb is gone: it was the same operation with the
        value baked in. */
+    /* THE OPPOSITION TABLES A MOTION (design/33 §1).
+
+       Confidence was something the government LOST PASSIVELY: the arithmetic
+       went wrong, checkLoss noticed, the run ended. The opposition never
+       decided anything, which is most of why the chamber reads as weather
+       rather than as an actor.
+
+       This is a division the player did not call, on a date, that she can
+       see coming and cannot cancel. The whole forecast and whipping
+       apparatus already works; what did not exist was a division arriving
+       from the other side.
+
+       WHAT MAKES IT A GAMBLE RATHER THAN A HECKLE: a motion that fails
+       STRENGTHENS the government, which is what a confidence vote is for.
+       Content decides when the opposition thinks it can win.
+
+       `{motion:{after:3, by:"cl"}}` tables one. */
+    motion: (st, C, v) => {
+      const o = (v && typeof v === "object") ? v : {};
+      st.motion = { on: st.sitting + (o.after == null ? 2 : o.after),
+                    by: o.by || null, tabledAt: st.sitting,
+                    label: o.label || "Motion of no confidence" };
+      st.wire = st.wire || [];
+      st.wire.unshift({ sitting: st.sitting,
+        text: "MOTION OF NO CONFIDENCE TABLED; THE HOUSE DIVIDES ON SITTING " + st.motion.on });
+    },
+
     flag:   (st, C, v) => {
       if (v && typeof v === "object" && !Array.isArray(v))
         Object.keys(v).forEach(f => { if (v[f]) st.flags[f] = true; else delete st.flags[f]; });
@@ -4338,6 +4373,12 @@ const Engine = (function () {
        carries {tab, how, focus} and the interface can send the player to it.
        A mark with nowhere to go — the rise, a thing merely expected — carries
        nothing, and is a statement rather than an instruction. */
+    /* THE MOTION, FIRST, because nothing else on this list can end the
+       government on a date it already knows. */
+    if (st.motion && !st.motion.resolved)
+      add(st.motion.on, "division", st.motion.label,
+          { tab: "cham", how: "The House divides on confidence" });
+
     (C.bills || []).forEach(b => {
       const bs = st.bills[b.id];
       if (bs && bs.dividesOn != null && !bs.dead)
@@ -4457,6 +4498,16 @@ const Engine = (function () {
      prime minister's day: the House first, then the government's own
      business, then the papers.
      --------------------------------------------------------- */
+  /* The motion is a deadline like any other: dated, unavoidable, and the
+     player should be able to count the sittings to it. */
+  function motionDeadline(st) {
+    const m = st.motion;
+    if (!m || m.resolved) return null;
+    return { kind: "division", at: m.on, away: m.on - st.sitting,
+             text: m.label, tab: "cham",
+             how: "The House divides on confidence" };
+  }
+
   const TAB_OF = { decision: "sit", division: "gov", vacancy: "gov",
                    owed: "sit", prayer: "gov", expected: "sit", rises: "sit",
                    slots: "gov" };
@@ -4802,6 +4853,9 @@ const Engine = (function () {
        the same instant. Read the other way round, a government that never
        brought a budget went to the country as though it had governed. */
     if (st.supplyLost) return { over: true, kind: "loss", reason: "supply" };
+    /* A CARRIED MOTION IS READ WITH SUPPLY, above dissolution, for the same
+       reason: it happened in the House that was still sitting. */
+    if (st.noConfidence) return { over: true, kind: "loss", reason: "no confidence" };
     /* A CRISIS CAN RESOLVE AFTER THE WRITS ARE OUT. This sat below the
        dissolution branch, which returns, so checkSettlement was never
        reached once the House was dissolved and the twelve sittings of the
@@ -5009,8 +5063,46 @@ const Engine = (function () {
     return { standing: trail[i], lastHeard: st.sitting - i, age: i, lag: lag };
   }
 
+  /* THE MOTION IS TAKEN. Read at the top of the sitting it was set for, so
+     the government has had every sitting in between to whip, spend and
+     bargain — which is the point of tabling it in advance rather than
+     springing it.
+
+     It is the SAME arithmetic the House uses for everything else:
+     confidence against the majority it has to clear. No separate rule, so a
+     player who has learned to read the coalition table has already learned
+     to read this. */
+  function resolveMotion(st, C) {
+    const m = st.motion;
+    if (!m || m.resolved || st.sitting < m.on) return null;
+    const have = confidence(st), need = majority(st);
+    m.resolved = st.sitting;
+    m.have = have; m.need = need;
+    st.wire = st.wire || [];
+    if (have < need) {
+      m.carried = true;
+      st.noConfidence = { at: st.sitting, have: have, need: need };
+      st.wire.unshift({ sitting: st.sitting,
+        text: "THE HOUSE HAS NO CONFIDENCE IN THE GOVERNMENT: " + have + " TO " + need });
+      st.log.unshift({ sitting: st.sitting,
+        text: "The motion of no confidence was carried, " + have + " against " + need + " needed." });
+    } else {
+      /* A MOTION THAT FAILS STRENGTHENS THE GOVERNMENT. */
+      m.carried = false;
+      st.scalars.party_loyalty = clamp((st.scalars.party_loyalty || 0) + 6, 0, 100);
+      st.scalars.public_standing = clamp((st.scalars.public_standing || 0) + 3, 0, 100);
+      st.scalars.legitimacy = clamp((st.scalars.legitimacy || 0) + 4, 0, 100);
+      st.wire.unshift({ sitting: st.sitting,
+        text: "GOVERNMENT SURVIVES NO-CONFIDENCE MOTION " + have + " TO " + need });
+      st.log.unshift({ sitting: st.sitting,
+        text: "The motion of no confidence was defeated, " + have + " against " + need + " needed." });
+    }
+    return m;
+  }
+
   function advance(st, C) {
     st.sitting += 1;
+    if (st.motion && !st.motion.resolved) resolveMotion(st, C);
     if (C) sampleForeign(st, C);
     st.divisionsToday = 0;                    /* a new day's business */
     st.grantsToday = 0;
@@ -5206,7 +5298,7 @@ const Engine = (function () {
     lastReconcile: () => lastReconcile, nationalShares, vacantSeats, seatsFor,
     vacateSeat, crossFloor, byElection, generalElection, shares, swungShares,
     divisorAllocate,
-    reshuffle, canReshuffle, assent, presidentDecides, referralRisk, reviewReturns,
+    reshuffle, canReshuffle, resolveMotion, motionDeadline, assent, presidentDecides, referralRisk, reviewReturns,
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,

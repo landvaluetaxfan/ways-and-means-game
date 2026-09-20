@@ -17,6 +17,11 @@ const SCHEMA = {
                    {k:"key",   type:"enum", src:"moveTargets", label:"Target"},
                    {k:"delta", type:"int",  label:"Change", hint:"+ or −"}],
                    shape:"keyed" },
+    motion:      { label:"The opposition tables a confidence motion", args:[
+                   {k:"after", type:"int",  label:"Sittings from now", hint:"the House divides then"},
+                   {k:"by",    type:"enum", src:"parties", label:"Tabled by", opt:true},
+                   {k:"label", type:"str",  label:"How the paper names it", opt:true}],
+                   shape:"object" },
     law:         { label:"Set a law value", args:[
                    {k:"key", type:"enum", src:"laws", label:"Law"},
                    {k:"value", type:"any", label:"New value"}],

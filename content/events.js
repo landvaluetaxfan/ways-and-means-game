@@ -2850,6 +2850,45 @@ be stacked, and closing it hands the sitting back to the pool.`,
     result: c.result
   }))},
 
+/* THE OPPOSITION DECIDES (design/33 §1).
+
+   The one event in this file that the government does not answer. It is the
+   other side of the House choosing its moment — gated on the government
+   being weak enough that the Leader of the Opposition thinks he can win,
+   because a motion that fails strengthens the government and he knows it.
+
+   It has no choices. There is nothing to decide: the paper is tabled, the
+   date is set, and the sittings between now and then are the whole of the
+   government's answer. */
+{ id:"no_confidence_tabled", once:true,
+  weight:6,
+  /* GATED ON WEAKNESS, in the closed vocabulary (there is no anyOf, and
+     inventing one would be content leaking into the engine): the Leader of
+     the Opposition moves when the government is low in the country AND its
+     own benches are unhappy, because he has to win. */
+  chapter:2,
+  when:{ minSitting:6, scalarBelow:{ public_standing:40, party_loyalty:46 } },
+  title:"The Leader of the Opposition rises",
+  speaker:"watkins",
+  body:`He does not have a question this time.
+
+"Madam Speaker. I give notice that I shall move, on Thursday, that this House
+has no confidence in Her Majesty's Government."
+
+The noise takes a while to settle, and it does not come from his side. He has
+been counting for weeks and has evidently arrived at a number he likes.
+
+You have until Thursday. Everything you do between now and then is the
+answer.`,
+  choices:[
+    { text:"Note the motion, and go and count.",
+      effects:[
+        { motion:{ after:3, by:"cl", label:"Motion of no confidence" } }
+      ],
+      result:"The motion is on the paper for Thursday. The House will divide on whether the government continues." }
+  ] },
+
+
 /* QUESTION TIME — the standing business of the House (design/33 §2).
 
    THE ONE RECURRING OBLIGATION WHERE THE OPPOSITION ACTS ON THE GOVERNMENT.
