@@ -1499,6 +1499,57 @@ console.log("\nA DEFERRED FACT (the queue carries effects):");
   if (bad) { console.log("\n" + bad + " DEFERRED-FACT FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nTHE PARTY OUTSIDE PARLIAMENT:");
+(function(){
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const org = CONTENT.partyOrg || {};
+  const pids = new Set((CONTENT.parties || []).map(p => p.id));
+  const sids = new Set((CONTENT.stations || []).map(s => s.id));
+
+  ok("every party has an organisation entry",
+     (CONTENT.parties || []).every(p => org[p.id]),
+     (CONTENT.parties || []).filter(p => !org[p.id]).map(p => p.id).join(", ") || "all twelve");
+  ok("and the entries name no party that does not exist",
+     Object.keys(org).every(k => pids.has(k)),
+     Object.keys(org).filter(k => !pids.has(k)).join(", ") || "none");
+
+  /* \u00a72.7 freezes the station roster, and a branch is a place. */
+  const stray = [];
+  Object.keys(org).forEach(k => ((org[k] || {}).branches || []).forEach(b => {
+    if (!sids.has(b.station)) stray.push(k + " -> " + b.station);
+  }));
+  ok("and every branch stands on a station that exists", stray.length === 0,
+     stray.join("; ") || "all real");
+
+  /* THE COLLISION THIS WOULD OTHERWISE CAUSE. Officers hold no seat and are
+     not in the cast, so nothing stopped the list-tier name generator handing
+     a member the name of their own party's general secretary. namesTaken now
+     reads them; this proves it, by seating the whole House and looking. */
+  const st0 = Engine.newGame(CONTENT);
+  const bench = Engine.benchRoll(st0, CONTENT);
+  const seated = new Set();
+  Object.keys(bench).forEach(k =>
+    bench[k].popular.concat(bench[k].functional).forEach(m => seated.add(m.name)));
+  const officers = [];
+  Object.keys(org).forEach(k => ((org[k] || {}).officers || [])
+    .forEach(o => officers.push(o.name)));
+  ok("there are officers to collide with", officers.length > 0, officers.length + " named");
+  const clash = officers.filter(n => seated.has(n));
+  ok("and no member of the House shares a party officer's name",
+     clash.length === 0, clash.join(", ") || "none of " + officers.length);
+
+  /* The empty entry is deliberate and must stay reachable rather than
+     becoming a missing key that reads the same way by accident. */
+  ok("the independents are declared as having no organisation",
+     !!org.ind && (org.ind.officers || []).length === 0 &&
+     (org.ind.branches || []).length === 0);
+
+  if (bad) { console.log("\n" + bad + " PARTY ORGANISATION FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nEVERY ENFRANCHISED SECTOR HAS A MINISTER:");
 (function(){
   let bad = 0;

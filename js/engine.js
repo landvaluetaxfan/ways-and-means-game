@@ -2669,6 +2669,11 @@ const Engine = (function () {
     (C.constituencies || []).forEach(k => t.add(bare(k.member)));
     (C.functional || []).forEach(fc =>
       (fc.members || []).forEach(m => t.add(bare(m.name))));
+    /* PARTY OFFICERS TOO. They hold no seat and are not in the cast, so
+       nothing here would have stopped a generated list member being given
+       the name of their own party's general secretary. */
+    Object.keys(C.partyOrg || {}).forEach(pid =>
+      ((C.partyOrg[pid] || {}).officers || []).forEach(o => t.add(bare(o.name))));
     t.delete("");
     return t;
   }

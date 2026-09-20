@@ -865,6 +865,40 @@ const UI = (function () {
       (axRows ? `<div class="rulehead">Where it stands</div>${axRows}` : "") +
       (sel.note ? `<div class="rulehead">In a sentence</div><div class="note">${esc(sel.note)}</div>` : "");
 
+    /* THE PARTY OUTSIDE PARLIAMENT. Who runs it between elections, what is
+       affiliated to it, and where it exists on the ground. No mechanic hangs
+       off any of it — it is somewhere to look, like the Concordance — and
+       the shapes differ because the parties do: a confederal party has a
+       convenor, a professional association has a registrar, and the
+       independents have nothing, which is the entry that says the most. */
+    const org = (C.partyOrg || {})[sel.id] || {};
+    const orgBox = $("#party-org");
+    if (orgBox) {
+      const offs = org.officers || [], bods = org.bodies || [], brs = org.branches || [];
+      if (!offs.length && !bods.length && !brs.length) {
+        orgBox.innerHTML = `<div class="note">No office, no agent and no branch. ` +
+          `${esc(sel.name)} is a label on a ballot and not an organisation.</div>`;
+      } else {
+        const stName = id => {
+          const s0 = (C.stations || []).find(x => x.id === id);
+          return s0 ? s0.name : id;
+        };
+        orgBox.innerHTML =
+          (offs.length ? `<div class="rulehead">Officers</div>` + offs.map(o =>
+            `<div class="orgrow"><b>${esc(o.name)}</b><span class="orgk">${esc(o.role)}</span>` +
+            `<div class="note">${esc(o.note)}</div></div>`).join("") : "") +
+          (bods.length ? `<div class="rulehead">Affiliated</div>` + bods.map(b =>
+            `<div class="orgrow"><b>${esc(b.name)}</b><span class="orgk">${esc(b.kind)}</span>` +
+            `<div class="note">${esc(b.note)}</div></div>`).join("") : "") +
+          (brs.length
+            ? `<div class="rulehead">On the ground <em>${brs.length}</em></div>` + brs.map(br =>
+                `<div class="orgrow"><b>${esc(stName(br.station))}</b>` +
+                `<div class="note">${esc(br.note)}</div></div>`).join("")
+            : `<div class="rulehead">On the ground</div><div class="note">Nowhere. ` +
+              `${esc(sel.name)} keeps no branch, because it has no members to keep one for.</div>`);
+      }
+    }
+
     /* the currents */
     const curs = (C.currents || []).filter(c => c.party === sel.id);
     const ch = $("#party-cur-hdr");

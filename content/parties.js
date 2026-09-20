@@ -188,3 +188,222 @@ const CURRENTS = [
   { id:"ind_merrick",   party:"ind", name:"John Henry",          members:1, loyalty:66,
     axes:{ownership:"public",personhood:"restrictionist",sovereignty:"station",closure:"closurist"} }
 ];
+
+
+/* =============================================================
+   PARTY ORGANISATION — the party outside Parliament.
+
+   Added 20 September 2026 at the author's direction. Bible §2.7 freezes the
+   person roster, so this is a deliberate addition rather than a passing one,
+   and it is kept OUT of content/characters.js on purpose: these are not
+   members. An officer holds no seat, votes in no division, and cannot be
+   appointed to anything. Putting them in the roster would put them in the
+   cast that `benchRoll` seats the House from.
+
+   They are still names, so js/engine.js's `namesTaken` reads them: a
+   generated list member must not turn out to share a name with the general
+   secretary of the party that listed them.
+
+   THREE THINGS, AND NO MORE. Who runs the party between elections
+   (`officers`), what is affiliated to it (`bodies`), and where it actually
+   exists on the ground (`branches`, keyed to real stations). A fourth would
+   be a party simulation, and there is no mechanic here — this is the
+   party as a place the player can look, the way the Concordance is.
+
+   The shapes differ because the parties do. A confederal party has a
+   convenor and no whip; a professional association has a registrar and a
+   licensing body, because §4.6.4 makes the roll of licensed members the
+   franchise; a congregational party has a moderator and a clerk; and the
+   independents have nothing at all, which is the entry that says the most.
+   ============================================================= */
+const PARTY_ORG = {
+
+  cu: {
+    officers: [
+      { role:"Chair", name:"Ilma Ruthven",
+        note:"Elected by conference and not by the leader, which is the arrangement every PSD leader inherits and none has repealed." },
+      { role:"General Secretary", name:"Bevan Osei",
+        note:"Runs the card vote. Knows what the maintenance trades will wear before they do." },
+      { role:"Chief Agent", name:"Tovah Sandquist",
+        note:"Forty-eight district seats and a canvass return for each of them." }
+    ],
+    bodies: [
+      { name:"Combined Maintenance Trades", kind:"union",
+        note:"Affiliated, and votes as a block at conference. The strike weapon is theirs and not the party's, which the party is careful never to say aloud." },
+      { name:"The Sunman Institute", kind:"institute",
+        note:"Policy, founded in a low-band station and still headquartered there. Produces the costings the Treasury disputes." }
+    ],
+    branches: [
+      { station:"ashfield", note:"The oldest branch, and the one that selects for the leader's own seat." },
+      { station:"slagworks", note:"Nine hundred members, most of them on the maintenance roll." }
+    ]
+  },
+
+  cl: {
+    officers: [
+      { role:"Chair", name:"Portia Vane",
+        note:"Chairs a party whose money arrives without being asked for and expects to be heard." },
+      { role:"Treasurer", name:"Cesar Aldana",
+        note:"The Liberals have a Treasurer where other parties have a General Secretary. That is the party, stated as an organogram." },
+      { role:"Chief Agent", name:"Noor Halvorsen",
+        note:"Runs the ring-band districts, where the vote is thin and the donations are not." }
+    ],
+    bodies: [
+      { name:"The Anchorage Club", kind:"club",
+        note:"Subscription by invitation. Not a party body in law and the only room where the party's line is actually settled." },
+      { name:"Institute for Open Transit", kind:"institute",
+        note:"Argues for the tether concession against whoever holds it. Currently that is not the Liberals, so it argues loudly." }
+    ],
+    branches: [
+      { station:"bourse", note:"Shipping and underwriting. The branch that pays for the others." },
+      { station:"kepler", note:"An anchor branch, and the party's only serious presence in the low band." }
+    ]
+  },
+
+  psa: {
+    officers: [
+      { role:"Chair", name:"Rune Adeyemi",
+        note:"Chairs the list order, which in a party with six districts and twenty-eight list seats is the only selection that matters." },
+      { role:"National Organiser", name:"Delphine Okonkwo",
+        note:"No agent, because there are barely any districts to agent. Organises the federation instead." }
+    ],
+    bodies: [
+      { name:"The Substrate Assembly", kind:"assembly",
+        note:"A standing congress of members that ratifies the list. It has rejected the leadership's order twice and both times the leadership complied." },
+      { name:"The Hosting Review", kind:"journal",
+        note:"Quarterly, unreadable, and the origin of most of the party's policy." }
+    ],
+    branches: [
+      { station:"meridian", note:"Substrate hosting, and the densest concentration of emulated members anywhere." },
+      { station:"erasmus", note:"A far-band branch that recruits faster than the party can process it." }
+    ]
+  },
+
+  sc: {
+    officers: [
+      { role:"Convenor", name:"Gudrun Saelid",
+        note:"Convenor and not Chair, and the distinction is the party's whole argument: she calls the meeting and cannot bind it." }
+    ],
+    bodies: [
+      { name:"The Stations' Convention", kind:"assembly",
+        note:"Station delegations, one vote each regardless of population. The parliamentary party answers to it and not the reverse, which is why Home Rule cannot whip." }
+    ],
+    branches: [
+      { station:"hollows", note:"Three habitats on one branch, and they do not agree either." },
+      { station:"tsiolkovsky", note:"Farstead, where the Convention meets when it meets at all." }
+    ]
+  },
+
+  hul: {
+    officers: [
+      { role:"President", name:"Aurelio Banse",
+        note:"President of an association that became a party by accident and has never amended its constitution to admit it." },
+      { role:"Registrar", name:"Kit Mbatha",
+        note:"Keeps the roll of licensed members. Since licensure carries the functional franchise, the Registrar decides who votes in the association's own seats." }
+    ],
+    bodies: [
+      { name:"Institute of Habitat Engineers", kind:"licensing",
+        note:"Sets the examinations. A government that wanted the association's seats would start here and would be noticed." }
+    ],
+    branches: [
+      { station:"perigee", note:"The yards, and the branch that supplies most of the association's officers." },
+      { station:"nasmyth", note:"Hammerstead. Heavy fabrication, and the last branch to accept emulated members." }
+    ]
+  },
+
+  rv: {
+    officers: [
+      { role:"Moderator", name:"Esme Thorbjørn",
+        note:"Elected for one year and by custom never for two. The office is meant to be inconvenient." },
+      { role:"Clerk", name:"Amos Ferrier",
+        note:"Keeps the minute, which in a congregational party is the constitution." }
+    ],
+    bodies: [
+      { name:"The Continuity Congregations", kind:"church",
+        note:"Federated, and they select the candidates. A CDA member of Parliament is answerable to a congregation before a whip." },
+      { name:"The Vigil", kind:"society",
+        note:"Lay society. Sits with the suspended, in shifts, for as long as the suspension lasts. It has never taken a political position and is the reason the party is trusted by people who disagree with it." }
+    ],
+    branches: [
+      { station:"oberth", note:"Bethesda. The largest congregation, and the one the Moderator comes from." },
+      { station:"wickstead", note:"Harvest. Agricultural, observant, and reliably to the left of the parliamentary party on everything but persons." }
+    ]
+  },
+
+  fh: {
+    officers: [
+      { role:"Chair", name:"Randall Voight",
+        note:"Holds four leases himself and has never seen the difficulty in that." },
+      { role:"Chief Agent", name:"Perpetua Lund",
+        note:"Works the lease registers rather than the electoral roll, on the reasoning that they are the same document with different columns." }
+    ],
+    bodies: [
+      { name:"The Leaseholders' League", kind:"lobby",
+        note:"Older than the party and will outlast it. Publishes the valuation tables everyone argues from, including the Georgists." }
+    ],
+    branches: [
+      { station:"belvedere", note:"Where the long leases are, and where they have been for four generations." },
+      { station:"tallow", note:"Pavilion. A low-band branch of small holders, which the League finds embarrassing and cannot do without." }
+    ]
+  },
+
+  gb: {
+    officers: [
+      { role:"Convenor", name:"Hiroko Delacroix",
+        note:"Convenes the member firms. Is not a member of anything herself and has never stood for election, because there is no election to stand in." }
+    ],
+    bodies: [
+      { name:"The Consortium Table", kind:"assembly",
+        note:"Where the functional seats are allocated between firms before anybody votes. The allocation has never once been contested at the poll." }
+    ],
+    branches: []       /* and see the renderer: the absence is the entry */
+  },
+
+  des: {
+    officers: [
+      { role:"Chair", name:"Marisol Teague",
+        note:"Cannot tolerate one gravity and has never been to the surface of anything." }
+    ],
+    bodies: [
+      { name:"The Bone Register", kind:"society",
+        note:"A mutual society for the physiologically excluded, which pays out when a member is refused work on a medical. It kept a list of those refusals for thirty years before anyone thought to call it a party." }
+    ],
+    branches: [
+      { station:"dredge", note:"John Henry. Where the refusals are, and where the Register started." },
+      { station:"cinder", note:"Lantern. Second oldest, and angrier." }
+    ]
+  },
+
+  geo: {
+    officers: [
+      { role:"Secretary", name:"Lucien Abara",
+        note:"The party's only officer, and does the agent's work as well. Three seats do not need an organogram." }
+    ],
+    bodies: [
+      { name:"The Ground Rent Society", kind:"society",
+        note:"Older than the party by two generations, and regards the party as a recent and probably temporary vehicle. Meets fortnightly and has read everything." }
+    ],
+    branches: [
+      { station:"quarry", note:"Stanbridge. One branch, forty members, and the highest turnout in the Commonwealth." }
+    ]
+  },
+
+  upl: {
+    officers: [
+      { role:"Chair", name:"Nkemdi Ravn",
+        note:"Two seats and a permanent seat at every negotiation, which she treats as the job rather than as a grievance." }
+    ],
+    bodies: [
+      { name:"The Uplift Compact", kind:"society",
+        note:"The charter that fixes the price of the party's support, in writing, in advance. It has never been renegotiated and is the reason nobody bothers trying." }
+    ],
+    branches: [
+      { station:"drift", note:"The Verge. The whole party, more or less, in one habitat." }
+    ]
+  },
+
+  /* THE ENTRY THAT SAYS THE MOST BY BEING EMPTY. Six district members who
+     share a label and nothing else. No office, no agent, no branch, and no
+     conference to elect one. */
+  ind: { officers: [], bodies: [], branches: [] }
+};

@@ -233,6 +233,13 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .pdot{display:inline-block;width:9px;height:9px;border:1px solid var(--rule);}
 /* the tier glyph column, and the members the story has not named yet */
 #party-mps .tg{width:14px;text-align:center;color:var(--ink-soft);font-size:9px;}
+/* the party outside Parliament: a name, what they are, and one line on why */
+.orgrow{padding:3px 0 5px;border-bottom:1px dotted var(--rule);}
+.orgrow:last-child{border-bottom:none;}
+.orgrow b{font-size:12.5px;}
+.orgrow .orgk{float:right;font-family:var(--f-data);font-size:9.5px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);}
+.orgrow .note{margin-top:1px;font-size:11px;line-height:1.4;}
 #party-mps tr.ph td{color:var(--ink-soft);}
 /* A PARTY THAT OPENS ONTO ITS CURRENTS. Not .sel — this is a fold, not a
    selection, and .sel means one thing (uxtest asserts it). */
