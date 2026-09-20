@@ -667,7 +667,14 @@ const Music = (function () {
       let buf;
       try { buf = b64buf(t.data); } catch (e) { return; }
       if (!buf) return;
+      /* ONCE, WHICHEVER WAY IT ARRIVES. decodeAudioData fires the legacy
+         callbacks AND resolves its promise, so play ran twice: two looping
+         sources, one of them untracked and therefore unstoppable — which
+         is why the recording outlived the page that started it. */
+      let played = false;
       const play = audio => {
+        if (played) return;
+        played = true;
         if (my !== anthemToken || !ctx || !out) return;
         try {
           const src = ctx.createBufferSource(), g = ctx.createGain();
@@ -722,6 +729,7 @@ const Music = (function () {
       context: ctx ? ctx.state : null,
       bar: playing ? (Math.floor(step / 8) % BARS) + 1 : null,
       anthem: anthemId,
+      anthemLevel: anthemGain ? Math.round(anthemGain.gain.value * 1000) / 1000 : null,
       levels: LAYERS.reduce((o, l) => {
         o[l.id] = gains[l.id] ? Math.round(gains[l.id].gain.value * 1000) / 1000 : null;
         return o;

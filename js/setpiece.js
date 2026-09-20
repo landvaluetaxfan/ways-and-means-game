@@ -83,20 +83,20 @@ const SetPiece = (function () {
          If Papers is not loaded the block still draws its rule and caption,
          because a missing signature must read as a blank line and not as a
          broken page. */
+      const box = (typeof Papers !== "undefined" && Papers.SIG_BOX) || { w: 228, h: 63 };
       const d = (typeof Papers !== "undefined" && Papers.SIG_PATH) || "";
       /* ONE <path> PER STROKE, so the signature can be WRITTEN. A single
-         path of forty-five subpaths animated by one dash offset reveals
-         whole strokes at a time — each letter fading in — because every
-         subpath is far shorter than the global dash length. Split, each
-         stroke draws over its own length, and arm() staggers them in the
-         order they were traced, which is left to right. */
+         path of many subpaths animated by one dash offset reveals whole
+         strokes at a time — each letter fading in — because every subpath
+         is far shorter than the global dash length. Split, each stroke
+         draws over its own length, and arm() staggers them in trace order. */
       const strokes = d ? d.split(/(?=M)/) : [];
       const svg = strokes.length
-        ? `<svg width="228" height="63" viewBox="0 0 228 63" aria-hidden="true">` +
+        ? `<svg width="${box.w}" height="${box.h}" viewBox="0 0 ${box.w} ${box.h}" aria-hidden="true">` +
           strokes.map(p => `<path class="sigpath" d="${p}"/>`).join("") + `</svg>`
         : "";
       return `<div class="sp-sec sp-signature"><div class="sigline">` +
-        `<div class="rule">` + svg + `</div>` +
+        `<div class="rule" style="height:${box.h}px">` + svg + `</div>` +
         `<div class="cap">${esc(sec.head || "")}</div>` +
         `</div></div>`;
     }

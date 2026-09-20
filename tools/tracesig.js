@@ -27,8 +27,9 @@ const root = path.join(__dirname, "..");
 const CHROME = [
   "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
   "/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell",
-  "/usr/bin/chromium", "/usr/bin/chromium-browser", "/usr/bin/google-chrome"
-].find(p => fs.existsSync(p));
+  "/usr/bin/chromium", "/usr/bin/chromium-browser", "/usr/bin/google-chrome",
+  process.env.CHROME
+].filter(Boolean).find(p => { try { return fs.existsSync(p); } catch { return false; } });
 
 const args = process.argv.slice(2);
 const WRITE = args.includes("--write");
@@ -43,7 +44,7 @@ if (!fs.existsSync(path.join(root, src))) {
 
 /* The tracing runs in the browser, where the pixels are. */
 const TRACE = `
-const W = 228, HMAX = 58;      // target viewBox, matching .sigline in the CSS
+const W = 228;                 // target width; the height follows the cropped ink
 
 function thin(g, w, h) {                     // Zhang-Suen, in place
   const at = (x, y) => (x < 0 || y < 0 || x >= w || y >= h) ? 0 : g[y * w + x];
@@ -164,6 +165,20 @@ function toBezier(p) {
   return d;
 }
 
+/* Threshold on luminance, and treat transparent pixels as paper — a PNG
+   exported with a clear background is the common case and would otherwise
+   read as solid ink. */
+function grab(canvas, w, h) {
+  const px = canvas.getContext("2d").getImageData(0, 0, w, h).data;
+  const g = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    const a = px[i*4+3];
+    const l = (px[i*4] * 0.299 + px[i*4+1] * 0.587 + px[i*4+2] * 0.114);
+    g[i] = (a > 40 && l < 128) ? 1 : 0;
+  }
+  return g;
+}
+
 function run(img) {
   /* Work at a fixed width so thinning behaves consistently regardless of
      what resolution the signature was scanned at. */
@@ -173,57 +188,104 @@ function run(img) {
   const cx = c.getContext("2d");
   cx.fillStyle = "#fff"; cx.fillRect(0, 0, TW, TH);
   cx.drawImage(img, 0, 0, TW, TH);
-  const px = cx.getImageData(0, 0, TW, TH).data;
-
-  /* Threshold on luminance, and treat transparent pixels as paper — a PNG
-     exported with a clear background is the common case and would otherwise
-     read as solid ink. */
-  const g = new Uint8Array(TW * TH);
-  for (let i = 0; i < TW * TH; i++) {
-    const a = px[i*4+3];
-    const l = (px[i*4] * 0.299 + px[i*4+1] * 0.587 + px[i*4+2] * 0.114);
-    g[i] = (a > 40 && l < 128) ? 1 : 0;
-  }
+  let g = grab(c, TW, TH);
   const ink = g.reduce((n, v) => n + v, 0);
 
-  thin(g, TW, TH);
-  let lines = polylines(g, TW, TH);
+  /* CROP TO THE INK. A scan is mostly margin, and the margin is what the
+     trace used to carry: the whole image scaled to 228 wide, so the hand
+     sat small inside a viewBox that was mostly empty and the CSS had to
+     guess a height. The bounding box is found here and the image is
+     redrawn from that region at the working width, so the signature fills
+     the box it is given and the viewBox it reports is the ink's own. */
+  let x0 = TW, y0 = TH, x1 = -1, y1 = -1;
+  for (let y = 0; y < TH; y++) for (let x = 0; x < TW; x++) {
+    if (!g[y * TW + x]) continue;
+    if (x < x0) x0 = x;
+    if (x > x1) x1 = x;
+    if (y < y0) y0 = y;
+    if (y > y1) y1 = y;
+  }
+  if (x1 < x0 || y1 < y0) return { error: "no ink found" };
+  const PAD = 8;                                /* working px, so edges breathe */
+  x0 = Math.max(0, x0 - PAD); y0 = Math.max(0, y0 - PAD);
+  x1 = Math.min(TW - 1, x1 + PAD); y1 = Math.min(TH - 1, y1 + PAD);
 
-  /* LEFT TO RIGHT, BECAUSE A SIGNATURE IS WRITTEN AND NOT ASSEMBLED.
+  const back = img.width / TW;                  /* working px -> source px */
+  const CW = x1 - x0 + 1, CH = y1 - y0 + 1;
+  const SW = 900, SH = Math.max(1, Math.round(CH * SW / CW));
+  const c2 = document.createElement("canvas");
+  c2.width = SW; c2.height = SH;
+  const cx2 = c2.getContext("2d");
+  cx2.fillStyle = "#fff"; cx2.fillRect(0, 0, SW, SH);
+  cx2.drawImage(img, x0 * back, y0 * back, CW * back, CH * back, 0, 0, SW, SH);
+  g = grab(c2, SW, SH);
 
-     This sorted longest-first, so the ceremony drew the biggest sweep before
-     everything else wherever it happened to sit on the page. With a real
-     signature that is forty-odd subpaths, the stroke-dashoffset animation
-     then reads as fragments appearing all over the line at once rather than
-     as a hand moving across it — which is exactly the complaint: the
-     signature does not get signed, it arrives.
+  thin(g, SW, SH);
+  let lines = polylines(g, SW, SH);
 
-     Ordering by leftmost x makes the sweep travel the way the pen did. A
-     crossed t or a dotted i lands with the part of the name it belongs to
-     rather than at the end, which is also how it is actually written: you
-     do not cross every t after finishing the surname.
+  /* JOINED WHERE THEY TOUCH, NOT ACROSS THE PAGE.
 
-     Ties break on the topmost point, so two strokes starting at the same x
-     draw in a stable order rather than whichever way the walk happened to
-     find them — the trace has to be reproducible.
+     Thinning breaks the ink at every crossing, so a real signature comes
+     out as dozens of fragments — this scan gives eighty-one. Drawn in
+     sequence they read as fragments appearing wherever the sort points
+     next, which is the complaint: the signature does not get signed, it
+     arrives.
 
-     AND EACH STROKE IS ORIENTED BEFORE IT IS ORDERED. The walk starts from
-     whichever endpoint it found first, so about a fifth of the strokes came
-     out right-to-left — they drew backwards, and they sorted by a leftmost
-     point that was not where they began, which left the sequence out of
-     order in nine places even after sorting. Reversing them first makes the
-     start of every stroke its leftmost point, so the ordering is exact and
-     each stroke is drawn in the direction a pen would move. */
-  lines.forEach(l => { if (l[l.length - 1][0] < l[0][0]) l.reverse(); });
-  const topmost = l => l.reduce((m, p) => Math.min(m, p[1]), Infinity);
-  lines.sort((a, b) => (a[0][0] - b[0][0]) || (topmost(a) - topmost(b)));
+     So fragments are CHAINED: walk to the nearest unused endpoint and
+     continue from there, reversing a fragment when its far end is closer.
+     A join is made ONLY when the endpoints are within JOIN of each other.
+     At a crossing they are; across the drawing they are not, and an
+     unbounded greedy chain drew long diagonals straight through the name,
+     which is worse than the fragments were. What survives is a handful of
+     continuous strokes a pen could have made, drawn in the order a hand
+     moves. Endpoints only, so a long baseline does not swallow the loops
+     sitting on it. */
+  const JOIN = 30;                    /* working px; a stroke is ~12 thick */
+  const JOIN2 = JOIN * JOIN;
+  function dist2(a, b) {
+    const dx = a[0] - b[0], dy = a[1] - b[1];
+    return dx * dx + dy * dy;
+  }
+  const chains = [];
+  {
+    const used = new Array(lines.length).fill(false);
+    let cur = null, end = null;
+    for (;;) {
+      let ni = -1, nd = JOIN2, rev = false;
+      if (cur) lines.forEach((l, i) => {
+        if (used[i]) return;
+        const d0 = dist2(end, l[0]), d1 = dist2(end, l[l.length - 1]);
+        if (d0 < nd) { nd = d0; ni = i; rev = false; }
+        if (d1 < nd) { nd = d1; ni = i; rev = true; }
+      });
+      if (ni < 0) {
+        if (cur) { chains.push(cur); cur = null; end = null; }
+        let bi = -1, bx = Infinity, brev = false;
+        lines.forEach((l, i) => {
+          if (used[i]) return;
+          if (l[0][0] < bx) { bx = l[0][0]; bi = i; brev = false; }
+          if (l[l.length - 1][0] < bx) { bx = l[l.length - 1][0]; bi = i; brev = true; }
+        });
+        if (bi < 0) break;
+        used[bi] = true;
+        cur = (brev ? lines[bi].slice().reverse() : lines[bi].slice());
+        end = cur[cur.length - 1];
+        continue;
+      }
+      used[ni] = true;
+      const l = rev ? lines[ni].slice().reverse() : lines[ni].slice();
+      l.forEach(p => cur.push(p));    /* the join is <= JOIN long, and unseen */
+      end = l[l.length - 1];
+    }
+    if (cur) chains.push(cur);
+  }
 
-  const sx = W / TW, sy = sx;                  // uniform, so nothing distorts
-  const H = Math.min(HMAX, Math.round(TH * sy));
-  const d = lines.map(l => toBezier(smooth(rdp(l, 0.9).map(p => [p[0] * sx, p[1] * sy])))).join(" ");
+  const sx = W / SW;                           // uniform, so nothing distorts
+  const H = Math.round(SH * sx);
+  const d = chains.map(c => toBezier(smooth(rdp(c, 0.9).map(p => [p[0] * sx, p[1] * sx])))).join(" ");
 
-  return { d: d, w: W, h: Math.max(H, Math.ceil(TH * sy)),
-           strokes: lines.length, inkPx: ink, src: TW + "x" + TH };
+  return { d: d, w: W, h: H,
+           strokes: chains.length, inkPx: ink, src: SW + "x" + SH };
 }
 
 const img = new Image();
@@ -243,9 +305,12 @@ const tmp = path.join(require("os").tmpdir(), "tracesig-" + process.pid + ".html
 fs.writeFileSync(tmp, `<html><body><img id="src" src="data:image/${mime};base64,${b64}">` +
   `<pre id="out"></pre><script>${TRACE}</script></body></html>`);
 
+/* stdio, not `2>/dev/null`: that redirection is a Unix shell's, and on
+   Windows cmd it fails the whole call with "cannot find the path". */
 const dom = cp.execSync(
   `"${CHROME}" --headless --disable-gpu --no-sandbox --virtual-time-budget=20000 ` +
-  `--dump-dom "${tmp}" 2>/dev/null`, { maxBuffer: 64 * 1024 * 1024 }).toString();
+  `--dump-dom "${tmp}"`,
+  { maxBuffer: 64 * 1024 * 1024, stdio: ["ignore", "pipe", "ignore"] }).toString();
 fs.unlinkSync(tmp);
 
 const m = dom.match(/<pre id="out">([\s\S]*?)<\/pre>/);
@@ -274,16 +339,22 @@ if (!WRITE) {
 } else {
   const p = path.join(root, "js/papers.js");
   let s = fs.readFileSync(p, "utf8");
-  const start = s.indexOf("  const SIG_PATH =");
+  let start = s.indexOf("  const SIG_BOX =");
+  if (start < 0) start = s.indexOf("  const SIG_PATH =");
   const end = s.indexOf('";', start) + 2;
   if (start < 0) { console.error("SIG_PATH not found in js/papers.js"); process.exit(1); }
   const wrap = [];
   for (let i = 0; i < r.d.length; i += 90) wrap.push(r.d.slice(i, i + 90));
-  const js = "  /* Traced from " + src + " by tools/tracesig.js. Centreline, one <path>,\n" +
-    "     because the ceremony draws it with a single stroke-dashoffset sweep.\n" +
-    "     Regenerate rather than editing by hand. */\n  const SIG_PATH =\n" +
+  const js =
+    "  /* Traced from " + src + " by tools/tracesig.js, cropped to the ink and\n" +
+    "     smoothed. ONE <path> of many subpaths; js/setpiece.js splits it into\n" +
+    "     one path per stroke so the introduction can write it left to right.\n" +
+    "     Regenerate rather than editing by hand. */\n" +
+    "  const SIG_BOX = { w: " + r.w + ", h: " + r.h + " };\n" +
+    "  const SIG_PATH =\n" +
     wrap.map((l, i) => '    "' + l + '"' + (i < wrap.length - 1 ? " +" : ";")).join("\n");
   fs.writeFileSync(p, s.slice(0, start) + js + s.slice(end));
   console.log("\n  written to js/papers.js");
-  console.log(`  check .sigline in css/terminal.css if the viewBox height changed (${r.h})`);
+  console.log(`  SIG_BOX carries the viewBox (0 0 ${r.w} ${r.h}); the set piece and`);
+  console.log("  the ceremony read it, so nothing is retyped in the CSS.");
 }
