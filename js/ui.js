@@ -3716,6 +3716,14 @@ const UI = (function () {
     const ending = Engine.checkEnd(st, C);
     if (ending.over) { box.innerHTML = endBoardHTML(ending); return; }
     if (!currentEvent) currentEvent = Engine.nextEvent(st, C);
+    /* A SET PIECE TAKES THE SCREEN (design/31). The class collapses the
+       columns either side; the prose becomes the page and the decision rows
+       below it are untouched, so there is still exactly one way to commit an
+       act. Toggled on every draw rather than only when one opens, because a
+       screen that got stuck wearing it would hide the whole tab. */
+    const sit = $("#s-sit");
+    if (sit) sit.classList.toggle("setpiece",
+      typeof SetPiece !== "undefined" && SetPiece.is(currentEvent));
     if (!currentEvent) {
       /* A QUIET SITTING IS NOT THE SAME AS AN EMPTY GAME, and the screen
          used to say the same sentence for both. A player met "nothing
@@ -3776,6 +3784,18 @@ const UI = (function () {
        margin-top:auto, so a short event leaves its space between the
        two rather than below everything, which reads as a margin
        instead of as an unfinished panel. */
+    /* A SET PIECE REPLACES THE READING BLOCK, not the decision. The prose
+       becomes a page of sections that takes the screen; the decision rows
+       below are drawn by drawDecision() exactly as they always are, so there
+       is still one way to commit an act and the derived reading of what a
+       choice does is not rebuilt anywhere. The mood is NOT cued here —
+       drawing makes no sound; the handler that opened the sitting does it. */
+    if (typeof SetPiece !== "undefined" && SetPiece.is(e)) {
+      box.innerHTML = SetPiece.html(e, {}).html +
+        `<div class="sit-decide" id="sit-decide"></div>`;
+      drawDecision();
+      return;
+    }
     box.innerHTML =
       `<div class="sit-read">` +
         plate(e.image) +

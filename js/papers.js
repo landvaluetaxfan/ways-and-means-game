@@ -402,5 +402,8 @@ const Papers = (function () {
   function reset() { drawn = {}; Focus.seed("pp-list", null); }
   function onUpdate(fn) { onChange = fn; }
 
-  return { render, reset, onUpdate, stageTrack };
+  /* SIG_PATH is exported so the set piece can end an introduction with the
+     SAME hand that signs every Act. One signature, traced once by
+     tools/tracesig.js, drawn by two ceremonies. */
+  return { render, reset, onUpdate, stageTrack, SIG_PATH };
 })();

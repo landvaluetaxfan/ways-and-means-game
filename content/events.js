@@ -1703,6 +1703,18 @@ What follows is somebody else's session.`,
    officer's opinion takes three. The player can see both coming and has to
    govern around them, which is the whole point of order-paper time. */
 { id:"f1_stranded", chapter:2, at:8, once:true,
+  /* THE ONE SET PIECE IN CHAPTER TWO (design/31). A turn the world takes,
+     not a decision the player makes — which is the test for whether an
+     event earns the whole screen. The sections are the frame's, the prose
+     here is a first pass and wants the author's hand. */
+  setpiece:{ mood:"threat", sections:[
+    { kind:"lede", body:"Cordell has walked away from the Bellamy Almanac Works." },
+    { kind:"body", head:"What the Commonwealth is being asked",
+      body:"The charter is suddenly an orphan, and the people under it are not." },
+    { kind:"voices", head:"What is being said",
+      body:[{ said:"They filed a return in the spring and nothing since.",
+              who:"The Spindle" }] }
+  ] },
   title:"A hundred and eighty-four thousand",
   speaker:null,
   body:`Cordell has abandoned the Almanac Works, and the debt has not. A hundred
