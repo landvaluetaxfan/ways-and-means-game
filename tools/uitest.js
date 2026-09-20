@@ -129,6 +129,24 @@ try {
        !!w.document.querySelector("#party-table tr.sel"));
   }
 
+  /* EVERY MEMBER, NOT JUST THE CAST. This listed C.characters filtered by
+     party \u2014 the fifty-odd people the story names \u2014 so the Liberals showed
+     nineteen against forty-seven seats. The table now seats the whole House
+     through Engine.benchRoll, and the count that proves it is the party's
+     own seat total: a member per seat, every seat. */
+  for (const pid of ["cu", "cl"]) {
+    const row = w.document.querySelector('#party-table tr[data-party="' + pid + '"]');
+    if (!row) continue;
+    row.click();
+    const seats = w.eval('Engine.partyTotal(UI.state(), ' + JSON.stringify(pid) + ')');
+    const listed = w.document.querySelectorAll("#party-mps tbody tr").length;
+    ok("every seat " + pid + " holds has a member on the page", listed === seats,
+       listed + " members against " + seats + " seats");
+  }
+  ok("and the list tier is marked as what it is",
+     [...w.document.querySelectorAll("#party-mps tbody tr")]
+       .some(r => /list/.test(r.textContent)));
+
   w.document.querySelector('.tab[data-t="cham"]').click();
   const comp = [...w.document.querySelectorAll("#comp-table tr[data-comp]")];
   ok("parties with currents open inside the composition table", comp.length > 0,

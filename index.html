@@ -67,7 +67,14 @@
             <div class="pbody scrolls" id="sit-docket"></div></div>
           <div class="panel"><h2>The parliamentary calendar <em>session <span id="cal-sess">4</span></em></h2>
             <div class="pbody scrolls" id="sit-cal"></div></div>
-          <div class="panel"><h2>Indicators</h2><div class="pbody scrolls" id="gov-meters-mirror"></div></div>
+          <!-- THE ONE INDICATOR PANEL. It used to be a MIRROR: the real one
+               lived on the Government tab and a MutationObserver copied its
+               innerHTML over here. Two panels for one readout, kept in step
+               by an observer, is the shape CLAUDE.md warns about from every
+               other direction — and when Government lost its copy (the
+               author: "already in sitting") the observer's source went with
+               it. So this is the source. -->
+          <div class="panel"><h2>Indicators</h2><div class="pbody scrolls" id="gov-meters"></div></div>
         </div>
       </div>
     </section>
@@ -97,14 +104,6 @@
               <table id="pp-list"></table>
             </div>
           </div>
-          <div class="panel">
-            <h2><span data-tip="tribunal">The Tribunal</span> <em>review, not the House</em></h2>
-            <div class="pbody scrolls" id="pp-tribunal"></div>
-          </div>
-          <div class="panel">
-            <h2><span data-tip="live">Presidency</span></h2>
-            <div class="pbody scrolls" id="gov-pres"></div>
-          </div>
         </div>
 
         <!-- THE DOCUMENT ITSELF, at the width a document wants. -->
@@ -124,6 +123,13 @@
             <h2>Undertakings <em>what the government has said it will do</em></h2>
             <div class="pbody scrolls" id="gov-owed"></div>
           </div>
+        </div>
+
+        <div class="stack scrolls">
+          <!-- THE LEDGER MOVED ONE RIGHT, and the standing indicators left
+               the tab entirely: they are already on the Sitting screen, and
+               the same meters twice is one readout that can disagree with
+               itself. The panel on the sitting page is the one. -->
           <div class="panel">
             <h2>Coalition ledger <em>permanent</em></h2>
             <div class="pbody flush scrolls">
@@ -131,15 +137,26 @@
               <div class="pbody scrolls"><div class="note" id="gov-ledger-note"></div></div>
             </div>
           </div>
-        </div>
-
-        <div class="stack scrolls">
-          <div class="panel"><h2>Standing indicators</h2><div class="pbody scrolls" id="gov-meters"></div></div>
           <div class="panel">
             <h2><span data-tip="vacant">Cabinet</span></h2>
             <div class="pbody flush scrolls"><div class="pbody scrolls" id="gov-appoint" hidden></div>
               <table id="gov-cabinet"></table></div>
           </div>
+          <!-- WHO CAN STOP YOU, AND USUALLY DOES NOT. Both of these are
+               quiet for most of a run — the Tribunal has nothing before it
+               until something is referred, and the Presidency has nothing to
+               say until an appointment or an assent is in front of it. A
+               panel that is empty most of the time is a frame around a hole
+               if it is always open, so they fold, and they sit at the edge
+               rather than in the column the player works in. -->
+          <details class="panel pfold">
+            <summary><span data-tip="tribunal">The Tribunal</span> <em>review, not the House</em></summary>
+            <div class="pbody scrolls" id="pp-tribunal"></div>
+          </details>
+          <details class="panel pfold">
+            <summary><span data-tip="live">Presidency</span> <em>assent and refusal</em></summary>
+            <div class="pbody scrolls" id="gov-pres"></div>
+          </details>
         </div>
 
       </div>
@@ -441,14 +458,6 @@
 <script src="js/shell.js"></script>
 <script>
   Shell.boot(CONTENT);
-  // mirror the indicator panel onto the Sitting screen
-  const mo = new MutationObserver(() => {
-    document.getElementById("gov-meters-mirror").innerHTML =
-      document.getElementById("gov-meters").innerHTML;
-  });
-  mo.observe(document.getElementById("gov-meters"), {childList:true, subtree:true});
-  document.getElementById("gov-meters-mirror").innerHTML =
-    document.getElementById("gov-meters").innerHTML;
 </script>
 </body>
 </html>

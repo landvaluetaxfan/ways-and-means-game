@@ -208,6 +208,20 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #s-econ.screen.on{height:100%;min-height:0;}
 .g-econ > .stack{min-height:0;}
 .g-econ .panel{min-height:0;}
+/* THE ECONOMY IS READ, NOT SCANNED. Every other tab is a working surface
+   where density is the point; this one is four numbers and a table you look
+   at to decide something, so it is set larger than the terminal's default.
+   The scarcity rows get a bigger figure and a taller sparkline, because a
+   trend nobody can see is a trend nobody can act on. */
+.g-econ .prow{padding:4px 0;}
+.g-econ .plab{font-size:13px;}
+.g-econ .plab em{font-size:10.5px;}
+.g-econ .pval{font-size:18px;font-variant-numeric:tabular-nums;}
+.g-econ .pval span{font-size:11px;}
+.g-econ .note{font-size:12px;line-height:1.5;}
+.g-econ .sparkline{width:110px;height:26px;}
+.g-econ table{font-size:12.5px;}
+.g-econ td,.g-econ th{padding:3px 6px;}
 
 /* THE PARTIES. A list narrow enough to read at a glance, the party itself in
    the middle where the prose is, and its members on the right. */
@@ -217,6 +231,9 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .g-party > .stack{min-height:0;}
 .g-party .panel{min-height:0;}
 .pdot{display:inline-block;width:9px;height:9px;border:1px solid var(--rule);}
+/* the tier glyph column, and the members the story has not named yet */
+#party-mps .tg{width:14px;text-align:center;color:var(--ink-soft);font-size:9px;}
+#party-mps tr.ph td{color:var(--ink-soft);}
 /* A PARTY THAT OPENS ONTO ITS CURRENTS. Not .sel — this is a fold, not a
    selection, and .sel means one thing (uxtest asserts it). */
 tr.compable{cursor:pointer;}
@@ -359,16 +376,28 @@ tr.compopen{background:var(--field);}
    it were squeezed to make room, and the forecast clipped. The plan is
    the thing the screen is for; it does not give up height to a list. */
 .g-cham > .stack > .panel:first-child{flex:0 0 auto;min-height:0;}
-/* THE ORDER PAPER GETS A FLOOR, AND THAT IS THE WHOLE FIX. Order-paper
-   time came over from the Government tab and the order paper under it went
-   into a scroller on a screen with room for it. The first attempt capped the
-   clock at 148px, which worked and made the clock cramped — and it turned
-   out the cap was never doing the work: the order paper was being squeezed
-   because nothing gave it a minimum, so the measure detail below it took the
-   surplus. Give the paper its floor and the clock can keep its full height.
-   Measured at 1600x1000: clock 302px, order paper 240 of content in a 240
-   box, no scrollbar. */
-#cham-biz > .panel:nth-child(2){flex:1 1 auto;min-height:260px;}
+/* THE ORDER PAPER IS EXACTLY AS TALL AS THE ORDER PAPER. Three attempts,
+   and the third is the one that is actually about the right thing.
+
+   It first went into a scroller because nothing gave it a minimum, so the
+   measure detail below took the surplus. A 260px floor plus flex-grow fixed
+   the scrollbar and bought a new fault: the panel then GREW past its nine
+   rows and left a band of empty chrome under the last bill, which is what
+   "unnecessarily long" was pointing at.
+
+   A list panel should be the size of its list. `0 1 auto` gives it exactly
+   its content, and lets it shrink — and only shrink — when the column runs
+   out; the measure detail below it is the one that grows, which is right,
+   because prose is the thing there can be more of. */
+#cham-biz > .panel:nth-child(2){flex:0 0 auto;min-height:0;max-height:52%;}
+/* AND THE MEASURE BELOW IT GROWS FROM NOTHING. `flex:1 1 auto` gave the
+   detail its CONTENT as a basis, so a long measure claimed the column before
+   anything was shared out and the order paper — the only item left able to
+   shrink — paid for it, right back into a scrollbar. A basis of 0 asks for
+   the LEFTOVER, which is what a panel that grows should ask for. The order
+   paper is capped at half the column so a long docket cannot do the same
+   thing in reverse. */
+#cham-biz > .panel:nth-child(3){flex:1 1 0;min-height:120px;}
 /* THE WHIP PANEL SIZES TO ITS CONTENT, except while its division list is
    open — then it takes the rest of the column. The list is the one thing in
    the panel that can be 280 names long, and the room it needs is the room
@@ -1501,6 +1530,14 @@ body.menu-on{background:#0b1826;}
 .mbtn.danger{color:#e9a08f;border-color:rgba(224,144,127,.6);}
 
 .slots{display:flex;flex-direction:column;gap:7px;max-width:620px;}
+/* ORDER-PAPER TIME IS A LIST OF NINE BILLS AND A BUTTON EACH, so the row is
+   what decides the panel's height, not the panel. Smaller buttons and tighter
+   rows take it down without capping anything or hiding a measure. */
+#gov-slots .slotbtn{font-size:10px;padding:1px 6px;letter-spacing:.04em;}
+#gov-slots table{width:100%;}
+#gov-slots td{padding:1px 4px;font-size:11.5px;}
+#gov-slots .note{font-size:10.5px;line-height:1.35;}
+#gov-slots .slotbar{margin-bottom:2px;}
 .slot{display:flex;align-items:center;gap:12px;background:rgba(20,23,18,.5);
   border:1px solid rgba(233,234,226,.2);padding:9px 12px;
   backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}

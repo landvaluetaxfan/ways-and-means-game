@@ -2673,26 +2673,41 @@ const Engine = (function () {
     return t;
   }
 
-  function rollCall(st, C, billId, d) {
-    d = d || division(st, C, billId);
-    const chars = C.characters || [];
+  /* EVERY MEMBER THE HOUSE HAS, party by party, with no division to hang
+     them on.
+
+     This was the first half of rollCall() and could only be reached by
+     costing a division first, so "who sits for the Liberals" was a question
+     the interface could not ask outside a vote. It is the same code, lifted:
+     one source, because two ways of seating the House would eventually seat
+     it differently.
+
+     `popularCount` is a function rather than a number because the two
+     callers disagree about where the count comes from, and both are right.
+     A division carries its own frozen popular figure for each party and must
+     seat exactly that many; anybody else wants the live roll. */
+  function benchAll(st, C, popularCount) {
     /* seat name -> the cast member sitting for it, so a district row can
        be upgraded from a bare name in the roll to a person with an office. */
     const cast = {};
-    chars.forEach(ch => { if (ch.seat) cast[ch.seat] = ch; });
+    (C.characters || []).forEach(ch => { if (ch.seat) cast[ch.seat] = ch; });
 
     /* One set for the whole House, so two parties cannot seat the same
-       placeholder and no placeholder can be a member who already exists. */
+       placeholder and no placeholder can be a member who already exists.
+       Filled in content's party order rather than a division's row order,
+       so the same member has the same name whether the House is voting or
+       being read. */
     const taken = namesTaken(C);
+    const out = {};
 
-    const parties = d.rows.map(r => {
+    (C.parties || []).forEach(p => {
       const seats = [];
 
       /* district: a named member per seat, from the roll. */
       (C.constituencies || []).forEach(k => {
         const held = (st.roll[k.id] || {}).held || {};
         if ((st.roll[k.id] || {}).nonVoting) return;
-        for (let i = 0; i < (held[r.party] || 0); i++) {
+        for (let i = 0; i < (held[p.id] || 0); i++) {
           const ch = cast[k.name];
           seats.push({ tier: "district", name: (ch && ch.name) || k.member,
                        seat: k.name, office: ch ? ch.office : null,
@@ -2702,17 +2717,17 @@ const Engine = (function () {
 
       /* list: the party's slate. Named from the pools, flagged as a
          placeholder, stable across saves. See placeholderName. */
-      const listN = Math.max(0, r.popularSeats - seats.length);
+      const listN = Math.max(0, popularCount(p.id) - seats.length);
       for (let i = 0; i < listN; i++)
         seats.push({ tier: "list", payroll: false, placeholder: true,
-                     name: placeholderName(C, r.party + ":list:" + i, taken),
+                     name: placeholderName(C, p.id + ":list:" + i, taken),
                      seat: null, listIndex: i + 1 });
 
       /* functional: named, with the register reference. */
       const fseats = [];
       (C.functional || []).forEach(fc => {
         (fc.members || []).forEach(m => {
-          if (m.party !== r.party) return;
+          if (m.party !== p.id) return;
           const ch = cast[m.name];
           fseats.push({ tier: "functional", name: m.name, ref: m.ref,
                         seat: fc.name, office: ch ? ch.office : null,
@@ -2720,9 +2735,27 @@ const Engine = (function () {
         });
       });
 
+      out[p.id] = { popular: seats, functional: fseats };
+    });
+    return out;
+  }
+
+  /* The House as it stands, for anybody who is not counting a vote. */
+  function benchRoll(st, C) {
+    return benchAll(st, C, id => partyPopular(st, id));
+  }
+
+  function rollCall(st, C, billId, d) {
+    d = d || division(st, C, billId);
+    const bench = benchAll(st, C, id => {
+      const r = d.rows.find(x => x.party === id);
+      return r ? r.popularSeats : partyPopular(st, id);
+    });
+    const parties = d.rows.map(r => {
+      const b = bench[r.party] || { popular: [], functional: [] };
       return { party: r.party, row: r,
-               popular: assign(seats, r, "popular"),
-               functional: assign(fseats, r, "functional") };
+               popular: assign(b.popular, r, "popular"),
+               functional: assign(b.functional, r, "functional") };
     });
 
     return { bill: billId, dual: d.dual, parties: parties, division: d };
@@ -5044,7 +5077,7 @@ const Engine = (function () {
     STATE_VERSION, newGame, migrate, save, load, chapters, reportedActor, receipts,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal,
-    division, reported, ballot, resolveDue, pairable, setPairs, clearPairs, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss, checkSettlement,
+    division, reported, ballot, benchRoll, resolveDue, pairable, setPairs, clearPairs, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss, checkSettlement,
     dateOfSitting, sittingOfDate, deadlines, calendar, today, business,
     initiatives, take, setDivision,
     apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,

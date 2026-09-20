@@ -881,16 +881,51 @@ const UI = (function () {
             `<td class="n ${loy < 35 ? "warn" : ""}">${loy}</td></tr>`;
         }).join("") + `</tbody>`;
 
-    /* the members */
-    const mps = (C.characters || []).filter(c => c.party === sel.id);
+    /* THE MEMBERS — ALL OF THEM, not just the cast.
+
+       This listed C.characters filtered by party, which is the fifty-odd
+       people the story names and not the party's bench: the Liberals showed
+       nineteen against forty-seven seats. Engine.benchRoll seats the whole
+       House the way a division does — a named member per district seat, the
+       slate filled from the name pools for the list tier, and the functional
+       register — so this is every member, and the same member carries the
+       same name here as in a roll call. */
+    const bench = (Engine.benchRoll(st, C) || {})[sel.id] || { popular: [], functional: [] };
+    const all = bench.popular.concat(bench.functional);
     const mh = $("#party-mp-hdr");
-    if (mh) mh.textContent = mps.length + " in the record";
+    if (mh) mh.textContent = all.length + " member" + (all.length === 1 ? "" : "s") +
+      (bench.functional.length
+        ? " · " + bench.popular.length + " popular, " + bench.functional.length + " functional"
+        : "");
+
+    /* Payroll first, then the benches, which is the order the House itself
+       is read in — same rank as the roll call's. */
+    const RANK = { district: 1, functional: 2, list: 3 };
+    const GLYPH = { district: "●", list: "□", functional: "▲" };
+    const sorted = all.slice().sort((a, b) =>
+      (a.payroll ? 0 : 1) - (b.payroll ? 0 : 1) ||
+      (RANK[a.tier] || 9) - (RANK[b.tier] || 9) ||
+      String(a.seat || "").localeCompare(String(b.seat || "")) ||
+      String(a.name || "").localeCompare(String(b.name || "")));
+
+    const byName = {};
+    (C.characters || []).forEach(c => { byName[c.name] = c; });
     const mt = $("#party-mps");
-    if (mt) mt.innerHTML = !mps.length
-      ? `<tbody><tr><td class="note">No member of this party is named in the record yet.</td></tr></tbody>`
-      : `<thead><tr><th>Member</th><th>Seat</th><th>Office</th></tr></thead><tbody>` +
-        mps.map(c => `<tr><td>${esc(c.name)}</td><td>${esc(c.seat || "—")}</td>` +
-          `<td>${esc(officeOfMember(c.id)) || "Backbench"}</td></tr>`).join("") + `</tbody>`;
+    if (mt) mt.innerHTML = !sorted.length
+      ? `<tbody><tr><td class="note">This party holds no seat in the present House.</td></tr></tbody>`
+      : `<thead><tr><th class="tg" data-tip-title="Tier" data-tip-body="` +
+        `Round for a district member, square for the list, triangle for a ` +
+        `functional constituency.">&nbsp;</th><th>Member</th><th>Seat</th>` +
+        `<th>Office</th></tr></thead><tbody>` +
+        sorted.map(m => {
+          const ch = byName[m.name];
+          const office = ch ? officeOfMember(ch.id) : "";
+          return `<tr${m.placeholder ? ' class="ph"' : ""}>` +
+            `<td class="tg">${GLYPH[m.tier] || ""}</td>` +
+            `<td>${esc(m.name)}</td>` +
+            `<td>${esc(m.seat || "list")}</td>` +
+            `<td>${esc(office || "Backbench")}</td></tr>`;
+        }).join("") + `</tbody>`;
   }
 
   /* ---------- ways and means ----------
@@ -3051,11 +3086,11 @@ const UI = (function () {
     });
     Object.keys(after.scalars || {}).forEach(k => {
       if ((before.scalars || {})[k] === after.scalars[k]) return;
-      if (gov) flash($('#gov-meters .meterrow[data-key="' + k + '"]'));
-      /* The Sitting screen's copy is filled by a MutationObserver a beat
-         after the meters redraw; pulse it on the next tick or the pulse
-         dies with the nodes it was painted onto. */
-      if (sit) setTimeout(() => flash($('#gov-meters-mirror .meterrow[data-key="' + k + '"]')), 0);
+      /* ONE PANEL, ON THE SITTING SCREEN. There were two — the Government
+         tab's and a mirror here — so this pulsed whichever the player was
+         looking at, and the mirror needed a tick's delay because a
+         MutationObserver filled it after the redraw. Neither is true now. */
+      if (sit) flash($('#gov-meters .meterrow[data-key="' + k + '"]'));
     });
     if ((before.sig || 0) !== (after.sig || 0)) flash($("#sb-sig"));
   }
