@@ -3165,3 +3165,60 @@ console.log("\nTHE ECONOMY:");
 
   if (bad) { console.log("\n" + bad + " FOREIGN FAILURES"); process.exitCode = 1; }
 })();
+
+/* ============ A PRESSURE NOBODY KEEPS UP ABATES ============
+   A trend used to apply every sitting for ever, so the annexation line ended
+   at friction 100 and solvency 0 — a player who did the central thing the
+   campaign asks ended up governing an impossible House. These assert the
+   decay, and that the run stays governable. */
+(function () {
+  let bad = 0;
+  const ok = (label, cond, extra) => {
+    if (!cond) bad++;
+    console.log((cond ? "  ok   " : "  FAIL ") + label + (extra ? "  " + extra : ""));
+  };
+  console.log("\nTRENDS DECAY");
+  console.log("=".repeat(56));
+
+  const every = (CONTENT.setup && CONTENT.setup.trendDecay) || 4;
+
+  const s = Engine.newGame(CONTENT);
+  s.trends.friction = 3;
+  for (let i = 0; i < every; i++) Engine.advance(s, CONTENT);
+  ok("a trend steps toward zero as sittings pass",
+     s.trends.friction < 3, "+3 -> +" + s.trends.friction);
+
+  for (let i = 0; i < every * 4; i++) Engine.advance(s, CONTENT);
+  ok("and reaches zero rather than leaning for ever",
+     s.trends.friction === 0, "+" + s.trends.friction);
+
+  /* A denominated scalar abates in its own unit, not by one. */
+  const m = Engine.newGame(CONTENT);
+  m.trends.solvency = 3000;
+  for (let i = 0; i < every; i++) Engine.advance(m, CONTENT);
+  ok("a money trend steps in its own unit",
+     m.trends.solvency === 2000, String(m.trends.solvency));
+
+  /* The whole point: the House stays governable on the annexation line. */
+  const g = Engine.newGame(CONTENT);
+  const pick = { f1_stranded: 0, f1_referendum: 0, f1_dilemma: 0, f1_loan: 1 };
+  let peak = 0;
+  for (let i = 0; i < 40; i++) {
+    const e = Engine.nextEvent(g, CONTENT);
+    if (e) {
+      const n = e.choices.length;
+      const w = pick[e.id] == null ? 0 : Math.min(pick[e.id], n - 1);
+      let done = false;
+      for (let k = w; k < n; k++) if (Engine.choose(g, CONTENT, e, k) !== null) { done = true; break; }
+      if (!done) for (let k = 0; k < n; k++) if (Engine.choose(g, CONTENT, e, k) !== null) break;
+    }
+    Engine.advance(g, CONTENT);
+    if (g.scalars.friction > peak) peak = g.scalars.friction;
+    const en = Engine.checkEnd(g, CONTENT);
+    if (en.over) break;
+  }
+  ok("the annexation line no longer drives friction to the ceiling",
+     peak < 90, "peak " + peak);
+
+  if (bad) { console.log("\n" + bad + " TREND FAILURES"); process.exitCode = 1; }
+})();

@@ -44,6 +44,14 @@ const SETUP = {
      budget; they may not stop it. */
   supplyDelaySittings: 3,
   slotsPerSession: 6,
+
+  /* HOW FAST A PRESSURE ABATES, in sittings per step toward zero.
+     A trend applied for ever is a doom clock rather than a lean: the
+     annexation line used to end at friction 100 because {trend.friction:+3}
+     was never taken off by anything. At four, a +3 lean delivers about
+     twenty-four points over twelve sittings and then stops. 0 turns decay
+     off and restores the old behaviour. */
+  trendDecay: 4,
   /* HOW LONG A SESSION RUNS, in sittings. The House rises at the end of it:
      order-paper time refills, business not carried falls, and anything owed
      "before the House rises" comes due. Bible 7.7 calls order-paper time the

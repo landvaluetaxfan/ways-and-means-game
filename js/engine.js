@@ -3886,6 +3886,41 @@ const Engine = (function () {
       st.scalars[k] = clamp((st.scalars[k] || 0) + d, 0, 100);
     });
 
+    /* AND A PRESSURE NOBODY KEEPS UP ABATES.
+
+       A trend applied every sitting for ever is not a lean, it is a doom
+       clock. Measured on the annexation line: `f1_dilemma` sets
+       {trend.friction:+3}, nothing ever takes it off, and twenty sittings
+       later the run ends at friction 100 and solvency 0 — a player who does
+       the central thing the campaign asks of them ends up governing a House
+       that is arithmetically impossible.
+
+       And it is structural rather than one bad number. Content sets four
+       positive friction trends (+3 +3 +2 +1) against exactly one -1, and
+       `trend.legitimacy` has two negatives and no positive anywhere: the
+       vocabulary only pushes. Trends also ACCUMULATE, so two such choices
+       stack toward TREND_MAX and arrive faster.
+
+       So a trend steps one unit toward zero every `trendDecay` sittings —
+       content's number, four by default. A +3 lean then delivers about
+       twenty-four points over twelve sittings and stops, which is a
+       pressure the government has to answer rather than a countdown it
+       cannot. An author who wants a permanent lean re-asserts it, which is
+       the same thing politics asks of anybody who wants one.
+
+       Deterministic, because §1.5 is: it steps on the sittings that divide,
+       not on a roll. A denominated scalar steps in its own unit, so
+       solvency abates by a thousand MW-years and not by one. */
+    const decayEvery = (C.setup && C.setup.trendDecay) || 4;
+    if (decayEvery > 0 && st.sitting % decayEvery === 0) {
+      Object.keys(st.trends || {}).forEach(k => {
+        const d = st.trends[k];
+        if (!d) return;
+        const step = MONEY_SCALE[k] || 1;
+        st.trends[k] = Math.abs(d) <= step ? 0 : d - Math.sign(d) * step;
+      });
+    }
+
     /* A METER THAT DRAGS ANOTHER (Flash I). Content declares the couplings
        in setup: while the source meter is above a line, its drag lands
        every sitting until somebody does something about it. The highest

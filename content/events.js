@@ -1764,7 +1764,14 @@ Neither future is a vote the government can lose quietly.`,
          it was; until now nothing was, and the annexation settlements gated
          on the flag this choice sets rather than on any Act. Moving it out
          of `drafting` is what "set down" means to the engine. */
-      effects:[{ flag:"f1_annexing" }, { move:{ "trend.friction":3 } },
+      /* EARTH REACTS THAT WEEK, not gradually over twenty sittings. This
+         carried only a TREND, so the whole diplomatic cost of annexing a
+         foreign works station arrived as a slow ramp — and when trends were
+         given decay (they used to run for ever, and drove friction to 100),
+         the cost stopped arriving at all. An annexation is a shock: most of
+         it lands at once, and the trend is the deterioration afterwards. */
+      effects:[{ flag:"f1_annexing" }, { move:{ "friction":12 } },
+               { move:{ "trend.friction":3 } },
                { move:{ "solvency":-6000 } }, { move:{ "legitimacy":12 } },
                { bill:{ annexation:{ stage:"first_reading" } } },
                /* AND THE HOUSE WILL SIT FOR IT. Six slots is the whole
