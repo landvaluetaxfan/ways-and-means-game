@@ -42,14 +42,9 @@ const SetPiece = (function () {
      back to plain body rather than inventing a style. */
   const KINDS = ["epigraph", "lede", "body", "voices", "document", "signature"];
 
-  /* THE PM'S HAND, AS AN IMAGE. img/signature-ink.png is the author's scan
-     cropped to its ink, transparent behind it and coloured to the page's
-     ink. `h` is the display height at `w` wide — the source is 830x478, so
-     the two move together if the scan is ever replaced. */
-  const SIG_IMG = { src: "img/signature-ink.png", w: 228, h: 131 };
-  /* HOW LONG THE REVEAL TAKES, in milliseconds. Slow on purpose: a
-     signature that arrives in a blink is a logo, not a hand. */
-  const WRITE_MS = 4200;
+  /* HOW LONG THE REVEAL TAKES, in milliseconds. One number, so the hold
+     before the page dissolves and the CSS transition agree. */
+  const WRITE_MS = 2100;
 
   function section(sec) {
     const kind = KINDS.indexOf(sec.kind) >= 0 ? sec.kind : "body";
@@ -85,22 +80,25 @@ const SetPiece = (function () {
     }
 
     if (kind === "signature") {
-      /* THE SAME HAND THAT SIGNS THE ACTS. Papers exports the one traced
-         SIG_PATH, so the first time a player meets that signature it is a
-         name at the end of an introduction, and every time after it is a
-         Prime Minister consenting to a law. One stroke, two ceremonies.
-         If Papers is not loaded the block still draws its rule and caption,
-         because a missing signature must read as a blank line and not as a
-         broken page. */
-      /* THE HAND IS THE SCAN ITSELF. It is cropped to its ink and baked to
-         the page's ink colour by the same pixel pass tools/tracesig.js uses
-         (img/signature-ink.png), and the reveal is a left-to-right clip.
-         A clip needs no path, so it cannot suffer the fragmentation a
-         centreline trace brings, and the hand stays exactly the author's. */
+      /* THE SAME HAND THAT SIGNS THE ACTS. Papers exports SIG_IMG — the
+         one scan, at the one size — so the first time a player meets that
+         signature it is a name at the end of an introduction, and every
+         time after it is a Prime Minister consenting to a law. If Papers
+         is not loaded the block still draws its rule and caption, because
+         a missing signature must read as a blank line and not as a broken
+         page. */
+      /* THE HAND IS THE SCAN ITSELF, cropped to its ink and baked to the
+         page's colour by tools/inksig.js, and revealed by a left-to-right
+         clip. A clip needs no path, so it cannot suffer the fragmentation
+         a centreline trace brings, and the hand stays exactly the author's.
+         Papers owns the one size, so the ceremony and the introduction
+         cannot drift apart. */
+      const img = (typeof Papers !== "undefined" && Papers.SIG_IMG) ||
+        { src: "img/signature-ink.png", w: 228, h: 131 };
       return `<div class="sp-sec sp-signature"><div class="sigline">` +
-        `<div class="rule" style="height:${SIG_IMG.h}px">` +
-        `<span class="sigimg" style="width:${SIG_IMG.w}px;height:${SIG_IMG.h}px">` +
-        `<img src="${SIG_IMG.src}" alt=""></span>` +
+        `<div class="rule" style="height:${img.h}px">` +
+        `<span class="sigimg" style="width:${img.w}px;height:${img.h}px">` +
+        `<img src="${img.src}" alt=""></span>` +
         `</div>` +
         `<div class="cap">${esc(sec.head || "")}</div>` +
         `</div></div>`;

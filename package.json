@@ -17,7 +17,7 @@
     "layout": "node tools/laycheck.js",
     "bundle": "node tools/bundle.js",
     "build": "node tools/build.js",
-    "tracesig": "node tools/tracesig.js",
+    "inksig": "node tools/inksig.js",
     "encode": "node tools/encodeaudio.js",
     "check": "npm run test && npm run lint && npm run cx && npm run roundtrip && npm run rename && npm run editor && npm run ui && npm run ux && npm run tocheck && npm run enc",
     "toc": "node tools/toc.js"

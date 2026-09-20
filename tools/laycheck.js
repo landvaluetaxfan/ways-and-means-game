@@ -16,9 +16,9 @@
    FITS.
 
    So this drives the real Chromium that is already on the box for
-   tools/tracesig.js, boots the game the way tools/harness.js does, walks
+   tools/inksig.js, boots the game the way tools/harness.js does, walks
    every tab, and measures. No new dependency: the browser is invoked exactly
-   as tracesig invokes it, results come back through --dump-dom in a <pre>.
+   as inksig invokes it, results come back through --dump-dom in a <pre>.
 
    IT IS NOT IN `npm run check`, on purpose. The ten checks there are fast,
    deterministic and need nothing but node and jsdom; this one needs a
