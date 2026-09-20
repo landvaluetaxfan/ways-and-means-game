@@ -203,18 +203,8 @@ const UI = (function () {
     lastSession = null; fallen = false; lastSigBand = null; ended = null;
     if (wired) { drawAll(); reveal(); return; }   /* Shell re-boots on every load */
     wired = true;
-    document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach(o => o.setAttribute("aria-selected", "false"));
-      t.setAttribute("aria-selected", "true");
-      document.querySelectorAll(".screen").forEach(s => s.classList.remove("on"));
-      $("#s-" + t.dataset.t).classList.add("on");
-      $("#viewport").scrollTop = 0;
-      screen = t.dataset.t;
-      setStatus(ambient(), "ambient");
-      /* The globe is drawn lazily: it is the one expensive thing on the
-         screen and there is no reason to build it before the tab is opened. */
-      if (screen === "world") drawWorld();
-    }));
+    document.querySelectorAll(".tab").forEach(t =>
+      t.addEventListener("click", () => openTab(t.dataset.t)));
 
     /* THE TERMINAL'S OWN CLICK, delegated once.
 
@@ -483,6 +473,30 @@ const UI = (function () {
      status bar turns into a race. */
   const STATUS = { transient: "", referral: "", ambient: "" };
   let statusTimer = null, screen = "sit";
+
+  /* THE ONE PLACE A TAB IS OPENED. The click handler calls it, the shell
+     calls it when a government opens, and nothing else reaches into .tab
+     or .screen — two ways to open a tab is the [data-go] trap wearing
+     different clothes. Keyboard and programmatic moves go through the
+     button (`el.click()`), which lands here.
+
+     BOOT IS DELIBERATELY NOT A CALLER. `UI.boot` is re-entered for an
+     ordinary redraw as well as for a new game, so resetting the tab there
+     would yank the player's screen on every state change — and would drop
+     the ? mode's tab stops, which are marked on the VISIBLE screen only.
+     tools/uxtest.js asserts that, and caught exactly this. */
+  function openTab(name) {
+    document.querySelectorAll(".tab").forEach(o =>
+      o.setAttribute("aria-selected", o.dataset.t === name ? "true" : "false"));
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("on"));
+    const pane = $("#s-" + name); if (pane) pane.classList.add("on");
+    const vp = $("#viewport"); if (vp) vp.scrollTop = 0;
+    screen = name;
+    setStatus(ambient(), "ambient");
+    /* The globe is drawn lazily: it is the one expensive thing on the
+       screen and there is no reason to build it before the tab is opened. */
+    if (screen === "world") drawWorld();
+  }
 
   function setStatus(text, level) {
     const k = level === "transient" || level === "referral" ? level : "ambient";
@@ -5160,7 +5174,7 @@ const UI = (function () {
   /* redraw is exported for the checks only. It is drawAll under another
      name, and it makes no sound — which is itself asserted, so exporting
      it cannot become a way to smuggle a cue into a renderer. */
-  return { boot, state: () => st, annotate, setStatus, redraw: drawAll,
+  return { boot, openTab, state: () => st, annotate, setStatus, redraw: drawAll,
            __test: { cabinetView, structure, reportMoves, rollChips, rollPlan } };
 })();
 

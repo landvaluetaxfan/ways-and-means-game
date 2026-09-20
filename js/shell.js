@@ -635,6 +635,13 @@ const Shell = (function () {
       if (typeof Focus !== "undefined") Focus.reset();
       if (typeof Papers !== "undefined") Papers.reset();
       UI.boot(state, C);
+      /* AND IT OPENS ON THE SITTING. The tab is in the DOM and in UI’s own
+         `screen`, and neither is in the save, so both survived the menu:
+         a government formed while the last one was standing on Papers
+         began on Papers, with its introduction drawn into a sitting page
+         nobody was looking at. After boot, because ambient() reads the
+         state boot has just installed. */
+      UI.openTab("sit");
     };
     if (typeof Motion !== "undefined") Motion.dissolve(swap);
     else swap();
@@ -831,7 +838,8 @@ const Shell = (function () {
           document.body.classList.remove("menu-on");
           document.getElementById("shell").classList.add("on");
           if (!current) current = { n: 1, name: f.name.replace(/\.json$/i, "") };
-          UI.boot(state, C); stampSlot(); flash("Imported " + f.name);
+          UI.boot(state, C); UI.openTab("sit");
+          stampSlot(); flash("Imported " + f.name);
         } catch (err) { Dialog.alert("That file could not be read: " + err.message,
                                      { title: "Could not import" }); }
       };

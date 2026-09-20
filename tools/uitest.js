@@ -78,6 +78,13 @@ try {
   ok("save writes to the slot", !!raw && slot.name === "Test ministry",
      "sitting " + slot.sitting);
   const before = w.eval("JSON.stringify(UI.state())");
+  /* AND STAND SOMEWHERE ELSE FIRST. The tab is not in the save, so it used
+     to survive the menu: the next government opened on whatever screen the
+     last one was left on, which for a new game meant its introduction was
+     drawn into a sitting page the player was not looking at. */
+  w.document.querySelector(String.raw`.tab[data-t="pap"]`).click();
+  ok("a government can be left on another tab",
+     $("#s-pap").classList.contains("on"));
   /* back to the menu the way a player does it: Options > Return to main menu */
   $("#tb-options").click();
   w.document.querySelector('#tb-optpanel [data-act="menu"]').click();
@@ -88,6 +95,9 @@ try {
   const after = w.eval("JSON.stringify(UI.state())");
   ok("slot reloads to the same state", before === after,
      before === after ? "" : "state differs after reload");
+  ok("and the government opens on the sitting, not the tab it was left on",
+     $("#s-sit").classList.contains("on") && !$("#s-pap").classList.contains("on"),
+     [...w.document.querySelectorAll(".screen.on")].map(s => s.id).join(" "));
 } catch (e) { ok("save round-trip", false, e.message); }
 
 /* THE BILL LIFECYCLE TRACK. An assented act must show the road it took, not
