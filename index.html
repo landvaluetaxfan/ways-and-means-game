@@ -36,7 +36,6 @@
     <button class="tab" role="tab" aria-selected="false" data-t="cham">Chamber</button>
     <button class="tab" role="tab" aria-selected="false" data-t="orb">Orbit</button>
     <button class="tab" role="tab" aria-selected="false" data-t="world">World</button>
-    <button class="tab" role="tab" aria-selected="false" data-t="pap">Papers</button>
     <button class="tab" role="tab" aria-selected="false" data-t="cx">Concordance</button>
     <button class="tab" role="tab" aria-selected="false" data-t="log">Record</button>
     <!-- Shown only under the Sandbox government (js/ui.js reveals it). -->
@@ -71,32 +70,20 @@
       </div>
     </section>
 
+    <!-- THE GOVERNMENT: what it can do, the papers it does it with, the
+         document itself, and the state of things. Papers was its own tab
+         until 20 Sep 2026 — an instrument, the register it lands in, the
+         court that can quash it and the office that assents to it are one
+         subject, and a tab that held four panels was a tab for the sake of
+         having one. -->
     <section class="screen" id="s-gov">
       <div class="grid g-gov">
+
         <div class="stack scrolls">
           <div class="panel">
             <h2>What the government can do <em id="gov-init-hdr">order-paper time</em></h2>
             <div class="pbody scrolls" id="gov-init"></div>
           </div>
-          <div class="panel">
-            <h2>Coalition <em id="gov-coalition-hdr"></em></h2>
-            <div class="pbody flush scrolls">
-              <table id="gov-coalition"></table>
-              <div class="pbody scrolls"><div class="note" id="gov-margin"></div></div>
-            </div>
-          </div>
-          <div class="panel">
-            <h2>Own party currents</h2>
-            <div class="pbody flush scrolls"><table id="gov-currents"></table></div>
-          </div>
-        </div>
-        <div class="stack scrolls">
-          <div class="panel">
-            <h2><span data-tip="live">Presidency</span></h2>
-            <div class="pbody scrolls" id="gov-pres"></div>
-          </div>
-        </div>
-        <div class="stack scrolls">
           <div class="panel">
             <h2>Undertakings <em>what the government has said it will do</em></h2>
             <div class="pbody scrolls" id="gov-owed"></div>
@@ -108,11 +95,42 @@
               <div class="pbody scrolls"><div class="note" id="gov-ledger-note"></div></div>
             </div>
           </div>
+        </div>
+
+        <div class="stack scrolls">
           <div class="panel">
-            <h2>Order paper time <em id="gov-slots-hdr"></em></h2>
-            <div class="pbody scrolls" id="gov-slots"></div>
+            <h2><span data-tip="instrument">Instruments</span> <em>signed, not voted</em></h2>
+            <div class="pbody flush scrolls">
+              <table id="gov-si"></table>
+              <div class="pbody scrolls"><div class="note">A bill needs a majority and cannot be undone.
+                An order needs no majority and can be revoked. Signing one puts it in force at
+                once; it stands unless the House prays against it inside the window.</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h2><span data-tip="register">Register</span> <em>acts, orders and minutes</em></h2>
+            <div class="pbody flush scrolls">
+              <table id="pp-list"></table>
+            </div>
+          </div>
+          <div class="panel">
+            <h2><span data-tip="tribunal">The Tribunal</span> <em>review, not the House</em></h2>
+            <div class="pbody scrolls" id="pp-tribunal"></div>
+          </div>
+          <div class="panel">
+            <h2><span data-tip="live">Presidency</span></h2>
+            <div class="pbody scrolls" id="gov-pres"></div>
           </div>
         </div>
+
+        <!-- THE DOCUMENT ITSELF, at the width a document wants. -->
+        <div class="stack" id="gov-docs">
+          <div class="panel">
+            <h2>Document</h2>
+            <div class="pbody flush scrolls" id="pp-doc"></div>
+          </div>
+        </div>
+
         <div class="stack scrolls">
           <div class="panel"><h2>Standing indicators</h2><div class="pbody scrolls" id="gov-meters"></div></div>
           <div class="panel">
@@ -129,6 +147,7 @@
               <table id="gov-cabinet"></table></div>
           </div>
         </div>
+
       </div>
     </section>
 
@@ -139,6 +158,13 @@
              a measure here colours the benches for it. There is no separate
              row of buttons any more, because there was never a second list. -->
         <div class="stack">
+          <!-- THE CLOCK ABOVE THE BUSINESS IT PAYS FOR. Order-paper time was
+               on the Government tab, two screens from the order paper it is
+               spent on (§7.7). -->
+          <div class="panel">
+            <h2>Order paper time <em id="gov-slots-hdr"></em></h2>
+            <div class="pbody scrolls" id="gov-slots"></div>
+          </div>
           <div class="panel">
             <h2>Order paper <em>select a measure</em></h2>
             <div class="pbody flush scrolls"><table id="cham-bills"></table></div>
@@ -174,7 +200,21 @@
         </div>
 
         <!-- REFERENCE: what the House is made of, and who is counted where. -->
+        <!-- WHO IS COUNTED, AND WHO WILL TURN OUT. The coalition and the
+             government's own currents were on the Government tab; they are
+             vote arithmetic, and this is where votes are counted. -->
         <div class="stack cref scrolls">
+          <div class="panel">
+            <h2>Coalition <em id="gov-coalition-hdr"></em></h2>
+            <div class="pbody flush scrolls">
+              <table id="gov-coalition"></table>
+              <div class="pbody scrolls"><div class="note" id="gov-margin"></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Own party currents</h2>
+            <div class="pbody flush scrolls"><table id="gov-currents"></table></div>
+          </div>
           <div class="panel">
             <h2>Composition <em id="comp-hdr">by tier</em></h2>
             <div class="pbody flush scrolls"><table id="comp-table"></table></div>
@@ -207,36 +247,6 @@
           <h2><span data-tip="schematic">Habitat schematic</span> <em data-tip="band">altitude bands &middot; not to lateral scale</em></h2>
           <div class="pbody flush plate scrolls" id="orbit-chart"></div>
           <div class="pbody okeys scrolls" id="orbit-key"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="screen" id="s-pap">
-      <div class="grid g-pap">
-        <div class="stack">
-          <div class="panel">
-            <h2><span data-tip="instrument">Instruments</span> <em>signed, not voted</em></h2>
-            <div class="pbody flush scrolls">
-              <table id="gov-si"></table>
-              <div class="pbody scrolls"><div class="note">A bill needs a majority and cannot be undone.
-                An order needs no majority and can be revoked. Signing one puts it in force at
-                once; it stands unless the House prays against it inside the window.</div></div>
-            </div>
-          </div>
-          <div class="panel">
-            <h2><span data-tip="tribunal">The Tribunal</span> <em>review, not the House</em></h2>
-            <div class="pbody scrolls" id="pp-tribunal"></div>
-          </div>
-          <div class="panel">
-            <h2><span data-tip="register">Register</span> <em>acts, orders and minutes</em></h2>
-            <div class="pbody flush scrolls">
-              <table id="pp-list"></table>
-            </div>
-          </div>
-        </div>
-        <div class="panel">
-          <h2>Document</h2>
-          <div class="pbody flush scrolls" id="pp-doc"></div>
         </div>
       </div>
     </section>

@@ -178,7 +178,19 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    thousand pixels wide with two words on each line. Splitting it gives the
    government four columns of roughly equal width at a 1440 window: what it can
    do, who it is dealing with, what it has promised, and how it stands. */
-.g-gov{grid-template-columns:minmax(230px,280px) minmax(0,1fr) minmax(0,1fr) minmax(260px,320px);}
+.g-gov{grid-template-columns:minmax(230px,300px) minmax(300px,380px) minmax(0,1fr) minmax(260px,320px);}
+/* THE SCREEN TAKES THE VIEWPORT, as the Chamber and the orbit do. This came
+   over from the Papers tab when Papers was folded in: the register used to
+   carry an inline max-height in the markup to stop its column running away,
+   which worked at one window height and overflowed the page by 138px at
+   another. The screen takes the viewport and the panels divide it. */
+#s-gov.screen.on{height:100%;min-height:0;}
+.g-gov{grid-template-rows:minmax(0,1fr);height:100%;min-height:0;}
+.g-gov > .stack{min-height:0;}
+/* The document column does not scroll as a COLUMN: it is one panel, and the
+   paper inside it is the scroller. */
+#gov-docs{min-height:0;}
+#gov-docs > .panel{flex:1 1 auto;min-height:0;}
 /* THE WORLD. The globe takes what is left; the reference column is a window the
    width of the orbit screen's, because it holds the same sort of thing: who a
    power is, and what it wants.
@@ -930,7 +942,7 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
   .tally i{transition:none;}
 }
 @media (max-width:1080px){
-  .g-gov,.g-cham,.g-orb,.g-disp,.g-pap,.g-elec,.g-sit,.g-world{grid-template-columns:minmax(0,1fr);}
+  .g-gov,.g-cham,.g-orb,.g-disp,.g-elec,.g-sit,.g-world{grid-template-columns:minmax(0,1fr);}
   /* one column: the plan is already fluid, nothing to release */
   .newsbody{column-count:1;}
 }
@@ -1262,16 +1274,11 @@ img.dith{display:block;}
 .c-synthetic{background:#7a5c8c;}
 
 /* ---------- Papers register ---------- */
-/* THE TAB FITS, like the Chamber, the orbit and the sitting screen. The
-   register carried an inline max-height in the markup to stop the column
-   running away, which worked at one window height and overflowed the
-   page by 138px at another. The screen takes the viewport and the panels
-   divide it. */
-.g-pap{grid-template-columns:minmax(380px,520px) minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:100%;min-height:0;}
-#s-pap.screen.on{height:100%;min-height:0;}
-.g-pap > .stack{min-height:0;}
-.g-pap .panel{min-height:0;}
-#pp-doc{background:#f4f0e4;overflow:auto;max-height:640px;}
+/* The document face. The 640px cap it used to carry belonged to the Papers
+   tab, where the panel had no height of its own to be bounded by; inside
+   #gov-docs the panel is the bound, so the cap would only clip it short of
+   the room it has. */
+#pp-doc{background:#f4f0e4;overflow:auto;}
 #pp-doc .paper{min-height:0;}
 .madestamp{
   border:2px solid #4e4838;color:#4e4838;padding:5px 12px;

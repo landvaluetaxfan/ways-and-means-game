@@ -1377,7 +1377,7 @@ console.log("\nTHE ORDER OF THE DAY:");
      t0.items[0].kind === "decision" && t0.required === 1,
      t0.items.map(i => i.kind).join(", "));
   ok("every item says where it is answered",
-     t0.items.every(i => ["sit", "gov", "pap", "orb"].indexOf(i.tab) >= 0));
+     t0.items.every(i => ["sit", "gov", "cham", "orb"].indexOf(i.tab) >= 0));
 
   /* OPPORTUNITIES ARE NOT OBLIGATIONS, and this is the assertion that
      keeps the feature honest. Plenty is available on day one. */
@@ -3019,16 +3019,16 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
     const u = Engine.outstanding(st).find(x => x.id === "probe_si");
     const w = Engine.undertakingWhere(CONTENT, u);
     ok("an undertaking names the screen that keeps it",
-       w.tab === "pap" && /Life Support Engineering/.test(w.how), w.tab + " - " + w.how);
+       w.tab === "gov" && /Life Support Engineering/.test(w.how), w.tab + " - " + w.how);
     const dl = Engine.deadlines(st, CONTENT).find(d => d.kind === "owed" && d.text === "Lay the order");
     ok("and its calendar item carries the same place",
-       dl && dl.tab === "pap" && !!dl.how, dl ? dl.tab + " - " + dl.how : "no item");
+       dl && dl.tab === "gov" && !!dl.how, dl ? dl.tab + " - " + dl.how : "no item");
     const t = Engine.today(st, CONTENT, false);
     const item = t.items.find(i => i.kind === "owed");
     /* THE NUMBER, NOT THE YEAR: every order is "... Order 2287", so the SI
        number is the only part of the title that tells one from another. */
     ok("and the order of the day sends you there",
-       item && item.tab === "pap" && /Make SI 2287\/44/.test(item.how || ""),
+       item && item.tab === "gov" && /Make SI 2287\/44/.test(item.how || ""),
        item ? item.tab + " - " + item.how : "no item");
     ok("and it names the order itself, not only the tab",
        !!(item && /^si:si_2287_44$/.test(item.focus || "")),

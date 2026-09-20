@@ -2868,7 +2868,7 @@ const UI = (function () {
     Object.keys(after.si).forEach(id => {
       if (before.si[id] === after.si[id]) return;
       const i = (C.instruments || []).find(x => x.id === id);
-      notes.push({ tab: "pap", where: "Papers",
+      notes.push({ tab: "gov", where: "Government",
                    text: (i ? i.number : id) + " is in force.",
                    detail: i ? i.title : null });
     });
@@ -3190,7 +3190,7 @@ const UI = (function () {
      sends you. And every item CLEARS when it is dealt with — a mark
      that never goes out teaches a player to stop reading it.
      --------------------------------------------------------------- */
-  const TABNAME = { sit: "Sitting", gov: "Government", pap: "Papers", orb: "Orbit" };
+  const TABNAME = { sit: "Sitting", gov: "Government", cham: "Chamber", orb: "Orbit" };
   const WHENWORD = { overdue: "overdue", now: "today", soon: "soon" };
 
   /* A ROW THAT NAMES A THING AS WELL AS A SCREEN. An undertaking is kept by
@@ -3212,7 +3212,7 @@ const UI = (function () {
       const row = document.querySelector('#gov-si tr[data-si="' + id + '"]');
       if (row) {
         if (row.scrollIntoView) row.scrollIntoView({ block: "center" });
-        /* THE ROW IS THE ANSWER, SO IT PULSES. Landing on the Papers tab
+        /* THE ROW IS THE ANSWER, SO IT PULSES. Landing on the instruments
            with thirteen orders and no mark on the one that matters reads as
            a dead link; the row the player was sent to says it was the row.
            And if the promise needs the order to be LAID first, the status
@@ -3476,7 +3476,7 @@ const UI = (function () {
     (C.instruments || []).forEach(si => {
       const x = st.instruments[si.id];
       if (x && x.inForce && x.prayerCloses != null && x.prayerCloses > st.sitting)
-        rows.push(`<div class="dk pray goto" data-goto="pap"><b>${esc(si.number)}</b>
+        rows.push(`<div class="dk pray goto" data-goto="gov"><b>${esc(si.number)}</b>
           <i>prayable for ${x.prayerCloses - st.sitting} more · Papers</i></div>`);
     });
     /* A POST THE GOVERNMENT HAS NOT FILLED IS BUSINESS. The appointment

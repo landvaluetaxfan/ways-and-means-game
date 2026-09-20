@@ -4153,7 +4153,7 @@ const Engine = (function () {
     const dz = (u && u.discharge) || {};
     if (dz.si && C.instrumentById && C.instrumentById[dz.si]) {
       const si = C.instrumentById[dz.si];
-      tab = "pap";
+      tab = "gov";
       /* THE NUMBER, NOT THE YEAR. Every order in the ladder is titled
          "... Order 2287", so the year names nothing; the SI number is what
          the papers table, the search and the order itself are indexed by,
@@ -4224,7 +4224,7 @@ const Engine = (function () {
       const s0 = st.instruments[si.id];
       if (s0 && s0.inForce && !s0.revoked && s0.prayerCloses != null)
         add(s0.prayerCloses, "prayer", "Last day to pray against " + (si.number || si.id),
-            { tab: "pap", how: "Pray against " + (si.number || si.id),
+            { tab: "gov", how: "Pray against " + (si.number || si.id),
               focus: "si:" + si.id });
     });
     /* SOMETHING THE PLAYER SET IN MOTION IS COMING BACK. Content decides
@@ -4304,9 +4304,9 @@ const Engine = (function () {
      business, then the papers.
      --------------------------------------------------------- */
   const TAB_OF = { decision: "sit", division: "gov", vacancy: "gov",
-                   owed: "sit", prayer: "pap", expected: "sit", rises: "sit",
+                   owed: "sit", prayer: "gov", expected: "sit", rises: "sit",
                    slots: "gov" };
-  const ORDER  = { sit: 0, gov: 1, pap: 2, orb: 3 };
+  const ORDER  = { sit: 0, gov: 1, cham: 2, orb: 3 };
   const SOON = 2;                 /* sittings. Closer than this is business. */
 
   function today(st, C, hasDecision) {

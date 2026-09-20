@@ -318,10 +318,24 @@ try {
      one of these looked right and only Firefox showed the OS bar. */
   ok("the page's own scroll is drawn too, not just the panels",
      w.document.querySelector("#viewport").classList.contains("scrolls"));
+  /* EVERY COLUMN HAS A WAY DOWN, which is the rule this was reaching for.
+     It asserted that every Government column carries .scrolls, and that was
+     true while every column was a stack of small panels. The document column
+     is not: it is one panel holding a sheet of paper, and the sheet is the
+     scroller. Marking the column too would nest one scroller inside another,
+     which is worse than the thing being guarded against.
+
+     So the rule is stated properly \u2014 a column either scrolls itself, or
+     everything in it can be reached by a scroller of its own. What must never
+     happen is a column that does neither, because that is content the player
+     cannot get to, which is the one outcome this construction exists to
+     prevent. */
   const govStacks = [...w.document.querySelectorAll("#s-gov .stack")];
-  ok("and the Government tab's columns, which scroll inside themselves",
-     govStacks.length > 0 && govStacks.every(e => e.classList.contains("scrolls")),
-     govStacks.filter(e => !e.classList.contains("scrolls")).length + " unmarked");
+  const reachable = e => e.classList.contains("scrolls") ||
+    [...e.children].every(k => k.querySelector(".pbody.scrolls"));
+  ok("and every Government column has a way down through it",
+     govStacks.length > 0 && govStacks.every(reachable),
+     govStacks.filter(e => !reachable(e)).length + " unreachable of " + govStacks.length);
 
   /* THE TAB FITS. Nothing scrolls the whole page: a screen takes the
      viewport's height and anything that cannot fit scrolls inside its own
@@ -333,7 +347,7 @@ try {
      both found that way. */
   const sheet2 = require("fs").readFileSync(
     require("path").join(__dirname, "..", "css", "terminal.css"), "utf8");
-  ["cham", "pap", "orb", "sit"].forEach(id => {
+  ["cham", "gov", "orb", "sit"].forEach(id => {
     ok("the " + id + " screen takes the viewport's height rather than growing past it",
        new RegExp("#s-" + id + "\\.screen\\.on\\{[^}]*height:100%").test(sheet2));
   });
@@ -2124,7 +2138,7 @@ try {
   const tempo = doc.querySelector("#gov-init .ini-t");
   ok("and each way of doing it", /slot/.test(body(tempo) || ""), body(tempo));
 
-  doc.querySelector('.tab[data-t="pap"]').click();
+  doc.querySelector('.tab[data-t="gov"]').click();
   const make = doc.querySelector("#gov-si [data-make]");
   ok("an order says that it costs no time, which is the point of an order",
      /no order-paper time/.test(body(make) || ""), body(make));
