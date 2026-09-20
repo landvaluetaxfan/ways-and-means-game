@@ -81,24 +81,6 @@
 
         <div class="stack scrolls">
           <div class="panel">
-            <h2>What the government can do <em id="gov-init-hdr">order-paper time</em></h2>
-            <div class="pbody scrolls" id="gov-init"></div>
-          </div>
-          <div class="panel">
-            <h2>Undertakings <em>what the government has said it will do</em></h2>
-            <div class="pbody scrolls" id="gov-owed"></div>
-          </div>
-          <div class="panel">
-            <h2>Coalition ledger <em>permanent</em></h2>
-            <div class="pbody flush scrolls">
-              <table id="gov-ledger"></table>
-              <div class="pbody scrolls"><div class="note" id="gov-ledger-note"></div></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="stack scrolls">
-          <div class="panel">
             <h2><span data-tip="instrument">Instruments</span> <em>signed, not voted</em></h2>
             <div class="pbody flush scrolls">
               <table id="gov-si"></table>
@@ -132,6 +114,24 @@
         </div>
 
         <div class="stack scrolls">
+          <div class="panel">
+            <h2>What the government can do <em id="gov-init-hdr">order-paper time</em></h2>
+            <div class="pbody scrolls" id="gov-init"></div>
+          </div>
+          <div class="panel">
+            <h2>Undertakings <em>what the government has said it will do</em></h2>
+            <div class="pbody scrolls" id="gov-owed"></div>
+          </div>
+          <div class="panel">
+            <h2>Coalition ledger <em>permanent</em></h2>
+            <div class="pbody flush scrolls">
+              <table id="gov-ledger"></table>
+              <div class="pbody scrolls"><div class="note" id="gov-ledger-note"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stack scrolls">
           <div class="panel"><h2>Standing indicators</h2><div class="pbody scrolls" id="gov-meters"></div></div>
           <div class="panel">
             <h2><span data-tip="scarcity">Scarcity</span> <em data-tip="scarcity">index, 100 at open</em></h2>
@@ -157,7 +157,7 @@
         <!-- WHAT IS BEFORE THE HOUSE. The order paper is the picker: choosing
              a measure here colours the benches for it. There is no separate
              row of buttons any more, because there was never a second list. -->
-        <div class="stack">
+        <div class="stack" id="cham-biz">
           <!-- THE CLOCK ABOVE THE BUSINESS IT PAYS FOR. Order-paper time was
                on the Government tab, two screens from the order paper it is
                spent on (§7.7). -->
@@ -211,14 +211,14 @@
               <div class="pbody scrolls"><div class="note" id="gov-margin"></div></div>
             </div>
           </div>
-          <div class="panel">
-            <h2>Own party currents</h2>
+          <details class="panel pfold">
+            <summary>Own party currents <em>fold</em></summary>
             <div class="pbody flush scrolls"><table id="gov-currents"></table></div>
-          </div>
-          <div class="panel">
-            <h2>Composition <em id="comp-hdr">by tier</em></h2>
+          </details>
+          <details class="panel pfold">
+            <summary>Composition <em id="comp-hdr">by tier</em></summary>
             <div class="pbody flush scrolls"><table id="comp-table"></table></div>
-          </div>
+          </details>
           <div class="panel">
             <h2><span data-tip="functional">Functional constituencies</span> <em data-tip="dual">40 seats, dual majority</em></h2>
             <div class="pbody flush scrolls"><table id="func-table"></table></div>
@@ -263,8 +263,16 @@
           <div class="pbody" id="w-map"></div>
         </div>
         <div class="panel">
-          <h2><span data-tip="actors">Relevant actors</span> <em data-tip="foreign">ordered by delay</em></h2>
+          <h2><span id="w-sel-hdr">What is selected</span> <em id="w-sel-sub">click the globe</em></h2>
           <div class="pbody scrolls" id="w-side"></div>
+        </div>
+        <!-- THE CAST, IN ITS OWN BOX. The powers used to be a fold at the
+             bottom of the selection panel, so reading about an anchor host
+             pushed them off the screen and selecting a body hid them
+             outright. They are not a footnote to whatever is selected. -->
+        <div class="panel">
+          <h2><span data-tip="actors">Relevant actors</span> <em data-tip="foreign">ordered by delay</em></h2>
+          <div class="pbody scrolls" id="w-actors"></div>
         </div>
       </div>
     </section>

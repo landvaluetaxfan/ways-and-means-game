@@ -178,7 +178,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    thousand pixels wide with two words on each line. Splitting it gives the
    government four columns of roughly equal width at a 1440 window: what it can
    do, who it is dealing with, what it has promised, and how it stands. */
-.g-gov{grid-template-columns:minmax(230px,300px) minmax(300px,380px) minmax(0,1fr) minmax(260px,320px);}
+.g-gov{grid-template-columns:minmax(300px,380px) minmax(0,1fr) minmax(230px,300px) minmax(260px,320px);}
 /* THE SCREEN TAKES THE VIEWPORT, as the Chamber and the orbit do. This came
    over from the Papers tab when Papers was folded in: the register used to
    carry an inline max-height in the markup to stop its column running away,
@@ -201,7 +201,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    overflow of its own, the canvas takes every pixel the panel can give, and the
    SVG is capped by BOTH dimensions — so the smaller of width and height wins
    and it is never larger than the space it is in. */
-.g-world{grid-template-columns:minmax(0,1fr) minmax(280px,340px);height:100%;min-height:0;
+.g-world{grid-template-columns:minmax(0,1fr) minmax(260px,330px) minmax(230px,300px);height:100%;min-height:0;
   align-items:stretch;grid-template-rows:minmax(0,1fr);}
 #s-world.screen.on{display:flex;flex-direction:column;height:100%;min-height:0;}
 #s-world .grid{flex:1 1 auto;min-height:0;}
@@ -331,6 +331,12 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    it were squeezed to make room, and the forecast clipped. The plan is
    the thing the screen is for; it does not give up height to a list. */
 .g-cham > .stack > .panel:first-child{flex:0 0 auto;min-height:0;}
+/* THE CLOCK IS A READOUT AND THE ORDER PAPER IS THE LIST. Order-paper time
+   came over from the Government tab at its old size — 302px measured — and
+   pushed the order paper into a scroller on a screen with room for it. The
+   clock is capped and the paper under it takes what is left. */
+#cham-biz #gov-slots{max-height:148px;}
+#cham-biz > .panel:nth-child(2){flex:1 1 auto;min-height:260px;}
 /* THE WHIP PANEL SIZES TO ITS CONTENT, except while its division list is
    open — then it takes the rest of the column. The list is the one thing in
    the panel that can be 280 names long, and the room it needs is the room
@@ -581,7 +587,18 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
      never scrolls; the thing inside the tab does. */
   overflow:hidden;
 }
-.panel > h2{
+/* A PANEL THAT FOLDS. The Chamber's reference column carries four tables and
+   the player wants one at a time; with all four open it was taller than the
+   screen and every one of them scrolled. A <details> IS the panel, so the
+   summary has to wear the same bar an <h2> does — same rule, two subjects,
+   rather than a second bar that drifts from the first. */
+.panel.pfold{display:block;}
+.panel.pfold > summary{cursor:pointer;list-style:none;}
+.panel.pfold > summary::-webkit-details-marker{display:none;}
+.panel.pfold > summary::after{content:"+";float:right;font-family:var(--f-data);opacity:.8;}
+.panel.pfold[open] > summary::after{content:"\2212";}
+.panel.pfold[open]{display:flex;flex-direction:column;}
+.panel > h2,.panel.pfold > summary{
   margin:0;background:var(--bar);color:var(--bar-txt);
   font-size:11px;font-weight:bold;letter-spacing:.11em;text-transform:uppercase;
   padding:2px 6px;display:flex;justify-content:space-between;gap:8px;
@@ -943,6 +960,38 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 }
 @media (max-width:1080px){
   .g-gov,.g-cham,.g-orb,.g-disp,.g-elec,.g-sit,.g-world{grid-template-columns:minmax(0,1fr);}
+
+  /* ONE COLUMN MEANS THE PAGE SCROLLS, and it did not. Every screen is
+     height:100% with grid-template-rows:minmax(0,1fr) — ONE row, sized to
+     the viewport — which is right for columns side by side and wrong the
+     moment they are stacked: four panels then divide a single viewport
+     height and all but the first are squeezed to nothing. Measured on the
+     world tab at 1024x640 with the globe taking 307px and the two panels
+     under it getting 27px each. That is not a CLIP, because a .pbody
+     scrolls, so npm run layout passed it — and 27px of a scroller is
+     useless, which is the same bug wearing a shape the check cannot see.
+
+     Below the collapse the screens give their height back and #viewport
+     does the scrolling, which is what it carries .scrolls for. Every panel
+     gets a floor so a stacked column reads as a page rather than as a row
+     of slots. */
+  #s-sit.screen.on,#s-gov.screen.on,#s-cham.screen.on,
+  #s-orb.screen.on,#s-world.screen.on{height:auto;min-height:0;}
+  .g-sit,.g-gov,.g-cham,.g-orb,.g-world{
+    grid-template-rows:none;height:auto;min-height:0;}
+  .g-sit > .stack,.g-gov > .stack,.g-cham > .stack,
+  .g-orb > .panel,.g-world > .panel{overflow:visible;}
+  .grid > .panel,.grid > .stack > .panel{min-height:170px;}
+  /* AN ID OUTRANKS A CLASS, which is the trap CLAUDE.md already records
+     against #s-orb.screen. `#s-world .panel{min-height:0}` quietly beat
+     every rule above and the two panels beside the globe stayed 27px tall
+     however many class selectors were pointed at them. Measured, not read:
+     the computed min-height came back 0px. */
+  #s-world .panel,#s-orb .panel{min-height:170px;overflow:visible;}
+  #s-world .panel:first-child{min-height:340px;}
+  #s-world #w-side,#s-world #w-actors{flex:1 1 auto;min-height:140px;}
+  #s-world .grid{flex:0 0 auto;}
+
   /* one column: the plan is already fluid, nothing to release */
   .newsbody{column-count:1;}
 }

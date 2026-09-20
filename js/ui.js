@@ -3567,6 +3567,7 @@ const UI = (function () {
         sd.querySelectorAll("[data-goto]").forEach(b =>
           b.addEventListener("click", () => openTarget(b)));
       }
+      worldSelHead();
     });
     World.wire($("#w-canvas"), () => {
       const c = $("#w-canvas");
@@ -3574,9 +3575,27 @@ const UI = (function () {
     });
 
     if (side) side.innerHTML = worldSideHTML();
-    const sel = World.selected();
+    const act = $("#w-actors");
+    if (act) {
+      act.innerHTML = worldActorsHTML();
+      act.querySelectorAll("[data-goto]").forEach(b =>
+        b.addEventListener("click", () => openTarget(b)));
+    }
+    worldSelHead();
     side && side.querySelectorAll("[data-goto]").forEach(b =>
       b.addEventListener("click", () => openTarget(b)));
+  }
+
+  /* The selection panel says what it is showing, so a column of prose is
+     never unlabelled. */
+  function worldSelHead() {
+    const hdr = $("#w-sel-hdr"), sub = $("#w-sel-sub");
+    if (!hdr) return;
+    const body = World.selectedBody(), sel = World.selected();
+    if (body)      { hdr.textContent = "The body";  sub.textContent = "beyond the Earth"; }
+    else if (sel)  { hdr.textContent = countryName(sel);
+                     sub.textContent = "anchor host and sovereign"; }
+    else           { hdr.textContent = "What is selected"; sub.textContent = "click the globe"; }
   }
 
   /* WHAT A COUNTRY IS, when you click it. The column is the window: the
@@ -3638,19 +3657,24 @@ const UI = (function () {
       }
       if (s.markets) h += `<div class="rulehead">What it sells</div><div class="note">${esc(s.markets)}</div>`;
     }
-    /* THE ACTORS, and the list is the campaign's own cast — gated, so the four
-       powers are not presented as the game before the story has introduced
-       them. Before the station issue the panel says what it is waiting for. */
-    if (!foreignOpen()) {
-      h += `<div class="rulehead">Relevant actors</div>` +
-        `<div class="note">The powers outside the Commonwealth are not yet in play. ` +
-        `They become relevant when the station question is raised, and not before.</div>`;
-    } else {
-      h += `<details class="w-allfold" open><summary><b>Relevant actors</b>` +
-        `<span>ordered by delay</span></summary>` +
-        `<div class="pbody scrolls">${foreignHTML()}</div></details>`;
-    }
     return h;
+  }
+
+  /* THE ACTORS, in a panel of their own. This was a fold at the foot of the
+     selection panel, which made the campaign's whole cast a footnote to
+     whatever country had last been clicked — and `worldSideHTML` returns
+     early for a selected BODY, so selecting the Moon hid the powers
+     entirely.
+
+     Still gated: the four powers are not presented as the game before the
+     story has introduced them, and until then the panel says what it is
+     waiting for rather than standing empty. */
+  function worldActorsHTML() {
+    if (!foreignOpen())
+      return `<div class="note">The powers outside the Commonwealth are not yet ` +
+        `in play. They become relevant when the station question is raised, and ` +
+        `not before.</div>`;
+    return foreignHTML();
   }
   function countryName(iso) {
     const f = (typeof WORLD_COUNTRIES !== "undefined" ? WORLD_COUNTRIES : [])
