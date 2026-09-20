@@ -3222,3 +3222,42 @@ console.log("\nTHE ECONOMY:");
 
   if (bad) { console.log("\n" + bad + " TREND FAILURES"); process.exitCode = 1; }
 })();
+
+/* ======= THE ENDING FITS INSIDE THE CAMPAIGN =======
+   Chapter three fires one prologue a sitting and the count is the last of
+   them, so the campaign's length is really a budget for how many beats the
+   ending may have. It was hard-coded at twelve in the engine, where nobody
+   authoring content would ever see it: adding beats would have pushed the
+   count past the backstop and ended the run without it being read, which is
+   the opposite of what a backstop is for. */
+(function () {
+  let bad = 0;
+  const ok = (label, cond, extra) => {
+    if (!cond) bad++;
+    console.log((cond ? "  ok   " : "  FAIL ") + label + (extra ? "  " + extra : ""));
+  };
+  console.log("\nTHE ENDING FITS THE CAMPAIGN");
+  console.log("=".repeat(56));
+
+  const window = (CONTENT.setup && CONTENT.setup.campaignSittings) || 12;
+  const pro3 = CONTENT.events.filter(e => e.chapter === 3 && e.prologue);
+  /* One sitting is spent on the dissolution itself before the chapter opens. */
+  const needs = pro3.length + 1;
+
+  ok("the campaign is long enough to read every chapter-three beat",
+     needs <= window,
+     needs + " sittings of beats in a " + window + "-sitting campaign" +
+     (needs > window ? "  -> raise setup.campaignSittings" : ""));
+
+  const count = pro3.slice().sort((a, b) => b.prologue - a.prologue)[0];
+  ok("and the last beat is the count, which ends the run",
+     !!count && /count/.test(count.id),
+     count ? count.id + " (prologue " + count.prologue + ")" : "no chapter-three prologue");
+
+  ok("the count sets the flag that ends the run",
+     !!count && [].concat(...(count.choices || []).map(c => [].concat(c.effects || [])))
+       .some(f => f && f.flag === "campaign_done"),
+     "campaign_done");
+
+  if (bad) { console.log("\n" + bad + " ENDING FAILURES"); process.exitCode = 1; }
+})();

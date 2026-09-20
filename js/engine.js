@@ -4575,10 +4575,19 @@ const Engine = (function () {
        The settlement branch returns {over:false}: recording that the crisis
        resolved never ends the run, before or after dissolution. The election
        still ends it, on the same terms as before. */
+    /* HOW LONG THE CAMPAIGN RUNS IS CONTENT'S, not a number in here. It was
+       hard-coded at twelve, and chapter three fires one prologue a sitting —
+       so the length of the campaign silently capped how many beats the
+       ending could have. An author folding chapter four into chapter three
+       would have pushed the COUNT past the backstop and ended the run
+       without it ever being read, which is the opposite of what the
+       backstop is for. `campaignSittings` in setup, and test.js asserts the
+       chain fits inside it. */
+    const window = (C && C.setup && C.setup.campaignSittings) || 12;
     const sEarly = checkSettlement(st, C);
     if (sEarly && st.dissolved)
       return { over: !!(st.flags && st.flags.campaign_done) ||
-                     (st.dissolved.at != null && st.sitting >= st.dissolved.at + 12),
+                     (st.dissolved.at != null && st.sitting >= st.dissolved.at + window),
                kind: "election", result: st.dissolved, settlement: sEarly };
     if (st.dissolved) {
       /* THE WRITS ARE OUT AND THE CAMPAIGN RUNS. Chapter three IS the
@@ -4588,7 +4597,7 @@ const Engine = (function () {
          ch3_the_count — or when a campaign's worth of sittings has gone by,
          so a missing or gated chapter can never leave a run open for ever. */
       const done = !!(st.flags && st.flags.campaign_done);
-      const ran = st.dissolved.at != null && st.sitting >= st.dissolved.at + 12;
+      const ran = st.dissolved.at != null && st.sitting >= st.dissolved.at + window;
       return { over: done || ran, kind: "election", result: st.dissolved };
     }
     const lost = checkLoss(st, C);

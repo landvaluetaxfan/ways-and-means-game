@@ -52,6 +52,15 @@ const SETUP = {
      twenty-four points over twelve sittings and then stops. 0 turns decay
      off and restores the old behaviour. */
   trendDecay: 4,
+
+  /* HOW LONG THE CAMPAIGN RUNS, in sittings after the writs go out.
+     Chapter three fires one prologue a sitting and the COUNT is the last of
+     them, so this is really "how many beats the ending is allowed". It was
+     hard-coded at twelve in the engine, which meant an author adding beats
+     would have pushed the count past the backstop and ended the run without
+     it — test.js now asserts the chain fits, so raise this when you add to
+     chapter three rather than discovering it in play. */
+  campaignSittings: 12,
   /* HOW LONG A SESSION RUNS, in sittings. The House rises at the end of it:
      order-paper time refills, business not carried falls, and anything owed
      "before the House rises" comes due. Bible 7.7 calls order-paper time the
