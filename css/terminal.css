@@ -251,7 +251,13 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    of it — and the column overflowed by 136px, which is why the indicators
    under it were crammed. Capped, and it scrolls; the sittings nearest now
    are the ones the player wants anyway. */
-#sit-cal{max-height:240px;}
+/* TWO SELECTORS, because one was not enough and the difference is the bug.
+   `#s-sit .stack > .panel > .pbody` sets overflow:visible on the sitting
+   column s bodies, and it outranks a bare #sit-cal — so capping the height
+   alone CLIPPED 195px of calendar instead of scrolling it, which is exactly
+   the trap CLAUDE.md records: .panel clipping is only safe because every
+   .pbody is a scroller. npm run layout caught it; npm run check cannot. */
+#s-sit #sit-cal{max-height:240px;overflow:auto;}
 .bandstrip{display:flex;gap:3px;margin:-2px 0 6px;padding-left:2px;}
 .bandstrip .bs{flex:1 1 0;display:flex;flex-direction:column;align-items:center;
   border:1px solid var(--rule);background:var(--field);padding:1px 0 2px;min-width:0;}

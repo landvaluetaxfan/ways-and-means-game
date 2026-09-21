@@ -231,7 +231,7 @@ const PROBE = `
       if (k.width || k.height) {
         if ((axis === "y" ? k.bottom : k.right) > edge + TOL)
           return name(kid) + (kid.textContent || "").trim()
-                   .replace(/\s+/g, " ").slice(0, 30).replace(/^/, ' "') + '"';
+                   .replace(/\\s+/g, " ").slice(0, 30).replace(/^/, ' "') + '"';
       }
       for (var m = 0; m < kid.children.length; m++) stack.push(kid.children[m]);
     }
