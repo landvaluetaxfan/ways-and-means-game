@@ -107,6 +107,7 @@ const SCHEMA = {
     priceBelow:     { label:"Price below",             form:"map", src:"prices", vtype:"int" },
     capitalAbove:   { label:"Debt above",              form:"map", src:"parties", vtype:"int" },
     capitalBelow:   { label:"Debt below",              form:"map", src:"parties", vtype:"int" },
+    pairsKeptAtLeast: { label:"Pairs honoured at least", form:"int" },
     economyAbove:   { label:"Productive economy above", form:"map", src:"economyKeys", vtype:"num" },
     economyBelow:   { label:"Productive economy below", form:"map", src:"economyKeys", vtype:"num" },
     slotsLeft:      { label:"Order-paper slots left",  form:"int" },

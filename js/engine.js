@@ -1538,6 +1538,19 @@ const Engine = (function () {
     st.actedThisSitting = true;
     const b = C.billById[billId];
     const result = division(st, C, billId);     // whips still in place
+    /* A PAIR THAT WAS HONOURED IS A FACT AND WAS RECORDED NOWHERE.
+       Pairing landed as a mechanic on 15 September: st.pairs holds the plan,
+       division() takes the seats out of both counts, and clearPairs deletes
+       the plan afterwards. Nothing anywhere remembered that it happened, so
+       `the_pairing_kept` — an event about the courtesy being remembered —
+       was gated on a flag no part of this program sets, and could never
+       fire. A count, incremented once per division that ran with a pair in
+       force, and `pairsKeptAtLeast` reads it. Read with `|| 0` rather than
+       migrated: nought is the truth for a save written before the count
+       existed, because no pair it kept was ever written down. */
+    if (Object.keys((st.pairs || {})[billId] || {})
+          .some(pid => ((st.pairs[billId] || {})[pid] || 0) > 0))
+      st.pairsKept = (st.pairsKept || 0) + 1;
     const paid = payWhips(st, C, billId);       // now charge for them
     /* And the promises come due later, which is the point of them. Settled
        after the count for the same reason the whips are: the result must be
@@ -3370,7 +3383,9 @@ const Engine = (function () {
     owes:           (st, v) => [].concat(v).every(id =>
                       (st.undertakings || []).some(u => u.id === id && u.state === "open")),
     breached:       (st, v) => [].concat(v).every(id =>
-                      (st.undertakings || []).some(u => u.id === id && u.state === "broken"))
+                      (st.undertakings || []).some(u => u.id === id && u.state === "broken")),
+    /* How many divisions have run with a pair in force. See divide(). */
+    pairsKeptAtLeast: (st, v) => (st.pairsKept || 0) >= v
   };
 
   /* ---------------------------------------------------------

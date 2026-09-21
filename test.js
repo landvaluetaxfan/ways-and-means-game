@@ -62,6 +62,73 @@ expect("functional need", d.functional.need, 21);
    transit prices, which drift on their own, so the figure is a band and the
    SEPARATION between the two runs is the claim.
    --------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------
+   GATES THAT WERE DEAD (21 September 2026)
+
+   Three gates named flags nothing in the project set, so the events behind
+   them could never fire however the game was played: a minister's
+   resignation, the courtesy of a kept pair, and — worst — both branches of
+   `indemnity_settles` where the cover actually PAYS, so a government could
+   buy indemnity against a freeze and the policy could never answer.
+
+   Each now reads real state instead of a flag: a broken undertaking, a
+   count of divisions run with a pair in force, and a flag the freeze itself
+   sets. Asserted in both directions, because "it matches once I force the
+   state" proves nothing on its own — a gate that matches unconditionally
+   would pass that and be worse than a dead one.
+
+   tools/lint.js has the general check. This pins the three repairs.
+   --------------------------------------------------------------------- */
+console.log("\nGATES THAT WERE DEAD:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const ev = id => CONTENT.events.find(e => e.id === id);
+  const both = (id, arm) => {
+    const e = ev(id), off = Engine.newGame(CONTENT), on = Engine.newGame(CONTENT);
+    arm(on);
+    return { blocked: !Engine.matches(off, e.when), fires: Engine.matches(on, e.when) };
+  };
+
+  let r = both("minister_resignation",
+    s => { s.undertakings = [{ id: "licensure_carveout", state: "broken" }]; });
+  ok("a minister resigns when a promise in their name is broken",
+     r.blocked && r.fires, "blocked " + r.blocked + ", fires " + r.fires);
+
+  r = both("the_pairing_kept", s => { s.pairsKept = 1; });
+  ok("the kept pair is reachable once a division has run with one",
+     r.blocked && r.fires, "blocked " + r.blocked + ", fires " + r.fires);
+
+  /* And the count it reads is actually incremented by dividing. */
+  const st = Engine.newGame(CONTENT);
+  ok("and nothing has kept a pair at the opening", !st.pairsKept, String(st.pairsKept));
+
+  /* The freeze records itself, which is what re-opens the payout branches. */
+  const fz = ev("f1_accounts_freeze");
+  const sets = [].concat(fz.effects || []).some(e => e.flag === "f1_frozen");
+  ok("the accounts freezing sets the flag the indemnity pays on", sets);
+  const ind = ev("indemnity_settles");
+  const payout = (ind.choices || []).filter(c =>
+    c.when && (c.when.flags || []).indexOf("f1_frozen") >= 0);
+  ok("so both payout branches of the indemnity are reachable",
+     payout.length === 2, payout.length + " branches want f1_frozen");
+  const froze = Engine.newGame(CONTENT);
+  froze.flags.f1_frozen = true; froze.flags.indemnity_suppliers = true;
+  ok("and one of them opens when the accounts have frozen",
+     Engine.matches(froze, payout[0].when) &&
+     !Engine.matches(Engine.newGame(CONTENT), payout[0].when));
+
+  /* flagsAbsent was suspected and is sound; asserted so it stays that way,
+     since 33 gates in content depend on it. */
+  const f = Engine.newGame(CONTENT); f.flags.probe_flag = true;
+  ok("flagsAbsent blocks when the flag is present",
+     !Engine.matches(f, { flagsAbsent: ["probe_flag"] }) &&
+     Engine.matches(Engine.newGame(CONTENT), { flagsAbsent: ["probe_flag"] }));
+
+  if (bad) { console.log("\n" + bad + " DEAD GATE FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nTHE PRODUCTIVE ECONOMY:");
 (function () {
   let bad = 0;

@@ -19,11 +19,14 @@
 
 const fs = require("fs"), vm = require("vm"), path = require("path");
 const root = path.join(__dirname, "..");
-const files = ["setup", "parties", "stations", "constituencies", "cabinet", "instruments","initiatives", "minutes", "characters", "bills", "events", "glossary", "encyclopedia", "labour", "actors"]
+/* settlements, business and achievements were added for the flag audit at the
+   bottom: a flag set in a file this tool does not load reads as a flag
+   nothing sets, and an audit with a hole in it is worse than none. */
+const files = ["setup", "parties", "stations", "constituencies", "cabinet", "instruments","initiatives", "minutes", "characters", "bills", "events", "glossary", "encyclopedia", "labour", "actors", "settlements", "business", "achievements"]
   .map(f => path.join(root, "content", f + ".js"));
 vm.runInThisContext(files.map(f => fs.readFileSync(f, "utf8")).join("\n") +
-  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS};");
-const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS } = globalThis.__G;
+  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES};");
+const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES } = globalThis.__G;
 
 const MAX_NEW_CLUSTERS = 1;  // per event. Raise this and you are choosing to confuse people.
 
@@ -648,6 +651,80 @@ EVENTS.forEach(e => (e.choices || []).forEach((c, i) => {
 }));
 section("CHOICES THE GAME WOULD DRAW AS \"undefined\"", labelBad, x => x);
 
+/* =============================================================
+   A GATE NOTHING CAN SATISFY
+
+   An event whose `when.flags` names a flag that nothing anywhere sets can
+   never fire. It is not rare content, it is dead content: the prose is
+   written, the choices are balanced, and no play reaches it.
+
+   This check exists because of how badly hand-auditing it went. A probe
+   written in the terminal reported FOURTEEN unsettable flags, because it
+   collected `{flag:"name"}` and not `{flag:{name:true}}` — and
+   content/initiatives.js writes every one of its flags the second way. The
+   real number was three. A measurement that can be wrong by eleven in
+   either direction is a measurement that has to live in a file and be run,
+   not typed fresh each time somebody wonders.
+
+   HARD, because the failure is invisible in play: the event simply never
+   appears, and nothing distinguishes that from an event whose conditions
+   have not come up yet.
+
+   `flagsAbsent` is advisory rather than fatal. Requiring the ABSENCE of a
+   flag nothing sets is trivially satisfied, so it costs nothing at
+   runtime — but it means the author expected something to set it, so it is
+   worth printing.
+   ============================================================= */
+const flagSet = new Set();
+(function collectFlags() {
+  const walk = (n) => {
+    if (!n || typeof n !== "object") return;
+    if (Array.isArray(n)) return n.forEach(walk);
+    /* BOTH SPELLINGS. `{flag:"x"}` and `{flag:{x:true, y:true}}` are both
+       live in content and the engine takes either. Reading one is the bug
+       this whole section is named after. */
+    if (typeof n.flag === "string") flagSet.add(n.flag);
+    else if (n.flag && typeof n.flag === "object")
+      Object.keys(n.flag).forEach(f => flagSet.add(f));
+    Object.keys(n).forEach(k => {
+      if (k === "flag") return;                  /* already taken, both ways */
+      if (n[k] && typeof n[k] === "object") walk(n[k]);
+    });
+  };
+  [EVENTS, BILLS, INSTRUMENTS, INITIATIVES, SETTLEMENTS, BUSINESS,
+   ACHIEVEMENTS, MINUTES].forEach(coll => (coll || []).forEach(walk));
+})();
+
+const gateNeeds = {}, gateAbsent = {};
+(function collectGates() {
+  const cw = (w, tag) => {
+    if (!w || typeof w !== "object") return;
+    (w.flags || []).forEach(f => (gateNeeds[f] = gateNeeds[f] || []).push(tag));
+    (w.flagsAbsent || []).forEach(f => (gateAbsent[f] = gateAbsent[f] || []).push(tag));
+    Object.keys(w).forEach(k => {
+      if (k === "flags" || k === "flagsAbsent") return;
+      if (w[k] && typeof w[k] === "object" && !Array.isArray(w[k])) cw(w[k], tag);
+    });
+  };
+  EVENTS.forEach(e => {
+    cw(e.when, "event " + e.id);
+    (e.choices || []).forEach((c, i) => cw(c.when, "event " + e.id + " choice " + (i + 1)));
+  });
+  (BILLS || []).forEach(b => cw(b.when, "bill " + b.id));
+  (INSTRUMENTS || []).forEach(i => cw(i.when, "instrument " + i.id));
+  (SETTLEMENTS || []).forEach(x => cw(x.when, "settlement " + x.id));
+  (INITIATIVES || []).forEach(x => cw(x.when, "initiative " + x.id));
+})();
+
+const gateBad = Object.keys(gateNeeds).filter(f => !flagSet.has(f))
+  .map(f => `"${f}" is required by ${[...new Set(gateNeeds[f])].join(", ")} ` +
+            `and set by nothing`);
+n += section("GATES NOTHING CAN SATISFY", gateBad, x => x);
+const gateAdv = Object.keys(gateAbsent).filter(f => !flagSet.has(f) && !gateNeeds[f])
+  .map(f => `"${f}" is required ABSENT by ${[...new Set(gateAbsent[f])].join(", ")} ` +
+            `and set by nothing, so the condition never does anything`);
+section("FLAGS REQUIRED ABSENT THAT NOTHING SETS (advisory)", gateAdv, x => x);
+
 R.push("=".repeat(60));
 R.push(n ? `${n} legibility issues` : "no legibility issues");
 if (artBad.length) R.push(`${artBad.length} ARTIFACT SHAPE FAILURES`);
@@ -657,6 +734,7 @@ if (parseBad.length) R.push(`${parseBad.length} STYLESHEET PARSE FAILURES`);
 if (verbBad.length) R.push(`${verbBad.length} RETIRED EFFECT VERBS IN CONTENT`);
 if (initBad.length) R.push(`${initBad.length} INITIATIVES WITH NO ANSWER`);
 if (labelBad.length) R.push(`${labelBad.length} UNLABELLED CHOICES`);
+if (gateBad.length) R.push(`${gateBad.length} GATES NOTHING CAN SATISFY`);
 if (popBad.length) R.push("THE POPULATION IS STORED TWICE AND HAS DRIFTED (advisory)");
 console.log(R.join("\n"));
 /* HARD FAILURES: everything except popBad. The chain is one of them now —
@@ -668,4 +746,4 @@ console.log(R.join("\n"));
    fails from the day it lands gets disabled rather than fixed. */
 if (artBad.length || chainBad.length || cssBad.length || verbBad.length ||
     parseBad.length || initBad.length || gridBad.length || targetBad.length ||
-    labelBad.length) process.exit(1);
+    labelBad.length || gateBad.length) process.exit(1);

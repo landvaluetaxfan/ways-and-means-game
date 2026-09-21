@@ -951,7 +951,14 @@ that put you here intends to keep you.`,
    player's to choose — that is the point of it. */
 /* REACH: the engine sets minister_resigned when an undertaking naming a post breaks. */
 { id:"minister_resignation", chapter:2, weight:99, once:true,
-  when:{ flags:["minister_resigned"] },
+  /* Was `flags:["minister_resigned"]`, which nothing set. The prose already
+     says what the gate should be — "a promise was made in that minister's
+     name and the promise was not kept" — and a broken undertaking is real
+     state the engine keeps. The carve-out is the promise made in the Life
+     Support minister's name, so breaching it is what produces this letter.
+     Still `once`: the gate names one undertaking and an undertaking breaks
+     once, so a second firing was never possible to begin with. */
+  when:{ breached:["licensure_carveout"] },
   title:"A resignation",
   speaker:null,
   body:`The letter is on the desk before the morning brief, which is how these
@@ -1971,6 +1978,14 @@ chamber is still arguing about the water.`,
 /* REACH: friction above 70; the couplings ramp it there. */
 { id:"f1_accounts_freeze", chapter:2, weight:87, once:true,
   when:{ scalarAbove:{ friction:70 } },
+  /* THE FREEZE HAS TO RECORD ITSELF. Two of the four branches of
+     `indemnity_settles` are the ones where the cover PAYS, and both wanted
+     `f1_frozen` — which nothing in the project set, so a government could
+     buy indemnity against exactly this and the policy could never answer.
+     An effect on the event rather than on a choice, because the accounts
+     freeze in the body: it has happened by the time the player is asked
+     anything, and both answers are answers to it. */
+  effects:[{ flag:"f1_frozen" }],
   title:"The accounts are frozen",
   speaker:"hatt",
   body:`The wire says it at 06:00 and the Treasury confirms it by nine. The
@@ -2720,7 +2735,10 @@ we want something that is not arithmetic."`,
 
 /* REACH: the flag is set by the pairing control in the whip panel (a UI action), not by content. */
 { id:"the_pairing_kept", chapter:2, weight:56, once:true,
-  when:{ flags:["paired"] },
+  /* Was `flags:["paired"]`, which nothing set, so this could never fire.
+     It reads the engine's own count of divisions that ran with a pair in
+     force — the fact the scene is about. */
+  when:{ pairsKeptAtLeast:1 },
   title:"The kindness, remembered",
   speaker:null,
   body:`The member came back from the reabsorption on the Tuesday, and the

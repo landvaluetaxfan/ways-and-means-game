@@ -48,13 +48,18 @@ const INITIATIVES = [
     note: "Nobody has counted how many people the standing shed orders have " +
           "suspended. Whoever produces the number will have to live with it.",
     cost: 1,
+    /* `review_ordered` is what makes this once-only, and nothing set it — so
+       the review could be commissioned again every sitting, and a second
+       order would have arrived while the first was still out. Both tempos
+       set it, because either one is an order having been given. */
     when: { flagsAbsent: ["review_ordered"] },
     event: "review_reports",
     tempo: [
       { label: "A note from the department, this week", after: 2,
-        effects: [ { flag: { review_thin: true } } ] },
+        effects: [ { flag: { review_thin: true, review_ordered: true } } ] },
       { label: "An independent inquiry, properly staffed", after: 8, cost: 1,
-        effects: [ { flag: { review_full: true } }, { move: { solvency: -3000 } } ] }
+        effects: [ { flag: { review_full: true, review_ordered: true } },
+                   { move: { solvency: -3000 } } ] }
     ] },
 
   /* A PUBLIC COMMITMENT, which is the one that cannot be taken back.
@@ -65,13 +70,18 @@ const INITIATIVES = [
     note: "Everyone has inferred the government's position. Saying it out loud " +
           "makes it something she can be held to.",
     cost: 2,
+    /* Same hole as commission_review: `position_stated` is what stops the
+       government stating its position twice, and nothing set it. A position
+       stated offhand and a position stated in a text are both the position
+       having been stated, so both tempos close it. */
     when: { flagsAbsent: ["position_stated"] },
     event: "position_lands",
     tempo: [
       { label: "At questions, in an answer", after: 1,
-        effects: [ { flag: { position_offhand: true } } ] },
+        effects: [ { flag: { position_offhand: true, position_stated: true } } ] },
       { label: "A statement to the House, with a text", after: 3,
-        effects: [ { undertake: { id: "carry_threshold",
+        effects: [ { flag: { position_stated: true } },
+                   { undertake: { id: "carry_threshold",
                                   text: "Carry the threshold bill this session",
                                   by: null } },
                    { move: { public_standing: 3, "loyalty.cu_maintenance": -4 } } ] }
