@@ -22,14 +22,21 @@ const World = (function () {
   "use strict";
   let st = null, C = null;
   const D2R = Math.PI / 180;
-  const view = { lat: 14, lng: 18, mode: "globe", auto: true, sel: null, zoom: 1 };
+  /* THE GLOBE IS STILL UNTIL IT IS ASKED TO TURN. It spun on arrival, which
+     moves the thing the player is trying to click and makes the first
+     impression of the tab a toy rather than a map. Spinning is one button
+     away and is remembered for the session once asked for. */
+  const view = { lat: 14, lng: 18, mode: "globe", auto: false, sel: null, zoom: 1 };
   let W = 720, H = 480, R = 200;
 
   function set(state, content) { st = state; C = content; }
   function mode() { return view.mode; }
   function toggle() {
     view.mode = view.mode === "globe" ? "map" : "globe";
-    view.auto = view.mode === "globe";
+    /* SWITCHING TO THE GLOBE USED TO START IT SPINNING, which quietly
+       overrode the player's own choice every time they changed view. The
+       mode and the motion are two decisions and only one of them is being
+       taken here. */
     return view.mode;
   }
   function selected() { return view.sel; }
@@ -168,7 +175,16 @@ const World = (function () {
     let countries = "";
     (typeof WORLD_COUNTRIES !== "undefined" ? WORLD_COUNTRIES : []).forEach(c => {
       const lit = !!sel && c.i === sel;
-      const has = anchors.some(a => a.host === c.n) || !!((WORLD.states || {})[c.i] || {}).actor;
+      /* A STATE IS MARKED WHEN IT IS AN ACTOR IN PLAY, and not before. This
+         also marked every anchor host, which is most of the map and none of
+         it interesting: an anchor is a fact about the Commonwealth's
+         dependencies, not a power taking a position. And the four powers
+         are gated behind the station question, so marking them before that
+         presents the foreign game as the game before the story has
+         introduced it — the side panel has always obeyed that gate and the
+         map did not. */
+      const open = !!(st && st.flags && st.flags.station_issue);
+      const has = open && !!((WORLD.states || {})[c.i] || {}).actor;
       let d = "";
       (c.g || []).forEach(rings => rings.forEach(r => d += ringD(r) + " "));
       if (!d.trim()) return;

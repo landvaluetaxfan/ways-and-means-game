@@ -4110,11 +4110,11 @@ const UI = (function () {
           `<span class="fgn-lag">${a.mine ? (a.leased ? "leased" : "held") : "foreign"}</span></div>` +
           `<div class="note">${esc(a.site)}${a.formal ? " &middot; " + esc(a.formal) : ""}` +
           `${a.station ? " &middot; serves the " + esc(stationName(a.station)) : ""}</div></div>`).join("");
-      } else {
-        h += `<div class="rulehead">Anchors</div><div class="note">None. The Commonwealth ` +
-          `depends on this state for nothing it cannot get elsewhere, which is a fact as ` +
-          `load-bearing as the ones above it.</div>`;
       }
+      /* NO HEADING WHERE THERE IS NOTHING UNDER IT. This printed an Anchors
+         section reading "None" for every state that has none, which is most
+         of them — a heading and three lines of prose to say that a country
+         is not relevant, on every country that is not relevant. */
       if (s.actor) {
         const a = (C.actors || []).find(x => x.id === s.actor);
         const live = (st.actors || {})[s.actor] || {};
@@ -4138,10 +4138,14 @@ const UI = (function () {
      story has introduced them, and until then the panel says what it is
      waiting for rather than standing empty. */
   function worldActorsHTML() {
+    /* IT SAYS THE PANEL IS EMPTY AND NOT WHY. The old line named the
+       station question as the trigger, which spoils a turn the campaign has
+       not taken yet AND assumes this campaign: the gate is a flag, and
+       another campaign will raise it for another reason entirely. An empty
+       panel should say it is empty, which is all the player needs. */
     if (!foreignOpen())
-      return `<div class="note">The powers outside the Commonwealth are not yet ` +
-        `in play. They become relevant when the station question is raised, and ` +
-        `not before.</div>`;
+      return `<div class="note">No power outside the Commonwealth is before the ` +
+        `government at present. They appear here when one is.</div>`;
     return foreignHTML();
   }
   function countryName(iso) {

@@ -246,6 +246,12 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .btn.tiny.sack:disabled{opacity:.35;}
 #gov-cabinet td:last-child{width:1%;white-space:nowrap;}
 /* the standing bands, under the national figure they add up to */
+/* THE CALENDAR IS A READOUT, NOT THE SCREEN. Measured on the sitting tab at
+   1600x1000: the calendar was 461px of an 821px column — fifty-six per cent
+   of it — and the column overflowed by 136px, which is why the indicators
+   under it were crammed. Capped, and it scrolls; the sittings nearest now
+   are the ones the player wants anyway. */
+#sit-cal{max-height:240px;}
 .bandstrip{display:flex;gap:3px;margin:-2px 0 6px;padding-left:2px;}
 .bandstrip .bs{flex:1 1 0;display:flex;flex-direction:column;align-items:center;
   border:1px solid var(--rule);background:var(--field);padding:1px 0 2px;min-width:0;}
