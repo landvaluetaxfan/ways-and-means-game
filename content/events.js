@@ -2931,6 +2931,11 @@ you already have.`,
       note:"Costs nothing today.",
       effects:[
         { move:{ public_standing:-4, party_loyalty:-2 } },
+        /* AND IT LANDS HARDEST WHERE THE RESERVE IS SPENT. The low band is
+           where the consumables floor is carried and where a thin reserve
+           is felt first, so a government that will not say what it holds
+           loses more there than the national figure shows. */
+        { move:{ "standing.low":-3 } },
         { wire:"PRIME MINISTER REFERS RESERVE QUESTION TO THE TREASURY AGAIN" }
       ],
       result:"It cost nothing today. It is the fourth time, and the fourth time is the one the gallery counted." },

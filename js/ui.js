@@ -1097,6 +1097,13 @@ const UI = (function () {
       </div>`;
   }
 
+  /* The bands' own words. Content names them; this only capitalises. */
+  const BAND_WORD = { ring: "Ring", middle: "Middle", low: "Low",
+                      far: "Far", external: "External" };
+  function bandName(b) {
+    return BAND_WORD[b] || String(b).replace(/_/g, " ");
+  }
+
   function drawPrices() {
     const box = $("#gov-prices"); if (!box) return;
     box.innerHTML = PRICE_META.map(m => {
@@ -1271,9 +1278,27 @@ const UI = (function () {
           f <= 0 ? "At nought the stations go dark and the government falls. There is no undo."
                  : "At " + f + " or below the party removes you. There is no undo.") +
         `></span>`;
+      /* THE COUNTRY IS NOT ONE PLACE. `public_standing` is the
+         electorate-weighted mean of the bands, so the row that shows it
+         shows its own parts underneath: a government can be liked in the
+         ring and finished in the low band and the national figure will say
+         it is doing fine. The strip is not a second number — it is the
+         first one, at the resolution the election reads it at. */
+      const strip = (k === "public_standing" && st.standing)
+        ? `<div class="bandstrip">` + Engine.bandsOf(C).map(b => {
+            const n = st.standing[b];
+            const far = n - v;
+            return `<span class="bs${far <= -6 ? " low" : far >= 6 ? " high" : ""}"` +
+              tipAttr(bandName(b) + " band",
+                "The government's standing where these seats are: " + n +
+                ", against " + v + " nationally. The election reads this, " +
+                "not the average.") +
+              `><i>${esc(bandName(b))}</i><b>${n}</b></span>`;
+          }).join("") + `</div>`
+        : "";
       return `<div class="meterrow" data-key="${k}"><label data-tip="${k}">${lab}</label>` +
         `<div class="meter ${cls}"><i style="width:${pc}%"></i>${tick}</div>` +
-        `<output>${v}</output></div>`;
+        `<output>${v}</output></div>` + strip;
     }).join("");
 
     /* the ledger: signed, permanent, and shown exactly */

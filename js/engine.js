@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 22;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard
+  const STATE_VERSION = 23;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard
 
   /* ---------------------------------------------------------
      1. STATE
@@ -32,6 +32,14 @@ const Engine = (function () {
 
       scalars: Object.assign({}, C.setup.scalars),
       law: Object.assign({}, C.setup.law),
+      /* STANDING BY BAND. Every band of the roll opens where the national
+         figure opens: the government is equally liked everywhere until it
+         does something. */
+      standing: (function () {
+        const s = {}, open = (C.setup.scalars || {}).public_standing;
+        bandsOf(C).forEach(b => { s[b] = open == null ? 50 : open; });
+        return s;
+      })(),
 
       parties: {},
       currents: {},
@@ -374,6 +382,14 @@ const Engine = (function () {
          was never tabled. */
       st.version = 22;
     }
+    if (st.version < 23) {                    // standing, by band
+      /* Left to reconcile(), which runs on every load and seeds each band
+         from the national figure the save is already carrying. Seeding here
+         as well would put the roster in two places and let them drift —
+         the same reason v13's actors and v20's foreign trails are empty. */
+      if (!st.standing) st.standing = {};
+      st.version = 23;
+    }
     return st;
   }
 
@@ -430,6 +446,16 @@ const Engine = (function () {
        arithmetic on would have carried that undefined into solvency as NaN.
        Same rule as the scalars below: content owns the key, the save owns
        whatever the government has since done to it. */
+    /* A BAND ADDED TO THE ROLL NEEDS A NUMBER, the way a new station needed
+       an entry in st.stations. Missing means the save predates it, and the
+       honest value is the national figure it has been carrying all along. */
+    st.standing = st.standing || {};
+    bandsOf(C).forEach(b => {
+      if (st.standing[b] == null)
+        st.standing[b] = st.scalars.public_standing == null ? 50 : st.scalars.public_standing;
+    });
+    syncStanding(st, C);
+
     Object.keys(C.setup.law || {}).forEach(k => {
       if (st.law[k] === undefined) st.law[k] = C.setup.law[k];
     });
@@ -745,12 +771,75 @@ const Engine = (function () {
     return out;
   }
 
+  /* ---------------------------------------------------------
+     STANDING, BY BAND (design/33 §5).
+
+     `public_standing` was one national number, so the campaign resolved a
+     single scalar and the annexation's four seats were arithmetic rather
+     than politics. A closure on a low-band habitat and a concession to the
+     ring read identically to the electorate, which is the one thing an
+     electorate never does.
+
+     THE BANDS COME FROM THE ROLL, not from a list in here. The engine names
+     no station and no band; it reads whatever bands the constituencies
+     declare, which today is five and tomorrow is whatever content says.
+     Five is still a politics. Thirty-five stations would not be — that is
+     the failure mode §7.6 exists to prevent.
+
+     ONE SOURCE, AND THE NATIONAL NUMBER IS DERIVED. `st.scalars.public_standing`
+     is read all over the engine, the interface and content, and it stays
+     exactly where it was — but it is now the electorate-weighted mean of
+     the bands, recomputed by syncStanding() and written nowhere else. Two
+     numbers for one fact is how apportionment_ratio drifted, and this is
+     the same fact seen at two resolutions.
+
+     A bare {move:{public_standing:n}} still works and still means what it
+     meant: it moves every band alike, which is what a national event does.
+     {move:{"standing.low":-8}} is the new sentence.
+     --------------------------------------------------------- */
+  function bandsOf(C) {
+    const seen = [];
+    (C.constituencies || []).forEach(k => {
+      if (k.band && seen.indexOf(k.band) < 0) seen.push(k.band);
+    });
+    return seen;
+  }
+
+  function bandWeight(C) {
+    const w = {};
+    (C.constituencies || []).forEach(k => {
+      if (!k.band) return;
+      w[k.band] = (w[k.band] || 0) + (k.electorate || 0);
+    });
+    return w;
+  }
+
+  /* The national figure, from the bands that make it up. */
+  function syncStanding(st, C) {
+    if (!st.standing) return;
+    const w = bandWeight(C);
+    let num = 0, den = 0;
+    Object.keys(st.standing).forEach(b => {
+      const n = w[b] || 0;
+      num += st.standing[b] * n; den += n;
+    });
+    if (den > 0) st.scalars.public_standing = clamp(Math.round(num / den), 0, 100);
+  }
+
+  /* What the government's standing is where this seat is. */
+  function standingIn(st, band) {
+    if (band && st.standing && st.standing[band] != null) return st.standing[band];
+    return st.scalars.public_standing;
+  }
+
   /* Swing. Government carries the standing of the government; the
-     opposition picks up a fraction of what it drops. */
-  function swing(st) { return (st.scalars.public_standing - 50) / 100; }
+     opposition picks up a fraction of what it drops. Read WHERE THE SEAT IS
+     when the caller knows, which is what makes a closure on one band a
+     political fact rather than a national average. */
+  function swing(st, band) { return (standingIn(st, band) - 50) / 100; }
 
   function swungShares(st, C, cons) {
-    const s = shares(st, C, cons), k = swing(st);
+    const s = shares(st, C, cons), k = swing(st, cons && cons.band);
     const gov = st.coalition.concat(st.confidenceSupply);
     let tot = 0;
     Object.keys(s).forEach(id => {
@@ -3201,7 +3290,28 @@ const Engine = (function () {
       switch (ns) {
         case "scalar":
           st.scalars[k] = clamp((st.scalars[k] || 0) + d, 0,
-            SCALAR_MAX[k] == null ? 100 : SCALAR_MAX[k]); break;
+            SCALAR_MAX[k] == null ? 100 : SCALAR_MAX[k]);
+          /* A NATIONAL MOVE IS A MOVE IN EVERY BAND. Content written before
+             the bands existed goes on meaning what it meant, and the
+             national figure stays the derived one rather than becoming a
+             second number that can disagree with its own parts. */
+          if (k === "public_standing" && st.standing) {
+            Object.keys(st.standing).forEach(b => {
+              st.standing[b] = clamp(st.standing[b] + d, 0, 100);
+            });
+            syncStanding(st, C);
+          }
+          break;
+        /* {move:{"standing.low":-8}} — a band, not the country. */
+        case "standing":
+          if (st.standing && st.standing[k] != null) {
+            st.standing[k] = clamp(st.standing[k] + d, 0, 100);
+            syncStanding(st, C);
+          } else {
+            st.log.unshift({ sitting: st.sitting, text:
+              "IGNORED: no band of the roll is called " + k + "." });
+          }
+          break;
         case "loyalty": {
           const t = st.currents[k] || st.parties[k];
           if (t) t.loyalty = clamp(t.loyalty + d, 0, 100);
@@ -5312,7 +5422,8 @@ const Engine = (function () {
     lastReconcile: () => lastReconcile, nationalShares, vacantSeats, seatsFor,
     vacateSeat, crossFloor, byElection, generalElection, shares, swungShares,
     divisorAllocate,
-    reshuffle, canReshuffle, resolveMotion, motionDeadline, assent, presidentDecides, referralRisk, reviewReturns,
+    reshuffle, canReshuffle, resolveMotion, motionDeadline,
+    standingIn, bandsOf, bandWeight, syncStanding, assent, presidentDecides, referralRisk, reviewReturns,
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,

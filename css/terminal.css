@@ -245,6 +245,15 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .btn.tiny.sack{border-color:rgba(224,144,127,.55);}
 .btn.tiny.sack:disabled{opacity:.35;}
 #gov-cabinet td:last-child{width:1%;white-space:nowrap;}
+/* the standing bands, under the national figure they add up to */
+.bandstrip{display:flex;gap:3px;margin:-2px 0 6px;padding-left:2px;}
+.bandstrip .bs{flex:1 1 0;display:flex;flex-direction:column;align-items:center;
+  border:1px solid var(--rule);background:var(--field);padding:1px 0 2px;min-width:0;}
+.bandstrip .bs i{font-style:normal;font-family:var(--f-ui);font-size:8px;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);}
+.bandstrip .bs b{font-family:var(--f-data);font-size:11px;font-weight:400;}
+.bandstrip .bs.low b{color:var(--alert);}
+.bandstrip .bs.high b{color:var(--ok);}
 .expbtns{display:flex;gap:6px;margin:5px 0;}
 #exp-text{width:100%;min-height:340px;flex:1 1 auto;resize:vertical;
   font-family:var(--f-data);font-size:10.5px;line-height:1.45;

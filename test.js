@@ -1499,6 +1499,88 @@ console.log("\nA DEFERRED FACT (the queue carries effects):");
   if (bad) { console.log("\n" + bad + " DEFERRED-FACT FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nSTANDING, BY BAND:");
+(function(){
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const st = Engine.newGame(CONTENT);
+  const bands = Engine.bandsOf(CONTENT);
+  ok("the bands come from the roll, not from the engine", bands.length >= 3,
+     bands.join(", "));
+  ok("and every one of them opens with a number",
+     bands.every(b => typeof st.standing[b] === "number"),
+     bands.map(b => b + " " + st.standing[b]).join(", "));
+
+  /* ONE SOURCE. The national figure is the electorate-weighted mean of the
+     bands and is written nowhere else \u2014 two numbers for one fact is how
+     apportionment_ratio drifted. */
+  const open = st.scalars.public_standing;
+  Engine.apply(st, CONTENT, [{ move: { "standing.low": -20 } }]);
+  ok("a band can be moved on its own", st.standing.low === open - 20,
+     open + " -> " + st.standing.low);
+  ok("and the other bands do not move", st.standing.ring === open,
+     "ring " + st.standing.ring);
+  ok("and the national figure follows its own parts",
+     st.scalars.public_standing < open && st.scalars.public_standing > open - 20,
+     open + " -> " + st.scalars.public_standing);
+
+  /* a national move still means what it meant */
+  const st2 = Engine.newGame(CONTENT);
+  const o2 = st2.scalars.public_standing;
+  Engine.apply(st2, CONTENT, [{ move: { public_standing: -10 } }]);
+  ok("a national move moves every band alike",
+     bands.every(b => st2.standing[b] === o2 - 10),
+     bands.map(b => st2.standing[b]).join(", "));
+  ok("and the national figure agrees with them",
+     st2.scalars.public_standing === o2 - 10,
+     o2 + " -> " + st2.scalars.public_standing);
+
+  /* a band nobody declared is refused rather than invented */
+  const st3 = Engine.newGame(CONTENT);
+  const before3 = JSON.stringify(st3.standing);
+  Engine.apply(st3, CONTENT, [{ move: { "standing.orbital_suburbs": -30 } }]);
+  ok("a band the roll does not have is refused", JSON.stringify(st3.standing) === before3);
+  ok("and the refusal is written down where the player can see it",
+     (st3.log || []).some(l => /no band of the roll/i.test(l.text || "")));
+
+  /* THE PAYOFF: the same national standing, different seats. */
+  const lowSeat = (CONTENT.constituencies || []).find(k => k.band === "low" && !k.nonVoting);
+  const ringSeat = (CONTENT.constituencies || []).find(k => k.band === "ring" && !k.nonVoting);
+  ok("the roll has a low-band seat and a ring seat", !!lowSeat && !!ringSeat);
+  if (lowSeat && ringSeat) {
+    const flat = Engine.newGame(CONTENT);
+    const lowFlat = Engine.swungShares(flat, CONTENT, lowSeat);
+    const tilt = Engine.newGame(CONTENT);
+    Engine.apply(tilt, CONTENT, [{ move: { "standing.low": -25 } }]);
+    const lowTilt = Engine.swungShares(tilt, CONTENT, lowSeat);
+    const ringTilt = Engine.swungShares(tilt, CONTENT, ringSeat);
+    const gov = tilt.playerParty;
+    ok("losing a band costs the government votes in that band",
+       lowTilt[gov] < lowFlat[gov],
+       (lowFlat[gov] * 100).toFixed(1) + "% -> " + (lowTilt[gov] * 100).toFixed(1) + "%");
+    const ringFlat = Engine.swungShares(flat, CONTENT, ringSeat);
+    ok("and costs it almost nothing where that band does not vote",
+       Math.abs(ringTilt[gov] - ringFlat[gov]) < Math.abs(lowTilt[gov] - lowFlat[gov]),
+       "ring moved " + ((ringTilt[gov] - ringFlat[gov]) * 100).toFixed(2) +
+       " points, low moved " + ((lowTilt[gov] - lowFlat[gov]) * 100).toFixed(2));
+  }
+
+  /* a save from before the bands loads with them */
+  const old = Engine.newGame(CONTENT);
+  delete old.standing;
+  const back = Engine.load(Engine.save(old), CONTENT);
+  ok("a save with no bands gets them from the roll",
+     Engine.bandsOf(CONTENT).every(b => typeof back.standing[b] === "number"),
+     JSON.stringify(back.standing));
+  ok("and its national figure is unchanged by the backfill",
+     back.scalars.public_standing === old.scalars.public_standing,
+     old.scalars.public_standing + " -> " + back.scalars.public_standing);
+
+  if (bad) { console.log("\n" + bad + " BAND STANDING FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nNO PARTY IS CALLED BY A NAME IT NO LONGER HAS:");
 (function(){
   let bad = 0;
