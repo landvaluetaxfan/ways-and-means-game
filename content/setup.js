@@ -28,6 +28,71 @@ const SETUP = {
      everything continuously, and it prices a government it does not
      believe in out of the market). */
   borrowCap: 60000,
+
+  /* WHAT THE UNDERWRITERS SAY (bible §7.5.2 — the only party with accurate
+     numbers on everything). The engine finds which of these apply and says
+     nothing itself; every word here is in the prose file and can be
+     rewritten without touching a line of code.
+
+     One reading each, in the register of somebody who prices risk for a
+     living: the fact, then what it means for the next few sittings. No
+     advice the player could not have worked out, because the point is that
+     they did not have to. */
+  outlook: {
+    reserve_gone: { text:
+      "The reserve is exhausted. Nothing is left to appropriate and nothing " +
+      "is left to borrow against; the next shortfall is met by shedding load, " +
+      "which means by shedding people." },
+    reserve_thin: { text:
+      "At the present rate of loss the reserve is gone inside a year. There is " +
+      "time to raise a rate or cut a line, and there will not be time twice." },
+    reserve_deep: { text:
+      "The reserve is deep enough to carry a bad session. It is also deep " +
+      "enough to be noticed by anybody arguing for a line the government has " +
+      "refused to fund." },
+    receipts_short: { text:
+      "Outgoings exceed receipts. The gap is met from the reserve every " +
+      "sitting, whether or not anybody votes on it." },
+    receipts_cover: { text:
+      "Receipts cover what the government is spending and add to the reserve. " +
+      "That position holds while the prices hold, and the prices are set by " +
+      "legislation." },
+    debt_none: { text:
+      "The Commonwealth owes nothing off-world. Everything it holds is its own, " +
+      "which is a stronger position at a negotiation than it looks on a ledger." },
+    debt_light: { text:
+      "The off-world debt is small enough to service out of receipts. It is " +
+      "also on Earth's books, and Earth reads a ledger as a lever." },
+    debt_heavy: { text:
+      "The off-world debt is large enough that servicing it is now a line of " +
+      "the budget in its own right. Every point of friction adds to what it " +
+      "costs, and the government does not set the friction alone." },
+    rate_cheap: { text:
+      "Earth is lending at a rate that assumes the quarrel is temporary." },
+    rate_dear: { text:
+      "Earth is charging for the quarrel. The rate is not a judgement about " +
+      "whether the Commonwealth can pay; it is a judgement about whether it " +
+      "will still be on speaking terms when the payment falls due." },
+    prices_falling: { text:
+      "The cost of existing is falling. Somebody is being paid less for " +
+      "something, and they will say so before the session rises." },
+    prices_steady: { text:
+      "The four prices are close to where they opened. Nothing the government " +
+      "has done has reached a household yet." },
+    prices_rising: { text:
+      "The cost of existing is rising across all four goods. A household " +
+      "notices thermal first, because it is in every other price." },
+    prices_spiking: { text:
+      "The cost of existing has risen sharply. At this level the question " +
+      "stops being economic: substrate rent is the price of continuing to be " +
+      "a person, and a register of people who cannot pay it is a political " +
+      "document." },
+    volume_forgone: { text:
+      "Volume is the largest base and the one being taxed least. A levy on " +
+      "position inside a habitat has nowhere to be passed on to, so it is the " +
+      "only rate that raises revenue without raising the cost of living. " +
+      "Every Single Tax member in the House knows this figure." }
+  },
   law: { divergence_threshold_hours:168, civic_clock_minimum:0,
          suspension_debt_accrual:true, substrate_public_share:0.35, shed_order_authority:"engineering_authority",
          /* THE APPROPRIATION'S FINGERPRINT ON THE MARKET (design/13 §2.3,

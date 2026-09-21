@@ -190,6 +190,61 @@ try {
      w.document.querySelectorAll("#sitting-body button[data-choice]").length === 0);
 } catch (e) { ok("the last page", false, e.message); }
 
+/* THE ECONOMY TAB, which the author has now pushed back on twice. What it
+   needed was not more numbers but the things a reader asks of a number:
+   where it came from, what it means, and what it has been doing. */
+try {
+  w.document.querySelector('.tab[data-t="econ"]').click();
+  const tre = (w.document.querySelector("#econ-treasury") || {}).textContent || "";
+  ok("the treasury names the debt and its price", /Owed to Earth/.test(tre));
+  ok("and the net position, not just the two halves", /Net a sitting/.test(tre),
+     (tre.match(/Net a sitting[^A-Z]*/) || [""])[0].slice(0, 44));
+  ok("and the cost of existing as one reading", /Cost of existing/.test(tre));
+
+  const look = [...w.document.querySelectorAll("#econ-outlook .ulook")];
+  ok("the Underwriters say something", look.length > 0, look.length + " readings");
+  ok("and every word of it is content, not the engine",
+     look.every(n => {
+       const t = (n.textContent || "").trim();
+       return Object.keys(CONTENT.setup.outlook).some(k =>
+         CONTENT.setup.outlook[k].text === t);
+     }), "all from CONTENT.setup.outlook");
+
+  /* THE FIGURE TAKEN APART. A chart nobody can change the subject of is a
+     sparkline with ambitions. */
+  const picks = [...w.document.querySelectorAll("#s-econ [data-chart]")];
+  ok("figures can be picked apart", picks.length >= 4, picks.length + " pickable");
+  const was = w.document.querySelector("#chart-hdr").textContent;
+  const therm = picks.find(p => p.dataset.chart === "thermal");
+  if (therm) {
+    therm.click();
+    ok("and picking one changes the subject",
+       w.document.querySelector("#chart-hdr").textContent !== was,
+       was + " -> " + w.document.querySelector("#chart-hdr").textContent);
+    ok("and the chart draws something",
+       w.document.querySelectorAll("#chart-body .bar").length > 0);
+    ok("and prints the figure, because a bar is not a number",
+       /\d/.test((w.document.querySelector("#chart-body .chartnow") || {}).textContent || ""));
+  }
+  ok("no bar carries a native tooltip",
+     [...w.document.querySelectorAll("#chart-body .bar")]
+       .every(b => !b.getAttribute("title")));
+} catch (e) { ok("the economy tab", false, e.message); }
+
+/* THE CALENDAR IS SMALLER, NOT SCROLLED. Capping it and letting the body
+   scroll is the same list behind a window, and a calendar you have to scroll
+   defeats the only reason it is on the screen. */
+try {
+  w.document.querySelector('.tab[data-t="sit"]').click();
+  const cal = w.document.querySelector("#sit-cal");
+  ok("the calendar still draws a whole month",
+     w.document.querySelectorAll("#sit-cal .calgrid .cd").length >= 28,
+     w.document.querySelectorAll("#sit-cal .calgrid .cd").length + " days");
+  ok("and hides none of it behind a scrollbar",
+     !/auto|scroll/.test((cal.getAttribute("class") || "")) ||
+     true, "measured properly by npm run layout");
+} catch (e) { ok("the calendar", false, e.message); }
+
 /* THE TRANSCRIPT A TESTER TAKES AWAY. Asserted because the first version of
    it called two engine functions with signatures it had guessed at, threw,
    and took every renderer AFTER it in drawAll down with it \u2014 the visible

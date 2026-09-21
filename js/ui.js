@@ -813,6 +813,80 @@ const UI = (function () {
      to spend, and the arithmetic between them; the prices and the LAW that
      sets them, because §7.9 says they are legislative outputs and not a
      market; and the population all of it is levied from. */
+  /* WHICH FIGURE IS TAKEN APART at the foot of the economy tab. A view
+     preference for the session, so it lives here and not in the save. */
+  let chartOn = "solvency";
+
+  /* THE SERIES BEHIND A FIGURE. Everything charted here is already kept —
+     the prices keep sixty sittings of history and the state keeps its own —
+     so nothing is stored for the chart's sake. A figure with no history
+     charts as the one reading it has, which is honest: a bar is a bar. */
+  function chartSeries(key) {
+    if (key === "inflation") {
+      /* derived per sitting from the price histories, the same way
+         Engine.inflation derives the live one: one source, read backwards. */
+      const ks = Object.keys(st.priceHistory || {});
+      if (!ks.length) return { label: "Cost of existing", unit: "%", pts: [] };
+      const n = Math.min.apply(null, ks.map(k => (st.priceHistory[k] || []).length));
+      const pts = [];
+      for (let i = 0; i < n; i++) {
+        let sum = 0, c = 0;
+        ks.forEach(k => {
+          const h = st.priceHistory[k], base = h[0] || 100;
+          if (!base) return;
+          sum += (h[i] - base) / base; c++;
+        });
+        pts.push(c ? Math.round(sum / c * 1000) / 10 : 0);
+      }
+      return { label: "Cost of existing", unit: "%", pts: pts, signed: true };
+    }
+    if (st.priceHistory && st.priceHistory[key])
+      return { label: (PRICE_META.find(m => m.k === key) || {}).label || key,
+               unit: "index", pts: st.priceHistory[key].slice() };
+    if (key === "solvency")
+      return { label: "The reserve", unit: "MW-years",
+               pts: (st.solvencyHistory || [st.scalars.solvency || 0]).slice() };
+    return { label: key, unit: "", pts: [st.scalars[key] || 0] };
+  }
+
+  function drawChart() {
+    const box = $("#chart-body"); if (!box) return;
+    const s = chartSeries(chartOn);
+    const hdr = $("#chart-hdr"), sub = $("#chart-sub");
+    if (hdr) hdr.textContent = s.label;
+    if (sub) sub.textContent = s.pts.length > 1
+      ? s.pts.length + " sittings \u00b7 " + s.unit
+      : "one reading so far \u00b7 " + s.unit;
+
+    const pts = s.pts.slice(-60);
+    const now = pts.length ? pts[pts.length - 1] : 0;
+    const lo = Math.min.apply(null, pts.concat(s.signed ? [0] : []));
+    const hi = Math.max.apply(null, pts.concat(s.signed ? [0] : []));
+    const span = (hi - lo) || 1;
+    box.innerHTML =
+      `<div class="chartwrap"><div class="cnum">` +
+        `<div class="chartnow">${s.unit === "%" ? (now >= 0 ? "+" : "") + now.toFixed(1) + "%"
+                                                : Math.round(now).toLocaleString()}` +
+        `<small> now</small></div>` +
+        `<div class="note">low ${s.unit === "%" ? lo.toFixed(1) : Math.round(lo).toLocaleString()}` +
+        ` \u00b7 high ${s.unit === "%" ? hi.toFixed(1) : Math.round(hi).toLocaleString()}</div>` +
+      `</div><div class="cplot">` +
+        `<div class="bigchart">` + pts.map((v, i) => {
+          const pc = Math.max(2, Math.round((v - lo) / span * 100));
+          /* NO title ATTRIBUTE. A native tooltip is the one kind this
+             interface does not use, and sixty annotated bars would also be
+             sixty tab stops in ? mode. The chart is a SHAPE; the numbers
+             that matter are printed beside it, which is the right division
+             of labour between a figure and a reading of it. */
+          return `<i class="bar${i === pts.length - 1 ? " hi" : ""}" ` +
+            `style="height:${pc}%" aria-hidden="true"></i>`;
+        }).join("") + `</div>` +
+        `<div class="chartaxis"><span>${pts.length > 1
+            ? "sitting " + Math.max(1, st.sitting - pts.length + 1) : ""}</span>` +
+          `<span>${pts.length > 1 ? "sitting " + st.sitting : ""}</span></div>` +
+      `</div></div>`;
+  }
+
   function drawEconomy() {
     const box = $("#econ-treasury");
     if (box) {
@@ -824,12 +898,28 @@ const UI = (function () {
       try { spend = (Engine.clauseCost(st, C, "appropriation") || {}).total || 0; }
       catch (e) { spend = 0; }
       const runway = r.total > 0 ? Math.floor(solv / Math.max(1, r.total)) : null;
-      const row = (lab, val, sub, cls) =>
-        `<div class="prow"><div class="plab">${esc(lab)}${sub ? `<em>${esc(sub)}</em>` : ""}</div>` +
+      const row = (lab, val, sub, cls, pick) =>
+        `<div class="prow${pick ? " pick" + (chartOn === pick ? " on" : "") : ""}"` +
+        (pick ? ` data-chart="${esc(pick)}"` : "") +
+        `><div class="plab">${esc(lab)}${sub ? `<em>${esc(sub)}</em>` : ""}</div>` +
         `<div class="pval ${cls || ""}">${val}</div></div>`;
+      const debt = Engine.debtOf ? Engine.debtOf(st) : 0;
+      const svc = Engine.debtService ? Engine.debtService(st) : 0;
+      const infl = Engine.inflation ? Engine.inflation(st) : 0;
       box.innerHTML =
-        row("Held", solv.toLocaleString(), "the quota the state has") +
+        row("Held", solv.toLocaleString(), "the quota the state has", "", "solvency") +
         row("Receipts", "+" + r.total.toLocaleString(), "every sitting", "down") +
+        (debt
+          ? row("Owed to Earth", debt.toLocaleString(),
+                "at " + Engine.debtRate(st) + " per cent", "up") +
+            row("Debt service", "\u2212" + svc.toLocaleString(), "every sitting", "up")
+          : row("Owed to Earth", "none", "nothing is pledged off-world")) +
+        row("Net a sitting", (r.total - svc >= 0 ? "+" : "\u2212") +
+              Math.abs(r.total - svc).toLocaleString(),
+            "receipts less what the debt costs", r.total - svc < 0 ? "up" : "down") +
+        row("Cost of existing", (infl >= 0 ? "+" : "") + infl.toFixed(1) + "%",
+            "the four prices against where they opened",
+            infl > 5 ? "up" : infl < -5 ? "down" : "", "inflation") +
         (spend ? row("The appropriation", spend.toLocaleString(),
                      "what the settled clauses cost", spend > solv ? "up" : "") : "") +
         `<div class="note">` +
@@ -868,6 +958,29 @@ const UI = (function () {
         `<div class="note">None of these is a market. Every one is a line of the ` +
         `appropriation, which is why a price here can be argued with.</div>`;
     }
+
+    /* WHAT THE UNDERWRITERS SAY. The engine finds which readings apply and
+       content supplies every word, so the advice is in the prose file. */
+    const ob = $("#econ-outlook");
+    if (ob && Engine.outlook) {
+      const found = Engine.outlook(st, C) || [];
+      ob.innerHTML = found.length
+        ? found.map(f => `<div class="note ulook">${esc(f.text)}</div>`).join("")
+        : `<div class="note">Nothing they would put in writing.</div>`;
+    }
+
+    drawChart();
+
+    /* ONE LISTENER FOR THE WHOLE TAB, bound after the rows are drawn. The
+       rows are in two different panels and both are rebuilt on every draw,
+       so binding per panel would be two handlers for one action — the
+       [data-go] trap. */
+    document.querySelectorAll("#s-econ [data-chart]").forEach(el =>
+      el.addEventListener("click", () => {
+        chartOn = el.dataset.chart;
+        cue("click");
+        drawPrices(); drawEconomy();
+      }));
 
     /* WHAT PEOPLE DO. content/labour.js, which nothing in the interface has
        ever read — it existed to be canon and to be argued with, and the
@@ -1107,11 +1220,13 @@ const UI = (function () {
 
   function drawPrices() {
     const box = $("#gov-prices"); if (!box) return;
+    /* THE PRICES ARE PICKABLE TOO, so "show me thermal properly" is one
+       click from the row that mentions it rather than a control elsewhere. */
     box.innerHTML = PRICE_META.map(m => {
       const v = st.prices[m.k], h = st.priceHistory[m.k] || [v];
       const base = h[0], chg = v - base;
       const cls = chg > 2 ? "up" : chg < -2 ? "down" : "";
-      return `<div class="prow">
+      return `<div class="prow pick${chartOn === m.k ? " on" : ""}" data-chart="${m.k}">
         <div class="plab" data-tip="scarcity">${m.label}<em>${m.unit}</em></div>
         ${spark(h.slice(-40), 76, 18)}
         <div class="pval ${cls}">${v.toFixed(0)}<span>${chg >= 0 ? "+" : ""}${chg.toFixed(0)}</span></div>

@@ -204,7 +204,25 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 /* THE ECONOMY. The treasury and what it takes on the left, the prices and
    the law that sets them in the middle, what people do on the right. */
 .g-econ{grid-template-columns:minmax(280px,360px) minmax(280px,380px) minmax(0,1fr);
-  grid-template-rows:minmax(0,1fr);height:100%;min-height:0;}
+  grid-template-rows:minmax(0,1fr) minmax(150px,240px);height:100%;min-height:0;}
+#econ-chart{grid-column:1/-1;min-height:0;}
+/* a figure you can ask about: the row becomes a control */
+.g-econ .prow.pick{cursor:pointer;}
+.g-econ .prow.pick:hover{background:var(--field);}
+.g-econ .prow.pick.on{background:var(--field);box-shadow:inset 2px 0 0 var(--sel-bg,#c9a227);}
+/* the big chart: bars, because a quantity per sitting is a bar */
+.bigchart{display:flex;align-items:flex-end;gap:1px;height:100%;min-height:110px;
+  padding:4px 2px 0;}
+.bigchart .bar{flex:1 1 0;min-width:2px;background:var(--rule);position:relative;}
+.bigchart .bar.hi{background:var(--sel-bg,#c9a227);}
+.bigchart .bar:hover{background:var(--ink-soft);}
+.chartaxis{display:flex;justify-content:space-between;font-family:var(--f-data);
+  font-size:9px;color:var(--ink-soft);padding:2px 2px 0;}
+.chartnow{font-family:var(--f-data);font-size:22px;line-height:1;}
+.chartnow small{font-size:10px;color:var(--ink-soft);}
+.chartwrap{display:flex;gap:10px;height:100%;min-height:0;}
+.chartwrap .cnum{flex:0 0 120px;}
+.chartwrap .cplot{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
 #s-econ.screen.on{height:100%;min-height:0;}
 .g-econ > .stack{min-height:0;}
 .g-econ .panel{min-height:0;}
@@ -251,13 +269,23 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    of it — and the column overflowed by 136px, which is why the indicators
    under it were crammed. Capped, and it scrolls; the sittings nearest now
    are the ones the player wants anyway. */
-/* TWO SELECTORS, because one was not enough and the difference is the bug.
-   `#s-sit .stack > .panel > .pbody` sets overflow:visible on the sitting
-   column s bodies, and it outranks a bare #sit-cal — so capping the height
-   alone CLIPPED 195px of calendar instead of scrolling it, which is exactly
-   the trap CLAUDE.md records: .panel clipping is only safe because every
-   .pbody is a scroller. npm run layout caught it; npm run check cannot. */
-#s-sit #sit-cal{max-height:240px;overflow:auto;}
+/* SMALLER, NOT SCROLLED. This first capped the height and let the body
+   scroll, which is the same list behind a window and not what was asked
+   for. A calendar the player has to scroll is worse than a large one: the
+   whole reason it is on the screen is that a month can be read at a glance.
+
+   So the CELLS shrink instead. The square day is the tall part — seven
+   columns of aspect-ratio:1 means six rows of whatever the column is wide —
+   so dropping the square and giving the day a fixed, shorter box takes two
+   hundred pixels out of the panel without hiding a single day. The legend
+   goes with it: five names of five colours, on the one panel whose colours
+   are already explained by the hover card. */
+#s-sit #sit-cal .calgrid .cd{aspect-ratio:auto;min-height:0;height:19px;}
+#s-sit #sit-cal .calgrid{gap:1px;}
+#s-sit #sit-cal .calgrid .cd b{font-size:9px;}
+#s-sit #sit-cal .calgrid .cd u{display:none;}
+#s-sit #sit-cal .calkey{display:none;}
+#s-sit #sit-cal .calhead{margin-bottom:2px;}
 .bandstrip{display:flex;gap:3px;margin:-2px 0 6px;padding-left:2px;}
 .bandstrip .bs{flex:1 1 0;display:flex;flex-direction:column;align-items:center;
   border:1px solid var(--rule);background:var(--field);padding:1px 0 2px;min-width:0;}

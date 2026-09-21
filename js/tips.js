@@ -178,6 +178,13 @@ const Tips = (function () {
             "average of these; a division is not. A current far below its " +
             "party's loyalty is where a rebellion comes from." },
 
+    underwriters: { title: "The Underwriters",
+      body: "Insurance rather than banking is the dominant institution here, " +
+            "because where failure kills everyone in the room somebody has to " +
+            "price it continuously. The consequence is that the Underwriters " +
+            "hold accurate numbers on everything, and what they sell the " +
+            "government is not money but an honest reading of its own books." },
+
     waysmeans: { title: "Ways and means",
       body: "What the state takes in, every sitting, on each of the four " +
             "bases it taxes. The appropriation sets the rate; the scarcity " +

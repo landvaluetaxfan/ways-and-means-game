@@ -400,6 +400,9 @@ const Engine = (function () {
       /* Nought is the truth for a save written before the power to borrow
          existed: nothing was owed, because nothing could be. */
       if (!st.debt) st.debt = { principal: 0 };
+      /* And the reserve starts keeping its own curve. An empty list is the
+         truth: the save has a solvency but no record of how it got there. */
+      if (!st.solvencyHistory) st.solvencyHistory = [];
       st.version = 25;
     }
     return st;
@@ -4379,6 +4382,61 @@ const Engine = (function () {
     return n ? Math.round(sum / n * 1000) / 10 : 0;   /* a percentage, one decimal */
   }
 
+  /* =========================================================
+     WHAT THE UNDERWRITERS THINK.
+
+     §7.5.2: underwriting rather than banking is the dominant institution,
+     "which is why the Underwriters are the only party with accurate numbers
+     on everything". They are the nearest thing this world has to a central
+     bank, and what they sell is not money but an honest reading.
+
+     THE ENGINE FINDS THE FACTS AND CONTENT SAYS THEM. This returns KEYS,
+     not sentences: `CONTENT.setup.outlook[key].text` is the prose, so every
+     word of the advice is in the prose file and the author can rewrite it
+     without touching the engine. An engine that phrased its own advice
+     would be the one place in the game where prose was unreachable.
+
+     Nothing here is new state. Every finding is a reading of what the
+     player can already see, which is the point: advice is not information
+     the player lacks, it is the arithmetic done for them. */
+  function outlook(st, C) {
+    const keys = [];
+    const solv = st.scalars.solvency || 0;
+    const rec = receipts(st).total;
+    const svc = debtService(st);
+    const net = rec - svc;
+    const debt = debtOf(st);
+    const infl = inflation(st);
+
+    /* the reserve, against what it is spending */
+    if (solv <= 0) keys.push("reserve_gone");
+    else if (net < 0 && solv / Math.max(1, -net) < 12) keys.push("reserve_thin");
+    else if (solv > 80000) keys.push("reserve_deep");
+
+    /* the flow */
+    if (net < 0) keys.push("receipts_short");
+    else if (rec > 0 && net > 0) keys.push("receipts_cover");
+
+    /* the debt and its price */
+    if (!debt) keys.push("debt_none");
+    else if (debt > 30000) keys.push("debt_heavy");
+    else keys.push("debt_light");
+    if (debt) keys.push(debtRate(st) >= 10 ? "rate_dear" : "rate_cheap");
+
+    /* the cost of existing */
+    if (infl <= -5) keys.push("prices_falling");
+    else if (infl < 5) keys.push("prices_steady");
+    else if (infl < 20) keys.push("prices_rising");
+    else keys.push("prices_spiking");
+
+    /* the one rate nobody has set, which is the Georgist point */
+    if ((st.law || {}).rate_volume === "none" || (st.law || {}).rate_volume === "low")
+      keys.push("volume_forgone");
+
+    return keys.filter(k => ((C.setup || {}).outlook || {})[k])
+               .map(k => ({ key: k, text: C.setup.outlook[k].text }));
+  }
+
   function tick(st, C) {
     const P = st.prices, marks = [];
 
@@ -4484,8 +4542,17 @@ const Engine = (function () {
          every sitting whether it thinks about it or not. */
       const owed = debtService(st);
       const net = r.total - owed;
-      if (!net) return;
-      st.scalars.solvency = Math.max(0, (st.scalars.solvency || 0) + net);
+      if (net) st.scalars.solvency = Math.max(0, (st.scalars.solvency || 0) + net);
+    })();
+
+    /* THE RESERVE KEEPS A CURVE, the way the four prices already do. It is
+       the one figure on the economy tab whose history nothing recorded, so
+       the chart had a single bar for the number everything else is measured
+       against. Sixty sittings, same window as priceHistory. */
+    (function () {
+      const h = st.solvencyHistory || (st.solvencyHistory = []);
+      h.push(st.scalars.solvency || 0);
+      if (h.length > 60) h.shift();
     })();
 
     /* TRENDS APPLY AFTER THE MARKETS MOVE, so the same sitting shows both
@@ -5631,7 +5698,7 @@ const Engine = (function () {
     vacateSeat, crossFloor, byElection, generalElection, shares, swungShares,
     divisorAllocate,
     packBoard, canPackBoard, boardsMoved, boardsTotal,
-    borrow, repay, canBorrow, debtOf, debtRate, debtService, inflation,
+    borrow, repay, canBorrow, debtOf, debtRate, debtService, inflation, outlook,
     reshuffle, canReshuffle, resolveMotion, motionDeadline,
     standingIn, bandsOf, bandWeight, syncStanding, assent, presidentDecides, referralRisk, reviewReturns,
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,

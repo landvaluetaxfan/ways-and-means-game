@@ -267,9 +267,21 @@
         </div>
         <div class="stack scrolls">
           <div class="panel">
+            <h2><span data-tip="underwriters">What the Underwriters say</span> <em>the only accurate numbers</em></h2>
+            <div class="pbody scrolls" id="econ-outlook"></div>
+          </div>
+          <div class="panel">
             <h2>Labour <em id="econ-lab-hdr">what people do</em></h2>
             <div class="pbody flush scrolls"><table id="econ-labour"></table></div>
           </div>
+        </div>
+        <!-- THE ONE READOUT TAKEN APART. Every other number on this tab is a
+             line in a list; this is whichever of them the player has asked
+             to look at properly, with its whole history. It spans the tab
+             because a trend needs width to be a trend. -->
+        <div class="panel" id="econ-chart">
+          <h2><span id="chart-hdr">Choose a figure above</span> <em id="chart-sub">its history, sitting by sitting</em></h2>
+          <div class="pbody scrolls" id="chart-body"></div>
         </div>
       </div>
     </section>
