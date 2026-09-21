@@ -130,13 +130,13 @@
                the tab entirely: they are already on the Sitting screen, and
                the same meters twice is one readout that can disagree with
                itself. The panel on the sitting page is the one. -->
-          <div class="panel">
-            <h2>Coalition ledger <em>permanent</em></h2>
-            <div class="pbody flush scrolls">
-              <table id="gov-ledger"></table>
-              <div class="pbody scrolls"><div class="note" id="gov-ledger-note"></div></div>
-            </div>
-          </div>
+          <!-- THE COALITION LEDGER IS GONE FROM HERE. It drew
+               partner/ledger/loyalty, which the Party tab now draws for all
+               twelve parties grouped by their relation to the government, with
+               what each bench can be moved on beside it. A per-partner credit
+               account is interparty affairs, and this tab is the executive:
+               the act, the text, the power and the people. The sign convention
+               it explained moved with it. -->
           <div class="panel">
             <h2><span data-tip="vacant">Cabinet</span></h2>
             <div class="pbody flush scrolls"><div class="pbody scrolls" id="gov-appoint" hidden></div>
@@ -215,11 +215,17 @@
              government's own currents were on the Government tab; they are
              vote arithmetic, and this is where votes are counted. -->
         <div class="stack cref scrolls">
+          <!-- THE ROSTER IS GONE FROM HERE, and the margin is the whole panel.
+               This drew party/seats/loyalty for the coalition partners, which
+               the Composition table two panels down already draws for all
+               twelve with the partners marked, and which the Party tab now
+               draws with the ledger beside it. Three copies of one roster; the
+               margin was the only thing on this panel that Chamber uniquely
+               needs, because it is the number the government dies on. -->
           <div class="panel">
-            <h2>Coalition <em id="gov-coalition-hdr"></em></h2>
-            <div class="pbody flush scrolls">
-              <table id="gov-coalition"></table>
-              <div class="pbody scrolls"><div class="note" id="gov-margin"></div></div>
+            <h2>Confidence <em id="gov-coalition-hdr"></em></h2>
+            <div class="pbody scrolls">
+              <div class="note" id="gov-margin"></div>
             </div>
           </div>
           <div class="panel">
@@ -301,7 +307,7 @@
       <div class="grid g-party">
         <div class="stack scrolls">
           <div class="panel">
-            <h2>Parties <em id="party-count"></em></h2>
+            <h2>The House by party <em id="party-count"></em></h2>
             <div class="pbody flush scrolls"><table id="party-table"></table></div>
           </div>
         </div>

@@ -1097,16 +1097,23 @@ const UI = (function () {
 
     tbl.innerHTML = `<thead><tr><th></th><th>Party</th><th class="n">Seats</th>` +
       `<th class="n" data-tip="loyalty">Loy</th>` +
-      `<th class="n" data-tip-title="The ledger" data-tip-body="What each partner is ` +
-      `owed. Granting a partner order-paper time puts credit here; whipping their ` +
-      `bench spends it. Overdrawing is allowed and costs their loyalty at twice ` +
-      `the overdraft, because calling in credit you do not have is a favour and ` +
-      `not a transaction.">Cr</th></tr></thead><tbody>` +
+      /* THE KEYED TIP, not a second copy of its words. js/tips.js already
+         explains `ledger` — "positive means they owe you, negative means you
+         owe them, nothing here decays" — and an inline body here said the
+         same thing in different words, which is two explanations that can
+         drift apart. It also left the key anchored to nothing once the
+         Government tab's ledger table went, which uxtest catches. */
+      `<th class="n" data-tip="ledger">Cr</th></tr></thead><tbody>` +
       GROUPS.map(g => {
         const rows = list.filter(p => relOf(p.id) === g.k);
         if (!rows.length) return "";
+        /* The GOV and C&S flags used to be drawn per row on the Chamber's
+           roster; the grouping says the same thing once, so the headings
+           take the explanations those flags carried. */
+        const relTip = g.k === "gov" ? ' data-tip="gov"'
+                     : g.k === "cs" ? ' data-tip="cs"' : "";
         return `<tr class="prel"><td colspan="5">` +
-          `<b>${g.head}</b> <em>${seatsIn(g.k)} seats \u00b7 ${g.note}</em></td></tr>` +
+          `<b${relTip}>${g.head}</b> <em>${seatsIn(g.k)} seats \u00b7 ${g.note}</em></td></tr>` +
           rows.map(p => {
             const seats = Engine.partyTotal(st, p.id);
             const loy = (st.loyalty && st.loyalty[p.id] != null) ? st.loyalty[p.id] : p.loyalty;
@@ -1128,6 +1135,7 @@ const UI = (function () {
               `<td class="n">${crCell}</td></tr>`;
           }).join("");
       }).join("") + `</tbody>`;
+
     tbl.querySelectorAll("[data-party]").forEach(tr =>
       tr.addEventListener("click", () => {
         Focus.seed("party-table", tr.dataset.party); cue("click"); drawParties();
@@ -1564,20 +1572,13 @@ const UI = (function () {
     const conf = Engine.confidence(st), maj = Engine.majority(st);
     $("#gov-coalition-hdr").textContent = `${conf}/${Engine.chamberTotal(st)}`;
 
-    let h = "<thead><tr><th>Party</th><th class='n' data-tip='seats'>Seats</th>" +
-      "<th class='n' data-tip='loyalty'>Loy</th></tr></thead><tbody>";
-    /* Every coalition partner is governing, not just the Prime Minister's
-       party — the player's own row is still the one with no loyalty figure. */
-    st.coalition.forEach(id => {
-      h += `<tr data-pid="${id}"><td>${mark(id)}${pn(id)} <span class="flag" data-tip="gov">GOV</span></td>` +
-           `<td class="n">${Engine.partyTotal(st, id)}</td><td class="n">${id === st.playerParty ? "&mdash;" : st.parties[id].loyalty}</td></tr>`;
-    });
-    st.confidenceSupply.forEach(id => {
-      h += `<tr data-pid="${id}"><td>${mark(id)}${pn(id)} <span class="flag" data-tip="cs">C&amp;S</span></td>` +
-           `<td class="n">${Engine.partyTotal(st, id)}</td><td class="n">${st.parties[id].loyalty}</td></tr>`;
-    });
-    h += "</tbody>";
-    $("#gov-coalition").innerHTML = h;
+    /* THE PARTNER ROSTER USED TO BE DRAWN HERE and is not any more. It was
+       party/seats/loyalty for the coalition and the confidence-and-supply
+       benches — which the Composition table on this same tab already draws
+       for all twelve with the partners marked `govrow`, and which the Party
+       tab now draws with the ledger and the relation beside it. One roster,
+       three drawings, and this was the thinnest of them. The margin below is
+       what Chamber uniquely needs. */
     /* THE MARGIN IS THE GAME, SO IT IS DRAWN AND NOT NARRATED.
 
        confidence() below majority() is the first line of checkLoss: this
@@ -1692,20 +1693,12 @@ const UI = (function () {
         `<output>${v}</output></div>` + strip;
     }).join("");
 
-    /* the ledger: signed, permanent, and shown exactly */
-    const partners = st.coalition.concat(st.confidenceSupply).filter(p => p !== st.playerParty);
-    $("#gov-ledger").innerHTML =
-      "<thead><tr><th>Partner</th><th class='n' data-tip='ledger'>Ledger</th>" +
-      "<th class='n' data-tip='loyalty'>Loy</th></tr></thead><tbody>" +
-      partners.map(id => {
-        const c = st.capital[id] || 0;
-        const cls = c > 0 ? "good" : c < 0 ? "bad" : "";
-        return `<tr data-pid="${id}"><td>${mark(id)}${pn(id)}</td>` +
-          `<td class="n"><span class="flag ${cls}" data-tip="ledger">${c > 0 ? "+" : ""}${c}</span></td>` +
-          `<td class="n">${st.parties[id].loyalty}</td></tr>`;
-      }).join("") + "</tbody>";
-    $("#gov-ledger-note").innerHTML =
-      "Positive means they owe you. Negative means you owe them. Nothing here decays.";
+    /* THE LEDGER TABLE MOVED TO THE PARTY TAB. It was partner/ledger/loyalty
+       and a note explaining the sign; the Party tab draws the same account
+       for all twelve parties, grouped by relation, beside what each bench can
+       be moved on — which is the context that makes a credit balance mean
+       something. The note travelled with it. A per-partner credit account is
+       interparty affairs; this tab is the executive. */
 
     const left = st.slots.total - st.slots.used;
     const gcap = (C.setup && C.setup.grantsPerSitting) || 2;
@@ -3713,18 +3706,26 @@ const UI = (function () {
   }
 
   function flashChanged(before, after) {
-    const gov = screen === "gov", sit = screen === "sit";
+    const gov = screen === "gov", sit = screen === "sit",
+          party = screen === "party";
     if (before.slots !== after.slots) {
       flash($("#sb-slots"));
       if (gov) { flash($("#gov-slots .slotbar")); flash($("#gov-slots-hdr")); }
     }
+    /* THE LEDGER AND THE LOYALTIES ARE ON THE PARTY TAB NOW, so the pulse
+       follows them. And the loyalty one had been dead for some time before
+       that: `#gov-coalition` moved to the CHAMBER when the coalition
+       arithmetic did, keeping its `gov-` prefix, and this gate still read
+       `screen === "gov"` — so a loyalty change pulsed a row on a screen the
+       player was never on when the gate allowed it. An id that outlives the
+       tab it was named for is how that hides. */
     Object.keys(after.capital || {}).forEach(pid => {
       if ((before.capital || {})[pid] === after.capital[pid]) return;
-      if (gov) flash($('#gov-ledger tr[data-pid="' + pid + '"]'));
+      if (party) flash($('#party-table tr[data-party="' + pid + '"]'));
     });
     Object.keys(after.loyalty || {}).forEach(pid => {
       if ((before.loyalty || {})[pid] === after.loyalty[pid]) return;
-      if (gov) flash($('#gov-coalition tr[data-pid="' + pid + '"]'));
+      if (party) flash($('#party-table tr[data-party="' + pid + '"]'));
     });
     Object.keys(after.scalars || {}).forEach(k => {
       if ((before.scalars || {})[k] === after.scalars[k]) return;

@@ -183,15 +183,40 @@ targets and now emits `"gov"`.
 to be drawn on Government and copied here by a `MutationObserver`. Do not
 reintroduce the copy.
 
-**THE COALITION ROSTER IS DRAWN THREE TIMES AND SHOULD NOT BE.** Measured 21
-Sep, and recorded here because the third one is mine: Chamber's *Coalition*
-(`#gov-coalition`) draws party/seats/loyalty, Government's *Coalition ledger*
-(`#gov-ledger`) draws partner/ledger/loyalty, and the refocused Party tab
-(`#party-table`) draws all four columns for all twelve parties grouped by
-relation — so it strictly contains both of the others. Each has a local
-excuse (Chamber's sits beside the margin, which is what Chamber needs;
-Government's sits beside Undertakings), but the roster itself now has one
-proper home. Before adding a fourth, read this.
+**THE COALITION ROSTER IS DRAWN ONCE, ON THE PARTY TAB.** It was drawn three
+times until 21 Sep: Chamber's *Coalition* as party/seats/loyalty,
+Government's *Coalition ledger* as partner/ledger/loyalty, and the refocused
+Party tab with all four columns for all twelve parties grouped by relation —
+which strictly contained both of the others. Both are gone.
+
+- **Chamber kept the margin and lost the roster.** That panel is now
+  *Confidence*, holding `#gov-margin` alone — the dual-majority bar and the
+  working-majority reading, which is the number the government dies on and the
+  one thing on that panel Chamber uniquely needed. The Composition table two
+  panels down already drew all twelve with the partners marked `govrow`.
+- **Government lost the ledger**, which left it *the act, the text, the power,
+  the people*: instruments, the register, the document, order-paper time,
+  undertakings, cabinet. Six panels in four columns. A per-partner credit
+  account is interparty affairs, and this tab is the executive — that mismatch
+  was most of what "lacking cohesion" meant.
+- **The tips moved with the data.** `ledger` is on the Party tab's `Cr` column
+  and `gov`/`cs` are on its relation headings. An inline tip there restating
+  the `ledger` key's own words was dropped: two explanations of one thing can
+  drift apart, and `js/tips.js` already owned it.
+
+**Two faults surfaced doing it, both worth the space:**
+
+- **`#gov-coalition` had a dead pulse.** The panel moved to the Chamber when
+  the coalition arithmetic did and kept its `gov-` prefix, while
+  `flashChanged` still gated it on `screen === "gov"` — so a loyalty change
+  pulsed a row on a screen the player could not be on when the gate allowed
+  it. An id that outlives the tab it was named for is how that hides. Both
+  pulses now follow the data to `#party-table`.
+- **One stray `</div>`** left by the removal unbalanced `#s-gov`, the parser
+  reflowed the document, and the STATUS BAR fell outside `#shell` — so
+  `chapter`, `rise`, `slots`, `signatures`, `confidence` and `margin` all
+  reported as tips anchored to nothing. Six orphans from one tag. `npm run ux`
+  caught it; the div counts per screen are the quickest confirmation.
 
 Three things worth knowing before you touch the engine:
 
