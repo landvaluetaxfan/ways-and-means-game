@@ -58,6 +58,22 @@ const PROBE = `
   var sp=null;
   (CONTENT.events||[]).forEach(function(ev){ if(!sp && SetPiece.is(ev)) sp=ev; });
   r.setpieceInContent=!!sp;
+  /* the tabs, and the decisions tree */
+  r.tabs=[].slice.call(document.querySelectorAll("#views button")).map(function(b){return b.dataset.v}).join(",");
+  document.querySelector('#views button[data-v="decisions"]').click();
+  r.nodes=document.querySelectorAll("#tree .tnode").length;
+  r.branches=document.querySelectorAll("#tree .tbranch").length;
+  r.nested=document.querySelectorAll("#tree .tbranch .tnode").length;
+  r.cycleGuards=document.querySelectorAll("#tree .again").length;
+  var tf=document.querySelector("#tree .tfields button.f");
+  r.treeOpens=!!tf; if(tf){tf.click(); r.treeAddr=document.getElementById("addr").textContent;}
+  document.querySelector('#views button[data-v="tips"]').click();
+  r.tipsOnly=[].slice.call(document.querySelectorAll("#tree button.f")).every(function(b){return b.dataset.a.indexOf("tips/")===0});
+  r.tipCount=document.querySelectorAll("#tree button.f").length;
+  document.querySelector('#views button[data-v="cx"]').click();
+  r.cxOnly=[].slice.call(document.querySelectorAll("#tree button.f")).every(function(b){return /^(encyclopedia|glossary)\\//.test(b.dataset.a)});
+  document.querySelector('#views button[data-v="all"]').click();
+  r.allBack=document.querySelectorAll("#tree button.f").length;
  }catch(err){r.error=err.message;}
  out.textContent=JSON.stringify(r);})();`;
 
@@ -98,6 +114,25 @@ ok("the filter narrows the tree", r.filtered > 0 && r.filtered < r.passages,
 ok("and clearing it restores everything", r.unfiltered === r.passages,
    r.unfiltered + " of " + r.passages);
 ok("the game still has a set piece for the frame to draw", r.setpieceInContent);
+
+/* THE DECISIONS TREE. An event list is not a story: a choice's effects can
+   queue another event, so a choice HAS children, and drawing the edges that
+   are really there is the difference between ninety-six rows and a shape.
+   The nested count is the assertion that matters — a tree with no nesting is
+   a list wearing indentation. */
+ok("the writing is split into tabs", r.tabs === "decisions,cx,tips,all", r.tabs);
+ok("the decisions tab draws a tree", r.nodes > 50, r.nodes + " nodes");
+ok("with a branch per choice", r.branches > r.nodes, r.branches + " branches");
+ok("and branches that actually lead somewhere", r.nested > 5,
+   r.nested + " events hang off a choice");
+ok("and it does not loop for ever on a cycle", r.cycleGuards > 0,
+   r.cycleGuards + " marked seen above");
+ok("a passage opens from the tree too", r.treeOpens && !!r.treeAddr, r.treeAddr);
+ok("the tooltips tab shows only tooltips", r.tipsOnly && r.tipCount > 50,
+   r.tipCount + " tips");
+ok("the concordance tab shows only the concordance", r.cxOnly);
+ok("and Everything comes back", r.allBack === r.passages,
+   r.allBack + " of " + r.passages);
 
 console.log("");
 if (bad) { console.log(bad + " WORKBENCH FAILURES"); process.exit(1); }

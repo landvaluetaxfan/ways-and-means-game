@@ -51,6 +51,8 @@
         if (hay.indexOf(filter) < 0) return;
       }
       var coll = r.addr.split("/")[0];
+      if (view === "cx" && coll !== "encyclopedia" && coll !== "glossary") return;
+      if (view === "tips" && coll !== "tips") return;
       var head = ProseMap.heading(C, r.addr);
       if (!g[coll]) { g[coll] = { name: coll, ents: {}, order: [] }; order.push(coll); }
       if (!g[coll].ents[head]) { g[coll].ents[head] = []; g[coll].order.push(head); }
@@ -66,7 +68,117 @@
     return edited[addr] != null && edited[addr] !== byAddr[addr].text;
   }
 
+  /* ---------- the decision tree ----------
+     AN EVENT LIST IS NOT A STORY. The author asked for decisions as a
+     BRANCHING tree rather than another dropdown table, and the content is
+     already a graph: a choice's effects can queue another event, so a choice
+     has children. Drawing the edges that are really there is the difference
+     between a list of ninety-six events and a shape you can read.
+
+     Roots are the events nothing queues — the ones the game reaches on its
+     own, by prologue, schedule or pool. Everything else hangs off a choice.
+     A node already drawn higher up is marked and not expanded again, because
+     the graph has cycles and a tree cannot. */
+  function queuedIds(effects) {
+    var out = [];
+    [].concat(effects || []).forEach(function (e) {
+      if (!e || !e.queue) return;
+      [].concat(e.queue).forEach(function (q) { if (q && q.event) out.push(q.event); });
+    });
+    return out;
+  }
+
+  function branchesOf(ev) {
+    var rows = [];
+    (ev.choices || []).forEach(function (c, i) {
+      rows.push({ i: i, label: c.label || c.text || ("choice " + (i + 1)),
+                  ids: queuedIds(c.effects) });
+    });
+    return rows;
+  }
+
+  var evById = {};
+  (C.events || []).forEach(function (e) { evById[e.id] = e; });
+
+  function rootEvents() {
+    var queued = {};
+    (C.events || []).forEach(function (e) {
+      queuedIds(e.effects).forEach(function (id) { queued[id] = 1; });
+      (e.choices || []).forEach(function (c) {
+        queuedIds(c.effects).forEach(function (id) { queued[id] = 1; });
+      });
+    });
+    return (C.events || []).filter(function (e) { return !queued[e.id]; });
+  }
+
+  function fieldsFor(addrPrefix) {
+    return rows.filter(function (r) { return r.addr.indexOf(addrPrefix) === 0; });
+  }
+
+  function evNode(ev, seen, depth) {
+    if (!ev) return "";
+    var done = seen[ev.id];
+    seen[ev.id] = 1;
+    var flds = fieldsFor("events/" + ev.id + "/");
+    var dirty = flds.some(function (r) { return isDirty(r.addr); });
+    var h = '<div class="tnode" data-ev="' + esc(ev.id) + '">' +
+      '<div class="thead' + (dirty ? " dirty" : "") + '">' +
+      '<span class="tw">' + esc(ev.title || ev.id) + "</span>" +
+      '<i>' + (ev.once ? "once" : ev.every ? "every " + ev.every :
+               ev.at != null ? "sitting " + ev.at : ev.prologue ? "prologue" : "pool") + "</i>" +
+      (done ? '<em class="again">seen above</em>' : "") + "</div>";
+    if (done) return h + "</div>";
+
+    /* the event's own prose */
+    h += '<div class="tfields">' + flds.filter(function (r) {
+      return r.addr.split("/").length === 3;
+    }).map(function (r) {
+      return '<button class="f' + (isDirty(r.addr) ? " dirty" : "") +
+        (current === r.addr ? " on" : "") + '" data-a="' + esc(r.addr) + '">' +
+        esc(r.addr.split("/")[2]) + "</button>";
+    }).join("") + "</div>";
+
+    /* a branch per choice */
+    branchesOf(ev).forEach(function (b) {
+      var cf = fieldsFor("events/" + ev.id + "/choices/" + b.i + "/");
+      h += '<div class="tbranch"><div class="tb-h">' + esc(b.label) + "</div>" +
+        '<div class="tfields">' + cf.map(function (r) {
+          return '<button class="f' + (isDirty(r.addr) ? " dirty" : "") +
+            (current === r.addr ? " on" : "") + '" data-a="' + esc(r.addr) + '">' +
+            esc(r.addr.split("/").slice(4).join("/")) + "</button>";
+        }).join("") + "</div>";
+      b.ids.forEach(function (id) {
+        h += evNode(evById[id], seen, depth + 1);
+      });
+      h += "</div>";
+    });
+    return h + "</div>";
+  }
+
+  function drawDecisions() {
+    var filter = ($("#find").value || "").trim().toLowerCase();
+    var roots = rootEvents(), seen = {}, html = "";
+    roots.forEach(function (ev) {
+      if (filter && (ev.id + " " + (ev.title || "")).toLowerCase().indexOf(filter) < 0
+          && !(C.events || []).some(function () { return false; })) {
+        /* a filter matches the root or anything under it, so build and test */
+        var probe = evNode(ev, {}, 0);
+        if (probe.toLowerCase().indexOf(filter) < 0) return;
+      }
+      html += evNode(ev, seen, 0);
+    });
+    $("#tree").innerHTML = html || '<div class="note">Nothing matches.</div>';
+    $("#treecount").textContent = roots.length + " entry points, " +
+      (C.events || []).length + " events";
+    $("#tree").querySelectorAll("button.f").forEach(function (b) {
+      b.addEventListener("click", function () { open(b.dataset.a); });
+    });
+  }
+
+  var view = "all";
+
   function drawTree() {
+    if (view === "decisions") return drawDecisions();
     var filter = ($("#find").value || "").trim().toLowerCase();
     var res = groups(filter), html = "";
     res.order.forEach(function (coll) {
@@ -151,6 +263,28 @@
     var b = $('#tree button.f[data-a="' + current + '"]');
     if (b) b.classList.toggle("dirty", isDirty(current));
     preview();
+  });
+
+  /* SHOW IT IN THE GAME. The button did nothing at all — the preview redraws
+     on selection and on every keystroke, so the control beside it was dead
+     chrome that looked like a feature. What it should do is what the author
+     asked for: open the real game at this event, in the real chrome, with
+     the real choices under it.
+
+     THE EDIT HAS TO BE SAVED FIRST, and saying so is better than opening the
+     game on the old sentence and letting them wonder why. */
+  $("#preview").addEventListener("click", function () {
+    if (!current) return;
+    var p = current.split("/");
+    if (p[0] !== "events") {
+      $("#prevnote").textContent =
+        "only an event can be opened in the game — this is " + p[0];
+      return;
+    }
+    if (isDirty(current))
+      $("#prevnote").textContent = "opening the game on the SAVED text — " +
+        "download and run npm run prose:in to see this edit there";
+    window.open("index.html?event=" + encodeURIComponent(p[1]), "_blank");
   });
 
   $("#revert").addEventListener("click", function () {
@@ -265,6 +399,16 @@
   });
 
   /* ---------- go ---------- */
+  document.querySelectorAll("#views button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      view = b.dataset.v;
+      document.querySelectorAll("#views button").forEach(function (o) {
+        o.classList.toggle("on", o === b);
+      });
+      drawTree();
+    });
+  });
+
   $("#count").textContent = rows.length + " passages, " +
     rows.reduce(function (n, r) { return n + r.text.length; }, 0).toLocaleString() +
     " characters";

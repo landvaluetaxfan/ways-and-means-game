@@ -43,6 +43,27 @@ html,body{height:100%;margin:0;background:var(--chrome);color:var(--ink);
 #tree button.f.on{background:var(--sel-bg,#c9a227);color:#1d1d1b;}
 #tree button.f i{font-style:normal;color:var(--ink-soft);}
 #tree button.f.dirty::after{content:" \25cf";color:var(--alert);}
+#views{display:flex;gap:1px;background:var(--chrome-dkr);}
+#views button{flex:1 1 0;background:var(--chrome);color:var(--ink-soft);border:none;
+  font-family:var(--f-ui);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;
+  padding:4px 2px;cursor:pointer;}
+#views button:hover{color:var(--ink);}
+#views button.on{background:var(--field);color:var(--ink);}
+/* the decision tree: an event, its choices, and what each choice leads to */
+.tnode{margin:3px 0 5px;}
+.tnode .thead{display:flex;gap:6px;align-items:baseline;padding:2px 4px;
+  background:var(--field);border-left:2px solid var(--rule);}
+.tnode .thead.dirty{border-left-color:var(--alert);}
+.tnode .thead .tw{flex:1 1 auto;font-family:var(--f-read);font-size:12px;}
+.tnode .thead i{font-style:normal;font-family:var(--f-data);font-size:9px;
+  color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em;}
+.tnode .thead .again{font-style:normal;font-size:9px;color:var(--ink-soft);}
+.tbranch{margin:2px 0 2px 12px;padding-left:8px;border-left:1px dotted var(--rule);}
+.tbranch .tb-h{font-size:11px;padding:1px 0;color:var(--ink);}
+.tbranch .tb-h::before{content:"\2192 ";color:var(--ink-soft);}
+.tfields{display:flex;flex-wrap:wrap;gap:2px;padding:1px 0 2px 10px;}
+.tfields button.f{width:auto;border:1px solid var(--rule);background:var(--chrome);
+  font-size:9.5px;padding:0 4px;}
 #addr{font-family:var(--f-data);font-size:10px;color:var(--ink-soft);
   padding:2px 8px;border-bottom:1px solid var(--rule);word-break:break-all;}
 #text{width:100%;flex:1 1 auto;min-height:220px;resize:none;
@@ -72,7 +93,13 @@ html,body{height:100%;margin:0;background:var(--chrome);color:var(--ink);
   </header>
 
   <div class="col">
-    <h2>Everything <em id="treecount"></em></h2>
+    <h2>The writing <em id="treecount"></em></h2>
+    <div id="views">
+      <button data-v="decisions">Decisions</button>
+      <button data-v="cx">Concordance</button>
+      <button data-v="tips">Tooltips</button>
+      <button data-v="all" class="on">Everything</button>
+    </div>
     <div class="b">
       <input id="find" placeholder="filter — a word, an id, an address">
       <div id="tree"></div>

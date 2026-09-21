@@ -584,6 +584,16 @@ const Shell = (function () {
   }
 
   /* ---------- starting and saving ---------- */
+  /* ?event=<id> on the address, if there is one. Read once and never
+     written; a game started this way is an ordinary sandbox game. */
+  function previewEvent() {
+    try {
+      const m = /[?&]event=([A-Za-z0-9_]+)/.exec(String(location.search || "") +
+                                                String(location.hash || ""));
+      return m ? m[1] : null;
+    } catch (e) { return null; }
+  }
+
   function start(n, name, stateStr, admin) {
     let state;
     try { state = stateStr ? Engine.load(stateStr, C) : Engine.newGame(contentFor(admin)); }
@@ -599,6 +609,21 @@ const Shell = (function () {
        about it. A save written before this has no `admin` and shows no
        introduction, which is correct — it has already begun. */
     if (!stateStr && admin) state.admin = admin.id;
+
+    /* SHOW ME THIS EVENT. prose.html links here as index.html?event=<id> so
+       an author can read a passage and then see it happen, in the real
+       chrome, with the real choices under it. It is the sandbox government
+       and a queued event — no new path into the engine, no preview mode, and
+       nothing a player can reach by accident.
+
+       The introduction stands between the government and the first sitting,
+       so it is marked read: somebody who asked to see one event should not
+       have to take office first. */
+    const jump = previewEvent();
+    if (!stateStr && jump && C.eventById && C.eventById[jump]) {
+      state.flags._introRead = true;
+      Engine.apply(state, C, [{ queue: [{ event: jump, after: 0 }] }]);
+    }
 
     /* THE BED OPENS WITH THE GOVERNMENT. A mood is a function name in
        js/music.js, not an argument, and `state`/`init`/`available` are not
