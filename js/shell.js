@@ -542,9 +542,17 @@ const Shell = (function () {
 
     m.querySelectorAll("[data-new]").forEach(b => b.addEventListener("click", () => {
       const n = +b.dataset.new, existing = slot(n);
+      /* THE DEFAULT IS THE GOVERNMENT, NOT THE LAST ONE IN THIS SLOT. This
+         offered `existing.name` when the slot already held a save, so
+         starting a NEW government over an old one arrived pre-filled with
+         the OLD government's name and a player who pressed Start inherited
+         it. The slot's current name is the business of the overwrite
+         confirmation below, which already names it; what this box is asking
+         is what to call the government about to be formed, and the answer
+         to that has nothing to do with what was there before. */
       const askName = () => Dialog.prompt("Name this game", {
         title: "New save",
-        value: existing ? existing.name : adminLabel(chosenAdmin),
+        value: adminLabel(chosenAdmin),
         yes: "Start"
       }, answer => {
         const name = (answer || "").trim();

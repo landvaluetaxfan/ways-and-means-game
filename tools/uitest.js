@@ -129,7 +129,41 @@ try {
        !!w.document.querySelector("#party-table tr.sel"));
   }
 
-  /* THE LAST PAGE IS A SET PIECE (design/31's third use). The frame was built
+  /* A NEW GOVERNMENT IS NOT NAMED AFTER THE LAST ONE. The name box offered the
+   slot's existing name when the slot already held a save, so forming a new
+   government over an old one arrived pre-filled with the OLD government's
+   name and anyone who pressed Start inherited it. Asserted by capturing what
+   the box was PRE-FILLED with, which is the whole of the bug \u2014 both versions
+   accept whatever is typed, so a test that only reads the result sees
+   nothing wrong. */
+try {
+  w.eval("Shell.boot(CONTENT)");
+  const seen = [];
+  w.eval("window.__seenDefaults = [];" +
+         "Dialog.prompt = function (m, o, cb) {" +
+         "  window.__seenDefaults.push((o && o.value) || '');" +
+         "  (typeof o === 'function' ? o : cb)('Second ministry');" +
+         "};");
+  w.document.querySelector('[data-go="new"]').click();
+  const adm = w.document.querySelector("[data-admin]");
+  if (adm) adm.click();
+  const slot1 = w.document.querySelector('[data-new="1"]');
+  /* The slot BUTTON reads "Overwrite" once a slot is occupied, so the
+     occupancy is read from the save itself rather than from the label. */
+  ok("slot 1 already holds the earlier government",
+     !!w.localStorage.getItem("wm.slot.1"),
+     JSON.parse(w.localStorage.getItem("wm.slot.1") || "{}").name || "empty");
+  if (slot1) slot1.click();
+  const defaults = w.eval("window.__seenDefaults");
+  ok("the name box offers a default", defaults.length > 0, JSON.stringify(defaults));
+  const d = defaults[defaults.length - 1] || "";
+  ok("and it is not the name of the government being replaced",
+     !/Test ministry/i.test(d), d);
+  ok("it is the government about to be formed",
+     /Socialists|Flash|government/i.test(d), d);
+} catch (e) { ok("the new-government default name", false, e.message); }
+
+/* THE LAST PAGE IS A SET PIECE (design/31's third use). The frame was built
    for three things and only two used it; the board was a panel among panels,
    which is the wrong shape for the one page in a run that is a RECORD rather
    than a control. Driven to an ending and read back off the glass, because a
