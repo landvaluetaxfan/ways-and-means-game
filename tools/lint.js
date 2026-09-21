@@ -185,6 +185,15 @@ try {
   const scalarIds = new Set(Object.keys(SETUP.scalars || {}));
   const lawIds = new Set(Object.keys(SETUP.law || {}));
   const priceIds = new Set(["thermal", "substrate", "volume", "transit"]);
+
+  /* The `case` labels of the move: dispatch in js/engine.js, so this list
+     cannot drift from the engine the way a copied one would. */
+  const engSrc = fs.readFileSync(path.join(root, "js", "engine.js"), "utf8");
+  const mv = engSrc.slice(engSrc.indexOf("move: (st, C, v) =>"));
+  const MOVE_NS = new Set(
+    [...mv.slice(0, mv.indexOf("\n    law: (st, C, v)")).matchAll(/case "([a-z]+)":/g)]
+      .map(m => m[1]));
+  MOVE_NS.add("scalar");          /* the no-dot default, never a case label */
   const checkEffects = (effs, tag) => [].concat(effs || []).forEach(e => {
     if (!e || typeof e !== "object") return;
     if (e.move) Object.keys(e.move).forEach(key => {
@@ -198,7 +207,21 @@ try {
         : ns === "actor" ? actorIds.has(k)
         : ns === "capital" ? partyIds.has(k)
         : ns === "price" ? priceIds.has(k)
-        : true;              /* an unmodelled namespace is the engine's business */
+        /* AND AN UNKNOWN NAMESPACE IS A FAULT, not "the engine's business".
+           That escape hatch is how `move:{"relationship.watkins":-6}` sat in
+           Questions to the Prime Minister passing every check: the engine's
+           switch has a `rel` case and no `relationship` one, so it fell to a
+           default that logs IGNORED into the in-game log and moved nobody.
+           Measured before the fix — relationship.watkins left him on 19,
+           rel.watkins took him to 13.
+
+           The engine's own switch is the authority, so MOVE_NS is read out
+           of js/engine.js rather than written down twice. A namespace the
+           engine handles but this file has no id list for still passes; one
+           it has never heard of does not. */
+        : MOVE_NS.has(ns) ? true
+        : (targetBad.push(tag + ": move." + key + " — the engine has no \"" +
+             ns + "\" namespace (it has: " + [...MOVE_NS].join(", ") + ")"), true);
       if (!okTarget) targetBad.push(tag + ": move." + key + " names nothing");
     });
     if (e.station) Object.keys(e.station).forEach(id => {

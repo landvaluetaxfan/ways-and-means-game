@@ -87,13 +87,99 @@ const SANDBOX = [
 
 const EVENTS = [
 
-{ id:"the_account", prologue:1, once:true,
+/* THE COMMISSION — prologue 1, and the reason the sequence starts here.
+
+   It used to open on a political editor catching the Prime Minister by a
+   lift. The author's note: a journalist haranguing the PM alone is not very
+   romantic or wide in scope, and Flash assuming office should feel
+   consequential. It should, and the polity has exactly the right instrument
+   for it. Bible §3.3: in a patchwork of stations with no shared territory
+   the presidency is the only office elected by everyone, and it is the thing
+   that symbolically holds the union together.
+
+   So the game opens where the union is: the capital that is nobody's
+   constituency, and the one person all 7,086,000 voted for, handing her a
+   government he does not expect to last. The arithmetic in his mouth is the
+   real arithmetic — 142 of 280, a majority of one, six of them independents
+   on confidence and supply — measured against the roll rather than written
+   for the scene.
+
+   This decides the PRESIDENT, and the choice the player meets next decides
+   HER. Two different axes on purpose: he holds dissolution, referral and
+   appointments, and a relationship that starts at 22 is the one that later
+   refuses her a snap election. */
+{ id:"the_commission", prologue:1, once:true,
   /* THE CAMPAIGN'S OWN NAME, carried on the first sitting's header rather
-     than a scene label. The author's choice; swap the part after the dash
-     for another reading. (Alternatives offered: A Defiance of Odds · The
-     Arithmetic of Confidence · Steady Hands and Unread Minutes · The Fourth
-     Session · One for You, One for Me · Why You? · The Winter Garden.) */
+     than a scene label. Moved here from the_account when that stopped being
+     the first thing the player reads. (Alternatives the author was offered:
+     A Defiance of Odds \u00b7 The Arithmetic of Confidence \u00b7 Steady Hands and
+     Unread Minutes \u00b7 The Fourth Session \u00b7 One for You, One for Me \u00b7
+     Why You? \u00b7 The Winter Garden.) */
   title:"Adriana Eireann Flash \u2014 The Edge of History",
+  speaker:"tenaya",
+  body:`The capital was put in the Winter Garden because the Winter Garden is
+nobody's constituency. It belongs to all thirty stations and returns one
+member who cannot vote. A river
+runs from the cold end to the warm. The congress hall where the Charter was
+signed stands on the hill at the middle of it. The Earth legations are sealed
+along the water in pieces of their own worlds, and the walk from the lift to
+this room passes six climates in a mile.
+
+Jaco van Ryneveld was elected by seven million and eighty-six thousand people
+across thirty habitats that share no air, no soil and no horizon. It is the
+only office every voter in the Commonwealth votes for. He took it as an
+independent, with 51.4 per cent, and he owes you nothing at all.
+
+The commission is on the desk in front of him. He has not moved it.
+
+"Two hundred and eighty seats," he says. "You can show me a hundred and
+forty-two. That is a majority of one, and six of the hundred and forty-two
+are independents who have undertaken to keep you alive and nothing beyond it.
+
+"I am obliged to send for whoever can hold the House. I am not obliged to
+expect it to hold. Tell me what you mean to do with it, and I will put the
+date on this."`,
+  choices:[
+    { label:"The personhood bill. It is why there is a government at all.",
+      act:"Tell him",
+      note:"The honest answer, and the one your largest partner joined for. " +
+           "The maintenance benches hear their wages named second.",
+      effects:[{ flag:"commission_bill" },
+               { move:{ "rel.president":4 } },
+               { move:{ "loyalty.psa":8 } },
+               { move:{ "loyalty.cu_maintenance":-5 } },
+               { wire:"PM TELLS PRESIDENT THE DIVERGENCE BILL COMES FIRST" }],
+      result:"He writes the date and signs under it. Your largest partner has what it joined for, in the President's minute, before the House has sat once." },
+
+    { label:"The stations. Three of them are under reserve this morning.",
+      act:"Tell him",
+      note:"He is the office the small habitats elected to be heard by. " +
+           "Your partner joined this government for the bill, and is listening.",
+      effects:[{ flag:"commission_stations" },
+               { move:{ "rel.president":8 } },
+               { move:{ "loyalty.cu_maintenance":6 } },
+               { move:{ "loyalty.psa":-6 } },
+               { move:{ public_standing:3 } },
+               { wire:"PM PUTS LIFE SUPPORT AHEAD OF THE BILL IN FIRST MEETING" }],
+      result:"He signs it without reading it again. Thirty stations elected him and four of them have been below reserve in his term; he has wanted a Prime Minister to say that first for three years." },
+
+    { label:"I intend to last. You will hear what I am doing when I do it.",
+      act:"Tell him",
+      note:"Nobody's creature, and nothing conceded in the first hour. " +
+           "He keeps dissolution, referral and every appointment.",
+      effects:[{ flag:"commission_none" },
+               { move:{ "rel.president":-6 } },
+               { move:{ "loyalty.cu_loyalists":7 } },
+               { move:{ public_standing:-2 } },
+               { wire:"PRESIDENT AND PRIME MINISTER MEET; NEITHER OFFICE COMMENTS" }],
+      result:"He puts the date on it and says nothing else. He keeps dissolution, bill referral and the refusal of an appointment, and he now knows he will be told about each of them afterwards." }
+  ]},
+
+{ id:"the_account", prologue:2, once:true,
+  /* The campaign's name moved to the_commission, which is the first thing
+     the player reads now; this takes "Why you?" from the same list of
+     alternatives the author was offered, because that is what the scene is. */
+  title:"Why you?",
   speaker:"ceyhan",
   /* THE EMPHASIS. Her record is FIXED (design/14 §2) — this does not
      change a thing she did. It decides which reading of it she puts her
@@ -106,16 +192,20 @@ const EVENTS = [
      are engineering. Three flags, and later content may gate a line on
      `led_on_competence` / `led_on_continuity` / `led_on_break` — never a
      branch, only a line. Nothing here forks the prose. */
-  body:`He has been waiting by the lift since seven, which means the question is
-one he thinks you will not answer.
+  body:`Thirty stations carry it live. On the ring it is the middle of a working
+shift; on the outer habitats they have held the change over to watch it. This
+is the first thing most of the Commonwealth will ever hear you say, and the
+lobby has given the first question to The Spindle.
 
-"Prime Minister. You inherit a majority, a bill you did not write, and a party
-that has spent thirty years arguing with itself about what it is for." He does
-not look at his notes. "Before anything else: why you?"
+Ivor Ceyhan does not look at his notes.
 
-It is the only question of the morning that you get to answer twice: once now,
-and once for the rest of it. The record is the record. What is not yet settled
-is which part of it you intend to be known for.`,
+"Prime Minister. You inherit a majority of one, a bill you did not write, and
+a party that has spent thirty years arguing with itself about what it is for.
+Before anything else: why you?"
+
+It is the only question of the morning you get to answer twice: once now, and
+once for the rest of it. The record is the record. What is not yet settled is
+which part of it you intend to be known for.`,
   choices:[
     { label:"Because the last government could not run it, and I can",
       act:"Say it",
@@ -156,7 +246,7 @@ is which part of it you intend to be known for.`,
       result:"It is the answer the country wanted and the one your own benches will quote back at you. Czarnecki declines to comment, which from him is a statement." }
   ]},
 
-{ id:"briefing_divergence", prologue:2, once:true,
+{ id:"briefing_divergence", prologue:3, once:true,
   title:"The bill you inherited",
   speaker:"ceyhan",
   body:`Your predecessor promised it and did not have to carry it. You do.
@@ -192,7 +282,7 @@ undercut their wages, would rather you had paid a different price.`,
       result:"The Substrate Left is delighted. Thirty-one of your own members were not consulted." }
   ]},
 
-{ id:"gb_approach", prologue:7, once:true,
+{ id:"gb_approach", prologue:8, once:true,
   /* THE CHAPTER ADVANCE MUST NOT HINGE ON MUTABLE BILL STATE. This was
      gated `billStage:{divergence:"committee"}`, and the obvious first move
      — granting the divergence bill a slot — moved it out of committee, so
@@ -245,7 +335,7 @@ recognise. You are not reforming personhood. You are reforming us."`,
       result:"You learn that the panel meets on Thursday morning, which is four hours before the division." }
   ]},
 
-{ id:"halloran_signatures", prologue:4,
+{ id:"halloran_signatures", prologue:5,
   when:{ loyaltyBelow:{cu_halloran:20}, flagsAbsent:["halloran_confronted"] },
   title:"Nine signatures",
   speaker:"halloran",
@@ -306,7 +396,7 @@ The ballot is called for the week after next.`,
       result:"You keep the leadership. The New Progressive Party meets tonight without you." }
   ]},
 
-{ id:"vantage_radiator", prologue:5,
+{ id:"vantage_radiator", prologue:6,
   when:{ scalarBelow:{thermal_margin:22}, flagsAbsent:["vantage_handled"] },
   title:"Ember Ridge, third day below reserve",
   speaker:null,
@@ -421,7 +511,7 @@ consensus. It is not clear that either is illegal.`,
    voice, one sitting at a time. The Chief Whip can say whatever he likes; the
    prose never puts the tutorial in the Prime Minister's mouth. */
 
-{ id:"the_order_of_the_day", prologue:3,
+{ id:"the_order_of_the_day", prologue:4,
   when:{ flagsAbsent:["taught_the_day"] },
   title:"The order of the day",
   speaker:"okarie",
@@ -499,7 +589,7 @@ about the licensing boards since Tuesday.
       result:"He accepts it the way he accepts everything, which is to say he goes back to the lobbies and works the benches himself." }
   ]},
 
-{ id:"the_whip_list", prologue:6,
+{ id:"the_whip_list", prologue:7,
   when:{ flagsAbsent:["whip_briefed"] },
   title:"The list",
   speaker:"okarie",
@@ -1787,7 +1877,18 @@ Neither future is a vote the government can lose quietly.`,
          given decay (they used to run for ever, and drove friction to 100),
          the cost stopped arriving at all. An annexation is a shock: most of
          it lands at once, and the trend is the deterioration afterwards. */
-      effects:[{ flag:"f1_annexing" }, { move:{ "friction":12 } },
+      /* FOURTEEN, NOT TWELVE, and the two points are the canon ending's
+         margin rather than a balance opinion. The shock plus its trend
+         converged on friction 65 exactly, and settlements/f1_pyrrhic gates
+         on scalarAbove.friction 65, which the engine reads STRICTLY. So the
+         Sovereign Debt Trap needed friction to reach 66 and the chain
+         delivered 65 — it landed only because the trend got one more
+         sitting than it needed, and adding an eighth prologue beat took
+         that sitting away. Measured: at 12 the run reaches 65 and no tier
+         ever lands, at 14 it converges on 67 and the settlement lands at
+         sitting 22 of 35. An ending that depends on the tutorial's length
+         is not balanced, it is coincident. */
+      effects:[{ flag:"f1_annexing" }, { move:{ "friction":14 } },
                { move:{ "trend.friction":3 } },
                { move:{ "solvency":-6000 } }, { move:{ "legitimacy":12 } },
                { bill:{ annexation:{ stage:"first_reading" } } },
@@ -2943,7 +3044,7 @@ you already have.`,
       note:"The benches will like it. The gallery has heard it.",
       effects:[
         { move:{ party_loyalty:5, public_standing:-2 } },
-        { move:{ "relationship.watkins":-6 } },
+        { move:{ "rel.watkins":-6 } },
         { wire:"NOISY EXCHANGES AT QUESTIONS; NEITHER LEADER ANSWERS THE OTHER" }
       ],
       result:"Your own side enjoyed it enormously. Nobody outside the chamber could say afterwards what the reserve stands at." }

@@ -8,6 +8,15 @@ vm.runInThisContext(src);
 const CONTENT = globalThis.__C;
 const Engine = require("./js/engine.js");
 
+/* HOW LONG THE OPENING IS, counted rather than written down. Chapter one's
+   prologue beats hold the first sittings of a run, and two assertions below
+   are really measuring that length: how far a dated crisis may drift, and
+   how many sittings a canon-ending run needs. Both went red when the
+   President's commission was added as a new first beat, which is a test
+   measuring the tutorial and calling it the crisis. */
+const PROLOGUE1 = CONTENT.events
+  .filter(e => (e.chapter || 1) === 1 && e.prologue).length;
+
 const st = Engine.newGame(CONTENT);
 console.log("chamber", Engine.chamberTotal(st), "| popular", Engine.popularTotal(st),
             "| functional", Engine.functionalTotal(st));
@@ -3634,8 +3643,11 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
     const pick = { f1_stranded: 0, f1_referendum: 0, f1_dilemma: 0, f1_water: 0,
       f1_loan: 1, f1_accounts_freeze: 0, fa_two_fronts: 0, fa_window_closes: 0,
       fa_anchor_terms: 0, fa_conciliate: 1 };
-    let tier = null, end = null;
-    for (let s = 0; s < 45; s++) {
+    let tier = null, end = null, tierAt = null;
+    /* The run has to outlast the tutorial: 38 sittings of chapter two plus
+       however many beats the opening takes, rather than a flat 45 that
+       silently became 44 of play when the prologue grew by one. */
+    for (let s = 0; s < 38 + PROLOGUE1; s++) {
       const e = Engine.nextEvent(st, CONTENT);
       if (e) {
         const n = (e.choices || []).length || 1;
@@ -3647,13 +3659,24 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
       govern(st);
       Engine.advance(st, CONTENT);
       const en = Engine.checkEnd(st, CONTENT);
-      if (en.settlement && !tier) tier = en.settlement;
+      if (en.settlement && !tier) { tier = en.settlement; tierAt = st.sitting; }
       if (en.over) { end = en; break; }
     }
     ok("the canon ending is reachable by play (the debt trap)",
        !!tier && tier.id === "f1_pyrrhic", tier ? tier.id : "no tier landed");
     ok("and it does not end the run: the campaign goes to the election",
        !!end && end.kind === "election", end ? end.kind : "no end");
+    /* AND IT LANDS WITH ROOM, which is the assertion that was missing. The
+       ending used to arrive on the last sitting it possibly could, so it
+       read as passing while resting on nothing: one more prologue beat and
+       it stopped landing at all, with "no tier landed" as the only clue.
+       Five sittings of slack is the difference between an ending the chain
+       produces and one it produces by coincidence. */
+    ok("and the canon ending lands with sittings to spare",
+       tierAt != null && end && end.sitting != null
+         ? end.sitting - tierAt >= 5 : tierAt != null,
+       tierAt == null ? "never landed"
+         : "settled at " + tierAt + (end && end.sitting ? ", run ended " + end.sitting : ""));
   }
 
   if (bad) { console.log("\n" + bad + " OPENING FAILURES"); process.exitCode = 1; }
@@ -3860,9 +3883,17 @@ console.log("\nTHE ECONOMY:");
   /* Its date is a FLOOR, not a promise of the exact day: chapter two's own
      prologue holds sitting 8, and a prologue outranks a date. So the test is
      that it cannot come early and cannot drift far — which is what a date in
-     a parliament is worth. */
+     a parliament is worth.
+
+     THE DRIFT IS A FUNCTION OF THE PROLOGUE, so it is derived rather than
+     written down. The tolerance was [8,10] against a seven-beat opening;
+     adding the President's commission as a new first beat pushed the crisis
+     to 11 and failed a test that was measuring the tutorial's length, not
+     the crisis's date. Counted from content, the next beat added or removed
+     moves the band with it. */
   ok("the crisis opens on its date, not when the pool reaches it",
-     a >= 8 && a <= 10, "f1_stranded at " + a + " (dated 8)");
+     a >= 8 && a <= PROLOGUE1 + 3,
+     "f1_stranded at " + a + " (dated 8, prologue is " + PROLOGUE1 + " beats)");
   ok("the survey takes sittings to report",
      b != null && b - a >= 2, "stranded " + a + " -> referendum " + b);
   ok("and the law officer's opinion takes sittings to come back",
