@@ -1499,6 +1499,63 @@ console.log("\nA DEFERRED FACT (the queue carries effects):");
   if (bad) { console.log("\n" + bad + " DEFERRED-FACT FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nTHE ANNEXATION ACT CAN BE CARRIED:");
+(function(){
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  /* THE ASSERTION BEHIND THE GATE CHANGE. The canon endings used to gate on
+     `f1_annexing` \u2014 a flag the Prime Minister sets by DECIDING \u2014 which
+     annexed 184,000 people with no reading, no division and no Act, in a
+     game whose thesis is that things happen by parliamentary act. Moving the
+     gate to `almanac_annexed` was two words and was reverted once, because
+     the Act could not then be carried and an ending nobody can reach is
+     worse than one that is merely unearned.
+
+     This is the condition that let it move, so it is the thing to watch: if
+     balance ever drifts back, the Act stops passing and this fails LOUDLY,
+     rather than the endings quietly becoming unreachable. */
+  const st = Engine.newGame(CONTENT);
+  Engine.apply(st, CONTENT, [{ flag: "station_issue" }, { flag: "annexed_almanac_works" },
+                             { flag: "f1_annexing" }]);
+  const bill = (CONTENT.bills || []).find(b => /annex/i.test(b.id));
+  ok("there is an Annexation Bill", !!bill, bill ? bill.id : "none");
+  if (bill) {
+    ok("and passing it is what sets the flag the endings read",
+       (bill.onPass || []).some(e => e.flag === "almanac_annexed"));
+    let dividedAt = null;
+    for (let i = 0; i < 40 && st.bills[bill.id].stage !== "assented"; i++) {
+      if (st.bills[bill.id].stage === Engine.DIVIDES_AT) {
+        const r = Engine.divide(st, CONTENT, bill.id);
+        if (r && r.ok !== false && dividedAt == null) dividedAt = st.sitting;
+      }
+      if (st.slots.used < st.slots.total) Engine.grantSlot(st, CONTENT, bill.id);
+      Engine.advance(st, CONTENT);
+    }
+    ok("a government that spends its order paper on it carries it",
+       st.bills[bill.id].stage === "assented",
+       st.bills[bill.id].stage + (dividedAt ? ", divided at sitting " + dividedAt : ""));
+    ok("and the Act sets the flag the settlements gate on",
+       st.flags.almanac_annexed === true);
+    ok("and the government is still standing afterwards",
+       !Engine.checkEnd(st, CONTENT).over,
+       "friction " + st.scalars.friction + ", legitimacy " + st.scalars.legitimacy +
+       ", solvency " + st.scalars.solvency);
+
+    /* and the endings gate on the Act, not the intention */
+    const onAct = (CONTENT.settlements || []).filter(s0 =>
+      ((s0.when || {}).flags || []).indexOf("almanac_annexed") >= 0);
+    const onWish = (CONTENT.settlements || []).filter(s0 =>
+      ((s0.when || {}).flags || []).indexOf("f1_annexing") >= 0);
+    ok("the annexation endings gate on the Act", onAct.length >= 3, onAct.length + " tiers");
+    ok("and none of them gates on the intention any more", onWish.length === 0,
+       onWish.map(s0 => s0.id).join(", ") || "none");
+  }
+
+  if (bad) { console.log("\n" + bad + " ANNEXATION ACT FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nTHE LICENSING BOARDS:");
 (function(){
   let bad = 0;
@@ -2609,11 +2666,11 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
     (flags || []).forEach(f => s.flags[f] = true);
     return s;
   };
-  const t1 = tier({ legitimacy: 80, solvency: 75000, friction: 30 }, ["f1_annexing"]);
+  const t1 = tier({ legitimacy: 80, solvency: 75000, friction: 30 }, ["almanac_annexed"]);
   ok("critical triumph", (Engine.checkSettlement(t1, CONTENT) || {}).id === "f1_triumph");
-  const t2 = tier({ legitimacy: 60, solvency: 65000, friction: 30 }, ["f1_annexing"]);
+  const t2 = tier({ legitimacy: 60, solvency: 65000, friction: 30 }, ["almanac_annexed"]);
   ok("maritime charter", (Engine.checkSettlement(t2, CONTENT) || {}).id === "f1_maritime");
-  const t3 = tier({ legitimacy: 70, solvency: 30000, friction: 70 }, ["f1_annexing"]);
+  const t3 = tier({ legitimacy: 70, solvency: 30000, friction: 70 }, ["almanac_annexed"]);
   ok("sovereign debt trap", (Engine.checkSettlement(t3, CONTENT) || {}).id === "f1_pyrrhic");
   const t4 = tier({ legitimacy: 50, solvency: 50000, friction: 50 }, ["f1_referendum_carried"]);
   ok("joint mandate", (Engine.checkSettlement(t4, CONTENT) || {}).id === "f1_joint");
@@ -3480,7 +3537,19 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
   {
     const st = Engine.newGame(CONTENT);
     const govern = s => {
-      CONTENT.bills.forEach(b => {
+      /* A GOVERNMENT CARRIES ITS OWN ACT FIRST. This granted order-paper
+         time to every bill in the order content happens to list them, and
+         the Annexation Bill is last \u2014 so the six slots were spent before
+         the policy ever reached the measure the whole campaign is about,
+         and the canon ending could not land once the gate moved from the
+         intention to the Act. A government that has decided to annex and
+         then does not put the Bill down is not playing well; it is not
+         playing at all. */
+      const order = CONTENT.bills.slice().sort((a, b) => {
+        const mine = x => (s.flags.f1_annexing && /annex/i.test(x.id)) ? 0 : 1;
+        return mine(a) - mine(b);
+      });
+      order.forEach(b => {
         if (s.bills[b.id] && !s.bills[b.id].dead) Engine.grantSlot(s, CONTENT, b.id);
       });
       CONTENT.bills.forEach(b => {

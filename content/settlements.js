@@ -158,27 +158,34 @@ const SETTLEMENTS = [
      PROSE IS THE AUTHOR'S. These closings are two flat sentences each
      so the mechanism can be played; the register is deliberately bare.
      ============================================================= */
-  /* THESE STILL GATE ON THE INTENTION, NOT THE ACT, and they should not.
-     `f1_annexing` is a flag the Prime Minister sets by deciding, so the
-     Commonwealth annexes 184,000 people with no reading, no division and no
-     Act — in a game whose thesis is that things happen by parliamentary act.
+  /* THESE NOW GATE ON THE ACT, which is what the note above them asked for
+     and could not have.
 
-     The Annexation Bill now exists (content/bills.js) and its onPass sets
-     `almanac_annexed`. Adding that flag here is a two-word change and it was
-     made and then REVERTED, because the Act cannot yet be carried: traced
-     over a full run the bill stalls at second reading, friction reaches 100
-     and solvency 0, and the canon ending becomes unreachable rather than
-     earned. Gating on an Act nobody can pass is worse than gating on an
-     intention.
+     `f1_annexing` is a flag the Prime Minister sets by DECIDING, so gating on
+     it annexed 184,000 people with no reading, no division and no Act — in a
+     game whose thesis is that things happen by parliamentary act. The change
+     to `almanac_annexed` (set by the Annexation Bill's onPass) was two words,
+     and it was made and reverted once because the Act could not be carried:
+     the bill stalled at second reading, friction reached 100 and solvency 0,
+     and the canon ending became unreachable rather than earned. Gating on an
+     Act nobody can pass is worse than gating on an intention.
 
-     So the balance comes first and the gate follows it. See the work order
-     in opencode-brief.md: this is one line once the bill can be carried. */
+     Three things have changed since. The annexation is an immediate friction
+     shock rather than a trend that ran away; trends decay; and the state has
+     an income, so a government that spends 14,000 on the Act is not finished
+     by having spent it. Traced on 21 September 2026: the bill reaches its
+     division at sitting 6, carries on the popular bench 129 to the 121 it
+     needs, is assented at sitting 7, and the run comes out of it with
+     friction 25, legitimacy 57 and solvency 46,765 — which receipts carry
+     back over the Maritime Charter's floor within a dozen sittings.
+
+     So the gate is the Act. The balance came first, as it should have. */
   { id: "f1_triumph", rank: 0,
     name: "Orbital Powerhouse",
     summary: "Full annexation. Earth drops the debt claims under threat of satellite transit tariffs.",
     closing: "The platform is Commonwealth territory, and Earth has dropped its claims. " +
              "Heavy orbital manufacturing is unlocked, and Earth will remember this.",
-    when: { flags: ["f1_annexing"],
+    when: { flags: ["almanac_annexed"],
             scalarAbove: { legitimacy: 75, solvency: 70000 },
             scalarBelow: { friction: 60 } } },
 
@@ -187,7 +194,7 @@ const SETTLEMENTS = [
     summary: "International courts recognise salvage rights. The platform becomes legal Federation territory.",
     closing: "The courts recognise the salvage, and the platform is Commonwealth territory in law. " +
              "The legal and administrative bill is heavy, and so is the trust it bought.",
-    when: { flags: ["f1_annexing"],
+    when: { flags: ["almanac_annexed"],
             scalarAbove: { legitimacy: 55, solvency: 60000 },
             scalarBelow: { friction: 40 } } },
 
@@ -197,7 +204,7 @@ const SETTLEMENTS = [
     summary: "Annexed, and 300,000 workers saved. The Federation assumes the defaulted corporate bonds.",
     closing: "The platform is annexed and its workers are saved, and the Commonwealth has assumed " +
              "the defaulted bonds that paid for them. Three years of austerity begin at the next estimates.",
-    when: { flags: ["f1_annexing"],
+    when: { flags: ["almanac_annexed"],
             scalarAbove: { legitimacy: 65, friction: 65 },
             scalarBelow: { solvency: 35000 } } },
 
