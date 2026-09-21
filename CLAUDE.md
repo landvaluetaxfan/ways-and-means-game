@@ -170,7 +170,7 @@ list over any older sentence here that implies a different one:
 | **Sitting** | the event, the docket, the calendar, and the one indicator panel |
 | **Government** | instruments · the document · what it can do · the ledger and cabinet, with the Tribunal and the Presidency folded at the edge |
 | **Chamber** | order-paper time, the order paper, the House, the whip, and who is counted |
-| **Economy** | the treasury, ways and means, the productive economy (§7.10), the prices and the law that sets them, the Underwriters' outlook, labour, and one chart anything above can be picked into **at either of two timescales** — the engine's per-sitting curve, or `setup.history`'s annual record 2280–2287, whose last point IS the opening value so the two join. The live window is about fifteen weeks (four sitting days a week), which is the right resolution for a price and far too short to show anything structural; that is what the record is for. `inflation` has no stored series and is derived from the four price series on both scales, never stored. |
+| **Economy** | *Refreshed 21 Sep 2026, and the refresh was a MERGE.* Four panels on four subjects and a band: **the account** (a stock and its flows), **what everything is priced in**, **what is made and who makes it**, and — in the bottom band beside the chart — **what the Underwriters say**. The middle panel is three former ones, because `TAX_BASES` and `PRICE_META` in the engine are the SAME FOUR THINGS (volume, thermal, substrate, transit): Scarcity, What sets the prices and Ways and means were three facts about one set of four rows, in two different columns, with a third panel between two steps of one sum — `receipts()` computes each yield AS `rate × price/100 × weight`, and §7.9 says outright that the four prices are the appropriation's. One row each now: price, trend, the clause that sets it, the rate, the yield. `inflation` is that table's footing, not the account's, being a reading of those four and nothing else. §7.10's three readings and `content/labour.js` are one panel for the same reason — `st.economy.participation` and `LABOUR.totals.participation` are one fact — with the eighteen categories folded, since they are reference and not a working readout. The chart takes two columns **at either of two timescales** — the engine's per-sitting curve, or `setup.history`'s annual record 2280–2287, whose last point IS the opening value so the two join. The live window is about fifteen weeks (four sitting days a week), which is the right resolution for a price and far too short to show anything structural; that is what the record is for. **Nothing on the tab scrolls at any of the seven measured shapes** — see the layout note below. |
 | **Party** | *renamed from Parties, and refocused 21 Sep.* The twelve grouped by their relation to the government — in government, confidence and supply, outside — with the per-partner ledger, what each bench can be moved on, ideological distance, the live measure they will not carry, their currents, every member, and the party outside Parliament |
 | **Orbit**, **World**, **Concordance**, **Record** | unchanged |
 
@@ -446,6 +446,43 @@ version of any of them is in the header of the file it names.
   and the PANEL clipped instead of the BODY scrolling. The content became
   unreachable, which is the one outcome that construction exists to prevent.
   `.panel > .pbody.scrolls` is `flex:1 1 auto;min-height:0`.
+- **A COLUMN THAT SCROLLS IS A COLUMN WHOSE CONTENTS WERE NEVER SIZED.** The
+  Economy tab had eight panels in three `.stack.scrolls` columns, and all
+  eight of them scrolled at 1366x768. Column scrolling hid the real fault
+  instead of showing it: the first column needed 706px and the second 397px,
+  so one scrolled while the other held eighty pixels of air, because panels
+  had been placed by what they were ABOUT and never by how big they were. The
+  fix was not CSS — it was measuring each panel's content need (250 / 282 /
+  230 / 154 / 221), merging the three that were about the same four things,
+  and PLACING five panels in named grid cells so no column has anything to
+  divide. **Measure the content need, not the box:** a `.pbody` with
+  `flex:1 1 auto` is GROWN to fill its panel, so `scrollHeight` reports the
+  box and not the need, and every fitting panel looks exactly full. Sum the
+  in-flow children instead.
+- **And "no scrollbars" is a matter of FITTING, never of removing `scrolls`.**
+  Every `.pbody` keeps it: an `overflow:auto` box with nothing overflowing
+  draws no bar, and the class is the net that stops a squeezed panel clipping
+  content nobody can reach. Taking it off to guarantee no bar guarantees the
+  one outcome the construction exists to prevent.
+- **Rows go `auto` then `1fr`, not `1fr` then a cap.** With the Economy's top
+  row on `1fr` all three panels fitted and each held about 200px of trailing
+  grey. Content-size the row that holds tables and let the band take the
+  slack — a bar chart's extra height is amplitude, which is what the panel is
+  for.
+- **A heading that gains a control is no longer only words.** `.panel > h2` is
+  a nowrap flex row; the chart's title, subtitle and two timescale buttons
+  came to 429px in a 397px panel at 820px wide, so a button was drawn 32px
+  outside its own frame. Scoped `flex-wrap` on that one heading — a rule whose
+  subject is every heading in the interface is not the way to fix the one
+  heading that holds a control. (The control was under the plot before, where
+  it cost the panel 37px it had never been given and the chart scrolled by
+  exactly the height of those two buttons at EVERY window, the author's
+  included.)
+- **`flex:1 1 0` with no cap means one data point fills the plot.** A first
+  sitting's single bar was drawn the full width at 2% height — a rule across
+  the bottom of the panel, not a chart. `max-width:26px` costs a full
+  sixty-bar series nothing at 1,000px and leaves a partial one growing from
+  the left, which is what a series does.
 - `npm run layout` measures all of the above. It also learned not to cry wolf:
   `scrollHeight` counts absolutely positioned children, and this interface
   hangs things proud on purpose (the dual-majority threshold tick sits at

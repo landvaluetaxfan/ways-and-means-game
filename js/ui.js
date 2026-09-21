@@ -401,7 +401,7 @@ const UI = (function () {
       /* A tip is positioned in viewport coordinates against a node that is
          about to be replaced. Take it down first. */
       if (typeof Tips !== "undefined") Tips.hide();
-      drawTitle(); drawPrices(); drawReceipts(); drawEconomy(); drawEconomyReal(); drawParties(); drawExport(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
+      drawTitle(); drawEconomy(); drawEconomyReal(); drawParties(); drawExport(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
       if (typeof Concordance !== "undefined") Concordance.render(st, C, cxCurrent, false);
       if (typeof Papers !== "undefined") Papers.render(st, C);
       /* The globe only redraws when it is the screen the player is on: it is
@@ -841,6 +841,12 @@ const UI = (function () {
      switching between them reads as one story at two magnifications rather
      than two stories. */
   let chartScale = "session";
+  /* WHICH FOLDS ON THE TAB ARE OPEN. Same reason as `whipOpen` on the
+     Chamber: a renderer replaces its container, so the <details> element
+     the player clicked does not survive the next draw and the fold has to
+     be reopened from a key. A view preference for the session, so it lives
+     here and not in the save. */
+  const econOpen = { labour: false };
 
   /* THE SERIES BEHIND A FIGURE. Everything charted here is already kept —
      the prices keep sixty sittings of history and the state keeps its own —
@@ -955,6 +961,16 @@ const UI = (function () {
       b("record", "The record", "2280\u20132287") +
       `</div>`;
   }
+  /* DRAWN INTO THE HEADING, once per chart draw. Appended to the body it
+     cost the panel 37px it had never been given, and the chart scrolled by
+     exactly the height of these two buttons at every window including the
+     author's 2560x1440 — the one scrollbar on this tab a wide screen did
+     not hide. */
+  function drawChartScale() {
+    const host = $("#chart-scale"); if (!host) return;
+    host.innerHTML = chartScaleHTML();
+    wireChartScale(host);
+  }
   function wireChartScale(box) {
     box.querySelectorAll("[data-cscale]").forEach(btn =>
       btn.addEventListener("click", () => {
@@ -980,9 +996,8 @@ const UI = (function () {
     /* A MEASURE WITH NO PAST SAYS SO. Drawing a flat line for one would be a
        claim about history rather than the absence of a record. */
     if (s.record && !s.pts.length) {
-      box.innerHTML = `<div class="chartwrap"><div class="note">${esc(s.none)}</div></div>` +
-        chartScaleHTML();
-      wireChartScale(box);
+      box.innerHTML = `<div class="chartwrap"><div class="note">${esc(s.none)}</div></div>`;
+      drawChartScale();
       return;
     }
 
@@ -996,8 +1011,13 @@ const UI = (function () {
         `<div class="chartnow">${s.unit === "%" ? (now >= 0 ? "+" : "") + now.toFixed(1) + "%"
                                                 : Math.round(now).toLocaleString()}` +
         `<small> now</small></div>` +
+        /* TWO LINES, NOT ONE. "low 53,219 \u00b7 high 85,003" is about 145px
+           of text in a 120px column, so it wrapped between the word "high"
+           and its own number -- a label on one line and its figure on the
+           next. Widening the column would only move the fault to the
+           narrowest window, and a low and a high are two readings anyway. */
         `<div class="note">low ${s.unit === "%" ? lo.toFixed(1) : Math.round(lo).toLocaleString()}` +
-        ` \u00b7 high ${s.unit === "%" ? hi.toFixed(1) : Math.round(hi).toLocaleString()}</div>` +
+        `<br>high ${s.unit === "%" ? hi.toFixed(1) : Math.round(hi).toLocaleString()}</div>` +
       `</div><div class="cplot">` +
         `<div class="bigchart">` + pts.map((v, i) => {
           const pc = Math.max(2, Math.round((v - lo) / span * 100));
@@ -1014,12 +1034,116 @@ const UI = (function () {
             : pts.length > 1 ? "sitting " + Math.max(1, st.sitting - pts.length + 1) : ""}</span>` +
           `<span>${s.record ? String(s.to)
             : pts.length > 1 ? "sitting " + st.sitting : ""}</span></div>` +
-      `</div></div>` + chartScaleHTML();
-    wireChartScale(box);
+      `</div></div>`;
+    drawChartScale();
   }
 
+  /* WHAT THE LAW DOES TO EACH BASE, in the clause's own words.
+
+     One lever per base, which is not a convenience of the interface: the
+     tick reads exactly these four keys and nothing else sets a price.
+     Bible §7.9 — "the four prices are the appropriation's... each of its
+     clauses sets a law key for the level chosen, and the tick reads those
+     keys where it now reads a scalar." */
+  const BASE_LAW = {
+    thermal:   { key: "thermal_release", clause: "Thermal quota released",
+                 word: { tight: "held tight", steady: "as last session",
+                         open: "released" } },
+    substrate: { key: "substrate_public_share", clause: "Substrate publicly held",
+                 pct: true },
+    volume:    { key: "capital_works", clause: "Capital works",
+                 word: { none: "deferred", ring: "the ring band",
+                         some: "the ring band", outer: "the outer stations" } },
+    transit:   { key: "transit_subsidy", clause: "Transit subsidy",
+                 word: { none: "unsubsidised", anchors: "the anchor states",
+                         all: "every station" } }
+  };
+  const RATE_WORD = { none: "not levied", low: "reduced",
+                      standard: "standing rate", high: "raised" };
+
+  /* THE FOUR BASES, WHICH ARE ALSO THE FOUR PRICES.
+
+     This panel is three former panels, and the merge is the whole point of
+     the refresh. `TAX_BASES` and `PRICE_META` in the engine name the same
+     four things — volume, thermal, substrate, transit — so Scarcity, What
+     sets the prices and Ways and means were three facts about ONE set of
+     four rows, drawn in two different columns with a third panel between
+     two steps of one sum: `receipts()` computes each yield AS
+     `rate × price/100 × weight`, so the price column and the yield column
+     are adjacent by arithmetic and were not adjacent on the glass.
+
+     A row now reads left to right as that sum. Volume costs 99, the law
+     says capital works in the ring band, it is levied at the standing
+     rate, and it brings in 475 a sitting. Nothing is recomputed here: the
+     engine hands back the table, for the same reason apportionment_ratio
+     is derived and never stored.
+
+     ORDERED BY YIELD, not by the engine's array order or the prices'. What
+     a reader wants from a revenue table first is which base carries the
+     state, and volume carries a third of it. */
+  function drawBases() {
+    const box = $("#econ-bases"); if (!box) return;
+    const r = Engine.receipts(st);
+    const L = st.law || {};
+    const rows = r.rows.slice().sort((a, b) => b.yield - a.yield);
+
+    const lawCell = k => {
+      const d = BASE_LAW[k]; if (!d) return "";
+      const v = L[d.key];
+      const said = d.pct
+        ? (v == null ? "—" : Math.round(v * 100) + "% publicly held")
+        : ((d.word || {})[v] || String(v == null ? "—" : v));
+      return `<div class="blaw">${esc(d.clause)}<b>${esc(said)}</b></div>`;
+    };
+
+    const meta = k => PRICE_META.find(m => m.k === k) || {};
+    const body = rows.map(row => {
+      const k = row.base;
+      const h = (st.priceHistory || {})[k] || [row.price];
+      const chg = row.price - h[0];
+      const cls = chg > 2 ? "up" : chg < -2 ? "down" : "";
+      return `<tr class="brow${chartOn === k ? " on" : ""}" data-chart="${esc(k)}">` +
+        `<td class="bname">${esc(row.name)}<em>${esc(meta(k).unit || "")}</em></td>` +
+        `<td class="bidx ${cls}">${row.price.toFixed(0)}` +
+          `<span>${chg >= 0 ? "+" : ""}${chg.toFixed(0)}</span></td>` +
+        `<td class="bspark">${spark(h.slice(-40), 58, 20)}</td>` +
+        `<td>${lawCell(k)}</td>` +
+        `<td class="brate">${esc(RATE_WORD[row.rate] || row.rate)}</td>` +
+        `<td class="byield">${row.yield.toLocaleString()}</td></tr>`;
+    }).join("");
+
+    /* THE COST OF EXISTING BELONGS HERE. It was a row in the treasury
+       panel, where it read as a fact about money held; it is a reading of
+       these four prices against where they opened and of nothing else, so
+       it is this table's footing. §7.9's note in the engine says the same:
+       one figure, derived in one place, owned by nobody. */
+    const infl = Engine.inflation ? Engine.inflation(st) : 0;
+
+    box.innerHTML =
+      `<table><thead><tr><th>Base</th>` +
+      `<th class="n" data-tip="scarcity">Price</th><th></th>` +
+      `<th>What the law does</th><th class="n">Levied</th>` +
+      `<th class="n" data-tip="waysmeans">Yields</th></tr></thead><tbody>` +
+      body +
+      `<tr class="btot"><td class="bname">Every sitting</td><td></td><td></td>` +
+      `<td class="blaw">the appropriation's own clauses<b>what it all comes to</b></td>` +
+      `<td></td><td class="byield">${r.total.toLocaleString()}</td></tr>` +
+      `</tbody></table>` +
+      `<div class="bfoot${chartOn === "inflation" ? " on" : ""}" data-chart="inflation">` +
+        `<b>The cost of existing</b>` +
+        `<i class="${infl > 5 ? "up" : infl < -5 ? "down" : ""}">` +
+        `${infl >= 0 ? "+" : ""}${infl.toFixed(1)}%</i></div>` +
+      `<div class="note" style="padding:4px 6px 6px">Index, 100 at the opening of ` +
+      `the series. None of these four is a market: every one is a line of the ` +
+      `appropriation, which is why a price here can be argued with — and each ` +
+      `yield is that price times the rate the clause sets.</div>`;
+  }
+
+  /* THE ACCOUNT. A stock and its flows, and no per-base breakdown: the
+     arithmetic behind Receipts is the panel next to it, and the two used to
+     be separate panels in separate columns saying one number twice. */
   function drawEconomy() {
-    const box = $("#econ-treasury");
+    const box = $("#econ-account");
     if (box) {
       const r = Engine.receipts(st);
       const solv = st.scalars.solvency || 0;
@@ -1028,7 +1152,6 @@ const UI = (function () {
       let spend = 0;
       try { spend = (Engine.clauseCost(st, C, "appropriation") || {}).total || 0; }
       catch (e) { spend = 0; }
-      const runway = r.total > 0 ? Math.floor(solv / Math.max(1, r.total)) : null;
       const row = (lab, val, sub, cls, pick) =>
         `<div class="prow${pick ? " pick" + (chartOn === pick ? " on" : "") : ""}"` +
         (pick ? ` data-chart="${esc(pick)}"` : "") +
@@ -1036,58 +1159,42 @@ const UI = (function () {
         `<div class="pval ${cls || ""}">${val}</div></div>`;
       const debt = Engine.debtOf ? Engine.debtOf(st) : 0;
       const svc = Engine.debtService ? Engine.debtService(st) : 0;
-      const infl = Engine.inflation ? Engine.inflation(st) : 0;
       box.innerHTML =
         row("Held", solv.toLocaleString(), "the quota the state has", "", "solvency") +
-        row("Receipts", "+" + r.total.toLocaleString(), "every sitting", "down") +
+        row("Receipts", "+" + r.total.toLocaleString(), "every sitting, from four bases", "down") +
         (debt
           ? row("Owed to Earth", debt.toLocaleString(),
                 "at " + Engine.debtRate(st) + " per cent", "up") +
-            row("Debt service", "\u2212" + svc.toLocaleString(), "every sitting", "up")
+            row("Debt service", "−" + svc.toLocaleString(), "every sitting", "up")
           : row("Owed to Earth", "none", "nothing is pledged off-world")) +
-        row("Net a sitting", (r.total - svc >= 0 ? "+" : "\u2212") +
+        row("Net a sitting", (r.total - svc >= 0 ? "+" : "−") +
               Math.abs(r.total - svc).toLocaleString(),
             "receipts less what the debt costs", r.total - svc < 0 ? "up" : "down") +
-        row("Cost of existing", (infl >= 0 ? "+" : "") + infl.toFixed(1) + "%",
-            "the four prices against where they opened",
-            infl > 5 ? "up" : infl < -5 ? "down" : "", "inflation") +
         (spend ? row("The appropriation", spend.toLocaleString(),
                      "what the settled clauses cost", spend > solv ? "up" : "") : "") +
+        /* ONE NOTE, NOT TWO. The panel carried a standing sentence about the
+           rates and a second about the runway, and at 768px the pair of them
+           were most of the reason this column scrolled. The runway is the
+           one worth the height, because it is the only line here that says
+           how long the government has. */
         `<div class="note">` +
         (spend > solv
           ? `The budget as it stands costs more than the Commonwealth holds. ` +
             `It cannot be carried without either the reserve it does not have ` +
             `or a rate it has not set.`
-          : `At the present rates the state takes ${r.total.toLocaleString()} a ` +
-            `sitting. A government that stops taking it does not default; it ` +
-            `sheds people.`) + `</div>` +
-        (runway != null ? `<div class="note">Nothing coming in, and what is held ` +
-          `would cover ${runway} sitting${runway === 1 ? "" : "s"} of the same spending.</div>` : "");
-    }
-
-    /* THE PRICES ARE LEGISLATION. §7.9, and the tick reads exactly these. */
-    const law = $("#econ-law");
-    if (law) {
-      const L = st.law || {};
-      const WORD = {
-        thermal_release: { tight:"held tight", steady:"as last session", open:"released" },
-        capital_works:   { none:"deferred", ring:"the ring band", some:"the ring band", outer:"the outer stations" },
-        transit_subsidy: { none:"unsubsidised", anchors:"the anchor states", all:"every station" }
-      };
-      const rows = [
-        ["Thermal quota released", "thermal_release", "sets the thermal price"],
-        ["Capital works",          "capital_works",   "sets the volume price"],
-        ["Transit subsidy",        "transit_subsidy", "sets the transit price"]
-      ].map(([lab, k, why]) =>
-        `<div class="prow"><div class="plab">${esc(lab)}<em>${esc(why)}</em></div>` +
-        `<div class="pval">${esc((WORD[k] || {})[L[k]] || String(L[k] == null ? "—" : L[k]))}</div></div>`
-      ).join("");
-      const pub = L.substrate_public_share;
-      law.innerHTML = rows +
-        `<div class="prow"><div class="plab">Substrate publicly held<em>sets the substrate price</em></div>` +
-        `<div class="pval">${pub == null ? "—" : Math.round(pub * 100) + "%"}</div></div>` +
-        `<div class="note">None of these is a market. Every one is a line of the ` +
-        `appropriation, which is why a price here can be argued with.</div>`;
+          : r.total > 0
+            /* THE RUNWAY, AS A CONDITIONAL AND NOT AN ASSERTION. This read
+               "Nothing coming in, and what is held would cover 43 sittings"
+               on a panel whose line above it says Receipts +1,200 — a
+               hypothetical phrased as a statement of fact, and two panels
+               apart nobody noticed. It was the second of two notes here and
+               is now the only one, so it had to say what it means. */
+            ? `Were the receipts to stop, what is held would cover ` +
+              Math.floor(solv / Math.max(1, r.total)) + ` sittings of the ` +
+              `same spending. A government that runs out does not default; ` +
+              `it sheds people.`
+            : `Nothing is coming in at all. A government that runs out does ` +
+              `not default; it sheds people.`) + `</div>`;
     }
 
     /* WHAT THE UNDERWRITERS SAY. The engine finds which readings apply and
@@ -1100,43 +1207,19 @@ const UI = (function () {
         : `<div class="note">Nothing they would put in writing.</div>`;
     }
 
+    drawBases();
     drawChart();
 
     /* ONE LISTENER FOR THE WHOLE TAB, bound after the rows are drawn. The
-       rows are in two different panels and both are rebuilt on every draw,
-       so binding per panel would be two handlers for one action — the
-       [data-go] trap. */
+       pickable figures are in three different panels and all three are
+       rebuilt on every draw, so binding per panel would be three handlers
+       for one action — the [data-go] trap. */
     document.querySelectorAll("#s-econ [data-chart]").forEach(el =>
       el.addEventListener("click", () => {
         chartOn = el.dataset.chart;
         cue("click");
-        drawPrices(); drawEconomy();
+        drawEconomy(); drawEconomyReal();
       }));
-
-    /* WHAT PEOPLE DO. content/labour.js, which nothing in the interface has
-       ever read — it existed to be canon and to be argued with, and the
-       player could not see a line of it. */
-    const lt = $("#econ-labour");
-    if (lt && typeof LABOUR !== "undefined") {
-      const T = LABOUR.totals || {};
-      const hdr = $("#econ-lab-hdr");
-      if (hdr) hdr.textContent =
-        (T.employed ? (T.employed / 1e6).toFixed(2) + "M in work" : "what people do") +
-        (T.participation ? " · " + Math.round(T.participation * 100) + "% participation" : "");
-      const cats = (LABOUR.categories || []).slice()
-        .sort((a, b) => (b.share || 0) - (a.share || 0));
-      lt.innerHTML =
-        `<thead><tr><th>What people do</th><th class="n">Share</th>` +
-        `<th class="n" data-tip-title="Embodied" data-tip-body="The proportion of ` +
-        `this work done by people in bodies rather than as emulations. A body is ` +
-        `an economic asset, not a class marker.">Embodied</th>` +
-        `<th class="n">Licensed</th></tr></thead><tbody>` +
-        cats.map(c => `<tr><td>${esc(c.name)}</td>` +
-          `<td class="n">${(c.share || 0).toFixed(1)}%</td>` +
-          `<td class="n">${c.embodied == null ? "—" : Math.round(c.embodied * 100) + "%"}</td>` +
-          `<td class="n">${c.licensed ? (c.licensed / 1000).toFixed(0) + "k" : "—"}</td></tr>`).join("") +
-        `</tbody>`;
-    }
   }
 
   /* ---------- the parties ----------
@@ -1586,36 +1669,6 @@ const UI = (function () {
         }).join("") + `</tbody>`;
   }
 
-  /* ---------- ways and means ----------
-     WHERE THE MONEY COMES FROM, base by base. The state had no income at
-     all until the tick learned to collect one, and a revenue nobody can see
-     is the same bug from the other side: the player is owed the arithmetic
-     and not the answer (\u00a77.6), so this prints the rate, the base it is
-     charged on and what each one yields, and lets them add up.
-
-     IT IS A PANEL AND NOT A TAB, deliberately. Debt, credit ratings and an
-     inflation number would each be a second way of saying something the
-     state already says \u2014 the four prices ARE the inflation, per good \u2014 and
-     \u00a77.6 draws the line at a model the player cannot hold in their head.
-
-     The engine hands back a table; nothing is recomputed here, because two
-     places that compute one number is how apportionment_ratio drifted. */
-  function drawReceipts() {
-    const box = $("#gov-receipts"); if (!box) return;
-    const r = Engine.receipts(st);
-    const RATE = { none: "not levied", low: "reduced",
-                   standard: "standing rate", high: "raised" };
-    box.innerHTML = r.rows.map(row =>
-      `<div class="prow wmrow">
-        <div class="plab">${esc(row.name)}<em>${esc(RATE[row.rate] || row.rate)}</em></div>
-        <div class="pval">${row.yield.toLocaleString()}</div>
-      </div>`).join("") +
-      `<div class="prow wmtot">
-        <div class="plab">Total receipts<em>every sitting</em></div>
-        <div class="pval">${r.total.toLocaleString()}</div>
-      </div>`;
-  }
-
   /* The bands' own words. Content names them; this only capitalises. */
   const BAND_WORD = { ring: "Ring", middle: "Middle", low: "Low",
                       far: "Far", external: "External" };
@@ -1683,27 +1736,80 @@ const UI = (function () {
           trSay(E.trade) + trend("trade"), true) +
       row("private", "In private hands", "%", Math.round(E.private * 100),
           prSay(E.private), false) +
-      `<div class="note" style="margin-top:4px">The prices are the cost of existing. ` +
-      `These are what the Commonwealth makes, sells and employs. Participation answers ` +
-      `to the divergence threshold: a shorter one turns instance-hours into counted jobs.</div>`;
+      `<div class="note">Participation answers to the divergence threshold: a ` +
+      `shorter one turns instance-hours into counted jobs. The four prices are the ` +
+      `cost of existing; these are what the Commonwealth makes and sells.</div>` +
+      labourHTML();
+
+    /* THE FOLD'S STATE OUTLIVES THE RE-RENDER. Every renderer here replaces
+       its container wholesale, so a <details> the player opened is a
+       different element a moment later — the same reason js/focus.js exists.
+       One key, one object, read back on the next draw. */
+    box.querySelectorAll("details.foldsec[data-fold]").forEach(dt =>
+      dt.addEventListener("toggle", () => { econOpen[dt.dataset.fold] = dt.open; }));
+
+    /* AND THE HEADING CARRIES THE LIVE FIGURE, not content's opening one.
+       `LABOUR.totals.participation` is 38% because that is where content set
+       it; `st.economy.participation` is what it has become, and a panel
+       heading printing the frozen number beside a row printing the live one
+       is two accounts of one fact. */
+    const rh = $("#econ-real-hdr");
+    if (rh) rh.textContent = E.participation.toFixed(1) + "% in paid work";
   }
 
-  function drawPrices() {
-    const box = $("#gov-prices"); if (!box) return;
-    /* THE PRICES ARE PICKABLE TOO, so "show me thermal properly" is one
-       click from the row that mentions it rather than a control elsewhere. */
-    box.innerHTML = PRICE_META.map(m => {
-      const v = st.prices[m.k], h = st.priceHistory[m.k] || [v];
-      const base = h[0], chg = v - base;
-      const cls = chg > 2 ? "up" : chg < -2 ? "down" : "";
-      return `<div class="prow pick${chartOn === m.k ? " on" : ""}" data-chart="${m.k}">
-        <div class="plab" data-tip="scarcity">${m.label}<em>${m.unit}</em></div>
-        ${spark(h.slice(-40), 76, 18)}
-        <div class="pval ${cls}">${v.toFixed(0)}<span>${chg >= 0 ? "+" : ""}${chg.toFixed(0)}</span></div>
-      </div>`;
-    }).join("") +
-    `<div class="note" style="margin-top:4px">Index, 100 at the opening of the series. ` +
-    `Every one of these is set by legislation rather than by a market.</div>`;
+  /* WHO WORKS, from content/labour.js — folded into the panel above it
+     because it is the same subject and the tab had it in a different
+     column. `st.economy.participation` and `LABOUR.totals.participation`
+     are one fact about one set of people: the first is the live figure and
+     the second is where content set it, and the player had to cross the
+     screen to notice they are the same number.
+
+     THE EIGHTEEN CATEGORIES FOLD. Everything else on this tab is a working
+     readout — something you act on — and this is reference, something you
+     look up. It is also the tallest thing here by a factor of two: at
+     1366x768 a column has about 334px and the table alone wanted 429, so
+     it was single-handedly most of the reason this tab scrolled. Closed it
+     names what is behind it and what share of the workforce that is,
+     because a disclosure that will not say makes the player open it to
+     find out. */
+  function labourHTML() {
+    if (typeof LABOUR === "undefined" || !LABOUR) return "";
+    const T = LABOUR.totals || {};
+    const cats = (LABOUR.categories || []).slice()
+      .sort((a, b) => (b.share || 0) - (a.share || 0));
+    if (!cats.length) return "";
+
+    const totals =
+      `<div class="labtot">` +
+      (T.employed ? `<span><b>${(T.employed / 1e6).toFixed(2)}M</b> in work</span>` : "") +
+      (T.residual ? `<span><b>${(T.residual / 1e6).toFixed(2)}M</b> on the floor</span>` : "") +
+      (T.functionalFranchise
+        ? `<span><b>${(T.functionalFranchise / 1e3).toFixed(0)}k</b> licensed</span>` : "") +
+      `</div>`;
+
+    /* THE ANSWER THE SUMMARY OWES: how many kinds, and how many people.
+       Both come from the data rather than being typed, so adding a category
+       cannot leave the label lying about the count. The first draft printed
+       the share the categories sum to, which is 100% for any complete list
+       and therefore said nothing at all. */
+    const who = T.employed ? (T.employed / 1e6).toFixed(2) + "M people" : "";
+    const table =
+      `<table id="econ-lab"><thead><tr><th>What people do</th>` +
+      `<th class="n">Share</th>` +
+      `<th class="n" data-tip-title="Embodied" data-tip-body="The proportion of ` +
+      `this work done by people in bodies rather than as emulations. A body is ` +
+      `an economic asset, not a class marker.">Embodied</th>` +
+      `<th class="n">Licensed</th></tr></thead><tbody>` +
+      cats.map(c => `<tr><td>${esc(c.name)}</td>` +
+        `<td class="n">${(c.share || 0).toFixed(1)}%</td>` +
+        `<td class="n">${c.embodied == null ? "—" : Math.round(c.embodied * 100) + "%"}</td>` +
+        `<td class="n">${c.licensed ? (c.licensed / 1000).toFixed(0) + "k" : "—"}</td></tr>`).join("") +
+      `</tbody></table>`;
+
+    return totals +
+      `<details class="foldsec" data-fold="labour"${econOpen.labour ? " open" : ""}>` +
+      `<summary><b>Who works</b><span>${cats.length} kinds of work` +
+      `${who ? " \u00b7 " + who : ""}</span></summary>${table}</details>`;
   }
 
   /* ---------- government ---------- */

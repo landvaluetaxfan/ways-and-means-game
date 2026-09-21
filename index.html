@@ -242,57 +242,92 @@
       </div>
     </section>
 
-    <!-- THE ECONOMY. A PROTOTYPE, and it exists because the state acquired
-         an income. While solvency only fell there was nothing here but two
-         readouts on the corner of the Government tab; now there is a budget
-         with two sides, four bases it is levied on, and a population it is
-         levied from. The rule it must not break is §7.6: shallow simulation,
-         deep consequence. Nothing on this screen is a model. Every number is
-         either state, a table the engine already computes, or content. -->
+    <!-- THE ECONOMY. Refreshed 21 Sep 2026, and the refresh was a MERGE
+         rather than a rearrangement.
+
+         It had eight panels in three columns and measured badly at every
+         window: all eight scrolled at 1366x768, six at 1440x900, and the
+         chart at the author's own 2560x1440. Balancing the columns would
+         not have fixed it — the first column needed 706px of height and
+         the second 397px, so one scrolled while the other held eighty
+         pixels of air, because panels had been placed by what they were
+         ABOUT and never by how big they were.
+
+         WHAT THE MEASURING FOUND, which is the real reason it read as
+         incoherent: `TAX_BASES` and `PRICE_META` in the engine are the
+         same four things. Volume, thermal, substrate, transit. Three
+         separate panels in two different columns — Scarcity, What sets
+         the prices, and Ways and means — were three facts about ONE set
+         of four rows, and the player had to read across the tab to join
+         a price to the clause that sets it and to the yield it earns.
+         Bible 7.9 says so outright ("the four prices are the
+         appropriation's... each of its clauses sets a law key"), and
+         `receipts()` computes each yield AS rate x price/100 x weight.
+         So the price column and the yield column are two steps of one
+         sum, and the tab put a third panel between them.
+
+         They are one table now, one row per base, and the tab is four
+         panels on four subjects: what the state holds, what everything
+         is priced in, what is made and who makes it, and what the
+         Underwriters think. The chart still spans, because a trend needs
+         width to be a trend.
+
+         `gov-receipts` and `gov-prices` are gone with them. Both were
+         named for the Government tab they were drawn on before Papers
+         was folded in, and an id that outlives the tab it was named for
+         is how `#gov-coalition` kept a pulse on a screen the player
+         could not be on. -->
     <section class="screen" id="s-econ">
       <div class="grid g-econ">
-        <div class="stack scrolls">
-          <div class="panel">
-            <h2><span data-tip="solvency">The Treasury</span> <em>MW-years rejected</em></h2>
-            <div class="pbody scrolls" id="econ-treasury"></div>
-          </div>
-          <div class="panel">
-            <h2><span data-tip="waysmeans">Ways and means</span> <em>every sitting</em></h2>
-            <div class="pbody scrolls" id="gov-receipts"></div>
-          </div>
-          <!-- §7.10. The prices are the cost of existing; this is what the
-               Commonwealth makes, sells and employs. -->
-          <div class="panel">
-            <h2>The productive economy <em>what it makes and employs</em></h2>
-            <div class="pbody scrolls" id="econ-real"></div>
-          </div>
+        <!-- WHAT THE STATE HOLDS AND OWES. A stock and its flows, and
+             nothing here is a per-base breakdown: that is the next panel,
+             which is where the arithmetic for Receipts lives. -->
+        <div class="panel" id="p-acct">
+          <h2><span data-tip="solvency">The account</span> <em>MW-years rejected</em></h2>
+          <div class="pbody scrolls" id="econ-account"></div>
         </div>
-        <div class="stack scrolls">
-          <div class="panel">
-            <h2><span data-tip="scarcity">Scarcity</span> <em data-tip="scarcity">index, 100 at open</em></h2>
-            <div class="pbody scrolls" id="gov-prices"></div>
-          </div>
-          <div class="panel">
-            <h2>What sets the prices <em>the law, not a market</em></h2>
-            <div class="pbody scrolls" id="econ-law"></div>
-          </div>
+        <!-- THE FOUR BASES, which are also the four prices, which are also
+             the four things the appropriation sets. One row each: what it
+             costs, what the law does to it, what it is levied at, what it
+             yields. The total IS the account's Receipts line. -->
+        <div class="panel" id="p-bases">
+          <h2><span data-tip="scarcity">What everything is priced in</span> <em>four bases, four prices, one row each</em></h2>
+          <div class="pbody flush scrolls" id="econ-bases"></div>
         </div>
-        <div class="stack scrolls">
-          <div class="panel">
-            <h2><span data-tip="underwriters">What the Underwriters say</span> <em>the only accurate numbers</em></h2>
-            <div class="pbody scrolls" id="econ-outlook"></div>
-          </div>
-          <div class="panel">
-            <h2>Labour <em id="econ-lab-hdr">what people do</em></h2>
-            <div class="pbody flush scrolls"><table id="econ-labour"></table></div>
-          </div>
+        <!-- WHAT IS MADE AND WHO MAKES IT. 7.10's three readings and the
+             labour table are one subject: `st.economy.participation` and
+             `LABOUR.totals.participation` are the same fact about the same
+             people, and they were in different columns. The eighteen
+             categories are reference rather than a working readout, so
+             they fold. -->
+        <div class="panel" id="p-real">
+          <h2>What is made, and who makes it <em id="econ-real-hdr">7.10</em></h2>
+          <div class="pbody scrolls" id="econ-real"></div>
+        </div>
+        <!-- THE BOTTOM BAND IS COMMENTARY AND HISTORY: what the Underwriters
+             think of all of it, and what the one figure the player picked has
+             been doing. The outlook was stacked under the account until the
+             heights were measured -- that column then needed 457px of a 337px
+             column at 1366x768 while the other two held 112px of air between
+             them, and the prose was crushed to a 24px window. Prose of a
+             length content decides wants its own box, not the remainder of
+             somebody else's. -->
+        <div class="panel" id="p-outlook">
+          <h2><span data-tip="underwriters">What the Underwriters say</span> <em>the only accurate numbers</em></h2>
+          <div class="pbody scrolls" id="econ-outlook"></div>
         </div>
         <!-- THE ONE READOUT TAKEN APART. Every other number on this tab is a
              line in a list; this is whichever of them the player has asked
-             to look at properly, with its whole history. It spans the tab
-             because a trend needs width to be a trend. -->
+             to look at properly, with its whole history. It takes the width
+             of two columns because a trend needs width to be a trend.
+
+             THE SCALE CONTROL IS IN THE HEADING, not under the plot. Under
+             it, the two buttons took 37px the panel had not been given, so
+             the chart body scrolled by exactly their height at every window
+             including the author's. A control belongs in the furniture. -->
         <div class="panel" id="econ-chart">
-          <h2><span id="chart-hdr">Choose a figure above</span> <em id="chart-sub">its history, sitting by sitting</em></h2>
+          <h2><span id="chart-hdr">Choose a figure above</span> <em id="chart-sub">its history, sitting by sitting</em>
+            <span class="hspace"></span><span id="chart-scale"></span></h2>
           <div class="pbody scrolls" id="chart-body"></div>
         </div>
       </div>

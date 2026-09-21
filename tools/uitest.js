@@ -195,11 +195,56 @@ try {
    where it came from, what it means, and what it has been doing. */
 try {
   w.document.querySelector('.tab[data-t="econ"]').click();
-  const tre = (w.document.querySelector("#econ-treasury") || {}).textContent || "";
-  ok("the treasury names the debt and its price", /Owed to Earth/.test(tre));
+  const tre = (w.document.querySelector("#econ-account") || {}).textContent || "";
+  ok("the account names the debt and its price", /Owed to Earth/.test(tre));
   ok("and the net position, not just the two halves", /Net a sitting/.test(tre),
      (tre.match(/Net a sitting[^A-Z]*/) || [""])[0].slice(0, 44));
-  ok("and the cost of existing as one reading", /Cost of existing/.test(tre));
+
+  /* THE MERGE, ASSERTED. Scarcity, What sets the prices and Ways and means
+     were three panels about the same four things — `TAX_BASES` and
+     `PRICE_META` name one set — so the tab made the player read across two
+     columns to join a price to the clause that sets it and to the yield it
+     earns, which is the sum `receipts()` actually does. One row each now,
+     and the row has to carry all three or the merge has not happened. */
+  const brows = [...w.document.querySelectorAll("#econ-bases tr.brow")];
+  ok("every base the Commonwealth prices gets one row", brows.length === 4,
+     brows.map(r => r.dataset.chart).join(" "));
+  ok("and the row joins the price, the clause that sets it, and the yield",
+     brows.every(r => r.querySelector(".bidx") && r.querySelector(".blaw b") &&
+                      r.querySelector(".byield")),
+     (brows[0] || { textContent: "" }).textContent.replace(/\s+/g, " ").trim().slice(0, 70));
+  ok("and the four bases are the four prices, not a second list",
+     brows.map(r => r.dataset.chart).sort().join(",") ===
+       w.eval("Engine.receipts(UI.state()).rows.map(r=>r.base).sort().join(',')"),
+     brows.map(r => r.dataset.chart).sort().join(","));
+  const bnum = el => Number((el.textContent || "").replace(/[^0-9-]/g, ""));
+  const byield = brows.map(r => bnum(r.querySelector(".byield")));
+  const btot = bnum(w.document.querySelector("#econ-bases tr.btot .byield"));
+  ok("the printed yields add up to the printed total",
+     byield.reduce((a, b) => a + b, 0) === btot, byield.join("+") + " = " + btot);
+  ok("which is the engine's number and not the interface's",
+     btot === w.eval("Engine.receipts(UI.state()).total"), btot + "");
+  ok("and it names the rate each base is charged at",
+     brows.every(r => /levied|reduced|standing rate|raised/.test(r.textContent)),
+     (brows[0] || { textContent: "" }).textContent.trim().slice(0, 40));
+  ok("the cost of existing is a reading of those four and sits under them",
+     /cost of existing/i.test((w.document.querySelector("#econ-bases") || {}).textContent || "") &&
+     !/cost of existing/i.test(tre), "moved out of the account panel");
+
+  /* WHO WORKS IS FOLDED, and the fold says what is behind it: eighteen
+     categories at 429px were most of the reason this tab scrolled. */
+  const lab = w.document.querySelector("#econ-real details.foldsec[data-fold=labour]");
+  ok("the labour table is on the tab, with the economy it describes", !!lab);
+  if (lab) {
+    ok("and it is closed until the player asks", !lab.open);
+    ok("and its summary says how much is behind it",
+       /\d+ kinds of work/.test(lab.querySelector("summary").textContent),
+       lab.querySelector("summary").textContent.replace(/\s+/g, " ").trim());
+    ok("and it holds every category content authors",
+       lab.querySelectorAll("#econ-lab tbody tr").length ===
+         w.eval("LABOUR.categories.length"),
+       lab.querySelectorAll("#econ-lab tbody tr").length + " rows");
+  }
 
   const look = [...w.document.querySelectorAll("#econ-outlook .ulook")];
   ok("the Underwriters say something", look.length > 0, look.length + " readings");
@@ -305,25 +350,27 @@ try {
   }
 } catch (e) { ok("the parties tab and the composition fold", false, e.message); }
 
-/* WAYS AND MEANS IS ON THE GLASS. The state grew an income; a revenue the
-   player cannot see is the same bug from the other side. And a panel that
-   renders blank is invisible to every static check \u2014 which is the whole
-   reason this file exists \u2014 so read the rows back and make them add up. */
+/* THE SCALE CONTROL IS FURNITURE. Under the plot the two buttons took 37px
+   the panel had never been given and the chart body scrolled by exactly
+   their height at every window, so they live in the heading now — and a
+   control drawn into a heading slot is one nothing re-renders over. */
 try {
-  const rows = [...w.document.querySelectorAll("#gov-receipts .prow")];
-  ok("the ways and means panel draws", rows.length === 5, rows.length + " rows");
-  const num = el => Number((el.querySelector(".pval").textContent || "").replace(/[^0-9-]/g, ""));
-  const bases = rows.slice(0, 4).map(num), total = num(rows[4]);
-  ok("it prints a yield for every base the Commonwealth taxes",
-     bases.length === 4 && bases.every(n => n > 0), bases.join(" + "));
-  ok("and the printed rows add up to the printed total",
-     bases.reduce((a, b) => a + b, 0) === total, bases.join("+") + " = " + total);
-  ok("which is the engine's number and not the interface's",
-     total === w.eval("Engine.receipts(UI.state()).total"), total + "");
-  ok("and it names the rate each base is charged at",
-     rows.slice(0, 4).every(r => /levied|reduced|standing rate|raised/.test(r.textContent)),
-     rows[0].textContent.trim());
-} catch (e) { ok("the ways and means panel", false, e.message); }
+  w.document.querySelector('.tab[data-t="econ"]').click();
+  const sc = [...w.document.querySelectorAll("#chart-scale [data-cscale]")];
+  ok("the chart offers both timescales", sc.length === 2,
+     sc.map(b => b.dataset.cscale).join(" "));
+  ok("and neither is inside the body it would cost height",
+     !w.document.querySelector("#chart-body [data-cscale]"));
+  const rec = sc.find(b => b.dataset.cscale === "record");
+  if (rec) {
+    rec.click();
+    ok("and the record draws the years before the game",
+       /228\d/.test((w.document.querySelector("#chart-sub") || {}).textContent || ""),
+       (w.document.querySelector("#chart-sub") || {}).textContent);
+    sc.find(b => b.dataset.cscale === "session").click();
+  }
+} catch (e) { ok("the chart's timescales", false, e.message); }
+
 
 /* THE BILL LIFECYCLE TRACK. An assented act must show the road it took, not
    just its end state — and the terminal branch must be drawn off the end of

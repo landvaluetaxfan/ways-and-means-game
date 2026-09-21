@@ -228,26 +228,140 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    overflow of its own, the canvas takes every pixel the panel can give, and the
    SVG is capped by BOTH dimensions — so the smaller of width and height wins
    and it is never larger than the space it is in. */
-/* THE ECONOMY. The treasury and what it takes on the left, the prices and
-   the law that sets them in the middle, what people do on the right. */
-.g-econ{grid-template-columns:minmax(280px,360px) minmax(280px,380px) minmax(0,1fr);
-  grid-template-rows:minmax(0,1fr) minmax(150px,240px);height:100%;min-height:0;}
-#econ-chart{grid-column:1/-1;min-height:0;}
+/* THE ECONOMY, REFRESHED. Four subjects in three columns and a chart band,
+   after a measurement that said the old three-by-eight could not be rescued
+   by tuning: all eight panels scrolled at 1366x768, six at 1440x900, and
+   the chart at the author's own 2560x1440. The first column needed 706px
+   and the second 397px, so one scrolled while the other held air.
+
+   NO COLUMN SCROLLS ANY MORE. `.stack.scrolls` is gone from this screen's
+   markup: a column that scrolls is a column whose contents were never
+   sized, and it hides the fault instead of showing it. The panels are
+   sized to fit and the two that legitimately cannot be bounded -- prose
+   from content, and an eighteen-row reference table the player opens --
+   are the only scrollers left.
+
+   The widths follow what each column holds: the account is figures and
+   short labels, the bases table is five columns of which two are phrases,
+   and the labour table has the longest names on the tab, so it takes the
+   slack. */
+.g-econ{grid-template-columns:minmax(264px,330px) minmax(430px,600px) minmax(300px,1fr);
+  grid-template-rows:minmax(0,auto) minmax(250px,1fr);height:100%;min-height:0;}
+/* FIVE PANELS, PLACED, and no .stack anywhere: each column of the top row
+   holds exactly one panel, so there is nothing for a column to divide and
+   no wrapper to scroll. Measured content need is 250 / 282 / 230 across the
+   three, against 332px of column at 1366x768.
+
+   THE BOTTOM BAND IS THE COMMENTARY. The Underwriters were stacked under
+   the account, which made that column need 457px of a 337px column while
+   the other two held 112px of air between them -- and the prose, being the
+   designated giver, was crushed to a 24px window. It has its own box in the
+   band now and the chart takes the other two columns, which still leaves
+   the plot about 1,000px at the narrowest supported window: sixty bars at
+   fifteen pixels each, which is a trend. */
+#p-acct   {grid-column:1;grid-row:1;}
+#p-bases  {grid-column:2;grid-row:1;}
+#p-real   {grid-column:3;grid-row:1;}
+#p-outlook{grid-column:1;grid-row:2;min-height:0;}
+#econ-chart{grid-column:2/-1;grid-row:2;min-height:0;}
+/* THE TOP ROW TAKES WHAT IT NEEDS AND THE BAND TAKES THE REST, which is why
+   the rows read `auto` then `1fr` and not the other way round.
+
+   With the top row on 1fr it was measured at 1440x900 with all three panels
+   holding about 200px of trailing grey each -- fitting, and empty. The band
+   is the right home for that slack: the chart is a bar chart, so more height
+   is more amplitude, and a trend is what the panel is for. The floor of
+   250px is so that a band squeezed by a grown top row still leaves the
+   Underwriters' prose a box worth reading.
+
+   AND THE OUTLOOK IS THE ONE PANEL WHOSE LENGTH CONTENT DECIDES.
+   `Engine.outlook` can return six readings at once -- the reserve, the flow,
+   the debt, its rate, the prices and the one rate nobody has set -- and the
+   longest of the fifteen authored is 260 characters, so a government in
+   deep trouble is told about 400px worth of it. At the opening state it is
+   154px and nothing on this tab scrolls at any of the seven measured
+   shapes. In the worst state on a short screen the prose is what gives,
+   which is the right thing to choose: it is the only content here that is
+   neither a table nor a figure, so reading it in a window is what it is
+   for. */
+
 /* a figure you can ask about: the row becomes a control */
 .g-econ .prow.pick{cursor:pointer;}
 .g-econ .prow.pick:hover{background:var(--field);}
 .g-econ .prow.pick.on{background:var(--field);box-shadow:inset 2px 0 0 var(--gold);}
+/* THE BASES TABLE. One row per thing the Commonwealth prices, and the row
+   reads left to right as the sum the engine actually does: this is what it
+   costs, this is what the law does to it, this is what it is levied at,
+   this is what it yields. The whole point is the adjacency, so the columns
+   are sized to keep a row on one line. */
+#econ-bases{font-variant-numeric:tabular-nums;}
+#econ-bases tr.brow{cursor:pointer;}
+#econ-bases tr.brow:hover>td{background:var(--field);}
+#econ-bases tr.brow.on>td{background:var(--field);}
+#econ-bases tr.brow.on>td:first-child{box-shadow:inset 2px 0 0 var(--gold);}
+#econ-bases th{font-size:9.5px;letter-spacing:.1em;}
+#econ-bases td{vertical-align:middle;}
+#econ-bases .bname{font-size:13px;}
+#econ-bases .bname em{display:block;font-style:normal;font-size:9.5px;
+  color:var(--ink-soft);letter-spacing:.02em;}
+#econ-bases .bidx{font-size:17px;text-align:right;white-space:nowrap;}
+#econ-bases .bidx span{font-size:10px;color:var(--ink-soft);margin-left:3px;}
+#econ-bases .bspark{width:60px;padding:3px 0;}
+#econ-bases .bspark .sparkline{width:58px;height:20px;}
+/* WHAT THE LAW DOES, and what it is set to. Two facts, so two lines: the
+   clause names itself above and its present level reads as the answer. */
+#econ-bases .blaw{font-size:11px;color:var(--ink-soft);line-height:1.25;}
+#econ-bases .blaw b{display:block;font-weight:400;font-size:12.5px;color:var(--ink);}
+#econ-bases .brate{font-size:11px;text-align:center;white-space:nowrap;}
+#econ-bases .byield{font-size:15px;text-align:right;white-space:nowrap;}
+#econ-bases tr.btot>td{border-top:2px solid var(--ink);font-size:13px;}
+#econ-bases tr.btot .byield{font-size:17px;}
+/* THE COST OF EXISTING sits under the four it is a reading of, and nowhere
+   else: it was in the treasury panel, which made it look like a fact about
+   money held rather than a fact about these four prices. */
+.bfoot{display:flex;align-items:baseline;gap:8px;padding:6px 6px 0;
+  border-top:1px solid var(--rule);margin-top:2px;cursor:pointer;}
+.bfoot:hover{background:var(--field);}
+.bfoot.on{background:var(--field);box-shadow:inset 2px 0 0 var(--gold);}
+.bfoot b{font-family:var(--f-ui);font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-soft);font-weight:400;}
+.bfoot i{font-style:normal;font-family:var(--f-data);font-size:17px;
+  margin-left:auto;font-variant-numeric:tabular-nums;}
 /* the big chart: bars, because a quantity per sitting is a bar */
 .bigchart{display:flex;align-items:flex-end;gap:1px;height:100%;min-height:110px;
   padding:4px 2px 0;}
-.bigchart .bar{flex:1 1 0;min-width:2px;background:var(--rule);position:relative;}
+/* A BAR HAS A MAXIMUM WIDTH, so a short history reads as a short history.
+   With `flex:1 1 0` alone, the one reading a first sitting has was drawn as
+   a single bar the full width of the plot at 2% height -- which is a rule
+   across the bottom of the panel and not a chart. Sixty bars in a 1,000px
+   plot are sixteen pixels each, so the cap costs a full series nothing and
+   leaves a partial one growing from the left, which is what a series does. */
+.bigchart .bar{flex:1 1 0;min-width:2px;max-width:26px;background:var(--rule);
+  position:relative;}
 .bigchart .bar.hi{background:var(--gold);}
 .bigchart .bar:hover{background:var(--ink-soft);}
-/* THE TIMESCALE CONTROL under the chart. Two buttons and a subtitle each,
-   because "The record" means nothing without the years beside it. */
-.cscale{display:flex;gap:6px;margin-top:8px;}
-.cscale .chv{flex:0 0 auto;text-align:left;line-height:1.15;padding:3px 8px;}
-.cscale .chv em{display:block;font-style:normal;font-size:8.5px;
+/* THE TIMESCALE CONTROL IS FURNITURE, so it lives in the heading. Under the
+   plot it took 37px the panel had never been given, and the chart body
+   scrolled by exactly the height of those two buttons at every window
+   including the author's -- the only scrollbar on this tab that a wide
+   screen did not hide. A control that costs its panel height is in the
+   wrong place; headings are where this interface puts controls. */
+.hspace{flex:1 1 auto;}
+/* AND THE HEADING WRAPS, because it now carries a control as well as a name.
+   `.panel > h2` is a nowrap flex row, which is right for a heading that is
+   only words; at 820px wide the grid collapses, the chart panel narrows to
+   397px, and the title, the subtitle and the two buttons came to 429 -- so
+   "The record 2280-2287" was drawn 32px outside its own panel and clipped.
+   Scoped to this panel rather than fixed on `.panel > h2`: a rule whose
+   subject is every heading in the interface is not the way to fix the one
+   heading that holds a control. */
+#econ-chart > h2{flex-wrap:wrap;row-gap:1px;}
+#econ-chart > h2 em{min-width:0;}
+#chart-scale{flex:0 0 auto;}
+.cscale{display:flex;gap:4px;flex:0 0 auto;}
+.cscale .chv{flex:0 0 auto;text-align:left;line-height:1.1;padding:2px 7px;
+  font-size:9px;}
+.cscale .chv em{display:block;font-style:normal;font-size:8px;
   letter-spacing:.04em;color:var(--ink-soft);text-transform:none;}
 .cscale .chv.on em{color:var(--ink);}
 .chartaxis{display:flex;justify-content:space-between;font-family:var(--f-data);
@@ -259,12 +373,17 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .chartwrap .cplot{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
 #s-econ.screen.on{height:100%;min-height:0;}
 .g-econ > .stack{min-height:0;}
+/* EVERY `.pbody` HERE KEEPS `scrolls`, and that is not a contradiction of
+   the heading above. It is the net that stops a squeezed panel clipping
+   content nobody can reach -- the one outcome CLAUDE.md records this
+   construction as existing to prevent. "No scrollbars" is then a matter of
+   FITTING the content rather than of removing the net: an overflow:auto box
+   with nothing overflowing draws no bar, and if a future content change
+   makes one overflow the player can still read it. */
 .g-econ .panel{min-height:0;}
 /* THE ECONOMY IS READ, NOT SCANNED. Every other tab is a working surface
    where density is the point; this one is four numbers and a table you look
-   at to decide something, so it is set larger than the terminal's default.
-   The scarcity rows get a bigger figure and a taller sparkline, because a
-   trend nobody can see is a trend nobody can act on. */
+   at to decide something, so it is set larger than the terminal's default. */
 .g-econ .prow{padding:4px 0;}
 .g-econ .plab{font-size:13px;}
 .g-econ .plab em{font-size:10.5px;}
@@ -274,6 +393,17 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .g-econ .sparkline{width:110px;height:26px;}
 .g-econ table{font-size:12.5px;}
 .g-econ td,.g-econ th{padding:3px 6px;}
+/* WHO WORKS. The three 7.10 readings are a working readout and the eighteen
+   categories are reference, so the categories fold. Closed it names what is
+   behind it, because a disclosure that will not say is one the player has to
+   open to find out. */
+#econ-lab{width:100%;}
+#econ-lab th{font-size:9.5px;letter-spacing:.08em;}
+#econ-lab td{padding:2px 6px;}
+#econ-lab .n{text-align:right;font-variant-numeric:tabular-nums;}
+.labtot{display:flex;gap:10px;flex-wrap:wrap;padding:4px 0 2px;
+  font-family:var(--f-data);font-size:11px;color:var(--ink-soft);}
+.labtot b{color:var(--ink);font-weight:400;}
 
 /* THE PARTIES. A list narrow enough to read at a glance, the party itself in
    the middle where the prose is, and its members on the right. */
