@@ -227,9 +227,9 @@ That could have been the whole of it. A decade of steady hands and unread minute
 So she is a banker at the head of the party of maintenance labour, which occasionally mitigates the two facts; occasionally it exemplifies it. The members who put her there did it to keep a government.` },
 
         { kind:"body", head:"What she inherits", body:
-`Her government is a coalition of the Party of Socialists and Democrats and the New Progressive Party, and with confidence and supply, they lead a minority government with exactly 1 seat enough to stay in power. One defection or unfortunate by-election could possibly end everything. And with that, while the New Progressive Party may align with the PSD on many elements of economic policy, the issue of personhood is one that lies in wait, a test for the shaky alliance.
+`Her government is a coalition of the Party of Socialists and Democrats, the New Progressive Party, and the Congregational Democratic Alliance; with confidence and supply, they lead a somewhat convincing minority government. Although with that, while the New Progressive Party may align with the PSD on many elements of economic policy, the issue of personhood is one that lies in wait, a test for the shaky alliance which sees a personhood restrictionist PSD and CDA (the CDA also being a semi-awkward fit economically for the governing coalition) pitted against a personhood expansionist NPP.
 
-The PSD are in power because of labour and trade unions. Expanding personhood is a natural threat against that. The New Progressive Party sees otherwise.
+The PSD are in power because of labour and trade unions. Expanding personhood is a natural threat against that, while the CDA agree from a humanist perspective. The New Progressive Party sees otherwise.
 
 She has four years. The session that opens on the eleventh of April is the fourth, and the House is already sitting.` },
 
