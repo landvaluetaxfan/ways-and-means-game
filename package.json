@@ -16,11 +16,14 @@
     "enc": "node tools/enccheck.js",
     "layout": "node tools/laycheck.js",
     "playtest": "node tools/playtest.js",
+    "prose": "node tools/prose.js",
+    "prose:in": "node tools/prose.js --in",
+    "prose:check": "node tools/prose.js --check",
     "bundle": "node tools/bundle.js",
     "build": "node tools/build.js",
     "inksig": "node tools/inksig.js",
     "encode": "node tools/encodeaudio.js",
-    "check": "npm run test && npm run lint && npm run cx && npm run roundtrip && npm run rename && npm run editor && npm run ui && npm run ux && npm run tocheck && npm run enc",
+    "check": "npm run test && npm run lint && npm run cx && npm run roundtrip && npm run rename && npm run editor && npm run ui && npm run ux && npm run tocheck && npm run enc && npm run prose:check",
     "toc": "node tools/toc.js"
   },
   "devDependencies": {
