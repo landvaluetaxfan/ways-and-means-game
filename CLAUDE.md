@@ -170,8 +170,8 @@ list over any older sentence here that implies a different one:
 | **Sitting** | the event, the docket, the calendar, and the one indicator panel |
 | **Government** | instruments · the document · what it can do · the ledger and cabinet, with the Tribunal and the Presidency folded at the edge |
 | **Chamber** | order-paper time, the order paper, the House, the whip, and who is counted |
-| **Economy** | the treasury, the prices and the law that sets them, labour |
-| **Parties** | twelve parties, their currents, every member, and the party outside Parliament |
+| **Economy** | the treasury, ways and means, the productive economy (§7.10), the prices and the law that sets them, the Underwriters' outlook, labour, and one chart anything above can be picked into |
+| **Party** | *renamed from Parties, and refocused 21 Sep.* The twelve grouped by their relation to the government — in government, confidence and supply, outside — with the per-partner ledger, what each bench can be moved on, ideological distance, the live measure they will not carry, their currents, every member, and the party outside Parliament |
 | **Orbit**, **World**, **Concordance**, **Record** | unchanged |
 
 **Papers is gone**, folded into Government — an instrument, the register it
@@ -182,6 +182,16 @@ targets and now emits `"gov"`.
 **The indicator panel is on the Sitting screen and there is only one.** It used
 to be drawn on Government and copied here by a `MutationObserver`. Do not
 reintroduce the copy.
+
+**THE COALITION ROSTER IS DRAWN THREE TIMES AND SHOULD NOT BE.** Measured 21
+Sep, and recorded here because the third one is mine: Chamber's *Coalition*
+(`#gov-coalition`) draws party/seats/loyalty, Government's *Coalition ledger*
+(`#gov-ledger`) draws partner/ledger/loyalty, and the refocused Party tab
+(`#party-table`) draws all four columns for all twelve parties grouped by
+relation — so it strictly contains both of the others. Each has a local
+excuse (Chamber's sits beside the margin, which is what Chamber needs;
+Government's sits beside Undertakings), but the roster itself now has one
+proper home. Before adding a fourth, read this.
 
 Three things worth knowing before you touch the engine:
 
