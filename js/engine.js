@@ -5876,6 +5876,10 @@ const Engine = (function () {
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
+    /* Exported so the interface cannot invent a second way to score
+       agreement. A tooltip that disagreed with a division would be the
+       worst kind of bug here: both right, neither checkable. */
+    axisAgreement,
     amendmentList, canAmend, amendBill,
     rollCall, lobbyable, setLobby, clearLobby, lobbyCost, payLobby, lobbiedSeats,
     clausesOf, clausePlan, clauseCost, setClause, clauseEffects,

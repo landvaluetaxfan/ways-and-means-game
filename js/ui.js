@@ -401,7 +401,7 @@ const UI = (function () {
       /* A tip is positioned in viewport coordinates against a node that is
          about to be replaced. Take it down first. */
       if (typeof Tips !== "undefined") Tips.hide();
-      drawTitle(); drawPrices(); drawReceipts(); drawEconomy(); drawParties(); drawExport(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
+      drawTitle(); drawPrices(); drawReceipts(); drawEconomy(); drawEconomyReal(); drawParties(); drawExport(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
       if (typeof Concordance !== "undefined") Concordance.render(st, C, cxCurrent, false);
       if (typeof Papers !== "undefined") Papers.render(st, C);
       /* The globe only redraws when it is the screen the player is on: it is
@@ -857,6 +857,13 @@ const UI = (function () {
       }
       return { label: "Cost of existing", unit: "%", pts: pts, signed: true };
     }
+    /* §7.10. Both keep a curve on the same sixty-sitting window as the
+       prices, so they plot through the same machinery; `private` is authored
+       and never drifts, so it has no curve and is not offered. */
+    if (st.economyHistory && st.economyHistory[key])
+      return { label: key === "participation" ? "Adults in paid work" : "Trade balance",
+               unit: key === "participation" ? "per cent" : "index",
+               pts: st.economyHistory[key].slice() };
     if (st.priceHistory && st.priceHistory[key])
       return { label: (PRICE_META.find(m => m.k === key) || {}).label || key,
                unit: "index", pts: st.priceHistory[key].slice() };
@@ -1154,6 +1161,8 @@ const UI = (function () {
        stored. */
     const rel = relOf(sel.id);
     const cr = st.capital[sel.id] || 0;
+    /* The player's own party, for the distance readout below. */
+    const own = C.partyById[st.playerParty];
     const selLoy = (st.loyalty && st.loyalty[sel.id] != null) ? st.loyalty[sel.id] : sel.loyalty;
     /* WHAT THIS RELATION IS, in the terms the engine prices it in.
        Four cases, not three: the player's own bench is inside the coalition
@@ -1200,6 +1209,66 @@ const UI = (function () {
          again two lines up is the restated idea PROSE_REGISTER.md names.
          What this block adds is the NUMBER — where you stand with them —
          and only where that is somebody other than yourself. */
+      /* HOW FAR APART YOU ACTUALLY ARE (bible §8.1).
+
+         This tab could say a partner was in the coalition, what it was owed
+         and that its loyalty was thin. It could not say WHY — the axes were
+         categorical strings and "restrictionist" against "restrictionist"
+         was a match or it was not, so there was no distance to report.
+
+         There is now, and it is the engine's own cosine rather than a second
+         scoring: the same number `inferStance` uses to decide how a bench
+         votes. So the Congregational Democratic Alliance at loyalty 23 stops
+         being a mystery — it sits 0.55 from you on personhood, which is the
+         argument this parliament is about, and no amount of order-paper time
+         will buy that. */
+      (sel.id !== st.playerParty && own && Object.keys(sel.axes || {}).length
+        ? (() => {
+            const a = Engine.axisAgreement(sel.axes, own.axes);
+            const say = a >= 0.6 ? "close to you"
+                      : a >= 0.25 ? "broadly with you"
+                      : a > -0.25 ? "neither with you nor against"
+                      : a > -0.6 ? "some way from you"
+                      : "at the other end of the argument";
+            const worst = axisPairs(sel.axes, own.axes)
+              .sort((x, y) => x.agree - y.agree)[0];
+            /* AND WHAT THEY WILL NOT CARRY, which is the more useful half.
+
+               Measuring distance from the player's own party was the first
+               version and it answered the wrong question: the Congregational
+               Democratic Alliance scores 0.78 against the governing party —
+               both left, both restrictionist, both mildly closurist — so the
+               readout said "close to you" about the partner whose loyalty is
+               23 and whose ledger is overdrawn. Their quarrel is not with the
+               party, it is with the BILL: they sit at -0.9 on personhood and
+               the divergence bill sits at +0.9.
+
+               So the panel also names the measure now before the House that
+               this bench is furthest from. That is the thing a whip's office
+               would tell you, and it is actionable: it is the vote you will
+               have to buy, or move, or lose. */
+            const live = (C.bills || []).filter(b => {
+              const sb = st.bills[b.id];
+              return sb && !sb.dead && sb.stage && sb.stage !== "drafting" &&
+                     b.axes && Object.keys(b.axes).length;
+            }).map(b => ({ b: b, a: Engine.axisAgreement(sel.axes, b.axes) }))
+              .sort((x, y) => x.a - y.a)[0];
+            const liveRow = live && live.a < -0.15
+              ? `<div class="prow"><div class="plab">Will not carry` +
+                `<em>${esc(live.b.title)}</em></div>` +
+                `<div class="pval warn">${live.a <= -0.6 ? "flatly" : "against"}</div></div>`
+              : live && live.a > 0.25
+              ? `<div class="prow"><div class="plab">With you on` +
+                `<em>${esc(live.b.title)}</em></div>` +
+                `<div class="pval">${live.a >= 0.6 ? "firmly" : "broadly"}</div></div>`
+              : "";
+            return `<div class="prow"><div class="plab">Distance from you` +
+              (worst && worst.agree < -0.05
+                ? `<em>furthest apart on ${esc(worst.axis)}</em>` : "") +
+              `</div><div class="pval${a < -0.25 ? " warn" : ""}">${say}</div></div>` +
+              liveRow;
+          })()
+        : "") +
       (leaderRel != null && sel.id !== st.playerParty
         ? `<div class="prow"><div class="plab">Where you stand with ` +
           `${esc((leader.name || "").replace(/^(Rt\. Hon\.|Hon\.)\s*/, ""))}</div>` +
@@ -1350,6 +1419,71 @@ const UI = (function () {
                       far: "Far", external: "External" };
   function bandName(b) {
     return BAND_WORD[b] || String(b).replace(/_/g, " ");
+  }
+
+  /* THE PRODUCTIVE ECONOMY (bible §7.10).
+
+     The Economy tab had the Treasury (a stock), ways and means (a flow), the
+     four prices and the law that sets them — the cost of EXISTING, four
+     times over — and no measure of whether the economy works. This is the
+     other half: what the Commonwealth makes, sells and employs.
+
+     Each row says what the number MEANS as well as what it is, because
+     "trade 97" is not a fact a reader can use and "a small deficit, and
+     widening" is. The author asked for exactly that: descriptions that
+     translate the numbers.
+
+     participation and trade are pickable into the big chart like the
+     prices. `private` is not: it is authored and never drifts, so it has no
+     history to draw and a flat line would be a lie about what it is. */
+  function drawEconomyReal() {
+    const box = $("#econ-real"); if (!box) return;
+    const E = st.economy;
+    if (!E) { box.innerHTML = `<div class="note">No productive economy in this save.</div>`; return; }
+
+    const pctSay = v =>
+      v >= 52 ? "high participation; almost every adult who can work does"
+      : v >= 45 ? "high for this economy, and rising against the founders' assumption"
+      : v >= 41 ? "the historic band, a little above the opening"
+      : v >= 37 ? "the historic band: most adults do not hold paid work"
+      : "low, and the instance-hours are doing the work instead";
+    const trSay = v =>
+      v >= 130 ? "a large surplus; compute is paying for everything else"
+      : v >= 108 ? "a working surplus, sold mostly in substrate-hours"
+      : v >= 96  ? "close to balance"
+      : v >= 80  ? "a deficit, covered out of the reserve"
+      : "a deficit the reserve cannot cover indefinitely";
+    const prSay = v =>
+      v >= 0.8 ? "mostly private, and the consortiums are most of that"
+      : v >= 0.65 ? "mixed, tilted private; the eleven seat-holding firms are outside this figure"
+      : v >= 0.45 ? "genuinely mixed"
+      : "mostly public; the utilities are held by the union";
+
+    const trend = k => {
+      const h = (st.economyHistory || {})[k] || [];
+      if (h.length < 4) return "";
+      const d = h[h.length - 1] - h[Math.max(0, h.length - 9)];
+      return Math.abs(d) < 0.4 ? ", and steady"
+           : d > 0 ? ", and rising" : ", and falling";
+    };
+
+    const row = (key, label, unit, val, say, pickable) =>
+      `<div class="prow${pickable ? " pick" + (chartOn === key ? " on" : "") : ""}"` +
+      `${pickable ? ` data-chart="${key}"` : ""}>` +
+      `<div class="plab">${label}<em>${say}</em></div>` +
+      (pickable ? spark(((st.economyHistory || {})[key] || [val]).slice(-40), 76, 18) : `<div></div>`) +
+      `<div class="pval">${val}<span>${unit}</span></div></div>`;
+
+    box.innerHTML =
+      row("participation", "In paid work", "%", E.participation.toFixed(1),
+          pctSay(E.participation) + trend("participation"), true) +
+      row("trade", "Trade balance", "idx", E.trade.toFixed(0),
+          trSay(E.trade) + trend("trade"), true) +
+      row("private", "In private hands", "%", Math.round(E.private * 100),
+          prSay(E.private), false) +
+      `<div class="note" style="margin-top:4px">The prices are the cost of existing. ` +
+      `These are what the Commonwealth makes, sells and employs. Participation answers ` +
+      `to the divergence threshold: a shorter one turns instance-hours into counted jobs.</div>`;
   }
 
   function drawPrices() {
@@ -1932,8 +2066,14 @@ const UI = (function () {
     Object.keys(paxes || {}).forEach(a => {
       const pa = paxes[a], ba = (baxes || {})[a];
       if (pa == null || ba == null) return;
+      /* pa * ba, which is the TERM the engine's cosine sums, so a per-axis
+         mark can never contradict the overall score. Positive means the two
+         lean the same way and the magnitude is how much both of them care;
+         near zero means one of them is at the centre. `1 - |pa - ba|` was
+         here first and is biased positive, which would have drawn "+" on
+         axes the division counted against. */
       const agree = (typeof pa === "number" && typeof ba === "number")
-        ? 1 - Math.abs(pa - ba)
+        ? pa * ba
         : (pa === ba ? 1 : -1);
       out.push({ axis: a, agree: agree });
     });
@@ -1946,7 +2086,7 @@ const UI = (function () {
   function axisWhy(paxes, baxes) {
     return axisPairs(paxes, baxes).map(x =>
       axisCode(x.axis) +
-      (x.agree >= 0.34 ? "+" : x.agree <= -0.34 ? "\u2212" : "\u00b7")).join(" ");
+      (x.agree >= 0.1 ? "+" : x.agree <= -0.1 ? "\u2212" : "\u00b7")).join(" ");
   }
 
   /* The same thing said in words, for the hover card. */
@@ -1954,9 +2094,9 @@ const UI = (function () {
     const ps = axisPairs(paxes, baxes);
     if (!ps.length) return "No position on the axes this bill moves.";
     const G = { with: [], broadly: [], middle: [], against: [], opposite: [] };
-    ps.forEach(x => G[x.agree >= 0.7 ? "with" : x.agree >= 0.34 ? "broadly"
-                     : x.agree > -0.34 ? "middle"
-                     : x.agree > -0.7 ? "against" : "opposite"].push(x.axis));
+    ps.forEach(x => G[x.agree >= 0.45 ? "with" : x.agree >= 0.1 ? "broadly"
+                     : x.agree > -0.1 ? "middle"
+                     : x.agree > -0.45 ? "against" : "opposite"].push(x.axis));
     const list = a => a.length > 1
       ? a.slice(0, -1).join(", ") + " and " + a[a.length - 1] : a[0];
     const say = [];
