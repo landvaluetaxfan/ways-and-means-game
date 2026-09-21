@@ -1499,6 +1499,75 @@ console.log("\nA DEFERRED FACT (the queue carries effects):");
   if (bad) { console.log("\n" + bad + " DEFERRED-FACT FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nTHE LICENSING BOARDS:");
+(function(){
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  /* \u00a74.6.4 is LOCKED and says the government appoints the boards, and the
+     player could not. It is the missing half of domain consent: a bill's
+     `touches` lets a functional constituency block it, and the
+     constitutional answer to being blocked is to decide who is licensed,
+     and therefore who votes in those seats. */
+  const st = Engine.newGame(CONTENT);
+  const mine = st.playerParty;
+  const target = (CONTENT.functional || []).find(f => {
+    const h = (st.functional[f.id] || {}).held || {};
+    return Object.keys(h).some(p => p !== mine && h[p] > 0);
+  });
+  ok("there is a roll the government does not already hold", !!target,
+     target ? target.id : "none");
+  if (target) {
+    const before = Object.assign({}, st.functional[target.id].held);
+    const mineBefore = before[mine] || 0;
+    const seatsBefore = Engine.partyFunctional(st, mine);
+    const legit = st.scalars.legitimacy, slots = st.slots.used;
+
+    ok("the engine will allow an appointment", Engine.canPackBoard(st, CONTENT, target.id).ok);
+    const r = Engine.packBoard(st, CONTENT, target.id);
+    ok("and it goes through", r && r.ok === true, r && (r.reason || r.from + " -> " + r.to));
+    ok("one seat changes hands on that roll",
+       (st.functional[target.id].held[mine] || 0) === mineBefore + 1,
+       mineBefore + " -> " + (st.functional[target.id].held[mine] || 0));
+    ok("and the party's functional total follows it",
+       Engine.partyFunctional(st, mine) === seatsBefore + 1,
+       seatsBefore + " -> " + Engine.partyFunctional(st, mine));
+    ok("it costs order-paper time (\u00a77.7)", st.slots.used === slots + 1);
+    ok("and it costs legitimacy, because it is the government choosing its electors",
+       st.scalars.legitimacy < legit, legit + " -> " + st.scalars.legitimacy);
+    ok("and it is counted", Engine.boardsMoved(st, target.id) === 1);
+    ok("and it is on the record where an opposition can find it",
+       (st.log || []).some(l => /licensing board/i.test(l.text || "")));
+
+    /* CAPPED BY CONTENT. A board that can be packed without limit is not a
+       fight, it is a cheat code. */
+    const cap = CONTENT.setup.boardCap;
+    ok("content sets a cap", typeof cap === "number", String(cap));
+    for (let i = Engine.boardsMoved(st, target.id); i < cap; i++) {
+      st.slots.used = 0;
+      Engine.packBoard(st, CONTENT, target.id);
+    }
+    st.slots.used = 0;
+    const g = Engine.canPackBoard(st, CONTENT, target.id);
+    ok("and the cap is refused at, not silently ignored", g.ok === false, g.reason);
+
+    /* content can notice */
+    ok("content can gate on how many boards have been moved",
+       Engine.matches(st, { boardsAtLeast: 1 }) === true &&
+       Engine.matches(st, { boardsAtLeast: 99 }) === false);
+  }
+
+  /* a save from before the power */
+  const old = Engine.newGame(CONTENT);
+  delete old.boards;
+  const back = Engine.load(Engine.save(old), CONTENT);
+  ok("a save written before the power loads with none made",
+     Engine.boardsTotal(back) === 0);
+
+  if (bad) { console.log("\n" + bad + " LICENSING BOARD FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nSTANDING, BY BAND:");
 (function(){
   let bad = 0;

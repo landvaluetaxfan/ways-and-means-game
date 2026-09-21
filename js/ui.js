@@ -5557,6 +5557,27 @@ const UI = (function () {
       if (post) return post.title || post.name;
       return ch.role || (ch.office && OFFICE[ch.office] ? OFFICE[ch.office][0] : null);
     };
+    /* WHAT THE GOVERNMENT HAS DONE TO THIS ELECTORATE, and what it may
+       still do. Reads the engine for both the count and the refusal, so the
+       reason a button is disabled is the engine's sentence. */
+    function boardControl(f) {
+      if (!Engine.canPackBoard) return "";
+      const moved = Engine.boardsMoved(st, f.id);
+      const gate = Engine.canPackBoard(st, C, f.id);
+      const done = moved
+        ? `<div class="note boardnote"><b>${moved}</b> appointment${moved === 1 ? "" : "s"} ` +
+          `already made to this board by this government. It is on the record.</div>`
+        : "";
+      return done +
+        `<div class="boardbtns"><button class="btn tiny board" data-board="${esc(f.id)}"` +
+        (gate.ok ? "" : " disabled") +
+        priceTip("Appoint to the " + (f.gatekeeper.board || "board"),
+          { slots: 1, note: "One seat on this roll changes hands. Costs legitimacy, " +
+            "and every appointment is counted for as long as the government lasts." },
+          gate.ok ? null : gate.reason) +
+        `>Appoint to the board</button></div>`;
+    }
+
     /* THE DETAIL, under the row it belongs to. Everything the hover card used
        to carry, plus the two things a card could not: the roll spelled out,
        and the members. It reads the same live roll the row does. */
@@ -5579,7 +5600,13 @@ const UI = (function () {
         (f.gatekeeper ? `<div class="rulehead">Gatekeeper</div>
           <div class="note">${esc(f.gatekeeper.board || "none")}` +
           (f.gatekeeper.appointed_by && f.gatekeeper.appointed_by !== "none"
-            ? `, appointed by the ${esc(f.gatekeeper.appointed_by)}` : "") + `.</div>` : "") +
+            ? `, appointed by the ${esc(f.gatekeeper.appointed_by)}` : "") + `.</div>` +
+          /* THE APPOINTMENT ITSELF (§4.6.4). The panel has named the board
+             and who appoints it since it was written; the government could
+             not do the thing the sentence says it does. Every appointment
+             already made is printed beside the control, because this is the
+             one power whose whole weight is that it is remembered. */
+          boardControl(f) : "") +
         (f.excluded ? `<div class="rulehead">Excluded from the roll</div>
           <div class="note">${esc(f.excluded.body)}, ${f.excluded.count.toLocaleString()}. ` +
           esc(f.excluded.note || "") + `</div>` : "") +
@@ -5618,6 +5645,32 @@ const UI = (function () {
       }).join("") + "</tbody>";
     $("#func-table").querySelectorAll("tr[data-func]").forEach(tr =>
       tr.addEventListener("click", () => Focus.activate("func-table", tr.dataset.func)));
+
+    /* THE APPOINTMENT. stopPropagation, because the button lives inside the
+       expanded row and the row's own click would fold it shut under the
+       player's hand. */
+    $("#func-table").querySelectorAll("[data-board]").forEach(btn =>
+      btn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        const fid = btn.dataset.board;
+        const f = (C.functional || []).find(x => x.id === fid) || {};
+        Dialog.confirm(
+          "Appoint to the " + ((f.gatekeeper && f.gatekeeper.board) || "board") +
+          "? One seat on the " + (f.name || fid) + " roll will change hands. " +
+          "It costs a slot and some legitimacy, and every appointment this " +
+          "government makes is counted for as long as it lasts.",
+          { title: "Appointments to a licensing board", ok: "Appoint" },
+          (yes) => {
+            if (!yes) return;
+            const r = acted(() => Engine.packBoard(st, C, fid));
+            cue("stamp");
+            setStatus(r && r.ok
+              ? "One seat on the " + (f.name || fid) + " roll changes hands"
+              : "The appointment was refused: " + ((r && r.reason) || "no reason given"),
+              "transient");
+            drawAll(); afterAction();
+          });
+      }));
 
     const seats = F.reduce((n, f) => n + f.seats, 0);
     const licensed = F.filter(f => f.franchise !== "residual")

@@ -15,6 +15,9 @@ const SETUP = {
                 believed, at home. friction: Earth's governments and banks
                 against the Commonwealth — higher is worse. */
              legitimacy:48, friction:25 },
+  /* HOW OFTEN THE CHARTER LETS A GOVERNMENT APPOINT TO ONE BOARD
+     (bible §4.6.4). Two is a fight; unlimited is a cheat code. */
+  boardCap: 2,
   law: { divergence_threshold_hours:168, civic_clock_minimum:0,
          suspension_debt_accrual:true, substrate_public_share:0.35, shed_order_authority:"engineering_authority",
          /* THE APPROPRIATION'S FINGERPRINT ON THE MARKET (design/13 §2.3,

@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 23;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard
+  const STATE_VERSION = 24;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard
 
   /* ---------------------------------------------------------
      1. STATE
@@ -389,6 +389,12 @@ const Engine = (function () {
          the same reason v13's actors and v20's foreign trails are empty. */
       if (!st.standing) st.standing = {};
       st.version = 23;
+    }
+    if (st.version < 24) {                    // the licensing boards
+      /* An empty table is the truth for a save written before the power
+         existed: no board has been appointed to, because none could be. */
+      if (!st.boards) st.boards = {};
+      st.version = 24;
     }
     return st;
   }
@@ -1819,6 +1825,91 @@ const Engine = (function () {
   }
 
   /* ---------------------------------------------------------
+     THE LICENSING BOARDS (bible §4.6.4, design/33 §4).
+
+     §4.6.4 is LOCKED and says it plainly: franchise in a functional
+     constituency runs through professional licensure, AND THE GOVERNMENT
+     APPOINTS THE BOARDS. That was written down and the player could not do
+     it — the sharpest tool in the game, named in canon, missing from the
+     hand that canon gives it to.
+
+     IT IS THE MISSING HALF OF DOMAIN CONSENT. A bill's `touches` names
+     domains, and the functional constituencies concerned with those domains
+     can block it. The government's own constitutional answer to being
+     blocked is to appoint the boards that decide who is licensed, and
+     therefore who votes in those seats. Give her that and a blocked bill
+     becomes a fight rather than a dice roll.
+
+     SLOW, CAPPED, AND REMEMBERED. One seat at a time; a slot, because §7.7
+     prices every power; legitimacy, because this is the government deciding
+     who its electors are; and a cap from content, because a board that can
+     be packed without limit is not a fight, it is a cheat code. Every one
+     is counted in `st.boards` and stays counted — packing a board is the
+     kind of thing an opposition runs an election on, and it can only do
+     that if the number survives.
+     --------------------------------------------------------- */
+  function boardsMoved(st, fcId) {
+    return ((st.boards || {})[fcId]) || 0;
+  }
+  function boardsTotal(st) {
+    return Object.keys(st.boards || {}).reduce((n, k) => n + st.boards[k], 0);
+  }
+
+  function canPackBoard(st, C, fcId) {
+    const f = (C.functional || []).find(x => x.id === fcId);
+    if (!f) return { ok: false, reason: "no such constituency" };
+    const roll = st.functional && st.functional[fcId];
+    if (!roll) return { ok: false, reason: "that roll is not in this parliament" };
+    if (st.slots.used >= st.slots.total)
+      return { ok: false, reason: "no order-paper time left this session" };
+    const cap = (C.setup && C.setup.boardCap) == null ? 2 : C.setup.boardCap;
+    if (boardsMoved(st, fcId) >= cap)
+      return { ok: false, reason: "the board has been appointed to as often as the Charter allows" };
+    const mine = st.playerParty;
+    const donors = Object.keys(roll.held).filter(p => p !== mine && roll.held[p] > 0);
+    if (!donors.length)
+      return { ok: false, reason: "every seat on this roll already returns the government" };
+    return { ok: true };
+  }
+
+  function packBoard(st, C, fcId) {
+    const gate = canPackBoard(st, C, fcId);
+    if (!gate.ok) return gate;
+    const f = (C.functional || []).find(x => x.id === fcId);
+    const roll = st.functional[fcId], mine = st.playerParty;
+
+    /* FROM THE LARGEST HOLDER THAT IS NOT THE GOVERNMENT. Licensure moves
+       at the margin, and the margin is where the most licences are. */
+    let from = null, n = -1;
+    Object.keys(roll.held).forEach(p => {
+      if (p !== mine && roll.held[p] > n) { n = roll.held[p]; from = p; }
+    });
+    roll.held[from] -= 1;
+    if (roll.held[from] <= 0) delete roll.held[from];
+    roll.held[mine] = (roll.held[mine] || 0) + 1;
+    syncFunctional(st, C);
+
+    st.slots.used += 1;
+    st.boards = st.boards || {};
+    st.boards[fcId] = boardsMoved(st, fcId) + 1;
+
+    /* THE PRICE IS BELIEF. A government that appoints its own electors is
+       still the government and is a little less obviously legitimate every
+       time it does it. */
+    st.scalars.legitimacy = clamp((st.scalars.legitimacy || 0) - 7, 0, 100);
+    if (st.parties[from])
+      st.parties[from].loyalty = clamp(st.parties[from].loyalty - 5, 0, 100);
+
+    st.log.unshift({ sitting: st.sitting,
+      text: "Appointments made to the " + (f.name || fcId) + " licensing board." });
+    st.wire = st.wire || [];
+    st.wire.unshift({ sitting: st.sitting,
+      text: "GOVERNMENT APPOINTS TO THE " + String(f.name || fcId).toUpperCase() +
+            " BOARD; ONE SEAT CHANGES HANDS" });
+    return { ok: true, from: from, to: mine, constituency: fcId };
+  }
+
+  /* ---------------------------------------------------------
      THE RESHUFFLE (design/33 §3).
 
      The most Westminster lever there is, and it was nearly free: `cabinet`,
@@ -3082,6 +3173,10 @@ const Engine = (function () {
     siInForce:      (st, v) => [].concat(v).every(k => st.instruments[k] && st.instruments[k].inForce),
     siNotMade:      (st, v) => [].concat(v).every(k => st.instruments[k] && !st.instruments[k].made),
     postVacant:     (st, v) => [].concat(v).every(k => st.cabinet[k] && !st.cabinet[k].holder),
+    /* §4.6.4's tool, in the condition vocabulary: content can notice that
+       the government has been appointing to its own electorates. */
+    boardsAtLeast:  (st, v) => boardsTotal(st) >= v,
+    boardsBelow:    (st, v) => boardsTotal(st) < v,
     priceAbove:     (st, v) => Object.keys(v).every(k => st.prices[k] > v[k]),
     priceBelow:     (st, v) => Object.keys(v).every(k => st.prices[k] < v[k]),
     capitalAbove:   (st, v) => Object.keys(v).every(k => (st.capital[k] || 0) > v[k]),
@@ -5422,6 +5517,7 @@ const Engine = (function () {
     lastReconcile: () => lastReconcile, nationalShares, vacantSeats, seatsFor,
     vacateSeat, crossFloor, byElection, generalElection, shares, swungShares,
     divisorAllocate,
+    packBoard, canPackBoard, boardsMoved, boardsTotal,
     reshuffle, canReshuffle, resolveMotion, motionDeadline,
     standingIn, bandsOf, bandWeight, syncStanding, assent, presidentDecides, referralRisk, reviewReturns,
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
