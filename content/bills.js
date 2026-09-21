@@ -43,7 +43,7 @@ const BILLS = [
             "same reason — a mind that can be run at any speed will always undercut a body "+
             "that cannot, and the first people undercut will be the ones who voted for it.",
     dualMajority:true,
-    axes:{ownership:null,personhood:"expansionist",sovereignty:"federal",closure:null},
+    axes:{economic:-0.3, authority:-0.3, personhood:0.9, sovereignty:0.5, trade:0.2},
     stances:{
       /* A stance may split by bench. Popular = district + list. */
       /* These are the forecast counts the whips have given the PM, so they are
@@ -253,7 +253,7 @@ const BILLS = [
             "quota moved to answer one fault becomes the ordinary way heat is allocated, "+
             "and the ring will be paying for the next fault before anyone has found it.",
     dualMajority:false,
-    axes:{ownership:"public",personhood:null,sovereignty:"federal",closure:"integrationist"},
+    axes:{economic:-0.6, authority:0.2, personhood:0, sovereignty:0.7, trade:0.4},
     stances:{ cu:"for", psa:"for", rv:"for", upl:"for", geo:"for", sc:{forPct:0.4}, cl:{forPct:0.3} },
     amendments:[
       { id:"th2_ring", label:"Release to the ring band first",
@@ -285,7 +285,7 @@ const BILLS = [
             "House, and that an authority which cannot be argued with is an authority which "+
             "cannot be wrong.",
     dualMajority:true,
-    axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
+    axes:{economic:-0.7, authority:-0.9, personhood:0.5, sovereignty:0.6, trade:0.1},
     stances:{ cu:"for", psa:"for", rv:{for:11}, upl:"for", geo:"for",
               gb:"against", hul:"against", fh:"against",
               /* THE PARTY SPLIT DOWN THE MIDDLE. The Liberal benches divide on
@@ -310,7 +310,7 @@ const BILLS = [
             "objection is that a lease renewed is still a lease, and the price is paid again "+
             "at the next renewal with less left to trade.",
     dualMajority:false,
-    axes:{ownership:"private",personhood:null,sovereignty:"federal",closure:"integrationist"},
+    axes:{economic:0.6, authority:0.1, personhood:0, sovereignty:0.5, trade:0.95},
     stances:{ cl:"for", cu:{forPct:0.7}, psa:{forPct:0.5}, sc:"against", hul:"against" },
     onPass:[{move:{"solvency": 8000}},{station:{kepler:{closure:0.02}}},{move:{"price.transit":-11}}],
     onFail:[{move:{"solvency": -6000}},{wire:"KEPLER CONCESSION LAPSES; EARTH STATE SIGNALS REVIEW"}] },
@@ -329,7 +329,7 @@ const BILLS = [
             "a floor with no test under it is a floor nobody can leave, and the consortiums "+
             "will price the guarantee into the rent of every person it covers.",
     dualMajority:false,
-    axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
+    axes:{economic:-0.85, authority:-0.2, personhood:0.6, sovereignty:0.6, trade:0.2},
     stances:{ psa:"for", cu:{forPct:0.8}, upl:"for", geo:"for", rv:{forPct:0.6},
               fh:"against", cl:{forPct:0.25}, hul:"against" },
     onPass:[{move:{"solvency": -11000}},{move:{"public_standing":7}},{move:{"loyalty.psa":12}},
@@ -352,7 +352,7 @@ const BILLS = [
             "reabsorbed is a list which will eventually be put to another use, and that a "+
             "right to be heard is not a right to be kept — the reabsorption still happens.",
     dualMajority:false,
-    axes:{ownership:null,personhood:"restrictionist",sovereignty:"federal",closure:null},
+    axes:{economic:-0.2, authority:-0.1, personhood:-0.85, sovereignty:0.4, trade:-0.1},
     stances:{ rv:"for", cu:{forPct:0.65}, des:"for", hul:{forPct:0.7}, gb:{forPct:0.5},
               psa:"against", cl:"against",
               /* CONFIDENCE AND SUPPLY, KEEPING ITS DISTANCE. The Uplift
@@ -384,7 +384,7 @@ const BILLS = [
             "which sets the standard for substrate will also be the party selling it, and "+
             "nobody audits the landlord's own meter.",
     dualMajority:false,
-    axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
+    axes:{economic:-0.95, authority:0.1, personhood:0.4, sovereignty:0.7, trade:0},
     stances:{ psa:"for", cu:{forPct:0.85}, upl:"for", geo:{forPct:0.6}, rv:{forPct:0.4},
               cl:"against", fh:"against", hul:{forPct:0.3}, gb:{forPct:0.2} },
     onPass:[{law:{substrate_public_share:0.6}},{move:{"price.substrate":-26}},
@@ -447,7 +447,7 @@ const BILLS = [
             "that build and maintain say the same thing they said about divergence: "+
             "97,000 workers entering the market at once will be undercut by whoever "+
             "is cheapest, and that will not be them for long.",
-    axes:{ownership:null,personhood:"expansionist",sovereignty:"federal",closure:null},
+    axes:{economic:-0.7, authority:0.5, personhood:0.6, sovereignty:0.85, trade:-0.4},
     stances:{
       /* Forecast counts as the whips gave them. Popular 129 of 240, needs 121. */
       cu:  { popular:{for:66}, functional:"for" },  /* seven rebels: the maintenance bloc */

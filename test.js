@@ -48,6 +48,72 @@ expect("functional aye", d.functional.aye, 12);
 expect("popular need", d.popular.need, 121);
 expect("functional need", d.functional.need, 21);
 
+/* ---------------------------------------------------------------------
+   THE PRODUCTIVE ECONOMY (bible §7.10)
+
+   The canon claim is a measurement, so it is asserted rather than trusted:
+   cutting the divergence threshold from 168 hours to 40 takes participation
+   from 39 to 49.2 over twenty-six sittings, against 40.1 if the threshold is
+   left alone. Nine points, because invisible instance-hours become counted
+   jobs — the bill everyone debates as a personhood measure is the largest
+   intervention in this labour market anyone has contemplated.
+
+   A tolerance rather than an equality: the target moves with the volume and
+   transit prices, which drift on their own, so the figure is a band and the
+   SEPARATION between the two runs is the claim.
+   --------------------------------------------------------------------- */
+console.log("\nTHE PRODUCTIVE ECONOMY:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  const open = Engine.newGame(CONTENT);
+  ok("a new game opens with the economy content declares",
+     open.economy && open.economy.participation === CONTENT.setup.economy.participation &&
+     open.economy.trade === CONTENT.setup.economy.trade,
+     JSON.stringify(open.economy));
+
+  const control = Engine.newGame(CONTENT);
+  for (let i = 0; i < 26; i++) Engine.advance(control, CONTENT);
+  const cut = Engine.newGame(CONTENT);
+  cut.law.divergence_threshold_hours = 40;
+  for (let i = 0; i < 26; i++) Engine.advance(cut, CONTENT);
+
+  const a = control.economy.participation, b = cut.economy.participation;
+  ok("left alone, participation stays near its opening", a > 39 && a < 42,
+     a + " (bible says 40.1)");
+  ok("cut to forty hours, it rises to about 49", b > 47 && b < 51,
+     b + " (bible says 49.2)");
+  ok("and the gap is the finding, not the figure", b - a > 7,
+     "+" + Math.round((b - a) * 10) / 10 + " points");
+
+  /* Trade falls off transit and substrate, so it must actually MOVE. */
+  ok("trade moves off the prices rather than sitting at its opening",
+     control.economy.trade !== CONTENT.setup.economy.trade,
+     control.economy.trade + " from " + CONTENT.setup.economy.trade);
+  ok("and both keep a curve, the same window as the prices",
+     control.economyHistory.participation.length === 27 &&
+     control.economyHistory.trade.length === 27,
+     control.economyHistory.participation.length + " points");
+  /* `private` is authored and never drifts, so it keeps no curve at all. */
+  ok("the private share does not drift and keeps no curve",
+     control.economy.private === CONTENT.setup.economy.private &&
+     control.economyHistory.private === undefined,
+     "private " + control.economy.private);
+
+  /* A save from before §7.10 has to arrive with an economy, not a hole. */
+  const older = JSON.parse(JSON.stringify(control));
+  delete older.economy; delete older.economyHistory; older.version = 25;
+  const back = Engine.reconcile(Engine.migrate(older), CONTENT);
+  ok("a pre-7.10 save is migrated and reconciled to content's opening",
+     back.version === 25 + 1 && back.economy &&
+     back.economy.participation === CONTENT.setup.economy.participation,
+     "v" + back.version + " " + JSON.stringify(back.economy));
+
+  if (bad) { console.log("\n" + bad + " ECONOMY FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nFIRST FIVE SITTINGS (deterministic):");
 let s = Engine.newGame(CONTENT);
 for (let i=0;i<5;i++){
@@ -2360,7 +2426,12 @@ console.log("\nTHE THREE-WAY COUNT (aye, nay, abstain):");
      indC.length + " currents, " + CONTENT.partyById.ind.seats.district + " seats");
 
   const probe = billId => ({ id: billId, title: "probe", ref: "",
-    axes: { ownership: null, personhood: null, sovereignty: "station", closure: "closurist" },
+    /* Signed axes: the same probe as before — a strongly station-rights,
+       strongly closurist measure — expressed as numbers now that agreement
+       is distance. A string here would fall back to equality against the
+       currents' numbers and read as -1 on every axis, so every independent
+       would vote against and the bloc test would pass for the wrong reason. */
+    axes: { economic: null, personhood: null, sovereignty: -0.9, trade: -0.9 },
     stances: {} });
   const withBill = (id, b) => Object.assign({}, CONTENT,
     { billById: Object.assign({}, CONTENT.billById, { [id]: b }) });
@@ -2379,7 +2450,7 @@ console.log("\nTHE THREE-WAY COUNT (aye, nay, abstain):");
      "bloc " + ayes(mStation, bloc) + " of 3, rest " + ayes(mStation, rest) + " of 3");
 
   const federal = Object.assign({}, probe("probe_ind_federal"),
-    { axes: { ownership: null, personhood: null, sovereignty: "federal", closure: "integrationist" } });
+    { axes: { economic: null, personhood: null, sovereignty: 0.9, trade: 0.9 } });
   const mFed = byCur(indRow(federal));
   ok("and on the federal question the rest outvote the bloc",
      ayes(mFed, rest) > ayes(mFed, bloc),

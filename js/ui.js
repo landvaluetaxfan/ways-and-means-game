@@ -1134,10 +1134,15 @@ const UI = (function () {
     /* the detail: who leads it, what it holds, what it believes */
     const leader = (C.characters || []).find(c => c.id === sel.leader);
     const pop = Engine.partyPopular(st, sel.id), fun = Engine.partyFunctional(st, sel.id);
+    /* `.filter(k => ax[k])` WAS A BUG THE MOMENT THE AXES BECAME SIGNED:
+       zero is the centre of an axis and a position content took on purpose,
+       and a truthiness test threw it away. Association of Engineers and
+       Systems is economic 0 — neither public nor private, which is the
+       whole of what that party is — and the row vanished. `!= null`. */
     const ax = sel.axes || {};
-    const axRows = Object.keys(ax).filter(k => ax[k])
+    const axRows = Object.keys(ax).filter(k => ax[k] != null)
       .map(k => `<div class="prow"><div class="plab">${esc(k)}</div>` +
-                `<div class="pval">${esc(ax[k])}</div></div>`).join("");
+                `<div class="pval axpos">${esc(axisAt(k, ax[k]))}</div></div>`).join("");
     /* WHAT THE RELATIONSHIP CONSISTS OF, above who they are.
 
        This panel opened on the leader and the seat count — true of a party
@@ -1885,37 +1890,83 @@ const UI = (function () {
      described on these, which is what makes "why" derivable rather than
      written: the reason a bench votes a way IS its position against the
      bill's, and the engine already computes that distance for the division. */
-  const AXIS_NAME = { ownership:"ownership", personhood:"personhood",
-                      sovereignty:"sovereignty", closure:"closure" };
-  /* THREE LETTERS AND A SIGN. The reason a bench is where it is, in the
-     shortest form that is still a reason: `own+ sov+ per−` is "with it on
-     ownership and sovereignty, against on personhood", and the long form is
-     the hover card so nothing is lost by saying it short. */
-  const AXIS_CODE = { ownership:"own", personhood:"per",
-                      sovereignty:"sov", closure:"clo" };
+  /* THE AXES ARE SIGNED NOW, so agreement is a DEGREE and not a yes or no.
+
+     This read `paxes[a] === baxes[a]` against categorical strings, which
+     made a party one step off the bill and a party at the opposite pole
+     the same picture. With numbers in -1..+1 the reason a bench is where
+     it is has a size, and the short form gets a third mark for the middle:
+
+         eco+ sov+ per−        with on economic and sovereignty, against
+                              on personhood
+         tra·                 declared a position and it is the centre
+
+     NO LIST HERE EITHER. There were two hardcoded axis maps in this file
+     and the engine deliberately has none; the codes are the first three
+     letters of whatever dimensions the party and the bill both declare,
+     so adding one to content reaches this drawing with no edit. The pole
+     NAMES come from SCHEMA, which index.html now loads — one copy of
+     "public/private", in the file CLAUDE.md calls the content vocabulary. */
+  const axisCode = a => a.slice(0, 3);
+  const axisPoles = a => {
+    const v = (typeof SCHEMA !== "undefined" && SCHEMA.vocab && SCHEMA.vocab.axes)
+      ? SCHEMA.vocab.axes[a] : null;
+    return v && v.low ? v : null;
+  };
+  /* Where one position sits on its own axis, in words: "public" rather than
+     "-0.75". The centre is named as the centre, because a party that has
+     taken the middle has taken a position and content said so. */
+  function axisAt(a, v) {
+    if (typeof v !== "number") return String(v);
+    const p = axisPoles(a);
+    if (!p) return v.toFixed(2);
+    const end = v < 0 ? p.low : p.high, m = Math.abs(v);
+    if (m < 0.15) return "the centre";
+    return (m >= 0.7 ? "strongly " : m >= 0.35 ? "" : "mildly ") + end;
+  }
+
+  /* The shared dimensions and how far apart the two are on each, using the
+     engine's own scoring so a tooltip cannot disagree with a division. */
+  function axisPairs(paxes, baxes) {
+    const out = [];
+    Object.keys(paxes || {}).forEach(a => {
+      const pa = paxes[a], ba = (baxes || {})[a];
+      if (pa == null || ba == null) return;
+      const agree = (typeof pa === "number" && typeof ba === "number")
+        ? 1 - Math.abs(pa - ba)
+        : (pa === ba ? 1 : -1);
+      out.push({ axis: a, agree: agree });
+    });
+    return out;
+  }
 
   /* WHY A PARTY IS WHERE IT IS, read off the axes it and the bill share. A
      party with no settled position on an axis the bill moves says nothing
      about it, rather than being given a reason content did not. */
   function axisWhy(paxes, baxes) {
-    const out = [];
-    Object.keys(AXIS_CODE).forEach(a => {
-      if (!baxes || baxes[a] == null || !paxes || paxes[a] == null) return;
-      out.push(AXIS_CODE[a] + (paxes[a] === baxes[a] ? "+" : "\u2212"));
-    });
-    return out.join(" ");
+    return axisPairs(paxes, baxes).map(x =>
+      axisCode(x.axis) +
+      (x.agree >= 0.34 ? "+" : x.agree <= -0.34 ? "\u2212" : "\u00b7")).join(" ");
   }
+
   /* The same thing said in words, for the hover card. */
   function axisWhyLong(paxes, baxes) {
-    const same = [], diff = [];
-    Object.keys(AXIS_NAME).forEach(a => {
-      if (!baxes || baxes[a] == null || !paxes || paxes[a] == null) return;
-      (paxes[a] === baxes[a] ? same : diff).push(AXIS_NAME[a]);
-    });
-    if (!same.length && !diff.length) return "No position on the axes this bill moves.";
-    if (diff.length && !same.length) return "Against it on " + diff.join(" and ") + ".";
-    if (same.length && !diff.length) return "With it on " + same.join(" and ") + ".";
-    return "With it on " + same.join(" and ") + ", against on " + diff.join(" and ") + ".";
+    const ps = axisPairs(paxes, baxes);
+    if (!ps.length) return "No position on the axes this bill moves.";
+    const G = { with: [], broadly: [], middle: [], against: [], opposite: [] };
+    ps.forEach(x => G[x.agree >= 0.7 ? "with" : x.agree >= 0.34 ? "broadly"
+                     : x.agree > -0.34 ? "middle"
+                     : x.agree > -0.7 ? "against" : "opposite"].push(x.axis));
+    const list = a => a.length > 1
+      ? a.slice(0, -1).join(", ") + " and " + a[a.length - 1] : a[0];
+    const say = [];
+    if (G.with.length)     say.push("with it on " + list(G.with));
+    if (G.broadly.length)  say.push("broadly with it on " + list(G.broadly));
+    if (G.middle.length)   say.push("close to the middle on " + list(G.middle));
+    if (G.against.length)  say.push("against it on " + list(G.against));
+    if (G.opposite.length) say.push("at the opposite end on " + list(G.opposite));
+    const t = say.join("; ");
+    return t.charAt(0).toUpperCase() + t.slice(1) + ".";
   }
 
   /* WHAT THE BILL DOES, in the engine's own reading of its own effects.

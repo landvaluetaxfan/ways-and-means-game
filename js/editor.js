@@ -396,12 +396,20 @@ const Editor = (function () {
       <label>Functional ${num_("functional", p.seats.functional)}</label>
       <label class="ed-note">Total <b>${p.seats.district + p.seats.list + p.seats.functional}</b></label>
     </div>
-    <div class="rulehead">Axes</div>
-    <div class="ed-grid">${Object.keys(A).map(k =>
-      `<label>${k} <select class="ed-f" data-f="ax_${k}">` +
-      `<option value=""${!p.axes[k] ? " selected" : ""}>— none —</option>` +
-      A[k].map(v => `<option value="${v}"${p.axes[k] === v ? " selected" : ""}>${v}</option>`).join("") +
-      `</select></label>`).join("")}</div>
+    <div class="rulehead">Axes <em>\u22121 to +1, or blank for no position</em></div>
+    <div class="ed-grid">${Object.keys(A).map(k => {
+      /* A NUMBER, NOT A DROPDOWN. The axes were two-value enums and this was
+         a select of their strings; they are signed now, so the poles become
+         the LABELS either side of a number and the middle is authorable,
+         which it never was. Blank still means no position at all, and is a
+         different thing from 0, which is a position in the centre. */
+      const v = p.axes[k], has = v != null;
+      return `<label class="ed-ax">${k}` +
+        `<span class="ed-axpole">${A[k].low}</span>` +
+        `<input class="ed-f ed-axn" type="number" step="0.05" min="-1" max="1" ` +
+        `data-f="ax_${k}" value="${has ? v : ""}" placeholder="\u2014">` +
+        `<span class="ed-axpole">${A[k].high}</span></label>`;
+    }).join("")}</div>
     <div class="rulehead">Note</div>
     <textarea class="ed-f ed-body" data-f="note" rows="3">${esc(p.note || "")}</textarea>`;
   }
@@ -753,7 +761,16 @@ const Editor = (function () {
       const al = g("aliases").value.split(",").map(s => s.trim()).filter(Boolean);
       if (al.length) p.aliases = al; else delete p.aliases;
       p.seats = { district: +g("district").value, list: +g("list").value, functional: +g("functional").value };
-      p.axes = {}; Object.keys(SCHEMA.vocab.axes).forEach(k => p.axes[k] = g("ax_" + k).value || null);
+      /* `|| null` WOULD EAT A ZERO, which is a position on a signed axis and
+         not the absence of one. Empty string is "no position"; anything that
+         parses is the number, clamped to the axis's own range. */
+      p.axes = {};
+      Object.keys(SCHEMA.vocab.axes).forEach(k => {
+        const raw = String(g("ax_" + k).value).trim();
+        if (raw === "") { p.axes[k] = null; return; }
+        const n = Number(raw);
+        p.axes[k] = isNaN(n) ? null : Math.max(-1, Math.min(1, n));
+      });
       sel.id = p.id;
     }
     else if (sel.tab === "stations") {

@@ -89,38 +89,54 @@ inside the bible's 4,149,803 and the districts were not rebalanced.
 `lint.js`, `encyclopedia_content.js`, `encyclopedia_renderer.js`, `js/codex.js`)
 or the `tools/dither.sh` mode change — they are pre-existing and left alone.
 
-## OPEN HANDOFF — a divergent branch must be reconciled (10 Sep 2026)
+## CLOSED — the divergent branch is reconciled (21 Sep 2026)
 
-A second agent (opencode) worked from a **stale clone** and committed a line of
-work that is **not on this branch**. It is pushed and waiting:
+`opencode/party-rename-and-economy` was a line of work committed from a stale
+clone and left unrebased for eleven days. **It is landed.** Nothing is owed on
+that branch and it can be deleted; the one commit that carried content was
+`fee015a`, and what came across is below. Its engine half was written against
+`STATE_VERSION 5` against today's 26, so it was cherry-picked rather than
+merged, and **the party rename and the `gb` split were dropped** because both
+were already here — which is what the old version of this section instructed.
 
-`git fetch origin opencode/party-rename-and-economy`
+**The four categorical axes are now five signed ones.** `ownership` became
+`economic` and `closure` became `trade` (a signed axis needs a name that reads
+in both directions — "ownership −0.75" says nothing), `authority` is new, and
+positions are numbers from −1 to +1. Bible §8.1 is rewritten for it.
 
-Built on the old base `49344d6` (before the UI pass and `STATE_VERSION 6`), it
-contains:
+- **`null` is not zero, and the distinction is load-bearing.** Zero is the
+  centre and a position content took; `null` is no position at all. Converting
+  the sixteen currents, a near-zero number was written where the old value was
+  `null` — and the canon forecast moved from 130 to 131, because six
+  independents who had no view on personhood had been given a faint one.
+  Restoring the nulls restored the number. `test.js` asserts 130.
+- **Agreement is the cosine over the shared axes**, not `1 - |a - b|` as on the
+  branch. That formula is biased: two positions on −1..+1 sit 0.67 apart on
+  average, so it scores the mean party-bill pair at +0.412 where the old
+  categorical scoring scored 0, and `inferStance` and the whip bands both cut
+  at ±0.25 on the old basis. `a * b` centres correctly but compresses. Cosine
+  centres at +0.064 and does not compress. §8.1 carries the table.
+- **The engine still names no axis**, deliberately against the branch, which
+  introduced `const AXES = [...]`. The dimensions are whatever a party and a
+  bill both declare. `js/schema.js` holds the names and the poles, and
+  **`index.html` now loads `js/schema.js`** so the interface can draw
+  "strongly public" instead of "−0.75" without a second copy of the poles.
 
-- **Five signed axes** (`economic · authority · personhood · sovereignty · trade`)
-  replacing the four categorical ones, with agreement as distance.
-- **§7.10 the productive economy**: `economy.participation/trade/private`, the
-  `economy` effect verb, `economyAbove/Below`, state v5.
-- **Renamed parties**, and the old `gb` split in two.
-- `ROADMAP.md`, `AUTHORING_FORMAT.md`, `drafts/`, and bible **Part XVII**.
+**§7.10 the productive economy is in**, at `STATE_VERSION 26`:
+`st.economy = {participation, trade, private}`, an `economy` effect verb,
+`economyAbove`/`economyBelow`, and `economyHistory` on the same sixty-sitting
+window as the prices. Opening figures are in `content/setup.js`, not the
+engine. `private` is authored and never drifts, so it keeps no curve.
+Participation moves on the divergence threshold: cut it to forty hours and
+participation goes 39 → **49.2** over twenty-six sittings against **40.1** if
+it is left alone, and `test.js` asserts both so the canon cannot rot.
 
-The branch is **ahead 1, behind 38**. Its engine half (axes, economy, migration)
-was written against v5 and conflicts with the current v6 engine — **Claude owns
-that rebase.**
+`ROADMAP.md` and `AUTHORING_FORMAT.md` came across too, each with a header
+saying what in it is out of date — the roadmap was written against a nine-tab
+interface that still had **Papers**.
 
-**The party rename IS landed on `main`.** It was landed once (`1b6c3b5`), reverted
-(`55aa28a`) because adding the 12th party `ind` **crashed the chamber, orbit and
-Concordance on existing saves**, and re-landed with the hole closed:
-`Engine.reconcile()` now backfills parties and currents from content, exactly as
-it already did for stations, and `test.js` asserts it. The six district seats
-moved to `ind` in `content/constituencies.js`, and `ind:"against"` holds the
-divergence forecast at 128.
-
-When rebasing the branch, **keep only the engine work** (five axes, §7.10
-economy, migration, roadmap/docs) and **drop the rename and the split** — they
-are already here. The table is a record:
+**The party table is still a useful record**, since the ids are the initials of
+the pre-rename names and are therefore a poor guide to what a party is called:
 
 | id | name | short |
 |---|---|---|
@@ -137,14 +153,12 @@ are already here. The table is a record:
 | upl | Uplift Alliance | UPA |
 | ind | Independents | IND |
 
-Three of those were renamed again on 14 Sep 2026 under bible §8.3's rule that a
-party names itself for who it is and not for what it opposes: `fh` was the
-*Party of Property Owners*, which is what a tax form calls them; `rv` was the
-*Democratic Centre*, which described neither their economics nor their faith;
-`upl` was *Common Kind*, a good phrase that identified nobody. **The ids never
-changed and are still the initials of the pre-rename names** — `cu` for Commons
-Union, `psa` for Public Substrate Association, and so on — so an id is a poor
-guide to what a party is now called. Read `content/parties.js`.
+Three were renamed again on 14 Sep 2026 under bible §8.3's rule that a party
+names itself for who it is and not for what it opposes: `fh` was the *Party of
+Property Owners*, which is what a tax form calls them; `rv` was the *Democratic
+Centre*, which described neither their economics nor their faith; `upl` was
+*Common Kind*, a good phrase that identified nobody. Read
+`content/parties.js`.
 
 ## THE TABS, AS OF 20 SEPTEMBER 2026
 

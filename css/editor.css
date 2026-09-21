@@ -135,3 +135,11 @@ tr.here td:first-child{box-shadow:inset 3px 0 0 var(--rule);}
 .palrow{display:flex;}
 .palrow i{width:34px;height:16px;border:1px solid var(--chrome-dkr);border-right:none;}
 .palrow i:last-child{border-right:1px solid var(--chrome-dkr);}
+
+/* THE AXIS ROW. Signed axes are a number between two pole names, so the
+   label reads "public  [-0.75]  private" and the author can see which way
+   the sign points without remembering the convention. */
+label.ed-ax{display:flex;align-items:center;gap:6px;}
+label.ed-ax .ed-axpole{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-soft,#4d5049);white-space:nowrap;}
+label.ed-ax .ed-axn{width:62px;text-align:center;font-variant-numeric:tabular-nums;}

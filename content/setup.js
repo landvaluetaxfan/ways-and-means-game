@@ -14,6 +14,14 @@ const SETUP = {
      people. 136 + 6 = 142 against a majority of 141 — a working majority of
      one, where it used to be nil. */
   confidenceSupply: ["ind"],
+  /* THE PRODUCTIVE ECONOMY (bible §7.10). The prices are the cost of
+     existing; this is what the Commonwealth makes, sells and employs.
+     participation is a per cent of adults in paid work, trade an index
+     at 100 where above is surplus, private the share of the economy in
+     private hands — excluding the eleven consortiums whose control
+     carries a parliamentary vote and which therefore never float. */
+  economy: { participation: 39, trade: 100, private: 0.72 },
+
   scalars: { party_loyalty:38, public_standing:44, consumables:71,
              thermal_margin:17, solvency:52000,
              /* Flash I's own meters. legitimacy: the government being

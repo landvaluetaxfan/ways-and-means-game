@@ -81,8 +81,27 @@ const Concordance = (function () {
     const total = Engine.partyTotal(st, p.id);
     const inGov = st.coalition.includes(p.id);
     const cs = st.confidenceSupply.includes(p.id);
-    const axisLine = ["ownership", "personhood", "sovereignty", "closure"]
-      .map(k => p.axes[k] ? k + ": " + p.axes[k] : null).filter(Boolean).join(" · ") || "no settled position";
+    /* SIGNED AXES, AND NO LIST OF THEM. This named the old four and tested
+       `p.axes[k] ?`, so after the conversion it printed nothing at all for
+       every party — the names were gone and zero is falsy. It reads whatever
+       dimensions the party declares, and says which end rather than the
+       number: "public" and not "-0.75". The poles come from SCHEMA, which
+       index.html loads for exactly this. */
+    const poles = (typeof SCHEMA !== "undefined" && SCHEMA.vocab && SCHEMA.vocab.axes)
+      ? SCHEMA.vocab.axes : {};
+    const axisLine = Object.keys(p.axes || {})
+      .filter(k => p.axes[k] != null)
+      .map(k => {
+        const v = p.axes[k];
+        if (typeof v !== "number") return k + ": " + v;
+        const pl = poles[k];
+        if (!pl) return k + ": " + v;
+        const m = Math.abs(v);
+        if (m < 0.15) return k + ": the centre";
+        return k + ": " + (m >= 0.7 ? "strongly " : m >= 0.35 ? "" : "mildly ") +
+               (v < 0 ? pl.low : pl.high);
+      })
+      .join(" \u00b7 ") || "no settled position";
 
     /* The leader is a character id on the party, and the office is read
        from the same cabinet the game runs on — so the article can say

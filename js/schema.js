@@ -25,6 +25,13 @@ const SCHEMA = {
     motion:      { label:"The opposition tables a confidence motion", args:[
                    {k:"value", type:"int", label:"Sittings until the division", hint:"the House divides then"}],
                    shape:"scalarVal" },
+    /* §7.10 the productive economy. Its own verb and not a move namespace,
+       because these are not 0..100 scalars: participation is a per cent of
+       adults, trade an index at 100, private a share of one. */
+    economy:     { label:"Move the productive economy", args:[
+                   {k:"key", type:"enum", src:"economyKeys", label:"Measure"},
+                   {k:"delta", type:"num", label:"Change"}],
+                   shape:"keyed" },
     law:         { label:"Set a law value", args:[
                    {k:"key", type:"enum", src:"laws", label:"Law"},
                    {k:"value", type:"any", label:"New value"}],
@@ -100,6 +107,8 @@ const SCHEMA = {
     priceBelow:     { label:"Price below",             form:"map", src:"prices", vtype:"int" },
     capitalAbove:   { label:"Debt above",              form:"map", src:"parties", vtype:"int" },
     capitalBelow:   { label:"Debt below",              form:"map", src:"parties", vtype:"int" },
+    economyAbove:   { label:"Productive economy above", form:"map", src:"economyKeys", vtype:"num" },
+    economyBelow:   { label:"Productive economy below", form:"map", src:"economyKeys", vtype:"num" },
     slotsLeft:      { label:"Order-paper slots left",  form:"int" },
     chapterIs:      { label:"Chapter is",              form:"int" },
     chapterAtLeast: { label:"Chapter is at least",      form:"int" },
@@ -122,8 +131,23 @@ const SCHEMA = {
     billFields: ["stage","dead"],
     billStages: ["drafting","first_reading","second_reading","committee","lords",
                  "blocked","withdrawn","passed","defeated"],
-    axes: { ownership:["public","private"], personhood:["expansionist","restrictionist"],
-            sovereignty:["federal","station"], closure:["closurist","integrationist"] },
+    /* THE AXES ARE SIGNED NUMBERS NOW, -1 to +1, and agreement is distance
+       rather than a match (bible Part XVII). Each entry names its poles so
+       the editor can label a slider and the interface can say which end a
+       position is at; the numbers themselves are authored in content.
+
+       `ownership` became `economic` and `closure` became `trade`, because a
+       signed axis needs a name that reads in both directions: "ownership
+       -0.75" says nothing, "economic -0.75" says left. `authority` is new
+       and had no categorical equivalent — nothing in the old four
+       distinguished a party that wants the state to decide from one that
+       wants nobody to. */
+    axes: { economic:    { min:-1, max:1, low:"public",         high:"private" },
+            authority:   { min:-1, max:1, low:"liberal",        high:"authoritarian" },
+            personhood:  { min:-1, max:1, low:"restrictionist", high:"expansionist" },
+            sovereignty: { min:-1, max:1, low:"station",        high:"federal" },
+            trade:       { min:-1, max:1, low:"closurist",      high:"integrationist" } },
+    economyKeys: ["participation","trade","private"],
     bands: ["ring","far","middle","low","external"],
     stationTypes: ["single","bundled","external"],
     stationForms: ["cylinder","torus","drum","sphere","cluster","yard","surface"],

@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 25;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard
+  const STATE_VERSION = 26;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy
 
   /* ---------------------------------------------------------
      1. STATE
@@ -171,6 +171,27 @@ const Engine = (function () {
          four; a Commonwealth that came to price a fifth should not need
          the engine recompiled to do it. */
       prices: pricesOf(C), priceHistory: historyOf(C),
+
+      /* THE PRODUCTIVE ECONOMY (bible §7.10).
+
+         The four prices are the cost of existing. These are the other half:
+         what the Commonwealth makes, sells and employs. Without them it is
+         a closed system with a static labour market, which is not a modern
+         economy however finely metered.
+
+           participation  per cent of adults in paid work
+           trade          balance index, 100 level, above is surplus
+           private        share of the economy in private hands, EXCLUDING
+                          the eleven consortiums whose control carries a
+                          parliamentary vote and which therefore never
+                          float (§7.5.1). There is a real equity market; it
+                          just cannot touch the firms that hold seats.
+
+         The opening figures come from content, like the prices and for the
+         same reason: a Commonwealth that came to meter a fifth thing should
+         not need the engine recompiled to do it. */
+      economy: economyOf(C),
+      economyHistory: economyHistoryOf(C),
 
       president: Object.assign({}, C.setup.president),
 
@@ -405,6 +426,21 @@ const Engine = (function () {
       if (!st.solvencyHistory) st.solvencyHistory = [];
       st.version = 25;
     }
+    if (st.version < 26) {                    // the productive economy
+      /* A save written before §7.10 has no productive economy at all, so it
+         gets the opening figures from content rather than a guess — the same
+         answer reconcile() gives a save with a hole in st.stations. The
+         history starts as one point, because one point is the truth: the
+         save has an economy and no record of how it got there. */
+      /* economyOf(null) and not economyOf(C), because migrate() is handed a
+         save and not the content — the same reason the v3 block two hundred
+         lines up says pricesOf(null). Aligning to whatever content actually
+         opens with is reconcile()'s job, and it runs on every load. */
+      if (!st.economy) st.economy = economyOf(null);
+      if (!st.economyHistory) st.economyHistory =
+        { participation: [st.economy.participation], trade: [st.economy.trade] };
+      st.version = 26;
+    }
     return st;
   }
 
@@ -476,6 +512,22 @@ const Engine = (function () {
     });
     Object.keys(C.setup.scalars || {}).forEach(k => {
       if (st.scalars[k] == null) st.scalars[k] = C.setup.scalars[k];
+    });
+
+    /* THE PRODUCTIVE ECONOMY, same rule as the scalars and the law above:
+       content owns which measures exist and what they open at, the save
+       owns where they have got to. A save from before §7.10 arrives here
+       with the engine's defaults from migrate() — which has no content to
+       read — and a content opening figure it never saw; a save from before
+       a measure was ADDED arrives with a hole. Both are the same fix, and
+       it is the reason reconcile runs on every load. */
+    st.economy = st.economy || {};
+    st.economyHistory = st.economyHistory || {};
+    Object.keys(economyOf(C)).forEach(k => {
+      if (st.economy[k] == null) st.economy[k] = economyOf(C)[k];
+      /* `private` is authored, never drifted, so it keeps no curve. */
+      if (k !== "private" && !st.economyHistory[k])
+        st.economyHistory[k] = [st.economy[k]];
     });
 
     st.stations = st.stations || {};
@@ -1064,6 +1116,21 @@ const Engine = (function () {
   const pricesOf  = (C) => scarceOf(C).reduce((m, k) => (m[k] = 100, m), {});
   const historyOf = (C) => scarceOf(C).reduce((m, k) => (m[k] = [100], m), {});
 
+  /* Read from content for the same reason pricesOf is: the engine names no
+     number. A save from before §7.10 gets these on migration. `private` has
+     no history because nothing drifts it — it moves only when content says
+     so, which is what a privatisation is. */
+  const economyOf = (C) => {
+    const e = (C && C.setup && C.setup.economy) || {};
+    return { participation: e.participation == null ? 39  : e.participation,
+             trade:         e.trade         == null ? 100 : e.trade,
+             private:       e.private       == null ? 0.72 : e.private };
+  };
+  const economyHistoryOf = (C) => {
+    const e = economyOf(C);
+    return { participation: [e.participation], trade: [e.trade] };
+  };
+
   /* (The axes need no constant here — see axisAgreement: they are read
      off whatever the party and the bill both declare.) */
 
@@ -1167,20 +1234,69 @@ const Engine = (function () {
     return out;
   }
 
+  /* AGREEMENT IS DISTANCE, NOT A MATCH (bible §7.10 / Part XVII).
+
+     The axes used to be categorical strings — ownership "public" or
+     "private", personhood "expansionist" or "restrictionist" — and
+     agreement was equality, so every disagreement cost the same. A party at
+     the far end of the personhood argument and a party one step off it were
+     indistinguishable, which is the thing this game is mostly about.
+
+     They are signed now, -1 to +1, and agreement is the COSINE of the two
+     positions over the axes they share: do the party and the bill want the
+     same direction on the things this measure touches, regardless of how
+     hard either pushes. +1 aligned, 0 unrelated, -1 opposed.
+
+     Three formulas were measured against content before this one was kept,
+     and the two obvious ones are both wrong:
+
+       `1 - |a - b|`   what the branch this came from used. Biased: two
+                       positions drawn from -1..+1 sit about 0.67 apart on
+                       average, so it scores the average party-bill pair at
+                       +0.412 where the old categorical scoring scored 0.
+                       `inferStance` and WHIP_BANDS both cut at +/-0.25 and
+                       were calibrated for a score centred on zero, so this
+                       reads most of the House as broadly agreeing.
+
+       `a * b`         centred correctly (0.022) but compressed: a party at
+                       -0.75 and a bill at -0.3 plainly agree and score
+                       0.225, under the threshold. Multiplying two numbers
+                       below one shrinks agreement that is really there.
+
+       cosine          centred (0.064) and not compressed, because it
+                       normalises out magnitude and measures DIRECTION.
+
+     The politics it produces is the argument for it. On the divergence
+     bill: the New Progressive Party 0.92 and the Uplift Alliance 0.95 for,
+     the Congregational Democratic Alliance -0.55 and One-G -0.77 against,
+     and the governing party 0.02 — split down the middle on the bill it
+     inherited, which is the premise of the whole campaign.
+
+     NO LIST, still, and deliberately against the branch this came from,
+     which introduced `const AXES = [...]` in the engine. The axes ARE
+     whatever dimensions a party and a bill both declare a position on: add
+     `housing` to both and it counts, add it to neither and nothing here
+     notices. An engine that names the dimensions is an engine that has to
+     be edited to add content, which is the one architectural rule. */
   function axisAgreement(partyAxes, billAxes) {
-    let score = 0, counted = 0;
-    /* NO LIST AT ALL, which is better than reading one from content: the
-       axes ARE whatever dimensions a party and a bill both declare a
-       position on. Add `housing` to both and it counts; add it to neither
-       and nothing here notices. The engine cannot name a dimension it has
-       never been told about, which is the rule working rather than being
-       enforced. */
+    let score = 0, counted = 0, magP = 0, magB = 0;
     Object.keys(partyAxes || {}).forEach(a => {
-      if (billAxes[a] == null || partyAxes[a] == null) return;
+      const pa = partyAxes[a], ba = (billAxes || {})[a];
+      if (pa == null || ba == null) return;
+      /* A string on either side means content has not been converted yet.
+         Fall back to equality rather than producing NaN and poisoning every
+         score that shares the denominator. */
+      if (typeof pa !== "number" || typeof ba !== "number") {
+        counted++; score += (pa === ba) ? 1 : -1; return;
+      }
       counted++;
-      score += (partyAxes[a] === billAxes[a]) ? 1 : -1;
+      score += pa * ba; magP += pa * pa; magB += ba * ba;
     });
-    return counted ? score / counted : 0;   // -1 .. +1
+    if (!counted) return 0;
+    /* Both at dead centre on every shared axis: no direction to compare, so
+       no agreement either way rather than a divide by zero. */
+    const m = Math.sqrt(magP) * Math.sqrt(magB);
+    return m ? score / m : 0;   // -1 .. +1
   }
 
   /* `detail`, if given, is filled with the per-current working — but ONLY
@@ -3190,6 +3306,14 @@ const Engine = (function () {
     priceBelow:     (st, v) => Object.keys(v).every(k => st.prices[k] < v[k]),
     capitalAbove:   (st, v) => Object.keys(v).every(k => (st.capital[k] || 0) > v[k]),
     capitalBelow:   (st, v) => Object.keys(v).every(k => (st.capital[k] || 0) < v[k]),
+    /* §7.10, so content can gate on the productive economy and not only on
+       the cost of existing. A save being migrated has no economy for the
+       instant before the guard runs, so an absent one answers false rather
+       than throwing. */
+    economyAbove:   (st, v) => !!st.economy &&
+      Object.keys(v).every(k => st.economy[k] > v[k]),
+    economyBelow:   (st, v) => !!st.economy &&
+      Object.keys(v).every(k => st.economy[k] < v[k]),
     slotsLeft:      (st, v) => (st.slots.total - st.slots.used) >= v,
     /* Conditions are not under the twenty-verb cap (§15.5), so the world
        may be read in as many ways as content needs. */
@@ -3451,6 +3575,18 @@ const Engine = (function () {
           st.log.unshift({ sitting: st.sitting, text:
             "IGNORED: a move effect named no such target: " + key + "." });
       }
+    }),
+
+    /* §7.10. `private` is a share and clamps to 0..1; the other two are
+       indices and clamp the way a price does. Its own verb rather than a
+       move namespace because an economy is not a scalar: participation is
+       a per cent of adults and trade is an index at 100, and banding
+       either against the 0..100 scalar scale would misreport every
+       effect. */
+    economy: (st, C, v) => Object.keys(v).forEach(k => {
+      if (!st.economy) return;
+      if (k === "private") st.economy.private = clamp(st.economy.private + v[k], 0, 1);
+      else st.economy[k] = clamp((st.economy[k] || 0) + v[k], 0, 300);
     }),
 
     law: (st, C, v) => Object.assign(st.law, v),
@@ -4497,6 +4633,42 @@ const Engine = (function () {
       const h = st.priceHistory[k] || (st.priceHistory[k] = []);
       h.push(P[k]); if (h.length > 60) h.shift();
     });
+
+    /* THE PRODUCTIVE ECONOMY DRIFTS OFF THE PRICES AND THE LAW (§7.10).
+
+       Participation rises when fork-labour is dear and building is cheap. A
+       low divergence threshold turns invisible instance-hours into counted
+       jobs — roughly 380,000 of them — which is the largest single
+       intervention in this labour market anyone has contemplated, and
+       nobody in the chamber discusses it in those terms (textbook ch. 5).
+
+       Trade answers to transit costs, to the substrate price (compute is
+       the export everyone else wants), and to how closurist the settlement
+       is. Autarky is resilient and poor.
+
+       `closure_target` is not a law key yet — the federal settlement that
+       would create one is a bill nobody has written — so the term reads
+       zero until it exists rather than being left out and forgotten. */
+    const E = st.economy;
+    if (E) {
+      const forkRatio = (st.law.divergence_threshold_hours || 168) / 168;
+      const buildCost = (P.volume + P.transit) / 200;
+      E.participation = clamp(E.participation + drift(E.participation,
+        39 + (1 - forkRatio) * 12 - (buildCost - 1) * 15), 18, 62);
+
+      const closurism = st.law.closure_target ? st.law.closure_target * 24 : 0;
+      E.trade = clamp(E.trade + drift(E.trade,
+        100 + (100 - P.transit) * 0.4 + (100 - P.substrate) * 0.35 - closurism), 40, 190);
+
+      E.participation = Math.round(E.participation * 10) / 10;
+      E.trade = Math.round(E.trade * 10) / 10;
+      st.economyHistory = st.economyHistory ||
+        { participation: [], trade: [] };
+      ["participation", "trade"].forEach(k => {
+        const h = st.economyHistory[k] || (st.economyHistory[k] = []);
+        h.push(E[k]); if (h.length > 60) h.shift();   /* same window as prices */
+      });
+    }
 
     /* CONSUMABLES IS CLOSURE, NATIONALLY. §7.2 makes the closure ratio the
        sovereignty number — the fraction of a habitat's material cycle it

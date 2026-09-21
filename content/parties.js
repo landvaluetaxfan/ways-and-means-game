@@ -25,14 +25,14 @@ const PARTIES = [
     leader:"flash", logo:"cu.png", wordmark:"cu_mark.png",
     seats:{district:48,list:25,functional:9},
     kind:"national", loyalty:62,
-    axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:null},
+    axes:{economic:-0.75, authority:-0.4, personhood:-0.55, sovereignty:0.5, trade:-0.35},
     note:"Old left. Embodied maintenance labour, and the strike weapon." },
 
   { id:"cl",  name:"Liberal Party",                short:"LIB", colour:"var(--p-cl)",
     leader:"watkins", logo:"cl.png", wordmark:"cl_mark.png",
     seats:{district:22,list:19,functional:6},
     kind:"national", loyalty:20,
-    axes:{ownership:"private",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
+    axes:{economic:0.7, authority:-0.1, personhood:0.6, sovereignty:0.75, trade:0.9},
     note:"Cosmopolitan market party. Elevator and shipping money." },
 
   { id:"psa", name:"New Progressive Party",        short:"NPP", colour:"var(--p-psa)",
@@ -40,35 +40,35 @@ const PARTIES = [
     aliases:["Substrate Left"],
     seats:{district:6,list:28,functional:2},
     kind:"national", loyalty:41,
-    axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
+    axes:{economic:-0.8, authority:-0.3, personhood:0.85, sovereignty:0.6, trade:0.55},
     note:"List-tier strength, almost no districts. Shares your economics, despises your personhood line." },
 
   { id:"sc",  name:"Home Rule",                    short:"HR",  colour:"var(--p-sc)",
     leader:"laughon", logo:"sc.png", wordmark:"sc_mark.png",
     seats:{district:26,list:8,functional:0},
     kind:"national", loyalty:35,
-    axes:{ownership:null,personhood:null,sovereignty:"station",closure:"closurist"},
+    axes:{economic:-0.1, authority:-0.5, personhood:0, sovereignty:-0.9, trade:-0.75},
     note:"Confederalist. Cannot whip its own members." },
 
   { id:"hul", name:"Association of Engineers and Systems", short:"AES", colour:"var(--p-hul)",
     leader:"wilde_hayward", logo:"hul.png", wordmark:"hul_mark.png",
     seats:{district:9,list:6,functional:7},
     kind:"national", loyalty:15,
-    axes:{ownership:null,personhood:"restrictionist",sovereignty:null,closure:"closurist"},
+    axes:{economic:0, authority:0.95, personhood:-0.6, sovereignty:0.1, trade:-0.6},
     note:"Habitat as lifeboat. Engineering authority supreme." },
 
   { id:"rv",  name:"Congregational Democratic Alliance", short:"CDA", colour:"var(--p-rv)",
     leader:"park", logo:"rv.png", wordmark:"rv_mark.png",
     seats:{district:12,list:5,functional:1},
     kind:"national", loyalty:23,
-    axes:{ownership:null,personhood:"restrictionist",sovereignty:null,closure:null},
+    axes:{economic:-0.45, authority:-0.2, personhood:-0.9, sovereignty:0, trade:-0.1},
     note:"Continuity of soul. A copy is not the person. Economically left, culturally immovable." },
 
   { id:"fh",  name:"Freehold Party",               short:"FH",  colour:"var(--p-fh)",
     leader:"bluespan", logo:"fh.png", wordmark:"fh_mark.png",
     seats:{district:8,list:3,functional:6},
     kind:"national", loyalty:12,
-    axes:{ownership:"private",personhood:"restrictionist",sovereignty:"station",closure:null},
+    axes:{economic:0.9, authority:-0.25, personhood:-0.4, sovereignty:-0.6, trade:0.3},
     note:"Volume owners. Property absolutists." },
 
   { id:"gb",  name:"Alliance of Business and Government", short:"ABG", colour:"var(--p-gb)",
@@ -76,21 +76,21 @@ const PARTIES = [
     aliases:["Guild Bench"],
     seats:{district:0,list:0,functional:9},
     kind:"professional", loyalty:30,
-    axes:{ownership:null,personhood:"restrictionist",sovereignty:"federal",closure:"closurist"},
+    axes:{economic:0.15, authority:0.85, personhood:-0.5, sovereignty:0.4, trade:-0.4},
     note:"Exists only in the functional tier. It does not campaign and cannot be voted out." },
 
   { id:"des", name:"One-G",                        short:"ONE", colour:"var(--p-des)",
     leader:"edelstein_powell", logo:"des.png", wordmark:"des_mark.png",
     seats:{district:3,list:1,functional:0},
     kind:"national", loyalty:18,
-    axes:{ownership:null,personhood:"restrictionist",sovereignty:null,closure:null},
+    axes:{economic:-0.2, authority:-0.15, personhood:-0.7, sovereignty:-0.3, trade:-0.2},
     note:"Gravity as birthright. Draws the physiologically excluded." },
 
   { id:"geo", name:"Single Tax Party",             short:"STP", colour:"var(--p-geo)",
     leader:"wheeler", logo:"geo.png", wordmark:"geo_mark.png",
     seats:{district:0,list:3,functional:0},
     kind:"national", loyalty:66,
-    axes:{ownership:null,personhood:null,sovereignty:"federal",closure:null},
+    axes:{economic:0.05, authority:0.2, personhood:0.1, sovereignty:0.7, trade:0.6},
     /* No carve-out: a national ideological party with no district roots and
        no category to protect. It lives or dies on the threshold every time,
        which is exactly the party 4.8 says will agonise just below the line. */
@@ -106,7 +106,7 @@ const PARTIES = [
        the case that carve-out was written for — and the exemption is itself
        permanently contested, which is the point of having it. */
     carve_out:"category",
-    axes:{ownership:"public",personhood:"expansionist",sovereignty:null,closure:null},
+    axes:{economic:-0.6, authority:-0.35, personhood:0.95, sovereignty:0.3, trade:0.4},
     note:"Two seats. Permanently kingmaker-adjacent. Price is always the same thing. "+
          "Exempt from the list threshold under the single-category carve-out, which "+
          "half the chamber would repeal tomorrow." },
@@ -126,13 +126,13 @@ const PARTIES = [
    drifts far enough simply becomes a party in the list above. */
 const CURRENTS = [
   { id:"cu_maintenance", party:"cu", name:"Maintenance bloc",     members:31, loyalty:29,
-    axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:"closurist"} },
+    axes:{economic:-0.85, authority:-0.35, personhood:-0.8, sovereignty:0.4, trade:-0.6} },
   { id:"cu_loyalists",   party:"cu", name:"Leadership loyalists",  members:22, loyalty:88,
-    axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:null} },
+    axes:{economic:-0.7, authority:-0.4, personhood:-0.4, sovereignty:0.55, trade:-0.25} },
   { id:"cu_deck",        party:"cu", name:"Deck cooperativists",   members:18, loyalty:54,
-    axes:{ownership:"public",personhood:"restrictionist",sovereignty:"station",closure:"closurist"} },
+    axes:{economic:-0.7, authority:-0.55, personhood:-0.5, sovereignty:-0.4, trade:-0.85} },
   { id:"cu_halloran",    party:"cu", name:"Czarnecki group",        members:11, loyalty:12,
-    axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:"closurist"} },
+    axes:{economic:-0.9, authority:-0.5, personhood:-0.35, sovereignty:0.2, trade:-0.5} },
 
   /* THE RENAMED PARTIES' ARGUMENTS (T7, design/24 B1). A party with no
      internal current is a bloc that votes, and these three names imply an
@@ -143,9 +143,9 @@ const CURRENTS = [
      deed. The Title Caucus wants the Commonwealth to enforce title; the
      Section Leagues want the station's own law and nothing federal near it. */
   { id:"fh_title",     party:"fh", name:"The Title Caucus",        members:6, loyalty:38,
-    axes:{ownership:"private",personhood:"restrictionist",sovereignty:"federal",closure:null} },
+    axes:{economic:0.95, authority:-0.1, personhood:-0.45, sovereignty:0.35, trade:null} },
   { id:"fh_section",   party:"fh", name:"The Section Leagues",     members:5, loyalty:50,
-    axes:{ownership:"private",personhood:null,sovereignty:"station",closure:null} },
+    axes:{economic:0.85, authority:-0.4, personhood:null, sovereignty:-0.85, trade:null} },
 
   /* THE CDA: a church and a coalition partner, and the two argue. The
      congregations made the party and voted the conference 71-29 against the
@@ -153,16 +153,16 @@ const CURRENTS = [
      partner, which is why its members absented themselves rather than
      divide against the leadership in public (8.5). */
   { id:"rv_congregation", party:"rv", name:"The Congregations",     members:11, loyalty:62,
-    axes:{ownership:null,personhood:"restrictionist",sovereignty:null,closure:null} },
+    axes:{economic:null, authority:-0.15, personhood:-0.95, sovereignty:null, trade:null} },
   { id:"rv_ministerial",  party:"rv", name:"The Ministerial wing",  members:6, loyalty:40,
-    axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:null} },
+    axes:{economic:-0.55, authority:-0.2, personhood:-0.8, sovereignty:0.45, trade:null} },
 
   /* UPLIFT: two seats and one question, whether they are there to witness or
      to trade. Each current is one of the two members. */
   { id:"upl_witness", party:"upl", name:"The Witness Caucus",       members:1, loyalty:70,
-    axes:{ownership:"public",personhood:"expansionist",sovereignty:null,closure:null} },
+    axes:{economic:-0.7, authority:-0.5, personhood:1, sovereignty:null, trade:null} },
   { id:"upl_bridge",  party:"upl", name:"The Bridge Caucus",        members:1, loyalty:50,
-    axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"} },
+    axes:{economic:-0.5, authority:-0.2, personhood:0.85, sovereignty:0.6, trade:0.7} },
 
   /* THE INDEPENDENTS (T14, design/26 #15 as amended). Six district
      members with no caucus, no whip and no leader, and six different
@@ -176,17 +176,17 @@ const CURRENTS = [
      player has to NOTICE in a division list rather than read on a rostrum.
      The other three share nothing with each other or with the bloc. */
   { id:"ind_grimsby",   party:"ind", name:"Homestead A",         members:1, loyalty:68,
-    axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:"closurist"} },
+    axes:{economic:-0.4, authority:-0.1, personhood:-0.5, sovereignty:0.3, trade:-0.7} },
   { id:"ind_kirilenko", party:"ind", name:"Clearmont & Sowerby", members:1, loyalty:55,
-    axes:{ownership:"public",personhood:"expansionist",sovereignty:"station",closure:"integrationist"} },
+    axes:{economic:-0.45, authority:-0.45, personhood:0.7, sovereignty:-0.65, trade:0.8} },
   { id:"ind_vasquez",   party:"ind", name:"Stanbridge",          members:1, loyalty:62,
-    axes:{ownership:null,personhood:"restrictionist",sovereignty:"federal",closure:"closurist"} },
+    axes:{economic:null, authority:0.15, personhood:-0.6, sovereignty:0.4, trade:-0.75} },
   { id:"ind_kettering", party:"ind", name:"Colonnade",           members:1, loyalty:70,
-    axes:{ownership:null,personhood:null,sovereignty:"station",closure:"closurist"} },
+    axes:{economic:null, authority:-0.2, personhood:null, sovereignty:-0.8, trade:-0.8} },
   { id:"ind_castellan", party:"ind", name:"Wrenfield-Aubrey",    members:1, loyalty:74,
-    axes:{ownership:null,personhood:null,sovereignty:"station",closure:"closurist"} },
+    axes:{economic:null, authority:-0.3, personhood:null, sovereignty:-0.75, trade:-0.85} },
   { id:"ind_merrick",   party:"ind", name:"John Henry",          members:1, loyalty:66,
-    axes:{ownership:"public",personhood:"restrictionist",sovereignty:"station",closure:"closurist"} }
+    axes:{economic:-0.55, authority:-0.25, personhood:-0.65, sovereignty:-0.7, trade:-0.9} }
 ];
 
 

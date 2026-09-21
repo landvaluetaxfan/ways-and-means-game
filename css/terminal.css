@@ -1520,6 +1520,9 @@ img.dith{display:block;}
 .plab{font-size:11.5px;line-height:1.2;}
 .plab em{display:block;font-style:normal;font-size:9.5px;color:var(--ink-soft);}
 .sparkline{background:var(--field);border:1px solid var(--chrome-dk);display:block;}
+/* An axis position is a word now ("strongly public"), not a number, so it
+   reads in the prose face rather than the data face and wraps if it must. */
+.pval.axpos{font-family:var(--f-ui);font-size:11.5px;line-height:1.25;}
 .pval{font-family:var(--f-data);font-size:14px;text-align:right;line-height:1;}
 .pval span{display:block;font-size:10px;color:var(--ink-soft);}
 .pval.up{color:var(--alert);}
