@@ -23,6 +23,11 @@ const SETUP = {
   /* HOW OFTEN THE CHARTER LETS A GOVERNMENT APPOINT TO ONE BOARD
      (bible §4.6.4). Two is a fight; unlimited is a cheat code. */
   boardCap: 2,
+  /* HOW FAR EARTH WILL GO. Beyond this its banks stop lending to this
+     government, whatever the rate (bible §7.5.2: underwriting prices
+     everything continuously, and it prices a government it does not
+     believe in out of the market). */
+  borrowCap: 60000,
   law: { divergence_threshold_hours:168, civic_clock_minimum:0,
          suspension_debt_accrual:true, substrate_public_share:0.35, shed_order_authority:"engineering_authority",
          /* THE APPROPRIATION'S FINGERPRINT ON THE MARKET (design/13 §2.3,

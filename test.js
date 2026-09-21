@@ -1558,6 +1558,75 @@ console.log("\nTHE ANNEXATION ACT CAN BE CARRIED:");
   if (bad) { console.log("\n" + bad + " ANNEXATION ACT FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nBORROWING FROM THE PEOPLE YOU ARE QUARRELLING WITH:");
+(function(){
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  /* \u00a77.5.3 makes the currency the thermal quota and the treasury the state's
+     holding of it, so there is no central bank to print anything: a state
+     that wants more quota than it holds must get it from somebody who has
+     some. That is Earth, and `friction` IS Earth's governments and banks. */
+  const st = Engine.newGame(CONTENT);
+  ok("the Commonwealth starts owing nothing", Engine.debtOf(st) === 0);
+  const r0 = Engine.debtRate(st);
+  ok("and the rate is the quarrel", r0 > 0,
+     r0 + " per cent at friction " + st.scalars.friction);
+
+  const hot = Engine.newGame(CONTENT);
+  hot.scalars.friction = 90;
+  ok("a government at war with Earth borrows dearer", Engine.debtRate(hot) > r0,
+     r0 + " -> " + Engine.debtRate(hot));
+
+  const solv = st.scalars.solvency, fr = st.scalars.friction, sl = st.slots.used;
+  const b = Engine.borrow(st, CONTENT, 10000);
+  ok("it can borrow", b && b.ok === true, b && b.reason);
+  ok("and the money arrives", st.scalars.solvency === solv + 10000,
+     solv + " -> " + st.scalars.solvency);
+  ok("and it is owed", Engine.debtOf(st) === 10000);
+  ok("it costs order-paper time (\u00a77.7)", st.slots.used === sl + 1);
+  ok("and Earth notices", st.scalars.friction > fr, fr + " -> " + st.scalars.friction);
+
+  /* AND IT IS NOT A DEFAULT MECHANIC. \u00a77.6: a government that runs out does
+     not default, it sheds people. Debt moves solvency from later to now. */
+  const svc = Engine.debtService(st);
+  ok("the debt is serviced every sitting", svc > 0, svc + " a sitting");
+  const before = st.scalars.solvency;
+  Engine.advance(st, CONTENT);
+  const rec = Engine.receipts(st).total;
+  ok("out of the same purse the receipts go into",
+     st.scalars.solvency === before + rec - Engine.debtService(st) ||
+     Math.abs(st.scalars.solvency - (before + rec - svc)) <= 1,
+     before + " + " + rec + " - " + svc + " = " + st.scalars.solvency);
+
+  const rp = Engine.repay(st, CONTENT, 4000);
+  ok("and it can be repaid", rp && rp.ok === true && Engine.debtOf(st) === 6000,
+     Engine.debtOf(st) + " still owed");
+
+  const cap = CONTENT.setup.borrowCap;
+  const over = Engine.canBorrow(st, CONTENT, cap + 1);
+  ok("Earth will not lend past its cap", over.ok === false, over.reason);
+
+  /* THERE IS NO INFLATION SCALAR and there should not be: \u00a77.9 makes the four
+     prices the cost of existing, and a fifth number summarising them is the
+     .sel mistake. This is a READING of the four, derived in one place. */
+  const fresh2 = Engine.newGame(CONTENT);
+  ok("inflation opens at nothing, because nothing has moved yet",
+     Math.abs(Engine.inflation(fresh2)) < 0.05, Engine.inflation(fresh2) + "%");
+  Object.keys(fresh2.prices).forEach(k => { fresh2.prices[k] = fresh2.prices[k] * 1.2; });
+  ok("and reads the four prices against where they opened",
+     Engine.inflation(fresh2) > 15 && Engine.inflation(fresh2) < 25,
+     Engine.inflation(fresh2) + "% after a fifth on every price");
+
+  const old = Engine.newGame(CONTENT);
+  delete old.debt;
+  ok("a save from before the power owes nothing",
+     Engine.debtOf(Engine.load(Engine.save(old), CONTENT)) === 0);
+
+  if (bad) { console.log("\n" + bad + " DEBT FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nTHE LICENSING BOARDS:");
 (function(){
   let bad = 0;

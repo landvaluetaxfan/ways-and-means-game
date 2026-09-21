@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 24;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard
+  const STATE_VERSION = 25;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard
 
   /* ---------------------------------------------------------
      1. STATE
@@ -395,6 +395,12 @@ const Engine = (function () {
          existed: no board has been appointed to, because none could be. */
       if (!st.boards) st.boards = {};
       st.version = 24;
+    }
+    if (st.version < 25) {                    // the Earth debt
+      /* Nought is the truth for a save written before the power to borrow
+         existed: nothing was owed, because nothing could be. */
+      if (!st.debt) st.debt = { principal: 0 };
+      st.version = 25;
     }
     return st;
   }
@@ -4271,6 +4277,108 @@ const Engine = (function () {
     return { rows: rows, total: rows.reduce((a, r) => a + r.yield, 0) };
   }
 
+  /* =========================================================
+     DEBT, THE RATE, AND WHAT THE UNDERWRITERS THINK.
+
+     WHO LENDS TO THE COMMONWEALTH. Not itself: §7.5.3 makes the currency the
+     thermal quota and the treasury the state's holding of it, so there is no
+     central bank to print anything — a state that wants more quota than it
+     holds has to get it from somebody who has some. That is Earth, and
+     `friction` is defined as "Earth's governments and banks against you". So
+     the Commonwealth borrows from the people it is quarrelling with, and the
+     price of the money is the state of the quarrel.
+
+     THE RATE IS THE QUARREL, then, and it is derived rather than stored:
+     four points, plus a point for every ten of friction. A government at
+     peace with Earth borrows at four and one at war with it borrows at
+     fourteen. Nothing else sets it, which is the point.
+
+     AND IT IS NOT A DEFAULT MECHANIC. §7.6 is explicit: a government that
+     runs out does not default, it sheds people. Debt does not add a failure
+     state; it moves solvency from later to now and charges for the move.
+
+     THERE IS NO INFLATION SCALAR, and there should not be: §7.9 makes the
+     four scarcity prices the cost of existing, and a fifth number claiming
+     to summarise them is the .sel mistake. `inflation` below is a READING of
+     those four against where they opened — one figure, derived in one place,
+     owned by nobody. */
+  const BASE_RATE = 4;
+
+  function debtRate(st) {
+    return BASE_RATE + Math.round((st.scalars.friction || 0) / 10);
+  }
+
+  function debtOf(st) { return (st.debt && st.debt.principal) || 0; }
+
+  /* What the debt costs every sitting, in the unit everything else is in. */
+  function debtService(st) {
+    const p = debtOf(st);
+    if (!p) return 0;
+    return Math.round(p * (debtRate(st) / 100) / 12);   /* a sitting, not a year */
+  }
+
+  function canBorrow(st, C, amount) {
+    const n = Math.max(0, Math.round(amount || 0));
+    if (!n) return { ok: false, reason: "nothing to borrow" };
+    const cap = (C.setup && C.setup.borrowCap) == null ? 60000 : C.setup.borrowCap;
+    if (debtOf(st) + n > cap)
+      return { ok: false, reason: "Earth's banks will not go past " + cap.toLocaleString() +
+                                  " with this government" };
+    if (st.slots.used >= st.slots.total)
+      return { ok: false, reason: "no order-paper time left this session" };
+    return { ok: true };
+  }
+
+  function borrow(st, C, amount) {
+    const gate = canBorrow(st, C, amount);
+    if (!gate.ok) return gate;
+    const n = Math.max(0, Math.round(amount));
+    st.debt = st.debt || { principal: 0 };
+    st.debt.principal += n;
+    st.scalars.solvency = (st.scalars.solvency || 0) + n;
+    st.slots.used += 1;
+    /* BORROWING FROM EARTH IS A POLITICAL ACT, and the House reads it as one. */
+    st.scalars.friction = clamp((st.scalars.friction || 0) + 5, 0, 100);
+    st.scalars.legitimacy = clamp((st.scalars.legitimacy || 0) - 3, 0, 100);
+    st.log.unshift({ sitting: st.sitting,
+      text: "Borrowed " + n.toLocaleString() + " MW-years against the quota, at " +
+            debtRate(st) + " per cent." });
+    st.wire = st.wire || [];
+    st.wire.unshift({ sitting: st.sitting,
+      text: "COMMONWEALTH RAISES " + n.toLocaleString() +
+            " ON EARTH MARKETS AT " + debtRate(st) + " PER CENT" });
+    return { ok: true, borrowed: n, rate: debtRate(st) };
+  }
+
+  function repay(st, C, amount) {
+    const p = debtOf(st);
+    if (!p) return { ok: false, reason: "the Commonwealth owes nothing" };
+    const n = Math.min(p, Math.max(0, Math.round(amount || 0)),
+                       st.scalars.solvency || 0);
+    if (!n) return { ok: false, reason: "nothing it can pay" };
+    st.debt.principal -= n;
+    st.scalars.solvency -= n;
+    st.scalars.legitimacy = clamp((st.scalars.legitimacy || 0) + 2, 0, 100);
+    st.log.unshift({ sitting: st.sitting,
+      text: "Repaid " + n.toLocaleString() + " MW-years of the Earth debt." });
+    return { ok: true, repaid: n };
+  }
+
+  /* THE FOUR PRICES, AS ONE READING. Against where each opened, weighted
+     evenly because the goods are not substitutes: a household pays all four. */
+  function inflation(st) {
+    const keys = Object.keys(st.prices || {});
+    if (!keys.length) return 0;
+    let sum = 0, n = 0;
+    keys.forEach(k => {
+      const hist = (st.priceHistory || {})[k] || [];
+      const base = hist.length ? hist[0] : 100;
+      if (!base) return;
+      sum += (st.prices[k] - base) / base; n++;
+    });
+    return n ? Math.round(sum / n * 1000) / 10 : 0;   /* a percentage, one decimal */
+  }
+
   function tick(st, C) {
     const P = st.prices, marks = [];
 
@@ -4371,8 +4479,13 @@ const Engine = (function () {
        effect spending it. See the Ways and Means note above tick(). */
     (function () {
       const r = receipts(st);
-      if (!r.total) return;
-      st.scalars.solvency = Math.max(0, (st.scalars.solvency || 0) + r.total);
+      /* AND THE DEBT IS SERVICED OUT OF THE SAME PURSE, before anything else
+         is done with it. A government that has borrowed is paying Earth
+         every sitting whether it thinks about it or not. */
+      const owed = debtService(st);
+      const net = r.total - owed;
+      if (!net) return;
+      st.scalars.solvency = Math.max(0, (st.scalars.solvency || 0) + net);
     })();
 
     /* TRENDS APPLY AFTER THE MARKETS MOVE, so the same sitting shows both
@@ -5518,6 +5631,7 @@ const Engine = (function () {
     vacateSeat, crossFloor, byElection, generalElection, shares, swungShares,
     divisorAllocate,
     packBoard, canPackBoard, boardsMoved, boardsTotal,
+    borrow, repay, canBorrow, debtOf, debtRate, debtService, inflation,
     reshuffle, canReshuffle, resolveMotion, motionDeadline,
     standingIn, bandsOf, bandWeight, syncStanding, assent, presidentDecides, referralRisk, reviewReturns,
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
