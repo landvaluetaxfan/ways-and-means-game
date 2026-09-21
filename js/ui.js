@@ -4196,6 +4196,93 @@ const UI = (function () {
     const s = (C.settlements || []).find(x => x.id === id);
     return s ? s.name : String(id).replace(/_/g, " ");
   }
+  /* THE LAST BOARD, AS A SET PIECE (design/31's third use).
+
+     The frame was built for three things — the long-form event, the
+     introduction, and the last page after the count — and only two of them
+     used it. The board was a panel among panels, which is the wrong shape
+     for the one page in a run that is a RECORD rather than a control: it is
+     read once, it offers exactly one way forward, and there is nothing
+     underneath it to do.
+
+     THE MOOD IS RETURNED AND NOT CUED, like every other set piece, because
+     sound comes from user actions and engine effects and never from a draw.
+     The caller cues it on the action that ended the run. */
+  function endMood(end) {
+    if (end.kind === "loss") return "grave";
+    if (end.kind === "election" && end.result) {
+      const r = end.result;
+      if ((r.held || 0) > (r.was || 0)) return "triumph";
+      if ((r.held || 0) < (r.was || 0)) return "sombre";
+      return "moment";
+    }
+    if (end.kind === "settlement" && end.settlement)
+      return end.settlement.terminal === false ? "sombre" : "moment";
+    return "moment";
+  }
+
+  function endPiece(end) {
+    const seatLine = map => Object.keys(map || {}).sort((a, b) => map[b] - map[a])
+      .map(id => ps(id) + " " + map[id]).join(" · ");
+    const secs = [];
+    let title;
+
+    if (end.kind === "election" && end.result) {
+      const r = end.result, was = r.was || 0, held = r.held || 0;
+      title = "The Commonwealth has voted";
+      secs.push({ kind: "lede", body:
+        "The government went to the country with " + was + " seat" + (was === 1 ? "" : "s") +
+        " and came back with " + held + ". " +
+        (held > was ? "It gained." : held < was ? "It lost." : "It held where it stood.") });
+      secs.push({ kind: "document", head: "The House it returns",
+                  body: seatLine(r.after), source: "Return of the writs" });
+    } else if (end.kind === "settlement" && end.settlement) {
+      title = end.settlement.name;
+      secs.push({ kind: "lede", body: end.settlement.closing ||
+                                      end.settlement.summary || "" });
+    } else {
+      title = "The government has fallen";
+      secs.push({ kind: "lede", body: end.reason
+        ? "It lost the House: " + end.reason + "."
+        : "It lost the House." });
+    }
+
+    if (st.settledAs)
+      secs.push({ kind: "body", head: "What the session settled",
+                  body: settlementName(st.settledAs) + "." });
+    if (st.resolvedAs)
+      secs.push({ kind: "body", head: "How the crisis resolved",
+                  body: settlementName(st.resolvedAs) + "." });
+
+    /* WHAT THE GOVERNMENT DID TO THE COUNTRY, which is the thing a player
+       wants at the end and which no board has ever printed: where it was
+       liked and where it was not, band by band. */
+    if (st.standing && Engine.bandsOf) {
+      const bands = Engine.bandsOf(C);
+      if (bands.length) secs.push({ kind: "document", head: "Where it stood, at the end",
+        body: bands.map(b => bandName(b) + " " + st.standing[b]).join(" · "),
+        source: "Standing by band, against " + st.scalars.public_standing + " nationally" });
+    }
+
+    /* AND WHAT IT WILL BE REMEMBERED FOR. Appointments to a licensing board
+       are the one act this government takes that an opposition runs an
+       election on, so they are named here whether or not anybody noticed at
+       the time. */
+    if (Engine.boardsTotal && Engine.boardsTotal(st) > 0)
+      secs.push({ kind: "body", head: "On the record",
+        body: "This government made " + Engine.boardsTotal(st) +
+              " appointment" + (Engine.boardsTotal(st) === 1 ? "" : "s") +
+              " to licensing boards, changing who was entitled to vote in " +
+              "the constituencies concerned." });
+
+    secs.push({ kind: "body", head: "The record",
+      body: st.log.length + " entries, sitting " + st.sitting + ", session " + st.session +
+            ". Every decision is on the Record tab, where it can be read and taken " +
+            "away, and nothing here can be taken back." });
+
+    return { title: title, sections: secs, mood: endMood(end) };
+  }
+
   function endBoardHTML(end) {
     const seatsOf = map => Object.keys(map || {}).sort((a, b) => map[b] - map[a])
       .map(id => `${mark(id)}${esc(ps(id))} ${map[id]}`).join(" &middot; ");
@@ -4311,7 +4398,20 @@ const UI = (function () {
        sittings with the Rise button still live. The board comes BEFORE the
        event draw: a run that has ended has no business offering a decision. */
     const ending = Engine.checkEnd(st, C);
-    if (ending.over) { box.innerHTML = endBoardHTML(ending); return; }
+    if (ending.over) {
+      /* THE FRAME, WHERE THERE IS ONE. SetPiece is optional everywhere else
+         it is used and is optional here too: a build without it still gets
+         the board, which is the same facts in a panel. */
+      const sitEnd = $("#s-sit");
+      if (typeof SetPiece !== "undefined" && SetPiece.html) {
+        box.innerHTML = SetPiece.html({ setpiece: endPiece(ending) }).html;
+        if (sitEnd) sitEnd.classList.add("setpiece");
+      } else {
+        box.innerHTML = endBoardHTML(ending);
+        if (sitEnd) sitEnd.classList.remove("setpiece");
+      }
+      return;
+    }
     if (!currentEvent) currentEvent = Engine.nextEvent(st, C);
     /* A SET PIECE TAKES THE SCREEN (design/31). The class collapses the
        columns either side; the prose becomes the page and the decision rows

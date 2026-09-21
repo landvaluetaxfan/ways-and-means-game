@@ -129,7 +129,34 @@ try {
        !!w.document.querySelector("#party-table tr.sel"));
   }
 
-  /* THE TRANSCRIPT A TESTER TAKES AWAY. Asserted because the first version of
+  /* THE LAST PAGE IS A SET PIECE (design/31's third use). The frame was built
+   for three things and only two used it; the board was a panel among panels,
+   which is the wrong shape for the one page in a run that is a RECORD rather
+   than a control. Driven to an ending and read back off the glass, because a
+   page that renders blank is invisible to every static check. */
+try {
+  const st = w.eval("UI.state()");
+  /* end it the way the House does */
+  /* the introduction is drawn before the ending, and correctly so — mark it
+     read the way taking office does, or the page under test is the intro */
+  w.eval("(function(){var s=UI.state(); s.flags._introRead=true;" +
+         "s.noConfidence={at:s.sitting,have:0,need:141};" +
+         "UI.boot(s, CONTENT);})()");
+  w.document.querySelector('.tab[data-t="sit"]').click();
+  const page = w.document.querySelector("#sitting-body .sp-page");
+  ok("a finished run draws the last page as a set piece", !!page);
+  const sit = w.document.querySelector("#s-sit");
+  ok("and the screen wears the set-piece class, so the columns give way",
+     !!sit && sit.classList.contains("setpiece"));
+  const text = page ? page.textContent : "";
+  ok("it names what happened", /fallen|voted|confidence/i.test(text),
+     text.slice(0, 60));
+  ok("and it carries the record", /Record tab/.test(text));
+  ok("and it offers no decision, because there is nothing left to decide",
+     w.document.querySelectorAll("#sitting-body button[data-choice]").length === 0);
+} catch (e) { ok("the last page", false, e.message); }
+
+/* THE TRANSCRIPT A TESTER TAKES AWAY. Asserted because the first version of
    it called two engine functions with signatures it had guessed at, threw,
    and took every renderer AFTER it in drawAll down with it \u2014 the visible
    symptom was the chamber drawing zero seats, three renderers away. A
