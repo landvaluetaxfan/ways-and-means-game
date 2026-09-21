@@ -287,7 +287,96 @@ const PROBE = `
   var de = document.documentElement;
   var pageX = de.scrollWidth - de.clientWidth;
 
-  done({ hits: found, tabs: drawn, pageX: pageX, vw: de.clientWidth, menu: menu });
+  /* WHICH FONT DID WE ACTUALLY MEASURE WITH.
+
+     Every measurement in this file is a width, and a width is a font. For
+     some time this runner had no Liberation Sans Narrow installed, so --f-ui
+     fell through Narrow, Arial Narrow, Arial and Helvetica to the generic and
+     landed on full-width Liberation Sans: the terminal's own face, the one
+     carrying every label and table column, was being measured 21.9% WIDER
+     than the author sees it (2562.7 against 2101.7 for a fixed test string).
+
+     Passing stayed sound, because measuring wide and finding no overflow
+     implies none when narrow. But a runner that silently measures a
+     different typeface than the player reads is reporting on a different
+     interface, and nothing said so. So each run now names the face it
+     resolved for the three stacks that matter and flags a fallback.
+
+     The width is the identity: a family name cannot be read back off a
+     computed style, so the probe measures a fixed string in the stack and in
+     each candidate, and reports the candidate it matches. */
+  function faceOf(stack) {
+    var probe = document.createElement("span");
+    probe.style.cssText = "position:absolute;left:-9999px;top:0;white-space:pre;" +
+                          "font-size:100px;font-family:" + stack;
+    probe.textContent = "The quick brown fox jumps over the lazy dog 0123456789";
+    document.body.appendChild(probe);
+    var w = probe.getBoundingClientRect().width;
+    probe.parentNode.removeChild(probe);
+    return Math.round(w * 10) / 10;
+  }
+  /* RESOLVE THE WAY CSS DOES: walk the declaration in ORDER and take the
+     first family the browser says it has. Two earlier attempts got this
+     wrong and both were instructive. Matching by width picked whichever
+     candidate in MY list happened to tie first, so --f-data resolved to
+     DejaVu Sans Mono and was then reported as having fallen back FROM
+     DejaVu Sans Mono. And widths collide: a family the box lacks measures
+     as the document default, which is Liberation Serif here, so an absent
+     "Arial Narrow" tied with a present "Liberation Serif" and won.
+
+     Declaration order needs no width at all for the identity. The width is
+     reported beside it because it is the number every finding below is
+     made of, and because two stacks resolving to the same width is worth
+     being able to see. */
+  function families(decl) {
+    return decl.split(",").map(function (x) {
+      return x.trim().replace(/^["']|["']$/g, "");
+    }).filter(Boolean);
+  }
+  var GENERIC = { "sans-serif":1, "serif":1, "monospace":1, "cursive":1,
+                  "fantasy":1, "system-ui":1 };
+  /* PRESENCE, THE ONLY WAY THAT ACTUALLY WORKS HERE. document.fonts.check
+     was the obvious tool and it is the wrong one: in this Chromium it
+     answered true for Segoe UI, Georgia and Bodoni MT, none of which the box
+     has, because it reports whether the text can be RENDERED — and with
+     fallback, it always can. So the report cheerfully named Georgia as the
+     face it had measured with.
+
+     The two-generic trick is the reliable one. Measure the family with
+     monospace behind it and again with serif behind it. Absent, it follows
+     the fallback and the two widths differ; present, the family wins both
+     times and they match. The generics differ from each other by
+     construction, so no family fools both.
+
+     (No back-ticks in this comment, and none anywhere else inside PROBE:
+     the whole probe is a template literal, so one would end it. That is
+     the same trap as the \s that once ate every letter s in here.) */
+  function have(f) {
+    if (GENERIC[f]) return true;
+    return Math.abs(faceOf('"' + f + '", monospace') -
+                    faceOf('"' + f + '", serif')) < 0.5;
+  }
+  var fonts = {};
+  var STACKS = ["--f-ui", "--f-read", "--f-sans", "--f-data", "--f-doc", "--f-disp"];
+  var rootCS = getComputedStyle(document.documentElement);
+  for (var si = 0; si < STACKS.length; si++) {
+    var decl = rootCS.getPropertyValue(STACKS[si]).trim();
+    if (!decl) { fonts[STACKS[si]] = { declared: "(not defined)" }; continue; }
+    var fam = families(decl), face = null, skipped = [];
+    for (var fi = 0; fi < fam.length; fi++) {
+      if (have(fam[fi])) { face = fam[fi]; break; }
+      skipped.push(fam[fi]);
+    }
+    fonts[STACKS[si]] = {
+      width: faceOf(decl),
+      face: face || "(none of " + fam.length + ")",
+      skipped: skipped,
+      fellBack: skipped.length > 0 || GENERIC[face] === 1
+    };
+  }
+
+  done({ hits: found, tabs: drawn, pageX: pageX, vw: de.clientWidth, menu: menu,
+         fonts: fonts });
 })();
 `;
 
@@ -320,8 +409,32 @@ console.log("LAYOUT CHECK");
 console.log("=".repeat(62));
 
 let fail = 0;
+let saidFonts = false;
 for (const [width, height] of SHAPES) {
   const r = run(width, height);
+
+  /* NAME THE FACES BEFORE THE NUMBERS, once. Every finding below is a width
+     and every width is a font, so a reader has to know which one. A stack
+     that fell back is not a failure — the runner may simply not have the
+     font a player has — but it is reported, because it means these numbers
+     describe a different typeface than the author is looking at. */
+  if (!saidFonts && r.fonts) {
+    saidFonts = true;
+    console.log("\n  measured with");
+    let fellBack = 0;
+    for (const k of Object.keys(r.fonts)) {
+      const f = r.fonts[k];
+      if (f.declared) { console.log("    " + k.padEnd(9) + " " + f.declared); continue; }
+      const note = f.skipped && f.skipped.length
+        ? "   <- no " + f.skipped.join(", ") : "";
+      console.log("    " + k.padEnd(9) + " " + String(f.face).padEnd(24) +
+                  String(f.width).padStart(8) + note);
+      if (f.fellBack) fellBack++;
+    }
+    if (fellBack) console.log("    " + fellBack +
+      " stack(s) fell back: these widths are not what a player with the named font sees");
+  }
+
   console.log("\n  " + width + "x" + height);
   if (r.error) { console.log("    FAIL " + r.error); fail++; continue; }
 

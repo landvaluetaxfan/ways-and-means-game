@@ -264,6 +264,24 @@ has until a human one arrives.
 npm run layout   # needs a real browser; measures what jsdom cannot
 ```
 
+**Install the narrow face first, or it measures the wrong interface:**
+
+```
+apt-get install -y fonts-liberation-sans-narrow
+```
+
+`--f-ui` is the terminal's own face and carries every label and table column.
+Its stack is `Liberation Sans Narrow, Arial Narrow, Arial, Helvetica,
+sans-serif`, and a runner with none of those installed falls all the way to
+the generic and measures full-width Liberation Sans — **21.9% wider** than
+the author sees (2562.7 against 2101.7 for a fixed test string). Passing
+stayed sound, since measuring wide and finding no overflow implies none when
+narrow, but the tool was reporting on a different typeface than the game
+renders and nothing said so. Every run now prints the face it resolved for
+each stack and flags a fallback, so read that block before trusting a width.
+Segoe UI, Georgia and Bodoni MT are absent here too and always will be —
+those fallbacks are expected, and the narrow one was not.
+
 `tools/laycheck.js` boots the game in headless Chromium, measures the main menu,
 walks all eight in-game tabs
 and reports content that is **clipped** (the player never sees it) or that

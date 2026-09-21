@@ -47,12 +47,21 @@
      tuned for screens. */
   --f-ui:"Liberation Sans Narrow","Arial Narrow",Arial,Helvetica,sans-serif;
   --f-read:"Segoe UI","Liberation Sans",Roboto,Helvetica,Arial,sans-serif;
-  /* Regular-width Arial, for the places where the compressed --f-ui is
-     wrong: the Concordance index is a reference work's own list of
-     titles, not government chrome, and Arial Narrow made two-hundred-odd
-     article names into a wall. Arial leads and Liberation Sans is the
-     metric-compatible stand-in where Arial is not installed. */
-  --f-sans:Arial,"Liberation Sans",Helvetica,sans-serif;
+  /* Regular-width sans, for the places where the compressed --f-ui is
+     wrong: the Concordance index is a reference work's own list of titles,
+     not government chrome, and Arial Narrow made two-hundred-odd article
+     names into a wall.
+
+     LIBERATION LEADS IN EVERY STACK HERE, and the order is not a preference.
+     Liberation Sans is a metric-compatible clone of Arial — identical
+     advance widths, so identical line breaks and column widths — and it is
+     the face installed on the Linux box that runs `npm run layout`. Arial is
+     what Windows and macOS have and Liberation is not, so BOTH stay in every
+     stack: dropping Arial for uniformity would leave those platforms falling
+     through to Helvetica or the generic, which is less uniform, not more.
+     This stack led with Arial while --f-ui led with Liberation, which was an
+     inconsistency and nothing else. */
+  --f-sans:"Liberation Sans",Arial,Helvetica,sans-serif;
   --f-data:"DejaVu Sans Mono",Consolas,"Liberation Mono","Courier New",monospace;
   --f-doc:Georgia,"Liberation Serif","Times New Roman",Times,serif;
   --f-disp:"Bodoni MT",Didot,"Playfair Display",Georgia,"Liberation Serif","Times New Roman",serif;
