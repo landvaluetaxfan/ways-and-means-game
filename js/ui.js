@@ -1013,7 +1013,8 @@ const UI = (function () {
     if (ct) ct.innerHTML = !curs.length
       ? `<tbody><tr><td class="note">No current is declared for this party. A party ` +
         `with no internal current is a bloc that votes.</td></tr></tbody>`
-      : `<thead><tr><th>Current</th><th class="n">Members</th><th class="n">Loyalty</th></tr></thead><tbody>` +
+      : `<thead><tr><th>Current</th><th class="n" data-tip="mps">Members</th>` +
+        `<th class="n" data-tip="loyalty">Loyalty</th></tr></thead><tbody>` +
         curs.map(cu => {
           const loy = (st.loyalty && st.loyalty[cu.id] != null) ? st.loyalty[cu.id] : cu.loyalty;
           return `<tr><td>${esc(cu.name)}</td><td class="n">${cu.members}</td>` +
@@ -1219,13 +1220,20 @@ const UI = (function () {
         : over > 0 ? `Working majority of ${over}.`
         : `Short by ${-over}. The government does not command the House.`}</div>`;
 
-    let ch = "<thead><tr><th>Current</th><th class='n' data-tip='mps'>MPs</th>" +
-      "<th class='n' data-tip='loyalty'>Loy</th></tr></thead><tbody>";
-    C.currents.filter(c => c.party === st.playerParty).forEach(c => {
-      const s = st.currents[c.id];
-      ch += `<tr class="${s.loyalty < 20 ? "warn" : ""}"><td>${c.name}</td><td class="n">${s.members}</td><td class="n">${s.loyalty}</td></tr>`;
-    });
-    $("#gov-currents").innerHTML = ch + "</tbody>";
+    /* THE OWN-PARTY CURRENTS PANEL IS GONE, and this is why rather than a
+        deletion nobody can explain later.
+
+        It came over from the Government tab when the coalition arithmetic
+        moved to the Chamber. Then the composition table learned to open a
+        party row onto that party's currents — which includes the player's
+        own party — and the Chamber was left showing the same four rows
+        twice, one panel above the other, on the same screen. One of them
+        had to go, and the survivor is the one that works for all twelve
+        parties instead of one.
+
+        Nothing else in the interface draws into #gov-currents, so the
+        renderer goes with the panel rather than being left to write into a
+        node that is not there. */
 
 
 
@@ -2263,7 +2271,7 @@ const UI = (function () {
           `<div class="cdet">` + mine.map(cu => {
             const loy = (st.loyalty && st.loyalty[cu.id] != null) ? st.loyalty[cu.id] : cu.loyalty;
             return `<div class="cdrow"><b>${esc(cu.name)}</b>` +
-              `<span class="cdn">${cu.members} member${cu.members === 1 ? "" : "s"}</span>` +
+              `<span class="cdn" data-tip="mps">${cu.members} member${cu.members === 1 ? "" : "s"}</span>` +
               `<span class="cdl${loy < 35 ? " warn" : ""}">loyalty ${loy}</span></div>`;
           }).join("") + `</div></td></tr>`;
       }

@@ -109,9 +109,10 @@ const Tips = (function () {
             "of them. A party at 40 delivers 85 of every 100 seats it promised. " +
             "Whipping buys back the gap.", go: "parliament" },
     mps: { title: "Members",
-      body: "Members of your own party in this current. A current is a faction " +
-            "with its own loyalty. Its members are part of the party's seats, " +
-            "not extra ones." },
+      body: "How many of the party's members sit with this current. A current " +
+            "is a faction with its own loyalty, and its members are part of " +
+            "the party's seats rather than extra ones — the currents of a " +
+            "party sum to the party." },
     popular: { title: "The popular benches",
       body: "The 240 members returned by districts and lists together. A bill " +
             "needs a simple majority of them." },
