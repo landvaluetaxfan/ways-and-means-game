@@ -135,3 +135,56 @@ so.
 are small and change how a session feels. Then 1, which needs the clock. Then
 4 and 5, which are the two that change the shape of the game and should not
 be built while anything above them is still moving.
+
+---
+
+## WHAT HAPPENED — 21 September 2026
+
+All six are in. Recorded here rather than in a commit message because the
+next person to open this file should not have to read the log to find out
+whether it was done.
+
+| | |
+|---|---|
+| **6. The record** | `npm run playtest`, seven strategies; and the Record tab's transcript, which a tester can select, paste or download. |
+| **3. The reshuffle** | `Engine.reshuffle` — a dismissal is a VACANCY, so the existing appointment panel fills it. Costs a slot and the relationship. |
+| **2. Question Time** | `every: N` beside `at`. Fires at 16, 20, 24 — a recurring item yields to a one-off on the same sitting. |
+| **1. The confidence motion** | `{motion: 3}`. A division the player did not call, on a date. A motion that FAILS strengthens the government. |
+| **4. Patronage** | `Engine.packBoard` — §4.6.4's boards, one seat at a time, capped at two by content, counted for ever. |
+| **5. Standing per band** | Five bands from the roll, national figure derived from them, and `swungShares` reads the band the seat is in. |
+
+Three things were argued in the design and turned out differently in the
+building, which is the useful half of a record:
+
+**The lane split did not hold, and should not have.** design/33 said Claude
+builds every mechanism and opencode writes every word. In practice each
+mechanism needed a piece of content to be reachable at all — an event that
+tables the motion, a clause that sets a rate, a candidate list for a post —
+so the mechanisms shipped with serviceable prose attached. It is opencode's
+to take further, and it is marked where it is thin.
+
+**The reshuffle is nearly useless until content catches up.** Exactly one
+post of eighteen declares candidates, and there is no other way to fill one,
+so the engine refuses a dismissal it cannot fill rather than destroying a
+ministry with a button. The power appears on a post the moment content gives
+it a bench. That is the single highest-value content task on this list.
+
+**Standing wanted five bands, not three.** The design said three because
+thirty-five would be unholdable. The roll has five and five is still a
+politics, so the engine reads whatever bands the constituencies declare and
+names none of them.
+
+### What the record now says, and it is not comfortable
+
+`npm run playtest`, seven strategies, 60 sittings each:
+
+- **Four of seven still lose supply**, at sitting 25. The three that survive
+  reach an election.
+- **No strategy reaches more than a third of the content.** 47 of 96 events
+  are never seen by any of them, including the whole leadership-challenge
+  line, the resignation, the empty brief and both drift events.
+
+Neither number is a bug in anything built here. They are what the tool was
+built to say, and they are the next thing to work on: a sitting budget that
+four of seven dumb strategies cannot survive is either too tight or too
+poorly signposted, and two thirds of the writing is currently unreachable.
