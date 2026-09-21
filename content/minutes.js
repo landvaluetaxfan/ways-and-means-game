@@ -38,7 +38,7 @@ I am conscious that a government which cannot carry a rights measure through the
     subject:"Guild Bench: after the licensing order",
     body:`You asked how it was received. It was received exactly as you were told it would be.
 
-The panel chair will not take a meeting. She has not said so in terms; she has said that her diary is full until the recess, which is the same thing said politely. The Life Support panel met for forty minutes yesterday and I am told the word used was pattern.
+The panel chair will not take a meeting. She has not said so in terms; she has said that her diary is full until the recess. The Life Support panel met for forty minutes yesterday and I am told the word used was pattern.
 
 Two of ours on the labour panels have asked, separately and in almost the same words, whether the Order will be laid again for Consumables. I said it would not. I would prefer you did not make that untrue.
 

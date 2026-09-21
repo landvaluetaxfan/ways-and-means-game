@@ -7,7 +7,8 @@ feels AI.
 
 They were right, and it is not one line. A scan of all 2,111 player-facing
 passages found the same handful of mechanical habits in ninety-six of
-them. `npm run register` lists them.
+them. Thirty-four are rewritten and the rest turned out to be the scanner's
+fault, not the prose's. `npm run register` lists them.
 
 ## What is wanted
 
@@ -23,46 +24,92 @@ clause that adds emphasis does not.
 **Not AI-sounding.** Which in practice means: stop doing the seven things
 below.
 
-## The seven habits
+## The habits, and what the sweep learned about them
 
-Each one is a real pattern with a real count in this repo, and each has the
-same shape — a sentence that has finished its work and then adds a flourish
-telling the reader what to think about it.
+The first version of the scanner reported 96 passages against seven rules.
+The sweep fixed 34 and **deleted or demoted four of the rules**, because
+reading the hits showed they were flagging correct prose. That is the more
+useful half of the exercise, so it is recorded here rather than quietly
+dropped.
 
-**1. The explanatory tail.** `…, which is the whole point.` `…, which is what
-the clause is for.` `…, and that is the point.` Fifty-seven passages. By far
-the commonest, and it is a tell because a fact that needs to be labelled
-important was not stated strongly enough.
+The report is now in two halves.
+
+### Mechanical — fix these
+
+A regex can be trusted on these, and all three read zero.
+
+**1. The empty explanatory tail.** `…, which is the point.` `…, which is what
+a ledger is for.` A sentence that has finished its work and then adds a
+clause telling the reader what to think of it. Fifty-four passages matched
+at first; **thirty were the habit and twenty-seven were not.** A tail that
+ends on a NEW fact is doing work:
+
+> which is the first elected office she has ever held
+> which is why one party holds all seven
+
+Cutting those to satisfy a regex would have flattened the prose. So the rule
+now reports a tail only where it introduces no number, no proper noun and
+fewer than four content words of its own. All thirty genuine ones are
+rewritten.
 
 > was: It sells the concession and not the sovereignty, and it has said so in
 > writing.
 >
 > now: Colombia's position, stated in the concession instrument and repeated
-> at every renewal, is that the lease conveys operating rights and not
-> territory.
+> at every renewal, is that the lease conveys operating rights over the
+> corridor and no territorial claim whatever.
 
-**2. The corrective pair.** `It is not X. It is Y.` Twelve passages. Reads as an
-argument with a reader who has not said anything yet. Assert Y.
+> was: The Underwriters keep the premium, which is the business they are in.
+>
+> now: The Underwriters keep the premium.
 
-**3. The tricolon.** `a name, a number, and a grievance.` One passage left. Three
-items in parallel is a rhythm, and a rhythm draws attention to the sentence
-rather than to its contents. Two items, or four, or a list that is actually a
-list.
+**2. Vague quantity.** `in a decade when it needed the money`, `ever since`,
+`long since`, `for generations`. The tells that name no period at all.
+`for a decade` and `for two centuries` came OUT of this rule: a decade is a
+quantity, and a reference work may give one.
 
-**4. The em-dash sandwich.** `The anchor — leased, not granted — pays.` Zero
-passages, and the rule is kept to hold it there. One pair of dashes in a
-passage is punctuation; two is a mannerism.
+**3. The em-dash sandwich.** Zero, and the rule is kept to hold it there.
+One pair of dashes in a passage is punctuation; two is a mannerism.
 
-**5. Vague quantity.** Nine passages. `a century`, `for generations`, `in a decade when it
-needed the money`, `long since`. A reference work gives the decade. If the
-number is not known, name what is known instead of gesturing at scale.
+### Judgement — read these and decide
 
-**6. The editorial sign-off.** Fifteen passages. `…rather than a grievance.` `…being paid badly
-for what it sells.` `…which nobody can amend.` The sentence ends on the
-author's opinion of the fact. End on the fact.
+These are real patterns that a regex cannot separate from their good uses.
+Reporting them as faults is how a style checker gets argued with once and
+ignored afterwards.
 
-**7. Elegant variation on the same idea.** Twelve passages. Saying a thing, then saying it
-again in a better phrase. Keep the better phrase.
+**4. The corrective pair.** `It is not X. It is Y.` Eleven left, and they
+stay. The form is informative when the thing being denied is what a reader
+would assume:
+
+> The office is not elected. It is held by whoever can command a majority in
+> the House of Delegates.
+>
+> Its grievance is not the platform. It is that the orbital franchises
+> undercut European labour and personhood law.
+
+It is the habit when the denial is a strawman nobody offered — `It is not
+dishonest. It is a bet that the bill comes due to somebody else` — and that
+one is fixed. Nothing in the text distinguishes the two.
+
+**5. The tricolon.** Demoted from a fault. A bill that requires a register,
+a hearing and a decision requires three things, and
+`bills/continuity_registration/contested` is an enumeration, not a cadence.
+
+**6. The editorial sign-off.** One left. `rather than` came OUT of this
+rule: it flagged four constituency notes whose contrasts are exactly right —
+*a technical question rather than a political one*, *a landlord's vote
+rather than a tenant's* — and a construction that useful cannot be a fault.
+
+### Deleted
+
+**7. Elegant variation.** Removed, and the removal is the finding. It looked
+for two clauses sharing three or more content words, and all twelve hits
+were correct prose: the Concordance's article on the Commonwealth says
+development spending raises a station's closure ratio and that a higher
+closure ratio raises its capacity to leave, which repeats the term because
+that is the causal chain. A reference work names a thing and then uses the
+name. A rule whose every hit is a false positive is worse than no rule — it
+is the line that teaches a reader to skim the report.
 
 ## What stays
 
@@ -79,10 +126,14 @@ prose does when nobody has decided how it should sound.
 ## Using it
 
 ```
-npm run register          every passage carrying a habit, worst first
+npm run register           every passage carrying a habit, worst first
 npm run register events    only addresses under that prefix
-npm run register signoff   only that habit
+npm run register pair      only that habit
 ```
+
+It reports and never rewrites. A rewrite is a decision, and four of the
+seven rules turned out to be wrong about what a fault is — which is a good
+reason for the tool not to have edited anything.
 
 The scanner is not in `npm run check`. A style check that fails a build
 turns into a style check that gets disabled, and the judgement it is standing

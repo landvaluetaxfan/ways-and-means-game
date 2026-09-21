@@ -208,7 +208,7 @@ const BILLS = [
           { id:"none", label:"Not levied", cost:0, note:"The lease is charged nothing. The Commonwealth forgoes its largest single base.", effects:[{ law:{ rate_volume:"none" } }, { move:{ "public_standing":3 } }] },
           { id:"low", label:"Reduced", cost:0, note:"Charged at half. The holders of the long leases keep the difference.", effects:[{ law:{ rate_volume:"low" } }, { move:{ "public_standing":1 } }] },
           { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_volume:"standard" } }] },
-          { id:"high", label:"Raised", cost:0, note:"Charged half again. The lease is dearer to hold and no dearer to live in, which is the whole of the argument and is not believed.", effects:[{ law:{ rate_volume:"high" } }, { move:{ "public_standing":-2 } }] }
+          { id:"high", label:"Raised", cost:0, note:`Charged half again. The lease is dearer to hold and no dearer to live in. That is the government's argument and the ring band does not accept it.`, effects:[{ law:{ rate_volume:"high" } }, { move:{ "public_standing":-2 } }] }
         ] },
       { id:"rate_thermal", name:"Ways and Means: thermal quota", default:"standard",
         note:"The levy on quota rejected. It is charged on the right to run, so it is paid by everything that runs, and it is in every price downstream.",

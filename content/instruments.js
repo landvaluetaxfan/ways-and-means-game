@@ -228,9 +228,7 @@ const INSTRUMENTS = [
     title:"Emergency Powers (Allocation) Order 2287", number:"SI 2287/68",
     author:"law_charter", procedure:"affirmative", revocable:true,
     when:{ flags:["rung7_tried"] },
-    summary:"Assumes the Allocation Act's emergency powers over the tier registers and the "+
-            "shed order. It suspends nobody. It takes the power to suspend, which is what "+
-            "emergency powers are.",
+    summary:`Assumes the Allocation Act's emergency powers over the tier registers and the shed order. It suspends nobody. It takes the power to suspend.`,
     effect_note:"The declaration is not the fight. The fight is the termination, and by then "+
                 "the power is the ordinary way the margin is managed.",
     effects:[ {move:{"thermal_margin":15}}, {move:{"public_standing":-18}},

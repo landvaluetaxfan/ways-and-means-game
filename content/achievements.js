@@ -85,10 +85,7 @@ const ACHIEVEMENTS = [
     when:{ settled:"graduated_personhood" } },
 
   { id:"set_federal", name:"The Federal Fudge", tier:"settlement",
-    note:"Each station sets its own threshold and the Commonwealth has agreed " +
-         "not to ask. There is no national answer any more, and a copy can be " +
-         "a person on one side of a line and an instance on the other, which " +
-         "is the cost paid by the people who cross.",
+    note:`Each station sets its own threshold and the Commonwealth has agreed not to ask. There is no national answer any more, and a copy can be a person on one side of a line and an instance on the other. The people who cross pay for that.`,
     when:{ settled:"federal_fudge" } },
 
   { id:"set_triumph", name:"Orbital Powerhouse", tier:"settlement",
@@ -157,9 +154,7 @@ const ACHIEVEMENTS = [
     when:{ flags:["tr_struck"] } },
 
   { id:"act_paired", name:"A Courtesy", tier:"action",
-    note:"You granted a courtesy pair \u2014 one member from each side stayed " +
-         "away \u2014 and did not call the favour in. A pair costs the government " +
-         "an aye and buys nothing in arithmetic, which is the point of it.",
+    note:`You granted a courtesy pair — one member from each side stayed away — and did not call the favour in. A pair costs the government an aye and buys nothing in arithmetic. The other side now owes you one.`,
     when:{ flags:["paired","pair_offered"] } },
 
   { id:"act_forward", name:"Sold Forward", tier:"action",

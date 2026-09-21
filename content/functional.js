@@ -159,7 +159,7 @@ const FUNCTIONAL = [
               { ref:"TA-4", party:"fh", name:"Sena Reyes" } ],
     interest:["anchor_concession","tether_traffic"],
     note:"Sixty-two voters. The smallest electorate in the Commonwealth and the largest balance sheet.",
-    description:"Four seats on 62 voters, weighted by tether capacity rather than one body one vote. The smallest electorate in the Commonwealth and the largest balance sheet, which is the whole case for the tier and against it." },
+    description:`Four seats on 62 voters, weighted by tether capacity rather than one body one vote. The smallest electorate in the Commonwealth and the largest balance sheet. Both sides of the argument about the tier begin there.` },
 
   { id:"fc_medicine", name:"Medicine and Embodiment", seats:3,
     franchise:"licensure", electorate:2700,

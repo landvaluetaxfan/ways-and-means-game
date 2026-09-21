@@ -305,9 +305,7 @@ recognise. You are not reforming personhood. You are reforming us."`,
   choices:[
     { label:"Offer a licensure carve-out: the threshold moves, licensure does not",
       act:"Offer it",
-      note:"The threshold moves and licensure does not, which is the one thing the " +
-           "panel actually asked for. It buys the chair's goodwill and the Substrate " +
-           "Left's fury, and it puts a promise on the order paper with a date.",
+      note:`The threshold moves and licensure does not. That is what the panel asked for. It buys the chair's goodwill and the Substrate Left's fury, and it puts a promise on the order paper with a date.`,
       /* MECHANICAL PLACEHOLDER, opencode's to reword: the undertaking's
          `text` is the line the order paper carries and the wording is
          prose. The shape is right — this choice is a promise made to a
@@ -461,8 +459,7 @@ The Spindle has the timestamp.`,
   image:{ src:"cluster_feed.png", palette:"newsprint",
           caption:"Registry advisory, 11 April", credit:"The Spindle" },
   body:`Two hundred and forty unattested accounts posted an identical string within
-a four-minute window. The Registry flagged the cluster and took no further action,
-which is the whole of the power the statute gives it.
+a four-minute window. The Registry flagged the cluster and took no further action. Flagging is the entire power the statute gives it.
 
 Ceyhan wants to know whether you intend to ask for more power, and he wants to
 know it on the record, because the answer is a story either way.`,
@@ -526,10 +523,9 @@ is whether you have the time, and the time runs out when the House rises.
 "Answer the sheet or do not. It will not ask twice."`,
   choices:[
     { label:"Walk the paper with him. Ask what each item wants.",
-      note:"The Chief Whip explains the day once, and this is the hour he does it. It " +
-           "costs you nothing and buys his confidence for the session.",
+      note:`The Chief Whip explains the day once, in the hour before it begins. It costs you nothing and buys his confidence for the session.`,
       effects:[{ flag:"taught_the_day" }, { move:{ "rel.okarie":6 } }, { move:{ "loyalty.cu_loyalists":3 } }],
-      result:"He names the mover of each item and what each mover wants back. It is the same list every sitting, and nobody explains it twice." },
+      result:`He names the mover of each item and what each mover wants back. It is the same list every sitting. He will not walk it with you again.` },
     { label:"Read it alone and send him back to the lobbies.",
       note:"You keep the hour and you read your own brief. The whips note that you did " +
            "not ask, and the country hears that the paper is read before the lobbies " +
@@ -595,8 +591,7 @@ about the licensing boards since Tuesday.
   speaker:"okarie",
   body:`The bill is called this session or the next, and the Chief Whip has come
 with one sheet. It has the members who are with the government, the members who
-are not, and the members who have not decided, which is the column he is
-interested in.
+are not, and the members who have not decided. He reads the third column.
 
 "Two ways to move a vote," he says. "You can spend the party's goodwill on the
 benches that already sit behind you, and it comes back when the session next
@@ -801,7 +796,7 @@ bidding with money that came, in the end, from the appropriation.`,
       effects:[{move:{"public_standing":-7}},{move:{"loyalty.hul":7}},{move:{"thermal_margin":-4}},
                {flag:"thermal_squeeze_seen"},{flag:"left_thermal_market"},
                {wire:"PM: THERMAL PRICE 'A SIGNAL, NOT A SCANDAL'"}],
-      result:"The signal reaches the stations that cannot pay it, which is what a signal is for." }
+      result:`The signal reaches the stations that cannot pay it first.` }
   ]},
 
 /* REACH: party_loyalty below 22; whipping and defeats drive it down. */
@@ -859,7 +854,7 @@ Commonwealth has already promised to pay for.`,
       effects:[{move:{"public_standing":5}},{move:{"loyalty.cu_maintenance":7}},
                {flag:"reserve_low_seen"},{flag:"spent_the_reserve"},
                {wire:"PM COMMITS RESERVE TO CURRENT PROGRAMME"}],
-      result:"It is not dishonest. It is a bet that the bill comes due to somebody else." }
+      result:`It is a bet that the bill comes due to somebody else.` }
   ]},
 
 /* REACH: public_standing below 26; the drift and hard choices drive it down. */
@@ -1000,7 +995,7 @@ do is stay empty by itself.`,
 
 "Nine seats," the chair says, "and not one of them moves for a government that has moved the roll. Count it again if you like. The count will not change."
 
-She is not angry about it, which is the difficulty. She has been doing this longer than the government has existed, and she is telling you what her members will do, not what she thinks of you.`,
+She is not angry about it. Anger would have been something to work with. She has been doing this longer than the government has existed, and she is telling you what her members will do, not what she thinks of you.`,
   choices:[
     { label:"Take the answer. Stop asking.",
       effects:[{flag:"guild_met"},{move:{"rel.gb_chair":5}},{move:{"loyalty.gb":5}}],
@@ -1055,7 +1050,7 @@ Ceyhan has, which was always going to happen. The whip has, in a different colum
     { label:"Leave it where it is. It was said and it stands.",
       effects:[{flag:"position_public"},{move:{"loyalty.cu_maintenance":4}},
                {move:{"rel.ceyhan":5}}],
-      result:"Nothing more is said. The sentence stays on the record, which is what a position is." },
+      result:`Nothing more is said. The sentence stays on the record, where it cannot be amended.` },
     { label:"Repeat it, and make the government's case for it.",
       effects:[{flag:"position_public"},{flag:"position_campaigned"},
                {move:{public_standing:5}},{move:{"loyalty.cu_maintenance":-8}},
@@ -1148,7 +1143,7 @@ number: how thin the government is willing to let it get.`,
       effects:[{ move:{ "thermal_margin":8 } }, { move:{ "solvency": -10000 } },
                { move:{ "loyalty.hul":6 } },
                { wire:"EMERGENCY THERMAL PURCHASE TO WIDEN THE MARGIN" }],
-      result:"The margin widens and the reserve pays for it, which is the trade every time." },
+      result:`The margin widens. The reserve pays for it.` },
     { label:"Hold it and let the department record its warning.",
       effects:[{ move:{ "thermal_margin":-2 } }, { move:{ "public_standing":-4 } },
                { move:{ "loyalty.hul":-8 } },
@@ -1214,7 +1209,7 @@ out what the six want, or how many the six can become.`,
       effects:[{ move:{ "loyalty.cu_maintenance":7 } }, { move:{ "loyalty.cu_halloran":4 } },
                { move:{ "public_standing":-3 } },
                { wire:"PM MEETS SIGNATORIES OF BACKBENCH LETTER" }],
-      result:"Half of them wanted to be asked, and that is the half that stops signing." },
+      result:`Half of them wanted to be asked. That half takes its names back off the paper.` },
     { label:"Warn them where this ends.",
       effects:[{ move:{ "loyalty.cu_loyalists":6 } }, { move:{ "loyalty.cu_maintenance":-8 } },
                { wire:"PM WARNS THE BACKBENCH OVER LEADERSHIP LETTER" }],
@@ -1240,7 +1235,7 @@ difference is the next bill."`,
     { label:"Tell her the account is the account.",
       effects:[{ move:{ "capital.rv":-1 } }, { move:{ "loyalty.rv":-8 } },
                { move:{ "party_loyalty":4 } }],
-      result:"Your own benches like it. Hers begin counting what they are owed, which is what a ledger is for." }
+      result:`Your own benches like it. Hers begin counting what they are owed, and they will present the figure.` }
   ]},
 
 /* REACH: SI 2287/44 in force; the carve-out undertaking discharges it. */
@@ -1263,7 +1258,7 @@ remember which government did."`,
       result:"It is real work and a real brief, and it does not give the panel its electorate back." },
     { label:"Tell her the order stands.",
       effects:[{ move:{ "rel.gb_chair":-8 } }, { move:{ "loyalty.hul":4 } }],
-      result:"She expected nothing else, which is why she came in person." }
+      result:`She expected nothing else. She came in person so the refusal would have a witness.` }
   ]},
 
   /* REACH: federal suspensions above 74,000 as the price rises. */
@@ -1394,7 +1389,7 @@ have been carried in return."`,
     { label:"Promise her party the next slot on the order paper.",
       effects:[{ move:{ "capital.psa":2 } }, { move:{ "loyalty.psa":8 } },
                { move:{ "public_standing":-2 } }],
-      result:"The promise is made and written down, which is the only form of it that counts." },
+      result:`The promise is made and written down, and a written promise can be produced later.` },
     { label:"Tell her the coalition is not for sale.",
       effects:[{ move:{ "loyalty.psa":-6 } }, { move:{ "party_loyalty":3 } }],
       result:"It was the answer her conference predicted, and the count on her benches will show it." }
@@ -1693,15 +1688,13 @@ back, they say what the government decided, in the past tense.`,
     { label:"Let the answer speak for itself.",
       effects:[{ move:{ "loyalty.cu_maintenance":4 } }, { move:{ "public_standing":-2 } },
                { wire:"PM LETS THE SETTLEMENT STAND WITHOUT A CAMPAIGN" }],
-      result:"A settled question does not need a press tour. It needs a government that will not reopen it, and that is what it has." }
+      result:`A settled question does not need a press tour. It needs a government that will not reopen it. This one will not.` }
   ]},
 
 { id:"ch4_the_losers", chapter:4, prologue:3, once:true,
   title:"The people who lost",
   speaker:"watkins",
-  body:`The benches that argued the other way have not changed their minds. They
-have changed their subject, which is the most you can ask and the least you can
-trust.
+  body:`The benches that argued the other way have not changed their minds. They have changed their subject. Nothing stops them changing it back.
 
 Watkins says it plainly: the answer is the government's until the country
 decides to give it to somebody else, and that decision is years away.`,
@@ -1755,7 +1748,7 @@ finished, and things that are finished are what a government moves on from."`,
     { label:"Govern quietly. The session has earned it.",
       effects:[{ move:{ "loyalty.cu_maintenance":5 } }, { move:{ "party_loyalty":3 } },
                { wire:"GOVERNMENT CHOOSES A QUIET SESSION AFTER THE SETTLEMENT" }],
-      result:"The House does its ordinary business and the country stops watching, which is the reward for having closed a question." }
+      result:`The House does its ordinary business and the country stops watching.` }
   ]},
 
 { id:"ch4_the_record", chapter:4, prologue:6, once:true,
@@ -1861,8 +1854,7 @@ its life-support bill, and the embargo risk over the defaulted debt. Or
 decline, keep the short term, and explain the strikes.
 
 Cordell did not break the law. It wound up the subsidiary that employed them,
-kept the leases, and left the parent's exposure at nothing, which is what a
-company is for.
+kept the leases, and left the parent's exposure at nothing. Every step of it was lawful.
 
 Neither future is a vote the government can lose quietly.`,
   choices:[
@@ -1916,8 +1908,7 @@ Neither future is a vote the government can lose quietly.`,
   title:"The recycling line",
   speaker:"vellan",
   body:`The Minister for Life Support brings the platform's water recycling
-estimate. It holds, or it does not hold, and the difference is a funding
-line that will not be felt for a month. That is the whole of the warning.`,
+estimate. It holds, or it does not hold, and the difference is a funding line that will not be felt for a month.`,
   choices:[
     { label:"Fund it in full.",
       effects:[{ move:{ "solvency":-3000 } }, { move:{ "trend.thermal_margin":1 } },
@@ -2015,7 +2006,7 @@ discovered."`,
       effects:[{ move:{ "rel.gb_chair":4 } }, { move:{ "legitimacy":-4 } },
                { si:"si_2287_44" },
                { wire:"PM CONCEDES THE LICENSING DELAY AND LAYS THE ORDER" }],
-      result:"The order is laid late and the government takes the blame publicly, which is the only coin the panel accepts." },
+      result:`The order is laid late and the government takes the blame publicly. The panel accepts an apology in no other form.` },
     { label:"Let it stand. A promise missed is a promise missed.",
       effects:[{ move:{ "rel.gb_chair":-8 } }, { move:{ "loyalty.gb":-8 } },
                { move:{ "legitimacy":-6 } },
@@ -2103,7 +2094,7 @@ its decision and that it is not its fault, both of which are true.`,
       effects:[{ move:{ "public_standing":-5 } }, { move:{ "loyalty.cu_maintenance":-6 } },
                { station:{ perigee:{ closure:-0.02 }, sinter:{ closure:-0.02 } } },
                { wire:"PM DECLINES TRANSIT SUBSIDY; OUTER STATIONS WARN ON CLOSURE" }],
-      result:"Two stations' closure figures take the strain, which is the arithmetic of an index the government does not set." }
+      result:`Two stations' closure figures take the strain. The government does not set the index and cannot argue with it.` }
   ]},
 
 { id:"fa_anchor_terms", chapter:2, weight:76, once:true,
@@ -2258,8 +2249,7 @@ Commonwealth assumed. The country has decided that saving three hundred
 thousand people was worth the austerity, and that the government that did
 it deserves the session that follows.
 
-The victory is real and it is expensive, which is the only kind this
-campaign had on offer.`,
+The victory is real and it is expensive. No cheaper one was on offer.`,
   choices:[
     { label:"Read the final numbers.",
       effects:[{ wire:"RETURNS COMPLETE: THE GOVERNMENT IS RETURNED ON THE PYRRIHIC TICKET" }],
@@ -2285,7 +2275,7 @@ and the schedule is a list of who is carried and who is not."`,
       effects:[{ move:{ "consumables":7 } }, { move:{ "solvency":-9000 } },
                { move:{ "loyalty.cu_maintenance":6 } }, { move:{ "loyalty.psa":5 } },
                { wire:"QUARTERLY LIFT RESTORED FROM THE RESERVE" }],
-      result:"The schedule is restored and the reserve carries it, which is what a distribution mechanism is for." },
+      result:`The schedule is restored and the reserve carries it.` },
     { label:"Let the stations that can pay, pay.",
       effects:[{ move:{ "consumables":-3 } }, { move:{ "public_standing":-6 } },
                { move:{ "loyalty.cu_maintenance":-8 } },
@@ -2369,7 +2359,7 @@ it that way because they could read the numbers and we could not."`,
       when:{ flagsAbsent:["f1_frozen"] },
       effects:[{ move:{ "actor.underwriters":4 } },
                { wire:"INDEMNITY EXPIRES UNUSED; THE UNDERWRITERS KEEP THE PREMIUM" }],
-      result:"The risk stayed away for the whole term. The Underwriters keep the premium, which is the business they are in." },
+      result:`The risk stayed away for the whole term. The Underwriters keep the premium.` },
     /* The safety net every queued settle carries. A door content never uses
        is better than an event that can strand a sitting. */
     { label:"The term ends.",
@@ -2783,7 +2773,7 @@ nothing."`,
       effects:[{ flag:"tr_referenced" }, { flag:"reference_ignored" },
                { move:{ "actor.tribunal":-12 } }, { move:{ "legitimacy":-3 } },
                { wire:"GOVERNMENT DECLINES TO ANSWER THE TRIBUNAL'S REFERENCE" }],
-      result:"Nothing is answered. The bench notes the date it asked and the date nothing came back, which is the sort of thing a bench keeps." }
+      result:`Nothing is answered. The bench notes the date it asked and the date nothing came back. Both dates stay on the file.` }
   ]},
 
 /* THE CHALLENGE. The opposition does not need a majority to hurt an order, it
