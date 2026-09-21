@@ -59,7 +59,7 @@ const HOME = {
   settlements: "content/settlements.js", actors: "content/actors.js",
   achievements: "content/achievements.js", sandbox: "content/events.js",
   scarcities: "content/setup.js", notice: "content/artifacts.js",
-  world: "content/world.js"
+  world: "content/world.js", tips: "js/tips.js"
 };
 
 /* THE WHITELIST, and it is a whitelist on purpose. Walking for "any long
@@ -87,12 +87,41 @@ const files = ["content/setup.js","content/parties.js","content/stations.js",
   "content/settlements.js","content/actors.js","content/achievements.js",
   "content/world.js","content/index.js"];
 
+/* THE TOOLTIPS ARE PROSE TOO, and they are not in content/. js/tips.js
+   carries a few hundred sentences explaining the terminal, in a plain object
+   keyed by tip id, and they were invisible to this tool because it only
+   walked the content files — so the answer to "are the tooltips editable?"
+   was no, and I had said yes.
+
+   It loads under a stub DOM because the module only touches the document
+   inside wire(), which nothing calls here. If that ever stops being true
+   the round-trip check fails loudly rather than the tips quietly vanishing
+   from the file. */
+function loadTips() {
+  const stub = {
+    document: { addEventListener() {}, querySelector() { return null },
+                createElement() { return { style: {}, classList: { add() {}, remove() {} },
+                                           appendChild() {} }; },
+                body: { appendChild() {} } },
+    CSS: { supports() { return true; } }
+  };
+  stub.window = stub;
+  try {
+    vm.runInNewContext(fs.readFileSync(path.join(root, "js", "tips.js"), "utf8") +
+      "\n;__T = (typeof Tips !== 'undefined' && Tips.TIPS) || null;", stub);
+    return stub.__T || null;
+  } catch (e) { return null; }
+}
+
 function loadContent() {
   const src = files.filter(f => fs.existsSync(path.join(root, f)))
     .map(f => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
   const ctx = {};
   vm.runInNewContext(src + "\n;__C = CONTENT;", ctx);
-  return ctx.__C;
+  const C = ctx.__C;
+  const tips = loadTips();
+  if (tips) C.tips = tips;          /* a pseudo-collection, home js/tips.js */
+  return C;
 }
 
 /* ---------- walking ----------
@@ -432,6 +461,13 @@ if (argv.includes("--check")) {
   console.log("PROSE ROUND TRIP");
   console.log("=".repeat(58));
   ok("the game has prose to export", n > 200, n + " passages");
+  /* THE TOOLTIPS ARE THE ONE COLLECTION THAT IS NOT IN content/, so they are
+     the one that can silently disappear from the file — a refactor that
+     stops exporting TIPS, or a top-level DOM access that makes the stub
+     load throw, and the tool goes on reporting a healthy round trip over
+     two thousand passages while a hundred of them are gone. */
+  const tipRows = rows.filter(r => r.addr.indexOf("tips/") === 0);
+  ok("and the tooltips are in it", tipRows.length > 50, tipRows.length + " tips");
   ok("and every passage comes back", parsed.length === n,
      parsed.length + " of " + n);
   const diff = parsed.filter(p => byAddr[p.addr] !== p.text);

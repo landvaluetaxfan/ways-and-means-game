@@ -562,7 +562,12 @@ const Tips = (function () {
      against this module's own idea of what an annotation is. The check
      used to spell the selector out itself and went quietly out of date
      the moment inline cards became annotations too. */
-  return { wire, hide, find, explain, remark, SEL,
+  /* TIPS IS EXPORTED SO THE PROSE FILE CAN REACH IT. Every other sentence a
+     player reads lives in content/ and goes through tools/prose.js; these
+     lived in a closure, so the one body of text the author most wanted to
+     rewrite was the one body they could not open. It is read-only from the
+     outside — nothing assigns to it — and the prose tool edits the SOURCE. */
+  return { wire, hide, find, explain, remark, SEL, TIPS,
            explaining: () => explaining,
            keys: () => Object.keys(TIPS) };
 })();
