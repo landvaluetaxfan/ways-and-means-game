@@ -1526,6 +1526,13 @@ img.dith{display:block;}
 #party-table tr.prel:hover td{background:var(--chrome-lt);}
 /* "yours" on the player's own bench: it sits inside the coalition group and
    is priced differently from every other row in it. */
+/* "with them" / "opposed" beside the agreement figure: a word, because a
+   signed number to two places is precise and not legible on its own. */
+#party-with .pwsay{font-size:10px;color:var(--ink-soft);white-space:nowrap;}
+#party-with td.good{color:var(--ok);}
+#party-with td.warn{color:var(--alert);}
+#party-with tr[data-party]{cursor:pointer;}
+#party-with tr[data-party]:hover{background:var(--field);}
 .pown{font-size:9px;letter-spacing:.08em;text-transform:uppercase;
   border:1px solid var(--chrome-dkr);border-radius:2px;padding:0 3px;
   color:var(--ink-soft);vertical-align:1px;}

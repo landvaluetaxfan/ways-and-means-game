@@ -1212,6 +1212,32 @@ const UI = (function () {
         `<div class="prow"><div class="plab">The ledger</div><div class="pval` +
         `${cr < 0 ? " warn" : ""}">${cr > 0 ? "+" + cr + " owed to them" :
            cr < 0 ? cr + " \u00b7 overdrawn" : "nothing either way"}</div></div>`) +
+      /* WHAT HAPPENS IF THEY GO, which is the interparty fact this tab was
+         missing. The margin is one, so the answer is the same for every
+         partner and that is the point: the Congregational Democratic
+         Alliance's eighteen and the Independents' six are equally fatal, and
+         a reader who has only seen the seat counts would not guess it. For a
+         party outside the government the same arithmetic runs the other way
+         — what they would add, and whether it would matter. */
+      (() => {
+        const seats = Engine.partyTotal(st, sel.id);
+        const conf = Engine.confidence(st), maj = Engine.majority(st);
+        if (rel === "opp") {
+          const after = conf + seats;
+          return `<div class="prow"><div class="plab">If they joined` +
+            `<em>${seats} seat${seats === 1 ? "" : "s"}</em></div>` +
+            `<div class="pval">${after} of ${Engine.chamberTotal(st)}` +
+            `${conf >= maj ? ", a margin of " + (after - maj) : after >= maj
+              ? ", and the government holds" : ", still short"}</div></div>`;
+        }
+        if (sel.id === st.playerParty) return "";
+        const after = conf - seats;
+        const falls = after < maj;
+        return `<div class="prow"><div class="plab">If they walked` +
+          `<em>${seats} seat${seats === 1 ? "" : "s"} out</em></div>` +
+          `<div class="pval${falls ? " warn" : ""}">${after} against ${maj}` +
+          `${falls ? " \u00b7 the government falls" : " \u00b7 it holds"}</div></div>`;
+      })() +
       /* THE LEADER IS NOT REPEATED HERE. The Leader section follows
          immediately below with the name and the office; a row saying it
          again two lines up is the restated idea PROSE_REGISTER.md names.
@@ -1293,6 +1319,67 @@ const UI = (function () {
       `this is the live roll.</div>` +
       (axRows ? `<div class="rulehead">Where it stands</div>${axRows}` : "") +
       (sel.note ? `<div class="rulehead">In a sentence</div><div class="note">${esc(sel.note)}</div>` : "");
+
+    /* WHO THEY VOTE WITH — the interparty panel, and the one thing on this
+       tab whose subject is not a single party.
+
+       The engine has been able to score any two parties against each other
+       since the axes became signed, and nothing read it: agreement was only
+       ever computed party-against-BILL and party-against-YOU. The full
+       twelve-by-twelve is the interparty picture, and some of it is
+       surprising in a way a seat count never shows — the New Progressive
+       Party and the Uplift Alliance agree at 0.96 and one of them is outside
+       the government; the Association of Engineers and the Alliance of
+       Business agree at 0.95 and are a bloc in everything but name; Home
+       Rule and the Single Tax Party are at -0.98, which is as opposed as two
+       parties in this House get.
+
+       Engine.axisAgreement, not a second scoring, for the same reason the
+       distance readout uses it: a number here that disagreed with a division
+       would be unfalsifiable. */
+    const withTbl = $("#party-with");
+    if (withTbl) {
+      const mine = sel.axes || {};
+      const rows = (C.parties || [])
+        .filter(p => p.id !== sel.id && Object.keys(p.axes || {}).length)
+        .map(p => ({ p: p, a: Engine.axisAgreement(mine, p.axes) }))
+        .sort((x, y) => y.a - x.a);
+      const hdr = $("#party-with-hdr");
+      if (hdr) hdr.textContent = Object.keys(mine).length
+        ? rows.length + " others, by agreement with " + (sel.short || sel.id)
+        : (sel.short || sel.id) + " declares no position";
+      if (!Object.keys(mine).length) {
+        /* The Independents are not a party and hold no position, so there is
+           nothing to rank them against — which is the entry that says the
+           most, and is said rather than left as an empty table. */
+        withTbl.innerHTML = `<tbody><tr><td class="note">` +
+          `The Independents declare no axes, so there is no party line to ` +
+          `compare. Each of the six votes on their own, and the Currents ` +
+          `panel below is where they are.</td></tr></tbody>`;
+      } else {
+        const say = a => a >= 0.7 ? "with them" : a >= 0.3 ? "broadly with"
+                      : a > -0.3 ? "neither" : a > -0.7 ? "against" : "opposed";
+        withTbl.innerHTML =
+          `<thead><tr><th></th><th>Party</th><th class="n" data-tip="seats">Seats</th>` +
+          `<th class="n">Agree</th><th></th></tr></thead><tbody>` +
+          rows.map(r => {
+            const g = relOf(r.p.id);
+            const cls = r.a >= 0.7 ? "good" : r.a <= -0.7 ? "warn" : "";
+            return `<tr data-party="${r.p.id}">` +
+              `<td><i class="pdot" style="background:${r.p.colour}"></i></td>` +
+              `<td><b>${esc(r.p.short || r.p.id)}</b>` +
+              (g === "gov" ? ` <span class="flag" data-tip="gov">GOV</span>`
+               : g === "cs" ? ` <span class="flag" data-tip="cs">C&amp;S</span>` : "") +
+              `</td><td class="n">${Engine.partyTotal(st, r.p.id)}</td>` +
+              `<td class="n ${cls}">${r.a >= 0 ? "+" : ""}${r.a.toFixed(2)}</td>` +
+              `<td class="pwsay">${say(r.a)}</td></tr>`;
+          }).join("") + `</tbody>`;
+      }
+      withTbl.querySelectorAll("[data-party]").forEach(tr =>
+        tr.addEventListener("click", () => {
+          Focus.seed("party-table", tr.dataset.party); cue("click"); drawParties();
+        }));
+    }
 
     /* THE PARTY OUTSIDE PARLIAMENT. Who runs it between elections, what is
        affiliated to it, and where it exists on the ground. No mechanic hangs
