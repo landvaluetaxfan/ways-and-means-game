@@ -395,6 +395,23 @@ version of any of them is in the header of the file it names.
   a save file silences somebody else's machine on import.
 - `CONTENT.encyclopedia` is an object — `meta`, `banners`, `articles` — not a
   list.
+- **Test a new gate against the OPENING state as well as the state it wants.**
+  A chapter-four event was gated `scalarBelow:{public_standing:46}` to mean
+  "the government has been weakened" — and standing OPENS at 44, so the gate
+  was true from the first sitting and the event would have fired the moment
+  the chapter began, whatever had happened. `Engine.matches(newGame(C), when)`
+  answers this in one line. Deliberately NOT a check: 17 events legitimately
+  match at the opening, because a `flagsAbsent` once-gate is supposed to, and
+  Czarnecki's group opens at loyalty 12 on purpose. A checker here would cry
+  wolf seventeen times, which is worse than none.
+- **Chapter budgets are in bible §1.7 and worth reading before generating.**
+  12-15 · 15-18 · 6-8 · 8-10 events. Chapter three is nine and correctly all
+  `prologue` — the bible calls the election "a chapter transition and not a
+  cycle" — so it wants no pool. Chapter four had six, all prologue, so the
+  pool the bible says "takes over" had nothing in it; it is 6 + 4 now.
+  Chapters one and two are far over budget on AUTHORED count but a run meets
+  about 32 events total, against a budget of 41-51 met, so the played length
+  is under and the authored count is a weighted pool rather than a queue.
 
 **CSS and layout traps, every one found by measuring rather than reading**
 

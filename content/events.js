@@ -3350,4 +3350,171 @@ you already have.`,
       result:`Nothing is borrowed and the programme is funded out of the reserve.` }
   ]},
 
+
+/* =============================================================
+   CHAPTER FOUR'S WEIGHTED POOL (bible §1.7)
+
+   Chapter four had six events and all six were `prologue`, so the pool the
+   bible says "takes over" after an authored opening had nothing in it: the
+   scripted arc ran — after, the answer, the losers, the cost, the next
+   question, the record — and then the chapter had no content at all. Budget
+   is 8-10 and it held 6.
+
+   These four are the pool, and they are deliberately NOT more arc. The
+   prologue already says what a settlement feels like; this is what it costs
+   in the state you happen to have settled in, which is the half that can
+   differ between playthroughs. Each gates on something real, and three of
+   them use conditions no content had touched: `risesWithin`, `owes`, and
+   the §7.10 economy.
+
+   PROSE IS NOT WRITTEN. Each carries a `brief`; the body under it is a
+   placeholder. `npm run prose` emits the brief as a # note above it.
+   ============================================================= */
+
+/* THE TEST. A settled question is only settled while nobody profits by
+   reopening it, and a government whose standing has fallen is the moment to
+   find out. Reads public_standing, which 117 effects move and 3 conditions
+   read — this is a fourth. */
+{ id:"ch4_tested", chapter:4, weight:72, once:true,
+  /* 38 AND NOT 46. public_standing OPENS at 44, so a gate at 46 was true
+     from the first sitting of the game and the event would have fired as
+     soon as chapter four began, whatever had happened — which is the
+     opposite of "the government is weak enough to be tested". Six points
+     below the opening is a fall somebody did. Caught by testing the gate
+     against the opening state as well as against the state it wants. */
+  when:{ scalarBelow:{ public_standing:38 } },
+  brief:"Somebody moves to reopen the settled question, and the government's "+
+    "standing is low enough to make it worth trying. The scene wants the "+
+    "Leader of the Opposition testing whether the answer holds rather than "+
+    "arguing against it — he does not need to win, he needs to show it can "+
+    "be asked again. The reader should understand that a settlement is a "+
+    "fact about the House's appetite and not about the law.",
+  title:"Whether it holds",
+  speaker:"watkins",
+  body:`A member gives notice of a measure that would reopen the question. The notice is the point; the measure is not expected to carry.`,
+  choices:[
+    { label:"Refuse it the floor. The question is closed.",
+      brief:"Using the government's control of time to deny a hearing. "+
+        "Effective, and it concedes that the answer needs protecting.",
+      effects:[{ move:{ legitimacy:-5 } },
+               { move:{ "rel.watkins":-6 } },
+               { move:{ public_standing:3 } },
+               { flag:"ch4_refused_reopening" },
+               { wire:"GOVERNMENT DENIES TIME TO REOPENING MOTION" }],
+      result:`The notice is not called. It stays on the paper, uncalled, where anyone can point at it.` },
+    { label:"Give it a day and beat it in the open.",
+      brief:"Spending order-paper time to win the argument twice. Costs a "+
+        "slot and settles the question harder than the settlement did.",
+      effects:[{ slots:{ total:-1 } },
+               { move:{ legitimacy:8 } },
+               { move:{ public_standing:5 } },
+               { move:{ "loyalty.cu_maintenance":-4 } },
+               { flag:"ch4_beat_reopening" },
+               { wire:"REOPENING MOTION DEFEATED ON THE FLOOR" }],
+      result:`The measure is called, debated and defeated, and the division list is now a second answer to the same question.` }
+  ]},
+
+/* WHAT THE ANSWER DID TO THE LABOUR MARKET. The settlement moved the
+   threshold or refused to, and §7.10 makes that a participation figure. The
+   prologue's `ch4_the_ledger` is the SOLVENCY cost; this is the structural
+   one, and it is the first content to read the economy in chapter four. */
+{ id:"ch4_structural", chapter:4, weight:69, maxFires:2,
+  when:{ economyAbove:{ participation:45 } },
+  brief:"The participation figure has moved further than the argument was "+
+    "ever about. The scene wants the Treasurer laying a structural change "+
+    "nobody voted for: the settlement was debated as a question about what a "+
+    "person is, and it has turned out to be the largest change in who holds "+
+    "paid work since the Charter. Whether the government claims that or is "+
+    "embarrassed by it is the choice.",
+  title:"What the answer did to the work",
+  speaker:"hatt",
+  body:`The participation figure is published, and the settlement is the reason it has moved.`,
+  choices:[
+    { label:"Build on it. Fund the training the new jobs need.",
+      brief:"Treating the side effect as a policy. Expensive, popular where "+
+        "the work is, and it commits the next session's money.",
+      effects:[{ move:{ solvency:-11000 } },
+               { economy:{ participation:2 } },
+               { move:{ public_standing:6 } },
+               { move:{ "standing.low":4 } },
+               { wire:"GOVERNMENT FUNDS TRAINING FOR THE NEW REGISTER" }],
+      result:`The programme is funded and the figure holds rather than drifting back.` },
+    { label:"Say nothing. It was a personhood measure.",
+      brief:"Declining to own an effect the government did not predict. "+
+        "Costs nothing and leaves the framing to whoever explains it first.",
+      effects:[{ move:{ "trend.public_standing":-1 } },
+               { move:{ "loyalty.psa":-4 } }],
+      result:`The figure is published and the government does not comment on it.` }
+  ]},
+
+/* THE COALITION HAS NO QUESTION LEFT. A partner that joined for one measure
+   has either got it or watched it die, and either way the arrangement now
+   has to be about something else. Gates on `owes`, which no content had
+   used: an undertaking still open is the government having promised
+   something it has not delivered. */
+{ id:"ch4_what_for", chapter:4, weight:78, once:true,
+  when:{ owes:["carry_threshold"] },
+  brief:"The partner that made the bill the price of the coalition asks what "+
+    "the government is for now. The scene wants a negotiation that is not "+
+    "about the settled question at all: the promise in the agreement is "+
+    "still open on the register, the thing it was about is over, and both "+
+    "sides know the arrangement needs a second reason to exist. Not a "+
+    "threat — a question neither of them can answer quickly.",
+  title:"What the arrangement is for",
+  speaker:"marin",
+  body:`The coalition agreement names an undertaking that is still open, about a question that is now closed.`,
+  choices:[
+    { label:"Write them a second programme.",
+      brief:"Giving the coalition a new purpose, which costs order-paper "+
+        "time it has not got and buys the partner's loyalty.",
+      effects:[{ slots:{ total:-1 } },
+               { move:{ "loyalty.psa":12 } },
+               { move:{ "capital.psa":-4 } },
+               { move:{ "loyalty.cu_maintenance":-5 } },
+               { flag:"ch4_second_programme" },
+               { wire:"COALITION AGREES A SECOND PROGRAMME" }],
+      result:`A second programme is agreed and the arrangement has a reason again.` },
+    { label:"Discharge the undertaking and let the agreement stand as it is.",
+      brief:"Closing the promise formally without replacing it. Honest, and "+
+        "it leaves a partner in a coalition about nothing.",
+      effects:[{ move:{ legitimacy:4 } },
+               { move:{ "loyalty.psa":-9 } },
+               { move:{ "trend.party_loyalty":-1 } },
+               { flag:"ch4_agreement_hollow" }],
+      result:`The undertaking is discharged on the record and neither side proposes a replacement.` }
+  ]},
+
+/* AND THE SESSION RISES ON IT. `risesWithin` had no content reading it, and
+   the last sittings of the settling session are exactly what it is for: the
+   House is about to go home on the answer, and what the government does
+   with the remaining time is the last decision of the chapter. */
+{ id:"ch4_rises_on_it", chapter:4, weight:64, once:true,
+  when:{ risesWithin:3 },
+  brief:"The House rises within three sittings and the settled question is "+
+    "what the session will be remembered for. The scene wants the Chief Whip "+
+    "with the last of the order paper in his hand, asking what to do with "+
+    "time that cannot be carried over. The reader should feel that unspent "+
+    "time is not saved, it is lost.",
+  title:"The last of the paper",
+  speaker:"okarie",
+  body:`The session rises shortly and there is order-paper time left that cannot be carried into the next one.`,
+  choices:[
+    { label:"Spend it on the small things the benches have been asking for.",
+      brief:"Using the remainder on backbench business. Buys loyalty broadly "+
+        "and produces nothing the country will notice.",
+      effects:[{ slots:{ total:-2 } },
+               { move:{ party_loyalty:9 } },
+               { move:{ "loyalty.cu_maintenance":6 } },
+               { move:{ "loyalty.cu_deck":5 } }],
+      result:`The remaining days go to backbench measures and the benches rise in a better temper than they sat.` },
+    { label:"Rise early. Let the answer be the last thing said.",
+      brief:"Ending the session on the settlement rather than on ordinary "+
+        "business. Cheap, and it wastes time that had a use.",
+      effects:[{ move:{ public_standing:4 } },
+               { move:{ legitimacy:3 } },
+               { move:{ party_loyalty:-5 } },
+               { wire:"HOUSE RISES EARLY; SESSION CLOSES ON THE SETTLEMENT" }],
+      result:`The House rises early and the record closes on the answer with nothing after it.` }
+  ]},
+
 ];
