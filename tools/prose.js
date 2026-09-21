@@ -124,140 +124,26 @@ function loadContent() {
   return C;
 }
 
-/* ---------- walking ----------
-   An address is slash-separated. A step is an id where the thing has one and
-   an index where it does not, because a choice has no id and never has. */
-function step(node, key) {
-  if (Array.isArray(node)) {
-    const item = node[key];
-    return (item && item.id) ? String(item.id) : String(key);
-  }
-  return String(key);
-}
-
-function collect(C) {
-  const out = [];
-  const seen = new Set();
-
-  function walk(node, addr, depth) {
-    if (node == null || depth > 8) return;
-    if (Array.isArray(node)) {
-      node.forEach((v, i) => walk(v, addr.concat(step(node, i)), depth + 1));
-      return;
-    }
-    if (typeof node !== "object") return;
-    Object.keys(node).forEach(k => {
-      const v = node[k];
-      const here = addr.concat(k);
-      if (typeof v === "string") {
-        if (!PROSE.has(k) || NEVER.has(k)) return;
-        if (!v.trim()) return;
-        const a = here.join("/");
-        if (seen.has(a)) return;          /* two references to one object */
-        seen.add(a);
-        out.push({ addr: a, text: v });
-        return;
-      }
-      if (Array.isArray(v) && v.every(x => typeof x === "string")) {
-        if (!PROSE.has(k)) return;
-        v.forEach((s, i) => {
-          if (!s.trim()) return;
-          const a = here.concat(String(i)).join("/");
-          if (seen.has(a)) return;
-          seen.add(a);
-          out.push({ addr: a, text: s });
-        });
-        return;
-      }
-      walk(v, here, depth + 1);
-    });
-  }
-
-  Object.keys(C).filter(k => !/ById$|ByTerm$/.test(k))
-    .sort()
-    .forEach(k => walk(C[k], [k], 0));
-  return out;
-}
-
-/* The heading a human reads to know where they are. */
-function heading(C, addr) {
-  const parts = addr.split("/");
-  const coll = parts[0], id = parts[1];
-  const list = C[coll];
-  if (!Array.isArray(list)) return coll;
-  const item = list.find(x => x && String(x.id) === id) ||
-               (/^\d+$/.test(id) ? list[Number(id)] : null);
-  if (!item) return coll + " · " + id;
-  return coll + " · " + (item.title || item.name || item.id || id);
-}
+/* THE WALK LIVES IN js/prosemap.js, because prose.html needs exactly the
+   same one: an address that resolves in the tool and not in the editor
+   would be the worst kind of bug here, silently dropping an author's work
+   on the way back in. The module knows nothing about files or the DOM. */
+const Map_ = require(path.join(root, "js", "prosemap.js"));
+const collect = Map_.collect;
+const heading = (C, a) => Map_.heading(C, a);
 
 /* ---------- out ---------- */
 function writeFile(C, target) {
   const rows = collect(C);
-  const L = [];
-  L.push("THE PROSE OF WAYS AND MEANS");
-  L.push("=".repeat(70));
-  L.push("");
-  L.push("Every sentence a player reads, in one file. Edit freely; keep the");
-  L.push("@ lines exactly as they are, because they are how it goes back.");
-  L.push("");
-  L.push("A line starting with # inside a block is a note, and is dropped on");
-  L.push("the way back in. Blank lines are paragraph breaks and are kept.");
-  L.push("");
-  L.push(rows.length + " passages, " +
-         rows.reduce((n, r) => n + r.text.length, 0).toLocaleString() +
-         " characters.");
-  L.push("");
-  let lastHead = null;
-  rows.forEach(r => {
-    const h = heading(C, r.addr);
-    if (h !== lastHead) {
-      L.push("");
-      L.push("=".repeat(70));
-      L.push("== " + h);
-      L.push("=".repeat(70));
-      lastHead = h;
-    }
-    L.push("");
-    L.push("@ " + r.addr);
-    L.push(r.text);
-  });
-  L.push("");
-  fs.writeFileSync(target, L.join("\n"), "utf8");
+  fs.writeFileSync(target, Map_.format(C, rows), "utf8");
   return rows.length;
 }
 
 /* ---------- in ---------- */
-function parseFile(text, known) {
-  const lines = String(text).split(/\r?\n/);
-  const out = [];
-  let cur = null, buf = [];
-  const flush = () => {
-    if (!cur) return;
-    while (buf.length && !buf[0].trim()) buf.shift();
-    while (buf.length && !buf[buf.length - 1].trim()) buf.pop();
-    out.push({ addr: cur, text: buf.join("\n") });
-    cur = null; buf = [];
-  };
-  lines.forEach(line => {
-    const m = /^@ (\S+)\s*$/.exec(line);
-    /* A MARKER ONLY IF THE ADDRESS IS REAL. Prose beginning with an at sign
-       is therefore not a marker, which is the whole reason for the test. */
-    if (m && known.has(m[1])) { flush(); cur = m[1]; return; }
-    /* A BLOCK ALSO ENDS AT A HEADING, which is what the first version of
-       this missed: the ==== rules and the == title between one entry and
-       the next were being pushed into the PREVIOUS passage's buffer, and
-       flush() only trims blank lines, so every passage that happened to be
-       the last of its entry came back with a heading stapled to it. The
-       round-trip check found it immediately, which is the entire reason for
-       comparing bytes rather than eyeballing the file. */
-    if (/^={10,}$/.test(line) || /^== /.test(line)) { flush(); return; }
-    if (cur === null) return;                       /* preamble */
-    if (/^# /.test(line)) return;                   /* a note, not prose */
-    buf.push(line);
-  });
-  flush();
-  return out;
+function parseFile(text, knownSet) {
+  const known = {};
+  knownSet.forEach(k => { known[k] = 1; });
+  return Map_.parse(text, known);
 }
 
 /* JavaScript source spellings of one string, so the replacer can find it

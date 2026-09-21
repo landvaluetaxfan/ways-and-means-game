@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ways and Means — the prose</title>
+<link rel="stylesheet" href="css/terminal.css">
+<style>
+/* THE WORKBENCH IS NOT THE GAME. It borrows the terminal's stylesheet so a
+   preview looks like the thing it is previewing, and nothing else: the
+   chrome here is plain, because the author is reading their own sentences
+   and the furniture should get out of the way. */
+html,body{height:100%;margin:0;background:var(--chrome);color:var(--ink);
+  font-family:var(--f-ui);}
+#pw{display:grid;grid-template-columns:minmax(260px,320px) minmax(0,1fr) minmax(0,1fr);
+  grid-template-rows:auto minmax(0,1fr);height:100vh;gap:1px;background:var(--chrome-dkr);}
+#pw > header{grid-column:1/-1;background:var(--bar);color:var(--bar-txt);
+  display:flex;align-items:center;gap:10px;padding:5px 10px;font-size:12px;}
+#pw > header b{letter-spacing:.08em;text-transform:uppercase;font-weight:400;}
+#pw > header .sp{flex:1 1 auto;}
+#pw .col{background:var(--chrome);min-height:0;display:flex;flex-direction:column;}
+#pw .col > h2{margin:0;background:var(--bar);color:var(--bar-txt);
+  font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:400;
+  padding:3px 8px;display:flex;gap:8px;align-items:baseline;}
+#pw .col > h2 em{font-style:normal;color:var(--ink-soft);font-size:9.5px;}
+#pw .col > .b{flex:1 1 auto;min-height:0;overflow:auto;padding:6px 8px;}
+#tree{font-family:var(--f-data);font-size:11px;}
+#tree .grp{margin:0 0 2px;}
+#tree .ghead{cursor:pointer;padding:2px 4px;background:var(--field);
+  border:1px solid var(--rule);letter-spacing:.04em;}
+#tree .ghead:hover{background:var(--chrome-lt);}
+#tree .gbody{display:none;padding:1px 0 3px 8px;}
+#tree .grp.open > .gbody{display:block;}
+#tree .ent{margin:2px 0 3px;}
+#tree .ehead{cursor:pointer;padding:1px 3px;color:var(--ink-soft);}
+#tree .ehead:hover{color:var(--ink);}
+#tree .ent.open > .ehead{color:var(--ink);font-weight:600;}
+#tree .fields{display:none;padding-left:10px;}
+#tree .ent.open > .fields{display:block;}
+#tree button.f{display:block;width:100%;text-align:left;background:none;border:none;
+  color:var(--ink);font-family:var(--f-data);font-size:10.5px;padding:1px 3px;cursor:pointer;}
+#tree button.f:hover{background:var(--field);}
+#tree button.f.on{background:var(--sel-bg,#c9a227);color:#1d1d1b;}
+#tree button.f i{font-style:normal;color:var(--ink-soft);}
+#tree button.f.dirty::after{content:" \25cf";color:var(--alert);}
+#addr{font-family:var(--f-data);font-size:10px;color:var(--ink-soft);
+  padding:2px 8px;border-bottom:1px solid var(--rule);word-break:break-all;}
+#text{width:100%;flex:1 1 auto;min-height:220px;resize:none;
+  font-family:var(--f-read);font-size:14px;line-height:1.55;
+  background:var(--field);color:var(--ink);border:1px solid var(--rule);padding:8px;}
+#meta{font-size:10.5px;color:var(--ink-soft);padding:3px 8px;}
+#prev{background:#0d0f0c;}
+#prev .b{padding:0;}
+#prevwrap{padding:10px;}
+.pbtns{display:flex;gap:5px;padding:4px 8px;flex-wrap:wrap;}
+.pbtns .btn{font-size:10.5px;}
+#find{width:100%;font-family:var(--f-data);font-size:11px;padding:3px 5px;
+  background:var(--field);color:var(--ink);border:1px solid var(--rule);margin-bottom:5px;}
+.dirtyN{color:var(--alert);}
+</style>
+</head>
+<body>
+<div id="pw">
+  <header>
+    <b>The prose</b>
+    <span id="count"></span>
+    <span class="sp"></span>
+    <span id="dirty"></span>
+    <button class="btn" id="load">Load a prose.txt</button>
+    <button class="btn" id="save">Download prose.txt</button>
+    <input type="file" id="file" accept=".txt" style="display:none">
+  </header>
+
+  <div class="col">
+    <h2>Everything <em id="treecount"></em></h2>
+    <div class="b">
+      <input id="find" placeholder="filter — a word, an id, an address">
+      <div id="tree"></div>
+    </div>
+  </div>
+
+  <div class="col">
+    <h2><span id="where">Nothing selected</span> <em id="field"></em></h2>
+    <div id="addr"></div>
+    <div class="b" style="display:flex;flex-direction:column;padding:6px">
+      <textarea id="text" spellcheck="true" placeholder="Choose a passage on the left."></textarea>
+      <div id="meta"></div>
+    </div>
+    <div class="pbtns">
+      <button class="btn" id="revert">Revert this one</button>
+      <button class="btn" id="preview">Show it in the game</button>
+    </div>
+  </div>
+
+  <div class="col" id="prev">
+    <h2>As the player sees it <em id="prevnote"></em></h2>
+    <div class="b"><div id="prevwrap"></div></div>
+  </div>
+</div>
+
+<script src="content/setup.js"></script>
+<script src="content/parties.js"></script>
+<script src="content/stations.js"></script>
+<script src="content/constituencies.js"></script>
+<script src="content/cabinet.js"></script>
+<script src="content/instruments.js"></script>
+<script src="content/initiatives.js"></script>
+<script src="content/minutes.js"></script>
+<script src="content/functional.js"></script>
+<script src="content/labour.js"></script>
+<script src="content/names.js"></script>
+<script src="content/characters.js"></script>
+<script src="content/bills.js"></script>
+<script src="content/glossary.js"></script>
+<script src="content/events.js"></script>
+<script src="content/encyclopedia.js"></script>
+<script src="content/artifacts.js"></script>
+<script src="content/business.js"></script>
+<script src="content/settlements.js"></script>
+<script src="content/geo/world-countries.js"></script>
+<script src="content/world.js"></script>
+<script src="content/actors.js"></script>
+<script src="content/achievements.js"></script>
+<script src="content/anthem.js"></script>
+<script src="content/index.js"></script>
+<script src="js/tips.js"></script>
+<script src="js/artifacts.js"></script>
+<script src="js/setpiece.js"></script>
+<script src="js/prosemap.js"></script>
+<script src="js/prosepad.js"></script>
+</body>
+</html>

@@ -19,6 +19,7 @@
     "prose": "node tools/prose.js",
     "prose:in": "node tools/prose.js --in",
     "prose:check": "node tools/prose.js --check",
+    "prosepad": "node tools/prosetest.js",
     "bundle": "node tools/bundle.js",
     "build": "node tools/build.js",
     "inksig": "node tools/inksig.js",
