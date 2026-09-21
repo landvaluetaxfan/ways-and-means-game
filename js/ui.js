@@ -4593,6 +4593,11 @@ const UI = (function () {
     worldSelHead();
     side && side.querySelectorAll("[data-goto]").forEach(b =>
       b.addEventListener("click", () => openTarget(b)));
+    /* The anchor panel's link back to its host. */
+    side && side.querySelectorAll("[data-wiso]").forEach(b =>
+      b.addEventListener("click", () => {
+        World.select(b.dataset.wiso); cue("click"); drawWorld();
+      }));
   }
 
   /* The selection panel says what it is showing, so a column of prose is
@@ -4600,11 +4605,17 @@ const UI = (function () {
   function worldSelHead() {
     const hdr = $("#w-sel-hdr"), sub = $("#w-sel-sub");
     if (!hdr) return;
+    const anc = World.selectedAnchor();
     const body = World.selectedBody(), sel = World.selected();
-    if (body)      { hdr.textContent = "The body";  sub.textContent = "beyond the Earth"; }
+    if (anc) {
+      const a = (WORLD.anchors || []).find(x => x.id === anc);
+      hdr.textContent = a ? (a.tether || a.id) : "The anchor";
+      sub.textContent = a && a.mine ? (a.leased ? "leased" : "held") : "foreign";
+    }
+    else if (body) { hdr.textContent = "The body";  sub.textContent = "beyond the Earth"; }
     else if (sel)  { hdr.textContent = countryName(sel);
                      sub.textContent = "anchor host and sovereign"; }
-    else           { hdr.textContent = "What is selected"; sub.textContent = "click the globe"; }
+    else           { hdr.textContent = "What is selected"; sub.textContent = "click an anchor"; }
   }
 
   /* WHAT A COUNTRY IS, when you click it. The column is the window: the
@@ -4631,7 +4642,38 @@ const UI = (function () {
     return !!(st.flags && st.flags.station_issue);
   }
 
+  /* AN ANCHOR'S OWN PAGE. It used to have none: clicking a tether selected
+     its host and the window showed the country, so the twelve things the
+     globe exists to draw were the one subject it could not display. */
+  function worldAnchorHTML(id) {
+    const a = (WORLD.anchors || []).find(x => x.id === id);
+    if (!a) return `<div class="note">No such anchor.</div>`;
+    const held = a.mine ? (a.leased ? "Leased by the Commonwealth"
+                                    : "Held by the Commonwealth")
+                        : "Not the Commonwealth's";
+    let h = `<div class="w-c-h"><b>${esc(a.tether || a.id)}</b>` +
+      `<span class="w-c-iso">${esc(a.iso || "")}</span></div>`;
+    if (a.formal) h += `<div class="note">${esc(a.formal)}</div>`;
+    h += `<div class="prow"><div class="plab">Standing</div>` +
+      `<div class="pval axpos">${held}</div></div>` +
+      `<div class="prow"><div class="plab">Site</div>` +
+      `<div class="pval axpos">${esc(a.site || "\u2014")}</div></div>`;
+    if (a.station) h += `<div class="prow"><div class="plab">Serves</div>` +
+      `<div class="pval axpos">${esc(stationName(a.station))}</div></div>`;
+    /* THE HOST IS A LINK BACK, because the anchor beating the country to the
+       click is only reasonable if the country is still one step away. */
+    if (a.iso) h += `<div class="rulehead">Whose soil</div>` +
+      `<div class="fgn"><div class="fgn-h">` +
+      `<b><button class="lnk" data-wiso="${esc(a.iso)}">${esc(countryName(a.iso))}</button></b>` +
+      `</div>` + (((WORLD.states || {})[a.iso] || {}).note
+        ? `<div class="note">${esc((WORLD.states[a.iso] || {}).note)}</div>` : "") +
+      `</div>`;
+    return h;
+  }
+
   function worldSideHTML() {
+    const anc = World.selectedAnchor();
+    if (anc) return worldAnchorHTML(anc);
     const body = World.selectedBody();
     if (body) return worldBodyHTML(body);
     const sel = World.selected();
@@ -4642,7 +4684,12 @@ const UI = (function () {
         soil. Click one for what the Commonwealth depends on it for.</div>`;
     } else {
       const s = (WORLD.states || {})[sel] || {};
-      const here = (WORLD.anchors || []).filter(a => a.host === sel);
+      /* `a.iso` AND NOT `a.host`, the same fault as in js/world.js and missed
+         here when that one was fixed: host is "Brazil" and a selection is
+         "BRA", so this filter found nothing and the Anchors section has never
+         appeared on any country — on a tab whose whole subject is that the
+         anchors stand on somebody else's soil. */
+      const here = (WORLD.anchors || []).filter(a => a.iso === sel);
       h = `<div class="w-c-h"><b>${esc(cName)}</b><span class="w-c-iso">${esc(sel)}</span></div>`;
       if (s.note) h += `<div class="note">${esc(s.note)}</div>`;
       if (here.length) {

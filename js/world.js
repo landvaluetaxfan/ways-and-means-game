@@ -26,7 +26,8 @@ const World = (function () {
      moves the thing the player is trying to click and makes the first
      impression of the tab a toy rather than a map. Spinning is one button
      away and is remembered for the session once asked for. */
-  const view = { lat: 14, lng: 18, mode: "globe", auto: false, sel: null, zoom: 1 };
+  const view = { lat: 14, lng: 18, mode: "globe", auto: false, sel: null,
+                 anchor: null, zoom: 1 };
   let W = 720, H = 480, R = 200;
 
   function set(state, content) { st = state; C = content; }
@@ -69,7 +70,7 @@ const World = (function () {
      selection directly and the reference column went on showing the roster. */
   let onChange = null;
   function select(iso) {
-    view.body = null;
+    view.body = null; view.anchor = null;
     view.sel = (iso && iso !== view.sel) ? iso : (iso === view.sel ? null : iso);
     if (onChange) onChange();
     return view.sel;
@@ -77,8 +78,22 @@ const World = (function () {
   /* THE CAMPAIGN'S SUBJECT IS SELECTABLE TOO. A foreign body is not a country
      and not an anchor: it is the thing the session is about, and clicking its
      mark opens it in the same window a country uses. */
+  /* AN ANCHOR IS ITS OWN SUBJECT. Clicking the mark selected its HOST, which
+     is a different thing: a tether has a name, a formal designation, a site,
+     the station it serves and whether the Commonwealth holds it, leases it or
+     does not have it — none of which is a fact about Brazil. Three kinds of
+     selection now, and each clears the other two, because the window beside
+     the globe shows one thing at a time. */
+  function selectAnchor(id) {
+    view.sel = null; view.body = null;
+    view.anchor = (id && id !== view.anchor) ? id : (id === view.anchor ? null : id);
+    if (onChange) onChange();
+    return view.anchor;
+  }
+  function selectedAnchor() { return view.anchor || null; }
+
   function selectBody(id) {
-    view.sel = null;
+    view.sel = null; view.anchor = null;
     view.body = (id && id !== view.body) ? id : (id === view.body ? null : id);
     if (onChange) onChange();
     return view.body;
@@ -187,7 +202,8 @@ const World = (function () {
        stylesheet unreachable since it was written and selecting a country
        never lit the anchor standing on it. content/world.js now carries an
        `iso` on every anchor, which is also what makes the mark clickable. */
-    const cls = "w-anchor" + (mine ? " mine" : "") + (view.sel && a.iso === view.sel ? " sel" : "");
+    const cls = "w-anchor" + (mine ? " mine" : "") +
+      ((view.sel && a.iso === view.sel) || (view.anchor && a.id === view.anchor) ? " sel" : "");
     /* AND THE MARK IS THE TARGET, which it was not before. Selecting a host
        meant clicking its country OUTLINE — fine for Brazil, most of a
        fiction for São Tomé, whose whole territory is two pixels of island.
@@ -195,7 +211,7 @@ const World = (function () {
        it carries the `data-iso` and a tab stop: twelve of them, against the
        152 country paths that stay mouse-only decoration. */
     const label = (a.tether || a.id) + (a.host ? ", " + a.host : "");
-    return `<g class="${cls}" data-iso="${a.iso || ""}" tabindex="0" ` +
+    return `<g class="${cls}" data-anchor="${a.id}" data-iso="${a.iso || ""}" tabindex="0" ` +
       `role="button" aria-label="${label.replace(/"/g, "")}">` +
       `<line x1="${p.x.toFixed(1)}" y1="${p.y.toFixed(1)}" x2="${q.x.toFixed(1)}" y2="${q.y.toFixed(1)}"/>` +
       `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${mine ? 3.1 : 2.2}"/>` +
@@ -316,8 +332,14 @@ const World = (function () {
            drag threshold selects what it pressed — the target is remembered from
            the pointerdown, so it is the right element even if the drawing was
            repainted underneath. */
+        /* THE ANCHOR WINS OVER ITS HOST. The mark carries both, because the
+           country is still worth reaching from it, but a click aimed at a
+           tether means the tether — the author's note: selecting it
+           "automatically defaults to the country instead of the anchor". */
+        const an = downTarget.closest && downTarget.closest("[data-anchor]");
         const b = downTarget.closest && downTarget.closest("[data-body]");
-        if (b) selectBody(b.dataset.body);
+        if (an) selectAnchor(an.dataset.anchor);
+        else if (b) selectBody(b.dataset.body);
         else {
           const p = downTarget.closest && downTarget.closest("[data-iso]");
           if (p) select(p.dataset.iso);
@@ -335,6 +357,8 @@ const World = (function () {
        so a keyboard selection cannot diverge from a clicked one. */
     root.addEventListener("keydown", e => {
       if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+      const an = e.target.closest && e.target.closest("[data-anchor]");
+      if (an) { e.preventDefault(); selectAnchor(an.dataset.anchor); redraw(); return; }
       const g = e.target.closest && e.target.closest("[data-iso]");
       if (!g || !g.dataset.iso) return;
       e.preventDefault();
@@ -372,5 +396,6 @@ const World = (function () {
   }
 
   return { render, wire, set, toggle, mode, selected, select, selectBody, selectedBody, onSelect, auto, view,
+           selectAnchor, selectedAnchor,
            zoom, zoomBy, canZoom, ZOOM_MIN, ZOOM_MAX };
 })();
