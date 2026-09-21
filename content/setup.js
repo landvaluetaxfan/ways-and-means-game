@@ -20,6 +20,45 @@ const SETUP = {
      at 100 where above is surplus, private the share of the economy in
      private hands — excluding the eleven consortiums whose control
      carries a parliamentary vote and which therefore never float. */
+  /* THE YEARS BEFORE THE GAME (bible §7.10).
+
+     The live curves are per SITTING, and a sitting is a day with four of
+     them a week, so the sixty-point window the engine keeps is about fifteen
+     weeks. That is the right resolution for a price and the wrong one for an
+     economy: nothing structural happens inside fifteen weeks, so the chart
+     opened on a single point and said nothing about where any of it came
+     from.
+
+     These are ANNUAL readings, 2280 to 2287, and the last of each is the
+     opening value so the two scales join rather than contradicting. They are
+     authored canon and they say what the premise already implies:
+
+       participation falls, 45 to 39, because the threshold has stood at 168
+         hours throughout and instance-hours have been quietly replacing
+         waged work. This is the argument the divergence bill is about,
+         finally visible as a line.
+       trade rises, 88 to 100, on compute. It is the one thing this economy
+         makes that Earth and the belt will buy.
+       the prices are an index rebased to 100 at the opening, so a figure
+         below 100 is a year when the thing was CHEAPER. Thermal has risen
+         hardest, which is why the margin is 17 and why Ember Ridge is three
+         days from a shed order.
+       the reserve drains, 78,000 to 52,000 MW-years. Four administrations
+         spent it and none of them replaced it.
+
+     The engine reads this and never writes it: it is the record, and the
+     record does not change. */
+  history: {
+    from: 2280, to: 2287, unit: "year",
+    participation: [45, 44.2, 43.5, 42.4, 41.6, 40.8, 39.9, 39],
+    trade:         [88, 90, 91.5, 94, 95.5, 97, 98.5, 100],
+    thermal:       [71, 74, 78, 83, 88, 92, 96, 100],
+    substrate:     [78, 81, 84, 88, 91, 94, 97, 100],
+    volume:        [85, 87, 89, 91, 94, 96, 98, 100],
+    transit:       [92, 93, 95, 96, 97, 98, 99, 100],
+    solvency:      [78000, 74000, 70500, 66000, 62000, 58500, 55000, 52000]
+  },
+
   economy: { participation: 39, trade: 100, private: 0.72 },
 
   scalars: { party_loyalty:38, public_standing:44, consumables:71,

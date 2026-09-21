@@ -243,6 +243,13 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .bigchart .bar{flex:1 1 0;min-width:2px;background:var(--rule);position:relative;}
 .bigchart .bar.hi{background:var(--gold);}
 .bigchart .bar:hover{background:var(--ink-soft);}
+/* THE TIMESCALE CONTROL under the chart. Two buttons and a subtitle each,
+   because "The record" means nothing without the years beside it. */
+.cscale{display:flex;gap:6px;margin-top:8px;}
+.cscale .chv{flex:0 0 auto;text-align:left;line-height:1.15;padding:3px 8px;}
+.cscale .chv em{display:block;font-style:normal;font-size:8.5px;
+  letter-spacing:.04em;color:var(--ink-soft);text-transform:none;}
+.cscale .chv.on em{color:var(--ink);}
 .chartaxis{display:flex;justify-content:space-between;font-family:var(--f-data);
   font-size:9px;color:var(--ink-soft);padding:2px 2px 0;}
 .chartnow{font-family:var(--f-data);font-size:22px;line-height:1;}

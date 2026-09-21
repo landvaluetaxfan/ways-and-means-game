@@ -833,12 +833,81 @@ const UI = (function () {
   /* WHICH FIGURE IS TAKEN APART at the foot of the economy tab. A view
      preference for the session, so it lives here and not in the save. */
   let chartOn = "solvency";
+  /* WHICH TIMESCALE THE CHART IS ON. "session" is the engine's own
+     per-sitting curve — about fifteen weeks at four sitting days a week, so
+     the right resolution for a price and far too short to show anything
+     structural. "record" is the annual series content authors in
+     setup.history, 2280 to 2287, whose last point IS the opening value, so
+     switching between them reads as one story at two magnifications rather
+     than two stories. */
+  let chartScale = "session";
 
   /* THE SERIES BEHIND A FIGURE. Everything charted here is already kept —
      the prices keep sixty sittings of history and the state keeps its own —
      so nothing is stored for the chart's sake. A figure with no history
      charts as the one reading it has, which is honest: a bar is a bar. */
+  /* THE YEARS BEFORE THE GAME. Content owns them; this reads them and never
+     writes them. A measure with no authored past says so rather than drawing
+     a flat line, which would be a claim about history rather than an absence
+     of one. */
+  function recordSeries(key) {
+    const H = (C.setup && C.setup.history) || {};
+    /* INFLATION IS DERIVED HERE TOO, the same way Engine.inflation derives
+       the live one and the session chart derives its curve: the mean relative
+       change of the scarce goods against their own first reading. It said
+       "no annual record" before, which was true of the stored data and wrong
+       as an answer — the record is in the four price series and this is the
+       reading of them. Derived, never stored, which is the rule this project
+       learned from apportionment_ratio.
+
+       Over 2280 to 2287 it comes to about +24%: thermal +41, substrate +28,
+       volume +18, transit +9. That is the cost of existing in this
+       Commonwealth, and it is the reason every one of the four prices is an
+       argument. */
+    if (key === "inflation") {
+      const ks = ["thermal", "substrate", "volume", "transit"].filter(k => (H[k] || []).length);
+      if (!ks.length) return { label: "Cost of existing", unit: "%", pts: [],
+                               record: true, none: "No annual price record is kept." };
+      const n = Math.min.apply(null, ks.map(k => H[k].length));
+      const pts = [];
+      for (let i = 0; i < n; i++) {
+        let sum = 0, c = 0;
+        ks.forEach(k => {
+          const base = H[k][0];
+          if (!base) return;
+          sum += (H[k][i] - base) / base; c++;
+        });
+        pts.push(c ? Math.round(sum / c * 1000) / 10 : 0);
+      }
+      return { label: "Cost of existing", unit: "%", pts: pts, signed: true,
+               record: true, from: H.from, to: H.to };
+    }
+    const a = H[key];
+    const meta = PRICE_META.find(m => m.k === key);
+    const label = key === "participation" ? "Adults in paid work"
+                : key === "trade" ? "Trade balance"
+                : key === "solvency" ? "The reserve"
+                : key === "inflation" ? "Cost of existing"
+                : (meta || {}).label || key;
+    const unit = key === "participation" ? "per cent"
+               : key === "solvency" ? "MW-years" : "index";
+    if (!a || !a.length) return { label: label, unit: unit, pts: [], record: true,
+                                  none: "No annual record is kept for this." };
+    /* THE LIVE VALUE IS THE LAST POINT, not the authored one, once play has
+       moved it: the record runs to the opening and the present continues it,
+       so the curve stays one line. */
+    const pts = a.slice();
+    const live = key === "solvency" ? (st.scalars || {}).solvency
+               : key === "participation" || key === "trade"
+                 ? ((st.economy || {})[key])
+               : (st.prices || {})[key];
+    if (typeof live === "number") pts[pts.length - 1] = live;
+    return { label: label, unit: unit, pts: pts, record: true,
+             from: H.from, to: H.to };
+  }
+
   function chartSeries(key) {
+    if (chartScale === "record") return recordSeries(key);
     if (key === "inflation") {
       /* derived per sitting from the price histories, the same way
          Engine.inflation derives the live one: one source, read backwards. */
@@ -873,14 +942,49 @@ const UI = (function () {
     return { label: key, unit: "", pts: [st.scalars[key] || 0] };
   }
 
+  /* THE TWO TIMESCALES, as a control rather than a setting: a reader looking
+     at thermal wants both questions — what has it done this fortnight, and
+     what has it done since 2280 — and neither answer is a default the other
+     can be derived from. */
+  function chartScaleHTML() {
+    const b = (k, t, sub) =>
+      `<button class="chv rad${chartScale === k ? " on" : ""}" data-cscale="${k}">` +
+      `${t}<em>${sub}</em></button>`;
+    return `<div class="cscale">` +
+      b("session", "This session", "sitting by sitting") +
+      b("record", "The record", "2280\u20132287") +
+      `</div>`;
+  }
+  function wireChartScale(box) {
+    box.querySelectorAll("[data-cscale]").forEach(btn =>
+      btn.addEventListener("click", () => {
+        if (chartScale === btn.dataset.cscale) return;
+        chartScale = btn.dataset.cscale;
+        cue("click");
+        drawChart();
+      }));
+  }
+
   function drawChart() {
     const box = $("#chart-body"); if (!box) return;
     const s = chartSeries(chartOn);
     const hdr = $("#chart-hdr"), sub = $("#chart-sub");
     if (hdr) hdr.textContent = s.label;
-    if (sub) sub.textContent = s.pts.length > 1
-      ? s.pts.length + " sittings \u00b7 " + s.unit
-      : "one reading so far \u00b7 " + s.unit;
+    if (sub) sub.textContent = s.record
+      ? (s.pts.length ? s.from + " to " + s.to + " \u00b7 " + s.unit
+                      : "no annual record \u00b7 " + s.unit)
+      : s.pts.length > 1
+        ? s.pts.length + " sittings \u00b7 " + s.unit
+        : "one reading so far \u00b7 " + s.unit;
+
+    /* A MEASURE WITH NO PAST SAYS SO. Drawing a flat line for one would be a
+       claim about history rather than the absence of a record. */
+    if (s.record && !s.pts.length) {
+      box.innerHTML = `<div class="chartwrap"><div class="note">${esc(s.none)}</div></div>` +
+        chartScaleHTML();
+      wireChartScale(box);
+      return;
+    }
 
     const pts = s.pts.slice(-60);
     const now = pts.length ? pts[pts.length - 1] : 0;
@@ -905,10 +1009,13 @@ const UI = (function () {
           return `<i class="bar${i === pts.length - 1 ? " hi" : ""}" ` +
             `style="height:${pc}%" aria-hidden="true"></i>`;
         }).join("") + `</div>` +
-        `<div class="chartaxis"><span>${pts.length > 1
-            ? "sitting " + Math.max(1, st.sitting - pts.length + 1) : ""}</span>` +
-          `<span>${pts.length > 1 ? "sitting " + st.sitting : ""}</span></div>` +
-      `</div></div>`;
+        `<div class="chartaxis"><span>${
+            s.record ? String(s.to - pts.length + 1)
+            : pts.length > 1 ? "sitting " + Math.max(1, st.sitting - pts.length + 1) : ""}</span>` +
+          `<span>${s.record ? String(s.to)
+            : pts.length > 1 ? "sitting " + st.sitting : ""}</span></div>` +
+      `</div></div>` + chartScaleHTML();
+    wireChartScale(box);
   }
 
   function drawEconomy() {

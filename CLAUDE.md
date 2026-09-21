@@ -170,7 +170,7 @@ list over any older sentence here that implies a different one:
 | **Sitting** | the event, the docket, the calendar, and the one indicator panel |
 | **Government** | instruments · the document · what it can do · the ledger and cabinet, with the Tribunal and the Presidency folded at the edge |
 | **Chamber** | order-paper time, the order paper, the House, the whip, and who is counted |
-| **Economy** | the treasury, ways and means, the productive economy (§7.10), the prices and the law that sets them, the Underwriters' outlook, labour, and one chart anything above can be picked into |
+| **Economy** | the treasury, ways and means, the productive economy (§7.10), the prices and the law that sets them, the Underwriters' outlook, labour, and one chart anything above can be picked into **at either of two timescales** — the engine's per-sitting curve, or `setup.history`'s annual record 2280–2287, whose last point IS the opening value so the two join. The live window is about fifteen weeks (four sitting days a week), which is the right resolution for a price and far too short to show anything structural; that is what the record is for. `inflation` has no stored series and is derived from the four price series on both scales, never stored. |
 | **Party** | *renamed from Parties, and refocused 21 Sep.* The twelve grouped by their relation to the government — in government, confidence and supply, outside — with the per-partner ledger, what each bench can be moved on, ideological distance, the live measure they will not carry, their currents, every member, and the party outside Parliament |
 | **Orbit**, **World**, **Concordance**, **Record** | unchanged |
 
