@@ -2881,7 +2881,7 @@ been counting for weeks and has evidently arrived at a number he likes.
 You have until Thursday. Everything you do between now and then is the
 answer.`,
   choices:[
-    { text:"Note the motion, and go and count.",
+    { label:"Note the motion, and go and count.",
       effects:[
         { motion:3 }
       ],
@@ -2919,7 +2919,7 @@ for the Treasurer, who is also not answering?"
 The benches behind you do the arithmetic before you do. The ones in front of
 you already have.`,
   choices:[
-    { text:"Answer it. Take the afternoon and answer all of it.",
+    { label:"Answer it. Take the afternoon and answer all of it.",
       cost:{ slot:1 },
       note:"A day of the order paper, spent on the one thing nobody can amend.",
       effects:[
@@ -2927,7 +2927,7 @@ you already have.`,
         { wire:"PRIME MINISTER TAKES QUESTIONS FOR NINETY MINUTES; NO FIGURE WITHHELD" }
       ],
       result:"You answered the three, and the eleven behind them. The House went home late and nobody said the government was hiding." },
-    { text:"Refer him to the Treasurer and move to the next question.",
+    { label:"Refer him to the Treasurer and move to the next question.",
       note:"Costs nothing today.",
       effects:[
         { move:{ public_standing:-4, party_loyalty:-2 } },
@@ -2939,7 +2939,7 @@ you already have.`,
         { wire:"PRIME MINISTER REFERS RESERVE QUESTION TO THE TREASURY AGAIN" }
       ],
       result:"It cost nothing today. It is the fourth time, and the fourth time is the one the gallery counted." },
-    { text:"Ask him what he would have done, and keep asking.",
+    { label:"Ask him what he would have done, and keep asking.",
       note:"The benches will like it. The gallery has heard it.",
       effects:[
         { move:{ party_loyalty:5, public_standing:-2 } },

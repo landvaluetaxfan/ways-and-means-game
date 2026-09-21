@@ -364,9 +364,26 @@ const UI = (function () {
     });
 
     $("#cx-back").addEventListener("click", () => goCx(Concordance.back(), false));
+    /* ONE listener for the whole nav, extended rather than joined by a
+       second: the category headers collapse the list, and binding them
+       separately is how [data-go] came to fire twice. */
     document.getElementById("cx-nav").addEventListener("click", e => {
+      const cat = e.target.closest("[data-cxcat]");
+      if (cat) {
+        Concordance.toggleCat(cat.dataset.cxcat);
+        cue("click");
+        Concordance.render(st, C, cxCurrent, false);
+        return;
+      }
       const g = e.target.closest("[data-go]");
       if (g) goCx(g.dataset.go, true);
+    });
+    /* and by keyboard, since the headers are focusable */
+    document.getElementById("cx-nav").addEventListener("keydown", e => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const cat = e.target.closest("[data-cxcat]");
+      if (!cat) return;
+      e.preventDefault(); cat.click();
     });
 
     drawAll();

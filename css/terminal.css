@@ -14,6 +14,18 @@
   /* the amber between them. It was hardcoded in .whipcost and nowhere
      named, so the next thing that wanted it guessed. */
   --warn:#8a6d22;
+  /* and the gold, for the same reason and found the same way: the selection
+     tint lived as three raw hex values in tr.sel and the orbit chart, and a
+     dozen rules already reached for a --gold token WITH A HEX FALLBACK
+     behind it, guessing at a variable nothing defined. Selection, and the
+     affordances that lead to it, are these three.
+
+     The fallback spelling is described here rather than quoted, because
+     tools/uxtest.js asserts that no such spelling survives and a comment
+     demonstrating one would fail the check it is explaining. */
+  --gold:#c9a227;
+  --gold-lt:#f2e4b3;
+  --gold-dk:#d8c07a;
 
   --p-cu:#fe0000;
   --p-psa:#0c9bdf;
@@ -35,6 +47,12 @@
      tuned for screens. */
   --f-ui:"Liberation Sans Narrow","Arial Narrow",Arial,Helvetica,sans-serif;
   --f-read:"Segoe UI","Liberation Sans",Roboto,Helvetica,Arial,sans-serif;
+  /* Regular-width Arial, for the places where the compressed --f-ui is
+     wrong: the Concordance index is a reference work's own list of
+     titles, not government chrome, and Arial Narrow made two-hundred-odd
+     article names into a wall. Arial leads and Liberation Sans is the
+     metric-compatible stand-in where Arial is not installed. */
+  --f-sans:Arial,"Liberation Sans",Helvetica,sans-serif;
   --f-data:"DejaVu Sans Mono",Consolas,"Liberation Mono","Courier New",monospace;
   --f-doc:Georgia,"Liberation Serif","Times New Roman",Times,serif;
   --f-disp:"Bodoni MT",Didot,"Playfair Display",Georgia,"Liberation Serif","Times New Roman",serif;
@@ -209,12 +227,12 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 /* a figure you can ask about: the row becomes a control */
 .g-econ .prow.pick{cursor:pointer;}
 .g-econ .prow.pick:hover{background:var(--field);}
-.g-econ .prow.pick.on{background:var(--field);box-shadow:inset 2px 0 0 var(--sel-bg,#c9a227);}
+.g-econ .prow.pick.on{background:var(--field);box-shadow:inset 2px 0 0 var(--gold);}
 /* the big chart: bars, because a quantity per sitting is a bar */
 .bigchart{display:flex;align-items:flex-end;gap:1px;height:100%;min-height:110px;
   padding:4px 2px 0;}
 .bigchart .bar{flex:1 1 0;min-width:2px;background:var(--rule);position:relative;}
-.bigchart .bar.hi{background:var(--sel-bg,#c9a227);}
+.bigchart .bar.hi{background:var(--gold);}
 .bigchart .bar:hover{background:var(--ink-soft);}
 .chartaxis{display:flex;justify-content:space-between;font-family:var(--f-data);
   font-size:9px;color:var(--ink-soft);padding:2px 2px 0;}
@@ -312,10 +330,21 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #party-mps tr.ph td{color:var(--ink-soft);}
 /* A PARTY THAT OPENS ONTO ITS CURRENTS. Not .sel — this is a fold, not a
    selection, and .sel means one thing (uxtest asserts it). */
+/* THE ROWS THAT OPEN, AND THE ONES THAT DO NOT. Only a party with currents
+   has anything under it, so only some rows are clickable — and a caret at
+   .7 opacity in the data font read as decoration, which meant the reader
+   had to hover every row to find out which ones did anything. The affordance
+   is now a drawn control: a bordered chevron box, in the accent, that a row
+   without currents simply does not have. */
 tr.compable{cursor:pointer;}
 tr.compable:hover{background:var(--field);}
-.compcar{float:right;font-family:var(--f-data);opacity:.7;padding-left:6px;}
+tr.compable:hover .compcar{border-color:var(--gold);color:var(--gold);}
+.compcar{float:right;margin-left:8px;width:13px;height:13px;line-height:11px;
+  text-align:center;font-family:var(--f-data);font-size:9px;
+  border:1px solid var(--chrome-dkr);color:var(--ink-soft);
+  border-radius:2px;transition:none;}
 tr.compopen{background:var(--field);}
+tr.compopen .compcar{border-color:var(--gold-dk);color:var(--ink);background:var(--gold);}
 .compdet > td{padding:0;}
 .cdet{border-left:2px solid var(--rule);margin:0 0 3px 10px;padding:3px 0 3px 8px;}
 .cdrow{display:flex;gap:8px;align-items:baseline;font-size:11.5px;padding:1px 0;}
@@ -348,19 +377,19 @@ tr.compopen{background:var(--field);}
 .w-c{fill:#3a4433;stroke:#6f7a63;stroke-width:.4;cursor:pointer;}
 .w-c:hover{fill:#4d5a42;}
 .w-c.has{fill:#55502f;}
-.w-c.sel{fill:#c9a227;stroke:#f0e6c8;stroke-width:.8;}
+.w-c.sel{fill:var(--gold);stroke:#f0e6c8;stroke-width:.8;}
 .w-anchor line{stroke:#7f8a72;stroke-width:.8;stroke-dasharray:2 2;}
 .w-anchor circle{fill:none;stroke:#8f9a80;stroke-width:1;}
-.w-anchor.mine line{stroke:var(--gold,#c9a227);stroke-dasharray:none;stroke-width:1.4;}
-.w-anchor.mine circle{stroke:var(--gold,#c9a227);}
-.w-anchor.mine circle:first-of-type{fill:var(--gold,#c9a227);}
+.w-anchor.mine line{stroke:var(--gold);stroke-dasharray:none;stroke-width:1.4;}
+.w-anchor.mine circle{stroke:var(--gold);}
+.w-anchor.mine circle:first-of-type{fill:var(--gold);}
 .w-anchor.sel circle{stroke:#f0e6c8;}
 /* THE FOREIGN BODY. Warning colour while it is outside the Commonwealth, gold
    once it has been annexed — the campaign's question answered in one colour. */
 .w-body line{stroke:var(--warn,#a4632a);stroke-width:1.2;stroke-dasharray:3 2;}
 .w-body circle{fill:var(--warn,#a4632a);stroke:#12150f;stroke-width:1;cursor:pointer;}
-.w-body.in line{stroke:var(--gold,#c9a227);stroke-dasharray:none;}
-.w-body.in circle{fill:var(--gold,#c9a227);}
+.w-body.in line{stroke:var(--gold);stroke-dasharray:none;}
+.w-body.in circle{fill:var(--gold);}
 /* THE SELECTED COUNTRY'S HEAD. Bigger than a rulehead, because it is a window
    and the country is the subject of it. */
 .w-c-h{display:flex;align-items:baseline;gap:6px;border-bottom:1px solid var(--ink-soft);
@@ -588,7 +617,7 @@ tr.compopen{background:var(--field);}
 #cons-table th.held,#cons-table td.held{width:1%;text-align:center;white-space:nowrap;}
 #cons-table .hs{font-style:normal;font-family:var(--f-data);font-size:11px;
   letter-spacing:.04em;color:var(--ink-soft);}
-#cons-table .chair{color:#c9a227;letter-spacing:.06em;}
+#cons-table .chair{color:var(--gold);letter-spacing:.06em;}
 /* Office badges — a mark, not a title: one word, spaced, coloured by how
    senior the office is. Speaker gold is the Chair's, above; these are the
    rest. font-style normal because the <i> is only a hook. */
@@ -604,7 +633,7 @@ tr.compopen{background:var(--field);}
 #cons-table .atlarge{font-style:normal;letter-spacing:.05em;color:var(--ink-soft);}
 /* The capital territory's delegate: a seat that may speak and not vote. */
 #cons-table .nonvote{font-style:normal;letter-spacing:.05em;color:#7a6428;
-  border:1px solid #c9a227;padding:0 3px;}
+  border:1px solid var(--gold);padding:0 3px;}
 /* The caret and the expanded detail row. The dossier that used to sit in a
    panel of its own is now one row per seat, opened from the row it belongs
    to. No transition: the rotation is a state, and a state that eases in is
@@ -664,7 +693,7 @@ tr.compopen{background:var(--field);}
   padding:2px 6px 4px;border:1px solid #2f3529;background:#1a1f16;
   color:#d7dccb;font:inherit;font-size:11.5px;cursor:pointer;text-align:left;}
 .ochip:hover{border-color:#6d7566;background:#212719;}
-.ochip.on{border-color:var(--alert-lt,#c9a227);background:#272d1d;}
+.ochip.on{border-color:var(--gold);background:#272d1d;}
 /* .plate svg is width:100% for the full-bleed diagrams; a chip glyph is a
    13px icon and must win that. */
 .plate .oglyph,.okey .oglyph{display:block;flex:0 0 13px;width:13px;height:13px;}
@@ -786,8 +815,8 @@ td.n,th.n{text-align:right;font-family:var(--f-data);font-size:11px;}
    tint with a red gutter, a green hatch, a grey ghost. They used to borrow
    .sel, which is how a row that was merely disloyal came to look identical
    to a row you had chosen. */
-tr.sel td{background:#f2e4b3;color:var(--ink);border-color:#d8c07a;}
-tr.sel td:first-child{box-shadow:inset 3px 0 0 #c9a227;}
+tr.sel td{background:var(--gold-lt);color:var(--ink);border-color:var(--gold-dk);}
+tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--gold);}
 
 /* A GUTTER: something is wrong with this row. #gov-currents, loyalty under 20. */
 tr.warn td{background:#efe0da;}
@@ -976,7 +1005,7 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 .stsub{font-family:var(--f-data);font-size:7px;fill:#818d72;}
 .gridln{stroke:#2b3226;stroke-width:1;}
 .gridln.hard{stroke:#3f4a37;}
-.tether{stroke:#c9a227;stroke-width:1;stroke-dasharray:3 2;}
+.tether{stroke:var(--gold);stroke-width:1;stroke-dasharray:3 2;}
 .loopln{stroke:#5f9ea0;stroke-width:1.5;}
 .earthfill{fill:#1d2a1a;stroke:#4a5c40;stroke-width:1;}
 
@@ -1214,10 +1243,10 @@ img.dith{display:block;}
    Deliberately NOT government chrome: this is something civilians
    made, so it gets a serif, generous leading and white paper.
    ============================================================= */
-.cx-wrap{display:grid;grid-template-columns:186px minmax(0,1fr);height:100%;background:#fbfbf9;}
+.cx-wrap{display:grid;grid-template-columns:248px minmax(0,1fr);height:100%;background:#fbfbf9;}
 #cx-side{
   background:#f2f2ee;border-right:1px solid #c3c6bd;padding:8px 0 20px;
-  overflow:auto;font-family:var(--f-ui);
+  overflow:auto;font-family:var(--f-sans);
 }
 .cx-brand{padding:0 10px 8px;border-bottom:1px solid #c3c6bd;margin-bottom:8px;}
 .cx-brand h3{
@@ -1233,12 +1262,27 @@ img.dith{display:block;}
   background:#fff;
 }
 .cx-navcat{
+  font-family:var(--f-ui);
   font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:#6a6d64;
-  padding:8px 10px 2px;border-bottom:1px solid #dcdfd6;margin-bottom:2px;
+  padding:6px 10px 4px;border-bottom:1px solid #dcdfd6;margin-bottom:2px;
+  cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none;
 }
+.cx-navcat:hover{background:#e8e9e2;color:#1b1d19;}
+.cx-navcat:focus{outline:1px dotted #6a6d64;outline-offset:-2px;}
+.cx-navcat.open{color:#1b1d19;}
+/* the same drawn chevron the composition table uses */
+.cx-cat-car{
+  flex:0 0 auto;width:13px;height:13px;line-height:11px;text-align:center;
+  font-family:var(--f-data);font-size:9px;letter-spacing:0;
+  border:1px solid #b4b7ad;border-radius:2px;color:#6a6d64;background:#fbfbf9;
+}
+.cx-navcat.open .cx-cat-car{background:var(--gold);border-color:var(--gold-dk);color:#fff;}
+.cx-navcat:hover .cx-cat-car{border-color:var(--gold-dk);}
+.cx-cat-n{margin-left:auto;font-family:var(--f-data);font-size:9px;letter-spacing:0;
+  color:#8a8d84;}
 .cx-navlink{
-  display:block;padding:1px 10px 1px 14px;font-size:12.5px;color:#2b4a7a;cursor:pointer;
-  text-decoration:none;line-height:1.35;
+  display:block;padding:1.5px 10px 1.5px 29px;font-size:12.5px;color:#2b4a7a;cursor:pointer;
+  text-decoration:none;line-height:1.35;font-family:var(--f-sans);
 }
 .cx-navlink:hover{text-decoration:underline;background:#e8e9e2;}
 .cx-navlink.on{background:#e0e4d6;color:#1b1d19;font-weight:bold;}
@@ -1351,7 +1395,7 @@ img.dith{display:block;}
 .ost{cursor:pointer;}
 .ost:hover .stlbl{fill:#fff;}
 .ost:focus{outline:none;}
-.ost:focus .stlbl{fill:#c9a227;}
+.ost:focus .stlbl{fill:var(--gold);}
 .okeys{
   display:flex;flex-direction:column;gap:2px;
   border-top:1px solid var(--chrome-dk);background:var(--chrome);
@@ -1648,15 +1692,15 @@ body.menu-on{background:#0b1826;}
   border:1px solid rgba(233,234,226,.16);border-left:3px solid #3a4433;
   backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
 .aw:hover{background:rgba(60,64,56,.6);}
-.aw.has{border-left-color:var(--gold,#c9a227);}
+.aw.has{border-left-color:var(--gold);}
 .aw.canon{border-left-width:5px;}
 .aw.canon.has{background:rgba(201,162,39,.14);}
 .aw:not(.has){opacity:.62;}
 .aw-badge{position:relative;flex:0 0 auto;width:22px;height:22px;border-radius:50%;
   border:1px solid rgba(233,234,226,.3);}
-.aw.has .aw-badge{border-color:var(--gold,#c9a227);}
+.aw.has .aw-badge{border-color:var(--gold);}
 .aw.has .aw-badge::after{content:"";position:absolute;inset:5px;border-radius:50%;
-  background:var(--gold,#c9a227);}
+  background:var(--gold);}
 .aw b{font-family:var(--f-doc);font-size:11.5px;line-height:1.2;color:#e6e7de;}
 .aw.has b{color:#f0e6c8;}
 .aw-mark{font-family:var(--f-data);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;
@@ -2177,7 +2221,7 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
    row went see-through and the light panel stock showed through it as a
    white flash. Second time this token has been invented; tools/lint.js
    now fails on an undefined custom property. */
-.ch.open{background:var(--field);border-color:#d8c07a;}
+.ch.open{background:var(--field);border-color:var(--gold-dk);}
 /* SELECTED IS THE GOLD TINT, the standard every table in the game now
    uses (tr.sel). The open row used to be the dark inverted block, which
    is precisely the treatment that was retired from the tables for
@@ -2189,8 +2233,8 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 }
 .ch-head:hover{background:var(--chrome-dk);}
 .ch.open .ch-head{
-  background:#f2e4b3;color:var(--ink);
-  box-shadow:inset 3px 0 0 #c9a227;
+  background:var(--gold-lt);color:var(--ink);
+  box-shadow:inset 3px 0 0 var(--gold);
 }
 .ch.open .ch-head:hover{background:#eeddA4;}
 .ch-arrow{font-family:var(--f-data);font-size:10px;opacity:.7;flex:0 0 auto;}
@@ -2211,7 +2255,7 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .cm.cost {border-style:dashed;}
 .cm.owed {border-width:1px 1px 1px 3px;font-weight:700;}
 .cm.grave{border-style:double;border-width:3px;}
-.ch.open .cm{border-color:#c9a227;}
+.ch.open .cm{border-color:var(--gold);}
 
 .ch-body{padding:8px 10px 10px;border-top:1px solid var(--rule);}
 /* THE CHOICE IN PROSE, above the numbers it moves. The effects say what the
@@ -2567,7 +2611,7 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
 .calnext .cn{padding:2px 0;}
 .calnext button.cn{display:block;width:100%;text-align:left;background:none;
   border:0;font:inherit;color:inherit;cursor:pointer;}
-.calnext button.cn:hover b{color:var(--gold,#c9a227);}
+.calnext button.cn:hover b{color:var(--gold);}
 .calnext button.cn:focus-visible{outline:1px dotted var(--ink);outline-offset:1px;}
 .calnext .cn b{display:block;font-size:11.5px;font-weight:400;}
 .calnext .cn i{display:block;font-style:normal;font-family:var(--f-data);
@@ -2993,7 +3037,7 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
    was a fair instinct and an ugly one: twelve of them in a legend read as
    a page of corrections. It shows itself on approach instead. */
 .pnm{color:inherit;text-decoration:none;cursor:pointer;}
-.pnm:hover,.pnm:focus-visible{color:var(--gold,var(--warn));}
+.pnm:hover,.pnm:focus-visible{color:var(--gold);}
 .pnm:focus-visible{outline:1px dotted var(--ink);outline-offset:1px;}
 /* The picture in a tip card. Small, and it never pushes the text around:
    a missing file removes the node (js/tips.js imgLine). */
@@ -3132,7 +3176,7 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
   padding:5px 16px;color:var(--ink);background:var(--chrome);
   border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
   border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);}
-.sp-go:hover{color:var(--gold,#c9a227);}
+.sp-go:hover{color:var(--gold);}
 .sp-go:active{border-color:var(--chrome-dkr) var(--chrome-dkr) var(--chrome-lt) var(--chrome-lt);}
 .sp-go:focus-visible{outline:1px dotted var(--ink);outline-offset:2px;}
 

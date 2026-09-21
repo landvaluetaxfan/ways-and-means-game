@@ -602,6 +602,29 @@ const initBad = [];
 });
 section("INITIATIVES WHOSE ANSWER DOES NOT EXIST", initBad, x => x);
 
+/* =============================================================
+   A CHOICE THE RENDERER CANNOT LABEL
+
+   js/ui.js draws a choice button as `esc(c.label)`, and four choices in
+   content/events.js were authored with `text:` instead — so the game drew
+   three buttons reading "undefined" at Questions to the Prime Minister,
+   which fires at sitting 4 and every fourth sitting after it, and one more
+   on the no-confidence motion, which is the event the whole game is about.
+
+   Nothing caught it. `text` is a real field elsewhere in the schema and both
+   spellings are on the prose tool's whitelist, so the passages exported,
+   round-tripped and linted clean while the player read the word `undefined`.
+   A static check for "the field the renderer actually reads" is the only
+   thing that would have.
+   ============================================================= */
+const labelBad = [];
+EVENTS.forEach(e => (e.choices || []).forEach((c, i) => {
+  if (typeof c.label !== "string" || !c.label.trim())
+    labelBad.push(`${e.id} choice ${i + 1}` +
+      (c.text ? ` — has text:"${String(c.text).slice(0, 40)}", wants label:` : " — no label"));
+}));
+section("CHOICES THE GAME WOULD DRAW AS \"undefined\"", labelBad, x => x);
+
 R.push("=".repeat(60));
 R.push(n ? `${n} legibility issues` : "no legibility issues");
 if (artBad.length) R.push(`${artBad.length} ARTIFACT SHAPE FAILURES`);
@@ -610,6 +633,7 @@ if (cssBad.length) R.push(`${cssBad.length} UNDEFINED CSS CUSTOM PROPERTIES`);
 if (parseBad.length) R.push(`${parseBad.length} STYLESHEET PARSE FAILURES`);
 if (verbBad.length) R.push(`${verbBad.length} RETIRED EFFECT VERBS IN CONTENT`);
 if (initBad.length) R.push(`${initBad.length} INITIATIVES WITH NO ANSWER`);
+if (labelBad.length) R.push(`${labelBad.length} UNLABELLED CHOICES`);
 if (popBad.length) R.push("THE POPULATION IS STORED TWICE AND HAS DRIFTED (advisory)");
 console.log(R.join("\n"));
 /* HARD FAILURES: everything except popBad. The chain is one of them now —
@@ -620,4 +644,5 @@ console.log(R.join("\n"));
    edit and a content fix, not a call a linter gets to make, and a check that
    fails from the day it lands gets disabled rather than fixed. */
 if (artBad.length || chainBad.length || cssBad.length || verbBad.length ||
-    parseBad.length || initBad.length || gridBad.length || targetBad.length) process.exit(1);
+    parseBad.length || initBad.length || gridBad.length || targetBad.length ||
+    labelBad.length) process.exit(1);

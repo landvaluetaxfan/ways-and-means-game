@@ -439,22 +439,72 @@ const Concordance = (function () {
     drawArticle(a);
   }
 
+  /* WHICH CATEGORIES ARE OPEN. The nav listed every article in every
+     category at once — around two hundred and forty links in a 186px
+     column, so finding anything meant scrolling past nine categories you
+     were not looking for. The categories collapse now, and the one holding
+     the article you are reading opens itself.
+
+     `null` means "not yet decided", which is how the FIRST render knows to
+     open the current article's category without that counting as a choice
+     the reader made. After that the set is theirs. */
+  let openCats = null;
+
+  /* THE CATEGORIES THAT START CLOSED, and it is a decision rather than a
+     rule about size — though size is how you can tell. The hand-written
+     categories run to five articles each and are what the Concordance is
+     FOR: they explain the institutions, the franchise and the law. The
+     generated ones are a catalogue. Measured:
+
+         Constituencies  141      Institutions             5
+         Persons          54      Economy                  4
+         Stations         35      Personhood               3
+         Definitions      27      Elections                2
+         The Earth        15      Constitutional theory    1
+         Parties          12      History                  1
+
+     So everything an author wrote is open on arrival — about twenty-eight
+     links — and the six catalogues are a heading you open when you want a
+     particular seat or a particular person. Listing all two hundred and
+     eighty at once is what the collapse was added to stop.
+
+     Parties is a catalogue by construction and open anyway: twelve of them,
+     and which party is which is the thing a reader of this game looks up
+     most. */
+  const CLOSED = new Set(["Constituencies", "Persons", "Stations",
+                          "Definitions", "The Earth", "Anchors"]);
+
+  function toggleCat(k) {
+    if (!openCats) openCats = new Set();
+    if (openCats.has(k)) openCats.delete(k); else openCats.add(k);
+    return true;
+  }
+
   function drawNav(current) {
     const cats = {};
     all.forEach(a => (cats[a.category] ||= []).push(a));
     const order = ["Institutions", "Constitutional theory", "Elections", "Legislation",
-                   "Personhood", "Parties", "Stations", "Constituencies", "The Earth",
-                   "Anchors", "Persons", "History", "Definitions"];
+                   "Economy", "Personhood", "History", "Parties", "Stations",
+                   "Constituencies", "The Earth", "Anchors", "Persons", "Definitions"];
     const keys = Object.keys(cats).sort((x, y) => {
       const ix = order.indexOf(x), iy = order.indexOf(y);
       return (ix < 0 ? 99 : ix) - (iy < 0 ? 99 : iy);
     });
-    document.getElementById("cx-nav").innerHTML = keys.map(k =>
-      `<div class="cx-navcat">${k}</div>` +
-      cats[k].sort((p, q) => p.title.localeCompare(q.title)).map(a =>
-        `<a class="cx-navlink${a.id === current.id ? " on" : ""}" tabindex="0" data-go="${a.id}">${a.title}` +
-        (a.generated ? "" : " <em>&sect;</em>") + `</a>`).join("")
-    ).join("");
+    /* Follow the reader: navigating into a collapsed category opens it, so a
+       cross-reference from the Chamber tab never lands on a nav that does not
+       show where you are. */
+    if (!openCats) openCats = new Set(keys.filter(k => !CLOSED.has(k)));
+    if (current && current.category) openCats.add(current.category);
+
+    document.getElementById("cx-nav").innerHTML = keys.map(k => {
+      const open = openCats.has(k), n = cats[k].length;
+      return `<div class="cx-navcat${open ? " open" : ""}" tabindex="0" data-cxcat="${k.replace(/"/g, "&quot;")}">` +
+        `<span class="cx-cat-car" aria-hidden="true">${open ? "\u2212" : "+"}</span>` +
+        `${k}<span class="cx-cat-n">${n}</span></div>` +
+        (open ? cats[k].sort((p, q) => p.title.localeCompare(q.title)).map(a =>
+          `<a class="cx-navlink${a.id === current.id ? " on" : ""}" tabindex="0" data-go="${a.id}">${a.title}` +
+          (a.generated ? "" : " <em>&sect;</em>") + `</a>`).join("") : "");
+    }).join("");
   }
 
   function drawArticle(a) {
@@ -569,5 +619,5 @@ const Concordance = (function () {
     return history[history.length - 1];
   }
 
-  return { render, search, hits, renderHits, back };
+  return { render, search, hits, renderHits, back, toggleCat };
 })();

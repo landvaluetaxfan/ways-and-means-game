@@ -78,51 +78,10 @@ const PROSE = new Set([
 const NEVER = new Set(["id", "ref", "kind", "art", "mood", "speaker", "party",
   "holder", "leader", "station", "seat", "band", "form", "tier", "franchise"]);
 
-const files = ["content/setup.js","content/parties.js","content/stations.js",
-  "content/constituencies.js","content/cabinet.js","content/instruments.js",
-  "content/initiatives.js","content/minutes.js","content/functional.js",
-  "content/labour.js","content/names.js","content/characters.js",
-  "content/bills.js","content/events.js","content/glossary.js",
-  "content/encyclopedia.js","content/artifacts.js","content/business.js",
-  "content/settlements.js","content/actors.js","content/achievements.js",
-  "content/world.js","content/index.js"];
-
-/* THE TOOLTIPS ARE PROSE TOO, and they are not in content/. js/tips.js
-   carries a few hundred sentences explaining the terminal, in a plain object
-   keyed by tip id, and they were invisible to this tool because it only
-   walked the content files — so the answer to "are the tooltips editable?"
-   was no, and I had said yes.
-
-   It loads under a stub DOM because the module only touches the document
-   inside wire(), which nothing calls here. If that ever stops being true
-   the round-trip check fails loudly rather than the tips quietly vanishing
-   from the file. */
-function loadTips() {
-  const stub = {
-    document: { addEventListener() {}, querySelector() { return null },
-                createElement() { return { style: {}, classList: { add() {}, remove() {} },
-                                           appendChild() {} }; },
-                body: { appendChild() {} } },
-    CSS: { supports() { return true; } }
-  };
-  stub.window = stub;
-  try {
-    vm.runInNewContext(fs.readFileSync(path.join(root, "js", "tips.js"), "utf8") +
-      "\n;__T = (typeof Tips !== 'undefined' && Tips.TIPS) || null;", stub);
-    return stub.__T || null;
-  } catch (e) { return null; }
-}
-
-function loadContent() {
-  const src = files.filter(f => fs.existsSync(path.join(root, f)))
-    .map(f => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
-  const ctx = {};
-  vm.runInNewContext(src + "\n;__C = CONTENT;", ctx);
-  const C = ctx.__C;
-  const tips = loadTips();
-  if (tips) C.tips = tips;          /* a pseudo-collection, home js/tips.js */
-  return C;
-}
+/* Loading them is tools/loadcontent.js, shared with tools/register.js:
+   the content files are script-scope `const`s collected by index.js, so
+   they must be concatenated and run in one context, never required. */
+const { loadContent } = require("./loadcontent.js");
 
 /* THE WALK LIVES IN js/prosemap.js, because prose.html needs exactly the
    same one: an address that resolves in the tool and not in the editor

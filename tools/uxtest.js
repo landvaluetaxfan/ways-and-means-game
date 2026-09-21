@@ -195,8 +195,16 @@ try {
   const css2 = fs.readFileSync(path.join(root, "css/terminal.css"), "utf8");
   ["tr.warn td", "tr.inforce td", "tr.vacant td"].forEach(sel =>
     ok("a rule of its own for " + sel, css2.includes(sel)));
+  /* The tint was three raw hex values in four rules and one guessed
+     `var(--gold,#c9a227)`; it is now named in :root. Assert the NAME, and
+     that the name resolves, which the hex literal could not tell you. */
   ok("selection is a gold tint, distinct from all three",
-     /tr\.sel td\{background:#f2e4b3/.test(css2));
+     /tr\.sel td\{background:var\(--gold-lt\)/.test(css2));
+  ok("and the gold is named rather than guessed at",
+     /--gold:\s*#[0-9a-f]{6}/i.test(css2) && /--gold-lt:\s*#[0-9a-f]{6}/i.test(css2) &&
+     /--gold-dk:\s*#[0-9a-f]{6}/i.test(css2) &&
+     !/var\(--gold\s*,/.test(css2),
+     "three tokens, no fallback spellings");
 
   /* NOTHING ABOUT PICKING A ROW FADES. A selection that eases in is one you
      are not sure you made, and the same goes for focus. */
@@ -416,6 +424,26 @@ try {
   /* the harness stubs anchor clicks so that a download link cannot throw;
      deleting the override falls back to HTMLElement's real one. */
   delete w.HTMLAnchorElement.prototype.click;
+
+  /* THE NAV COLLAPSES NOW, so the visible link count is a function of which
+     categories are open and no longer measures reachability on its own. The
+     six generated catalogues (Constituencies at 141, Persons at 54) start
+     closed. Open every category first: that exercises the toggle AND
+     restores the guarantee this assertion was written for. */
+  const cats = [...w.document.querySelectorAll("#cx-nav [data-cxcat]")];
+  ok("the Concordance index has collapsible categories", cats.length >= 6,
+     cats.length + " categories");
+  ok("and each category heading is a tab stop",
+     cats.every(c => c.getAttribute("tabindex") === "0"),
+     cats.filter(c => c.getAttribute("tabindex") !== "0").length + " unreachable");
+  const shut = cats.filter(c => !c.classList.contains("open"));
+  ok("with the big catalogues shut on arrival", shut.length >= 4,
+     shut.length + " of " + cats.length + " closed");
+  const before = w.document.querySelectorAll("#cx-nav .cx-navlink").length;
+  shut.forEach(c => c.click());
+  const after = w.document.querySelectorAll("#cx-nav .cx-navlink").length;
+  ok("and opening them reveals the rest of the index", after > before,
+     before + " links shut, " + after + " open");
 
   const links = [...w.document.querySelectorAll("#s-cx [data-go], #s-cx [data-anchor]")];
   const unreachable = links.filter(a => a.getAttribute("tabindex") !== "0");
