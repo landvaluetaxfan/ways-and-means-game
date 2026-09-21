@@ -49,6 +49,35 @@ the work is already in, the file is stale and should be deleted.
 
 A live instruction from the author always beats it.
 
+## The prose file
+
+The author edits prose in one place now, and it is not the content files.
+
+```
+npm run prose        write prose.txt — every sentence in the game
+npm run prose:in     put an edited prose.txt back
+npm run prose:check  the round trip (already part of npm run check)
+```
+
+There is also **prose.html**, a browser page that does the same thing with a
+tree, a live preview and a download button. `npm run prosepad` checks it.
+
+**If the author hands you an edited prose.txt: put it at the repository root
+and run `npm run prose:in`.** That is the whole job. It replaces each passage
+in its own content file surgically and leaves every comment and effect where
+it was.
+
+- Do **not** hand-edit content files from the prose file, and do **not**
+  re-serialise them. The importer exists precisely because re-serialising
+  produces valid JavaScript and destroys every comment in it, and the
+  comments in `content/*.js` are half of what this repo knows.
+- It refuses anything it cannot place unambiguously and names it. Those are
+  the only ones to do by hand.
+- A line starting `# ` inside a block is a note and is stripped on the way
+  in. That is the channel for describing what a passage must DO without
+  putting it in the game.
+- Run `npm run check` afterwards; the round trip is asserted there.
+
 ## Before you finish
 
 ```

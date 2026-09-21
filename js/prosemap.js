@@ -100,18 +100,39 @@ var ProseMap = (function () {
   /* ---------- the file ---------- */
   function format(C, rows) {
     var L = [], lastHead = null;
+    /* THE HEADER IS AN INSTRUCTION SHEET, because the file gets handed to
+       somebody. The author edits it and gives it to whichever agent is
+       working the content lane, and that agent should not need a separate
+       message explaining what to do with it \u2014 the file says. */
     L.push("THE PROSE OF WAYS AND MEANS");
     L.push(new Array(71).join("="));
     L.push("");
-    L.push("Every sentence a player reads, in one file. Edit freely; keep the");
-    L.push("@ lines exactly as they are, because they are how it goes back.");
-    L.push("");
-    L.push("A line starting with # inside a block is a note, and is dropped on");
-    L.push("the way back in. Blank lines are paragraph breaks and are kept.");
-    L.push("");
     L.push(rows.length + " passages, " +
            rows.reduce(function (n, r) { return n + r.text.length; }, 0)
-             .toLocaleString() + " characters.");
+             .toLocaleString() + " characters: every sentence a player reads.");
+    L.push("");
+    L.push("FOR THE AUTHOR");
+    L.push("  Edit the prose freely. Leave the @ lines exactly as they are \u2014");
+    L.push("  they are the addresses, and they are how this goes back into");
+    L.push("  the game. Blank lines are paragraph breaks and are kept.");
+    L.push("  A line starting with # is a note and is dropped on the way in,");
+    L.push("  so it is a safe place to leave a question or a reminder.");
+    L.push("");
+    L.push("FOR WHOEVER IS APPLYING THIS");
+    L.push("  Put this file at the repository root as prose.txt and run:");
+    L.push("");
+    L.push("      npm run prose:in");
+    L.push("");
+    L.push("  That is the whole job. It replaces each passage in its own");
+    L.push("  content file, surgically, leaving every comment and every");
+    L.push("  effect exactly where it was. Do NOT hand-edit the content");
+    L.push("  files from this, and do NOT re-serialise them: the importer");
+    L.push("  exists because re-serialising produces valid JavaScript and");
+    L.push("  destroys every comment in it.");
+    L.push("");
+    L.push("  It reports anything it cannot place unambiguously and refuses");
+    L.push("  to guess. Those are the only ones to do by hand, and it names");
+    L.push("  them. Afterwards run npm run check.");
     L.push("");
     rows.forEach(function (r) {
       var h = heading(C, r.addr);
