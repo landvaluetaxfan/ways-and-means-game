@@ -1061,15 +1061,65 @@ const UI = (function () {
     const count = $("#party-count");
     if (count) count.textContent = list.length + " in the House";
 
+    /* GROUPED BY THEIR RELATION TO THE GOVERNMENT, not listed flat.
+
+       The author's note: this tab was originally meant to be "party" — a
+       place to manage INTERPARTY AFFAIRS — and a flat alphabetical twelve
+       made it a browser instead. The engine has always known the three
+       relations and priced them differently: `whippable()` will move a
+       coalition bench on ordinary business, moves a confidence-and-supply
+       bench on supply and confidence only, and answers anyone else with
+       "outside the coalition; this is lobbying, not whipping". That
+       distinction is the subject of the tab, so the list says it first.
+
+       The counts in each heading are seats, not parties: what a reader wants
+       from this column is the arithmetic of their own support. */
+    const inGov = st.coalition.slice();
+    const inCS  = st.confidenceSupply.filter(id => !inGov.includes(id));
+    const relOf = id => inGov.includes(id) ? "gov" : inCS.includes(id) ? "cs" : "opp";
+    const GROUPS = [
+      { k: "gov", head: "In government",
+        note: "movable on ordinary business, at the ledger's price" },
+      { k: "cs",  head: "Confidence and supply",
+        note: "held on confidence and supply; free on everything else" },
+      { k: "opp", head: "Outside the government",
+        note: "cannot be whipped \u2014 persuasion, not the ledger" }
+    ];
+    const seatsIn = k => list.filter(p => relOf(p.id) === k)
+      .reduce((n, p) => n + Engine.partyTotal(st, p.id), 0);
+
     tbl.innerHTML = `<thead><tr><th></th><th>Party</th><th class="n">Seats</th>` +
-      `<th class="n">Loyalty</th></tr></thead><tbody>` +
-      list.map(p => {
-        const seats = Engine.partyTotal(st, p.id);
-        const loy = (st.loyalty && st.loyalty[p.id] != null) ? st.loyalty[p.id] : p.loyalty;
-        return `<tr data-party="${p.id}"${sel && sel.id === p.id ? ' class="sel"' : ""}>` +
-          `<td><i class="pdot" style="background:${p.colour}"></i></td>` +
-          `<td><b>${esc(p.short || p.id)}</b> ${esc(p.name)}</td>` +
-          `<td class="n">${seats}</td><td class="n">${loy == null ? "—" : loy}</td></tr>`;
+      `<th class="n" data-tip="loyalty">Loy</th>` +
+      `<th class="n" data-tip-title="The ledger" data-tip-body="What each partner is ` +
+      `owed. Granting a partner order-paper time puts credit here; whipping their ` +
+      `bench spends it. Overdrawing is allowed and costs their loyalty at twice ` +
+      `the overdraft, because calling in credit you do not have is a favour and ` +
+      `not a transaction.">Cr</th></tr></thead><tbody>` +
+      GROUPS.map(g => {
+        const rows = list.filter(p => relOf(p.id) === g.k);
+        if (!rows.length) return "";
+        return `<tr class="prel"><td colspan="5">` +
+          `<b>${g.head}</b> <em>${seatsIn(g.k)} seats \u00b7 ${g.note}</em></td></tr>` +
+          rows.map(p => {
+            const seats = Engine.partyTotal(st, p.id);
+            const loy = (st.loyalty && st.loyalty[p.id] != null) ? st.loyalty[p.id] : p.loyalty;
+            const cr = st.capital[p.id] || 0;
+            const own = p.id === st.playerParty;
+            /* THE LEDGER IS FOR PARTNERS. `whippable()` returns
+               `currency: own ? "loyalty" : "capital"`, so the player's own
+               bench is never bought with credit and an outside party cannot
+               be bought at all. A number in either row would be a number
+               that does nothing. */
+            const crCell = (g.k === "opp" || own) ? "&mdash;"
+              : `<span class="${cr < 0 ? "warn" : ""}">${cr > 0 ? "+" + cr : cr}</span>`;
+            return `<tr data-party="${p.id}"${sel && sel.id === p.id ? ' class="sel"' : ""}>` +
+              `<td><i class="pdot" style="background:${p.colour}"></i></td>` +
+              `<td><b>${esc(p.short || p.id)}</b> ${esc(p.name)}` +
+              (own ? ` <span class="pown">yours</span>` : "") + `</td>` +
+              `<td class="n">${seats}</td>` +
+              `<td class="n">${loy == null ? "&mdash;" : loy}</td>` +
+              `<td class="n">${crCell}</td></tr>`;
+          }).join("");
       }).join("") + `</tbody>`;
     tbl.querySelectorAll("[data-party]").forEach(tr =>
       tr.addEventListener("click", () => {
@@ -1088,8 +1138,70 @@ const UI = (function () {
     const axRows = Object.keys(ax).filter(k => ax[k])
       .map(k => `<div class="prow"><div class="plab">${esc(k)}</div>` +
                 `<div class="pval">${esc(ax[k])}</div></div>`).join("");
+    /* WHAT THE RELATIONSHIP CONSISTS OF, above who they are.
+
+       This panel opened on the leader and the seat count — true of a party
+       whether or not you have anything to do with it. On a tab about
+       interparty affairs the first thing wanted is the standing: which of
+       the three relations this is, what they are owed, how far their
+       loyalty has left to fall, and who you would have to talk to. All of
+       it is read off state the engine already keeps; nothing new is
+       stored. */
+    const rel = relOf(sel.id);
+    const cr = st.capital[sel.id] || 0;
+    const selLoy = (st.loyalty && st.loyalty[sel.id] != null) ? st.loyalty[sel.id] : sel.loyalty;
+    /* WHAT THIS RELATION IS, in the terms the engine prices it in.
+       Four cases, not three: the player's own bench is inside the coalition
+       but is the one whipped with party loyalty rather than the ledger, and
+       calling it "a partner" was wrong in the way that matters. */
+    let RELSAY;
+    if (sel.id === st.playerParty) {
+      RELSAY = ["Your own party",
+        "Your own bench, and the only one moved with party loyalty rather than " +
+        "the ledger. What you spend here is what a leadership challenge is " +
+        "counted in."];
+    } else if (rel === "gov") {
+      RELSAY = ["In government",
+        "A partner. Their bench can be moved on ordinary business, and the " +
+        "ledger is what it costs."];
+    } else if (rel === "cs") {
+      RELSAY = ["Confidence and supply",
+        "Not a partner. They have undertaken to carry confidence and supply and " +
+        "are free on everything else, so there is nothing to whip on ordinary " +
+        "business at any price."];
+    } else {
+      RELSAY = ["Outside the government",
+        "No arrangement. Their bench cannot be whipped \u2014 what moves it is the " +
+        "measure itself, or something offered outside this ledger."];
+    }
+
+    const leaderRel = leader && st.characters[leader.id]
+      ? st.characters[leader.id].relationship : null;
+    const standing =
+      `<div class="rulehead">Standing <em>${RELSAY[0]}</em></div>` +
+      `<div class="note">${RELSAY[1]}</div>` +
+      `<div class="prow"><div class="plab">Loyalty</div><div class="pval` +
+        `${selLoy != null && selLoy < 35 ? " warn" : ""}">${selLoy == null ? "\u2014" : selLoy}` +
+        `${selLoy != null && selLoy < 35 ? " \u00b7 thin" : ""}</div></div>` +
+      /* Same reason as the column: no ledger row where there is no ledger.
+         Outside parties have no arrangement and the player's own bench is
+         charged in loyalty, which is the row above. */
+      (rel === "opp" || sel.id === st.playerParty ? "" :
+        `<div class="prow"><div class="plab">The ledger</div><div class="pval` +
+        `${cr < 0 ? " warn" : ""}">${cr > 0 ? "+" + cr + " owed to them" :
+           cr < 0 ? cr + " \u00b7 overdrawn" : "nothing either way"}</div></div>`) +
+      /* THE LEADER IS NOT REPEATED HERE. The Leader section follows
+         immediately below with the name and the office; a row saying it
+         again two lines up is the restated idea PROSE_REGISTER.md names.
+         What this block adds is the NUMBER — where you stand with them —
+         and only where that is somebody other than yourself. */
+      (leaderRel != null && sel.id !== st.playerParty
+        ? `<div class="prow"><div class="plab">Where you stand with ` +
+          `${esc((leader.name || "").replace(/^(Rt\. Hon\.|Hon\.)\s*/, ""))}</div>` +
+          `<div class="pval${leaderRel < 30 ? " warn" : ""}">${leaderRel}</div></div>` : "");
+
     const det = $("#party-detail");
-    if (det) det.innerHTML =
+    if (det) det.innerHTML = standing +
       (leader ? `<div class="rulehead">Leader</div><div class="note"><b>${esc(leader.name)}</b>` +
         ` — ${esc(officeOfMember(leader.id))}${leader.seat ? " · sits for " + esc(leader.seat) : ""}.</div>`
         : `<div class="rulehead">Leader</div><div class="note">None. The independents are not a party and do not choose one.</div>`) +

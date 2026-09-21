@@ -1495,6 +1495,25 @@ img.dith{display:block;}
 }
 
 /* ---------- scarcity prices ---------- */
+/* THE RELATION HEADINGS in the party list. Not a selectable row and not a
+   party: a band that says which of the three relations the rows under it
+   are, with the seats they add up to. Styled off the table's own rules
+   rather than .rulehead, which lives in a panel body and not in a thead. */
+#party-table tr.prel td{
+  background:var(--chrome-lt);border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--chrome-dk);
+  padding:5px 6px 3px;cursor:default;
+}
+#party-table tr.prel:first-child td{border-top:none;}
+#party-table tr.prel b{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;}
+#party-table tr.prel em{font-style:normal;font-size:9.5px;color:var(--ink-soft);
+  letter-spacing:.02em;text-transform:none;}
+#party-table tr.prel:hover td{background:var(--chrome-lt);}
+/* "yours" on the player's own bench: it sits inside the coalition group and
+   is priced differently from every other row in it. */
+.pown{font-size:9px;letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid var(--chrome-dkr);border-radius:2px;padding:0 3px;
+  color:var(--ink-soft);vertical-align:1px;}
 .prow{display:grid;grid-template-columns:1fr auto 54px;gap:6px;align-items:center;
   padding:2px 0;border-bottom:1px solid var(--chrome-dk);}
 .prow:last-of-type{border-bottom:none;}
