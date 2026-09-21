@@ -30,6 +30,28 @@ const World = (function () {
   let W = 720, H = 480, R = 200;
 
   function set(state, content) { st = state; C = content; }
+
+  /* ZOOM WAS PLUMBED AND NEVER DRIVEN. `view.zoom` is read in four places —
+     the projection, the ocean's radius and both tether lengths — and was
+     written nowhere, so it sat at 1 for the life of the file and the globe
+     had no magnification at all. On a small screen that is most of what made
+     the tab feel awkward: São Tomé's anchor and Gabon's are four pixels
+     apart at zoom 1 and there was no way to separate them.
+
+     It scales about the CENTRE, which is why it composes with the drag: zoom
+     in, then turn the thing you want under the middle. The floor is 1 because
+     below it the drawing is smaller than its own frame. */
+  const ZOOM_MIN = 1, ZOOM_MAX = 4;
+  function zoom(z) {
+    if (z == null) return view.zoom;
+    view.zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, Math.round(z * 100) / 100));
+    return view.zoom;
+  }
+  function zoomBy(f) { return zoom((view.zoom || 1) * f); }
+  function canZoom(f) {
+    const z = (view.zoom || 1) * f;
+    return z >= ZOOM_MIN - 1e-9 && z <= ZOOM_MAX + 1e-9 && Math.abs(z - view.zoom) > 1e-9;
+  }
   function mode() { return view.mode; }
   function toggle() {
     view.mode = view.mode === "globe" ? "map" : "globe";
@@ -159,11 +181,26 @@ const World = (function () {
     const m = Math.hypot(dx, dy) || 1;
     const ux = dx / m, uy = view.mode === "globe" ? dy / m : -1;
     const q = { x: p.x + ux * len, y: p.y + uy * len };
-    const cls = "w-anchor" + (mine ? " mine" : "") + (view.sel && a.host === view.sel ? " sel" : "");
-    return `<g class="${cls}">` +
+    /* `a.iso` AND NOT `a.host`. This read `a.host === view.sel`, and host is a
+       display name — "Brazil", "the Maldives" — while a selection is a code
+       like BRA. The two were never equal, so `.w-anchor.sel` has been in the
+       stylesheet unreachable since it was written and selecting a country
+       never lit the anchor standing on it. content/world.js now carries an
+       `iso` on every anchor, which is also what makes the mark clickable. */
+    const cls = "w-anchor" + (mine ? " mine" : "") + (view.sel && a.iso === view.sel ? " sel" : "");
+    /* AND THE MARK IS THE TARGET, which it was not before. Selecting a host
+       meant clicking its country OUTLINE — fine for Brazil, most of a
+       fiction for São Tomé, whose whole territory is two pixels of island.
+       The anchor is the thing the globe exists to show (see the header), so
+       it carries the `data-iso` and a tab stop: twelve of them, against the
+       152 country paths that stay mouse-only decoration. */
+    const label = (a.tether || a.id) + (a.host ? ", " + a.host : "");
+    return `<g class="${cls}" data-iso="${a.iso || ""}" tabindex="0" ` +
+      `role="button" aria-label="${label.replace(/"/g, "")}">` +
       `<line x1="${p.x.toFixed(1)}" y1="${p.y.toFixed(1)}" x2="${q.x.toFixed(1)}" y2="${q.y.toFixed(1)}"/>` +
       `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${mine ? 3.1 : 2.2}"/>` +
       `<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="1.8"/>` +
+      `<circle class="w-hit" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="7"/>` +
       `</g>`;
   }
 
@@ -289,6 +326,33 @@ const World = (function () {
       dragging = false; spinPaused = false; downTarget = null;
     };
     root.addEventListener("pointerup", up);
+
+    /* THE KEYBOARD REACHES THE SAME SELECT. The globe was mouse-only: 152
+       selectable country paths and not one tab stop, on a screen whose
+       siblings are all navigable (tools/uxtest.js asserts it of the
+       Concordance). The twelve anchors are focusable now and Enter or Space
+       goes through `select`, which is the path the pointer uses — one way in,
+       so a keyboard selection cannot diverge from a clicked one. */
+    root.addEventListener("keydown", e => {
+      if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+      const g = e.target.closest && e.target.closest("[data-iso]");
+      if (!g || !g.dataset.iso) return;
+      e.preventDefault();
+      select(g.dataset.iso);
+      redraw();
+    });
+
+    /* AND THE WHEEL ZOOMS, now that there is a zoom to drive. passive:false
+       because the page must not scroll under the globe while the pointer is
+       over it, and preventDefault needs a non-passive listener to do it. */
+    root.addEventListener("wheel", e => {
+      if (!root.querySelector("#world-svg")) return;
+      const f = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+      if (!canZoom(f)) return;
+      e.preventDefault();
+      zoomBy(f);
+      redraw();
+    }, { passive: false });
     root.addEventListener("pointercancel", () => {
       dragging = false; spinPaused = false; downTarget = null;
     });
@@ -307,5 +371,6 @@ const World = (function () {
     return () => { if (t) clearInterval(t); };
   }
 
-  return { render, wire, set, toggle, mode, selected, select, selectBody, selectedBody, onSelect, auto, view };
+  return { render, wire, set, toggle, mode, selected, select, selectBody, selectedBody, onSelect, auto, view,
+           zoom, zoomBy, canZoom, ZOOM_MIN, ZOOM_MAX };
 })();

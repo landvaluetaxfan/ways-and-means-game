@@ -59,19 +59,26 @@ const WORLD = {
   ],
   /* tether: the name the Commonwealth uses; formal: the instrument's name. */
   anchors: [
-    { id:"tether_1",  tether:"The Beanstalk", formal:"",                               station:"anselm",       site:"Macapá, Brazil",          lat:  0.03, lng: -51.07, host:"Brazil",               mine:true },
-    { id:"tether_2",  tether:"the International", formal:"International Earth-Orbit Elevator", station:"kepler", site:"Malindi, Kenya",          lat: -3.22, lng:  40.12, host:"Kenya",                mine:true },
-    { id:"tether_3",  tether:"the Sumatra line", formal:"",                            station:null,           site:"Pontianak, Indonesia",    lat: -0.02, lng: 109.34, host:"Indonesia",            mine:false },
-    { id:"tether_4",  tether:"the Kourou vertical", formal:"",                         station:"bourse",       site:"Kourou, French Guiana",   lat:  5.16, lng: -52.65, host:"European Union",       mine:false },
-    { id:"tether_5",  tether:"The Clothesline", formal:"The Meridian Vertical",        station:"meridian",     site:"São Tomé",                lat:  0.34, lng:   6.73, host:"São Tomé and Príncipe", mine:true },
-    { id:"tether_6",  tether:"the Leticia line", formal:"",                           station:"halvard",      site:"Leticia, Colombia",       lat: -4.21, lng: -69.94, host:"Colombia",             mine:false },
-    { id:"tether_7",  tether:"the Kismayo line", formal:"",                           station:"grimaldi",     site:"Kismayo, Somalia",        lat: -0.36, lng:  42.55, host:"Somalia",              mine:false },
-    { id:"tether_8",  tether:"the Port-Gentil line", formal:"",                       station:"corvus",       site:"Port-Gentil, Gabon",      lat: -0.72, lng:   8.78, host:"Gabon",                mine:false },
-    { id:"tether_9",  tether:"The Bond", formal:"Bondsville Anchor No. 9",              station:"sable",        site:"Christmas Island, Kiribati", lat: 1.87, lng: -157.43, host:"Kiribati",           mine:true, leased:true },
-    { id:"tether_10", tether:"the Entebbe line", formal:"",                           station:null,           site:"Entebbe, Uganda",         lat:  0.05, lng:  32.46, host:"Uganda",               mine:false },
-    { id:"tether_11", tether:"the Chimborazo line", formal:"",                        station:null,           site:"Chimborazo, Ecuador",     lat: -1.47, lng: -78.82, host:"Ecuador",              mine:false },
-    { id:"tether_12", tether:"the Malé line", formal:"",                              station:null,           site:"Malé, the Maldives",      lat:  4.18, lng:  73.51, host:"the Maldives",         mine:false }
+    { id:"tether_1",  tether:"The Beanstalk", formal:"",                               station:"anselm",       site:"Macapá, Brazil",          lat:  0.03, lng: -51.07, host:"Brazil", iso:"BRA",               mine:true },
+    { id:"tether_2",  tether:"the International", formal:"International Earth-Orbit Elevator", station:"kepler", site:"Malindi, Kenya",          lat: -3.22, lng:  40.12, host:"Kenya", iso:"KEN",                mine:true },
+    { id:"tether_3",  tether:"the Sumatra line", formal:"",                            station:null,           site:"Pontianak, Indonesia",    lat: -0.02, lng: 109.34, host:"Indonesia", iso:"IDN",            mine:false },
+    { id:"tether_4",  tether:"the Kourou vertical", formal:"",                         station:"bourse",       site:"Kourou, French Guiana",   lat:  5.16, lng: -52.65, host:"European Union", iso:"FRA",       mine:false },
+    { id:"tether_5",  tether:"The Clothesline", formal:"The Meridian Vertical",        station:"meridian",     site:"São Tomé",                lat:  0.34, lng:   6.73, host:"São Tomé and Príncipe", iso:"STP", mine:true },
+    { id:"tether_6",  tether:"the Leticia line", formal:"",                           station:"halvard",      site:"Leticia, Colombia",       lat: -4.21, lng: -69.94, host:"Colombia", iso:"COL",             mine:false },
+    { id:"tether_7",  tether:"the Kismayo line", formal:"",                           station:"grimaldi",     site:"Kismayo, Somalia",        lat: -0.36, lng:  42.55, host:"Somalia", iso:"SOM",              mine:false },
+    { id:"tether_8",  tether:"the Port-Gentil line", formal:"",                       station:"corvus",       site:"Port-Gentil, Gabon",      lat: -0.72, lng:   8.78, host:"Gabon", iso:"GAB",                mine:false },
+    { id:"tether_9",  tether:"The Bond", formal:"Bondsville Anchor No. 9",              station:"sable",        site:"Christmas Island, Kiribati", lat: 1.87, lng: -157.43, host:"Kiribati", iso:"KIR",           mine:true, leased:true },
+    { id:"tether_10", tether:"the Entebbe line", formal:"",                           station:null,           site:"Entebbe, Uganda",         lat:  0.05, lng:  32.46, host:"Uganda", iso:"UGA",               mine:false },
+    { id:"tether_11", tether:"the Chimborazo line", formal:"",                        station:null,           site:"Chimborazo, Ecuador",     lat: -1.47, lng: -78.82, host:"Ecuador", iso:"ECU",              mine:false },
+    { id:"tether_12", tether:"the Malé line", formal:"",                              station:null,           site:"Malé, the Maldives",      lat:  4.18, lng:  73.51, host:"the Maldives", iso:"MDV",         mine:false }
   ],
+
+  /* `iso` ON EACH ANCHOR is what links it to the state it stands on, and it
+     had to be added: `host` is a display name ("Brazil", "the Maldives") and
+     the states below are keyed by code, so js/world.js comparing
+     `a.host === view.sel` was comparing a name to a code and never matched.
+     The CSS for `.w-anchor.sel` has been in the stylesheet, unreachable,
+     since it was written — selecting a country never lit its anchor. */
 
   /* The countries worth a summary. `actor` links the country to a modelled
      foreign actor, so clicking it shows the relationship the game keeps. */

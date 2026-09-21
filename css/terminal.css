@@ -393,6 +393,21 @@ tr.compopen .compcar{border-color:var(--gold-dk);color:var(--ink);background:var
 .w-anchor.mine circle{stroke:var(--gold);}
 .w-anchor.mine circle:first-of-type{fill:var(--gold);}
 .w-anchor.sel circle{stroke:#f0e6c8;}
+/* AN INVISIBLE HIT TARGET. The anchor's own circles are 2-3px, which is a
+   fair drawing and a poor button, so a transparent 7px disc sits over each
+   one. `fill:transparent` and not `fill:none`: none is not hit-testable. */
+.w-anchor .w-hit{fill:transparent;stroke:none;}
+.w-anchor{cursor:pointer;}
+/* The twelve anchors are the globe's tab stops. A focus ring has to be drawn
+   on the SVG, since an outline on a <g> is not reliably painted. */
+.w-anchor:focus{outline:none;}
+.w-anchor:focus circle:first-of-type{stroke:var(--gold);stroke-width:2.2;}
+.w-anchor:focus line{stroke:var(--gold);}
+.w-anchor:hover circle:first-of-type{stroke:var(--gold);}
+/* The zoom readout beside the Globe/Map buttons. */
+.w-zoom{display:inline-flex;align-items:center;gap:4px;}
+.w-zoom b{font-family:var(--f-data);font-size:10.5px;min-width:26px;text-align:center;
+  color:var(--ink-soft);}
 /* THE FOREIGN BODY. Warning colour while it is outside the Commonwealth, gold
    once it has been annexed — the campaign's question answered in one colour. */
 .w-body line{stroke:var(--warn,#a4632a);stroke-width:1.2;stroke-dasharray:3 2;}

@@ -4455,8 +4455,18 @@ const UI = (function () {
       `<button class="chv rad${World.mode() === "globe" ? " on" : ""}" data-wmode="globe">Globe</button>` +
       `<button class="chv rad${World.mode() === "map" ? " on" : ""}" data-wmode="map">Map</button>` +
       `<button class="chv${World.view.auto ? " on" : ""}" data-wspin="1">${World.view.auto ? "Spinning" : "Still"}</button>` +
-      `<span class="w-hint">Drag to turn it. Click a country.</span>` +
+      /* ZOOM, which the projection has always supported and nothing drove. */
+      `<span class="w-zoom">` +
+        `<button class="chv" data-wzoom="out"${World.canZoom(1 / 1.15) ? "" : " disabled"}>\u2212</button>` +
+        `<b>${World.zoom().toFixed(1)}\u00d7</b>` +
+        `<button class="chv" data-wzoom="in"${World.canZoom(1.15) ? "" : " disabled"}>+</button>` +
+      `</span>` +
+      `<span class="w-hint">Drag to turn it. Click an anchor or a country. Wheel to zoom.</span>` +
       `</div><div class="w-canvas" id="w-canvas">` + World.render() + `</div>`;
+    map.querySelectorAll("[data-wzoom]").forEach(b => b.addEventListener("click", () => {
+      World.zoomBy(b.dataset.wzoom === "in" ? 1.15 : 1 / 1.15);
+      cue("click"); drawWorld();
+    }));
     map.querySelectorAll("[data-wmode]").forEach(b => b.addEventListener("click", () => {
       if (World.mode() === b.dataset.wmode) return;
       World.toggle(); cue("click"); drawWorld();

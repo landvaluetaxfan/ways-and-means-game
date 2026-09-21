@@ -479,6 +479,19 @@ version of any of them is in the header of the file it names.
 - There is NO ASSET LOADING and cannot easily be: on `file://`, `fetch()` and
   `XMLHttpRequest` both fail. Base64 in a `.js` file through `atob` into
   `decodeAudioData` is the route that works.
+- **The globe's do-over was three faults and none of them was speed.** Measured
+  before touching it: a globe redraw is **4.9ms** (the drag calls only
+  `c.innerHTML = World.render()`, not `drawAll()`, which is 42ms) so dragging
+  had three times the 60fps budget spare. The real ones were: an anchor
+  compared `a.host` ("Brazil") against a selection (`"BRA"`), so
+  `.w-anchor.sel` sat in the stylesheet unreachable and selecting a country
+  never lit its anchor; **152 selectable country paths and not one tab stop**,
+  on a screen whose siblings are all keyboard-navigable; and `view.zoom`, read
+  in four places and written by nothing, so the projection supported
+  magnification the interface never offered. Anchors now carry an `iso`, a
+  7px transparent hit disc (`fill:transparent`, since `fill:none` is not
+  hit-testable) and a tab stop each — twelve, or however many face the
+  viewer, against 152 paths that stay mouse-only.
 
 **Text and encoding**
 
