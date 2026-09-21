@@ -1905,6 +1905,14 @@ Neither future is a vote the government can lose quietly.`,
 /* REACH: the annexation choice in f1_dilemma sets f1_annexing. */
 { id:"f1_water", chapter:2, weight:60, maxFires:2,
   when:{ flags:["f1_annexing"] },
+  /* THE FIRST BRIEF. `brief` is not on the prose whitelist, so no player
+     ever reads it; `npm run prose` emits it as a # note above the passage it
+     describes, and the importer strips it. It is the channel for building a
+     decision without writing its prose. */
+  brief:"A funding decision whose consequence is a month away. The scene "+
+    "wants the Minister for Life Support presenting an estimate she cannot "+
+    "guarantee, and the reader understanding that neither answer produces "+
+    "an event today — the drift is the point.",
   title:"The recycling line",
   speaker:"vellan",
   body:`The Minister for Life Support brings the platform's water recycling
@@ -3039,5 +3047,289 @@ you already have.`,
       ],
       result:"Your own side enjoyed it enormously. Nobody outside the chamber could say afterwards what the reserve stands at." }
   ] },
+
+
+/* =============================================================
+   THE PRODUCTIVE ECONOMY IN PLAY (bible §7.10)
+
+   Built 21 September 2026, the first content to read st.economy. The
+   measures existed for one commit and nothing gated on them, which is the
+   fault design/22 measured across the whole project: 588 effects MOVE a
+   scalar and 20 conditions READ one, so the indicators were scoreboards
+   rather than state. Every event below both reads the economy and moves it.
+
+   PROSE IS NOT WRITTEN. Each carries a `brief` saying what the passage has
+   to do; the body under it is a placeholder. `npm run prose` emits the
+   brief as a # note above the placeholder, so the author writes over it and
+   hands the file back. Nothing here is meant to be read as finished text.
+   ============================================================= */
+
+{ id:"ec_participation_report", chapter:2, weight:58, maxFires:2,
+  when:{ economyAbove:{ participation:44 } },
+  brief:"The Bureau publishes the participation figure and it has moved "+
+    "further than any bill in the session was argued to move it. The scene "+
+    "wants the Treasurer laying a number nobody campaigned for: the "+
+    "divergence threshold was debated as a personhood measure and has "+
+    "turned out to be the largest labour-market intervention in the "+
+    "Commonwealth's history. The PM has to decide whether to claim it.",
+  title:"The figure nobody argued for",
+  speaker:"hatt",
+  body:`The participation figure is published quarterly. It has moved, and it has moved because of a law that was debated as something else.`,
+  choices:[
+    { label:"Claim it. Say plainly what the threshold did.",
+      brief:"Taking credit for a consequence the government did not "+
+        "predict. Reads as competence to the country and as an admission "+
+        "to the benches who were told it was a personhood bill.",
+      effects:[{ move:{ public_standing:6 } },
+               { move:{ "loyalty.cu_maintenance":-5 } },
+               { move:{ legitimacy:3 } },
+               { wire:"TREASURER CREDITS THRESHOLD FOR RISE IN PAID WORK" }],
+      result:`The claim is made and the number is on the record beside it.` },
+    { label:"Let the figure speak and say nothing.",
+      brief:"The cautious answer. Costs nothing and concedes the framing to "+
+        "whoever explains it first, which will be the Opposition.",
+      effects:[{ move:{ "rel.watkins":-2 } },
+               { move:{ "trend.public_standing":-1 } }],
+      result:`The figure is published without a minister beside it.` }
+  ]},
+
+{ id:"ec_participation_stalls", chapter:2, weight:62, maxFires:2,
+  when:{ economyBelow:{ participation:37 } },
+  brief:"Participation has fallen below the historic band, which means "+
+    "instance-hours are doing work that used to be waged. The scene wants "+
+    "the Minister for Labour and Participation explaining that the economy "+
+    "has not shrunk — the work is being done, it is simply not being paid "+
+    "for, and the registry has no column for it.",
+  title:"The work that is not wages",
+  speaker:"marin",
+  body:`Participation is below the band it has held for a generation. The work is still being done.`,
+  choices:[
+    { label:"Shorten the threshold and count the hours.",
+      brief:"The interventionist answer: the same lever as the divergence "+
+        "bill, used deliberately this time. Expensive with the employers.",
+      effects:[{ law:{ divergence_threshold_hours:96 } },
+               { economy:{ participation:3 } },
+               { move:{ "loyalty.fh":-8 } },
+               { move:{ "actor.metanationals":-6 } },
+               { wire:"THRESHOLD CUT TO NINETY-SIX HOURS" }],
+      result:`The hours are counted and the figure moves next quarter.` },
+    { label:"Fund a public works programme instead.",
+      brief:"Buying participation with the reserve rather than with the "+
+        "law. Works, costs money, and leaves the underlying question open.",
+      effects:[{ move:{ solvency:-9000 } },
+               { economy:{ participation:2 } },
+               { move:{ public_standing:4 } }],
+      result:`The programme is funded and the figure moves a little.` },
+    { label:"Accept it. The economy is what it is.",
+      brief:"The answer that costs nothing today. The trend continues and "+
+        "the benches that depend on waged work notice.",
+      effects:[{ move:{ "loyalty.cu_maintenance":-6 } },
+               { move:{ "trend.legitimacy":-1 } }],
+      result:`Nothing is done and the figure is published again next quarter.` }
+  ]},
+
+{ id:"ec_trade_surplus", chapter:2, weight:55, maxFires:2,
+  when:{ economyAbove:{ trade:118 } },
+  brief:"Compute exports are paying for everything else. The scene wants "+
+    "the Minister for External Relations pointing out that the surplus is "+
+    "leverage abroad and a target at home: the Earth states can see the "+
+    "figure too, and so can every bench that wants the money spent.",
+  title:"What the surplus buys",
+  speaker:"landry",
+  body:`The trade balance is in surplus and the surplus is substrate-hours sold to people who cannot make them.`,
+  choices:[
+    { label:"Spend it on the stations that are short.",
+      brief:"Redistribution inside the union. Popular where it lands and "+
+        "resented by the habitats that earned it.",
+      effects:[{ move:{ solvency:7000 } },
+               { move:{ "standing.low":5 } },
+               { move:{ "standing.ring":-3 } },
+               { move:{ consumables:3 } }],
+      result:`The transfer is made and the low band feels it first.` },
+    { label:"Hold it against the anchor negotiations.",
+      brief:"Treating the surplus as a diplomatic reserve. Nothing visible "+
+        "happens at home, which is the cost.",
+      effects:[{ move:{ solvency:4000 } },
+               { move:{ "actor.earth_host":4 } },
+               { move:{ "trend.public_standing":-1 } },
+               { flag:"ec_surplus_held" }],
+      result:`The money is not spent and the negotiators are told why.` }
+  ]},
+
+{ id:"ec_trade_deficit", chapter:2, weight:74, maxFires:2,
+  when:{ economyBelow:{ trade:84 } },
+  brief:"The deficit is now large enough that the reserve is covering "+
+    "imports rather than building anything. The scene wants the Treasurer "+
+    "saying the quiet part: the Commonwealth is buying more than it sells "+
+    "and the difference is coming out of the thing that pays for the "+
+    "radiators.",
+  title:"Buying more than it sells",
+  speaker:"hatt",
+  body:`The trade balance has been in deficit for long enough that the reserve is covering the gap.`,
+  choices:[
+    { label:"Cut transit costs and sell more compute.",
+      brief:"The orthodox answer: subsidise the corridor, export the one "+
+        "thing the Commonwealth makds that Earth will buy. Costs money now "+
+        "for a balance later.",
+      effects:[{ law:{ transit_subsidy:1 } },
+               { move:{ solvency:-6000 } },
+               { move:{ "price.transit":-10 } },
+               { economy:{ trade:4 } }],
+      result:`The subsidy is laid and the corridor is cheaper by the month.` },
+    { label:"Close the gap by importing less.",
+      brief:"Autarky as a choice rather than a condition. Resilient and "+
+        "poorer, and the stations that cannot feed themselves pay for it.",
+      effects:[{ economy:{ trade:6 } },
+               { move:{ consumables:-5 } },
+               { move:{ "standing.low":-5 } },
+               { flag:"ec_import_squeeze" }],
+      result:`Imports are cut and the balance improves on paper.` }
+  ]},
+
+{ id:"ec_privatisation_offer", chapter:2, weight:64, once:true,
+  when:{ scalarBelow:{ solvency:34000 }, economyBelow:{ private:0.78 } },
+  brief:"An offer to buy a utility, arriving precisely when the reserve is "+
+    "thin. The scene wants the Alliance of Business and Government making a "+
+    "reasonable case for a sale that cannot be undone, and the reader "+
+    "understanding that the price is good because the buyer knows the "+
+    "government needs the money this quarter.",
+  title:"An offer for the substrate works",
+  speaker:"hatt",
+  body:`There is an offer on the table for a public holding, and the reserve is thin enough to make it interesting.`,
+  choices:[
+    { label:"Sell. Take the money.",
+      brief:"A one-off payment against a permanent loss of control. The "+
+        "left of the party will not forget which quarter this happened in.",
+      effects:[{ move:{ solvency:22000 } },
+               { economy:{ private:0.06 } },
+               { move:{ "loyalty.cu_maintenance":-12 } },
+               { move:{ "loyalty.cu_deck":-9 } },
+               { move:{ "loyalty.fh":8 } },
+               { move:{ "capital.gb":6 } },
+               { flag:"ec_sold_a_utility" },
+               { wire:"GOVERNMENT SELLS PUBLIC STAKE IN SUBSTRATE WORKS" }],
+      result:`The sale is made and the reserve is not thin this quarter.` },
+    { label:"Refuse, and say why in the House.",
+      brief:"Refusing on principle while the reserve is visibly short. "+
+        "Buys the party and buys nothing else.",
+      effects:[{ move:{ "loyalty.cu_maintenance":9 } },
+               { move:{ "loyalty.cu_deck":6 } },
+               { move:{ "capital.gb":-4 } },
+               { move:{ "trend.solvency":-400 } },
+               { flag:"ec_refused_sale" }],
+      result:`The offer is declined on the floor and the reserve is unchanged.` }
+  ]},
+
+
+/* CLOSING THE CHAIN ON THE SUBSIDY. tools/lint.js flagged
+   law.transit_subsidy as "moved by 1, gated by 0 — NUMBER NOBODY SEES" the
+   moment ec_trade_deficit set it, which is the check working: a law the
+   government can change and nothing ever reads is a scoreboard. This reads
+   it, with `lawIs`, which no content had used before. */
+{ id:"ec_subsidy_reckoning", chapter:2, weight:66, maxFires:2,
+  when:{ lawIs:{ transit_subsidy:1 } },
+  brief:"The transit subsidy is in force and somebody has done the "+
+    "arithmetic on who receives it. The scene wants the Chair of the Life "+
+    "Support panel pointing out that a corridor subsidy is paid per tonne, "+
+    "so the habitats that ship most collect most, and those are not the "+
+    "habitats that needed it. A redistribution running backwards.",
+  title:"Who the subsidy reaches",
+  speaker:"gb_chair",
+  body:`The subsidy is paid by the tonne. The panel has worked out which stations ship the most tonnes.`,
+  choices:[
+    { label:"Cap it per station and take the saving.",
+      brief:"Fixing the incidence. Cheap, correct, and it makes an enemy of "+
+        "every habitat that was collecting.",
+      effects:[{ move:{ solvency:4000 } },
+               { move:{ "standing.ring":-4 } },
+               { move:{ "standing.low":4 } },
+               { move:{ "rel.gb_chair":5 } },
+               { wire:"TRANSIT SUBSIDY CAPPED PER STATION" }],
+      result:`The cap is laid and the incidence changes in the same quarter.` },
+    { label:"Leave it. The corridor matters more than the incidence.",
+      brief:"Defending the subsidy on trade grounds while conceding the "+
+        "distribution point. Honest and unpopular in the low band.",
+      effects:[{ economy:{ trade:2 } },
+               { move:{ "standing.low":-3 } },
+               { move:{ "rel.gb_chair":-4 } }],
+      result:`The subsidy stands as laid and the panel's figures stand too.` },
+    { label:"Withdraw it entirely.",
+      brief:"Undoing the government's own instrument two sittings after "+
+        "laying it. Saves the money and costs the argument.",
+      effects:[{ law:{ transit_subsidy:0 } },
+               { move:{ solvency:6000 } },
+               { move:{ "price.transit":10 } },
+               { economy:{ trade:-3 } },
+               { move:{ legitimacy:-4 } },
+               { wire:"GOVERNMENT WITHDRAWS TRANSIT SUBSIDY" }],
+      result:`The subsidy is withdrawn and the corridor price returns.` }
+  ]},
+
+/* AND THE SALE HAS A SEQUEL, because `private` is authored and never
+   drifts: if content can move it, content has to read it. `owes` and
+   `capitalAbove` were both unused conditions. */
+{ id:"ec_sold_and_asked", chapter:2, weight:70, once:true,
+  when:{ flags:["ec_sold_a_utility"], capitalAbove:{ gb:4 } },
+  brief:"The buyer is back, and it is owed a favour. The scene wants the "+
+    "Alliance of Business and Government presenting a second request as a "+
+    "continuation of the first transaction rather than a new one — the "+
+    "ledger from the sale is the reason this meeting is happening, and "+
+    "everyone in the room knows the figure.",
+  title:"The second conversation",
+  speaker:"hatt",
+  body:`The buyer of the public stake has a second request, and a credit balance to spend on it.`,
+  choices:[
+    { label:"Grant the licence. Settle the ledger.",
+      brief:"Paying the debt with a regulatory decision. Clears the books "+
+        "and establishes what the credit was actually for.",
+      effects:[{ move:{ "capital.gb":-6 } },
+               { economy:{ private:0.03 } },
+               { move:{ "loyalty.cu_maintenance":-7 } },
+               { move:{ legitimacy:-5 } },
+               { flag:"ec_licence_granted" }],
+      result:`The licence is granted and the ledger is level.` },
+    { label:"Refuse, and keep owing them.",
+      brief:"Declining while carrying the debt. Nothing is spent and "+
+        "nothing is settled, which is a position rather than a decision.",
+      effects:[{ move:{ "loyalty.gb":-10 } },
+               { move:{ "rel.hatt":-8 } },
+               { move:{ "loyalty.cu_maintenance":5 } }],
+      result:`The request is refused and the balance stays on the books.` }
+  ]},
+
+/* THE ECONOMY AS A REASON TO BORROW, gating on both halves of §7.10 at
+   once: a deficit AND participation short is the case for the facility, and
+   a surplus is the case against it. */
+{ id:"ec_borrow_case", chapter:2, weight:68, maxFires:2,
+  when:{ economyBelow:{ trade:92, participation:41 },
+         scalarBelow:{ solvency:40000 } },
+  brief:"The case for borrowing from Earth, made on the productive economy "+
+    "rather than on the reserve. The scene wants the Treasurer arguing that "+
+    "an economy selling less than it buys and employing fewer than it could "+
+    "is an economy that should borrow to build — and the reader "+
+    "understanding that the lender sets the rate and the lender is abroad.",
+  title:"The case for the facility",
+  speaker:"hatt",
+  body:`The balance is short and the participation figure is short, and the Treasury has written down what borrowing would cost.`,
+  choices:[
+    { label:"Draw on the facility and build.",
+      brief:"Borrowing to raise participation. The rate is the quarrel and "+
+        "the quarrel is with a lender who is not in the chamber.",
+      effects:[{ move:{ solvency:16000 } },
+               { economy:{ participation:2, trade:-2 } },
+               { move:{ friction:5 } },
+               { move:{ "actor.earth_bloc":-4 } },
+               { flag:"ec_drew_facility" },
+               { wire:"COMMONWEALTH DRAWS ON EARTH FACILITY" }],
+      result:`The facility is drawn and the building programme has money.` },
+    { label:"Balance it at home instead.",
+      brief:"Refusing the facility and finding the money internally. "+
+        "Slower, cheaper in sovereignty, expensive in everything else.",
+      effects:[{ move:{ solvency:-4000 } },
+               { move:{ consumables:-3 } },
+               { move:{ "loyalty.sc":6 } },
+               { move:{ legitimacy:3 } }],
+      result:`Nothing is borrowed and the programme is funded out of the reserve.` }
+  ]},
 
 ];

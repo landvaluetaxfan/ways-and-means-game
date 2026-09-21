@@ -790,3 +790,32 @@ on the block when the default is wrong:
 
 `office` · `press` · `primer` · `broadcast` · `silent`. Use `silent` when the
 text should land without a voice; it is a choice, not an absence.
+
+## Building a decision without writing its prose
+
+`brief` is a field on an event, a choice, a bill — anything carrying a
+passage. It is **not** on the prose whitelist, so no player ever reads it.
+`npm run prose` emits it as a `#` note above the passage it describes, and
+`npm run prose:in` strips it on the way back.
+
+```js
+{ id:"f1_water", chapter:2, weight:60,
+  brief:"A funding decision whose consequence is a month away.",
+  title:"The recycling line",
+  body:`placeholder`,
+  ... }
+```
+
+A bare `brief` describes the node's **primary** passage — the `body` of an
+event, the `result` of a choice. For any other field, name it:
+
+```js
+  briefs:{ title:"Three words. It is a line item, not a crisis.",
+           label:"The cheap answer, phrased as thrift rather than neglect." },
+```
+
+That is the channel for the division of labour this project runs on: the
+mechanism is built and described, the prose is written over it. The brief
+lives in the repository, so it comes back every time `prose.txt` is
+generated — unlike a note typed into that file, which is generated and
+gitignored and lost on the next run.

@@ -38,6 +38,22 @@ var ProseMap = (function () {
     return String(key);
   }
 
+  /* WHICH PASSAGE A BARE `brief` BELONGS TO. Attaching it to every string
+     on the node put the same paragraph above the title, the body and each
+     label, which is three times the noise and no more information. A bare
+     brief describes the node's PRIMARY passage — the body of an event, the
+     result of a choice — and `briefs: { title: "...", label: "..." }`
+     addresses the others by name when one of them needs its own. */
+  var PRIMARY = ["body", "result", "summary", "text", "description", "note"];
+  function briefFor(node, k) {
+    if (node.briefs && typeof node.briefs[k] === "string") return node.briefs[k];
+    if (typeof node.brief !== "string") return null;
+    for (var i = 0; i < PRIMARY.length; i++)
+      if (typeof node[PRIMARY[i]] === "string" && node[PRIMARY[i]].trim())
+        return PRIMARY[i] === k ? node.brief : null;
+    return null;              /* no primary passage: the brief has no home */
+  }
+
   function collect(C) {
     var out = [], seen = {};
 
@@ -55,7 +71,17 @@ var ProseMap = (function () {
           if (!isProse(k) || !v.trim()) return;
           a = here.join("/");
           if (seen[a]) return;
-          seen[a] = 1; out.push({ addr: a, text: v, field: k });
+          seen[a] = 1;
+          /* THE BRIEF TRAVELS WITH THE PASSAGE.
+             `#` notes were strippable on the way IN and there was no way to
+             emit one on the way OUT, so a mechanism description could only
+             live in prose.txt — which is generated and gitignored, so it was
+             lost the next time anyone ran the tool. A `brief` beside a
+             passage is authored content: it is in the repository, it is not
+             on the PROSE whitelist so a player never sees it, and it reaches
+             the author as a note every time the file is written. That is the
+             channel "generate everything except the prose" needs. */
+          out.push({ addr: a, text: v, field: k, brief: briefFor(node, k) });
           return;
         }
         if (Object.prototype.toString.call(v) === "[object Array]" &&
@@ -118,6 +144,12 @@ var ProseMap = (function () {
     L.push("  A line starting with # is a note and is dropped on the way in,");
     L.push("  so it is a safe place to leave a question or a reminder.");
     L.push("");
+    L.push("  Where a passage carries a # note ABOVE it, that is the brief:");
+    L.push("  what the passage has to do, written by whoever built the");
+    L.push("  mechanism. The prose under it is a placeholder standing in");
+    L.push("  until you write over it. The brief is in the repository, so it");
+    L.push("  comes back every time this file is generated.");
+    L.push("");
     L.push("FOR WHOEVER IS APPLYING THIS");
     L.push("  Put this file at the repository root as prose.txt and run:");
     L.push("");
@@ -145,6 +177,18 @@ var ProseMap = (function () {
       }
       L.push("");
       L.push("@ " + r.addr);
+      /* The brief first, as a note, so the author reads what the passage has
+         to DO before reading the placeholder that is standing in for it.
+         Wrapped, because a brief is a paragraph and a text file is 74
+         columns. Stripped on the way back in like any other note. */
+      if (r.brief) {
+        var words = String(r.brief).split(/\s+/), line = "#";
+        words.forEach(function (w) {
+          if ((line + " " + w).length > 74) { L.push(line); line = "#"; }
+          line += " " + w;
+        });
+        if (line !== "#") L.push(line);
+      }
       L.push(r.text);
     });
     L.push("");

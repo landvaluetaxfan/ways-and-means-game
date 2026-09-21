@@ -4170,6 +4170,28 @@ const Engine = (function () {
           text: (v[pk] >= 0 ? "Puts " : "Spends credit with ") +
                 nameOf("parties", pk, "name") + (v[pk] >= 0 ? " in your debt" : "") }));
           break;
+        /* §7.10. WITHOUT THIS THE PLAYER READS THE WORD "economy".
+           uxtest asserts that nothing shown to a player describes itself as
+           a bare verb name, and it caught this the first time content used
+           the verb — the same miss as `motion` before it. A new verb in
+           EFFECTS needs three things and not two: the apply case, the
+           schema entry, and a line here saying what it did. */
+        case "economy": Object.keys(v).forEach(ek => {
+          const d = v[ek];
+          const say =
+            ek === "participation"
+              ? (d >= 0 ? "Puts more adults in paid work" : "Puts adults out of paid work")
+              : ek === "trade"
+              ? (d >= 0 ? "Improves the trade balance" : "Worsens the trade balance")
+              : (d >= 0 ? "Moves the economy into private hands"
+                        : "Moves the economy into public hands");
+          /* `private` is a share of one, so it bands against its own scale
+             rather than the index the other two use. */
+          const b = band(ek === "private" ? d * 100 : d);
+          out.push({ tone: ek === "private" ? "grave" : (d >= 0 ? "good" : "bad"),
+                     text: say + (b ? ", " + b : "") });
+        });
+          break;
         case "law": Object.keys(v).forEach(lk => out.push({
           tone: "grave", text: "Changes the law on " + lk.replace(/_/g, " ") }));
           break;
