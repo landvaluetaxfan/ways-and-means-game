@@ -29,7 +29,9 @@ const expect = (label, got, want) => {
 console.log("\nAGAINST THE BIBLE:");
 expect("chamber", Engine.chamberTotal(st), 280);
 expect("majority", Engine.majority(st), 141);
-expect("confidence", Engine.confidence(st), 141);
+/* 136 coalition + 6 Independents. The bible §8.4 carries the arithmetic and
+   the amendment that changed it from 141 on 21 September 2026. */
+expect("confidence", Engine.confidence(st), 142);
 expect("popular total", d.popular.total, 240);
 expect("functional total", d.functional.total, 40);
 expect("popular aye", d.popular.aye, 130);

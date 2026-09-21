@@ -130,74 +130,74 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 - §8.2 · L1246 — Depth budget  *LOCKED*
 - §8.3 · L1255 — Naming register  *LOCKED*
 - §8.4 · L1280 — The seated parties  *LOCKED (280 seats*
-- §8.5 · L1300 — Party notes
-- §8.6 · L1324 — Parties available but not currently seated  *LOCKED as reserve material*
-- §8.7 · L1360 — Extraparliamentary  *LOCKED*
-- §8.8 · L1366 — Historical and defunct  *LOCKED*
-- §8.9 · L1372 — Ideologies as doctrines  *LOCKED*
+- §8.5 · L1302 — Party notes
+- §8.6 · L1326 — Parties available but not currently seated  *LOCKED as reserve material*
+- §8.7 · L1362 — Extraparliamentary  *LOCKED*
+- §8.8 · L1368 — Historical and defunct  *LOCKED*
+- §8.9 · L1374 — Ideologies as doctrines  *LOCKED*
 
-**Part IX — THE PLAYER'S PARTY** · L1384
-- §9.1 · L1386 — Which party  *LEANING (Party of Socialists and Democrats)*
-- §9.2 · L1399 — Inherited platform  *LOCKED*
-- §9.3 · L1403 — Two alliance structures  *LOCKED*
-- §9.4 · L1412 — Refraction  *LOCKED as a writing principle*
-- §9.5 · L1416 — Current caucus (Party of Socialists and Democrats, 82)  *LOCKED*
+**Part IX — THE PLAYER'S PARTY** · L1386
+- §9.1 · L1388 — Which party  *LEANING (Party of Socialists and Democrats)*
+- §9.2 · L1401 — Inherited platform  *LOCKED*
+- §9.3 · L1405 — Two alliance structures  *LOCKED*
+- §9.4 · L1414 — Refraction  *LOCKED as a writing principle*
+- §9.5 · L1418 — Current caucus (Party of Socialists and Democrats, 82)  *LOCKED*
 
-**Part X — SOCIETY, CULTURE, LAW** · L1431
-- §10.1 · L1433 — Aesthetic register — orbital warmth  *LOCKED*
-- §10.2 · L1445 — Nativism, inverted  *LOCKED*
-- §10.3 · L1451 — Labour  *LOCKED*
-- §10.3.1 · L1475 — Four overlays that matter more than the sectors  *LOCKED*
-- §10.4 · L1504 — Who is not in paid work  *LOCKED*
-- §10.5 · L1542 — Fork-rentiers  *LOCKED*
-- §10.6 · L1557 — Labour conflict  *LOCKED*
-- §10.7 · L1565 — Media and information  *LOCKED*
-- §10.8 · L1571 — Courts and law  *LOCKED*
-- §10.9 · L1577 — Religion  *LOCKED*
-- §10.10 · L1581 — External pressures  *LOCKED*
+**Part X — SOCIETY, CULTURE, LAW** · L1433
+- §10.1 · L1435 — Aesthetic register — orbital warmth  *LOCKED*
+- §10.2 · L1447 — Nativism, inverted  *LOCKED*
+- §10.3 · L1453 — Labour  *LOCKED*
+- §10.3.1 · L1477 — Four overlays that matter more than the sectors  *LOCKED*
+- §10.4 · L1506 — Who is not in paid work  *LOCKED*
+- §10.5 · L1544 — Fork-rentiers  *LOCKED*
+- §10.6 · L1559 — Labour conflict  *LOCKED*
+- §10.7 · L1567 — Media and information  *LOCKED*
+- §10.8 · L1573 — Courts and law  *LOCKED*
+- §10.9 · L1579 — Religion  *LOCKED*
+- §10.10 · L1583 — External pressures  *LOCKED*
 
-**Part XI — NAMED CANON** · L1589
-- §11.1 · L1593 — The polity
-- §11.2 · L1614 — Persons
-- §11.3 · L1652 — Stations and constituencies
-- §11.4 · L1725 — The functional roster  *LOCKED*
-- §11.5 · L1747 — The live bill
-- §11.6 · L1756 — Other business on the order paper
+**Part XI — NAMED CANON** · L1591
+- §11.1 · L1595 — The polity
+- §11.2 · L1616 — Persons
+- §11.3 · L1654 — Stations and constituencies
+- §11.4 · L1727 — The functional roster  *LOCKED*
+- §11.5 · L1749 — The live bill
+- §11.6 · L1758 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L1769
-- §12.1 · L1771 — The core principle  *LOCKED*
-- §12.2 · L1775 — Split visual language  *LOCKED*
-- §12.3 · L1782 — Chrome direction  *LOCKED*
-- §12.4 · L1788 — Screens  *LOCKED*
-- §12.5 · L1792 — Election night  *LOCKED*
-- §12.6 · L1801 — The orbital map  *LOCKED*
-- §12.7 · L1829 — The parliament diagram  *LOCKED*
-- §12.8 · L1855 — Documents  *LOCKED*
-- §12.9 · L1861 — The feed  *LOCKED*
-- §12.10 · L1865 — Build cost  *LOCKED*
-- §12.11 · L1869 — Images  *LOCKED*
-- §12.12 · L1897 — Existing artifact
-- §12.13 · L1909 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L1771
+- §12.1 · L1773 — The core principle  *LOCKED*
+- §12.2 · L1777 — Split visual language  *LOCKED*
+- §12.3 · L1784 — Chrome direction  *LOCKED*
+- §12.4 · L1790 — Screens  *LOCKED*
+- §12.5 · L1794 — Election night  *LOCKED*
+- §12.6 · L1803 — The orbital map  *LOCKED*
+- §12.7 · L1831 — The parliament diagram  *LOCKED*
+- §12.8 · L1857 — Documents  *LOCKED*
+- §12.9 · L1863 — The feed  *LOCKED*
+- §12.10 · L1867 — Build cost  *LOCKED*
+- §12.11 · L1871 — Images  *LOCKED*
+- §12.12 · L1899 — Existing artifact
+- §12.13 · L1911 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L1968
-- §13.1 · L1970 — Scandal taxonomy  *LOCKED*
-- §13.2 · L1983 — The spine  *LEANING*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L1970
+- §13.1 · L1972 — Scandal taxonomy  *LOCKED*
+- §13.2 · L1985 — The spine  *LEANING*
 
-**Part XIV — PRIOR ART** · L1989
-- §14.1 · L1991 — The gap  *LOCKED*
-- §14.2 · L1995 — Works
-- §14.3 · L2003 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L1991
+- §14.1 · L1993 — The gap  *LOCKED*
+- §14.2 · L1997 — Works
+- §14.3 · L2005 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2016
-- §15.1 · L2018 — Team  *LOCKED*
-- §15.2 · L2024 — Documentation  *LOCKED*
-- §15.3 · L2040 — Where this gets hard  *LOCKED*
-- §15.4 · L2051 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2068 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2018
+- §15.1 · L2020 — Team  *LOCKED*
+- §15.2 · L2026 — Documentation  *LOCKED*
+- §15.3 · L2042 — Where this gets hard  *LOCKED*
+- §15.4 · L2053 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2070 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2105
+**Part XVI — OPEN DECISIONS** · L2107
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2135
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2137
 
 <!-- /TOC -->
 
@@ -1293,7 +1293,9 @@ a lie is a slogan.
 | Georgists | 0 | 3 | 0 | **3** | mixed · — · Federal · — |
 | Uplift Alliance | 0 | 2 | 0 | **2** | Public · Expansionist · — · — |
 
-**Government:** Party of Socialists and Democrats 82 + New Progressive Party 36 + the CDA 18 = 136, plus confidence-and-supply from the Uplift Alliance (2) and Georgists (3) = **141 exactly.** Working majority of nil.
+**Government:** Party of Socialists and Democrats 82 + New Progressive Party 36 + the CDA 18 = 136, plus confidence-and-supply from the Independents (6) = **142.** Working majority of **one**.
+
+Amended 21 September 2026. It was the Uplift Alliance (2) and the Georgists (3) for 141 exactly and a working majority of nil. Six independents is the same position one seat less sharp, and it is a different KIND of position: a bloc of two and a bloc of three can each be bargained with as a bloc, and six independents cannot be bargained with at all — there is no whip, no leader and no caucus position, only six people who agree on nothing except that. The functional arithmetic is untouched, because the Independents return no functional member: the coalition still holds 12 of 40 and still needs 21.
 
 **Dual majority position:** coalition holds 12 of 40 functional seats. Needs 21. Structurally cannot carry an integrity bill or a charter amendment. This is the trap the campaign is built on.
 

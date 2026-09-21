@@ -8,7 +8,12 @@ const SETUP = {
   sittingDays: [1, 2, 3, 4],
   pm: "flash", playerParty: "cu",
   coalition: ["cu","psa","rv"],
-  confidenceSupply: ["upl","geo"],
+  /* THE INDEPENDENTS HOLD IT UP. Six district members with no whip, no
+     leader and no caucus position, which is why this is confidence and
+     supply and not a coalition: there is nobody to negotiate with, only six
+     people. 136 + 6 = 142 against a majority of 141 — a working majority of
+     one, where it used to be nil. */
+  confidenceSupply: ["ind"],
   scalars: { party_loyalty:38, public_standing:44, consumables:71,
              thermal_margin:17, solvency:52000,
              /* Flash I's own meters. legitimacy: the government being
