@@ -441,14 +441,22 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    So the CELLS shrink instead. The square day is the tall part — seven
    columns of aspect-ratio:1 means six rows of whatever the column is wide —
    so dropping the square and giving the day a fixed, shorter box takes two
-   hundred pixels out of the panel without hiding a single day. The legend
-   goes with it: five names of five colours, on the one panel whose colours
-   are already explained by the hover card. */
+   hundred pixels out of the panel without hiding a single day.
+
+   THE LEGEND CAME BACK, and hiding it was the wrong call. The reason given
+   was that "the colours are already explained by the hover card" -- but a
+   hover card explains THE DAY IT IS ON, not what a colour means, so the
+   only way to learn that a dark red pip is a division was to find a day
+   that happens to carry one and hover it. A key answers the question
+   without the hunt, which is the whole of what a key is for. It costs
+   nineteen pixels of a panel that gave up two hundred, so it was never the
+   saving that mattered. It is set tighter here than elsewhere instead. */
 #s-sit #sit-cal .calgrid .cd{aspect-ratio:auto;min-height:0;height:19px;}
 #s-sit #sit-cal .calgrid{gap:1px;}
 #s-sit #sit-cal .calgrid .cd b{font-size:9px;}
 #s-sit #sit-cal .calgrid .cd u{display:none;}
-#s-sit #sit-cal .calkey{display:none;}
+#s-sit #sit-cal .calkey{margin-top:3px;font-size:8.5px;gap:7px;}
+#s-sit #sit-cal .calkey s{width:5px;height:5px;}
 #s-sit #sit-cal .calhead{margin-bottom:2px;}
 .bandstrip{display:flex;gap:3px;margin:-2px 0 6px;padding-left:2px;}
 .bandstrip .bs{flex:1 1 0;display:flex;flex-direction:column;align-items:center;

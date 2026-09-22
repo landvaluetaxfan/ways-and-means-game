@@ -172,7 +172,8 @@ list over any older sentence here that implies a different one:
 | **Chamber** | order-paper time, the order paper, the House, the whip, and who is counted |
 | **Economy** | *Refreshed 21 Sep 2026, and the refresh was a MERGE.* Four panels on four subjects and a band: **the account** (a stock and its flows), **what everything is priced in**, **what is made and who makes it**, and — in the bottom band beside the chart — **what the Underwriters say**. The middle panel is three former ones, because `TAX_BASES` and `PRICE_META` in the engine are the SAME FOUR THINGS (volume, thermal, substrate, transit): Scarcity, What sets the prices and Ways and means were three facts about one set of four rows, in two different columns, with a third panel between two steps of one sum — `receipts()` computes each yield AS `rate × price/100 × weight`, and §7.9 says outright that the four prices are the appropriation's. One row each now: price, trend, the clause that sets it, the rate, the yield. `inflation` is that table's footing, not the account's, being a reading of those four and nothing else. §7.10's three readings and `content/labour.js` are one panel for the same reason — `st.economy.participation` and `LABOUR.totals.participation` are one fact — with the eighteen categories folded, since they are reference and not a working readout. The chart takes two columns **at either of two timescales** — the engine's per-sitting curve, or `setup.history`'s annual record 2280–2287, whose last point IS the opening value so the two join. The live window is about fifteen weeks (four sitting days a week), which is the right resolution for a price and far too short to show anything structural; that is what the record is for. **Nothing on the tab scrolls at any of the seven measured shapes** — see the layout note below. |
 | **Party** | *renamed from Parties, and refocused 21 Sep.* The twelve grouped by their relation to the government — in government, confidence and supply, outside — with the per-partner ledger, what each bench can be moved on, ideological distance, the live measure they will not carry, their currents, every member, and the party outside Parliament |
-| **Orbit**, **World**, **Concordance**, **Record** | unchanged |
+| **Orbit**, **World**, **Record** | unchanged |
+| **Concordance** | *the reference work, and it can only know what the world knows.* Articles are generated from content, which is authored for the WHOLE campaign — so anything staged for later showed up at sitting one. The four bills that open in `drafting` (the Almanac Works (Annexation) Bill among them, which is the act the campaign is about) each had a full page with a division forecast for a measure nobody had laid before the House, and the page contradicted itself saying so: "A measure before the House of Delegates. Stage: drafting." `drafting` is the engine's own word for not introduced, so it is the line: `build()` skips those and the page appears the moment the bill is set down. **The gate belongs on the surface, not in the content** — the content is right, the bill SHOULD be sitting in `drafting` waiting for `f1_dilemma`. Worth re-checking whenever a new reference surface reads a content list whole. |
 
 **Papers is gone**, folded into Government — an instrument, the register it
 lands in, the court that can quash it and the office that assents to it are one
@@ -490,6 +491,59 @@ version of any of them is in the header of the file it names.
 
 **Interface**
 
+- **AN ADMINISTRATION'S `setup` OVERRIDES ARE THE SESSION'S, not one call's.**
+  `Shell.contentFor(admin)` merges them and was handed to `Engine.newGame`
+  and then THROWN AWAY, so the opening STATE was built from Flash I's
+  `startDate: "2080-04-11"` while every engine call afterwards got the
+  unmerged `C`, whose placeholder is 2287. 207 years apart. `sittingOfDate`
+  counts forward from `C.setup.startDate`, so every day of the campaign's own
+  month was "before the start" and returned null: not one day in the calendar
+  carried a sitting number, `past`/`today` were false for every day so the
+  calendar never marked today at all, and the hover card told the player the
+  House does not sit on any Monday in April. It hid because the two halves
+  disagree SILENTLY — the day cell tints off `d.sits` (a weekday test, right)
+  and the card reads `d.sitting` (the count, null) — so the grid looked
+  correct and only its tooltips lied. Three entry points needed it: a new
+  government, a loaded slot (resolve the admin from the save's own `admin`
+  field) and an imported file. `contentFor` is exported so nobody writes a
+  second merge, and `UI.content()` exists beside `UI.state()` so the two can
+  be compared: nothing could see both at once, which is why it survived.
+- **A predicate and its negation are not always two cases.** The calendar
+  card branched on `d.sitting != null` and said "the House sits four days in
+  seven, this is not one of them" for everything else — including a Monday
+  before the session opened, which is one of them. Three cases: numbered,
+  a sitting day outside this session, and not a sitting day.
+- **A HIDDEN LEGEND IS NOT AN EXPLAINED ONE.** The calendar key was hidden to
+  save height on the grounds that "the colours are already explained by the
+  hover card". A hover card explains THE DAY IT IS ON, not what a colour
+  means, so the only way to learn that a pip is a division was to find a day
+  carrying one. It cost nineteen pixels of a panel that had given up two
+  hundred.
+- **A TRUTHY GUARD AROUND A MISSING FUNCTION IS SILENCE.** `js/ui.js` called
+  `Concordance.knows(id)` behind `Concordance.knows ? … : false`, and `knows`
+  was never written — so it answered false for everything and EVERY
+  `[data-go]` outside the Concordance tab did nothing. A party name on the
+  Chamber tab, a station on the orbit table, a constituency in the roll: all
+  inert, which is the exact fault the comment there says the attribute exists
+  to fix. Same class as the miss `tools/edtest.js` was written for.
+- **`data-go` BELONGS TO TWO SYSTEMS**, so the handler is scoped to `#shell`
+  positively rather than by excluding `#menu`. The main menu has used the
+  attribute since before the Concordance existed (`new`, `load`, `awards`,
+  `options`, `credits`, and `root` on every sub-screen) and `root` IS an
+  article id — so the moment `knows` answered truthfully, the menu's own Back
+  button would have jumped into the Concordance.
+- **A CONTAINER'S ONLY CHILD IS NOT THE CONTAINER.** The Concordance search
+  wrote its results into `#cx-body`, whose only child is `#cx-article` — the
+  element every article render targets. One search destroyed it,
+  `drawArticle` set `.innerHTML` on null, and the Concordance became a
+  one-way trip: nav links, the search hits themselves and the back button
+  were all dead, because all three end at the same `goCx`. `drawNav` runs
+  before `drawArticle`, so the nav highlight moved while the page under it
+  never changed — the interface said it had navigated.
+- **jsdom's `HTMLAnchorElement.click()` does not dispatch**, so a probe using
+  it reported the Concordance nav as broken when it was not. Anchors are
+  exercised with a real `MouseEvent`; a "bug" found only through `.click()`
+  on an `<a>` is the harness, not the game.
 - Renderers replace containers wholesale, so focus falls to `document.body` on
   every state change. `js/focus.js` restores it by DATA KEY, never by index, and
   owns the only selection store — selection used to live in four places and the

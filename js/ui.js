@@ -345,9 +345,23 @@ const UI = (function () {
     const cxKnows = id =>
       typeof Concordance !== "undefined" && Concordance.knows
         ? Concordance.knows(id) : false;
+    /* INSIDE #shell ONLY, and that is not defensive tidying -- `data-go` is
+       shared by TWO systems. The main menu has used it since before the
+       Concordance existed (`new`, `load`, `awards`, `options`, `credits`,
+       and `root` on every sub-screen), and the Concordance uses it for
+       article ids. `root` IS an article id, so with `knows` answering
+       truthfully the menu's own Back button would have jumped into the
+       Concordance and opened an article called Root.
+
+       Scoped POSITIVELY to the shell rather than by excluding `#menu`: an
+       exclusion list grows every time somebody adds a screen, and the rule
+       being expressed is that this is an in-game cross-reference. In game,
+       the only `data-go` outside the Concordance is the twelve party names,
+       which is exactly what the attribute is here for. */
     document.addEventListener("click", e => {
       const g = e.target.closest && e.target.closest("[data-go]");
-      if (!g || g.closest("#cx-body") || g.closest("#cx-nav")) return;
+      if (!g || !g.closest("#shell")) return;
+      if (g.closest("#cx-body") || g.closest("#cx-nav")) return;
       if (!cxKnows(g.dataset.go)) return;
       e.preventDefault();
       const tab = document.querySelector('.tab[data-t="cx"]');
@@ -358,7 +372,8 @@ const UI = (function () {
     document.addEventListener("keydown", e => {
       if (e.key !== "Enter" && e.key !== " ") return;
       const g = e.target.closest && e.target.closest("[data-go]");
-      if (!g || g.closest("#cx-body") || g.closest("#cx-nav")) return;
+      if (!g || !g.closest("#shell")) return;
+      if (g.closest("#cx-body") || g.closest("#cx-nav")) return;
       if (!cxKnows(g.dataset.go)) return;
       e.preventDefault(); g.click();
     });
@@ -4540,6 +4555,13 @@ const UI = (function () {
   function calendarHTML() {
     const cal = Engine.calendar(st, C, calMonth);
     if (!cal || !cal.days.length) return "";
+    /* The day this session's count starts from, named rather than dated,
+       because a card that says "before this session" is owed the date it is
+       before. Read off the content the session was booted with, which is the
+       administration's merged copy — the same source `sittingOfDate` counts
+       from, so the two can never disagree. */
+    const opened = (C.setup || {}).startDate;
+    const sessionOpened = opened ? dayLabel(opened) : "";
     let cells = "";
     /* the blanks before the first, so the columns line up with the week */
     for (let i = 0; i < cal.days[0].dow; i++) cells += '<i class="pad"></i>';
@@ -4570,7 +4592,16 @@ const UI = (function () {
       /* AND THE PROJECT'S OWN HOVER CARD, not the browser's. This was a
          native title= — slow, unstyled, and a second tooltip system in a
          build that spent a commit removing one. */
-      const title = d.sitting != null ? "Sitting " + d.sitting : "The House does not sit";
+      /* THREE CASES, NOT TWO. `d.sitting` is the session's count and
+         `d.sits` is the weekday test, and they are not each other's
+         negation: a Monday BEFORE the session's first sitting is a sitting
+         day of the week with no number, and this told the player "the House
+         sits four days in seven, this is not one of them" about a Monday.
+         Wrong twice over -- it is one of them, and the reason it carries no
+         number is the session, not the week. */
+      const title = d.sitting != null ? "Sitting " + d.sitting
+                  : d.sits ? "Before this session"
+                  : "The House does not sit";
       /* THE CARD LEADS WITH THE THING, IN WORDS, ONE PER LINE. It was a run
          of "Name: text — Name: text" joined by dashes, which is a sentence
          you parse rather than a thing you read. Each mark gets its own
@@ -4578,8 +4609,10 @@ const UI = (function () {
          colour of the dot has a word to match it to. */
       const body = d.marks.length
         ? d.marks.map(m => MARKNAME[m.kind] + ". " + m.text).join("\n")
-        : (d.sitting != null ? "Nothing is down for this day."
-                             : "The House sits " + SITDAYS + " days in seven. This is not one of them.");
+        : d.sitting != null ? "Nothing is down for this day."
+        : d.sits ? "A sitting day, but before this session opened" +
+                   (sessionOpened ? " on " + sessionOpened : "") + "."
+        : "The House sits " + SITDAYS + " days in seven. This is not one of them.";
       /* data-tip draws the card for a pointer; aria-label is what a screen
          reader gets, and it has to carry the same sentence. Swapping the
          native title= for the project's own card quietly dropped the
@@ -6665,7 +6698,15 @@ const UI = (function () {
   /* redraw is exported for the checks only. It is drawAll under another
      name, and it makes no sound — which is itself asserted, so exporting
      it cannot become a way to smuggle a cue into a renderer. */
-  return { boot, openTab, state: () => st, annotate, setStatus, redraw: drawAll,
+  return { boot, openTab, state: () => st,
+           /* THE CONTENT THIS INTERFACE IS RUNNING ON, beside the state it is
+              showing. Read-only and for the same reason `state()` exists: the
+              two have to agree, and the calendar bug was precisely that they
+              did not -- `st.date` in 2080 against a `setup.startDate` in 2287
+              -- with nothing able to see both at once to say so. uitest
+              asserts they agree now, which it could not do before this. */
+           content: () => C,
+           annotate, setStatus, redraw: drawAll,
            __test: { cabinetView, structure, reportMoves, rollChips, rollPlan } };
 })();
 

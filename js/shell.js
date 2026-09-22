@@ -594,9 +594,45 @@ const Shell = (function () {
     } catch (e) { return null; }
   }
 
+  /* WHICH ADMINISTRATION A SAVE BELONGS TO, read off the save itself. A
+     loaded game gets no `admin` argument -- the menu only has one when a
+     government is being chosen -- so without this every reload of Flash I
+     came back on the unmerged content. */
+  function adminOf(stateStr) {
+    try {
+      const was = JSON.parse(stateStr).admin;
+      return (C.administrations || []).find(a => a.id === was) || null;
+    } catch (e) { return null; }
+  }
+
   function start(n, name, stateStr, admin) {
     let state;
-    try { state = stateStr ? Engine.load(stateStr, C) : Engine.newGame(contentFor(admin)); }
+    /* THE MERGED CONTENT IS THE SESSION'S CONTENT, not one call's.
+       `contentFor(admin)` was handed to `newGame` and then thrown away, so
+       the opening STATE was built from the administration's overrides while
+       every engine call for the rest of the game got the UNMERGED `C`.
+
+       Measured: Flash I sets `startDate: "2080-04-11"`, so `st.date` was
+       2080-04-11 and `C.setup.startDate` was still the 2287 placeholder --
+       207 years apart. `sittingOfDate` counts forward from
+       `C.setup.startDate`, so EVERY day of the campaign's own month was
+       "before the start" and returned null: not one day in the calendar
+       carried a sitting number, `past`/`today` were false for every day so
+       the calendar never marked today at all, and the hover card told the
+       player the House does not sit on any Monday in April.
+
+       It hid because the two halves disagree silently. The day CELL tints
+       off `d.sits`, a weekday test, which was right; the CARD reads
+       `d.sitting`, the count, which was null. So the calendar looked
+       correct and only its tooltips were wrong.
+
+       Resolve the administration FIRST -- from the argument when a
+       government is chosen, from the save's own `admin` when one is loaded
+       -- and use that one object everywhere below. `contentFor` returns a
+       shallow copy, so every other table (`eventById`, `administrations`)
+       is still the same object by reference. */
+    const K = contentFor(admin || (stateStr ? adminOf(stateStr) : null));
+    try { state = stateStr ? Engine.load(stateStr, K) : Engine.newGame(K); }
     catch (e) { Dialog.alert("That save could not be read: " + e.message,
                              { title: "Could not load" }); return; }
     /* THE SANDBOX IS A STATE, NOT A SETUP FIELD. newGame starts flags empty,
@@ -620,9 +656,9 @@ const Shell = (function () {
        so it is marked read: somebody who asked to see one event should not
        have to take office first. */
     const jump = previewEvent();
-    if (!stateStr && jump && C.eventById && C.eventById[jump]) {
+    if (!stateStr && jump && K.eventById && K.eventById[jump]) {
       state.flags._introRead = true;
-      Engine.apply(state, C, [{ queue: [{ event: jump, after: 0 }] }]);
+      Engine.apply(state, K, [{ queue: [{ event: jump, after: 0 }] }]);
     }
 
     /* THE BED OPENS WITH THE GOVERNMENT. A mood is a function name in
@@ -667,7 +703,7 @@ const Shell = (function () {
          one's selection into it points at things that may not exist. */
       if (typeof Focus !== "undefined") Focus.reset();
       if (typeof Papers !== "undefined") Papers.reset();
-      UI.boot(state, C);
+      UI.boot(state, K);
       /* AND IT OPENS ON THE SITTING. The tab is in the DOM and in UI’s own
          `screen`, and neither is in the save, so both survived the menu:
          a government formed while the last one was standing on Papers
@@ -865,13 +901,17 @@ const Shell = (function () {
       const r = new FileReader();
       r.onload = () => {
         try {
-          const state = Engine.load(r.result, C);
+          /* AN IMPORTED SAVE IS THE SAME CASE as a loaded slot: resolve
+             its administration and run the session on the merged content,
+             or an imported Flash I comes back 207 years off. */
+          const K = contentFor(adminOf(r.result));
+          const state = Engine.load(r.result, K);
           if (typeof Papers !== "undefined") Papers.reset();
           document.getElementById("menu").classList.remove("on");
           document.body.classList.remove("menu-on");
           document.getElementById("shell").classList.add("on");
           if (!current) current = { n: 1, name: f.name.replace(/\.json$/i, "") };
-          UI.boot(state, C); UI.openTab("sit");
+          UI.boot(state, K); UI.openTab("sit");
           stampSlot(); flash("Imported " + f.name);
         } catch (err) { Dialog.alert("That file could not be read: " + err.message,
                                      { title: "Could not import" }); }
@@ -883,6 +923,15 @@ const Shell = (function () {
   }
 
   return { boot: boot, autosave: autosave, save: saveNow, options: opts,
+           /* ONE IMPLEMENTATION OF THE MERGE, exported so nobody writes a
+              second. `tools/uitest.js` re-booted the interface with the raw
+              global CONTENT to inject an ending, which put it back in the
+              state the bug above created -- the session's own content
+              replaced by the unmerged copy -- and every assertion after that
+              point ran 207 years off the state it was reading. A helper
+              that is hard to reach gets reimplemented, and two places that
+              compute one thing is how apportionment_ratio drifted. */
+           contentFor: contentFor,
            opt: opt, setOpt: setOpt, flash: flash,
            /* the session log: written when a government ends, read by the
               board. Outside every save on purpose. */

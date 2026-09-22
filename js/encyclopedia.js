@@ -418,7 +418,33 @@ const Concordance = (function () {
     (C.constituencies || []).forEach(k => {
       if (!handIds.has(k.id)) gen.push(constituencyArticle(k));
     });
-    C.bills.forEach(b => { if (!handIds.has("bill_" + b.id)) gen.push(billArticle(b)); });
+    /* A BILL THAT HAS NOT BEEN INTRODUCED HAS NO ARTICLE.
+
+       This generated one for every bill in content unconditionally, so the
+       four that open in `drafting` -- the Almanac Works (Annexation) Bill
+       among them -- had a full page in the Concordance from the first
+       sitting, complete with a division forecast, for a measure nobody had
+       laid before the House. The page even said so and contradicted itself
+       doing it: "A measure before the House of Delegates. Stage: drafting."
+
+       `drafting` is the engine's own word for not introduced (it is
+       STAGE_ORDER[0]: it cannot be given a day and prorogation does not
+       kill it), so it is the right line to draw. The Concordance is an
+       in-world reference work and it can only know what the world knows.
+       Everything past first reading keeps its article, including a bill
+       that died -- that one existed.
+
+       This is the general shape of the fault the author named: content is
+       authored for the whole campaign and the reference surfaces read the
+       whole of content, so anything staged for later shows up at sitting
+       one. The gate belongs on the surface rather than in the content,
+       because the content is right -- the bill SHOULD be there, in
+       drafting, waiting for `f1_dilemma` to set it down. */
+    C.bills.forEach(b => {
+      const bs = st.bills[b.id];
+      if (!bs || bs.stage === "drafting") return;
+      if (!handIds.has("bill_" + b.id)) gen.push(billArticle(b));
+    });
     C.characters.forEach(c => { if (!handIds.has("person_" + c.id)) gen.push(personArticle(c)); });
     (C.glossary || []).forEach(g => {
       const id = "term_" + g.term.toLowerCase().replace(/\s+/g, "_");
@@ -619,10 +645,23 @@ const Concordance = (function () {
       .slice(0, 40).map(x => x.a);
   }
 
+  /* THE RESULTS GO WHERE AN ARTICLE GOES, which is `#cx-article` and NOT
+     `#cx-body`. `#cx-article` is `#cx-body`'s only child, so writing the
+     list into the body DESTROYED the element every article render targets:
+     `drawArticle` then set `.innerHTML` on null and threw, and the
+     Concordance became a one-way trip. Measured after one search: the nav
+     links, the search hits themselves and the BACK BUTTON were all dead,
+     because all three end at the same `goCx`.
+
+     It read as working from outside, which is how it survived. `drawNav`
+     runs before `drawArticle` in `render`, so the nav redrew and the
+     highlight moved -- the interface said it had navigated and the page
+     under it never changed. A search is a page like any other; it belongs
+     in the container that holds pages. */
   function renderHits(list, q) {
     const esc0 = s => String(s == null ? "" : s)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    document.getElementById("cx-body").innerHTML =
+    document.getElementById("cx-article").innerHTML =
       `<h2 class="cx-title">Search</h2>` +
       `<p class="cx-lead">${list.length} article${list.length === 1 ? "" : "s"} ` +
       `matching <b>${esc0(q)}</b>.</p>` +
@@ -638,5 +677,24 @@ const Concordance = (function () {
     return history[history.length - 1];
   }
 
-  return { render, search, hits, renderHits, back, toggleCat };
+  /* WHAT HAS AN ARTICLE. js/ui.js has called this since the day it stopped
+     keeping its own whitelist of parties, stations and hand-written pages --
+     and it was never written here, so the guard it is called behind
+     (`Concordance.knows ? Concordance.knows(id) : false`) answered false for
+     everything and EVERY [data-go] outside the Concordance tab did nothing.
+     A party name on the Chamber tab, a station on the orbit table, a
+     constituency in the roll: all inert, which is the exact fault the
+     comment there says the attribute exists to fix. A truthy guard around a
+     function that does not exist is how it stayed quiet.
+
+     It answers off `byId`, so it is the same list the nav draws from and a
+     link it offers can never land on a page that is not there -- including
+     the bills gated out above. */
+  function knows(id) {
+    if (!id || !st || !C) return false;
+    build();
+    return !!byId[id];
+  }
+
+  return { render, search, hits, renderHits, back, toggleCat, knows };
 })();

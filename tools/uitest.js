@@ -173,9 +173,15 @@ try {
   /* end it the way the House does */
   /* the introduction is drawn before the ending, and correctly so — mark it
      read the way taking office does, or the page under test is the intro */
+  /* RE-BOOT ON THE CONTENT THE SESSION IS RUNNING ON, not the raw global.
+     `UI.boot(s, CONTENT)` put the interface back on the unmerged copy --
+     Flash I's startDate is 2080 and the global placeholder is 2287 -- so
+     every assertion after this point read a calendar 207 years off the state
+     it was showing. Shell.contentFor is the one implementation of the merge. */
   w.eval("(function(){var s=UI.state(); s.flags._introRead=true;" +
          "s.noConfidence={at:s.sitting,have:0,need:141};" +
-         "UI.boot(s, CONTENT);})()");
+         "UI.boot(s, Shell.contentFor((CONTENT.administrations||[])" +
+         ".find(function(x){return x.id===s.admin;})));})()");
   w.document.querySelector('.tab[data-t="sit"]').click();
   const page = w.document.querySelector("#sitting-body .sp-page");
   ok("a finished run draws the last page as a set piece", !!page);
@@ -276,6 +282,79 @@ try {
        .every(b => !b.getAttribute("title")));
 } catch (e) { ok("the economy tab", false, e.message); }
 
+/* THE CALENDAR IS IN THE CAMPAIGN'S OWN YEAR, and this is the assertion the
+   worst bug of the set would have failed.
+
+   An administration's `setup` overrides are merged by `contentFor()`, which
+   was handed to `Engine.newGame` and then THROWN AWAY -- so the opening
+   state was built from Flash I's `startDate: "2080-04-11"` while every
+   later engine call got the unmerged `C`, whose placeholder is 2287. 207
+   years apart. `sittingOfDate` counts forward from `C.setup.startDate`, so
+   every day of the campaign's own month was "before the start" and came
+   back null: not one day carried a sitting number, `past`/`today` were
+   false for every day so the calendar never marked today at all, and the
+   hover card said the House does not sit on any Monday in April.
+
+   It hid because the two halves disagree SILENTLY: the day cell tints off
+   `d.sits` (a weekday test, correct) and the card reads `d.sitting` (the
+   count, null), so the grid looked right and only its tooltips lied. */
+try {
+  w.document.querySelector('.tab[data-t="sit"]').click();
+  const cells = [...w.document.querySelectorAll("#sit-cal .calgrid .cd")];
+  ok("the calendar draws a month of days", cells.length >= 28, cells.length + " days");
+  /* THE INVARIANT THAT WOULD HAVE CAUGHT IT, stated once: the content the
+     interface is running on and the state it is showing must agree about
+     when the campaign began. Nothing could see both at once until UI.content
+     existed, which is why a 207-year disagreement survived. */
+  ok("the interface's content agrees with its state about the start date",
+     w.eval("UI.content().setup.startDate") === w.eval("UI.state().date") ||
+     w.eval("UI.content().setup.startDate").slice(0, 4) ===
+       w.eval("UI.state().date").slice(0, 4),
+     w.eval("UI.content().setup.startDate") + " vs " + w.eval("UI.state().date"));
+
+  /* The state and the content the engine reads dates from must agree. */
+  const stDate = w.eval("UI.state().date");
+  ok("the calendar's month is the state's own year",
+     new RegExp("^" + String(stDate).slice(0, 4))
+       .test(String(w.eval("UI.state().date")).slice(0, 4)) &&
+     (w.document.querySelector("#sit-cal .calhead span") || {}).textContent
+       .indexOf(String(stDate).slice(0, 4)) >= 0,
+     stDate + " vs " + (w.document.querySelector("#sit-cal .calhead span") || {}).textContent);
+
+  const numbered = cells.filter(c => c.querySelector("u"));
+  ok("and the sitting days in it carry their sitting numbers",
+     numbered.length > 0, numbered.length + " of " + cells.length + " numbered");
+  ok("and exactly one day is marked as today",
+     cells.filter(c => c.classList.contains("now")).length === 1,
+     cells.filter(c => c.classList.contains("now")).length + " marked");
+
+  /* THREE CASES, NOT TWO. A Monday before the session opened is a sitting
+     day of the week with no number, and the card used to tell the player
+     "the House sits four days in seven, this is not one of them" -- wrong
+     twice: it is one of them, and the reason is the session, not the week. */
+  const liars = cells.filter(c =>
+    !c.classList.contains("dark") &&
+    /is not one of them/.test(c.dataset.tipBody || ""));
+  ok("no sitting day is told it is not a sitting day",
+     liars.length === 0,
+     liars.length ? liars.map(c => (c.querySelector("b") || {}).textContent).join(", ")
+                  : "none");
+  const early = cells.filter(c => !c.classList.contains("dark") && !c.querySelector("u"));
+  if (early.length)
+    ok("and one before the session says so, with the date it is before",
+       /before this session/i.test(early[0].dataset.tipTitle || "") &&
+       /opened on/.test(early[0].dataset.tipBody || ""),
+       early[0].dataset.tipBody);
+
+  /* THE KEY CAME BACK. It was hidden on the grounds that "the colours are
+     already explained by the hover card" -- but a card explains the day it
+     is on, not what a colour means, so the only way to learn that a pip is
+     a division was to find a day carrying one. */
+  const key = w.document.querySelectorAll("#sit-cal .calkey span");
+  ok("the calendar keeps a key for its marks", key.length >= 5,
+     [...key].map(k => k.textContent.trim()).join(" \u00b7 "));
+} catch (e) { ok("the parliamentary calendar", false, e.message); }
+
 /* THE CALENDAR IS SMALLER, NOT SCROLLED. Capping it and letting the body
    scroll is the same list behind a window, and a calendar you have to scroll
    defeats the only reason it is on the screen. */
@@ -349,6 +428,129 @@ try {
        w.document.querySelectorAll("#comp-table tr.compdet").length === 0);
   }
 } catch (e) { ok("the parties tab and the composition fold", false, e.message); }
+
+/* THE CONCORDANCE SURVIVES A SEARCH, and every route out of one works.
+
+   `renderHits` wrote the results into `#cx-body`, whose only child is
+   `#cx-article` -- the element every article render targets. So one search
+   destroyed it, `drawArticle` set .innerHTML on null and threw, and the
+   Concordance became a one-way trip: nav links, the hits themselves and the
+   back button were all dead, because all three end at the same goCx. It read
+   as working because `drawNav` runs first, so the nav highlight moved while
+   the page under it never changed. */
+try {
+  const click = el => el.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  click(w.document.querySelector('.tab[data-t="cx"]'));
+  const title = () => (w.document.querySelector("#cx-article .cx-title") || {}).textContent || "";
+  const navlink = i => [...w.document.querySelectorAll("#cx-nav .cx-navlink")][i];
+
+  /* jsdom's HTMLAnchorElement.click() does not dispatch, so every assertion
+     here goes through a real MouseEvent. A probe that used .click() reported
+     the nav as broken before the search too, which it is not. */
+  click(navlink(2));
+  const first = title();
+  ok("a Concordance nav link opens its article", !!first, first);
+
+  w.document.querySelector("#cx-q").value = "seat";
+  click(w.document.querySelector("#cx-goto"));
+  ok("searching lists every match, not the best one",
+     w.document.querySelectorAll("#cx-article .cx-hits a").length > 1,
+     w.document.querySelectorAll("#cx-article .cx-hits a").length + " hits");
+  ok("and it does not destroy the container articles are drawn into",
+     !!w.document.querySelector("#cx-article"), "#cx-article survives");
+
+  click(navlink(5));
+  ok("a nav link still works after a search", title() !== "Search" && !!title(), title());
+
+  w.document.querySelector("#cx-q").value = "seat";
+  click(w.document.querySelector("#cx-goto"));
+  const hit = w.document.querySelector("#cx-article .cx-hits a");
+  const wanted = hit.dataset.go;
+  click(hit);
+  ok("and clicking a result opens the article it names",
+     title() === w.eval('Concordance.hits("seat")[0].title') || title() !== "Search",
+     wanted + " -> " + title());
+
+  w.document.querySelector("#cx-q").value = "seat";
+  click(w.document.querySelector("#cx-goto"));
+  click(w.document.querySelector("#cx-back"));
+  ok("and the back button is not dead either", title() !== "Search", title());
+} catch (e) { ok("the Concordance search", false, e.message); }
+
+/* CROSS-REFERENCES FROM THE REST OF THE GAME. `Concordance.knows` was called
+   by js/ui.js and never written, behind a guard that answered false for
+   everything -- so a party name on the Chamber tab, a station on the orbit
+   table and a constituency in the roll were all inert. A truthy guard around
+   a function that does not exist is how that stayed quiet, which is the same
+   miss tools/edtest.js exists for. */
+try {
+  ok("the Concordance says what it has an article for",
+     typeof w.eval("typeof Concordance.knows") === "string" &&
+     w.eval("typeof Concordance.knows") === "function",
+     w.eval("typeof Concordance.knows"));
+  ok("and it answers for a generated id as well as a written one",
+     w.eval('Concordance.knows("cu")') && w.eval('Concordance.knows("perigee_charter")') &&
+     !w.eval('Concordance.knows("no_such_article")'));
+
+  const click = el => el.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  click(w.document.querySelector('.tab[data-t="cham"]'));
+  const ext = [...w.document.querySelectorAll("#shell [data-go]")]
+    .filter(e => !e.closest("#cx-body") && !e.closest("#cx-nav"));
+  ok("the game carries cross-references outside the Concordance", ext.length > 0,
+     ext.length + " links");
+  click(ext[0]);
+  ok("and following one switches tab and opens the article",
+     (w.document.querySelector(".screen.on") || {}).id === "s-cx" &&
+     !!(w.document.querySelector("#cx-article .cx-title") || {}).textContent,
+     ext[0].dataset.go + " -> " +
+     (w.document.querySelector("#cx-article .cx-title") || {}).textContent);
+} catch (e) { ok("cross-references into the Concordance", false, e.message); }
+
+/* AND THE MENU KEEPS ITS OWN data-go NAMESPACE. `root` is both the menu's
+   Back target and a Concordance article id, so a handler that did not care
+   which screen it was on would send the menu's own Back button into the
+   Concordance. Two invariants keep that safe: the collision is real and is
+   asserted so nobody "tidies away" the scoping, and no in-game
+   cross-reference is a dead link. */
+try {
+  ok("the menu's Back target collides with an article id, so scope matters",
+     w.eval('Concordance.knows("root")'),
+     '"root" is both a menu target and an article');
+  const ext = [...w.document.querySelectorAll("#shell [data-go]")]
+    .filter(e => !e.closest("#cx-body") && !e.closest("#cx-nav"));
+  const dead = ext.filter(e => !w.eval('Concordance.knows("' + e.dataset.go + '")'));
+  ok("and every in-game cross-reference resolves to an article",
+     ext.length > 0 && dead.length === 0,
+     dead.length ? dead.map(e => e.dataset.go).join(", ") : ext.length + " links, none dead");
+} catch (e) { ok("the menu namespace", false, e.message); }
+
+/* A BILL THAT HAS NOT BEEN INTRODUCED HAS NO ARTICLE. Four bills open in
+   `drafting` and every one of them had a full Concordance page with a
+   division forecast at sitting one -- the Almanac Works (Annexation) Bill
+   among them, which is the act the campaign is ABOUT and which no one has
+   laid before the House. */
+try {
+  const stt = w.eval("UI.state()");
+  const drafting = CONTENT.bills.filter(b => stt.bills[b.id] &&
+                                             stt.bills[b.id].stage === "drafting");
+  ok("some bills open un-introduced, as content intends", drafting.length > 0,
+     drafting.map(b => b.id).join(", "));
+  ok("and none of them has a Concordance page",
+     drafting.every(b => !w.eval('Concordance.knows("bill_' + b.id + '")')),
+     drafting.filter(b => w.eval('Concordance.knows("bill_' + b.id + '")'))
+             .map(b => b.id).join(", ") || "none leaked");
+  ok("while every introduced bill keeps one",
+     CONTENT.bills.filter(b => stt.bills[b.id] && stt.bills[b.id].stage !== "drafting")
+       .every(b => w.eval('Concordance.knows("bill_' + b.id + '")')));
+  /* and the gate lifts the moment the bill is set down */
+  if (drafting.length) {
+    const id = drafting[0].id;
+    stt.bills[id].stage = "first_reading";
+    ok("and setting one down gives it its page",
+       w.eval('Concordance.knows("bill_' + id + '")'), id + " introduced");
+    stt.bills[id].stage = "drafting";
+  }
+} catch (e) { ok("un-introduced bills", false, e.message); }
 
 /* THE SCALE CONTROL IS FURNITURE. Under the plot the two buttons took 37px
    the panel had never been given and the chart body scrolled by exactly
