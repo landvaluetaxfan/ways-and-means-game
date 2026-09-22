@@ -480,8 +480,18 @@ const UI = (function () {
     $("#sb-slots").innerHTML = "SLOTS" + Array.from({ length: sTot }, (_, i) =>
       `<i class="sbpip${i < sUsed ? " spent" : ""}"></i>`).join("");
     $("#sb-slots").classList.toggle("none", sUsed >= sTot);
-    $("#sb-sig").textContent = `SIGNATURES ${st.signatures || 0}/9`;
-    $("#sb-sig").style.color = (st.signatures || 0) >= 7 ? "var(--alert)" : "";
+    /* THE THRESHOLD IS CONTENT'S, and this readout had it wrong. It printed
+       "/9" and reddened at 7 as literals, while `setup.thresholds.ballot` is
+       12 and `signaturePanel` fifty lines down reads it properly -- so the
+       status bar told the player a ballot needed nine names when it needs
+       twelve, and went red five short of the number that actually matters.
+       Two places holding one number, which is the apportionment_ratio
+       lesson; the alert follows the threshold now rather than being set
+       beside it. */
+    const sigNeed = (C.setup.thresholds && C.setup.thresholds.ballot) || 12;
+    const sigHave = st.signatures || 0;
+    $("#sb-sig").textContent = `SIGNATURES ${sigHave}/${sigNeed}`;
+    $("#sb-sig").style.color = sigHave >= sigNeed - 2 ? "var(--alert)" : "";
     /* OUTSTANDING UNDERTAKINGS. Absent when there are none, rather than
        showing a zero: this is the thing that makes rising cost
        something, and a permanent "OWED 0" is furniture. */

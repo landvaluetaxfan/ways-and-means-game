@@ -491,6 +491,15 @@ version of any of them is in the header of the file it names.
 
 **Interface**
 
+- **A NUMBER THE INTERFACE PRINTS IS CONTENT'S NUMBER.** The status bar had
+  `SIGNATURES n/9` and reddened at 7 as literals, while
+  `setup.thresholds.ballot` is **12** and `signaturePanel` fifty lines down
+  reads it properly — so the bar told the player a ballot needed nine names
+  when it needs twelve, and went red five short of the number that actually
+  matters. Two places holding one number is the `apportionment_ratio` lesson
+  from the other direction, and a hardcoded threshold is invisible to every
+  check that does not compare it against its source. Found while checking a
+  fact for a prose rewrite, which is an argument for doing that checking.
 - **AN ADMINISTRATION'S `setup` OVERRIDES ARE THE SESSION'S, not one call's.**
   `Shell.contentFor(admin)` merges them and was handed to `Engine.newGame`
   and then THROWN AWAY, so the opening STATE was built from Flash I's

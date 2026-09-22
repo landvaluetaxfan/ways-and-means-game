@@ -282,6 +282,20 @@ try {
        .every(b => !b.getAttribute("title")));
 } catch (e) { ok("the economy tab", false, e.message); }
 
+/* A NUMBER THE INTERFACE PRINTS IS CONTENT'S NUMBER. The status bar had
+   "SIGNATURES n/9" and reddened at 7 as literals, while
+   setup.thresholds.ballot is 12 and signaturePanel reads it properly -- so
+   the bar told the player a ballot needed nine names when it needs twelve,
+   and went red five short of the number that matters. Two places holding one
+   number is the apportionment_ratio lesson, and a hardcoded threshold is
+   invisible to every check that does not compare it with its source. */
+try {
+  const need = w.eval("CONTENT.setup.thresholds.ballot");
+  const bar = (w.document.querySelector("#sb-sig") || {}).textContent || "";
+  ok("the status bar's ballot threshold is the one content sets",
+     bar.indexOf("/" + need) >= 0, bar + " against a threshold of " + need);
+} catch (e) { ok("the signatures readout", false, e.message); }
+
 /* THE CALENDAR IS IN THE CAMPAIGN'S OWN YEAR, and this is the assertion the
    worst bug of the set would have failed.
 

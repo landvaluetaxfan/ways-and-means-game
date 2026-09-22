@@ -77,9 +77,9 @@ These are real patterns that a regex cannot separate from their good uses.
 Reporting them as faults is how a style checker gets argued with once and
 ignored afterwards.
 
-**4. The corrective pair.** `It is not X. It is Y.` Eleven left, and they
-stay. The form is informative when the thing being denied is what a reader
-would assume:
+**4. The corrective pair.** `It is not X. It is Y.` **Adjudicated 22 Sep
+2026: eleven read, five rewritten, six kept.** The form is informative when
+the thing being denied is what a reader would actually assume:
 
 > The office is not elected. It is held by whoever can command a majority in
 > the House of Delegates.
@@ -87,15 +87,62 @@ would assume:
 > Its grievance is not the platform. It is that the orbital franchises
 > undercut European labour and personhood law.
 
-It is the habit when the denial is a strawman nobody offered — `It is not
-dishonest. It is a bet that the bill comes due to somebody else` — and that
-one is fixed. Nothing in the text distinguishes the two.
+It is the habit when the denial is a strawman nobody offered. Nothing in the
+text distinguishes the two, which is why this is judgement and not a fault.
+
+**The six that stay, and why — so the next pass does not re-argue them.**
+The scanner will keep reporting all six; this is the verdict, not a
+suppression list, because a suppression list is how a style tool stops being
+read.
+
+| address | the denial | why it stays |
+|---|---|---|
+| `encyclopedia/…/prime_minister/summary` | *not elected* | a reader assumes a head of government is elected; denying it is the constitution. The rule's own comment names this the informative case. |
+| `actors/earth_bloc/note` | *not the platform* | the whole crisis IS the platform, so this corrects the one assumption a reader certainly arrives with. The most useful sentence in the note. |
+| `events/standing_low/body` | *not catastrophic* | the assumption from a low-standing event is catastrophe, and *flat, which is worse* is a real claim the passage then substantiates. |
+| `events/f1_accounts_freeze/body` | *not an embargo yet* | Hatt speaking, and `yet` plus *the price of one* is escalation information. A character may sound like themselves. |
+| `events/the_pairing_offer/body` | *not a favour* | Okarie speaking, and the distinction is cashed out in the next clause — a favour is owed back, a kindness is remembered. |
+| `minutes/min_130/body` | *not a refusal* | an in-world minute where refusal-versus-record is legally load-bearing, and the next line (*I am aware of how this minute will read if it is ever produced*) makes the care deliberate. |
+
+**The five that went, and what replaced them.** Every one was a two-word
+antithesis on a word nobody offered, and in each case the passage was
+carrying the real information one sentence later — so the fix was to lead
+with it:
+
+- `events/review_reports/body` — *It is not a scandal. It is a schedule.
+  That is the part that will be quoted.* Alliterative antithesis plus an
+  editorial sign-off in one sentence pair; the densest two habits in the
+  corpus. Now states the mechanism: every suspension lawful and minuted, the
+  number growing at the rate the standing orders permit.
+- `events/shed_order_crisis/body` — *What follows is not a headline.* A
+  headline was invented in order to be denied, two sentences after the text
+  had already said the number is never read aloud. The shed order arrives
+  directly now, and *It is what the price does when it goes up and nobody
+  pays it down* became the causal chain as fact.
+- `events/the_opposition_asks/body` — *It is not a question. It is a
+  statement.* Replaced with the observable fact that makes the point: *He
+  does not wait for an answer.*
+- `events/signatures_build/body` — *Six is not a ballot.* This one was
+  teaching a real mechanic, so it says the mechanic: six is half the twelve
+  that would force a ballot. More informative than the version it replaced,
+  because it names the threshold.
+- `events/minister_resignation/body` — *not a protest. It is a payment.*
+  The explanation that follows made the pivot redundant; *closes the
+  account* keeps the metaphor as a verb rather than an epigram.
+
+A sixth habit was found by scanning for things the tool does not model —
+`not X but Y`, superlative framing, *what it will not do is*, *that is the
+part that* — and none of them reached three instances across 2,212
+passages. At that density they are background, not a cadence. The corrective
+pair at eleven was the last one that was.
 
 **5. The tricolon.** Demoted from a fault. A bill that requires a register,
 a hearing and a decision requires three things, and
 `bills/continuity_registration/contested` is an enumeration, not a cadence.
 
-**6. The editorial sign-off.** One left. `rather than` came OUT of this
+**6. The editorial sign-off.** **None left** — the one was
+`events/review_reports/body`'s *That is the part that will be quoted*, which
+went with the corrective pair in the same sentence pair. `rather than` came OUT of this
 rule: it flagged four constituency notes whose contrasts are exactly right —
 *a technical question rather than a political one*, *a landlord's vote
 rather than a tenant's* — and a construction that useful cannot be a fault.

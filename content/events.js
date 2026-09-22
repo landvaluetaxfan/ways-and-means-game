@@ -744,9 +744,10 @@ the House. Seventy-five thousand and some. That is the count of people suspended
 across the thirty stations, stopped and held and not running, and it has crossed
 the figure the Allocation Act calls a federal strain.
 
-What follows is not a headline. It is a shed order, posted at 06:00: Ashfield,
-tier four, a further eleven hundred, effective next sitting. Nobody voted for it.
-It is what the price does when it goes up and nobody pays it down.
+The consequence arrives as a shed order, posted at 06:00: Ashfield, tier four,
+a further eleven hundred, effective next sitting. No vote authorised it and none
+was needed. The substrate price rose, nothing in the appropriation brought it
+down, and the order follows from the Act.
 
 By the time the House sits, the figure has been on the wire four hours and the
 government has said nothing.`,
@@ -965,10 +966,10 @@ that put you here intends to keep you.`,
 things are arranged: the minister told the paper, the paper called the office,
 and the office said nothing.
 
-The resignation is not a protest. It is a payment. A promise was made in that
-minister's name and the promise was not kept, and in this building a minister
-who will not resign for it is resigned for. The post is empty. What it will not
-do is stay empty by itself.`,
+A promise was made in that minister's name and the promise was not kept, and a
+minister who will not resign for that is resigned for. The letter closes the
+account. The post is vacant, and a department with no holder cannot make an
+order until somebody is appointed to it.`,
   choices:[
     { label:"Fill it from the loyal wing of the party.",
       effects:[{move:{"party_loyalty":5}},{move:{"public_standing":-2}},
@@ -1024,7 +1025,9 @@ She is not angry about it. Anger would have been something to work with. She has
   speaker:null,
   body:`Somebody has finally counted. The register of people suspended under the standing shed orders stands at seventy-six thousand, and no House has ever been told the number aloud, because nothing required it to be.
 
-It is not a scandal. It is a schedule. That is the part that will be quoted.`,
+Every suspension in it was lawful and minuted, made under an order already in
+force. The number grew a quarter at a time, at a rate the standing orders
+permit, and it will be quoted against the government by the afternoon.`,
   choices:[
     { label:"Read the number into the record yourself.",
       when:{ flags:["review_full"] },
@@ -1206,11 +1209,11 @@ argued by officials and signed by nobody.`,
   title:"The names on the paper",
   speaker:"ceyhan",
   body:`Six members have put their names to a letter that does not say what it
-is for. Six is not a ballot. It is the number that tells the whips a ballot is
-possible, and the number is in the lobby the same afternoon.
+is for. Six is half the twelve that would force a ballot, and enough to tell the
+whips one is within reach. The number is in the lobby the same afternoon.
 
-Ceyhan asks the only question that matters: whether the government means to find
-out what the six want, or how many the six can become.`,
+Ceyhan puts the choice plainly: whether the government means to find out what
+the six want, or how many the six can become.`,
   choices:[
     { label:"Meet them. Ask what the letter is really about.",
       effects:[{ move:{ "loyalty.cu_maintenance":7 } }, { move:{ "loyalty.cu_halloran":4 } },
@@ -1369,9 +1372,9 @@ by nobody in this room."`,
 whether the government intends to govern, or intends to be carried through
 the session by the arithmetic of the coalition.
 
-It is not a question. It is a statement of the position the opposition
-intends to take until the number improves, and the benches behind him
-know it and stay seated.`,
+He does not wait for an answer. The wording is the line the opposition will
+hold at every question time until the government's standing recovers, and the
+benches behind him know it and stay seated.`,
   choices:[
     { label:"Answer him yourself, on your feet.",
       effects:[{ move:{ "public_standing":3 } }, { move:{ "loyalty.cl":-4 } },
