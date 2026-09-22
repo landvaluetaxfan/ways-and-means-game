@@ -582,12 +582,18 @@ version of any of them is in the header of the file it names.
   zero from sitting 56 to the end at 60. Whether a cascade during the
   campaign is a loss is the author's call.
 - **Chapter budgets are in bible §1.7 and worth reading before generating.**
-  12-15 · 15-18 · 14-18 events, three chapters since the correction of 22
-  Sep (chapter three is the old election and settlement budgets together).
-  Measured under three sessions: chapter one meets 8, chapter two about 39,
-  and chapter three 5-6, so chapter two is more than twice its budget and
-  the other two are under. Size a content round against the chapter, not
-  the run total.
+  12-15 · 23-28 · 6-8 events since 22 Sep: chapter two now carries the
+  result and its aftermath while the House still sits, and chapter three is
+  the writs, the campaign and the count. Measured under three sessions before
+  that change: chapter one meets 8 and chapter two about 39. Size a content
+  round against the chapter, not the run total.
+- **A CAMPAIGN HAS ONE CANON ENDING, AND THE NEXT CAMPAIGN OPENS ON IT**
+  (bible §1.8, the author's decision of 22 Sep). The player can reach any
+  ending; the next leader's campaign assumes the canon one, so a narrative
+  runs across parliaments. Flash I's canon is LEANING the debt trap, which
+  returns the PSD to government (84 to 90 seats under the canon policy) with
+  austerity to come. `test.js` guards that the canon ending is reachable by
+  play; keep that true whatever else moves.
 
 **CSS and layout traps, every one found by measuring rather than reading**
 
