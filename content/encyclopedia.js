@@ -266,10 +266,10 @@ const ENCYCLOPEDIA = {
     ],
     see:["engineering_authority","shed_order","hul"] },
 
-  { id:"the_failed_revolution", title:"The events of 2044", category:"History",
+  { id:"the_failed_revolution", title:"The events of 2063", category:"History",
     banners:["stub","neutrality","single"],
     edited:{ by:"unattributed", attested:false, note:"reverted 9 times this session" },
-    summary:"The **events of 2044** were a rising against the provisional administration. It was "+
+    summary:"The **events of 2063** were a rising against the provisional administration. It was "+
             "suppressed within five weeks. Accounts of its causes, extent and casualties differ "+
             "substantially.",
     sections:[

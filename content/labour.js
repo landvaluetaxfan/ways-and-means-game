@@ -13,12 +13,17 @@
 
    THREE FACTS THE TABLE IS BUILT TO CARRY:
 
-   1. Most adults do not work. Automation took bulk production two
-      centuries ago. Participation is 38 per cent, and the consumables
-      floor and substrate insurance are not a safety net — they are the
+   1. Most adults do not work. Automation took bulk production on
+      Earth before any of this was built, and the surplus capacity is
+      what built it: seven million people are in orbit inside twenty
+      years because the manufacturing to put them there already
+      existed. Participation is 38 per cent, and the consumables floor
+      and substrate insurance are not a safety net — they are the
       primary distribution mechanism. What people argue about is the
       uprating formula, never whether the floor exists. (Bible 2.1:
-      the radical thing is settled and old.)
+      the radical thing is settled. It is not old, because nothing
+      here is: it has been in the Charter since there was a Charter,
+      which is the whole life of the Commonwealth.)
 
    2. Licensure is a narrow gate on a wide sector. 142,000 people do
       verification work; 890 of them are licensed, and those 890 elect
@@ -182,7 +187,8 @@ const LABOUR = {
   distribution: {
     consumablesFloor: 0.62,      // share of adults drawing it in any given quarter
     substrateInsurance: 0.34,    // share of the emulated population covered
-    note:"Not a safety net. The primary distribution mechanism, settled generations ago. The "+
+    note:"Not a safety net. The primary distribution mechanism, in the Charter since there "+
+         "was a Charter. The "+
          "argument is the uprating formula and has never been whether the floor exists."
   }
 };

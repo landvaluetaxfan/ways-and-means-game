@@ -34,7 +34,7 @@ const INSTRUMENTS = [
     prayer_window:6,
     revocable:true,
     summary:"Widens the Life Support Engineering licence to admit integrity technicians "+
-            "certified before 2054, adding roughly 900 electors to a constituency of 4,100. "+
+            "certified before 2067, adding roughly 900 electors to a constituency of 4,100. "+
             "The new electors are disproportionately maintenance-union members.",
     effect_note:"Moves functional seats over 2–4 sittings. The Guild Bench will not divide "+
                 "with a government that has done this.",

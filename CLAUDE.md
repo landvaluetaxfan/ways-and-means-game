@@ -160,53 +160,62 @@ Centre*, which described neither their economics nor their faith; `upl` was
 *Common Kind*, a good phrase that identified nobody. Read
 `content/parties.js`.
 
-## THE CANON DATE MOVED TO 2080, AND THE SWEEP IS HALF-DONE (22 Sep 2026)
+## THE CANON DATE IS 2080 AND THE HISTORY IS TWO DECADES (22 Sep 2026)
 
-`content/setup.js` dates Flash I to **11 April 2080** and says in terms that
-"the bible's 2287 is a placeholder older than the term and is not the year".
-That decision had been made in ONE file and nothing had followed it: the
-bible's §11.1 still read 2287, and **every in-world historical date in the
-game was in the future** relative to the campaign's own year.
+The world was drafted two hundred years old and dated to 2287. The author
+moved the campaign to **11 April 2080** and then, when the sweep turned up
+the contradiction, compressed the history to match: **two decades, not two
+centuries**, on the argument that halfway to post-scarcity means enormous
+manufacturing capacity, and enormous manufacturing capacity is what puts
+seven million people in orbit inside twenty years. Automation is the CAUSE of
+the colonisation rather than something that happened long before it.
 
-**What has been shifted, by −207, which preserves every interval:** 67 year
-references across content, the bible, the textbook and `test.js` — 2287→2080,
-2286→2079, 2284→2077, 2281→2074, 2280→2073, 2279→2072, 2261→2054, 2251→2044,
-2249→2042 — plus 30 references to the four `si_2287_*` ids, renamed to
-`si_2080_*` (`npm run rename` passes: an id that names a year its own title no
-longer carries is the trap this repo keeps hitting). `setup.startDate`'s own
-default was still 2287 and is now 2080, so the default and the administration
-agree.
+**`bible.md` §11.1 carries the timeline and it is LOCKED.** Read it before
+dating anything. The short version: Earth settles personhood and automation
+in the 2040s, orbital industry reaches scale ~2058, *The Spindle* and the
+treaty organisation 2061, the rising 2063, **the Perigee Charter 2064**, the
+anchors 2065 and 2068, Flash comes up 2070 and takes the Bank 2071, and the
+campaign opens in 2080 with the Commonwealth sixteen years old.
 
-**WHAT IS NOT DONE, AND WHY IT IS A CANON DECISION AND NOT A SWEEP.** Two
-content files say the world is two hundred years old:
+**What the sweep touched.** 67 year references shifted by −207 (2287→2080 and
+so on down), 30 `si_2287_*` id references renamed `si_2080_*` (`npm run
+rename` confirms behaviour-preserving), and then a second pass re-anchored
+the eight dates that −207 had put either in the future or before orbital
+settlement: the judge's emulation, the rising, the certification cohort, the
+Spindle's founding **and its issue number** (No. 31,884 was 87 years of
+dailies the paper has not had; it is No. 6,884), the Secretary-General's last
+use, and the three Earth-side notes in `world.js`.
 
-- `content/names.js` — "**Two centuries** of orbital [settlement]"
-- `content/labour.js` — "Automation took bulk production **two centuries ago**"
+**And seven duration claims that assumed an old world**, which a year sweep
+cannot see because they carry no digits: `names.js`'s "two centuries of
+orbital habitation blended the founding populations" (twenty years blends
+nothing — the populations arrived already mixed, because orbital industry
+recruited everywhere at once and recruited fast), `labour.js`'s "automation
+took bulk production two centuries ago", the consumables floor "settled
+generations ago", leases held "for four generations", a mutual "older than
+the party by two generations", firms "closely held two centuries after they
+were founded", and **bible §2.1 itself**. Three more were left alone on
+purpose: §14.3 is notes on the Mars trilogy and §15's predator line belongs
+to another setting's appendix, so neither is Commonwealth history.
 
-Two centuries before 2080 is 1880, which cannot hold this world. Before 2287
-it is 2087, which fits exactly. Five deep dates are still in the future and
-were deliberately NOT invented a value for:
+**§2.1 came out stronger.** Its principle is that whatever is radical is
+already settled, and it bought that with "two or three generations", which
+twenty years cannot supply. A young polity founded on OLD EARTH SETTLEMENTS
+buys it outright: the personhood fight happened on Earth before anybody came
+up, so nobody in the chamber won it and nobody in the chamber owns it.
 
-| reference | reads | under −207 |
-|---|---|---|
-| The Spindle founded (bible §11.1) | 2201 | 1994 — and **No. 31,884** implies ~87 years of daily issues |
-| Secretary-General unused since (§2.4) | 2206 | 1999 |
-| Somali coast contested since (`world.js`) | the 2180s | the 1970s |
-| Anselm anchor granted (`world.js`) | the 2230s | the 2020s, on a **ninety-nine-year** term |
-| Indonesian anchor granted (`world.js`) | the 2240s | the 2030s |
+**Flash's career needed no change, and that is the confirmation.** Arriving
+in 2070 and governing the Reserve Bank in 2071 reads as absurd in a
+two-century-old republic and as obvious in a sixteen-year-old one standing up
+its first institutions; her nine years as Governor are "long enough to be a
+record" only because the Bank is barely older than that. Her introduction was
+already written for this world — she banks through "the latter half of a
+century defined by an upheaval in the institutions of the old order as
+climate change forced their hand", for a firm called Alphabet-JPMorgan Omni.
 
-And two that the shift itself put **before** the Commonwealth's own
-springtime, which `setup.js` places at 2070: the failed revolution (now 2044)
-and the Tribunal judge's emulation (now 2042).
-
-**The two coherent ways out.** (a) A young Commonwealth: re-anchor the deep
-layer into 2040–2070, drop the Spindle's issue number, and change `names.js`
-and `labour.js`. (b) Put the campaign back to 2287 and shift **Flash's
-biography** instead — up in 2277, the Bank in 2278 — which costs two numbers
-and keeps everything else, because the author's own note is about INTERVALS
-("nine years as Governor... recent enough that the people she priced are
-still sitting in the chamber") and every one of those works at any absolute
-year. The shift applied here is mechanical and reverses with +207.
+**If a new date is being written, check it against §11.1 first.** The window
+is narrow now: anything Commonwealth is 2058–2080, anything Earth may be
+earlier, and nothing is generations old.
 
 ## THE TABS, AS OF 20 SEPTEMBER 2026
 

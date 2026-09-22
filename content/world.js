@@ -83,11 +83,11 @@ const WORLD = {
   /* The countries worth a summary. `actor` links the country to a modelled
      foreign actor, so clicking it shows the relationship the game keeps. */
   states: {
-    "BRA": { note:"Granted the Anselm anchor in the 2230s on a ninety-nine-year term. The fee was fixed at grant with no indexation clause, and lift tonnage through the anchor has roughly trebled since. Brazil runs its own launch range and a national orbital programme, and is a net seller of lift to the Commonwealth.",
+    "BRA": { note:"Granted the Anselm anchor in 2065 on a ninety-nine-year term, so it runs to 2164. The fee was fixed at grant with no indexation clause, and lift tonnage through the anchor has roughly trebled since. Brazil runs its own launch range and a national orbital programme, and is a net seller of lift to the Commonwealth.",
              markets:"Soy, iron, and launch capacity it would rather the Commonwealth bought than built." },
     "KEN": { actor:"earth_host", note:"The host state. Kenyan soil carries the International Earth-Orbit Elevator, and Kenyan procurement law is why the repatriation plan runs two years rather than six months. Its stated position is that it will not fund a private wind-up, and will not accept a foreign government taking title to a platform at the foot of its own tether.",
              markets:"Tea, geothermal power, and the corridor rights to the Malindi base — the last of which it is the only seller of." },
-    "IDN": { note:"Non-aligned, archipelagic, and the largest state on the equator. The anchor was granted in the 2240s during a currency crisis, and Indonesia has moved to reopen the terms at each of the three renewals since.",
+    "IDN": { note:"Non-aligned, archipelagic, and the largest state on the equator. The anchor was granted in 2068 during a currency crisis, and Indonesia has moved to reopen the terms at each of the two fee reviews since.",
              markets:"Nickel, palm, and the busiest equatorial corridor on the planet." },
     "FRA": { actor:"earth_bloc", note:"The Kourou vertical stands on European Union territory, making the Union the only power in the dispute that is also a landlord. Its complaint is about labour and personhood law rather than the platform: the orbital franchises operate below European standards, and no European court has jurisdiction to reach them.",
              markets:"Instruments, aircraft, and the European market the Commonwealth's compute exports want in." },
@@ -95,7 +95,7 @@ const WORLD = {
              markets:"Cocoa, and the concession that pays for everything the cocoa does not." },
     "COL": { note:"The Leticia corridor runs through the Amazon tri-border, a district Colombia polices jointly with Peru and Brazil and administers thinly. Its position, written into the concession instrument and restated at every renewal, is that the lease conveys operating rights over the corridor and no territorial claim whatever.",
              markets:"Coffee, cut flowers, and the corridor into the Amazon basin." },
-    "SOM": { note:"A federal authority holding an equatorial coast contested since the 2180s. The anchor is one of three revenue-bearing assets in the district, and the authority's writ over the corridor is recognised in Mogadishu and disputed on the ground.",
+    "SOM": { note:"A federal authority holding an equatorial coast contested since the 2040s. The anchor is one of three revenue-bearing assets in the district, and the authority's writ over the corridor is recognised in Mogadishu and disputed on the ground.",
              markets:"Livestock, frankincense, and the Kismayo roadstead." },
     "GAB": { note:"Cordell's charter state, and the base of its orbital operations. Gabon has run on extraction since the twenty-first century, and it is the only host here represented in the dispute by a domestic concessionaire rather than by a claim against one.",
              markets:"Manganese, oil, and the Port-Gentil anchor." },

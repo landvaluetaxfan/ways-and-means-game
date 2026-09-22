@@ -2565,7 +2565,7 @@ first half. I cannot hold it if you make them choose."`,
 { id:"the_old_judge", chapter:2, weight:71, once:true,
   title:"The judge who remembers",
   speaker:"fenwick",
-  body:`The presiding judge of the Tribunal was emulated in 2042 and has sat
+  body:`The presiding judge of the Tribunal was emulated in 2060 and has sat
 continuously since. She remembers the founding arguments as arguments, which is
 to say she was in the room for some of them.
 

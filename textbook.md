@@ -142,7 +142,7 @@ anyway to keep everyone alive.
 The Georgists observe that a volume lease derives its value almost entirely from
 position — proximity to an agricultural deck, to a tether head, to the good air —
 and that position is not created by the leaseholder. They are correct. Land value
-taxation, an idea that spent three centuries as an interesting minor school on
+taxation, an idea that spent two centuries as an interesting minor school on
 Earth, turns out to be simply and obviously right in a habitat, where the total
 quantity of the good is fixed by construction and its value is entirely
 locational. The Georgists poll 4.1 per cent and have never exceeded it.
@@ -411,8 +411,8 @@ dilutes not merely a board but a seat in the House of Delegates. No consortium
 holding a functional constituency will float, because floating is unilateral
 disarmament. Ownership passes by negotiated transfer between families and
 syndicates, the register of control is a political document rather than a
-commercial one, and the great firms of the Commonwealth remain closely held two
-centuries after they were founded.
+commercial one, and the great firms of the Commonwealth remain closely held in the
+second decade after they were founded.
 
 Our capital markets are shaped by our electoral law. I know of nowhere else this
 is true.
@@ -724,7 +724,7 @@ emulated persons, or the limits of engineering authority, or whether sectoral
 representation should be permanent, and they judged — correctly, I think — that a
 document that settled these questions would not have been signed.
 
-So they left holes, and we have spent two centuries arguing in them, and the
+So they left holes, and we have spent every year since arguing in them, and the
 arguing is the constitution.
 
 What holds us together is not principle. It is that most of our members would die

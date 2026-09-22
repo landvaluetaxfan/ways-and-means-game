@@ -342,7 +342,7 @@ const PARTY_ORG = {
         note:"Older than the party and will outlast it. Publishes the valuation tables everyone argues from, including the Georgists." }
     ],
     branches: [
-      { station:"belvedere", note:"Where the long leases are, and where they have been for four generations." },
+      { station:"belvedere", note:"Where the long leases are, and where they have been since the first of them was written." },
       { station:"tallow", note:"Pavilion. A low-band branch of small holders, which the League finds embarrassing and cannot do without." }
     ]
   },
@@ -381,7 +381,7 @@ const PARTY_ORG = {
     ],
     bodies: [
       { name:"The Ground Rent Society", kind:"society",
-        note:"Older than the party by two generations, and regards the party as a recent and probably temporary vehicle. Meets fortnightly and has read everything." }
+        note:"Older than the party — it was a mutual before there was a Commonwealth to register it in — and regards the party as a recent and probably temporary vehicle. Meets fortnightly and has read everything." }
     ],
     branches: [
       { station:"quarry", note:"Stanbridge. One branch, forty members, and the highest turnout in the Commonwealth." }

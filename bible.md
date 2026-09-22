@@ -159,46 +159,46 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 
 **Part XI — NAMED CANON** · L1684
 - §11.1 · L1688 — The polity
-- §11.2 · L1709 — Persons
-- §11.3 · L1747 — Stations and constituencies
-- §11.4 · L1820 — The functional roster  *LOCKED*
-- §11.5 · L1842 — The live bill
-- §11.6 · L1851 — Other business on the order paper
+- §11.2 · L1747 — Persons
+- §11.3 · L1785 — Stations and constituencies
+- §11.4 · L1858 — The functional roster  *LOCKED*
+- §11.5 · L1880 — The live bill
+- §11.6 · L1889 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L1864
-- §12.1 · L1866 — The core principle  *LOCKED*
-- §12.2 · L1870 — Split visual language  *LOCKED*
-- §12.3 · L1877 — Chrome direction  *LOCKED*
-- §12.4 · L1883 — Screens  *LOCKED*
-- §12.5 · L1887 — Election night  *LOCKED*
-- §12.6 · L1896 — The orbital map  *LOCKED*
-- §12.7 · L1924 — The parliament diagram  *LOCKED*
-- §12.8 · L1950 — Documents  *LOCKED*
-- §12.9 · L1956 — The feed  *LOCKED*
-- §12.10 · L1960 — Build cost  *LOCKED*
-- §12.11 · L1964 — Images  *LOCKED*
-- §12.12 · L1992 — Existing artifact
-- §12.13 · L2004 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L1902
+- §12.1 · L1904 — The core principle  *LOCKED*
+- §12.2 · L1908 — Split visual language  *LOCKED*
+- §12.3 · L1915 — Chrome direction  *LOCKED*
+- §12.4 · L1921 — Screens  *LOCKED*
+- §12.5 · L1925 — Election night  *LOCKED*
+- §12.6 · L1934 — The orbital map  *LOCKED*
+- §12.7 · L1962 — The parliament diagram  *LOCKED*
+- §12.8 · L1988 — Documents  *LOCKED*
+- §12.9 · L1994 — The feed  *LOCKED*
+- §12.10 · L1998 — Build cost  *LOCKED*
+- §12.11 · L2002 — Images  *LOCKED*
+- §12.12 · L2030 — Existing artifact
+- §12.13 · L2042 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2063
-- §13.1 · L2065 — Scandal taxonomy  *LOCKED*
-- §13.2 · L2078 — The spine  *LEANING*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2101
+- §13.1 · L2103 — Scandal taxonomy  *LOCKED*
+- §13.2 · L2116 — The spine  *LEANING*
 
-**Part XIV — PRIOR ART** · L2084
-- §14.1 · L2086 — The gap  *LOCKED*
-- §14.2 · L2090 — Works
-- §14.3 · L2098 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L2122
+- §14.1 · L2124 — The gap  *LOCKED*
+- §14.2 · L2128 — Works
+- §14.3 · L2136 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2111
-- §15.1 · L2113 — Team  *LOCKED*
-- §15.2 · L2119 — Documentation  *LOCKED*
-- §15.3 · L2135 — Where this gets hard  *LOCKED*
-- §15.4 · L2146 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2163 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2149
+- §15.1 · L2151 — Team  *LOCKED*
+- §15.2 · L2157 — Documentation  *LOCKED*
+- §15.3 · L2173 — Where this gets hard  *LOCKED*
+- §15.4 · L2184 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2201 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2200
+**Part XVI — OPEN DECISIONS** · L2238
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2230
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2268
 
 <!-- /TOC -->
 
@@ -327,7 +327,7 @@ Contemporary politics depends on: a shared clock, information moving fast enough
 
 Contemporary politics isn't about whether people get to vote. It's about redistricting, procurement contracts, formulary coverage, and which committee a bill dies in.
 
-**Therefore: whatever is radical about the world is two or three generations old.** The franchise fight over uploaded consciousness happened generations ago, it was ugly, and reopening it is politically suicidal. What people argue about *now* is whether fork-instances count for apportionment — boring, technical, worth a hundred million to somebody.
+**Therefore: whatever is radical about the world was settled before the world began.** The Commonwealth is twenty years old and its novelties are older than it is: the franchise fight over uploaded consciousness was fought out on EARTH, before anybody came up, and the Perigee Charter inherited the answer rather than arguing it. It was ugly and reopening it is politically suicidal. A young polity founded on old settlements gets this principle for free, and more cleanly than an old polity does — nobody in the chamber won that fight, so nobody in the chamber owns it. What people argue about *now* is whether fork-instances count for apportionment — boring, technical, worth a hundred million to somebody.
 
 **Corollary:** keep two novelties hot, freeze the rest into infrastructure. If citizenship, mortality, labour, and identity are all live simultaneously, you have a constitutional convention, not a government.
 
@@ -564,7 +564,7 @@ every confirmation. §3.7 as an administrative fact.
 *Secretary-General of the Commonwealth*, from when the Commonwealth was a treaty
 organisation between stations rather than a state. The usage survives on
 instruments of appointment and nowhere else. No holder has been addressed by it
-since 2206. §2.4: the Charter should feel dated.
+since 2064, when the Charter made a state of what had been a treaty organisation. §2.4: the Charter should feel dated — and it is dated by being FOUNDATIONAL rather than by being ancient. Sixteen years is the whole life of the Commonwealth.
 
 
 ---
@@ -1550,13 +1550,13 @@ Automation handles bulk production, so most adults have no wage income and never
 expect one. Non-participation is not unemployment: it is not a failure state and
 there is no political demand for "jobs" in the twentieth-century sense. The
 argument is the uprating formula on the consumables floor, settled in principle
-generations ago exactly as §2.1 requires.
+before the Commonwealth existed, exactly as §2.1 requires.
 
 Shares are of the ~1.9M employed.
 
 | Sector | % | Why it is that size |
 |---|---|---|
-| Life support, maintenance, environment | **24** | Robots handle regular geometry; humans handle two centuries of undocumented retrofit. Failure is lethal, so maintenance runs preventive with inspection layered on. ~1 worker per 15 residents — shipboard engineering ratios, and a habitat is a ship that never docks. |
+| Life support, maintenance, environment | **24** | Robots handle regular geometry; humans handle two decades of undocumented retrofit. Failure is lethal, so maintenance runs preventive with inspection layered on. ~1 worker per 15 residents — shipboard engineering ratios, and a habitat is a ship that never docks. |
 | Care | **19** | The sector automation reaches last, with demand rising: the very old accumulate rather than die. Restoration nursing for the returning suspended; embodiment brokerage. High partly *because* the floor exists — when subsistence does not depend on wages, people do work they think is worth doing. |
 | Verification, attestation, judgment under liability | **15** | Larger than any real economy, because the Charter's drafting defect makes every boundary case litigable. Unifying principle: **automation can do the task but cannot hold the liability.** |
 | Substrate, thermal, computation | **9** | Small headcount, enormous leverage — mostly radiator maintenance and thermal accounting rather than compute administration. 9% of workers, four functional seats, 411 corporate voters. That mismatch *is* the ownership fight. |
@@ -1700,7 +1700,45 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
   lexical.
 - **The Perigee Charter** — the founding document. Deliberately ambiguous on contested items. Functional-tier sunset clause extended four times.
 - **Current date in play:** 11 April 2080. Session 4, Week 112.
-- **The Spindle** — newspaper of record, founded 2201, Anselm Ring, No. 31,884.
+- **THE TIMELINE — LOCKED 22 Sep 2026, and it is TWO DECADES and not two
+  centuries.** The Commonwealth was drafted as two hundred years old and dated
+  to 2287; the author moved the campaign to 2080 and compressed the history to
+  match, on the argument that halfway to post-scarcity means enormous
+  manufacturing capacity, and enormous manufacturing capacity is what puts
+  seven million people in orbit inside twenty years. Automation is the CAUSE
+  of the colonisation, not something that happened long before it.
+
+  | | |
+  |---|---|
+  | 2040s | Earth: automation takes bulk production; climate forces the institutions of the old order open. Equatorial coasts become strategic — Somalia's is contested from here. **The personhood and emulation fights are fought and settled here, on Earth, before anybody comes up.** |
+  | ~2058 | Orbital industry at scale. Permanent habitation begins. |
+  | 2060 | The Tribunal's presiding judge is emulated — before the founding, which is why she was in the room for its arguments. |
+  | 2061 | *The Spindle* founded. The stations begin acting together as a treaty organisation, whose head is styled **Secretary-General**. |
+  | 2063 | The rising against the provisional administration, suppressed in five weeks. Its survivors are alive and in their fifties now. |
+  | 2064 | **The Perigee Charter.** The treaty organisation becomes a state and the Secretary-General title goes vestigial — no holder addressed by it since. The consumables floor is in it from the start. |
+  | 2065 | The Anselm anchor granted to Brazil on a ninety-nine-year term, running to 2164. |
+  | 2068 | The Indonesian anchor granted during a currency crisis. |
+  | 2070 | **Flash comes up to the Winter Garden.** The Commonwealth's springtime. |
+  | 2071 | Flash is Governor of the Reserve Bank, a year after arriving. |
+  | 2072 | The last amendment to the Allocation Act; the functional-tier position unchanged since. |
+  | 2073–2080 | The economy's annual record (`setup.history`). |
+  | 2077 | President van Ryneveld elected. |
+  | 2079 | Charnock's primer, fourth edition. |
+  | **2080** | **The campaign.** Flash is Prime Minister. The Commonwealth is sixteen. |
+
+  **The compression VALIDATES two things that read badly at two centuries.**
+  Flash arriving in 2070 and governing the Reserve Bank in 2071 is absurd in a
+  two-hundred-year-old republic and obvious in a sixteen-year-old one standing
+  up its first institutions and hiring a proven Earth banker to do it; and her
+  nine years as Governor are "long enough to be a record" only because the
+  Bank is barely older than that. Her career needed no change at all.
+
+  **And §2.1 gets cleaner, not weaker.** The principle is that whatever is
+  radical is already settled; the old text bought that with "two or three
+  generations". A young polity founded on old Earth settlements buys it
+  outright — nobody in the chamber won the personhood fight, so nobody in the
+  chamber owns it.
+- **The Spindle** — newspaper of record, founded 2061, Anselm Ring, No. 6,884.
 - **Ring Network** — broadcaster.
 - **Representation Act** — s.44 governs dual candidacy and revenant ranking.
 - **Allocation Act** — governs thermal quota; permits the engineering authority to suspend the tier-four register without notice.

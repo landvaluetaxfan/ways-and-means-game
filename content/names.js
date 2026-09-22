@@ -3,10 +3,13 @@
 
    Pools for rolling names when you need one and do not care which.
 
-   Naming in this setting is not neutral. Two centuries of orbital
-   habitation blended the founding populations, so given names and
-   family names cross freely and a person's name says little about
-   their origin — which is itself the point. What *does* carry
+   Naming in this setting is not neutral. Orbital industry recruited
+   from everywhere at once and recruited fast, so the founding
+   populations arrived already mixed rather than blending over
+   generations — two decades is nowhere near long enough to blend a
+   population, and it did not have to. Given names and family names
+   cross freely and a person's name says little about their origin,
+   which is itself the point. What *does* carry
    information:
 
      - Earth-born arrivals more often keep an unblended family name,
