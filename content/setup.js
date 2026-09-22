@@ -1,6 +1,6 @@
 /* SETUP — the opening state. Change a number here and the game starts differently. */
 const SETUP = {
-  startDate: "2287-04-11", session: 4, sitting: 1,
+  startDate: "2080-04-11", session: 4, sitting: 1,
   /* THE HOUSE DOES NOT SIT EVERY DAY, and the days it does are what turn a
      sitting number into a date the player can point at on a calendar.
      0 is Sunday. Four days in seven, so a 24-sitting session runs six weeks
@@ -29,7 +29,7 @@ const SETUP = {
      opened on a single point and said nothing about where any of it came
      from.
 
-     These are ANNUAL readings, 2280 to 2287, and the last of each is the
+     These are ANNUAL readings, 2073 to 2080, and the last of each is the
      opening value so the two scales join rather than contradicting. They are
      authored canon and they say what the premise already implies:
 
@@ -49,7 +49,7 @@ const SETUP = {
      The engine reads this and never writes it: it is the record, and the
      record does not change. */
   history: {
-    from: 2280, to: 2287, unit: "year",
+    from: 2073, to: 2080, unit: "year",
     participation: [45, 44.2, 43.5, 42.4, 41.6, 40.8, 39.9, 39],
     trade:         [88, 90, 91.5, 94, 95.5, 97, 98.5, 100],
     thermal:       [71, 74, 78, 83, 88, 92, 96, 100],
@@ -297,7 +297,7 @@ const SETUP = {
 
    The label is BUILT from these fields in js/shell.js, not stored here, so
    it can never drift from the data it names. Flash I is the current
-   campaign and the rewrite's too; the bible's 11 April 2287 (§3.9) is a
+   campaign and the rewrite's too; the bible's 11 April 2080 (§3.9) is a
    placeholder older than the term, and this dates the campaign to the
    term's own first year.
    ============================================================= */
@@ -315,7 +315,7 @@ const ADMINISTRATIONS = [
        2080 and she is already Prime Minister. She comes up in 2070 and takes
        the Bank in 2071, which gives her nine years as Governor before the
        premiership — long enough to be a record, recent enough that the
-       people she priced are still sitting in the chamber. The bible's 2287
+       people she priced are still sitting in the chamber. The bible's 2080
        is a placeholder older than the term and is not the year. */
     intro:{
       /* A BED, not the readout. js/music.js exports its moods by name and

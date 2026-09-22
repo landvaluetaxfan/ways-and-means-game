@@ -1408,7 +1408,7 @@ Amended 21 September 2026. It was the Uplift Alliance (2) and the Georgists (3) 
 
 **Freehold Party** — volume owners, the landlord class. Property absolutists, anti-Georgist to the point of obsession. **They are the Freehold Party and never the party of property owners**: no propertied interest has ever named itself for the asset. It names itself for the tenure, because a tenure sounds like a liberty. What their opponents call them is a separate question and belongs in the prose, not in the roster.
 
-**Guild Bench** — exists only in the functional tier. Contests no geographic constituency, does not campaign, cannot be voted out, holds a veto on integrity bills. Position unchanged since 2279.
+**Guild Bench** — exists only in the functional tier. Contests no geographic constituency, does not campaign, cannot be voted out, holds a veto on integrity bills. Position unchanged since 2072.
 
 **Descensionists** — gravity as birthright, orbital life as temporary exile. Draws the physiologically excluded, which makes it tragic and sympathetic rather than merely nasty.
 
@@ -1699,7 +1699,7 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
   something anyone chose. Asked what they are, people name a station. §7.2 made
   lexical.
 - **The Perigee Charter** — the founding document. Deliberately ambiguous on contested items. Functional-tier sunset clause extended four times.
-- **Current date in play:** 11 April 2287. Session 4, Week 112.
+- **Current date in play:** 11 April 2080. Session 4, Week 112.
 - **The Spindle** — newspaper of record, founded 2201, Anselm Ring, No. 31,884.
 - **Ring Network** — broadcaster.
 - **Representation Act** — s.44 governs dual candidacy and revenant ranking.
@@ -1711,7 +1711,7 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
 - **Rt. Hon. Adriana Flash MP** — Prime Minister. Party of Socialists and Democrats. Member for Anselm Ring.
 - **Mandelina Trottier MP** — Deputy Prime Minister; Leader, New Progressive
   Party. The junior coalition partner's price.
-- **President Jaco van Ryneveld** — independent. Elected 2284, direct, 51.4%. Relations with the government: cold. Has privately indicated a threshold bill carried on a contested dual majority would be referred for constitutional review.
+- **President Jaco van Ryneveld** — independent. Elected 2077, direct, 51.4%. Relations with the government: cold. Has privately indicated a threshold bill carried on a contested dual majority would be referred for constitutional review.
 - **Dan Czarnecki MP** — Ashfield. Party of Socialists and Democrats. Leads the eleven-member Czarnecki group, loyalty 12. Needs nine more signatures for a leadership ballot.
 - **Suravaram Vidyasagar MP** — Minister for Life Support. Party of Socialists and Democrats, member for
   Fore River Yards. Career maintenance union. The only member of Cabinet the Guild
@@ -1733,7 +1733,7 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
 - **Kosta Piastri MP** — Minister for Education. Party of Socialists and Democrats. Deck
   cooperativist, and photographs well.
 - **Kazuya Tanako MP** — Chair, Life Support panel. Functional tier, Alliance of
-  Business and Government. Position unchanged since 2279.
+  Business and Government. Position unchanged since 2072.
 - **Adam King MP** — independent, member for Colonnade. Backbench since the
   presidency.
 - **Benj Clarke MP** — Liberal Party, member for Meridian Loop. Backbench.
@@ -2122,7 +2122,7 @@ Not currently sought: a programmer, a game designer. See §15.3 for where that a
 - **`bible.md`** (this file) — canon, structured, uploaded to project knowledge.
   Out-of-world: it may discuss mechanics, the player, and the build.
 - **`textbook.md`** — *The Circumterrestrial Economy*, Ondine Charnock, 4th ed.,
-  Perigee Review Press, 2286. **Canon, and entirely in-world.** It knows nothing
+  Perigee Review Press, 2079. **Canon, and entirely in-world.** It knows nothing
   of the player or the game and must never mention them. It carries the economic
   and demographic detail in a voice, which makes it both a reference and a
   register guide for content passes. Where it disagrees with this file on a

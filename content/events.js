@@ -57,9 +57,9 @@ const SANDBOX = [
     result:"The federal settlement is in reach.",
     effects:[{ flag:"federal_schedule" }, { wire:"SANDBOX: THE FEDERAL SCHEDULE IS IMPOSED" }] },
   { id:"licensing_order", label:"Make the licensing order",
-    note:"Makes SI 2287/44 in force and offers the carve-out flag.",
+    note:"Makes SI 2080/44 in force and offers the carve-out flag.",
     result:"The order is in force, which opens its reaction and the challenge at the tribunal.",
-    effects:[{ si:"si_2287_44" }, { flag:"licensure_carveout_offered" },
+    effects:[{ si:"si_2080_44" }, { flag:"licensure_carveout_offered" },
              { wire:"SANDBOX: THE LICENSING ORDER IS IN FORCE" }] },
   { id:"friction", label:"Push friction toward a sanction",
     note:"Raises friction and drops legitimacy.",
@@ -314,7 +314,7 @@ recognise. You are not reforming personhood. You are reforming us."`,
                {undertake:{ id:"licensure_carveout",
                             text:"Lay the licensing order carrying the carve-out",
                             owed_to:"gb_chair", by:4,
-                             discharge:{ si:"si_2287_44" },
+                             discharge:{ si:"si_2080_44" },
                              onBreach:"gb_carveout_broken" }},
                {wire:"GOVERNMENT SIGNALS LICENSURE CARVE-OUT; SUBSTRATE LEFT FURIOUS"},
                {flag:"licensure_carveout_offered"}],
@@ -999,7 +999,7 @@ order until somebody is appointed to it.`,
 { id:"guild_answers", queuedOnly:true, once:true,
   title:"The panel's answer",
   speaker:"gb_chair",
-  body:`The panel met on Thursday, which is when it always meets, and the answer it agreed is the one the sector has given every government since 2279.
+  body:`The panel met on Thursday, which is when it always meets, and the answer it agreed is the one the sector has given every government since 2072.
 
 "Nine seats," the chair says, "and not one of them moves for a government that has moved the roll. Count it again if you like. The count will not change."
 
@@ -1248,9 +1248,9 @@ difference is the next bill."`,
       result:`Your own benches like it. Hers begin counting what they are owed, and they will present the figure.` }
   ]},
 
-/* REACH: SI 2287/44 in force; the carve-out undertaking discharges it. */
+/* REACH: SI 2080/44 in force; the carve-out undertaking discharges it. */
 { id:"the_licensing_reaction", chapter:2, weight:82, once:true,
-  when:{ siInForce:["si_2287_44"] },
+  when:{ siInForce:["si_2080_44"] },
   title:"What the order did to the panel",
   speaker:"gb_chair",
   body:`The panel has met and the sector has an answer to the licensing order.
@@ -2030,7 +2030,7 @@ discovered."`,
   choices:[
     { label:"Lay the order next sitting and say the delay was yours.",
       effects:[{ move:{ "rel.gb_chair":4 } }, { move:{ "legitimacy":-4 } },
-               { si:"si_2287_44" },
+               { si:"si_2080_44" },
                { wire:"PM CONCEDES THE LICENSING DELAY AND LAYS THE ORDER" }],
       result:`The order is laid late and the government takes the blame publicly. The panel accepts an apology in no other form.` },
     { label:"Let it stand. A promise missed is a promise missed.",
@@ -2500,7 +2500,7 @@ way."`,
   title:"The minimum berth",
   speaker:"vellan",
   body:`The Ministry has measured the berths on the low band and a third of them
-are under the standard of 2279. Most of the shortfall is in the last six years,
+are under the standard of 2072. Most of the shortfall is in the last six years,
 and most of it is one landlord.
 
 Vellan puts the two readings of the same figure. "Either a berth is a home and
@@ -2565,7 +2565,7 @@ first half. I cannot hold it if you make them choose."`,
 { id:"the_old_judge", chapter:2, weight:71, once:true,
   title:"The judge who remembers",
   speaker:"fenwick",
-  body:`The presiding judge of the Tribunal was emulated in 2249 and has sat
+  body:`The presiding judge of the Tribunal was emulated in 2042 and has sat
 continuously since. She remembers the founding arguments as arguments, which is
 to say she was in the room for some of them.
 
@@ -2807,9 +2807,9 @@ nothing."`,
 
 /* THE CHALLENGE. The opposition does not need a majority to hurt an order, it
    needs counsel. An order the government made is challenged in the Tribunal. */
-/* REACH: SI 2287/44 in force. */
+/* REACH: SI 2080/44 in force. */
 { id:"tr_challenge_lodged", chapter:2, weight:66, once:true,
-  when:{ siInForce:["si_2287_44"], flagsAbsent:["tr_challenged"] },
+  when:{ siInForce:["si_2080_44"], flagsAbsent:["tr_challenged"] },
   title:"The order is challenged",
   speaker:"fenwick",
   body:`The Liberals have taken the licensing order to the Tribunal. The

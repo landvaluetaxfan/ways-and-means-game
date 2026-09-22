@@ -259,8 +259,8 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
   ok("HC 4/117 fails the functional test on opening state",
      !d0.functional.carries, d0.functional.aye + "/" + d0.functional.need);
 
-  Engine.makeInstrument(s, CONTENT, "si_2287_44");
-  Engine.makeInstrument(s, CONTENT, "si_2287_47");
+  Engine.makeInstrument(s, CONTENT, "si_2080_44");
+  Engine.makeInstrument(s, CONTENT, "si_2080_47");
   const d1 = Engine.division(s, CONTENT, "divergence");
   ok("board-packing moves functional seats", d1.functional.aye > d0.functional.aye,
      d0.functional.aye + " -> " + d1.functional.aye);
@@ -269,15 +269,15 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
 
   let v = Engine.newGame(CONTENT);
   Engine.vacate(v, CONTENT, "attestation_registry");
-  ok("an SI made by a vacant post is rejected", !Engine.canMake(v, CONTENT, "si_2287_44").ok);
+  ok("an SI made by a vacant post is rejected", !Engine.canMake(v, CONTENT, "si_2080_44").ok);
 
   let p = Engine.newGame(CONTENT);
-  Engine.makeInstrument(p, CONTENT, "si_2287_44");
+  Engine.makeInstrument(p, CONTENT, "si_2080_44");
   const beforeFn = Engine.division(p, CONTENT, "divergence").functional.aye;
   p.parties.cl.loyalty = 100; p.parties.hul.loyalty = 100;
   p.parties.gb.loyalty = 100; p.parties.fh.loyalty = 100;
   p.coalition = ["cu"]; p.confidenceSupply = [];
-  const pr = Engine.prayAgainst(p, CONTENT, "si_2287_44");
+  const pr = Engine.prayAgainst(p, CONTENT, "si_2080_44");
   const afterFn = Engine.division(p, CONTENT, "divergence").functional.aye;
   ok("a prayed-against SI is revoked and its effects reversed",
      pr.carried && afterFn < beforeFn, beforeFn + " -> " + afterFn);
@@ -287,21 +287,21 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
      division and no House. It has been in the engine since the instrument
      landed and nothing offered it. */
   let rv = Engine.newGame(CONTENT);
-  Engine.makeInstrument(rv, CONTENT, "si_2287_44");
+  Engine.makeInstrument(rv, CONTENT, "si_2080_44");
   const rvBefore = Engine.division(rv, CONTENT, "divergence").functional.aye;
-  const rr = Engine.revokeInstrument(rv, CONTENT, "si_2287_44");
+  const rr = Engine.revokeInstrument(rv, CONTENT, "si_2080_44");
   const rvAfter = Engine.division(rv, CONTENT, "divergence").functional.aye;
   ok("the government can revoke its own revocable order",
-     rr.ok && !rv.instruments.si_2287_44.inForce && rvAfter < rvBefore,
+     rr.ok && !rv.instruments.si_2080_44.inForce && rvAfter < rvBefore,
      rr.ok ? rvBefore + " -> " + rvAfter : rr.reason);
-  const rbad = Engine.revokeInstrument(rv, CONTENT, "si_2287_44");
+  const rbad = Engine.revokeInstrument(rv, CONTENT, "si_2080_44");
   ok("and revoking it twice is refused", !rbad.ok, rbad.reason);
 
   let w = Engine.newGame(CONTENT);
-  Engine.makeInstrument(w, CONTENT, "si_2287_44");
+  Engine.makeInstrument(w, CONTENT, "si_2080_44");
   w.sitting = 40;
   ok("praying after the window closes is refused",
-     !Engine.prayAgainst(w, CONTENT, "si_2287_44").ok);
+     !Engine.prayAgainst(w, CONTENT, "si_2080_44").ok);
 
   let g = Engine.newGame(CONTENT);
   g.bills.divergence.stage = Engine.DIVIDES_AT;
@@ -355,7 +355,7 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     {
       const s = Engine.newGame(CONTENT);
       const before = s.parties.cu.seats.functional;
-      Engine.makeInstrument(s, CONTENT, "si_2287_44");
+      Engine.makeInstrument(s, CONTENT, "si_2080_44");
       ok("a functional seat moves inside the roll, and the derived total follows",
          s.parties.cu.seats.functional === before + 2 &&
          s.functional.fc_lifesupport.held.cu === 2 &&
@@ -2603,10 +2603,10 @@ console.log("\nTHE TRIBUNAL:");
   const st = Engine.newGame(CONTENT);
   ok("nothing is challengeable before an order is made",
      !Engine.matches(st, CONTENT.eventById.tr_challenge_lodged.when));
-  Engine.makeInstrument(st, CONTENT, "si_2287_44");
+  Engine.makeInstrument(st, CONTENT, "si_2080_44");
   ok("and an order in force is challengeable",
      Engine.matches(st, CONTENT.eventById.tr_challenge_lodged.when),
-     "si_2287_44 in force");
+     "si_2080_44 in force");
 
   /* THE RULING BRANCHES ON THE BENCH, not on a die. Both directions. */
   const ev = CONTENT.eventById.tr_ruling;
@@ -3726,7 +3726,7 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
   {
     const st = Engine.newGame(CONTENT);
     Engine.apply(st, CONTENT, [{ undertake: { id: "probe_si", text: "Lay the order",
-      discharge: { si: "si_2287_44" }, by: 2 } }]);
+      discharge: { si: "si_2080_44" }, by: 2 } }]);
     const u = Engine.outstanding(st).find(x => x.id === "probe_si");
     const w = Engine.undertakingWhere(CONTENT, u);
     ok("an undertaking names the screen that keeps it",
@@ -3736,13 +3736,13 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
        dl && dl.tab === "gov" && !!dl.how, dl ? dl.tab + " - " + dl.how : "no item");
     const t = Engine.today(st, CONTENT, false);
     const item = t.items.find(i => i.kind === "owed");
-    /* THE NUMBER, NOT THE YEAR: every order is "... Order 2287", so the SI
+    /* THE NUMBER, NOT THE YEAR: every order is "... Order 2080", so the SI
        number is the only part of the title that tells one from another. */
     ok("and the order of the day sends you there",
-       item && item.tab === "gov" && /Make SI 2287\/44/.test(item.how || ""),
+       item && item.tab === "gov" && /Make SI 2080\/44/.test(item.how || ""),
        item ? item.tab + " - " + item.how : "no item");
     ok("and it names the order itself, not only the tab",
-       !!(item && /^si:si_2287_44$/.test(item.focus || "")),
+       !!(item && /^si:si_2080_44$/.test(item.focus || "")),
        item ? String(item.focus) : "no item");
   }
 
@@ -3775,8 +3775,8 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
         if (Engine.canDivide(s, CONTENT, b.id).ok &&
             (Engine.reported(s, CONTENT, b.id) || {}).carries) Engine.divide(s, CONTENT, b.id);
       });
-      if (!s.instruments["si_2287_44"].made && Engine.canMake(s, CONTENT, "si_2287_44").ok)
-        Engine.makeInstrument(s, CONTENT, "si_2287_44");
+      if (!s.instruments["si_2080_44"].made && Engine.canMake(s, CONTENT, "si_2080_44").ok)
+        Engine.makeInstrument(s, CONTENT, "si_2080_44");
     };
     const pick = { f1_stranded: 0, f1_referendum: 0, f1_dilemma: 0, f1_water: 0,
       f1_loan: 1, f1_accounts_freeze: 0, fa_two_fronts: 0, fa_window_closes: 0,

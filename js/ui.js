@@ -862,10 +862,16 @@ const UI = (function () {
      per-sitting curve — about fifteen weeks at four sitting days a week, so
      the right resolution for a price and far too short to show anything
      structural. "record" is the annual series content authors in
-     setup.history, 2280 to 2287, whose last point IS the opening value, so
+     setup.history, 2073 to 2080, whose last point IS the opening value, so
      switching between them reads as one story at two magnifications rather
      than two stories. */
-  let chartScale = "session";
+  /* THE RECORD IS THE DEFAULT, at the author's direction. The live curve is
+     about fifteen weeks and opens on a single point, so a player arriving at
+     the tab was shown one bar and no history; the annual record opens on
+     eight years of it and its last reading IS the opening value, so nothing
+     is contradicted by starting there. The session curve is a click away and
+     is the right scale once a run has some length to it. */
+  let chartScale = "record";
   /* WHICH FOLDS ON THE TAB ARE OPEN. Same reason as `whipOpen` on the
      Chamber: a renderer replaces its container, so the <details> element
      the player clicked does not survive the next draw and the fold has to
@@ -891,7 +897,7 @@ const UI = (function () {
        reading of them. Derived, never stored, which is the rule this project
        learned from apportionment_ratio.
 
-       Over 2280 to 2287 it comes to about +24%: thermal +41, substrate +28,
+       Over 2073 to 2080 it comes to about +24%: thermal +41, substrate +28,
        volume +18, transit +9. That is the cost of existing in this
        Commonwealth, and it is the reason every one of the four prices is an
        argument. */
@@ -975,15 +981,23 @@ const UI = (function () {
 
   /* THE TWO TIMESCALES, as a control rather than a setting: a reader looking
      at thermal wants both questions — what has it done this fortnight, and
-     what has it done since 2280 — and neither answer is a default the other
+     what has it done since 2073 — and neither answer is a default the other
      can be derived from. */
   function chartScaleHTML() {
     const b = (k, t, sub) =>
       `<button class="chv rad${chartScale === k ? " on" : ""}" data-cscale="${k}">` +
       `${t}<em>${sub}</em></button>`;
+    /* THE YEARS COME FROM THE RECORD, not from a literal beside it. This
+       button read "2073-2080" as text while `setup.history` owns the span,
+       so moving the campaign's year left the control naming years the data
+       no longer covered. Same lesson as the ballot threshold: a number the
+       interface prints is content's number. */
+    const H = (C.setup && C.setup.history) || {};
+    const span = H.from != null && H.to != null
+      ? H.from + "\u2013" + H.to : "the annual record";
     return `<div class="cscale">` +
       b("session", "This session", "sitting by sitting") +
-      b("record", "The record", "2280\u20132287") +
+      b("record", "The record", span) +
       `</div>`;
   }
   /* DRAWN INTO THE HEADING, once per chart draw. Appended to the body it
@@ -2111,7 +2125,7 @@ const UI = (function () {
       const keeps = Engine.outstanding(st).filter(u =>
         (u.discharge || {}).si === si.id);
       const row = `<tr data-si="${si.id}" class="${s.inForce ? "inforce" : ""}${open ? " open" : ""}">
-        <td><i class="caret${open ? " open" : ""}"></i>${si.title.replace(/ Order 2287$/, "")}` +
+        <td><i class="caret${open ? " open" : ""}"></i>${si.title.replace(/ Order 2080$/, "")}` +
           (keeps.length ? ` <span class="flag" data-tip-title="Keeps a promise" ` +
             `data-tip-body="${esc(keeps.map(u => u.text).join("  \u00b7  "))}. ` +
             `Signing it here discharges the undertaking.">PROMISE</span>` : "") +
@@ -6712,7 +6726,7 @@ const UI = (function () {
            /* THE CONTENT THIS INTERFACE IS RUNNING ON, beside the state it is
               showing. Read-only and for the same reason `state()` exists: the
               two have to agree, and the calendar bug was precisely that they
-              did not -- `st.date` in 2080 against a `setup.startDate` in 2287
+              did not -- `st.date` in 2080 against a `setup.startDate` in 2080
               -- with nothing able to see both at once to say so. uitest
               asserts they agree now, which it could not do before this. */
            content: () => C,

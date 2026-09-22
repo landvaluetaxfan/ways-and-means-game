@@ -38,7 +38,7 @@ const ARTIFACTS = {
 };
 
 const NOTICE = {
-  ref: "PM/4/2287/002",
+  ref: "PM/4/2080/002",
   from: "Office systems",
   text: "Terminal left running between sittings by standing instruction. " +
         "The board below is the position as it stood at the opening of the " +

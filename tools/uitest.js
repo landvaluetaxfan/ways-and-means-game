@@ -580,9 +580,17 @@ try {
   const rec = sc.find(b => b.dataset.cscale === "record");
   if (rec) {
     rec.click();
+    /* THE YEARS COME FROM THE RECORD. This asserted /228\d/, which was the
+       campaign's year when it was written and stopped being true the moment
+       the canon date moved -- the third place in one sweep where a literal
+       stood in for content's own number. */
+    const H = w.eval("JSON.stringify(CONTENT.setup.history)");
+    const span = JSON.parse(H);
     ok("and the record draws the years before the game",
-       /228\d/.test((w.document.querySelector("#chart-sub") || {}).textContent || ""),
-       (w.document.querySelector("#chart-sub") || {}).textContent);
+       ((w.document.querySelector("#chart-sub") || {}).textContent || "")
+         .indexOf(String(span.from)) >= 0,
+       (w.document.querySelector("#chart-sub") || {}).textContent +
+         " against " + span.from + "-" + span.to);
     sc.find(b => b.dataset.cscale === "session").click();
   }
 } catch (e) { ok("the chart's timescales", false, e.message); }

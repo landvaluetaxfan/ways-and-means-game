@@ -160,6 +160,54 @@ Centre*, which described neither their economics nor their faith; `upl` was
 *Common Kind*, a good phrase that identified nobody. Read
 `content/parties.js`.
 
+## THE CANON DATE MOVED TO 2080, AND THE SWEEP IS HALF-DONE (22 Sep 2026)
+
+`content/setup.js` dates Flash I to **11 April 2080** and says in terms that
+"the bible's 2287 is a placeholder older than the term and is not the year".
+That decision had been made in ONE file and nothing had followed it: the
+bible's §11.1 still read 2287, and **every in-world historical date in the
+game was in the future** relative to the campaign's own year.
+
+**What has been shifted, by −207, which preserves every interval:** 67 year
+references across content, the bible, the textbook and `test.js` — 2287→2080,
+2286→2079, 2284→2077, 2281→2074, 2280→2073, 2279→2072, 2261→2054, 2251→2044,
+2249→2042 — plus 30 references to the four `si_2287_*` ids, renamed to
+`si_2080_*` (`npm run rename` passes: an id that names a year its own title no
+longer carries is the trap this repo keeps hitting). `setup.startDate`'s own
+default was still 2287 and is now 2080, so the default and the administration
+agree.
+
+**WHAT IS NOT DONE, AND WHY IT IS A CANON DECISION AND NOT A SWEEP.** Two
+content files say the world is two hundred years old:
+
+- `content/names.js` — "**Two centuries** of orbital [settlement]"
+- `content/labour.js` — "Automation took bulk production **two centuries ago**"
+
+Two centuries before 2080 is 1880, which cannot hold this world. Before 2287
+it is 2087, which fits exactly. Five deep dates are still in the future and
+were deliberately NOT invented a value for:
+
+| reference | reads | under −207 |
+|---|---|---|
+| The Spindle founded (bible §11.1) | 2201 | 1994 — and **No. 31,884** implies ~87 years of daily issues |
+| Secretary-General unused since (§2.4) | 2206 | 1999 |
+| Somali coast contested since (`world.js`) | the 2180s | the 1970s |
+| Anselm anchor granted (`world.js`) | the 2230s | the 2020s, on a **ninety-nine-year** term |
+| Indonesian anchor granted (`world.js`) | the 2240s | the 2030s |
+
+And two that the shift itself put **before** the Commonwealth's own
+springtime, which `setup.js` places at 2070: the failed revolution (now 2044)
+and the Tribunal judge's emulation (now 2042).
+
+**The two coherent ways out.** (a) A young Commonwealth: re-anchor the deep
+layer into 2040–2070, drop the Spindle's issue number, and change `names.js`
+and `labour.js`. (b) Put the campaign back to 2287 and shift **Flash's
+biography** instead — up in 2277, the Bank in 2278 — which costs two numbers
+and keeps everything else, because the author's own note is about INTERVALS
+("nine years as Governor... recent enough that the people she priced are
+still sitting in the chamber") and every one of those works at any absolute
+year. The shift applied here is mechanical and reverses with +207.
+
 ## THE TABS, AS OF 20 SEPTEMBER 2026
 
 Nine, and the arrangement is younger than most of this file, so trust this
@@ -170,7 +218,7 @@ list over any older sentence here that implies a different one:
 | **Sitting** | the event, the docket, the calendar, and the one indicator panel |
 | **Government** | instruments · the document · what it can do · the ledger and cabinet, with the Tribunal and the Presidency folded at the edge |
 | **Chamber** | order-paper time, the order paper, the House, the whip, and who is counted |
-| **Economy** | *Refreshed 21 Sep 2026, and the refresh was a MERGE.* Four panels on four subjects and a band: **the account** (a stock and its flows), **what everything is priced in**, **what is made and who makes it**, and — in the bottom band beside the chart — **what the Underwriters say**. The middle panel is three former ones, because `TAX_BASES` and `PRICE_META` in the engine are the SAME FOUR THINGS (volume, thermal, substrate, transit): Scarcity, What sets the prices and Ways and means were three facts about one set of four rows, in two different columns, with a third panel between two steps of one sum — `receipts()` computes each yield AS `rate × price/100 × weight`, and §7.9 says outright that the four prices are the appropriation's. One row each now: price, trend, the clause that sets it, the rate, the yield. `inflation` is that table's footing, not the account's, being a reading of those four and nothing else. §7.10's three readings and `content/labour.js` are one panel for the same reason — `st.economy.participation` and `LABOUR.totals.participation` are one fact — with the eighteen categories folded, since they are reference and not a working readout. The chart takes two columns **at either of two timescales** — the engine's per-sitting curve, or `setup.history`'s annual record 2280–2287, whose last point IS the opening value so the two join. The live window is about fifteen weeks (four sitting days a week), which is the right resolution for a price and far too short to show anything structural; that is what the record is for. **Nothing on the tab scrolls at any of the seven measured shapes** — see the layout note below. |
+| **Economy** | *Refreshed 21 Sep 2026, and the refresh was a MERGE.* Four panels on four subjects and a band: **the account** (a stock and its flows), **what everything is priced in**, **what is made and who makes it**, and — in the bottom band beside the chart — **what the Underwriters say**. The middle panel is three former ones, because `TAX_BASES` and `PRICE_META` in the engine are the SAME FOUR THINGS (volume, thermal, substrate, transit): Scarcity, What sets the prices and Ways and means were three facts about one set of four rows, in two different columns, with a third panel between two steps of one sum — `receipts()` computes each yield AS `rate × price/100 × weight`, and §7.9 says outright that the four prices are the appropriation's. One row each now: price, trend, the clause that sets it, the rate, the yield. `inflation` is that table's footing, not the account's, being a reading of those four and nothing else. §7.10's three readings and `content/labour.js` are one panel for the same reason — `st.economy.participation` and `LABOUR.totals.participation` are one fact — with the eighteen categories folded, since they are reference and not a working readout. The chart takes two columns **at either of two timescales** — the engine's per-sitting curve, or `setup.history`'s annual record 2073–2080, whose last point IS the opening value so the two join. The live window is about fifteen weeks (four sitting days a week), which is the right resolution for a price and far too short to show anything structural; that is what the record is for. **Nothing on the tab scrolls at any of the seven measured shapes** — see the layout note below. |
 | **Party** | *renamed from Parties, and refocused 21 Sep.* The twelve grouped by their relation to the government — in government, confidence and supply, outside — with the per-partner ledger, what each bench can be moved on, ideological distance, the live measure they will not carry, their currents, every member, and the party outside Parliament |
 | **Orbit**, **World**, **Record** | unchanged |
 | **Concordance** | *the reference work, and it can only know what the world knows.* Articles are generated from content, which is authored for the WHOLE campaign — so anything staged for later showed up at sitting one. The four bills that open in `drafting` (the Almanac Works (Annexation) Bill among them, which is the act the campaign is about) each had a full page with a division forecast for a measure nobody had laid before the House, and the page contradicted itself saying so: "A measure before the House of Delegates. Stage: drafting." `drafting` is the engine's own word for not introduced, so it is the line: `build()` skips those and the page appears the moment the bill is set down. **The gate belongs on the surface, not in the content** — the content is right, the bill SHOULD be sitting in `drafting` waiting for `f1_dilemma`. Worth re-checking whenever a new reference surface reads a content list whole. |
@@ -491,6 +539,12 @@ version of any of them is in the header of the file it names.
 
 **Interface**
 
+- **A NUMBER THE INTERFACE PRINTS IS CONTENT'S NUMBER — three found in two
+  days.** The chart's record button read `2280-2287` as literal text while
+  `setup.history` owns the span, so moving the canon date left a control
+  naming years the data no longer covered; `tools/uitest.js` had the same
+  literal as `/228\d/` and was the one assertion the date sweep broke. Both
+  derive from `setup.history` now. The third is below.
 - **A NUMBER THE INTERFACE PRINTS IS CONTENT'S NUMBER.** The status bar had
   `SIGNATURES n/9` and reddened at 7 as literals, while
   `setup.thresholds.ballot` is **12** and `signaturePanel` fifty lines down

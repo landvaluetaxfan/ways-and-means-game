@@ -224,7 +224,7 @@ const CHARACTERS = [
   /* ---- the presidency ---- */
   { id:"tenaya", portrait:"tenaya.png",   name:"President Jaco van Ryneveld", role:"President",
     party:null, category:"biological", relationship:22,
-    note:"Independent. Elected 2284, 51.4%. Biologically augmented: cat ears. "+
+    note:"Independent. Elected 2077, 51.4%. Biologically augmented: cat ears. "+
          "Reserve powers: dissolution, formation, referral, appointments." },
 
   /* ---- the faction leader ---- */
@@ -235,7 +235,7 @@ const CHARACTERS = [
   /* ---- the panel chair ---- */
   { id:"gb_chair", portrait:"gb_chair.png", name:"Kazuya Tanako MP", role:"Chair, Life Support panel",
     party:"gb", category:"emulation", status:["disembodied"], functional:"fc_lifesupport", relationship:18,
-    note:"Functional tier. Position unchanged since 2279. The whips do not believe money will move them." },
+    note:"Functional tier. Position unchanged since 2072. The whips do not believe money will move them." },
 
   /* ---- non-parliamentary voices ---- */
   { id:"ceyhan", portrait:"ceyhan.png",   name:"Ivor Ceyhan", role:"Political editor, The Spindle",

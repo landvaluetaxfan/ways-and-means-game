@@ -63,7 +63,7 @@ const FUNCTIONAL = [
               { ref:"LS-5", party:"gb", name:"Casimir Falk" },
               { ref:"LS-6", party:"hul", name:"Ruslan Enyeto" } ],
     interest:["integrity_standards","licensure_scope"],
-    note:"The panel that justified the whole tier. Has not divided with a government on licensure since 2279.",
+    note:"The panel that justified the whole tier. Has not divided with a government on licensure since 2072.",
     description:"Six seats on a roll of 4,100 certifying and systems engineers, the narrowest licensed electorate in the Commonwealth. The board that sets the roll is appointed by the government, and the eleven thousand licensed technicians it excludes are the whole argument about the tier." },
 
   { id:"fc_maintenance", name:"Maintenance and Trades", seats:7,

@@ -216,7 +216,7 @@ const BUSINESS = [
   { id:"c_forklabour", kind:"committee",
     text:"The Committee on Labour hears evidence on fork wages in the ring band." },
   { id:"c_lapse", kind:"committee",
-    when:{ siInForce:["si_2287_58"] },
+    when:{ siInForce:["si_2080_58"] },
     text:"The Committee on Attestation reports on the lapse order's first quarter." },
   { id:"c_supply_paid", kind:"committee",
     when:{ flags:["supply_granted"] },
@@ -240,7 +240,7 @@ const BUSINESS = [
 
   /* statements: a member says a thing on the record */
   { id:"s_guild", kind:"statement",
-    when:{ siInForce:["si_2287_44"] },
+    when:{ siInForce:["si_2080_44"] },
     text:"The Minister for Substrate and Thermal makes a statement on the licensing order." },
   { id:"s_lowband", kind:"statement",
     text:"A member for the low band makes a personal statement on the shed register." },

@@ -26,15 +26,15 @@
 
 const INSTRUMENTS = [
 
-  { id:"si_2287_44",
-    title:"Life Support Engineering (Licensing) Order 2287",
-    number:"SI 2287/44",
+  { id:"si_2080_44",
+    title:"Life Support Engineering (Licensing) Order 2080",
+    number:"SI 2080/44",
     author:"attestation_registry",
     procedure:"negative",
     prayer_window:6,
     revocable:true,
     summary:"Widens the Life Support Engineering licence to admit integrity technicians "+
-            "certified before 2261, adding roughly 900 electors to a constituency of 4,100. "+
+            "certified before 2054, adding roughly 900 electors to a constituency of 4,100. "+
             "The new electors are disproportionately maintenance-union members.",
     effect_note:"Moves functional seats over 2–4 sittings. The Guild Bench will not divide "+
                 "with a government that has done this.",
@@ -49,9 +49,9 @@ const INSTRUMENTS = [
     political_cost:[ {move:{"public_standing":-5}}, {move:{"loyalty.cu_halloran":-9}} ],
     prayer_stances:{ cu:"against", psa:"against", rv:{}, gb:"for", hul:"for", fh:"for", cl:"for" } },
 
-  { id:"si_2287_51",
-    title:"Thermal Allocation (Ember Ridge) Emergency Order 2287",
-    number:"SI 2287/51",
+  { id:"si_2080_51",
+    title:"Thermal Allocation (Ember Ridge) Emergency Order 2080",
+    number:"SI 2080/51",
     author:"life_support",
     procedure:"affirmative",
     revocable:true,
@@ -67,9 +67,9 @@ const INSTRUMENTS = [
     political_cost:[ {move:{"solvency": -6000}} ],
     prayer_stances:{ cu:"against", psa:"against", cl:"for", fh:"for" } },
 
-  { id:"si_2287_58",
-    title:"Attestation (Lapse and Restoration) Order 2287",
-    number:"SI 2287/58",
+  { id:"si_2080_58",
+    title:"Attestation (Lapse and Restoration) Order 2080",
+    number:"SI 2080/58",
     author:"attestation_registry",
     procedure:"negative",
     prayer_window:6,
@@ -89,9 +89,9 @@ const INSTRUMENTS = [
     political_cost:[ {move:{"public_standing":-3}} ],
     prayer_stances:{ cu:{}, psa:"for", rv:"for", upl:"for", geo:"for", gb:"against", hul:"against" } },
 
-  { id:"si_2287_47",
-    title:"Legal Practice (Admissions) Order 2287",
-    number:"SI 2287/47",
+  { id:"si_2080_47",
+    title:"Legal Practice (Admissions) Order 2080",
+    number:"SI 2080/47",
     author:"attestation_registry",
     procedure:"negative",
     prayer_window:6,
@@ -126,7 +126,7 @@ const INSTRUMENTS = [
    ============================================================= */
 
   { id:"rung1_conservation",
-    title:"Voluntary Conservation (Appeal) Order 2287", number:"SI 2287/61",
+    title:"Voluntary Conservation (Appeal) Order 2080", number:"SI 2080/61",
     author:"substrate_thermal", procedure:"negative", prayer_window:6, revocable:true,
     summary:"Asks the stations to draw down non-essential load ahead of the winter margin. "+
             "It asks; it does not compel. The margin improves a little and the appeal is forgotten in a week.",
@@ -137,7 +137,7 @@ const INSTRUMENTS = [
     political_cost:[ {move:{"public_standing":-2}} ] },
 
   { id:"rung2_clockrate",
-    title:"Clock-Rate (Reduction) Order 2287", number:"SI 2287/62",
+    title:"Clock-Rate (Reduction) Order 2080", number:"SI 2080/62",
     author:"persons_continuity", procedure:"negative", prayer_window:6, revocable:true,
     when:{ flags:["rung1_tried"] },
     summary:"Slows the emulated blocs' clock rate by four per cent for the duration of the "+
@@ -151,7 +151,7 @@ const INSTRUMENTS = [
     political_cost:[ {move:{"loyalty.psa":-6}} ] },
 
   { id:"rung3_deferred",
-    title:"Deferred-Computation (Scheduling) Order 2287", number:"SI 2287/63",
+    title:"Deferred-Computation (Scheduling) Order 2080", number:"SI 2080/63",
     author:"substrate_thermal", procedure:"negative", prayer_window:6, revocable:true,
     when:{ flags:["rung2_tried"] },
     summary:"Moves non-critical substrate computation to the cold hours. The racks still run; "+
@@ -166,7 +166,7 @@ const INSTRUMENTS = [
     political_cost:[ {move:{"loyalty.gb":-5}}, {move:{"loyalty.hul":-5}} ] },
 
   { id:"rung4_appropriation",
-    title:"Emergency Thermal (Appropriation) Order 2287", number:"SI 2287/64",
+    title:"Emergency Thermal (Appropriation) Order 2080", number:"SI 2080/64",
     author:"treasury", procedure:"affirmative", revocable:true,
     when:{ flags:["rung3_tried"] },
     summary:"Appropriates directly against the reserve to buy thermal capacity at whatever the "+
@@ -179,7 +179,7 @@ const INSTRUMENTS = [
     political_cost:[ {move:{"solvency": -10000}}, {move:{"public_standing":-3}} ] },
 
   { id:"rung5_purchase",
-    title:"Thermal Quota (Market Purchase) Order 2287", number:"SI 2287/65",
+    title:"Thermal Quota (Market Purchase) Order 2080", number:"SI 2080/65",
     author:"treasury", procedure:"negative", prayer_window:6, revocable:true,
     when:{ flags:["rung4_tried"] },
     summary:"Buys quota on the open exchange and holds it off the market. It works, it works at "+
@@ -193,7 +193,7 @@ const INSTRUMENTS = [
     political_cost:[ {move:{"solvency": -14000}} ] },
 
   { id:"rung6_drawdown",
-    title:"Substrate Insurance (Drawdown) Order 2287", number:"SI 2287/66",
+    title:"Substrate Insurance (Drawdown) Order 2080", number:"SI 2080/66",
     author:"treasury", procedure:"negative", prayer_window:6, revocable:true,
     when:{ flags:["rung5_tried"] },
     summary:"Draws down the substrate insurance fund ahead of the quarter it was written for. "+
@@ -209,7 +209,7 @@ const INSTRUMENTS = [
     political_cost:[ {move:{"public_standing":-10}}, {move:{"loyalty.psa":-8}} ] },
 
   { id:"rung7_standards",
-    title:"Life Support (Performance Standards) Order 2287", number:"SI 2287/67",
+    title:"Life Support (Performance Standards) Order 2080", number:"SI 2080/67",
     author:"life_support", procedure:"affirmative", revocable:true,
     when:{ flags:["rung6_tried"] },
     summary:"Lowers the certified performance standard on radiator and seal integrity by one "+
@@ -225,7 +225,7 @@ const INSTRUMENTS = [
     political_cost:[ {move:{"loyalty.gb":-12}}, {move:{"loyalty.hul":-12}} ] },
 
   { id:"rung8_powers",
-    title:"Emergency Powers (Allocation) Order 2287", number:"SI 2287/68",
+    title:"Emergency Powers (Allocation) Order 2080", number:"SI 2080/68",
     author:"law_charter", procedure:"affirmative", revocable:true,
     when:{ flags:["rung7_tried"] },
     summary:`Assumes the Allocation Act's emergency powers over the tier registers and the shed order. It suspends nobody. It takes the power to suspend.`,
@@ -239,7 +239,7 @@ const INSTRUMENTS = [
     political_cost:[ {move:{"public_standing":-16}}, {move:{"loyalty.cu_maintenance":-12}} ] },
 
   { id:"rung9_suspension",
-    title:"Involuntary Suspension (Federal) Order 2287", number:"SI 2287/69",
+    title:"Involuntary Suspension (Federal) Order 2080", number:"SI 2080/69",
     author:"contingencies", procedure:"affirmative", revocable:true,
     when:{ flags:["rung8_tried"] },
     summary:"Suspends the tier-four register across the exposed stations without notice and "+

@@ -4,7 +4,7 @@
 
 **Ondine Charnock**
 
-*Fourth edition · Perigee Review Press · Anselm Ring · 2286*
+*Fourth edition · Perigee Review Press · Anselm Ring · 2079*
 
 ---
 

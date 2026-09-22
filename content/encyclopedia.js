@@ -219,7 +219,7 @@ const ENCYCLOPEDIA = {
 
   { id:"perigee_charter", title:"The Perigee Charter", category:"Institutions",
     banners:["protected"],
-    edited:{ by:"Registry Archivist", attested:true, note:"protected since 2281" },
+    edited:{ by:"Registry Archivist", attested:true, note:"protected since 2074" },
     summary:"The **Perigee Charter** is the founding document of the "+
             "[[commonwealth|Circumterrestrial Commonwealth]]. It was adopted at the end of the "+
             "independence congress. It is short, and deliberately silent on several contested "+
@@ -239,7 +239,7 @@ const ENCYCLOPEDIA = {
         "litigation." },
       { h:"Amendment", body:
         "An amendment needs a dual majority: separate majorities among elected and functional "+
-        "members. No amendment has passed since 2279." }
+        "members. No amendment has passed since 2072." }
     ],
     see:["functional_constituency","dual_majority","the_permanent_emergency"] },
 
@@ -266,10 +266,10 @@ const ENCYCLOPEDIA = {
     ],
     see:["engineering_authority","shed_order","hul"] },
 
-  { id:"the_failed_revolution", title:"The events of 2251", category:"History",
+  { id:"the_failed_revolution", title:"The events of 2044", category:"History",
     banners:["stub","neutrality","single"],
     edited:{ by:"unattributed", attested:false, note:"reverted 9 times this session" },
-    summary:"The **events of 2251** were a rising against the provisional administration. It was "+
+    summary:"The **events of 2044** were a rising against the provisional administration. It was "+
             "suppressed within five weeks. Accounts of its causes, extent and casualties differ "+
             "substantially.",
     sections:[
