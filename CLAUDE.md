@@ -538,6 +538,14 @@ version of any of them is in the header of the file it names.
   rise, one before the new one. Nothing fails today, but any beat added
   ahead of the chain pushes the dilemma past sitting 16 and the Act falls
   with the House. The chain is to be re-dated for three sessions.
+- **THE BIBLE COPIES CONTENT, AND THE COPIES ROT.** The v5 audit (22 Sep)
+  compared every section with the built game: all 34 station lines in §11.3
+  matched content to the digit, while the party table carried five names
+  from before the renames, §5.3 "LOCKED" a constituency schema nothing used,
+  §12.4 listed six screens, §15.5 six checks, and §16 gated foreign affairs
+  on a chapter-one size §1.7's own budget forbids. Where the bible restates a
+  roster or a count, content owns it (§11.2 now says so); where the bible
+  states a RULE, read `design/` for a later decision before obeying it.
 - **CHAPTERS THREE AND FOUR ARE STILL ALTERNATIVES, NOT A SEQUENCE**, which
   is design/32's fold not yet done. Both transitions are chapter-two events
   and chapter gating is an exact match, so a run that settles (every tier
