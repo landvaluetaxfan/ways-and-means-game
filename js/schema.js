@@ -159,4 +159,15 @@ const SCHEMA = {
                    "Personhood","History","Economy","Parties","Stations","Persons"]
   }
 };
+/* REACHABLE FROM BOTH SIDES. `const SCHEMA` at the top level of a classic
+   script shares the global lexical environment in a browser, so the rest of
+   the game sees it -- but jsdom evaluates each script separately and those
+   bindings do not cross, so in `npm run ui` and `npm run ux` SCHEMA was
+   simply undefined. The Concordance guards on `typeof SCHEMA !== "undefined"`
+   and fell back to printing raw co-ordinates, which meant the harness was
+   measuring an interface no player has ever seen: every party article showed
+   "economic: -0.75" under test and "strongly public" in Chromium. The module
+   already made itself reachable to Node; this is the same courtesy to the
+   window, and it makes the two environments agree. */
 if (typeof module !== "undefined") module.exports = SCHEMA;
+if (typeof window !== "undefined") window.SCHEMA = SCHEMA;

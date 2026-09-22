@@ -41,7 +41,7 @@ const PARTIES = [
     seats:{district:6,list:28,functional:2},
     kind:"national", loyalty:41,
     axes:{economic:-0.8, authority:-0.3, personhood:0.85, sovereignty:0.6, trade:0.55},
-    note:"List-tier strength, almost no districts. Shares your economics, despises your personhood line." },
+    note:"List-tier strength and almost no districts. Left on economics and expansionist on personhood, which sets it against the old left on the question it cares most about." },
 
   { id:"sc",  name:"Home Rule",                    short:"HR",  colour:"var(--p-sc)",
     leader:"laughon", logo:"sc.png", wordmark:"sc_mark.png",

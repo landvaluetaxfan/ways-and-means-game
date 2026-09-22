@@ -36,7 +36,7 @@ const GLOSSARY = [
     handle:"A triage list, written in advance, by whoever holds the pen.",
     introduced:"halloran_signatures" },
 
-  { term:"substrate", cluster:"cold", gloss:"The hardware an emulated mind runs on. You pay rent to exist on it.",
+  { term:"substrate", cluster:"cold", gloss:"The hardware an emulated mind runs on. Its tenants pay rent to exist on it.",
     handle:"Rent, except the landlord can switch you off.",
     introduced:"halloran_signatures" },
 
@@ -60,7 +60,7 @@ const GLOSSARY = [
     handle:"A medical licence that also comes with a ballot.",
     introduced:"gb_approach" },
 
-  { term:"attestation", gloss:"Proof you are one unique person. Required to vote or post.",
+  { term:"attestation", gloss:"Proof of being one unique person. Required to vote or to post.",
     handle:"Voter ID, for a world where copies are cheap.",
     introduced:"cluster_flag" },
 

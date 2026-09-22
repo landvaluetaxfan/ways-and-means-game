@@ -49,13 +49,29 @@ const w = dom.window;
 w.alert = () => {}; w.confirm = () => true; w.prompt = () => "Test ministry";
 w.URL.createObjectURL = () => "blob:x"; w.HTMLAnchorElement.prototype.click = function () {};
 
-const FILES = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js",
-  "content/cabinet.js","content/instruments.js","content/initiatives.js","content/minutes.js","content/functional.js",
-  "content/labour.js","content/names.js","content/characters.js","content/bills.js",
-  "content/glossary.js","content/events.js","content/encyclopedia.js","content/artifacts.js","content/business.js","content/settlements.js","content/actors.js","content/index.js",
-  "js/audio.js","js/music.js","js/focus.js","js/stream.js","js/wait.js","js/dialog.js","js/tips.js","js/motion.js","js/artifacts.js","js/engine.js","js/orbitchart.js","js/papers.js","js/encyclopedia.js",
-  "js/setpiece.js",
-  "js/ui.js","js/shell.js"];
+/* THE SCRIPTS THE PAGE LOADS, READ OFF THE PAGE.
+
+   This was a hand-maintained list of forty-odd filenames beside
+   index.html's own list of forty-odd <script src> tags, and the two drifted:
+   `js/schema.js` was added to the page when the four categorical axes became
+   five signed ones and was never added here. So SCHEMA was undefined under
+   test while being defined for every player, the Concordance's guard
+   (`typeof SCHEMA !== "undefined"`) took its fallback branch, and every
+   party article showed "economic: -0.75" in the harness and "strongly
+   public" in Chromium.
+
+   A test that runs a different set of scripts than the browser is not
+   testing the game, and nothing could report the drift because neither list
+   knew about the other. So the list is DERIVED from index.html now, in
+   document order, which is the order the browser uses. Adding a script to
+   the page is all it takes; there is no second place to remember.
+
+   `js/world.js` and the rest come along automatically for the same reason. */
+const FILES = (html.match(/<script[^>]+src="([^"]+)"/g) || [])
+  .map(tag => (tag.match(/src="([^"]+)"/) || [])[1])
+  .filter(Boolean);
+if (!FILES.length) { console.log("SKIP: index.html lists no scripts"); process.exit(1); }
+
 FILES.forEach(f => {
   const p = path.join(root, f);
   if (!fs.existsSync(p)) return;

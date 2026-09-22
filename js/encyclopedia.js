@@ -16,6 +16,11 @@ const Concordance = (function () {
   let C, st, history = [];
 
   /* ---------- inline syntax: **emphasis** and [[id]] or [[id|shown text]] ---------- */
+  /* ONE ESCAPE HELPER at module scope. It lived inside `renderHits`, so the
+     article footer could not reach it. */
+  const esc0 = t => String(t == null ? "" : t)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
   function links(text) {
     return String(text).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
                        .replace(/\*([^*]+)\*/g, "<em>$1</em>")
@@ -34,6 +39,94 @@ const Concordance = (function () {
 
   function paras(text) {
     return String(text).split(/\n\n+/).map(p => `<p>${links(p)}</p>`).join("");
+  }
+
+  /* =============================================================
+     THE REGISTER, WHICH IS WIKIPEDIA'S AND NOT A CAPTION'S.
+
+     The hand-written articles had it and the generated ones did not, and
+     that split is the whole of what "the Concordance does not read like an
+     encyclopedia" meant. The Perigee Charter opens "The Perigee Charter is
+     the founding document of the Circumterrestrial Commonwealth"; the party
+     article opened "A party of the House of Delegates holding 82 of 280
+     seats" -- a sentence with no subject in it, which is a caption under a
+     photograph and not a lede.
+
+     Four rules, applied by these four helpers everywhere:
+
+     1. THE FIRST SENTENCE NAMES THE SUBJECT IN BOLD AND SAYS WHAT IT IS.
+        `**X** is a Y.` Wikipedia does this without exception and it is the
+        single most recognisable thing about the register.
+     2. A VOLATILE FIGURE CARRIES ITS DATE. "Party discipline is recorded at
+        62" is a fact about one sitting printed as though it were permanent.
+     3. A VALUE IS RENDERED IN WORDS. js/schema.js holds the poles for
+        exactly this reason and CLAUDE.md says so: "strongly public"
+        and not "-0.75".
+     4. AN ARTICLE ENDS IN ITS CATEGORIES, because a reference work says
+        what kind of thing it has just described.
+     ============================================================= */
+
+  /* 1. THE LEDE. `rest` continues the sentence, so a caller writes the
+     predicate and never the subject -- which is what stops a generator
+     quietly going back to captions. */
+  function lede(title, rest) {
+    return `**${title}** ${rest}`;
+  }
+
+  /* 2. AS OF WHEN. Everything the engine can move gets this, and nothing
+     that content froze does: a station's form is not "as of" anything. */
+  function asOf(sentence) {
+    return `As of sitting ${st.sitting}, ${sentence}`;
+  }
+
+  /* 3. A POSITION IN WORDS. Shared, because the party article had the only
+        copy and the bill article printed raw numbers.
+
+        It also COUNTS the axes rather than naming a number. The old line
+        read "the four axes of Commonwealth politics" and then listed five,
+        because the conversion from four categorical axes to five signed
+        ones moved the data and left the prose. A sentence that states its
+        own arity is a sentence that goes stale. */
+  function axisProse(axes) {
+    const poles = (typeof SCHEMA !== "undefined" && SCHEMA.vocab && SCHEMA.vocab.axes)
+      ? SCHEMA.vocab.axes : {};
+    const said = Object.keys(axes || {})
+      .filter(k => axes[k] != null)
+      .map(k => {
+        const v = axes[k];
+        if (typeof v !== "number") return k + ": " + v;
+        const pl = poles[k];
+        if (!pl) return k + ": " + v;
+        const m = Math.abs(v);
+        if (m < 0.15) return k + ": the centre";
+        return k + ": " + (m >= 0.7 ? "strongly " : m >= 0.35 ? "" : "mildly ") +
+               (v < 0 ? pl.low : pl.high);
+      });
+    return { count: said.length, line: said.join(" \u00b7 ") };
+  }
+
+  /* 4. WHAT KIND OF THING THIS IS. Wikipedia's categories, drawn from what
+     the article already knows rather than typed a second time. */
+  function categoriesOf(a) {
+    const cats = [a.category];
+    if (a.generated) cats.push("Articles maintained from Bureau returns");
+    else cats.push("Articles maintained by contributors");
+    if (a.edited && a.edited.attested === false) cats.push("Unattested articles");
+    return cats.filter(Boolean);
+  }
+
+  /* A SECTION MAY WAIT FOR THE WORLD. The Concordance is supposed to be a
+     live reference work and its hand-written articles were frozen text, so
+     an article could not gain a paragraph when the thing it describes
+     happened. A section carrying `when` is drawn only once the engine says
+     that condition holds -- the same condition vocabulary events are gated
+     on, evaluated by the same `Engine.matches`, so content authors one
+     grammar and not two. */
+  function liveSections(sections) {
+    return (sections || []).filter(sec => {
+      if (!sec.when) return true;
+      try { return Engine.matches(st, sec.when); } catch (e) { return false; }
+    });
   }
 
   /* ---------- offices, read from the content the game runs on ----------
@@ -87,21 +180,8 @@ const Concordance = (function () {
        dimensions the party declares, and says which end rather than the
        number: "public" and not "-0.75". The poles come from SCHEMA, which
        index.html loads for exactly this. */
-    const poles = (typeof SCHEMA !== "undefined" && SCHEMA.vocab && SCHEMA.vocab.axes)
-      ? SCHEMA.vocab.axes : {};
-    const axisLine = Object.keys(p.axes || {})
-      .filter(k => p.axes[k] != null)
-      .map(k => {
-        const v = p.axes[k];
-        if (typeof v !== "number") return k + ": " + v;
-        const pl = poles[k];
-        if (!pl) return k + ": " + v;
-        const m = Math.abs(v);
-        if (m < 0.15) return k + ": the centre";
-        return k + ": " + (m >= 0.7 ? "strongly " : m >= 0.35 ? "" : "mildly ") +
-               (v < 0 ? pl.low : pl.high);
-      })
-      .join(" \u00b7 ") || "no settled position";
+    const ax = axisProse(p.axes);
+    const axisLine = ax.line || "no settled position";
 
     /* The leader is a character id on the party, and the office is read
        from the same cabinet the game runs on — so the article can say
@@ -111,9 +191,13 @@ const Concordance = (function () {
 
     const currents = C.currents.filter(c => c.party === p.id);
     const sections = [
+      /* THE AXES ARE COUNTED, NOT NAMED. "the four axes" was written when
+         there were four and survived the conversion to five. */
       { h: "Position", body:
-        `Recorded position on the four axes of Commonwealth politics: ${axisLine}. ` +
-        (p.note || "") },
+        (ax.count
+          ? `The party's recorded position on the ${ax.count} axes of Commonwealth ` +
+            `politics is ${axisLine}.`
+          : "The party has no position recorded on any axis of Commonwealth politics.") },
       { h: "Representation", body:
         `${total} seats: ${seats.district} district, ${seats.list} list, ${seats.functional} functional. ` +
         (seats.district === 0 && seats.list > 0
@@ -126,18 +210,31 @@ const Concordance = (function () {
       `Led by [[person_${leader.id}|${leader.name}]]. ` +
       (leadOffice ? officeLine(leadOffice) : "Holds no ministerial office.") });
     if (inGov) sections.push({ h: "In government", body:
-      `A party of the present coalition. Party discipline is recorded at ${st.parties[p.id].loyalty}.` });
+      asOf(`the party sits in the governing coalition, and its discipline is ` +
+           `recorded at ${st.parties[p.id].loyalty}.`) });
     else if (cs) sections.push({ h: "Confidence and supply", body:
-      `Sustains the present government without holding office. Discipline recorded at ${st.parties[p.id].loyalty}.` });
+      asOf(`the party sustains the government without holding office, and its ` +
+           `discipline is recorded at ${st.parties[p.id].loyalty}.`) });
     if (currents.length) sections.push({ h: "Currents", body:
-      currents.map(c => `${c.name} (${st.currents[c.id].members} members, discipline ${st.currents[c.id].loyalty}).`).join(" ") });
+      `The party recognises ${currents.length} internal current` +
+      (currents.length === 1 ? "" : "s") + ". " +
+      asOf(currents.map(c =>
+        `${c.name} numbers ${st.currents[c.id].members} members at a discipline of ` +
+        `${st.currents[c.id].loyalty}`).join("; ") + ".") });
 
     return {
       id: p.id, title: p.name, category: "Parties", generated: true,
       banners: st.parties[p.id].loyalty < 25 && (inGov || cs) ? ["contested"] : [],
       edited: { by: "Concordance seat index", attested: true, note: "updated each division" },
-      summary: `A party of the House of Delegates holding ${total} of ${Engine.chamberTotal(st)} seats.` +
-               (p.aliases ? ` Known in the press as the ${p.aliases[0]}.` : ""),
+      /* A LEDE, NOT A CAPTION. This read "A party of the House of Delegates
+         holding 82 of 280 seats" -- a sentence with no subject in it. */
+      summary: lede(p.name,
+        `is a political party of the [[parliament|House of Delegates]]. ` +
+        (p.aliases ? `It is known in the press as the ${p.aliases[0]}. ` : "") +
+        asOf(`it holds ${total} of the ${Engine.chamberTotal(st)} seats in the ` +
+             `chamber and ${inGov ? "sits in the governing coalition"
+                          : cs ? "sustains the government on confidence and supply"
+                               : "sits in opposition"}.`)),
       sections,
       infobox: { title: p.name, logo: p.logo || null, rows: [
         ["Leader", leader ? `[[person_${leader.id}|${leader.name}]]` : "None"],
@@ -181,8 +278,11 @@ const Concordance = (function () {
       id: s.id, title: s.name, category: "Stations", generated: true,
       banners: s.closure < 0.35 ? ["contested"] : [],
       edited: { by: "Census Bureau returns", attested: true, note: "" },
-      summary: `A habitat of the ${s.band} band, population ${s.population.toLocaleString()}, ` +
-               `returning ${s.seats} members.`,
+      summary: lede(s.name,
+        `is an orbital habitat of the ${s.band} band of the Circumterrestrial ` +
+        `Commonwealth. It has a population of ${s.population.toLocaleString()} and ` +
+        `returns ${s.seats} member${s.seats === 1 ? "" : "s"} to the ` +
+        `[[parliament|House of Delegates]].`),
       sections,
       infobox: { title: s.name, rows: [
         ["Band", s.band], ["Population", s.population.toLocaleString()],
@@ -224,9 +324,11 @@ const Concordance = (function () {
       id: k.id, title: k.name + (k.at_large ? " (at large)" : ""),
       category: "Constituencies", generated: true,
       banners: [], edited: { by: "Census Bureau returns", attested: true, note: k.parent || "" },
-      summary: `A district of ${s0 ? s0.name : "the Commonwealth"}` +
-        `${k.member ? ", held by " + k.member : ""}, returning ${k.magnitude} member` +
-        `${k.magnitude === 1 ? "" : "s"}.`,
+      summary: lede(k.name,
+        `is an electoral district of ${s0 ? `[[${s0.id}|${s0.name}]]` : "the Commonwealth"}. ` +
+        `It returns ${k.magnitude} member${k.magnitude === 1 ? "" : "s"} to the ` +
+        `[[parliament|House of Delegates]]` +
+        `${k.member ? `, and is held by ${k.member}` : ""}.`),
       sections,
       infobox: { title: k.name, rows: [
         ["Station", s0 ? s0.name : k.station],
@@ -252,9 +354,11 @@ const Concordance = (function () {
     return {
       id: "anchor_" + a.id, title: a.tether, category: "Anchors", generated: true,
       banners: [], edited: { by: "Committee on Trade and the Anchors", attested: true, note: "" },
-      summary: `An orbital elevator whose base is at ${a.site}, on the territory of ${a.host}. ` +
-        (st0 ? `It serves ${st0.name}. ` : "") +
-        (a.mine ? "The Commonwealth holds the concession." : "The concession is held by a foreign power."),
+      summary: lede(a.tether,
+        `is an orbital elevator with its base at ${a.site}, on the territory of ` +
+        `${a.host}. ` + (st0 ? `It serves [[${st0.id}|${st0.name}]]. ` : "") +
+        (a.mine ? "Its concession is held by the Commonwealth."
+                : "Its concession is held by a foreign power.")),
       sections: [
         { h: "The base", body: `A tether's base must be equatorial, stable and able to give a ` +
           `corridor, which is why the dozen are where they are and not wherever the traffic is. ` +
@@ -275,7 +379,9 @@ const Concordance = (function () {
     return {
       id: "body_" + b.id, title: b.name, category: "The Earth", generated: true,
       banners: ["contested"], edited: { by: "multiple", attested: true, note: "the charter is not public" },
-      summary: b.note || `A body outside the Commonwealth's jurisdiction.`,
+      summary: lede(b.name,
+        `is a body outside the jurisdiction of the Circumterrestrial ` +
+        `Commonwealth.`) + (b.note ? " " + b.note : ""),
       sections: [
         { h: "The charter", body: b.charter || "" },
         { h: "The operator", body: `Operated by [[actor_${b.operator}|${b.operator}]].` },
@@ -302,7 +408,11 @@ const Concordance = (function () {
     return {
       id: "actor_" + a.id, title: a.name, category: "The Earth", generated: true,
       banners: [], edited: { by: "Foreign Office", attested: true, note: "as of the last dispatch" },
-      summary: a.note || `A power outside the Commonwealth.`,
+      summary: lede(a.name,
+        `is a power outside the Circumterrestrial Commonwealth` +
+        (a.lag ? `, whose business reaches the chamber ${a.lag} sitting` +
+                 `${a.lag === 1 ? "" : "s"} after it is sent` : "") + `.`) +
+        (a.note ? " " + a.note : ""),
       sections: [
         a.asks ? { h: "What it wants", body: a.asks } : null,
         { h: "Delay", body: a.lag
@@ -334,7 +444,12 @@ const Concordance = (function () {
       id: "bill_" + b.id, title: b.title, category: "Legislation", generated: true,
       banners: bs.dead ? [] : ["contested"],
       edited: { by: "Order paper", attested: true, note: b.ref },
-      summary: `A measure before the House of Delegates. Stage: ${String(bs.stage).replace(/_/g, " ")}.`,
+      summary: lede(b.title,
+        `is a bill before the [[parliament|House of Delegates]]` +
+        (b.owner && C.partyById[b.owner] ? `, brought by the ` +
+          `[[${b.owner}|${C.partyById[b.owner].name}]]` : "") + `. ` +
+        asOf(`it stands at ${String(bs.stage).replace(/_/g, " ")}` +
+             `${bs.dead ? " and has fallen" : ""}.`)),
       sections,
       infobox: { title: b.ref, rows: [
         ["Stage", String(bs.stage).replace(/_/g, " ")],
@@ -353,7 +468,7 @@ const Concordance = (function () {
       title: g.term.charAt(0).toUpperCase() + g.term.slice(1),
       category: "Definitions", generated: true, banners: ["stub"],
       edited: { by: "unattributed", attested: true, note: "" },
-      summary: g.gloss,
+      summary: lede(g.term, `is a term of Commonwealth politics. ` + g.gloss),
       sections: g.handle ? [{ h: "", body: g.handle }] : [],
       see: []
     };
@@ -368,22 +483,41 @@ const Concordance = (function () {
     /* THE LEDE FOLLOWS THE OFFICE, NOT A TYPED TITLE. A minister is
        described by the post the cabinet says they hold, so a recast
        cannot leave the article calling a minister a backbencher. */
+    /* A LEDE, AND A SENTENCE. This built a fragment -- "Prime Minister;
+       Leader, Party of Socialists and Democrats. Sits for First Spin." --
+       with no subject and no verb in it. Wikipedia's form is "X is a Y who
+       has served as Z", and it is worth the few extra words because it is
+       the thing that makes a page read as an encyclopedia entry. */
     const lead = mainOffice(offices);
     const partyOffice = offices.find(o => o.kind === "Party");
-    let summary;
-    if (lead) summary = lead.title + (partyOffice ? "; " + partyOffice.label : "");
-    else if (partyOffice) summary = partyOffice.label;
-    else summary = ch.role || "A backbencher";
-    if (party && summary.indexOf(party.name) < 0) summary += ", " + party.name;
+    const seatPhrase = fc ? `the ${fc.name} functional constituency`
+                     : ch.seat ? ch.seat : null;
+    let summary = lede(ch.name, "is a Commonwealth politician");
+    if (party) summary += ` of the [[${party.id}|${party.name}]]`;
+    if (seatPhrase) summary += `, sitting for ${seatPhrase}`;
     summary += ".";
-    if (fc) summary += ` Sits for the ${fc.name} functional constituency.`;
-    else if (ch.seat) summary += ` Sits for ${ch.seat}.`;
+    if (lead) summary += ` ${asOf(`they serve as ${lead.title}.`)}`;
+    else if (partyOffice) summary += ` ${asOf(`they are ${partyOffice.label}.`)}`;
+    else summary += " They hold no ministerial office.";
 
     const sections = [];
-    if (ch.note) sections.push({ h: "", body: ch.note });
+    /* `ch.note` IS NOT PRINTED, and that is the point of this pass. The
+       character notes are the AUTHOR'S design notes -- "Liabilities, not
+       buffs. Her record is the thing that can be dug up", "This is the
+       sharpest tool in the game", "which nobody has yet told him" -- and
+       they were being printed verbatim into an in-world encyclopedia as
+       the article's first paragraph. An encyclopedia does not know it is
+       in a game, and it never addresses the reader. What an automatically
+       maintained article can honestly say is what the registry knows, so
+       that is what it says now, and it stays true through a reshuffle
+       because every word of it is derived. */
+    if (offices.length > 1) sections.push({ h: "Offices", body:
+      `They hold ${offices.length} recorded offices: ` +
+      offices.map(o => o.label).join("; ") + "." });
     if (isPM) sections.push({ h: "Government", body:
-      `Leads a government commanding ${Engine.confidence(st)} of ${Engine.chamberTotal(st)} ` +
-      `seats against a majority of ${Engine.majority(st)}.` });
+      asOf(`the government they lead commands ${Engine.confidence(st)} of ` +
+           `${Engine.chamberTotal(st)} seats, against a majority of ` +
+           `${Engine.majority(st)}.`) });
 
     const rows = [];
     if (party) rows.push(["Party", party.name]);
@@ -567,12 +701,17 @@ const Concordance = (function () {
         : `<tr><th>${r[0]}</th><td>${links(r[1])}</td></tr>`).join("") +
       `</table></aside>` : "";
 
-    const toc = (a.sections || []).filter(s => s.h).length > 1
+    /* RESOLVED ONCE. A section gated on `when` must be filtered before
+       either the contents list or the body is built, or the two disagree
+       about what the article contains and the contents list points at a
+       heading that is not there. */
+    const secs = liveSections(a.sections);
+    const toc = secs.filter(s => s.h).length > 1
       ? `<nav class="cx-toc"><b>Contents</b><ol>` +
-        a.sections.filter(s => s.h).map((s, i) => `<li><a tabindex="0" data-anchor="cx-s${i}">${s.h}</a></li>`).join("") +
+        secs.filter(s => s.h).map((s, i) => `<li><a tabindex="0" data-anchor="cx-s${i}">${s.h}</a></li>`).join("") +
         `</ol></nav>` : "";
 
-    const body = (a.sections || []).map((s, i) =>
+    const body = secs.map((s, i) =>
       (s.h ? `<h3 id="cx-s${i}">${s.h}</h3>` : "") + paras(s.body)).join("");
 
     const see = (a.see || []).filter(id => byId[id]);
@@ -585,7 +724,13 @@ const Concordance = (function () {
       `Last edited by <b>${ed.by || "unattributed"}</b> ` +
       `<span class="cx-att ${ed.attested === false ? "n" : "y"}">${ed.attested === false ? "UNATTESTED" : "ATTESTED"}</span>` +
       (ed.note ? ` &middot; ${ed.note}` : "") +
-      `<br>${a.generated ? "This article is maintained automatically from Bureau returns." : "This article is maintained by contributors."}</div>`;
+      `<br>${a.generated ? "This article is maintained automatically from Bureau returns." : "This article is maintained by contributors."}</div>` +
+      /* CATEGORIES. Wikipedia closes every article with what kind of thing
+         it has just described, and the Concordance closed with nothing.
+         Derived from what the article already knows, so nothing is typed
+         twice and a recategorised article cannot leave a stale footer. */
+      `<div class="cx-cats"><b>Categories</b>` +
+      categoriesOf(a).map(c => `<span>${esc0(c)}</span>`).join("") + `</div>`;
 
     document.getElementById("cx-article").innerHTML =
       `<h2 class="cx-title">${a.title}</h2>` +
@@ -659,8 +804,6 @@ const Concordance = (function () {
      under it never changed. A search is a page like any other; it belongs
      in the container that holds pages. */
   function renderHits(list, q) {
-    const esc0 = s => String(s == null ? "" : s)
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     document.getElementById("cx-article").innerHTML =
       `<h2 class="cx-title">Search</h2>` +
       `<p class="cx-lead">${list.length} article${list.length === 1 ? "" : "s"} ` +

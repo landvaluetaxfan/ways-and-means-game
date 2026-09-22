@@ -105,6 +105,19 @@ const ENCYCLOPEDIA = {
       ["Head of government","[[prime_minister|Prime Minister]]"]
     ]},
     edited:{ by:"multiple", attested:true, note:"the demonym section is reverted about weekly" },
+    /* A SECTION MAY WAIT FOR THE WORLD.
+
+       `when` takes the same condition vocabulary events are gated on and is
+       evaluated by the same `Engine.matches`, so an article can gain a
+       paragraph when the thing it describes actually happens instead of
+       being frozen text written before the campaign began. This is the
+       worked example: the Commonwealth's article says nothing about the
+       Almanac Works until the House annexes it, and then it says it the way
+       an encyclopedia would -- as a change to the composition of the state,
+       in the section about composition.
+
+       Author it on any hand-written article. A section with no `when` is
+       drawn always, which is every section that existed before this. */
     summary:"The **Circumterrestrial Commonwealth** is a federated parliamentary republic. It "+
       "comprises the inhabited stations of Earth orbit, the Selene settlements and the Lagrange "+
       "yards. It was founded under the [[perigee_charter|Perigee Charter]] and is governed by "+
@@ -128,6 +141,17 @@ const ENCYCLOPEDIA = {
         "The Commonwealth has thirty stations across four altitude bands, and five external "+
         "constituencies. Anselm Ring holds more residents than the seven smallest stations "+
         "combined. The apportionment formula corrects this only partly." },
+      /* Drawn only once the House has carried the annexation. Before that
+         the article does not mention the Works at all, because before that
+         the Works is not part of the Commonwealth. */
+      { h:"Accession of the Almanac Works", when:{ flags:["almanac_annexed"] }, body:
+        "The Bellamy Almanac Works, Brant & Vane was brought within the Commonwealth by Act, "+
+        "its private charter surrendered and its 184,000 residents admitted as Commonwealth "+
+        "persons. It is the first accession since the founding and the first addition to the "+
+        "roll that was not a station built inside it.\n\n"+
+        "The Works enters the [[functional_constituency|apportionment]] at the next "+
+        "redistribution, which is the part the chamber argued about: a works station of that "+
+        "size is worth seats, and the seats have to come from somewhere." },
       { h:"What holds it together", body:
         "Neither force, nor consent, nor identity. A station's closure ratio is the fraction of "+
         "its material cycle it can sustain without imports, and most stations are below the "+
@@ -422,7 +446,7 @@ const ENCYCLOPEDIA = {
       { h:"The contract", body:
         "A substrate future fixes a price now for computation delivered later. Because "+"clock rates differ twentyfold between persons, the contract is written on "+"objective hours and settled in MW-years rather than in subjective experience." },
       { h:"The debt", body:
-        "**Credit secured against your own continuation** is the ordinary financing of a "+"habitat. A station borrows against the productive capacity of its residents, who "+"are the collateral. When the station fails, the lenders' claim runs against the "+"people rather than the place." },
+        "**Credit secured against one's own continuation** is the ordinary financing of a "+"habitat. A station borrows against the productive capacity of its residents, who "+"are the collateral. When the station fails, the lenders' claim runs against the "+"people rather than the place." },
       { h:"The platform", body:
         "The abandoned platform and its three hundred thousand residents are the present "+"case. The debt has not failed with the platform; it has been assigned. A "+"government that assumes it pays for people it does not own. A government that "+"[[write-off|writes it off]] has told the lenders what its word is worth." }
     ],

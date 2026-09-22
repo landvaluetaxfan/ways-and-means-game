@@ -2796,6 +2796,16 @@ s.p-rises   {background:var(--ink);}
 /* a fifth thing on one day is a rule, not a fifth dot */
 s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
 .calgrid .cd.now s{outline:1px solid var(--field);}
+/* THE CATEGORY FOOTER. Wikipedia closes an article with the categories it
+   belongs to, boxed and set apart from the prose, and the Concordance closed
+   with nothing at all. */
+.cx-cats{margin-top:10px;padding:5px 7px;border:1px solid var(--rule);
+  background:var(--field);font-family:var(--f-ui);font-size:10px;
+  display:flex;flex-wrap:wrap;gap:6px;align-items:baseline;}
+.cx-cats b{font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-soft);margin-right:2px;}
+.cx-cats span{padding:1px 5px;border:1px solid var(--rule);background:var(--chrome);}
+
 .calkey{
   display:flex;gap:9px;margin-top:5px;font-family:var(--f-data);font-size:9px;
   color:var(--ink-soft);align-items:center;flex-wrap:wrap;

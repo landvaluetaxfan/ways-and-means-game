@@ -491,6 +491,92 @@ try {
   ok("and the back button is not dead either", title() !== "Search", title());
 } catch (e) { ok("the Concordance search", false, e.message); }
 
+/* THE CONCORDANCE READS AS AN ENCYCLOPEDIA.
+
+   The hand-written articles had Wikipedia's register and the generated ones
+   did not: the party article opened "A party of the House of Delegates
+   holding 82 of 280 seats" -- a sentence with no subject in it, which is a
+   caption and not a lede -- and the person article opened with a fragment.
+   Wikipedia's first sentence names the subject in bold and says what it is,
+   without exception, and that is the most recognisable thing about it. */
+try {
+  const click = el => el.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  click(w.document.querySelector('.tab[data-t="cx"]'));
+  const open = id => { w.eval('Concordance.render(UI.state(), UI.content(), "' + id + '", true)');
+                       return w.document.querySelector("#cx-article"); };
+
+  /* Every KIND of article, because the fault was per generator. */
+  const kinds = ["cu", "person_flash", "anselm", "commonwealth", "bill_divergence"];
+  const bad = kinds.filter(id => {
+    const el = open(id);
+    const lede = el.querySelector(".cx-lede");
+    if (!lede) return true;
+    const strong = lede.querySelector("strong");
+    const t = lede.textContent.trim();
+    /* the subject, in bold, and then a verb saying what it is */
+    /* "The Circumterrestrial Commonwealth is..." is the same form: an
+       English article in front of the subject is part of the name. */
+    const head = t.replace(/^(The|A|An)\s+/, "");
+    return !strong || head.indexOf(strong.textContent.replace(/^(The|A|An)\s+/, "")) !== 0 ||
+           !/\b(is|are|was|were)\b/.test(head);
+  });
+  ok("every article opens by naming its subject and saying what it is",
+     bad.length === 0, bad.length ? bad.join(", ") : kinds.length + " kinds checked");
+
+  /* A VOLATILE FIGURE CARRIES ITS DATE. "Party discipline is recorded at 62"
+     is a fact about one sitting printed as though it were permanent. */
+  ok("and dates the figures the engine can move",
+     /As of sitting \d+/.test(open("cu").textContent),
+     (open("cu").textContent.match(/As of sitting \d+[^.]*\./) || [""])[0].slice(0, 70));
+
+  /* A POSITION IN WORDS, from js/schema.js's poles -- and the count of the
+     axes taken from the data, not typed. "the four axes" was written when
+     there were four and survived the conversion to five. */
+  const pos = open("cu").textContent;
+  ok("and renders a party's position in words, not co-ordinates",
+     /strongly (public|private|liberal|authoritarian|restrictionist|expansionist|station|federal|closurist|integrationist)/.test(pos) &&
+     !/economic: -?\d/.test(pos),
+     (pos.match(/position on the \d+ axes[^.]*\./) || [""])[0].slice(0, 96));
+  ok("and counts its axes rather than naming a number that can go stale",
+     pos.indexOf("the " + Object.keys(w.eval("JSON.parse(JSON.stringify(CONTENT.partyById.cu.axes))"))
+       .filter(k => w.eval('CONTENT.partyById.cu.axes.' + k) !== null).length + " axes") >= 0,
+     (pos.match(/the \d+ axes/) || [""])[0]);
+
+  /* CATEGORIES, which Wikipedia closes every article with. */
+  ok("and closes on its categories", !!open("cu").querySelector(".cx-cats span"),
+     [...open("cu").querySelectorAll(".cx-cats span")].map(x => x.textContent).join(" \u00b7 "));
+
+  /* AN ENCYCLOPEDIA DOES NOT PRINT THE AUTHOR'S DESIGN NOTES. The person
+     article used `characters[].note` as its first paragraph, and those are
+     notes to the author: "Liabilities, not buffs. Her record is the thing
+     that can be dug up." */
+  const flash = open("person_flash").textContent;
+  ok("and never prints the author's design notes at the reader",
+     !/Liabilities, not buffs/.test(flash) && !/\bbuffs?\b/i.test(flash),
+     "characters[].note stays out of world");
+} catch (e) { ok("the Concordance register", false, e.message); }
+
+/* AN ARTICLE GAINS A SECTION WHEN THE WORLD EARNS IT. The hand-written
+   articles were frozen text, so the reference work could not report on the
+   campaign it sits inside. A section carrying `when` is gated by the same
+   Engine.matches the events use. */
+try {
+  const openIt = () => { w.eval('Concordance.render(UI.state(), UI.content(), "commonwealth", true)');
+                         return w.document.querySelector("#cx-article"); };
+  const stt = w.eval("UI.state()");
+  const was = !!stt.flags.almanac_annexed;
+  delete stt.flags.almanac_annexed;
+  ok("a conditional section is absent before its condition holds",
+     !/Accession of the Almanac Works/.test(openIt().textContent));
+  stt.flags.almanac_annexed = true;
+  const after = openIt();
+  ok("and appears once the House has done the thing",
+     /Accession of the Almanac Works/.test(after.textContent));
+  ok("and the contents list gains it too, rather than pointing at nothing",
+     /Accession/.test((after.querySelector(".cx-toc") || { textContent: "" }).textContent));
+  if (!was) delete stt.flags.almanac_annexed;
+} catch (e) { ok("conditional Concordance sections", false, e.message); }
+
 /* CROSS-REFERENCES FROM THE REST OF THE GAME. `Concordance.knows` was called
    by js/ui.js and never written, behind a guard that answered false for
    everything -- so a party name on the Chamber tab, a station on the orbit

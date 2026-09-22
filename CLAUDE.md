@@ -232,6 +232,38 @@ list over any older sentence here that implies a different one:
 | **Orbit**, **World**, **Record** | unchanged |
 | **Concordance** | *the reference work, and it can only know what the world knows.* Articles are generated from content, which is authored for the WHOLE campaign — so anything staged for later showed up at sitting one. The four bills that open in `drafting` (the Almanac Works (Annexation) Bill among them, which is the act the campaign is about) each had a full page with a division forecast for a measure nobody had laid before the House, and the page contradicted itself saying so: "A measure before the House of Delegates. Stage: drafting." `drafting` is the engine's own word for not introduced, so it is the line: `build()` skips those and the page appears the moment the bill is set down. **The gate belongs on the surface, not in the content** — the content is right, the bill SHOULD be sitting in `drafting` waiting for `f1_dilemma`. Worth re-checking whenever a new reference surface reads a content list whole. |
 
+**THE CONCORDANCE WAS REFRESHED 22 Sep 2026 — the register, and liveness.**
+
+*The register.* The hand-written articles had Wikipedia's voice and the
+generated ones did not, and that split was the whole of "it does not read
+like an encyclopedia". The party article opened *"A party of the House of
+Delegates holding 82 of 280 seats"* — a sentence with no subject in it,
+which is a caption — and the person article opened with a fragment. Four
+rules now, applied by four helpers at the top of `js/encyclopedia.js`:
+`lede()` (the subject in bold, then a verb saying what it is — Wikipedia
+does this without exception), `asOf()` (a figure the engine can move carries
+its sitting), `axisProse()` (SCHEMA's poles, so "strongly public" and not
+"−0.75", and it **counts** the axes rather than naming a number — "the four
+axes" was written when there were four and survived the conversion to five),
+and `categoriesOf()` (an article closes on what kind of thing it is).
+
+*Liveness.* A section may carry `when`, gated by the same `Engine.matches`
+events use, so a hand-written article gains a paragraph when the thing it
+describes happens. The worked example is in `content/encyclopedia.js`: the
+Commonwealth article says nothing about the Almanac Works until the House
+annexes it. Sections are filtered **once**, before the contents list and the
+body are built, or the two disagree and the contents points at a heading
+that is not there.
+
+*And the encyclopedia no longer knows it is in a game.* `characters[].note`
+is the AUTHOR'S design notes — "Liabilities, not buffs. Her record is the
+thing that can be dug up", "This is the sharpest tool in the game" — and was
+printed verbatim as a person article's first paragraph. It is not printed at
+all now; the article is derived, which is also what keeps it true through a
+reshuffle. `npm run cx` gained a register check for second person and game
+vocabulary in player-facing prose (quoted speech exempt), which found four
+more and now fails the build on a fifth.
+
 **Papers is gone**, folded into Government — an instrument, the register it
 lands in, the court that can quash it and the office that assents to it are one
 subject. Nothing named `pap` survives; `js/engine.js` used to emit `tab:"pap"`
@@ -612,6 +644,20 @@ version of any of them is in the header of the file it names.
   were all dead, because all three end at the same `goCx`. `drawNav` runs
   before `drawArticle`, so the nav highlight moved while the page under it
   never changed — the interface said it had navigated.
+- **THE HARNESS MUST RUN THE SCRIPTS THE PAGE RUNS, and it was not.**
+  `tools/harness.js` kept a hand-maintained list of forty-odd filenames
+  beside `index.html`'s own forty-odd `<script src>` tags, and they drifted:
+  `js/schema.js` was added to the page when the axes became signed and never
+  added to the harness. So `SCHEMA` was undefined under test while defined
+  for every player, the Concordance's `typeof SCHEMA !== "undefined"` guard
+  took its fallback branch, and every party article showed `economic: -0.75`
+  in `npm run ui` and *strongly public* in Chromium — **the harness was
+  measuring an interface nobody has ever seen**, and neither list could
+  report the drift because neither knew about the other. The list is DERIVED
+  from `index.html` now, in document order. Also: a top-level `const` in a
+  classic script shares the global lexical environment in a browser but does
+  NOT cross jsdom's separate script evaluations, so a module meant for both
+  assigns to `window` explicitly the way it already assigns to `module`.
 - **jsdom's `HTMLAnchorElement.click()` does not dispatch**, so a probe using
   it reported the Concordance nav as broken when it was not. Anchors are
   exercised with a real `MouseEvent`; a "bug" found only through `.click()`
