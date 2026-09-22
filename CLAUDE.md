@@ -513,14 +513,48 @@ version of any of them is in the header of the file it names.
   §7.7 is about. The same file printed every choice as "#1" because it read
   `.text` where choices carry `label`. **Two fields read by names the data
   does not use, both falling back to a placeholder without a word.**
-- **OPEN, and the author's call: one session or three.** Bible §1.7 (LOCKED)
-  says *"three sessions of the House, one general election mid-game"*;
-  `content/setup.js` says *"one parliament is one session"* with the election
-  as the backstop ending, at `sittingsPerSession: 24`. A run meets about one
-  event per sitting, so a 24-sitting campaign cannot show more than ~25–33
-  events however it is played — against §1.7's budget of 41–51 — and 57 of
-  109 authored events are reached by no strategy. Run length sets the
-  ceiling, not gating. Decide this before sizing more content.
+- **DECIDED 22 Sep 2026: THREE SESSIONS OF SIXTEEN SITTINGS**, which is
+  bible §1.7's three sessions (`sessionsPerParliament: 3`,
+  `sittingsPerSession: 16` in `content/setup.js`, whose comment carries the
+  measurements). One session of twenty-four ran 31 sittings and met 29
+  events, reached 48% of the authored set across all strategies, and no
+  Flash I ending landed in any strategy but the scripted one, because
+  `f1_joint` lands at sitting 47. Three of sixteen runs about 52 sittings,
+  meets 43 events, reaches 61%, and lands `f1_joint` in three strategies.
+  Two of twenty-four measured about the same but produced a cascade loss,
+  and 3 × 24 produced five losses. Supply is carried ONCE per run and costs
+  five of a session's six slots, so more, shorter sessions give more free
+  slots after it. **Still open:** §1.7 puts the election MID-game with the
+  settlement after it; the engine ends the run at the campaign after
+  dissolution, so the second half does not exist yet.
+- **AN AFFIRMATIVE ORDER COULD BE LAID AND NEVER APPROVED.** `makeInstrument`
+  set `awaitingApproval`, charged the political cost, and nothing in the
+  engine ever read the flag again — five orders were paid for and could
+  never take effect, and since rung 4 of the thermal ladder is one of them
+  and every rung above is gated on its flag, the emergency ladder stopped at
+  rung 3 for everybody. One session hid it: the thermal drain after the debt
+  trap could not reach zero before the House rose. Three sessions reached
+  it and the canon run cascaded at sitting 42. `approveInstrument` /
+  `canApprove` / `approvalForecast` are the missing half (a division, one
+  slot, counted like a prayer the other way round; refused, the order
+  lapses and may be laid again), with an Approve control on the
+  Government tab. **A state flag that is set and never read is a mechanic
+  somebody started.** `grep` for its readers the day it is written.
+- **A CABINET EFFECT NAMING NO POST DOES NOTHING, SILENTLY.** `appoint`
+  answers an unknown post with `{ok:false}` and effects discard results, so
+  the vacant-Treasury event's "Fill it" — which the §7.6 rename had
+  rewritten to `cabinet:{solvency:…}`, the post's scalar and not the post —
+  left the Treasury empty and printed TREASURY BRIEF FILLED. `test.js` now
+  resolves every `cabinet` effect in content against the posts and the
+  person roster. A sweep renaming a scalar must leave alone a post id that
+  happened to share the scalar's old name.
+- **OPEN: nothing physical can end the run after dissolution.** `checkEnd`
+  reads the election branch before `checkLoss`, correctly for a confidence
+  vote (the House no longer exists) but also for the thermal cascade — so
+  the margin can sit at zero through the twelve campaign sittings and the
+  run goes on. A canon-policy run holding the ladder measured the margin at
+  zero from sitting 56 to the end at 60. Whether a cascade during the
+  campaign is a loss is the author's call.
 - **Chapter budgets are in bible §1.7 and worth reading before generating.**
   12-15 · 15-18 · 6-8 · 8-10 events. Chapter three is nine and correctly all
   `prologue` — the bible calls the election "a chapter transition and not a

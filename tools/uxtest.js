@@ -1279,10 +1279,14 @@ try {
   ok("and allowed on the day", E.canDivide(a, Cx, "divergence").ok === true);
   ok("the division then resolves", !!E.divide(a, Cx, "divergence").result);
 
-  /* PROROGATION, which is now the case where the parliament has another
-     session left in it. With sessionsPerParliament at 1 the first rise
-     dissolves instead, so this asks for a two-session parliament to test
-     the behaviour it is about — and the dissolution is tested below. */
+  /* PROROGATION, which is the case where the parliament has another
+     session left in it. This block and the dissolution blocks below each
+     set the parliament's length to the case they are about — two sessions
+     here, one below so the first rise dissolves — and content's own number
+     is put back after them. It used to be left at 1, which was harmless
+     while content said 1 and meant every later test ran a parliament the
+     game does not have the day content said 3. */
+  const SPP = Cx.setup.sessionsPerParliament;
   const b = mk();
   b.parliamentOpenedAt = b.session - 0;
   Cx.setup.sessionsPerParliament = 2;
@@ -1311,9 +1315,9 @@ try {
 
   /* THE PARLIAMENT ENDS. Four loss conditions and a settlement still left
      a run that could go on for ever: a play reaching no settlement was
-     measured running 190 empty sittings. A campaign is one parliament and
-     one parliament is one session, so the House is dissolved at the end
-     of it and the electorate answers. */
+     measured running 190 empty sittings. A campaign is one parliament, so
+     the House is dissolved at the end of its last session and the
+     electorate answers; a one-session parliament is the short way there. */
   const e = mk();
   /* A one-session parliament is on its last session from the day it
      opens, which is what makes the election its terminus. */
@@ -1373,6 +1377,7 @@ try {
   ok("a promise owed before the House rises is judged at dissolution too",
      !!g.dissolved && g.undertakings[0].state === "broken",
      g.undertakings[0].state);
+  Cx.setup.sessionsPerParliament = SPP;
 
   /* the docket says when the House rises, always */
   w.eval('UI.boot(UI.state(), CONTENT);');
@@ -1380,6 +1385,34 @@ try {
   ok("the docket carries the session's end",
      /House rises/i.test(w.document.querySelector("#sit-docket").textContent));
 } catch (e) { ok("the calendar", false, e.message); }
+
+/* THE AFFIRMATIVE ORDER HAS A WAY INTO FORCE. The row said "awaiting
+   approval" and offered nothing, because the engine had no vote; this walks
+   the player's path through the control rather than the engine call, on a
+   fresh game so nothing later inherits the order, and puts the state back. */
+try {
+  w.eval("window.__keepApprove = UI.state(); UI.boot(Engine.newGame(CONTENT), CONTENT);");
+  const doc = w.document;
+  doc.querySelector('.tab[data-t="gov"]').click();
+  const aff = w.eval('CONTENT.instruments.find(function (i) { return i.procedure === "affirmative" && ' +
+                     'Engine.canMake(UI.state(), CONTENT, i.id).ok; }).id');
+  const mk = doc.querySelector('#gov-si [data-make="' + aff + '"]');
+  ok("an affirmative order does not promise to be in force at once",
+     !!mk && !/in force at once/.test(mk.getAttribute("data-tip-body") || ""),
+     mk ? mk.getAttribute("data-tip-body") : "no control");
+  mk.click();
+  const ap = doc.querySelector('#gov-si [data-approve="' + aff + '"]');
+  ok("laid, it offers the House's approval", !!ap && !ap.disabled);
+  const row = () => doc.querySelector('#pp-list [data-doc="' + aff + '"] .flag');
+  ok("and the register calls it laid, not made", !!row() && row().textContent === "laid",
+     row() ? row().textContent : "no row");
+  ap.click();
+  ok("approved, it is in force", w.eval('UI.state().instruments["' + aff + '"].inForce') === true);
+  ok("and the control is gone", !doc.querySelector('#gov-si [data-approve="' + aff + '"]'));
+  ok("and the register says so", !!row() && row().textContent === "in force",
+     row() ? row().textContent : "no row");
+  w.eval("UI.boot(window.__keepApprove, CONTENT);");
+} catch (e) { ok("the affirmative order", false, e.message); }
 
 
 /* EXPANDING A ROW MUST NOT REBUILD THE PICTURE ABOVE IT.

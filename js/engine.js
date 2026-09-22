@@ -1866,6 +1866,109 @@ const Engine = (function () {
     return { aye: aye, total: total, need: need, carries: aye >= need };
   }
 
+  /* =============================================================
+     THE AFFIRMATIVE PROCEDURE, which content specified and nothing built.
+
+     content/instruments.js has always said it in one line: "affirmative
+     -- needs a simple popular majority first". makeInstrument() honoured
+     the first half -- it set `awaitingApproval` and withheld the effect --
+     and then nothing in the program ever cleared that flag. There was no
+     vote, no function, no path into force. So an affirmative order was
+     made, its `political_cost` was charged (that is applied on making,
+     "whatever happens after"), and its effect never arrived: the player
+     paid and got nothing, and the table said "awaiting approval" for the
+     rest of the run.
+
+     Five orders are affirmative, and the damage was not confined to them.
+     `rung4_appropriation` is affirmative and its effect is what sets
+     `rung4_tried`, which `rung5_purchase` is gated on, and so on up -- so
+     the thermal escalation ladder STOPPED AT RUNG THREE. Rungs four to
+     nine were dead or unreachable, and so was the Ember Ridge emergency
+     order. It surfaced when the campaign grew to three sessions: the canon
+     run lands the debt trap at sitting 23, the grid drains a point or two a
+     sitting, and a government that climbed every rung that worked still
+     cascaded at sitting 48, one short of the election, with nothing left
+     to reach for.
+
+     THE VOTE MIRRORS THE PRAYER, deliberately. `prayer_stances` is the one
+     place content records how each party feels about an order, and a
+     second model of the same feeling would drift from the first. So a
+     party that would pray against the order votes against approving it, a
+     party that would oppose a prayer votes for it, a partner with a
+     loyalty threshold approves only above it, the government's own benches
+     approve at their discipline, and an unrecorded opposition party does
+     not -- "omitted parties are assumed to oppose the government". It
+     carries on the same simple popular majority a prayer needs.
+
+     IT IS HOUSE BUSINESS, so it costs an order-paper slot and counts
+     against the day's divisions exactly as a bill's division does. That is
+     what makes the affirmative order the slow tool beside the negative
+     one, which costs no time and stands until somebody prays.
+     ============================================================= */
+  function approvalForecast(st, C, siId) {
+    const si = C.instrumentById[siId];
+    const total = popularTotal(st), need = Math.floor(total / 2) + 1;
+    let aye = 0;
+    Object.keys(st.parties).forEach(pid => {
+      const seats = partyPopular(st, pid);
+      const inGov = st.coalition.includes(pid) || st.confidenceSupply.includes(pid);
+      const stance = (si.prayer_stances || {})[pid];
+      if (stance && typeof stance === "object" && stance.ifLoyaltyBelow != null) {
+        if ((st.parties[pid] ? st.parties[pid].loyalty : 100) >= stance.ifLoyaltyBelow)
+          aye += Math.round(seats * discipline(st, C, pid, null));
+        return;
+      }
+      if (stance === "against") aye += seats;          /* against annulling it */
+      else if (stance === "for") return;               /* for annulling it */
+      else if (inGov) aye += Math.round(seats * discipline(st, C, pid, null));
+    });
+    return { aye: aye, total: total, need: need, carries: aye >= need };
+  }
+
+  function canApprove(st, C, siId) {
+    const si = C.instrumentById[siId], s = st.instruments[siId];
+    if (!si || !s) return { ok: false, reason: "no such instrument" };
+    if (si.procedure !== "affirmative")
+      return { ok: false, reason: "a negative order needs no approval" };
+    if (!s.made || s.revoked) return { ok: false, reason: "it has not been laid" };
+    if (!s.awaitingApproval)
+      return { ok: false, reason: s.inForce ? "already approved" : "not awaiting approval" };
+    if (slotsRemaining(st) < 1)
+      return { ok: false, noTime: true, reason: "no order-paper time left this session" };
+    const cap = (C.setup && C.setup.divisionsPerSitting) || 2;
+    if ((st.divisionsToday || 0) >= cap)
+      return { ok: false, full: true, cap: cap,
+               reason: cap === 1 ? "the House has already divided today"
+                                 : "the House has divided " + cap + " times today" };
+    return { ok: true };
+  }
+
+  /* Not approved, it LAPSES: out of force, no longer awaiting, and free to
+     be laid again. The political cost was paid when it was made and stays
+     paid, which is what content's "whatever happens after" means. */
+  function approveInstrument(st, C, siId) {
+    const chk = canApprove(st, C, siId);
+    if (!chk.ok) return chk;
+    spendSlots(st, 1);
+    st.divisionsToday = (st.divisionsToday || 0) + 1;
+    st.actedThisSitting = true;
+    const si = C.instrumentById[siId], s = st.instruments[siId];
+    const f = approvalForecast(st, C, siId);
+    s.awaitingApproval = false;
+    if (f.carries) {
+      s.inForce = true; s.effectApplied = true; s.approvedAt = st.sitting;
+      apply(st, C, si.effects);
+      st.log.unshift({ sitting: st.sitting, text: "Instrument approved: " + si.title +
+                       " (" + f.aye + " of " + f.need + " needed)" });
+    } else {
+      s.made = false; s.inForce = false; s.lapsed = st.sitting;
+      st.log.unshift({ sitting: st.sitting, text: "Instrument not approved, and lapses: " +
+                       si.title + " (" + f.aye + " of " + f.need + " needed)" });
+    }
+    settle(st, C);
+    return { ok: true, approved: f.carries, forecast: f };
+  }
+
   function prayAgainst(st, C, siId) {
     const si = C.instrumentById[siId], s = st.instruments[siId];
     if (!s || !s.made || s.revoked) return { ok: false, reason: "not in force" };
@@ -5387,8 +5490,9 @@ const Engine = (function () {
      that reached no settlement was measured running 190 empty sittings
      and would have run for ever.
 
-     A CAMPAIGN IS ONE PARLIAMENT AND ONE PARLIAMENT IS ONE SESSION
-     (setup.sessionsPerParliament). At the end of it the House is
+     A CAMPAIGN IS ONE PARLIAMENT, OF HOWEVER MANY SESSIONS CONTENT SAYS
+     (setup.sessionsPerParliament; three since 22 Sep 2026, one before, and
+     the engine names no number). At the end of it the House is
      dissolved, the electorate answers, and the campaign is over — which
      makes the election the BACKSTOP ENDING rather than an interruption.
      A run therefore has three ways to finish and no way to continue
@@ -5911,6 +6015,7 @@ const Engine = (function () {
     reshuffle, canReshuffle, resolveMotion, motionDeadline,
     standingIn, bandsOf, bandWeight, syncStanding, assent, presidentDecides, referralRisk, reviewReturns,
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
+    canApprove, approveInstrument, approvalForecast,
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
     /* Exported so the interface cannot invent a second way to score

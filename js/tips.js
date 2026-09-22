@@ -253,9 +253,10 @@ const Tips = (function () {
 
     /* ---- instruments ---- */
     instrument: { title: "Statutory instrument",
-      body: "An order signed rather than voted. It needs no majority and takes " +
-            "effect as soon as it is made. It can be revoked, which a bill " +
-            "cannot." },
+      body: "An order signed rather than voted. A negative order takes effect " +
+            "as soon as it is made and stands unless the House prays against " +
+            "it; an affirmative one does nothing until the House approves it. " +
+            "Either can be revoked, which a bill cannot." },
     prayer: { title: "Praying against",
       body: "The House's only way to challenge an order already in force. It " +
             "expires. The number is the sittings left. After that the order " +

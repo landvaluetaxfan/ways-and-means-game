@@ -1194,7 +1194,7 @@ holder makes no instrument, so a budget whose Treasury is unheld is a budget
 argued by officials and signed by nobody.`,
   choices:[
     { label:"Fill it. Put a Treasurer in the brief today.",
-      effects:[{ cabinet:{ solvency:{ holder:"skye", party:"cu" } } },
+      effects:[{ cabinet:{ treasury:{ holder:"skye", party:"cu" } } },
                { move:{ "public_standing":3 } },
                { wire:"TREASURY BRIEF FILLED" }],
       result:"The brief has a holder, which means it has a face for the questions and a name on the orders." },

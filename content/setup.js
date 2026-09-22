@@ -198,14 +198,37 @@ const SETUP = {
      "before the House rises" comes due. Bible 7.7 calls order-paper time the
      currency that cannot be topped up — this is the period it cannot be
      topped up WITHIN. */
-  sittingsPerSession: 24,
-  /* A CAMPAIGN IS ONE PARLIAMENT AND ONE PARLIAMENT IS ONE SESSION. At the end
-     of it the House is dissolved and the electorate answers, which makes the
-     election the backstop ending rather than an interruption: a run finishes on
-     a settlement, on the election, or on a loss, and cannot run past them.
-     Raise this and the parliament sits for more sessions before going to the
-     country. */
-  sessionsPerParliament: 1,
+  sittingsPerSession: 16,
+  /* A CAMPAIGN IS ONE PARLIAMENT OF THREE SESSIONS, which is bible §1.7's
+     number, and it was one session of twenty-four until 22 Sep 2026.
+
+     WHY IT CHANGED, measured rather than argued. At one session the run
+     ended at about sitting 25, a run met about 29 events against §1.7's
+     budget of 41-51, and 57 of 109 authored events were reached by no
+     strategy in `npm run playtest`. The campaign's own ending could not
+     happen at all: `f1_joint`, the Flash I settlement, lands at sitting 47
+     in every run that reaches it, and the game stopped twenty sittings
+     before that. Three sessions of sixteen runs about 48 sittings, meets 43
+     events a run, and three of seven strategies reach f1_joint.
+
+     WHY THREE OF SIXTEEN AND NOT TWO OF TWENTY-FOUR, which is the same
+     length. Both hit the budget; three of sixteen lost no run to a cascade
+     where two of twenty-four lost one, and three rises are three points where
+     undertakings come due and unfinished business falls, which is the
+     scarcity §7.7 is built on happening three times rather than once. More
+     order-paper time per session was tried too and made runs shorter and
+     losses more common: supply is carried ONCE per run (testSupply passes for
+     good once it has), so session one pays for the budget and sessions two
+     and three have their whole six slots for the programme. The squeeze was
+     solved by sessions, not by slots.
+
+     At the end of the third session the House is dissolved and the
+     electorate answers, which is still the backstop ending: a run finishes
+     on a settlement, on the election, or on a loss, and cannot run past
+     them. Bible §1.7 places the election MID-game with the settlement after
+     it; the engine cannot continue past a dissolution yet, so that is an
+     open question and not a setting. */
+  sessionsPerParliament: 3,
   /* opening ledger. Positive means they owe you. */
   capital: { psa: 2, rv: -3, upl: 0, geo: 1 },
   president: { id:"tenaya", relationship:22,
@@ -283,8 +306,8 @@ const SETUP = {
 /* =============================================================
    ADMINISTRATIONS — the governments a campaign can open as.
 
-   A CAMPAIGN IS ONE SESSION (sessionsPerParliament above). A GOVERNMENT is
-   one Prime Minister's term and can run across more than one session, so
+   A CAMPAIGN IS ONE PARLIAMENT OF THREE SESSIONS (sessionsPerParliament
+   above). A GOVERNMENT is one Prime Minister's term and runs across them, so
    the player chooses whose government this is and the label names the whole
    term: party, leader and ordinal, and the years.
 

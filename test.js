@@ -16,6 +16,13 @@ const Engine = require("./js/engine.js");
    measuring the tutorial and calling it the crisis. */
 const PROLOGUE1 = CONTENT.events
   .filter(e => (e.chapter || 1) === 1 && e.prologue).length;
+/* And how long a whole run can be: every session of the parliament, then the
+   campaign after the writs, then slack. Read from setup, because the length
+   is content's and moved from one session to three on 22 Sep 2026 — the two
+   loops that had it written in as 40 and 38 were the first two failures. */
+const RUN_BOUND = (CONTENT.setup.sittingsPerSession || 24) *
+                  (CONTENT.setup.sessionsPerParliament || 1) +
+                  (CONTENT.setup.campaignSittings || 12) + 4;
 
 const st = Engine.newGame(CONTENT);
 console.log("chamber", Engine.chamberTotal(st), "| popular", Engine.popularTotal(st),
@@ -307,6 +314,101 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
   g.bills.divergence.stage = Engine.DIVIDES_AT;
   ok("a slot cannot advance a bill awaiting a division",
      !Engine.grantSlot(g, CONTENT, "divergence").ok);
+
+  /* THE AFFIRMATIVE PROCEDURE, which could be started and never finished.
+     Making an affirmative order laid it, charged its political cost and set
+     `awaitingApproval` — and nothing in the engine ever read that flag, so
+     five orders were paid for and could never take effect. Rung 4 of the
+     thermal ladder is one of them, and every rung above it is gated on rung
+     4's flag, so the emergency ladder stopped at rung 3 for everybody. It
+     went unnoticed because one session was too short for the thermal drain
+     to reach zero; three sessions reached it. */
+  {
+    const a = Engine.newGame(CONTENT);
+    const m0 = a.scalars.thermal_margin;
+    Engine.makeInstrument(a, CONTENT, "si_2080_51");
+    ok("an affirmative order is laid, not in force",
+       a.instruments.si_2080_51.awaitingApproval && !a.instruments.si_2080_51.inForce &&
+       a.scalars.thermal_margin === m0, "margin " + m0 + " -> " + a.scalars.thermal_margin);
+    ok("and a negative order has nothing to approve",
+       !Engine.canApprove(a, CONTENT, "si_2080_44").ok,
+       Engine.canApprove(a, CONTENT, "si_2080_44").reason);
+    const used = a.slots.used;
+    const r = Engine.approveInstrument(a, CONTENT, "si_2080_51");
+    ok("approving it brings it into force and applies it",
+       r.ok && r.approved && a.instruments.si_2080_51.inForce && a.scalars.thermal_margin > m0,
+       r.forecast ? r.forecast.aye + "/" + r.forecast.need + ", margin " + m0 + " -> " +
+                    a.scalars.thermal_margin : r.reason);
+    ok("and the division costs order-paper time", a.slots.used === used + 1,
+       used + " -> " + a.slots.used);
+    ok("and it cannot be approved twice", !Engine.canApprove(a, CONTENT, "si_2080_51").ok);
+
+    const t = Engine.newGame(CONTENT);
+    Engine.makeInstrument(t, CONTENT, "si_2080_51");
+    t.slots.used = t.slots.total;
+    ok("no order-paper time, no approval", !!Engine.canApprove(t, CONTENT, "si_2080_51").noTime);
+
+    /* A House that will not approve it lets it lapse: out of force, never
+       applied, and the government may lay it again. */
+    const b = Engine.newGame(CONTENT);
+    Engine.makeInstrument(b, CONTENT, "si_2080_51");
+    Object.keys(b.parties).forEach(p => { b.parties[p].loyalty = 0; });
+    b.coalition = ["cu"]; b.confidenceSupply = [];
+    const mb = b.scalars.thermal_margin;
+    const rb = Engine.approveInstrument(b, CONTENT, "si_2080_51");
+    ok("a refused order lapses and applies nothing",
+       rb.ok && !rb.approved && !b.instruments.si_2080_51.inForce &&
+       b.instruments.si_2080_51.lapsed != null && b.scalars.thermal_margin === mb,
+       rb.forecast ? rb.forecast.aye + "/" + rb.forecast.need : rb.reason);
+    ok("and it can be laid again", Engine.canMake(b, CONTENT, "si_2080_51").ok);
+
+    /* The ladder: with rung 4 approved, rung 5 opens. The bench is widened
+       because the opening House does not carry rung 4 at any loyalty (118
+       of 121) — which is the hung chamber working, not the mechanism
+       failing — and this is a test of the mechanism. */
+    const d = Engine.newGame(CONTENT);
+    Engine.fillPost(d, CONTENT, "treasury", 0);
+    d.flags.rung3_tried = true;
+    d.confidenceSupply.push("cl");
+    Engine.makeInstrument(d, CONTENT, "rung4_appropriation");
+    const rd = Engine.approveInstrument(d, CONTENT, "rung4_appropriation");
+    ok("the thermal ladder climbs past rung 4 once the House approves it",
+       rd.ok && rd.approved && Engine.canMake(d, CONTENT, "rung5_purchase").ok,
+       rd.ok ? String(rd.approved) : rd.reason);
+  }
+
+  /* A CABINET EFFECT NAMES A POST THAT EXISTS. `appoint` answers an unknown
+     post with {ok:false} and nothing else, so an effect naming one does
+     nothing at all without a word. The vacant-Treasury event's "Fill it"
+     named `solvency` — the post's scalar, renamed from `treasury` in the
+     §7.6 amendment and swept into the post id — so the one choice that
+     fills the brief left it empty and printed TREASURY BRIEF FILLED. */
+  {
+    const posts = new Set((CONTENT.cabinet || []).map(p => p.id));
+    const chars = new Set((CONTENT.characters || []).map(c => c.id));
+    const bad = [];
+    /* An effect is an ELEMENT OF A LIST, so only list elements are read as
+       effects — an index keyed by id has an entry called `cabinet` that is
+       an article, not an appointment. */
+    const walk = (o, where, inList) => {
+      if (Array.isArray(o)) return o.forEach(x => walk(x, where, true));
+      if (!o || typeof o !== "object") return;
+      if (inList && o.cabinet && typeof o.cabinet === "object" && !Array.isArray(o.cabinet))
+        Object.keys(o.cabinet).forEach(k => {
+          if (!posts.has(k)) bad.push(where + ": no post " + k);
+          const h = o.cabinet[k];
+          if (h && h.holder && !chars.has(h.holder)) bad.push(where + ": no person " + h.holder);
+        });
+      Object.keys(o).forEach(k => walk(o[k], where, false));
+    };
+    Object.keys(CONTENT).forEach(k => {
+      if (k === "cabinet" || /ById$/.test(k)) return;
+      [].concat(CONTENT[k] || []).forEach(x => walk(x, k + " " + ((x && x.id) || "")));
+    });
+    (CONTENT.cabinet || []).forEach(p => (p.candidates || []).forEach(c => walk(c.effects, "cabinet " + p.id)));
+    ok("every cabinet effect names a post and a person that exist", bad.length === 0,
+       bad.join("; ") || "all resolve");
+  }
 
   /* THE DISTRICT ROLL. Every district seat lives in st.roll and every
      district total is derived from it. Two numbers for one fact is the
@@ -3458,7 +3560,7 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
       Engine.grantSlot(gov, CONTENT, "appropriation");
     Engine.divide(gov, CONTENT, "appropriation");
     let e2 = null;
-    for (let i = 0; i < 40 && !e2; i++) {
+    for (let i = 0; i < RUN_BOUND && !e2; i++) {
       const f = Engine.checkEnd(gov, CONTENT);
       if (f.over) { e2 = f; break; }
       Engine.advance(gov, CONTENT);
@@ -3777,15 +3879,39 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
       });
       if (!s.instruments["si_2080_44"].made && Engine.canMake(s, CONTENT, "si_2080_44").ok)
         Engine.makeInstrument(s, CONTENT, "si_2080_44");
+      /* AND IT HOLDS THE COUNTRY, which the comment above always said and
+         the policy never did. With one session of twenty-four the debt trap
+         landed and the House rose before the thermal drain it causes could
+         reach zero; three sessions give it the time, and a government that
+         watched the margin fall to nothing for twenty-five sittings is not
+         the one the canon ending describes. So it fills the Treasury (a
+         vacant post makes no order) and climbs the emergency ladder when the
+         margin is low: approving any order that is laid and waiting first,
+         then laying the next rung. The ladder is found in content by what
+         it does, not by name. */
+      if (!s.cabinet.treasury.holder && Engine.vacancies(s, CONTENT).length)
+        Engine.fillPost(s, CONTENT, "treasury", 0);
+      if (s.scalars.thermal_margin <= 10) {
+        const cools = CONTENT.instruments.filter(si => [].concat(si.effects || [])
+          .some(f => f.move && f.move.thermal_margin > 0)).map(si => si.id);
+        const waiting = cools.find(id => s.instruments[id].awaitingApproval &&
+          Engine.canApprove(s, CONTENT, id).ok);
+        if (waiting) Engine.approveInstrument(s, CONTENT, waiting);
+        else {
+          const next = cools.find(id => !s.instruments[id].made &&
+            Engine.canMake(s, CONTENT, id).ok);
+          if (next) Engine.makeInstrument(s, CONTENT, next);
+        }
+      }
     };
     const pick = { f1_stranded: 0, f1_referendum: 0, f1_dilemma: 0, f1_water: 0,
       f1_loan: 1, f1_accounts_freeze: 0, fa_two_fronts: 0, fa_window_closes: 0,
       fa_anchor_terms: 0, fa_conciliate: 1 };
     let tier = null, end = null, tierAt = null;
-    /* The run has to outlast the tutorial: 38 sittings of chapter two plus
-       however many beats the opening takes, rather than a flat 45 that
-       silently became 44 of play when the prologue grew by one. */
-    for (let s = 0; s < 38 + PROLOGUE1; s++) {
+    /* The run has to outlast the parliament and its campaign, and the bound
+       is content's: a flat 45 silently became 44 of play when the prologue
+       grew by one, and a flat anything is wrong the day the length moves. */
+    for (let s = 0; s < RUN_BOUND + PROLOGUE1; s++) {
       const e = Engine.nextEvent(st, CONTENT);
       if (e) {
         const n = (e.choices || []).length || 1;
@@ -3803,7 +3929,9 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
     ok("the canon ending is reachable by play (the debt trap)",
        !!tier && tier.id === "f1_pyrrhic", tier ? tier.id : "no tier landed");
     ok("and it does not end the run: the campaign goes to the election",
-       !!end && end.kind === "election", end ? end.kind : "no end");
+       !!end && end.kind === "election",
+       end ? end.kind + " " + (end.reason || "") + " at sitting " + st.sitting +
+             ", supply " + (st.bills.appropriation || {}).stage : "no end");
     /* AND IT LANDS WITH ROOM, which is the assertion that was missing. The
        ending used to arrive on the last sitting it possibly could, so it
        read as passing while resting on nothing: one more prologue beat and

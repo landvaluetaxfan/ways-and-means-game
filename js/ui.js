@@ -2134,9 +2134,27 @@ const UI = (function () {
         <td class="n">${s.made ? "" :
           `<button class="btn sibtn" data-make="${si.id}"${chk.ok ? "" : " disabled"}` +
             priceTip("Make " + si.number,
-                     { free: "Costs no order-paper time. That is the point of an order: " +
-                             "it is in force at once, and prayable." },
+                     /* THE AFFIRMATIVE ORDER IS NOT FREE AND NOT AT ONCE. This
+                        tip said "in force at once, and prayable" for every
+                        order, which was a promise the affirmative five could
+                        not keep: made, they wait for the House. */
+                     si.procedure === "affirmative"
+                       ? { free: "Laying it costs no order-paper time, but it does " +
+                                 "nothing until the House approves it, and that vote " +
+                                 "does cost time." }
+                       : { free: "Costs no order-paper time. That is the point of an order: " +
+                                 "it is in force at once, and prayable." },
                      chk.ok ? null : chk.reason) + `>Make</button>`}
+          ${s.awaitingApproval ? (function () {
+            /* THE VOTE THAT WAS NEVER THERE. The row said "awaiting approval"
+               and offered nothing to do about it, because nothing in the
+               engine could approve an order. It can now, and this is where
+               the player asks for it. */
+            const ac = Engine.canApprove(st, C, si.id);
+            return `<button class="btn sibtn" data-approve="${si.id}"${ac.ok ? "" : " disabled"}` +
+              priceTip("Seek approval for " + si.number,
+                       { slots: 1 }, ac.ok ? null : ac.reason) + `>Approve</button>`;
+          })() : ""}
           ${s.inForce && window > 0 ? `<button class="btn sibtn" data-pray="${si.id}">Pray</button>` : ""}
           ${s.inForce && si.revocable ? `<button class="btn sibtn" data-revoke="${si.id}">Revoke</button>` : ""}</td>
       </tr>`;
@@ -2170,10 +2188,34 @@ const UI = (function () {
       if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); Dialog.alert(r.reason, { title: "Order refused" }); }
       else {
         cue("stamp"); score("order");
-        setStatus((si ? si.number : b.dataset.make) + " made \u2014 in force at once, and prayable",
+        setStatus((si ? si.number : b.dataset.make) +
+                  (si && si.procedure === "affirmative"
+                    ? " laid \u2014 it takes effect only when the House approves it"
+                    : " made \u2014 in force at once, and prayable"),
                   "transient");
       }
       drawAll(); afterAction();
+    }));
+    $("#gov-si").querySelectorAll("[data-approve]").forEach(b => b.addEventListener("click", () => {
+      const f = Engine.approvalForecast(st, C, b.dataset.approve);
+      Dialog.confirm(
+        `Forecast ${f.aye} of ${f.total}, needs ${f.need}.\n\n` +
+        (f.carries ? "The House would approve it and the order would take effect." :
+                     "The House would decline it and the order would lapse. " +
+                     "What it cost to lay is not returned."),
+        { title: "Seek the House's approval?", yes: "Divide", danger: !f.carries },
+        ok => {
+          if (!ok) return;
+          const r = acted(() => Engine.approveInstrument(st, C, b.dataset.approve));
+          if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); drawAll(); return; }
+          cue(r.approved ? "aye" : "nay");
+          score(r.approved ? "order" : "revoke");
+          const si = C.instrumentById[b.dataset.approve];
+          setStatus((si ? si.number : b.dataset.approve) +
+                    (r.approved ? " approved \u2014 in force" : " not approved \u2014 it lapses"),
+                    "transient");
+          drawAll(); afterAction();
+        });
     }));
     $("#gov-si").querySelectorAll("[data-pray]").forEach(b => b.addEventListener("click", () => {
       const f = Engine.prayerForecast(st, C, b.dataset.pray);

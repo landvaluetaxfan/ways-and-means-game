@@ -82,11 +82,16 @@ const Papers = (function () {
 
     (C.instruments || []).forEach(si => {
       const s = st.instruments[si.id];
-      if (!s.made) return;
+      /* An affirmative order the House refused is no longer made, and it
+         keeps its row: a register records what was laid, not only what
+         survived. `laid` is the affirmative order waiting on the House,
+         which is a different fact from a negative order being made. */
+      if (!s.made && s.lapsed == null) return;
       out.push({
         kind: "instrument", id: si.id, si: si, state: s,
         title: si.title, ref: si.number, at: s.madeAt || 0,
-        status: s.revoked ? "revoked" : s.inForce ? "in force" : "made"
+        status: s.revoked ? "revoked" : s.awaitingApproval ? "laid"
+              : s.inForce ? "in force" : !s.made ? "lapsed" : "made"
       });
     });
 
@@ -250,7 +255,11 @@ const Papers = (function () {
       <p>${esc(si.summary)}</p>
       ${si.effect_note ? `<p><i>${esc(si.effect_note)}</i></p>` : ""}
       <p>${si.procedure === "affirmative"
-        ? "This instrument requires the approval of the House before taking effect."
+        ? "This instrument requires the approval of the House before taking effect." +
+          (s.awaitingApproval ? " It has been laid and awaits that approval."
+            : s.approvedAt != null ? " The House approved it at sitting " + s.approvedAt + "."
+            : !s.made && s.lapsed != null ? " The House did not approve it, and it lapsed at " +
+              "sitting " + s.lapsed + "." : "")
         : "This instrument took effect on being made. It stands unless the House prays " +
           "against it within " + (si.prayer_window || 6) + " sittings. A prayer requires a " +
           "simple majority of elected members only."}
@@ -324,7 +333,7 @@ const Papers = (function () {
       `<tr class="${i.id === sel ? "sel" : ""}" data-doc="${i.id}">
         <td>${esc(i.title)}<div class="note">${esc(i.ref)}</div></td>
         <td class="n"><span class="flag ${i.status === "assented" || i.status === "in force" ? "good"
-          : ["struck", "revoked", "defeated"].includes(i.status) ? "bad" : ""}"
+          : ["struck", "revoked", "defeated", "lapsed"].includes(i.status) ? "bad" : ""}"
           data-tip="${i.kind === "minute" ? "minute" : i.kind === "instrument" ? "instrument" : "register"}"
           >${i.status}</span></td>
       </tr>`).join("")
