@@ -223,11 +223,11 @@ const SETUP = {
      solved by sessions, not by slots.
 
      At the end of the third session the House is dissolved and the
-     electorate answers, which is still the backstop ending: a run finishes
-     on a settlement, on the election, or on a loss, and cannot run past
-     them. Bible §1.7 places the election MID-game with the settlement after
-     it; the engine cannot continue past a dissolution yet, so that is an
-     open question and not a setting. */
+     electorate answers, and the count ENDS THE RUN: nothing happens after
+     it. That is the author's decision (design/32, "canon decided here", and
+     bible §1.7 as corrected), not an engine limit waiting to be lifted. A
+     settlement lands during the parliament and records; it does not end
+     the run and opens no chapter of its own. */
   sessionsPerParliament: 3,
   /* opening ledger. Positive means they owe you. */
   capital: { psa: 2, rv: -3, upl: 0, geo: 1 },

@@ -524,9 +524,27 @@ version of any of them is in the header of the file it names.
   Two of twenty-four measured about the same but produced a cascade loss,
   and 3 × 24 produced five losses. Supply is carried ONCE per run and costs
   five of a session's six slots, so more, shorter sessions give more free
-  slots after it. **Still open:** §1.7 puts the election MID-game with the
-  settlement after it; the engine ends the run at the campaign after
-  dissolution, so the second half does not exist yet.
+  slots after it. **The election ends the run and nothing comes after the
+  count.** That was the author's decision on 20 Sep (`design/32-the-arc.md`,
+  "canon decided here"), restated 22 Sep; §1.7 still said "mid-game" until
+  it was corrected that day, and a plan was drafted from the stale section
+  before the design note was read. **Read `design/32` before planning the
+  run's shape.** It is written against one session of 24, so its sitting
+  numbers are stale and its decisions are not.
+- **THREE SESSIONS PUT THE ANNEXATION ACT ON A ONE-SITTING MARGIN.** Every
+  bill not carried falls at each rise. The Flash I chain is dated from
+  `at:8` for a single session of 24, and a policy that puts the Act first
+  sets it down and carries it at sitting 15: nine sittings before the old
+  rise, one before the new one. Nothing fails today, but any beat added
+  ahead of the chain pushes the dilemma past sitting 16 and the Act falls
+  with the House. The chain is to be re-dated for three sessions.
+- **CHAPTERS THREE AND FOUR ARE STILL ALTERNATIVES, NOT A SEQUENCE**, which
+  is design/32's fold not yet done. Both transitions are chapter-two events
+  and chapter gating is an exact match, so a run that settles (every tier
+  but the non-terminal `f1_pyrrhic`) enters chapter four, `ch4_the_record`
+  sets `campaign_done`, and the run ends at the dissolution with no
+  campaign; a run that dissolves first never sees the aftermath. Measured
+  across the seven playtest strategies: none reached both.
 - **AN AFFIRMATIVE ORDER COULD BE LAID AND NEVER APPROVED.** `makeInstrument`
   set `awaitingApproval`, charged the political cost, and nothing in the
   engine ever read the flag again — five orders were paid for and could
@@ -556,13 +574,12 @@ version of any of them is in the header of the file it names.
   zero from sitting 56 to the end at 60. Whether a cascade during the
   campaign is a loss is the author's call.
 - **Chapter budgets are in bible §1.7 and worth reading before generating.**
-  12-15 · 15-18 · 6-8 · 8-10 events. Chapter three is nine and correctly all
-  `prologue` — the bible calls the election "a chapter transition and not a
-  cycle" — so it wants no pool. Chapter four had six, all prologue, so the
-  pool the bible says "takes over" had nothing in it; it is 6 + 4 now.
-  Chapters one and two are far over budget on AUTHORED count but a run meets
-  about 32 events total, against a budget of 41-51 met, so the played length
-  is under and the authored count is a weighted pool rather than a queue.
+  12-15 · 15-18 · 14-18 events, three chapters since the correction of 22
+  Sep (chapter three is the old election and settlement budgets together).
+  Measured under three sessions: chapter one meets 8, chapter two about 39,
+  and chapter three 5-6, so chapter two is more than twice its budget and
+  the other two are under. Size a content round against the chapter, not
+  the run total.
 
 **CSS and layout traps, every one found by measuring rather than reading**
 
