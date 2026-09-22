@@ -1,5 +1,36 @@
 # SWEEP BRIEF — CLOSING THE CONSEQUENCE CHAIN
 
+> **READ THIS FIRST — much of what follows is a RECORD and not a work order.**
+> `CLAUDE.md` names this file as "what is being built now" and it had stopped
+> being that. Same treatment as `ROADMAP.md` and `AUTHORING_FORMAT.md`: the
+> document stays because the reasoning in it is still good, with a header
+> saying which parts have been overtaken.
+>
+> **Out of date below:** the two-lane split (Lane A engine / Lane B content,
+> Claude Code and opencode running at once) describes a division of labour
+> that is no longer how the work is being done — the lanes have been running
+> together on `main` since 21 Sep. Anything in Part 0 about *which* lane is
+> open should be read as history.
+>
+> **Still good below:** the consequence-chain reasoning, the gap analysis,
+> and every argument about why a mechanic is shaped the way it is. `design/`
+> is intact and `design/README.md` §5 still maps it document by document.
+>
+> **WHERE THE BUILD ACTUALLY IS (22 Sep 2026).** The interface passes: the
+> Economy tab was rebuilt around the fact that the tax bases and the scarcity
+> prices are one set of four things; the Party tab is interparty affairs
+> rather than a browser of twelve; the Concordance has Wikipedia's register
+> and can gain sections as the campaign moves. The canon date settled at
+> **11 April 2080** with a **two-decade** history, which `bible.md` §11.1
+> holds and which is LOCKED — read it before dating anything. Prose is
+> through a register pass: `npm run register` reports zero mechanical habits
+> and six adjudicated judgement calls recorded in `PROSE_REGISTER.md`.
+>
+> **What is next is CONTENT**, which is where the remaining weight is. The
+> engine's vocabulary is closed and sufficient; the checks are the only
+> playtester until a human one arrives, and they are green at 1,114
+> assertions.
+
 **For execution against the repo. Companion to `bible.md` v4 and `design/`.**
 Where this brief and the bible disagree on a number, the bible wins and this
 brief is wrong — raise it rather than silently diverging.
