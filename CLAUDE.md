@@ -494,6 +494,33 @@ version of any of them is in the header of the file it names.
   match at the opening, because a `flagsAbsent` once-gate is supposed to, and
   Czarnecki's group opens at loyalty 12 on purpose. A checker here would cry
   wolf seventeen times, which is worse than none.
+- **THE PLAYTEST MISREPORTED THE BUDGET, and it is the tool every balance
+  question goes through.** `tools/playtest.js` read `r.carries` off
+  `Engine.divide()`, which returns `{ok:false, reason}` or `{result, paid,
+  assent}` — never `carries` — so every call was logged "lost". The
+  transcript showed the Appropriation "lost" thirteen sittings running, which
+  read as the budget failing thirteen divisions; a defeated bill is DEAD and
+  would have been skipped, so every one was the House declining to divide,
+  with its reason sitting unread in `r.reason`. Underneath that, "supply
+  first" was not keeping supply's vote: **passing the budget costs five of
+  the session's six slots** (four grants from first reading, one for the
+  division), and once supply sat at third reading the loop spent the last
+  slot on the next bill down — so two supply-first strategies fell on supply
+  at the rise, refused twenty-two times for "no order-paper time left". A
+  budget-first strategy now reserves what supply still needs. Result: all
+  five supply-first strategies pass supply and reach the election; only
+  *programme first* and *governs not at all* lose on it, which is the choice
+  §7.7 is about. The same file printed every choice as "#1" because it read
+  `.text` where choices carry `label`. **Two fields read by names the data
+  does not use, both falling back to a placeholder without a word.**
+- **OPEN, and the author's call: one session or three.** Bible §1.7 (LOCKED)
+  says *"three sessions of the House, one general election mid-game"*;
+  `content/setup.js` says *"one parliament is one session"* with the election
+  as the backstop ending, at `sittingsPerSession: 24`. A run meets about one
+  event per sitting, so a 24-sitting campaign cannot show more than ~25–33
+  events however it is played — against §1.7's budget of 41–51 — and 57 of
+  109 authored events are reached by no strategy. Run length sets the
+  ceiling, not gating. Decide this before sizing more content.
 - **Chapter budgets are in bible §1.7 and worth reading before generating.**
   12-15 · 15-18 · 6-8 · 8-10 events. Chapter three is nine and correctly all
   `prologue` — the bible calls the election "a chapter transition and not a

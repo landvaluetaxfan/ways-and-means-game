@@ -79,29 +79,87 @@ function govern(st, strategy) {
     return strategy.budget ? s(a) - s(b) : s(b) - s(a);
   });
 
-  /* divide on whatever will carry, before spending anything */
+  /* divide on whatever will carry, before spending anything.
+
+     WHAT divide() ACTUALLY RETURNS, which this read wrongly for as long as
+     it existed. It is `{ ok:false, reason }` when the House will not divide
+     and `{ result, paid, assent }` when it does, with the outcome at
+     `result.carries`. This read `r.carries` -- a field divide() has never
+     had -- so it was undefined, falsy, and every call was written down as
+     "lost": refusals, successes and defeats alike. The transcript showed
+     the Appropriation "lost" thirteen sittings running, which reads as the
+     budget failing thirteen divisions, when a defeated bill is DEAD
+     (divide() sets bs.dead) and would have been skipped the next sitting.
+     Every one of those was the House declining to divide at all, and the
+     reason it gave was in `r.reason` the whole time.
+
+     So the three outcomes are three words now, and a refusal carries the
+     House's own reason -- which is the most useful line in the transcript,
+     because it says what a player would have been told. */
   for (const b of order) {
     const bs = st.bills[b.id];
     if (!bs || bs.dead || bs.stage !== Engine.DIVIDES_AT) continue;
     try {
       const r = Engine.divide(st, CONTENT, b.id);
-      if (r) acts.push((r.carries ? "carried " : "lost ") + b.title);
+      if (!r) continue;
+      if (r.ok === false) acts.push("no division on " + b.title + ": " + r.reason);
+      else acts.push((r.result && r.result.carries ? "carried " : "defeated ") + b.title);
     } catch (e) { /* not divisible yet; the engine said so */ }
   }
 
-  /* then move something along, while there is time to do it with */
+  /* then move something along, while there is time to do it with.
+
+     "SUPPLY FIRST" HAS TO KEEP SUPPLY'S VOTE, and it did not. The session
+     opens with six slots of order-paper time and the Appropriation opens at
+     first reading: four grants to reach third reading and one more for the
+     division itself, so passing the budget costs five of the six. This loop
+     sorted supply first and then spent every slot it could -- and once
+     supply reached third reading, granting it more time is refused
+     ("awaiting a division"), so the loop moved on and spent the remaining
+     slot on the next bill down. On the day the division was set for there
+     was no time left to hold it. "Last option, supply first" was refused
+     twenty-two sittings running for "no order-paper time left this
+     session" and fell on supply at the rise, which the table reported as a
+     finding about supply when it was a finding about this loop.
+
+     So a budget-first government reserves what supply still needs -- a slot
+     for each stage left to climb and one for the division -- and spends
+     only the surplus on its programme. A programme-first government does
+     not, because putting its programme ahead of the budget is the whole of
+     what that strategy is testing, and it should be allowed to lose on it. */
+  const reserve = strategy.budget ? supplyNeed(st) : 0;
   let budgetSlots = strategy.slotsPerSitting == null ? 2 : strategy.slotsPerSitting;
   while (budgetSlots-- > 0 && st.slots.used < st.slots.total) {
     let moved = false;
     for (const b of order) {
       const bs = st.bills[b.id];
       if (!bs || bs.dead || bs.stage === "assented") continue;
+      /* the slot supply's vote needs is not this bill's to spend */
+      const isSupply = b.test === "supply";
+      if (!isSupply && (st.slots.total - st.slots.used) <= reserve) continue;
       const r = Engine.grantSlot(st, CONTENT, b.id);
       if (r && r.ok !== false) { acts.push("time to " + b.title); moved = true; break; }
     }
     if (!moved) break;
   }
   return acts;
+}
+
+/* WHAT SUPPLY STILL NEEDS, in slots: one per stage it has left to climb to
+   the division, and one for the division itself. Nought once it is past the
+   division -- awaiting assent, assented, or dead -- because there is nothing
+   left for order-paper time to buy it. Read off the engine's own stage
+   ladder rather than a number typed here, so a change to the ladder cannot
+   leave this reserving the wrong amount. */
+function supplyNeed(st) {
+  const sup = (CONTENT.bills || []).find(b => b.test === "supply");
+  if (!sup) return 0;
+  const bs = st.bills[sup.id];
+  if (!bs || bs.dead) return 0;
+  const at = Engine.STAGE_ORDER.indexOf(bs.stage);
+  const divides = Engine.STAGE_ORDER.indexOf(Engine.DIVIDES_AT);
+  if (at < 0 || at > divides) return 0;
+  return (divides - at) + 1;
 }
 
 const STRATEGIES = [
@@ -170,7 +228,13 @@ function play(strategy, sittings) {
         if (Engine.choose(st, CONTENT, e, k) !== null) { took = k; break; }
       }
       if (took === null) refused++;
-      else { picks++; note(e.title + " — " + (e.choices[took].text || "#" + took)); }
+      /* `label`, which is the field the game draws. This read `.text`, so
+         every choice in every transcript printed as "#1" or "#2" -- the one
+         line meant to say what the government decided said nothing. Same
+         fault as the division result above: a field read by a name the
+         data does not use, falling back to a placeholder without a word. */
+      else { picks++; const c = e.choices[took];
+             note(e.title + " — " + (c.label || c.text || "#" + took)); }
     }
 
     /* AND THEN IT GOVERNS. */
