@@ -4,8 +4,8 @@
 
    So: play 40 sittings, rename everything, play again, compare. */
 const fs=require("fs"), vm=require("vm"), path=require("path"), root=path.join(__dirname,"..");
-const CF=["setup","parties","stations","constituencies","cabinet","instruments","initiatives","minutes","functional","characters","bills","glossary","archetypes","names","events","encyclopedia","settlements","business","actors"];
-const src=CF.map(f=>fs.readFileSync(path.join(root,"content",f+".js"),"utf8")).join("\n");
+/* the content files index.html loads, in its order (tools/loadcontent.js) */
+const LC=require("./loadcontent.js"); const src=LC.source(LC.modelFiles);
 const indexSrc=fs.readFileSync(path.join(root,"content","index.js"),"utf8");
 
 /* THE WHOLE MODEL, AND THE WHOLE GAME. This loaded eleven collections and

@@ -3,8 +3,8 @@
    This is the SERIALISER. The editor's forms are a second way to corrupt
    content and are proved by tools/edtest.js, which opens every entry. */
 const fs=require("fs"), vm=require("vm"), path=require("path"), root=path.join(__dirname,"..");
-const CF=["setup","parties","stations","constituencies","cabinet","instruments","initiatives","minutes","characters","bills","events","glossary","encyclopedia"];
-const src=CF.map(f=>fs.readFileSync(path.join(root,"content",f+".js"),"utf8")).join("\n");
+/* the content files index.html loads, in its order (tools/loadcontent.js) */
+const src=require("./loadcontent.js").source();
 vm.runInThisContext(src+"\n;globalThis.__A={SETUP,PARTIES,CURRENTS,STATIONS,CHARACTERS,BILLS,EVENTS,GLOSSARY,ENCYCLOPEDIA,CONSTITUENCIES};");
 const A=globalThis.__A;
 const Serialise=require("../js/serialise.js");

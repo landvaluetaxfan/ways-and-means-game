@@ -1,10 +1,7 @@
 /* Headless check: does the division calculator reproduce the bible's numbers? */
 const fs = require("fs"), vm = require("vm");
-const files = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js","content/initiatives.js","content/minutes.js",
-               "content/functional.js","content/labour.js","content/names.js",
-               "content/characters.js","content/bills.js","content/events.js","content/glossary.js","content/encyclopedia.js","content/business.js","content/settlements.js","content/actors.js","content/index.js"];
-const src = files.map(f => fs.readFileSync(f,"utf8")).join("\n") + "\n;globalThis.__C = CONTENT;";
-vm.runInThisContext(src);
+/* the content files index.html loads, in its order (tools/loadcontent.js) */
+vm.runInThisContext(require("./tools/loadcontent.js").source() + "\n;globalThis.__C = CONTENT;");
 /* THE CAMPAIGN'S VIEW, not the whole set (design/36 §3): the tests below
    assert Flash I, so they play what Flash I plays, with its own setup
    merged in. ALL is every campaign's content, for the tests of the view. */

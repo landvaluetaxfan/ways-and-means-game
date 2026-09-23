@@ -42,10 +42,12 @@ const w = dom.window;
 w.alert = () => {}; w.confirm = () => true; w.prompt = () => null;
 w.URL.createObjectURL = () => "blob:x"; w.HTMLAnchorElement.prototype.click = function () {};
 
-const FILES = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js","content/initiatives.js","content/minutes.js","content/functional.js","content/labour.js",
-  "content/characters.js","content/bills.js","content/glossary.js","content/archetypes.js","content/names.js",
-  "content/events.js","content/encyclopedia.js","content/business.js","content/settlements.js","content/actors.js","content/index.js",
-  "js/engine.js","js/schema.js","js/refs.js","js/coverage.js","js/serialise.js","js/dialog.js","js/editor.js"];
+/* THE SCRIPTS editor.html RUNS, read off the page in its order. This was a
+   hand-kept list that loaded initiatives and minutes, which the page did
+   not, so the test measured an editor with more in it than the author's:
+   the rename dialog's warnings about initiatives came from the test's copy
+   and not the page's (the harness lesson, again). */
+const FILES = require("./loadcontent.js").scriptsOf("editor.html");
 
 FILES.forEach(f => {
   const p = path.join(root, f);

@@ -22,9 +22,11 @@ const root = path.join(__dirname, "..");
 /* settlements, business and achievements were added for the flag audit at the
    bottom: a flag set in a file this tool does not load reads as a flag
    nothing sets, and an audit with a hole in it is worse than none. */
-const files = ["setup", "parties", "stations", "constituencies", "cabinet", "instruments","initiatives", "minutes", "characters", "bills", "events", "glossary", "encyclopedia", "labour", "actors", "settlements", "business", "achievements"]
-  .map(f => path.join(root, "content", f + ".js"));
-vm.runInThisContext(files.map(f => fs.readFileSync(f, "utf8")).join("\n") +
+/* the content files index.html loads, in its order (tools/loadcontent.js):
+   a file this tool does not load reads as content nobody wrote */
+const LC = require("./loadcontent.js");
+const files = LC.files.map(f => path.join(root, f));
+vm.runInThisContext(LC.source() +
   "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA, ADMINISTRATIONS};");
 const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA, ADMINISTRATIONS } = globalThis.__G;
 
@@ -981,6 +983,19 @@ try {
 } catch (e) { campBad.push("could not check the campaigns: " + e.message); }
 n += section("CAMPAIGNS THAT REACH INTO ANOTHER'S CONTENT", campBad, x => x);
 
+/* THE EDITOR LOADS WHAT THE GAME LOADS. Two pages each name the content
+   files, and the editor had fallen three behind: it could not see an
+   initiative, a minute or an award, so its rename dialog could not warn
+   about a reference in one. The game's own presentation files (the images'
+   registry and the globe) and the assets are the only ones it may skip. */
+const pageBad = [];
+try {
+  const EDITOR_SKIPS = /content\/(artifacts|world)\.js$/;
+  LC.files.filter(f => !EDITOR_SKIPS.test(f) && LC.editorFiles.indexOf(f) < 0)
+    .forEach(f => pageBad.push("editor.html does not load " + f + ", which index.html does"));
+} catch (e) { pageBad.push("could not compare the pages: " + e.message); }
+n += section("CONTENT THE EDITOR CANNOT SEE", pageBad, x => x);
+
 R.push("=".repeat(60));
 R.push(n ? `${n} legibility issues` : "no legibility issues");
 if (artBad.length) R.push(`${artBad.length} ARTIFACT SHAPE FAILURES`);
@@ -993,6 +1008,7 @@ if (labelBad.length) R.push(`${labelBad.length} UNLABELLED CHOICES`);
 if (gateBad.length) R.push(`${gateBad.length} GATES NOTHING CAN SATISFY`);
 if (refBad.length) R.push(`${refBad.length} IDS THAT NAME NOTHING`);
 if (campBad.length) R.push(`${campBad.length} CAMPAIGN FAULTS`);
+if (pageBad.length) R.push(`${pageBad.length} CONTENT FILES THE EDITOR DOES NOT LOAD`);
 if (popBad.length) R.push("THE POPULATION IS STORED TWICE AND HAS DRIFTED (advisory)");
 console.log(R.join("\n"));
 /* HARD FAILURES: everything except popBad. The chain is one of them now —
@@ -1004,4 +1020,5 @@ console.log(R.join("\n"));
    fails from the day it lands gets disabled rather than fixed. */
 if (artBad.length || chainBad.length || cssBad.length || verbBad.length ||
     parseBad.length || initBad.length || gridBad.length || targetBad.length ||
-    labelBad.length || gateBad.length || refBad.length || campBad.length) process.exit(1);
+    labelBad.length || gateBad.length || refBad.length || campBad.length ||
+    pageBad.length) process.exit(1);

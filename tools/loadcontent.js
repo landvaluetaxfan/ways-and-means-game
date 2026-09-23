@@ -15,15 +15,38 @@
 const fs = require("fs"), vm = require("vm"), path = require("path");
 const root = path.join(__dirname, "..");
 
-/* index.js last: it is the file that reads the others' bindings. */
-const files = ["content/setup.js","content/parties.js","content/stations.js",
-  "content/constituencies.js","content/cabinet.js","content/instruments.js",
-  "content/initiatives.js","content/minutes.js","content/functional.js",
-  "content/labour.js","content/names.js","content/characters.js",
-  "content/bills.js","content/events.js","content/glossary.js",
-  "content/encyclopedia.js","content/artifacts.js","content/business.js",
-  "content/settlements.js","content/actors.js","content/achievements.js",
-  "content/world.js","content/index.js"];
+/* ONE LIST, AND IT IS THE PAGE'S. This file kept its own list of content
+   files, and so did test.js, the lint, the playtest, the editor test, the
+   round trip, the Concordance check and the bundle: a dozen lists, each
+   edited by hand, and a new file (a new campaign's, say) had to be added to
+   every one of them or a check measured content the game does not play.
+   The game loads what index.html's <script> tags name, in their order, so
+   that is the list: a file is added to the page and every tool sees it.
+
+   ASSETS are left out: the recorded anthem and the country outlines are
+   megabytes of base64 and coordinates that no check reads. */
+const ASSET = /content\/(anthem\.js|geo\/)/;
+function scriptsOf(page) {
+  const html = fs.readFileSync(path.join(root, page), "utf8");
+  return [...html.matchAll(/<script[^>]*\bsrc="([^"]+)"/g)].map(m => m[1]);
+}
+/* index.js last in the page as well: it reads the others' bindings. */
+const files = scriptsOf("index.html").filter(f => /^content\//.test(f) && !ASSET.test(f));
+
+/* What the editor loads besides: `archetypes.js` is the editor's alone.
+   The union, in the page's order with the editor's extras before index.js,
+   is the whole model an author edits (the rename test reads it). */
+const editorFiles = scriptsOf("editor.html").filter(f => /^content\//.test(f) && !ASSET.test(f));
+const modelFiles = files.filter(f => !/index\.js$/.test(f))
+  .concat(editorFiles.filter(f => files.indexOf(f) < 0))
+  .concat(files.filter(f => /index\.js$/.test(f)));
+
+/* The content's source as one script, for tools that want the bindings
+   themselves (the lint reads EVENTS, not CONTENT). */
+function source(list) {
+  return (list || files).filter(f => fs.existsSync(path.join(root, f)))
+    .map(f => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
+}
 
 /* THE TOOLTIPS ARE PROSE TOO, and they are not in content/. js/tips.js
    carries a few hundred sentences explaining the terminal, in a plain object
@@ -51,14 +74,12 @@ function loadTips() {
 }
 
 function loadContent() {
-  const src = files.filter(f => fs.existsSync(path.join(root, f)))
-    .map(f => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
   const ctx = {};
-  vm.runInNewContext(src + "\n;__C = CONTENT;", ctx);
+  vm.runInNewContext(source() + "\n;__C = CONTENT;", ctx);
   const C = ctx.__C;
   const tips = loadTips();
   if (tips) C.tips = tips;          /* a pseudo-collection, home js/tips.js */
   return C;
 }
 
-module.exports = { files, loadTips, loadContent, root };
+module.exports = { files, editorFiles, modelFiles, source, scriptsOf, loadTips, loadContent, root, ASSET };

@@ -34,14 +34,8 @@
 const fs = require("fs"), vm = require("vm"), path = require("path");
 const root = path.join(__dirname, "..");
 
-const files = ["content/setup.js","content/parties.js","content/stations.js",
-  "content/constituencies.js","content/cabinet.js","content/instruments.js",
-  "content/initiatives.js","content/minutes.js","content/functional.js",
-  "content/labour.js","content/names.js","content/characters.js","content/bills.js",
-  "content/events.js","content/glossary.js","content/encyclopedia.js",
-  "content/business.js","content/settlements.js","content/actors.js","content/index.js"];
-vm.runInThisContext(files.map(f => fs.readFileSync(path.join(root, f), "utf8")).join("\n") +
-                    "\n;globalThis.__C = CONTENT;");
+/* the content files index.html loads, in its order (tools/loadcontent.js) */
+vm.runInThisContext(require("./loadcontent.js").source() + "\n;globalThis.__C = CONTENT;");
 /* The campaign's view of the content (design/36 §3): `--campaign <id>`,
    Flash I by default. */
 const CAMPAIGN = (process.argv.indexOf("--campaign") >= 0

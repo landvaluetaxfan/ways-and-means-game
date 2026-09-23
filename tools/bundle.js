@@ -17,14 +17,14 @@
 
 const fs = require("fs"), path = require("path"), vm = require("vm");
 const root = path.join(__dirname, "..");
-const CF = ["setup","parties","stations","functional","characters","bills",
-            "constituencies","glossary","archetypes","names","events","encyclopedia"];
+/* the content files the pages load (tools/loadcontent.js), the editor's
+   archetypes included, so the digest describes what is actually played */
+const LC = require("./loadcontent.js");
+const CF = LC.modelFiles.map(f => f.replace(/^content\//, "").replace(/\.js$/, ""))
+  .filter(f => f !== "index");
 
 const ctx = {};
-const src = CF.map(f => {
-  const p = path.join(root, "content", f + ".js");
-  return fs.existsSync(p) ? fs.readFileSync(p, "utf8") : "";
-}).join("\n");
+const src = LC.source(LC.modelFiles);
 vm.runInNewContext(src + `;__G={SETUP,PARTIES,CURRENTS,STATIONS,CHARACTERS,BILLS,EVENTS,GLOSSARY,
   ENCYCLOPEDIA, FUNCTIONAL: typeof FUNCTIONAL!=="undefined"?FUNCTIONAL:[],
   CONSTITUENCIES: typeof CONSTITUENCIES!=="undefined"?CONSTITUENCIES:[],
