@@ -49,7 +49,7 @@ const BILLS = [
       /* These are the forecast counts the whips have given the PM, so they are
          stated explicitly rather than derived. Popular 128 of 240 (needs 121),
          functional 12 of 40 (needs 21). */
-      cu:  { popular:{for:68}, functional:{forPct:1} },   /* scales if the licensing boards move seats */  /* five popular rebels: the maintenance bloc hates this bill */
+      cu:  { popular:{for:68}, functional:{forPct:1} },   /* scales if the licensing boards move seats */  /* five popular rebels: the Trades Left hates this bill */
       psa: { popular:{for:34}, functional:{forPct:1} },
       rv:  { popular:{for:3},  functional:{forPct:1} },  /* the three ministers; conference voted against 71-29 */
       upl: { popular:{for:2},  functional:"against" },
@@ -423,7 +423,7 @@ const BILLS = [
 
      THE ARITHMETIC. 129 of 240 for, against 121 needed: it carries, by
      eight, which is inside what a whip can lose. The government's own
-     seven rebels are the maintenance bloc, who read 97,000 workers
+     seven rebels are the Trades Left, who read 97,000 workers
      entering the labour market the way they read the divergence bill, and
      for the same reason.
      ============================================================= */
@@ -450,7 +450,7 @@ const BILLS = [
     axes:{economic:-0.7, authority:0.5, personhood:0.6, sovereignty:0.85, trade:-0.4},
     stances:{
       /* Forecast counts as the whips gave them. Popular 129 of 240, needs 121. */
-      cu:  { popular:{for:66}, functional:"for" },  /* seven rebels: the maintenance bloc */
+      cu:  { popular:{for:66}, functional:"for" },  /* seven rebels: the Trades Left */
       psa: { popular:{for:34}, functional:"for" },
       rv:  { popular:{for:9},  functional:"for" },  /* the ministers; the conference is split */
       /* DOMAIN CONSENT IS WHAT DECIDES THIS, not a functional majority.

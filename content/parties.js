@@ -128,16 +128,27 @@ const PARTIES = [
          "the division list rather than anything the House was told." }
 ];
 
-/* CURRENTS — factions inside a party. Same four axes; a current that
-   drifts far enough simply becomes a party in the list above. */
+/* CURRENTS — factions inside a party. Same axes as a party; a current that
+   drifts far enough simply becomes a party in the list above.
+
+   NAMED FOR WHERE THEY STAND (the author, 23 Sep). Hard left and soft left
+   are clear because each is a position everyone knows plus a qualifier, and
+   the old names were descriptions an analyst would write ("Maintenance
+   bloc", "Leadership loyalists", "The Title Caucus"). So a current is named
+   the way real factions are, a pole and a side, and the poles are the
+   game's own axis words: the federation argument that splits this
+   parliament shows in the names themselves (Station Left, Station Right,
+   Federal Right). Where a party's split is not positional but about what
+   comes first, the name says that instead (Confessionals and
+   Coalitionists, Purists and Pragmatists). The ids are unchanged. */
 const CURRENTS = [
-  { id:"cu_maintenance", party:"cu", name:"Maintenance bloc",     members:31, loyalty:29,
+  { id:"cu_maintenance", party:"cu", name:"Trades Left",          members:31, loyalty:29,
     axes:{economic:-0.85, authority:-0.35, personhood:-0.8, sovereignty:0.4, trade:-0.6} },
-  { id:"cu_loyalists",   party:"cu", name:"Leadership loyalists",  members:22, loyalty:88,
+  { id:"cu_loyalists",   party:"cu", name:"Soft Left",             members:22, loyalty:88,
     axes:{economic:-0.7, authority:-0.4, personhood:-0.4, sovereignty:0.55, trade:-0.25} },
-  { id:"cu_deck",        party:"cu", name:"Deck cooperativists",   members:18, loyalty:54,
+  { id:"cu_deck",        party:"cu", name:"Station Left",          members:18, loyalty:54,
     axes:{economic:-0.7, authority:-0.55, personhood:-0.5, sovereignty:-0.4, trade:-0.85} },
-  { id:"cu_halloran",    party:"cu", name:"Czarnecki group",        members:11, loyalty:12,
+  { id:"cu_halloran",    party:"cu", name:"Hard Left",              members:11, loyalty:12,
     axes:{economic:-0.9, authority:-0.5, personhood:-0.35, sovereignty:0.2, trade:-0.5} },
 
   /* THE RENAMED PARTIES' ARGUMENTS (T7, design/24 B1). A party with no
@@ -146,28 +157,30 @@ const CURRENTS = [
      (district + list), the way the cu currents do. */
 
   /* FREEHOLD: property absolutists who disagree on whose courts defend the
-     deed. The Title Caucus wants the Commonwealth to enforce title; the
-     Section Leagues want the station's own law and nothing federal near it. */
-  { id:"fh_title",     party:"fh", name:"The Title Caucus",        members:6, loyalty:38,
+     deed. The Federal Right wants the Commonwealth to enforce title; the
+     Station Right wants the station's own law and nothing federal near it. */
+  { id:"fh_title",     party:"fh", name:"Federal Right",           members:6, loyalty:38,
     axes:{economic:0.95, authority:-0.1, personhood:-0.45, sovereignty:0.35, trade:null} },
-  { id:"fh_section",   party:"fh", name:"The Section Leagues",     members:5, loyalty:50,
+  { id:"fh_section",   party:"fh", name:"Station Right",           members:5, loyalty:50,
     axes:{economic:0.85, authority:-0.4, personhood:null, sovereignty:-0.85, trade:null} },
 
   /* THE CDA: a church and a coalition partner, and the two argue. The
-     congregations made the party and voted the conference 71-29 against the
-     threshold; the ministerial wing holds the offices and votes like a
-     partner, which is why its members absented themselves rather than
-     divide against the leadership in public (8.5). */
-  { id:"rv_congregation", party:"rv", name:"The Congregations",     members:11, loyalty:62,
+     Confessionals put the faith first: the congregations made the party and
+     voted the conference 71-29 against the threshold. The Coalitionists put
+     the coalition first: they hold the offices and vote like a partner,
+     which is why they absented themselves rather than divide against the
+     leadership in public (8.5). */
+  { id:"rv_congregation", party:"rv", name:"Confessionals",         members:11, loyalty:62,
     axes:{economic:null, authority:-0.15, personhood:-0.95, sovereignty:null, trade:null} },
-  { id:"rv_ministerial",  party:"rv", name:"The Ministerial wing",  members:6, loyalty:40,
+  { id:"rv_ministerial",  party:"rv", name:"Coalitionists",         members:6, loyalty:40,
     axes:{economic:-0.55, authority:-0.2, personhood:-0.8, sovereignty:0.45, trade:null} },
 
   /* UPLIFT: two seats and one question, whether they are there to witness or
-     to trade. Each current is one of the two members. */
-  { id:"upl_witness", party:"upl", name:"The Witness Caucus",       members:1, loyalty:70,
+     to trade: the Purists will not deal on personhood, the Pragmatists will.
+     Each current is one of the two members. */
+  { id:"upl_witness", party:"upl", name:"Purists",                  members:1, loyalty:70,
     axes:{economic:-0.7, authority:-0.5, personhood:1, sovereignty:null, trade:null} },
-  { id:"upl_bridge",  party:"upl", name:"The Bridge Caucus",        members:1, loyalty:50,
+  { id:"upl_bridge",  party:"upl", name:"Pragmatists",              members:1, loyalty:50,
     axes:{economic:-0.5, authority:-0.2, personhood:0.85, sovereignty:0.6, trade:0.7} },
 
   /* THE INDEPENDENTS (T14, design/26 #15 as amended). Six district

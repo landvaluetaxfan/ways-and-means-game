@@ -215,11 +215,14 @@ const Concordance = (function () {
     else if (cs) sections.push({ h: "Confidence and supply", body:
       asOf(`the party sustains the government without holding office, and its ` +
            `discipline is recorded at ${st.parties[p.id].loyalty}.`) });
+    /* A current's name is a position ("Hard Left") or a seat ("Homestead
+       A"), neither of which takes a verb as a subject, so the list gives
+       each name its figures rather than making it the subject of one. */
     if (currents.length) sections.push({ h: "Currents", body:
       `The party recognises ${currents.length} internal current` +
       (currents.length === 1 ? "" : "s") + ". " +
-      asOf((Engine.currentSeats(st, C, p.id) || []).map(c =>
-        `${c.name} numbers ${c.seats} member${c.seats === 1 ? "" : "s"} at a discipline of ` +
+      asOf("they stand as follows: " + (Engine.currentSeats(st, C, p.id) || []).map(c =>
+        `${c.name}, ${c.seats} member${c.seats === 1 ? "" : "s"} at a discipline of ` +
         `${c.loyalty}`).join("; ") + ".") });
 
     /* THE PARTY OUTSIDE PARLIAMENT, moved here from the Party tab, which is

@@ -221,7 +221,7 @@ which part of it you intend to be known for.`,
 
     { label:"Because I am what this party has always been",
       act:"Say it",
-      note:"You claim the movement's inheritance. It is the line the maintenance bloc " +
+      note:"You claim the movement's inheritance. It is the line the Trades Left " +
            "will carry into every meeting for a year, and the line your partners will " +
            "ask you to clarify before the week is out.",
       effects:[{flag:"led_on_continuity"},
@@ -230,7 +230,7 @@ which part of it you intend to be known for.`,
                {move:{public_standing:-4}},
                {move:{"loyalty.psa":-5}},
                {wire:"PM CLAIMS THE MOVEMENT'S INHERITANCE; PARTNERS SEEK CLARIFICATION"}],
-      result:"The maintenance bloc will carry that sentence into every meeting for a year. So will the New Progressive Party, in a different tone, and the bill you inherited is about wages whichever way you look at it." },
+      result:"The Trades Left will carry that sentence into every meeting for a year. So will the New Progressive Party, in a different tone, and the bill you inherited is about wages whichever way you look at it." },
 
     { label:"Because the party had to change and I changed it",
       act:"Say it",

@@ -175,8 +175,8 @@ const CONSTITUENCIES = [
     held:{cu:1},
     parent:"anselm_ring_agricultural",
     material_interest:["tether_traffic", "volume_rationing"],
-    description:"Growing beds under strip light, and the maintenance bloc that works them. The recorded interests are tether traffic and volume rationing.",
-    tendency:"Union and embodied-labour, on a roll of 28,779 and a ratio of 1.03, and the maintenance bloc's home district. Petra Prentice lost the ministry in the reshuffle and held the seat at the next election." },
+    description:"Growing beds under strip light, and the maintenance trades that work them. The recorded interests are tether traffic and volume rationing.",
+    tendency:"Union and embodied-labour, on a roll of 28,779 and a ratio of 1.03, and the Trades Left's home district. Petra Prentice lost the ministry in the reshuffle and held the seat at the next election." },
 
   { id:"orchard_deck_and_vine_end", name:"Orchard Deck & Vine End", station:"anselm", band:"ring",
     magnitude:1, electorate:27578,

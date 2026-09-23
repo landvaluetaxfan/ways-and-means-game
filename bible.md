@@ -158,61 +158,61 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 - §9.4 · L1679 — Refraction  *LOCKED as a writing principle*
 - §9.5 · L1683 — Current caucus (Party of Socialists and Democrats, 82)  *LOCKED*
 
-**Part X — SOCIETY, CULTURE, LAW** · L1698
-- §10.1 · L1700 — Aesthetic register — orbital warmth  *LOCKED*
-- §10.2 · L1712 — Nativism, inverted  *LOCKED*
-- §10.3 · L1718 — Labour  *LOCKED*
-- §10.3.1 · L1742 — Four overlays that matter more than the sectors  *LOCKED*
-- §10.4 · L1771 — Who is not in paid work  *LOCKED*
-- §10.5 · L1809 — Fork-rentiers  *LOCKED*
-- §10.6 · L1824 — Labour conflict  *LOCKED*
-- §10.7 · L1832 — Media and information  *LOCKED*
-- §10.8 · L1838 — Courts and law  *LOCKED*
-- §10.9 · L1844 — Religion  *LOCKED*
-- §10.10 · L1848 — External pressures  *LOCKED*
+**Part X — SOCIETY, CULTURE, LAW** · L1700
+- §10.1 · L1702 — Aesthetic register — orbital warmth  *LOCKED*
+- §10.2 · L1714 — Nativism, inverted  *LOCKED*
+- §10.3 · L1720 — Labour  *LOCKED*
+- §10.3.1 · L1744 — Four overlays that matter more than the sectors  *LOCKED*
+- §10.4 · L1773 — Who is not in paid work  *LOCKED*
+- §10.5 · L1811 — Fork-rentiers  *LOCKED*
+- §10.6 · L1826 — Labour conflict  *LOCKED*
+- §10.7 · L1834 — Media and information  *LOCKED*
+- §10.8 · L1840 — Courts and law  *LOCKED*
+- §10.9 · L1846 — Religion  *LOCKED*
+- §10.10 · L1850 — External pressures  *LOCKED*
 
-**Part XI — NAMED CANON** · L1856
-- §11.1 · L1860 — The polity
-- §11.2 · L1921 — Persons
-- §11.3 · L1965 — Stations and constituencies
-- §11.4 · L2042 — The functional roster  *LOCKED*
-- §11.5 · L2064 — The live bill
-- §11.6 · L2073 — Other business on the order paper
+**Part XI — NAMED CANON** · L1858
+- §11.1 · L1862 — The polity
+- §11.2 · L1923 — Persons
+- §11.3 · L1967 — Stations and constituencies
+- §11.4 · L2044 — The functional roster  *LOCKED*
+- §11.5 · L2066 — The live bill
+- §11.6 · L2075 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L2091
-- §12.1 · L2093 — The core principle  *LOCKED*
-- §12.2 · L2097 — Split visual language  *LOCKED*
-- §12.3 · L2104 — Chrome direction  *LOCKED*
-- §12.4 · L2110 — Screens  *LOCKED*
-- §12.5 · L2114 — Election night  *LOCKED*
-- §12.6 · L2124 — The orbital map  *LOCKED*
-- §12.7 · L2152 — The parliament diagram  *LOCKED*
-- §12.8 · L2178 — Documents  *LOCKED*
-- §12.9 · L2184 — The feed  *LOCKED*
-- §12.10 · L2188 — Build cost  *LOCKED*
-- §12.11 · L2192 — Images  *LOCKED*
-- §12.12 · L2220 — Existing artifact
-- §12.13 · L2232 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L2093
+- §12.1 · L2095 — The core principle  *LOCKED*
+- §12.2 · L2099 — Split visual language  *LOCKED*
+- §12.3 · L2106 — Chrome direction  *LOCKED*
+- §12.4 · L2112 — Screens  *LOCKED*
+- §12.5 · L2116 — Election night  *LOCKED*
+- §12.6 · L2126 — The orbital map  *LOCKED*
+- §12.7 · L2154 — The parliament diagram  *LOCKED*
+- §12.8 · L2180 — Documents  *LOCKED*
+- §12.9 · L2186 — The feed  *LOCKED*
+- §12.10 · L2190 — Build cost  *LOCKED*
+- §12.11 · L2194 — Images  *LOCKED*
+- §12.12 · L2222 — Existing artifact
+- §12.13 · L2234 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2291
-- §13.1 · L2293 — Scandal taxonomy  *LOCKED*
-- §13.2 · L2306 — The spine  *LEANING*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2293
+- §13.1 · L2295 — Scandal taxonomy  *LOCKED*
+- §13.2 · L2308 — The spine  *LEANING*
 
-**Part XIV — PRIOR ART** · L2312
-- §14.1 · L2314 — The gap  *LOCKED*
-- §14.2 · L2318 — Works
-- §14.3 · L2326 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L2314
+- §14.1 · L2316 — The gap  *LOCKED*
+- §14.2 · L2320 — Works
+- §14.3 · L2328 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2339
-- §15.1 · L2341 — Team  *LOCKED*
-- §15.2 · L2347 — Documentation  *LOCKED*
-- §15.3 · L2363 — Where this gets hard  *LOCKED*
-- §15.4 · L2374 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2391 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2341
+- §15.1 · L2343 — Team  *LOCKED*
+- §15.2 · L2349 — Documentation  *LOCKED*
+- §15.3 · L2365 — Where this gets hard  *LOCKED*
+- §15.4 · L2376 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2393 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2421
+**Part XVI — OPEN DECISIONS** · L2423
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2462
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2464
 
 <!-- /TOC -->
 
@@ -1684,12 +1684,14 @@ Other ideologies are refracted through the player's party's view of them. Hullis
 
 | Current | MPs | Loyalty |
 |---|---|---|
-| Maintenance bloc | 31 | 29 |
-| Leadership loyalists | 22 | 88 |
-| Deck cooperativists | 18 | 54 |
-| Czarnecki group | 11 | 12 |
+| Trades Left | 31 | 29 |
+| Soft Left | 22 | 88 |
+| Station Left | 18 | 54 |
+| Hard Left | 11 | 12 |
 
-**Dan Czarnecki** (Ashfield) leads the group. A leadership ballot needs twelve signatures (`setup.thresholds.ballot`) and his group is eleven.
+**Dan Czarnecki** (Ashfield) leads the Hard Left, which the press calls the Czarnecki group. A leadership ballot needs twelve signatures (`setup.thresholds.ballot`) and his group is eleven.
+
+**Currents are named for where they stand** (the author, 23 Sep 2026), the way real factions are: hard left, soft left. The old names (*Maintenance bloc*, *Leadership loyalists*, *Deck cooperativists*, *Czarnecki group*) were descriptions an analyst would write. The Trades Left is the maintenance trades' wing, union-based, protectionist and restrictionist; the Soft Left is the leadership's mainstream; the Station Left is the one PSD current on the station side of the federation; the Hard Left is the furthest left and the rebels. The poles are the game's own axis words, so the federation argument shows in the names across parties: Freehold splits into a **Federal Right** and a **Station Right**. Where a split is about what comes first rather than where, the name says that: the CDA's **Confessionals** and **Coalitionists**, Uplift's **Purists** and **Pragmatists**. The independents' currents stay named for their seats, because they are members and not factions. `content/parties.js` holds the names; the ids did not change.
 
 Composition by tier: 48 district, 25 list, 9 functional. The twenty-five list members hold no constituency and no independent base — they whip reliably and will not survive a leadership change that reorders the list. Nine members are revenants returned after losing a district.
 
@@ -1924,7 +1926,7 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
 - **Mandelina Trottier MP** — Deputy Prime Minister; Leader, New Progressive
   Party. The junior coalition partner's price.
 - **President Jaco van Ryneveld** — independent. Elected 2077, direct, 51.4%. Relations with the government: cold. Has privately indicated a threshold bill carried on a contested dual majority would be referred for constitutional review.
-- **Dan Czarnecki MP** — Ashfield. Party of Socialists and Democrats. Leads the eleven-member Czarnecki group, loyalty 12. A ballot needs twelve signatures.
+- **Dan Czarnecki MP** — Ashfield. Party of Socialists and Democrats. Leads the Hard Left, eleven members, loyalty 12. A ballot needs twelve signatures.
 - **Suravaram Vidyasagar MP** — Minister for Life Support. Party of Socialists and Democrats, member for
   Fore River Yards. Career maintenance union. The only member of Cabinet the Guild
   Bench will take a meeting with.
@@ -1940,10 +1942,10 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
 - **Imre Whitlam MP** — Leader of the House. Party of Socialists and Democrats. Owns the order paper.
 - **Sunniva Brakk MP** — Minister for Home Affairs and Contingencies. Party of
   Socialists and Democrats. The civilian answer to the engineering authority.
-- **Ferran Dulac MP** — Minister for Defence. Party of Socialists and Democrats. The maintenance
-  bloc's man, brought back in.
-- **Kosta Piastri MP** — Minister for Education. Party of Socialists and Democrats. Deck
-  cooperativist, and photographs well.
+- **Ferran Dulac MP** — Minister for Defence. Party of Socialists and Democrats. The Trades
+  Left's man, brought back in.
+- **Kosta Piastri MP** — Minister for Education. Party of Socialists and Democrats. Station
+  Left, and photographs well.
 - **Kazuya Tanako MP** — Chair, Life Support panel. Functional tier, Alliance of
   Business and Government. Position unchanged since 2072.
 - **Adam King MP** — independent, member for Colonnade. Backbench since the

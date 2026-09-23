@@ -66,7 +66,7 @@ const CABINET = [
   { id:"defence",                 name:"Defence",                   title:"Minister for Defence",
     holder:"dulac", party:"cu",
     brief:["friction"],
-    note:"The Commonwealth keeps no fleet and no army — a shooting war inside a pressure vessel kills everyone in the room, which is the same arithmetic that made underwriting the dominant institution. What the Ministry actually holds is the tether, the traffic and the launch windows, because a chokepoint is the only thing a habitat can defend or lose. The maintenance bloc's man, brought back in to a department where being brought back in is the whole of the appointment." },
+    note:"The Commonwealth keeps no fleet and no army — a shooting war inside a pressure vessel kills everyone in the room, which is the same arithmetic that made underwriting the dominant institution. What the Ministry actually holds is the tether, the traffic and the launch windows, because a chokepoint is the only thing a habitat can defend or lose. The Trades Left's man, brought back in to a department where being brought back in is the whole of the appointment." },
   { id:"law_charter",             name:"Law and the Charter",       title:"Minister for Law and the Charter",
     holder:"fenwick", party:"cu",
     brief:["shed_order_authority"],

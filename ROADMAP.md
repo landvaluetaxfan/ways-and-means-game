@@ -111,7 +111,7 @@ Build:
 Acceptance:
 - `test.js` asserts a ballot cannot fire below 9 signatures
 - `test.js` asserts a ballot with every current at full loyalty is survivable,
-  and one with the maintenance bloc below 20 is not
+  and one with the Trades Left below 20 is not
 - The Record shows the ballot as an event, not a modal
 
 ---

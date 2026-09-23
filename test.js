@@ -994,7 +994,7 @@ console.log("\nCURRENTS IN A DIVISION:");
 
   /* THE CASE THE WHOLE CHANGE EXISTS FOR. The Party of Socialists and
      Democrats has NO position on closure; two of its currents do. The
-     deck cooperativists are the MORE loyal of this pair and the LESS
+     Station Left is the MORE loyal of this pair and the LESS
      willing, which is only possible if the current's own axes are read.
      If this ever fails because loyalty alone decides turnout, the
      factions have gone back to being decoration. */

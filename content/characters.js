@@ -75,7 +75,7 @@ const CHARACTERS = [
     note:"The coalition partner's price, now in the portfolio the threshold bill is really about." },
   { id:"piastri", name:"Kosta Piastri MP", role:"Minister for Education",
     party:"cu", current:"cu_deck", category:"biological", seat:"Kiln End—Cordage", relationship:61,
-    note:"Deck cooperativist, and the only minister who was regularly photographed working. Back in at Education, which nobody has yet told him is the licensing question." },
+    note:"Station Left, and the only minister who was regularly photographed working. Back in at Education, which nobody has yet told him is the licensing question." },
   { id:"lee_kuan_yew", name:"Alexandria Lee Kuan Yew MP", role:"Minister for Volume and Housing",
     party:"cu", current:"cu_loyalists", category:"biological", status:["instance"], seat:"Hollowmere", relationship:52, office:"minister",
     note:"The defining domestic brief, and the one nobody wants." },
@@ -173,7 +173,7 @@ const CHARACTERS = [
   /* ---- the expanded front benches ---- */
   { id:"dulac", name:"Ferran Dulac MP", role:"Minister for Defence",
     party:"cu", current:"cu_maintenance", category:"biological", seat:"The Beds", relationship:53,
-    note:"The maintenance bloc's man, and no longer the minister who owns the bill. Defence commands nothing that shoots, which is understood by everyone including him." },
+    note:"The Trades Left's man, and no longer the minister who owns the bill. Defence commands nothing that shoots, which is understood by everyone including him." },
   { id:"ivarsen", name:"Marit Ivarsen MP", role:"Minister for Trade and the Anchors",
     party:"psa", category:"emulation", seat:"Amphitheatre", relationship:50, office:"minister",
     note:"Owns the trade balance, compute exports and the anchor concessions on foreign soil." },
@@ -235,7 +235,7 @@ const CHARACTERS = [
          "Reserve powers: dissolution, formation, referral, appointments." },
 
   /* ---- the faction leader ---- */
-  { id:"halloran", portrait:"halloran.png", name:"Dan Czarnecki MP", role:"Leader, Czarnecki group",
+  { id:"halloran", portrait:"halloran.png", name:"Dan Czarnecki MP", role:"Leader, Hard Left",
     party:"cu", current:"cu_halloran", category:"biological", seat:"Tier Four", relationship:12,
     note:"Has the signatures for a leadership ballot if he finds nine more." },
 
