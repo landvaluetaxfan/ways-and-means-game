@@ -260,7 +260,8 @@ const UI = (function () {
     Focus.region("party-table", {
       rows: "tr[data-party]",
       key: tr => tr.dataset.party,
-      fallback: () => ((C.parties || [])[0] || {}).id,
+      /* the first partner, never your own party, which the tab does not open */
+      fallback: () => (defaultParty() || {}).id,
       activate: () => drawParties()
     });
     Focus.region("orbit-table", {
@@ -1316,22 +1317,56 @@ const UI = (function () {
       }));
   }
 
-  /* ---------- the parties ----------
-     A PARTY IS NOT A COLOUR. Twelve of them exist in content and the only
-     place any of it was legible was a tint in the seating plan and a row in
-     the coalition table — so the government's own currents lived on the
-     Government tab, the opposition's nowhere at all, and who actually sits
-     for a party could not be asked.
+  /* ---------- the Party tab: interparty affairs ----------
+     THE GOVERNMENT'S DEALINGS WITH THE OTHER PARTIES, AND NOTHING ELSE.
+     The author, 23 Sep: the tab "was built on false assumptions that it was
+     supposed to be for all parties. It should be entirely focused on
+     interparty affairs." It was a directory — pick any of the twelve and
+     read its leader, its seats, its axes, its currents, its organisation
+     and every member — which is reference, and the Concordance is the
+     reference work. The directory went to the party's Concordance article
+     (members, organisation, branches, currents) and the currents to the
+     Chamber's composition table, where they are counted.
 
-     Everything here is derived. Seats come from Engine, which counts the
-     live roll rather than the frozen numbers in content (a by-election has
-     to show up); offices come from the cabinet, the way js/encyclopedia.js
-     already derives them, so a reshuffle reaches this screen without anybody
-     editing it. Nothing is stored. */
+     What stays is what a coalition manager keeps: who is in the
+     arrangement and on what terms, what each partner is owed, what it
+     wants from you, what you have promised it, where it will not follow
+     you, and whom it would rather be with. Your own party is on the roster
+     because its seats are the government's, and is not a subject here:
+     your own bench is managed with loyalty, on the Chamber tab, and not by
+     dealing. Everything is derived; nothing is stored. */
+  const REL = {
+    gov: { head: "In government",
+           note: "movable on ordinary business, at the ledger's price",
+           say: "A partner. Their bench can be moved on ordinary business, and " +
+                "the ledger is what it costs." },
+    cs:  { head: "Confidence and supply",
+           note: "held on confidence and supply; free on everything else",
+           say: "Not a partner. They have undertaken to carry confidence and " +
+                "supply and are free on everything else, so there is nothing to " +
+                "whip on ordinary business at any price." },
+    opp: { head: "Outside the government",
+           note: "cannot be whipped \u2014 persuasion, not the ledger",
+           say: "No arrangement. Their bench cannot be whipped \u2014 what moves " +
+                "it is the measure itself, or something offered outside this " +
+                "ledger." }
+  };
+  function relOf(id) {
+    return st.coalition.includes(id) ? "gov"
+         : st.confidenceSupply.includes(id) ? "cs" : "opp";
+  }
+
+  /* The other party the page is about. Never your own: the roster shows it
+     and does not open it. */
+  function defaultParty() {
+    const others = (C.parties || []).filter(p => p.id !== st.playerParty);
+    return others.find(p => relOf(p.id) === "gov") ||
+           others.find(p => relOf(p.id) === "cs") || others[0] || null;
+  }
   function partySel() {
-    const list = C.parties || [];
     const want = Focus.selected("party-table");
-    return list.find(p => p.id === want) || list[0] || null;
+    return (C.parties || []).find(p => p.id === want && p.id !== st.playerParty) ||
+           defaultParty();
   }
 
   /* The office a member holds, from the cabinet and the party leaderships —
@@ -1345,78 +1380,67 @@ const UI = (function () {
     return (ch && ch.role) || "";
   }
 
+  const bareName = n => String(n || "").replace(/^(Rt\. Hon\.|Hon\.)\s*/, "").replace(/\s+MP$/, "");
+
   function drawParties() {
     const tbl = $("#party-table"); if (!tbl) return;
     const list = C.parties || [];
     const sel = partySel();
     const count = $("#party-count");
-    if (count) count.textContent = list.length + " in the House";
+    if (count) count.textContent = (list.length - 1) + " others in the House";
 
-    /* GROUPED BY THEIR RELATION TO THE GOVERNMENT, not listed flat.
-
-       The author's note: this tab was originally meant to be "party" — a
-       place to manage INTERPARTY AFFAIRS — and a flat alphabetical twelve
-       made it a browser instead. The engine has always known the three
-       relations and priced them differently: `whippable()` will move a
-       coalition bench on ordinary business, moves a confidence-and-supply
-       bench on supply and confidence only, and answers anyone else with
-       "outside the coalition; this is lobbying, not whipping". That
-       distinction is the subject of the tab, so the list says it first.
-
-       The counts in each heading are seats, not parties: what a reader wants
-       from this column is the arithmetic of their own support. */
-    const inGov = st.coalition.slice();
-    const inCS  = st.confidenceSupply.filter(id => !inGov.includes(id));
-    const relOf = id => inGov.includes(id) ? "gov" : inCS.includes(id) ? "cs" : "opp";
-    const GROUPS = [
-      { k: "gov", head: "In government",
-        note: "movable on ordinary business, at the ledger's price" },
-      { k: "cs",  head: "Confidence and supply",
-        note: "held on confidence and supply; free on everything else" },
-      { k: "opp", head: "Outside the government",
-        note: "cannot be whipped \u2014 persuasion, not the ledger" }
-    ];
+    /* THE ARRANGEMENT, grouped by relation. The engine has always priced the
+       three relations differently: `whippable()` moves a coalition bench on
+       ordinary business, a confidence-and-supply bench on supply and
+       confidence only, and answers anyone else with "outside the coalition;
+       this is lobbying, not whipping". The counts in each heading are seats,
+       because what a reader wants from this column is the arithmetic of
+       their own support. */
     const seatsIn = k => list.filter(p => relOf(p.id) === k)
       .reduce((n, p) => n + Engine.partyTotal(st, p.id), 0);
+    const conf = Engine.confidence(st), maj = Engine.majority(st);
 
     tbl.innerHTML = `<thead><tr><th></th><th>Party</th><th class="n">Seats</th>` +
       `<th class="n" data-tip="loyalty">Loy</th>` +
-      /* THE KEYED TIP, not a second copy of its words. js/tips.js already
-         explains `ledger` — "positive means they owe you, negative means you
-         owe them, nothing here decays" — and an inline body here said the
-         same thing in different words, which is two explanations that can
-         drift apart. It also left the key anchored to nothing once the
-         Government tab's ledger table went, which uxtest catches. */
-      `<th class="n" data-tip="ledger">Cr</th></tr></thead><tbody>` +
-      GROUPS.map(g => {
-        const rows = list.filter(p => relOf(p.id) === g.k);
+      `<th class="n" data-tip="ledger">Cr</th>` +
+      /* WHAT HAPPENS IF THEY GO, as a column. The margin is one, so it is
+         the same answer for most partners and that is the point: the
+         Congregational Democratic Alliance's eighteen and the Independents'
+         six are equally fatal, which no seat count says. */
+      `<th data-tip-title="If they go" data-tip-body="For a party supporting ` +
+      `the government, whether it survives their walking out. For a party ` +
+      `outside it, whether their joining would give it a majority it lacks.">` +
+      `If they go</th></tr></thead><tbody>` +
+      ["gov", "cs", "opp"].map(k => {
+        const rows = list.filter(p => relOf(p.id) === k);
         if (!rows.length) return "";
-        /* The GOV and C&S flags used to be drawn per row on the Chamber's
-           roster; the grouping says the same thing once, so the headings
-           take the explanations those flags carried. */
-        const relTip = g.k === "gov" ? ' data-tip="gov"'
-                     : g.k === "cs" ? ' data-tip="cs"' : "";
-        return `<tr class="prel"><td colspan="5">` +
-          `<b${relTip}>${g.head}</b> <em>${seatsIn(g.k)} seats \u00b7 ${g.note}</em></td></tr>` +
+        const relTip = k === "gov" ? ' data-tip="gov"' : k === "cs" ? ' data-tip="cs"' : "";
+        return `<tr class="prel"><td colspan="6">` +
+          `<b${relTip}>${REL[k].head}</b> <em>${seatsIn(k)} seats \u00b7 ${REL[k].note}</em></td></tr>` +
           rows.map(p => {
             const seats = Engine.partyTotal(st, p.id);
             const loy = Engine.loyaltyOf(st, p.id) ?? p.loyalty;
             const cr = st.capital[p.id] || 0;
             const own = p.id === st.playerParty;
-            /* THE LEDGER IS FOR PARTNERS. `whippable()` returns
-               `currency: own ? "loyalty" : "capital"`, so the player's own
-               bench is never bought with credit and an outside party cannot
-               be bought at all. A number in either row would be a number
-               that does nothing. */
-            const crCell = (g.k === "opp" || own) ? "&mdash;"
+            /* THE LEDGER IS FOR PARTNERS. `whippable()` charges the player's
+               own bench in loyalty and cannot move an outside one at all, so
+               a number in either row would be a number that does nothing. */
+            const crCell = (k === "opp" || own) ? "&mdash;"
               : `<span class="${cr < 0 ? "warn" : ""}">${cr > 0 ? "+" + cr : cr}</span>`;
-            return `<tr data-party="${p.id}"${sel && sel.id === p.id ? ' class="sel"' : ""}>` +
+            const go = own ? "&mdash;"
+              : k === "opp"
+                ? (conf >= maj ? "&mdash;" : conf + seats >= maj
+                    ? `<span class="good">a majority</span>` : "still short")
+                : (conf - seats < maj ? `<span class="warn">it falls</span>` : "it holds");
+            return `<tr${own ? ' class="ownrow"' : ` data-party="${p.id}"` +
+                (sel && sel.id === p.id ? ' class="sel"' : "")}>` +
               `<td><i class="pdot" style="background:${p.colour}"></i></td>` +
               `<td><b>${esc(p.short || p.id)}</b> ${esc(p.name)}` +
               (own ? ` <span class="pown">yours</span>` : "") + `</td>` +
               `<td class="n">${seats}</td>` +
               `<td class="n">${loy == null ? "&mdash;" : loy}</td>` +
-              `<td class="n">${crCell}</td></tr>`;
+              `<td class="n">${crCell}</td>` +
+              `<td class="pgo">${go}</td></tr>`;
           }).join("");
       }).join("") + `</tbody>`;
 
@@ -1426,220 +1450,161 @@ const UI = (function () {
       }));
 
     if (!sel) return;
-    const hdr = $("#party-hdr"), sub = $("#party-sub");
-    if (hdr) hdr.textContent = sel.name;
-    if (sub) sub.textContent = (sel.short || "") + " · " + (sel.kind || "");
-
-    /* the detail: who leads it, what it holds, what it believes */
-    const leader = (C.characters || []).find(c => c.id === sel.leader);
-    const pop = Engine.partyPopular(st, sel.id), fun = Engine.partyFunctional(st, sel.id);
-    /* `.filter(k => ax[k])` WAS A BUG THE MOMENT THE AXES BECAME SIGNED:
-       zero is the centre of an axis and a position content took on purpose,
-       and a truthiness test threw it away. Association of Engineers and
-       Systems is economic 0 — neither public nor private, which is the
-       whole of what that party is — and the row vanished. `!= null`. */
-    const ax = sel.axes || {};
-    const axRows = Object.keys(ax).filter(k => ax[k] != null)
-      .map(k => `<div class="prow"><div class="plab">${esc(k)}</div>` +
-                `<div class="pval axpos">${esc(axisAt(k, ax[k]))}</div></div>`).join("");
-    /* WHAT THE RELATIONSHIP CONSISTS OF, above who they are.
-
-       This panel opened on the leader and the seat count — true of a party
-       whether or not you have anything to do with it. On a tab about
-       interparty affairs the first thing wanted is the standing: which of
-       the three relations this is, what they are owed, how far their
-       loyalty has left to fall, and who you would have to talk to. All of
-       it is read off state the engine already keeps; nothing new is
-       stored. */
     const rel = relOf(sel.id);
+    const hdr = $("#party-hdr"), sub = $("#party-sub");
+    if (hdr) hdr.textContent = "With " + (sel.short || sel.name);
+    if (sub) sub.textContent = REL[rel].head.toLowerCase();
+
     const cr = st.capital[sel.id] || 0;
-    /* The player's own party, for the distance readout below. */
     const own = C.partyById[st.playerParty];
     const selLoy = Engine.loyaltyOf(st, sel.id) ?? sel.loyalty;
-    /* WHAT THIS RELATION IS, in the terms the engine prices it in.
-       Four cases, not three: the player's own bench is inside the coalition
-       but is the one whipped with party loyalty rather than the ledger, and
-       calling it "a partner" was wrong in the way that matters. */
-    let RELSAY;
-    if (sel.id === st.playerParty) {
-      RELSAY = ["Your own party",
-        "Your own bench, and the only one moved with party loyalty rather than " +
-        "the ledger. What you spend here is what a leadership challenge is " +
-        "counted in."];
-    } else if (rel === "gov") {
-      RELSAY = ["In government",
-        "A partner. Their bench can be moved on ordinary business, and the " +
-        "ledger is what it costs."];
-    } else if (rel === "cs") {
-      RELSAY = ["Confidence and supply",
-        "Not a partner. They have undertaken to carry confidence and supply and " +
-        "are free on everything else, so there is nothing to whip on ordinary " +
-        "business at any price."];
-    } else {
-      RELSAY = ["Outside the government",
-        "No arrangement. Their bench cannot be whipped \u2014 what moves it is the " +
-        "measure itself, or something offered outside this ledger."];
-    }
-
+    const leader = (C.characters || []).find(c => c.id === sel.leader);
     const leaderRel = leader && st.characters[leader.id]
       ? st.characters[leader.id].relationship : null;
-    const standing =
-      `<div class="rulehead">Standing <em>${RELSAY[0]}</em></div>` +
-      `<div class="note">${RELSAY[1]}</div>` +
-      `<div class="prow"><div class="plab">Loyalty</div><div class="pval` +
-        `${selLoy != null && selLoy < 35 ? " warn" : ""}">${selLoy == null ? "\u2014" : selLoy}` +
-        `${selLoy != null && selLoy < 35 ? " \u00b7 thin" : ""}</div></div>` +
-      /* Same reason as the column: no ledger row where there is no ledger.
-         Outside parties have no arrangement and the player's own bench is
-         charged in loyalty, which is the row above. */
-      (rel === "opp" || sel.id === st.playerParty ? "" :
-        `<div class="prow"><div class="plab">The ledger</div><div class="pval` +
-        `${cr < 0 ? " warn" : ""}">${cr > 0 ? "+" + cr + " owed to them" :
-           cr < 0 ? cr + " \u00b7 overdrawn" : "nothing either way"}</div></div>`) +
-      /* WHAT HAPPENS IF THEY GO, which is the interparty fact this tab was
-         missing. The margin is one, so the answer is the same for every
-         partner and that is the point: the Congregational Democratic
-         Alliance's eighteen and the Independents' six are equally fatal, and
-         a reader who has only seen the seat counts would not guess it. For a
-         party outside the government the same arithmetic runs the other way
-         — what they would add, and whether it would matter. */
-      (() => {
-        const seats = Engine.partyTotal(st, sel.id);
-        const conf = Engine.confidence(st), maj = Engine.majority(st);
-        if (rel === "opp") {
-          const after = conf + seats;
-          return `<div class="prow"><div class="plab">If they joined` +
-            `<em>${seats} seat${seats === 1 ? "" : "s"}</em></div>` +
-            `<div class="pval">${after} of ${Engine.chamberTotal(st)}` +
-            `${conf >= maj ? ", a margin of " + (after - maj) : after >= maj
-              ? ", and the government holds" : ", still short"}</div></div>`;
-        }
-        if (sel.id === st.playerParty) return "";
-        const after = conf - seats;
-        const falls = after < maj;
-        return `<div class="prow"><div class="plab">If they walked` +
-          `<em>${seats} seat${seats === 1 ? "" : "s"} out</em></div>` +
-          `<div class="pval${falls ? " warn" : ""}">${after} against ${maj}` +
-          `${falls ? " \u00b7 the government falls" : " \u00b7 it holds"}</div></div>`;
-      })() +
-      /* THE LEADER IS NOT REPEATED HERE. The Leader section follows
-         immediately below with the name and the office; a row saying it
-         again two lines up is the restated idea PROSE_REGISTER.md names.
-         What this block adds is the NUMBER — where you stand with them —
-         and only where that is somebody other than yourself. */
-      /* HOW FAR APART YOU ACTUALLY ARE (bible §8.1).
+    const seats = Engine.partyTotal(st, sel.id);
+    const prow = (lab, sub0, val, cls) =>
+      `<div class="prow"><div class="plab">${lab}${sub0 ? `<em>${sub0}</em>` : ""}</div>` +
+      `<div class="pval${cls ? " " + cls : ""}">${val}</div></div>`;
 
-         This tab could say a partner was in the coalition, what it was owed
-         and that its loyalty was thin. It could not say WHY — the axes were
-         categorical strings and "restrictionist" against "restrictionist"
-         was a match or it was not, so there was no distance to report.
+    /* 1. THE TERMS: which relation this is, in the engine's own prices,
+       what the ledger says, how far their discipline has left to fall, and
+       who you would be talking to. */
+    const terms =
+      `<div class="rulehead">The terms <em>${REL[rel].head}</em></div>` +
+      `<div class="note">${REL[rel].say}</div>` +
+      (leader
+        ? prow("Their leader", esc(officeOfMember(leader.id)), esc(bareName(leader.name))) +
+          (leaderRel != null
+            ? prow("Where you stand with " + esc(bareName(leader.name).split(" ").pop()), "",
+                   String(leaderRel), leaderRel < 30 ? "warn" : "")
+            : "")
+        : prow("Their leader", "", "none: the independents do not choose one")) +
+      prow("Their discipline", "", `${selLoy == null ? "\u2014" : selLoy}` +
+           `${selLoy != null && selLoy < 35 ? " \u00b7 thin" : ""}`,
+           selLoy != null && selLoy < 35 ? "warn" : "") +
+      (rel === "opp" ? "" :
+        prow("The ledger", "", cr > 0 ? "+" + cr + " \u00b7 they owe you"
+                                 : cr < 0 ? cr + " \u00b7 overdrawn" : "nothing either way",
+             cr < 0 ? "warn" : "")) +
+      (rel === "opp"
+        ? prow("If they joined", `${seats} seat${seats === 1 ? "" : "s"}`,
+               `${conf + seats} of ${Engine.chamberTotal(st)}` +
+               (conf >= maj ? ", a margin of " + (conf + seats - maj)
+                : conf + seats >= maj ? ", and the government holds" : ", still short"))
+        : prow("If they walked", `${seats} seat${seats === 1 ? "" : "s"} out`,
+               `${conf - seats} against ${maj}` +
+               (conf - seats < maj ? " \u00b7 the government falls" : " \u00b7 it holds"),
+               conf - seats < maj ? "warn" : ""));
 
-         There is now, and it is the engine's own cosine rather than a second
-         scoring: the same number `inferStance` uses to decide how a bench
-         votes. So the Congregational Democratic Alliance at loyalty 23 stops
-         being a mystery — it sits 0.55 from you on personhood, which is the
-         argument this parliament is about, and no amount of order-paper time
-         will buy that. */
-      (sel.id !== st.playerParty && own && Object.keys(sel.axes || {}).length
-        ? (() => {
-            const a = Engine.axisAgreement(sel.axes, own.axes);
-            const say = a >= 0.6 ? "close to you"
-                      : a >= 0.25 ? "broadly with you"
-                      : a > -0.25 ? "neither with you nor against"
-                      : a > -0.6 ? "some way from you"
-                      : "at the other end of the argument";
-            const worst = axisPairs(sel.axes, own.axes)
-              .sort((x, y) => x.agree - y.agree)[0];
-            /* AND WHAT THEY WILL NOT CARRY, which is the more useful half.
+    /* 2. WHAT THEY WANT FROM YOU. A party's own bills are the trade this
+       parliament runs on: every stage the government gives one order-paper
+       time is credit on their ledger (Engine.grantSlot), and a partner who
+       sees its measure stall is a partner whose loyalty falls. Each row
+       opens the bill where it is carried. */
+    const theirs = (C.bills || []).filter(b => b.owner === sel.id).map(b => ({ b, bs: st.bills[b.id] }))
+      .filter(x => x.bs);
+    const wants = `<div class="rulehead">What they want <em>${theirs.length
+        ? theirs.length + " measure" + (theirs.length === 1 ? "" : "s") + " of their own" : "nothing on the order paper"}</em></div>` +
+      (theirs.length ? theirs.map(({ b, bs }) => {
+        const state = billState(bs);
+        const worth = rel === "opp" ? "" : " \u00b7 +" + (b.priority ? 3 : 2) + " a stage you grant it";
+        /* A live measure opens where time is given to it, which is the
+           act this row is about; a finished one opens its own page. */
+        const done = state === "dead" || state === "passed";
+        return `<button class="dk goto" data-goto="${done ? "cham" : "gov"}"` +
+          ` data-open="${done ? "bill" : "grant"}:${esc(b.id)}">` +
+          `<b>${esc(b.title)}</b><i>${esc(bs.stage.replace(/_/g, " "))}` +
+          `${done ? "" : worth}</i></button>`;
+      }).join("")
+      : `<div class="note">${esc(sel.short || sel.name)} has no measure of its own before ` +
+        `the House, so there is nothing of theirs to give time to.</div>`);
 
-               Measuring distance from the player's own party was the first
-               version and it answered the wrong question: the Congregational
-               Democratic Alliance scores 0.78 against the governing party —
-               both left, both restrictionist, both mildly closurist — so the
-               readout said "close to you" about the partner whose loyalty is
-               23 and whose ledger is overdrawn. Their quarrel is not with the
-               party, it is with the BILL: they sit at -0.9 on personhood and
-               the divergence bill sits at +0.9.
+    /* 3. WHAT YOU HAVE PROMISED THEM. An undertaking is owed to a person;
+       the ones owed to this party's members are what this relationship
+       carries forward, and a broken one is a broken promise to all of them. */
+    const partyOf = id => ((C.characterById || {})[id] || {}).party;
+    const owed = (st.undertakings || []).filter(u => partyOf(u.owed_to) === sel.id);
+    const open = owed.filter(u => u.state === "open");
+    const promises = `<div class="rulehead">What you have promised <em>${open.length
+        ? open.length + " outstanding" : owed.length ? "nothing outstanding" : "nothing"}</em></div>` +
+      (owed.length ? owed.map(u => {
+        if (u.state !== "open")
+          return `<div class="prow"><div class="plab">${esc(u.text)}</div>` +
+            `<div class="pval${u.state === "broken" ? " warn" : ""}">${esc(u.state)}</div></div>`;
+        const w0 = Engine.undertakingWhere(C, u);
+        const due = u.by == null ? "before the House rises"
+                  : u.by - st.sitting <= 0 ? "due this sitting" : "by sitting " + u.by;
+        return `<button class="dk owed goto${u.by != null && u.by - st.sitting <= 1 ? " late" : ""}"` +
+          ` data-goto="${w0.tab}" data-open="${esc(w0.focus || "")}"><b>${esc(u.text)}</b>` +
+          `<i>to ${esc(bareName(((C.characterById || {})[u.owed_to] || {}).name))} \u00b7 ` +
+          `${esc(due)} \u00b7 ${esc(w0.how)}</i></button>`;
+      }).join("")
+      : `<div class="note">The government has given ${esc(sel.short || sel.name)} no undertaking.</div>`);
 
-               So the panel also names the measure now before the House that
-               this bench is furthest from. That is the thing a whip's office
-               would tell you, and it is actionable: it is the vote you will
-               have to buy, or move, or lose. */
-            const live = (C.bills || []).filter(b => {
-              const sb = st.bills[b.id];
-              return sb && !sb.dead && sb.stage && sb.stage !== "drafting" &&
-                     b.axes && Object.keys(b.axes).length;
-            }).map(b => ({ b: b, a: Engine.axisAgreement(sel.axes, b.axes) }))
-              .sort((x, y) => x.a - y.a)[0];
-            const liveRow = live && live.a < -0.15
-              ? `<div class="prow"><div class="plab">Will not carry` +
-                `<em>${esc(live.b.title)}</em></div>` +
-                `<div class="pval warn">${live.a <= -0.6 ? "flatly" : "against"}</div></div>`
-              : live && live.a > 0.25
-              ? `<div class="prow"><div class="plab">With you on` +
-                `<em>${esc(live.b.title)}</em></div>` +
-                `<div class="pval">${live.a >= 0.6 ? "firmly" : "broadly"}</div></div>`
-              : "";
-            return `<div class="prow"><div class="plab">Distance from you` +
-              (worst && worst.agree < -0.05
-                ? `<em>furthest apart on ${esc(worst.axis)}</em>` : "") +
-              `</div><div class="pval${a < -0.25 ? " warn" : ""}">${say}</div></div>` +
-              liveRow;
-          })()
-        : "") +
-      (leaderRel != null && sel.id !== st.playerParty
-        ? `<div class="prow"><div class="plab">Where you stand with ` +
-          `${esc((leader.name || "").replace(/^(Rt\. Hon\.|Hon\.)\s*/, ""))}</div>` +
-          `<div class="pval${leaderRel < 30 ? " warn" : ""}">${leaderRel}</div></div>` : "");
+    /* 4. WHERE THEY PART FROM YOU. Distance from your own party answers the
+       wrong question on its own: the Congregational Democratic Alliance
+       scores close to the governing party — both left, both restrictionist
+       — and its quarrel is with the BILL. So every measure before the House
+       is scored against them, by the engine's own cosine (the number
+       `inferStance` votes on), and the ones they will not carry are the
+       votes you will have to buy, move, or lose. */
+    let parts = "";
+    if (own && Object.keys(sel.axes || {}).length) {
+      const a = Engine.axisAgreement(sel.axes, own.axes);
+      const say = a >= 0.6 ? "close to you" : a >= 0.25 ? "broadly with you"
+                : a > -0.25 ? "neither with you nor against" : a > -0.6 ? "some way from you"
+                : "at the other end of the argument";
+      const worst = axisPairs(sel.axes, own.axes).sort((x, y) => x.agree - y.agree)[0];
+      const live = (C.bills || []).filter(b => {
+        const sb = st.bills[b.id];
+        return sb && !sb.dead && sb.stage && sb.stage !== "drafting" &&
+               billState(sb) === "live" && b.axes && Object.keys(b.axes).length;
+      }).map(b => ({ b: b, a: Engine.axisAgreement(sel.axes, b.axes) }))
+        .filter(x => Math.abs(x.a) > 0.15).sort((x, y) => x.a - y.a);
+      parts = `<div class="rulehead">Where they part from you</div>` +
+        prow("Distance from you", worst && worst.agree < -0.05
+               ? "furthest apart on " + esc(worst.axis) : "", say, a < -0.25 ? "warn" : "") +
+        live.map(x => x.a < 0
+          ? prow("Will not carry", esc(x.b.title), x.a <= -0.6 ? "flatly" : "against", "warn")
+          : prow("With you on", esc(x.b.title), x.a >= 0.6 ? "firmly" : "broadly")).join("");
+    } else {
+      parts = `<div class="rulehead">Where they part from you</div>` +
+        `<div class="note">${esc(sel.name)} declares no party line, so there is ` +
+        `nothing to part from. Each member votes on their own position, and the ` +
+        `Chamber's composition table counts them one by one.</div>`;
+    }
 
     const det = $("#party-detail");
-    if (det) det.innerHTML = standing +
-      (leader ? `<div class="rulehead">Leader</div><div class="note"><b>${esc(leader.name)}</b>` +
-        ` — ${esc(officeOfMember(leader.id))}${leader.seat ? " · sits for " + esc(leader.seat) : ""}.</div>`
-        : `<div class="rulehead">Leader</div><div class="note">None. The independents are not a party and do not choose one.</div>`) +
-      `<div class="rulehead">Seats <em>${pop + fun}</em></div>` +
-      `<div class="note">${pop} popular · ${fun} functional. ` +
-      `Content declares ${(sel.seats && (sel.seats.district + sel.seats.list + sel.seats.functional)) || 0} at the opening; ` +
-      `this is the live roll.</div>` +
-      (axRows ? `<div class="rulehead">Where it stands</div>${axRows}` : "") +
-      (sel.note ? `<div class="rulehead">In a sentence</div><div class="note">${esc(sel.note)}</div>` : "");
+    if (det) {
+      det.innerHTML = terms + wants + promises + parts +
+        `<div class="note pcx">Who they are \u2014 their leader, members and ` +
+        `organisation \u2014 is in the <a class="cx-link" tabindex="0" data-go="${esc(sel.id)}">` +
+        `Concordance</a>.</div>`;
+      det.querySelectorAll("[data-goto]").forEach(b0 =>
+        b0.addEventListener("click", () => openTarget(b0)));
+    }
 
-    /* WHO THEY VOTE WITH — the interparty panel, and the one thing on this
-       tab whose subject is not a single party.
-
-       The engine has been able to score any two parties against each other
-       since the axes became signed, and nothing read it: agreement was only
-       ever computed party-against-BILL and party-against-YOU. The full
-       twelve-by-twelve is the interparty picture, and some of it is
-       surprising in a way a seat count never shows — the New Progressive
-       Party and the Uplift Alliance agree at 0.96 and one of them is outside
-       the government; the Association of Engineers and the Alliance of
-       Business agree at 0.95 and are a bloc in everything but name; Home
-       Rule and the Single Tax Party are at -0.98, which is as opposed as two
-       parties in this House get.
-
-       Engine.axisAgreement, not a second scoring, for the same reason the
-       distance readout uses it: a number here that disagreed with a division
-       would be unfalsifiable. */
+    /* WHO THEY VOTE WITH. The engine can score any two parties against each
+       other, and the full picture is the interparty one: which benches
+       would carry a measure with this one and which never will. Some of it
+       is surprising in a way a seat count never shows. Engine.axisAgreement,
+       not a second scoring, so a number here cannot disagree with a
+       division. */
     const withTbl = $("#party-with");
     if (withTbl) {
       const mine = sel.axes || {};
-      const rows = (C.parties || [])
+      const rows = list
         .filter(p => p.id !== sel.id && Object.keys(p.axes || {}).length)
         .map(p => ({ p: p, a: Engine.axisAgreement(mine, p.axes) }))
         .sort((x, y) => y.a - x.a);
-      const hdr = $("#party-with-hdr");
-      if (hdr) hdr.textContent = Object.keys(mine).length
-        ? rows.length + " others, by agreement with " + (sel.short || sel.id)
+      const whdr = $("#party-with-hdr");
+      if (whdr) whdr.textContent = Object.keys(mine).length
+        ? "by agreement with " + (sel.short || sel.id)
         : (sel.short || sel.id) + " declares no position";
       if (!Object.keys(mine).length) {
-        /* The Independents are not a party and hold no position, so there is
-           nothing to rank them against — which is the entry that says the
-           most, and is said rather than left as an empty table. */
         withTbl.innerHTML = `<tbody><tr><td class="note">` +
           `The Independents declare no axes, so there is no party line to ` +
-          `compare. Each of the six votes on their own, and the Currents ` +
-          `panel below is where they are.</td></tr></tbody>`;
+          `compare. Each of the six votes on their own.</td></tr></tbody>`;
       } else {
         const say = a => a >= 0.7 ? "with them" : a >= 0.3 ? "broadly with"
                       : a > -0.3 ? "neither" : a > -0.7 ? "against" : "opposed";
@@ -1649,10 +1614,12 @@ const UI = (function () {
           rows.map(r => {
             const g = relOf(r.p.id);
             const cls = r.a >= 0.7 ? "good" : r.a <= -0.7 ? "warn" : "";
-            return `<tr data-party="${r.p.id}">` +
+            const mineRow = r.p.id === st.playerParty;
+            return `<tr${mineRow ? "" : ` data-party="${r.p.id}"`}>` +
               `<td><i class="pdot" style="background:${r.p.colour}"></i></td>` +
               `<td><b>${esc(r.p.short || r.p.id)}</b>` +
-              (g === "gov" ? ` <span class="flag" data-tip="gov">GOV</span>`
+              (mineRow ? ` <span class="pown">yours</span>`
+               : g === "gov" ? ` <span class="flag" data-tip="gov">GOV</span>`
                : g === "cs" ? ` <span class="flag" data-tip="cs">C&amp;S</span>` : "") +
               `</td><td class="n">${Engine.partyTotal(st, r.p.id)}</td>` +
               `<td class="n ${cls}">${r.a >= 0 ? "+" : ""}${r.a.toFixed(2)}</td>` +
@@ -1664,103 +1631,6 @@ const UI = (function () {
           Focus.seed("party-table", tr.dataset.party); cue("click"); drawParties();
         }));
     }
-
-    /* THE PARTY OUTSIDE PARLIAMENT. Who runs it between elections, what is
-       affiliated to it, and where it exists on the ground. No mechanic hangs
-       off any of it — it is somewhere to look, like the Concordance — and
-       the shapes differ because the parties do: a confederal party has a
-       convenor, a professional association has a registrar, and the
-       independents have nothing, which is the entry that says the most. */
-    const org = (C.partyOrg || {})[sel.id] || {};
-    const orgBox = $("#party-org");
-    if (orgBox) {
-      const offs = org.officers || [], bods = org.bodies || [], brs = org.branches || [];
-      if (!offs.length && !bods.length && !brs.length) {
-        orgBox.innerHTML = `<div class="note">No office, no agent and no branch. ` +
-          `${esc(sel.name)} is a label on a ballot and not an organisation.</div>`;
-      } else {
-        const stName = id => {
-          const s0 = (C.stations || []).find(x => x.id === id);
-          return s0 ? s0.name : id;
-        };
-        orgBox.innerHTML =
-          (offs.length ? `<div class="rulehead">Officers</div>` + offs.map(o =>
-            `<div class="orgrow"><b>${esc(o.name)}</b><span class="orgk">${esc(o.role)}</span>` +
-            `<div class="note">${esc(o.note)}</div></div>`).join("") : "") +
-          (bods.length ? `<div class="rulehead">Affiliated</div>` + bods.map(b =>
-            `<div class="orgrow"><b>${esc(b.name)}</b><span class="orgk">${esc(b.kind)}</span>` +
-            `<div class="note">${esc(b.note)}</div></div>`).join("") : "") +
-          (brs.length
-            ? `<div class="rulehead">On the ground <em>${brs.length}</em></div>` + brs.map(br =>
-                `<div class="orgrow"><b>${esc(stName(br.station))}</b>` +
-                `<div class="note">${esc(br.note)}</div></div>`).join("")
-            : `<div class="rulehead">On the ground</div><div class="note">Nowhere. ` +
-              `${esc(sel.name)} keeps no branch, because it has no members to keep one for.</div>`);
-      }
-    }
-
-    /* the currents */
-    const curs = (C.currents || []).filter(c => c.party === sel.id);
-    const ch = $("#party-cur-hdr");
-    if (ch) ch.textContent = curs.length ? curs.length + " inside the party"
-                                         : "none declared";
-    const ct = $("#party-currents");
-    if (ct) ct.innerHTML = !curs.length
-      ? `<tbody><tr><td class="note">No current is declared for this party. A party ` +
-        `with no internal current is a bloc that votes.</td></tr></tbody>`
-      : `<thead><tr><th>Current</th><th class="n" data-tip="mps">Members</th>` +
-        `<th class="n" data-tip="loyalty">Loyalty</th></tr></thead><tbody>` +
-        curs.map(cu => {
-          const loy = Engine.loyaltyOf(st, cu.id) ?? cu.loyalty;
-          return `<tr><td>${esc(cu.name)}</td><td class="n">${cu.members}</td>` +
-            `<td class="n ${loy < 35 ? "warn" : ""}">${loy}</td></tr>`;
-        }).join("") + `</tbody>`;
-
-    /* THE MEMBERS — ALL OF THEM, not just the cast.
-
-       This listed C.characters filtered by party, which is the fifty-odd
-       people the story names and not the party's bench: the Liberals showed
-       nineteen against forty-seven seats. Engine.benchRoll seats the whole
-       House the way a division does — a named member per district seat, the
-       slate filled from the name pools for the list tier, and the functional
-       register — so this is every member, and the same member carries the
-       same name here as in a roll call. */
-    const bench = (Engine.benchRoll(st, C) || {})[sel.id] || { popular: [], functional: [] };
-    const all = bench.popular.concat(bench.functional);
-    const mh = $("#party-mp-hdr");
-    if (mh) mh.textContent = all.length + " member" + (all.length === 1 ? "" : "s") +
-      (bench.functional.length
-        ? " · " + bench.popular.length + " popular, " + bench.functional.length + " functional"
-        : "");
-
-    /* Payroll first, then the benches, which is the order the House itself
-       is read in — same rank as the roll call's. */
-    const RANK = { district: 1, functional: 2, list: 3 };
-    const GLYPH = { district: "●", list: "□", functional: "▲" };
-    const sorted = all.slice().sort((a, b) =>
-      (a.payroll ? 0 : 1) - (b.payroll ? 0 : 1) ||
-      (RANK[a.tier] || 9) - (RANK[b.tier] || 9) ||
-      String(a.seat || "").localeCompare(String(b.seat || "")) ||
-      String(a.name || "").localeCompare(String(b.name || "")));
-
-    const byName = {};
-    (C.characters || []).forEach(c => { byName[c.name] = c; });
-    const mt = $("#party-mps");
-    if (mt) mt.innerHTML = !sorted.length
-      ? `<tbody><tr><td class="note">This party holds no seat in the present House.</td></tr></tbody>`
-      : `<thead><tr><th class="tg" data-tip-title="Tier" data-tip-body="` +
-        `Round for a district member, square for the list, triangle for a ` +
-        `functional constituency.">&nbsp;</th><th>Member</th><th>Seat</th>` +
-        `<th>Office</th></tr></thead><tbody>` +
-        sorted.map(m => {
-          const ch = byName[m.name];
-          const office = ch ? officeOfMember(ch.id) : "";
-          return `<tr${m.placeholder ? ' class="ph"' : ""}>` +
-            `<td class="tg">${GLYPH[m.tier] || ""}</td>` +
-            `<td>${esc(m.name)}</td>` +
-            `<td>${esc(m.seat || "list")}</td>` +
-            `<td>${esc(office || "Backbench")}</td></tr>`;
-        }).join("") + `</tbody>`;
   }
 
   /* The bands' own words. Content names them; this only capitalises. */
@@ -3129,7 +2999,7 @@ const UI = (function () {
            short numbers — and a composition table is the one place the reader
            wants to know which party, not which three letters. */
         `<td class="pn">${mark(p.id)}${pname(p.id)}` +
-        (mine.length ? `<span class="compcar" aria-hidden="true">${open ? "−" : "+"}</span>` : "") +
+        (mine.length ? `<span class="compcar" data-tip="currents">${open ? "−" : "+"}</span>` : "") +
         `</td>` +
         `<td class="n">${sq.district}</td><td class="n">${sq.list}</td>` +
         `<td class="n">${sq.functional}</td>` +
@@ -4584,6 +4454,15 @@ const UI = (function () {
       }
     } else if (kind === "bill" && typeof Focus !== "undefined") {
       Focus.activate("cham-bills", id);
+    } else if (kind === "grant") {
+      /* where order-paper time is given: the bill's row in the Government
+         tab's order-paper panel, pulsed, the way an instrument's is */
+      const btn = document.querySelector('#gov-slots [data-slot="' + id + '"]');
+      const row = btn && btn.closest("tr");
+      if (row) {
+        if (row.scrollIntoView) row.scrollIntoView({ block: "center" });
+        flash(row);
+      }
     }
   }
 

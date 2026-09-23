@@ -218,9 +218,51 @@ const Concordance = (function () {
     if (currents.length) sections.push({ h: "Currents", body:
       `The party recognises ${currents.length} internal current` +
       (currents.length === 1 ? "" : "s") + ". " +
-      asOf(currents.map(c =>
-        `${c.name} numbers ${st.currents[c.id].members} members at a discipline of ` +
-        `${st.currents[c.id].loyalty}`).join("; ") + ".") });
+      asOf((Engine.currentSeats(st, C, p.id) || []).map(c =>
+        `${c.name} numbers ${c.seats} member${c.seats === 1 ? "" : "s"} at a discipline of ` +
+        `${c.loyalty}`).join("; ") + ".") });
+
+    /* THE PARTY OUTSIDE PARLIAMENT, moved here from the Party tab, which is
+       about the government's dealings with the other parties and not a
+       directory of each (the author, 23 Sep). No mechanic hangs off any of
+       it; it is somewhere to look, and this is where things are looked up. */
+    const org = (C.partyOrg || {})[p.id] || {};
+    const offs = org.officers || [], bods = org.bodies || [], brs = org.branches || [];
+    if (offs.length || bods.length) sections.push({ h: "Organisation", body:
+      offs.map(o => `**${o.name}**, ${o.role.charAt(0).toLowerCase() + o.role.slice(1)}. ${o.note}`)
+        .concat(bods.map(b => `**${b.name}** (${b.kind}, affiliated). ${b.note}`)).join("\n\n") });
+    if (brs.length) sections.push({ h: "Branches", body:
+      `The party keeps ${brs.length} branch${brs.length === 1 ? "" : "es"}.\n\n` +
+      brs.map(br => {
+        const s0 = (C.stations || []).find(x => x.id === br.station);
+        return `**${s0 ? `[[${s0.id}|${s0.name}]]` : br.station}**. ${br.note}`;
+      }).join("\n\n") });
+
+    /* EVERY MEMBER, NOT JUST THE CAST, the way the Party tab listed them:
+       Engine.benchRoll seats the whole House as a division does, so the
+       same member carries the same name here as in a roll call. */
+    const bench = (rollOf() || {})[p.id] || { popular: [], functional: [] };
+    const all = bench.popular.concat(bench.functional);
+    if (all.length) {
+      const RANK = { district: 1, functional: 2, list: 3 };
+      const TIER = { district: "district", list: "list", functional: "functional" };
+      const named = {};
+      (C.characters || []).forEach(c => { named[c.name] = c; });
+      const rows = all.slice().sort((a, b) =>
+        (RANK[a.tier] || 9) - (RANK[b.tier] || 9) ||
+        String(a.seat || "").localeCompare(String(b.seat || "")) ||
+        String(a.name || "").localeCompare(String(b.name || "")))
+        .map(m => {
+          const ch = named[m.name];
+          const off = ch ? mainOffice(officesOf(ch)) : null;
+          return [ch ? `[[person_${ch.id}|${m.name}]]` : m.name,
+                  m.seat || "\u2014", TIER[m.tier] || m.tier || "", off ? off.label : ""];
+        });
+      sections.push({ h: "Members", body:
+        asOf(`the party has ${all.length} member${all.length === 1 ? "" : "s"} in the ` +
+             `House of Delegates.`),
+        table: { head: ["Member", "Seat", "Tier", "Office"], rows: rows } });
+    }
 
     return {
       id: p.id, title: p.name, category: "Parties", generated: true,
@@ -543,7 +585,15 @@ const Concordance = (function () {
 
   let all = [], byId = {};
 
+  /* The whole House seated once per build and not once per party. */
+  let roll = null;
+  function rollOf() {
+    if (!roll && Engine.benchRoll) roll = Engine.benchRoll(st, C);
+    return roll;
+  }
+
   function build() {
+    roll = null;
     const hand = ENCYCLOPEDIA.articles.map(a => Object.assign({ generated: false }, a));
     const handIds = new Set(hand.map(a => a.id));
     const gen = [];
@@ -711,8 +761,17 @@ const Concordance = (function () {
         secs.filter(s => s.h).map((s, i) => `<li><a tabindex="0" data-anchor="cx-s${i}">${s.h}</a></li>`).join("") +
         `</ol></nav>` : "";
 
+    /* A SECTION MAY CARRY A TABLE after its prose, drawn as a wikitable:
+       `table: {head: [...], rows: [[...], ...]}`, every cell through the
+       same link syntax as a paragraph. A party's members are a list of
+       eighty names, which prose cannot carry and a table can. */
+    const table = t => t && t.rows && t.rows.length
+      ? `<table class="cx-wikitable"><thead><tr>${(t.head || []).map(h => `<th>${h}</th>`).join("")}` +
+        `</tr></thead><tbody>${t.rows.map(r => `<tr>${r.map(c => `<td>${links(String(c))}</td>`).join("")}</tr>`).join("")}` +
+        `</tbody></table>` : "";
     const body = secs.map((s, i) =>
-      (s.h ? `<h3 id="cx-s${i}">${s.h}</h3>` : "") + paras(s.body)).join("");
+      (s.h ? `<h3 id="cx-s${i}">${s.h}</h3>` : "") + (s.body ? paras(s.body) : "") +
+      table(s.table)).join("");
 
     const see = (a.see || []).filter(id => byId[id]);
     const seeAlso = see.length

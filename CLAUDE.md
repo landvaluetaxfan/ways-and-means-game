@@ -228,7 +228,7 @@ list over any older sentence here that implies a different one:
 | **Government** | instruments · the document · what it can do · the ledger and cabinet, with the Tribunal and the Presidency folded at the edge |
 | **Chamber** | order-paper time, the order paper, the House, the whip, and who is counted |
 | **Economy** | *Refreshed 21 Sep 2026, and the refresh was a MERGE.* Four panels on four subjects and a band: **the account** (a stock and its flows), **what everything is priced in**, **what is made and who makes it**, and — in the bottom band beside the chart — **what the Underwriters say**. The middle panel is three former ones, because `TAX_BASES` and `PRICE_META` in the engine are the SAME FOUR THINGS (volume, thermal, substrate, transit): Scarcity, What sets the prices and Ways and means were three facts about one set of four rows, in two different columns, with a third panel between two steps of one sum — `receipts()` computes each yield AS `rate × price/100 × weight`, and §7.9 says outright that the four prices are the appropriation's. One row each now: price, trend, the clause that sets it, the rate, the yield. `inflation` is that table's footing, not the account's, being a reading of those four and nothing else. §7.10's three readings and `content/labour.js` are one panel for the same reason — `st.economy.participation` and `LABOUR.totals.participation` are one fact — with the eighteen categories folded, since they are reference and not a working readout. The chart takes two columns **at either of two timescales** — the engine's per-sitting curve, or `setup.history`'s annual record 2073–2080, whose last point IS the opening value so the two join. The live window is about fifteen weeks (four sitting days a week), which is the right resolution for a price and far too short to show anything structural; that is what the record is for. **Nothing on the tab scrolls at any of the seven measured shapes** — see the layout note below. |
-| **Party** | *renamed from Parties, and refocused 21 Sep.* The twelve grouped by their relation to the government — in government, confidence and supply, outside — with the per-partner ledger, what each bench can be moved on, ideological distance, the live measure they will not carry, their currents, every member, and the party outside Parliament |
+| **Party** | *interparty affairs and nothing else (the author, 23 Sep: it "was built on false assumptions that it was supposed to be for all parties").* Three columns: **the arrangement** (every other party grouped by relation — in government, confidence and supply, outside — with seats, loyalty, the ledger and whether the government survives their going; your own party is on the roster for the arithmetic and does not open), **one relationship** (the terms, their leader and where you stand with them, what they want from you — their own bills, each opening where time is given to it — what you have promised their members, and where they part from you, measure by measure), and **who they vote with**. Who a party IS went to its Concordance article: members (a wikitable, `section.table`), organisation and branches (`CONTENT.partyOrg`), currents. The currents are counted on the Chamber's composition table. |
 | **Orbit**, **World**, **Record** | unchanged |
 | **Concordance** | *the reference work, and it can only know what the world knows.* Articles are generated from content, which is authored for the WHOLE campaign — so anything staged for later showed up at sitting one. The four bills that open in `drafting` (the Almanac Works (Annexation) Bill among them, which is the act the campaign is about) each had a full page with a division forecast for a measure nobody had laid before the House, and the page contradicted itself saying so: "A measure before the House of Delegates. Stage: drafting." `drafting` is the engine's own word for not introduced, so it is the line: `build()` skips those and the page appears the moment the bill is set down. **The gate belongs on the surface, not in the content** — the content is right, the bill SHOULD be sitting in `drafting` waiting for `f1_dilemma`. Worth re-checking whenever a new reference surface reads a content list whole. |
 
@@ -315,7 +315,8 @@ Three things worth knowing before you touch the engine:
   else that touches it is a content effect spending it.
 - `Engine.benchRoll(st, C)` seats the whole House without a division. It is the
   first half of `rollCall` lifted out; do not write a second way to seat it.
-- `CONTENT.partyOrg` is the party outside Parliament. Officers are deliberately
+- `CONTENT.partyOrg` is the party outside Parliament, printed in the party's
+  Concordance article since 23 Sep. Officers are deliberately
   NOT in `content/characters.js` — they hold no seat — but `namesTaken` reads
   them so the list-tier name generator cannot reuse one.
 
@@ -717,6 +718,14 @@ version of any of them is in the header of the file it names.
   nothing, owes it to Earth now. **Open for the author:** design/13 §8.3
   decided "this setting has no lender" and `reserve_low` still says so,
   while d8ac8a9 built Earth borrowing and content lends through two events.
+- **A STYLE THAT NAMES A PANEL WHICH NO LONGER EXISTS DOES NOTHING,
+  SILENTLY.** The composition table listed a party's currents twice when
+  it was opened with a measure named: the detail that opens with the
+  party, and the division's faction rows, drawn under every party. The
+  second set drew full size because the rule that indents them still named
+  `#breakdown`, the panel they came from before it was merged. One set of
+  rows now, under an opened party only. When a panel is merged or renamed,
+  `grep` the stylesheet for its id.
 - **`characters[].current` is authored now** (23 Sep). It was read by the
   bench roll, the members list, the signature count and the reshuffle, and
   carried by nobody. `test.js` asserts every popular-seat member of a party

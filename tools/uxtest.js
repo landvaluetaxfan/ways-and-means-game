@@ -887,12 +887,13 @@ try {
      dangling.join(", "));
 
   /* AND EVERY EXPLANATION IS REACHABLE. A key nobody anchors is a tip
-     nobody will ever see; it reads as coverage and is not. `prayer` and
-     `repay` are the legitimate exceptions - one exists only while an order
-     is in force, the other only while a lender is owed - so each is proved
+     nobody will ever see; it reads as coverage and is not. `prayer`,
+     `repay` and `mps` are the legitimate exceptions - one exists only while
+     an order is in force, one only while a lender is owed, and one only
+     under a party opened in the composition table - so each is proved
      separately below rather than excused. */
   const anchored = new Set(anchors.map(a => a.getAttribute("data-tip")));
-  const LATER = ["prayer", "repay"];
+  const LATER = ["prayer", "repay", "mps"];
   const orphan = w.eval("Tips.keys()").filter(k => !anchored.has(k) && LATER.indexOf(k) < 0);
   ok("and every explanation is anchored to something", orphan.length === 0,
      orphan.join(", "));
@@ -909,6 +910,11 @@ try {
   ok("and so does repaying a lender, once one is owed",
      !!w.document.querySelector('#econ-account [data-tip="repay"]'));
   w.eval(`var st = UI.state(); st.debt = { owed: {} }; UI.redraw();`);
+  const compRow = w.document.querySelector("#comp-table tr[data-comp]");
+  if (compRow) compRow.click();
+  ok("and so does the size of a current, once a party is opened",
+     !!w.document.querySelector('#comp-table [data-tip="mps"]'));
+  if (compRow) w.document.querySelector("#comp-table tr[data-comp].compopen").click();
 
   /* NO SCREEN SHIPS WITH NOTHING. The Concordance is the deliberate
      exception: it is in-world, on white paper, in a serif, and it is
