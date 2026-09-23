@@ -1300,6 +1300,27 @@ console.log("\nTHE EMERGENCY FACILITY IS REPAYABLE (the author, 23 Sep):");
   if (bad) { console.log("\n" + bad + " FACILITY FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nA SCALAR MOVES BY ONE RULE, WHATEVER MOVES IT (design/34):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  /* Trends, couplings and the idleness drag each clamped to 0..100, and
+     solvency is denominated: one sitting took the reserve to a hundred. */
+  const a = Engine.newGame(CONTENT);
+  a.trends = { solvency: -1000 };
+  const s0 = a.scalars.solvency;
+  Engine.advance(a, CONTENT);
+  ok("a trend on the reserve moves it, it does not cap it at a hundred",
+     a.scalars.solvency > 1000 && a.scalars.solvency < s0 + 2000, s0 + " -> " + a.scalars.solvency);
+  const b = Engine.newGame(CONTENT);
+  b.scalars.friction = 70;
+  const s1 = b.scalars.solvency;
+  Engine.advance(b, CONTENT);
+  ok("and nor does the quarrel's drain", b.scalars.solvency > 1000, s1 + " -> " + b.scalars.solvency);
+  if (bad) { console.log("\n" + bad + " SCALAR FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nEVERY MEMBER HAS A CURRENT (design/34 D3):");
 (function () {
   let bad = 0;

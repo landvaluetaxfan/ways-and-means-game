@@ -3687,6 +3687,31 @@ const Engine = (function () {
      second scalar namespace, so a bare `{move:{solvency:n}}` still reaches
      the same table it always did. */
   const SCALAR_MAX   = { solvency: Infinity };
+
+  /* THE ONE WAY A SCALAR MOVES BY AN AMOUNT. `move`, the trends, the
+     couplings and the idleness drag each wrote their own
+     `clamp(x + d, 0, 100)`, and only `move` had learned that solvency is
+     denominated -- so a trend or a coupling on solvency clamped the reserve
+     to a hundred MW-years in one sitting. Refusing the emergency loan set
+     such a trend, and the debt trap's coupling (friction above 65,
+     solvency -1000 a sitting) did it every sitting: 52,000 became 100
+     (design/34). And a national standing move is a move in every band,
+     wherever it comes from. */
+  function bumpScalar(st, C, k, d) {
+    if (!d) return;
+    st.scalars[k] = clamp((st.scalars[k] || 0) + d, 0,
+      SCALAR_MAX[k] == null ? 100 : SCALAR_MAX[k]);
+    /* A NATIONAL MOVE IS A MOVE IN EVERY BAND. Content written before
+       the bands existed goes on meaning what it meant, and the
+       national figure stays the derived one rather than becoming a
+       second number that can disagree with its own parts. */
+    if (k === "public_standing" && st.standing) {
+      Object.keys(st.standing).forEach(b => {
+        st.standing[b] = clamp(st.standing[b] + d, 0, 100);
+      });
+      syncStanding(st, C);
+    }
+  }
   const TREND_MAX    = { solvency: 10000 };
   const MONEY_SCALE  = { solvency: 1000 };
 
@@ -3724,18 +3749,7 @@ const Engine = (function () {
       const k  = dot < 0 ? key : key.slice(dot + 1);
       switch (ns) {
         case "scalar":
-          st.scalars[k] = clamp((st.scalars[k] || 0) + d, 0,
-            SCALAR_MAX[k] == null ? 100 : SCALAR_MAX[k]);
-          /* A NATIONAL MOVE IS A MOVE IN EVERY BAND. Content written before
-             the bands existed goes on meaning what it meant, and the
-             national figure stays the derived one rather than becoming a
-             second number that can disagree with its own parts. */
-          if (k === "public_standing" && st.standing) {
-            Object.keys(st.standing).forEach(b => {
-              st.standing[b] = clamp(st.standing[b] + d, 0, 100);
-            });
-            syncStanding(st, C);
-          }
+          bumpScalar(st, C, k, d);
           break;
         /* {move:{"standing.low":-8}} — a band, not the country. */
         case "standing":
@@ -4971,7 +4985,7 @@ const Engine = (function () {
     Object.keys(st.trends || {}).forEach(k => {
       const d = st.trends[k];
       if (!d) return;
-      st.scalars[k] = clamp((st.scalars[k] || 0) + d, 0, 100);
+      bumpScalar(st, C, k, d);
     });
 
     /* AND A PRESSURE NOBODY KEEPS UP ABATES.
@@ -5019,9 +5033,7 @@ const Engine = (function () {
       .sort((a, b) => (b.above || 0) - (a.above || 0));
     if (cps.length) {
       const cp = cps[0];
-      Object.keys(cp.drag || {}).forEach(k => {
-        st.scalars[k] = clamp((st.scalars[k] || 0) + cp.drag[k], 0, 100);
-      });
+      Object.keys(cp.drag || {}).forEach(k => bumpScalar(st, C, k, cp.drag[k]));
       const key = "coupling_" + cp.meter + "_" + cp.above;
       if (cp.mark && !st.flags[key]) { st.flags[key] = true; marks.push(cp.mark); }
     }
@@ -5989,9 +6001,7 @@ const Engine = (function () {
       if (st.actedThisSitting) st.idleSittings = 0;
       else st.idleSittings = (st.idleSittings || 0) + 1;
       if (st.idleSittings >= (idle.after || 1)) {
-        Object.keys(idle.drag || {}).forEach(k => {
-          st.scalars[k] = clamp((st.scalars[k] || 0) + idle.drag[k], 0, 100);
-        });
+        Object.keys(idle.drag || {}).forEach(k => bumpScalar(st, C, k, idle.drag[k]));
         if (idle.mark && !st.flags._idle_mark) {
           st.flags._idle_mark = true;
           st.wire.unshift({ sitting: st.sitting, text: idle.mark.toUpperCase() });
