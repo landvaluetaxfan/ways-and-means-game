@@ -4455,19 +4455,21 @@ const UI = (function () {
       const head = `<button class="ini-h" data-ini="${i.id}"${i.ok ? "" : " disabled"}` +
         priceTip(i.title, { slots: i.cost }, i.ok ? null : i.reason) + `>
           <b>${esc(i.title)}</b>
-          <i>${i.ok ? slotPips(st.slots.used, st.slots.total, i.cost) +
-                      " " + i.cost + " slot" + (i.cost === 1 ? "" : "s")
-                    : esc(i.reason)}</i>
+          <i>${!i.ok ? esc(i.reason)
+               : i.cost === 0 ? "no order-paper time"
+               : slotPips(st.slots.used, st.slots.total, i.cost) +
+                 " " + i.cost + " slot" + (i.cost === 1 ? "" : "s")}</i>
         </button>`;
       if (!open) return `<div class="ini">${head}</div>`;
       const tempo = (i.tempo || []).map((t, n) => {
         const cost = i.cost + (t.cost || 0);
-        const can = cost <= left;
+        const gated = t.when && !Engine.matches(st, t.when);
+        const can = cost <= left && !gated;
         return `<button class="ini-t" data-take="${i.id}" data-tempo="${n}"${can ? "" : " disabled"}` +
           priceTip(i.title + " \u2014 " + t.label, { slots: cost },
-                   can ? null : "not enough order-paper time left this sitting period") + `>
+                   can ? null : gated ? "not open to you" : "not enough order-paper time left this sitting period") + `>
             <b>${esc(t.label)}</b>
-            <i>answers in ${t.after} sitting${t.after === 1 ? "" : "s"} \u00b7 ${cost} slot${cost === 1 ? "" : "s"}${can ? "" : " \u00b7 not enough time"}</i>
+            <i>answers in ${t.after} sitting${t.after === 1 ? "" : "s"} \u00b7 ${cost === 0 ? "no order-paper time" : cost + " slot" + (cost === 1 ? "" : "s")}${can ? "" : gated ? " \u00b7 not open to you" : " \u00b7 not enough time"}</i>
           </button>`;
       }).join("");
       return `<div class="ini open">${head}

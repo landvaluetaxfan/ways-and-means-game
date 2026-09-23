@@ -85,6 +85,16 @@ Ranked by how much of the game each one touched.
 
 ## 2. Decisions for the author
 
+**Answered 23 Sep, the same day.**
+- D1: the loan is repayable, and built.
+- D3: the MPs are assigned to currents.
+- D4: the freeze follows the debt trap, and the collapse follows the freeze.
+- The campaign cascade is a loss.
+- The debt trap is Flash I's canon (bible §1.8, §3.5).
+
+D2, D5 and D6 are proposals under discussion. The text below is as the
+report first put them.
+
 - **D1. The emergency loan (`f1_loan`)** undertakes to honour the facility
   with no discharge, so it always breaks. Its breach names `f1_debt_called`,
   which is not an event, so when it breaks the Treasurer resigns and nothing

@@ -10,6 +10,13 @@
      shadow      Shadow minister
      leader      leader of a party
      whip        Chief Whip
+   current — the faction inside the party a member belongs to, an id from
+   CURRENTS in content/parties.js. Read by the bench roll, the members list,
+   the signature count (a member's willingness to sign against the leader is
+   their current's loyalty) and the reshuffle (a dismissed minister's current
+   takes it personally). Assigned 23 Sep 2026; nobody carried one before, so
+   all three read nothing (design/34 D3). A member for a FUNCTIONAL seat has
+   none: currents count the popular seats only.
    The Speaker is NOT an office here: it is a property of the seat
    (`speaker:true`), because the Chair belongs to the House, not the person.
    Rename people freely — they are referenced by id, and tools/renametest.js
@@ -57,35 +64,35 @@
 const CHARACTERS = [
   /* ---- the government ---- */
   { id:"flash", portrait:"flash.png",   name:"Rt. Hon. Adriana Flash MP", role:"Prime Minister",
-    party:"cu", category:"biological", seat:"First Spin", relationship:100, office:"pm",
+    party:"cu", current:"cu_loyalists", category:"biological", seat:"First Spin", relationship:100, office:"pm",
     note:"Liabilities, not buffs. Her record is the thing that can be dug up." },
   { id:"vellan", name:"Suravaram Vidyasagar MP", role:"Minister for Life Support",
-    party:"cu", category:"biological", seat:"Slipway", relationship:64, office:"minister",
+    party:"cu", current:"cu_maintenance", category:"biological", seat:"Slipway", relationship:64, office:"minister",
     note:"Career maintenance union. Holds the Ministry the whole crisis runs through, and is the "+
          "only member of Cabinet the Guild Bench will take a meeting with." },
   { id:"herrera", name:"Jason Herrera MP", role:"Minister for Labour and Participation",
     party:"psa", category:"emulation", seat:"Kingsmere", relationship:58, office:"minister",
     note:"The coalition partner's price, now in the portfolio the threshold bill is really about." },
   { id:"piastri", name:"Kosta Piastri MP", role:"Minister for Education",
-    party:"cu", category:"biological", seat:"Kiln End—Cordage", relationship:61,
+    party:"cu", current:"cu_deck", category:"biological", seat:"Kiln End—Cordage", relationship:61,
     note:"Deck cooperativist, and the only minister who was regularly photographed working. Back in at Education, which nobody has yet told him is the licensing question." },
   { id:"lee_kuan_yew", name:"Alexandria Lee Kuan Yew MP", role:"Minister for Volume and Housing",
-    party:"cu", category:"biological", status:["instance"], seat:"Hollowmere", relationship:52, office:"minister",
+    party:"cu", current:"cu_loyalists", category:"biological", status:["instance"], seat:"Hollowmere", relationship:52, office:"minister",
     note:"The defining domestic brief, and the one nobody wants." },
   { id:"vasmer", name:"Henrik Vasmer MP", role:"Minister for Transit and Orbital Mechanics",
     party:"psa", category:"emulation", seat:"The Warrens", relationship:47, office:"minister",
     note:"Runs the brief that decides which station is close and which is abandoned." },
   { id:"preiss", name:"Luke Preiss MP", role:"Minister for Attestation and the Registry",
-    party:"cu", category:"biological", seat:"Registry Walk", relationship:55, office:"minister",
+    party:"cu", current:"cu_loyalists", category:"biological", seat:"Registry Walk", relationship:55, office:"minister",
     note:"Appoints the licensing boards. This is the sharpest tool in the game." },
   { id:"marin", name:"Florence Marin MP", role:"Minister for Persons, Health and Continuity",
-    party:"rv", category:"biological", seat:"Concord—Bellfield", relationship:49, office:"minister",
+    party:"rv", current:"rv_ministerial", category:"biological", seat:"Concord—Bellfield", relationship:49, office:"minister",
     note:"Given to the Congregational Democratic Alliance at formation. The portfolio is the party's whole argument, and she has never had to make it in public." },
   { id:"landry", name:"Jean Landry MP", role:"Minister for External Relations",
-    party:"cu", category:"biological", seat:"Anchor Head—Cable Row", relationship:43, office:"minister",
+    party:"cu", current:"cu_loyalists", category:"biological", seat:"Anchor Head—Cable Row", relationship:43, office:"minister",
     note:"The anchors stand on foreign soil, so this is really a domestic brief." },
   { id:"skye", name:"Aster Skye MP", role:"Treasurer",
-    party:"cu", category:"biological", seat:"Deep Deck", relationship:66, office:"minister",
+    party:"cu", current:"cu_loyalists", category:"biological", seat:"Deep Deck", relationship:66, office:"minister",
     note:"Sits apart and reports directly to the Prime Minister. Knows what everything costs." },
   /* Two portfolios held from functional seats: the sector elects the minister
      who regulates it, which is the whole argument about the tier in one line. */
@@ -99,7 +106,7 @@ const CHARACTERS = [
     party:"rv", category:"biological", functional:"fc_medicine", relationship:49,
     note:"Backbench. Sits for the medicine roll, and argues the ministry's case from it rather than for it." },
   { id:"okarie", name:"Anil Devi MP", role:"Chief Whip",
-    party:"cu", category:"biological", seat:"Ropewalk", relationship:71, office:"whip",
+    party:"cu", current:"cu_loyalists", category:"biological", seat:"Ropewalk", relationship:71, office:"whip",
     note:"Reports that things went as well as they could have. Reports this about everything." },
 
   /* ---- the opposition ---- */
@@ -145,10 +152,10 @@ const CHARACTERS = [
     party:"hul", category:"biological", seat:"The Array", relationship:29, office:"leader",
     note:"Habitat as lifeboat. Engineering authority supreme, and says so in that order." },
   { id:"park", name:"Ryan Jung-Hee Park MP", role:"Leader, Congregational Democratic Alliance",
-    party:"rv", category:"biological", seat:"Quorum", relationship:41, office:"leader",
+    party:"rv", current:"rv_congregation", category:"biological", seat:"Quorum", relationship:41, office:"leader",
     note:"Continuity of soul. Economically left, culturally immovable." },
   { id:"bluespan", name:"Alan Bluespan III MP", role:"Leader, Freehold Party",
-    party:"fh", category:"biological", seat:"Drybank", relationship:20, office:"leader",
+    party:"fh", current:"fh_title", category:"biological", seat:"Drybank", relationship:20, office:"leader",
     note:"Volume owners, property absolutists, anti-Georgist to the point of obsession." },
   { id:"hatt", name:"Edward Hatt MP", role:"Leader, Alliance of Business and Government",
     party:"gb", category:"emulation", status:["disembodied"], functional:"fc_attestation", relationship:45, office:"leader",
@@ -160,24 +167,24 @@ const CHARACTERS = [
     party:"geo", category:"emulation", status:["instance"], relationship:57, office:"leader",
     note:"Volume tax, land value tax, nothing else. List tier only." },
   { id:"lindegaard", name:"Aalborg Lindegaard MP", role:"Leader, Uplift Alliance",
-    party:"upl", category:"uplift", relationship:50, office:"leader",
+    party:"upl", current:"upl_bridge", category:"uplift", relationship:50, office:"leader",
     note:"Two seats, permanently kingmaker-adjacent. Price is always the same thing." },
 
   /* ---- the expanded front benches ---- */
   { id:"dulac", name:"Ferran Dulac MP", role:"Minister for Defence",
-    party:"cu", category:"biological", seat:"The Beds", relationship:53,
+    party:"cu", current:"cu_maintenance", category:"biological", seat:"The Beds", relationship:53,
     note:"The maintenance bloc's man, and no longer the minister who owns the bill. Defence commands nothing that shoots, which is understood by everyone including him." },
   { id:"ivarsen", name:"Marit Ivarsen MP", role:"Minister for Trade and the Anchors",
     party:"psa", category:"emulation", seat:"Amphitheatre", relationship:50, office:"minister",
     note:"Owns the trade balance, compute exports and the anchor concessions on foreign soil." },
   { id:"fenwick", name:"Adaeze Fenwick MP", role:"Minister for Law and the Charter",
-    party:"cu", category:"biological", seat:"Crowfield", relationship:58, office:"minister",
+    party:"cu", current:"cu_loyalists", category:"biological", seat:"Crowfield", relationship:58, office:"minister",
     note:"The Law Officer in cabinet. Referral, constitutional review, and the amendment nobody will open." },
   { id:"whitlam", name:"Imre Whitlam MP", role:"Leader of the House",
-    party:"cu", category:"biological", seat:"Spinward Reach", relationship:56, office:"minister",
+    party:"cu", current:"cu_loyalists", category:"biological", seat:"Spinward Reach", relationship:56, office:"minister",
     note:"Owns the order paper. The slots are his to give away, which makes him everyone's friend and nobody's." },
   { id:"brakk", name:"Sunniva Brakk MP", role:"Minister for Home Affairs and Contingencies",
-    party:"cu", category:"biological", seat:"Ambrose Fields", relationship:48, office:"minister",
+    party:"cu", current:"cu_loyalists", category:"biological", seat:"Ambrose Fields", relationship:48, office:"minister",
     note:"The civilian answer to the engineering authority. Declaration is easy; termination is the fight, and it is hers." },
   { id:"sorrel", name:"Kel Sorrel MP", role:"Shadow Minister for Labour and Participation",
     party:"cl", category:"biological", seat:"Rookworks East", relationship:23, office:"shadow",
@@ -210,7 +217,7 @@ const CHARACTERS = [
 
   /* ---- the chair of the House ---- */
   { id:"king", name:"Adam King MP", role:"",
-    party:"ind", category:"biological", seat:"Colonnade", relationship:40,
+    party:"ind", current:"ind_kettering", category:"biological", seat:"Colonnade", relationship:40,
     note:"Backbench. Independent since the presidency, and does not regret it." },
 
   /* ---- other seated members ---- */
@@ -218,7 +225,7 @@ const CHARACTERS = [
     party:"cl", category:"biological", seat:"Meridian Loop", relationship:35, office:"shadow",
     note:"Watches the order paper for the opposition. Market liberal, which here means elevator and loop money." },
   { id:"tomasson", name:"Haukur Tómasson MP", role:"Minister for Closure and Development",
-    party:"rv", category:"biological", seat:"Brant North", relationship:47, office:"minister",
+    party:"rv", current:"rv_congregation", category:"biological", seat:"Brant North", relationship:47, office:"minister",
     note:"Owns the closure floor and the low band. Continuity of soul, and votes it every time." },
 
   /* ---- the presidency ---- */
@@ -229,7 +236,7 @@ const CHARACTERS = [
 
   /* ---- the faction leader ---- */
   { id:"halloran", portrait:"halloran.png", name:"Dan Czarnecki MP", role:"Leader, Czarnecki group",
-    party:"cu", category:"biological", seat:"Tier Four", relationship:12,
+    party:"cu", current:"cu_halloran", category:"biological", seat:"Tier Four", relationship:12,
     note:"Has the signatures for a leadership ballot if he finds nine more." },
 
   /* ---- the panel chair ---- */

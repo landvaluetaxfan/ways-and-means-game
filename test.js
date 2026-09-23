@@ -1249,6 +1249,103 @@ console.log("\nA PROMISE CAN BE KEPT (design/34):");
   if (bad) { console.log("\n" + bad + " PROMISE FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nTHE EMERGENCY FACILITY IS REPAYABLE (the author, 23 Sep):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const loan = CONTENT.eventById.f1_loan;
+  const take = loan && loan.choices.find(c => (c.effects || []).some(e => e.undertake));
+  ok("the loan undertakes a repayment", !!take);
+  if (!take) { process.exitCode = 1; return; }
+
+  const a = Engine.newGame(CONTENT);
+  a.scalars.solvency = 25000;
+  Engine.apply(a, CONTENT, take.effects);
+  const u = a.undertakings.find(x => x.id === "f1_debt");
+  ok("and says how it is kept", !!(u && u.discharge), JSON.stringify(u && u.discharge));
+  const ini = Engine.initiatives(a, CONTENT).find(i => i.id === "repay_facility");
+  ok("repaying it is something the government can do", !!(ini && ini.ok), ini && ini.reason);
+  ok("and it takes no order-paper time", ini && ini.cost === 0, ini && ini.cost);
+  const used = a.slots.used, solv = a.scalars.solvency;
+  const r = Engine.take(a, CONTENT, "repay_facility", 0);
+  ok("paying it keeps the promise", r.ok && u.state === "kept", r.reason || u.state);
+  ok("out of the reserve, and not out of House time",
+     a.scalars.solvency === solv - 19800 && a.slots.used === used,
+     solv + " -> " + a.scalars.solvency + ", slots " + used + " -> " + a.slots.used);
+  ok("and the Alliance answers", a.queue.some(q => q.eventId === "f1_facility_closed"));
+
+  const b = Engine.newGame(CONTENT);
+  b.scalars.solvency = 0;                       /* the loan itself brings 18,000 */
+  Engine.apply(b, CONTENT, take.effects);
+  ok("a government that cannot pay in cash is not offered the cash",
+     Engine.take(JSON.parse(JSON.stringify(b)), CONTENT, "repay_facility", 0).ok === false);
+  const c2 = JSON.parse(JSON.stringify(b));
+  const rl = Engine.take(c2, CONTENT, "repay_facility", 1);
+  ok("but can settle against the leases",
+     rl.ok && c2.undertakings.find(x => x.id === "f1_debt").state === "kept" &&
+     !!c2.flags.cordell_leases_ceded, rl.reason);
+  let guard = 0;
+  while (!b.dissolved && guard++ < 200) Engine.advance(b, CONTENT);
+  const ub = b.undertakings.find(x => x.id === "f1_debt");
+  ok("unpaid when the House rises, it breaks", ub.state === "broken", ub.state);
+  ok("and the Alliance calls it", b.queue.some(q => q.eventId === "f1_debt_called") ||
+     (b.seen.f1_debt_called || 0) > 0);
+  const called = CONTENT.eventById.f1_debt_called;
+  b.scalars.solvency = 5000;
+  const shut = called && !Engine.matches(b, called.choices[0].when || {});
+  b.scalars.solvency = 30000;
+  ok("a reserve too small to pay cannot pay it, and one large enough can",
+     shut && Engine.matches(b, called.choices[0].when || {}));
+  if (bad) { console.log("\n" + bad + " FACILITY FAILURES"); process.exitCode = 1; }
+})();
+
+console.log("\nEVERY MEMBER HAS A CURRENT (design/34 D3):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const withCurrents = new Set((CONTENT.currents || []).map(c => c.party));
+  const byId = new Map((CONTENT.currents || []).map(c => [c.id, c]));
+  const missing = CONTENT.characters.filter(c => withCurrents.has(c.party) && !c.functional && !c.current);
+  ok("every popular-seat member of a party with currents belongs to one",
+     missing.length === 0, missing.map(c => c.id).join(", "));
+  const wrong = CONTENT.characters.filter(c => c.current &&
+    (!byId.has(c.current) || byId.get(c.current).party !== c.party));
+  ok("and it is a current of their own party", wrong.length === 0,
+     wrong.map(c => c.id + ":" + c.current).join(", "));
+  const fnl = CONTENT.characters.filter(c => c.functional && c.current);
+  ok("and no functional member is counted in one", fnl.length === 0, fnl.map(c => c.id).join(", "));
+  if (bad) { console.log("\n" + bad + " CURRENT FAILURES"); process.exitCode = 1; }
+})();
+
+console.log("\nA CASCADE DURING THE CAMPAIGN IS A LOSS (the author, 23 Sep):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  /* supply carried, or the rise is a supply loss before anything else */
+  const carried = s0 => (CONTENT.bills || []).filter(x => x.test === "supply")
+    .forEach(x => { s0.bills[x.id].stage = "assented"; s0.bills[x.id].dead = true; });
+  const a = Engine.newGame(CONTENT);
+  carried(a);
+  Engine.dissolve(a, CONTENT);
+  ok("a dissolved parliament with the country held goes on to the count",
+     Engine.checkEnd(a, CONTENT).kind === "election", Engine.checkEnd(a, CONTENT).kind);
+  a.scalars.thermal_margin = 0;
+  const e = Engine.checkEnd(a, CONTENT);
+  ok("and one whose margin fails during the campaign has lost",
+     e.over && e.kind === "loss" && e.reason === "cascade", JSON.stringify(e));
+  const b = Engine.newGame(CONTENT);
+  carried(b);
+  Engine.dissolve(b, CONTENT);
+  Object.keys(b.parties).forEach(p => { if (b.coalition.includes(p)) b.parties[p].loyalty = 0; });
+  b.scalars.party_loyalty = 0;
+  ok("but a dissolved House has no confidence to lose and no caucus sitting to unseat her",
+     !Engine.checkLoss(b, CONTENT).lost, JSON.stringify(Engine.checkLoss(b, CONTENT)));
+  if (bad) { console.log("\n" + bad + " CAMPAIGN LOSS FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nA SETTLEMENT IS A MARK IN THE REGISTER (design/31 §4):");
 (function () {
   let bad = 0;
@@ -4144,6 +4241,13 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
       });
       if (!s.instruments["si_2080_44"].made && Engine.canMake(s, CONTENT, "si_2080_44").ok)
         Engine.makeInstrument(s, CONTENT, "si_2080_44");
+      /* AND ONCE THE RESULT IS IN, IT ASKS EARTH FOR TERMS. The debt trap
+         leaves friction where the quarrel drains the margin every sitting,
+         and a cascade during the campaign is a loss (the author, 23 Sep). */
+      if (s.resolvedAs && !s.dissolved) {
+        const ask = Engine.initiatives(s, CONTENT).find(i => i.id === "seek_terms");
+        if (ask && ask.ok) Engine.take(s, CONTENT, "seek_terms", 0);
+      }
     };
     const holdTheCountry = s => {
       /* IT HOLDS THE COUNTRY, which the comment above always said and
@@ -4174,11 +4278,22 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
          slots a session carry a programme or hold the country, not both
          (§7.7); a government with an emergency order laid does not spend
          the time it would take to approve it on the order paper. */
-      return awaiting().length ? 1 : 0;
+      /* and it keeps a slot in hand whenever the margin is low, not only
+         once an order is waiting: an order laid with no time left to
+         approve it was laid for nothing, which is how the fourth rung sat
+         unapproved from the freeze to the dissolution. */
+      return awaiting().length || s.scalars.thermal_margin <= 15 ? 1 : 0;
     };
+    /* A PICK MAY READ THE STATE. The canon government holds out against
+       Earth until the result is in -- conciliating before it would take the
+       friction the debt trap needs -- and settles with Earth after, which is
+       what stops the quarrel's drain on the margin before the House rises.
+       Since 23 Sep a cascade during the campaign is a loss, so a government
+       that goes to the country with the drain still running does not reach
+       the count. */
     const pick = { f1_stranded: 0, f1_referendum: 0, f1_dilemma: 0, f1_water: 0,
-      f1_loan: 1, f1_accounts_freeze: 0, fa_two_fronts: 0, fa_window_closes: 0,
-      fa_anchor_terms: 0, fa_conciliate: 1 };
+      f1_loan: 1, f1_accounts_freeze: 0, fa_two_fronts: s => s.resolvedAs ? 1 : 0,
+      fa_window_closes: 0, fa_anchor_terms: 0, fa_conciliate: s => s.resolvedAs ? 0 : 1 };
     let tier = null, end = null, tierAt = null;
     /* The run has to outlast the parliament and its campaign, and the bound
        is content's: a flat 45 silently became 44 of play when the prologue
@@ -4187,7 +4302,8 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
       const e = Engine.nextEvent(st, CONTENT);
       if (e) {
         const n = (e.choices || []).length || 1;
-        const want = pick[e.id] == null ? 0 : Math.min(pick[e.id], n - 1);
+        const p0 = typeof pick[e.id] === "function" ? pick[e.id](st) : pick[e.id];
+        const want = p0 == null ? 0 : Math.min(p0, n - 1);
         let done = false;
         for (let i = want; i < n; i++) if (Engine.choose(st, CONTENT, e, i) !== null) { done = true; break; }
         if (!done) for (let i = 0; i < n; i++) if (Engine.choose(st, CONTENT, e, i) !== null) { done = true; break; }

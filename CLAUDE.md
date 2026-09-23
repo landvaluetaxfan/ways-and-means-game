@@ -589,13 +589,15 @@ version of any of them is in the header of the file it names.
   an emergency order: after the debt trap, holding the country is the game.
   The canon script had to put the ladder first for the same reason — six
   slots carry a programme or hold the country, not both.
-- **THE EMERGENCY LOAN CANNOT BE HONOURED, AND ITS DEBT IS NEVER CALLED.**
-  `f1_loan` undertakes "Honour the emergency facility" with no `discharge`,
-  so it always breaks when it falls due, at the end of the session. The
-  Treasurer resigns. This line used to say "and the debt is called", which
-  was never true: the breach names `f1_debt_called`, which is not an event,
-  and a breach naming no event queues nothing (design/34 D1). lint prints
-  both halves as advisories until the author decides.
+- **THE EMERGENCY LOAN WAS UNREPAYABLE, AND ITS DEBT WAS NEVER CALLED** —
+  both fixed 23 Sep on the author's decision that it is repayable.
+  `f1_loan`'s undertaking had no `discharge`, and its breach named
+  `f1_debt_called`, which was not an event, so it always broke and nothing
+  followed. Now `repay_facility` (an initiative costing no order-paper time)
+  settles it in cash, when the reserve can meet 19,800, or against the
+  Cordell leases. If it is still owed when the House rises, `f1_debt_called`
+  asks for 21,600 or the leases. The cash way is closed by a TEMPO `when`, a
+  field an initiative's tempo can now carry.
 - **AN AFFIRMATIVE ORDER COULD BE LAID AND NEVER APPROVED.** `makeInstrument`
   set `awaitingApproval`, charged the political cost, and nothing in the
   engine ever read the flag again — five orders were paid for and could
@@ -650,13 +652,15 @@ version of any of them is in the header of the file it names.
   interface opens no dialog and writes nothing to the session log, which is
   for finished governments. The closing prose is read on the last page,
   after the count.
-- **OPEN: nothing physical can end the run after dissolution.** `checkEnd`
-  reads the election branch before `checkLoss`, correctly for a confidence
-  vote (the House no longer exists) but also for the thermal cascade — so
-  the margin can sit at zero through the twelve campaign sittings and the
-  run goes on. A canon-policy run holding the ladder measured the margin at
-  zero from sitting 56 to the end at 60. Whether a cascade during the
-  campaign is a loss is the author's call.
+- **A CASCADE DURING THE CAMPAIGN IS A LOSS** (the author, 23 Sep). It was
+  OPEN: `checkEnd` read the election branch before any loss, so the margin
+  could sit at zero through the campaign. `checkLoss` now knows the House is
+  dissolved. After dissolution only the physical ends a run: no confidence
+  vote, no leadership loss, but the cascade does. Before that change it also
+  judged a dissolved House's majority, so the interface declared a
+  government that lost seats at the count "fallen". A debt-trap government
+  must now hold the country through the campaign, which is why
+  `seek_terms` exists.
 - **Chapter budgets are in bible §1.7 and worth reading before generating.**
   12-15 · 23-28 · 6-8 events since 22 Sep: chapter two now carries the
   result and its aftermath while the House still sits, and chapter three is
@@ -666,10 +670,24 @@ version of any of them is in the header of the file it names.
 - **A CAMPAIGN HAS ONE CANON ENDING, AND THE NEXT CAMPAIGN OPENS ON IT**
   (bible §1.8, the author's decision of 22 Sep). The player can reach any
   ending; the next leader's campaign assumes the canon one, so a narrative
-  runs across parliaments. Flash I's canon is LEANING the debt trap, which
-  returns the PSD to government (84 to 90 seats under the canon policy) with
-  austerity to come. `test.js` guards that the canon ending is reachable by
-  play; keep that true whatever else moves.
+  runs across parliaments. **Flash I's canon is the debt trap, decided 23
+  Sep: "a middle ground between perfect and failure".** It returns the PSD to
+  government (84 to 88 seats under the canon policy, the coalition with
+  confidence and supply 145 of 280) with austerity to come. The canon
+  government climbs the emergency ladder, asks Earth's banks for terms once
+  the result is in, and reaches the count with the thermal margin at about
+  six. It is the tightest number in the game. `test.js` guards that the
+  canon ending is reachable by play and goes to the count; keep that true
+  whatever else moves.
+- **AN EVENT INSERTED MID-LIST CHANGES EVERY RUN.** The pool's seeded lean
+  is keyed on an event's POSITION in `EVENTS` (so renaming preserves runs).
+  Inserting two events before `f1_meltdown` moved three playtest strategies
+  from the debt trap at 34 to the joint mandate at 23. New events go at the
+  END of the list, and the playtest before and after is the proof.
+- **`characters[].current` is authored now** (23 Sep). It was read by the
+  bench roll, the members list, the signature count and the reshuffle, and
+  carried by nobody. `test.js` asserts every popular-seat member of a party
+  with currents has one of their own party's.
 
 **CSS and layout traps, every one found by measuring rather than reading**
 

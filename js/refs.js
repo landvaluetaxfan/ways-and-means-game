@@ -275,6 +275,8 @@ const Refs = (function () {
   function currentRefs(M, id) {
     const hits = [];
     const H = (where, apply) => hits.push({ where, apply });
+    (M.characters || []).forEach(c => {
+      if (c.current === id) H(`character ${c.id} · current`, to => c.current = to); });
     moveRefs(M, "loyalty", id, H);
     eachCondition(M, (w, where) => {
       ["loyaltyAbove", "loyaltyBelow"].forEach(k => {

@@ -5427,12 +5427,15 @@ const Engine = (function () {
     return (C.initiatives || []).map(i => {
       const left = st.slots.total - st.slots.used;
       const already = (st.flags || {})["init_" + i.id];
+      /* A cost of 0 is a real cost: an executive act that takes no House
+         time, such as paying a debt. `i.cost || 1` read it as one. */
+      const base = i.cost == null ? 1 : i.cost;
       const why = already ? "already in hand"
         : !matches(st, i.when) ? "not open to you"
-        : (i.cost || 1) > left ? "no order-paper time left this sitting period"
+        : base > left ? "no order-paper time left this sitting period"
         : null;
       return { id: i.id, title: i.title, note: i.note || "",
-               cost: i.cost || 1, tempo: i.tempo || [],
+               cost: base, tempo: i.tempo || [],
                ok: !why, reason: why };
     });
   }
@@ -5448,7 +5451,10 @@ const Engine = (function () {
     if (!avail.ok) return { ok: false, reason: avail.reason };
 
     const t = (i.tempo || [])[tempoIdx || 0] || { after: 3 };
-    const cost = (i.cost || 1) + (t.cost || 0);
+    /* A tempo may carry its own gate: paying a debt in cash wants the cash,
+       where settling it in kind does not. */
+    if (t.when && !matches(st, t.when)) return { ok: false, reason: "not open to you" };
+    const cost = (i.cost == null ? 1 : i.cost) + (t.cost || 0);
     if (cost > st.slots.total - st.slots.used)
       return { ok: false, reason: "no order-paper time left this sitting period" };
     st.slots.used += cost;
@@ -5737,6 +5743,14 @@ const Engine = (function () {
        backstop is for. `campaignSittings` in setup, and test.js asserts the
        chain fits inside it. */
     const window = (C && C.setup && C.setup.campaignSittings) || 12;
+    /* THE CASCADE, DURING THE CAMPAIGN. checkLoss knows what can still end
+       a dissolved parliament's run; it is read before the election branch
+       returns, or the thermal margin could sit at nothing through twelve
+       campaign sittings and the count be read anyway. */
+    if (st.dissolved) {
+      const lostNow = checkLoss(st, C);
+      if (lostNow.lost) return { over: true, kind: "loss", reason: lostNow.reason };
+    }
     const sEarly = checkSettlement(st, C);
     if (sEarly && st.dissolved)
       return { over: !!(st.flags && st.flags.campaign_done) ||
@@ -6132,6 +6146,17 @@ const Engine = (function () {
        coming for a whole session: the bill is on the order paper from
        sitting one and the calendar carries the day it must be done by. */
     if (C && st.supplyLost) return { lost: true, reason: "supply" };
+    /* ONCE THE HOUSE IS DISSOLVED, ONLY THE PHYSICAL CAN END THE RUN (the
+       author, 23 Sep). There is no House to lose a confidence vote in, and
+       a caucus does not unseat its leader mid-campaign -- but a radiator
+       does not know there is an election, and a cascade during the
+       campaign is a loss. This read confidence against the dissolved
+       House's majority, so a government that lost seats at the count was
+       declared fallen by the interface while checkEnd ran the campaign on. */
+    if (st.dissolved) {
+      if (st.scalars.thermal_margin <= 0) return { lost: true, reason: "cascade" };
+      return { lost: false };
+    }
     if (confidence(st) < majority(st)) return { lost: true, reason: "confidence" };
     /* A ballot the Prime Minister lost is the end, through the same reason the
        old loyalty floor used, so there is one leadership loss and not two. */

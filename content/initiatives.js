@@ -14,7 +14,8 @@
      cost    order-paper slots, before the tempo's own surcharge
      when    the same condition vocabulary events use
      event   the answer, queued `after` sittings by the chosen tempo
-     tempo   [{ label, after, cost?, effects? }]
+     tempo   [{ label, after, cost?, effects?, when? }] -- a tempo's own
+             `when` closes that way of doing it without closing the others
 
    ---------------------------------------------------------------------
    The three below are the opening set: one relationship, one piece of
@@ -88,6 +89,50 @@ const INITIATIVES = [
                                   by: null,
                                   discharge: { division: "divergence", carried: true } } },
                    { move: { public_standing: 3, "loyalty.cu_maintenance": -4 } } ] }
+    ] },
+
+  /* REPAYING THE EMERGENCY FACILITY (the author, 23 Sep: the loan is
+     repayable). A Treasury act, not House business, so it costs no
+     order-paper time. Two ways: the cash, which needs the reserve to hold
+     it, or the security, which settles now at no margin what the Alliance
+     would otherwise take at the rise with ten per cent on top. Either sets
+     the flag that discharges the `f1_debt` undertaking. */
+  { id: "repay_facility",
+    title: "Repay the emergency facility",
+    note: "The Alliance of Business and Government is owed nineteen thousand " +
+          "eight hundred MW-years, principal and the printed rate, secured on " +
+          "the Cordell leases. Unpaid when the House rises, it is called with " +
+          "a margin of ten per cent.",
+    cost: 0,
+    when: { owes: ["f1_debt"] },
+    event: "f1_facility_closed",
+    tempo: [
+      { label: "In full, from the reserve", after: 1,
+        when: { scalarAbove: { solvency: 19799 } },
+        effects: [ { move: { solvency: -19800 } }, { flag: "f1_debt_repaid" } ] },
+      { label: "Against the Cordell leases", after: 1,
+        effects: [ { flag: "f1_debt_repaid" }, { flag: "cordell_leases_ceded" },
+                   { move: { "loyalty.gb": 4, public_standing: -3, legitimacy: -4 } } ] }
+    ] },
+
+  /* ASKING EARTH FOR TERMS (design/34 D4). Earth's price for standing its
+     measures down was a weighted event, so whether a government could ever
+     settle the quarrel was a matter of what else the House had that week --
+     and after the Sovereign Debt Trap the quarrel drains the thermal margin
+     every sitting, which since 23 Sep can end the run during the campaign.
+     The government may now ask. The answer is the same list of terms. */
+  { id: "seek_terms",
+    title: "Ask Earth's banks for terms",
+    note: "What Earth's banks would take to lift their measures against the " +
+          "Commonwealth. The answer comes as a list, and the list has a price.",
+    cost: 1,
+    when: { scalarAbove: { friction: 45 } },
+    event: "fa_conciliate",
+    tempo: [
+      { label: "Through the Foreign Minister", after: 2,
+        effects: [ { move: { "rel.landry": 3 } } ] },
+      { label: "Through the Underwriters, who price the quarrel", after: 4,
+        effects: [ { move: { friction: -2, solvency: -1500, "actor.underwriters": 3 } } ] }
     ] },
 
   /* A POSITION, NOT A SCREEN (design/28 §3). The Commonwealth's quota sold

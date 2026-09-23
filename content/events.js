@@ -1970,21 +1970,32 @@ The condition is Cordell's mining leases.
 
 The rate is printed. The term is printed. The condition is one line.`,
   choices:[
+    /* REPAYABLE (the author, 23 Sep). The promise had no discharge, so it
+       always broke, and its breach named an event nobody had written, so the
+       debt was never called either (design/34 D1). It is repaid through the
+       `repay_facility` initiative, which sets the flag below, and if it is
+       still owed when the House rises the Alliance calls it. */
     { label:"Take the loan.",
       effects:[{ move:{ "solvency":18000 } }, { move:{ "legitimacy":-10 } },
-               { undertake:{ id:"f1_debt", text:"Honour the emergency facility",
-                             post:"treasury", by:null, onBreach:"f1_debt_called" } }],
-      result:"The solvency line recovers. The promise does not, and it has a date." },
+               { undertake:{ id:"f1_debt", text:"Repay the emergency facility",
+                             owed_to:"hatt", post:"treasury", by:null,
+                             discharge:{ flag:"f1_debt_repaid" },
+                             onBreach:"f1_debt_called" } }],
+      result:"Eighteen thousand MW-years reach the reserve. The facility is repayable at nineteen thousand eight hundred before the House rises, and the Cordell leases stand as its security until then." },
     { label:"Refuse the rate.",
       effects:[{ move:{ "legitimacy":3 } }, { move:{ "trend.solvency":-1000 } }],
       result:"A solvent government could have refused it. This one is not solvent, and refusing costs a little, every sitting." }
   ]},
 
 /* the meltdown: a LOSS through the loyalty floor, not a settlement */
-/* REACH: a collapse: friction above 85 with all three floors breached; a loss, not a settlement. */
+/* REACH: the collapse after the freeze. It needed friction above 85, which
+   nothing short of repeated borrowing reached, with all three floors
+   breached at once. It follows the freeze now: a frozen government that
+   lets the quarrel run past 78 while the margin, the reserve and its
+   standing give way together falls. A loss, not a settlement (design/34 D4). */
 { id:"f1_meltdown", chapter:2, weight:98, once:true,
-  when:{ scalarAbove:{ friction:85 },
-         scalarBelow:{ thermal_margin:20, solvency:20000, legitimacy:20 } },
+  when:{ flags:["f1_frozen"], scalarAbove:{ friction:78 },
+         scalarBelow:{ thermal_margin:20, solvency:20000, legitimacy:30 } },
   title:"The cascade",
   speaker:null,
   body:`The embargo lands. Life support fails on the platform and the
@@ -2001,8 +2012,14 @@ chamber is still arguing about the water.`,
    stops being a cost and becomes a fact. The couplings keep biting; this
    is the prose that tells the player why. */
 /* REACH: friction above 70; the couplings ramp it there. */
+/* THE TRAP'S CONSEQUENCE, NOT A THRESHOLD. This waited for friction above
+   70, and the annexation's own ramp, abating by the setup's trendDecay, tops
+   out at exactly 70 -- so the freeze, the debt trap's one escalation beat and
+   the thing the indemnity initiative insures against, never came in any run
+   (design/34 D4). It now follows the Sovereign Debt Trap itself, unless the
+   government has brought the quarrel back under 60 since. */
 { id:"f1_accounts_freeze", chapter:2, weight:87, once:true,
-  when:{ scalarAbove:{ friction:70 } },
+  when:{ resolved:"f1_pyrrhic", scalarAbove:{ friction:60 } },
   /* THE FREEZE HAS TO RECORD ITSELF. Two of the four branches of
      `indemnity_settles` are the ones where the cover PAYS, and both wanted
      `f1_frozen` — which nothing in the project set, so a government could
@@ -3549,6 +3566,50 @@ you already have.`,
                { move:{ party_loyalty:-5 } },
                { wire:"HOUSE RISES EARLY; SESSION CLOSES ON THE SETTLEMENT" }],
       result:`The House rises early and the record closes on the answer with nothing after it.` }
+  ]},
+
+
+/* APPENDED, NOT INSERTED. The pool's seeded lean is keyed on an event's
+   position in this list, so an event inserted mid-list re-leans every event
+   after it and changes every run; new events go at the end. */
+/* THE FACILITY, REPAID. The answer to the `repay_facility` initiative. The
+   Alliance offers to keep the line open, which is a standing call on the
+   Commonwealth's short position with the Alliance's name on it. */
+{ id:"f1_facility_closed", queuedOnly:true, once:true,
+  title:"The facility is closed",
+  speaker:"hatt",
+  body:`The emergency facility is discharged, and the Alliance of Business and Government has no further claim under it: in cash from the reserve, or in the Cordell leases, as the Treasury chose.
+
+Hatt offers to keep the line open as a standing facility on the same terms, drawn only when the Commonwealth asks for it.`,
+  choices:[
+    { label:"Keep the line open.",
+      effects:[{ flag:"abg_standing_line" }, { move:{ "loyalty.gb":4 } }, { move:{ "legitimacy":-2 } },
+               { wire:"ALLIANCE HOLDS STANDING LINE ON COMMONWEALTH SHORT POSITION" }],
+      result:"The Alliance holds a standing line on the Commonwealth's short position, on the terms of the emergency facility." },
+    { label:"Close it.",
+      effects:[{ move:{ "legitimacy":3 } }, { move:{ "loyalty.gb":-2 } }],
+      result:"The Commonwealth owes the Alliance nothing and has no line with it." }
+  ]},
+
+/* THE FACILITY, CALLED. Queued by the breach of `f1_debt` when the House
+   rises with the facility unpaid. The default margin is the agreement's. */
+{ id:"f1_debt_called", queuedOnly:true, once:true,
+  title:"The facility is called",
+  speaker:"hatt",
+  body:`The emergency facility was still owed when the House rose, and the Alliance of Business and Government has called it. The sum due is twenty-one thousand six hundred MW-years: the principal, the printed rate, and the default margin of ten per cent the agreement sets.
+
+The security is the Cordell leases. The Alliance will accept the leases in settlement, or the sum from the reserve.`,
+  choices:[
+    { label:"Pay it from the reserve.",
+      when:{ scalarAbove:{ solvency:21599 } },
+      effects:[{ move:{ "solvency":-21600 } }, { move:{ "legitimacy":-2 } },
+               { wire:"TREASURY PAYS CALLED FACILITY IN FULL FROM THE RESERVE" }],
+      result:"The reserve pays the Alliance in full, and the Cordell leases stay with the Commonwealth." },
+    { label:"Let the Alliance take the leases.",
+      effects:[{ flag:"cordell_leases_ceded" }, { move:{ "loyalty.gb":6 } },
+               { move:{ "public_standing":-5 } }, { move:{ "legitimacy":-6 } },
+               { wire:"ALLIANCE TAKES CORDELL LEASES IN SETTLEMENT OF CALLED FACILITY" }],
+      result:"The Cordell mining leases pass to the Alliance of Business and Government, and the facility is extinguished." }
   ]},
 
 ];
