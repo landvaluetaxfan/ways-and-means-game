@@ -16,11 +16,12 @@ const Engine = require("./js/engine.js");
    measuring the tutorial and calling it the crisis. */
 const PROLOGUE1 = CONTENT.events
   .filter(e => (e.chapter || 1) === 1 && e.prologue).length;
-/* And how long a whole run can be: every session of the parliament, then the
-   campaign after the writs, then slack. Read from setup, because the length
+/* And how long a whole run can be: every sitting period of every session, the
+   campaign after the writs, and slack. Read from setup, because the length
    is content's and moved from one session to three on 22 Sep 2026 — the two
    loops that had it written in as 40 and 38 were the first two failures. */
-const RUN_BOUND = (CONTENT.setup.sittingsPerSession || 24) *
+const RUN_BOUND = (CONTENT.setup.sittingsPerPeriod || 24) *
+                  (CONTENT.setup.periodsPerSession || 1) *
                   (CONTENT.setup.sessionsPerParliament || 1) +
                   (CONTENT.setup.campaignSittings || 12) + 4;
 
@@ -417,11 +418,55 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
 
     const x = Engine.newGame(CONTENT);
     Engine.apply(x, CONTENT, annex.effects);
-    const rise = x.sessionEnds + 1;
+    const rise = x.risesAt + 1;
     while (x.sitting <= rise) Engine.advance(x, CONTENT);
-    ok("and reserved time goes with the session it was granted for",
+    ok("and reserved time goes with the sitting period it was granted for",
        Engine.reservedFor(x, "annexation") === 0 && x.slots.total === total0,
        Engine.reservedFor(x, "annexation") + " reserved, " + x.slots.total + " general");
+  }
+
+  /* SITTING PERIODS (bible §1.8). A session is sat in periods, and a recess
+     ends nothing: time refills, bills and promises carry on, and only the
+     end of the session kills the one and calls in the other. For a day the
+     three blocks were sessions, which killed bills at a recess and broke
+     the emergency loan's promise mid-run. */
+  {
+    const r = Engine.newGame(CONTENT);
+    for (let i = 0; i < 4 && Engine.canDivide(r, CONTENT, "appropriation").unread; i++)
+      Engine.grantSlot(r, CONTENT, "appropriation");
+    while (!Engine.canDivide(r, CONTENT, "appropriation").ok && r.sitting < r.risesAt)
+      Engine.advance(r, CONTENT);
+    Engine.divide(r, CONTENT, "appropriation");
+    Engine.apply(r, CONTENT, [{ undertake: { id: "recess_probe", text: "Before we rise", by: null } }]);
+    const live = CONTENT.bills.filter(b => !r.bills[b.id].dead &&
+      !["drafting", "assented"].includes(r.bills[b.id].stage)).map(b => b.id);
+    const s0 = r.session, rise = r.risesAt;
+    while (r.sitting <= rise) Engine.advance(r, CONTENT);
+    const probe = r.undertakings.find(u => u.id === "recess_probe");
+    ok("the House rises for a recess, not the end of the session",
+       r.period === 2 && r.session === s0 && !r.dissolved,
+       "session " + r.session + ", period " + r.period);
+    ok("and the recess refills order-paper time", r.slots.used === 0, r.slots.used + " used");
+    ok("but no bill falls at a recess",
+       live.length > 0 && live.every(id => !r.bills[id].dead),
+       live.filter(id => r.bills[id].dead).join(", ") || live.length + " live bills survive");
+    ok("and a promise owed before the House rises is still owed",
+       probe && probe.state === "open", probe ? probe.state : "no probe");
+    while (!r.dissolved && r.sitting < 200) Engine.advance(r, CONTENT);
+    ok("until the session ends, when it is judged",
+       !!r.dissolved && probe.state === "broken",
+       (r.dissolved ? "dissolved at " + r.dissolved.at : "not dissolved") + ", " + probe.state);
+
+    /* A save written while the blocks were sessions: its later session
+       numbers were periods all along. */
+    const old = JSON.parse(JSON.stringify(Engine.newGame(CONTENT)));
+    old.version = 27; old.session = 5; old.parliamentOpenedAt = 4;
+    old.sessionEnds = 33; delete old.risesAt; delete old.period;
+    const mig = Engine.migrate(old);
+    ok("a save from the three-session day comes back as session 4, period 2",
+       mig.session === 4 && mig.period === 2 && mig.risesAt === 33 &&
+       !("sessionEnds" in mig) && mig.version === Engine.STATE_VERSION,
+       JSON.stringify({ session: mig.session, period: mig.period, risesAt: mig.risesAt }));
   }
 
   /* THREE CHAPTERS, AND NOTHING AFTER THE COUNT (bible §1.7). */
@@ -1613,7 +1658,7 @@ console.log("\nTHE CALENDAR:");
 
   const dl = Engine.deadlines(st, CONTENT);
   ok("the session end is a deadline like any other",
-     dl.some(d => d.kind === "rises" && d.sitting === st.sessionEnds),
+     dl.some(d => d.kind === "rises" && d.sitting === st.risesAt),
      dl.map(d => d.kind).join(", ") || "(none)");
   ok("every deadline lands on a square the calendar drew",
      dl.every(d => Engine.sittingOfDate(CONTENT, d.date) === d.sitting));
@@ -1629,13 +1674,16 @@ console.log("\nTHE CALENDAR:");
      owed.length ? owed[0].text + " on " + owed[0].date : "not shown");
 
   /* `by: null` means "before the House rises", so it must land on the
-     last sitting of the session rather than nowhere. */
+     last sitting of the SESSION rather than nowhere — and since a session
+     is sat in periods (bible §1.8), that is the last period's rise, not the
+     first recess. */
   const v = Engine.newGame(CONTENT);
   Engine.apply(v, CONTENT, [{ undertake: { id: "cal_open", text: "Before we rise", by: null } }]);
   const open = Engine.deadlines(v, CONTENT).filter(d => d.kind === "owed");
   ok("and one owed before the House rises lands on the last sitting",
-     open.length === 1 && open[0].sitting === v.sessionEnds,
-     open.length ? "sitting " + open[0].sitting + " of " + v.sessionEnds : "not shown");
+     open.length === 1 && open[0].sitting === Engine.sessionEndsAt(v, CONTENT),
+     open.length ? "sitting " + open[0].sitting + " of " + Engine.sessionEndsAt(v, CONTENT)
+                 : "not shown");
 
   /* A PRAYER WINDOW IS A DEADLINE — an order stands unless the House prays
      against it before the window closes, and that date lived in the state
@@ -1734,11 +1782,11 @@ console.log("\nTHE ORDER OF THE DAY:");
   const f = Engine.newGame(CONTENT);
   ok("the rise is not business twenty sittings out",
      Engine.today(f, CONTENT, false).items.every(i => i.kind !== "rises"),
-     "sessionEnds " + f.sessionEnds + " at sitting " + f.sitting);
-  while (f.sitting < f.sessionEnds - 1) Engine.advance(f, CONTENT);
+     "risesAt " + f.risesAt + " at sitting " + f.sitting);
+  while (f.sitting < f.risesAt - 1) Engine.advance(f, CONTENT);
   ok("and is business when it is next week",
      Engine.today(f, CONTENT, false).items.some(i => i.kind === "rises"),
-     "at sitting " + f.sitting + " of " + f.sessionEnds);
+     "at sitting " + f.sitting + " of " + f.risesAt);
 
   if (bad) { console.log("\n" + bad + " ORDER-OF-DAY FAILURES"); process.exitCode = 1; }
 })();
@@ -3764,7 +3812,7 @@ console.log("\nINITIATIVE:");
        CONTENT.bills.filter(b => d.bills[b.id].stage === "drafting")
          .every(b => Engine.setDivision(d, CONTENT, b.id, d.sitting + 3).ok === false));
     ok("and not after it has risen",
-       Engine.setDivision(d, CONTENT, bill.id, d.sessionEnds + 1).ok === false);
+       Engine.setDivision(d, CONTENT, bill.id, d.risesAt + 1).ok === false);
     ok("and the day she named is on the calendar",
        Engine.deadlines(d, CONTENT).some(x => x.kind === "division" &&
                                               x.sitting === d.sitting + 6));
@@ -4263,7 +4311,7 @@ console.log("\nTHE ECONOMY:");
     const e = Engine.nextEvent(chain, CONTENT);
     if (e) {
       if (when[e.id] == null && /^f1_/.test(e.id)) {
-        when[e.id] = chain.sitting; riseAt[e.id] = chain.sessionEnds;
+        when[e.id] = chain.sitting; riseAt[e.id] = chain.risesAt;
       }
       Engine.choose(chain, CONTENT, e, 0);
     }

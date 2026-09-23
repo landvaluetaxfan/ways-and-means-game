@@ -448,9 +448,13 @@ const UI = (function () {
        every tab and already carries the sitting, so the count belongs beside
        it. Order-paper time is the currency that cannot be topped up (bible
        7.7) and this is the only place that says how much of it is left. */
-    const rise = st.sessionEnds != null
-      ? " / RISES IN " + Math.max(0, st.sessionEnds - st.sitting + 1) : "";
-    $("#tb-sys").textContent = `SESS ${st.session} / SITTING ${String(st.sitting).padStart(3, "0")} / ${st.date}${rise}`;
+    const rise = st.risesAt != null
+      ? " / RISES IN " + Math.max(0, st.risesAt - st.sitting + 1) : "";
+    /* The period beside the session (bible §1.8), only where a session has
+       more than one: "SESS 4.2" is the second sitting period of Session 4. */
+    const per = (C.setup && C.setup.periodsPerSession) || 1;
+    const sess = per > 1 ? st.session + "." + (st.period || 1) : String(st.session);
+    $("#tb-sys").textContent = `SESS ${sess} / SITTING ${String(st.sitting).padStart(3, "0")} / ${st.date}${rise}`;
   }
   function drawStatus() {
     const conf = Engine.confidence(st), maj = Engine.majority(st);
@@ -466,9 +470,9 @@ const UI = (function () {
        It is a chip in the status bar now, and it turns red inside three. */
     const rise = $("#sb-rise");
     if (rise) {
-      if (st.sessionEnds == null) { rise.textContent = ""; }
+      if (st.risesAt == null) { rise.textContent = ""; }
       else {
-        const left = st.sessionEnds - st.sitting;
+        const left = st.risesAt - st.sitting;
         rise.textContent = left <= 0 ? "RISE TODAY" : `RISE IN ${left}`;
         rise.style.color = left <= 3 ? "var(--alert)" : "";
       }
@@ -631,8 +635,11 @@ const UI = (function () {
        it is edge-triggered off the state here, the same way the knell is,
        because both are things that HAPPEN TO the player rather than
        things the player does. */
-    if (lastSession === null) lastSession = st.session;
-    else if (st.session !== lastSession) { lastSession = st.session; score("prorogue"); }
+    /* A recess turns the paper over as a prorogation does, so it scores the
+       same cadence: keyed on the session AND its period. */
+    const turn = st.session + "." + (st.period || 1);
+    if (lastSession === null) lastSession = turn;
+    else if (turn !== lastSession) { lastSession = turn; score("prorogue"); }
 
     const loss = Engine.checkLoss(st, C);
     if (loss.lost && !fallen) {
@@ -2059,11 +2066,11 @@ const UI = (function () {
     /* Judged PER BILL, because a measure with time of its own can still be
        moved when the session's is gone. */
     const grantRefusal = id => left + Engine.reservedFor(st, id) < 1
-      ? "no order-paper time left this session"
+      ? "no order-paper time left this sitting period"
       : gtoday >= gcap ? "the House has taken " + gcap + " measures today" : null;
     const resTotal = Object.values(st.slots.reserved || {}).reduce((a, n) => a + n, 0);
     const hdr = $("#gov-slots-hdr");
-    if (hdr) hdr.textContent = left + " of " + st.slots.total + " left this session" +
+    if (hdr) hdr.textContent = left + " of " + st.slots.total + " left this period" +
       (resTotal ? " + " + resTotal + " reserved" : "") +
       (gtoday ? " \u00b7 " + gtoday + " of " + gcap + " today" : "");
     $("#gov-slots").innerHTML =
@@ -2071,7 +2078,7 @@ const UI = (function () {
         `<i class="${i < st.slots.used ? "spent" : ""}"></i>`).join("")}${
         Array.from({length: resTotal}, () => `<i class="res"></i>`).join("")}</div>` +
       `<div class="note" style="margin-top:4px">A slot is order-paper time: spend one and a measure moves one
-       stage closer to its vote. The session holds ${st.slots.total} and they refill when the House rises; the
+       stage closer to its vote. Each sitting period holds ${st.slots.total} and they refill when the House rises; the
        House takes ${gcap} measure${gcap === 1 ? "" : "s"} a sitting, and no more. Give a slot to a partner's bill
        and the partner owes you for it. Give it to your own and only your programme advances.</div>` +
       `<table><tbody>${C.bills.filter(b => !st.bills[b.id].dead).map(b =>
@@ -2081,7 +2088,7 @@ const UI = (function () {
         `${b.priority ? " <span class='flag' data-tip='priority'>PRIORITY</span>" : ""}` +
         `${Engine.reservedFor(st, b.id) ? " <span class='flag' data-tip-title='Time of its own'" +
           " data-tip-body='Order-paper time granted for this measure alone. Only its stages and" +
-          " its division can spend it, it is spent before the session&#39;s own, and it goes" +
+          " its division can spend it, it is spent before the period&#39;s own, and it goes" +
           " when the House rises.'>" + Engine.reservedFor(st, b.id) + " OWN</span>" : ""}</td>` +
         `<td class="n">${b.owner && b.owner !== st.playerParty ? "+" + (b.priority ? 3 : 2) : "&mdash;"}</td>` +
         `<td class="n"><button class="btn slotbtn" data-slot="${b.id}"${grantRefusal(b.id) ? " disabled" : ""}` +
@@ -2839,8 +2846,8 @@ const UI = (function () {
        time too. */
     function daySetterHTML(billId, bs) {
       if (bs.dead || bs.stage === "drafting" || bs.stage === "assented") return "";
-      if (st.sessionEnds == null) return "";
-      const last = st.sessionEnds;
+      if (st.risesAt == null) return "";
+      const last = st.risesAt;
       const first = st.sitting + 1;
       if (first > last) return "";
       let btns = "";
@@ -2989,7 +2996,7 @@ const UI = (function () {
     if (s.slots) {
       const left = st.slots.total - st.slots.used;
       bits.push(slotWord(s.slots) + " of order-paper time. " +
-        (s.slots > left ? left + " left this session \u2014 not enough."
+        (s.slots > left ? left + " left this period \u2014 not enough."
                         : left + " left, " + (left - s.slots) + " after."));
     }
     Object.keys(s.capital || {}).forEach(pid => {
@@ -4447,7 +4454,7 @@ const UI = (function () {
         const can = cost <= left;
         return `<button class="ini-t" data-take="${i.id}" data-tempo="${n}"${can ? "" : " disabled"}` +
           priceTip(i.title + " \u2014 " + t.label, { slots: cost },
-                   can ? null : "not enough order-paper time left this session") + `>
+                   can ? null : "not enough order-paper time left this sitting period") + `>
             <b>${esc(t.label)}</b>
             <i>answers in ${t.after} sitting${t.after === 1 ? "" : "s"} \u00b7 ${cost} slot${cost === 1 ? "" : "s"}${can ? "" : " \u00b7 not enough time"}</i>
           </button>`;
@@ -4462,7 +4469,7 @@ const UI = (function () {
     el.innerHTML = initHTML();
     const hdr = $("#gov-init-hdr");
     if (hdr) hdr.textContent = (st.slots.total - st.slots.used) + " of " +
-                               st.slots.total + " slots left this session";
+                               st.slots.total + " slots left this period";
     el.querySelectorAll("[data-ini]").forEach(b =>
       b.addEventListener("click", () => {
         initOpen = initOpen === b.dataset.ini ? null : b.dataset.ini;
@@ -4828,11 +4835,12 @@ const UI = (function () {
     /* THE SESSION'S END IS ALWAYS ON THE PAPER. It is the cheapest
        possible source of pressure and it needs no mechanic of its own:
        everything above it has to happen before it. */
-    if (st.sessionEnds != null) {
-      const left = st.sessionEnds - st.sitting + 1;
+    if (st.risesAt != null) {
+      const left = st.risesAt - st.sitting + 1;
       rows.push(`<div class="dk rises${left <= 3 ? " late" : ""}">
-        <b>The House rises</b><i>sitting ${st.sessionEnds} · ${left} sitting${
-          left === 1 ? "" : "s"} left of session ${st.session}</i></div>`);
+        <b>${Engine.lastPeriod(st, C) ? "The House rises" : "The House rises for the recess"}</b>` +
+        `<i>sitting ${st.risesAt} · ${left} sitting${left === 1 ? "" : "s"} left ${
+          Engine.lastPeriod(st, C) ? "of session " + st.session : "in this sitting period"}</i></div>`);
     }
     return rows.length ? rows.join("")
       : `<div class="note">Nothing before the House but the sitting itself.</div>`;

@@ -51,7 +51,8 @@ const arg = (k, d) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] :
    after the writs, and slack. It was a flat 60, and when the campaign began
    at sitting 51 the cap cut it off before the count — the tool reported a
    run the game had not finished. */
-const RUN_LENGTH = (CONTENT.setup.sittingsPerSession || 24) *
+const RUN_LENGTH = (CONTENT.setup.sittingsPerPeriod || 24) *
+                   (CONTENT.setup.periodsPerSession || 1) *
                    (CONTENT.setup.sessionsPerParliament || 1) +
                    (CONTENT.setup.campaignSittings || 12) + 6;
 const SITTINGS = Number(arg("--sittings", RUN_LENGTH));

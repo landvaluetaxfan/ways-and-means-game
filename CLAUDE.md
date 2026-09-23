@@ -513,10 +513,18 @@ version of any of them is in the header of the file it names.
   §7.7 is about. The same file printed every choice as "#1" because it read
   `.text` where choices carry `label`. **Two fields read by names the data
   does not use, both falling back to a placeholder without a word.**
-- **DECIDED 22 Sep 2026: THREE SESSIONS OF SIXTEEN SITTINGS**, which is
-  bible §1.7's three sessions (`sessionsPerParliament: 3`,
-  `sittingsPerSession: 16` in `content/setup.js`, whose comment carries the
-  measurements). One session of twenty-four ran 31 sittings and met 29
+- **DECIDED: ONE SESSION OF THREE SITTING PERIODS OF SIXTEEN** (22-23 Sep
+  2026; `periodsPerSession: 3`, `sittingsPerPeriod: 16`,
+  `sessionsPerParliament: 1` in `content/setup.js`, whose comment carries the
+  measurements). For a day the three blocks were SESSIONS, which killed every
+  bill not carried at a recess, made the prose's eighty-one "this session"s
+  mean sixteen sittings, and broke the unpayable loan mid-run; a recess now
+  refills order-paper time and ends nothing, the session's end (the last
+  rise) is when bills fall and promises owed "before the House rises" come
+  due, and the status bar reads SESS 4.2. `st.sessionEnds` is `st.risesAt`
+  (the next rise, of either kind) at `STATE_VERSION 28`, and a save from the
+  three-session day migrates to session 4, period 2. The blocks' length was
+  chosen on these measurements: One session of twenty-four ran 31 sittings and met 29
   events, reached 48% of the authored set across all strategies, and no
   Flash I ending landed in any strategy but the scripted one, because
   `f1_joint` lands at sitting 47. Three of sixteen runs about 52 sittings,
@@ -574,9 +582,11 @@ version of any of them is in the header of the file it names.
   The canon script had to put the ladder first for the same reason — six
   slots carry a programme or hold the country, not both.
 - **THE EMERGENCY LOAN CANNOT BE HONOURED.** `f1_loan` undertakes "Honour the
-  emergency facility" with no `discharge`, so it always breaks at the next
-  rise: the Treasurer resigns and the debt is called. With one session the
-  next rise was the end; with three it lands mid-run. Content round.
+  emergency facility" with no `discharge`, so it always breaks when it falls
+  due: the Treasurer resigns and the debt is called. Under sitting periods
+  that is the end of the session, as written, so the debt is called during
+  the campaign; for the day the blocks were sessions it landed mid-run.
+  Whether it should be repayable is the content round's call.
 - **AN AFFIRMATIVE ORDER COULD BE LAID AND NEVER APPROVED.** `makeInstrument`
   set `awaitingApproval`, charged the political cost, and nothing in the
   engine ever read the flag again — five orders were paid for and could

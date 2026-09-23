@@ -3522,7 +3522,11 @@ you already have.`,
     "time is not saved, it is lost.",
   title:"The last of the paper",
   speaker:"okarie",
-  body:`The session rises shortly and there is order-paper time left that cannot be carried into the next one.`,
+  /* "The House", not "the session": it fires before whichever rise comes
+     first after the result, and since a session is sat in periods (bible
+     §1.8) that is usually a recess. Time does not carry over a recess
+     either, so the rest of the line is true of both. */
+  body:`The House rises shortly and there is order-paper time left that cannot be carried past it.`,
   choices:[
     { label:"Spend it on the small things the benches have been asking for.",
       brief:"Using the remainder on backbench business. Buys loyalty broadly "+

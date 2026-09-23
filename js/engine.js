@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 27;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time
+  const STATE_VERSION = 28;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods
 
   /* ---------------------------------------------------------
      1. STATE
@@ -24,7 +24,10 @@ const Engine = (function () {
       version: STATE_VERSION,
       sitting: 1,
       chapter: 1,
-      session: 4,
+      /* The session is content's number (bible §11.1: Session 4), and a
+         session is sat in PERIODS with a recess between them (§1.8). */
+      session: C.setup.session || 1,
+      period: 1,
       date: dateOfSitting(C, 1),   /* the first day the House actually sits */
       inGovernment: true,
       pm: C.setup.pm,
@@ -215,12 +218,14 @@ const Engine = (function () {
          real one when a player starts a game. */
       seed: (seed == null ? 20287 : (seed >>> 0)) || 1,
 
-      /* THE CALENDAR. A session has an end, and that is what makes the
-         order paper a schedule rather than a list. Everything with a
-         deadline counts toward this sitting: slots refill here, business
-         not carried falls here, and an undertaking owed before the House
-         rises comes due here. */
-      sessionEnds: (C.setup.sittingsPerSession || 24),
+      /* THE CALENDAR. The House RISES at the end of every sitting period,
+         and that is what makes the order paper a schedule rather than a
+         list: order-paper time refills here. Most rises are a recess; the
+         last of a session also ends the session — business not carried
+         falls and what was owed "before the House rises" comes due — and
+         the last of a parliament dissolves it. Was `sessionEnds`, which
+         stopped being true the day a session gained periods. */
+      risesAt: periodLength(C),
 
       queue: [],      // [{eventId, dueSitting}]
       seen: {},       // eventId -> times fired
@@ -319,7 +324,7 @@ const Engine = (function () {
     if (st.version < 10) {                    // the calendar
       /* An older save is mid-session by definition, so it is given a full
          session from where it stands rather than being prorogued on load. */
-      if (st.sessionEnds == null) st.sessionEnds = st.sitting + 24;
+      if (st.risesAt == null) st.risesAt = st.sitting + 24;
       st.version = 10;
     }
     if (st.version < 11) {                    // the day's business
@@ -448,6 +453,19 @@ const Engine = (function () {
          pool, and that save keeps the larger pool it was given. */
       if (st.slots && !st.slots.reserved) st.slots.reserved = {};
       st.version = 27;
+    }
+    if (st.version < 28) {                    // sitting periods
+      /* The next rise was `sessionEnds`. And a save written while a run was
+         three SESSIONS carries the later ones in its session number: they
+         were periods of one session all along, so the count moves across. */
+      if (st.risesAt == null && st.sessionEnds != null) st.risesAt = st.sessionEnds;
+      delete st.sessionEnds;
+      if (st.period == null) {
+        const opened = st.parliamentOpenedAt != null ? st.parliamentOpenedAt : st.session;
+        st.period = Math.max(1, st.session - opened + 1);
+        st.session = opened;
+      }
+      st.version = 28;
     }
     return st;
   }
@@ -1779,7 +1797,7 @@ const Engine = (function () {
   }
 
   function grantSlot(st, C, billId) {
-    if (slotsFor(st, billId) < 1) return { ok: false, reason: "no slots left this session" };
+    if (slotsFor(st, billId) < 1) return { ok: false, reason: "no order-paper time left this sitting period" };
     const b = C.billById[billId], bs = st.bills[billId];
     if (!b || bs.dead) return { ok: false, reason: "not before Parliament" };
     if (bs.stage === DIVIDES_AT) return { ok: false, reason: "awaiting a division" };
@@ -1971,7 +1989,7 @@ const Engine = (function () {
     if (!s.awaitingApproval)
       return { ok: false, reason: s.inForce ? "already approved" : "not awaiting approval" };
     if (slotsRemaining(st) < 1)
-      return { ok: false, noTime: true, reason: "no order-paper time left this session" };
+      return { ok: false, noTime: true, reason: "no order-paper time left this sitting period" };
     const cap = (C.setup && C.setup.divisionsPerSitting) || 2;
     if ((st.divisionsToday || 0) >= cap)
       return { ok: false, full: true, cap: cap,
@@ -2139,7 +2157,7 @@ const Engine = (function () {
     const roll = st.functional && st.functional[fcId];
     if (!roll) return { ok: false, reason: "that roll is not in this parliament" };
     if (st.slots.used >= st.slots.total)
-      return { ok: false, reason: "no order-paper time left this session" };
+      return { ok: false, reason: "no order-paper time left this sitting period" };
     const cap = (C.setup && C.setup.boardCap) == null ? 2 : C.setup.boardCap;
     if (boardsMoved(st, fcId) >= cap)
       return { ok: false, reason: "the board has been appointed to as often as the Charter allows" };
@@ -2218,7 +2236,7 @@ const Engine = (function () {
     if (postId === (C.setup && C.setup.pmPost)) return { ok: false, reason: "the Prime Minister cannot dismiss herself" };
     const post0 = (C.cabinet || []).find(x => x.id === postId) || {};
     if (st.slots.used >= st.slots.total)
-      return { ok: false, reason: "no order-paper time left this session" };
+      return { ok: false, reason: "no order-paper time left this sitting period" };
     /* AND THERE HAS TO BE SOMEBODY TO APPOINT. Content declares who may hold
        a post (§15.5) and there is no other way to fill one, so dismissing
        from a post with no declared candidates would leave it permanently
@@ -3503,8 +3521,8 @@ const Engine = (function () {
        while the House still sits — chains on this rather than on a flag
        every one of its choices would have to remember to set. */
     seen:           (st, v) => [].concat(v).every(id => (st.seen[id] || 0) > 0),
-    risesWithin:    (st, v) => st.sessionEnds != null &&
-                      (st.sessionEnds - st.sitting) <= v,
+    risesWithin:    (st, v) => st.risesAt != null &&
+                      (st.risesAt - st.sitting) <= v,
     /* ON WHAT WAS HEARD, NOT ON WHAT IS TRUE. design/11 §3 is explicit that
        this is the point rather than a wrinkle to route around: an event
        fires because the last thing you heard was bad, and it may not be
@@ -4658,7 +4676,7 @@ const Engine = (function () {
       return { ok: false, reason: "Earth's banks will not go past " + cap.toLocaleString() +
                                   " with this government" };
     if (st.slots.used >= st.slots.total)
-      return { ok: false, reason: "no order-paper time left this session" };
+      return { ok: false, reason: "no order-paper time left this sitting period" };
     return { ok: true };
   }
 
@@ -5156,14 +5174,14 @@ const Engine = (function () {
        what makes it fair rather than punitive — so it is dated the day the
        House rises and sits there from the opening, not raised as a warning
        once it is too late to act. */
-    if (!supplyCarried(st, C) && st.sessionEnds != null) {
+    if (!supplyCarried(st, C) && st.risesAt != null) {
       const sup = (C.bills || []).find(b => b.test === "supply" &&
         !((st.bills[b.id] || {}).dead));
       /* Its own kind, not "owed": an undertaking is a promise the player
          made and this is a requirement they did not choose. Two tests
          filter the calendar for owed and expect exactly the promises the
          player entered into, and they were right to. */
-      if (sup) add(st.sessionEnds, "supply", sup.title + " must carry",
+      if (sup) add(st.risesAt, "supply", sup.title + " must carry",
                    { tab: "cham", how: "Carry the " + sup.title,
                      focus: "bill:" + sup.id });
     }
@@ -5174,7 +5192,7 @@ const Engine = (function () {
       if (u.state !== "open") return;
       /* Where it is kept, and how: one helper, so the calendar, the
          undertakings panel and the order itself agree. */
-      add(u.by == null ? st.sessionEnds : u.by, "owed", u.text,
+      add(u.by == null ? sessionEndsAt(st, C) : u.by, "owed", u.text,
           undertakingWhere(C, u));
     });
     /* A PRAYER WINDOW IS A DEADLINE. An order stands unless the House
@@ -5211,8 +5229,10 @@ const Engine = (function () {
       if (e.at < st.sitting) return;
       add(e.at, "expected", e.foreseen);
     });
-    if (st.sessionEnds != null)
-      add(st.sessionEnds, "rises", "The House rises \u2014 session " + st.session);
+    if (st.risesAt != null)
+      add(st.risesAt, "rises", !lastPeriod(st, C) ? "The House rises for the recess"
+        : lastSession(st, C) ? "The House rises and is dissolved"
+        : "The House rises \u2014 session " + st.session + " ends");
     return out.sort((a, b) => a.sitting - b.sitting ||
                               a.kind.localeCompare(b.kind));
   }
@@ -5320,7 +5340,7 @@ const Engine = (function () {
     /* Order-paper time does not carry over, so time left unspent in the
        last days of a session is time thrown away. */
     const left = st.slots.total - st.slots.used;
-    const toRise = st.sessionEnds != null ? st.sessionEnds - st.sitting : 99;
+    const toRise = st.risesAt != null ? st.risesAt - st.sitting : 99;
     if (left > 0 && toRise <= SOON)
       push("slots", left + " order-paper slot" + (left === 1 ? "" : "s") +
                     " unspent before the House rises",
@@ -5382,7 +5402,7 @@ const Engine = (function () {
       const already = (st.flags || {})["init_" + i.id];
       const why = already ? "already in hand"
         : !matches(st, i.when) ? "not open to you"
-        : (i.cost || 1) > left ? "no order-paper time left this session"
+        : (i.cost || 1) > left ? "no order-paper time left this sitting period"
         : null;
       return { id: i.id, title: i.title, note: i.note || "",
                cost: i.cost || 1, tempo: i.tempo || [],
@@ -5403,7 +5423,7 @@ const Engine = (function () {
     const t = (i.tempo || [])[tempoIdx || 0] || { after: 3 };
     const cost = (i.cost || 1) + (t.cost || 0);
     if (cost > st.slots.total - st.slots.used)
-      return { ok: false, reason: "no order-paper time left this session" };
+      return { ok: false, reason: "no order-paper time left this sitting period" };
     st.slots.used += cost;
     st.actedThisSitting = true;
 
@@ -5447,7 +5467,7 @@ const Engine = (function () {
     if (bs.stage !== "committee")
       return { ok: false, reason: "amendments are moved at committee", list: list };
     if (st.slots.total - st.slots.used < 1)
-      return { ok: false, reason: "no order-paper time left this session", list: list };
+      return { ok: false, reason: "no order-paper time left this sitting period", list: list };
     return { ok: true, list: list };
   }
 
@@ -5490,7 +5510,7 @@ const Engine = (function () {
     if (bs.stage === "drafting")
       return { ok: false, reason: "not introduced yet" };
     const first = st.sitting + 1;
-    const last = st.sessionEnds == null ? first + 12 : st.sessionEnds;
+    const last = st.risesAt == null ? first + 12 : st.risesAt;
     if (on < first) return { ok: false, reason: "the House cannot divide before sitting " + first };
     if (on > last) return { ok: false, reason: "the House rises at sitting " + last };
     bs.dividesOn = on;
@@ -5544,9 +5564,13 @@ const Engine = (function () {
      that reached no settlement was measured running 190 empty sittings
      and would have run for ever.
 
-     A CAMPAIGN IS ONE PARLIAMENT, OF HOWEVER MANY SESSIONS CONTENT SAYS
-     (setup.sessionsPerParliament; three since 22 Sep 2026, one before, and
-     the engine names no number). At the end of it the House is
+     A CAMPAIGN IS ONE PARLIAMENT, OF HOWEVER MANY SESSIONS AND SITTING
+     PERIODS CONTENT SAYS (setup.sessionsPerParliament and
+     setup.periodsPerSession; the engine names no number). Flash I is one
+     session of three periods: it was one session of twenty-four sittings,
+     then for a day three SESSIONS of sixteen, which made every "this
+     session" in the prose mean sixteen sittings and killed bills at a
+     recess. At the end of it the House is
      dissolved, the electorate answers, and the campaign is over — which
      makes the election the BACKSTOP ENDING rather than an interruption.
      A run therefore has three ways to finish and no way to continue
@@ -5566,6 +5590,44 @@ const Engine = (function () {
   function lastSession(st, C) {
     const per = (C.setup && C.setup.sessionsPerParliament) || 1;
     return (st.session - (st.parliamentOpenedAt || st.session) + 1) >= per;
+  }
+
+  /* SITTING PERIODS (bible §1.8). A session is sat in periods with a recess
+     between them, and a recess is not the end of anything: order-paper time
+     refills, and bills and promises carry on. Three periods of sixteen are
+     one session in Flash I, because the prose was written for a run that
+     is one session — "bring it back this session" means before the
+     election — and real procedure kills a bill at prorogation, not at a
+     recess. */
+  function periodLength(C) { return (C && C.setup && C.setup.sittingsPerPeriod) || 24; }
+  function lastPeriod(st, C) {
+    return (st.period || 1) >= ((C && C.setup && C.setup.periodsPerSession) || 1);
+  }
+  /* The sitting on which this session's last period rises: when what is
+     owed "before the House rises" falls due. */
+  function sessionEndsAt(st, C) {
+    const left = ((C && C.setup && C.setup.periodsPerSession) || 1) - (st.period || 1);
+    return st.risesAt == null ? null : st.risesAt + Math.max(0, left) * periodLength(C);
+  }
+
+  /* THE HOUSE RISES FOR THE RECESS. Time is allotted per period, so it
+     refills, and reserved time goes with the period it was granted for.
+     Supply is tested, because a government may not go into a recess
+     without it. Nothing else ends: a bill is killed by prorogation, not
+     by a recess, and a promise owed before the House rises is owed before
+     the SESSION ends — which is when content written for one session to a
+     run meant it to be. */
+  function recess(st, C) {
+    testSupply(st, C);
+    st.period = (st.period || 1) + 1;
+    st.slots.used = 0;
+    st.slots.reserved = {};
+    st.slotsGranted = [];
+    st.risesAt = st.sitting + periodLength(C);
+    st.log.unshift({ sitting: st.sitting, text: "The House rises for the recess, and returns " +
+      "for the " + (["", "first", "second", "third", "fourth", "fifth"][st.period] ||
+      "next") + " sitting period of the session." });
+    st.wire.unshift({ sitting: st.sitting, text: "THE HOUSE RISES FOR THE RECESS" });
   }
 
   /* Dissolution, the election, and the end of the campaign. The seats are
@@ -5589,7 +5651,7 @@ const Engine = (function () {
     const after = Object.keys(st.parties).reduce((m, p) =>
       (m[p] = partyTotal(st, p), m), {});
     const mine = st.playerParty;
-    st.dissolved = { at: st.sitting, session: st.session,
+    st.dissolved = { at: st.sitting, session: st.session, period: st.period || 1,
                      before: before, after: after,
                      held: after[mine] || 0, was: before[mine] || 0 };
     st.log.unshift({ sitting: st.sitting,
@@ -5713,10 +5775,11 @@ const Engine = (function () {
     });
 
     st.session += 1;
+    st.period = 1;
     st.slots.used = 0;
-    st.slots.reserved = {};                   /* reserved time is the session's */
+    st.slots.reserved = {};                   /* reserved time is the period's */
     st.slotsGranted = [];
-    st.sessionEnds = st.sitting + (C.setup.sittingsPerSession || 24);
+    st.risesAt = st.sitting + periodLength(C);
     st.log.unshift({ sitting: st.sitting,
       text: "The House rises. Session " + st.session + " opens" +
             (fell.length ? "; " + fell.length + " bill" + (fell.length > 1 ? "s" : "") +
@@ -5741,7 +5804,7 @@ const Engine = (function () {
        done — which is what makes §7.7's scarcity bite. `noTime` lets the
        interface say so rather than refusing in silence. */
     if (slotsFor(st, billId) < 1)
-      return { ok: false, reason: "no order-paper time left this session", noTime: true };
+      return { ok: false, reason: "no order-paper time left this sitting period", noTime: true };
 
     /* A BILL MUST HAVE BEEN READ BEFORE THE HOUSE DIVIDES ON IT.
 
@@ -5914,9 +5977,11 @@ const Engine = (function () {
        must all see it, so it resolves at the top of the sitting and not
        at the point somebody happens to look. */
     if (C) resolveDue(st, C);
-    if (C && st.sessionEnds != null && st.sitting > st.sessionEnds && !st.dissolved) {
-      /* The House rises. Whether it meets again is the whole question. */
-      if (lastSession(st, C)) dissolve(st, C);
+    if (C && st.risesAt != null && st.sitting > st.risesAt && !st.dissolved) {
+      /* The House rises. For a recess, for the end of the session, or for
+         good: whether it meets again is the whole question. */
+      if (!lastPeriod(st, C)) recess(st, C);
+      else if (lastSession(st, C)) dissolve(st, C);
       else prorogue(st, C);
     }
     if (C) reviewReturns(st, C);
@@ -6094,7 +6159,7 @@ const Engine = (function () {
     rollCall, lobbyable, setLobby, clearLobby, lobbyCost, payLobby, lobbiedSeats,
     clausesOf, clausePlan, clauseCost, setClause, clauseEffects,
     domainTest, functionalByConstituency, lobbiedByConstituency, isSupply,
-    lastSession, dissolve, checkEnd, supplyCarried, supplyPending,
+    lastSession, lastPeriod, sessionEndsAt, recess, dissolve, checkEnd, supplyCarried, supplyPending,
     signableMembers, collectSignature,
     settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
     undertakingWhere,

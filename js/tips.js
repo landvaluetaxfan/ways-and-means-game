@@ -57,10 +57,12 @@ const Tips = (function () {
       body: "The act of the story you are in. Chapters control which events can " +
             "fire. They do not advance on a timer." },
     rise: { title: "The House rises",
-      body: "The sittings left before the session ends. When it does, order-paper " +
-            "time refills, business not carried falls, and every undertaking due " +
-            "before the rise comes due at once. It is the deadline everything " +
-            "else on the board is measured against." },
+      body: "The sittings left before the House rises. A session is sat in " +
+            "periods: at a recess order-paper time refills and nothing else ends. " +
+            "When the last period rises the session ends with it, business not " +
+            "carried falls, and every undertaking due before the House rises " +
+            "comes due at once. It is the deadline everything else on the board " +
+            "is measured against." },
     globe: { title: "The Earth",
       body: "Every anchor in the dozen stands on somebody else's soil. The globe " +
             "turns and can be dragged; the map is the same drawing in a different " +
@@ -84,8 +86,8 @@ const Tips = (function () {
       body: "One slot moves one bill one stage closer to its division, and the " +
             "session holds only a few. Give a slot to a partner's bill and you " +
             "earn capital with that partner; spend one on your own and only your " +
-            "programme advances. Slots refill when the House rises and the next " +
-            "session opens. A hollow mark is time a crisis measure brought with " +
+            "programme advances. Slots refill when the House rises for a recess. " +
+            "A hollow mark is time a crisis measure brought with " +
             "it: only that measure can spend it, and it goes when the House rises." },
     signatures: { title: "Signatures",
       body: "Names Czarnecki has collected, against the number that forces a " +

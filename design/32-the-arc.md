@@ -1,7 +1,8 @@
 # 32 — THE ARC: THE RUN, THE SPINE, AND THE SETTLEMENT MAP
 
-> **Status, 22 Sep 2026.** The run is three sessions of sixteen sittings now,
-> not one of twenty-four, so the sitting numbers below are stale; the
+> **Status, 23 Sep 2026.** The run is one session sat in three periods of
+> sixteen sittings now, not one of twenty-four, so the sitting numbers below
+> are stale; the
 > decisions are not. Built since: §E.1 (the families are two channels,
 > `crisis: true`), §E.5 (reserved order-paper time), and decision 3 in the
 > author's revised form — chapter four folded into chapter TWO, where the

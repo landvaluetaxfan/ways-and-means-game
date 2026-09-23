@@ -1255,7 +1255,7 @@ try {
   const mk = () => w.eval("Engine.newGame(CONTENT)");
 
   const st0 = mk();
-  ok("a session has an end", st0.sessionEnds > st0.sitting, "rises at " + st0.sessionEnds);
+  ok("a session has an end", st0.risesAt > st0.sitting, "rises at " + st0.risesAt);
 
   /* granting the last slot SETS a day rather than opening a window */
   const a = mk();
@@ -1285,8 +1285,16 @@ try {
      here, one below so the first rise dissolves — and content's own number
      is put back after them. It used to be left at 1, which was harmless
      while content said 1 and meant every later test ran a parliament the
-     game does not have the day content said 3. */
+     game does not have the day content said 3.
+
+     AND ONE SITTING PERIOD TO A SESSION, for the same reason: these blocks
+     are about the end of a session, and content's sessions are sat in
+     three periods (bible §1.8), so its first rise is a recess that ends
+     nothing. test.js asserts the recess; these assert what a session's end
+     does, on a session with nothing but its end. */
   const SPP = Cx.setup.sessionsPerParliament;
+  const PPS = Cx.setup.periodsPerSession;
+  Cx.setup.periodsPerSession = 1;
   const b = mk();
   b.parliamentOpenedAt = b.session - 0;
   Cx.setup.sessionsPerParliament = 2;
@@ -1298,7 +1306,7 @@ try {
   const sess = b.session;
   /* Compute the target ONCE: b.sitting climbs while the bound would
      shrink, so a live expression here exits the loop about halfway. */
-  const riseAt = b.sessionEnds + 2;
+  const riseAt = b.risesAt + 2;
   while (b.sitting < riseAt) E.advance(b, Cx);
   ok("the House rises and a new session opens", b.session === sess + 1,
      "session " + b.session);
@@ -1310,7 +1318,7 @@ try {
      drafting + " in drafting");
   ok("and an instrument in force survives it",
      b.instruments[si].inForce || b.instruments[si].made);
-  ok("the next rise is scheduled", b.sessionEnds > b.sitting);
+  ok("the next rise is scheduled", b.risesAt > b.sitting);
   Cx.setup.sessionsPerParliament = 1;
 
   /* THE PARLIAMENT ENDS. Four loss conditions and a settlement still left
@@ -1329,7 +1337,7 @@ try {
   for (let i = 0; i < 4 && E.canDivide(e, Cx, "appropriation").unread; i++)
     E.grantSlot(e, Cx, "appropriation");
   E.divide(e, Cx, "appropriation");
-  const endAt = e.sessionEnds + 2;
+  const endAt = e.risesAt + 2;
   while (e.sitting < endAt) E.advance(e, Cx);
   ok("the House is dissolved rather than prorogued", !!e.dissolved,
      "session " + e.session);
@@ -1361,9 +1369,9 @@ try {
      c.undertakings[0].by === null);
   for (let i = 0; i < 5; i++) E.advance(c, Cx);
   ok("so it does not break early", c.undertakings[0].state === "open");
-  const cRise = c.sessionEnds + 2;
+  const cRise = c.risesAt + 2;
   while (c.sitting < cRise) E.advance(c, Cx);
-  ok("and breaks when the House rises", c.undertakings[0].state === "broken");
+  ok("and breaks when the session ends", c.undertakings[0].state === "broken");
 
   /* AND AT DISSOLUTION, WHICH IS THE HOUSE RISING FOR GOOD. Every promise
      lobbying makes is by:null, so without this a government could buy the
@@ -1372,12 +1380,13 @@ try {
   const g = mk();
   E.apply(g, Cx, [{ undertake: { id: "diss_probe", text: "before the House rises",
                                  by: null, discharge: { flag: "never" } } }]);
-  const gRise = g.sessionEnds + 2;
+  const gRise = g.risesAt + 2;
   while (g.sitting < gRise) E.advance(g, Cx);
   ok("a promise owed before the House rises is judged at dissolution too",
      !!g.dissolved && g.undertakings[0].state === "broken",
      g.undertakings[0].state);
   Cx.setup.sessionsPerParliament = SPP;
+  Cx.setup.periodsPerSession = PPS;
 
   /* the docket says when the House rises, always */
   w.eval('UI.boot(UI.state(), CONTENT);');
