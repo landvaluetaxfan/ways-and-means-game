@@ -124,6 +124,15 @@ try {
     ok("and its members with it",
        w.document.querySelectorAll("#party-mps tbody tr").length !== mpsFirst ||
        mpsFirst === 0, mpsFirst + " -> " + w.document.querySelectorAll("#party-mps tbody tr").length);
+    /* THE LOYALTY COLUMN IS THE LIVE ONE. It read st.loyalty, which does
+       not exist, and fell back to content, so it printed the opening figure
+       for the whole run whatever happened to the party. */
+    const lp = CONTENT.parties.find(p => p.id !== w.eval("UI.state().playerParty"));
+    w.eval('UI.state().parties[' + JSON.stringify(lp.id) + '].loyalty = 7; UI.redraw();');
+    const lcell = w.document.querySelector('#party-table tr[data-party="' + lp.id + '"] td:nth-child(4)');
+    ok("the party table prints loyalty as it stands, not as it opened",
+       lcell && lcell.textContent.trim() === "7", lcell ? lcell.textContent : "no row");
+    w.eval('UI.state().parties[' + JSON.stringify(lp.id) + '].loyalty = ' + lp.loyalty + '; UI.redraw();');
     ok("and the selection is marked on the row that was clicked",
        (w.document.querySelector("#party-table tr.sel") || {}) === prows[1] ||
        !!w.document.querySelector("#party-table tr.sel"));
@@ -163,6 +172,27 @@ try {
      /Socialists|Flash|government/i.test(d), d);
 } catch (e) { ok("the new-government default name", false, e.message); }
 
+/* A SETTLEMENT RECORDS AND DOES NOT INTERRUPT (design/31 §4, the author's
+   correction). It opened a dialog with its closing prose the moment it
+   landed, which can be sitting fifteen; the words belong on the last page. */
+try {
+  const snap9 = w.eval("JSON.stringify(UI.state())");
+  w.eval(`window.__alerts = []; (function(){ var a = Dialog.alert;
+    Dialog.alert = function (m, o, cb) { window.__alerts.push((o && o.title) || ""); return a.apply(this, arguments); }; })();
+    (function(){ var s = UI.state(); s.sitting = Math.max(s.sitting, 15);
+      s.bills.divergence.stage = "defeated"; s.bills.divergence.dead = true; })();`);
+  w.document.querySelector('.tab[data-t="gov"]').click();
+  const slot = w.document.querySelector("#gov-slots .slotbtn");
+  if (slot) slot.click();
+  const st9 = w.eval("UI.state()");
+  ok("a settlement landing mid-session is recorded", st9.settledAs === "restriction", st9.settledAs);
+  ok("in the register", st9.log.some(l => /The question is settled: The Restriction Settlement/.test(l.text)));
+  ok("and it opens no dialog", !w.eval("window.__alerts").some(t => /Settlement/.test(t)),
+     w.eval("window.__alerts").join(" / "));
+  /* put the run back as it was: the checks below read its calendar */
+  w.eval("UI.boot(JSON.parse(" + JSON.stringify(snap9) + "), UI.content())");
+} catch (e) { ok("a settlement records and does not interrupt", false, e.message); }
+
 /* THE LAST PAGE IS A SET PIECE (design/31's third use). The frame was built
    for three things and only two used it; the board was a panel among panels,
    which is the wrong shape for the one page in a run that is a RECORD rather
@@ -192,6 +222,13 @@ try {
   ok("it names what happened", /fallen|voted|confidence/i.test(text),
      text.slice(0, 60));
   ok("and it carries the record", /Record tab/.test(text));
+  /* and the settlement's closing words are on it, which no dialog read out
+     earlier: settled here on the page's own state */
+  const setl = w.eval("(function(){ var s = UI.state(); s.settledAs = 'restriction'; UI.redraw();" +
+    " var p = document.querySelector('#sitting-body .sp-page'); return p ? p.textContent : ''; })()");
+  ok("and the settlement's own closing words, which no dialog read out earlier",
+     /What the session settled: The Restriction Settlement/.test(setl) &&
+     /one hundred and sixty-eight hours/.test(setl), setl.slice(setl.indexOf("settled"), setl.indexOf("settled") + 80));
   ok("and it offers no decision, because there is nothing left to decide",
      w.document.querySelectorAll("#sitting-body button[data-choice]").length === 0);
 } catch (e) { ok("the last page", false, e.message); }
@@ -704,6 +741,12 @@ try {
        one and read a committee bill as if it were the assented act. */
     const track = w.document.querySelector("#pp-doc .stagetrack");
     ok("the act document draws a stage track", !!track);
+    /* THE DATE ON THE FILE IS THE CALENDAR'S. It was the literal "11 APR
+       2287" on every bill paper, two centuries off the campaign's own. */
+    const docText = (w.document.querySelector("#pp-doc") || {}).textContent || "";
+    const year = String(w.eval("UI.content().setup.startDate")).slice(0, 4);
+    ok("and it is dated in the campaign's own year", docText.indexOf(year) >= 0 && !/2287/.test(docText),
+       (docText.match(/\d{1,2} [A-Z]{3} \d{4}/) || ["no date"])[0]);
     if (track) {
       const steps = [...track.querySelectorAll("li")];
       const term  = track.querySelector("li.term");

@@ -619,13 +619,17 @@ const UI = (function () {
      - which is also why this cannot live in drawStatus. */
   let fallen = false, lastSession = null, lastSigBand = null, ended = null;
   function afterAction() {
-    /* THE SIGNATURES AGAINST HER. Nine is a ballot and seven is the band
-       the topbar turns red at — the most dramatic thing that can happen
+    /* THE SIGNATURES AGAINST HER. The threshold is a ballot and two short
+       of it is the band the topbar turns red at — the most dramatic thing that can happen
        short of losing, and the score did not notice it at all. Edge
        triggered on the way UP only: it is news when it gets worse, and
        silence when a signature is withdrawn. */
+    /* The threshold is content's, as the status bar's is; this cue was
+       left on the old literals and scored "threat" three short of a ballot
+       that needs twelve (design/34). Same band as the status bar's red. */
     const sigs = st.signatures || 0;
-    const band = sigs >= 9 ? 2 : sigs >= 7 ? 1 : 0;
+    const need = (C.setup.thresholds && C.setup.thresholds.ballot) || 12;
+    const band = sigs >= need ? 2 : sigs >= need - 2 ? 1 : 0;
     if (lastSigBand === null) lastSigBand = band;
     else if (band > lastSigBand) { lastSigBand = band; score("threat"); }
     else if (band < lastSigBand) lastSigBand = band;
@@ -674,18 +678,18 @@ const UI = (function () {
     if (end.kind !== "loss" && ended !== endKey) {
       ended = endKey;
       if (end.kind === "settlement" && end.settlement) {
-        /* A terminal settlement knells and sombres; a non-terminal one
-           resolves the crisis and the run goes on, so it scores like a
-           moment, not an ending. */
-        if (end.over) { score("sombre"); cue("knell"); }
-        else score("moment");
+        /* NO SETTLEMENT ENDS THE RUN (bible §1.7), so none interrupts it.
+           design/31 §4, the author's correction: a settlement landing
+           mid-session "records and does not interrupt. A line on the wire,
+           a mark in the register. No dialog." It opened one anyway, with
+           the closing prose, which put the payload at sitting fifteen in an
+           alert box. The engine writes the line and the mark; the closing
+           is read on the last page, after the count. */
+        /* And it is not written to the session log, which is the list of
+           FINISHED governments: a run that answered its question and then
+           resolved its crisis went in three times, twice before it ended. */
+        score("moment");
         setStatus("Settled: " + end.settlement.name, "transient");
-        if (typeof Dialog !== "undefined") Dialog.alert(
-          end.settlement.closing || end.settlement.summary || "",
-          { title: end.settlement.name, yes: "Acknowledge" });
-        if (typeof Shell !== "undefined" && Shell.record)
-          Shell.record({ sitting: st.sitting, chapter: st.chapter,
-                         date: st.date, end: "settled \u2014 " + end.settlement.name });
       } else if (end.kind === "election" && end.over) {
         setStatus("The Commonwealth has voted. The campaign is over.", "transient");
         if (typeof Shell !== "undefined" && Shell.record)
@@ -722,6 +726,7 @@ const UI = (function () {
       seats: held || was ? { was: was, held: held } : null,
       was: was, held: was ? held - was : 0,
       flags: st.flags || {},
+      promises: (st.undertakings || []).reduce((m, u) => (m[u.id] = u.state, m), {}),
       log: (st.log || []).map(x => x.text || "")
     };
     /* The election is the ending here, so `seats:"held"` means the government
@@ -1363,7 +1368,7 @@ const UI = (function () {
           `<b${relTip}>${g.head}</b> <em>${seatsIn(g.k)} seats \u00b7 ${g.note}</em></td></tr>` +
           rows.map(p => {
             const seats = Engine.partyTotal(st, p.id);
-            const loy = (st.loyalty && st.loyalty[p.id] != null) ? st.loyalty[p.id] : p.loyalty;
+            const loy = Engine.loyaltyOf(st, p.id) ?? p.loyalty;
             const cr = st.capital[p.id] || 0;
             const own = p.id === st.playerParty;
             /* THE LEDGER IS FOR PARTNERS. `whippable()` returns
@@ -1418,7 +1423,7 @@ const UI = (function () {
     const cr = st.capital[sel.id] || 0;
     /* The player's own party, for the distance readout below. */
     const own = C.partyById[st.playerParty];
-    const selLoy = (st.loyalty && st.loyalty[sel.id] != null) ? st.loyalty[sel.id] : sel.loyalty;
+    const selLoy = Engine.loyaltyOf(st, sel.id) ?? sel.loyalty;
     /* WHAT THIS RELATION IS, in the terms the engine prices it in.
        Four cases, not three: the player's own bench is inside the coalition
        but is the one whipped with party loyalty rather than the ledger, and
@@ -1674,7 +1679,7 @@ const UI = (function () {
       : `<thead><tr><th>Current</th><th class="n" data-tip="mps">Members</th>` +
         `<th class="n" data-tip="loyalty">Loyalty</th></tr></thead><tbody>` +
         curs.map(cu => {
-          const loy = (st.loyalty && st.loyalty[cu.id] != null) ? st.loyalty[cu.id] : cu.loyalty;
+          const loy = Engine.loyaltyOf(st, cu.id) ?? cu.loyalty;
           return `<tr><td>${esc(cu.name)}</td><td class="n">${cu.members}</td>` +
             `<td class="n ${loy < 35 ? "warn" : ""}">${loy}</td></tr>`;
         }).join("") + `</tbody>`;
@@ -2537,6 +2542,12 @@ const UI = (function () {
      the ordinary majority. A supply bill is the one that cannot be stopped
      and can be held, which is the whole of T18 and the reason the forty
      appear in a money division at all. */
+  /* A small count in words, as the prose around it is written; a figure
+     past twelve is printed as a figure. */
+  function words(n) {
+    return ["no", "one", "two", "three", "four", "five", "six", "seven", "eight",
+            "nine", "ten", "eleven", "twelve"][n] || String(n);
+  }
   function billRuleHTML(b) {
     if (b.test === "supply")
       return `<div class="rulehead">The rule</div><div class="note">` +
@@ -2544,7 +2555,7 @@ const UI = (function () {
         `the 240 and nothing else: a budget touches every subject there is, so the ` +
         `domain test is not applied to it. The functional forty divide and are ` +
         `recorded. They cannot stop it, and a bench that votes it down holds it ` +
-        `for three sittings — paid in the one currency that cannot be topped up.</div>`;
+        `for ${words(C.setup.supplyDelaySittings || 3)} sittings — paid in the one currency that cannot be topped up.</div>`;
     if (b.dualMajority)
       return `<div class="rulehead">The rule</div><div class="note">` +
         `The dual test applies. It must carry separately among the 240 elected ` +
@@ -3106,7 +3117,7 @@ const UI = (function () {
         const cols = 5 + (armed ? 2 : 0) + (anyOff ? 1 : 0);
         h += `<tr class="compdet"><td colspan="${cols}">` +
           `<div class="cdet">` + mine.map(cu => {
-            const loy = (st.loyalty && st.loyalty[cu.id] != null) ? st.loyalty[cu.id] : cu.loyalty;
+            const loy = Engine.loyaltyOf(st, cu.id) ?? cu.loyalty;
             return `<div class="cdrow"><b>${esc(cu.name)}</b>` +
               `<span class="cdn" data-tip="mps">${cu.members} member${cu.members === 1 ? "" : "s"}</span>` +
               `<span class="cdl${loy < 35 ? " warn" : ""}">loyalty ${loy}</span></div>`;
@@ -5180,12 +5191,17 @@ const UI = (function () {
         : "It lost the House." });
     }
 
+    /* THE SETTLEMENTS' OWN WORDS, here and nowhere earlier (design/31 §4):
+       the closing prose used to arrive mid-session in a dialog and the last
+       page printed only a name. */
+    const closingOf = id => { const x = (C.settlements || []).find(y => y.id === id);
+      return x && (x.closing || x.summary) || ""; };
+    if (st.resolvedAs && !(end.kind === "settlement" && end.settlement && end.settlement.id === st.resolvedAs))
+      secs.push({ kind: "body", head: "How the crisis resolved: " + settlementName(st.resolvedAs),
+                  body: closingOf(st.resolvedAs) || settlementName(st.resolvedAs) + "." });
     if (st.settledAs)
-      secs.push({ kind: "body", head: "What the session settled",
-                  body: settlementName(st.settledAs) + "." });
-    if (st.resolvedAs)
-      secs.push({ kind: "body", head: "How the crisis resolved",
-                  body: settlementName(st.resolvedAs) + "." });
+      secs.push({ kind: "body", head: "What the session settled: " + settlementName(st.settledAs),
+                  body: closingOf(st.settledAs) || settlementName(st.settledAs) + "." });
 
     /* WHAT THE GOVERNMENT DID TO THE COUNTRY, which is the thing a player
        wants at the end and which no board has ever printed: where it was

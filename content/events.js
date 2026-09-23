@@ -3214,7 +3214,7 @@ you already have.`,
       brief:"The orthodox answer: subsidise the corridor, export the one "+
         "thing the Commonwealth makds that Earth will buy. Costs money now "+
         "for a balance later.",
-      effects:[{ law:{ transit_subsidy:1 } },
+      effects:[{ law:{ transit_subsidy:"all" } },
                { move:{ solvency:-6000 } },
                { move:{ "price.transit":-10 } },
                { economy:{ trade:4 } }],
@@ -3270,7 +3270,12 @@ you already have.`,
    government can change and nothing ever reads is a scoreboard. This reads
    it, with `lawIs`, which no content had used before. */
 { id:"ec_subsidy_reckoning", chapter:2, weight:66, maxFires:2,
-  when:{ lawIs:{ transit_subsidy:1 } },
+  /* IN THE LAW'S OWN WORDS. This read `transit_subsidy:1` and the deficit
+     event wrote 1 and 0, while the appropriation, the price tick and the
+     Economy panel all speak "none" / "anchors" / "all" -- so a subsidy laid
+     here moved no price and printed no word (design/34). "all" is the
+     corridor subsidy the brief describes: paid per tonne, everywhere. */
+  when:{ lawIs:{ transit_subsidy:"all" } },
   brief:"The transit subsidy is in force and somebody has done the "+
     "arithmetic on who receives it. The scene wants the Chair of the Life "+
     "Support panel pointing out that a corridor subsidy is paid per tonne, "+
@@ -3299,7 +3304,7 @@ you already have.`,
     { label:"Withdraw it entirely.",
       brief:"Undoing the government's own instrument two sittings after "+
         "laying it. Saves the money and costs the argument.",
-      effects:[{ law:{ transit_subsidy:0 } },
+      effects:[{ law:{ transit_subsidy:"none" } },
                { move:{ solvency:6000 } },
                { move:{ "price.transit":10 } },
                { economy:{ trade:-3 } },

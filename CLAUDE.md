@@ -378,21 +378,29 @@ Content is `.js` rather than `.json` on purpose: `fetch()` is blocked on
 
 ```
 npm install      # once, for jsdom
-npm run check    # all ten, about three seconds
+npm run check    # all eleven, about two minutes
 ```
+
+`uxtest` is about seventy seconds of that and `edtest` about twenty-five
+(it opens every entry in the editor, design/34); the other nine take a few
+seconds between them. Run one on its own with `npm run <name>`.
 
 | | |
 |---|---|
 | `test.js` | chamber arithmetic against the bible, tier reconciliation, instrument acceptance, 40-sitting smoke test |
 | `tools/lint.js` | legibility: concept load per event, terms used before taught |
 | `tools/cxcheck.js` | Concordance links, see-alsos, banners |
-| `tools/roundtrip.js` | editor fidelity: serialise → reload → identical play |
-| `tools/renametest.js` | renaming an id preserves behaviour exactly |
-| `tools/edtest.js` | editor boots and every tab works |
+| `tools/roundtrip.js` | the serialiser: serialise → reload → identical play AND identical data |
+| `tools/renametest.js` | renaming every id preserves behaviour, and leaves no old id anywhere |
+| `tools/edtest.js` | editor boots, every tab works, and opening an entry changes nothing |
 | `tools/uitest.js` | menu into a running game, every screen renders, saves round-trip |
 | `tools/uxtest.js` | focus, tips, audio, streaming, the division dialog |
 | `tools/toc.js --check` | the bible's section index is current |
 | `tools/enccheck.js` | every source file is UTF-8, no BOM, LF, no bad decode |
+| `tools/prose.js --check` | the prose export round-trips |
+
+`tools/lint.js` is also where references are checked: every id a gate,
+effect, promise, initiative or award names must exist (design/34).
 
 **Run them after any content change.** They are the only playtester this project
 has until a human one arrives.
@@ -581,12 +589,13 @@ version of any of them is in the header of the file it names.
   an emergency order: after the debt trap, holding the country is the game.
   The canon script had to put the ladder first for the same reason — six
   slots carry a programme or hold the country, not both.
-- **THE EMERGENCY LOAN CANNOT BE HONOURED.** `f1_loan` undertakes "Honour the
-  emergency facility" with no `discharge`, so it always breaks when it falls
-  due: the Treasurer resigns and the debt is called. Under sitting periods
-  that is the end of the session, as written, so the debt is called during
-  the campaign; for the day the blocks were sessions it landed mid-run.
-  Whether it should be repayable is the content round's call.
+- **THE EMERGENCY LOAN CANNOT BE HONOURED, AND ITS DEBT IS NEVER CALLED.**
+  `f1_loan` undertakes "Honour the emergency facility" with no `discharge`,
+  so it always breaks when it falls due, at the end of the session. The
+  Treasurer resigns. This line used to say "and the debt is called", which
+  was never true: the breach names `f1_debt_called`, which is not an event,
+  and a breach naming no event queues nothing (design/34 D1). lint prints
+  both halves as advisories until the author decides.
 - **AN AFFIRMATIVE ORDER COULD BE LAID AND NEVER APPROVED.** `makeInstrument`
   set `awaitingApproval`, charged the political cost, and nothing in the
   engine ever read the flag again — five orders were paid for and could
@@ -608,6 +617,39 @@ version of any of them is in the header of the file it names.
   resolves every `cabinet` effect in content against the posts and the
   person roster. A sweep renaming a scalar must leave alone a post id that
   happened to share the scalar's old name.
+- **THE EDITOR REWROTE WHAT IT OPENED.** `commit()` runs on every click
+  away, and the event form built a FRESH object from the fields it draws, so
+  browsing the list deleted `at`, `maxFires`, briefs, a choice's gate, act
+  and cost, and every condition the schema does not describe. It changed 73
+  of 108 events, `f1_stranded`'s `at:14` among them. A `<select>` whose value
+  is not among its options shows the first option and reads it back, which
+  retargeted every `actor.`, `trend.` and `standing.` move. A form edits a
+  clone of its entry now, and `tools/edtest.js` opens every entry of every
+  tab and requires nothing to change. **A form that cannot draw a field
+  must still carry it.**
+- **A CHECK THAT ASKS ITS SUBJECT CANNOT FAIL** (design/34 §6). Put a gate
+  on a bill that does not exist, or a breach naming no event, through
+  `npm run check`: until 23 Sep every check passed both.
+  - The rename test asked `js/refs.js` whether `js/refs.js` had missed
+    anything; 32 kinds of reference had been missed.
+  - The round trip compared forty sittings of play, not the data.
+  - lint's flag audit did not read the awards.
+  - One assertion was `Engine.agreement ? true : true`.
+
+  Before trusting a check, break its subject and watch it fail.
+- **A NAME READ THAT NOTHING WRITES IS A FEATURE THAT ISN'T THERE.**
+  - The Party tab read `st.loyalty`, which does not exist, so every loyalty
+    it printed was the opening one.
+  - A division discharge read `lastDivision.carried` where the engine writes
+    `carries`.
+  - `characters[].current` is read in three places and authored nowhere.
+
+  The same shape as the affirmative order above, from the other side.
+- **A SETTLEMENT RECORDS AND DOES NOT INTERRUPT** (design/31 §4, built 23
+  Sep). The engine writes a log and wire line when either kind lands. The
+  interface opens no dialog and writes nothing to the session log, which is
+  for finished governments. The closing prose is read on the last page,
+  after the count.
 - **OPEN: nothing physical can end the run after dissolution.** `checkEnd`
   reads the election branch before `checkLoss`, correctly for a confidence
   vote (the House no longer exists) but also for the thermal cascade — so

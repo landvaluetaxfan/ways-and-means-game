@@ -159,6 +159,97 @@ try {
   }
 } catch (e) { ok("effect pairs survive the form", false, e.message); }
 
+/* OPENING AN ENTRY CHANGES NOTHING (design/34). The editor commits the form
+   whenever the author clicks away, and it rebuilt each entry from the fields
+   it draws -- so browsing the events list deleted `at`, `maxFires`, briefs,
+   choice gates and every condition the schema did not describe, from 73 of
+   108 events. Nothing here noticed, because nothing here compared an entry
+   before and after. This opens every entry of every tab in a FRESH editor
+   (the checks above have already edited this one), exports each tab, and
+   compares with what content holds. Two differences are the editor's
+   documented normal form and are applied to both sides: a multi-pair effect
+   is exploded into one effect per pair, and an empty effects list is none. */
+console.log("\nOPENING AN ENTRY CHANGES NOTHING");
+try {
+  const vc2 = new VirtualConsole(), errs2 = [];
+  vc2.on("jsdomError", e => errs2.push(e.message));
+  const d2 = new JSDOM(html, { runScripts: "dangerously", pretendToBeVisual: true, url: "file:///y/",
+    virtualConsole: vc2, beforeParse(win) { win.addEventListener("error", e => errs2.push(e.message)); } });
+  const w2 = d2.window;
+  w2.URL.createObjectURL = () => "blob:y"; w2.HTMLAnchorElement.prototype.click = function () {};
+  FILES.forEach(f => { const p = path.join(root, f); if (!fs.existsSync(p)) return;
+    const sc = w2.document.createElement("script"); sc.textContent = fs.readFileSync(p, "utf8");
+    w2.document.body.appendChild(sc); });
+  w2.eval(`
+    Dialog.confirm = function (m, o, cb) { (typeof o === "function" ? o : cb)(false); };
+    Dialog.prompt  = function (m, o, cb) { (typeof o === "function" ? o : cb)(null); };
+    Dialog.alert   = function (m, o, cb) { var f = typeof o === "function" ? o : cb; if (f) f(); };
+    try { localStorage.clear(); } catch (e) {}
+    (function(){ const f = Serialise.file; Serialise.file = function (k, arr) {
+      window.__cap = JSON.parse(JSON.stringify(arr)); return f.apply(this, arguments); };
+      const pf = Serialise.partiesFile; Serialise.partiesFile = function (p, c) {
+      window.__cap = JSON.parse(JSON.stringify(p)); return pf.apply(this, arguments); }; })();
+    Editor.boot();`);
+  const X = w2.eval("Editor.__test.explodeEffects");
+  const norm = (tab, e) => { if (!e) return e; e = JSON.parse(JSON.stringify(e));
+    if (tab === "events") (e.choices || []).forEach(c => {
+      if (c.effects) c.effects = JSON.parse(JSON.stringify(X(c.effects)));
+      if (c.effects && !c.effects.length) delete c.effects; });
+    return e; };
+  const GLOB = { events: "EVENTS", parties: "PARTIES", stations: "STATIONS", characters: "CHARACTERS",
+    bills: "BILLS", glossary: "GLOSSARY", constituencies: "CONSTITUENCIES", functional: "FUNCTIONAL" };
+  const diff = (a, b, p, out) => {
+    if (JSON.stringify(a) === JSON.stringify(b)) return;
+    if (a && b && typeof a === "object" && typeof b === "object" && Array.isArray(a) === Array.isArray(b))
+      new Set(Object.keys(a).concat(Object.keys(b))).forEach(k => diff(a[k], b[k], p + "." + k, out));
+    else out.push(p + ": " + String(JSON.stringify(a)).slice(0, 50) + " -> " + String(JSON.stringify(b)).slice(0, 50));
+  };
+  Object.keys(GLOB).forEach(tab => {
+    const t = w2.document.querySelector('.tab[data-t="' + tab + '"]');
+    if (!t) { ok("the " + tab + " tab exists", false); return; }
+    t.dispatchEvent(new w2.MouseEvent("click", { bubbles: true }));
+    const idsOf = () => [...w2.document.querySelectorAll("#ed-list .ed-item[data-id]")].map(n => n.dataset.id);
+    idsOf().forEach(id => {
+      const it = [...w2.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id === id);
+      if (it) it.dispatchEvent(new w2.MouseEvent("click", { bubbles: true }));
+    });
+    w2.__cap = null;
+    w2.document.getElementById("ed-exportone").dispatchEvent(new w2.MouseEvent("click", { bubbles: true }));
+    const got = w2.__cap || [], want = JSON.parse(w2.eval("JSON.stringify(" + GLOB[tab] + ")"));
+    const key = o => o.id || o.term;
+    const byId = new Map(got.map(o => [key(o), o]));
+    const out = [];
+    want.forEach(o => diff(norm(tab, o), norm(tab, byId.get(key(o))), key(o), out));
+    const one = { parties: "party", glossary: "glossary", constituencies: "constituency",
+                  functional: "functional" }[tab] || tab.replace(/s$/, "");
+    ok("opening every " + one + " entry changes none of them",
+       out.length === 0, out.length + " differences: " + out.slice(0, 4).join("  //  "));
+  });
+  /* A RENAME SAYS WHAT IT CANNOT REACH. The cabinet, the instruments and
+     the rest are read-only here, and a party renamed in the editor used to
+     leave them naming a party that no longer exists without a word. */
+  w2.eval(`window.__prompt = null; Dialog.prompt = function (m, o, cb) {
+    window.__prompt = m; (typeof o === "function" ? o : cb)(null); };`);
+  w2.document.querySelector('.tab[data-t="parties"]').dispatchEvent(new w2.MouseEvent("click", { bubbles: true }));
+  const cu = [...w2.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id === "cu");
+  if (cu) cu.dispatchEvent(new w2.MouseEvent("click", { bubbles: true }));
+  const rb = w2.document.querySelector('#ed-form [data-act="rename"]');
+  if (rb) rb.dispatchEvent(new w2.MouseEvent("click", { bubbles: true }));
+  const said = String(w2.__prompt || "");
+  ok("renaming a party lists what it cannot change in files it does not write",
+     /does not write/.test(said) && /cabinet /.test(said),
+     said.split("\n").filter(l => /NOT changed|cabinet |instrument /.test(l)).slice(0, 3).join(" / ") || "no prompt");
+
+  /* and the content the game plays is not reported as broken: the
+     validator checked the schema, which describes only the verbs the forms
+     draw, and called seven real verbs and twenty-two conditions unknown */
+  const unknown = [...w2.document.querySelectorAll("#ed-status .ed-err")]
+    .map(n => n.textContent).filter(t => /unknown (verb|condition)/.test(t));
+  ok("the validator knows every verb and condition content uses", unknown.length === 0,
+     unknown.slice(0, 3).join(" // "));
+  if (errs2.length) ok("and the fresh editor raised no errors", false, errs2.slice(0, 2).join(" // "));
+} catch (e) { ok("opening an entry changes nothing", false, e.message); }
+
 console.log("");
 const uniq = [...new Set(errs.map(e => String(e).replace(/^Uncaught \[?|\]$/g, "")))];
 if (uniq.length) { console.log("WINDOW ERRORS:"); uniq.forEach(e => console.log("  " + e)); fail += uniq.length; }

@@ -20,15 +20,45 @@ const Refs = (function () {
   /* Each site is { path, kind, get, set } where get(M) yields
      { where, rename } for every hit. `where` is shown to the author. */
 
+  /* EVERY EFFECT LIST AND EVERY GATE, IN EVERY COLLECTION THE MODEL HOLDS.
+     These walked choice effects, bill onPass/onFail and event-level gates
+     and nothing else, so a rename missed an event's own effects, a choice's
+     gate, a bill's amendments and clauses, and every instrument,
+     initiative, minute, settlement and business entry (design/34: 32 kinds
+     of reference, found by renaming everything and looking for what was
+     left). The walk is by known KEY -- an effect list is found under one of
+     these names, a gate under `when` -- so prose is never touched. */
+  const EFFECT_KEYS = ["effects", "onPass", "onFail", "reverse", "political_cost", "onSign", "close"];
+  const COLLECTIONS = [["events", "event"], ["bills", "bill"], ["instruments", "instrument"],
+    ["initiatives", "initiative"], ["minutes", "minute"], ["cabinet", "cabinet"],
+    ["settlements", "settlement"], ["business", "business"], ["actors", "actor"]];
+  function walkModel(M, visit) {
+    const go = (o, where) => {
+      if (!o || typeof o !== "object") return;
+      if (Array.isArray(o)) return o.forEach(x => go(x, where));
+      visit(o, where);
+      Object.keys(o).forEach(k => {
+        if (EFFECT_KEYS.includes(k) || k === "when" || !o[k] || typeof o[k] !== "object") return;
+        if (k === "choices" && Array.isArray(o[k]))
+          o[k].forEach((c, ci) => go(c, where + " · choice " + (ci + 1)));
+        else go(o[k], where);
+      });
+    };
+    COLLECTIONS.forEach(([name, label]) =>
+      (M[name] || []).forEach(x => go(x, label + " " + (x.id || x.term || "?"))));
+  }
   function eachEffect(M, fn) {
-    M.events.forEach(e => (e.choices || []).forEach((c, ci) =>
-      [].concat(c.effects || []).forEach(eff =>
-        fn(eff, `event ${e.id} · choice ${ci + 1}`))));
-    M.bills.forEach(b => ["onPass", "onFail"].forEach(k =>
-      [].concat(b[k] || []).forEach(eff => fn(eff, `bill ${b.id} · ${k}`))));
+    walkModel(M, (o, where) => EFFECT_KEYS.forEach(k => {
+      if (Array.isArray(o[k])) o[k].forEach(eff => { if (eff && typeof eff === "object") fn(eff, where); });
+    }));
   }
   function eachCondition(M, fn) {
-    M.events.forEach(e => { if (e.when) fn(e.when, `event ${e.id} · condition`); });
+    walkModel(M, (o, where) => {
+      if (o.when && typeof o.when === "object" && !Array.isArray(o.when)) fn(o.when, where + " · condition");
+    });
+    (((M.encyclopedia || {}).articles) || []).forEach(a => (a.sections || []).forEach((sec, i) => {
+      if (sec.when) fn(sec.when, `article ${a.id} · section ${i + 1} · condition`);
+    }));
   }
 
   const renameKey = (obj, from, to) => {
@@ -63,8 +93,25 @@ const Refs = (function () {
     });
     M.currents.forEach(c => { if (c.party === id) H(`current ${c.id} · party`, to => c.party = to); });
     M.characters.forEach(c => { if (c.party === id) H(`character ${c.id} · party`, to => c.party = to); });
+    (M.functional || []).forEach(f => (f.members || []).forEach(m => {
+      if (m.party === id) H(`functional ${f.id} · member ${m.ref || m.name}`, to => m.party = to);
+    }));
+    (M.cabinet || []).forEach(p => {
+      if (p.party === id) H(`cabinet ${p.id} · party`, to => p.party = to);
+      (p.candidates || []).forEach(c => {
+        if (c.party === id) H(`cabinet ${p.id} · candidate ${c.holder}`, to => c.party = to); });
+    });
+    (M.administrations || []).forEach(a => {
+      if (a.party === id) H(`administration ${a.id} · party`, to => a.party = to); });
+    (M.instruments || []).forEach(si => {
+      if (si.prayer_stances && si.prayer_stances[id] !== undefined)
+        H(`instrument ${si.id} · prayer stance`, to => renameKey(si.prayer_stances, id, to));
+    });
 
-    const S = M.setup;
+    /* The editor's model holds no setup (it does not write setup.js), and
+       this read it unguarded, so renaming a party there threw before the
+       dialog opened (design/34). */
+    const S = M.setup || {};
     if (S.playerParty === id) H("setup · playerParty", to => S.playerParty = to);
     (S.coalition || []).forEach((p, i) => { if (p === id) H("setup · coalition", to => S.coalition[i] = to); });
     (S.confidenceSupply || []).forEach((p, i) => { if (p === id) H("setup · confidence & supply", to => S.confidenceSupply[i] = to); });
@@ -80,6 +127,15 @@ const Refs = (function () {
         (eff.coalition[k] || []).forEach((p, i) => {
           if (p === id) H(`${where} · coalition ${k}`, to => eff.coalition[k][i] = to);
         }));
+      if (eff.functional) Object.keys(eff.functional).forEach(fc => {
+        const t = eff.functional[fc];
+        if (t && typeof t === "object" && t[id] !== undefined)
+          H(`${where} · functional ${fc}`, to => renameKey(t, id, to));
+      });
+      if (eff.cabinet) Object.keys(eff.cabinet).forEach(post => {
+        const t = eff.cabinet[post];
+        if (t && t.party === id) H(`${where} · cabinet ${post}`, to => t.party = to);
+      });
     });
     eachCondition(M, (w, where) => {
       ["loyaltyAbove", "loyaltyBelow", "capitalAbove", "capitalBelow"].forEach(k => {
@@ -94,6 +150,13 @@ const Refs = (function () {
   function stationRefs(M, id) {
     const hits = [];
     const H = (where, apply) => hits.push({ where, apply });
+    /* the roll: a seat belongs to a station, and a renamed station left all
+       its constituencies pointing at nothing */
+    (M.constituencies || []).forEach(k => {
+      if (k.station === id) H(`constituency ${k.id} · station`, to => k.station = to);
+      /* an at-large seat's `parent` is its station; a split one's is the
+         constituency it was split from, which the constituency rename takes */
+      if (k.parent === id) H(`constituency ${k.id} · parent`, to => k.parent = to); });
     eachEffect(M, (eff, where) => {
       if (eff.station && eff.station[id] !== undefined)
         H(`${where} · station`, to => renameKey(eff.station, id, to));
@@ -115,6 +178,11 @@ const Refs = (function () {
         H(`${where} · bill`, to => renameKey(eff.bill, id, to));
       if (eff.slots && eff.slots.reserve && eff.slots.reserve[id] !== undefined)
         H(`${where} · reserved time`, to => renameKey(eff.slots.reserve, id, to));
+      [].concat(eff.undertake || []).forEach(u => {
+        const d = u.discharge || {};
+        if (d.bill === id) H(`${where} · undertaking ${u.id} discharge`, to => d.bill = to);
+        if (d.division === id) H(`${where} · undertaking ${u.id} discharge`, to => d.division = to);
+      });
     });
     eachCondition(M, (w, where) => {
       if (w.billStage && w.billStage[id] !== undefined)
@@ -133,6 +201,11 @@ const Refs = (function () {
         if (q.event === id) H(`${where} · queue`, to => q.event = to);
       });
     });
+    eachEffect(M, (eff, where) => [].concat(eff.undertake || []).forEach(u => {
+      if (u.onBreach === id) H(`${where} · undertaking ${u.id} onBreach`, to => u.onBreach = to);
+    }));
+    (M.initiatives || []).forEach(i => {
+      if (i.event === id) H(`initiative ${i.id} · answered by`, to => i.event = to); });
     M.glossary.forEach(g => {
       if (g.introduced === id) H(`glossary "${g.term}" · introduced`, to => g.introduced = to);
     });
@@ -172,8 +245,28 @@ const Refs = (function () {
       H("setup · president", to => M.setup.president.id = to);
     /* A minister is named by the post, and a party leader by the party, so a
        rename has to follow the office into both or the Concordance loses it. */
-    (M.cabinet || []).forEach(p => { if (p.holder === id) H(`cabinet ${p.id} · holder`, to => p.holder = to); });
+    (M.cabinet || []).forEach(p => {
+      if (p.holder === id) H(`cabinet ${p.id} · holder`, to => p.holder = to);
+      if (p.vacatedBy === id) H(`cabinet ${p.id} · vacated by`, to => p.vacatedBy = to);
+      (p.candidates || []).forEach(c => {
+        if (c.holder === id) H(`cabinet ${p.id} · candidate`, to => c.holder = to); });
+    });
     (M.parties || []).forEach(p => { if (p.leader === id) H(`party ${p.id} · leader`, to => p.leader = to); });
+    (M.administrations || []).forEach(a => {
+      if (a.leader === id) H(`administration ${a.id} · leader`, to => a.leader = to); });
+    (M.bills || []).forEach(b => {
+      if (b.author === id) H(`bill ${b.id} · author`, to => b.author = to);
+      (b.cosponsors || []).forEach((c, i) => {
+        if (c === id) H(`bill ${b.id} · cosponsor`, to => b.cosponsors[i] = to); });
+    });
+    eachEffect(M, (eff, where) => {
+      [].concat(eff.undertake || []).forEach(u => {
+        if (u.owed_to === id) H(`${where} · undertaking ${u.id} owed to`, to => u.owed_to = to); });
+      if (eff.cabinet) Object.keys(eff.cabinet).forEach(post => {
+        const t = eff.cabinet[post];
+        if (t && t.holder === id) H(`${where} · cabinet ${post}`, to => t.holder = to);
+      });
+    });
     prose(M, "person_" + id, hits, "person_");
     return hits;
   }
@@ -220,6 +313,8 @@ const Refs = (function () {
     functional: () => [], glossary: () => [], concordance: () => [],
     constituencies: (M, id) => {
       const hits = [];
+      (M.constituencies || []).forEach(k => {
+        if (k.parent === id) hits.push({ where: `constituency ${k.id} · parent`, apply: to => k.parent = to }); });
       prose(M, id, hits);
       return hits;
     }

@@ -1452,6 +1452,18 @@ const Engine = (function () {
     return WHIP_BANDS.find(b => a >= b.min);
   }
 
+  /* A PARTY'S OR A CURRENT'S LOYALTY, AS IT STANDS. The live figure is on
+     st.currents[id] or st.parties[id]; there is no st.loyalty. The interface
+     read one for its whole life, found nothing, and fell back to content's
+     OPENING figure, so every loyalty the Party tab printed was the one the
+     campaign began with, and reshuffle's "their current takes it
+     personally" wrote to it and landed nowhere. One reader, so neither
+     side can guess the address again. Null for an id that is neither. */
+  function loyaltyOf(st, id) {
+    const t = (st.currents || {})[id] || (st.parties || {})[id];
+    return t && t.loyalty != null ? t.loyalty : null;
+  }
+
   function whippable(st, C, billId, partyId, tier) {
     const bill = C.billById[billId];
     const own = partyId === st.playerParty;
@@ -1746,6 +1758,17 @@ const Engine = (function () {
   const STAGE_ORDER = ["drafting","first_reading","second_reading","committee",
                        "report","third_reading","assent"];
   const DIVIDES_AT = "third_reading";
+  /* HOW FAR A BILL HAS GOT, for "has it reached X". STAGE_ORDER ends at
+     "assent", but a carried bill is then "awaiting_assent" or "referred",
+     and a signed one "assented" (content writes "passed") -- none of them in
+     the ladder, so indexOf said -1 and a bill that had become law had, by
+     this measure, not been introduced. A dead end (defeated, fallen,
+     struck) reached nothing. */
+  function stageRank(stage) {
+    if (stage === "awaiting_assent" || stage === "referred") return STAGE_ORDER.indexOf("assent");
+    if (stage === "assented" || stage === "passed" || stage === "in_force") return STAGE_ORDER.length;
+    return STAGE_ORDER.indexOf(stage);
+  }
 
   /* ---------------------------------------------------------
      ORDER-PAPER TIME, SPENT
@@ -2275,8 +2298,8 @@ const Engine = (function () {
     /* their current takes it personally */
     const cur = (C.currents || []).find(cu => cu.party === party &&
       ch && ch.current === cu.id);
-    if (cur && st.loyalty) st.loyalty[cur.id] = clamp((st.loyalty[cur.id] == null
-      ? cur.loyalty : st.loyalty[cur.id]) - 18, 0, 100);
+    if (cur && st.currents[cur.id])
+      st.currents[cur.id].loyalty = clamp(st.currents[cur.id].loyalty - 18, 0, 100);
     else if (party && st.parties[party])
       st.parties[party].loyalty = clamp(st.parties[party].loyalty - 6, 0, 100);
 
@@ -4181,11 +4204,14 @@ const Engine = (function () {
       const b = st.bills[d.bill];
       if (!b) return false;
       if (!d.stage) return b.stage !== (C.billById[d.bill] || {}).stage;
-      return STAGE_ORDER.indexOf(b.stage) >= STAGE_ORDER.indexOf(d.stage);
+      return stageRank(b.stage) >= stageRank(d.stage);
     }
+    /* `carries`, which is what divide() records. This read `carried`, which
+       nothing writes, so a promise discharged by a division carrying could
+       never be kept (design/34). */
     if (d.division) {
       const b = st.bills[d.division];
-      return !!(b && b.lastDivision && (d.carried == null || b.lastDivision.carried === d.carried));
+      return !!(b && b.lastDivision && (d.carried == null || b.lastDivision.carries === !!d.carried));
     }
     return false;
   }
@@ -5127,16 +5153,17 @@ const Engine = (function () {
       const si = C.instrumentById[dz.si];
       tab = "gov";
       /* THE NUMBER, NOT THE YEAR. Every order in the ladder is titled
-         "... Order 2287", so the year names nothing; the SI number is what
+         "... Order <year>", so the year names nothing; the SI number is what
          the papers table, the search and the order itself are indexed by,
          and it is the only part of the title that is different. */
       how = "Make " + (si.number ? si.number + " \u2014 " : "") +
-            (si.title || dz.si).replace(/ Order 2287$/, "");
+            (si.title || dz.si).replace(/ Order \d{4}$/, "");
       focus = "si:" + dz.si;
-    } else if (dz.bill && C.billById && C.billById[dz.bill]) {
+    } else if ((dz.bill || dz.division) && C.billById && C.billById[dz.bill || dz.division]) {
+      const id = dz.bill || dz.division;
       tab = "cham";
-      how = "Carry the " + (C.billById[dz.bill].title || dz.bill);
-      focus = "bill:" + dz.bill;
+      how = "Carry the " + (C.billById[id].title || id);
+      focus = "bill:" + id;
     }
     return { tab: tab, how: how, focus: focus };
   }
@@ -6061,12 +6088,20 @@ const Engine = (function () {
     const best = list => list.filter(s0 => matches(st, s0.when))
       .sort((a, b) => (a.rank || 0) - (b.rank || 0))[0] || null;
     const all = C.settlements || [];
+    /* A LINE ON THE WIRE AND A MARK IN THE REGISTER, the moment either
+       lands (design/31 §4). The interface used to announce it in a dialog;
+       a settlement ends nothing, so it is recorded like any other fact of
+       the sitting and its closing words wait for the last page. */
+    const mark = (s0, how) => {
+      st.log.unshift({ sitting: st.sitting, text: how + ": " + s0.name });
+      st.wire.unshift({ sitting: st.sitting, text: String(s0.name).toUpperCase() });
+    };
     if (!st.resolvedAs) {
       const c = best(all.filter(s0 => s0.crisis));
-      if (c) { st.resolvedAs = c.id; st.resolvedAt = st.sitting; }
+      if (c) { st.resolvedAs = c.id; st.resolvedAt = st.sitting; mark(c, "The crisis resolves"); }
     }
     const d = best(all.filter(s0 => !s0.crisis));
-    if (d) st.settledAs = d.id;
+    if (d && st.settledAs !== d.id) { st.settledAs = d.id; mark(d, "The question is settled"); }
     const resolved = st.resolvedAs ? all.find(s0 => s0.id === st.resolvedAs) : null;
     return resolved || d;
   }
@@ -6150,7 +6185,7 @@ const Engine = (function () {
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
     canApprove, approveInstrument, approvalForecast, reservedFor,
     instrumentsInForce, appoint, vacate,
-    whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
+    loyaltyOf, whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
     /* Exported so the interface cannot invent a second way to score
        agreement. A tooltip that disagreed with a division would be the
        worst kind of bug here: both right, neither checkable. */

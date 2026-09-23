@@ -2431,4 +2431,29 @@ try {
   } else ok("the unread measure is on the order paper", false);
 } catch (e) { ok("order-paper time paces the session", false, e.message); }
 
+/* AN AWARD READS THE RUN, NOT A PHRASE THAT WAS NEVER WRITTEN. The carve-out
+   pair read a flag nothing set and two log phrases that appear nowhere, so
+   "The Order Was Laid" went to anyone who made the promise, including the
+   governments that broke it, and "never laid" to nobody (design/34). */
+try {
+  console.log("\nAWARDS READ THE RUN");
+  const meets = (when, facts) => w.eval("Shell.meets(" + JSON.stringify(when) + ", " +
+    JSON.stringify(Object.assign({ flags: {}, log: [] }, facts)) + ")");
+  const byId = id => JSON.parse(w.eval("JSON.stringify(ACHIEVEMENTS.find(a => a.id === " +
+    JSON.stringify(id) + "))"));
+  const kept = byId("act_carveout_kept").when, broke = byId("act_carveout_broken").when;
+  ok("a promise kept earns the kept award", meets(kept, { promises: { licensure_carveout: "kept" } }));
+  ok("and not the broken one", !meets(broke, { promises: { licensure_carveout: "kept" } }));
+  ok("a promise broken earns the broken award", meets(broke, { promises: { licensure_carveout: "broken" } }));
+  ok("and not the kept one", !meets(kept, { promises: { licensure_carveout: "broken" } }));
+  ok("a promise still open earns neither",
+     !meets(kept, { promises: { licensure_carveout: "open" } }) &&
+     !meets(broke, { promises: { licensure_carveout: "open" } }));
+  const conf = byId("end_confidence").when;
+  ok("losing the House counts whichever way it was lost",
+     meets(conf, { end: "loss", reason: "confidence" }) &&
+     meets(conf, { end: "loss", reason: "no confidence" }) &&
+     !meets(conf, { end: "loss", reason: "supply" }));
+} catch (e) { ok("awards read the run", false, e.message); }
+
 H.finish("the interface is healthy");

@@ -9,6 +9,8 @@
 > aftermath plays while the House still sits, not into the campaign.
 > `ch4_the_record` and the chapter-four transition are gone. The chain is
 > re-dated: stranded at 14, the survey four sittings, the opinion three.
+> §E.2 is built as of the structural audit (design/34, 23 Sep): a
+> settlement records and opens no dialog, and its closing is on the last page.
 
 **20 September 2026. Content lane (opencode).** The map the events hang on.
 Engine limits have been discovered as content problems because this document

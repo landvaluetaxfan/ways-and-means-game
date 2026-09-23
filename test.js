@@ -1188,6 +1188,84 @@ console.log("\nA MINISTER ANSWERS FOR A BROKEN PROMISE (design/08 §3):");
   if (bad) { console.log("\n" + bad + " RESIGNATION FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nA PROMISE CAN BE KEPT (design/34):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  /* The threshold statement undertook to carry the bill and named no way
+     to keep the promise, so it broke at the rise whether or not it carried. */
+  const init = (CONTENT.initiatives || []).find(i => i.id === "state_the_position");
+  const tempo = init && (init.tempo || []).find(t => (t.effects || []).some(e => e.undertake));
+  ok("the threshold statement undertakes something", !!tempo);
+  if (tempo) {
+    const a = Engine.newGame(CONTENT);
+    Engine.apply(a, CONTENT, tempo.effects);
+    const u = a.undertakings.find(x => x.id === "carry_threshold");
+    ok("and says how it is kept", !!(u && u.discharge), JSON.stringify(u && u.discharge));
+    a.bills.divergence.lastDivision = { carries: false };
+    Engine.settle(a, CONTENT);
+    ok("a lost division does not keep it", u.state === "open", u.state);
+    a.bills.divergence.lastDivision = { carries: true };
+    Engine.settle(a, CONTENT);
+    ok("carrying the bill does", u.state === "kept", u.state);
+  }
+
+  /* A bill that has become law has got further than "assent", not less far
+     than "drafting": the post-division stages are off the ladder. */
+  const b = Engine.newGame(CONTENT);
+  Engine.apply(b, CONTENT, [{ undertake: { id: "law_probe", text: "Make it law", by: null,
+                                            discharge: { bill: "divergence", stage: "assent" } } }]);
+  const lu = b.undertakings.find(x => x.id === "law_probe");
+  b.bills.divergence.stage = "awaiting_assent";
+  Engine.settle(b, CONTENT);
+  ok("a carried bill awaiting assent has reached assent", lu.state === "kept", lu.state);
+  const c = Engine.newGame(CONTENT);
+  Engine.apply(c, CONTENT, [{ undertake: { id: "law_probe", text: "Make it law", by: null,
+                                            discharge: { bill: "divergence", stage: "assent" } } }]);
+  c.bills.divergence.stage = "defeated";
+  Engine.settle(c, CONTENT);
+  ok("and a defeated one has not", c.undertakings[0].state === "open", c.undertakings[0].state);
+
+  /* ONE LIST OF STAGES. The editor offered stages no bill is ever in and
+     lacked the ones a carried bill reaches, so a gate built there on the
+     obvious word could never open. */
+  const SCH = require("./js/schema.js");
+  const stages = new Set(SCH.vocab.billStages);
+  const missing = Engine.STAGE_ORDER.filter(x => !stages.has(x));
+  const engineSets = [...require("fs").readFileSync("js/engine.js", "utf8")
+    .matchAll(/\.stage = "([a-z_]+)"/g)].map(m => m[1]).filter(x => !stages.has(x));
+  const contentSets = [];
+  (function walk(o) { if (!o || typeof o !== "object") return;
+    if (Array.isArray(o)) return o.forEach(walk);
+    if (o.bill && typeof o.bill === "object") Object.values(o.bill).forEach(v => {
+      if (v && typeof v.stage === "string" && !stages.has(v.stage)) contentSets.push(v.stage); });
+    Object.values(o).forEach(walk); })(CONTENT.events.concat(CONTENT.bills, CONTENT.initiatives || []));
+  (CONTENT.bills || []).forEach(b => { if (!stages.has(b.stage)) contentSets.push(b.id + ":" + b.stage); });
+  ok("the editor's stages are every stage a bill can be in",
+     !missing.length && !engineSets.length && !contentSets.length,
+     missing.concat(engineSets, contentSets).join(" "));
+  if (bad) { console.log("\n" + bad + " PROMISE FAILURES"); process.exitCode = 1; }
+})();
+
+console.log("\nA SETTLEMENT IS A MARK IN THE REGISTER (design/31 §4):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const a = Engine.newGame(CONTENT);
+  a.sitting = Math.max(a.sitting, (CONTENT.setup.settlementFloorSittings || 0));
+  a.bills.divergence.stage = "defeated"; a.bills.divergence.dead = true;
+  Engine.checkSettlement(a, CONTENT);
+  Engine.checkSettlement(a, CONTENT);
+  const lines = a.log.filter(l => /The question is settled/.test(l.text));
+  ok("an answer landing is written in the log once, however often it is read",
+     a.settledAs === "restriction" && lines.length === 1, a.settledAs + " x" + lines.length);
+  ok("and on the wire", a.wire.some(x => /RESTRICTION SETTLEMENT/.test(x.text)));
+  if (bad) { console.log("\n" + bad + " SETTLEMENT FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nA DIVISION IS HOUSE TIME (design/18 §3):");
 (function () {
   let bad = 0;
@@ -2326,6 +2404,30 @@ console.log("\nRECURRING BUSINESS, AND THE RESHUFFLE:");
     ok("and the regard is gone and not coming back",
        (st2.characters[who] || {}).relationship < before,
        before + " -> " + (st2.characters[who] || {}).relationship);
+    /* THEIR CURRENT TAKES IT PERSONALLY, and it now does. The write went to
+       st.loyalty, which does not exist, so the guard was always false and
+       the party lost six instead of the current eighteen. */
+    /* No character carries `current` in content yet (design/34), so the
+       minister is given one here: the branch is the engine's and must work
+       the day content writes the field. */
+    const ch0 = (CONTENT.characters || []).find(c => c.id === who) || {};
+    const cur0 = (CONTENT.currents || []).find(c => c.party === ch0.party);
+    if (cur0) {
+      const Cc = Object.assign({}, CONTENT, { characters: CONTENT.characters.map(c =>
+        c.id === who ? Object.assign({}, c, { current: cur0.id }) : c) });
+      const stc = Engine.newGame(Cc);
+      if (!stc.cabinet[post.id].holder) Engine.fillPost(stc, Cc, post.id, 0);
+      const was = Engine.loyaltyOf(stc, cur0.id), pwas = Engine.loyaltyOf(stc, ch0.party);
+      Engine.reshuffle(stc, Cc, post.id);
+      ok("and the dismissed minister's current takes it personally",
+         Engine.loyaltyOf(stc, cur0.id) === Math.max(0, was - 18) &&
+         Engine.loyaltyOf(stc, ch0.party) === pwas,
+         cur0.id + " " + was + " -> " + Engine.loyaltyOf(stc, cur0.id));
+    }
+    ok("the loyalty a party is read at is the one in state, not content's",
+       (function () { const s4 = Engine.newGame(CONTENT);
+         const pid = CONTENT.parties[1].id; s4.parties[pid].loyalty = 3;
+         return Engine.loyaltyOf(s4, pid) === 3; })());
     ok("dismissing an empty post is refused",
        Engine.canReshuffle(st2, CONTENT, post.id).ok === false,
        Engine.canReshuffle(st2, CONTENT, post.id).reason);
@@ -3495,22 +3597,34 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
   (function () {
     const src = require("fs").readFileSync(__dirname + "/js/engine.js", "utf8")
       .replace(/\/\*[^]*?\*\//g, "").replace(/\/\/.*/g, "");
-    ok("the axes are declared in content", Array.isArray(CONTENT.axes) &&
-       CONTENT.axes.length === 4, (CONTENT.axes || []).join(", "));
+    /* THE AXES ARE WHATEVER A PARTY AND A BILL DECLARE. This asserted that
+       CONTENT.axes held four names -- the four categorical axes of before
+       the signed conversion, "ownership" and "closure" among them, which
+       nothing read (design/34). What matters is that the engine names none. */
+    /* "trade" is also a measure of the productive economy (§7.10), which
+       the engine does name; the axis of that name it must not. */
+    const SCH2 = require("./js/schema.js");
+    const axisNames = Object.keys(SCH2.vocab.axes)
+      .filter(a => !(SCH2.vocab.economyKeys || []).includes(a));
+    const namedAxes = axisNames.filter(a => new RegExp('"' + a + '"').test(src));
+    ok("the engine names no axis", namedAxes.length === 0, namedAxes.join(", "));
     ok("and the scarce goods too", Array.isArray(CONTENT.scarcities) &&
        CONTENT.scarcities.length === 4, (CONTENT.scarcities || []).join(", "));
 
     /* A fifth of either must need no engine change at all. */
     const C2 = Object.assign({}, CONTENT, {
-      axes: CONTENT.axes.concat("housing"),
       scarcities: CONTENT.scarcities.concat("water")
     });
     const st2 = Engine.newGame(C2);
     ok("a fifth scarce good needs no engine change",
        st2.prices.water === 100 && st2.priceHistory.water.length === 1,
        Object.keys(st2.prices).join(", "));
-    ok("and a fifth axis is read without one",
-       Engine.agreement ? true : true);
+    /* This read `Engine.agreement ? true : true`, which cannot fail. An
+       axis nobody has heard of is scored like any other. */
+    ok("and a sixth axis is read without one",
+       Engine.axisAgreement({ housing: 0.8 }, { housing: 0.8 }) > 0.9 &&
+       Engine.axisAgreement({ housing: 0.8 }, { housing: -0.8 }) < -0.9,
+       Engine.axisAgreement({ housing: 0.8 }, { housing: 0.8 }));
 
     /* And the engine still names no party, station or event. */
     const named = (CONTENT.parties || []).map(p => p.id)

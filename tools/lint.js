@@ -25,8 +25,8 @@ const root = path.join(__dirname, "..");
 const files = ["setup", "parties", "stations", "constituencies", "cabinet", "instruments","initiatives", "minutes", "characters", "bills", "events", "glossary", "encyclopedia", "labour", "actors", "settlements", "business", "achievements"]
   .map(f => path.join(root, "content", f + ".js"));
 vm.runInThisContext(files.map(f => fs.readFileSync(f, "utf8")).join("\n") +
-  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES};");
-const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES } = globalThis.__G;
+  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA};");
+const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA } = globalThis.__G;
 
 const MAX_NEW_CLUSTERS = 1;  // per event. Raise this and you are choosing to confuse people.
 
@@ -693,6 +693,12 @@ const flagSet = new Set();
   };
   [EVENTS, BILLS, INSTRUMENTS, INITIATIVES, SETTLEMENTS, BUSINESS,
    ACHIEVEMENTS, MINUTES].forEach(coll => (coll || []).forEach(walk));
+  /* AND THE ENGINE'S OWN. `paired` and `minister_resigned` are set by the
+     rules rather than by content, and reading the awards made the first of
+     them look unsettable. */
+  const engSrc2 = fs.readFileSync(path.join(root, "js", "engine.js"), "utf8");
+  for (const m of engSrc2.matchAll(/flags(?:\.([A-Za-z_]\w*)|\[["']([\w]+)["']\])\s*=[^=]/g))
+    flagSet.add(m[1] || m[2]);
 })();
 
 const gateNeeds = {}, gateAbsent = {};
@@ -714,16 +720,170 @@ const gateNeeds = {}, gateAbsent = {};
   (INSTRUMENTS || []).forEach(i => cw(i.when, "instrument " + i.id));
   (SETTLEMENTS || []).forEach(x => cw(x.when, "settlement " + x.id));
   (INITIATIVES || []).forEach(x => cw(x.when, "initiative " + x.id));
+  /* AND THE TWO THAT WERE MISSING. An award waited on `gb_carveout_broken`,
+     which nothing sets, and this audit never saw it because it did not read
+     the awards (design/34). `flagsAny` is the awards' own spelling. */
+  (BUSINESS || []).forEach(x => cw(x.when, "business " + x.id));
+  (ACHIEVEMENTS || []).forEach(x => {
+    cw(x.when, "award " + x.id);
+    ((x.when || {}).flagsAny || []).forEach(f => (gateNeeds[f] = gateNeeds[f] || []).push("award " + x.id));
+  });
 })();
 
 const gateBad = Object.keys(gateNeeds).filter(f => !flagSet.has(f))
   .map(f => `"${f}" is required by ${[...new Set(gateNeeds[f])].join(", ")} ` +
             `and set by nothing`);
 n += section("GATES NOTHING CAN SATISFY", gateBad, x => x);
+/* AND THE OTHER DIRECTION, for the content round rather than as a fault. A
+   flag a choice sets that nothing reads is a consequence the choice promises
+   and the game never delivers -- design/34 counted 84 of them. The count is
+   printed every run; `node tools/lint.js --unread-flags` lists them. The
+   engine's own reads count too (js/*.js), as do the awards'. */
+const jsRead = new Set();
+fs.readdirSync(path.join(root, "js")).filter(f => /\.js$/.test(f)).forEach(f => {
+  for (const m of fs.readFileSync(path.join(root, "js", f), "utf8")
+      .matchAll(/flags(?:\.([A-Za-z_]\w*)|\[["']([\w]+)["']\])(?!\s*=[^=])/g)) jsRead.add(m[1] || m[2]);
+});
+const unread = [...flagSet].filter(f => !gateNeeds[f] && !gateAbsent[f] && !jsRead.has(f)).sort();
+R.push("FLAGS SET THAT NOTHING READS (advisory): " + unread.length +
+       (process.argv.includes("--unread-flags") ? "\n  " + unread.join("\n  ") : "  (--unread-flags lists them)"));
+R.push("");
 const gateAdv = Object.keys(gateAbsent).filter(f => !flagSet.has(f) && !gateNeeds[f])
   .map(f => `"${f}" is required ABSENT by ${[...new Set(gateAbsent[f])].join(", ")} ` +
             `and set by nothing, so the condition never does anything`);
 section("FLAGS REQUIRED ABSENT THAT NOTHING SETS (advisory)", gateAdv, x => x);
+
+/* =============================================================
+   IDS THAT NAME NOTHING (design/34)
+
+   The flag audit above and the move-target audit catch two ways content can
+   point at nothing. The structural audit of 23 Sep found the rest by hand,
+   and put a mutation through every check to prove none of them could: a
+   gate on a bill that does not exist, a promise whose breach names no event,
+   an award reading a log phrase nobody writes. Every one fails silently in
+   play -- the condition is simply false, the queue entry simply dropped.
+
+   So every id a gate, an effect, a promise, an initiative or an award names
+   is resolved here against the roster it belongs to. HARD, except the two
+   marked advisory, which are one open decision (the emergency loan).
+   ============================================================= */
+const refBad = [], refAdv = [];
+try {
+  const Eng = require(path.join(root, "js", "engine.js"));
+  const ids = a => new Set((a || []).map(x => x.id));
+  const EV = ids(EVENTS), BI = ids(BILLS), SI = ids(INSTRUMENTS), SE = ids(SETTLEMENTS),
+        PA = ids(PARTIES), CU = ids(CURRENTS), AC = ids(ACTORS), ST = ids(STATIONS),
+        CH = ids(CHARACTERS), CAB = ids(CABINET);
+  const LAW = new Set(Object.keys(SETUP.law || {})), SC = new Set(Object.keys(SETUP.scalars || {}));
+  const PR = new Set(["thermal", "substrate", "volume", "transit"]);
+  const ECK = new Set(Object.keys(SETUP.economy || {}));
+  /* Every stage a bill can be in, from the schema, which test.js holds to
+     the engine's ladder. */
+  const STAGES = new Set(require(path.join(root, "js", "schema.js")).vocab.billStages);
+  const walk = (o, f) => { if (!o || typeof o !== "object") return;
+    if (Array.isArray(o)) return o.forEach(x => walk(x, f));
+    f(o); Object.keys(o).forEach(k => walk(o[k], f)); };
+  const COLLS = { event: EVENTS, bill: BILLS, instrument: INSTRUMENTS, initiative: INITIATIVES,
+    settlement: SETTLEMENTS, business: BUSINESS, minute: MINUTES, cabinet: CABINET, actor: ACTORS };
+
+  const UND = new Set();
+  Object.values(COLLS).forEach(c => walk(c, o => { if (o.undertake) [].concat(o.undertake).forEach(u => UND.add(u.id)); }));
+
+  const checkWhen = (w, tag) => {
+    if (!w || typeof w !== "object" || Array.isArray(w)) return;
+    Object.keys(w).forEach(k => {
+      const v = w[k], bad = m => refBad.push(tag + ": " + k + " " + m);
+      if (!Eng.CONDITIONS[k]) return bad("is not a condition the engine knows");
+      const keys = (set, what) => Object.keys(v).forEach(x => { if (!set.has(x)) bad("names no " + what + " '" + x + "'"); });
+      const list = (set, what) => [].concat(v).forEach(x => { if (!set.has(x)) bad("names no " + what + " '" + x + "'"); });
+      switch (k) {
+        case "billStage": keys(BI, "bill"); Object.values(v).forEach(x => { if (!STAGES.has(x)) bad("names no stage '" + x + "'"); }); break;
+        case "siInForce": case "siNotMade": list(SI, "instrument"); break;
+        case "owes": case "breached": list(UND, "undertaking"); break;
+        case "seen": list(EV, "event"); break;
+        case "settled": case "resolved": if (typeof v === "string" && !SE.has(v)) bad("names no settlement '" + v + "'"); break;
+        case "resolvedIs": if (!SE.has(v)) bad("names no settlement '" + v + "'"); break;
+        case "lawIs": case "lawAbove": case "lawBelow": keys(LAW, "law"); break;
+        case "scalarAbove": case "scalarBelow": keys(SC, "scalar"); break;
+        case "priceAbove": case "priceBelow": keys(PR, "price"); break;
+        case "economyAbove": case "economyBelow": if (ECK.size) keys(ECK, "economy measure"); break;
+        case "loyaltyAbove": case "loyaltyBelow": Object.keys(v).forEach(x => { if (!PA.has(x) && !CU.has(x)) bad("names no party or current '" + x + "'"); }); break;
+        case "capitalAbove": case "capitalBelow": keys(PA, "party"); break;
+        case "actorAbove": case "actorBelow": keys(AC, "actor"); break;
+        case "stationBelow": keys(ST, "station"); break;
+        case "suspendedAbove": case "suspendedBelow": Object.keys(v).forEach(x => { if (x !== "federal" && !ST.has(x)) bad("names no station '" + x + "'"); }); break;
+        case "postVacant": list(CAB, "cabinet post"); break;
+      }
+    });
+  };
+  const checkEff = (e, tag) => {
+    if (!e || typeof e !== "object") return;
+    if (e.bill) Object.keys(e.bill).forEach(x => { if (!BI.has(x)) refBad.push(tag + ": bill '" + x + "' is no bill"); });
+    if (typeof e.si === "string" && !SI.has(e.si)) refBad.push(tag + ": si '" + e.si + "' is no instrument");
+    if (e.queue) [].concat(e.queue).forEach(q => { if (!EV.has(q.event)) refBad.push(tag + ": queues '" + q.event + "', which is no event"); });
+    if (e.slots && e.slots.reserve) Object.keys(e.slots.reserve).forEach(x => { if (!BI.has(x)) refBad.push(tag + ": reserves time for '" + x + "', which is no bill"); });
+    if (e.coalition) ["add", "remove"].forEach(k => [].concat(e.coalition[k] || []).forEach(p => { if (!PA.has(p)) refBad.push(tag + ": coalition names no party '" + p + "'"); }));
+    if (e.undertake) [].concat(e.undertake).forEach(u => {
+      const t = tag + ": undertaking " + u.id;
+      if (u.onBreach && !EV.has(u.onBreach)) refAdv.push(t + " breaks into '" + u.onBreach + "', which is no event, so the breach does nothing but the resignation");
+      if (!u.discharge) refAdv.push(t + " names no discharge, so it cannot be kept");
+      const d = u.discharge || {};
+      if (d.si && !SI.has(d.si)) refBad.push(t + " is kept by '" + d.si + "', which is no instrument");
+      if (d.bill && !BI.has(d.bill)) refBad.push(t + " is kept by '" + d.bill + "', which is no bill");
+      if (d.division && !BI.has(d.division)) refBad.push(t + " is kept by a division on '" + d.division + "', which is no bill");
+      if (d.stage && !STAGES.has(d.stage)) refBad.push(t + " is kept at stage '" + d.stage + "', which is no stage");
+      if (u.owed_to && !CH.has(u.owed_to) && !AC.has(u.owed_to)) refBad.push(t + " is owed to '" + u.owed_to + "', who is nobody");
+      if (u.post && !CAB.has(u.post)) refBad.push(t + " rests on post '" + u.post + "', which is no post");
+    });
+  };
+  Object.entries(COLLS).forEach(([kind, coll]) => (coll || []).forEach(x => {
+    const tag = kind + " " + (x.id || "?");
+    walk(x, o => {
+      ["when", "gate"].forEach(k => checkWhen(o[k], tag));
+      ["effects", "onPass", "onFail", "reverse", "onSign", "close"].forEach(k => [].concat(o[k] || []).forEach(e => checkEff(e, tag)));
+    });
+  }));
+  (INITIATIVES || []).forEach(i => { if (i.event && !EV.has(i.event)) refBad.push("initiative " + i.id + ": answers with '" + i.event + "', which is no event"); });
+  walk(ENCYCLOPEDIA, o => { if (o.when) checkWhen(o.when, "concordance " + (o.heading || o.title || "section")); });
+
+  /* ONE LAW, ONE VOCABULARY. transit_subsidy was written "none"/"anchors"/
+     "all" by the appropriation and 1/0 by two events, and the engine and the
+     panel understood only the words. A law key written in two types is a law
+     half of content is speaking a different language to. */
+  const lawTypes = {};
+  const noteLaw = (k, v, where) => ((lawTypes[k] = lawTypes[k] || {})[typeof v] = where);
+  Object.keys(SETUP.law || {}).forEach(k => noteLaw(k, SETUP.law[k], "setup"));
+  Object.entries(COLLS).forEach(([kind, coll]) => walk(coll, o => {
+    if (o.law && typeof o.law === "object" && !Array.isArray(o.law))
+      Object.keys(o.law).forEach(k => noteLaw(k, o.law[k], kind));
+    ["when", "gate"].forEach(g => { const w = o[g]; if (w && w.lawIs) Object.keys(w.lawIs).forEach(k => noteLaw(k, w.lawIs[k], kind + " gate")); });
+  }));
+  Object.keys(lawTypes).forEach(k => { const t = Object.keys(lawTypes[k]).filter(x => x !== "object");
+    if (t.length > 1) refBad.push("law " + k + " is written as " + t.map(x => x + " (" + lawTypes[k][x] + ")").join(" and ")); });
+
+  /* AND THE AWARDS, which have a matcher of their own in js/shell.js. Its
+     vocabulary is listed here because it is small; a key it does not know
+     is ignored there, which is an award for nothing. */
+  const MEETS = new Set(["end", "reason", "resolved", "settled", "seats", "flags", "flagsAny",
+                         "log", "logAbsent", "kept", "breached"]);
+  const shellSrc = fs.readFileSync(path.join(root, "js", "shell.js"), "utf8");
+  MEETS.forEach(k => { if (!new RegExp('k === "' + k + '"').test(shellSrc)) refBad.push("awards: this check lists '" + k + "' and js/shell.js meets() does not read it"); });
+  /* Not the awards file itself, or every phrase an award reads is found in
+     the award that reads it. */
+  const everything = fs.readdirSync(path.join(root, "content"))
+    .filter(f => /\.js$/.test(f) && f !== "achievements.js")
+    .concat(["../js/engine.js"])
+    .map(f => fs.readFileSync(path.join(root, "content", f), "utf8")).join("\n");
+  (ACHIEVEMENTS || []).forEach(a => {
+    const w = a.when || {}, tag = "award " + a.id;
+    Object.keys(w).forEach(k => { if (!MEETS.has(k)) refBad.push(tag + ": '" + k + "' is not a key the award matcher reads"); });
+    [].concat(w.kept || [], w.breached || []).forEach(u => { if (!UND.has(u)) refBad.push(tag + ": names no undertaking '" + u + "'"); });
+    ["resolved", "settled"].forEach(k => { if (typeof w[k] === "string" && !SE.has(w[k])) refBad.push(tag + ": names no settlement '" + w[k] + "'"); });
+    [].concat(w.log || [], w.logAbsent || []).forEach(t => { if (everything.indexOf(t) < 0) refBad.push(tag + ": reads the log for \"" + t + "\", which nothing writes"); });
+  });
+} catch (e) { refBad.push("could not resolve the references: " + e.message); }
+n += section("IDS THAT NAME NOTHING", refBad, x => x);
+section("PROMISES THAT CANNOT BE KEPT OR BROKEN CLEANLY (advisory)", refAdv, x => x);
 
 R.push("=".repeat(60));
 R.push(n ? `${n} legibility issues` : "no legibility issues");
@@ -735,6 +895,7 @@ if (verbBad.length) R.push(`${verbBad.length} RETIRED EFFECT VERBS IN CONTENT`);
 if (initBad.length) R.push(`${initBad.length} INITIATIVES WITH NO ANSWER`);
 if (labelBad.length) R.push(`${labelBad.length} UNLABELLED CHOICES`);
 if (gateBad.length) R.push(`${gateBad.length} GATES NOTHING CAN SATISFY`);
+if (refBad.length) R.push(`${refBad.length} IDS THAT NAME NOTHING`);
 if (popBad.length) R.push("THE POPULATION IS STORED TWICE AND HAS DRIFTED (advisory)");
 console.log(R.join("\n"));
 /* HARD FAILURES: everything except popBad. The chain is one of them now —
@@ -746,4 +907,4 @@ console.log(R.join("\n"));
    fails from the day it lands gets disabled rather than fixed. */
 if (artBad.length || chainBad.length || cssBad.length || verbBad.length ||
     parseBad.length || initBad.length || gridBad.length || targetBad.length ||
-    labelBad.length || gateBad.length) process.exit(1);
+    labelBad.length || gateBad.length || refBad.length) process.exit(1);

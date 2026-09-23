@@ -256,7 +256,19 @@ const Shell = (function () {
     for (const k of Object.keys(when)) {
       const want = when[k];
       if (k === "end") { if (facts.end !== want) return false; }
-      else if (k === "reason") { if (facts.reason !== want) return false; }
+      /* A LIST, because one ending has two spellings: the arithmetic loss
+         says "confidence" and a carried motion says "no confidence", and an
+         award for losing the House should not care which. */
+      else if (k === "reason") { if (![].concat(want).includes(facts.reason)) return false; }
+      /* A PROMISE KEPT OR BROKEN, read off the undertaking's own state. The
+         carve-out awards read a flag nothing set and two log phrases that
+         appear nowhere, so "kept" went to anyone who made the promise and
+         "broken" to nobody. State is monotonic once it leaves "open", so
+         evaluating mid-run cannot award early. */
+      else if (k === "kept" || k === "breached") {
+        const want2 = k === "kept" ? "kept" : "broken";
+        if (![].concat(want).every(id => (facts.promises || {})[id] === want2)) return false;
+      }
       else if (k === "resolved") { if (facts.resolved !== want) return false; }
       else if (k === "settled") { if (facts.settled !== want) return false; }
       else if (k === "seats") {
@@ -936,5 +948,5 @@ const Shell = (function () {
            /* the session log: written when a government ends, read by the
               board. Outside every save on purpose. */
            record: record, sessions: log,
-          award: award, earned: earned, stat: stat };
+          award: award, meets: meets, earned: earned, stat: stat };
 })();

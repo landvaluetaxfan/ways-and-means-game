@@ -47,7 +47,7 @@ const ACHIEVEMENTS = [
     note:"You lost a confidence division in the House. The majority you had " +
          "been governing with was gone, and the government fell on the floor " +
          "rather than at the polls.",
-    when:{ end:"loss", reason:"confidence" } },
+    when:{ end:"loss", reason:["confidence", "no confidence"] } },
 
   { id:"end_ballot", name:"The Caucus Decided", tier:"ending",
     note:"Enough of your own members signed to force a leadership ballot and " +
@@ -133,13 +133,13 @@ const ACHIEVEMENTS = [
     note:"You promised the Guild Bench a licensure carve-out and laid SI " +
          "2080/44 inside the four sittings you named. The promise was kept, " +
          "and the panel records which governments keep them.",
-    when:{ flags:["licensure_carveout_offered"], logAbsent:["was not laid","not renewed"] } },
+    when:{ kept:["licensure_carveout"] } },
 
   { id:"act_carveout_broken", name:"The Order That Was Never Laid", tier:"action",
     note:"You promised the Guild Bench a licensure carve-out and did not lay " +
          "the order in time. The panel will not be asking again; the sector " +
          "treats the question as settled against you.",
-    when:{ flags:["gb_carveout_broken"] } },
+    when:{ breached:["licensure_carveout"] } },
 
   { id:"act_tribunal", name:"The Tribunal Sits", tier:"action",
     note:"Your licensing order was challenged at the tribunal and you let it " +

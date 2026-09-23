@@ -1,6 +1,7 @@
 /* Round-trip: serialise every content file, re-evaluate it, and confirm the
-   game is byte-for-byte unchanged in behaviour. If this fails, the editor
-   would silently corrupt content, which is the one thing it must never do. */
+   game is byte-for-byte unchanged in behaviour and the data field for field.
+   This is the SERIALISER. The editor's forms are a second way to corrupt
+   content and are proved by tools/edtest.js, which opens every entry. */
 const fs=require("fs"), vm=require("vm"), path=require("path"), root=path.join(__dirname,"..");
 const CF=["setup","parties","stations","constituencies","cabinet","instruments","initiatives","minutes","characters","bills","events","glossary","encyclopedia"];
 const src=CF.map(f=>fs.readFileSync(path.join(root,"content",f+".js"),"utf8")).join("\n");
@@ -61,5 +62,14 @@ eq("glossary counts", A.GLOSSARY.length, B.GLOSSARY.length);
 eq("40-sitting trace identical", before.trace, after.trace);
 eq("final scalars identical", before.scalars, after.scalars);
 eq("division identical", before.div, after.div);
+/* AND THE DATA ITSELF. The checks above compare counts and forty sittings of
+   one play-through, so a field the serialiser dropped that no event in those
+   forty sittings happens to read -- `maxFires`, a late `at`, a brief -- came
+   back "lossless". It was in fact lossless (design/34 measured it), which
+   makes this free to assert and the only line here that can see a dropped
+   field. It does NOT cover the editor's forms; tools/edtest.js does. */
+["SETUP","PARTIES","CURRENTS","STATIONS","CHARACTERS","BILLS","EVENTS","GLOSSARY","CONSTITUENCIES"]
+  .forEach(k => eq(k.toLowerCase() + " identical, field for field",
+                   JSON.stringify(A[k]), JSON.stringify(B[k])));
 console.log("");
 console.log(fail?fail+" FAILURES — the editor would corrupt content":"round-trip is lossless");

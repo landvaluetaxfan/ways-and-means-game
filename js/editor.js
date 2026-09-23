@@ -55,7 +55,11 @@ const Editor = (function () {
     switch (src) {
       case "scalars": return V.scalars.map(v => [v, v.replace(/_/g, " ")]);
       case "prices": return V.prices.map(v => [v, v]);
-      case "laws": return V.laws.map(v => [v, v.replace(/_/g, " ")]);
+      /* The declared law is setup's, which has keys the schema's list never
+         caught up with (the appropriation's clauses, the four rates). */
+      case "laws": return [...new Set(V.laws.concat(Object.keys(
+          (typeof SETUP !== "undefined" && SETUP.law) || {})))].map(v => [v, v.replace(/_/g, " ")]);
+      case "economyKeys": return (V.economyKeys || []).map(v => [v, v]);
       case "tiers": return V.tiers.map(v => [v, v]);
       case "stationFields": return V.stationFields.map(v => [v, v]);
       case "billFields": return V.billFields.map(v => [v, v]);
@@ -93,7 +97,12 @@ const Editor = (function () {
         .concat([["rel.president", "relations · The President"]])
         .concat(M.characters.map(c => ["rel." + c.id, "relations · " + c.name]))
         .concat(SCHEMA.vocab.prices.map(k => ["price." + k, "price · " + k]))
-        .concat(M.parties.map(p => ["capital." + p.id, "capital · " + p.name]));
+        .concat(M.parties.map(p => ["capital." + p.id, "capital · " + p.name]))
+        /* and the three namespaces the engine grew after this list was
+           written, which content uses sixty times between them */
+        .concat(SCHEMA.vocab.scalars.map(k => ["trend." + k, "trend · " + k.replace(/_/g, " ")]))
+        .concat(SCHEMA.vocab.bands.map(k => ["standing." + k, "standing · " + k]))
+        .concat((typeof ACTORS !== "undefined" ? ACTORS : []).map(a => ["actor." + a.id, "actor · " + a.name]));
       default: return [];
     }
   }
@@ -116,8 +125,16 @@ const Editor = (function () {
   /* ---------- small form helpers ---------- */
 
   function sel_(name, src, cur, cls) {
-    const opts = vocab(src).map(([v, l]) =>
-      `<option value="${esc(v)}"${v === cur ? " selected" : ""}>${esc(l)}</option>`).join("");
+    const list = vocab(src);
+    /* A VALUE THE LIST DOES NOT HOLD IS KEPT, not replaced. A <select>
+       whose value is not among its options shows the first one, and the
+       form read that back -- so {move:{"actor.tribunal":3}} came out of an
+       ordinary save as a move on the first scalar, and a law the schema did
+       not list became a different law (design/34). */
+    const known = cur == null || cur === "" || list.some(([v]) => v === cur);
+    const opts = (known ? "" : `<option value="${esc(cur)}" selected>${esc(cur)} (not in this list)</option>`) +
+      list.map(([v, l]) =>
+        `<option value="${esc(v)}"${v === cur ? " selected" : ""}>${esc(l)}</option>`).join("");
     return `<select class="ed-f ${cls || ""}" data-f="${name}">${opts}</select>`;
   }
   function num_(name, cur, w) {
@@ -213,7 +230,12 @@ const Editor = (function () {
       case "keyedSet":  return { [r.verb]: { [r.key]: n(r.value) } };
       case "nested":    return { [r.verb]: { [r.key]: { [r.field]: n(r.delta) } } };
       case "nestedSet": return { [r.verb]: { [r.key]: { [r.field]: n(r.value) } } };
-      case "scalarVal": return { [r.verb]: r.verb === "chapter" ? (+r.value || 1) : r.value };
+      /* The arg's own type: `motion` is a number of sittings, and the text
+         box handed back "3". */
+      case "scalarVal": { const a = (d.args || [])[0] || {};
+        return { [r.verb]: r.verb === "chapter" ? (+r.value || 1)
+          : (a.type === "int" || a.type === "num") ? n(r.value)
+          : a.type === "bool" ? n(r.value) : r.value }; }
       case "coalition": return { [r.verb]: { [r.field]: [r.value] } };
       case "queue":     { const q = { event: r.value, after: +r.delta || 1 };
                           if (r.label) q.label = r.label;
@@ -225,7 +247,12 @@ const Editor = (function () {
     const r = effToRow(eff);
     const d = SCHEMA.effects[r.verb] ||
       { args: [{ k: "value", type: "text", label: "JSON", hint: "raw" }] };
+    /* A verb the schema does not model is offered as itself, or the select
+       shows the first verb, the form reads that back, and an undertaking
+       saves as {move:{undefined:0}}. */
     const verbSel = `<select class="ed-f ed-verb" data-f="verb">` +
+      (SCHEMA.effects[r.verb] ? "" :
+        `<option value="${esc(r.verb)}" selected>${esc(r.verb)} (as written)</option>`) +
       Object.keys(SCHEMA.effects).map(k =>
         `<option value="${k}"${k === r.verb ? " selected" : ""}>${esc(SCHEMA.effects[k].label)}</option>`).join("") +
       `</select>`;
@@ -244,10 +271,27 @@ const Editor = (function () {
      CONDITIONS
      ========================================================= */
 
+  /* A CONDITION THE FORM CANNOT SHOW IS SHOWN AS WRITTEN. This returned ""
+     for any key the schema does not describe -- settled, seen, owes,
+     dissolved and nineteen more -- and for a map it drew only the first key,
+     so opening an event and moving on deleted its gate (design/34). */
+  function rawCond(k, v) {
+    return `<div class="ed-cond" data-c="${esc(k)}" data-raw="1"><b>${esc(k)}</b>` +
+      txt_("v", JSON.stringify(v), "JSON", 300) +
+      `<button class="btn ed-x" data-act="cond-del" data-c="${esc(k)}">×</button></div>`;
+  }
   function condRows(when) {
     when = when || {};
     return Object.keys(when).map(k => {
-      const d = SCHEMA.conditions[k]; if (!d) return "";
+      const d = SCHEMA.conditions[k];
+      if (!d) return rawCond(k, when[k]);
+      if (d.form === "map" && (!when[k] || typeof when[k] !== "object" ||
+          Object.keys(when[k]).length !== 1 ||
+          (d.vtype !== "stage" && d.vtype !== "any" && typeof Object.values(when[k])[0] !== "number")))
+        return rawCond(k, when[k]);
+      if (d.form === "int" && typeof when[k] !== "number") return rawCond(k, when[k]);
+      if (d.form === "bool" && typeof when[k] !== "boolean") return rawCond(k, when[k]);
+      if (d.form === "flagList" && !Array.isArray(when[k])) return rawCond(k, when[k]);
       let inner = "";
       if (d.form === "int") inner = num_("v", when[k], 60);
       else if (d.form === "bool")
@@ -258,7 +302,9 @@ const Editor = (function () {
       else if (d.form === "map") {
         const key = Object.keys(when[k])[0], v = when[k][key];
         inner = sel_("k", d.src, key) +
-          (d.vtype === "stage" ? sel_("v", SCHEMA.vocab.billStages, v) : num_("v", v, 70));
+          (d.vtype === "stage" ? sel_("v", SCHEMA.vocab.billStages, v)
+           : d.vtype === "any" ? txt_("v", typeof v === "string" ? v : JSON.stringify(v), "value", 90)
+           : num_("v", v, 70));
       }
       return `<div class="ed-cond" data-c="${k}"><b>${esc(d.label)}</b>${inner}` +
              `<button class="btn ed-x" data-act="cond-del" data-c="${k}">×</button></div>`;
@@ -270,13 +316,20 @@ const Editor = (function () {
     scope.querySelectorAll(".ed-cond").forEach(n => {
       const k = n.dataset.c, d = SCHEMA.conditions[k];
       const g = f => n.querySelector(`[data-f="${f}"]`);
+      if (n.dataset.raw) {
+        try { when[k] = JSON.parse(g("v").value); } catch (e) { when[k] = g("v").value; }
+        return;
+      }
       if (d.form === "int") when[k] = +g("v").value;
       else if (d.form === "bool") when[k] = g("v").value === "true";
       else if (d.form === "flagList")
         when[k] = g("v").value.split(",").map(s => s.trim()).filter(Boolean);
       else if (d.form === "map") {
         const v = g("v").value;
-        when[k] = { [g("k").value]: d.vtype === "stage" ? v : +v };
+        /* "any" is a law's value, which is as often a word as a number:
+           +"all" is NaN, and a gate on NaN never opens. */
+        const any = x => { try { return JSON.parse(x); } catch (e) { return x; } };
+        when[k] = { [g("k").value]: d.vtype === "stage" ? v : d.vtype === "any" ? any(v) : +v };
       }
     });
     return Object.keys(when).length ? when : undefined;
@@ -296,7 +349,8 @@ const Editor = (function () {
         `<option value="${esc(v)}"${v === (e.speaker || "") ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
       <label>Chapter ${num_("chapter", e.chapter == null ? "" : e.chapter)}
         <span class="ed-hint">blank = any</span></label>
-      <label>Weight ${num_("weight", e.weight == null ? 50 : e.weight)}</label>
+      <label>Weight ${num_("weight", e.weight == null ? "" : e.weight)}
+        <span class="ed-hint">blank = 1</span></label>
       <label>Prologue ${num_("prologue", e.prologue == null ? "" : e.prologue)}
         <span class="ed-hint">ordered opening of its chapter</span></label>
       <label class="ed-chk"><input type="checkbox" class="ed-f" data-f="once" ${e.once ? "checked" : ""}> once only</label>
@@ -335,32 +389,50 @@ const Editor = (function () {
     </div>`;
   }
 
-  function readEvent() {
+  /* THE FORM EDITS AN ENTRY; IT DOES NOT REPLACE IT. This built a fresh
+     object from the fields the form draws, and commit() runs on every click
+     away -- so merely OPENING an event and moving on deleted whatever the
+     form had no field for: `at`, `maxFires`, `brief`, `setpiece`, `every`,
+     a choice's `when`, `act` and `cost`, and every gate the schema did not
+     describe. 73 of 108 events changed by being looked at, among them
+     f1_stranded, whose `at:14` starts the whole Flash I chain (design/34).
+     Now the entry is cloned and only the form's own fields are written. */
+  function readEvent(orig) {
     const g = f => document.querySelector(`#ed-form [data-f="${f}"]`);
-    const e = {
-      id: g("id").value.trim(),
-      title: g("title").value,
-      body: g("body").value
-    };
+    const e = clone(orig || {});
+    e.id = g("id").value.trim();
+    e.title = g("title").value;
+    e.body = g("body").value;
+    const setOr = (k, v, keep) => { if (keep) e[k] = v; else delete e[k]; };
     const ch = g("chapter").value;
-    if (ch !== "") e.chapter = +ch;
-    const pro = g("prologue").value;
-    if (pro !== "") e.prologue = +pro; else e.weight = +g("weight").value;
-    if (g("once").checked) e.once = true;
-    if (g("queuedOnly").checked) e.queuedOnly = true;
+    setOr("chapter", +ch, ch !== "");
+    const pro = g("prologue").value, wt = g("weight").value;
+    setOr("prologue", +pro, pro !== "");
+    /* Blank is "no weight", which the engine reads as 1. The form used to
+       show 50 for an absent weight and then write it. */
+    setOr("weight", +wt, pro === "" && wt !== "");
+    setOr("once", true, g("once").checked);
+    setOr("queuedOnly", true, g("queuedOnly").checked);
     if (g("speaker").value) e.speaker = g("speaker").value;
+    else if (e.speaker != null) delete e.speaker;
     const when = readConds(document.getElementById("ed-conds"));
-    if (when) e.when = when;
-    if (g("img_src").value.trim()) e.image = {
+    setOr("when", when, !!when);
+    if (g("img_src").value.trim()) e.image = Object.assign({}, e.image || {}, {
       src: g("img_src").value.trim(), palette: g("img_palette").value,
       caption: g("img_caption").value, credit: g("img_credit").value
-    };
+    });
+    else delete e.image;
+    const before = (orig && orig.choices) || [];
     e.choices = [...document.querySelectorAll("#ed-choices .ed-choice")].map(n => {
       const q = f => n.querySelector(`:scope > * [data-f="${f}"], :scope > [data-f="${f}"]`);
-      const ch = { label: n.querySelector('[data-f="label"]').value,
-                   effects: [], result: n.querySelector('[data-f="result"]').value || undefined };
+      /* the choice as it was, so its `when`, `brief`, `act` and `cost` stay */
+      const ch = clone(before[+n.dataset.ci] || {});
+      ch.label = n.querySelector('[data-f="label"]').value;
+      ch.effects = [];
+      const res = n.querySelector('[data-f="result"]').value;
+      if (res) ch.result = res; else delete ch.result;
       const note = n.querySelector('[data-f="note"]');
-      if (note && note.value.trim()) ch.note = note.value;
+      if (note && note.value.trim()) ch.note = note.value; else delete ch.note;
       n.querySelectorAll(".ed-eff").forEach(en => {
         const r = { verb: en.querySelector('[data-f="verb"]').value };
         en.querySelectorAll("[data-f]").forEach(f => { if (f.dataset.f !== "verb") r[f.dataset.f] = f.value; });
@@ -455,7 +527,8 @@ const Editor = (function () {
       <label class="ed-w">Name ${txt_("name", c.name, "", 300)}<button class="btn ed-add" data-act="roll-name">roll</button></label>
       <label class="ed-w">Role ${txt_("role", c.role, "", 240)}</label>
       <label>Office <select class="ed-f" data-f="office"><option value="">— none —</option>${
-        ["pm","minister","opposition","shadow","leader","whip"].map(o =>
+        [...new Set(["pm","deputy","minister","opposition","shadow","leader","whip"]
+          .concat(c.office ? [c.office] : []))].map(o =>
           `<option value="${o}"${c.office === o ? " selected" : ""}>${o}</option>`).join("")
       }</select></label>
       <label>Party <select class="ed-f" data-f="party"><option value="">— none —</option>${
@@ -511,9 +584,16 @@ const Editor = (function () {
       else if (s.forPct != null) { kind = "percent"; n = s.forPct; }
       else if (s.for != null) { kind = "count"; n = s.for; }
     }
-    const opts = [["", "— infer —"]].concat(SCHEMA.vocab.stanceForms.map(v => [v, v]));
-    return `<select class="ed-f ed-st" data-f="${which}_kind">${opts.map(([v, l]) =>
-      `<option value="${v}"${v === kind ? " selected" : ""}>${l}</option>`).join("")}</select>` +
+    /* A SHAPE THE FORM DOES NOT DRAW IS KEPT AS WRITTEN. {abstain:true,
+       absent:2} -- a party that abstains whole and loses two to absence --
+       read back as "infer", and the stance was gone (design/34). */
+    const raw = s != null && kind === "" ? JSON.stringify(s) : null;
+    if (raw) kind = "__raw";
+    const opts = (raw ? [["__raw", "as written: " + raw]] : [])
+      .concat([["", "— infer —"]], SCHEMA.vocab.stanceForms.map(v => [v, v]));
+    return (raw ? `<input type="hidden" data-f="${which}_raw" value="${esc(raw)}">` : "") +
+      `<select class="ed-f ed-st" data-f="${which}_kind">${opts.map(([v, l]) =>
+      `<option value="${esc(v)}"${v === kind ? " selected" : ""}>${esc(l)}</option>`).join("")}</select>` +
       `<input class="ed-f ed-num" data-f="${which}_n" type="number" step="any" value="${n}" style="width:56px${
         (kind === "count" || kind === "percent") ? "" : ";visibility:hidden"}">`;
   }
@@ -526,6 +606,7 @@ const Editor = (function () {
         const k = tr.querySelector(`[data-f="${which}_kind"]`).value;
         const n = tr.querySelector(`[data-f="${which}_n"]`).value;
         if (!k) return undefined;
+        if (k === "__raw") return JSON.parse(tr.querySelector(`[data-f="${which}_raw"]`).value);
         if (k === "count") return { for: +n || 0 };
         if (k === "percent") return { forPct: +n || 0 };
         if (k === "free") return { free: true };
@@ -752,7 +833,7 @@ const Editor = (function () {
     const g = f => document.querySelector(`#ed-form [data-f="${f}"]`);
     if (!g("id") && !g("term")) return;
 
-    if (sel.tab === "events") { arr[i] = readEvent(); sel.id = arr[i].id; }
+    if (sel.tab === "events") { arr[i] = readEvent(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "parties") {
       const p = arr[i];
       p.id = g("id").value.trim(); p.name = g("name").value; p.short = g("short").value;
@@ -764,10 +845,13 @@ const Editor = (function () {
       /* `|| null` WOULD EAT A ZERO, which is a position on a signed axis and
          not the absence of one. Empty string is "no position"; anything that
          parses is the number, clamped to the axis's own range. */
+      /* A blank box adds no key the party did not have: the independents
+         declare `axes:{}` and a save turned that into five nulls. */
+      const was = p.axes || {};
       p.axes = {};
       Object.keys(SCHEMA.vocab.axes).forEach(k => {
         const raw = String(g("ax_" + k).value).trim();
-        if (raw === "") { p.axes[k] = null; return; }
+        if (raw === "") { if (k in was) p.axes[k] = null; return; }
         const n = Number(raw);
         p.axes[k] = isNaN(n) ? null : Math.max(-1, Math.min(1, n));
       });
@@ -798,7 +882,9 @@ const Editor = (function () {
     else if (sel.tab === "bills") {
       const b = arr[i];
       ["id","ref","title","stage","summary"].forEach(k => b[k] = g(k).value);
-      b.dualMajority = g("dualMajority").checked;
+      /* absent and false are both "no", and absent stays absent */
+      if (g("dualMajority").checked) b.dualMajority = true;
+      else if (b.dualMajority) b.dualMajority = false;
       b.owner = g("owner").value || null;
       if (g("priority").checked) b.priority = true; else delete b.priority;
       const en = g("effectNote").value; if (en) b.effectNote = en; else delete b.effectNote;
@@ -843,9 +929,13 @@ const Editor = (function () {
     }
     else if (sel.tab === "glossary") {
       const t = arr[i];
-      t.term = g("term").value; t.gloss = g("gloss").value; t.handle = g("handle").value;
+      t.term = g("term").value; t.gloss = g("gloss").value;
+      /* an empty box is an absent field, not an empty string or a null, unless
+         the entry already said so */
+      const h = g("handle").value; if (h || t.handle != null) t.handle = h;
       const cl = g("cluster").value.trim(); if (cl) t.cluster = cl; else delete t.cluster;
-      t.introduced = g("introduced").value || null;
+      const iv = g("introduced").value;
+      if (iv) t.introduced = iv; else if (t.introduced !== undefined) t.introduced = null;
       if (g("assumed").checked) t.assumed = true; else delete t.assumed;
       sel.id = t.term;
     }
@@ -965,9 +1055,26 @@ const Editor = (function () {
       ? `\n\nNOT changed — these merely share the name:\n` +
         soft.slice(0, 6).map(s => "  · " + s).join("\n")
       : "";
+    /* REFERENCES IN FILES THIS EDITOR DOES NOT WRITE. The model holds the
+       files it exports; setup, the cabinet, instruments, initiatives,
+       minutes, settlements, business, actors and administrations name the same ids
+       and are read-only here, so a rename would leave them pointing at
+       nothing. They are found and listed so they can be changed by hand. */
+    const G = n => (typeof window !== "undefined" && window[n]) ||
+      (function () { try { return eval(n); } catch (e) { return undefined; } })();
+    const outside = Refs.find(Object.assign({}, M, {
+      cabinet: G("CABINET"), instruments: G("INSTRUMENTS"), initiatives: G("INITIATIVES"),
+      minutes: G("MINUTES"), settlements: G("SETTLEMENTS"), business: G("BUSINESS"),
+      actors: G("ACTORS"), administrations: G("ADMINISTRATIONS"), setup: G("SETUP") }), kind, from)
+      .filter(h => /^(setup|cabinet|instrument|initiative|minute|settlement|business|actor|administration) /.test(h.where));
+    const outNote = outside.length
+      ? `\n\nNOT changed — in files this editor does not write, change by hand:\n` +
+        outside.slice(0, 8).map(h => "  · " + h.where).join("\n") +
+        (outside.length > 8 ? `\n  · …and ${outside.length - 8} more` : "")
+      : "";
     Dialog.prompt(
       `Rename "${from}" to what?\n\n` +
-      `${hits.length} reference${hits.length === 1 ? "" : "s"} will be updated:\n${preview}${softNote}`,
+      `${hits.length} reference${hits.length === 1 ? "" : "s"} will be updated:\n${preview}${softNote}${outNote}`,
       { title: `Rename "${from}"`, value: from, yes: "Rename" },
       to => {
         if (!to || to === from) return;
@@ -1290,7 +1397,11 @@ const Editor = (function () {
       (e.choices || []).forEach((c, i) => {
         [].concat(c.effects || []).forEach(eff => {
           const v = Object.keys(eff)[0];
-          if (!SCHEMA.effects[v]) P.push(["err", e.id + " choice " + (i + 1) + ": unknown verb " + v]);
+          /* The ENGINE's vocabulary decides what is unknown. The schema only
+             describes the verbs the forms can draw, and seven real verbs
+             were reported as errors here (design/34). */
+          const knownV = typeof Engine !== "undefined" && Engine.EFFECTS ? Engine.EFFECTS[v] : SCHEMA.effects[v];
+          if (!knownV) P.push(["err", e.id + " choice " + (i + 1) + ": unknown verb " + v]);
           if (eff.queue) [].concat(eff.queue).forEach(q => {
             if (!ids.includes(q.event)) P.push(["err", e.id + ": queues missing event " + q.event]);
             const t = M.events.find(x => x.id === q.event);
@@ -1299,7 +1410,8 @@ const Editor = (function () {
         });
       });
       Object.keys(e.when || {}).forEach(k => {
-        if (!SCHEMA.conditions[k]) P.push(["err", e.id + ": unknown condition " + k]);
+        const knownC = typeof Engine !== "undefined" && Engine.CONDITIONS ? Engine.CONDITIONS[k] : SCHEMA.conditions[k];
+        if (!knownC) P.push(["err", e.id + ": unknown condition " + k]);
       });
     });
     /* one concept cluster per event */
@@ -1528,7 +1640,9 @@ const Editor = (function () {
       const cur = arrOf(sel.tab).find(o => idOf(sel.tab, o) === sel.id);
       if (act === "choice-add") cur.choices.push({ label: "New choice", effects: [] });
       if (act === "choice-del") cur.choices.splice(+b.dataset.ci, 1);
-      if (act === "eff-add") (cur.choices[+b.dataset.ci].effects ||= []).push({ scalar: { public_standing: 0 } });
+      /* `move`, not `scalar`: the verb was folded into move, apply() throws
+         on it, and every effect this button made was a crash in waiting. */
+      if (act === "eff-add") (cur.choices[+b.dataset.ci].effects ||= []).push({ move: { public_standing: 0 } });
       if (act === "eff-del") cur.choices[+b.dataset.ci].effects.splice(+b.dataset.ei, 1);
       if (act === "cond-add") {
         Dialog.prompt("Condition:\n\n" + Object.keys(SCHEMA.conditions).join("\n"),

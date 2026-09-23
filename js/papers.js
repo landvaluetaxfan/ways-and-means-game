@@ -114,6 +114,16 @@ const Papers = (function () {
     <path d="M6 45 h34" stroke="#17140e" stroke-width="1.2"/>
     <path d="M9 49 h28" stroke="#17140e" stroke-width="0.8"/></svg>`;
 
+  /* THE DAY ON THE FILE, from the calendar. The bill paper printed "11 APR
+     2287" as a literal for every bill on every sitting, which the move to
+     2080 left two centuries out (design/34). */
+  const MON = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  function dateline(n) {
+    const iso = Engine.dateOfSitting(C, n);
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
+    return m ? (+m[3]) + " " + MON[+m[2] - 1] + " " + m[1] : "SITTING " + n;
+  }
+
   function head(office, sub, file, right) {
     return `<div class="letterhead">${crest}<div class="lh-txt">
         <h3>${esc(office)}</h3><p>${esc(sub)}</p></div></div>
@@ -226,7 +236,7 @@ const Papers = (function () {
 
     return { html: `<div class="paper${ceremonial && !already ? " sig-armed" : ""}${ceremonial && already ? " sig-done" : ""}">
       ${head("Office of the Prime Minister", "Circumterrestrial Commonwealth \u00b7 Anselm Ring",
-             "FILE " + b.ref, "11 APR 2287")}
+             "FILE " + b.ref, dateline(st.sitting))}
       ${banner}${stageTrack(b, bs)}${body}${sig}</div>`, ceremonial: ceremonial && !already };
   }
 

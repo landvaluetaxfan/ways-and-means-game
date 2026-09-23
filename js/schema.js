@@ -130,8 +130,15 @@ const SCHEMA = {
     prices: ["thermal","substrate","volume","transit"],
     stationFields: ["closure","suspended","attested","population","seats"],
     billFields: ["stage","dead"],
-    billStages: ["drafting","first_reading","second_reading","committee","lords",
-                 "blocked","withdrawn","passed","defeated"],
+    /* EVERY STAGE A BILL CAN BE IN: the engine's ladder (STAGE_ORDER), what
+       a division, the President and the rise leave behind, and the two that
+       content writes itself ("withdrawn", and "passed", which is content's
+       word for what the engine calls "assented"). This listed "lords", which
+       no bill is ever in, and lacked third reading and every stage after
+       it (design/34). test.js holds it to the engine and to content. */
+    billStages: ["drafting","first_reading","second_reading","committee","report",
+                 "third_reading","assent","awaiting_assent","referred","assented",
+                 "passed","struck","blocked","defeated","fallen","withdrawn"],
     /* THE AXES ARE SIGNED NUMBERS NOW, -1 to +1, and agreement is distance
        rather than a match (bible Part XVII). Each entry names its poles so
        the editor can label a slider and the interface can say which end a

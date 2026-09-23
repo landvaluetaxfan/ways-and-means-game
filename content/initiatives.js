@@ -81,9 +81,12 @@ const INITIATIVES = [
         effects: [ { flag: { position_offhand: true, position_stated: true } } ] },
       { label: "A statement to the House, with a text", after: 3,
         effects: [ { flag: { position_stated: true } },
+                   /* WITH A DISCHARGE. It had none, so it broke at the
+                      rise whether or not the bill carried (design/34). */
                    { undertake: { id: "carry_threshold",
                                   text: "Carry the threshold bill this session",
-                                  by: null } },
+                                  by: null,
+                                  discharge: { division: "divergence", carried: true } } },
                    { move: { public_standing: 3, "loyalty.cu_maintenance": -4 } } ] }
     ] },
 
