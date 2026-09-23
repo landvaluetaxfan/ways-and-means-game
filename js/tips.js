@@ -271,9 +271,9 @@ const Tips = (function () {
 
     /* ---- indicators and scarcity ---- */
     party_loyalty: { title: "Party loyalty",
-      body: "Your own party's discipline. It is separate from the loyalty of " +
-            "the currents inside it. Whipping your own members is paid for from " +
-            "this." },
+      body: "Your own party's loyalty: the loyalty of the currents inside it, " +
+            "averaged by how many members each has. Whipping your own members " +
+            "is paid for from it, and the cost falls on every current." },
     public_standing: { title: "Public standing",
       body: "How the government is seen outside the chamber. It does not vote. " +
             "It decides what the wire prints." },

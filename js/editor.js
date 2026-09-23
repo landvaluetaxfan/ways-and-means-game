@@ -456,7 +456,9 @@ const Editor = (function () {
       <label>Short ${txt_("short", p.short || "", "", 70)}</label>
       <label class="ed-w">Aliases ${txt_("aliases", (p.aliases || []).join(", "), "press nicknames", 220)}</label>
       <label>Colour ${txt_("colour", p.colour, "", 130)}</label>
-      <label>Loyalty ${num_("loyalty", p.loyalty)}</label>
+      ${M.currents.some(c => c.party === p.id)
+        ? `<label>Loyalty <span class="ed-hint">the mean of its currents</span></label>`
+        : `<label>Loyalty ${num_("loyalty", p.loyalty)}</label>`}
       <label class="ed-w">Logo ${txt_("logo", p.logo || "", "cu.png", 150)}
         ${p.logo ? `<img class="dith ed-logopv" src="img/logos/${esc(p.logo)}" onerror="this.style.display='none'">` : ""}
         <button class="btn ed-add" data-act="logo-make">Make from image…</button></label>
@@ -837,7 +839,9 @@ const Editor = (function () {
     else if (sel.tab === "parties") {
       const p = arr[i];
       p.id = g("id").value.trim(); p.name = g("name").value; p.short = g("short").value;
-      p.colour = g("colour").value; p.loyalty = +g("loyalty").value; p.note = g("note").value;
+      p.colour = g("colour").value; p.note = g("note").value;
+      /* a party with currents has no loyalty of its own to write */
+      if (g("loyalty")) p.loyalty = +g("loyalty").value;
       const lg = g("logo").value.trim(); if (lg) p.logo = lg; else delete p.logo;
       const al = g("aliases").value.split(",").map(s => s.trim()).filter(Boolean);
       if (al.length) p.aliases = al; else delete p.aliases;

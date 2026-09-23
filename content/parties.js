@@ -1,7 +1,13 @@
 /* PARTIES — add a party by adding an object here. Nothing else needs to change.
-   axes: ownership public|private  personhood expansionist|restrictionist
-         sovereignty federal|station   closure closurist|integrationist
+   axes: five signed axes from -1 to +1, named with their poles in
+         js/schema.js (economic, authority, personhood, sovereignty, trade).
    Omit an axis (or use null) where the party has no settled position.
+   loyalty: a party WITHOUT currents carries its own. A party with currents
+         (below) carries none: its loyalty is the member-weighted mean of its
+         currents', and for the government's party that mean is the Party
+         loyalty meter (the author, 23 Sep; js/engine.js syncLoyalty). Five
+         parties had a figure here as well, and three disagreed with their
+         own currents -- the CDA at 23 against currents averaging 54.
    aliases: press nicknames. Bible 8.3 — real parties are named for a value,
    an interest, a place or a founding event, almost never for their ideology.
    "Substrate Left" is what the papers call them; it is not their name. */
@@ -24,7 +30,7 @@ const PARTIES = [
   { id:"cu",  name:"Party of Socialists and Democrats", short:"PSD", colour:"var(--p-cu)",
     leader:"flash", logo:"cu.png", wordmark:"cu_mark.png",
     seats:{district:48,list:25,functional:9},
-    kind:"national", loyalty:62,
+    kind:"national",
     axes:{economic:-0.75, authority:-0.4, personhood:-0.55, sovereignty:0.5, trade:-0.35},
     note:"Old left. Embodied maintenance labour, and the strike weapon." },
 
@@ -60,14 +66,14 @@ const PARTIES = [
   { id:"rv",  name:"Congregational Democratic Alliance", short:"CDA", colour:"var(--p-rv)",
     leader:"park", logo:"rv.png", wordmark:"rv_mark.png",
     seats:{district:12,list:5,functional:1},
-    kind:"national", loyalty:23,
+    kind:"national",
     axes:{economic:-0.45, authority:-0.2, personhood:-0.9, sovereignty:0, trade:-0.1},
     note:"Continuity of soul. A copy is not the person. Economically left, culturally immovable." },
 
   { id:"fh",  name:"Freehold Party",               short:"FH",  colour:"var(--p-fh)",
     leader:"bluespan", logo:"fh.png", wordmark:"fh_mark.png",
     seats:{district:8,list:3,functional:6},
-    kind:"national", loyalty:12,
+    kind:"national",
     axes:{economic:0.9, authority:-0.25, personhood:-0.4, sovereignty:-0.6, trade:0.3},
     note:"Volume owners. Property absolutists." },
 
@@ -100,7 +106,7 @@ const PARTIES = [
   { id:"upl", name:"Uplift Alliance",              short:"UPA", colour:"var(--p-upl)",
     leader:"lindegaard", logo:"upl.png", wordmark:"upl_mark.png",
     seats:{district:0,list:2,functional:0},
-    kind:"national", loyalty:58,
+    kind:"national",
     /* Bible 4.8: the list threshold exempts a party representing a single
        legal-person category, as minority protection. The Uplift Alliance is
        the case that carve-out was written for — and the exemption is itself
@@ -114,7 +120,7 @@ const PARTIES = [
   { id:"ind", name:"Independents",                 short:"IND", colour:"var(--p-ind)",
     leader:null,
     seats:{district:6,list:0,functional:0},
-    kind:"national", loyalty:50,
+    kind:"national",
     axes:{},
     note:"District independents. No caucus position, no whip, no leader. Six members " +
          "and six arguments: the seats on Sinter share one, and the others share " +

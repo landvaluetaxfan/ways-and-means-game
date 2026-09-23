@@ -61,7 +61,10 @@ const SETUP = {
 
   economy: { participation: 39, trade: 100, private: 0.72 },
 
-  scalars: { party_loyalty:38, public_standing:44, consumables:71,
+  /* No `party_loyalty`: the meter is the government party's currents,
+     member-weighted (content/parties.js), which open at 48. It was set here
+     to 38 beside them and the two never met. */
+  scalars: { public_standing:44, consumables:71,
              thermal_margin:17, solvency:52000,
              /* Flash I's own meters. legitimacy: the government being
                 believed, at home. friction: Earth's governments and banks
@@ -402,7 +405,7 @@ She has four years. The session that opens on the eleventh of April is the fourt
       grantsPerSitting: 99,
       idleness: { fromChapter: 99, after: 3, drag: { legitimacy: -1 },
                   mark: "Sandbox: the idleness pressure is off" },
-      scalars: { party_loyalty: 80, public_standing: 70, consumables: 80,
+      scalars: { public_standing: 70, consumables: 80,
                  thermal_margin: 60, solvency: 999999,
                  legitimacy: 70, friction: 10 } }
   }

@@ -684,6 +684,18 @@ version of any of them is in the header of the file it names.
   Inserting two events before `f1_meltdown` moved three playtest strategies
   from the debt trap at 34 to the joint mandate at 23. New events go at the
   END of the list, and the playtest before and after is the proof.
+- **A SCALAR MOVES BY ONE RULE.** `move`, the trends, the couplings and the
+  idleness drag each clamped to 0-100 themselves, and only `move` knew that
+  solvency has no ceiling. So a solvency trend, or the debt trap's coupling,
+  took the reserve from 52,000 to 100 in one sitting, every sitting it
+  applied, and the debt trap's own gate (solvency under 35,000) was met by
+  that bug. `bumpScalar` is the one writer now.
+- **ONE LOYALTY PER BENCH** (the author, 23 Sep). A party with currents
+  stores only the currents. Its own figure, and for the government's party
+  the Party loyalty meter, are their member-weighted mean (`syncLoyalty`).
+  A move on the party or the meter moves every current. The meter opens at
+  48 where setup said 38, and the CDA reads 54 where `parties.js` said 23
+  against currents averaging 54. `shiftLoyalty` is the only writer.
 - **`characters[].current` is authored now** (23 Sep). It was read by the
   bench roll, the members list, the signature count and the reshuffle, and
   carried by nobody. `test.js` asserts every popular-seat member of a party

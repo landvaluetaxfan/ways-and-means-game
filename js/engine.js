@@ -253,6 +253,8 @@ const Engine = (function () {
     seedRoll(st, C);
     seedFunctional(st, C);
     seedActors(st, C);
+    /* the party figures and the government's meter are the currents' */
+    syncLoyalty(st, C);
     return st;
   }
 
@@ -683,6 +685,9 @@ const Engine = (function () {
        round-tripping to an identical state — which tools/uitest.js checks
        and which is the whole basis of the roundtrip test. */
     lastReconcile = notes;
+    /* and on every load, so a save written before the loyalties were linked
+       reads its meter off its currents like a new game does */
+    syncLoyalty(st, C);
     return st;
   }
 
@@ -1464,6 +1469,47 @@ const Engine = (function () {
     return t && t.loyalty != null ? t.loyalty : null;
   }
 
+  /* ONE LOYALTY PER BENCH, AND THE REST DERIVED (the author, 23 Sep).
+     A party with currents had three figures for one fact: the currents,
+     which decide how its members vote; the party's own, which nothing in a
+     division read; and, for the government's party, the `party_loyalty`
+     meter, which whipping spent and the leadership loss read. They never
+     met: measured on one run, the meter at 80 while the Maintenance bloc
+     sat at 7.
+
+     So the CURRENTS are stored and the other two are their member-weighted
+     mean, the way the national standing is the mean of the bands. A move on
+     the party, or on the meter, moves every one of its currents by that
+     much. A party with no currents keeps its own figure, and if it is the
+     government's party the meter is that figure. */
+  function currentsOf(st, C, partyId) {
+    return ((C && C.currents) || []).filter(c => c.party === partyId && st.currents[c.id]);
+  }
+  function syncLoyalty(st, C) {
+    Object.keys(st.parties || {}).forEach(pid => {
+      const cs = currentsOf(st, C, pid);
+      let num = 0, den = 0;
+      cs.forEach(c => { const m = st.currents[c.id].members || 0;
+                        num += m * st.currents[c.id].loyalty; den += m; });
+      if (den) st.parties[pid].loyalty = Math.round(num / den);
+    });
+    const own = (st.parties || {})[st.playerParty];
+    if (own && own.loyalty != null) st.scalars.party_loyalty = own.loyalty;
+  }
+  function shiftLoyalty(st, C, id, d) {
+    if (!d) return;
+    if (st.currents[id]) {
+      st.currents[id].loyalty = clamp(st.currents[id].loyalty + d, 0, 100);
+    } else {
+      const cs = currentsOf(st, C, id);
+      if (cs.length) cs.forEach(c =>
+        st.currents[c.id].loyalty = clamp(st.currents[c.id].loyalty + d, 0, 100));
+      else if (st.parties[id])
+        st.parties[id].loyalty = clamp(st.parties[id].loyalty + d, 0, 100);
+    }
+    syncLoyalty(st, C);
+  }
+
   function whippable(st, C, billId, partyId, tier) {
     const bill = C.billById[billId];
     const own = partyId === st.playerParty;
@@ -1534,7 +1580,7 @@ const Engine = (function () {
   function payWhips(st, C, billId) {
     const cost = whipCost(st, C, billId);
     if (cost.loyalty) {
-      st.scalars.party_loyalty = clamp(st.scalars.party_loyalty - cost.loyalty, 0, 100);
+      shiftLoyalty(st, C, st.playerParty, -cost.loyalty);
     }
     Object.keys(cost.capital).forEach(pid => {
       const before = st.capital[pid] || 0;
@@ -1542,7 +1588,7 @@ const Engine = (function () {
       st.capital[pid] = after;
       if (after < 0) {
         const overdrawn = Math.min(cost.capital[pid], -after);
-        if (st.parties[pid]) st.parties[pid].loyalty = clamp(st.parties[pid].loyalty - overdrawn * 2, 0, 100);
+        if (st.parties[pid]) shiftLoyalty(st, C, pid, -overdrawn * 2);
       }
     });
     delete st.whips[billId];
@@ -2217,7 +2263,7 @@ const Engine = (function () {
        time it does it. */
     st.scalars.legitimacy = clamp((st.scalars.legitimacy || 0) - 7, 0, 100);
     if (st.parties[from])
-      st.parties[from].loyalty = clamp(st.parties[from].loyalty - 5, 0, 100);
+      shiftLoyalty(st, C, from, -5);
 
     st.log.unshift({ sitting: st.sitting,
       text: "Appointments made to the " + (f.name || fcId) + " licensing board." });
@@ -2298,13 +2344,11 @@ const Engine = (function () {
     /* their current takes it personally */
     const cur = (C.currents || []).find(cu => cu.party === party &&
       ch && ch.current === cu.id);
-    if (cur && st.currents[cur.id])
-      st.currents[cur.id].loyalty = clamp(st.currents[cur.id].loyalty - 18, 0, 100);
-    else if (party && st.parties[party])
-      st.parties[party].loyalty = clamp(st.parties[party].loyalty - 6, 0, 100);
+    if (cur && st.currents[cur.id]) shiftLoyalty(st, C, cur.id, -18);
+    else if (party && st.parties[party]) shiftLoyalty(st, C, party, -6);
 
     /* and the House notices */
-    st.scalars.party_loyalty = clamp((st.scalars.party_loyalty || 0) - 4, 0, 100);
+    shiftLoyalty(st, C, st.playerParty, -4);
 
     vacate(st, C, postId, "dismissed");
     const name = ch ? ch.name : who;
@@ -3699,6 +3743,9 @@ const Engine = (function () {
      wherever it comes from. */
   function bumpScalar(st, C, k, d) {
     if (!d) return;
+    /* the government's party's loyalty is its currents' (syncLoyalty) */
+    if (k === "party_loyalty" && st.parties && st.parties[st.playerParty])
+      return shiftLoyalty(st, C, st.playerParty, d);
     st.scalars[k] = clamp((st.scalars[k] || 0) + d, 0,
       SCALAR_MAX[k] == null ? 100 : SCALAR_MAX[k]);
     /* A NATIONAL MOVE IS A MOVE IN EVERY BAND. Content written before
@@ -3761,11 +3808,9 @@ const Engine = (function () {
               "IGNORED: no band of the roll is called " + k + "." });
           }
           break;
-        case "loyalty": {
-          const t = st.currents[k] || st.parties[k];
-          if (t) t.loyalty = clamp(t.loyalty + d, 0, 100);
+        case "loyalty":
+          shiftLoyalty(st, C, k, d);
           break;
-        }
         case "rel":
           if (k === "president") st.president.relationship = clamp(st.president.relationship + d, 0, 100);
           else if (st.characters[k]) st.characters[k].relationship = clamp(st.characters[k].relationship + d, 0, 100);
@@ -5972,9 +6017,11 @@ const Engine = (function () {
     } else {
       /* A MOTION THAT FAILS STRENGTHENS THE GOVERNMENT. */
       m.carried = false;
-      st.scalars.party_loyalty = clamp((st.scalars.party_loyalty || 0) + 6, 0, 100);
-      st.scalars.public_standing = clamp((st.scalars.public_standing || 0) + 3, 0, 100);
-      st.scalars.legitimacy = clamp((st.scalars.legitimacy || 0) + 4, 0, 100);
+      /* Through the one writer: a standing written straight onto the
+         national figure was overwritten by the bands at the next sync. */
+      bumpScalar(st, C, "party_loyalty", 6);
+      bumpScalar(st, C, "public_standing", 3);
+      bumpScalar(st, C, "legitimacy", 4);
       st.wire.unshift({ sitting: st.sitting,
         text: "GOVERNMENT SURVIVES NO-CONFIDENCE MOTION " + have + " TO " + need });
       st.log.unshift({ sitting: st.sitting,

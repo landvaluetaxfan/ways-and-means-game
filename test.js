@@ -1321,6 +1321,36 @@ console.log("\nA SCALAR MOVES BY ONE RULE, WHATEVER MOVES IT (design/34):");
   if (bad) { console.log("\n" + bad + " SCALAR FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nONE LOYALTY PER BENCH (the author, 23 Sep):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const a = Engine.newGame(CONTENT);
+  const own = a.playerParty;
+  const cs = CONTENT.currents.filter(c => c.party === own);
+  const mean = s0 => Math.round(cs.reduce((n, c) => n + s0.currents[c.id].members * s0.currents[c.id].loyalty, 0) /
+                                cs.reduce((n, c) => n + s0.currents[c.id].members, 0));
+  ok("the meter is the government party's currents, weighted by members",
+     a.scalars.party_loyalty === mean(a) && a.parties[own].loyalty === mean(a),
+     "meter " + a.scalars.party_loyalty + ", mean " + mean(a));
+  const before = cs.map(c => a.currents[c.id].loyalty);
+  Engine.apply(a, CONTENT, [{ move: { party_loyalty: -5 } }]);
+  ok("a move on the meter moves every current by that much",
+     cs.every((c, i) => a.currents[c.id].loyalty === Math.max(0, before[i] - 5)));
+  ok("and the meter follows", a.scalars.party_loyalty === mean(a), a.scalars.party_loyalty);
+  Engine.apply(a, CONTENT, [{ move: { ["loyalty." + cs[0].id]: -20 } }]);
+  ok("a move on one current moves the meter by its share",
+     a.scalars.party_loyalty === mean(a), a.scalars.party_loyalty + " = " + mean(a));
+  const withCurrents = [...new Set(CONTENT.currents.map(c => c.party))];
+  ok("no party with currents carries a loyalty of its own in content",
+     withCurrents.every(pid => CONTENT.partyById[pid].loyalty == null),
+     withCurrents.filter(pid => CONTENT.partyById[pid].loyalty != null).join(", "));
+  ok("and setup does not set the meter beside them",
+     CONTENT.setup.scalars.party_loyalty == null);
+  if (bad) { console.log("\n" + bad + " LOYALTY FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nEVERY MEMBER HAS A CURRENT (design/34 D3):");
 (function () {
   let bad = 0;
@@ -2535,11 +2565,11 @@ console.log("\nRECURRING BUSINESS, AND THE RESHUFFLE:");
         c.id === who ? Object.assign({}, c, { current: cur0.id }) : c) });
       const stc = Engine.newGame(Cc);
       if (!stc.cabinet[post.id].holder) Engine.fillPost(stc, Cc, post.id, 0);
-      const was = Engine.loyaltyOf(stc, cur0.id), pwas = Engine.loyaltyOf(stc, ch0.party);
+      const was = Engine.loyaltyOf(stc, cur0.id);
       Engine.reshuffle(stc, Cc, post.id);
+      /* eighteen for the dismissal, and the four the whole party loses */
       ok("and the dismissed minister's current takes it personally",
-         Engine.loyaltyOf(stc, cur0.id) === Math.max(0, was - 18) &&
-         Engine.loyaltyOf(stc, ch0.party) === pwas,
+         Engine.loyaltyOf(stc, cur0.id) === Math.max(0, was - 22),
          cur0.id + " " + was + " -> " + Engine.loyaltyOf(stc, cur0.id));
     }
     ok("the loyalty a party is read at is the one in state, not content's",

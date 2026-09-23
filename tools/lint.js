@@ -185,7 +185,7 @@ try {
   const charIds = new Set(CHARACTERS.map(c => c.id));
   const actorIds = new Set((ACTORS || []).map(a => a.id));
   const stationIds = new Set(STATIONS.map(s => s.id));
-  const scalarIds = new Set(Object.keys(SETUP.scalars || {}));
+  const scalarIds = new Set(Object.keys(SETUP.scalars || {}).concat(require(path.join(root, "js", "schema.js")).vocab.scalars))  /* party_loyalty is derived, so setup opens no value for it */;
   const lawIds = new Set(Object.keys(SETUP.law || {}));
   const priceIds = new Set(["thermal", "substrate", "volume", "transit"]);
 
@@ -774,7 +774,7 @@ try {
   const EV = ids(EVENTS), BI = ids(BILLS), SI = ids(INSTRUMENTS), SE = ids(SETTLEMENTS),
         PA = ids(PARTIES), CU = ids(CURRENTS), AC = ids(ACTORS), ST = ids(STATIONS),
         CH = ids(CHARACTERS), CAB = ids(CABINET);
-  const LAW = new Set(Object.keys(SETUP.law || {})), SC = new Set(Object.keys(SETUP.scalars || {}));
+  const LAW = new Set(Object.keys(SETUP.law || {})), SC = new Set(Object.keys(SETUP.scalars || {}).concat(require(path.join(root, "js", "schema.js")).vocab.scalars))  /* party_loyalty is derived, so setup opens no value for it */;
   const PR = new Set(["thermal", "substrate", "volume", "transit"]);
   const ECK = new Set(Object.keys(SETUP.economy || {}));
   /* Every stage a bill can be in, from the schema, which test.js holds to
