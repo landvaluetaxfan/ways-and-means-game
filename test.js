@@ -2217,13 +2217,56 @@ console.log("\nBORROWING FROM THE PEOPLE YOU ARE QUARRELLING WITH:");
      Math.abs(st.scalars.solvency - (before + rec - svc)) <= 1,
      before + " + " + rec + " - " + svc + " = " + st.scalars.solvency);
 
+  const lg0 = st.scalars.legitimacy;
   const rp = Engine.repay(st, CONTENT, 4000);
   ok("and it can be repaid", rp && rp.ok === true && Engine.debtOf(st) === 6000,
      Engine.debtOf(st) + " still owed");
+  ok("a part-payment buys no legitimacy, or a debt paid by the unit would buy it by the unit",
+     st.scalars.legitimacy === lg0, lg0 + " -> " + st.scalars.legitimacy);
+  Engine.repay(st, CONTENT, 6000);
+  ok("clearing the lender does", st.scalars.legitimacy === lg0 + 2 && Engine.debtOf(st) === 0,
+     lg0 + " -> " + st.scalars.legitimacy);
+  Engine.borrow(st, CONTENT, 6000);
 
-  const cap = CONTENT.setup.borrowCap;
+  const cap = CONTENT.setup.lenders.earth.cap;
   const over = Engine.canBorrow(st, CONTENT, cap + 1);
   ok("Earth will not lend past its cap", over.ok === false, over.reason);
+
+  /* NAMED CREDITORS. The Alliance's facility sat in an undertaking the
+     account could not see; it is a balance owed to a named lender now, on
+     the lender's terms, and the promise is kept when the balance is gone. */
+  const nc = Engine.newGame(CONTENT);
+  nc.scalars.friction = 40;
+  Engine.EFFECTS.move(nc, CONTENT, { "debt.alliance": 19800, "debt.earth": 12000 });
+  ok("a debt is owed to somebody", Engine.debtOf(nc, "alliance") === 19800 &&
+     Engine.debtOf(nc, "earth") === 12000 && Engine.debtOf(nc) === 31800,
+     JSON.stringify(nc.debt));
+  ok("each lender sets its own rate", Engine.debtRate(nc, CONTENT, "alliance") === 10 &&
+     Engine.debtRate(nc, CONTENT, "earth") === 8,
+     Engine.debtRate(nc, CONTENT, "alliance") + " / " + Engine.debtRate(nc, CONTENT, "earth"));
+  const ds = Engine.debts(nc, CONTENT);
+  ok("a facility whose rate is in the sum costs nothing a sitting until the term",
+     ds.find(d => d.id === "alliance").service === 0 &&
+     Engine.debtService(nc, CONTENT) === ds.find(d => d.id === "earth").service,
+     JSON.stringify(ds.map(d => [d.id, d.service])));
+  const no = Engine.repay(nc, CONTENT, 19800, "alliance");
+  ok("and is not paid across the counter: its own terms say how", no.ok === false, no.reason);
+  Engine.EFFECTS.move(nc, CONTENT, { "debt.alliance": -50000 });
+  ok("nobody owes the Commonwealth: a balance floors at nought",
+     Engine.debtOf(nc, "alliance") === 0);
+
+  const fl = Engine.newGame(CONTENT);
+  fl.scalars.solvency = 25000;
+  const loan = CONTENT.eventById.f1_loan.choices[0];
+  Engine.apply(fl, CONTENT, loan.effects);
+  ok("the emergency facility is on the account, principal and rate",
+     Engine.debtOf(fl, "alliance") === 19800, Engine.debtOf(fl, "alliance") + " owed");
+  const u = (fl.undertakings || []).find(x => x.id === "f1_debt");
+  ok("and its promise is open", u && u.state === "open");
+  Engine.EFFECTS.move(fl, CONTENT, { "debt.alliance": -19800 });
+  Engine.settle(fl, CONTENT);
+  ok("and kept when the Alliance is owed nothing, however it was paid",
+     u && u.state === "kept", u && u.state);
 
   /* THERE IS NO INFLATION SCALAR and there should not be: \u00a77.9 makes the four
      prices the cost of existing, and a fifth number summarising them is the
@@ -2240,6 +2283,11 @@ console.log("\nBORROWING FROM THE PEOPLE YOU ARE QUARRELLING WITH:");
   delete old.debt;
   ok("a save from before the power owes nothing",
      Engine.debtOf(Engine.load(Engine.save(old), CONTENT)) === 0);
+  const v28 = Engine.newGame(CONTENT);
+  v28.version = 28; v28.debt = { principal: 7000 };
+  const up = Engine.load(Engine.save(v28), CONTENT);
+  ok("a v28 save's one principal is owed to Earth, whole",
+     Engine.debtOf(up, "earth") === 7000 && Engine.debtOf(up) === 7000, JSON.stringify(up.debt));
 
   if (bad) { console.log("\n" + bad + " DEBT FAILURES"); process.exitCode = 1; }
 })();

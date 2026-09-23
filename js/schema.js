@@ -11,8 +11,11 @@ const SCHEMA = {
   effects: {
     /* ONE VERB for every clamp-and-add against a keyed table. The target
        is namespaced: a bare key is a scalar, otherwise loyalty. / rel. /
-       price. / capital. — so the editor offers one picker rather than
-       five near-identical verbs. See js/engine.js EFFECTS.move. */
+       price. / capital. / trend. / standing. / actor. / debt. — so the
+       editor offers one picker rather than eight near-identical verbs.
+       `debt.<lender>` is what is owed to a lender in setup.lenders; a loan
+       is that AND a move of solvency, written as two. See js/engine.js
+       EFFECTS.move. */
     move:        { label:"Move a number", args:[
                    {k:"key",   type:"enum", src:"moveTargets", label:"Target"},
                    {k:"delta", type:"int",  label:"Change", hint:"+ or −"}],

@@ -188,6 +188,7 @@ try {
   const scalarIds = new Set(Object.keys(SETUP.scalars || {}).concat(require(path.join(root, "js", "schema.js")).vocab.scalars))  /* party_loyalty is derived, so setup opens no value for it */;
   const lawIds = new Set(Object.keys(SETUP.law || {}));
   const priceIds = new Set(["thermal", "substrate", "volume", "transit"]);
+  const lenderIds = new Set(Object.keys(SETUP.lenders || {}));
 
   /* The `case` labels of the move: dispatch in js/engine.js, so this list
      cannot drift from the engine the way a copied one would. */
@@ -210,6 +211,7 @@ try {
         : ns === "actor" ? actorIds.has(k)
         : ns === "capital" ? partyIds.has(k)
         : ns === "price" ? priceIds.has(k)
+        : ns === "debt" ? lenderIds.has(k)
         /* AND AN UNKNOWN NAMESPACE IS A FAULT, not "the engine's business".
            That escape hatch is how `move:{"relationship.watkins":-6}` sat in
            Questions to the Prime Minister passing every check: the engine's
@@ -855,6 +857,7 @@ try {
       if (d.bill && !BI.has(d.bill)) refBad.push(t + " is kept by '" + d.bill + "', which is no bill");
       if (d.division && !BI.has(d.division)) refBad.push(t + " is kept by a division on '" + d.division + "', which is no bill");
       if (d.stage && !STAGES.has(d.stage)) refBad.push(t + " is kept at stage '" + d.stage + "', which is no stage");
+      if (d.repaid && !(SETUP.lenders || {})[d.repaid]) refBad.push(t + " is kept by repaying '" + d.repaid + "', who is no lender in setup.lenders");
       if (u.owed_to && !CH.has(u.owed_to) && !AC.has(u.owed_to)) refBad.push(t + " is owed to '" + u.owed_to + "', who is nobody");
       if (u.post && !CAB.has(u.post)) refBad.push(t + " rests on post '" + u.post + "', which is no post");
     });

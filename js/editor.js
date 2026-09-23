@@ -102,7 +102,9 @@ const Editor = (function () {
            written, which content uses sixty times between them */
         .concat(SCHEMA.vocab.scalars.map(k => ["trend." + k, "trend · " + k.replace(/_/g, " ")]))
         .concat(SCHEMA.vocab.bands.map(k => ["standing." + k, "standing · " + k]))
-        .concat((typeof ACTORS !== "undefined" ? ACTORS : []).map(a => ["actor." + a.id, "actor · " + a.name]));
+        .concat((typeof ACTORS !== "undefined" ? ACTORS : []).map(a => ["actor." + a.id, "actor · " + a.name]))
+        .concat(Object.entries((typeof SETUP !== "undefined" && SETUP.lenders) || {}).map(([k, L]) =>
+          ["debt." + k, "owed to · " + (L.name || k)]));
       default: return [];
     }
   }

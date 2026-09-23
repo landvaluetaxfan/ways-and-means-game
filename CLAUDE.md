@@ -704,6 +704,19 @@ version of any of them is in the header of the file it names.
   initiatives and instruments as movers and never a bill, so a law only an
   Act sets looked unmoved. It reads bills now. A law the engine reads counts
   as seen through the price it sets.
+- **THE DEBT HAS NAMED CREDITORS** (23 Sep, `STATE_VERSION 29`). It was one
+  principal owed to Earth, and the Alliance's emergency facility, the one
+  debt the campaign is built around, was a sum of money and a promise that
+  the account could not see. `st.debt.owed` is keyed by lender; the terms
+  (rate fixed or the quarrel's, cap, `serviced`, `repayable`, the account's
+  note) are `setup.lenders`; an effect moves a balance with
+  `{move:{"debt.<id>": n}}` and the reserve's side separately, since a loan
+  is both. A promise to repay is `discharge:{repaid:"<id>"}`. The facility
+  is 19,800 on the account (principal and printed rate, no service until
+  the term) and `ec_borrow_case`'s draw, which added 16,000 and owed
+  nothing, owes it to Earth now. **Open for the author:** design/13 §8.3
+  decided "this setting has no lender" and `reserve_low` still says so,
+  while d8ac8a9 built Earth borrowing and content lends through two events.
 - **`characters[].current` is authored now** (23 Sep). It was read by the
   bench roll, the members list, the signature count and the reshuffle, and
   carried by nobody. `test.js` asserts every popular-seat member of a party

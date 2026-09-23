@@ -95,8 +95,8 @@ const INITIATIVES = [
      repayable). A Treasury act, not House business, so it costs no
      order-paper time. Two ways: the cash, which needs the reserve to hold
      it, or the security, which settles now at no margin what the Alliance
-     would otherwise take at the rise with ten per cent on top. Either sets
-     the flag that discharges the `f1_debt` undertaking. */
+     would otherwise take at the rise with ten per cent on top. Either clears
+     what is owed to the Alliance, which is what discharges `f1_debt`. */
   { id: "repay_facility",
     title: "Repay the emergency facility",
     note: "The Alliance of Business and Government is owed nineteen thousand " +
@@ -109,9 +109,11 @@ const INITIATIVES = [
     tempo: [
       { label: "In full, from the reserve", after: 1,
         when: { scalarAbove: { solvency: 19799 } },
-        effects: [ { move: { solvency: -19800 } }, { flag: "f1_debt_repaid" } ] },
+        effects: [ { move: { solvency: -19800, "debt.alliance": -19800 } },
+                   { flag: "f1_debt_repaid" } ] },
       { label: "Against the Cordell leases", after: 1,
-        effects: [ { flag: "f1_debt_repaid" }, { flag: "cordell_leases_ceded" },
+        effects: [ { move: { "debt.alliance": -19800 } },
+                   { flag: "f1_debt_repaid" }, { flag: "cordell_leases_ceded" },
                    { move: { "loyalty.gb": 4, public_standing: -3, legitimacy: -4 } } ] }
     ] },
 

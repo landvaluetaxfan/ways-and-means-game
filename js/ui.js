@@ -1219,16 +1219,30 @@ const UI = (function () {
         (pick ? ` data-chart="${esc(pick)}"` : "") +
         `><div class="plab">${esc(lab)}${sub ? `<em>${esc(sub)}</em>` : ""}</div>` +
         `<div class="pval ${cls || ""}">${val}</div></div>`;
-      const debt = Engine.debtOf ? Engine.debtOf(st) : 0;
-      const svc = Engine.debtService ? Engine.debtService(st) : 0;
+      /* ONE ROW PER CREDITOR. The account said "Owed to Earth" while the
+         emergency facility's nineteen thousand eight hundred sat in an
+         undertaking on another tab, so the one debt the campaign is built
+         around was the one the account could not see. Who is owed, and on
+         what terms, is the engine's (`Engine.debts`), and the words are
+         content's (`setup.lenders`). */
+      const owed = Engine.debts ? Engine.debts(st, C) : [];
+      const svc = Engine.debtService ? Engine.debtService(st, C) : 0;
+      const lender = d =>
+        `<div class="prow"><div class="plab">Owed to ${esc(d.name)}` +
+        `<em>${esc(d.note ? d.note + (d.service ? ", " + d.rate + " per cent" : "")
+                           : "at " + d.rate + " per cent")}</em></div>` +
+        `<div class="pval up">${d.owed.toLocaleString()}</div>` +
+        (d.repayable
+          ? `<button class="btn tiny" data-repay="${esc(d.id)}"` +
+            (solv >= d.owed ? "" : " disabled") + ` data-tip="repay">Repay</button>`
+          : "") + `</div>`;
       box.innerHTML =
         row("Held", solv.toLocaleString(), "the quota the state has", "", "solvency") +
         row("Receipts", "+" + r.total.toLocaleString(), "every sitting, from four bases", "down") +
-        (debt
-          ? row("Owed to Earth", debt.toLocaleString(),
-                "at " + Engine.debtRate(st) + " per cent", "up") +
-            row("Debt service", "−" + svc.toLocaleString(), "every sitting", "up")
-          : row("Owed to Earth", "none", "nothing is pledged off-world")) +
+        (owed.length
+          ? owed.map(lender).join("") +
+            (svc ? row("Debt service", "−" + svc.toLocaleString(), "every sitting", "up") : "")
+          : row("Owed", "none", "nothing is pledged to any lender")) +
         row("Net a sitting", (r.total - svc >= 0 ? "+" : "−") +
               Math.abs(r.total - svc).toLocaleString(),
             "receipts less what the debt costs", r.total - svc < 0 ? "up" : "down") +
@@ -1258,6 +1272,24 @@ const UI = (function () {
             : `Nothing is coming in at all. A government that runs out does ` +
               `not default; it sheds people.`) + `</div>`;
     }
+
+    if (box) box.querySelectorAll("[data-repay]").forEach(b =>
+      b.addEventListener("click", () => {
+        const d = (Engine.debts(st, C) || []).find(x => x.id === b.dataset.repay);
+        if (!d) return;
+        Dialog.confirm(
+          `Pay ${d.name} ${d.owed.toLocaleString()} MW-years from the reserve, ` +
+          `leaving ${((st.scalars.solvency || 0) - d.owed).toLocaleString()}?`,
+          { title: "Repay in full", yes: "Repay" },
+          ok => {
+            if (!ok) return;
+            const r = acted(() => Engine.repay(st, C, d.owed, d.id));
+            if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); drawAll(); return; }
+            cue("stamp");
+            setStatus("Repaid " + r.repaid.toLocaleString() + " to " + d.name, "transient");
+            drawAll(); saved(); afterAction();
+          });
+      }));
 
     /* WHAT THE UNDERWRITERS SAY. The engine finds which readings apply and
        content supplies every word, so the advice is in the prose file. */

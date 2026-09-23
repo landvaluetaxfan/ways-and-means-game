@@ -73,11 +73,29 @@ const SETUP = {
   /* HOW OFTEN THE CHARTER LETS A GOVERNMENT APPOINT TO ONE BOARD
      (bible §4.6.4). Two is a fight; unlimited is a cheat code. */
   boardCap: 2,
-  /* HOW FAR EARTH WILL GO. Beyond this its banks stop lending to this
-     government, whatever the rate (bible §7.5.2: underwriting prices
-     everything continuously, and it prices a government it does not
-     believe in out of the market). */
-  borrowCap: 60000,
+  /* WHO THE COMMONWEALTH OWES (named creditors, 23 Sep). The engine keeps
+     what is owed to each, by id, and reads the terms from here; an effect
+     moves a balance with {move:{"debt.<id>": n}}, and the reserve's side of
+     a loan is its own move, because a loan is the debt AND the money.
+
+     `rate`     fixed, or the quarrel's: base + perFriction a point of friction
+     `cap`      how far this lender will go with this government
+     `serviced` false: the rate is folded into the sum owed at the term, and
+                nothing is paid out of the reserve each sitting
+     `repayable` false: not paid down across the counter on the Economy tab,
+                because its own terms (an initiative, a call) say how
+     `note`     what the account prints under the figure
+
+     Earth's cap is bible §7.5.2: underwriting prices everything
+     continuously, and it prices a government it does not believe in out of
+     the market. */
+  lenders: {
+    earth: { name: "Earth's markets", rate: { base: 4, perFriction: 0.1 }, cap: 60000,
+             note: "at the quarrel's rate" },
+    alliance: { name: "The Alliance of Business and Government",
+                rate: { fixed: 10 }, serviced: false, repayable: false,
+                note: "the emergency facility, due before the House rises; secured on the Cordell leases" }
+  },
 
   /* WHAT THE UNDERWRITERS SAY (bible §7.5.2 — the only party with accurate
      numbers on everything). The engine finds which of these apply and says

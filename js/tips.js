@@ -197,6 +197,13 @@ const Tips = (function () {
             "defaults cost, so a government that cuts a rate is spending " +
             "its reserve to do it." },
 
+    repay: { title: "Repay",
+      body: "Pays this lender everything owed, from the reserve, and costs " +
+            "no order-paper time: the Treasury settles a debt, the House " +
+            "does not. It can only be done in full, and only while the " +
+            "reserve holds the sum. A lender whose own terms say how it is " +
+            "repaid has no control here." },
+
     /* ---- the orbit ---- */
     schematic: { title: "The habitat schematic",
       body: "This is a chart, not a map. Vertical position is altitude band. " +

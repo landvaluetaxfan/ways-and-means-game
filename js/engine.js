@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 28;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods
+  const STATE_VERSION = 29;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors
 
   /* ---------------------------------------------------------
      1. STATE
@@ -468,6 +468,15 @@ const Engine = (function () {
         st.session = opened;
       }
       st.version = 28;
+    }
+    if (st.version < 29) {                    // named creditors
+      /* One principal, owed to Earth, becomes a table keyed by lender. The
+         only lender there was is Earth's markets, so the figure moves across
+         whole. */
+      const was = (st.debt && st.debt.principal) || 0;
+      st.debt = { owed: (st.debt && st.debt.owed) || {} };
+      if (was) st.debt.owed.earth = (st.debt.owed.earth || 0) + was;
+      st.version = 29;
     }
     return st;
   }
@@ -3833,6 +3842,13 @@ const Engine = (function () {
         /* No new verb: an actor's standing moves the way a party's loyalty
            does, which is what keeps EFFECTS at its twenty-one and off
            §15.5's line for a twenty-second time. */
+        /* {move:{"debt.alliance":18000}} -- what is owed to a lender, in
+           MW-years. Content writes the reserve's side itself (a loan is
+           the debt AND the money), so a facility is two moves, and neither
+           needed a new verb. Floor at nought: nobody owes the Commonwealth. */
+        case "debt":
+          owedTable(st)[k] = Math.max(0, debtOf(st, k) + d);
+          break;
         case "actor":
           if (st.actors[k])
             st.actors[k].standing = clamp(st.actors[k].standing + d, 0, 100);
@@ -4265,6 +4281,9 @@ const Engine = (function () {
       if (!d.stage) return b.stage !== (C.billById[d.bill] || {}).stage;
       return stageRank(b.stage) >= stageRank(d.stage);
     }
+    /* a promise to repay is kept when the lender is owed nothing, however
+       the debt was paid: in cash on the account, or in kind */
+    if (d.repaid) return debtOf(st, d.repaid) <= 0;
     /* `carries`, which is what divide() records. This read `carried`, which
        nothing writes, so a promise discharged by a division carrying could
        never be kept (design/34). */
@@ -4740,37 +4759,79 @@ const Engine = (function () {
      owned by nobody. */
   const BASE_RATE = 4;
 
-  function debtRate(st) {
-    return BASE_RATE + Math.round((st.scalars.friction || 0) / 10);
+  /* NAMED CREDITORS (the author, 23 Sep: "flesh out the economy"). The debt
+     was one principal owed to Earth, and the Alliance's emergency facility
+     was a sum of money with a promise beside it that nothing in the account
+     could see. It is a table keyed by LENDER now, and the lenders are
+     content's (`setup.lenders`): who they are, what their money costs -- a
+     fixed rate, or the quarrel's, a base plus so much a point of friction --
+     how far they will go, and whether the rate is paid every sitting or
+     folded into the sum owed at the term (`serviced: false`). The one the
+     engine knows by name is Earth, because §7.5.3 does: `borrow` is the
+     Commonwealth's own power, and it borrows from Earth or not at all. */
+  const EARTH_TERMS = { rate: { base: BASE_RATE, perFriction: 0.1 }, cap: 60000 };
+  function lenderOf(C, id) {
+    const L = (C && C.setup && C.setup.lenders) || {};
+    return L[id] || (id === "earth" ? EARTH_TERMS : { rate: { base: BASE_RATE } });
+  }
+  function owedTable(st) {
+    if (!st.debt) st.debt = { owed: {} };
+    if (!st.debt.owed) st.debt.owed = {};
+    return st.debt.owed;
+  }
+  function debtRate(st, C, lender) {
+    const r = lenderOf(C, lender || "earth").rate || {};
+    if (r.fixed != null) return r.fixed;
+    return (r.base == null ? BASE_RATE : r.base) +
+           Math.round((st.scalars.friction || 0) * (r.perFriction || 0));
   }
 
-  function debtOf(st) { return (st.debt && st.debt.principal) || 0; }
-
-  /* What the debt costs every sitting, in the unit everything else is in. */
-  function debtService(st) {
-    const p = debtOf(st);
-    if (!p) return 0;
-    return Math.round(p * (debtRate(st) / 100) / 12);   /* a sitting, not a year */
+  /* What is owed, to one lender or to all of them. */
+  function debtOf(st, lender) {
+    const o = (st.debt && st.debt.owed) || {};
+    if (lender) return o[lender] || 0;
+    return Object.keys(o).reduce((n, k) => n + (o[k] || 0), 0);
   }
 
-  function canBorrow(st, C, amount) {
+  /* Every lender the Commonwealth owes, with the terms, for the account. */
+  function debts(st, C) {
+    const o = (st.debt && st.debt.owed) || {};
+    return Object.keys(o).filter(k => o[k] > 0).map(k => {
+      const L = lenderOf(C, k);
+      return { id: k, name: L.name || k, owed: o[k], rate: debtRate(st, C, k),
+               service: L.serviced === false ? 0
+                      : Math.round(o[k] * (debtRate(st, C, k) / 100) / 12),
+               note: L.note || "", repayable: L.repayable !== false };
+    });
+  }
+
+  /* What the debt costs every sitting, in the unit everything else is in:
+     each lender's principal at that lender's rate, a sitting's share of a
+     year. */
+  function debtService(st, C) {
+    return debts(st, C).reduce((n, d) => n + d.service, 0);
+  }
+
+  function canBorrow(st, C, amount, lender) {
+    const id = lender || "earth";
     const n = Math.max(0, Math.round(amount || 0));
     if (!n) return { ok: false, reason: "nothing to borrow" };
-    const cap = (C.setup && C.setup.borrowCap) == null ? 60000 : C.setup.borrowCap;
-    if (debtOf(st) + n > cap)
-      return { ok: false, reason: "Earth's banks will not go past " + cap.toLocaleString() +
-                                  " with this government" };
+    const L = lenderOf(C, id);
+    const cap = L.cap != null ? L.cap : Infinity;
+    if (debtOf(st, id) + n > cap)
+      return { ok: false, reason: (L.name || "Earth's banks") + " will not go past " +
+                                  cap.toLocaleString() + " with this government" };
     if (st.slots.used >= st.slots.total)
       return { ok: false, reason: "no order-paper time left this sitting period" };
     return { ok: true };
   }
 
-  function borrow(st, C, amount) {
-    const gate = canBorrow(st, C, amount);
+  function borrow(st, C, amount, lender) {
+    const id = lender || "earth";
+    const gate = canBorrow(st, C, amount, id);
     if (!gate.ok) return gate;
     const n = Math.max(0, Math.round(amount));
-    st.debt = st.debt || { principal: 0 };
-    st.debt.principal += n;
+    owedTable(st)[id] = debtOf(st, id) + n;
     st.scalars.solvency = (st.scalars.solvency || 0) + n;
     st.slots.used += 1;
     /* BORROWING FROM EARTH IS A POLITICAL ACT, and the House reads it as one. */
@@ -4778,25 +4839,33 @@ const Engine = (function () {
     st.scalars.legitimacy = clamp((st.scalars.legitimacy || 0) - 3, 0, 100);
     st.log.unshift({ sitting: st.sitting,
       text: "Borrowed " + n.toLocaleString() + " MW-years against the quota, at " +
-            debtRate(st) + " per cent." });
+            debtRate(st, C, id) + " per cent." });
     st.wire = st.wire || [];
     st.wire.unshift({ sitting: st.sitting,
       text: "COMMONWEALTH RAISES " + n.toLocaleString() +
-            " ON EARTH MARKETS AT " + debtRate(st) + " PER CENT" });
-    return { ok: true, borrowed: n, rate: debtRate(st) };
+            " ON EARTH MARKETS AT " + debtRate(st, C, id) + " PER CENT" });
+    return { ok: true, borrowed: n, rate: debtRate(st, C, id) };
   }
 
-  function repay(st, C, amount) {
-    const p = debtOf(st);
-    if (!p) return { ok: false, reason: "the Commonwealth owes nothing" };
+  function repay(st, C, amount, lender) {
+    const id = lender || "earth";
+    const p = debtOf(st, id);
+    const L = lenderOf(C, id);
+    if (!p) return { ok: false, reason: "the Commonwealth owes " + (L.name || id) + " nothing" };
     const n = Math.min(p, Math.max(0, Math.round(amount || 0)),
                        st.scalars.solvency || 0);
     if (!n) return { ok: false, reason: "nothing it can pay" };
-    st.debt.principal -= n;
+    if (L.repayable === false)
+      return { ok: false, reason: (L.name || id) + " is repaid on its own terms" };
+    owedTable(st)[id] = p - n;
     st.scalars.solvency -= n;
-    st.scalars.legitimacy = clamp((st.scalars.legitimacy || 0) + 2, 0, 100);
+    /* The credit is for being clear of the lender, not for each payment, or
+       a debt paid a unit at a time would buy legitimacy by the unit. */
+    if (p - n <= 0)
+      st.scalars.legitimacy = clamp((st.scalars.legitimacy || 0) + 2, 0, 100);
     st.log.unshift({ sitting: st.sitting,
-      text: "Repaid " + n.toLocaleString() + " MW-years of the Earth debt." });
+      text: "Repaid " + n.toLocaleString() + " MW-years to " + (L.name || id) + "." });
+    settle(st, C);
     return { ok: true, repaid: n };
   }
 
@@ -4836,7 +4905,7 @@ const Engine = (function () {
     const keys = [];
     const solv = st.scalars.solvency || 0;
     const rec = receipts(st).total;
-    const svc = debtService(st);
+    const svc = debtService(st, C);
     const net = rec - svc;
     const debt = debtOf(st);
     const infl = inflation(st);
@@ -4854,7 +4923,7 @@ const Engine = (function () {
     if (!debt) keys.push("debt_none");
     else if (debt > 30000) keys.push("debt_heavy");
     else keys.push("debt_light");
-    if (debt) keys.push(debtRate(st) >= 10 ? "rate_dear" : "rate_cheap");
+    if (debt) keys.push(Math.max(...debts(st, C).map(d => d.rate)) >= 10 ? "rate_dear" : "rate_cheap");
 
     /* the cost of existing */
     if (infl <= -5) keys.push("prices_falling");
@@ -5017,7 +5086,7 @@ const Engine = (function () {
       /* AND THE DEBT IS SERVICED OUT OF THE SAME PURSE, before anything else
          is done with it. A government that has borrowed is paying Earth
          every sitting whether it thinks about it or not. */
-      const owed = debtService(st);
+      const owed = debtService(st, C);
       const net = r.total - owed;
       if (net) st.scalars.solvency = Math.max(0, (st.scalars.solvency || 0) + net);
     })();
@@ -5237,6 +5306,10 @@ const Engine = (function () {
       how = "Make " + (si.number ? si.number + " \u2014 " : "") +
             (si.title || dz.si).replace(/ Order \d{4}$/, "");
       focus = "si:" + dz.si;
+    } else if (dz.repaid) {
+      tab = "econ";
+      how = "Repay " + (lenderOf(C, dz.repaid).name || dz.repaid);
+      focus = null;
     } else if ((dz.bill || dz.division) && C.billById && C.billById[dz.bill || dz.division]) {
       const id = dz.bill || dz.division;
       tab = "cham";
@@ -6282,7 +6355,7 @@ const Engine = (function () {
     vacateSeat, crossFloor, byElection, generalElection, shares, swungShares,
     divisorAllocate,
     packBoard, canPackBoard, boardsMoved, boardsTotal,
-    borrow, repay, canBorrow, debtOf, debtRate, debtService, inflation, outlook,
+    borrow, repay, canBorrow, debtOf, debtRate, debtService, debts, lenderOf, inflation, outlook,
     reshuffle, canReshuffle, resolveMotion, motionDeadline,
     standingIn, bandsOf, bandWeight, syncStanding, assent, presidentDecides, referralRisk, reviewReturns,
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,

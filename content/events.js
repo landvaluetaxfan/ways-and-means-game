@@ -1973,13 +1973,16 @@ The rate is printed. The term is printed. The condition is one line.`,
     /* REPAYABLE (the author, 23 Sep). The promise had no discharge, so it
        always broke, and its breach named an event nobody had written, so the
        debt was never called either (design/34 D1). It is repaid through the
-       `repay_facility` initiative, which sets the flag below, and if it is
-       still owed when the House rises the Alliance calls it. */
+       `repay_facility` initiative, and if it is still owed when the House
+       rises the Alliance calls it. The sum owed is on the account as a
+       named creditor, principal and printed rate together, and the promise
+       is kept when that balance is nothing, however it got there. */
     { label:"Take the loan.",
-      effects:[{ move:{ "solvency":18000 } }, { move:{ "legitimacy":-10 } },
+      effects:[{ move:{ "solvency":18000 } }, { move:{ "debt.alliance":19800 } },
+               { move:{ "legitimacy":-10 } },
                { undertake:{ id:"f1_debt", text:"Repay the emergency facility",
                              owed_to:"hatt", post:"treasury", by:null,
-                             discharge:{ flag:"f1_debt_repaid" },
+                             discharge:{ repaid:"alliance" },
                              onBreach:"f1_debt_called" } }],
       result:"Eighteen thousand MW-years reach the reserve. The facility is repayable at nineteen thousand eight hundred before the House rises, and the Cordell leases stand as its security until then." },
     { label:"Refuse the rate.",
@@ -3380,7 +3383,7 @@ you already have.`,
     { label:"Draw on the facility and build.",
       brief:"Borrowing to raise participation. The rate is the quarrel and "+
         "the quarrel is with a lender who is not in the chamber.",
-      effects:[{ move:{ solvency:16000 } },
+      effects:[{ move:{ solvency:16000 } }, { move:{ "debt.earth":16000 } },
                { economy:{ participation:2, trade:-2 } },
                { move:{ friction:5 } },
                { move:{ "actor.earth_bloc":-4 } },
@@ -3602,11 +3605,13 @@ The security is the Cordell leases. The Alliance will accept the leases in settl
   choices:[
     { label:"Pay it from the reserve.",
       when:{ scalarAbove:{ solvency:21599 } },
-      effects:[{ move:{ "solvency":-21600 } }, { move:{ "legitimacy":-2 } },
+      effects:[{ move:{ "solvency":-21600 } }, { move:{ "debt.alliance":-19800 } },
+               { move:{ "legitimacy":-2 } },
                { wire:"TREASURY PAYS CALLED FACILITY IN FULL FROM THE RESERVE" }],
       result:"The reserve pays the Alliance in full, and the Cordell leases stay with the Commonwealth." },
     { label:"Let the Alliance take the leases.",
-      effects:[{ flag:"cordell_leases_ceded" }, { move:{ "loyalty.gb":6 } },
+      effects:[{ flag:"cordell_leases_ceded" }, { move:{ "debt.alliance":-19800 } },
+               { move:{ "loyalty.gb":6 } },
                { move:{ "public_standing":-5 } }, { move:{ "legitimacy":-6 } },
                { wire:"ALLIANCE TAKES CORDELL LEASES IN SETTLEMENT OF CALLED FACILITY" }],
       result:"The Cordell mining leases pass to the Alliance of Business and Government, and the facility is extinguished." }

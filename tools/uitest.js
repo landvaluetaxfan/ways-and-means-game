@@ -239,7 +239,19 @@ try {
 try {
   w.document.querySelector('.tab[data-t="econ"]').click();
   const tre = (w.document.querySelector("#econ-account") || {}).textContent || "";
-  ok("the account names the debt and its price", /Owed to Earth/.test(tre));
+  ok("the account says when nothing is owed", /Owednothing is pledged to any lendernone/.test(tre), tre.slice(0, 120));
+  /* NAMED CREDITORS: each lender its own row, on its own terms, and a Repay
+     control only where the lender is paid across the counter. Staged on a
+     copy of the page's state and put back, so nothing after this sees it. */
+  const snapC = w.eval("JSON.stringify(UI.state())");
+  const cred = w.eval("(function(){ var s = UI.state(); s.debt = {owed:{earth:12000, alliance:19800}};" +
+    " UI.redraw(); var b = document.querySelector('#econ-account');" +
+    " return { text: b.textContent, repay: [].map.call(b.querySelectorAll('[data-repay]'), function(x){ return x.dataset.repay; }) }; })()");
+  ok("the account names each creditor", /Owed to Earth's markets/.test(cred.text) &&
+     /Owed to The Alliance of Business and Government/.test(cred.text), cred.text.slice(0, 160));
+  ok("and only the lender paid across the counter has a Repay control",
+     cred.repay.length === 1 && cred.repay[0] === "earth", JSON.stringify(cred.repay));
+  w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapC) + "), UI.content())");
   ok("and the net position, not just the two halves", /Net a sitting/.test(tre),
      (tre.match(/Net a sitting[^A-Z]*/) || [""])[0].slice(0, 44));
 
