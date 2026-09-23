@@ -131,6 +131,11 @@ const PARTIES = [
 /* CURRENTS — factions inside a party. Same axes as a party; a current that
    drifts far enough simply becomes a party in the list above.
 
+   `description` is in-world prose, printed in the party's Concordance
+   article and as the current's tooltip in the Chamber's composition
+   table. A current has no article of its own (the author, 23 Sep): it is
+   something its party contains.
+
    NAMED FOR WHERE THEY STAND (the author, 23 Sep). Hard left and soft left
    are clear because each is a position everyone knows plus a qualifier, and
    the old names were descriptions an analyst would write ("Maintenance
@@ -143,13 +148,17 @@ const PARTIES = [
    Coalitionists, Purists and Pragmatists). The ids are unchanged. */
 const CURRENTS = [
   { id:"cu_maintenance", party:"cu", name:"Trades Left",          members:31, loyalty:29,
-    axes:{economic:-0.85, authority:-0.35, personhood:-0.8, sovereignty:0.4, trade:-0.6} },
+    axes:{economic:-0.85, authority:-0.35, personhood:-0.8, sovereignty:0.4, trade:-0.6},
+    description:"The largest current, drawn from the maintenance trades. Strongly for public ownership of the systems its members keep running, for a federal Commonwealth that pays for them, for closed trade, and against widening personhood." },
   { id:"cu_loyalists",   party:"cu", name:"Soft Left",             members:22, loyalty:88,
-    axes:{economic:-0.7, authority:-0.4, personhood:-0.4, sovereignty:0.55, trade:-0.25} },
+    axes:{economic:-0.7, authority:-0.4, personhood:-0.4, sovereignty:0.55, trade:-0.25},
+    description:"The leadership's current. For public ownership and a federal Commonwealth, against widening personhood, and the least committed of the four to closing the Commonwealth to trade." },
   { id:"cu_deck",        party:"cu", name:"Station Left",          members:18, loyalty:54,
-    axes:{economic:-0.7, authority:-0.55, personhood:-0.5, sovereignty:-0.4, trade:-0.85} },
+    axes:{economic:-0.7, authority:-0.55, personhood:-0.5, sovereignty:-0.4, trade:-0.85},
+    description:"The current of the deck co-operatives. The one current in the party that takes the station's side against the federation, and the most opposed to open trade." },
   { id:"cu_halloran",    party:"cu", name:"Hard Left",              members:11, loyalty:12,
-    axes:{economic:-0.9, authority:-0.5, personhood:-0.35, sovereignty:0.2, trade:-0.5} },
+    axes:{economic:-0.9, authority:-0.5, personhood:-0.35, sovereignty:0.2, trade:-0.5},
+    description:"The party's left flank. The strongest for public ownership, the least concerned of the four with personhood, and the current most often in revolt against the leadership. The press calls it the Czarnecki group, after the member for Tier Four who leads it." },
 
   /* THE RENAMED PARTIES' ARGUMENTS (T7, design/24 B1). A party with no
      internal current is a bloc that votes, and these three names imply an
@@ -160,9 +169,11 @@ const CURRENTS = [
      deed. The Federal Right wants the Commonwealth to enforce title; the
      Station Right wants the station's own law and nothing federal near it. */
   { id:"fh_title",     party:"fh", name:"Federal Right",           members:6, loyalty:38,
-    axes:{economic:0.95, authority:-0.1, personhood:-0.45, sovereignty:0.35, trade:null} },
+    axes:{economic:0.95, authority:-0.1, personhood:-0.45, sovereignty:0.35, trade:null},
+    description:"Holds that a title is only as good as the court that enforces it, and wants the Commonwealth's courts to do so. Strongly for private ownership, and against widening personhood." },
   { id:"fh_section",   party:"fh", name:"Station Right",           members:5, loyalty:50,
-    axes:{economic:0.85, authority:-0.4, personhood:null, sovereignty:-0.85, trade:null} },
+    axes:{economic:0.85, authority:-0.4, personhood:null, sovereignty:-0.85, trade:null},
+    description:"Holds that a deed is the station's business: the station's own law, and nothing federal near it. Strongly for private ownership, with no settled view on personhood." },
 
   /* THE CDA: a church and a coalition partner, and the two argue. The
      Confessionals put the faith first: the congregations made the party and
@@ -171,17 +182,21 @@ const CURRENTS = [
      which is why they absented themselves rather than divide against the
      leadership in public (8.5). */
   { id:"rv_congregation", party:"rv", name:"Confessionals",         members:11, loyalty:62,
-    axes:{economic:null, authority:-0.15, personhood:-0.95, sovereignty:null, trade:null} },
+    axes:{economic:null, authority:-0.15, personhood:-0.95, sovereignty:null, trade:null},
+    description:"The congregations that made the party, putting the faith first. Their one settled position is against widening personhood; on everything else they are free. They voted the party conference 71 to 29 against the divergence threshold." },
   { id:"rv_ministerial",  party:"rv", name:"Coalitionists",         members:6, loyalty:40,
-    axes:{economic:-0.55, authority:-0.2, personhood:-0.8, sovereignty:0.45, trade:null} },
+    axes:{economic:-0.55, authority:-0.2, personhood:-0.8, sovereignty:0.45, trade:null},
+    description:"The members who hold the party's offices, putting the coalition first. Against widening personhood like the rest of the party, but also for public ownership and a federal Commonwealth. When the conference went against the leadership, they absented themselves rather than divide against it in public." },
 
   /* UPLIFT: two seats and one question, whether they are there to witness or
      to trade: the Purists will not deal on personhood, the Pragmatists will.
      Each current is one of the two members. */
   { id:"upl_witness", party:"upl", name:"Purists",                  members:1, loyalty:70,
-    axes:{economic:-0.7, authority:-0.5, personhood:1, sovereignty:null, trade:null} },
+    axes:{economic:-0.7, authority:-0.5, personhood:1, sovereignty:null, trade:null},
+    description:"The member who will not deal on personhood. Uplift's case argued as a principle, with nothing traded for it." },
   { id:"upl_bridge",  party:"upl", name:"Pragmatists",              members:1, loyalty:50,
-    axes:{economic:-0.5, authority:-0.2, personhood:0.85, sovereignty:0.6, trade:0.7} },
+    axes:{economic:-0.5, authority:-0.2, personhood:0.85, sovereignty:0.6, trade:0.7},
+    description:"The member who will. For widening personhood too, and also for open trade and a federal Commonwealth, and ready to vote on other measures in return for movement on the one that matters." },
 
   /* THE INDEPENDENTS (T14, design/26 #15 as amended). Six district
      members with no caucus, no whip and no leader, and six different
@@ -195,17 +210,23 @@ const CURRENTS = [
      player has to NOTICE in a division list rather than read on a rostrum.
      The other three share nothing with each other or with the bloc. */
   { id:"ind_grimsby",   party:"ind", name:"Homestead A",         members:1, loyalty:68,
-    axes:{economic:-0.4, authority:-0.1, personhood:-0.5, sovereignty:0.3, trade:-0.7} },
+    axes:{economic:-0.4, authority:-0.1, personhood:-0.5, sovereignty:0.3, trade:-0.7},
+    description:"Rosalind Grimsby's seat. Public ownership, closed trade and caution on personhood: the nearest of the six to the governing party, and in no bloc." },
   { id:"ind_kirilenko", party:"ind", name:"Clearmont & Sowerby", members:1, loyalty:55,
-    axes:{economic:-0.45, authority:-0.45, personhood:0.7, sovereignty:-0.65, trade:0.8} },
+    axes:{economic:-0.45, authority:-0.45, personhood:0.7, sovereignty:-0.65, trade:0.8},
+    description:"Dmitri Kirilenko's seat, and the outlier among the six: for widening personhood, for the station against the federation, and for open trade." },
   { id:"ind_vasquez",   party:"ind", name:"Stanbridge",          members:1, loyalty:62,
-    axes:{economic:null, authority:0.15, personhood:-0.6, sovereignty:0.4, trade:-0.75} },
+    axes:{economic:null, authority:0.15, personhood:-0.6, sovereignty:0.4, trade:-0.75},
+    description:"Marek Vasquez's seat. For a federal Commonwealth with a firmer hand, closed trade and caution on personhood, with no position on ownership." },
   { id:"ind_kettering", party:"ind", name:"Colonnade",           members:1, loyalty:70,
-    axes:{economic:null, authority:-0.2, personhood:null, sovereignty:-0.8, trade:-0.8} },
+    axes:{economic:null, authority:-0.2, personhood:null, sovereignty:-0.8, trade:-0.8},
+    description:"Brennan Kettering's seat, held on the localist case: the station against the federation, and trade kept closed. Wrenfield-Aubrey is held on the same case." },
   { id:"ind_castellan", party:"ind", name:"Wrenfield-Aubrey",    members:1, loyalty:74,
-    axes:{economic:null, authority:-0.3, personhood:null, sovereignty:-0.75, trade:-0.85} },
+    axes:{economic:null, authority:-0.3, personhood:null, sovereignty:-0.75, trade:-0.85},
+    description:"Nadia Castellan's seat, held on the localist case alongside Colonnade: the station against the federation, and trade kept closed." },
   { id:"ind_merrick",   party:"ind", name:"John Henry",          members:1, loyalty:66,
-    axes:{economic:-0.55, authority:-0.25, personhood:-0.65, sovereignty:-0.7, trade:-0.9} }
+    axes:{economic:-0.55, authority:-0.25, personhood:-0.65, sovereignty:-0.7, trade:-0.9},
+    description:"Beatrix Merrick's seat. The localist case of Colonnade and Wrenfield-Aubrey, with caution on personhood added; the three vote together often enough to be noticed." }
 ];
 
 

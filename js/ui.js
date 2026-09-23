@@ -3030,7 +3030,13 @@ const UI = (function () {
         h += (Engine.currentSeats(st, C, p.id) || []).map(cs => {
           const b = fc[cs.id];
           const loy = cs.loyalty;
-          return `<tr class="bench"><td>${esc(cs.name)}` +
+          /* THE CURRENT EXPLAINS ITSELF ON HOVER. It has no article of its
+             own (the author, 23 Sep): its description is content's, and the
+             same words are in its party's Concordance article. */
+          const cd = ((C.currents || []).find(x => x.id === cs.id) || {}).description;
+          return `<tr class="bench"><td>` +
+            (cd ? `<span data-tip-title="${esc(cs.name)}" data-tip-body="${esc(cd)}">${esc(cs.name)}</span>`
+                : esc(cs.name)) +
             `<span class="cdl${loy < 35 ? " warn" : ""}" data-tip="loyalty">${loy}</span></td>` +
             `<td class="n"></td><td class="n"></td><td class="n"></td>` +
             `<td class="n" data-tip="mps">${b ? b.popularSeats + b.functionalSeats : cs.seats}</td>` +
@@ -5707,9 +5713,18 @@ const UI = (function () {
     if (hdr) hdr.textContent = id ? "by tier, and how they are expected to go" : "by tier";
     el.innerHTML = benchTableHTML(id ? forecast(id) : null);
     /* A player action, so it may make a sound. Clicking the open party
-       again closes it. */
+       again closes it.
+
+       ONE CLICK, ONE ACTION. The party's name is a Concordance link, as a
+       party name is everywhere in the game, and it sits inside a row that
+       opens the currents, so a click on the name did both: the currents
+       opened and the page left for the Concordance. The name keeps its
+       one job and the rest of the row, the + box included, keeps the
+       other, which is the rule the instruments' rows already follow for
+       the buttons inside them. */
     el.querySelectorAll("[data-comp]").forEach(tr =>
-      tr.addEventListener("click", () => {
+      tr.addEventListener("click", e => {
+        if (e.target.closest("[data-go], button")) return;
         compOpen = compOpen === tr.dataset.comp ? null : tr.dataset.comp;
         cue("click"); drawBenchTable();
       }));

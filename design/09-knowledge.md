@@ -2,6 +2,12 @@
 
 *Secrets, scandal, and the thriller half.*
 
+> **Superseded as a story plan (23 Sep 2026).** §6 below plans the machinery
+> for backup coercion as the campaign's spine. The author calls that a
+> holdover: the spine of Flash I is the platform crisis in `design/35`, and
+> bible §13.2 now says so. The knowledge table in §§1–4 is unbuilt and has
+> no story that needs it; build it when a campaign does.
+
 `sweep-brief.md` C.3 puts it plainly: grep for "scandal" across `js/` and
 `content/` and there are **zero hits in both**. Part XIII is LOCKED canon and
 entirely unbuilt.

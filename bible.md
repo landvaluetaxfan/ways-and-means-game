@@ -196,23 +196,23 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 
 **Part XIII — SCANDAL AND THE THRILLER SPINE** · L2293
 - §13.1 · L2295 — Scandal taxonomy  *LOCKED*
-- §13.2 · L2308 — The spine  *LEANING*
+- §13.2 · L2308 — The spine  *LOCKED*
 
-**Part XIV — PRIOR ART** · L2314
-- §14.1 · L2316 — The gap  *LOCKED*
-- §14.2 · L2320 — Works
-- §14.3 · L2328 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L2316
+- §14.1 · L2318 — The gap  *LOCKED*
+- §14.2 · L2322 — Works
+- §14.3 · L2330 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2341
-- §15.1 · L2343 — Team  *LOCKED*
-- §15.2 · L2349 — Documentation  *LOCKED*
-- §15.3 · L2365 — Where this gets hard  *LOCKED*
-- §15.4 · L2376 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2393 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2343
+- §15.1 · L2345 — Team  *LOCKED*
+- §15.2 · L2351 — Documentation  *LOCKED*
+- §15.3 · L2367 — Where this gets hard  *LOCKED*
+- §15.4 · L2378 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2395 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2423
+**Part XVI — OPEN DECISIONS** · L2425
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2464
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2466
 
 <!-- /TOC -->
 
@@ -2305,9 +2305,11 @@ Crimes the setting makes possible:
 - **Scheduling a vote while a cohort of your opponent's constituents is suspended.**
 - **Backup coercion** — whoever holds your backup owns your afterlife. Blackmail with unlimited leverage, near-impossible to prosecute.
 
-## 13.2 The spine — LEANING
+## 13.2 The spine — LOCKED
 
-**Backup coercion is where the thriller lives**, if the political and the personal are to be the same plot. Hold in reserve for a late-game arc: a Prime Minister discovers it has been done to a cabinet colleague.
+**The spine of a campaign is its crisis.** For Flash I that is the platform crisis in the author's own design document, transcribed in `design/35`: the stranded platform, the referendum, the dilemma, the five outcome tiers and the pivots.
+
+**Backup coercion is not the spine** (the author, 23 Sep 2026: "a holdover"). It was proposed here in an earlier draft as a late-game arc — a Prime Minister discovers it has been done to a cabinet colleague — and `design/09` §6 planned the machinery for it. It stays in §13.1 as a crime the setting makes possible, and no campaign is built around it.
 
 ---
 

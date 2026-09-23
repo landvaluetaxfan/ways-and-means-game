@@ -216,14 +216,19 @@ const Concordance = (function () {
       asOf(`the party sustains the government without holding office, and its ` +
            `discipline is recorded at ${st.parties[p.id].loyalty}.`) });
     /* A current's name is a position ("Hard Left") or a seat ("Homestead
-       A"), neither of which takes a verb as a subject, so the list gives
-       each name its figures rather than making it the subject of one. */
+       A"), neither of which takes a verb as a subject, so each paragraph
+       leads with the name and its figures and then says what it is. A
+       current has no article of its own (the author, 23 Sep); this is
+       where it is described, in content's own words. */
     if (currents.length) sections.push({ h: "Currents", body:
       `The party recognises ${currents.length} internal current` +
       (currents.length === 1 ? "" : "s") + ". " +
-      asOf("they stand as follows: " + (Engine.currentSeats(st, C, p.id) || []).map(c =>
-        `${c.name}, ${c.seats} member${c.seats === 1 ? "" : "s"} at a discipline of ` +
-        `${c.loyalty}`).join("; ") + ".") });
+      asOf("they stand as follows.") + "\n\n" +
+      (Engine.currentSeats(st, C, p.id) || []).map(c => {
+        const d = (currents.find(x => x.id === c.id) || {}).description;
+        return `**${c.name}**, ${c.seats} member${c.seats === 1 ? "" : "s"} at a discipline ` +
+               `of ${c.loyalty}.` + (d ? " " + d : "");
+      }).join("\n\n") });
 
     /* THE PARTY OUTSIDE PARLIAMENT, moved here from the Party tab, which is
        about the government's dealings with the other parties and not a

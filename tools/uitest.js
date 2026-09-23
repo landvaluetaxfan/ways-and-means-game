@@ -531,6 +531,20 @@ try {
   ok("and the list tier is marked as what it is",
      [...w.document.querySelectorAll("#cx-article .cx-wikitable tbody tr")]
        .some(r => /list/.test(r.textContent)));
+  /* the article that holds the party's currents says what each one is */
+  {
+    const link = w.document.createElement("a");
+    link.setAttribute("data-go", "cu");
+    w.document.querySelector("#shell").appendChild(link);
+    link.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+    link.remove();
+    const cuText = (w.document.querySelector("#cx-article") || {}).textContent || "";
+    const cuC = CONTENT.currents.filter(c => c.party === "cu");
+    ok("the governing party's article describes each of its currents",
+       cuC.length > 0 && cuC.every(c => cuText.indexOf(c.name) >= 0 &&
+                                        cuText.indexOf(c.description.slice(0, 30)) >= 0),
+       cuC.map(c => c.name).join(", "));
+  }
 
   w.document.querySelector('.tab[data-t="cham"]').click();
   const comp = [...w.document.querySelectorAll("#comp-table tr[data-comp]")];
@@ -548,9 +562,36 @@ try {
     ok("each with its loyalty and its size",
        det.length > 0 && det.every(tr => tr.querySelector(".cdl") && /\d/.test(tr.cells[4].textContent)),
        det.length ? det[0].textContent.trim().slice(0, 60) : "nothing");
+    /* A CURRENT EXPLAINS ITSELF: a tooltip with content's description on
+       every row, and no article of its own (the author, 23 Sep). */
+    ok("and a tooltip saying what each current is",
+       det.length > 0 && det.every(tr => {
+         const t = tr.cells[0].querySelector("[data-tip-body]");
+         return t && t.getAttribute("data-tip-body").length > 40;
+       }), det.length ? (det[0].cells[0].querySelector("[data-tip-body]") || { getAttribute: () => "none" })
+                          .getAttribute("data-tip-body").slice(0, 60) : "nothing");
     w.document.querySelector("#comp-table tr[data-comp]").click();
     ok("and clicking again closes it",
        w.document.querySelectorAll("#comp-table tr.bench").length === 0);
+
+    /* ONE CLICK, ONE ACTION. The name is a Concordance link inside a row
+       that opens the currents; a click on it did both. */
+    const nameLink = w.document.querySelector("#comp-table tr[data-comp] a[data-go]");
+    if (nameLink) {
+      const goes = nameLink.dataset.go;
+      nameLink.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+      ok("the party's name opens its Concordance article and not the currents",
+         w.document.querySelector('.tab[data-t="cx"]').getAttribute("aria-selected") === "true" &&
+         w.document.querySelectorAll("#comp-table tr.bench").length === 0,
+         goes);
+      w.document.querySelector('.tab[data-t="cham"]').click();
+      const car = w.document.querySelector("#comp-table tr[data-comp] .compcar");
+      car.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+      ok("and the + box opens the currents without leaving the Chamber",
+         w.document.querySelector('.tab[data-t="cham"]').getAttribute("aria-selected") === "true" &&
+         w.document.querySelectorAll("#comp-table tr.bench").length > 0);
+      w.document.querySelector("#comp-table tr[data-comp].compopen").click();
+    } else ok("the party's name in the composition table is a link", false);
   }
 } catch (e) { ok("the parties tab and the composition fold", false, e.message); }
 
