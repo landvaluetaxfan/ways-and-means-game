@@ -1590,6 +1590,8 @@ img.dith{display:block;}
   border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);
 }
 .slotbar i.spent{background:var(--chrome-dk);}
+/* RESERVED TIME (design/32 §E.5) is hollow: present, and one measure's only. */
+.slotbar i.res{background:transparent;border:1px dashed var(--ok);}
 /* THE SAME MARKS IN THE STATUS BAR, where the currency is read at a glance
    rather than navigated to. Same colours as the order-paper bar so the two
    readouts cannot disagree about what a spent slot looks like. */
@@ -1598,6 +1600,7 @@ img.dith{display:block;}
   background:var(--ok);border:1px solid var(--chrome-dkr);
 }
 .sbpip.spent{background:var(--chrome-dk);}
+.sbpip.res{background:transparent;border-style:dashed;border-color:var(--ok);}
 #sb-slots.none{color:var(--alert);}
 #sb-slots.none .sbpip{background:var(--chrome-dk);}
 .whiptab td{padding:1px 4px;}

@@ -1,5 +1,14 @@
 # 32 — THE ARC: THE RUN, THE SPINE, AND THE SETTLEMENT MAP
 
+> **Status, 22 Sep 2026.** The run is three sessions of sixteen sittings now,
+> not one of twenty-four, so the sitting numbers below are stale; the
+> decisions are not. Built since: §E.1 (the families are two channels,
+> `crisis: true`), §E.5 (reserved order-paper time), and decision 3 in the
+> author's revised form — chapter four folded into chapter TWO, where the
+> aftermath plays while the House still sits, not into the campaign.
+> `ch4_the_record` and the chapter-four transition are gone. The chain is
+> re-dated: stranded at 14, the survey four sittings, the opinion three.
+
 **20 September 2026. Content lane (opencode).** The map the events hang on.
 Engine limits have been discovered as content problems because this document
 did not exist; anything this document needs from `js/` is named in section E

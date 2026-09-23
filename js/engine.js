@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 26;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy
+  const STATE_VERSION = 27;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time
 
   /* ---------------------------------------------------------
      1. STATE
@@ -58,7 +58,7 @@ const Engine = (function () {
       /* Time on the order paper is the scarce good that generates capital.
          A session has a finite number of slots and every one you give a
          partner is one you do not get. */
-      slots: { total: C.setup.slotsPerSession || 6, used: 0 },
+      slots: { total: C.setup.slotsPerSession || 6, used: 0, reserved: {} },
 
       /* THE DAY'S BUSINESS. Order-paper time was a session budget and
          nothing more: six slots, twenty-four sittings, and every one of
@@ -81,7 +81,7 @@ const Engine = (function () {
       actedThisSitting: false,
       idleSittings: 0,
 
-      /* Czarnecki needs nine more names for a leadership ballot. Things the
+      /* A leadership ballot needs setup.thresholds.ballot names (twelve). Things the
          player does add to the counter; §3.5's second loss condition reads it. */
       signatures: 0,
 
@@ -440,6 +440,14 @@ const Engine = (function () {
       if (!st.economyHistory) st.economyHistory =
         { participation: [st.economy.participation], trade: [st.economy.trade] };
       st.version = 26;
+    }
+    if (st.version < 27) {                    // reserved order-paper time
+      /* Time a measure brings with it is held apart from the session's own
+         (see reserveSlots). A save from before has none reserved, which is
+         the truth: the crisis time it was granted went into the general
+         pool, and that save keeps the larger pool it was given. */
+      if (st.slots && !st.slots.reserved) st.slots.reserved = {};
+      st.version = 27;
     }
     return st;
   }
@@ -1533,7 +1541,7 @@ const Engine = (function () {
     if (!chk.ok) return { ok: false, reason: chk.reason, result: null, paid: null, assent: null };
     /* House time, spent whether the bill carries or falls, and one of
        the day's divisions whichever way it goes. */
-    spendSlots(st, 1);
+    spendSlotsFor(st, billId, 1);
     st.divisionsToday = (st.divisionsToday || 0) + 1;
     st.actedThisSitting = true;
     const b = C.billById[billId];
@@ -1741,8 +1749,37 @@ const Engine = (function () {
     return true;
   }
 
+  /* RESERVED TIME (design/32 §E.5). A crisis measure brings its own
+     order-paper time — that is what an emergency debate is — and the time
+     used to go into the general pool, where every bill declared earlier in
+     content took it first: the Annexation Bill, the act the campaign is
+     about, reached its division in no playtest strategy at any session
+     length. It also stayed in the pool for good, so every later session
+     had eleven slots and not six.
+
+     So time granted FOR a measure is held against that measure's name:
+     only its own stages and its own division can spend it, it is spent
+     before the general pool, and it expires when the House rises, with the
+     session it was granted for. Everything else — initiatives, approvals,
+     the other bills — reads the general pool exactly as before. */
+  function reservedFor(st, billId) {
+    return ((st.slots.reserved || {})[billId]) || 0;
+  }
+  function slotsFor(st, billId) { return slotsRemaining(st) + reservedFor(st, billId); }
+  function spendSlotsFor(st, billId, n) {
+    if (slotsFor(st, billId) < n) return false;
+    const r = st.slots.reserved || (st.slots.reserved = {});
+    const fromReserve = Math.min(n, reservedFor(st, billId));
+    if (fromReserve) {
+      r[billId] -= fromReserve;
+      if (!r[billId]) delete r[billId];
+    }
+    st.slots.used += n - fromReserve;
+    return true;
+  }
+
   function grantSlot(st, C, billId) {
-    if (slotsRemaining(st) < 1) return { ok: false, reason: "no slots left this session" };
+    if (slotsFor(st, billId) < 1) return { ok: false, reason: "no slots left this session" };
     const b = C.billById[billId], bs = st.bills[billId];
     if (!b || bs.dead) return { ok: false, reason: "not before Parliament" };
     if (bs.stage === DIVIDES_AT) return { ok: false, reason: "awaiting a division" };
@@ -1767,7 +1804,7 @@ const Engine = (function () {
     else if (i >= 0) { bs.stage = STAGE_ORDER[i + 1]; }
     else return { ok: false, reason: 'unknown stage "' + bs.stage + '"' };
     billLog(st, billId, "stage", "Advanced to " + String(bs.stage).replace(/_/g, " "));
-    spendSlots(st, 1);
+    spendSlotsFor(st, billId, 1);
     st.grantsToday = (st.grantsToday || 0) + 1;
     st.actedThisSitting = true;
     (st.slotsGranted || (st.slotsGranted = [])).push(billId);
@@ -3441,20 +3478,31 @@ const Engine = (function () {
        fire on them and advance the chapter in the ordinary way:
 
          { when:{ dissolved:true }, effects:[{chapter:3}] }
-         { when:{ settled:true },   effects:[{chapter:4}] }
+
+       There is no chapter after the count (bible §1.7), so a result — the
+       `resolved` condition below — opens no chapter: its aftermath plays in
+       chapter two while the House still sits, chained with `seen`.
 
        `risesWithin` is for the run-up rather than the moment: an event
        that wants to fire in the last few sittings before the House goes
        to the country asks for it by number instead of guessing a sitting. */
     dissolved:      (st, v) => !!st.dissolved === !!v,
-    settled:        (st, v) => {
-                      /* content cannot reach checkSettlement's C, so this
-                         reads the flag the engine leaves when one lands */
-                      return !!st.settledAs === !!v;
-                    },
-    /* Which NON-TERMINAL tier resolved the crisis (Flash I): the election's
-       chapter-three events read this to narrate the result. */
+    /* WHICH ANSWER HOLDS, AND WHETHER THE CRISIS HAS RESOLVED. Each takes
+       `true`/`false` for "has one landed" or an id for "has this one".
+       `settled` took a boolean only and compared truthiness, so
+       `settled:"restriction"` was true of ANY settlement — harmless only
+       because the achievements that write it use their own matcher. */
+    settled:        (st, v) => typeof v === "string" ? st.settledAs === v
+                                                     : !!st.settledAs === !!v,
+    resolved:       (st, v) => typeof v === "string" ? st.resolvedAs === v
+                                                     : !!st.resolvedAs === !!v,
+    /* The older spelling of `resolved:<id>`, kept because content uses it. */
     resolvedIs:     (st, v) => st.resolvedAs === v,
+    /* EVERY NAMED EVENT HAS FIRED. An ordered sequence outside a chapter's
+       prologue — the aftermath of a result, which plays in chapter two
+       while the House still sits — chains on this rather than on a flag
+       every one of its choices would have to remember to set. */
+    seen:           (st, v) => [].concat(v).every(id => (st.seen[id] || 0) > 0),
     risesWithin:    (st, v) => st.sessionEnds != null &&
                       (st.sessionEnds - st.sitting) <= v,
     /* ON WHAT WAS HEARD, NOT ON WHAT IS TRUE. design/11 §3 is explicit that
@@ -3826,6 +3874,11 @@ const Engine = (function () {
     slots: (st, C, v) => {
       if (v.total != null) st.slots.total += v.total;
       if (v.refill) { st.slots.used = 0; }
+      /* {reserve:{billId: n}} — time for that measure alone; see reservedFor. */
+      if (v.reserve) {
+        const r = st.slots.reserved || (st.slots.reserved = {});
+        Object.keys(v.reserve).forEach(id => { r[id] = (r[id] || 0) + v.reserve[id]; });
+      }
     },
     /* Seats move by these four verbs and no other. Writing a district count
        directly would desynchronise it from the roll on the next syncRoll,
@@ -4339,9 +4392,10 @@ const Engine = (function () {
           text: (v <= 0 ? "Thins the signatures against you"
                         : "Adds to the signatures against you") });
           break;
-        case "slots": out.push({ tone: (v && v.total > 0) ? "good" : "plain",
+        case "slots": out.push({ tone: (v && (v.total > 0 || v.reserve)) ? "good" : "plain",
           text: v && v.refill ? "Refills the order paper"
-                              : "Changes the order paper's time" });
+              : v && v.reserve ? "Gives a measure order-paper time of its own"
+                               : "Changes the order paper's time" });
           break;
         case "coalition":
           if (v.remove) out.push({ tone: "grave", text: "Breaks the coalition" });
@@ -5660,6 +5714,7 @@ const Engine = (function () {
 
     st.session += 1;
     st.slots.used = 0;
+    st.slots.reserved = {};                   /* reserved time is the session's */
     st.slotsGranted = [];
     st.sessionEnds = st.sitting + (C.setup.sittingsPerSession || 24);
     st.log.unshift({ sitting: st.sitting,
@@ -5685,7 +5740,7 @@ const Engine = (function () {
        business, so when the session's order-paper time is gone the House is
        done — which is what makes §7.7's scarcity bite. `noTime` lets the
        interface say so rather than refusing in silence. */
-    if (slotsRemaining(st) < 1)
+    if (slotsFor(st, billId) < 1)
       return { ok: false, reason: "no order-paper time left this session", noTime: true };
 
     /* A BILL MUST HAVE BEEN READ BEFORE THE HOUSE DIVIDES ON IT.
@@ -5918,24 +5973,37 @@ const Engine = (function () {
        never engaged the crisis cannot settle it. */
     const floor = (C.setup && C.setup.settlementFloorSittings) || 0;
     if (st.sitting < floor) return null;
-    const found = (C.settlements || [])
-      .filter(s0 => matches(st, s0.when))
-      .sort((a, b) => (a.rank || 0) - (b.rank || 0));
-    /* A settlement that has landed is recorded so CONTENT can see that one
-       has, through the `settled` condition, without the engine naming
-       which — §3.5.1 rule 2 still holds and nothing here reports progress
-       toward one.
+    /* TWO FAMILIES, TWO CHANNELS (design/32 §E.1, bible §3.5.1). A
+       campaign's CRISIS tiers (`crisis: true`) are its outcome, and one of
+       them lands or none does; the other settlements are INTERMEDIATE
+       resolutions of the standing question, which record and end nothing.
 
-       TERMINAL OR NOT (Flash I). By default a settlement ends the run.
-       `terminal:false` resolves the CRISIS, not the CAMPAIGN: it is
-       recorded in `resolvedAs` instead, so the `settled` condition stays
-       quiet and the run continues to the election, where content reads
-       which tier landed through the `resolvedIs` condition. */
-    if (found.length) {
-      if (found[0].terminal === false) st.resolvedAs = found[0].id;
-      else st.settledAs = found[0].id;
+       They were ranked together, and only the winner was recorded — so an
+       intermediate resolution matching on the same sitting as a crisis
+       tier could take the canon ending off the board, and four of Flash
+       I's five tiers were routed to the intermediate channel (only the one
+       marked `terminal:false` reached `resolvedAs`), which left their
+       achievements unearnable and their election beat unread. Each family
+       now picks its own best match and records it in its own field.
+
+       THE CRISIS RESOLVES ONCE. The first tier to land is the outcome and
+       stays it: the aftermath narrates it the sitting after, and a result
+       that changed under the narration would make the narration false.
+       The intermediate channel records whichever answer holds now, as it
+       always has, because a standing question can be answered twice.
+
+       Nothing here reports progress toward either (§3.5.1 rule 2). */
+    const best = list => list.filter(s0 => matches(st, s0.when))
+      .sort((a, b) => (a.rank || 0) - (b.rank || 0))[0] || null;
+    const all = C.settlements || [];
+    if (!st.resolvedAs) {
+      const c = best(all.filter(s0 => s0.crisis));
+      if (c) { st.resolvedAs = c.id; st.resolvedAt = st.sitting; }
     }
-    return found.length ? found[0] : null;
+    const d = best(all.filter(s0 => !s0.crisis));
+    if (d) st.settledAs = d.id;
+    const resolved = st.resolvedAs ? all.find(s0 => s0.id === st.resolvedAs) : null;
+    return resolved || d;
   }
 
   /* Has a money bill been carried in this session? Read generically: any
@@ -6015,7 +6083,7 @@ const Engine = (function () {
     reshuffle, canReshuffle, resolveMotion, motionDeadline,
     standingIn, bandsOf, bandWeight, syncStanding, assent, presidentDecides, referralRisk, reviewReturns,
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
-    canApprove, approveInstrument, approvalForecast,
+    canApprove, approveInstrument, approvalForecast, reservedFor,
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
     /* Exported so the interface cannot invent a second way to score

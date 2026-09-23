@@ -47,7 +47,14 @@ const Engine = require(path.join(root, "js", "engine.js"));
 
 const argv = process.argv.slice(2);
 const arg = (k, d) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : d; };
-const SITTINGS = Number(arg("--sittings", 60));
+/* THE CAP IS THE RUN'S OWN LENGTH, from setup: every session, the campaign
+   after the writs, and slack. It was a flat 60, and when the campaign began
+   at sitting 51 the cap cut it off before the count — the tool reported a
+   run the game had not finished. */
+const RUN_LENGTH = (CONTENT.setup.sittingsPerSession || 24) *
+                   (CONTENT.setup.sessionsPerParliament || 1) +
+                   (CONTENT.setup.campaignSittings || 12) + 6;
+const SITTINGS = Number(arg("--sittings", RUN_LENGTH));
 const WANT_LOG = argv.indexOf("--log") >= 0 ? String(argv[argv.indexOf("--log") + 1] || "") : null;
 
 /* ---------- the strategies ----------
@@ -129,14 +136,25 @@ function govern(st, strategy) {
      what that strategy is testing, and it should be allowed to lose on it. */
   const reserve = strategy.budget ? supplyNeed(st) : 0;
   let budgetSlots = strategy.slotsPerSitting == null ? 2 : strategy.slotsPerSitting;
-  while (budgetSlots-- > 0 && st.slots.used < st.slots.total) {
+  /* AND A MEASURE WITH TIME OF ITS OWN IS GIVEN IT FIRST (reserved
+     order-paper time, design/32 §E.5). It costs the session's own time
+     nothing, so no government leaves it unspent. This loop stopped the
+     moment the GENERAL pool was empty and so never touched the reserve: the
+     Annexation Bill fell at the rise with five slots of its own unused,
+     which is the failure the reserve exists to prevent, reproduced in the
+     tool that measures it. */
+  const general = () => st.slots.total - st.slots.used;
+  const own = b => Engine.reservedFor(st, b.id) > 0;
+  const ordered = order.slice().sort((x, y) => (own(y) ? 1 : 0) - (own(x) ? 1 : 0));
+  while (budgetSlots-- > 0) {
     let moved = false;
-    for (const b of order) {
+    for (const b of ordered) {
       const bs = st.bills[b.id];
       if (!bs || bs.dead || bs.stage === "assented") continue;
+      if (!own(b) && general() < 1) continue;
       /* the slot supply's vote needs is not this bill's to spend */
       const isSupply = b.test === "supply";
-      if (!isSupply && (st.slots.total - st.slots.used) <= reserve) continue;
+      if (!isSupply && !own(b) && general() <= reserve) continue;
       const r = Engine.grantSlot(st, CONTENT, b.id);
       if (r && r.ok !== false) { acts.push("time to " + b.title); moved = true; break; }
     }
@@ -208,7 +226,7 @@ function play(strategy, sittings) {
   const seen = new Set();
   const marks = [];
   let picks = 0, refused = 0, ended = null, endedAt = null;
-  let settled = null, settledAt = null;
+  let settled = null, settledAt = null, resolved = null, resolvedAt = null;
 
   const note = (text) => marks.push({ at: st.sitting, text });
 
@@ -250,9 +268,17 @@ function play(strategy, sittings) {
        checkEnd also reads dissolution BEFORE loss, for the reason its own
        header gives: you cannot lose a confidence vote in a chamber that no
        longer exists. */
+    /* TWO CHANNELS (bible §3.5.1): the crisis RESULT, which is the
+       campaign's outcome and lands once, and the ANSWER to the standing
+       question, which is intermediate. This read only the second, so a run
+       whose crisis resolved looked like a run where nothing happened. */
+    if (!resolved && st.resolvedAs) {
+      resolved = st.resolvedAs; resolvedAt = st.resolvedAt || st.sitting;
+      note("-- the crisis resolved: " + st.resolvedAs);
+    }
     if (!settled && st.settledAs) {
       settled = st.settledAs; settledAt = st.sitting;
-      note("-- settled: " + st.settledAs);
+      note("-- the question answered: " + st.settledAs);
     }
     const end = Engine.checkEnd(st, CONTENT);
     if (end && end.over) {
@@ -263,7 +289,7 @@ function play(strategy, sittings) {
   }
 
   const total = (CONTENT.events || []).length;
-  return { strategy, st, seen, marks, picks, refused, settled, settledAt,
+  return { strategy, st, seen, marks, picks, refused, settled, settledAt, resolved, resolvedAt,
            ended: ended || "still governing", endedAt: endedAt || st.sitting,
            reach: total ? Math.round(seen.size / total * 100) : 0, total: total };
 }
@@ -279,7 +305,7 @@ console.log("  " + SITTINGS + " sittings each, " + STRATEGIES.length + " strateg
 
 console.log("  " + pad("strategy", 34) + num("sat", 5) + num("chose", 7) +
             num("shut", 6) + num("events", 8) + num("reach", 7) +
-            "  " + pad("settled", 26) + "outcome");
+            "  " + pad("crisis result", 20) + pad("answer", 24) + "outcome");
 console.log("  " + "-".repeat(92));
 
 const runs = STRATEGIES.map(s => play(s, SITTINGS));
@@ -287,7 +313,8 @@ runs.forEach(r => {
   console.log("  " + pad(r.strategy.name, 34) + num(r.endedAt, 5) + num(r.picks, 7) +
               num(r.refused, 6) + num(r.seen.size + "/" + r.total, 8) +
               num(r.reach + "%", 7) + "  " +
-              pad(r.settled ? r.settled + " @" + r.settledAt : "-", 26) + r.ended);
+              pad(r.resolved ? r.resolved.replace(/^f1_/, "") + " @" + r.resolvedAt : "-", 20) +
+              pad(r.settled ? r.settled + " @" + r.settledAt : "-", 24) + r.ended);
 });
 
 /* THE METERS AT THE CLOSE, because "it ended" is not a finding and
@@ -323,7 +350,17 @@ if (missed.length) {
 
 /* ---------- the record a tester pastes back ---------- */
 if (WANT_LOG !== null) {
-  const r = runs.find(x => x.strategy.id === WANT_LOG) || runs[0];
+  /* BY ID OR BY ANY PART OF THE NAME, and an unknown one is refused. It fell
+     back to the first strategy without a word, so asking for "Last option"
+     printed "First option" and three transcripts came back identical. */
+  const want = WANT_LOG.toLowerCase();
+  const r = runs.find(x => x.strategy.id === want) ||
+            runs.find(x => want && x.strategy.name.toLowerCase().includes(want));
+  if (!r) {
+    console.log("\nno strategy matches --log " + JSON.stringify(WANT_LOG) + "; ids are " +
+                runs.map(x => x.strategy.id).join(", "));
+    process.exit(1);
+  }
   console.log("\n" + "=".repeat(96));
   console.log("TRANSCRIPT — " + r.strategy.name);
   console.log("  " + r.strategy.note);

@@ -181,9 +181,17 @@ console.log("\nTHE PRODUCTIVE ECONOMY:");
   delete older.economy; delete older.economyHistory; older.version = 25;
   const back = Engine.reconcile(Engine.migrate(older), CONTENT);
   ok("a pre-7.10 save is migrated and reconciled to content's opening",
-     back.version === 25 + 1 && back.economy &&
+     back.version === Engine.STATE_VERSION && back.economy &&
      back.economy.participation === CONTENT.setup.economy.participation,
      "v" + back.version + " " + JSON.stringify(back.economy));
+
+  /* v27: reserved order-paper time. A save from before has none reserved. */
+  const v26 = JSON.parse(JSON.stringify(control));
+  delete v26.slots.reserved; v26.version = 26;
+  const v27 = Engine.migrate(v26);
+  ok("a v26 save gains an empty reserve of order-paper time",
+     v27.version === Engine.STATE_VERSION && !!v27.slots.reserved &&
+     Object.keys(v27.slots.reserved).length === 0, JSON.stringify(v27.slots));
 
   if (bad) { console.log("\n" + bad + " ECONOMY FAILURES"); process.exitCode = 1; }
 })();
@@ -375,6 +383,65 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     ok("the thermal ladder climbs past rung 4 once the House approves it",
        rd.ok && rd.approved && Engine.canMake(d, CONTENT, "rung5_purchase").ok,
        rd.ok ? String(rd.approved) : rd.reason);
+  }
+
+  /* RESERVED ORDER-PAPER TIME (design/32 §E.5). The dilemma's five slots
+     went into the general pool, where every bill listed earlier in content
+     spent them first, and stayed there for good: the Annexation Bill reached
+     its division in no playtest strategy, and every later session had eleven
+     slots and not six. */
+  {
+    const dil = CONTENT.eventById.f1_dilemma;
+    const annex = dil.choices.find(c => [].concat(c.effects || []).some(f => f.flag === "f1_annexing"));
+    const r = Engine.newGame(CONTENT);
+    const total0 = r.slots.total;
+    Engine.apply(r, CONTENT, annex.effects);
+    ok("the crisis brings its own time, reserved for the Act",
+       Engine.reservedFor(r, "annexation") === 5 && r.slots.total === total0,
+       Engine.reservedFor(r, "annexation") + " reserved, " + r.slots.total + " general");
+    r.slots.used = r.slots.total;
+    const other = CONTENT.bills.find(b => b.id !== "annexation" && !r.bills[b.id].dead &&
+                                        r.bills[b.id].stage !== "drafting" &&
+                                        r.bills[b.id].stage !== Engine.DIVIDES_AT);
+    ok("and no other bill can spend it", !Engine.grantSlot(r, CONTENT, other.id).ok, other.id);
+    let guard = 0;
+    while (r.bills.annexation.stage !== Engine.DIVIDES_AT && guard++ < 12) {
+      const g = Engine.grantSlot(r, CONTENT, "annexation");
+      if (!g.ok) Engine.advance(r, CONTENT);
+    }
+    while (!Engine.canDivide(r, CONTENT, "annexation").ok && guard++ < 16) Engine.advance(r, CONTENT);
+    const d = Engine.divide(r, CONTENT, "annexation");
+    ok("so the Act reaches its division on its own time alone",
+       !!d.result && r.slots.used === r.slots.total && Engine.reservedFor(r, "annexation") === 0,
+       d.result ? "divided, reserve " + Engine.reservedFor(r, "annexation") : (d.reason || "no division"));
+
+    const x = Engine.newGame(CONTENT);
+    Engine.apply(x, CONTENT, annex.effects);
+    const rise = x.sessionEnds + 1;
+    while (x.sitting <= rise) Engine.advance(x, CONTENT);
+    ok("and reserved time goes with the session it was granted for",
+       Engine.reservedFor(x, "annexation") === 0 && x.slots.total === total0,
+       Engine.reservedFor(x, "annexation") + " reserved, " + x.slots.total + " general");
+  }
+
+  /* THREE CHAPTERS, AND NOTHING AFTER THE COUNT (bible §1.7). */
+  {
+    const beyond = CONTENT.events.filter(e => (e.chapter || 1) > 3 ||
+      (e.choices || []).some(c => [].concat(c.effects || []).some(f => f.chapter > 3)));
+    ok("no event belongs to, or opens, a chapter after the third",
+       beyond.length === 0, beyond.map(e => e.id).join(", ") || "none");
+    const after = CONTENT.events.filter(e => /^ch4_/.test(e.id));
+    const d = Engine.newGame(CONTENT);
+    d.resolvedAs = "f1_pyrrhic";
+    after.forEach(e => { d.seen[e.id] = 0; });
+    d.seen.ch4_settled = 1; d.seen.ch4_after = 1; d.seen.ch4_the_answer = 1;
+    d.seen.ch4_the_losers = 1;
+    const before = Engine.matches(d, CONTENT.eventById.ch4_the_next.when);
+    d.dissolved = { at: d.sitting };
+    ok("the aftermath plays while the House sits and stops at the writs",
+       before && after.every(e => !Engine.matches(d, e.when)),
+       "before the writs " + before + ", after: " +
+       (after.filter(e => Engine.matches(d, e.when)).map(e => e.id).join(", ") || "none"));
   }
 
   /* A CABINET EFFECT NAMES A POST THAT EXISTS. `appoint` answers an unknown
@@ -2963,18 +3030,44 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
   const Cnt = Object.assign({}, CONTENT, {
     settlements: CONTENT.settlements.concat([
       { id: "probe_nt", rank: 0, name: "Probe tier", summary: "probe",
-        terminal: false, when: { flags: ["probe_nt_flag"] } }]) });
+        crisis: true, when: { flags: ["probe_nt_flag"] } }]) });
   const nt = Engine.newGame(Cnt); nt.flags.probe_nt_flag = true;
   nt.sitting = (Cnt.setup.settlementFloorSittings || 0) + 1;
   const endN = Engine.checkEnd(nt, Cnt);
-  ok("a non-terminal settlement resolves the crisis without ending the run",
+  ok("a crisis tier resolves the crisis without ending the run",
      endN.over === false && endN.kind === "settlement" &&
      nt.resolvedAs === "probe_nt" && !nt.settledAs,
      JSON.stringify({ over: endN.over, resolvedAs: nt.resolvedAs,
                       settledAs: nt.settledAs }));
   ok("and content can read which tier landed",
      Engine.matches(nt, { resolvedIs: "probe_nt" }) &&
-     !Engine.matches(nt, { resolvedIs: "probe_other" }));
+     Engine.matches(nt, { resolved: "probe_nt" }) &&
+     Engine.matches(nt, { resolved: true }) &&
+     !Engine.matches(nt, { resolved: "probe_other" }));
+
+  /* THE TWO FAMILIES DO NOT RACE (design/32 §E.1). They were ranked
+     together and only the winner recorded, so an intermediate answer landing
+     on the same sitting as a crisis tier took the canon ending off the board;
+     and four of Flash I's five tiers were routed to the intermediate channel,
+     so their achievements could never be earned. */
+  ok("every Flash I tier is on the crisis channel",
+     CONTENT.settlements.filter(x => /^f1_/.test(x.id)).every(x => x.crisis) &&
+     CONTENT.settlements.filter(x => !/^f1_/.test(x.id)).every(x => !x.crisis),
+     CONTENT.settlements.map(x => x.id + (x.crisis ? "*" : "")).join(" "));
+  const both = fresh(); both.flags.tribunal_established = true;
+  both.flags.almanac_annexed = true;
+  Object.assign(both.scalars, { legitimacy: 80, solvency: 75000, friction: 30 });
+  Engine.checkSettlement(both, CONTENT);
+  ok("an intermediate answer and a crisis tier landing together are both recorded",
+     both.settledAs === "graduated_personhood" && both.resolvedAs === "f1_triumph",
+     JSON.stringify({ settledAs: both.settledAs, resolvedAs: both.resolvedAs }));
+  Object.assign(both.scalars, { legitimacy: 70, solvency: 30000, friction: 70 });
+  Engine.checkSettlement(both, CONTENT);
+  ok("and the crisis result is fixed once it has landed",
+     both.resolvedAs === "f1_triumph", both.resolvedAs);
+  ok("while the named form of `settled` names one answer, not any",
+     Engine.matches(both, { settled: "graduated_personhood" }) &&
+     !Engine.matches(both, { settled: "restriction" }));
 
   /* FLASH I: every tier is reachable from the opening state. The meters are
      moved by the campaign's events once they are wired, and each tier is
@@ -3857,6 +3950,14 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
   {
     const st = Engine.newGame(CONTENT);
     const govern = s => {
+      /* IT HOLDS THE COUNTRY FIRST, before any bill is given time. The canon
+         ending is the debt trap, and the thermal drain it causes reaches
+         zero inside three sessions, so the ladder below is not optional. It
+         ran after the bills until reserved order-paper time stopped the
+         crisis time leaking into every later session: with six slots and
+         not eleven, bills granted first left none to approve a rung, and the
+         run cascaded at sitting 48. See holdTheCountry below. */
+      const keep = holdTheCountry(s);
       /* A GOVERNMENT CARRIES ITS OWN ACT FIRST. This granted order-paper
          time to every bill in the order content happens to list them, and
          the Annexation Bill is last \u2014 so the six slots were spent before
@@ -3870,7 +3971,9 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
         return mine(a) - mine(b);
       });
       order.forEach(b => {
-        if (s.bills[b.id] && !s.bills[b.id].dead) Engine.grantSlot(s, CONTENT, b.id);
+        if (s.bills[b.id] && !s.bills[b.id].dead &&
+            Engine.reservedFor(s, b.id) + s.slots.total - s.slots.used > keep)
+          Engine.grantSlot(s, CONTENT, b.id);
       });
       CONTENT.bills.forEach(b => {
         if (!s.bills[b.id] || s.bills[b.id].dead) return;
@@ -3879,7 +3982,9 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
       });
       if (!s.instruments["si_2080_44"].made && Engine.canMake(s, CONTENT, "si_2080_44").ok)
         Engine.makeInstrument(s, CONTENT, "si_2080_44");
-      /* AND IT HOLDS THE COUNTRY, which the comment above always said and
+    };
+    const holdTheCountry = s => {
+      /* IT HOLDS THE COUNTRY, which the comment above always said and
          the policy never did. With one session of twenty-four the debt trap
          landed and the House rose before the thermal drain it causes could
          reach zero; three sessions give it the time, and a government that
@@ -3891,11 +3996,11 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
          it does, not by name. */
       if (!s.cabinet.treasury.holder && Engine.vacancies(s, CONTENT).length)
         Engine.fillPost(s, CONTENT, "treasury", 0);
+      const cools = CONTENT.instruments.filter(si => [].concat(si.effects || [])
+        .some(f => f.move && f.move.thermal_margin > 0)).map(si => si.id);
+      const awaiting = () => cools.filter(id => s.instruments[id].awaitingApproval);
       if (s.scalars.thermal_margin <= 10) {
-        const cools = CONTENT.instruments.filter(si => [].concat(si.effects || [])
-          .some(f => f.move && f.move.thermal_margin > 0)).map(si => si.id);
-        const waiting = cools.find(id => s.instruments[id].awaitingApproval &&
-          Engine.canApprove(s, CONTENT, id).ok);
+        const waiting = awaiting().find(id => Engine.canApprove(s, CONTENT, id).ok);
         if (waiting) Engine.approveInstrument(s, CONTENT, waiting);
         else {
           const next = cools.find(id => !s.instruments[id].made &&
@@ -3903,6 +4008,11 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
           if (next) Engine.makeInstrument(s, CONTENT, next);
         }
       }
+      /* AND IT KEEPS TIME IN HAND for an order waiting on the House. Six
+         slots a session carry a programme or hold the country, not both
+         (§7.7); a government with an emergency order laid does not spend
+         the time it would take to approve it on the order paper. */
+      return awaiting().length ? 1 : 0;
     };
     const pick = { f1_stranded: 0, f1_referendum: 0, f1_dilemma: 0, f1_water: 0,
       f1_loan: 1, f1_accounts_freeze: 0, fa_two_fronts: 0, fa_window_closes: 0,
@@ -3938,6 +4048,17 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
        it stopped landing at all, with "no tier landed" as the only clue.
        Five sittings of slack is the difference between an ending the chain
        produces and one it produces by coincidence. */
+    /* THE RUN'S SHAPE (bible §1.7, design/32). The result's aftermath plays
+       while the House sits, and then the run goes to the country: until 22
+       Sep a run that resolved its crisis entered a fourth chapter that ended
+       at the dissolution, so it never had a campaign, and a run that
+       dissolved first never saw the aftermath. None of the seven playtest
+       strategies reached both. */
+    ok("and the canon run plays the result's aftermath, then the campaign and the count",
+       !!(st.seen.ch4_settled && st.seen.ch4_after && st.seen.ch3_dissolution &&
+          st.seen.ch3_the_count),
+       ["ch4_settled", "ch4_after", "ch4_the_answer", "ch3_dissolution", "ch3_the_count"]
+         .map(id => id + (st.seen[id] ? "" : " (not seen)")).join(", "));
     ok("and the canon ending lands with sittings to spare",
        tierAt != null && end && end.sitting != null
          ? end.sitting - tierAt >= 5 : tierAt != null,
@@ -4137,10 +4258,13 @@ console.log("\nTHE ECONOMY:");
      the chain on flags, the gaps collapse and this goes red. */
   const chain = Engine.newGame(CONTENT);
   const when = {};
-  for (let i = 0; i < 30; i++) {
+  const riseAt = {};
+  for (let i = 0; i < 40; i++) {
     const e = Engine.nextEvent(chain, CONTENT);
     if (e) {
-      if (when[e.id] == null && /^f1_/.test(e.id)) when[e.id] = chain.sitting;
+      if (when[e.id] == null && /^f1_/.test(e.id)) {
+        when[e.id] = chain.sitting; riseAt[e.id] = chain.sessionEnds;
+      }
       Engine.choose(chain, CONTENT, e, 0);
     }
     Engine.advance(chain, CONTENT);
@@ -4157,13 +4281,22 @@ console.log("\nTHE ECONOMY:");
      to 11 and failed a test that was measuring the tutorial's length, not
      the crisis's date. Counted from content, the next beat added or removed
      moves the band with it. */
+  const strandAt = CONTENT.eventById.f1_stranded.at;
   ok("the crisis opens on its date, not when the pool reaches it",
-     a >= 8 && a <= PROLOGUE1 + 3,
-     "f1_stranded at " + a + " (dated 8, prologue is " + PROLOGUE1 + " beats)");
+     a >= strandAt && a <= Math.max(strandAt, PROLOGUE1 + 3) + 1,
+     "f1_stranded at " + a + " (dated " + strandAt + ", prologue is " + PROLOGUE1 + " beats)");
   ok("the survey takes sittings to report",
      b != null && b - a >= 2, "stranded " + a + " -> referendum " + b);
   ok("and the law officer's opinion takes sittings to come back",
      c != null && c - b >= 2, "referendum " + b + " -> dilemma " + c);
+  /* AND THE ACT HAS A SESSION TO BE CARRIED IN. Every bill not carried falls
+     when the House rises, and the dilemma is what sets the Annexation Bill
+     down. Dated for one session of twenty-four it landed at 15, one sitting
+     before the first rise of three; this is the margin that re-dating the
+     chain for three sessions bought, and a longer opening must not spend it. */
+  ok("and the dilemma leaves the Act most of a session to be carried",
+     c != null && riseAt.f1_dilemma - c >= 8,
+     "dilemma at " + c + ", the House rises at " + riseAt.f1_dilemma);
 
   /* AND A DEADLINE KNOWS WHERE IT IS KEPT. The calendar showed five kinds of
      mark and could act on none of them, because only undertakings carried a

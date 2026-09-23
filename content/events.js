@@ -34,7 +34,7 @@ const SANDBOX = [
     note:"Sets station_issue, annexed_almanac_works and f1_annexing, and sets the annexation bill down.",
     result:"The Works is inside the Commonwealth and the annexation bill is set down with its crisis time.",
     effects:[{ flag:"station_issue" }, { flag:"annexed_almanac_works" }, { flag:"f1_annexing" },
-             { bill:{ annexation:{ stage:"first_reading" } } }, { slots:{ total:5 } },
+             { bill:{ annexation:{ stage:"first_reading" } } }, { slots:{ reserve:{ annexation:5 } } },
              { wire:"SANDBOX: THE WORKS IS ANNEXED" }] },
   { id:"carry_threshold", label:"Carry the threshold bill (forty hours)",
     note:"Assents the divergence bill and sets the threshold low.",
@@ -1500,6 +1500,10 @@ already made its case.`,
   ]},
 
 { id:"ch3_open_question", chapter:3, prologue:2, once:true,
+  /* Says nothing was settled, so it plays only where nothing was. A run
+     whose crisis resolved skips it until the content round writes the
+     campaign that runs on a result. */
+  when:{ resolved:false },
   title:"The question on the ballot",
   speaker:null,
   body:`The writs are out and the question the House could not close is now the
@@ -1523,6 +1527,7 @@ position now, because a campaign is where a preference becomes a promise.`,
   ]},
 
 { id:"ch3_manifestos", chapter:3, prologue:3, once:true,
+  when:{ resolved:false },
   title:"The manifestos",
   speaker:"ceyhan",
   body:`Four documents, published within a day of each other, and none of them
@@ -1608,6 +1613,7 @@ anyone watches together.`,
   ]},
 
 { id:"ch3_the_ground", chapter:3, prologue:8, once:true,
+  when:{ resolved:false },
   title:"The last week",
   speaker:null,
   body:`The last week of a one-session campaign is the only part of it anyone
@@ -1646,7 +1652,14 @@ is now the country's to carry.`,
 
 /* the settlement: the argument was closed, and the Commonwealth after */
 { id:"ch4_settled", chapter:2, weight:97, once:true,
-  when:{ settled:true },
+  /* THE RESULT, NOT THE ANSWER, AND IT OPENS NO CHAPTER. This fired on
+     `settled` (the personhood question) and moved the run into chapter
+     four, which then ended at the dissolution without a campaign; a run
+     that dissolved first never saw it. It fires on the crisis result now
+     (bible §3.5.1), while the House still sits, and the aftermath below
+     follows it in chapter two (§1.7). The ids keep their `ch4_` prefix
+     because the author's prose exports are addressed by them. */
+  when:{ resolved:true, dissolved:false },
   title:"The question, closed",
   speaker:null,
   body:`The argument the whole session has been about is closed. Not
@@ -1657,11 +1670,12 @@ The House will do the rest of its business in the shadow of the answer,
 which is how a settlement works. What follows is the Commonwealth after it.`,
   choices:[
     { label:"See it.",
-      effects:[{ chapter:4 }],
+      effects:[],
       result:"The argument is closed." }
   ]},
 
-  { id:"ch4_after", chapter:4, prologue:1, once:true,
+  { id:"ch4_after", chapter:2, weight:96, once:true,
+  when:{ seen:["ch4_settled"], dissolved:false },
   title:"After",
   speaker:null,
   body:`The session runs on. Bills move or fall, ministers answer questions,
@@ -1676,12 +1690,16 @@ That is what a settlement is for.`,
       result:"The record stands." }
   ]},
 
-/* ---- THE AFTERMATH (T21). Chapter four is reached only when a settlement
-   closed the question (ch4_settled gates on `settled`). Where chapter three
-   leaves the question open, this chapter lives with an answer: the argument
-   does not reopen, and the cost arrives afterwards. */
+/* ---- THE AFTERMATH (T21). Chapter four was reached only when a settlement
+   closed the question, and it ended the run at the dissolution, so a
+   settled run never went to the country. Folded into chapter two on 22 Sep
+   2026 (bible §1.7): these follow the crisis result in order, while the
+   House still sits, each gated on the one before through `seen`, and the
+   whole chain stops at the writs. The argument does not reopen, and the
+   cost arrives afterwards. */
 
-{ id:"ch4_the_answer", chapter:4, prologue:2, once:true,
+{ id:"ch4_the_answer", chapter:2, weight:95, once:true,
+  when:{ seen:["ch4_after"], dissolved:false },
   title:"The answer",
   speaker:null,
   body:`The country has an answer now, and the ordinary business is done in its
@@ -1701,7 +1719,8 @@ back, they say what the government decided, in the past tense.`,
       result:`A settled question does not need a press tour. It needs a government that will not reopen it. This one will not.` }
   ]},
 
-{ id:"ch4_the_losers", chapter:4, prologue:3, once:true,
+{ id:"ch4_the_losers", chapter:2, weight:94, once:true,
+  when:{ seen:["ch4_the_answer"], dissolved:false },
   title:"The people who lost",
   speaker:"watkins",
   body:`The benches that argued the other way have not changed their minds. They have changed their subject. Nothing stops them changing it back.
@@ -1720,8 +1739,8 @@ decides to give it to somebody else, and that decision is years away.`,
       result:"The benches behind the government want it, and the benches against it will remember. Both of those are the normal politics of an answer." }
   ]},
 
-{ id:"ch4_the_ledger", chapter:4, prologue:4, once:true,
-  when:{ scalarBelow:{ solvency:45000 } },
+{ id:"ch4_the_ledger", chapter:2, weight:93, once:true,
+  when:{ seen:["ch4_the_losers"], dissolved:false, scalarBelow:{ solvency:45000 } },
   title:"The bill for the answer",
   speaker:"hatt",
   body:`Every settlement has a cost, and the cost does not arrive with the
@@ -1741,7 +1760,8 @@ not in this room."`,
       result:"The current position looks better and the next one looks worse. That is what a schedule is for." }
   ]},
 
-{ id:"ch4_the_next", chapter:4, prologue:5, once:true,
+{ id:"ch4_the_next", chapter:2, weight:92, once:true,
+  when:{ seen:["ch4_the_losers"], dissolved:false },
   title:"The next question",
   speaker:"ansar",
   body:`A settled question makes room for the next one. The ninth deck has one,
@@ -1761,21 +1781,10 @@ finished, and things that are finished are what a government moves on from."`,
       result:`The House does its ordinary business and the country stops watching.` }
   ]},
 
-{ id:"ch4_the_record", chapter:4, prologue:6, once:true,
-  title:"The record",
-  speaker:null,
-  body:`The session closes on the answer. Everything that moved in it is in the
-record, and the record is what the next parliament argues with.
-
-The question was put and carried, defeated, or taken out of the House's hands,
-and the form of the answer is the form the record will show for a generation.
-What follows is somebody else's session.`,
-  choices:[
-    { label:"Close the record.",
-      effects:[{ flag:"campaign_done" },
-               { wire:"SESSION CLOSES ON THE SETTLEMENT" }],
-      result:"The record stands. The answer is the government's, and the next argument starts from it." }
-  ]},
+/* ch4_the_record was dropped on 22 Sep 2026 (design/32): it set
+   `campaign_done`, which ended a settled run at the dissolution without a
+   campaign, and it said "what follows is somebody else's session" when the
+   election follows. The count closes the record now. */
 
 /* ============================================================
    FLASH I — THE PLATFORM CRISIS (the author's campaign, wired so it can
@@ -1799,8 +1808,18 @@ What follows is somebody else's session.`,
    choice that causes it, with the time that thing would actually take and a
    label so it lands on the calendar. A survey takes four sittings. A law
    officer's opinion takes three. The player can see both coming and has to
-   govern around them, which is the whole point of order-paper time. */
-{ id:"f1_stranded", chapter:2, at:8, once:true,
+   govern around them, which is the whole point of order-paper time.
+
+   DATED FOR THREE SESSIONS (22 Sep 2026). The chain opened at 8 with gaps
+   of two, which put the dilemma at 15 and the Annexation Bill on the order
+   paper one sitting before the first rise, where every bill not carried
+   falls; any beat added to chapter one would have pushed it past. It opens
+   late in the first session now, the survey and the opinion take the four
+   and three sittings this comment always said they did, and the dilemma
+   lands early in the second session with most of it left to carry the
+   Act. The stranded have two months of air: stranded in early May, the Act
+   is carried in June. */
+{ id:"f1_stranded", chapter:2, at:14, once:true,
   /* THE ONE SET PIECE IN CHAPTER TWO (design/31). A turn the world takes,
      not a decision the player makes — which is the test for whether an
      event earns the whole screen. The sections are the frame's, the prose
@@ -1823,7 +1842,7 @@ The Works has voted. The question is what the Commonwealth says.`,
   choices:[
     { label:"Send the survey team.",
       effects:[{ flag:"f1_surveyed" }, { wire:"FEDERATION SURVEYS THE ABANDONED PLATFORM" },
-               { queue:[{ event:"f1_referendum", after:2,
+               { queue:[{ event:"f1_referendum", after:4,
                           label:"The survey team reports from the Almanac" }] }],
       result:"The survey's first return is the scrubber schedule. The second is the debt." },
     { label:"Wait for Earth's process.",
@@ -1847,7 +1866,7 @@ wire."`,
       effects:[{ flag:"f1_referendum_carried" }, { move:{ "friction":10 } },
                { move:{ "legitimacy":8 } },
                { wire:"FEDERATION RECOGNISES THE PLATFORM REFERENDUM" },
-               { queue:[{ event:"f1_dilemma", after:2,
+               { queue:[{ event:"f1_dilemma", after:3,
                           label:"Law and the Charter reports on the platform" }] }],
       result:"The Works is the Commonwealth's question now, and Earth's banks are reading the same wire." },
     { label:"Decline to recognise it.",
@@ -1902,8 +1921,11 @@ Neither future is a vote the government can lose quietly.`,
                   A crisis measure brings its own time, which is what an
                   emergency debate IS. Five is what it costs: four grants to
                   carry it from first reading to where it can be voted, and
-                  one more for the division itself. */
-               { slots:{ total:5 } },
+                  one more for the division itself. RESERVED for the Act
+                  (design/32 §E.5): held in the bill's name, so the bills
+                  above it on the order paper cannot spend it, and gone
+                  when the House rises. */
+               { slots:{ reserve:{ annexation:5 } } },
                { wire:"GOVERNMENT MOVES TO ANNEX THE WORKS" }],
       result:"The annexation bill is set down. Acting is popular at home; Earth notices, a little more, every sitting." },
     { label:"Hold the line.",
@@ -2278,7 +2300,7 @@ it deserves the session that follows.
 The victory is real and it is expensive. No cheaper one was on offer.`,
   choices:[
     { label:"Read the final numbers.",
-      effects:[{ wire:"RETURNS COMPLETE: THE GOVERNMENT IS RETURNED ON THE PYRRIHIC TICKET" }],
+      effects:[{ wire:"RETURNS COMPLETE: THE GOVERNMENT IS RETURNED ON THE PYRRHIC TICKET" }],
       result:"The numbers are read. The chapter closes." }
   ]},
 
@@ -3378,14 +3400,14 @@ you already have.`,
    reopening it, and a government whose standing has fallen is the moment to
    find out. Reads public_standing, which 117 effects move and 3 conditions
    read — this is a fourth. */
-{ id:"ch4_tested", chapter:4, weight:72, once:true,
+{ id:"ch4_tested", chapter:2, weight:72, once:true,
   /* 38 AND NOT 46. public_standing OPENS at 44, so a gate at 46 was true
      from the first sitting of the game and the event would have fired as
      soon as chapter four began, whatever had happened — which is the
      opposite of "the government is weak enough to be tested". Six points
      below the opening is a fall somebody did. Caught by testing the gate
      against the opening state as well as against the state it wants. */
-  when:{ scalarBelow:{ public_standing:38 } },
+  when:{ settled:true, dissolved:false, scalarBelow:{ public_standing:38 } },
   brief:"Somebody moves to reopen the settled question, and the government's "+
     "standing is low enough to make it worth trying. The scene wants the "+
     "Leader of the Opposition testing whether the answer holds rather than "+
@@ -3421,8 +3443,8 @@ you already have.`,
    threshold or refused to, and §7.10 makes that a participation figure. The
    prologue's `ch4_the_ledger` is the SOLVENCY cost; this is the structural
    one, and it is the first content to read the economy in chapter four. */
-{ id:"ch4_structural", chapter:4, weight:69, maxFires:2,
-  when:{ economyAbove:{ participation:45 } },
+{ id:"ch4_structural", chapter:2, weight:69, maxFires:2,
+  when:{ settled:true, dissolved:false, economyAbove:{ participation:45 } },
   brief:"The participation figure has moved further than the argument was "+
     "ever about. The scene wants the Treasurer laying a structural change "+
     "nobody voted for: the settlement was debated as a question about what a "+
@@ -3455,8 +3477,8 @@ you already have.`,
    has to be about something else. Gates on `owes`, which no content had
    used: an undertaking still open is the government having promised
    something it has not delivered. */
-{ id:"ch4_what_for", chapter:4, weight:78, once:true,
-  when:{ owes:["carry_threshold"] },
+{ id:"ch4_what_for", chapter:2, weight:78, once:true,
+  when:{ settled:true, dissolved:false, owes:["carry_threshold"] },
   brief:"The partner that made the bill the price of the coalition asks what "+
     "the government is for now. The scene wants a negotiation that is not "+
     "about the settled question at all: the promise in the agreement is "+
@@ -3491,8 +3513,8 @@ you already have.`,
    the last sittings of the settling session are exactly what it is for: the
    House is about to go home on the answer, and what the government does
    with the remaining time is the last decision of the chapter. */
-{ id:"ch4_rises_on_it", chapter:4, weight:64, once:true,
-  when:{ risesWithin:3 },
+{ id:"ch4_rises_on_it", chapter:2, weight:64, once:true,
+  when:{ resolved:true, dissolved:false, risesWithin:3 },
   brief:"The House rises within three sittings and the settled question is "+
     "what the session will be remembered for. The scene wants the Chief Whip "+
     "with the last of the order paper in his hand, asking what to do with "+

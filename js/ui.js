@@ -477,9 +477,13 @@ const UI = (function () {
        a number; six marks with two dark is a quantity the eye has before it
        reads. The tooltip still says what the marks mean. */
     const sUsed = st.slots.used, sTot = st.slots.total;
+    /* Reserved time (design/32 §E.5) is drawn HOLLOW after the session's own:
+       it is there, and only one measure can spend it. */
+    const sRes = Object.values(st.slots.reserved || {}).reduce((a, n) => a + n, 0);
     $("#sb-slots").innerHTML = "SLOTS" + Array.from({ length: sTot }, (_, i) =>
-      `<i class="sbpip${i < sUsed ? " spent" : ""}"></i>`).join("");
-    $("#sb-slots").classList.toggle("none", sUsed >= sTot);
+      `<i class="sbpip${i < sUsed ? " spent" : ""}"></i>`).join("") +
+      Array.from({ length: sRes }, () => `<i class="sbpip res"></i>`).join("");
+    $("#sb-slots").classList.toggle("none", sUsed >= sTot && !sRes);
     /* THE THRESHOLD IS CONTENT'S, and this readout had it wrong. It printed
        "/9" and reddened at 7 as literals, while `setup.thresholds.ballot` is
        12 and `signaturePanel` fifty lines down reads it properly -- so the
@@ -653,8 +657,15 @@ const UI = (function () {
        shown once; the terminal then stays open so the record can be read,
        which is the placeholder the brief asked for, not the final screen. */
     const end = Engine.checkEnd(st, C);
-    if (end.kind !== "loss" && ended !== end.kind) {
-      ended = end.kind;
+    /* KEYED ON WHAT ENDED, NOT ON WHAT KIND OF ENDING IT WAS. Keyed on the
+       kind, a crisis result landing after an intermediate answer was never
+       announced (both are "settlement"), and the count was never announced
+       at all: dissolution returns kind "election" with over:false, which
+       spent the key, so the same kind with over:true was skipped. */
+    const endKey = end.kind + ":" + (end.settlement ? end.settlement.id : "") +
+                   ":" + (end.over ? 1 : 0);
+    if (end.kind !== "loss" && ended !== endKey) {
+      ended = endKey;
       if (end.kind === "settlement" && end.settlement) {
         /* A terminal settlement knells and sombres; a non-terminal one
            resolves the crisis and the run goes on, so it scores like a
@@ -2045,14 +2056,20 @@ const UI = (function () {
     /* TWO REFUSALS, BOTH SAID OUT LOUD: no time left this session, and the
        day's business already done. The order paper hears so many measures a
        day, exactly as the House divides so many times. */
-    const grantRefusal = !left ? "no order-paper time left this session"
+    /* Judged PER BILL, because a measure with time of its own can still be
+       moved when the session's is gone. */
+    const grantRefusal = id => left + Engine.reservedFor(st, id) < 1
+      ? "no order-paper time left this session"
       : gtoday >= gcap ? "the House has taken " + gcap + " measures today" : null;
+    const resTotal = Object.values(st.slots.reserved || {}).reduce((a, n) => a + n, 0);
     const hdr = $("#gov-slots-hdr");
     if (hdr) hdr.textContent = left + " of " + st.slots.total + " left this session" +
+      (resTotal ? " + " + resTotal + " reserved" : "") +
       (gtoday ? " \u00b7 " + gtoday + " of " + gcap + " today" : "");
     $("#gov-slots").innerHTML =
       `<div class="slotbar">${Array.from({length: st.slots.total}, (_, i) =>
-        `<i class="${i < st.slots.used ? "spent" : ""}"></i>`).join("")}</div>` +
+        `<i class="${i < st.slots.used ? "spent" : ""}"></i>`).join("")}${
+        Array.from({length: resTotal}, () => `<i class="res"></i>`).join("")}</div>` +
       `<div class="note" style="margin-top:4px">A slot is order-paper time: spend one and a measure moves one
        stage closer to its vote. The session holds ${st.slots.total} and they refill when the House rises; the
        House takes ${gcap} measure${gcap === 1 ? "" : "s"} a sitting, and no more. Give a slot to a partner's bill
@@ -2061,15 +2078,19 @@ const UI = (function () {
         `<tr><td>${b.owner ? mark(b.owner)
             : `<i class="swatch" style="background:var(--chrome-dk)" data-tip-title="No sponsor"` +
               ` data-tip-body="A measure the government did not bring forward."></i>`}${b.title.replace(/ Bill$/, "")}` +
-        `${b.priority ? " <span class='flag' data-tip='priority'>PRIORITY</span>" : ""}</td>` +
+        `${b.priority ? " <span class='flag' data-tip='priority'>PRIORITY</span>" : ""}` +
+        `${Engine.reservedFor(st, b.id) ? " <span class='flag' data-tip-title='Time of its own'" +
+          " data-tip-body='Order-paper time granted for this measure alone. Only its stages and" +
+          " its division can spend it, it is spent before the session&#39;s own, and it goes" +
+          " when the House rises.'>" + Engine.reservedFor(st, b.id) + " OWN</span>" : ""}</td>` +
         `<td class="n">${b.owner && b.owner !== st.playerParty ? "+" + (b.priority ? 3 : 2) : "&mdash;"}</td>` +
-        `<td class="n"><button class="btn slotbtn" data-slot="${b.id}"${grantRefusal ? " disabled" : ""}` +
+        `<td class="n"><button class="btn slotbtn" data-slot="${b.id}"${grantRefusal(b.id) ? " disabled" : ""}` +
           priceTip("Give time to " + b.title, { slots: 1,
             note: b.owner && b.owner !== st.playerParty
               ? "Moves it a stage and puts " + ps(b.owner) + " +" + (b.priority ? 3 : 2) +
                 " in your debt."
               : "Moves it a stage. Your own bill buys you no debt." },
-            grantRefusal) + `>${grantLabel(b.id)}</button></td></tr>`
+            grantRefusal(b.id)) + `>${grantLabel(b.id)}</button></td></tr>`
       ).join("")}</tbody></table>`;
     /* THE ORDER PAPER CARRIES UNDERTAKINGS TOO. An order paper lists the
        business, and a promise the government has made is business. This

@@ -85,10 +85,12 @@ const Tips = (function () {
             "session holds only a few. Give a slot to a partner's bill and you " +
             "earn capital with that partner; spend one on your own and only your " +
             "programme advances. Slots refill when the House rises and the next " +
-            "session opens." },
+            "session opens. A hollow mark is time a crisis measure brought with " +
+            "it: only that measure can spend it, and it goes when the House rises." },
     signatures: { title: "Signatures",
-      body: "Names Czarnecki has collected. At nine he can force a leadership " +
-            "ballot. Your own conduct adds to this count: packing one licensing " +
+      body: "Names Czarnecki has collected, against the number that forces a " +
+            "leadership ballot, which the bar prints beside them. Your own conduct " +
+            "adds to this count: packing one licensing " +
             "board adds two names, and packing a second adds three." },
     confidence: { title: "Confidence",
       body: "Seats held by your coalition, plus any party supplying confidence. " +

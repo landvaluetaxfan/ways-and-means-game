@@ -113,6 +113,8 @@ const Refs = (function () {
     eachEffect(M, (eff, where) => {
       if (eff.bill && eff.bill[id] !== undefined)
         H(`${where} · bill`, to => renameKey(eff.bill, id, to));
+      if (eff.slots && eff.slots.reserve && eff.slots.reserve[id] !== undefined)
+        H(`${where} · reserved time`, to => renameKey(eff.slots.reserve, id, to));
     });
     eachCondition(M, (w, where) => {
       if (w.billStage && w.billStage[id] !== undefined)
@@ -133,6 +135,12 @@ const Refs = (function () {
     });
     M.glossary.forEach(g => {
       if (g.introduced === id) H(`glossary "${g.term}" · introduced`, to => g.introduced = to);
+    });
+    eachCondition(M, (w, where) => {
+      if (w.seen === id) H(`${where} · seen`, to => w.seen = to);
+      else if (Array.isArray(w.seen)) w.seen.forEach((x, i) => {
+        if (x === id) H(`${where} · seen`, to => w.seen[i] = to);
+      });
     });
     return hits;
   }

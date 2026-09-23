@@ -531,13 +531,11 @@ version of any of them is in the header of the file it names.
   before the design note was read. **Read `design/32` before planning the
   run's shape.** It is written against one session of 24, so its sitting
   numbers are stale and its decisions are not.
-- **THREE SESSIONS PUT THE ANNEXATION ACT ON A ONE-SITTING MARGIN.** Every
-  bill not carried falls at each rise. The Flash I chain is dated from
-  `at:8` for a single session of 24, and a policy that puts the Act first
-  sets it down and carries it at sitting 15: nine sittings before the old
-  rise, one before the new one. Nothing fails today, but any beat added
-  ahead of the chain pushes the dilemma past sitting 16 and the Act falls
-  with the House. The chain is to be re-dated for three sessions.
+- **THE ANNEXATION ACT HAD A ONE-SITTING MARGIN** — resolved 22 Sep by
+  re-dating the Flash I chain for three sessions: stranded at 14, the survey
+  four sittings, the law officer's opinion three, so the dilemma lands at 21
+  with twelve sittings before the rise. `test.js` asserts at least eight, so a
+  longer chapter one cannot quietly spend the margin again.
 - **THE BIBLE COPIES CONTENT, AND THE COPIES ROT.** The v5 audit (22 Sep)
   compared every section with the built game: all 34 station lines in §11.3
   matched content to the digit, while the party table carried five names
@@ -546,13 +544,39 @@ version of any of them is in the header of the file it names.
   on a chapter-one size §1.7's own budget forbids. Where the bible restates a
   roster or a count, content owns it (§11.2 now says so); where the bible
   states a RULE, read `design/` for a later decision before obeying it.
-- **CHAPTERS THREE AND FOUR ARE STILL ALTERNATIVES, NOT A SEQUENCE**, which
-  is design/32's fold not yet done. Both transitions are chapter-two events
-  and chapter gating is an exact match, so a run that settles (every tier
-  but the non-terminal `f1_pyrrhic`) enters chapter four, `ch4_the_record`
-  sets `campaign_done`, and the run ends at the dissolution with no
-  campaign; a run that dissolves first never sees the aftermath. Measured
-  across the seven playtest strategies: none reached both.
+- **CHAPTERS THREE AND FOUR WERE ALTERNATIVES, NOT A SEQUENCE** — folded 22
+  Sep. A run that settled entered chapter four and ended at the dissolution
+  with no campaign; one that dissolved first never saw the aftermath. The
+  aftermath now plays in chapter two after the crisis result, while the House
+  sits, each beat chained on the last with the `seen` condition (a
+  chapter-two sequence has no prologue to order it). Every run that passes
+  supply now goes to the country, and `test.js` asserts no chapter after the
+  third and that the aftermath stops at the writs.
+- **THE TWO SETTLEMENT FAMILIES RACED, AND FOUR ENDINGS WERE UNEARNABLE.**
+  `checkSettlement` ranked the four personhood answers and Flash I's five
+  tiers together and recorded only the winner, and only the tier marked
+  `terminal:false` reached `resolvedAs`, which is what the achievements and
+  the election beat read. Two channels now: `crisis: true` lands in
+  `resolvedAs` once and stays, the rest in `settledAs`. Also: the `settled`
+  condition compared truthiness, so `settled:"restriction"` was true of ANY
+  settlement; it and the new `resolved` take an id or a boolean. And the
+  interface announced an ending once per KIND, so a crisis result after an
+  answer was never shown and the count never was: it keys on the ending now.
+- **CRISIS TIME LEAKED, AND THE TOOL DID NOT SPEND IT.** The dilemma's five
+  slots went into the general pool (the bills listed earlier took them) and
+  stayed for good (eleven slots every later session). Reserved time,
+  `{slots:{reserve:{bill:n}}}`, is spent only by that bill and goes at the
+  rise, at `STATE_VERSION 27`. Then the playtest's own loop stopped when the
+  GENERAL pool was empty, so it never spent the reserve either; fixed, and
+  for the first time the generic strategies carry the Act and reach the debt
+  trap by play (sitting 33). They then cascade at 41, because they never lay
+  an emergency order: after the debt trap, holding the country is the game.
+  The canon script had to put the ladder first for the same reason — six
+  slots carry a programme or hold the country, not both.
+- **THE EMERGENCY LOAN CANNOT BE HONOURED.** `f1_loan` undertakes "Honour the
+  emergency facility" with no `discharge`, so it always breaks at the next
+  rise: the Treasurer resigns and the debt is called. With one session the
+  next rise was the end; with three it lands mid-run. Content round.
 - **AN AFFIRMATIVE ORDER COULD BE LAID AND NEVER APPROVED.** `makeInstrument`
   set `awaitingApproval`, charged the political cost, and nothing in the
   engine ever read the flag again — five orders were paid for and could
