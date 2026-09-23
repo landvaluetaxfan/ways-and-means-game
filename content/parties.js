@@ -37,7 +37,7 @@ const PARTIES = [
   { id:"cl",  name:"Liberal Party",                short:"LIB", colour:"var(--p-cl)",
     leader:"watkins", logo:"cl.png", wordmark:"cl_mark.png",
     seats:{district:22,list:19,functional:6},
-    kind:"national", loyalty:20,
+    kind:"national",
     axes:{economic:0.7, authority:-0.1, personhood:0.6, sovereignty:0.75, trade:0.9},
     note:"Cosmopolitan market party. Elevator and shipping money." },
 
@@ -159,6 +159,24 @@ const CURRENTS = [
   { id:"cu_halloran",    party:"cu", name:"Hard Left",              members:11, loyalty:12,
     axes:{economic:-0.9, authority:-0.5, personhood:-0.35, sovereignty:0.2, trade:-0.5},
     description:"The party's left flank. The strongest for public ownership, the least concerned of the four with personhood, and the current most often in revolt against the leadership. The press calls it the Czarnecki group, after the member for Tier Four who leads it." },
+
+  /* THE LIBERALS (the author, 23 Sep: "social, abundance, and classical
+     liberals"). The party's own position is the member-weighted mean of
+     these three to within a few hundredths on every axis, and their
+     loyalty averages the 20 the party carried before it had currents, so
+     the split changes WHO turns out on a measure and not the party line.
+     Classical: the elevator and shipping money, the largest. Abundance:
+     the shortages are shortages of building. Social: rights and personhood
+     first, the market second. */
+  { id:"cl_classical", party:"cl", name:"Classical Liberals",  members:20, loyalty:13,
+    axes:{economic:0.95, authority:-0.25, personhood:0.4, sovereignty:0.7, trade:1},
+    description:"The party's largest current, and the elevator and shipping money behind it. Strongly for private ownership and open trade, for a federal Commonwealth with few rules and balanced books, and the least eager of the three to widen personhood." },
+  { id:"cl_abundance", party:"cl", name:"Abundance Liberals",  members:15, loyalty:29,
+    axes:{economic:0.55, authority:0.3, personhood:0.6, sovereignty:0.9, trade:0.9},
+    description:"Holds that the Commonwealth's shortages are shortages of building: of volume, of radiator capacity, of docks. For private capital and a federal state with the power to get things built, for open trade, and for widening personhood." },
+  { id:"cl_social",    party:"cl", name:"Social Liberals",     members:12, loyalty:20,
+    axes:{economic:0.35, authority:-0.5, personhood:0.95, sovereignty:0.65, trade:0.7},
+    description:"The rights wing of the party: civil liberties and the personhood case first, the market second. The strongest in the party for widening personhood and against the state's reach, and the least attached to private ownership." },
 
   /* THE RENAMED PARTIES' ARGUMENTS (T7, design/24 B1). A party with no
      internal current is a bloc that votes, and these three names imply an
