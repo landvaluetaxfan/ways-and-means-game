@@ -2060,14 +2060,36 @@ try {
     const bd = w.document.querySelector("#comp-table");
     ok("composition carries the forecast when a measure is named",
        !!bd && />Aye</.test(bd.innerHTML));
-    const bench = bd.querySelectorAll("tr.bench");
-    /* T7 gave three more parties currents, and T14 made the independents a
-       free bench, so the expected count is read off the ENGINE's own
-       division rather than typed here. */
-    const expectedB = w.eval("(function(){ var d = Engine.division(UI.state(), CONTENT, 'thermal2');" +
-      " return d.rows.reduce(function (n, r) { return n + ((r.benches || []).length); }, 0); })()");
-    ok("which lists the factions under their party", bench.length === expectedB,
+    /* THE FACTIONS ARE LISTED UNDER A PARTY THE PLAYER OPENS, AND ONCE.
+       They were drawn under every party whenever a measure was named, and
+       again in the detail that opened with the party, so an open party
+       with a measure named listed its currents twice. */
+    const openComp = pid => {
+      for (let i = 0; i < 2; i++) {
+        const tr = w.document.querySelector('#comp-table tr[data-comp="' + pid + '"]');
+        if (!tr || tr.classList.contains("compopen")) break;
+        tr.click();
+      }
+      return w.document.querySelector('#comp-table tr[data-comp="' + pid + '"].compopen');
+    };
+    ok("no party's factions are drawn until it is opened",
+       bd.querySelectorAll("tr.bench").length === 0,
+       bd.querySelectorAll("tr.bench").length + " rows");
+    openComp(w.eval("UI.state().playerParty"));
+    const bench = w.document.querySelectorAll("#comp-table tr.bench");
+    /* The expected count is read off the ENGINE's own division rather than
+       typed here. */
+    const expectedB = w.eval("(function(){ var s = UI.state(); var d = Engine.division(s, CONTENT, 'thermal2');" +
+      " var r = d.rows.filter(function (x) { return x.party === s.playerParty; })[0];" +
+      " return (r && r.benches || []).length; })()");
+    ok("which lists the factions under their party", bench.length === expectedB && bench.length > 0,
        bench.length + " current rows");
+    const names = [...bench].map(tr => tr.cells[0].firstChild.textContent.trim());
+    ok("each of them once",
+       names.every(n => [...w.document.querySelectorAll("#comp-table tr")]
+         .filter(tr => tr.cells[0] && tr.cells[0].firstChild &&
+                       tr.cells[0].firstChild.textContent.trim() === n).length === 1),
+       names.join(" · "));
     ok("named, not keyed",
        [...bench].every(tr => /[a-z]/.test(tr.cells[0].textContent) &&
                               !/^cu_/.test(tr.cells[0].textContent.trim())),
@@ -2127,10 +2149,16 @@ try {
        that are actually free to move. Since T14 that is the independents,
        whose six currents vote on their own axes and nothing else. */
     w.document.querySelector('#cham-bills tr[data-bill="divergence"]').click();
+    openComp("ind");
     const dvb = [...w.document.querySelectorAll("#comp-table tr.bench")];
-    ok("a stated forecast draws faction rows only for the free bench",
-       dvb.length === 6 && dvb.every(tr => !/Socialists|Progressive|Home Rule/.test(tr.cells[0].textContent)),
+    ok("a stated forecast still counts the free bench faction by faction",
+       dvb.length === 6 && dvb.some(tr => /\d/.test(tr.cells[5].textContent)),
        dvb.length + " bench rows");
+    openComp(w.eval("UI.state().playerParty"));
+    const dvc = [...w.document.querySelectorAll("#comp-table tr.bench")];
+    ok("and gives a whipped party's factions no share of the whips' own guess",
+       dvc.length > 0 && dvc.every(tr => !/\d/.test(tr.cells[5].textContent)),
+       dvc.map(tr => tr.cells[5].textContent).join(" "));
     /* A fallen measure loses the WHIP TABLE — there is nobody left to
        move — but it may still carry its division list, which is a record
        and the reason the panel stays. So the test is the control, not the

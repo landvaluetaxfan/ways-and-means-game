@@ -1226,6 +1226,22 @@ const Engine = (function () {
     }));
   }
 
+  /* A party's currents as SEATS, resized against what the party holds now,
+     the same way a division splits them (`benchRows`): each tier
+     apportioned by share on its own. For the interface, so a table that
+     lists the currents without a measure in front of it sizes them as the
+     one with a measure does, and never from the content's `members`, which
+     an election leaves behind. */
+  function currentSeats(st, C, partyId) {
+    const bs = benches(st, C, partyId);
+    if (!bs) return null;
+    const w = bs.map(b => b.share);
+    const P = apportion(partyPopular(st, partyId), w);
+    const F = apportion(partyFunctional(st, partyId), w);
+    return bs.map((b, i) => ({ id: b.id, name: b.name, loyalty: b.loyalty,
+                               seats: P[i] + F[i] }));
+  }
+
   /* The fraction of a party's seats that votes with its stated position.
      `floor` is what indiscipline cannot take away: 0.75 on a whipped
      position, 0 on a free vote, where there is no line to hold.
@@ -6345,7 +6361,7 @@ const Engine = (function () {
   return {
     STATE_VERSION, newGame, migrate, save, load, chapters, reportedActor, receipts,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
-    partyPopular, partyFunctional, partyTotal,
+    partyPopular, partyFunctional, partyTotal, currentSeats,
     division, reported, ballot, benchRoll, resolveDue, pairable, setPairs, clearPairs, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss, checkSettlement,
     dateOfSitting, sittingOfDate, deadlines, calendar, today, business,
     initiatives, take, setDivision,

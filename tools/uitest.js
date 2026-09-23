@@ -477,18 +477,20 @@ try {
   ok("parties with currents open inside the composition table", comp.length > 0,
      comp.length + " expandable");
   ok("and nothing is open to begin with",
-     w.document.querySelectorAll("#comp-table tr.compdet").length === 0);
+     w.document.querySelectorAll("#comp-table tr.bench").length === 0);
   if (comp.length) {
+    const pid = comp[0].dataset.comp;
     comp[0].click();
-    const det = [...w.document.querySelectorAll("#comp-table tr.compdet")];
-    ok("clicking one shows its currents", det.length === 1,
-       det.length + " detail rows");
-    ok("and names them with their loyalty",
-       det.length > 0 && /loyalty/.test(det[0].textContent),
+    const det = [...w.document.querySelectorAll("#comp-table tr.bench")];
+    const want = w.eval("CONTENT.currents.filter(function (c) { return c.party === '" + pid + "'; }).length");
+    ok("clicking one shows its currents, one row each", det.length === want && want > 0,
+       det.length + " rows for " + want + " currents");
+    ok("each with its loyalty and its size",
+       det.length > 0 && det.every(tr => tr.querySelector(".cdl") && /\d/.test(tr.cells[4].textContent)),
        det.length ? det[0].textContent.trim().slice(0, 60) : "nothing");
     w.document.querySelector("#comp-table tr[data-comp]").click();
     ok("and clicking again closes it",
-       w.document.querySelectorAll("#comp-table tr.compdet").length === 0);
+       w.document.querySelectorAll("#comp-table tr.bench").length === 0);
   }
 } catch (e) { ok("the parties tab and the composition fold", false, e.message); }
 

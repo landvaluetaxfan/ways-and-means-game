@@ -3139,28 +3139,36 @@ const UI = (function () {
         (anyOff ? `<td class="n${r && off(r) ? " offv" : ""}">` +
           `${r && off(r) ? off(r) : "&mdash;"}</td>` : "") +
         `</tr>`;
-      /* THE CURRENTS, UNDER THE PARTY THEY BELONG TO. The author asked for
-         the individual parties to open rather than the whole table to
-         collapse — which is right: a composition table nobody can see is
-         not shorter, it is gone. The same construction as the
-         constituency dossier inside #cons-table: a detail ROW, not a
-         second panel. */
+      /* THE CURRENTS, UNDER THE PARTY THEY BELONG TO, ONCE. The author
+         asked for the individual parties to open rather than the whole
+         table to collapse — a composition table nobody can see is not
+         shorter, it is gone. There were TWO listings of them: a detail
+         block that opened with the party (members and loyalty), and the
+         division's faction rows, drawn under every party whenever a
+         measure was named. Open a party with a measure named and its
+         currents were listed twice, the second time full size, because
+         the rule that quietened those rows still named #breakdown, the
+         panel they came from before it was merged into this one. One set
+         of rows now, in the table's own columns so the figures line up
+         under the party's: its size always, and how it is expected to go
+         when a measure is named. A stated forecast belongs to the whips
+         who wrote it and not to the factions, so there the ayes are a
+         dash rather than a share of somebody else's guess. */
       if (open) {
-        const cols = 5 + (armed ? 2 : 0) + (anyOff ? 1 : 0);
-        h += `<tr class="compdet"><td colspan="${cols}">` +
-          `<div class="cdet">` + mine.map(cu => {
-            const loy = Engine.loyaltyOf(st, cu.id) ?? cu.loyalty;
-            return `<div class="cdrow"><b>${esc(cu.name)}</b>` +
-              `<span class="cdn" data-tip="mps">${cu.members} member${cu.members === 1 ? "" : "s"}</span>` +
-              `<span class="cdl${loy < 35 ? " warn" : ""}">loyalty ${loy}</span></div>`;
-          }).join("") + `</div></td></tr>`;
+        const fc = {};
+        ((r && r.benches) || []).forEach(b => { fc[b.id] = b; });
+        h += (Engine.currentSeats(st, C, p.id) || []).map(cs => {
+          const b = fc[cs.id];
+          const loy = cs.loyalty;
+          return `<tr class="bench"><td>${esc(cs.name)}` +
+            `<span class="cdl${loy < 35 ? " warn" : ""}" data-tip="loyalty">${loy}</span></td>` +
+            `<td class="n"></td><td class="n"></td><td class="n"></td>` +
+            `<td class="n" data-tip="mps">${b ? b.popularSeats + b.functionalSeats : cs.seats}</td>` +
+            (armed ? `<td class="n">${b && b.popularAye != null ? b.popularAye : "&mdash;"}</td>` +
+                     `<td class="n">${b && b.functionalAye != null ? b.functionalAye : "&mdash;"}</td>` : "") +
+            (anyOff ? `<td class="n"></td>` : "") + `</tr>`;
+        }).join("");
       }
-      if (armed && r && r.benches) h += r.benches.map(b =>
-        `<tr class="bench"><td>${esc(b.name)}</td><td class="n"></td><td class="n"></td>` +
-        `<td class="n"></td><td class="n">${b.popularSeats + b.functionalSeats}</td>` +
-        `<td class="n">${b.popularAye == null ? "&mdash;" : b.popularAye}</td>` +
-        `<td class="n">${b.functionalAye == null ? "&mdash;" : b.functionalAye}</td>` +
-        (anyOff ? `<td class="n"></td>` : "") + `</tr>`).join("");
     });
     return h + `</tbody>`;
   }
@@ -3276,22 +3284,6 @@ const UI = (function () {
      What you can move depends on how far the bill sits from the party's own
      position, which is what keeps the four axes load-bearing. What it costs
      comes out of the ledger, and overdrawing costs loyalty. */
-  /* The factions under their party in the division breakdown. Only present
-     where the engine actually derived the count from them — a stated
-     forecast belongs to the whips who wrote it, not to the currents, and
-     the engine returns no benches in that case. Each column sums to the
-     party row above it. */
-  function benchRowsHTML(r) {
-    if (!r.benches) return "";
-    const cell = (aye, seats) => aye == null
-      ? `<td class="n">&mdash;</td><td class="n">${seats}</td>`
-      : `<td class="n">${aye}</td><td class="n">${seats}</td>`;
-    return r.benches.map(b =>
-      `<tr class="bench"><td>${esc(b.name)}</td>` +
-      cell(b.popularAye, b.popularSeats) +
-      cell(b.functionalAye, b.functionalSeats) + `</tr>`).join("");
-  }
-
   function whipPanel(billId, b, d) {
     if (bsOf(billId).dead) return "";
     const partners = [st.playerParty].concat(
