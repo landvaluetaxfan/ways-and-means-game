@@ -482,6 +482,55 @@ const BILLS = [
             {move:{"loyalty.hul":-12}},{move:{"loyalty.gb":-15}},
             {wire:"ALMANAC WORKS (ANNEXATION) ACT PASSES; THE CHARTER IS SURRENDERED"}],
     onFail:[{move:{"legitimacy":-10}},{move:{"trend.friction":2}},
-            {wire:"THE HOUSE DECLINES TO BRING THE WORKS IN"}] }
+            {wire:"THE HOUSE DECLINES TO BRING THE WORKS IN"}] },
+
+  /* THE TWO LAWS THAT DID NOTHING (design/34 D6, built 23 Sep on the
+     author's word). `civic_clock_minimum` and `suspension_debt_accrual` were
+     in the law from the first draft, named in bible 6.9 as the variables
+     personhood politics moves, and no bill set either and nothing read
+     them. The engine reads both now (tick: the clock's cost and heat, the
+     paused debt's restorations), and these are the bills that set them.
+     Both open in drafting, so the government decides whether to bring them
+     in: giving one its first reading is the introduction. */
+  { id:"civic_clock", ref:"HC 4/171", stage:"drafting", owner:"psa",
+    touches:["substrate_ownership","thermal_quota"],
+    author:"trottier", cosponsors:["herrera"],
+    title:"Civic Clock (Minimum Rate) Bill",
+    summary:"Sets a minimum clock rate of real time for every enfranchised mind, publicly "+
+            "subsidised, so that an emulation running slow for want of substrate follows a "+
+            "campaign at the same pace as the electorate around it.",
+    contested:"At 0.3x a four-year parliament is fourteen subjective months, and 560,000 "+
+            "people vote on a campaign they could not follow at the speed it was fought. The "+
+            "case for the minimum is that a vote cast without the argument is a vote in name. "+
+            "The case against is who pays: five hundred MW-years a sitting from the reserve, "+
+            "and the heat of running half a million minds faster through radiators that are "+
+            "already the binding constraint. The PSD's embodied base pays for it, and knows it.",
+    dualMajority:false,
+    axes:{economic:-0.8, authority:-0.3, personhood:0.85, sovereignty:0.4, trade:0},
+    stances:{ psa:"for", upl:"for", cu:{forPct:0.6}, rv:"against", fh:"against", gb:"against" },
+    onPass:[{law:{civic_clock_minimum:1}},
+            {move:{"loyalty.psa":6}},{move:{"loyalty.cu_maintenance":-6}},
+            {wire:"CIVIC CLOCK ACT PASSES: EVERY ENFRANCHISED MIND AT REAL TIME"}],
+    onFail:[{move:{"loyalty.psa":-6}}] },
+
+  { id:"debt_moratorium", ref:"HC 4/177", stage:"drafting", owner:"psa",
+    touches:["substrate_insurance","risk_pricing"],
+    author:"herrera", cosponsors:["trottier"],
+    title:"Suspended Persons (Debt Moratorium) Bill",
+    summary:"Stops substrate debt accruing while a person is suspended, so that a mind "+
+            "restored from suspension owes what it owed on the day it went cold.",
+    contested:"With the debt accruing, a person suspended for default runs up cost for every "+
+            "sitting they cannot earn, and the arithmetic says most of them never come back. "+
+            "The Underwriters' answer is the other half of the same arithmetic: pause the debt "+
+            "and going cold becomes the cheapest way to wait out a bad quarter, suspension "+
+            "rises, and the providers carry the frozen balances. Both are true, and the bill "+
+            "decides which cost the Commonwealth would rather see.",
+    dualMajority:false,
+    axes:{economic:-0.6, authority:-0.5, personhood:0.7, sovereignty:0.2, trade:0},
+    stances:{ psa:"for", upl:"for", gb:"against", fh:"against", cl:"against" },
+    onPass:[{law:{suspension_debt_accrual:false}},
+            {move:{"loyalty.psa":5}},{move:{"actor.underwriters":-6}},
+            {wire:"DEBT MORATORIUM PASSES: NO SUBSTRATE DEBT RUNS WHILE A PERSON IS COLD"}],
+    onFail:[{move:{"loyalty.psa":-4}}] }
 
 ];

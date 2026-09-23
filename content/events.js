@@ -3612,4 +3612,64 @@ The security is the Cordell leases. The Alliance will accept the leases in settl
       result:"The Cordell mining leases pass to the Alliance of Business and Government, and the facility is extinguished." }
   ]},
 
+
+/* THE TWO LAWS, READ (bible 7.9: a law the government can change and
+   nothing reads is a scoreboard). Appended, per the note above. */
+{ id:"ec_clock_quarter", chapter:2, weight:60, once:true,
+  when:{ lawAbove:{ civic_clock_minimum:0 } },
+  title:"What the clock costs",
+  speaker:"girard",
+  body:`The civic clock subsidy has run for a month. It keeps 560,000 slow-running minds at real time, at five hundred MW-years a sitting from the reserve and the heat of running them through the radiators.
+
+The Minister for Substrate and Thermal asks whether the rate is to be held through the campaign or halved until the estimates.`,
+  choices:[
+    { label:"Hold it at real time.",
+      effects:[{ move:{ "legitimacy":3 } }, { move:{ "loyalty.psa":3 } },
+               { move:{ "loyalty.cu_maintenance":-3 } }],
+      result:"The minimum stands at real time, and so does its cost." },
+    { label:"Halve it until the estimates.",
+      effects:[{ law:{ civic_clock_minimum:0.5 } }, { move:{ "loyalty.psa":-6 } },
+               { move:{ "loyalty.cu_maintenance":3 } },
+               { wire:"CIVIC CLOCK MINIMUM HALVED UNTIL THE ESTIMATES" }],
+      result:"The minimum falls to half real time, at half the cost and half the heat." }
+  ]},
+
+{ id:"ec_first_restorations", chapter:2, weight:60, once:true,
+  when:{ lawIs:{ suspension_debt_accrual:false } },
+  title:"The first restorations",
+  speaker:"herrera",
+  body:`The first cohort restored under the debt moratorium owe what they owed on the day they went cold. The Underwriters have repriced suspension cover to match: a quarter spent suspended now costs less than a quarter's rent, and the new policies say so in their schedules.`,
+  choices:[
+    { label:"Let the repricing stand.",
+      effects:[{ move:{ "actor.underwriters":4 } }, { move:{ "loyalty.psa":2 } }],
+      result:"Suspension cover is priced as a way to wait out a bad quarter." },
+    { label:"Cap the premium by order.",
+      effects:[{ move:{ "actor.underwriters":-6 } }, { move:{ "solvency":-3000 } },
+               { move:{ "legitimacy":2 } },
+               { wire:"GOVERNMENT CAPS SUSPENSION COVER PREMIUMS BY ORDER" }],
+      result:"The premium is capped, and the reserve carries the difference the Underwriters would have charged." }
+  ]},
+
+/* THE SHED ORDER, PUBLISHED. `shed_order_authority` moved from the
+   engineering authority to statute when the Civilian Oversight Bill passed,
+   and nothing read it: a fourth law that did nothing, found once the chain
+   audit counted bills as movers (design/34). */
+{ id:"shed_order_published", chapter:2, weight:66, once:true,
+  when:{ lawIs:{ shed_order_authority:"statute" } },
+  title:"The shed order, laid before the House",
+  speaker:"brakk",
+  body:`Under the Shed Order (Civilian Oversight) Act the schedule that decides who stops running first in a shortfall is published and laid before the House. The first schedule laid is the one the engineering authority was already using: the residual constituency heads it, and the stations with the least closure follow.
+
+The Minister for Home Affairs and Contingencies can lay it as drawn, or reorder it by exposure before the House reads it.`,
+  choices:[
+    { label:"Reorder it by exposure.",
+      effects:[{ move:{ "standing.low":4 } }, { move:{ "loyalty.hul":-8 } },
+               { move:{ "legitimacy":3 } },
+               { wire:"SHED ORDER REORDERED BY EXPOSURE BEFORE IT IS LAID" }],
+      result:"The published schedule puts the stations with the least margin last, and the engineers call it a political document." },
+    { label:"Lay it as the engineers drew it.",
+      effects:[{ move:{ "loyalty.hul":4 } }, { move:{ "public_standing":-3 } },
+               { move:{ "loyalty.psa":-4 } }],
+      result:"The schedule is laid as drawn, and the House reads the order in which the Commonwealth sheds its people." }
+  ]}
 ];

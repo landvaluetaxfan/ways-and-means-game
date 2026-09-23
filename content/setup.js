@@ -158,7 +158,11 @@ const SETUP = {
             exactly what the appropriation's own defaults cost. */
          rate_volume:"standard", rate_thermal:"standard",
          rate_substrate:"standard", rate_transit:"standard",
-         tier_ratio_district:140, tier_ratio_list:100, threshold_pct:4,
+         /* The list side of the tier ratio (bible 4.4). The district side
+            was a law here too, 140, which nothing read: the district tier
+            is the roll's own count of voting seats (content/constituencies.js),
+            and a second copy of it could only disagree (design/34). */
+         tier_ratio_list:100, threshold_pct:4,
          /* Bible 4.10: the divisor is a bill, not a constant. D'Hondt favours
             large parties, Sainte-Lague small ones, and the two tiers are two
             separate fights. Values: "dhondt" | "sainte_lague". */
@@ -167,6 +171,15 @@ const SETUP = {
             The value is kept for the editor and for any future bill that
             merges seats back into multi-member districts. */
          district_divisor:"fptp", list_divisor:"dhondt" },
+  /* THE CIVIC CLOCK (bible 6.3), at a minimum of 1 (real time): what the
+     subsidy costs the reserve a sitting, and the points it adds to the
+     thermal price's target. Scaled by the minimum the law sets. Keeping
+     560,000 slow-running minds at real time is expensive and it is heat. */
+  civicClock: { costPerSitting: 500, heat: 6 },
+  /* SUSPENSION, WITH THE DEBT PAUSED (bible 6.6). Restorations run this
+     much faster and suspensions this much more often than with the debt
+     accruing, which is the status quo and the calibration. */
+  suspension: { pausedRestore: 1.5, pausedShed: 1.2 },
   divisionsPerSitting: 2,
   /* AND HOW MANY MEASURES THE HOUSE TAKES A DAY. Six slots spendable on
      sitting one made the session budget a lump sum; order-paper time is

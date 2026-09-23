@@ -4884,7 +4884,15 @@ const Engine = (function () {
     /* the levy, passed through to whoever buys the thing. Nought at the
        standard rate, so the calibration of everything above is unmoved. */
     const taxT = (rateOf(st, "thermal") - 1) * 26;
-    P.thermal = clamp(P.thermal + drift(P.thermal, 100 + pressure + relBump + taxT), 20, 400);
+    /* THE CIVIC CLOCK (bible 6.3): a minimum clock rate for every
+       enfranchised mind, publicly subsidised. Every watt of computation
+       becomes heat, so the rate is thermal pressure as well as a cost,
+       and both scale with the minimum the law sets (0 none, 1 real time).
+       The coefficients are content's (setup.civicClock). */
+    const clock = +((st.law || {}).civic_clock_minimum) || 0;
+    const clockC = (C.setup && C.setup.civicClock) || {};
+    const heatT = clock * (clockC.heat || 0);
+    P.thermal = clamp(P.thermal + drift(P.thermal, 100 + pressure + relBump + taxT + heatT), 20, 400);
 
     /* substrate: cheaper the more of it is publicly held, dearer as thermal rises */
     const pub = st.law.substrate_public_share == null ? 0.35 : st.law.substrate_public_share;
@@ -5083,9 +5091,20 @@ const Engine = (function () {
       if (cp.mark && !st.flags[key]) { st.flags[key] = true; marks.push(cp.mark); }
     }
 
+    /* and the reserve pays the subsidy, every sitting the law stands */
+    if (clock > 0 && clockC.costPerSitting)
+      bumpScalar(st, C, "solvency", -Math.round(clock * clockC.costPerSitting));
+
     /* Stations answer to the substrate price. A habitat that cannot pay does
        not economise — it sheds people, and the shed order says which. */
     const strain = (P.substrate - 100) / 100;
+    /* WHETHER A SUSPENDED PERSON'S DEBT ACCRUES (bible 6.6): "the debt
+       question decides how bad it is". Accruing is the status quo and the
+       calibration below. Paused, a restoration owes only what it owed going
+       cold, so people come back faster -- and going cold becomes a way to
+       wait out a bad quarter, so a few more go. Content's numbers. */
+    const paused = (st.law || {}).suspension_debt_accrual === false;
+    const susp = (C.setup && C.setup.suspension) || {};
     if (Math.abs(strain) > 0.06) {
       C.stations.forEach(s0 => {
         const s = st.stations[s0.id];
@@ -5095,7 +5114,9 @@ const Engine = (function () {
            how much the exposed actually feel. */
         const cushion = 0.6 + (st.scalars.consumables / 100) * 0.7;
         const exposure = Math.max(0, 0.75 - s.closure) / cushion;
-        const delta = Math.round(strain * exposure * s.population * 0.0012);
+        let delta = Math.round(strain * exposure * s.population * 0.0012);
+        if (paused) delta = Math.round(delta * (delta < 0 ? (susp.pausedRestore || 1)
+                                                          : (susp.pausedShed || 1)));
         if (!delta) return;
         const before = s.suspended;
         s.suspended = Math.max(0, s.suspended + delta);

@@ -496,17 +496,40 @@ try {
     const box = {}; require("vm").runInNewContext(src2 + ";this.__I = INSTRUMENTS;", box);
     (box.__I || []).forEach(i => { walkEffects(i.effects); walkWhen(i.when); });
   } catch (e) { /* instruments are optional to this check */ }
+  /* AND THE BILLS, which are the main thing that moves a law. The walk
+     read events, initiatives and instruments and never a bill's onPass,
+     clauses or amendments, so a law only an Act could set was reported
+     "moved by 0" and a law no event watched passed as seen (design/34). */
+  (BILLS || []).forEach(b => {
+    walkEffects(b.onPass); walkEffects(b.onFail);
+    (b.amendments || []).forEach(a => walkEffects(a.effects));
+    (b.clauses || []).forEach(cl => (cl.levels || []).forEach(lv => walkEffects(lv.effects)));
+  });
   /* A coupling drags a scalar every sitting (Flash I). A number that moves
      and is not watched is exactly the bug this audit exists to catch, so
      the couplings are movers too. */
   (SETUP.couplings || []).forEach(cp =>
     Object.keys(cp.drag || {}).forEach(k => bump(moved, "scalar." + k)));
 
+  /* A LAW THE ENGINE READS IS SEEN THROUGH WHAT IT MOVES. The rates, the
+     thermal release, capital works and the public share of substrate set the
+     four prices in tick(), and the prices are gated, so the chain runs
+     law -> price -> event without an event naming the law. The engine is
+     read for the key (the rates by their shared prefix), so a law nothing
+     reads at all -- not the engine, not an event -- is still a break. */
+  const engSrc3 = fs.readFileSync(path.join(root, "js", "engine.js"), "utf8");
+  const engineReads = k => {
+    const law = k.slice(4);
+    return new RegExp("law(\\.|\\[\"|\\)\\.)" + law + "\\b").test(engSrc3) ||
+           new RegExp("\\b" + law + "\\b").test(engSrc3) ||
+           (/^rate_/.test(law) && /"rate_"\s*\+/.test(engSrc3));
+  };
   const keys = [...new Set(Object.keys(moved).concat(Object.keys(gated)))].sort();
   keys.forEach(k => {
     const m = moved[k] || 0, g = gated[k] || 0;
     let verdict = "ok";
-    if (m && !g) verdict = "NUMBER NOBODY SEES";
+    if (m && !g && /^law\./.test(k) && engineReads(k)) verdict = "ok (read by the engine)";
+    else if (m && !g) verdict = "NUMBER NOBODY SEES";
     else if (!m && g) verdict = "EVENT NEVER FIRES";
     else if (!m && !g) verdict = "inert";
     chainRows.push({ k, m, g, verdict });

@@ -649,9 +649,12 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
        String(Engine.chamberTotal(a)));
     ok("the election reconciles the tiers", Engine.tierCheck(a, CONTENT).ok,
        JSON.stringify(Engine.tierCheck(a, CONTENT)));
+    /* against the roll's own count: `law.tier_ratio_district` was a copy of
+       it that nothing else read, and it is gone (design/34) */
+    const districtNow = s0 => CONTENT.parties.reduce((n, p) => n + Engine.partyDistrict(s0, p.id), 0);
     ok("the district tier is still the authored size",
-       Engine.partyDistrict(a, "cu") + CONTENT.parties.filter(p => p.id !== "cu")
-         .reduce((n, p) => n + Engine.partyDistrict(a, p.id), 0) === a.law.tier_ratio_district);
+       districtNow(a) === districtNow(Engine.newGame(CONTENT)),
+       districtNow(a) + " against " + districtNow(Engine.newGame(CONTENT)));
     const listTot = Object.values(a.parties).reduce((n, p) => n + p.seats.list, 0);
     ok("the list tier is still the authored size", listTot === a.law.tier_ratio_list,
        listTot + "/" + a.law.tier_ratio_list);
@@ -1349,6 +1352,35 @@ console.log("\nONE LOYALTY PER BENCH (the author, 23 Sep):");
   ok("and setup does not set the meter beside them",
      CONTENT.setup.scalars.party_loyalty == null);
   if (bad) { console.log("\n" + bad + " LOYALTY FAILURES"); process.exitCode = 1; }
+})();
+
+console.log("\nTHE LAWS THAT DID NOTHING NOW DO SOMETHING (design/34 D6):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  /* the civic clock: a cost a sitting and heat, scaled by the minimum */
+  const run = (law, n) => { const s0 = Engine.newGame(CONTENT);
+    Object.assign(s0.law, law); for (let i = 0; i < n; i++) Engine.advance(s0, CONTENT); return s0; };
+  const none = run({}, 6), clock = run({ civic_clock_minimum: 1 }, 6);
+  /* net of the receipts its own heat raises on the thermal levy */
+  ok("a civic clock costs the reserve every sitting it stands",
+     none.scalars.solvency - clock.scalars.solvency >= 6 * CONTENT.setup.civicClock.costPerSitting * 0.9,
+     none.scalars.solvency + " against " + clock.scalars.solvency);
+  ok("and runs the thermal price up", clock.prices.thermal > none.prices.thermal,
+     none.prices.thermal + " against " + clock.prices.thermal);
+  /* the moratorium: restorations faster when the debt is paused */
+  const cheap = law => { const s0 = Engine.newGame(CONTENT); Object.assign(s0.law, law);
+    Object.keys(s0.stations).forEach(id => s0.stations[id].suspended = 20000);
+    s0.prices.substrate = 60; Engine.advance(s0, CONTENT);
+    return Object.values(s0.stations).reduce((n, x) => n + x.suspended, 0); };
+  const accr = cheap({}), paused = cheap({ suspension_debt_accrual: false });
+  ok("with the debt paused, more of the suspended come back", paused < accr, accr + " -> " + paused);
+  ok("and each law has a bill that sets it",
+     ["civic_clock_minimum", "suspension_debt_accrual"].every(k => (CONTENT.bills || []).some(b =>
+       [].concat(b.onPass || []).some(e => e.law && e.law[k] !== undefined))));
+  ok("and the district tier's copy of the roll is gone", !("tier_ratio_district" in CONTENT.setup.law));
+  if (bad) { console.log("\n" + bad + " LAW FAILURES"); process.exitCode = 1; }
 })();
 
 console.log("\nEVERY MEMBER HAS A CURRENT (design/34 D3):");

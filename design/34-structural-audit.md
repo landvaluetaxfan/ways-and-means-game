@@ -92,8 +92,12 @@ Ranked by how much of the game each one touched.
 - The campaign cascade is a loss.
 - The debt trap is Flash I's canon (bible §1.8, §3.5).
 
-D2, D5 and D6 are proposals under discussion. The text below is as the
-report first put them.
+Later the same day:
+- D2: the loyalties are linked.
+- D6: the laws are real bills, and a fourth dead law was found once the
+  chain audit counted bills.
+
+D5 is under discussion. The text below is as the report first put it.
 
 - **D1. The emergency loan (`f1_loan`)** undertakes to honour the facility
   with no discharge, so it always breaks. Its breach names `f1_debt_called`,

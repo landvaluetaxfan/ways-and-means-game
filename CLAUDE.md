@@ -696,6 +696,14 @@ version of any of them is in the header of the file it names.
   A move on the party or the meter moves every current. The meter opens at
   48 where setup said 38, and the CDA reads 54 where `parties.js` said 23
   against currents averaging 54. `shiftLoyalty` is the only writer.
+- **FOUR LAWS DID NOTHING, AND THE CHAIN AUDIT COULD NOT SEE THREE OF
+  THEM.** `civic_clock_minimum`, `suspension_debt_accrual`,
+  `shed_order_authority` and `tier_ratio_district` were in the law from the
+  first draft. The first three now have bills and mechanics; the fourth was
+  a copy of the roll's own count and is gone. The audit read events,
+  initiatives and instruments as movers and never a bill, so a law only an
+  Act sets looked unmoved. It reads bills now. A law the engine reads counts
+  as seen through the price it sets.
 - **`characters[].current` is authored now** (23 Sep). It was read by the
   bench roll, the members list, the signature count and the reshuffle, and
   carried by nobody. `test.js` asserts every popular-seat member of a party
