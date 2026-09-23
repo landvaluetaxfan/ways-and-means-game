@@ -215,6 +215,11 @@ const Editor = (function () {
        effect the editor cannot present is still an effect it must not
        destroy. */
     if (!d) return { verb, key: "", field: "", value: JSON.stringify(v), delta: "", raw: true };
+    /* AND A VALUE OF A SHAPE THE FORM DOES NOT DRAW. `{flag:{x:false}}` is
+       how a flag is cleared, and the form draws one flag name, so it wrote
+       "[object Object]" back: the same fault from the other side. */
+    if (d.shape === "scalarVal" && v && typeof v === "object" && !Array.isArray(v))
+      return { verb, key: "", field: "", value: JSON.stringify(v), delta: "", raw: true };
     const r = { verb, key: "", field: "", value: "", delta: "" };
     switch (d.shape) {
       case "keyed":     r.key = Object.keys(v)[0]; r.delta = v[r.key]; break;
@@ -233,7 +238,7 @@ const Editor = (function () {
 
   function rowToEff(r) {
     const d = SCHEMA.effects[r.verb];
-    if (!d) {
+    if (!d || r.raw) {
       try { return { [r.verb]: JSON.parse(r.value) }; }
       catch (e) { return null; }
     }
@@ -268,7 +273,9 @@ const Editor = (function () {
 
   function effRow(eff, ci, ei) {
     const r = effToRow(eff);
-    const d = SCHEMA.effects[r.verb] ||
+    /* a raw row is drawn as its JSON, whatever the verb, and marked so it
+       is read back as JSON */
+    const d = (!r.raw && SCHEMA.effects[r.verb]) ||
       { args: [{ k: "value", type: "text", label: "JSON", hint: "raw" }] };
     /* A verb the schema does not model is offered as itself, or the select
        shows the first verb, the form reads that back, and an undertaking
@@ -286,7 +293,7 @@ const Editor = (function () {
       if (a.type === "flag") return `<label>${esc(a.label)} ${flag_(a.k, cur)}</label>`;
       return `<label>${esc(a.label)} ${txt_(a.k, cur, a.hint, 220)}</label>`;
     }).join("");
-    return `<div class="ed-eff" data-ci="${ci}" data-ei="${ei}">${verbSel}${fields}` +
+    return `<div class="ed-eff" data-ci="${ci}" data-ei="${ei}"${r.raw ? ' data-raw="1"' : ""}>${verbSel}${fields}` +
       `<button class="btn ed-x" data-act="eff-del" data-ci="${ci}" data-ei="${ei}">×</button></div>`;
   }
 
@@ -459,7 +466,7 @@ const Editor = (function () {
       const note = n.querySelector('[data-f="note"]');
       if (note && note.value.trim()) ch.note = note.value; else delete ch.note;
       n.querySelectorAll(".ed-eff").forEach(en => {
-        const r = { verb: en.querySelector('[data-f="verb"]').value };
+        const r = { verb: en.querySelector('[data-f="verb"]').value, raw: !!en.dataset.raw };
         en.querySelectorAll("[data-f]").forEach(f => { if (f.dataset.f !== "verb") r[f.dataset.f] = f.value; });
         const eff = rowToEff(r); if (eff) ch.effects.push(eff);
       });

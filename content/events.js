@@ -1979,7 +1979,7 @@ The rate is printed. The term is printed. The condition is one line.`,
        is kept when that balance is nothing, however it got there. */
     { label:"Take the loan.",
       effects:[{ move:{ "solvency":18000 } }, { move:{ "debt.alliance":19800 } },
-               { move:{ "legitimacy":-10 } },
+               { move:{ "legitimacy":-10 } }, { flag:"cordell_leases_pledged" },
                { undertake:{ id:"f1_debt", text:"Repay the emergency facility",
                              owed_to:"hatt", post:"treasury", by:null,
                              discharge:{ repaid:"alliance" },
@@ -1997,7 +1997,10 @@ The rate is printed. The term is printed. The condition is one line.`,
    lets the quarrel run past 78 while the margin, the reserve and its
    standing give way together falls. A loss, not a settlement (design/34 D4). */
 { id:"f1_meltdown", campaign:"flash_i", chapter:2, weight:98, once:true,
-  when:{ flags:["f1_frozen"], scalarAbove:{ friction:78 },
+  /* the last floor: it needs the two before it (the tier fall, below
+     shed_order_published) and cannot come while the emergency order stands */
+  when:{ flags:["f1_frozen", "f1_second_floor"], flagsAbsent:["f1_emergency"],
+         scalarAbove:{ friction:78 },
          scalarBelow:{ thermal_margin:20, solvency:20000, legitimacy:30 } },
   title:"The cascade",
   speaker:null,
@@ -3606,7 +3609,7 @@ The security is the Cordell leases. The Alliance will accept the leases in settl
     { label:"Pay it from the reserve.",
       when:{ scalarAbove:{ solvency:21599 } },
       effects:[{ move:{ "solvency":-21600 } }, { move:{ "debt.alliance":-19800 } },
-               { move:{ "legitimacy":-2 } },
+               { move:{ "legitimacy":-2 } }, { flag:{ cordell_leases_pledged:false } },
                { wire:"TREASURY PAYS CALLED FACILITY IN FULL FROM THE RESERVE" }],
       result:"The reserve pays the Alliance in full, and the Cordell leases stay with the Commonwealth." },
     { label:"Let the Alliance take the leases.",
@@ -3676,5 +3679,121 @@ The Minister for Home Affairs and Contingencies can lay it as drawn, or reorder 
       effects:[{ move:{ "loyalty.hul":4 } }, { move:{ "public_standing":-3 } },
                { move:{ "loyalty.psa":-4 } }],
       result:"The schedule is laid as drawn, and the House reads the order in which the Commonwealth sheds its people." }
+  ]},
+
+/* =============================================================
+   FLASH I: THE REST OF THE AUTHOR'S PLAN (design/35). EXAMPLES TO REWRITE.
+
+   The pivots and the tier fall, built from the vocabulary and nothing
+   else, so each is a worked example of the shape rather than the last
+   word. The prose is bare on purpose, like the settlements' closings.
+
+   THE TIER FALL. "Failing a trajectory check doesn't jump straight to the
+   worst case — it drops the situation down one tier per turn, giving the
+   player time to execute an Emergency Pivot before hitting Systemic
+   Meltdown." Two floors now come before the meltdown, each a flag the next
+   one needs, and the pool fires one event a sitting, so the fall is at most
+   one floor a sitting. The meltdown needs the second floor, and nothing
+   while the emergency order stands.
+
+   THE PIVOTS are initiatives, one per tier, in content/initiatives.js:
+   declare_emergency (Meltdown), sell_the_leases (Pyrrhic),
+   lease_the_zone (Joint Mandate), sacrifice_the_minister (Capitulation).
+   Their answers are below. Appended, not inserted: see the note at
+   f1_facility_closed.
+   ============================================================= */
+{ id:"f1_brink_1", campaign:"flash_i", chapter:2, weight:97, once:true,
+  when:{ flags:["f1_frozen"], scalarAbove:{ friction:70 }, scalarBelow:{ thermal_margin:30 } },
+  title:"The first floor gives",
+  speaker:"girard",
+  effects:[{ flag:"f1_first_floor" }],
+  body:`The frozen accounts have reached the radiators. Coolant imports are paid for twice, once in quota and once in delay, and the margin on the ring is falling faster than the Treasury's model says it can.
+
+This is the first of three floors under the government. The last one is the House.`,
+  choices:[
+    { label:"Ration the ring ahead of the shed order.",
+      effects:[{ move:{ thermal_margin:3, public_standing:-3 } }],
+      result:"The ring runs cooler and louder. The margin buys a sitting or two." },
+    { label:"Hold the line and say nothing.",
+      effects:[{ move:{ legitimacy:-2 } }],
+      result:"Nothing changes today, which is the point and the danger." }
+  ]},
+
+{ id:"f1_brink_2", campaign:"flash_i", chapter:2, weight:97, once:true,
+  when:{ flags:["f1_first_floor"], scalarAbove:{ friction:75 },
+         scalarBelow:{ thermal_margin:25, solvency:30000 } },
+  title:"The second floor gives",
+  speaker:null,
+  effects:[{ flag:"f1_second_floor" }],
+  body:`The reserve no longer covers what the sanctions cost, and the margin is inside the range where the engineering authority sheds without being asked.
+
+One floor is left under the government. The Cabinet Office has drafted the order that would hold it up.`,
+  choices:[
+    { label:"Leave the order drafted and unsigned.",
+      effects:[{ move:{ legitimacy:-2 } }],
+      result:"The emergency order is on the Prime Minister's desk, unsigned." },
+    { label:"Concede something to Earth's banks in public.",
+      effects:[{ move:{ friction:-3, legitimacy:-4 } }],
+      result:"The concession is small and printed large. The quarrel eases by a point or two." }
+  ]},
+
+/* the Meltdown's pivot, answered */
+{ id:"f1_emergency_declared", campaign:"flash_i", queuedOnly:true, once:true,
+  title:"The emergency order",
+  speaker:null,
+  body:`The order is signed. Assembly on the ring is restricted, movement between stations needs a permit, and the House may not remove the government while the order stands.
+
+The Commonwealth has not done this before, and everyone in the chamber knows it.`,
+  choices:[
+    { label:"It is done.",
+      effects:[{ wire:"PRIME MINISTER SIGNS EMERGENCY ORDER; HOUSE MAY NOT REMOVE GOVERNMENT WHILE IT STANDS" }],
+      result:"The government stands, and nobody can say it stands on consent." }
+  ]},
+
+{ id:"f1_emergency_lapses", campaign:"flash_i", queuedOnly:true,
+  title:"The order runs out",
+  speaker:null,
+  body:`The emergency order expires at midnight. The House sits again with its powers restored, and the first question on the order paper is whether the government should have had them.`,
+  choices:[
+    { label:"Let it lapse.",
+      effects:[{ flag:{ f1_emergency:false } }, { move:{ legitimacy:10 } }],
+      result:"The order lapses. Some of what it cost comes back; most of it does not." },
+    { label:"Renew it for four sittings.",
+      effects:[{ move:{ public_standing:-6, party_loyalty:-6 } },
+               { queue:[{ event:"f1_emergency_lapses", after:4 }] }],
+      result:"The order is renewed, and the renewal is the story." }
+  ]},
+
+/* the Pyrrhic tier's pivot, answered */
+{ id:"f1_leases_sold", campaign:"flash_i", queuedOnly:true, once:true,
+  title:"The leases are sold",
+  speaker:null,
+  body:`The Cordell mining leases have a buyer, and the proceeds go to the reserve. Earth's banks price the Commonwealth's risk a little lower the day the sale is announced.`,
+  choices:[
+    { label:"Announce it as prudence.",
+      effects:[{ move:{ public_standing:1 } }],
+      result:"It is announced as prudence. The Trades Left calls it a sale." }
+  ]},
+
+/* the Joint Mandate's pivot, answered */
+{ id:"f1_zone_leased", campaign:"flash_i", queuedOnly:true, once:true,
+  title:"The first fees are paid",
+  speaker:"landry",
+  body:`The free zone under the joint mandate is charging for its berths. The first carriers have paid, and the Commonwealth has an income from a platform it does not own.`,
+  choices:[
+    { label:"Report it to the House.",
+      effects:[{ move:{ legitimacy:1 } }],
+      result:"The House hears that the mandate pays, which it had been told it would not." }
+  ]},
+
+/* the Capitulation's pivot, answered */
+{ id:"f1_minister_resigns", campaign:"flash_i", queuedOnly:true, once:true,
+  title:"A resignation",
+  speaker:null,
+  body:`The Minister for External Relations resigns. The statement is four sentences long and takes responsibility for the platform in the second.`,
+  choices:[
+    { label:"Accept it in the House.",
+      effects:[{ wire:"MINISTER FOR EXTERNAL RELATIONS RESIGNS OVER PLATFORM" }],
+      result:"The Spindle prints the statement in full, which it does for resignations and for nothing else." }
   ]}
 ];

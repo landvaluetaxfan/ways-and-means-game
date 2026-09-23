@@ -133,16 +133,16 @@ messages.
 | Four continuous meters | **yes** | `legitimacy`, `solvency`, `friction`, `thermal_margin` |
 | Delayed variable drift | **yes** | `trend.*` moves; trends decay |
 | Compound triggers | **yes** | multi-meter `when` gates; `f1_meltdown` on three floors |
-| Panic buttons | **partly**: the emergency loan and the emergency order ladder; no martial law | `f1_loan`, `repay_facility`, the thermal ladder |
+| Panic buttons | **yes**: the emergency loan, the emergency order ladder, and the state of emergency | `f1_loan`, `repay_facility`, the thermal ladder, `declare_emergency` |
 | The five tiers and their thresholds | **yes**, SS mapped to MW-years (70 → 70,000) | `content/settlements.js` |
 | Systemic Meltdown | **yes**, as a loss | `f1_meltdown`; the cascade is a loss in the campaign too |
-| Pivot: Asset Liquidation | **partly**: the Cordell leases can settle the Alliance facility; nothing sells leases to pay down interest | `repay_facility`, `f1_debt_called` |
-| Pivot: Diplomatic Lease | **no** | |
-| Pivot: Cabinet Sacrifice | **no** as a pivot (a minister can be sacked; nothing makes the Foreign Minister absorb the blame) | |
-| Pivot: Martial Law | **no** | |
+| Pivot: Asset Liquidation | **yes** (23 Sep): sell the Cordell leases after the debt trap, unless they are pledged to the facility | `sell_the_leases` |
+| Pivot: Diplomatic Lease | **yes** (23 Sep) | `lease_the_zone` |
+| Pivot: Cabinet Sacrifice | **yes** (23 Sep): vacates External Relations, whoever holds it | `sacrifice_the_minister` |
+| Pivot: Martial Law | **yes** (23 Sep), as a state of emergency: the Commonwealth keeps no army | `declare_emergency`, `f1_emergency_lapses` |
 | Graduated friction into import costs into LSM | **yes** | `setup.couplings` |
 | Domestic thresholds (low SS sustained by DL through tax hikes) | **partly**: rates are the appropriation's clauses; nothing ties an emergency tax rise to legitimacy | |
-| Cascading triggers, one tier per turn | **no**: an outcome lands once and stays | |
+| Cascading triggers, one tier per turn | **yes** (23 Sep), as two floors before the meltdown, one a sitting at most; the meltdown needs both | `f1_brink_1`, `f1_brink_2` (flags `f1_first_floor`, `f1_second_floor`), `f1_meltdown` |
 | Mutual structural vulnerability | **no**: friction only hurts the Commonwealth; no relays, no volatiles | |
 | Narrative asymmetry, two-front media | **thin**: one event (`fa_two_fronts`); no player lever for Earth opinion | |
 | Committees, emergency motions, legal challenges | **yes** | committee stage and amendments, motions, the Tribunal |
@@ -153,3 +153,11 @@ Five items are unbuilt (three of the four pivots, the tier cascade and
 mutual vulnerability) and four are partial or thin (asset liquidation, the
 panic buttons' martial law, domestic thresholds and the media front). Those
 are the rest of this campaign.
+
+**23 Sep, later:** the four pivots and the tier fall are built as examples
+to rewrite. They are initiatives in `content/initiatives.js` and events at
+the end of `content/events.js`, all tagged `campaign:"flash_i"`. Building
+them found that an event's own `effects` were applied by nothing, so the
+accounts freeze had never set `f1_frozen`: the meltdown could not come in
+any run, and the indemnity could not pay. `choose()` applies them now. Left:
+mutual vulnerability, the media front and domestic thresholds.

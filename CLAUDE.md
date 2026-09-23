@@ -738,6 +738,16 @@ version of any of them is in the header of the file it names.
   vacuous with one campaign, so it was proved by adding a probe
   administration and tagging a shared bill: eight hits, and none without
   the fault.
+- **AN EVENT'S OWN `effects` WERE APPLIED BY NOTHING** (found 23 Sep).
+  Content put the accounts freeze's flag on the event, "because the
+  accounts freeze in the body", and `choose()` applied only the choice's.
+  So `f1_frozen` was never set: the Systemic Meltdown was unreachable in
+  every run, and the indemnity's two paying branches could never pay.
+  Lint's flag audit counted the flag as set, because it reads every effects
+  array. `choose()` applies the event's effects, then the choice's. The
+  editor had the same blind spot for `{flag:{x:false}}`, the only way to
+  clear a flag: it drew one flag name and wrote "[object Object]" back. A
+  value the form cannot draw is a raw JSON row now.
 - **`characters[].current` is authored now** (23 Sep). It was read by the
   bench roll, the members list, the signature count and the reshuffle, and
   carried by nobody. `test.js` asserts every popular-seat member of a party

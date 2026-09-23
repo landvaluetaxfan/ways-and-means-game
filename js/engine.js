@@ -4682,6 +4682,13 @@ const Engine = (function () {
     const ch = event.choices[choiceIndex];
     if (!choiceOpen(st, C, ch)) return null;
     if (ch.cost && ch.cost.slot) st.slots.used += ch.cost.slot;
+    /* AN EVENT'S OWN EFFECTS: what has happened by the time the player is
+       asked anything, whichever answer is given. Content wrote them and
+       nothing applied them, so the accounts freeze never recorded itself:
+       `f1_frozen` was set by no run, the meltdown could not come and the
+       indemnity's two paying branches could not pay (found building the
+       tier fall, 23 Sep). They apply once, with the answer. */
+    apply(st, C, event.effects);
     apply(st, C, ch.effects);
     /* Answering the House is governing. The idleness drag is for a
        government that does nothing at all — not for one whose bills are

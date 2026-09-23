@@ -4956,3 +4956,79 @@ console.log("\nA CAMPAIGN IS A UNIT (design/36 §3):");
      up.campaign === "flash_i" && up.version === Engine.STATE_VERSION, up.campaign);
   if (bad) { console.log("\n" + bad + " CAMPAIGN FAILURES"); process.exitCode = 1; }
 })();
+
+console.log("\nTHE TIER FALL AND THE PIVOTS (design/35):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  /* AN EVENT'S OWN EFFECTS APPLY, with the answer. Nothing applied them,
+     so the accounts freeze never recorded itself and every floor below
+     would have been dead too. */
+  const fz = Engine.newGame(CONTENT);
+  Engine.choose(fz, CONTENT, CONTENT.eventById.f1_accounts_freeze, 0);
+  ok("an event's own effects apply when it is answered", !!fz.flags.f1_frozen);
+  const melt = CONTENT.eventById.f1_meltdown;
+  const brink = () => {
+    const g = Engine.newGame(CONTENT);
+    g.chapter = 2; g.flags.f1_frozen = true;
+    Object.assign(g.scalars, { friction: 80, thermal_margin: 15, solvency: 15000, legitimacy: 25 });
+    return g;
+  };
+  /* "Failing a trajectory check doesn't jump straight to the worst case." */
+  const a = brink();
+  ok("the meltdown does not come straight from the numbers", !Engine.matches(a, melt.when));
+  a.flags.f1_first_floor = true;
+  ok("nor from the first floor alone", !Engine.matches(a, melt.when));
+  a.flags.f1_second_floor = true;
+  ok("it comes once both floors have given", Engine.matches(a, melt.when));
+  a.flags.f1_emergency = true;
+  ok("and not while the emergency order stands", !Engine.matches(a, melt.when));
+
+  /* one floor a sitting: the pool fires one event, and each floor needs
+     the one before */
+  /* the numbers are held down every sitting, so what is measured is the
+     fall itself and not whatever a choice happened to repair */
+  const b = brink(), when = {};
+  const pin = g => Object.assign(g.scalars, { friction: 80, thermal_margin: 15, solvency: 15000, legitimacy: 25 });
+  for (let i = 0; i < 12 && !when.f1_meltdown; i++) {
+    pin(b);
+    const e = Engine.nextEvent(b, CONTENT);
+    if (e) { if (when[e.id] == null) when[e.id] = b.sitting; Engine.choose(b, CONTENT, e, 0); }
+    Engine.advance(b, CONTENT);
+  }
+  ok("the floors give one a sitting, in order, before the meltdown",
+     when.f1_brink_1 != null && when.f1_brink_2 > when.f1_brink_1 &&
+     (when.f1_meltdown == null || when.f1_meltdown > when.f1_brink_2),
+     JSON.stringify(when));
+
+  /* THE PIVOTS: one per tier, open on that tier and on nothing else. */
+  const open = (g, id) => (Engine.initiatives(g, CONTENT).find(i => i.id === id) || {}).ok;
+  const fresh = Engine.newGame(CONTENT);
+  const P = { declare_emergency: null, sell_the_leases: "f1_pyrrhic",
+              lease_the_zone: "f1_joint", sacrifice_the_minister: "f1_capitulation" };
+  ok("no pivot is open at the opening", Object.keys(P).every(id => !open(fresh, id)));
+  Object.keys(P).filter(id => P[id]).forEach(id => {
+    const g = Engine.newGame(CONTENT); g.resolvedAs = P[id];
+    const other = Object.keys(P).filter(x => P[x] && x !== id);
+    ok(id + " opens on " + P[id] + " and only there",
+       open(g, id) && other.every(x => !open(g, x)));
+  });
+  const pl = Engine.newGame(CONTENT); pl.resolvedAs = "f1_pyrrhic"; pl.flags.cordell_leases_pledged = true;
+  ok("leases pledged against the facility cannot be sold", !open(pl, "sell_the_leases"));
+
+  const c = brink(); c.flags.f1_first_floor = c.flags.f1_second_floor = true;
+  ok("the emergency order opens on the second floor", open(c, "declare_emergency"));
+  const r = Engine.take(c, CONTENT, "declare_emergency", 0);
+  ok("and taking it holds the government up at the cost of its legitimacy",
+     r.ok && c.scalars.legitimacy === 0 && !Engine.matches(c, melt.when) &&
+     c.queue.some(q => q.eventId === "f1_emergency_lapses"), r.reason || "legitimacy " + c.scalars.legitimacy);
+
+  const d = Engine.newGame(CONTENT); d.resolvedAs = "f1_capitulation";
+  const post = () => { const p = d.cabinet.external_relations; return p && typeof p === "object" ? p.holder : p; };
+  const holder = post();
+  Engine.take(d, CONTENT, "sacrifice_the_minister", 1);
+  ok("the capitulation's pivot costs the minister the post",
+     !!holder && !post(), holder + " -> " + post());
+  if (bad) { console.log("\n" + bad + " TIER FALL FAILURES"); process.exitCode = 1; }
+})();

@@ -110,7 +110,7 @@ const INITIATIVES = [
       { label: "In full, from the reserve", after: 1,
         when: { scalarAbove: { solvency: 19799 } },
         effects: [ { move: { solvency: -19800, "debt.alliance": -19800 } },
-                   { flag: "f1_debt_repaid" } ] },
+                   { flag: "f1_debt_repaid" }, { flag: { cordell_leases_pledged: false } } ] },
       { label: "Against the Cordell leases", after: 1,
         effects: [ { move: { "debt.alliance": -19800 } },
                    { flag: "f1_debt_repaid" }, { flag: "cordell_leases_ceded" },
@@ -235,5 +235,97 @@ const INITIATIVES = [
         effects: [ { move: { "solvency": -12000 } }, { move: { "legitimacy": 8 } },
                    { move: { "friction": -4 } }, { move: { "actor.underwriters": -4 } },
                    { flag: { debt_assumed: true, substrate_debt_dealt: true } } ] }
+    ] },
+
+  /* =============================================================
+     FLASH I'S PIVOTS (design/35), one per outcome tier: EXAMPLES TO
+     REWRITE. Each is an initiative that costs something real and pulls a
+     failing run back toward a bruised stalemate, as the author's plan
+     says a panic button should. The answers are at the end of
+     content/events.js.
+     ============================================================= */
+
+  /* MELTDOWN'S PIVOT: "Temporarily suspend civil liberties to prevent
+     government collapse (drives DL to 0)". Open once the second floor has
+     given; while it stands the meltdown cannot come. */
+  { id: "declare_emergency", campaign: "flash_i",
+    title: "Declare a state of emergency",
+    note: "Suspends assembly, movement between stations and the House's power " +
+          "to remove the government, by order, for a fixed term. It holds the " +
+          "government up, and it costs everything the government has left in " +
+          "legitimacy.",
+    cost: 0,
+    when: { flags: ["f1_second_floor"], flagsAbsent: ["f1_emergency"] },
+    event: "f1_emergency_declared",
+    tempo: [
+      { label: "For eight sittings", after: 1,
+        effects: [ { flag: "f1_emergency" },
+                   { move: { legitimacy: -100, thermal_margin: 6, public_standing: -12 } },
+                   { queue: [{ event: "f1_emergency_lapses", after: 8 }] } ] },
+      { label: "For four sittings", after: 1,
+        effects: [ { flag: "f1_emergency" },
+                   { move: { legitimacy: -100, thermal_margin: 3, public_standing: -6 } },
+                   { queue: [{ event: "f1_emergency_lapses", after: 4 }] } ] }
+    ] },
+
+  /* THE PYRRHIC TIER'S PIVOT: "Sell mining leases to private cartels to pay
+     down interest." Open after the debt trap, if the leases are still the
+     Commonwealth's and not pledged against the emergency facility. The
+     interest here is what the quarrel costs: friction prices Earth's
+     lending and the couplings drain the reserve above 65. */
+  { id: "sell_the_leases", campaign: "flash_i",
+    title: "Sell the Cordell mining leases",
+    note: "The leases came with the platform. Sold, they pay down what the " +
+          "quarrel is costing, and they do not come back.",
+    cost: 0,
+    when: { resolvedIs: "f1_pyrrhic",
+            flagsAbsent: ["cordell_leases_ceded", "cordell_leases_pledged"] },
+    event: "f1_leases_sold",
+    tempo: [
+      { label: "Privately, to the Alliance", after: 1,
+        effects: [ { flag: "cordell_leases_ceded" },
+                   { move: { solvency: 20000, friction: -2, "loyalty.gb": 5, legitimacy: -4,
+                             "loyalty.cu_maintenance": -6 } } ] },
+      { label: "At auction, to the consortiums", after: 2,
+        effects: [ { flag: "cordell_leases_ceded" },
+                   { move: { solvency: 16000, friction: -4, "loyalty.cu_maintenance": -6,
+                             public_standing: -3 } } ] }
+    ] },
+
+  /* THE JOINT MANDATE'S PIVOT: "Negotiate exclusive cargo access fees to
+     monetize the buffer zone." */
+  { id: "lease_the_zone", campaign: "flash_i",
+    title: "Charge for access to the free zone",
+    note: "The joint mandate made the platform a free trade zone the " +
+          "Commonwealth administers and does not own. The cargo that passes " +
+          "through it can be charged for.",
+    cost: 1,
+    when: { resolvedIs: "f1_joint" },
+    event: "f1_zone_leased",
+    tempo: [
+      { label: "Exclusive berths to one consortium", after: 2,
+        effects: [ { move: { solvency: 9000, friction: 4, "loyalty.gb": 4, public_standing: -2 } } ] },
+      { label: "A posted fee to every carrier", after: 3,
+        effects: [ { move: { solvency: 4000, "trend.solvency": 300, friction: 1, legitimacy: 2 } } ] }
+    ] },
+
+  /* THE CAPITULATION'S PIVOT: "Fire the Foreign Minister to absorb blame and
+     restore public trust." It vacates the post, whoever holds it, and the
+     vacancy is filled the usual way. */
+  { id: "sacrifice_the_minister", campaign: "flash_i",
+    title: "Let the Minister for External Relations take the blame",
+    note: "The referendum was declined and the platform cleared. Somebody " +
+          "resigns for it, and the country is told who. It restores a little " +
+          "of the trust the capitulation cost.",
+    cost: 0,
+    when: { resolvedIs: "f1_capitulation" },
+    event: "f1_minister_resigns",
+    tempo: [
+      { label: "Accept a resignation, with thanks", after: 1,
+        effects: [ { cabinet: { external_relations: null } },
+                   { move: { legitimacy: 8, public_standing: 4, "loyalty.cu_loyalists": -4 } } ] },
+      { label: "Dismiss the Minister", after: 1,
+        effects: [ { cabinet: { external_relations: null } },
+                   { move: { legitimacy: 12, public_standing: 7, "loyalty.cu_loyalists": -8 } } ] }
     ] }
 ];
