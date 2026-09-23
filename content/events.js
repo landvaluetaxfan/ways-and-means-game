@@ -1819,7 +1819,7 @@ finished, and things that are finished are what a government moves on from."`,
    lands early in the second session with most of it left to carry the
    Act. The stranded have two months of air: stranded in early May, the Act
    is carried in June. */
-{ id:"f1_stranded", chapter:2, at:14, once:true,
+{ id:"f1_stranded", campaign:"flash_i", chapter:2, at:14, once:true,
   /* THE ONE SET PIECE IN CHAPTER TWO (design/31). A turn the world takes,
      not a decision the player makes — which is the test for whether an
      event earns the whole screen. The sections are the frame's, the prose
@@ -1850,7 +1850,7 @@ The Works has voted. The question is what the Commonwealth says.`,
       result:"The outer stations read the delay as an answer, and it is not the one they wanted." }
   ]},
 
-{ id:"f1_referendum", chapter:2, queuedOnly:true, once:true,
+{ id:"f1_referendum", campaign:"flash_i", chapter:2, queuedOnly:true, once:true,
   title:"The vote",
   speaker:"ceyhan",
   body:`The workers have voted to join the Federation, and Ceyhan's column
@@ -1874,7 +1874,7 @@ wire."`,
       result:"The strikes start on the outer habitats before the sitting ends." }
   ]},
 
-{ id:"f1_dilemma", chapter:2, queuedOnly:true, once:true,
+{ id:"f1_dilemma", campaign:"flash_i", chapter:2, queuedOnly:true, once:true,
   title:"The dilemma",
   speaker:"fenwick",
   body:`The Minister for Law and the Charter sets out the two futures in
@@ -1935,7 +1935,7 @@ Neither future is a vote the government can lose quietly.`,
 
 /* one drift micro-decision: nothing crashes today; the margin leans */
 /* REACH: the annexation choice in f1_dilemma sets f1_annexing. */
-{ id:"f1_water", chapter:2, weight:60, maxFires:2,
+{ id:"f1_water", campaign:"flash_i", chapter:2, weight:60, maxFires:2,
   when:{ flags:["f1_annexing"] },
   /* THE FIRST BRIEF. `brief` is not on the prose whitelist, so no player
      ever reads it; `npm run prose` emits it as a # note above the passage it
@@ -1960,7 +1960,7 @@ estimate. It holds, or it does not hold, and the difference is a funding line th
   ]},
 
 /* a panic button: visible, expensive, and the way back from the cascade */
-{ id:"f1_loan", chapter:2, weight:84, maxFires:1,
+{ id:"f1_loan", campaign:"flash_i", chapter:2, weight:84, maxFires:1,
   when:{ scalarBelow:{ solvency:30000 } },
   title:"The emergency loan",
   speaker:"hatt",
@@ -1996,7 +1996,7 @@ The rate is printed. The term is printed. The condition is one line.`,
    breached at once. It follows the freeze now: a frozen government that
    lets the quarrel run past 78 while the margin, the reserve and its
    standing give way together falls. A loss, not a settlement (design/34 D4). */
-{ id:"f1_meltdown", chapter:2, weight:98, once:true,
+{ id:"f1_meltdown", campaign:"flash_i", chapter:2, weight:98, once:true,
   when:{ flags:["f1_frozen"], scalarAbove:{ friction:78 },
          scalarBelow:{ thermal_margin:20, solvency:20000, legitimacy:30 } },
   title:"The cascade",
@@ -2021,7 +2021,7 @@ chamber is still arguing about the water.`,
    the thing the indemnity initiative insures against, never came in any run
    (design/34 D4). It now follows the Sovereign Debt Trap itself, unless the
    government has brought the quarrel back under 60 since. */
-{ id:"f1_accounts_freeze", chapter:2, weight:87, once:true,
+{ id:"f1_accounts_freeze", campaign:"flash_i", chapter:2, weight:87, once:true,
   when:{ resolved:"f1_pyrrhic", scalarAbove:{ friction:60 } },
   /* THE FREEZE HAS TO RECORD ITSELF. Two of the four branches of
      `indemnity_settles` are the ones where the cover PAYS, and both wanted
@@ -2086,7 +2086,7 @@ discovered."`,
    sitting, so a government that wants friction DOWN needs something to do
    about it that is not simply waiting: Earth's price for standing down, on
    the table more than once, at a cost the player can see. */
-{ id:"fa_conciliate", chapter:2, weight:62, maxFires:2,
+{ id:"fa_conciliate", campaign:"flash_i", chapter:2, weight:62, maxFires:2,
   when:{ scalarAbove:{ friction:45 } },
   title:"What Earth would take to stand down",
   speaker:"landry",
@@ -2284,7 +2284,7 @@ people's schedules.`,
   ]},
 
 /* REACH: no gate; always eligible in ch2 and loses on weight. */
-{ id:"fa_two_fronts", chapter:2, weight:57, maxFires:2,
+{ id:"fa_two_fronts", campaign:"flash_i", chapter:2, weight:57, maxFires:2,
   title:"Two audiences, one sentence",
   speaker:"ceyhan",
   body:`The Spindle leads with the platform's scrubbers and the government
@@ -2308,7 +2308,7 @@ the government that will be read in both.`,
   ]},
 
 /* the canon election: the pyrrhic tier leads to the campaign's victory */
-{ id:"f1_pyrrhic_election", chapter:3, prologue:7, once:true,
+{ id:"f1_pyrrhic_election", campaign:"flash_i", chapter:3, prologue:7, once:true,
   when:{ resolvedIs:"f1_pyrrhic" },
   title:"The mandate",
   speaker:null,
@@ -2402,7 +2402,7 @@ of the trade.`,
    freeze happened or it did not, and the cover was on the suppliers or on
    the whole line. */
 /* REACH: queued by the take_indemnity initiative. */
-{ id:"indemnity_settles", queuedOnly:true, once:true,
+{ id:"indemnity_settles", campaign:"flash_i", queuedOnly:true, once:true,
   title:"The indemnity comes to term",
   speaker:"hatt",
   body:`The Underwriters do not argue and they do not negotiate. They send a
@@ -2486,7 +2486,7 @@ people who expected the price to move."`,
    and `above T` cover every value; prices carry one decimal, so
    `below X + 0.1` and `above X` do the same. */
 /* REACH: queued by the assume_substrate_debt initiative. */
-{ id:"substrate_debt_settles", queuedOnly:true, once:true,
+{ id:"substrate_debt_settles", campaign:"flash_i", queuedOnly:true, once:true,
   title:"The substrate debt comes to term",
   speaker:"ceyhan",
   body:`The Commonwealth took the debt onto its books or it cancelled it, and
@@ -2979,7 +2979,7 @@ man with a list."`,
    `solvency > 900000`, which no real opening or earning reaches;
    `test_mode` is only ever set by the opener. ============================================================ */
 
-{ id:"test_console_open", weight:500, once:true,
+{ id:"test_console_open", campaign:"flash_i", weight:500, once:true,
   when:{ scalarAbove:{ solvency:900000 }, flagsAbsent:["test_mode"] },
   title:"Test console",
   speaker:null,
@@ -2996,7 +2996,7 @@ appears in Flash I.`,
       result:"The console is open. Its controls are the next thing on the order of the day." }
   ]},
 
-{ id:"test_console", queuedOnly:true,
+{ id:"test_console", campaign:"flash_i", queuedOnly:true,
   when:{ flags:["test_mode"] },
   title:"Test console",
   speaker:null,
@@ -3578,7 +3578,7 @@ you already have.`,
 /* THE FACILITY, REPAID. The answer to the `repay_facility` initiative. The
    Alliance offers to keep the line open, which is a standing call on the
    Commonwealth's short position with the Alliance's name on it. */
-{ id:"f1_facility_closed", queuedOnly:true, once:true,
+{ id:"f1_facility_closed", campaign:"flash_i", queuedOnly:true, once:true,
   title:"The facility is closed",
   speaker:"hatt",
   body:`The emergency facility is discharged, and the Alliance of Business and Government has no further claim under it: in cash from the reserve, or in the Cordell leases, as the Treasury chose.
@@ -3596,7 +3596,7 @@ Hatt offers to keep the line open as a standing facility on the same terms, draw
 
 /* THE FACILITY, CALLED. Queued by the breach of `f1_debt` when the House
    rises with the facility unpaid. The default margin is the agreement's. */
-{ id:"f1_debt_called", queuedOnly:true, once:true,
+{ id:"f1_debt_called", campaign:"flash_i", queuedOnly:true, once:true,
   title:"The facility is called",
   speaker:"hatt",
   body:`The emergency facility was still owed when the House rose, and the Alliance of Business and Government has called it. The sum due is twenty-one thousand six hundred MW-years: the principal, the printed rate, and the default margin of ten per cent the agreement sets.

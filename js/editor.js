@@ -63,6 +63,12 @@ const Editor = (function () {
       case "tiers": return V.tiers.map(v => [v, v]);
       case "stationFields": return V.stationFields.map(v => [v, v]);
       case "billFields": return V.billFields.map(v => [v, v]);
+      /* THE CAMPAIGNS an entry may belong to (design/36 §3): every
+         administration's, or its own id. Blank is the world's: every
+         campaign plays it. */
+      case "campaigns": return [["", "every campaign (the world's)"]].concat(
+        [...new Set(((typeof ADMINISTRATIONS !== "undefined" && ADMINISTRATIONS) || [])
+          .map(a => a.campaign || a.id))].map(c => [c, c]));
       case "parties": return M.parties.map(p => [p.id, p.name]);
       case "stations": return M.stations.map(s => [s.id, s.name]);
       case "bands": return SCHEMA.vocab.bands.map(v => [v, v]);
@@ -125,6 +131,21 @@ const Editor = (function () {
   }
 
   /* ---------- small form helpers ---------- */
+
+  /* WHICH CAMPAIGN AN ENTRY BELONGS TO. A list of campaigns is shown and
+     never rewritten: a select cannot hold two values, and a form that
+     cannot draw a field must still carry it. */
+  function campField(o) {
+    if (Array.isArray(o.campaign))
+      return `<label>Campaign <span class="ed-hint">${esc(o.campaign.join(", "))} ` +
+             `(a list; edit it in the file)</span></label>`;
+    return `<label>Campaign ${sel_("campaign", "campaigns", o.campaign || "")}</label>`;
+  }
+  function readCampaign(o) {
+    const f = document.querySelector('#ed-form [data-f="campaign"]');
+    if (!f) return;
+    if (f.value) o.campaign = f.value; else delete o.campaign;
+  }
 
   function sel_(name, src, cur, cls) {
     const list = vocab(src);
@@ -351,6 +372,7 @@ const Editor = (function () {
         `<option value="${esc(v)}"${v === (e.speaker || "") ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
       <label>Chapter ${num_("chapter", e.chapter == null ? "" : e.chapter)}
         <span class="ed-hint">blank = any</span></label>
+      ${campField(e)}
       <label>Weight ${num_("weight", e.weight == null ? "" : e.weight)}
         <span class="ed-hint">blank = 1</span></label>
       <label>Prologue ${num_("prologue", e.prologue == null ? "" : e.prologue)}
@@ -415,6 +437,7 @@ const Editor = (function () {
     setOr("weight", +wt, pro === "" && wt !== "");
     setOr("once", true, g("once").checked);
     setOr("queuedOnly", true, g("queuedOnly").checked);
+    readCampaign(e);
     if (g("speaker").value) e.speaker = g("speaker").value;
     else if (e.speaker != null) delete e.speaker;
     const when = readConds(document.getElementById("ed-conds"));
@@ -564,6 +587,7 @@ const Editor = (function () {
       <label>Ref ${txt_("ref", b.ref, "", 90)}</label>
       <label class="ed-w">Title ${txt_("title", b.title, "", 380)}<button class="btn ed-add" data-act="roll-name">roll</button></label>
       <label>Stage ${sel_("stage", SCHEMA.vocab.billStages, b.stage)}</label>
+      ${campField(b)}
       <label>Owner <select class="ed-f" data-f="owner"><option value=""${!b.owner ? " selected" : ""}>— government —</option>${
         M.parties.map(p => `<option value="${p.id}"${b.owner === p.id ? " selected" : ""}>${esc(p.name)}</option>`).join("")
       }</select></label>
@@ -816,8 +840,9 @@ const Editor = (function () {
     }) : arr;
     document.getElementById("ed-list").innerHTML = shown.map(o => {
       const id = idOf(sel.tab, o);
+      const camp = o && o.campaign != null ? " \u00b7 " + [].concat(o.campaign).join("/") : "";
       return `<div class="ed-item${id === sel.id ? " on" : ""}" data-id="${esc(id)}">
-        <b>${esc(K.label(o))}</b><span>${esc(K.sub(o))}</span></div>`;
+        <b>${esc(K.label(o))}</b><span>${esc(K.sub(o) + camp)}</span></div>`;
     }).join("") + (q && !shown.length ? `<div class="ed-item"><b>no matches</b></div>` : "");
     document.getElementById("ed-count").textContent =
       q ? shown.length + " of " + arr.length : arr.length + "";
@@ -888,6 +913,7 @@ const Editor = (function () {
     else if (sel.tab === "bills") {
       const b = arr[i];
       ["id","ref","title","stage","summary"].forEach(k => b[k] = g(k).value);
+      readCampaign(b);
       /* absent and false are both "no", and absent stays absent */
       if (g("dualMajority").checked) b.dualMajority = true;
       else if (b.dualMajority) b.dualMajority = false;

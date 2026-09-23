@@ -42,7 +42,11 @@ const files = ["content/setup.js","content/parties.js","content/stations.js",
   "content/business.js","content/settlements.js","content/actors.js","content/index.js"];
 vm.runInThisContext(files.map(f => fs.readFileSync(path.join(root, f), "utf8")).join("\n") +
                     "\n;globalThis.__C = CONTENT;");
-const CONTENT = globalThis.__C;
+/* The campaign's view of the content (design/36 §3): `--campaign <id>`,
+   Flash I by default. */
+const CAMPAIGN = (process.argv.indexOf("--campaign") >= 0
+  ? process.argv[process.argv.indexOf("--campaign") + 1] : null) || "flash_i";
+const CONTENT = globalThis.__C.forCampaign(CAMPAIGN);
 const Engine = require(path.join(root, "js", "engine.js"));
 
 const argv = process.argv.slice(2);

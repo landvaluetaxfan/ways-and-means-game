@@ -427,7 +427,7 @@ const BILLS = [
      entering the labour market the way they read the divergence bill, and
      for the same reason.
      ============================================================= */
-  { id:"annexation", ref:"HC 4/163", stage:"drafting", owner:"cu",
+  { id:"annexation", campaign:"flash_i", ref:"HC 4/163", stage:"drafting", owner:"cu",
     /* It brings 184,000 people inside the services guarantee and it settles
        what happens to a charter held on the Chimborazo line, so those are
        the two benches whose consent it needs. */

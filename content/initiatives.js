@@ -97,7 +97,7 @@ const INITIATIVES = [
      it, or the security, which settles now at no margin what the Alliance
      would otherwise take at the rise with ten per cent on top. Either clears
      what is owed to the Alliance, which is what discharges `f1_debt`. */
-  { id: "repay_facility",
+  { id: "repay_facility", campaign:"flash_i",
     title: "Repay the emergency facility",
     note: "The Alliance of Business and Government is owed nineteen thousand " +
           "eight hundred MW-years, principal and the printed rate, secured on " +
@@ -123,7 +123,7 @@ const INITIATIVES = [
      and after the Sovereign Debt Trap the quarrel drains the thermal margin
      every sitting, which since 23 Sep can end the run during the campaign.
      The government may now ask. The answer is the same list of terms. */
-  { id: "seek_terms",
+  { id: "seek_terms", campaign:"flash_i",
     title: "Ask Earth's banks for terms",
     note: "What Earth's banks would take to lift their measures against the " +
           "Commonwealth. The answer comes as a list, and the list has a price.",
@@ -169,7 +169,7 @@ const INITIATIVES = [
      risk is the freeze, which is why the instrument only exists once the
      crisis is running. The premium is certain and the payout is not, and
      that is the whole trade. */
-  { id: "take_indemnity",
+  { id: "take_indemnity", campaign:"flash_i",
     title: "Take an indemnity",
     note: "The Underwriters will carry the platform's running costs for one " +
           "term. The premium is quoted now and the cover runs from today. At " +
@@ -217,7 +217,7 @@ const INITIATIVES = [
      Commonwealth can take that debt onto its own books or cancel it.
      Flash I's pyrrhic tier is the worked example of what happens when it
      is left where it is. The survey has to have found the debt first. */
-  { id: "assume_substrate_debt",
+  { id: "assume_substrate_debt", campaign:"flash_i",
     title: "Deal with the platform's substrate debt",
     note: "The debt runs against the instances and the substrate of the " +
           "three hundred thousand people on the platform. The Commonwealth " +

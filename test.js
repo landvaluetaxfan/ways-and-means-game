@@ -5,7 +5,11 @@ const files = ["content/setup.js","content/parties.js","content/stations.js","co
                "content/characters.js","content/bills.js","content/events.js","content/glossary.js","content/encyclopedia.js","content/business.js","content/settlements.js","content/actors.js","content/index.js"];
 const src = files.map(f => fs.readFileSync(f,"utf8")).join("\n") + "\n;globalThis.__C = CONTENT;";
 vm.runInThisContext(src);
-const CONTENT = globalThis.__C;
+/* THE CAMPAIGN'S VIEW, not the whole set (design/36 §3): the tests below
+   assert Flash I, so they play what Flash I plays, with its own setup
+   merged in. ALL is every campaign's content, for the tests of the view. */
+const ALL = globalThis.__C;
+const CONTENT = ALL.forCampaign("flash_i");
 const Engine = require("./js/engine.js");
 
 /* HOW LONG THE OPENING IS, counted rather than written down. Chapter one's
@@ -4872,4 +4876,83 @@ console.log("\nTHE ECONOMY:");
      "campaign_done");
 
   if (bad) { console.log("\n" + bad + " ENDING FAILURES"); process.exitCode = 1; }
+})();
+
+console.log("\nA CAMPAIGN IS A UNIT (design/36 §3):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  /* Flash I plays everything that is its own or the world's, so nothing
+     changed for it, and its runs are the same runs. */
+  ok("Flash I's view holds every entry that is its own or the world's",
+     CONTENT.events.length === ALL.events.length && CONTENT.bills.length === ALL.bills.length,
+     CONTENT.events.length + " of " + ALL.events.length + " events");
+  ok("and its own setup is merged over the world's, one level deep",
+     !!CONTENT.setup.lenders.alliance && !!CONTENT.setup.lenders.earth &&
+     !ALL.setup.lenders.alliance, Object.keys(CONTENT.setup.lenders).join(", "));
+
+  /* A SECOND CAMPAIGN, built the way an author would add one: an
+     administration, one event of its own, and an opening. */
+  const next = { id: "test_next", party: "cu", leader: "flash", ordinal: "II",
+                 setup: { startDate: "2084-05-02", scalars: { friction: 30 } },
+                 opening: [{ flag: "test_opened" }, { move: { "debt.earth": 5000 } }] };
+  const own = { id: "test_next_event", campaign: "test_next", chapter: 1, weight: 1,
+                title: "A test", body: "A test.", choices: [{ label: "Go.", effects: [] }] };
+  const ALL2 = Object.assign({}, ALL, {
+    administrations: ALL.administrations.concat([next]),
+    events: ALL.events.concat([own]) });
+  const K = ALL2.forCampaign("test_next");
+  const f1 = ALL.events.filter(e => e.campaign === "flash_i");
+  ok("a second campaign sees none of Flash I's story",
+     f1.length > 0 && f1.every(e => !K.eventById[e.id]) && !K.billById.annexation &&
+     !K.settlementById.f1_pyrrhic, f1.length + " Flash I events hidden");
+  ok("and all of the world's",
+     ALL.events.filter(e => e.campaign == null).every(e => K.eventById[e.id]) &&
+     K.parties.length === ALL.parties.length && K.stations.length === ALL.stations.length);
+  ok("and its own entries", !!K.eventById.test_next_event);
+  ok("and Flash I sees none of the second campaign's",
+     !ALL2.forCampaign("flash_i").eventById.test_next_event);
+  ok("a campaign's setup changes one scalar without restating the rest",
+     K.setup.scalars.friction === 30 && K.setup.scalars.solvency === ALL.setup.scalars.solvency &&
+     !K.setup.lenders.alliance, JSON.stringify(K.setup.scalars));
+  const g = Engine.newGame(K);
+  ok("a new game knows its campaign", g.campaign === "test_next", g.campaign);
+  ok("and opens with the campaign's opening applied",
+     !!g.flags.test_opened && Engine.debtOf(g, "earth") === 5000 && g.log.length === 0,
+     JSON.stringify(g.debt));
+  ok("the campaign condition reads it",
+     Engine.matches(g, { campaign: "test_next" }) && !Engine.matches(g, { campaign: "flash_i" }) &&
+     Engine.matches(g, { campaign: ["flash_i", "test_next"] }));
+
+  /* AND IT PLAYS. Thirty sittings of the second campaign on the world's
+     content alone: if a shared entry named something only Flash I has, a
+     queued event or a bill would be missing here and this would throw. */
+  let played = 0, threw = null;
+  try {
+    const p2 = Engine.newGame(K);
+    for (let i = 0; i < 30; i++) {
+      if (Engine.checkLoss(p2, K).lost) break;
+      const e = Engine.nextEvent(p2, K);
+      if (e) { Engine.choose(p2, K, e, i % e.choices.length); played++; }
+      Engine.advance(p2, K);
+    }
+  } catch (e) { threw = e.message; }
+  ok("a campaign with none of Flash I's story plays thirty sittings",
+     !threw && played > 0, threw || played + " events");
+
+  /* The sandbox plays Flash I: its content and setup, then its own. */
+  const S = ALL.forCampaign("sandbox");
+  ok("an administration may play another's campaign",
+     S.campaign === "flash_i" && !!S.billById.annexation && !!S.setup.lenders.alliance &&
+     S.setup.startDate === CONTENT.setup.startDate && S.setup.scalars.solvency === 999999,
+     S.campaign + " from " + S.admin);
+
+  /* A save from before campaigns is the campaign it is loaded as. */
+  const old = Engine.newGame(CONTENT);
+  old.version = 29; delete old.campaign;
+  const up = Engine.load(Engine.save(old), CONTENT);
+  ok("a save from before campaigns takes the campaign it is loaded as",
+     up.campaign === "flash_i" && up.version === Engine.STATE_VERSION, up.campaign);
+  if (bad) { console.log("\n" + bad + " CAMPAIGN FAILURES"); process.exitCode = 1; }
 })();

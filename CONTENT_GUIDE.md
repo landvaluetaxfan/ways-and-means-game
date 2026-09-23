@@ -29,6 +29,51 @@ content/events.js     ← you will live here
 
 ---
 
+## Campaigns
+
+A **campaign** is one government's story: Flash I is the first. The content
+files hold two things at once, and a field tells them apart:
+
+- **The world** — parties, stations, constituencies, characters, the
+  glossary, the Concordance, and every event, bill or settlement with no
+  `campaign` field. Every campaign plays the world.
+- **A campaign's own story** — any entry carrying `campaign:"flash_i"` (or a
+  list of ids). Only that campaign sees it; to every other campaign it does
+  not exist.
+
+A campaign is declared as an **administration** in `content/setup.js`
+(`ADMINISTRATIONS`), which is what the menu offers:
+
+```js
+{ id:"flash_ii", party:"cu", leader:"flash", ordinal:"II",
+  from:2084, to:2088, session:1,
+  setup:{ startDate:"2084-05-02",               // merged ONE LEVEL deep over the world's:
+          scalars:{ solvency:30000 },           // change one scalar, keep the rest
+          lenders:{ bondholders:{ name:"...", rate:{ fixed:6 } } } },
+  opening:[                                     // effects applied at the first sitting
+    { flag:"f1_resolved_pyrrhic" },             // how the last campaign's canon ending
+    { move:{ "debt.bondholders":30000 } },      // becomes this one's starting state
+    { coalition:{ remove:["rv"] } } ],
+  intro:{ ... } }
+```
+
+To write a campaign: add its administration, then write its events, bills,
+settlements and initiatives with `campaign:"<its id>"`, in the same files as
+everything else. The editor has a Campaign field on events and bills, and
+shows each entry's campaign in the list. Entries that should serve several
+campaigns stay untagged, and can branch on which one is running with the
+`campaign` condition: `when:{ campaign:"flash_ii" }`.
+
+An administration can also play **another's** campaign. The sandbox is
+`campaign:"flash_i"`: Flash I's content, setup and opening, with its own
+setup on top.
+
+`npm run lint` checks that every tag names a campaign, and that nothing a
+campaign can see names something it cannot. A shared event that queues a
+Flash I event is fine in Flash I and broken everywhere else, and lint says
+so. `CONTENT.forCampaign(id)` builds any campaign's view, and it is what the
+game, the tests and the playtest all play.
+
 ## Adding an event
 
 Copy an entry in `content/events.js`. Nothing else changes.

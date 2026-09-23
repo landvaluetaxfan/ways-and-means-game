@@ -726,6 +726,18 @@ version of any of them is in the header of the file it names.
   `#breakdown`, the panel they came from before it was merged. One set of
   rows now, under an opened party only. When a panel is merged or renamed,
   `grep` the stylesheet for its id.
+- **A CAMPAIGN IS A UNIT** (23 Sep, `STATE_VERSION 30`; design/36 §3). The
+  author writes the campaigns; Flash I is the proof of concept. An entry
+  with `campaign:"<id>"` belongs to that campaign only; untagged is the
+  world's. `CONTENT.forCampaign(admin)` builds a campaign's view (its
+  entries, rebuilt indexes, setup merged one level deep, `opening`
+  effects), and the shell, `test.js` and the playtest all play through it:
+  **never hand the engine raw `CONTENT` for a game.** `st.campaign` and the
+  `campaign` condition say which one is running. Lint checks tags and that
+  no campaign can see an entry naming another campaign's id. That check was
+  vacuous with one campaign, so it was proved by adding a probe
+  administration and tagging a shared bill: eight hits, and none without
+  the fault.
 - **`characters[].current` is authored now** (23 Sep). It was read by the
   bench roll, the members list, the signature count and the reshuffle, and
   carried by nobody. `test.js` asserts every popular-seat member of a party

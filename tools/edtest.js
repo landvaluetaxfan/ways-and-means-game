@@ -247,6 +247,32 @@ try {
     .map(n => n.textContent).filter(t => /unknown (verb|condition)/.test(t));
   ok("the validator knows every verb and condition content uses", unknown.length === 0,
      unknown.slice(0, 3).join(" // "));
+  /* WHICH CAMPAIGN AN ENTRY BELONGS TO (design/36 §3): shown, and written
+     when it is changed. The fidelity sweep above proves opening a tagged
+     entry keeps its tag; this proves the field is a real control. */
+  {
+    const click = n => n && n.dispatchEvent(new w2.MouseEvent("click", { bubbles: true }));
+    click(w2.document.querySelector('.tab[data-t="events"]'));
+    const item = id => [...w2.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id === id);
+    const tagged = w2.eval("JSON.stringify(EVENTS.filter(function (e) { return typeof e.campaign === 'string'; })[0] || null)");
+    const te = JSON.parse(tagged);
+    if (!te) ok("some event belongs to a campaign", false);
+    else {
+      click(item(te.id));
+      const f = w2.document.querySelector('#ed-form [data-f="campaign"]');
+      ok("an event's campaign is shown in its form", !!f && f.value === te.campaign, f ? f.value : "no field");
+      if (f) {
+        f.value = "";
+        const other = [...w2.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id !== te.id);
+        click(other);
+        w2.__cap = null;
+        click(w2.document.getElementById("ed-exportone"));
+        const back = (w2.__cap || []).find(o => o.id === te.id) || {};
+        ok("and clearing it makes the event the world's", back.id === te.id && back.campaign === undefined,
+           JSON.stringify(back.campaign));
+      }
+    }
+  }
   if (errs2.length) ok("and the fresh editor raised no errors", false, errs2.slice(0, 2).join(" // "));
 } catch (e) { ok("opening an entry changes nothing", false, e.message); }
 

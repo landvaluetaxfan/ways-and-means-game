@@ -91,10 +91,9 @@ const SETUP = {
      the market. */
   lenders: {
     earth: { name: "Earth's markets", rate: { base: 4, perFriction: 0.1 }, cap: 60000,
-             note: "at the quarrel's rate" },
-    alliance: { name: "The Alliance of Business and Government",
-                rate: { fixed: 10 }, serviced: false, repayable: false,
-                note: "the emergency facility, due before the House rises; secured on the Cordell leases" }
+             note: "at the quarrel's rate" }
+    /* A campaign adds its own lenders in its administration's `setup`, which
+       merges one level deep: Flash I's emergency facility is there. */
   },
 
   /* WHAT THE UNDERWRITERS SAY (bible §7.5.2 — the only party with accurate
@@ -360,7 +359,16 @@ const SETUP = {
 const ADMINISTRATIONS = [
   { id:"flash_i", party:"cu", leader:"flash", ordinal:"I",
     from:2080, to:2084, session:4,
-    setup:{ startDate:"2080-04-11" },
+    /* THE CAMPAIGN'S OWN SETUP, merged one level deep over the world's
+       (CONTENT.forCampaign). Its content is every entry tagged
+       `campaign:"flash_i"` plus the world's. `opening` would hold effects
+       applied at the first sitting; Flash I opens on the world as it is. */
+    setup:{ startDate:"2080-04-11",
+      lenders: {
+        alliance: { name: "The Alliance of Business and Government",
+                    rate: { fixed: 10 }, serviced: false, repayable: false,
+                    note: "the emergency facility, due before the House rises; secured on the Cordell leases" }
+      } },
     /* THE INTRODUCTION (design/31 §5). Rendered through js/setpiece.js, so
        the sections and their kinds are the frame's vocabulary: epigraph,
        lede, body, signature. It is the first thing a player reads, and the
@@ -428,6 +436,9 @@ She has four years. The session that opens on the eleventh of April is the fourt
      change: `contentFor()` in js/shell.js merges this over SETUP. */
   { id:"sandbox", party:"cu", leader:"flash", ordinal:"(sandbox)",
     from:2080, to:2084, session:4,
+    /* Flash I with the brakes off: it plays Flash I's campaign (content,
+       setup and opening) and then its own setup on top. */
+    campaign:"flash_i",
     setup:{
       weightJitter: 0,
       settlementFloorSittings: 1,

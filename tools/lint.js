@@ -25,8 +25,8 @@ const root = path.join(__dirname, "..");
 const files = ["setup", "parties", "stations", "constituencies", "cabinet", "instruments","initiatives", "minutes", "characters", "bills", "events", "glossary", "encyclopedia", "labour", "actors", "settlements", "business", "achievements"]
   .map(f => path.join(root, "content", f + ".js"));
 vm.runInThisContext(files.map(f => fs.readFileSync(f, "utf8")).join("\n") +
-  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA};");
-const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA } = globalThis.__G;
+  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA, ADMINISTRATIONS};");
+const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA, ADMINISTRATIONS } = globalThis.__G;
 
 const MAX_NEW_CLUSTERS = 1;  // per event. Raise this and you are choosing to confuse people.
 
@@ -188,7 +188,9 @@ try {
   const scalarIds = new Set(Object.keys(SETUP.scalars || {}).concat(require(path.join(root, "js", "schema.js")).vocab.scalars))  /* party_loyalty is derived, so setup opens no value for it */;
   const lawIds = new Set(Object.keys(SETUP.law || {}));
   const priceIds = new Set(["thermal", "substrate", "volume", "transit"]);
-  const lenderIds = new Set(Object.keys(SETUP.lenders || {}));
+  /* the world's lenders and every campaign's own (design/36 §3) */
+  const lenderIds = new Set(Object.keys(SETUP.lenders || {}).concat(
+    ...(ADMINISTRATIONS || []).map(a => Object.keys((a.setup || {}).lenders || {}))));
 
   /* The `case` labels of the move: dispatch in js/engine.js, so this list
      cannot drift from the engine the way a copied one would. */
@@ -857,7 +859,9 @@ try {
       if (d.bill && !BI.has(d.bill)) refBad.push(t + " is kept by '" + d.bill + "', which is no bill");
       if (d.division && !BI.has(d.division)) refBad.push(t + " is kept by a division on '" + d.division + "', which is no bill");
       if (d.stage && !STAGES.has(d.stage)) refBad.push(t + " is kept at stage '" + d.stage + "', which is no stage");
-      if (d.repaid && !(SETUP.lenders || {})[d.repaid]) refBad.push(t + " is kept by repaying '" + d.repaid + "', who is no lender in setup.lenders");
+      if (d.repaid && !(SETUP.lenders || {})[d.repaid] &&
+          !(ADMINISTRATIONS || []).some(a => ((a.setup || {}).lenders || {})[d.repaid]))
+        refBad.push(t + " is kept by repaying '" + d.repaid + "', who is no lender in any setup");
       if (u.owed_to && !CH.has(u.owed_to) && !AC.has(u.owed_to)) refBad.push(t + " is owed to '" + u.owed_to + "', who is nobody");
       if (u.post && !CAB.has(u.post)) refBad.push(t + " rests on post '" + u.post + "', which is no post");
     });
@@ -911,6 +915,72 @@ try {
 n += section("IDS THAT NAME NOTHING", refBad, x => x);
 section("PROMISES THAT CANNOT BE KEPT OR BROKEN CLEANLY (advisory)", refAdv, x => x);
 
+/* =============================================================
+   CAMPAIGNS (design/36 §3). An entry that carries `campaign` belongs to
+   that campaign only, and a campaign plays its own entries and the
+   world's. So three things can go wrong, and each is a campaign that
+   breaks the moment it is played:
+     - a tag naming no campaign (the entry is seen by nobody);
+     - a `campaign` condition naming no campaign (it is never true);
+     - an entry a campaign can see naming an id that campaign cannot:
+       Flash I's loan queued from a shared event, say, which works in
+       Flash I and names nothing in every other campaign.
+   The third is checked per campaign by looking for any other campaign's
+   id among the values of what this campaign sees, including its own
+   setup and opening. Ids are distinctive enough that equality is the
+   test; a tag is not a reference and is skipped.
+   ============================================================= */
+const campBad = [];
+try {
+  const ADM = ADMINISTRATIONS || [];
+  const CAMPS = new Set(ADM.map(a => a.campaign || a.id));
+  ADM.forEach(a => { if (a.campaign && !ADM.some(b => b.id === a.campaign))
+    campBad.push("administration " + a.id + " plays '" + a.campaign + "', which is no administration"); });
+  const COLL = { event: EVENTS, bill: BILLS, settlement: SETTLEMENTS, initiative: INITIATIVES,
+                 award: ACHIEVEMENTS, instrument: INSTRUMENTS, minute: MINUTES, business: BUSINESS,
+                 article: (ENCYCLOPEDIA || {}).articles, character: CHARACTERS, post: CABINET,
+                 party: PARTIES, station: STATIONS, actor: ACTORS };
+  const entries = [];
+  Object.keys(COLL).forEach(kind => (COLL[kind] || []).forEach(x => entries.push({ kind, x })));
+  const tagsOf = x => x.campaign == null ? null : [].concat(x.campaign);
+  entries.forEach(({ kind, x }) => (tagsOf(x) || []).forEach(c => {
+    if (!CAMPS.has(c)) campBad.push(kind + " " + x.id + " belongs to campaign '" + c + "', which no administration plays");
+  }));
+  const walkVals = (o, fn, key) => {
+    if (o == null) return;
+    if (typeof o === "string") return fn(o, key);
+    if (Array.isArray(o)) return o.forEach(v => walkVals(v, fn, key));
+    if (typeof o === "object") Object.keys(o).forEach(k => {
+      if (k === "campaign" && key !== "when") return;     /* a tag, not a reference */
+      if (k === "campaign") [].concat(o[k]).forEach(c => {
+        if (!CAMPS.has(c)) campBad.push("a campaign condition names '" + c + "', which no administration plays"); });
+      /* AND THE KEYS. `billStage:{divergence:"committee"}` and
+         `move:{"loyalty.cu_maintenance":4}` name their ids as keys, and
+         a walk over values alone found one reference to a bill that
+         dozens of gates name (measured by tagging it and looking). */
+      fn(k, key);
+      if (k.indexOf(".") > 0) fn(k.slice(k.indexOf(".") + 1), key);
+      walkVals(o[k], fn, k);
+    });
+  };
+  /* the campaign conditions, wherever a `when` is */
+  entries.forEach(({ x }) => walkVals(x, () => {}, null));
+  CAMPS.forEach(camp => {
+    const sees = x => { const t = tagsOf(x); return !t || t.indexOf(camp) >= 0; };
+    const foreign = new Map();
+    entries.forEach(({ kind, x }) => { if (x.id && !sees(x)) foreign.set(x.id, kind + " of " + tagsOf(x).join("/")); });
+    if (!foreign.size) return;
+    const report = (where) => (v) => { if (foreign.has(v)) campBad.push(
+      "campaign " + camp + ": " + where + " names '" + v + "', the " + foreign.get(v) + ", which it cannot see"); };
+    entries.forEach(({ kind, x }) => { if (sees(x)) walkVals(x, report(kind + " " + x.id), null); });
+    const host = ADM.find(a => a.id === camp) || {};
+    walkVals(Object.assign({}, SETUP, { lenders: null }), report("the world's setup"), null);
+    walkVals(host.setup, report("its setup"), null);
+    walkVals(host.opening, report("its opening"), null);
+  });
+} catch (e) { campBad.push("could not check the campaigns: " + e.message); }
+n += section("CAMPAIGNS THAT REACH INTO ANOTHER'S CONTENT", campBad, x => x);
+
 R.push("=".repeat(60));
 R.push(n ? `${n} legibility issues` : "no legibility issues");
 if (artBad.length) R.push(`${artBad.length} ARTIFACT SHAPE FAILURES`);
@@ -922,6 +992,7 @@ if (initBad.length) R.push(`${initBad.length} INITIATIVES WITH NO ANSWER`);
 if (labelBad.length) R.push(`${labelBad.length} UNLABELLED CHOICES`);
 if (gateBad.length) R.push(`${gateBad.length} GATES NOTHING CAN SATISFY`);
 if (refBad.length) R.push(`${refBad.length} IDS THAT NAME NOTHING`);
+if (campBad.length) R.push(`${campBad.length} CAMPAIGN FAULTS`);
 if (popBad.length) R.push("THE POPULATION IS STORED TWICE AND HAS DRIFTED (advisory)");
 console.log(R.join("\n"));
 /* HARD FAILURES: everything except popBad. The chain is one of them now —
@@ -933,4 +1004,4 @@ console.log(R.join("\n"));
    fails from the day it lands gets disabled rather than fixed. */
 if (artBad.length || chainBad.length || cssBad.length || verbBad.length ||
     parseBad.length || initBad.length || gridBad.length || targetBad.length ||
-    labelBad.length || gateBad.length || refBad.length) process.exit(1);
+    labelBad.length || gateBad.length || refBad.length || campBad.length) process.exit(1);

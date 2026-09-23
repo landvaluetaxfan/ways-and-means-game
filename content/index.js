@@ -36,26 +36,88 @@ const CONTENT = (function () {
        one itself. It indexes these; it does not contain them. */
     names: typeof NAMELISTS !== "undefined" ? NAMELISTS : {}
   };
-  const idx = (arr) => arr.reduce((m, o) => (m[o.id] = o, m), {});
-  C.partyById = idx(PARTIES);
-  C.currentById = idx(CURRENTS);
-  C.stationById = idx(STATIONS);
-  C.instrumentById = (typeof INSTRUMENTS!=="undefined"?INSTRUMENTS:[]).reduce((m,x)=>(m[x.id]=x,m),{});
-  C.cabinetById = (typeof CABINET!=="undefined"?CABINET:[]).reduce((m,x)=>(m[x.id]=x,m),{});
-  C.constituencyById = (C.constituencies||[]).reduce((m,x)=>(m[x.id]=x,m),{});
-  C.characterById = idx(CHARACTERS);
-  C.billById = idx(BILLS);
-  C.eventById = idx(EVENTS);
-  C.functionalById = (C.functional||[]).reduce((m,f)=>(m[f.id]=f,m),{});
-  /* the authored articles only; the Concordance generates its own for
-     parties, stations and persons and keeps those to itself. The
-     encyclopedia is an OBJECT - meta, banners, articles - not a list. */
   C.artifacts = typeof ARTIFACTS !== "undefined" ? ARTIFACTS : {};
   C.notice = typeof NOTICE !== "undefined" ? NOTICE : null;
-  C.encyclopediaById = ((C.encyclopedia||{}).articles||[]).reduce((m,a)=>(m[a.id]=a,m),{});
-  C.settlementById = (C.settlements||[]).reduce((m,x)=>(m[x.id]=x,m),{});
-  C.actorById = (C.actors||[]).reduce((m,x)=>(m[x.id]=x,m),{});
-  C.glossaryByTerm = GLOSSARY.reduce((m,g)=>(m[g.term.toLowerCase()]=g,m),{});
+
+  /* THE INDEXES, built from whatever collections a content object holds, so
+     a campaign's view (below) is indexed from its own lists and not the
+     whole set's. */
+  function index(K) {
+    const idx = arr => (arr || []).reduce((m, o) => (m[o.id] = o, m), {});
+    K.partyById = idx(K.parties);
+    K.currentById = idx(K.currents);
+    K.stationById = idx(K.stations);
+    K.instrumentById = idx(K.instruments);
+    K.cabinetById = idx(K.cabinet);
+    K.constituencyById = idx(K.constituencies);
+    K.characterById = idx(K.characters);
+    K.billById = idx(K.bills);
+    K.eventById = idx(K.events);
+    K.functionalById = idx(K.functional);
+    /* the authored articles only; the Concordance generates its own for
+       parties, stations and persons and keeps those to itself. The
+       encyclopedia is an OBJECT - meta, banners, articles - not a list. */
+    K.encyclopediaById = idx((K.encyclopedia || {}).articles);
+    K.settlementById = idx(K.settlements);
+    K.actorById = idx(K.actors);
+    K.glossaryByTerm = (K.glossary || []).reduce((m, g) => (m[g.term.toLowerCase()] = g, m), {});
+    return K;
+  }
+  index(C);
+
+  /* A CAMPAIGN'S VIEW OF THE CONTENT (design/36 §3). A campaign is an
+     administration: the government the menu offers. The content above is
+     the WORLD plus every campaign's story, and an entry that carries
+     `campaign` (an id, or a list of them) belongs to that campaign only;
+     an entry without one belongs to every campaign. This returns the
+     content one campaign plays:
+
+       - every collection with its other campaigns' entries removed, and
+         the indexes rebuilt from what is left;
+       - `setup` merged ONE LEVEL deep: the world's, then the campaign's,
+         then this administration's, so a campaign can change one scalar
+         or add one lender without restating the rest;
+       - `opening`, the campaign's effects applied at the first sitting
+         (Engine.newGame reads it): how a campaign opens on the last one's
+         canon ending (bible §1.8);
+       - `campaign`, the id the `campaign` condition compares against.
+
+     An administration may play ANOTHER's campaign (`campaign: "flash_i"`
+     on the sandbox): it gets that campaign's content, setup and opening,
+     and then its own setup on top. Nothing is copied into the content
+     files; a view is built on demand and the world is never edited. */
+  const plain = v => v && typeof v === "object" && !Array.isArray(v);
+  const merge = (base, over) => {
+    const out = Object.assign({}, base);
+    Object.keys(over || {}).forEach(k => {
+      out[k] = plain(over[k]) && plain(out[k]) ? Object.assign({}, out[k], over[k]) : over[k];
+    });
+    return out;
+  };
+  C.forCampaign = function (a) {
+    /* the object it is called on, so a copy of the content with another
+       campaign added (a test, a mod) builds that campaign's view */
+    const C0 = this && this.administrations ? this : C;
+    const list = C0.administrations || [];
+    const admin = typeof a === "string" ? list.find(x => x.id === a) : a;
+    if (!admin) return C;
+    const camp = admin.campaign || admin.id;
+    const host = camp !== admin.id ? list.find(x => x.id === camp) : null;
+    const mine = x => !x || typeof x !== "object" || x.campaign == null ||
+                      [].concat(x.campaign).indexOf(camp) >= 0;
+    const K = Object.assign({}, C0);
+    Object.keys(C0).forEach(k => {
+      if (Array.isArray(C0[k]) && k !== "administrations") K[k] = C0[k].filter(mine);
+    });
+    if (C0.encyclopedia && C0.encyclopedia.articles)
+      K.encyclopedia = Object.assign({}, C0.encyclopedia,
+                                     { articles: C0.encyclopedia.articles.filter(mine) });
+    K.setup = merge(merge(C0.setup, host && host.setup), admin.setup);
+    K.opening = [].concat((host && host.opening) || [], admin.opening || []);
+    K.campaign = camp;
+    K.admin = admin.id;
+    return index(K);
+  };
   return C;
 })();
 if (typeof module !== "undefined") module.exports = CONTENT;

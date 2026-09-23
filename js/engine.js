@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 29;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors
+  const STATE_VERSION = 30;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns
 
   /* ---------------------------------------------------------
      1. STATE
@@ -253,6 +253,20 @@ const Engine = (function () {
     seedRoll(st, C);
     seedFunctional(st, C);
     seedActors(st, C);
+    /* WHICH CAMPAIGN, AND HOW IT OPENS (design/36 §3). A campaign's view of
+       the content (`CONTENT.forCampaign`) names itself and carries its
+       opening: ordinary effects, applied once, here, after the world is
+       seeded and before anything is read. That is how a campaign opens on
+       the last one's canon ending (bible §1.8) without anybody writing a
+       second setup file: a flag, a debt, a coalition, a vacated post, in
+       the vocabulary events already use. The log it writes is the
+       opening's, so it is cleared. */
+    st.campaign = C.campaign || null;
+    if (C.opening && C.opening.length) {
+      apply(st, C, C.opening);
+      st.log = [];
+      st.wire = [];
+    }
     /* the party figures and the government's meter are the currents' */
     syncLoyalty(st, C);
     return st;
@@ -478,6 +492,12 @@ const Engine = (function () {
       if (was) st.debt.owed.earth = (st.debt.owed.earth || 0) + was;
       st.version = 29;
     }
+    if (st.version < 30) {                    // campaigns
+      /* A save from before campaigns played the only one there was;
+         reconcile() names it from the content it is loaded with. */
+      if (st.campaign === undefined) st.campaign = null;
+      st.version = 30;
+    }
     return st;
   }
 
@@ -694,6 +714,8 @@ const Engine = (function () {
        round-tripping to an identical state — which tools/uitest.js checks
        and which is the whole basis of the roundtrip test. */
     lastReconcile = notes;
+    /* a save from before campaigns is the campaign it is loaded as */
+    if (st.campaign == null && C.campaign) st.campaign = C.campaign;
     /* and on every load, so a save written before the loyalties were linked
        reads its meter off its currents like a new game does */
     syncLoyalty(st, C);
@@ -3608,6 +3630,11 @@ const Engine = (function () {
                                                      : !!st.resolvedAs === !!v,
     /* The older spelling of `resolved:<id>`, kept because content uses it. */
     resolvedIs:     (st, v) => st.resolvedAs === v,
+    /* {campaign:"flash_i"} or a list: true in the named campaign(s). For
+       an entry SHARED by several campaigns that wants to branch on which
+       one is running; an entry that belongs to one campaign carries
+       `campaign` itself and is never seen by the others at all. */
+    campaign:       (st, v) => [].concat(v).indexOf(st.campaign) >= 0,
     /* EVERY NAMED EVENT HAS FIRED. An ordered sequence outside a chapter's
        prologue — the aftermath of a result, which plays in chapter two
        while the House still sits — chains on this rather than on a flag

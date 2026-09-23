@@ -387,9 +387,13 @@ const Shell = (function () {
      derived from it off the object it is handed, so a shallow copy with this
      administration's setup merged over SETUP is a different opening with no
      engine change. */
+  /* THE CAMPAIGN'S VIEW OF THE CONTENT, which content/index.js builds: its
+     entries only, its setup merged over the world's, its opening. One
+     builder, so the game, the tests and the tools all play the same
+     campaign (design/36 §3). */
   function contentFor(a) {
-    if (!a || !a.setup) return C;
-    return Object.assign({}, C, { setup: Object.assign({}, C.setup, a.setup) });
+    if (!a) return C;
+    return C.forCampaign ? C.forCampaign(a) : C;
   }
 
   function newGov() {

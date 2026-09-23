@@ -165,7 +165,7 @@ The argument is closed by winning it. What is made of a person stops being a leg
      back over the Maritime Charter's floor within a dozen sittings.
 
      So the gate is the Act. The balance came first, as it should have. */
-  { id: "f1_triumph", rank: 0, crisis: true,
+  { id: "f1_triumph", campaign:"flash_i", rank: 0, crisis: true,
     name: "Orbital Powerhouse",
     summary: "Full annexation. Earth drops the debt claims under threat of satellite transit tariffs.",
     closing: "The platform is Commonwealth territory, and Earth has dropped its claims. " +
@@ -174,7 +174,7 @@ The argument is closed by winning it. What is made of a person stops being a leg
             scalarAbove: { legitimacy: 75, solvency: 70000 },
             scalarBelow: { friction: 60 } } },
 
-  { id: "f1_maritime", rank: 1, crisis: true,
+  { id: "f1_maritime", campaign:"flash_i", rank: 1, crisis: true,
     name: "Maritime Charter",
     summary: "International courts recognise salvage rights. The platform becomes legal Federation territory.",
     closing: "The courts recognise the salvage, and the platform is Commonwealth territory in law. " +
@@ -183,7 +183,7 @@ The argument is closed by winning it. What is made of a person stops being a leg
             scalarAbove: { legitimacy: 55, solvency: 60000 },
             scalarBelow: { friction: 40 } } },
 
-  { id: "f1_pyrrhic", rank: 2, crisis: true,
+  { id: "f1_pyrrhic", campaign:"flash_i", rank: 2, crisis: true,
     name: "Sovereign Debt Trap",
     summary: "Annexed, and 300,000 workers saved. The Federation assumes the defaulted corporate bonds.",
     closing: "The platform is annexed and its workers are saved, and the Commonwealth has assumed " +
@@ -192,7 +192,7 @@ The argument is closed by winning it. What is made of a person stops being a leg
             scalarAbove: { legitimacy: 65, friction: 65 },
             scalarBelow: { solvency: 35000 } } },
 
-  { id: "f1_joint", rank: 3, crisis: true,
+  { id: "f1_joint", campaign:"flash_i", rank: 3, crisis: true,
     name: "UN/Orbital Joint Mandate",
     summary: "A co-administered international free trade zone. No embargo, no territory, mild voter apathy.",
     closing: "The platform is a co-administered free trade zone under a joint mandate. " +
@@ -201,7 +201,7 @@ The argument is closed by winning it. What is made of a person stops being a leg
             scalarAbove: { legitimacy: 40, solvency: 40000, friction: 40 },
             scalarBelow: { legitimacy: 60, solvency: 60000, friction: 60 } } },
 
-  { id: "f1_capitulation", rank: 4, crisis: true,
+  { id: "f1_capitulation", campaign:"flash_i", rank: 4, crisis: true,
     name: "Corporate Re-Entry",
     summary: "The Federation declines the referendum. Earth corporate security reclaims and clears the platform.",
     closing: "The referendum is declined, and corporate security reclaims the platform. " +

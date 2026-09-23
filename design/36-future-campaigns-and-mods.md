@@ -84,6 +84,22 @@ This is the gap that matters for Flash II.
 
 That is moderate engine work plus mechanical tagging of Flash I's content.
 
+**Built, 23 Sep 2026.**
+- **Tags:** `campaign` on any entry.
+- **The view:** `CONTENT.forCampaign(admin)` filters every collection,
+  rebuilds the indexes, merges setup one level deep and carries the
+  `opening` effects.
+- **The state:** `st.campaign` is saved at `STATE_VERSION 30`, and the
+  `campaign` condition reads it.
+- **Editor and lint:** the editor has a Campaign field on events and bills;
+  lint checks tags and cross-campaign references.
+- **Flash I's story is tagged:** 16 events, the Annexation Act, the five
+  tiers, four initiatives, eight awards and the Alliance lender. Its runs
+  are unchanged, and a campaign on the world's content alone plays thirty
+  sittings in `test.js`.
+- **What the opening does not do yet:** reseat the House. A campaign after
+  an election needs its own roll, which is content, not engine.
+
 ## 4. Tooling: strong, and partly Flash I's own
 
 - **General:**
