@@ -2469,17 +2469,20 @@ console.log("\nNO PARTY IS CALLED BY A NAME IT NO LONGER HAS:");
     "Democratic Centre": "rv", "Common Kind": "upl",
     "Station Confederacy": "sc", "Habitat Union League": "hul"
   };
-  const LOOK = ["js", "content", "tools"];
+  /* content/ is read to the bottom: a campaign keeps its story in a folder
+     (content/campaigns/<id>/), and a listing that does not descend passed
+     over all of it the day Flash I moved in. */
+  const LOOK = ["js", "tools"];
   const hits = [];
-  LOOK.forEach(dir => fs.readdirSync(dir)
-    .filter(f => /\.js$/.test(f))
-    .forEach(f => {
-      const p = dir + "/" + f;
+  LOOK.map(dir => fs.readdirSync(dir).filter(f => /\.js$/.test(f)).map(f => dir + "/" + f))
+    .concat([require("./tools/loadcontent.js").contentFiles()])
+    .reduce((a, b) => a.concat(b), [])
+    .forEach(p => {
       const src = fs.readFileSync(p, "utf8");
       Object.keys(GONE).forEach(name => {
         if (src.indexOf(name) >= 0) hits.push(p + ": " + name);
       });
-    }));
+    });
   ["test.js"].forEach(p => {
     /* this file names them on purpose, in the table above */
   });

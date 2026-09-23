@@ -82,4 +82,18 @@ function loadContent() {
   return C;
 }
 
-module.exports = { files, editorFiles, modelFiles, source, scriptsOf, loadTips, loadContent, root, ASSET };
+/* EVERY .js FILE UNDER content/, the campaign folders included, as paths
+   relative to the root. For the checks that read content as TEXT (a retired
+   verb, a party's old name, a phrase an award reads): three of them listed
+   content/ with readdirSync, which does not descend, and went on passing
+   without reading a line of a campaign's folder the day Flash I moved into
+   one. What the pages load is `files`; this is what is in the directory. */
+function contentFiles(dir) {
+  const d = dir || "content";
+  return fs.readdirSync(path.join(root, d), { withFileTypes: true })
+    .reduce((out, e) => e.isDirectory() ? out.concat(contentFiles(d + "/" + e.name))
+                       : /\.js$/.test(e.name) ? out.concat(d + "/" + e.name) : out, []);
+}
+
+module.exports = { files, editorFiles, modelFiles, source, scriptsOf, loadTips, loadContent,
+                   contentFiles, root, ASSET };

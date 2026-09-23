@@ -153,8 +153,8 @@ try {
   const Eng = require(path.join(root, "js", "engine.js"));
   const known = new Set(Object.keys(Eng.EFFECTS));
   const RETIRED = ["scalar", "loyalty", "relationship", "price", "capital", "unflag", "byelection"];
-  fs.readdirSync(path.join(root, "content")).filter(f => /\.js$/.test(f)).forEach(f => {
-    const src4 = fs.readFileSync(path.join(root, "content", f), "utf8");
+  require("./loadcontent.js").contentFiles().forEach(f => {
+    const src4 = fs.readFileSync(path.join(root, f), "utf8");
     RETIRED.forEach(v => {
       /* `{verb:` or `{ verb :` — the object-literal form an effect takes.
          A bare word in prose or a comment is not a match. */
@@ -902,10 +902,10 @@ try {
   MEETS.forEach(k => { if (!new RegExp('k === "' + k + '"').test(shellSrc)) refBad.push("awards: this check lists '" + k + "' and js/shell.js meets() does not read it"); });
   /* Not the awards file itself, or every phrase an award reads is found in
      the award that reads it. */
-  const everything = fs.readdirSync(path.join(root, "content"))
-    .filter(f => /\.js$/.test(f) && f !== "achievements.js")
-    .concat(["../js/engine.js"])
-    .map(f => fs.readFileSync(path.join(root, "content", f), "utf8")).join("\n");
+  const everything = require("./loadcontent.js").contentFiles()
+    .filter(f => !/(^|\/)achievements\.js$/.test(f))
+    .concat(["js/engine.js"])
+    .map(f => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
   (ACHIEVEMENTS || []).forEach(a => {
     const w = a.when || {}, tag = "award " + a.id;
     Object.keys(w).forEach(k => { if (!MEETS.has(k)) refBad.push(tag + ": '" + k + "' is not a key the award matcher reads"); });
