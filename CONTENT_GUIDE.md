@@ -24,49 +24,97 @@ content/parties.js    parties and internal currents
 content/stations.js   the station roster
 content/characters.js the fixed cast
 content/bills.js      bills and how each party votes on them
-content/events.js     ← you will live here
+content/events.js     the world's events
+content/campaigns/<id>/  a campaign's own story, one file per kind
+                      ← you will live here
 ```
 
 ---
 
 ## Campaigns
 
-A **campaign** is one government's story: Flash I is the first. The content
-files hold two things at once, and a field tells them apart:
+A **campaign** is one government's story: Flash I is the first, and the
+proof of concept. The content holds two things at once:
 
 - **The world** — parties, stations, constituencies, characters, the
-  glossary, the Concordance, and every event, bill or settlement with no
-  `campaign` field. Every campaign plays the world.
-- **A campaign's own story** — any entry carrying `campaign:"flash_i"` (or a
-  list of ids). Only that campaign sees it; to every other campaign it does
-  not exist.
+  glossary, the Concordance, and every event, bill or settlement in the
+  files directly under `content/`. Every campaign plays the world.
+- **A campaign's own story** — a folder, `content/campaigns/<id>/`. Only
+  that campaign sees what is in it; to every other campaign it does not
+  exist.
 
-A campaign is declared as an **administration** in `content/setup.js`
-(`ADMINISTRATIONS`), which is what the menu offers:
+Flash I's folder, which is the one to copy:
 
-```js
-{ id:"flash_ii", party:"cu", leader:"flash", ordinal:"II",
-  from:2084, to:2088, session:1,
-  setup:{ startDate:"2084-05-02",               // merged ONE LEVEL deep over the world's:
-          scalars:{ solvency:30000 },           // change one scalar, keep the rest
-          lenders:{ bondholders:{ name:"...", rate:{ fixed:6 } } } },
-  opening:[                                     // effects applied at the first sitting
-    { flag:"f1_resolved_pyrrhic" },             // how the last campaign's canon ending
-    { move:{ "debt.bondholders":30000 } },      // becomes this one's starting state
-    { coalition:{ remove:["rv"] } } ],
-  intro:{ ... } }
+```
+content/campaigns/flash_i/
+  campaign.js       the administration the menu offers, its setup, its
+                    introduction; and the sandbox, which plays it
+  events.js         the crisis, the panic buttons' answers, the canon election
+  bills.js          the Annexation Act
+  settlements.js    the five outcome tiers
+  initiatives.js    the facility, Earth's terms, the pivots
+  achievements.js   its awards
+  scaffold.example.js   the pre-build scaffold, loaded by nothing
 ```
 
-To write a campaign: add its administration, then write its events, bills,
-settlements and initiatives with `campaign:"<its id>"`, in the same files as
-everything else. The editor has a Campaign field on events and bills, and
-shows each entry's campaign in the list. Entries that should serve several
-campaigns stay untagged, and can branch on which one is running with the
-`campaign` condition: `when:{ campaign:"flash_ii" }`.
+Each file is one call. The entries inside are written exactly as they are in
+the world's files:
+
+```js
+campaign("flash_i", { events: [
+
+  { id:"f1_stranded", chapter:2, at:14, once:true, ... },
+
+] });
+```
+
+`campaign()` (in `content/setup.js`) tags every entry `campaign:"flash_i"`
+and adds it to the world's list of that kind, so the engine, the editor and
+every check see it without being told where it lives. The kinds a campaign
+may add are `administrations`, `events`, `bills`, `settlements`,
+`initiatives`, `instruments`, `achievements`, `minutes`, `characters`,
+`actors`, `business`, `glossary` and `articles`. Misspell one and the page
+throws rather than dropping the campaign's story without a word.
+
+**The tag decides, not the folder.** An entry in a world file carrying
+`campaign:"flash_i"` is just as much Flash I's; the folder is where a
+campaign's entries are kept, and the editor writes them back there. An entry
+meant for several campaigns stays in the world's files, untagged, and can
+branch on which one is running with the `campaign` condition:
+`when:{ campaign:"flash_ii" }`.
+
+**Starting a new campaign:**
+
+1. Copy `content/campaigns/flash_i/` to `content/campaigns/<new id>/`, and
+   change the id in every `campaign()` call.
+2. In `campaign.js`, make the administration yours:
+
+   ```js
+   { id:"flash_ii", party:"cu", leader:"flash", ordinal:"II",
+     from:2084, to:2088, session:1,
+     setup:{ startDate:"2084-05-02",               // merged ONE LEVEL deep over the world's:
+             scalars:{ solvency:30000 },           // change one scalar, keep the rest
+             lenders:{ bondholders:{ name:"...", rate:{ fixed:6 } } } },
+     opening:[                                     // effects applied at the first sitting
+       { flag:"f1_resolved_pyrrhic" },             // how the last campaign's canon ending
+       { move:{ "debt.bondholders":30000 } },      // becomes this one's starting state
+       { coalition:{ remove:["rv"] } } ],
+     intro:{ ... } }
+   ```
+3. Add the folder's files to **both** `index.html` and `editor.html`, after
+   the world's content and before `content/index.js`. Every tool reads the
+   page's list, so nothing else needs telling; lint fails if the two pages
+   disagree.
+4. Empty the copied files and write the story.
 
 An administration can also play **another's** campaign. The sandbox is
 `campaign:"flash_i"`: Flash I's content, setup and opening, with its own
-setup on top.
+setup on top. Administrations are not tagged, because their `campaign`
+field means the campaign they play.
+
+**Append, do not insert.** The pool's seeded lean is keyed on an event's
+position in the list a campaign plays, which is the world's events followed
+by the campaign's. A new event goes at the end of its file.
 
 `npm run lint` checks that every tag names a campaign, and that nothing a
 campaign can see names something it cannot. A shared event that queues a
@@ -74,9 +122,20 @@ Flash I event is fine in Flash I and broken everywhere else, and lint says
 so. `CONTENT.forCampaign(id)` builds any campaign's view, and it is what the
 game, the tests and the playtest all play.
 
+**The prose file and the editor both know the folders.** `npm run prose`
+lifts a campaign's sentences with the world's, and `npm run prose:in` writes
+each back to the file it came from. The editor's export writes the world's
+entries to the world's file and each campaign's to `<id>-<kind>.js`, whose
+header says where in the folder it goes. **The two are not alike.** The
+prose file replaces one string in place and leaves everything else in the
+file as it was. The editor's export regenerates the whole file from data
+and drops every comment in it, so a file whose comments matter is edited by
+hand or through the prose file, not through the export.
+
 ## Adding an event
 
-Copy an entry in `content/events.js`. Nothing else changes.
+Copy an entry in `content/events.js`, or in a campaign's `events.js` for
+that campaign's story. Nothing else changes.
 
 ```js
 { id:"unique_id",

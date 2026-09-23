@@ -187,8 +187,11 @@ try {
     Dialog.prompt  = function (m, o, cb) { (typeof o === "function" ? o : cb)(null); };
     Dialog.alert   = function (m, o, cb) { var f = typeof o === "function" ? o : cb; if (f) f(); };
     try { localStorage.clear(); } catch (e) {}
-    (function(){ const f = Serialise.file; Serialise.file = function (k, arr) {
-      window.__cap = JSON.parse(JSON.stringify(arr)); return f.apply(this, arguments); };
+    (function(){ const f = Serialise.files; Serialise.files = function (k, arr) {
+      window.__cap = JSON.parse(JSON.stringify(arr));
+      const out = f.apply(this, arguments);
+      window.__files = out.map(function (x) { return { path: x.path, text: x.text }; });
+      return out; };
       const pf = Serialise.partiesFile; Serialise.partiesFile = function (p, c) {
       window.__cap = JSON.parse(JSON.stringify(p)); return pf.apply(this, arguments); }; })();
     Editor.boot();`);
@@ -272,6 +275,18 @@ try {
         const back = (w2.__cap || []).find(o => o.id === te.id) || {};
         ok("and clearing it makes the event the world's", back.id === te.id && back.campaign === undefined,
            JSON.stringify(back.campaign));
+        /* AND IT IS WRITTEN TO THE WORLD'S FILE. A campaign's entries are kept
+           in its folder (content/campaigns/<id>/), and the export writes each
+           file a kind is kept in; an entry in the wrong one would load twice
+           or not be the campaign's. */
+        const fl = w2.__files || [], idq = 'id:"' + te.id + '"';
+        const inW = fl.filter(x => x.path === "content/events.js" && x.text.indexOf(idq) >= 0).length;
+        const inC = fl.filter(x => /campaigns\//.test(x.path) && x.text.indexOf(idq) >= 0).length;
+        ok("and the export writes it to the world's file, not the campaign's",
+           inW === 1 && inC === 0, fl.map(x => x.path).join(", "));
+        ok("while the campaign's other events still go to its folder",
+           fl.some(x => x.path === "content/campaigns/" + te.campaign + "/events.js"),
+           fl.map(x => x.path).join(", "));
       }
     }
   }

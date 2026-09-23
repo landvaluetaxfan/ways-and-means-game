@@ -81,7 +81,37 @@ const NEVER = new Set(["id", "ref", "kind", "art", "mood", "speaker", "party",
 /* Loading them is tools/loadcontent.js, shared with tools/register.js:
    the content files are script-scope `const`s collected by index.js, so
    they must be concatenated and run in one context, never required. */
-const { loadContent } = require("./loadcontent.js");
+const { loadContent, files: PAGE_FILES } = require("./loadcontent.js");
+
+/* A CAMPAIGN'S ENTRIES ARE KEPT IN ITS FOLDER, content/campaigns/<id>/, so
+   HOME names only the world's file of each kind. The places to look for a
+   passage are, in order: the file of its kind in the folder of the campaign
+   its entry is tagged for; the world's file; and then every campaign file,
+   because an administration is declared in its folder and is not tagged.
+   The first of them that holds the passage is its file. Trying the
+   campaign's own file first is what keeps a common label ("Continue") from
+   resolving to the world's file when it belongs to a campaign's event. */
+const CAMPAIGN_FILES = PAGE_FILES.filter(f => /^content\/campaigns\//.test(f));
+function candidates(C, addr) {
+  const parts = addr.split("/"), coll = parts[0];
+  const arts = coll === "encyclopedia" && parts[1] === "articles";
+  const list = arts ? ((C.encyclopedia || {}).articles || []) : C[coll];
+  const id = arts ? parts[2] : parts[1];
+  const x = Array.isArray(list) ? list.find(e => e && e.id === id) : null;
+  const kind = arts ? "articles" : coll;
+  const own = (x ? [].concat(x.campaign || []) : [])
+    .map(c => "content/campaigns/" + c + "/" + kind + ".js")
+    .filter(f => CAMPAIGN_FILES.indexOf(f) >= 0);
+  return [...new Set(own.concat(HOME[coll] ? [HOME[coll]] : [], CAMPAIGN_FILES))];
+}
+function fileOf(C, addr, text, srcOf) {
+  const c = candidates(C, addr);
+  for (const f of c) {
+    const src = srcOf(f);
+    if (src != null && findRuns(src, literals(src), text).length) return f;
+  }
+  return HOME[addr.split("/")[0]];
+}
 
 /* THE WALK LIVES IN js/prosemap.js, because prose.html needs exactly the
    same one: an address that resolves in the tool and not in the editor
@@ -234,8 +264,7 @@ function readBack(C, target, dry) {
   const parsed = parseFile(fs.readFileSync(target, "utf8"), known);
 
   const srcByFile = {};
-  Object.keys(HOME).forEach(k => {
-    const f = HOME[k];
+  Object.keys(HOME).map(k => HOME[k]).concat(CAMPAIGN_FILES).forEach(f => {
     if (srcByFile[f] == null && fs.existsSync(path.join(root, f)))
       srcByFile[f] = fs.readFileSync(path.join(root, f), "utf8");
   });
@@ -244,7 +273,7 @@ function readBack(C, target, dry) {
   parsed.forEach(p => {
     if (byAddr[p.addr] == null) { missing.push(p.addr); return; }
     if (byAddr[p.addr] === p.text) return;
-    const file = HOME[p.addr.split("/")[0]];
+    const file = fileOf(C, p.addr, byAddr[p.addr], f => srcByFile[f]);
     const r = applyOne(srcByFile, file, byAddr[p.addr], p.text);
     if (r.ok) changed.push(p.addr);
     else failed.push(p.addr + " — " + r.why);
@@ -333,22 +362,30 @@ if (argv.includes("--check")) {
      corrupting anything \u2014 but the author would be told to fix by hand
      something the tool could have done. `notice` was mapped to setup.js and
      lives in artifacts.js. */
-  const wrongHome = [];
+  const wrongHome = [], inFolder = [];
   const cache = {}, litCache = {};
-  rows.forEach(r => {
-    const f = HOME[r.addr.split("/")[0]];
-    if (!f) return;
+  const srcOf = f => {
     if (cache[f] == null)
-      cache[f] = fs.existsSync(path.join(root, f))
-        ? fs.readFileSync(path.join(root, f), "utf8") : "";
-    if (litCache[f] == null) litCache[f] = literals(cache[f]);
-    if (findRuns(cache[f], litCache[f], r.text).length === 0)
+      cache[f] = fs.existsSync(path.join(root, f)) ? fs.readFileSync(path.join(root, f), "utf8") : "";
+    return cache[f];
+  };
+  rows.forEach(r => {
+    const f = fileOf(C, r.addr, r.text, srcOf);
+    if (!f) return;
+    if (litCache[f] == null) litCache[f] = literals(srcOf(f));
+    if (findRuns(srcOf(f), litCache[f], r.text).length === 0)
       wrongHome.push(r.addr);
+    else if (CAMPAIGN_FILES.indexOf(f) >= 0) inFolder.push(r.addr);
   });
   ok("and that file is the one the passage is actually written in",
      wrongHome.length === 0,
      wrongHome.length ? wrongHome.length + " elsewhere, e.g. " +
        wrongHome.slice(0, 3).join(", ") : "all " + rows.length);
+  /* A campaign's folder is where its prose is written, so the round trip
+     has to be seen going through one or it proves nothing about them. */
+  ok("and a campaign's prose is found in its folder",
+     !CAMPAIGN_FILES.length || inFolder.length > 0,
+     inFolder.length + " passages in " + CAMPAIGN_FILES.length + " campaign files");
 
   /* THE FULL ROUND TRIP, through the write-back. Export, import without
      editing a character, and require every source file to be byte-identical
@@ -356,8 +393,7 @@ if (argv.includes("--check")) {
      quietly mangle a content file, which is the one failure that would cost
      real work. */
   const before = {};
-  Object.keys(HOME).forEach(k => {
-    const f = HOME[k];
+  Object.keys(HOME).map(k => HOME[k]).concat(CAMPAIGN_FILES).forEach(f => {
     if (before[f] == null && fs.existsSync(path.join(root, f)))
       before[f] = fs.readFileSync(path.join(root, f), "utf8");
   });

@@ -88,46 +88,6 @@ const ACHIEVEMENTS = [
     note:`Each station sets its own threshold and the Commonwealth has agreed not to ask. There is no national answer any more, and a copy can be a person on one side of a line and an instance on the other. The people who cross pay for that.`,
     when:{ settled:"federal_fudge" } },
 
-  { id:"set_triumph", campaign:"flash_i", name:"Orbital Powerhouse", tier:"settlement",
-    note:"You annexed the Works and Earth dropped its debt claims rather than " +
-         "test what the Commonwealth would do with the anchors it holds. Full " +
-         "annexation on the Commonwealth's terms, with no embargo and the " +
-         "bonds left where they fell.",
-    when:{ resolved:"f1_triumph" } },
-
-  { id:"set_maritime", campaign:"flash_i", name:"Maritime Charter", tier:"settlement",
-    note:"The Works was annexed and an international court recognised the " +
-         "salvage, which makes it Commonwealth territory in law rather than " +
-         "by force. You take the Works and the legal bill, without the " +
-         "stand-off.",
-    when:{ resolved:"f1_maritime" } },
-
-  { id:"set_pyrrhic", campaign:"flash_i", name:"Sovereign Debt Trap", tier:"settlement",
-    note:"The Works was annexed and the Commonwealth assumed the defaulted " +
-         "Cordell bonds that the wind-up left behind. The people are carried; " +
-         "the debt is now the Commonwealth's, and the austerity arrives at " +
-         "the next estimates. This is the campaign's canon ending.",
-    when:{ resolved:"f1_pyrrhic" } },
-
-  { id:"set_joint", campaign:"flash_i", name:"Joint Mandate", tier:"settlement",
-    note:"The referendum was recognised but the Works was not annexed. It " +
-         "became a co-administered free trade zone: no embargo and no " +
-         "territory, and a country that shrugged.",
-    when:{ resolved:"f1_joint" } },
-
-  { id:"set_capitulation", campaign:"flash_i", name:"Corporate Re-Entry", tier:"settlement",
-    note:"The referendum was declined and Cordell's security went back into " +
-         "the Works. The outer habitats struck the same week; the Works stayed " +
-         "outside the Commonwealth and the people on it stayed there.",
-    when:{ resolved:"f1_capitulation" } },
-
-  /* ---------- the supercanon ---------- */
-  { id:"supercanon", campaign:"flash_i", name:"Ways and Means", tier:"canon",
-    note:"You reached the pyrrhic ending \u2014 the Works annexed and the bonds " +
-         "assumed \u2014 and then won the election on it. The canon result with " +
-         "the arithmetic the campaign was built around.",
-    when:{ resolved:"f1_pyrrhic", end:"election", seats:"held" } },
-
   /* ---------- unique actions ---------- */
   { id:"act_carveout_kept", name:"The Order Was Laid", tier:"action",
     note:"You promised the Guild Bench a licensure carve-out and laid SI " +
@@ -162,18 +122,6 @@ const ACHIEVEMENTS = [
          "margin did afterwards, the price was set then and the quota leaves " +
          "when the term comes.",
     when:{ flags:["quota_forward_sold"] } },
-
-  { id:"act_indemnity", campaign:"flash_i", name:"Cover Taken", tier:"action",
-    note:"You took the underwriters' indemnity against the freeze. The " +
-         "premium is spent whether or not the risk lands, and the cover is " +
-         "worth what it is worth on the day the accounts are frozen.",
-    when:{ flags:["indemnity_taken"] } },
-
-  { id:"act_annexed", campaign:"flash_i", name:"The Question Was Carried", tier:"action",
-    note:"You recognised the referendum and moved to annex the Works. This is " +
-         "the decision the campaign is about; whether it becomes an Act is the " +
-         "rest of the session.",
-    when:{ flags:["f1_annexing"] } },
 
   { id:"act_mars", name:"Eleven Sittings", tier:"action",
     note:"You sent a dispatch to the Chryse Basin and Nili Republic and the " +

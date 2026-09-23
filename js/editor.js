@@ -1589,33 +1589,42 @@ const Editor = (function () {
     a.href = URL.createObjectURL(new Blob([text], { type: "text/javascript" }));
     a.download = name; a.click();
   }
+  /* ONE KIND IS SEVERAL FILES once a campaign keeps entries of it: the
+     world's file, and content/campaigns/<id>/<kind>.js for each campaign
+     (Serialise.files). A browser download cannot name a folder, so a
+     campaign's file downloads as `<id>-<kind>.js` and its header says where
+     it is kept. Writing a campaign's entries into the world's file instead
+     would load them twice. */
+  function filesOf(kind) {
+    if (kind === "parties") return [{ path: "content/parties.js", text: Serialise.partiesFile(M.parties, M.currents) }];
+    if (kind === "concordance") return Serialise.encyclopediaFiles(M.encyclopedia);
+    return Serialise.files(kind, M[KIND[kind].arr] || []);
+  }
+  function downloadName(p) {
+    const m = /^content\/campaigns\/([^/]+)\/(.+)$/.exec(p);
+    return m ? m[1] + "-" + m[2] : p.replace(/^content\//, "");
+  }
   function exportAll() {
     commit();
     dirty = false;
     document.getElementById("sb-dirty").textContent = "EXPORTED";
     document.getElementById("sb-dirty").style.color = "";
-    download("events.js", Serialise.file("events", M.events));
-    setTimeout(() => download("parties.js", Serialise.partiesFile(M.parties, M.currents)), 120);
-    setTimeout(() => download("stations.js", Serialise.file("stations", M.stations)), 240);
-    setTimeout(() => download("characters.js", Serialise.file("characters", M.characters)), 360);
-    setTimeout(() => download("bills.js", Serialise.file("bills", M.bills)), 480);
-    setTimeout(() => download("glossary.js", Serialise.file("glossary", M.glossary)), 600);
-    setTimeout(() => download("encyclopedia.js", Serialise.encyclopediaFile(M.encyclopedia)), 720);
-    setTimeout(() => download("functional.js", Serialise.file("functional", M.functional)), 840);
-    setTimeout(() => download("constituencies.js", Serialise.file("constituencies", M.constituencies)), 960);
+    const all = ["events", "parties", "stations", "characters", "bills", "glossary",
+                 "concordance", "functional", "constituencies"]
+      .reduce((a, k) => a.concat(filesOf(k)), []);
+    all.forEach((f, i) => setTimeout(() => download(downloadName(f.path), f.text), i * 120));
   }
   function exportOne() {
     commit();
-    if (sel.tab === "parties") download("parties.js", Serialise.partiesFile(M.parties, M.currents));
-    else if (sel.tab === "concordance") download("encyclopedia.js", Serialise.encyclopediaFile(M.encyclopedia));
-    else if (KIND[sel.tab]) download(sel.tab + ".js", Serialise.file(sel.tab, M[KIND[sel.tab].arr]));
+    if (sel.tab !== "parties" && sel.tab !== "concordance" && !KIND[sel.tab]) return;
+    filesOf(sel.tab).forEach((f, i) => setTimeout(() => download(downloadName(f.path), f.text), i * 120));
   }
   function preview() {
     commit();
     const kind = sel.tab === "graph" ? "events" : sel.tab;
-    const text = kind === "parties" ? Serialise.partiesFile(M.parties, M.currents)
-               : kind === "concordance" ? Serialise.encyclopediaFile(M.encyclopedia)
-               : Serialise.file(kind, M[KIND[kind].arr]);
+    const fs = filesOf(kind);
+    const text = fs.length === 1 ? fs[0].text
+               : fs.map(f => "/* ---------- " + f.path + " ---------- */\n" + f.text).join("\n");
     document.getElementById("ed-preview").textContent = text;
     document.getElementById("ed-previewwrap").style.display = "";
   }

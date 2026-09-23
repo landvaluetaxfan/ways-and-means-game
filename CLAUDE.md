@@ -448,7 +448,8 @@ editor.html           the content editor
 bible.md              canon, out-of-world. Read this first.
 textbook.md           canon, in-world. Charnock's primer.
 sweep-brief.md        the current build phase
-content/*.js          everything authored
+content/*.js          everything authored: the world's
+content/campaigns/<id>/  one campaign's story, one file per kind
 js/engine.js          rules. Names nothing concrete.
 js/ui.js              game rendering
 js/editor.js          the editor
@@ -738,6 +739,20 @@ version of any of them is in the header of the file it names.
   vacuous with one campaign, so it was proved by adding a probe
   administration and tagging a shared bill: eight hits, and none without
   the fault.
+- **A CAMPAIGN IS A FOLDER** (23 Sep). Flash I's story is
+  `content/campaigns/flash_i/`, one file per kind, each a
+  `campaign("flash_i", { events: [...] })` call. `campaign()` is in
+  `content/setup.js`: it tags every entry and pushes it onto the world's
+  list, so nothing downstream learned a new place to look. The folder's
+  files load after the world's and before `content/index.js` on BOTH
+  pages. `ADMINISTRATIONS` in setup.js is empty on purpose; the menu's
+  order is the folders' load order. Two tools had to learn the folders,
+  and each was proved by breaking it: the editor's export
+  (`Serialise.files` writes a kind as the world's file plus one per
+  campaign, and `tools/roundtrip.js` and `tools/edtest.js` assert the
+  split), and the prose write-back (`tools/prose.js` looks in the entry's
+  campaign file first, then the world's, then every campaign file, since
+  administrations are not tagged).
 - **AN EVENT'S OWN `effects` WERE APPLIED BY NOTHING** (found 23 Sep).
   Content put the accounts freeze's flag on the event, "because the
   accounts freeze in the body", and `choose()` applied only the choice's.

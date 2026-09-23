@@ -32,16 +32,18 @@ function play(C,n){
 
 const before=play(mkContent(A),40);
 
-/* serialise → re-evaluate */
+/* serialise → re-evaluate. EVERY FILE A KIND IS KEPT IN: a campaign's
+   entries go to content/campaigns/<id>/<kind>.js, not the world's file, and
+   they come back through `campaign()` in setup.js, so setup.js goes first
+   and the campaign files after the world's lists, as the page loads them. */
+const files=k=>Serialise.files(k,A[k.toUpperCase()]);
+const out=[].concat(files("glossary"),
+  [{path:"content/parties.js",text:Serialise.partiesFile(A.PARTIES,A.CURRENTS)}],
+  files("stations"),files("characters"),files("bills"),files("constituencies"),files("events"));
+const world=out.filter(f=>!/campaigns\//.test(f.path)), camp=out.filter(f=>/campaigns\//.test(f.path));
 const regen =
-  Serialise.file("glossary",A.GLOSSARY)+"\n"+
-  Serialise.partiesFile(A.PARTIES,A.CURRENTS)+"\n"+
-  Serialise.file("stations",A.STATIONS)+"\n"+
-  Serialise.file("characters",A.CHARACTERS)+"\n"+
-  Serialise.file("bills",A.BILLS)+"\n"+
-  Serialise.file("constituencies",A.CONSTITUENCIES)+"\n"+
-  Serialise.file("events",A.EVENTS)+"\n"+
-  fs.readFileSync(path.join(root,"content","setup.js"),"utf8");
+  fs.readFileSync(path.join(root,"content","setup.js"),"utf8")+"\n"+
+  world.map(f=>f.text).join("\n")+"\n"+camp.map(f=>f.text).join("\n");
 const ctx={};
 vm.runInNewContext(regen+"\n;__B={SETUP,PARTIES,CURRENTS,STATIONS,CHARACTERS,BILLS,EVENTS,GLOSSARY,CONSTITUENCIES};",ctx);
 const B=ctx.__B;
@@ -54,7 +56,14 @@ const eq=(l,a,b)=>{ const ok=a===b; if(!ok)fail++;
 
 console.log("ROUND-TRIP: content → serialiser → content");
 console.log("=".repeat(52));
-console.log("  regenerated size:", regen.length, "chars");
+console.log("  regenerated size:", regen.length, "chars, in", out.length, "files ("+camp.length+" a campaign's)");
+/* The split is the point: a campaign's entry written into the world's file
+   as well would load twice, and one written only there would lose its folder. */
+const tagged=[].concat(A.EVENTS,A.BILLS).filter(e=>e.campaign).map(e=>'id:"'+e.id+'"');
+eq("no campaign entry written to a world file",
+   tagged.filter(t=>world.some(f=>f.text.indexOf(t)>=0)).join(" "), "");
+eq("every campaign's entries written to its folder",
+   camp.length>0 && A.EVENTS.filter(e=>e.campaign).length===B.EVENTS.filter(e=>e.campaign).length, true);
 eq("event counts", A.EVENTS.length, B.EVENTS.length);
 eq("party counts", A.PARTIES.length, B.PARTIES.length);
 eq("station counts", A.STATIONS.length, B.STATIONS.length);

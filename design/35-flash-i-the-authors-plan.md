@@ -155,8 +155,9 @@ panic buttons' martial law, domestic thresholds and the media front). Those
 are the rest of this campaign.
 
 **23 Sep, later:** the four pivots and the tier fall are built as examples
-to rewrite. They are initiatives in `content/initiatives.js` and events at
-the end of `content/events.js`, all tagged `campaign:"flash_i"`. Building
+to rewrite. They are initiatives and events at the end of the files in
+`content/campaigns/flash_i/`, the campaign's own folder since the same day.
+Building
 them found that an event's own `effects` were applied by nothing, so the
 accounts freeze had never set `f1_frozen`: the meltdown could not come in
 any run, and the indemnity could not pay. `choose()` applies them now. Left:

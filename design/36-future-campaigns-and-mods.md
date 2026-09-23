@@ -97,6 +97,15 @@ That is moderate engine work plus mechanical tagging of Flash I's content.
   tiers, four initiatives, eight awards and the Alliance lender. Its runs
   are unchanged, and a campaign on the world's content alone plays thirty
   sittings in `test.js`.
+- **A folder each** (later the same day): Flash I's story is
+  `content/campaigns/flash_i/`, one file per kind, each a `campaign()` call
+  that tags its entries and adds them to the world's lists. The tag still
+  decides; the folder is where they are kept. The editor's export and the
+  prose file write each entry back to the file it came from. Moving the
+  entries re-leaned the pool once, because Flash I's events now follow the
+  world's: the canon run is unchanged to the tier (pyrrhic at 28) and
+  reaches the count a sitting later, and every playtest strategy ends the
+  way it did.
 - **What the opening does not do yet:** reseat the House. A campaign after
   an election needs its own roll, which is content, not engine.
 

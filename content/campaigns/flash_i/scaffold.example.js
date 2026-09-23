@@ -1,9 +1,13 @@
 /* =============================================================
    FLASH I — THE CAMPAIGN (placeholder scaffold, NOT WIRED)
 
+   SUPERSEDED, and kept as a record. This was the scaffold written before
+   Flash I was built; the campaign is now the files beside this one, and
+   design/35 is the author's own plan. Several figures here are older than
+   the build (solvency is a reserve in MW-years now, not 0-100).
+
    This file is example content in the vein of the author's plan. It is
-   loaded by NOTHING: the real campaign belongs in content/events.js,
-   content/settlements.js and content/setup.js once the author writes it.
+   loaded by NOTHING: index.html does not name it.
    Every block here is flat prose for the author to replace, and every
    mechanic is annotated against the engine that already exists or the
    one small piece it proposes.

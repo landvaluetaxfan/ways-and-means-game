@@ -350,105 +350,71 @@ const SETUP = {
      session  which session of the term a campaign opens at
      setup    overrides merged over SETUP when a campaign starts from here
 
+     campaign which campaign it plays, when not its own (the sandbox)
+     opening  effects applied at the first sitting, over the world as it is
+     intro    the introduction, drawn by js/setpiece.js
+
    The label is BUILT from these fields in js/shell.js, not stored here, so
-   it can never drift from the data it names. Flash I is the current
-   campaign and the rewrite's too; the bible's 11 April 2080 (§3.9) is a
-   placeholder older than the term, and this dates the campaign to the
-   term's own first year.
+   it can never drift from the data it names.
+
+   THE LIST IS EMPTY HERE ON PURPOSE. Each campaign declares its own
+   administrations in its folder (Flash I's are in
+   content/campaigns/flash_i/campaign.js), and `campaign()` below adds them
+   in the order the pages load the folders, which is the order the menu
+   offers them.
    ============================================================= */
-const ADMINISTRATIONS = [
-  { id:"flash_i", party:"cu", leader:"flash", ordinal:"I",
-    from:2080, to:2084, session:4,
-    /* THE CAMPAIGN'S OWN SETUP, merged one level deep over the world's
-       (CONTENT.forCampaign). Its content is every entry tagged
-       `campaign:"flash_i"` plus the world's. `opening` would hold effects
-       applied at the first sitting; Flash I opens on the world as it is. */
-    setup:{ startDate:"2080-04-11",
-      lenders: {
-        alliance: { name: "The Alliance of Business and Government",
-                    rate: { fixed: 10 }, serviced: false, repayable: false,
-                    note: "the emergency facility, due before the House rises; secured on the Cordell leases" }
-      } },
-    /* THE INTRODUCTION (design/31 §5). Rendered through js/setpiece.js, so
-       the sections and their kinds are the frame's vocabulary: epigraph,
-       lede, body, signature. It is the first thing a player reads, and the
-       last thing in it is the signature that will sign every Act she passes.
+const ADMINISTRATIONS = [];
 
-       DATES, settled with the author. The draft put her arrival in 2081 and
-       the governorship in 2082, which cannot stand: Flash I opens 11 April
-       2080 and she is already Prime Minister. She comes up in 2070 and takes
-       the Bank in 2071, which gives her nine years as Governor before the
-       premiership — long enough to be a record, recent enough that the
-       people she priced are still sitting in the chamber. The bible's 2080
-       is a placeholder older than the term and is not the year. */
-    intro:{
-      /* A BED, not the readout. js/music.js exports its moods by name and
-         `state` is the state readout, so it was never going to play.
-         `anthem` names a recorded track in content/anthem.js: while the
-         introduction is up it plays and the bed steps aside, and leaving it
-         fades the recording out and the bed back in. `mood` is the fallback
-         for a build where the recording is not encoded yet. */
-      mood:"moment",
-      anthem:"la_bionda",
-      title:"Adriana Eireann Flash",
-      art:"flash_intro",
-      sections:[
-        { kind:"epigraph",
-          body:"All the rivers run into the sea; yet the sea is not full.",
-          source:"Ecclesiastes 1:7" },
+/* =============================================================
+   CAMPAIGNS: a folder each, content/campaigns/<id>/.
 
-        { kind:"lede", body:
-`Adriana Eireann Flash is perhaps an example of uncertainty: an unexpected candidate for Prime Minister, a defiance of odds. She had never held elected office before her ascension to the premiership, and yet at this moment she seems to be the best answer the Commonwealth has to the question of who ought to lead it. With the world unsettled and confidence in its old certainties beginning to fray, she stands now at the edge of history.` },
+   A campaign's files load after the world's and before content/index.js,
+   and each hands its entries here, one call per file:
 
-        { kind:"body", head:"The banker", body:
-`When the Circumterrestrial Commonwealth emerged out of the primordial soup that was humanity extending into the heavens — first into orbit around Earth, and then further out into the solar system — Adriana Eireann Flash was a banker for Alphabet-JPMorgan Omni, making a name for herself in the latter half of a century that had been defined, economically, by an upheaval in the institutions of the old order as climate change forced their hand.
+     campaign("flash_i", { events: [ ... ] });
 
-She came up to the Winter Garden in 2070, in the Commonwealth's springtime, when orbital industry was finding its flourishing and nobody yet knew what any of it was worth. A year later she was Governor of the Reserve Bank of the Circumterrestrial Commonwealth. She was to be the first in a line of faceless bankers who would set the precedent for the composed monetary policy of this novel polity.
+   Every entry is tagged `campaign:"<id>"` unless it names a campaign
+   already, and is added to the world's list of that kind. So everything
+   that reads the lists sees it without being told where it lives: the
+   engine through CONTENT.forCampaign, the editor, and every check. THE TAG
+   DECIDES WHOSE AN ENTRY IS; the folder is only where it is kept, and an
+   entry tagged in a world file is just as much the campaign's.
 
-That could have been the whole of it. A decade of steady hands and unread minutes, a portrait in a corridor, a pension. But it's not like every capable leader was evidently destined to do it beforehand.` },
+   Administrations are added but NOT tagged, because an administration's
+   `campaign` field means the campaign it plays (the sandbox plays Flash I),
+   not the one it belongs to.
 
-        { kind:"body", head:"How she came to it", body:
-`The Party of Socialists and Democrats did not choose her because she was one of them. It chose her because the party was seemingly in between worlds, in constant melancholic turmoil, unsure of what was to come next. And so, dark horse she was, she hammered her way to the leadership election, and then she won it. She took First Spin at the election that made her Prime Minister, which is the first elected office she has ever held.
-
-So she is a banker at the head of the party of maintenance labour, which occasionally mitigates the two facts; occasionally it exemplifies it. The members who put her there did it to keep a government.` },
-
-        { kind:"body", head:"What she inherits", body:
-`Her government is a coalition of the Party of Socialists and Democrats, the New Progressive Party, and the Congregational Democratic Alliance; with confidence and supply, they lead a somewhat convincing minority government. Although with that, while the New Progressive Party may align with the PSD on many elements of economic policy, the issue of personhood is one that lies in wait, a test for the shaky alliance which sees a personhood restrictionist PSD and CDA (the CDA also being a semi-awkward fit economically for the governing coalition) pitted against a personhood expansionist NPP.
-
-The PSD are in power because of labour and trade unions. Expanding personhood is a natural threat against that, while the CDA agree from a humanist perspective. The New Progressive Party sees otherwise.
-
-She has four years. The session that opens on the eleventh of April is the fourth, and the House is already sitting.` },
-
-        { kind:"signature", head:"Adriana Eireann Flash \u00b7 Prime Minister" }
-      ] } },
-
-  /* THE SANDBOX. A second government that exists only to be played with, so a
-     tester can reach a branch without playing the session that would have
-     reached it. Its overrides are all setup fields the engine already reads:
-     no pool jitter, a settlement may land as soon as its `when` holds, the
-     idleness drag is off, order-paper time and divisions are effectively
-     unlimited, and the meters open high enough not to lose by accident.
-
-     Its opening SOLVENCY is the tell. It is set far above anything the real
-     campaign can earn, and the test-console events in content/events.js are
-     gated on `scalarAbove:{solvency:900000}`, which is how the console knows
-     it is in the sandbox and stays out of Flash I. No new files, no engine
-     change: `contentFor()` in js/shell.js merges this over SETUP. */
-  { id:"sandbox", party:"cu", leader:"flash", ordinal:"(sandbox)",
-    from:2080, to:2084, session:4,
-    /* Flash I with the brakes off: it plays Flash I's campaign (content,
-       setup and opening) and then its own setup on top. */
-    campaign:"flash_i",
-    setup:{
-      weightJitter: 0,
-      settlementFloorSittings: 1,
-      slotsPerSession: 99,
-      divisionsPerSitting: 99,
-      grantsPerSitting: 99,
-      idleness: { fromChapter: 99, after: 3, drag: { legitimacy: -1 },
-                  mark: "Sandbox: the idleness pressure is off" },
-      scalars: { public_standing: 70, consumables: 80,
-                 thermal_margin: 60, solvency: 999999,
-                 legitimacy: 70, friction: 10 } }
-  }
-];
+   A kind this does not know is an error, and so is one whose world file
+   has not loaded yet. Both fail loudly on purpose: `event:` for `events:`
+   would otherwise drop a campaign's whole story without a word.
+   ============================================================= */
+function campaign(id, parts) {
+  const lists = {
+    administrations: typeof ADMINISTRATIONS !== "undefined" ? ADMINISTRATIONS : null,
+    events:       typeof EVENTS !== "undefined" ? EVENTS : null,
+    bills:        typeof BILLS !== "undefined" ? BILLS : null,
+    settlements:  typeof SETTLEMENTS !== "undefined" ? SETTLEMENTS : null,
+    initiatives:  typeof INITIATIVES !== "undefined" ? INITIATIVES : null,
+    instruments:  typeof INSTRUMENTS !== "undefined" ? INSTRUMENTS : null,
+    achievements: typeof ACHIEVEMENTS !== "undefined" ? ACHIEVEMENTS : null,
+    minutes:      typeof MINUTES !== "undefined" ? MINUTES : null,
+    characters:   typeof CHARACTERS !== "undefined" ? CHARACTERS : null,
+    actors:       typeof ACTORS !== "undefined" ? ACTORS : null,
+    business:     typeof BUSINESS !== "undefined" ? BUSINESS : null,
+    glossary:     typeof GLOSSARY !== "undefined" ? GLOSSARY : null,
+    articles:     typeof ENCYCLOPEDIA !== "undefined" ? ENCYCLOPEDIA.articles : null
+  };
+  Object.keys(parts || {}).forEach(kind => {
+    if (!(kind in lists))
+      throw new Error('campaign("' + id + '"): no kind called "' + kind +
+                      '". A campaign adds ' + Object.keys(lists).join(", ") + ".");
+    const into = lists[kind];
+    if (!into)
+      throw new Error('campaign("' + id + '"): the world\'s ' + kind + " have not loaded. " +
+                      "A campaign's files go after every world file and before content/index.js.");
+    (parts[kind] || []).forEach(x => {
+      if (kind !== "administrations" && x && x.campaign == null) x.campaign = id;
+      into.push(x);
+    });
+  });
+}
