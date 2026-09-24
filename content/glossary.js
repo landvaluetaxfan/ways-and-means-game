@@ -48,7 +48,7 @@ const GLOSSARY = [
     handle:"A regulator with emergency powers and no election to lose.",
     introduced:"vantage_radiator" },
 
-  { term:"functional constituency", cluster:"functional", gloss:"A seat elected by a profession or industry rather than a place.",
+  { term:"functional constituency", cluster:"functional", gloss:"A seat elected by the members of a profession or industry.",
     handle:"The House of Lords, if the Lords were chosen by their trade bodies.",
     introduced:"gb_approach" },
 
@@ -103,7 +103,7 @@ const GLOSSARY = [
   { term:"volume lease", cluster:"markets", gloss:"Volume let forward to a station for a term, paid in cash or in work on its own cycle.",
     handle:"A long lease on a shop, paid in rent or in repairs.",
     introduced:"volume_charter_settles" },
-  { term:"write-off", cluster:"markets", gloss:"Debt secured against a person's continuation, cancelled rather than honoured.",
+  { term:"write-off", cluster:"markets", gloss:"The cancellation of a debt secured against a person's continuation.",
     handle:"Tearing up the invoice because the debtor is the collateral.",
     introduced:"substrate_debt_settles" },
 
@@ -111,7 +111,7 @@ const GLOSSARY = [
     handle:"Washington or Whitehall: the place standing in for the people in it.",
     assumed:true },
 
-  { term:"emulation", gloss:"A person running as software rather than in a body.", assumed:true },
+  { term:"emulation", gloss:"A person running as software, without a body.", assumed:true },
   { term:"root",      gloss:"The original, of which instances are copies.",       assumed:true },
   { term:"the Charter", gloss:"The Perigee Charter. The founding document.",      assumed:true },
   { term:"habitat",   gloss:"A station. Where people live.",                       assumed:true }

@@ -124,8 +124,8 @@ const PARTIES = [
     axes:{},
     note:"District independents. No caucus position, no whip, no leader. Six members " +
          "and six arguments: the seats on Sinter share one, and the others share " +
-         "nothing. Where three of them vote together it is something to notice in " +
-         "the division list rather than anything the House was told." }
+         "nothing. Where three of them vote together, the division list is the " +
+         "only record of it." }
 ];
 
 /* CURRENTS — factions inside a party. Same axes as a party; a current that
@@ -393,7 +393,7 @@ const PARTY_ORG = {
       { role:"Chair", name:"Randall Voight",
         note:"Holds four leases himself and has never seen the difficulty in that." },
       { role:"Chief Agent", name:"Perpetua Lund",
-        note:"Works the lease registers rather than the electoral roll, on the reasoning that they are the same document with different columns." }
+        note:"Works the lease registers, on the reasoning that they are the electoral roll with different columns." }
     ],
     bodies: [
       { name:"The Leaseholders' League", kind:"lobby",
@@ -449,7 +449,7 @@ const PARTY_ORG = {
   upl: {
     officers: [
       { role:"Chair", name:"Nkemdi Ravn",
-        note:"Two seats and a permanent seat at every negotiation, which she treats as the job rather than as a grievance." }
+        note:"Two seats and a permanent seat at every negotiation, which she treats as the job itself." }
     ],
     bodies: [
       { name:"The Uplift Compact", kind:"society",

@@ -171,6 +171,16 @@ was wrong with them. That is the method, and it is repeatable:
   twelve rewritten: the place, the anchor, the economy, the dates. What a
   country has to do with the crisis is a separate note, shown once the
   story has raised it.
+- **24 Sep.** The calibration set was accepted (the Soft Left, the
+  instrument and currents tooltips, Gabon), and the author asked for the
+  rest of the register to be swept. The fifty remaining Reference contrasts
+  were rewritten: constituency tendencies, the Concordance, actors, the
+  glossary, functional franchises, party organisation. Each now states the
+  fact that is true and drops the thing it was set against; where the
+  dropped half carried information, the rewrite says it positively ("each
+  vote weighted by the voter's share of tether capacity", "the division
+  list is the only record of it"). Reference and Interface stand at zero
+  faults. Voice keeps its contrasts as notes, as decided.
 
 ## Using it
 

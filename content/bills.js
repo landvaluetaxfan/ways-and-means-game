@@ -75,9 +75,8 @@ const BILLS = [
                   { move:{ "loyalty.cu_maintenance":7 } },
                   { move:{ "loyalty.psa":-7 } }, { move:{ "capital.psa":-2 } } ] },
       { id:"div_boards", label:"Carve the licensing boards out",
-        note:"The Guild's own ask, moved as an amendment rather than carried as "+
-             "a promise: the threshold binds the boards' members and not their "+
-             "licensure. It buys the functional bench, and the Substrate Left "+
+        note:"The Guild's own ask, moved as an amendment: the threshold binds "+
+             "the boards' members and leaves their licensure untouched. It buys the functional bench, and the Substrate Left "+
              "reads it as the government selling the bill behind them.",
         effects:[ { flag:{ divergence_boards:true } },
                   { move:{ "loyalty.gb":7 } }, { move:{ "rel.gb_chair":5 } },

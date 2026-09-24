@@ -97,7 +97,7 @@ const ACTORS = [
     reach: { fc_attestation: 3, fc_substrate: 2 },
     wants: { divergence_threshold_hours: -1, attestation_enforcement: -1, registry_powers: -1 },
     asks: "no new attestation requirement before the House rises",
-    note: "Two hundred and ten thousand people who rent out their own instances, cannot vote, and are therefore active by other means. They are not organised. They are numerous, which the chamber has learned is not the same thing." },
+    note: "Two hundred and ten thousand people who rent out their own instances, cannot vote, and have no organisation. They act on the chamber through their numbers alone." },
 
   { id: "maintenance_union", name: "Combined Maintenance Trades", kind: "union",
     standing: 61, patience: 45,
@@ -168,7 +168,7 @@ const ACTORS = [
   { id: "tribunal", name: "The Tribunal", kind: "court",
     standing: 55, patience: 90,
     reach: {}, wants: {},
-    asks: "that a reference is answered rather than ignored",
+    asks: "that every reference it hears is answered",
     note: "The bench that hears what the orders do. Its standing is its disposition toward the government and not its quality: a bench at seventy reads an order generously, and a bench at thirty has been given reasons to read it narrowly. It cannot be whipped, it is not elected, and it remembers." },
 
   /* EARTH (Flash I). Two governments the crisis runs through: the bloc
@@ -188,7 +188,7 @@ const ACTORS = [
     standing: 50, patience: 60,
     reach: {}, wants: {},
     asks: "the platform's corporate debt is honoured before any annexation",
-    note: "The treaty union that sanctioned the Commonwealth, and the only power in the dispute that is also a landlord: it holds Tether 4 at Kourou on its own territory. Its grievance is not the platform. It is that the orbital franchises undercut European labour and personhood law, and that European courts cannot reach them. Two sittings between a decision in Brussels and the Commonwealth hearing of it." },
+    note: "The treaty union that sanctioned the Commonwealth, and the only power in the dispute that is also a landlord: it holds Tether 4 at Kourou on its own territory. Its grievance is that the orbital franchises undercut European labour and personhood law, and that European courts cannot reach them. Two sittings between a decision in Brussels and the Commonwealth hearing of it." },
 
   { id: "earth_host", name: "Kenya", kind: "state", foreign: true, lag: 1,
     standing: 55, patience: 40,
@@ -199,14 +199,14 @@ const ACTORS = [
   { id: "mars", name: "Chryse Basin and Nili Republic", kind: "state", foreign: true, lag: 11,
     standing: 44, patience: 80,
     reach: {}, wants: {},
-    asks: "the Commonwealth's position on the metanationals, stated rather than implied",
+    asks: "a public statement of the Commonwealth's position on the metanationals",
     note: "Eleven sittings away, and permanently divided at home: the Chryse Basin wants to dig, and Nili, where Mars' strongest evidence of ancient life sits, will not let it. It buys from the same extraction companies that abandoned the platform, and it has been watching. Everything the Commonwealth hears from it is a fortnight old." },
 
   { id: "metanationals", name: "Cordell", kind: "metanational", foreign: true, lag: 3,
     standing: 47, patience: 70,
     reach: {}, wants: {},
     asks: "the anchor concessions renewed without ratification, on their terms",
-    note: "Quasi-sovereign, and the one foreign actor that is also a domestic lobbyist: the corporation that abandoned the Almanac Works through a ring-fenced subsidiary, holds two anchor concessions, and buys functional seats at home through the Anchor Party. It cannot be whipped and it does not need to be. Its position is not that it was wrong. It is that it was entitled." }
+    note: "Quasi-sovereign, and the one foreign actor that is also a domestic lobbyist: the corporation that abandoned the Almanac Works through a ring-fenced subsidiary, holds two anchor concessions, and buys functional seats at home through the Anchor Party. It cannot be whipped and it does not need to be. Its position is that it acted within its rights." }
 ];
 
 if (typeof module !== "undefined") module.exports = ACTORS;

@@ -76,7 +76,7 @@ const CONSTITUENCIES = [
     parent:"anselm_ring_north",
     material_interest:["tether_traffic", "volume_rationing"],
     description:"Two districts joined at a boundary review: Concord, the old administrative quarter, and Bellfield, the terraces behind it. The electorate is mixed, and the recorded interests are tether traffic and volume rationing.",
-    tendency:"Left-leaning and restrictionist, strongest in the terraces rather than the old quarter, on a roll of 30,230 and a ratio of 0.98. Perpetua Ndiaye's majority is personal rather than structural, and on the party's own numbers the seat would be competitive without her." },
+    tendency:"Left-leaning and restrictionist, strongest in the terraces, on a roll of 30,230 and a ratio of 0.98. Perpetua Ndiaye's majority is a personal vote, and on the party's own numbers the seat would be competitive without her." },
 
   { id:"first_spin", name:"First Spin", station:"anselm", band:"ring",
     magnitude:1, electorate:34743,
@@ -112,7 +112,7 @@ const CONSTITUENCIES = [
     parent:"anselm_ring_central",
     material_interest:["tether_traffic", "volume_rationing"],
     description:"Where the consumables allocation was once read out to the queues, now a commercial square with digital queues. The recorded interests are tether traffic and volume rationing.",
-    tendency:"Commercial and price-sensitive, on a roll of 29,768 and a ratio of 1.00, exactly at the mean. Tomas Kirilenko holds a seat that moves with the consumables price rather than with any national mood, and it is the only ring seat the government has taken and lost twice since the founding." },
+    tendency:"Commercial and price-sensitive, on a roll of 29,768 and a ratio of 1.00, exactly at the mean. Tomas Kirilenko holds a seat that moves with the consumables price, and it is the only ring seat the government has taken and lost twice since the founding." },
 
   { id:"the_exchange", name:"The Exchange", station:"anselm", band:"ring",
     magnitude:1, electorate:33260,
@@ -158,7 +158,7 @@ const CONSTITUENCIES = [
     parent:"anselm_ring_agricultural",
     material_interest:["tether_traffic", "volume_rationing"],
     description:"The station's old water storage, drained and built over, with the vaults still under the housing. The recorded interests are tether traffic and volume rationing.",
-    tendency:"Congregational and restrictionist, on a roll of 27,591 and a ratio of 1.07, one of the smaller and more over-represented electorates in the ring. Viggo Vane holds it, and the personhood line carries because the congregation does the work rather than the party." },
+    tendency:"Congregational and restrictionist, on a roll of 27,591 and a ratio of 1.07, one of the smaller and more over-represented electorates in the ring. Viggo Vane holds it, and the personhood line carries because the congregation does the canvassing." },
 
   { id:"cress_walk_wellhead", name:"Cress Walk—Wellhead", station:"anselm", band:"ring",
     magnitude:1, electorate:28200,
@@ -437,7 +437,7 @@ const CONSTITUENCIES = [
     parent:"meridian_spindle_east",
     material_interest:["tether_traffic", "substrate_supply"],
     description:"The loop district on the spindle's inner face, and the offices that work the tether trade. The recorded interests are tether traffic and substrate supply.",
-    tendency:"Commercial and free-trading, on a roll of 27,614 and a ratio of 1.07. Halima Okafor holds the station's commercial seat, the only one where the Liberal vote is structural rather than personal." },
+    tendency:"Commercial and free-trading, on a roll of 27,614 and a ratio of 1.07. Halima Okafor holds the station's commercial seat, the only one where the Liberal vote is structural and would outlast its member." },
 
   { id:"east_gallery_and_sailmakers", name:"East Gallery & Sailmakers", station:"meridian", band:"ring",
     magnitude:1, electorate:25907,
@@ -446,7 +446,7 @@ const CONSTITUENCIES = [
     parent:"meridian_spindle_east",
     material_interest:["tether_traffic", "substrate_supply"],
     description:"Two districts on the station's eastern gallery, one of them the old sailmakers' quarter. The recorded interests are tether traffic and substrate supply.",
-    tendency:"Home-rule and gallery trades, on a roll of 25,907 and a ratio of 1.14. Kestrel Vane holds a home-rule seat in a ring station, and it holds because the gallery districts were built by the station authority rather than the union." },
+    tendency:"Home-rule and gallery trades, on a roll of 25,907 and a ratio of 1.14. Kestrel Vane holds a home-rule seat in a ring station, and it holds because the station authority built the gallery districts." },
 
   { id:"meridian_yard", name:"Meridian Yard", station:"meridian", band:"ring",
     magnitude:1, electorate:21673,
@@ -509,7 +509,7 @@ const CONSTITUENCIES = [
     parent:"meridian_tether_head",
     material_interest:["tether_traffic", "substrate_supply"],
     description:"The spiral service decks that run the length of the spindle. The recorded interests are tether traffic and substrate supply.",
-    tendency:"Service grades and left, on a roll of 23,579 and a ratio of 1.26. Perpetua Zubiri holds one of the few ring seats where the vote is read as a verdict on the station authority rather than the government." },
+    tendency:"Service grades and left, on a roll of 23,579 and a ratio of 1.26. Perpetua Zubiri holds one of the few ring seats where the vote is read as a verdict on the station authority." },
 
   { id:"counterweight_row", name:"Counterweight Row", station:"meridian", band:"ring",
     magnitude:1, electorate:24336,
@@ -527,7 +527,7 @@ const CONSTITUENCIES = [
     parent:"meridian_underdecks",
     material_interest:["tether_traffic", "substrate_supply"],
     description:"The lowest service decks, below the main pressurised volume. The recorded interests are tether traffic and substrate supply.",
-    tendency:"Maintenance union and left, on a roll of 22,192 and a ratio of 1.34. Thandi Thorne holds a small and poor electorate whose loyalty is to the maintenance union rather than to any party programme." },
+    tendency:"Maintenance union and left, on a roll of 22,192 and a ratio of 1.34. Thandi Thorne holds a small and poor electorate whose loyalty is to the maintenance union." },
 
   { id:"trentham_lowbay", name:"Trentham—Lowbay", station:"meridian", band:"ring",
     magnitude:1, electorate:28502,
@@ -546,7 +546,7 @@ const CONSTITUENCIES = [
     parent:"meridian_underdecks",
     material_interest:["tether_traffic", "substrate_supply"],
     description:"The dense housing warrens on the station's inner face, built for the tether workforce. The recorded interests are tether traffic and substrate supply.",
-    tendency:"Emulated residents, and expansionist, on a roll of 23,094 and a ratio of 1.28. Tomas Halstead holds the NPP's one ring foothold, on the emulated residents' register rather than the embodied trades." },
+    tendency:"Emulated residents, and expansionist, on a roll of 23,094 and a ratio of 1.28. Tomas Halstead holds the NPP's one ring foothold, on the emulated residents' register." },
 
   { id:"ostler_green", name:"Ostler Green", station:"meridian", band:"ring",
     magnitude:1, electorate:22833,
@@ -636,7 +636,7 @@ const CONSTITUENCIES = [
     parent:"sable_drum_rim",
     material_interest:["tether_traffic", "consumables_subsidy"],
     description:"The drumhead district at the station's north end. The recorded interests are tether traffic and consumables subsidy.",
-    tendency:"Subsidy-first and left, on a roll of 28,583 and a ratio of 1.04. Constance Ekwueme holds the government's one Bondsville seat, on the consumables subsidy rather than the party's national position." },
+    tendency:"Subsidy-first and left, on a roll of 28,583 and a ratio of 1.04. Constance Ekwueme holds the government's one Bondsville seat, on the strength of the consumables subsidy." },
 
   { id:"leaseside_rentfield", name:"Leaseside—Rentfield", station:"sable", band:"ring",
     magnitude:1, electorate:33162,
@@ -672,7 +672,7 @@ const CONSTITUENCIES = [
     parent:"halvard_terrace",
     material_interest:["volume_rationing", "tether_traffic"],
     description:"The centre of Halvard Works, and the volume brokers who work it. The recorded interests are volume rationing and tether traffic.",
-    tendency:"Volume brokers and landlords' liberalism, on a roll of 31,314 and a ratio of 0.95. Signe Crowther holds the one place in the ring where the Liberal vote is a landlord's rather than a tenant's." },
+    tendency:"Volume brokers and landlords' liberalism, on a roll of 31,314 and a ratio of 0.95. Signe Crowther holds the one ring seat where the Liberal vote comes from landlords." },
 
   { id:"the_crescent", name:"The Crescent", station:"halvard", band:"ring",
     magnitude:1, electorate:31559,
@@ -717,7 +717,7 @@ const CONSTITUENCIES = [
     parent:"hollows_north",
     material_interest:["consumables_subsidy", "volume_rationing"],
     description:"The northern half of the Brant bundle, and the oldest of its sixteen settlements. The recorded interests are the consumables subsidy and volume rationing.",
-    tendency:"Subsidy-dependent and restrictionist, on a roll of 38,090 and a ratio of 0.78, well under-represented against the mean. Otto Mainwaring holds a large and poor electorate, and the personhood line sells on the restoration register rather than the party machine." },
+    tendency:"Subsidy-dependent and restrictionist, on a roll of 38,090 and a ratio of 0.78, well under-represented against the mean. Otto Mainwaring holds a large and poor electorate, and the personhood line sells on the restoration register." },
 
   { id:"brant_south", name:"Brant South", station:"hollows", band:"far",
     magnitude:1, electorate:34083,
@@ -744,7 +744,7 @@ const CONSTITUENCIES = [
     parent:"hollows_south",
     material_interest:["consumables_subsidy", "volume_rationing"],
     description:"The Ellery cross-district and the Thin Air settlements behind it. The recorded interests are the consumables subsidy and volume rationing.",
-    tendency:"Home-rule on the lift, on a roll of 41,140 and a ratio of 0.72, the largest electorate in the far band and its most under-represented. Amias Castellan holds it, and the seat reads the lift as charity rather than entitlement." },
+    tendency:"Home-rule on the lift, on a roll of 41,140 and a ratio of 0.72, the largest electorate in the far band and its most under-represented. Amias Castellan holds it, and the seat regards the federal lift as charity." },
 
   { id:"kincaid", name:"Kincaid", station:"hollows", band:"far",
     magnitude:1, electorate:34645,
@@ -771,7 +771,7 @@ const CONSTITUENCIES = [
     parent:"tsiolkovsky_north",
     material_interest:["substrate_supply", "thermal_quota"],
     description:"The centre of Farstead, and the thermal engineers who work the quota. The recorded interests are substrate supply and the thermal quota.",
-    tendency:"Thermal engineers and restrictionist, on a roll of 38,208 and a ratio of 0.78. Boyd Mwangi holds the AES's far-band seat, on the argument that the quota is a technical question rather than a political one." },
+    tendency:"Thermal engineers and restrictionist, on a roll of 38,208 and a ratio of 0.78. Boyd Mwangi holds the AES's far-band seat, on the argument that the quota is a technical question for engineers." },
 
   { id:"the_rackworks", name:"The Rackworks", station:"tsiolkovsky", band:"far",
     magnitude:1, electorate:35582,
@@ -789,7 +789,7 @@ const CONSTITUENCIES = [
     parent:"tsiolkovsky_substrate_quarter",
     material_interest:["substrate_supply", "thermal_quota"],
     description:"The substrate quarter, where the hosting capacity is concentrated. The recorded interests are substrate supply and the thermal quota.",
-    tendency:"Minds-first and expansionist, on a roll of 33,408 and a ratio of 0.89. Beatrix Pemberton holds the NPP's far-band seat, the one place where more minds is an electoral promise rather than a threat." },
+    tendency:"Minds-first and expansionist, on a roll of 33,408 and a ratio of 0.89. Beatrix Pemberton holds the NPP's far-band seat, the one place where more minds is an electoral promise." },
 
   { id:"cold_storage_and_dray_end", name:"Cold Storage & Dray End", station:"tsiolkovsky", band:"far",
     magnitude:1, electorate:40290,
@@ -888,7 +888,7 @@ const CONSTITUENCIES = [
     parent:"vantage_radiator_row",
     material_interest:["thermal_quota", "shed_order_priority"],
     description:"The park district on the station's cool side. The recorded interests are the thermal quota and the shed order.",
-    tendency:"Home-rule and the radiator fault, on a roll of 30,106 and a ratio of 0.98. Casimir Marchetti holds a close seat, the one Ember Ridge district where the fault is read as a failure of the station authority rather than the government." },
+    tendency:"Home-rule and the radiator fault, on a roll of 30,106 and a ratio of 0.98. Casimir Marchetti holds a close seat, the one Ember Ridge district where voters blame the fault on the station authority." },
 
   { id:"the_yards", name:"The Yards", station:"perigee", band:"middle",
     magnitude:1, electorate:24993,
@@ -915,7 +915,7 @@ const CONSTITUENCIES = [
     parent:"perigee_yards",
     material_interest:["tether_traffic", "yard_contracts"],
     description:"The slipway district, and the launching crews who work it. The recorded interests are tether traffic and the yard contracts.",
-    tendency:"Launching crews and left, on a roll of 29,316 and a ratio of 1.01. Suravaram Vidyasagar holds it on the union vote rather than on the party's programme." },
+    tendency:"Launching crews and left, on a roll of 29,316 and a ratio of 1.01. Suravaram Vidyasagar holds it on the union vote." },
 
   { id:"the_loop", name:"The Loop", station:"calloway", band:"middle",
     magnitude:1, electorate:31643,
@@ -980,7 +980,7 @@ const CONSTITUENCIES = [
     parent:"the_tannery",
     material_interest:["consumables_subsidy", "shed_order_priority"],
     description:"The works itself, and the trades that process what other stations will not. The recorded interests are the consumables subsidy and the shed order.",
-    tendency:"Tannery trades and left, on a roll of 13,872 and a ratio of 2.14. Hakim Rasmussen holds a small and over-represented electorate, and it votes for the work to be recognised as essential rather than tier four." },
+    tendency:"Tannery trades and left, on a roll of 13,872 and a ratio of 2.14. Hakim Rasmussen holds a small and over-represented electorate, and it votes to have the work reclassified from tier four to essential." },
 
   { id:"skinners_row_and_barkfield", name:"Skinners Row & Barkfield", station:"tannery", band:"middle",
     magnitude:1, electorate:13967,
@@ -998,7 +998,7 @@ const CONSTITUENCIES = [
     parent:"ashfield_a_c",
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"],
     description:"The first of the numbered Homestead districts, and the one that kept the letter. The recorded interests are the consumables subsidy, the shed order and volume rationing.",
-    tendency:"Independent, and no whip, on a roll of 32,992 and a ratio of 0.90. Rosalind Grimsby holds it, a local tradition in a station of fifteen seats rather than a statement." },
+    tendency:"Independent, and no whip, on a roll of 32,992 and a ratio of 0.90. Rosalind Grimsby holds it by local tradition, in a station of fifteen seats." },
 
   { id:"homestead_two", name:"Homestead Two", station:"ashfield", band:"low",
     magnitude:1, electorate:34149,
@@ -1006,7 +1006,7 @@ const CONSTITUENCIES = [
     held:{cu:1},
     parent:"ashfield_a_c",
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"],
-    description:"The second Homestead district, numbered in words rather than figures. The recorded interests are the consumables subsidy, the shed order and volume rationing.",
+    description:"The second Homestead district, whose number is spelled out in words. The recorded interests are the consumables subsidy, the shed order and volume rationing.",
     tendency:"Union and left, on a roll of 34,149 and a ratio of 0.87. Nikolai Bassey holds a large and poor electorate, the government's safest seat in the station." },
 
   { id:"homestead_iii", name:"Homestead III", station:"ashfield", band:"low",
@@ -1096,7 +1096,7 @@ const CONSTITUENCIES = [
     held:{cu:1},
     parent:"ashfield_slagside",
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"],
-    description:"A rationing tier rather than a place, and the district the shed order is named for. The recorded interests are the consumables subsidy, the shed order and volume rationing.",
+    description:"The district takes its name from a rationing tier, and the shed order takes its name from the district. The recorded interests are the consumables subsidy, the shed order and volume rationing.",
     tendency:"Dissident left, and the tier grievance, on a roll of 30,208 and a ratio of 0.98. Dan Czarnecki holds it, and he leads the government's own dissident group." },
 
   { id:"the_cans", name:"The Cans", station:"ashfield", band:"low",
@@ -1336,6 +1336,6 @@ const CONSTITUENCIES = [
     nonVoting:true,
     parent:"winter_garden",
     material_interest:["charter_interpretation", "attestation_enforcement"],
-    description:"The capital territory returns one delegate, chosen by the whole station and denied a vote on the floor. The electorate is the most transient in the Commonwealth: civil servants, the diplomatic corps, and the staff of the ministries, most of whom keep a vote in the district they came from. Turnout is high, and the result is read as a verdict on the government of the day rather than on the delegate.",
+    description:"The capital territory returns one delegate, chosen by the whole station and denied a vote on the floor. The electorate is the most transient in the Commonwealth: civil servants, the diplomatic corps, and the staff of the ministries, most of whom keep a vote in the district they came from. Turnout is high, and the result is read as a verdict on the government of the day.",
     tendency:"Non-voting by construction, on a roll of 49,200. Rowan Charteris holds the delegate's seat, which may speak and may not vote; the territory's politics are the politics of the capital, and the delegate is chosen to be nobody's." },
 ];

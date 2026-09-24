@@ -59,7 +59,7 @@ const ENCYCLOPEDIA = {
         "About 46 per cent of jobs need an embodied worker, and biological persons hold nearly "+
         "all of them. The working population is therefore mostly biological, and the non-working "+
         "population mostly emulated.\n\n"+
-        "A body is a qualification, not a mark of status. Embodied work runs from the anchor "+
+        "A body is a qualification for work. Embodied work runs from the anchor "+
         "crews, the best-paid employment in the Commonwealth, to integrity engineering, which is "+
         "licensed and unionised and can withdraw its labour." },
       { h:"Exposure", body:
@@ -85,8 +85,8 @@ const ENCYCLOPEDIA = {
       { h:"Uploading under economic pressure", body:
         "Emulation is cheaper on volume and dearer on thermal. A household driven to upload is "+
         "therefore one that cannot meet its *volume* rent, which puts it in the ring or middle "+
-        "band rather than the low band. Uploading is not a way to escape a rent that is already "+
-        "cheap.\n\n"+
+        "band, where volume rents are highest. In the low band, where volume is already cheap, "+
+        "uploading saves little.\n\n"+
         "It removes access to about 46 per cent of paid work, and returning to that work costs "+
         "more in body rent than the rent being escaped. It also puts a person who could not "+
         "previously be switched off onto a register where they can be.\n\n"+
@@ -124,18 +124,18 @@ const ENCYCLOPEDIA = {
       "[[parliament|Parliament]] and a [[cabinet|Cabinet]] under a [[prime_minister|Prime Minister]].",
     sections:[
       { h:"Name", body:
-        "*Circumterrestrial* is the Charter's term and appears on every instrument of state. It "+
-        "is not used in speech. The country is called the Commonwealth, the government is called "+
-        "Perigee, and a person is said to be from their station.\n\n"+
-        "The far-band delegations objected at the founding that the word described a geometry "+
-        "rather than a country. That was the objection, and it is also why the word was adopted." },
+        "*Circumterrestrial* is the Charter's term and appears on every instrument of state. In "+
+        "speech the country is called the Commonwealth, the government is called Perigee, and a "+
+        "person is said to be from their station.\n\n"+
+        "The far-band delegations objected at the founding that the word described an orbit and "+
+        "named no nation. The founders adopted it for the same reason." },
       { h:"The demonym", body:
         "**Commonwealther** is the most-used demonym for a citizen of the Commonwealth, and the "+
         "one the papers and the House use. *Circumterrestrials* is the Charter-era form: it "+
         "appears in four founding documents and is not used in speech. Several alternatives have "+
         "been proposed and have failed.\n\n"+
-        "The word caught on slowly, because the union is held together by shared metabolism "+
-        "rather than shared identity. Asked what they are, many residents still name a station "+
+        "The word caught on slowly, because what holds the union together is shared metabolism: "+
+        "the stations' dependence on one another for air, heat and transit. Asked what they are, many residents still name a station "+
         "first, and add Commonwealther second, as though the two answered different questions." },
       { h:"Composition", body:
         "The Commonwealth has thirty stations across four altitude bands, and five external "+
@@ -189,7 +189,7 @@ const ENCYCLOPEDIA = {
     banners:[],
     edited:{ by:"multiple", attested:true, note:"" },
     summary:"The **Prime Minister** is the head of government of the Commonwealth. The office is "+
-      "not elected. It is held by whoever can command a majority in the "+
+      "held by whoever can command a majority in the "+
       "[[parliament|House of Delegates]].",
     sections:[
       { h:"Tenure", body:
@@ -232,8 +232,8 @@ const ENCYCLOPEDIA = {
       { h:"Collective responsibility", body:
         "A minister who cannot support a decision is expected to resign before opposing it. In "+
         "practice the convention is observed by absence more often than by resignation. Two "+
-        "Congregational Democratic Alliance ministers were absent from the threshold division rather than vote "+
-        "against the leadership." },
+        "Congregational Democratic Alliance ministers who opposed the threshold were absent from "+
+        "its division." },
       { h:"The Treasury", body:
         "The Treasury sits apart from the ministries and reports directly to the Prime Minister. "+
         "It answers for the appropriation, and a post left vacant is a budget argued by "+
@@ -276,8 +276,8 @@ const ENCYCLOPEDIA = {
     sections:[
       { h:"Argument for", body:
         "Proponents argue that a committee cannot be convened in the ninety seconds available "+
-        "when a seal fails. On this view an engineering authority with final judgment is a "+
-        "precondition for ordinary politics, not a suspension of it, and demands for civilian "+
+        "when a seal fails. On this view an engineering authority with final judgment is what "+
+        "makes ordinary politics possible, and demands for civilian "+
         "oversight come from those who have not experienced a loss of pressure." },
       { h:"Argument against", body:
         "Critics argue that emergency authorities always find emergencies. They cite the "+
@@ -311,7 +311,7 @@ const ENCYCLOPEDIA = {
     banners:["contested"],
     edited:{ by:"Apportionment Reform Society", attested:true, note:"" },
     summary:"A **functional constituency** is a seat in the House of Delegates elected by a "+
-            "profession or industry, not by a place. Forty of the 280 seats are functional.",
+            "profession or industry. Forty of the 280 seats are functional.",
     sections:[
       { h:"Origin", body:
         "The functional tier comes from the founding compromise. The Charter's authors needed "+
@@ -403,7 +403,7 @@ const ENCYCLOPEDIA = {
       { h:"Forwarding", body:
         "A **[[quota_forward|quota forward]]** fixes a price now for capacity delivered at a "+"named sitting. The seller takes the money today and hands over the margin later. "+"Into a tight release the sale is a hedge; into a loose one it is a hole, and the "+"consortiums price the difference because they hold the only complete numbers." },
       { h:"Fraud", body:
-        "The market has been traded, hedged, forwarded and defrauded since the Charter, "+"and the Commonwealth has legislated against the fourth of those four times. The "+"offence is not the sale of capacity that does not exist. It is the sale of the "+"same capacity twice, which the Registry can detect and the courts cannot." },
+        "The market has been traded, hedged, forwarded and defrauded since the Charter, "+"and the Commonwealth has legislated against the fourth of those four times. The "+"offence is the sale of the "+"same capacity twice, which the Registry can detect and the courts cannot." },
       { h:"The Commonwealth's position", body:
         "The state is the issuer of the quota and a participant in the market for it. "+"Critics of the arrangement note that a government which sets the release also "+"trades on it. The Treasury's answer is that the release is set by a division and "+"the trading is not." }
     ],
@@ -434,7 +434,7 @@ const ENCYCLOPEDIA = {
       { h:"Volume", body:
         "Volume is positional. Ring-band volume is dear because everyone wants to be "+"there; low-band volume is nearly free because nobody does. A lease converts that "+"difference into a term of years." },
       { h:"The lease", body:
-        "The rent is paid in one of two currencies: cash, or work on the station's own "+"material cycle. The second is worth more and is not guaranteed, which is what "+"makes a lease a political instrument rather than a conveyance. A station that "+"raises its closure under a lease needs less of the federal lift, and is closer to "+"feeding itself in the event of a separation." },
+        "The rent is paid in one of two currencies: cash, or work on the station's own "+"material cycle. The second is worth more and is not guaranteed, which is what "+"makes a lease a political instrument. A station that "+"raises its closure under a lease needs less of the federal lift, and is closer to "+"feeding itself in the event of a separation." },
       { h:"Inheritance", body:
         "Leases are inheritable, and the law of inheritance as it applies to reabsorbed "+"and suspended persons is unsettled. The leading case is before the Tribunal. "+"Meanwhile the market prices the uncertainty and not the law." }
     ],
@@ -446,9 +446,9 @@ const ENCYCLOPEDIA = {
     summary:"**Substrate futures** are forward contracts on mind-hours, and the debt written "+"against them is secured by the continuation of the persons who run. Where a "+"platform is abandoned, its debt survives its residents, and the choice between "+"assuming that debt and writing it off is a choice about who is owed.",
     sections:[
       { h:"The contract", body:
-        "A substrate future fixes a price now for computation delivered later. Because "+"clock rates differ twentyfold between persons, the contract is written on "+"objective hours and settled in MW-years rather than in subjective experience." },
+        "A substrate future fixes a price now for computation delivered later. Because "+"clock rates differ twentyfold between persons, the contract is written on "+"objective hours and settled in MW-years." },
       { h:"The debt", body:
-        "**Credit secured against one's own continuation** is the ordinary financing of a "+"habitat. A station borrows against the productive capacity of its residents, who "+"are the collateral. When the station fails, the lenders' claim runs against the "+"people rather than the place." },
+        "**Credit secured against one's own continuation** is the ordinary financing of a "+"habitat. A station borrows against the productive capacity of its residents, who "+"are the collateral. When the station fails, the lenders' claim runs against the "+"people." },
       { h:"The platform", body:
         "The Bellamy Almanac Works and its 184,000 residents are the present "+"case. The debt has not failed with the platform; it has been assigned. A "+"government that assumes it pays for people it does not own. A government that "+"[[write-off|writes it off]] has told the lenders what its word is worth." }
     ],

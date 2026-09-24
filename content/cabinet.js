@@ -82,7 +82,7 @@ const CABINET = [
   { id:"persons_continuity",      name:"Persons, Health and Continuity", title:"Minister for Persons, Health and Continuity",
     holder:"marin", party:"rv",
     brief:["divergence_threshold_hours","civic_clock_minimum"],
-    note:"Medicine and Embodiment returns three members and had no Minister facing it. Health sits here because in this republic being treated, being suspended and being a person are one question, and the Congregational Democratic Alliance holds the office that answers it. Held from a district seat rather than the medicine roll." },
+    note:"Medicine and Embodiment returns three members and had no Minister facing it. Health sits here because in this republic being treated, being suspended and being a person are one question, and the Congregational Democratic Alliance holds the office that answers it. The minister sits for a district seat." },
   { id:"labour_participation",    name:"Labour and Participation",  title:"Minister for Labour and Participation",
     holder:"herrera", party:"psa",
     brief:["divergence_threshold_hours","public_standing"],

@@ -74,10 +74,10 @@ const FUNCTIONAL = [
       { body:"Pressure Fitters' Society", count:21400 },
       { body:"Hull Platers", count:15900 },
       { body:"Rotational Mechanics", count:8700 } ],
-    note_franchise:"The executive casts, not the members. Two hundred and "+
-      "fourteen thousand votes are decided in a room, which is why one party "+
-      "holds all seven and why the union is a scandal surface rather than a "+
-      "safe bloc.", board:null,
+    note_franchise:"The union's executive casts the vote for its members. Two "+
+      "hundred and fourteen thousand votes are decided in a room, which is why "+
+      "one party holds all seven, and why every seat the union returns is "+
+      "exposed to scandal.", board:null,
     held:{ cu:7 },
     members:[ { ref:"MT-1", party:"cu", name:"Marit Thibault" },
               { ref:"MT-2", party:"cu", name:"Corin Rasheed" },
@@ -149,7 +149,7 @@ const FUNCTIONAL = [
       { body:"Anchor lessees", count:5 },
       { body:"Loop operators", count:23 },
       { body:"Tether service consortiums", count:34 } ],
-    note_franchise:"Weighted by tether capacity share, not one body one vote. "+
+    note_franchise:"Weighted by each voter's share of tether capacity. "+
       "Sixty-two voters and the largest balance sheet in the Commonwealth; a "+
       "flat franchise would understate them and everyone knows it.", board:null,
     held:{ cl:3, fh:1 },
@@ -159,7 +159,7 @@ const FUNCTIONAL = [
               { ref:"TA-4", party:"fh", name:"Sena Reyes" } ],
     interest:["anchor_concession","tether_traffic"],
     note:"Sixty-two voters. The smallest electorate in the Commonwealth and the largest balance sheet.",
-    description:`Four seats on 62 voters, weighted by tether capacity rather than one body one vote. The smallest electorate in the Commonwealth and the largest balance sheet. Both sides of the argument about the tier begin there.` },
+    description:`Four seats on 62 voters, each vote weighted by the voter's share of tether capacity. The smallest electorate in the Commonwealth and the largest balance sheet. Both sides of the argument about the tier begin there.` },
 
   { id:"fc_medicine", name:"Medicine and Embodiment", seats:3,
     franchise:"licensure", electorate:2700,

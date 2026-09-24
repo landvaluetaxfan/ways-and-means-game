@@ -130,7 +130,7 @@ const INSTRUMENTS = [
     author:"substrate_thermal", procedure:"negative", prayer_window:6, revocable:true,
     summary:"Asks the stations to draw down non-essential load ahead of the winter margin. "+
             "It asks; it does not compel. The margin improves a little and the appeal is forgotten in a week.",
-    effect_note:"The cheapest rung, and the one that buys the least. A first move, not a policy.",
+    effect_note:"The cheapest rung, and the one that buys the least: a first move, made before the dearer ones.",
     effects:[ {move:{"thermal_margin":3}}, { flag:"rung1_tried" },
               { wire:"CONSERVATION APPEAL ISSUED TO STATION AUTHORITIES" } ],
     reverse:[ {move:{"thermal_margin":-3}}, { flag:{ rung1_tried:false } } ],
