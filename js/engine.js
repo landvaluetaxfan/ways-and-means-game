@@ -2369,7 +2369,7 @@ const Engine = (function () {
       const pty = ((C.partyById || {})[p.party] || {}).name || p.party;
       return { ok: false, code: "partner",
         reason: "the " + pty + " names its own ministers under the coalition agreement, and " +
-                "only it can withdraw one; dismissing one would end the agreement, not reshuffle it" };
+                "only it can withdraw one. Dismissing one would end the agreement" };
     }
     /* AND THERE HAS TO BE SOMEBODY TO APPOINT. Content declares who may hold
        a post (§15.5) and there is no other way to fill one, so dismissing
