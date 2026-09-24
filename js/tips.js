@@ -177,10 +177,13 @@ const Tips = (function () {
             "district roll count different people." },
 
     currents: { title: "Currents",
-      body: "The factions inside a party, with how many members each carries " +
-            "and how loyal each is to its leadership. A party's own row is an " +
-            "average of these; a division is not. A current far below its " +
-            "party's loyalty is where a rebellion comes from." },
+      body: "The organised factions inside a party. The triangle opens a party's " +
+            "row to list its currents, with the number of members in each and " +
+            "their loyalty to the party leadership. The party's loyalty is the " +
+            "average of its currents', weighted by size. In a division each " +
+            "current is counted separately, and one whose loyalty has fallen " +
+            "well below the party's is the most likely to vote against the whip. " +
+            "A party with no organised currents opens to a single bench." },
 
     underwriters: { title: "The Underwriters",
       body: "Insurance rather than banking is the dominant institution here, " +

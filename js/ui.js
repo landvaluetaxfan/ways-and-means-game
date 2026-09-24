@@ -3009,16 +3009,28 @@ const UI = (function () {
     C.parties.forEach(p => {
       const sq = seatsOf(p.id), r = armed && d.rows.find(x => x.party === p.id);
       const mine = (C.currents || []).filter(cu => cu.party === p.id);
-      const open = compOpen === p.id && mine.length;
-      h += `<tr class="${govIds.includes(p.id) ? "govrow " : ""}` +
-        `${mine.length ? "compable" : ""}${open ? " compopen" : ""}"` +
-        `${mine.length ? ` data-comp="${p.id}"` : ""}>` +
+      const open = compOpen === p.id;
+      /* EVERY PARTY OPENS, AND THE CONTROL THAT OPENS IT SAYS SO (the author,
+         24 Sep). The + box sat at the far end of the name, only parties
+         with currents had one, and the whole row lit on hover as if the
+         name were part of the button. Now each row leads with the same
+         disclosure triangle, it is the only thing that opens the row, and
+         the name only goes to the Concordance: two controls, two jobs, both
+         visible. A party with no currents opens too, to say it sits and
+         votes as one bench, which is redundant and is the point: the
+         answer is the same shape for every party. */
+      const pnm = pn(p.id);
+      /* The triangle is terminal chrome, so its explanation is js/tips.js's
+         `currents` and not a sentence built here. */
+      const dis = `<button class="compdis" data-compbtn="${p.id}" aria-expanded="${open}" ` +
+        `aria-label="${open ? "Hide" : "Show"} the currents of the ${esc(pnm)}" data-tip="currents"` +
+        `>${open ? "\u25be" : "\u25b8"}</button>`;
+      h += `<tr class="${govIds.includes(p.id) ? "govrow " : ""}compable${open ? " compopen" : ""}"` +
+        ` data-comp="${p.id}">` +
         /* THE FULL NAME. There is room for it in this column — eleven rows of
            short numbers — and a composition table is the one place the reader
            wants to know which party, not which three letters. */
-        `<td class="pn">${mark(p.id)}${pname(p.id)}` +
-        (mine.length ? `<span class="compcar" data-tip="currents">${open ? "−" : "+"}</span>` : "") +
-        `</td>` +
+        `<td class="pn">${dis}${mark(p.id)}${pname(p.id)}</td>` +
         `<td class="n">${sq.district}</td><td class="n">${sq.list}</td>` +
         `<td class="n">${sq.functional}</td>` +
         `<td class="n"><b>${Engine.partyTotal(st, p.id)}</b></td>` +
@@ -3042,7 +3054,19 @@ const UI = (function () {
          when a measure is named. A stated forecast belongs to the whips
          who wrote it and not to the factions, so there the ayes are a
          dash rather than a share of somebody else's guess. */
-      if (open) {
+      if (open && !mine.length) {
+        const loy = Engine.loyaltyOf ? Engine.loyaltyOf(st, p.id) : (st.parties[p.id] || {}).loyalty;
+        h += `<tr class="bench"><td><span data-tip-title="One bench" data-tip-body="` +
+          esc("The " + pnm + " has no organised currents. Its members sit and vote as one bench, " +
+              "at the party's own loyalty, and a division counts them together.") +
+          `">One bench</span>` +
+          `<span class="cdl${loy < 35 ? " warn" : ""}" data-tip="loyalty">${loy}</span></td>` +
+          `<td class="n"></td><td class="n"></td><td class="n"></td>` +
+          `<td class="n" data-tip="mps">${Engine.partyTotal(st, p.id)}</td>` +
+          (armed ? `<td class="n"></td><td class="n"></td>` : "") +
+          (anyOff ? `<td class="n"></td>` : "") + `</tr>`;
+      }
+      if (open && mine.length) {
         const fc = {};
         ((r && r.benches) || []).forEach(b => { fc[b.id] = b; });
         h += (Engine.currentSeats(st, C, p.id) || []).map(cs => {
@@ -5752,10 +5776,12 @@ const UI = (function () {
        one job and the rest of the row, the + box included, keeps the
        other, which is the rule the instruments' rows already follow for
        the buttons inside them. */
-    el.querySelectorAll("[data-comp]").forEach(tr =>
-      tr.addEventListener("click", e => {
-        if (e.target.closest("[data-go], button")) return;
-        compOpen = compOpen === tr.dataset.comp ? null : tr.dataset.comp;
+    /* THE TRIANGLE AND NOTHING ELSE (24 Sep). The row itself used to open,
+       name excepted, and lit on hover as though the name were part of the
+       button, so the name read as the dropdown's and not the Concordance's. */
+    el.querySelectorAll("[data-compbtn]").forEach(btn =>
+      btn.addEventListener("click", () => {
+        compOpen = compOpen === btn.dataset.compbtn ? null : btn.dataset.compbtn;
         cue("click"); drawBenchTable();
       }));
   }

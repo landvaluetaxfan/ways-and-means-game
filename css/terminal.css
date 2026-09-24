@@ -475,23 +475,17 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #exp-text{width:100%;min-height:340px;flex:1 1 auto;resize:vertical;
   font-family:var(--f-data);font-size:10.5px;line-height:1.45;
   background:var(--field);color:var(--ink);border:1px solid var(--rule);padding:6px;}
-/* A PARTY THAT OPENS ONTO ITS CURRENTS. Not .sel — this is a fold, not a
-   selection, and .sel means one thing (uxtest asserts it). */
-/* THE ROWS THAT OPEN, AND THE ONES THAT DO NOT. Only a party with currents
-   has anything under it, so only some rows are clickable — and a caret at
-   .7 opacity in the data font read as decoration, which meant the reader
-   had to hover every row to find out which ones did anything. The affordance
-   is now a drawn control: a bordered chevron box, in the accent, that a row
-   without currents simply does not have. */
-tr.compable{cursor:pointer;}
-tr.compable:hover{background:var(--field);}
-tr.compable:hover .compcar{border-color:var(--gold);color:var(--gold);}
-.compcar{float:right;margin-left:8px;width:13px;height:13px;line-height:11px;
-  text-align:center;font-family:var(--f-data);font-size:9px;
-  border:1px solid var(--chrome-dkr);color:var(--ink-soft);
-  border-radius:2px;transition:none;}
+/* THE DISCLOSURE TRIANGLE, first in every party's row and the only thing
+   that opens it: the row no longer lights as a whole, so the name reads as
+   the Concordance link it is. */
+.compdis{display:inline-block;vertical-align:middle;width:13px;height:13px;margin:0 5px 1px 0;
+  padding:0;line-height:11px;text-align:center;font-family:var(--f-data);font-size:9px;
+  border:1px solid var(--chrome-dkr);border-radius:2px;background:var(--chrome-lt);
+  color:var(--ink-soft);cursor:pointer;}
+.compdis:hover{border-color:var(--gold-dk);color:var(--ink);}
+.compdis:focus-visible{outline:1px dotted var(--ink);outline-offset:1px;}
 tr.compopen{background:var(--field);}
-tr.compopen .compcar{border-color:var(--gold-dk);color:var(--ink);background:var(--gold);}
+tr.compopen .compdis{border-color:var(--gold-dk);color:var(--ink);background:var(--gold);}
 /* a current's loyalty, beside its name in the row under its party */
 #comp-table tr.bench .cdl{float:right;margin-left:8px;font-family:var(--f-data);
   font-size:10.5px;color:var(--ink-soft);}

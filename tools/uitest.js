@@ -566,14 +566,32 @@ try {
   }
 
   w.document.querySelector('.tab[data-t="cham"]').click();
-  const comp = [...w.document.querySelectorAll("#comp-table tr[data-comp]")];
+  /* EVERY PARTY OPENS, by its triangle (the author, 24 Sep). */
+  const comp = [...w.document.querySelectorAll("#comp-table tr[data-comp]")]
+    .filter(tr => w.eval("CONTENT.currents.some(function (c) { return c.party === '" + tr.dataset.comp + "'; })"));
+  const everyRow = [...w.document.querySelectorAll("#comp-table tbody > tr")].filter(tr => !tr.classList.contains("bench"));
+  ok("every party's row leads with a disclosure triangle",
+     everyRow.length === w.eval("CONTENT.parties.length") &&
+     everyRow.every(tr => { const b = tr.cells[0].firstElementChild;
+       return b && b.matches("button.compdis[data-compbtn]") && b.getAttribute("data-tip") === "currents"; }),
+     everyRow.length + " rows");
+  const dis = pid => w.document.querySelector('#comp-table [data-compbtn="' + pid + '"]');
+  const lone = w.eval("(CONTENT.parties.filter(function (p) { return !CONTENT.currents.some(function (c) { return c.party === p.id; }); })[0] || {}).id");
+  if (lone) {
+    dis(lone).click();
+    const one = [...w.document.querySelectorAll("#comp-table tr.bench")];
+    ok("a party with no currents opens too, to one bench",
+       one.length === 1 && /one bench/i.test(one[0].textContent) && !!one[0].querySelector("[data-tip-body]"),
+       lone + ": " + (one[0] ? one[0].textContent.trim().slice(0, 50) : "nothing"));
+    dis(lone).click();
+  }
   ok("parties with currents open inside the composition table", comp.length > 0,
      comp.length + " expandable");
   ok("and nothing is open to begin with",
      w.document.querySelectorAll("#comp-table tr.bench").length === 0);
   if (comp.length) {
     const pid = comp[0].dataset.comp;
-    comp[0].click();
+    dis(pid).click();
     const det = [...w.document.querySelectorAll("#comp-table tr.bench")];
     const want = w.eval("CONTENT.currents.filter(function (c) { return c.party === '" + pid + "'; }).length");
     ok("clicking one shows its currents, one row each", det.length === want && want > 0,
@@ -589,13 +607,13 @@ try {
          return t && t.getAttribute("data-tip-body").length > 40;
        }), det.length ? (det[0].cells[0].querySelector("[data-tip-body]") || { getAttribute: () => "none" })
                           .getAttribute("data-tip-body").slice(0, 60) : "nothing");
-    w.document.querySelector("#comp-table tr[data-comp]").click();
+    dis(pid).click();
     ok("and clicking again closes it",
        w.document.querySelectorAll("#comp-table tr.bench").length === 0);
 
     /* ONE CLICK, ONE ACTION. The name is a Concordance link inside a row
        that opens the currents; a click on it did both. */
-    const nameLink = w.document.querySelector("#comp-table tr[data-comp] a[data-go]");
+    const nameLink = w.document.querySelector('#comp-table tr[data-comp="' + pid + '"] a[data-go]');
     if (nameLink) {
       const goes = nameLink.dataset.go;
       nameLink.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
@@ -604,12 +622,16 @@ try {
          w.document.querySelectorAll("#comp-table tr.bench").length === 0,
          goes);
       w.document.querySelector('.tab[data-t="cham"]').click();
-      const car = w.document.querySelector("#comp-table tr[data-comp] .compcar");
-      car.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
-      ok("and the + box opens the currents without leaving the Chamber",
+      dis(pid).dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+      ok("and the triangle opens the currents without leaving the Chamber",
          w.document.querySelector('.tab[data-t="cham"]').getAttribute("aria-selected") === "true" &&
          w.document.querySelectorAll("#comp-table tr.bench").length > 0);
-      w.document.querySelector("#comp-table tr[data-comp].compopen").click();
+      /* and the rest of the row is not a button: a click on the seats opens nothing */
+      dis(pid).click();
+      const row = w.document.querySelector('#comp-table tr[data-comp="' + pid + '"]');
+      row.cells[4].dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+      ok("while the rest of the row is not a button",
+         w.document.querySelectorAll("#comp-table tr.bench").length === 0);
     } else ok("the party's name in the composition table is a link", false);
   }
 } catch (e) { ok("the parties tab and the composition fold", false, e.message); }

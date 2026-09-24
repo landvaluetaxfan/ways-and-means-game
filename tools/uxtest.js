@@ -910,11 +910,12 @@ try {
   ok("and so does repaying a lender, once one is owed",
      !!w.document.querySelector('#econ-account [data-tip="repay"]'));
   w.eval(`var st = UI.state(); st.debt = { owed: {} }; UI.redraw();`);
-  const compRow = w.document.querySelector("#comp-table tr[data-comp]");
-  if (compRow) compRow.click();
+  const compBtn = w.document.querySelector("#comp-table [data-compbtn]");
+  if (compBtn) compBtn.click();
   ok("and so does the size of a current, once a party is opened",
      !!w.document.querySelector('#comp-table [data-tip="mps"]'));
-  if (compRow) w.document.querySelector("#comp-table tr[data-comp].compopen").click();
+  const openBtn = w.document.querySelector("#comp-table tr.compopen [data-compbtn]");
+  if (openBtn) openBtn.click();
 
   /* NO SCREEN SHIPS WITH NOTHING. The Concordance is the deliberate
      exception: it is in-world, on white paper, in a serif, and it is
@@ -2074,7 +2075,7 @@ try {
       for (let i = 0; i < 2; i++) {
         const tr = w.document.querySelector('#comp-table tr[data-comp="' + pid + '"]');
         if (!tr || tr.classList.contains("compopen")) break;
-        tr.click();
+        tr.querySelector("[data-compbtn]").click();
       }
       return w.document.querySelector('#comp-table tr[data-comp="' + pid + '"].compopen');
     };
