@@ -1494,6 +1494,12 @@ button.lnk:focus-visible{outline:1px dotted currentColor;outline-offset:1px;}
    infobox logo does. */
 .cx-infobox .cx-logo,.cx-infobox .cx-flag{display:block;width:100%;height:auto;background:#f8f9fa;
   border-bottom:1px solid #c3c6bd;}
+/* THE PERSON'S FACE, at the head of the wikibox. A fixed 4:5 window rather
+   than the logo treatment: the pictures are photographs of different shapes,
+   and object-fit keeps a tall scan and a square one the same size on the
+   page. A missing file falls back to the placeholder in the markup. */
+.cx-infobox .cx-portrait{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;
+  background:#e8ebe0;border-bottom:1px solid #c3c6bd;}
 .cx-infobox table{width:100%;border-collapse:collapse;}
 .cx-infobox th{
   text-align:left;font-size:10px;letter-spacing:.07em;text-transform:uppercase;
@@ -1542,6 +1548,8 @@ button.lnk:focus-visible{outline:1px dotted currentColor;outline-offset:1px;}
   .cx-wrap{grid-template-columns:minmax(0,1fr);}
   #cx-side{border-right:none;border-bottom:1px solid #c3c6bd;max-height:200px;}
   .cx-infobox{float:none;width:auto;margin:0 0 12px;}
+  /* the box goes full width; the face must not */
+  .cx-infobox .cx-portrait{max-width:220px;}
 }
 
 /* party logos, where a party has one. The NPP's is a landscape wordmark, so

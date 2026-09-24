@@ -131,7 +131,7 @@ const CHARACTERS = [
   { id:"caprica", name:"Jonathan Caprica MP", role:"Shadow Minister for Attestation and the Registry",
     party:"cl", current:"cl_social", category:"biological", seat:"Marlowe Green", relationship:27, office:"shadow",
     note:"Wants the boards depoliticised, which is a position with no constituents." },
-  { id:"watkins", name:"Darren Watkins Jr. MP", role:"Leader of the Opposition",
+  { id:"watkins", portrait:"watkins.png", name:"Darren Watkins Jr. MP", role:"Leader of the Opposition",
     party:"cl", current:"cl_classical", category:"biological", seat:"Anselm Proper", relationship:19, office:"opposition",
     note:"Leads the largest party outside the coalition. The government's alternative, and says so." },
   { id:"raj", name:"Chandrama Raj MP", role:"Shadow Minister for External Relations",
@@ -230,8 +230,8 @@ const CHARACTERS = [
 
   /* ---- the presidency ---- */
   { id:"tenaya", portrait:"tenaya.png",   name:"President Jaco van Ryneveld", role:"President",
-    party:null, category:"biological", relationship:22,
-    note:"Independent. Elected 2077, 51.4%. Biologically augmented: cat ears. "+
+    party:"cl", current:"cl_classical", category:"biological", relationship:22,
+    note:"Elected 2077, 51.4% on a Liberal ticket. Biologically augmented: cat ears. "+
          "Reserve powers: dissolution, formation, referral, appointments." },
 
   /* ---- the faction leader ---- */

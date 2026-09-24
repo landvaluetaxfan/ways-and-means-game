@@ -584,7 +584,12 @@ const Concordance = (function () {
       edited: { by: "multiple", attested: true, note: isPM ? "elevated sourcing requirements apply" : "" },
       summary: summary,
       sections: sections,
-      infobox: rows.length ? { title: ch.name, rows: rows } : null,
+      /* A FACE, EVERY TIME. A person's article carries their portrait when
+         the registry has one and the placeholder when it does not, so the
+         page reads as a person rather than as a table with a name on it.
+         The file is named, not checked: whether it exists is the browser's
+         question, and the img falls back on its own. */
+      infobox: { title: ch.name, portrait: ch.portrait || null, rows: rows },
       see: ch.party ? [ch.party] : []
     };
   }
@@ -751,6 +756,9 @@ const Concordance = (function () {
     }).join("");
 
     const info = a.infobox ? `<aside class="cx-infobox">` +
+      (a.infobox.portrait !== undefined
+        ? `<img class="cx-portrait" src="img/portraits/${esc0(a.infobox.portrait || "placeholder.png")}"` +
+          ` alt="" onerror="this.onerror=null;this.src='img/portraits/placeholder.png'">` : "") +
       (a.infobox.flag ? `<img class="cx-flag" src="img/logos/${a.infobox.flag}" alt="">` : "") +
       (a.infobox.logo ? `<img class="cx-logo" src="img/logos/${a.infobox.logo}" alt="">` : "") +
       `<h4>${a.infobox.title}</h4><table>` +
