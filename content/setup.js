@@ -139,14 +139,24 @@ const SETUP = {
         { when: { scalarAbove: { friction: 85 } }, add: 3.5,
           label: "under a blockade" },
         { when: { scalarBelow: { solvency: 10000 } }, add: 2,
-          label: "while the reserve is under the covenant, as default interest" } ] },
+          label: "while the reserve is under the covenant, as default interest" },
+        /* A DECLARED DEFAULT. A campaign declares one by setting the flag
+           (Flash I's is the expropriation clause, when the Works is annexed
+           with its bonds unpaid). Default interest is charged once: this
+           step stands aside while the covenant's own is running. */
+        { when: { flags: ["standby_default"], scalarAbove: { solvency: 9999 } }, add: 2,
+          label: "while an event of default is declared, as default interest" },
+        { when: { flags: ["standby_waiver"] }, add: 0.5,
+          label: "since the syndicate waived an event of default" } ] },
       limits: [
         { when: { scalarAbove: { friction: 40 } }, suspends: "eu",
           why: "the sanctions clause has suspended the European lenders' commitments" },
         { when: { scalarAbove: { friction: 85 } }, cap: 0,
           why: "the sanctions clause has suspended every lender's commitment" },
         { when: { scalarBelow: { solvency: 10000 } }, cap: 0,
-          why: "the reserve is under the covenant, and the agent has stopped the drawing" } ],
+          why: "the reserve is under the covenant, and the agent has stopped the drawing" },
+        { when: { flags: ["standby_default"] }, cap: 0,
+          why: "the agent has declared an event of default and funds no drawing until it is cured" } ],
       onDraw: [ { move: { friction: 3, legitimacy: -2 } } ],
       drawNote: "Earth's governments read a drawing as a political act: " +
         "friction with Earth rises, and the government's legitimacy falls.",
@@ -191,7 +201,17 @@ const SETUP = {
             "A lender is not obliged to fund a drawing that its own government's " +
             "sanctions forbid. The European lenders' commitments, 20,000 " +
             "MW-years between them, are suspended while the European Union's " +
-            "measures against the Commonwealth are in force." } ] } },
+            "measures against the Commonwealth are in force." },
+          /* live: these appear when a campaign declares a default or buys a
+             waiver, and say nothing about which campaign it was */
+          { h: "Event of default", when: { flags: ["standby_default"] }, body:
+            "The agent has declared an event of default under the facility. " +
+            "Until it is cured, the lenders fund no drawing and default " +
+            "interest of 2.00 per cent is charged on amounts outstanding." },
+          { h: "Waiver", when: { flags: ["standby_waiver"] }, body:
+            "The syndicate has waived an event of default under the facility, " +
+            "for a fee and an increase of 0.50 per cent in the margin for the " +
+            "rest of its term." } ] } },
 
     /* THE CIRCUMTERRESTRIAL UNDERWRITERS: COMMONWEALTH RESERVE NOTES. The
        lender at home. The Underwriters are a market and not a firm (bible

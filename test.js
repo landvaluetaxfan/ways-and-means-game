@@ -2172,9 +2172,11 @@ console.log("\nBORROWING FROM THE PEOPLE YOU ARE QUARRELLING WITH:");
     const bc = (ALL.events || []).find(e => e.id === "ec_borrow_case");
     if (bc) {
       const drawC = bc.choices[0];
-      const agree = [[30, 30000], [84, 30000], [86, 30000], [95, 30000], [30, 9000], [30, 10000]].every(([f, sv]) => {
+      const agree = [[30, 30000], [84, 30000], [86, 30000], [95, 30000], [30, 9000], [30, 10000],
+                     [30, 30000, "standby_default"]].every(([f, sv, flag]) => {
         const t = Engine.newGame(CONTENT);
         t.scalars.friction = f; t.scalars.solvency = sv;
+        if (flag) t.flags[flag] = true;
         return Engine.choiceOpen(t, CONTENT, drawC) ===
                (Engine.lenderCap(t, CONTENT, "earth").cap > 0);
       });

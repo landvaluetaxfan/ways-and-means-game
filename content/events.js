@@ -2917,10 +2917,12 @@ you already have.`,
       brief:"Borrowing to raise participation. The rate is the quarrel and "+
         "the quarrel is with a lender who is not in the chamber.",
       /* CLOSED WHERE THE STANDBY FACILITY STOPS LENDING (24 Sep): under a
-         blockade, and while the reserve is under the covenant. The same two
-         lines as setup.lenders.earth's full-stop limits; test.js holds the
-         two together, so moving one without the other fails. */
-      when:{ scalarBelow:{ friction:86 }, scalarAbove:{ solvency:9999 } },
+         blockade, while the reserve is under the covenant, and while a
+         default is declared. The same lines as setup.lenders.earth's
+         full-stop limits; test.js holds the two together, so moving one
+         without the other fails. */
+      when:{ scalarBelow:{ friction:86 }, scalarAbove:{ solvency:9999 },
+             flagsAbsent:["standby_default"] },
       effects:[{ move:{ solvency:16000 } }, { move:{ "debt.earth":16000 } },
                { economy:{ participation:2, trade:-2 } },
                { move:{ friction:5 } },

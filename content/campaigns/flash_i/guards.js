@@ -381,7 +381,13 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
     ok("and it does not end the run: the campaign goes to the election",
        !!end && end.kind === "election",
        end ? end.kind + " " + (end.reason || "") + " at sitting " + st.sitting +
-             ", supply " + (st.bills.appropriation || {}).stage : "no end");
+             ", supply " + (st.bills.appropriation || {}).stage +
+             /* the canon's two figures, printed so a change to the run can be
+                read against them: the thermal margin at the count is the
+                tightest number in the game (CLAUDE.md), and the seats are
+                the government the next campaign opens on */
+             "; thermal margin " + st.scalars.thermal_margin +
+             ", PSD " + Engine.partyTotal(st, "cu") + " seats" : "no end");
     /* AND IT LANDS WITH ROOM, which is the assertion that was missing. The
        ending used to arrive on the last sitting it possibly could, so it
        read as passing while resting on nothing: one more prologue beat and
@@ -405,6 +411,38 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
        tierAt == null ? "never landed"
          : "settled at " + tierAt + (end && end.sitting ? ", run ended " + end.sitting : ""));
   }
+});
+
+/* THE STANDBY FACILITY'S EXPROPRIATION CLAUSE (24 Sep). Annexing the Works
+   with its bonds unpaid is an event of default on Earth's facility; the
+   agent's notice says so, disputing it closes the facility and charges
+   default interest, and paying the bond (here or through Earth's terms)
+   cures it. The terms are the world's; the trigger and the cure are ours. */
+guard("THE STANDBY FACILITY'S EXPROPRIATION CLAUSE", ok => {
+  const ev = id => CONTENT.events.find(e => e.id === id);
+  const notice = ev("f1_standby_notice"), terms = ev("fa_conciliate");
+  const g = Engine.newGame(CONTENT);
+  ok("the notice waits for the Act", !Engine.matches(g, notice.when));
+  g.flags.almanac_annexed = true;
+  ok("and is due once the Works is annexed with its bonds unpaid", Engine.matches(g, notice.when));
+  Engine.borrow(g, CONTENT, CONTENT.setup.lenders.earth.utilisation, "earth");
+  const r0 = Engine.debtRate(g, CONTENT, "earth");
+  Engine.choose(g, CONTENT, notice, 0);
+  ok("disputing it closes the facility", Engine.lenderCap(g, CONTENT, "earth").cap === 0,
+     Engine.lenderCap(g, CONTENT, "earth").why);
+  ok("and charges default interest on what is drawn", Engine.debtRate(g, CONTENT, "earth") > r0,
+     r0 + " -> " + Engine.debtRate(g, CONTENT, "earth"));
+  Engine.choose(g, CONTENT, terms, 0);
+  ok("paying the bond through Earth's terms cures it",
+     Engine.lenderCap(g, CONTENT, "earth").cap > 0 && Engine.debtRate(g, CONTENT, "earth") === r0 &&
+     !Engine.matches(g, notice.when));
+  const w = Engine.newGame(CONTENT);
+  w.flags.almanac_annexed = true;
+  const r1 = Engine.debtRate(w, CONTENT, "earth");
+  Engine.choose(w, CONTENT, notice, 1);
+  ok("a waiver keeps the facility open at a higher margin",
+     Engine.lenderCap(w, CONTENT, "earth").cap > 0 && Engine.debtRate(w, CONTENT, "earth") > r1,
+     r1 + " -> " + Engine.debtRate(w, CONTENT, "earth"));
 });
 
 guard("THE MARKETS THE CRISIS WROTE (design/28 §3)", ok => {

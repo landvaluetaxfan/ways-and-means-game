@@ -300,8 +300,11 @@ three and the measures are lifted, for a quarter, and reviewed.
 It is not a bargain an ordinary year would take. This is not one.`,
   choices:[
     { label:"Pay the bond and take the suspension.",
+      /* paying the bond also cures the Standby Facility's default, if the
+         agent has declared one (f1_standby_notice) */
       effects:[{ move:{ "friction":-9 } }, { move:{ "solvency":-7000 } },
                { move:{ "legitimacy":-3 } },
+               { flag:{ works_bond_paid:true, standby_default:false } },
                { wire:"COMMONWEALTH PAYS THE BOND; EARTH SUSPENDS THE MEASURES FOR A QUARTER" }],
       result:"The measures lift and the reserve pays for a suspension that lasts a quarter." },
     { label:"Refuse, and wear the measures.",
@@ -692,6 +695,38 @@ The Commonwealth has not done this before, and everyone in the chamber knows it.
     { label:"Report it to the House.",
       effects:[{ move:{ public_standing:-1 } }],
       result:"The House hears that the relays are back on and that nothing was asked for in return." }
+  ]},
+
+/* THE STANDBY FACILITY'S EXPROPRIATION CLAUSE (the author, 24 Sep). The
+   world's Earth facility (content/setup.js) counts the taking of an
+   Earth-registered company's property without compensation as an event of
+   default, and the Annexation Act takes the Works while its bonds are
+   unpaid, which is the European Union's own complaint. So the notice lands
+   once, soon after the Act. Paying the bond cures it, here or through
+   fa_conciliate. Appended at the end of the list, because the seeded lean
+   is keyed on position. Its first choice moves no meter: the canon
+   government takes that one, and pays the bond after the result. */
+{ id:"f1_standby_notice", chapter:2, weight:95, once:true,
+  when:{ flags:["almanac_annexed"], flagsAbsent:["works_bond_paid"] },
+  title:"A notice from the agent",
+  speaker:"skye",
+  body:`Alphabet-JPMorgan Omni has written to the Treasury as agent for the Standby Facility. The Works' bonds are unpaid, and the syndicate reads the Annexation Act as the taking of an Earth-registered company's property without compensation. Under the facility's expropriation clause, that is an event of default.
+
+Until it is cured, the agent will fund no drawing, and anything already drawn carries default interest. The letter names two cures. The Commonwealth can pay the bondholders, or it can buy a waiver for a fee and a higher margin.`,
+  choices:[
+    { label:"Dispute it. The Act bought the charter, and the bonds are Cordell's.",
+      effects:[{ flag:"standby_default" },
+               { wire:"TREASURY DISPUTES DEFAULT NOTICE ON EARTH STANDBY FACILITY" }],
+      result:"The facility is closed to the Commonwealth until the notice is withdrawn, and the letter goes into a file." },
+    { label:"Buy the waiver.",
+      effects:[{ move:{ solvency:-900 } }, { flag:"standby_waiver" },
+               { wire:"COMMONWEALTH PAYS FOR A WAIVER ON THE EARTH STANDBY FACILITY" }],
+      result:"The syndicate waives the default for nine hundred MW-years, and the margin carries half a point more until the facility matures." },
+    { label:"Pay the bondholders.",
+      effects:[{ move:{ solvency:-7000, friction:-4, legitimacy:-3, "actor.earth_bloc":5 } },
+               { flag:"works_bond_paid" },
+               { wire:"COMMONWEALTH PAYS THE ALMANAC WORKS BONDHOLDERS; BRUSSELS NOTES THE PAYMENT" }],
+      result:"The bond is paid out of the reserve, the notice is withdrawn, and Brussels acknowledges it in one sentence." }
   ]},
 
 ] });

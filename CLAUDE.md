@@ -741,7 +741,15 @@ version of any of them is in the header of the file it names.
   Economy account has a Draw control per facility, each lender with
   `terms` gets a generated `lender_<id>` article, and `test.js` holds the
   commitments to the cap. The canon run and every playtest strategy were
-  unchanged by it.
+  unchanged by it. **The expropriation clause is wired into Flash I**: a
+  flag the world's terms name (`standby_default`: a drawstop and default
+  interest; `standby_waiver`: half a point on the margin) and Flash I's
+  `f1_standby_notice`, due once the Works is annexed with its bonds unpaid.
+  Paying the bond (the notice's own choice, or `fa_conciliate`) cures it.
+  The notice takes a sitting's event, so the canon count moved from sitting
+  58 to 56 and its thermal margin from 4 to 6, both printed by the guard;
+  the First and Cheapest playtest strategies still cascade, a sitting
+  earlier.
 - **A STYLE THAT NAMES A PANEL WHICH NO LONGER EXISTS DOES NOTHING,
   SILENTLY.** The composition table listed a party's currents twice when
   it was opened with a measure named: the detail that opens with the
