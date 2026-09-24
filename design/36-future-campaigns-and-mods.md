@@ -130,6 +130,9 @@ That is moderate engine work plus mechanical tagging of Flash I's content.
   `content/campaigns/flash_i/guards.js`, run by `npm run guards` with every
   other campaign's. A new campaign copies that file. `tools/testkit.js` is
   the shared ground both load from.
+- **The story map, 23 Sep:** `npm run storymap` draws each view's wiring
+  (graph, chapters, flags, loose ends) from the content the game plays,
+  so an author can see what a beat pulls on before cutting it.
 
 ## 5. Mods
 

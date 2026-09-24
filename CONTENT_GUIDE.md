@@ -119,6 +119,23 @@ field means the campaign they play.
 position in the list a campaign plays, which is the world's events followed
 by the campaign's. A new event goes at the end of its file.
 
+**The story map: see the wiring before you pull on it.** `npm run storymap`
+writes `storymap/<id>.html` for the world and every campaign; open
+`storymap/index.html`. Each page has:
+
+- the campaign's own entries as a graph, left to right by what leads to
+  what: queues, initiatives' answers, flags set and read, *after* gates,
+  results read, bills moved, broken promises;
+- every event by chapter, each with its gate, its choices and what they
+  do, and where it comes from and leads to;
+- every flag with who sets it, clears it, needs it and is shut by it;
+- the loose ends: a queued-only event nothing queues, a gate waiting on a
+  flag nothing sets, and the flags set that nothing reads.
+
+It is generated from the content the game plays, so it is never out of
+date unless it was drawn before your last edit; draw it again. It is not
+committed.
+
 **Guards: the story's tests are the campaign's.** `test.js` tests the
 engine on the world's content and never reads a campaign's folder. What a
 campaign promises (the crisis opens on its date, the Act can be carried,

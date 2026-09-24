@@ -379,11 +379,11 @@ Content is `.js` rather than `.json` on purpose: `fetch()` is blocked on
 
 ```
 npm install      # once, for jsdom
-npm run check    # all twelve, about two minutes
+npm run check    # all thirteen, about two minutes
 ```
 
 `uxtest` is about seventy seconds of that and `edtest` about twenty-five
-(it opens every entry in the editor, design/34); the other ten take a few
+(it opens every entry in the editor, design/34); the other eleven take a few
 seconds between them. Run one on its own with `npm run <name>`.
 
 | | |
@@ -400,6 +400,7 @@ seconds between them. Run one on its own with `npm run <name>`.
 | `tools/toc.js --check` | the bible's section index is current |
 | `tools/enccheck.js` | every source file is UTF-8, no BOM, LF, no bad decode |
 | `tools/prose.js --check` | the prose export round-trips |
+| `tools/storymap.js --check` | every view's story map draws (`npm run storymap` writes them to `storymap/`, which is not committed) |
 
 `tools/lint.js` is also where references are checked: every id a gate,
 effect, promise, initiative or award names must exist (design/34).
@@ -471,6 +472,8 @@ js/artifacts.js       named image slots. Reusable: key on a slot name, not
                       a path, and never make it menu-specific.
 tools/harness.js      one jsdom, shared by uitest and uxtest
 tools/                checks, index generator, image pipeline, bundle
+tools/storymap.js     the story's wiring as a page: `npm run storymap`,
+                      then open storymap/index.html. Generated, ignored.
 ```
 
 ## Things that have already gone wrong
