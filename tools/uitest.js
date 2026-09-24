@@ -358,7 +358,14 @@ try {
 try {
   w.document.querySelector('.tab[data-t="econ"]').click();
   const tre = (w.document.querySelector("#econ-account") || {}).textContent || "";
-  ok("the account says when nothing is owed", /Owednothing is pledged to any lendernone/.test(tre), tre.slice(0, 120));
+  /* THE STANDING LENDERS (24 Sep): a row each, drawn or not, because a
+     facility nobody has drawn is still a choice the government has. */
+  const facRows = [...w.document.querySelectorAll("#econ-account .prow.fac")];
+  const drawable = Object.keys(CONTENT.setup.lenders).filter(k => CONTENT.setup.lenders[k].drawable);
+  ok("the account lists each standing lender, drawn or not",
+     facRows.length === drawable.length && facRows.every(r => /none/.test(r.textContent)) &&
+     drawable.every(k => !!w.document.querySelector('#econ-account [data-draw="' + k + '"]')),
+     facRows.map(r => r.textContent.slice(0, 40)).join(" | "));
   /* NAMED CREDITORS: each lender its own row, on its own terms, and a Repay
      control only where the lender is paid across the counter. Staged on a
      copy of the page's state and put back, so nothing after this sees it. */
@@ -366,10 +373,22 @@ try {
   const cred = w.eval("(function(){ var s = UI.state(); s.debt = {owed:{earth:12000, alliance:19800}};" +
     " UI.redraw(); var b = document.querySelector('#econ-account');" +
     " return { text: b.textContent, repay: [].map.call(b.querySelectorAll('[data-repay]'), function(x){ return x.dataset.repay; }) }; })()");
-  ok("the account names each creditor", /Owed to Earth's markets/.test(cred.text) &&
-     /Owed to The Alliance of Business and Government/.test(cred.text), cred.text.slice(0, 160));
+  ok("the account names each creditor", /Earth's banks/.test(cred.text) && /12,000/.test(cred.text) &&
+     /The Alliance's facility/.test(cred.text), cred.text.slice(0, 200));
   ok("and only the lender paid across the counter has a Repay control",
      cred.repay.length === 1 && cred.repay[0] === "earth", JSON.stringify(cred.repay));
+  w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapC) + "), UI.content())");
+  /* A DRAWING goes through the engine's own borrow: the lender's size, a
+     slot of order-paper time, and the line in the record. */
+  const d0 = w.eval("({ owed: Engine.debtOf(UI.state(), 'earth'), used: UI.state().slots.used })");
+  const dbtn = w.document.querySelector('#econ-account [data-draw="earth"]');
+  if (dbtn) dbtn.click();
+  const d1 = w.eval("({ owed: Engine.debtOf(UI.state(), 'earth'), used: UI.state().slots.used, log: UI.state().log[0].text })");
+  ok("Draw takes one drawing on the facility, through the engine",
+     d1.owed === d0.owed + CONTENT.setup.lenders.earth.utilisation && d1.used === d0.used + 1 &&
+     /Standby Facility/.test(d1.log), JSON.stringify(d1));
+  ok("and the row says what is drawn",
+     /8,000/.test((w.document.querySelector('#econ-account [data-draw="earth"]').closest(".prow") || {}).textContent || ""));
   w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapC) + "), UI.content())");
   ok("and the net position, not just the two halves", /Net a sitting/.test(tre),
      (tre.match(/Net a sitting[^A-Z]*/) || [""])[0].slice(0, 44));

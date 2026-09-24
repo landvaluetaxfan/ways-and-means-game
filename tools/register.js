@@ -28,6 +28,9 @@ function registerOf(addr) {
      event is Voice throughout; the menu's notice board is an in-world notice */
   if (coll === "events" || coll === "minutes" || coll === "business" || coll === "notice") return "voice";
   if (coll === "administrations") return /\/intro\//.test(addr) ? "voice" : "reference";
+  /* a lender's terms are an article's prose (Reference); what the account
+     says about a drawing and why it is refused is Interface */
+  if (coll === "setup" && /\/lenders\/[^/]+\/(drawNote|limits|rate)\b/.test(addr)) return "interface";
   if (coll === "setup") return /\/outlook\//.test(addr) ? "voice" : "reference";
   if (coll === "settlements") return /\/closing$/.test(addr) ? "voice" : "reference";
   if (["tips", "initiatives", "achievements", "sandbox"].indexOf(coll) >= 0) return "interface";

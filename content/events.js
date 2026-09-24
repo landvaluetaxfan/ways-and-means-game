@@ -838,9 +838,12 @@ against the party, and it has been shrinking for a month.`,
 in the reserve is a number the Treasury will not put in a document because
 putting it in a document would make it a fact.
 
-There is no lender. The Commonwealth has never borrowed and the Charter does not
-provide for it. What there is, is the option of not paying for something the
-Commonwealth has already promised to pay for.`,
+The Treasury can still borrow. Earth's banks will honour a drawing on the
+Standby Facility until the reserve falls under the covenant, and the
+Underwriters will take a series of notes while the thermal margin holds. Each
+costs what the quarrel or the margin says it costs. What there is besides is
+the option of not paying for something the Commonwealth has already promised to
+pay for.`,
   choices:[
     { label:"Raise the tether tariff. The traffic pays.",
       effects:[{move:{"solvency": 16000}},{move:{"price.substrate":6}},{move:{"loyalty.cl":-10}},
@@ -2913,6 +2916,11 @@ you already have.`,
     { label:"Draw on the facility and build.",
       brief:"Borrowing to raise participation. The rate is the quarrel and "+
         "the quarrel is with a lender who is not in the chamber.",
+      /* CLOSED WHERE THE STANDBY FACILITY STOPS LENDING (24 Sep): under a
+         blockade, and while the reserve is under the covenant. The same two
+         lines as setup.lenders.earth's full-stop limits; test.js holds the
+         two together, so moving one without the other fails. */
+      when:{ scalarBelow:{ friction:86 }, scalarAbove:{ solvency:9999 } },
       effects:[{ move:{ solvency:16000 } }, { move:{ "debt.earth":16000 } },
                { economy:{ participation:2, trade:-2 } },
                { move:{ friction:5 } },

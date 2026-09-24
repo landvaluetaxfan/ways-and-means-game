@@ -34,9 +34,13 @@ campaign("flash_i", { administrations: [
        term's own first year. */
     setup:{ startDate:"2080-04-11",
       lenders: {
+        /* The Alliance is a party of the House, so its facility is a debt at
+           home: `home` keeps it out of the Underwriters' reading of the
+           quarrel, where a fixed ten per cent read as Earth's rate. */
         alliance: { name: "The Alliance of Business and Government",
-                    rate: { fixed: 10 }, serviced: false, repayable: false,
-                    note: "the emergency facility, due before the House rises; secured on the Cordell leases" }
+                    rate: { fixed: 10 }, serviced: false, repayable: false, home: true,
+                    note: "the emergency facility, due before the House rises; secured on the Cordell leases",
+                    label: "The Alliance's facility", short: "due at the rise, on the Cordell leases" }
       } },
     /* THE INTRODUCTION (design/31 §5). Rendered through js/setpiece.js, so
        the sections and their kinds are the frame's vocabulary: epigraph,

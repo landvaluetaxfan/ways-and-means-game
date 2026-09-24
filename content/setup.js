@@ -73,27 +73,198 @@ const SETUP = {
   /* HOW OFTEN THE CHARTER LETS A GOVERNMENT APPOINT TO ONE BOARD
      (bible §4.6.4). Two is a fight; unlimited is a cheat code. */
   boardCap: 2,
-  /* WHO THE COMMONWEALTH OWES (named creditors, 23 Sep). The engine keeps
-     what is owed to each, by id, and reads the terms from here; an effect
-     moves a balance with {move:{"debt.<id>": n}}, and the reserve's side of
-     a loan is its own move, because a loan is the debt AND the money.
+  /* WHO LENDS TO THE COMMONWEALTH, AND ON WHAT TERMS (named creditors, 23
+     Sep; the two standing lenders, 24 Sep). The engine keeps what is owed to
+     each, by id, and reads everything else from here. An effect moves a
+     balance with {move:{"debt.<id>": n}}, and the reserve's side of a loan
+     is its own move, because a loan is the debt AND the money.
 
-     `rate`     fixed, or the quarrel's: base + perFriction a point of friction
-     `cap`      how far this lender will go with this government
-     `serviced` false: the rate is folded into the sum owed at the term, and
-                nothing is paid out of the reserve each sitting
-     `repayable` false: not paid down across the counter on the Economy tab,
-                because its own terms (an initiative, a call) say how
-     `note`     what the account prints under the figure
+     `name`        who is owed, and `label` a shorter name for the account
+     `rate`        `fixed`, or a `base` (plus `perFriction` a point of
+                   friction, if given) plus every one of its `steps` whose
+                   `when` holds now. Steps are cumulative, the way a margin
+                   grid reads, and each `label` says in words when it applies
+     `cap`         the commitment: how far this lender will go
+     `limits`      clauses that lower the cap while their `when` holds: a
+                   number (`cap`), or `suspends` a tag, which takes out the
+                   commitments of every party carrying it. The lowest binds,
+                   and `why` is the refusal the account prints
+     `drawable`    true: the Commonwealth may draw on it, from the Economy
+                   tab, `utilisation` at a time, for `slots` of order-paper
+                   time (1 if not given)
+     `onDraw`      what a drawing does besides the money, in effects, and
+     `drawNote`    the same in words, for the confirmation
+     `log`/`wire`  the record's line and the wire's, {n} and {rate} filled
+     `home`        a lender inside the Commonwealth, read apart from Earth's
+                   by the Underwriters' outlook; `outlook.owed_<id>` is what
+                   they say about a lender while it is owed
+     `note`        what the account says under the figure, and `short` a
+                   one-line form of it where the note is long
+     `serviced`    false: the rate is folded into the sum owed at the term,
+                   and nothing is paid out of the reserve each sitting
+     `repayable`   false: not paid down across the counter on the Economy
+                   tab, because its own terms (an initiative, a call) say how
+     `parties`     who is in it and for how much (`prose`: the name as a
+                   sentence carries it). The commitments sum to the cap, which
+                   test.js holds
+     `terms`       the facility as a document, for its Concordance article
+                   (`lender_<id>`), which js/encyclopedia.js generates
 
-     Earth's cap is bible §7.5.2: underwriting prices everything
-     continuously, and it prices a government it does not believe in out of
-     the market. */
+     A campaign adds its own lenders in its administration's `setup`, which
+     merges one level deep: Flash I's emergency facility is there. */
   lenders: {
-    earth: { name: "Earth's markets", rate: { base: 4, perFriction: 0.1 }, cap: 60000,
-             note: "at the quarrel's rate" }
-    /* A campaign adds its own lenders in its administration's `setup`, which
-       merges one level deep: Flash I's emergency facility is there. */
+
+    /* EARTH'S BANKS: A SYNDICATED STANDBY FACILITY. Signed in March 2078,
+       when the reserve had fallen for five years running and the Treasury
+       wanted a backstop it did not mean to use; undrawn when the campaign
+       opens, which is why the Commonwealth owes nothing. The shape is a
+       sovereign revolving facility as Earth's banks write one: arrangers,
+       an agent, a syndicate, a margin grid that ratchets with the quarrel,
+       a sanctions clause that suspends the commitments of lenders whose own
+       governments are sanctioning the borrower, and one financial covenant.
+
+       The grid's steps sit on the friction couplings' own lines (40, 65,
+       85) so the account and the couplings agree about when the quarrel has
+       changed. The European lenders' twenty thousand go when the sanctions
+       regime is in force; the whole syndicate stops at the blockade. */
+    earth: {
+      name: "Earth's banks", facility: "the Standby Facility",
+      drawable: true, utilisation: 8000,
+      cap: 60000,
+      rate: { base: 5, steps: [
+        { when: { scalarAbove: { friction: 40 } }, add: 1.25,
+          label: "while Earth's sanctions regime is in force" },
+        { when: { scalarAbove: { friction: 65 } }, add: 2.25,
+          label: "while Earth's banks are pricing the Commonwealth's risk" },
+        { when: { scalarAbove: { friction: 85 } }, add: 3.5,
+          label: "under a blockade" },
+        { when: { scalarBelow: { solvency: 10000 } }, add: 2,
+          label: "while the reserve is under the covenant, as default interest" } ] },
+      limits: [
+        { when: { scalarAbove: { friction: 40 } }, suspends: "eu",
+          why: "the sanctions clause has suspended the European lenders' commitments" },
+        { when: { scalarAbove: { friction: 85 } }, cap: 0,
+          why: "the sanctions clause has suspended every lender's commitment" },
+        { when: { scalarBelow: { solvency: 10000 } }, cap: 0,
+          why: "the reserve is under the covenant, and the agent has stopped the drawing" } ],
+      onDraw: [ { move: { friction: 3, legitimacy: -2 } } ],
+      drawNote: "Earth's governments read a drawing as a political act: " +
+        "friction with Earth rises, and the government's legitimacy falls.",
+      log: "Drew {n} MW-years on the Standby Facility from Earth's banks, at {rate} per cent.",
+      wire: "COMMONWEALTH DRAWS {n} ON EARTH STANDBY FACILITY AT {rate} PER CENT",
+      note: "the Standby Facility",
+      parties: [
+        { name: "Alphabet-JPMorgan Omni", seat: "New York", role: "coordinator, bookrunner and agent", commitment: 12000 },
+        { name: "HSBC Standard Chartered", seat: "London", role: "mandated lead arranger", commitment: 10000 },
+        { name: "Mitsubishi UFJ Mizuho", seat: "Tokyo", role: "mandated lead arranger", commitment: 10000 },
+        { name: "BNP Paribas Société Générale", seat: "Paris", role: "mandated lead arranger", commitment: 8000, tags: ["eu"] },
+        { name: "Deutsche Commerzbank", seat: "Frankfurt", role: "lender", commitment: 7000, tags: ["eu"] },
+        { name: "ING Rabobank", seat: "Amsterdam", role: "lender", commitment: 5000, tags: ["eu"] },
+        { name: "Itaú Bradesco", seat: "São Paulo", role: "lender", commitment: 4000 },
+        { name: "KCB Equity Group", seat: "Nairobi", role: "lender", commitment: 4000 } ],
+      terms: {
+        title: "The Standby Facility", partiesHead: "The syndicate",
+        see: ["commonwealth", "lender_underwriters"],
+        kind: "a syndicated standby credit facility", type: "syndicated standby facility",
+        borrower: "the Circumterrestrial Commonwealth, acting by the Treasurer",
+        signed: "14 March 2078", maturity: "14 March 2083",
+        reference: "3.25 per cent, the lending banks' overnight reference rate",
+        margin: "1.75 per cent",
+        summary: "It was signed in March 2078, after five years in which the " +
+          "Commonwealth met its deficits from the reserve, as a backstop the " +
+          "Treasury did not intend to draw.",
+        sections: [
+          { h: "Drawing", body:
+            "The Commonwealth draws on the facility by a utilisation request " +
+            "from the Treasurer to the agent, in amounts of 8,000 MW-years. " +
+            "Each drawing is announced to the House. Amounts drawn may be " +
+            "repaid at any time without penalty and drawn again, and all " +
+            "amounts outstanding fall due at final maturity." },
+          { h: "Covenants", body:
+            "The Commonwealth undertakes to keep its reserve at or above " +
+            "10,000 MW-years while any amount is drawn. The facility carries a " +
+            "negative pledge, a pari passu clause and a cross-default clause in " +
+            "the usual form, and an expropriation clause under which the taking " +
+            "of an Earth-registered company's property without compensation is " +
+            "an event of default." },
+          { h: "Sanctions", body:
+            "A lender is not obliged to fund a drawing that its own government's " +
+            "sanctions forbid. The European lenders' commitments, 20,000 " +
+            "MW-years between them, are suspended while the European Union's " +
+            "measures against the Commonwealth are in force." } ] } },
+
+    /* THE CIRCUMTERRESTRIAL UNDERWRITERS: COMMONWEALTH RESERVE NOTES. The
+       lender at home. The Underwriters are a market and not a firm (bible
+       §7.5.2): 46 syndicates and 94 mutuals trade on it, and 140 of them
+       elect Insurance and Underwriting's three seats (content/functional.js).
+       Insurers hold reserves against claims, and those reserves are quota;
+       the Treasury borrows them by placing notes, through the market's own
+       Central Fund, with the Reserve Bank as registrar.
+
+       Priced on continuation, not on the quarrel: the coupon steps up as the
+       thermal margin narrows, which is the Underwriters' own reading of
+       whether the borrower keeps running, and no new notes are placed into
+       a cascade. No friction, because Earth is not a party to it; the price
+       is at home, in the standing of a body that votes three seats. */
+    underwriters: {
+      name: "the Underwriters", facility: "Commonwealth Reserve Notes",
+      drawable: true, utilisation: 6000, home: true,
+      cap: 36000,
+      rate: { base: 3.5, steps: [
+        { when: { scalarBelow: { thermal_margin: 15 } }, add: 1,
+          label: "while the federal thermal margin is under 15" },
+        { when: { scalarBelow: { thermal_margin: 10 } }, add: 1.5,
+          label: "while it is under 10" },
+        { when: { scalarBelow: { thermal_margin: 6 } }, add: 2,
+          label: "while it is under 6" } ] },
+      limits: [
+        { when: { scalarBelow: { thermal_margin: 6 } }, cap: 0,
+          why: "the Underwriters place no notes while the thermal margin is under six" } ],
+      onDraw: [ { move: { "actor.underwriters": 3, party_loyalty: -1 } } ],
+      drawNote: "The Underwriters' standing with the government rises. The " +
+        "party's own benches like borrowing from the insurers less.",
+      log: "Placed {n} MW-years of Commonwealth Reserve Notes with the Underwriters, at {rate} per cent.",
+      wire: "TREASURY PLACES {n} OF RESERVE NOTES WITH UNDERWRITERS AT {rate} PER CENT",
+      note: "Commonwealth Reserve Notes",
+      parties: [
+        { name: "Habitat Owners' Mutual Protection and Indemnity Association", seat: "The Bourse", role: "lead manager", commitment: 8000,
+          prose: "the Habitat Owners' Mutual Protection and Indemnity Association" },
+        { name: "Coldwater Underwriting Agency, for Syndicate 118", seat: "The Bourse", role: "lead manager", commitment: 7000 },
+        { name: "Orbit Provident Mutual Assurance Society", seat: "Anchorage", role: "co-manager", commitment: 6000 },
+        { name: "First Circumterrestrial Assurance", seat: "The Bourse", role: "co-manager", commitment: 5000 },
+        { name: "Aldous Pryce Syndicate 2207", seat: "The Bourse", role: "placee", commitment: 4000 },
+        { name: "Far Band Mutual Assurance Association", seat: "The Rotunda", role: "placee", commitment: 3000 },
+        { name: "The Underwriters' Central Fund", seat: "The Bourse", role: "placee", commitment: 3000 } ],
+      terms: {
+        title: "Commonwealth Reserve Notes", plural: true, partiesHead: "The placees",
+        see: ["underwriting", "lender_earth", "commonwealth"],
+        kind: "a programme of Treasury notes placed with members of the Circumterrestrial Underwriters",
+        type: "Treasury notes, privately placed",
+        borrower: "the Circumterrestrial Commonwealth, acting by the Treasurer",
+        signed: "2 September 2079", maturity: "three years from each issue",
+        registrar: "the Reserve Bank of the Circumterrestrial Commonwealth",
+        summary: "The programme was agreed in September 2079 between the " +
+          "Treasury and the Council of the Underwriters, and no notes had been " +
+          "issued under it by April 2080.",
+        sections: [
+          { h: "Issue", body:
+            "Notes are issued in series of 6,000 MW-years and placed with the " +
+            "members listed below in proportion to their commitments. Each " +
+            "series runs for three years and may be redeemed early at par. The " +
+            "Reserve Bank keeps the register of holders and pays the coupon." },
+          { h: "The coupon", body:
+            "The coupon is set by the Underwriters' continuity rating of the " +
+            "Commonwealth, which follows the federal thermal margin. It is 3.50 " +
+            "per cent at the rating the programme opened on, and it steps up " +
+            "when the rating falls. The members place no new notes while the " +
+            "margin is below the level at which their own schedules treat a " +
+            "cascade as likely." },
+          { h: "The Hull Club", body:
+            "The largest holder, the Habitat Owners' Mutual Protection and " +
+            "Indemnity Association, is known on the Bourse as the Hull Club. It " +
+            "was founded by habitat operators to insure one another against " +
+            "bulkhead failure, and it is the mutual from which the Underwriters' " +
+            "market grew." } ] } }
   },
 
   /* WHAT THE UNDERWRITERS SAY (bible §7.5.2 — the only party with accurate
@@ -125,15 +296,15 @@ const SETUP = {
       "That position holds while the prices hold, and the prices are set by " +
       "legislation." },
     debt_none: { text:
-      "The Commonwealth owes nothing off-world. Everything it holds is its own, " +
-      "which is a stronger position at a negotiation than it looks on a ledger." },
+      "The Commonwealth owes nothing. Everything it holds is its own, which is " +
+      "a stronger position at a negotiation than it looks on a ledger." },
     debt_light: { text:
-      "The off-world debt is small enough to service out of receipts. It is " +
-      "also on Earth's books, and Earth reads a ledger as a lever." },
+      "The debt is small enough to service out of receipts." },
     debt_heavy: { text:
-      "The off-world debt is large enough that servicing it is now a line of " +
-      "the budget in its own right. Every point of friction adds to what it " +
-      "costs, and the government does not set the friction alone." },
+      "Servicing the debt is now a line of the budget of its own." },
+    owed_underwriters: { text:
+      "The coupon on the Underwriters' notes follows the thermal margin, so " +
+      "the notes cost more when everything else does." },
     rate_cheap: { text:
       "Earth is lending at a rate that assumes the quarrel is temporary." },
     rate_dear: { text:

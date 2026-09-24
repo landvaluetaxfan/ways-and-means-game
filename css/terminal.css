@@ -389,6 +389,12 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .g-econ .plab em{font-size:10.5px;}
 .g-econ .pval{font-size:18px;font-variant-numeric:tabular-nums;}
 .g-econ .pval span{font-size:11px;}
+/* A STANDING LENDER'S ROW carries two controls, Draw and (once anything is
+   drawn) Repay, stacked in the row's third column so the figure keeps its
+   place in the second. */
+.g-econ .prow.fac .facbtn{display:flex;flex-direction:column;gap:2px;align-items:stretch;}
+.g-econ .prow.fac .plab{cursor:help;}
+.g-econ .prow.fac{padding:2px 0;}
 .g-econ .note{font-size:12px;line-height:1.5;}
 .g-econ .sparkline{width:110px;height:26px;}
 .g-econ table{font-size:12.5px;}

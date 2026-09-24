@@ -722,9 +722,26 @@ version of any of them is in the header of the file it names.
   is both. A promise to repay is `discharge:{repaid:"<id>"}`. The facility
   is 19,800 on the account (principal and printed rate, no service until
   the term) and `ec_borrow_case`'s draw, which added 16,000 and owed
-  nothing, owes it to Earth now. **Open for the author:** design/13 §8.3
-  decided "this setting has no lender" and `reserve_low` still says so,
-  while d8ac8a9 built Earth borrowing and content lends through two events.
+  nothing, owes it to Earth now.
+- **TWO STANDING LENDERS, AND THEIR TERMS ARE CONTENT** (24 Sep, the
+  author's decision; design/13 §8.3's "no lender" is retired). Earth's
+  banks lend through the **Standby Facility**, a syndicated facility of
+  60,000 signed in 2078 with eight named banks; the **Underwriters** lend
+  at home through **Commonwealth Reserve Notes**, 36,000 with seven named
+  syndicates and mutuals. Both are `setup.lenders` entries: a rate built
+  of `steps` that apply while a condition holds (a margin grid on
+  friction; a coupon on the thermal margin; default interest under the
+  reserve covenant), `limits` that lower the cap (the sanctions clause
+  `suspends` the tagged European lenders, so their 20,000 is the
+  syndicate's own sum and not a second number), and `onDraw` for what a
+  drawing does besides the money. **`borrow` had Earth's politics written
+  in** (friction +5, legitimacy −3, "EARTH MARKETS" on the wire) and would
+  have made a placement with the Commonwealth's own insurers a quarrel
+  with Earth; it applies the lender's `onDraw` now and names nobody. The
+  Economy account has a Draw control per facility, each lender with
+  `terms` gets a generated `lender_<id>` article, and `test.js` holds the
+  commitments to the cap. The canon run and every playtest strategy were
+  unchanged by it.
 - **A STYLE THAT NAMES A PANEL WHICH NO LONGER EXISTS DOES NOTHING,
   SILENTLY.** The composition table listed a party's currents twice when
   it was opened with a measure named: the detail that opens with the

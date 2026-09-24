@@ -327,6 +327,20 @@ deliberately. Its other input is the anchor states, and foreign affairs
 
 ## 8.3 Two questions, decided
 
+> **SUPERSEDED IN PART (24 Sep 2026).** "This setting has no lender" is
+> retired. Named creditors were built on 23 Sep (`st.debt.owed`, keyed by
+> lender) and the author then decided the two standing lenders: **Earth's
+> banks**, through a syndicated standby facility of 60,000 MW-years signed
+> in 2078 and undrawn at the opening, and **the Circumterrestrial
+> Underwriters** at home, through Commonwealth Reserve Notes. Their terms
+> are content's (`setup.lenders` in `content/setup.js`), each has a
+> generated Concordance article, and the Economy tab draws on either. The
+> argument below still holds for what it was about: there is still no
+> deficit accumulator, a government that runs out still sheds people rather
+> than defaulting, and `thermal_margin` is still where the physical
+> deficit lives. What changed is only that the reserve can now be topped up
+> by borrowing, at a price the quarrel or the margin sets.
+
 ### Should the game track a deficit?
 
 **No — and the thing a deficit is FOR already exists.**

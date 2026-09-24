@@ -876,6 +876,20 @@ try {
     });
   }));
   (INITIATIVES || []).forEach(i => { if (i.event && !EV.has(i.event)) refBad.push("initiative " + i.id + ": answers with '" + i.event + "', which is no event"); });
+  /* THE LENDERS' CLAUSES are conditions and effects too (24 Sep): a rate
+     step, a limit and a drawing's consequences, in the world's setup and in
+     every campaign's. An unknown condition there throws at the first
+     sitting the account is drawn. */
+  [["the world", SETUP.lenders || {}]].concat((ADMINISTRATIONS || []).map(a => [a.id, (a.setup || {}).lenders || {}]))
+    .forEach(([who, LS]) => Object.keys(LS).forEach(id => {
+      const tag = "lender " + id + " (" + who + ")";
+      walk(LS[id], o => checkWhen(o.when, tag));
+      [].concat(LS[id].onDraw || []).forEach(e => checkEff(e, tag));
+      (LS[id].limits || []).forEach(x => {
+        if (x.suspends != null && !(LS[id].parties || []).some(p => (p.tags || []).indexOf(x.suspends) >= 0))
+          refBad.push(tag + ": a limit suspends '" + x.suspends + "', and no party carries that tag");
+      });
+    }));
   walk(ENCYCLOPEDIA, o => { if (o.when) checkWhen(o.when, "concordance " + (o.heading || o.title || "section")); });
 
   /* ONE LAW, ONE VOCABULARY. transit_subsidy was written "none"/"anchors"/

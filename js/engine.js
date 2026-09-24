@@ -4836,11 +4836,18 @@ const Engine = (function () {
      was a sum of money with a promise beside it that nothing in the account
      could see. It is a table keyed by LENDER now, and the lenders are
      content's (`setup.lenders`): who they are, what their money costs -- a
-     fixed rate, or the quarrel's, a base plus so much a point of friction --
+     fixed rate, or a base with steps that apply while a condition holds --
      how far they will go, and whether the rate is paid every sitting or
-     folded into the sum owed at the term (`serviced: false`). The one the
-     engine knows by name is Earth, because §7.5.3 does: `borrow` is the
-     Commonwealth's own power, and it borrows from Earth or not at all. */
+     folded into the sum owed at the term (`serviced: false`).
+
+     THE LENDERS ARE CONTENT'S AND SO IS THEIR POLITICS (24 Sep). `borrow`
+     used to add five friction and take three legitimacy whoever lent,
+     because the only lender was Earth; with a lender at home (the
+     Underwriters' notes) that would have made borrowing from the
+     Commonwealth's own insurers a quarrel with Earth. What a drawing does
+     beyond the money is the lender's `onDraw`, in content. The one default
+     the engine keeps is the rate and cap of a lender called `earth`, for a
+     save or a probe with no terms at all. */
   const EARTH_TERMS = { rate: { base: BASE_RATE, perFriction: 0.1 }, cap: 60000 };
   function lenderOf(C, id) {
     const L = (C && C.setup && C.setup.lenders) || {};
@@ -4851,11 +4858,23 @@ const Engine = (function () {
     if (!st.debt.owed) st.debt.owed = {};
     return st.debt.owed;
   }
+  /* THE RATE, derived and never stored. A fixed rate is fixed. Otherwise a
+     base, plus so much a point of friction if the lender says so, plus
+     every STEP whose condition holds now: a margin grid that ratchets with
+     the quarrel, a coupon that steps up as the thermal margin narrows,
+     default interest while a covenant is broken. Steps are cumulative, the
+     way a real margin grid reads, and each carries the words for it. */
+  function rateSteps(st, C, lender) {
+    const r = lenderOf(C, lender || "earth").rate || {};
+    return (r.steps || []).filter(x => matches(st, x.when));
+  }
   function debtRate(st, C, lender) {
     const r = lenderOf(C, lender || "earth").rate || {};
     if (r.fixed != null) return r.fixed;
-    return (r.base == null ? BASE_RATE : r.base) +
-           Math.round((st.scalars.friction || 0) * (r.perFriction || 0));
+    const base = (r.base == null ? BASE_RATE : r.base) +
+                 Math.round((st.scalars.friction || 0) * (r.perFriction || 0));
+    const add = rateSteps(st, C, lender).reduce((n, x) => n + (x.add || 0), 0);
+    return Math.round((base + add) * 100) / 100;
   }
 
   /* What is owed, to one lender or to all of them. */
@@ -4873,7 +4892,8 @@ const Engine = (function () {
       return { id: k, name: L.name || k, owed: o[k], rate: debtRate(st, C, k),
                service: L.serviced === false ? 0
                       : Math.round(o[k] * (debtRate(st, C, k) / 100) / 12),
-               note: L.note || "", repayable: L.repayable !== false };
+               label: L.label || "", note: L.note || "", short: L.short || L.note || "",
+               repayable: L.repayable !== false, home: !!L.home };
     });
   }
 
@@ -4884,16 +4904,42 @@ const Engine = (function () {
     return debts(st, C).reduce((n, d) => n + d.service, 0);
   }
 
+  /* HOW FAR A LENDER WILL GO NOW. The cap is the commitment; a LIMIT is a
+     clause that lowers it while its condition holds -- a sanctions clause
+     that suspends some lenders' commitments, a drawstop while a covenant is
+     broken -- and the lowest limit in force is the one that binds. A limit
+     at nought stops new drawing and leaves what is owed where it is. A
+     limit that `suspends` a tag takes out the commitments of the parties
+     carrying it, so the figure is the syndicate's own sum and is not
+     written down twice. */
+  function lenderCap(st, C, lender) {
+    const L = lenderOf(C, lender);
+    let cap = L.cap != null ? L.cap : Infinity, why = "";
+    (L.limits || []).forEach(x => {
+      const c = x.suspends != null
+        ? (L.cap || 0) - (L.parties || [])
+            .filter(p => (p.tags || []).indexOf(x.suspends) >= 0)
+            .reduce((n, p) => n + (p.commitment || 0), 0)
+        : x.cap;
+      if (c < cap && matches(st, x.when)) { cap = c; why = x.why || ""; }
+    });
+    return { cap: cap, why: why };
+  }
+
   function canBorrow(st, C, amount, lender) {
     const id = lender || "earth";
     const n = Math.max(0, Math.round(amount || 0));
     if (!n) return { ok: false, reason: "nothing to borrow" };
     const L = lenderOf(C, id);
-    const cap = L.cap != null ? L.cap : Infinity;
-    if (debtOf(st, id) + n > cap)
-      return { ok: false, reason: (L.name || "Earth's banks") + " will not go past " +
-                                  cap.toLocaleString() + " with this government" };
-    if (st.slots.used >= st.slots.total)
+    if (L.drawable === false)
+      return { ok: false, reason: (L.name || id) + " is not a facility the Commonwealth can draw on" };
+    const c = lenderCap(st, C, id);
+    if (debtOf(st, id) + n > c.cap)
+      return { ok: false, reason: c.why ||
+        ((L.name || "Earth's banks") + " will not go past " +
+         c.cap.toLocaleString() + " with this government") };
+    const slots = L.slots == null ? 1 : L.slots;
+    if (slots && st.slots.used + slots > st.slots.total)
       return { ok: false, reason: "no order-paper time left this sitting period" };
     return { ok: true };
   }
@@ -4902,21 +4948,51 @@ const Engine = (function () {
     const id = lender || "earth";
     const gate = canBorrow(st, C, amount, id);
     if (!gate.ok) return gate;
+    const L = lenderOf(C, id);
     const n = Math.max(0, Math.round(amount));
     owedTable(st)[id] = debtOf(st, id) + n;
     st.scalars.solvency = (st.scalars.solvency || 0) + n;
-    st.slots.used += 1;
-    /* BORROWING FROM EARTH IS A POLITICAL ACT, and the House reads it as one. */
-    st.scalars.friction = clamp((st.scalars.friction || 0) + 5, 0, 100);
-    st.scalars.legitimacy = clamp((st.scalars.legitimacy || 0) - 3, 0, 100);
-    st.log.unshift({ sitting: st.sitting,
-      text: "Borrowed " + n.toLocaleString() + " MW-years against the quota, at " +
-            debtRate(st, C, id) + " per cent." });
+    st.slots.used += (L.slots == null ? 1 : L.slots);
+    st.actedThisSitting = true;
+    /* WHAT A DRAWING DOES BEYOND THE MONEY is the lender's own: Earth's
+       governments read a drawing on Earth's banks as a political act, and
+       the Underwriters read a placement as business. */
+    const rate = debtRate(st, C, id);
+    if (L.onDraw) apply(st, C, L.onDraw);
+    /* a rate is printed to two places, the way a lender quotes one */
+    const pc = rate.toFixed(2);
+    const fill = t => String(t).replace(/\{n\}/g, n.toLocaleString()).replace(/\{rate\}/g, pc);
+    st.log.unshift({ sitting: st.sitting, text: L.log ? fill(L.log)
+      : "Borrowed " + n.toLocaleString() + " MW-years from " + (L.name || id) +
+        ", at " + pc + " per cent." });
     st.wire = st.wire || [];
-    st.wire.unshift({ sitting: st.sitting,
-      text: "COMMONWEALTH RAISES " + n.toLocaleString() +
-            " ON EARTH MARKETS AT " + debtRate(st, C, id) + " PER CENT" });
-    return { ok: true, borrowed: n, rate: debtRate(st, C, id) };
+    st.wire.unshift({ sitting: st.sitting, text: L.wire ? fill(L.wire)
+      : "COMMONWEALTH BORROWS " + n.toLocaleString() + " FROM " +
+        String(L.name || id).toUpperCase() + " AT " + pc + " PER CENT" });
+    return { ok: true, borrowed: n, rate: rate };
+  }
+
+  /* EVERY FACILITY THE COMMONWEALTH CAN DRAW ON, owed or not, for the
+     account: what is drawn, what the lender will go to now and why, the
+     rate and the steps in it, and the size of one drawing. A lender that is
+     not drawable (the Alliance's facility, which its own terms settle) is in
+     `debts` and not here. */
+  function facilities(st, C) {
+    const L = (C && C.setup && C.setup.lenders) || {};
+    return Object.keys(L).filter(k => L[k].drawable).map(k => {
+      const c = lenderCap(st, C, k);
+      const size = L[k].utilisation || 1000;
+      const gate = canBorrow(st, C, size, k);
+      return { id: k, name: L[k].name || k, facility: L[k].facility || "",
+               owed: debtOf(st, k), cap: c.cap, commitment: L[k].cap,
+               limit: c.why, rate: debtRate(st, C, k),
+               steps: rateSteps(st, C, k).map(x => ({ label: x.label || "", add: x.add || 0 })),
+               base: ((L[k].rate || {}).fixed != null ? L[k].rate.fixed
+                     : ((L[k].rate || {}).base == null ? BASE_RATE : L[k].rate.base)),
+               utilisation: size, ok: gate.ok, reason: gate.reason || "",
+               slots: L[k].slots == null ? 1 : L[k].slots,
+               home: !!L[k].home, note: L[k].note || "", drawNote: L[k].drawNote || "" };
+    });
   }
 
   function repay(st, C, amount, lender) {
@@ -4991,11 +5067,17 @@ const Engine = (function () {
     if (net < 0) keys.push("receipts_short");
     else if (rec > 0 && net > 0) keys.push("receipts_cover");
 
-    /* the debt and its price */
+    /* the debt and its price. What is owed at home (a lender marked
+       `home`) is read apart from what is owed off-world, because the rate
+       readings are about the quarrel and a domestic lender is not in it. */
     if (!debt) keys.push("debt_none");
     else if (debt > 30000) keys.push("debt_heavy");
     else keys.push("debt_light");
-    if (debt) keys.push(Math.max(...debts(st, C).map(d => d.rate)) >= 10 ? "rate_dear" : "rate_cheap");
+    const all = debts(st, C), away = all.filter(d => !d.home);
+    if (away.length) keys.push(Math.max(...away.map(d => d.rate)) >= 10 ? "rate_dear" : "rate_cheap");
+    /* and one reading per lender owed, where content has something to say
+       about that lender in particular (`owed_<id>`) */
+    all.forEach(d => keys.push("owed_" + d.id));
 
     /* the cost of existing */
     if (infl <= -5) keys.push("prices_falling");
@@ -6440,6 +6522,7 @@ const Engine = (function () {
     divisorAllocate,
     packBoard, canPackBoard, boardsMoved, boardsTotal,
     borrow, repay, canBorrow, debtOf, debtRate, debtService, debts, lenderOf, inflation, outlook,
+    facilities, lenderCap, rateSteps,
     reshuffle, canReshuffle, resolveMotion, motionDeadline,
     standingIn, bandsOf, bandWeight, syncStanding, assent, presidentDecides, referralRisk, reviewReturns,
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,

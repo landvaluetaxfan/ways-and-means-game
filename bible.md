@@ -133,86 +133,86 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 - §7.5 · L1169 — The shape of the economy  *LOCKED*
 - §7.5.1 · L1182 — Why nothing floats  *LOCKED*
 - §7.5.2 · L1196 — The financial sector  *LOCKED*
-- §7.5.3 · L1214 — Money  *LOCKED*
-- §7.6 · L1236 — Model depth, and the state object  *LOCKED*
-- §7.7 · L1287 — Order-paper time  *LOCKED*
-- §7.8 · L1323 — Discipline and the whip  *LOCKED*
-- §7.9 · L1353 — Scarcity prices  *LOCKED*
-- §7.10 · L1393 — The productive economy  *LOCKED*
+- §7.5.3 · L1223 — Money  *LOCKED*
+- §7.6 · L1245 — Model depth, and the state object  *LOCKED*
+- §7.7 · L1296 — Order-paper time  *LOCKED*
+- §7.8 · L1332 — Discipline and the whip  *LOCKED*
+- §7.9 · L1362 — Scarcity prices  *LOCKED*
+- §7.10 · L1402 — The productive economy  *LOCKED*
 
-**Part VIII — AXES AND PARTIES** · L1438
-- §8.1 · L1440 — The five signed axes  *LOCKED*
-- §8.2 · L1498 — Depth budget  *LOCKED*
-- §8.3 · L1507 — Naming register  *LOCKED*
-- §8.4 · L1532 — The seated parties  *LOCKED (280 seats*
-- §8.5 · L1564 — Party notes
-- §8.6 · L1588 — Parties available but not currently seated  *LOCKED as reserve material*
-- §8.7 · L1624 — Extraparliamentary  *LOCKED*
-- §8.8 · L1630 — Historical and defunct  *LOCKED*
-- §8.9 · L1636 — Ideologies as doctrines  *LOCKED*
+**Part VIII — AXES AND PARTIES** · L1447
+- §8.1 · L1449 — The five signed axes  *LOCKED*
+- §8.2 · L1507 — Depth budget  *LOCKED*
+- §8.3 · L1516 — Naming register  *LOCKED*
+- §8.4 · L1541 — The seated parties  *LOCKED (280 seats*
+- §8.5 · L1573 — Party notes
+- §8.6 · L1597 — Parties available but not currently seated  *LOCKED as reserve material*
+- §8.7 · L1633 — Extraparliamentary  *LOCKED*
+- §8.8 · L1639 — Historical and defunct  *LOCKED*
+- §8.9 · L1645 — Ideologies as doctrines  *LOCKED*
 
-**Part IX — THE PLAYER'S PARTY** · L1648
-- §9.1 · L1650 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
-- §9.2 · L1667 — Inherited platform  *LOCKED*
-- §9.3 · L1671 — Two alliance structures  *LOCKED*
-- §9.4 · L1680 — Refraction  *LOCKED as a writing principle*
-- §9.5 · L1684 — Current caucus (Party of Socialists and Democrats, 82)  *LOCKED*
+**Part IX — THE PLAYER'S PARTY** · L1657
+- §9.1 · L1659 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
+- §9.2 · L1676 — Inherited platform  *LOCKED*
+- §9.3 · L1680 — Two alliance structures  *LOCKED*
+- §9.4 · L1689 — Refraction  *LOCKED as a writing principle*
+- §9.5 · L1693 — Current caucus (Party of Socialists and Democrats, 82)  *LOCKED*
 
-**Part X — SOCIETY, CULTURE, LAW** · L1701
-- §10.1 · L1703 — Aesthetic register — orbital warmth  *LOCKED*
-- §10.2 · L1715 — Nativism, inverted  *LOCKED*
-- §10.3 · L1721 — Labour  *LOCKED*
-- §10.3.1 · L1745 — Four overlays that matter more than the sectors  *LOCKED*
-- §10.4 · L1774 — Who is not in paid work  *LOCKED*
-- §10.5 · L1812 — Fork-rentiers  *LOCKED*
-- §10.6 · L1827 — Labour conflict  *LOCKED*
-- §10.7 · L1835 — Media and information  *LOCKED*
-- §10.8 · L1841 — Courts and law  *LOCKED*
-- §10.9 · L1847 — Religion  *LOCKED*
-- §10.10 · L1851 — External pressures  *LOCKED*
+**Part X — SOCIETY, CULTURE, LAW** · L1710
+- §10.1 · L1712 — Aesthetic register — orbital warmth  *LOCKED*
+- §10.2 · L1724 — Nativism, inverted  *LOCKED*
+- §10.3 · L1730 — Labour  *LOCKED*
+- §10.3.1 · L1754 — Four overlays that matter more than the sectors  *LOCKED*
+- §10.4 · L1783 — Who is not in paid work  *LOCKED*
+- §10.5 · L1821 — Fork-rentiers  *LOCKED*
+- §10.6 · L1836 — Labour conflict  *LOCKED*
+- §10.7 · L1844 — Media and information  *LOCKED*
+- §10.8 · L1850 — Courts and law  *LOCKED*
+- §10.9 · L1856 — Religion  *LOCKED*
+- §10.10 · L1860 — External pressures  *LOCKED*
 
-**Part XI — NAMED CANON** · L1859
-- §11.1 · L1863 — The polity
-- §11.2 · L1924 — Persons
-- §11.3 · L1968 — Stations and constituencies
-- §11.4 · L2045 — The functional roster  *LOCKED*
-- §11.5 · L2067 — The live bill
-- §11.6 · L2076 — Other business on the order paper
+**Part XI — NAMED CANON** · L1868
+- §11.1 · L1872 — The polity
+- §11.2 · L1933 — Persons
+- §11.3 · L1977 — Stations and constituencies
+- §11.4 · L2054 — The functional roster  *LOCKED*
+- §11.5 · L2076 — The live bill
+- §11.6 · L2085 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L2094
-- §12.1 · L2096 — The core principle  *LOCKED*
-- §12.2 · L2100 — Split visual language  *LOCKED*
-- §12.3 · L2107 — Chrome direction  *LOCKED*
-- §12.4 · L2113 — Screens  *LOCKED*
-- §12.5 · L2117 — Election night  *LOCKED*
-- §12.6 · L2127 — The orbital map  *LOCKED*
-- §12.7 · L2155 — The parliament diagram  *LOCKED*
-- §12.8 · L2181 — Documents  *LOCKED*
-- §12.9 · L2187 — The feed  *LOCKED*
-- §12.10 · L2191 — Build cost  *LOCKED*
-- §12.11 · L2195 — Images  *LOCKED*
-- §12.12 · L2223 — Existing artifact
-- §12.13 · L2235 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L2103
+- §12.1 · L2105 — The core principle  *LOCKED*
+- §12.2 · L2109 — Split visual language  *LOCKED*
+- §12.3 · L2116 — Chrome direction  *LOCKED*
+- §12.4 · L2122 — Screens  *LOCKED*
+- §12.5 · L2126 — Election night  *LOCKED*
+- §12.6 · L2136 — The orbital map  *LOCKED*
+- §12.7 · L2164 — The parliament diagram  *LOCKED*
+- §12.8 · L2190 — Documents  *LOCKED*
+- §12.9 · L2196 — The feed  *LOCKED*
+- §12.10 · L2200 — Build cost  *LOCKED*
+- §12.11 · L2204 — Images  *LOCKED*
+- §12.12 · L2232 — Existing artifact
+- §12.13 · L2244 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2294
-- §13.1 · L2296 — Scandal taxonomy  *LOCKED*
-- §13.2 · L2309 — The spine  *LOCKED*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2303
+- §13.1 · L2305 — Scandal taxonomy  *LOCKED*
+- §13.2 · L2318 — The spine  *LOCKED*
 
-**Part XIV — PRIOR ART** · L2317
-- §14.1 · L2319 — The gap  *LOCKED*
-- §14.2 · L2323 — Works
-- §14.3 · L2331 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L2326
+- §14.1 · L2328 — The gap  *LOCKED*
+- §14.2 · L2332 — Works
+- §14.3 · L2340 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2344
-- §15.1 · L2346 — Team  *LOCKED*
-- §15.2 · L2352 — Documentation  *LOCKED*
-- §15.3 · L2368 — Where this gets hard  *LOCKED*
-- §15.4 · L2379 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2396 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2353
+- §15.1 · L2355 — Team  *LOCKED*
+- §15.2 · L2361 — Documentation  *LOCKED*
+- §15.3 · L2377 — Where this gets hard  *LOCKED*
+- §15.4 · L2388 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2405 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2426
+**Part XVI — OPEN DECISIONS** · L2435
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2467
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2476
 
 <!-- /TOC -->
 
@@ -1210,6 +1210,15 @@ rather than shareholder-owned.
   whether particular people keep running.
 - **Substrate debt** is credit secured against your own continuation. Time-
   imprisonment, and the darkest instrument available.
+- **The state borrows from two lenders** (decided 24 Sep 2026, retiring
+  `design/13` §8.3's "no lender"). **Earth's banks** lend through the Standby
+  Facility, a syndicated facility signed in 2078 and undrawn when the campaign
+  opens, priced on a margin grid that ratchets with the quarrel, with a
+  sanctions clause and a reserve covenant. **The Underwriters** lend at home by
+  taking Commonwealth Reserve Notes out of their reserves, at a coupon their
+  own continuity rating sets from the thermal margin. The Reserve Bank keeps
+  the register and prints nothing (§7.5.3). The syndicates, the placees and
+  every term are content's (`setup.lenders`), not this section's.
 
 ### 7.5.3 Money — LOCKED
 

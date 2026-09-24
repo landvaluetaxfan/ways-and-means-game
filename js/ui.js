@@ -1238,25 +1238,68 @@ const UI = (function () {
          content's (`setup.lenders`). */
       const owed = Engine.debts ? Engine.debts(st, C) : [];
       const svc = Engine.debtService ? Engine.debtService(st, C) : 0;
+      const pc = r => Number(r).toFixed(2);
+      const repayBtn = d => d.repayable
+        ? `<button class="btn tiny" data-repay="${esc(d.id)}"` +
+          (solv >= d.owed ? "" : " disabled") + ` data-tip="repay">Repay</button>`
+        : "";
+      /* A LENDER OWED THAT IS NOT A STANDING FACILITY (a campaign's own,
+         like the Alliance's). The row says who and the short form of its
+         terms; the whole note is its tooltip, because at 1366 by 768 a
+         two-line label and a two-line note were most of why the account
+         scrolled once three lenders were owed. */
       const lender = d =>
-        `<div class="prow"><div class="plab">Owed to ${esc(d.name)}` +
-        `<em>${esc(d.note ? d.note + (d.service ? ", " + d.rate + " per cent" : "")
-                           : "at " + d.rate + " per cent")}</em></div>` +
+        `<div class="prow"><div class="plab"${tipAttr(d.name, cap1(d.note) +
+          (d.note ? ". " : "") + "The rate is " + pc(d.rate) + " per cent" +
+          (d.service ? ", paid every sitting." : ", added to the sum owed at the term."))}>` +
+        `${esc(cap1(d.label || d.name))}<em>${esc(d.short || ("at " + pc(d.rate) + " per cent"))}</em></div>` +
         `<div class="pval up">${d.owed.toLocaleString()}</div>` +
-        (d.repayable
-          ? `<button class="btn tiny" data-repay="${esc(d.id)}"` +
-            (solv >= d.owed ? "" : " disabled") + ` data-tip="repay">Repay</button>`
-          : "") + `</div>`;
+        repayBtn(d) + `</div>`;
+      /* THE STANDING LENDERS (24 Sep): one row each, owed or not, because a
+         facility the Commonwealth has not drawn is still a choice it has.
+         What is drawn and at what rate is on the row; the terms in force,
+         and why the lender will go no further, are in its tooltip; Draw
+         takes one drawing at the lender's own size. */
+      const facs = Engine.facilities ? Engine.facilities(st, C) : [];
+      const facIds = facs.map(f => f.id);
+      const facRow = f => {
+        const d = owed.find(x => x.id === f.id);
+        const room = Math.max(0, f.cap - f.owed);
+        const terms = f.name + ", " + f.facility + ": " + f.commitment.toLocaleString() +
+          " MW-years, of which " + f.owed.toLocaleString() + " is drawn. The rate is " +
+          pc(f.rate) + " per cent" + (f.steps.length ? ": " + pc(f.base) +
+            f.steps.map(x => ", plus " + pc(x.add) + " " + x.label).join("") : "") + ". " +
+          (f.limit ? f.limit.charAt(0).toUpperCase() + f.limit.slice(1) + ", so " +
+                     room.toLocaleString() + " can be drawn. " : "") +
+          "A drawing is " + f.utilisation.toLocaleString() + " MW-years" +
+          (f.slots ? " and takes " + slotWord(f.slots) + " of order-paper time" : "") + ".";
+        return `<div class="prow fac"><div class="plab"${tipAttr(f.name, terms)}>${esc(cap1(f.name))}` +
+          `<em>${pc(f.rate)} per cent · ${room.toLocaleString()} undrawn</em></div>` +
+          `<div class="pval${f.owed ? " up" : ""}">${f.owed ? f.owed.toLocaleString() : "none"}</div>` +
+          `<div class="facbtn"><button class="btn tiny" data-draw="${esc(f.id)}"` +
+          (f.ok ? "" : " disabled") +
+          tipAttr("Draw " + f.utilisation.toLocaleString(), f.ok ? f.drawNote : cap1(f.reason) + ".") +
+          `>Draw</button>` + (d ? repayBtn(d) : "") + `</div></div>`;
+      };
       box.innerHTML =
-        row("Held", solv.toLocaleString(), "the quota the state has", "", "solvency") +
+        /* THE RUNWAY IS THE RESERVE'S OWN SUB-LINE (24 Sep). It was the
+           note at the foot of the panel, and once the standing lenders took
+           a row each that note was the part of the panel that scrolled. It
+           is still a conditional and not an assertion. */
+        row("Held", solv.toLocaleString(), r.total > 0
+              ? "would last " + Math.floor(solv / Math.max(1, r.total)) + " sittings if receipts stopped"
+              : "the quota the state has", "", "solvency") +
         row("Receipts", "+" + r.total.toLocaleString(), "every sitting, from four bases", "down") +
-        (owed.length
-          ? owed.map(lender).join("") +
-            (svc ? row("Debt service", "−" + svc.toLocaleString(), "every sitting", "up") : "")
-          : row("Owed", "none", "nothing is pledged to any lender")) +
+        facs.map(facRow).join("") +
+        owed.filter(d => facIds.indexOf(d.id) < 0).map(lender).join("") +
+        (!owed.length && !facs.length ? row("Owed", "none", "nothing is pledged to any lender") : "") +
+        /* THE DEBT SERVICE IS THE NET'S OWN WORKING, so it is the net's
+           sub-line and not a row of its own: one row fewer, and the two
+           figures a reader subtracts are read in one place. */
         row("Net a sitting", (r.total - svc >= 0 ? "+" : "−") +
               Math.abs(r.total - svc).toLocaleString(),
-            "receipts less what the debt costs", r.total - svc < 0 ? "up" : "down") +
+            svc ? "receipts less " + svc.toLocaleString() + " of debt service"
+                : "receipts, with no debt to service", r.total - svc < 0 ? "up" : "down") +
         (spend ? row("The appropriation", spend.toLocaleString(),
                      "what the settled clauses cost", spend > solv ? "up" : "") : "") +
         /* ONE NOTE, NOT TWO. The panel carried a standing sentence about the
@@ -1264,26 +1307,41 @@ const UI = (function () {
            were most of the reason this column scrolled. The runway is the
            one worth the height, because it is the only line here that says
            how long the government has. */
-        `<div class="note">` +
+        /* THE RUNWAY, AS A CONDITIONAL AND NOT AN ASSERTION. This read
+           "Nothing coming in, and what is held would cover 43 sittings" on a
+           panel whose line above it says Receipts +1,200 — a hypothetical
+           phrased as a statement of fact. It is the Held row's sub-line now,
+           and the note is kept for the two cases that are warnings. */
         (spend > solv
-          ? `The budget as it stands costs more than the Commonwealth holds. ` +
-            `It cannot be carried without either the reserve it does not have ` +
-            `or a rate it has not set.`
-          : r.total > 0
-            /* THE RUNWAY, AS A CONDITIONAL AND NOT AN ASSERTION. This read
-               "Nothing coming in, and what is held would cover 43 sittings"
-               on a panel whose line above it says Receipts +1,200 — a
-               hypothetical phrased as a statement of fact, and two panels
-               apart nobody noticed. It was the second of two notes here and
-               is now the only one, so it had to say what it means. */
-            ? `Were the receipts to stop, what is held would cover ` +
-              Math.floor(solv / Math.max(1, r.total)) + ` sittings of the ` +
-              `same spending. A government that runs out does not default; ` +
-              `it sheds people.`
-            : `Nothing is coming in at all. A government that runs out does ` +
-              `not default; it sheds people.`) + `</div>`;
+          ? `<div class="note">The budget as it stands costs more than the ` +
+            `Commonwealth holds. It cannot be carried without either the ` +
+            `reserve it does not have or a rate it has not set.</div>`
+          : r.total > 0 ? ""
+          : `<div class="note">Nothing is coming in at all. A government that ` +
+            `runs out does not default; it sheds people.</div>`);
     }
 
+    /* A DRAWING, confirmed with what it costs beyond the money. */
+    if (box) box.querySelectorAll("[data-draw]").forEach(b =>
+      b.addEventListener("click", () => {
+        const f = (Engine.facilities(st, C) || []).find(x => x.id === b.dataset.draw);
+        if (!f) return;
+        Dialog.confirm(
+          `Draw ${f.utilisation.toLocaleString()} MW-years from ${f.name} ` +
+          `(${f.facility}) at ${Number(f.rate).toFixed(2)} per cent?` +
+          (f.slots ? ` It takes ${slotWord(f.slots)} of order-paper time.` : "") +
+          (f.drawNote ? " " + f.drawNote : ""),
+          { title: "Draw on " + f.facility, yes: "Draw" },
+          ok => {
+            if (!ok) return;
+            const r = acted(() => Engine.borrow(st, C, f.utilisation, f.id));
+            if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); drawAll(); return; }
+            cue("stamp");
+            setStatus("Drew " + r.borrowed.toLocaleString() + " on " + f.facility +
+                      " at " + Number(r.rate).toFixed(2) + " per cent", "transient");
+            drawAll(); saved(); afterAction();
+          });
+      }));
     if (box) box.querySelectorAll("[data-repay]").forEach(b =>
       b.addEventListener("click", () => {
         const d = (Engine.debts(st, C) || []).find(x => x.id === b.dataset.repay);
@@ -3229,6 +3287,7 @@ const UI = (function () {
     return body ? ` data-tip-title="${esc(title)}" data-tip-body="${esc(body)}"` : "";
   }
   function slotWord(n) { return n + " slot" + (n === 1 ? "" : "s"); }
+  function cap1(t) { t = String(t || ""); return t.charAt(0).toUpperCase() + t.slice(1); }
   function priceTip(what, spend, refusal) {
     const bits = [];
     const s = spend || {};

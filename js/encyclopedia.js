@@ -430,6 +430,71 @@ const Concordance = (function () {
     };
   }
 
+  /* A LENDER (24 Sep). The standing lenders are content with terms --
+     `setup.lenders.<id>.terms` -- and each is a document the Commonwealth
+     signed, so each has an article: what it is, who is in it and for how
+     much, how its rate is built, and what is drawn and at what rate NOW,
+     from the engine, so the page cannot disagree with the account. Only a
+     lender with `terms` is written up: the Alliance's facility is a
+     campaign's, and exists only once its story makes it. */
+  function lenderArticle(id, L) {
+    const T = L.terms || {};
+    const title = T.title || L.facility || L.name || id;
+    const parties = L.parties || [];
+    const lead = parties[0];
+    const num = n => Number(n).toLocaleString();
+    const pc = r => Number(r).toFixed(2);
+    const words = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight",
+                   "nine", "ten", "eleven", "twelve"];
+    const nWord = n => words[n] || String(n);
+    const owed = Engine.debtOf(st, id);
+    const rate = Engine.debtRate(st, C, id);
+    const room = Engine.lenderCap(st, C, id);
+    const r = L.rate || {};
+    const up = t => t ? t.charAt(0).toUpperCase() + t.slice(1) : "";
+    const rows = [["Type", up(T.type || T.kind)],
+                  ["Borrower", "The Circumterrestrial Commonwealth"],
+                  [parties.length === 1 ? "Lender" : "Lenders", String(parties.length)],
+                  lead ? ["Lead", lead.name] : null,
+                  T.registrar ? ["Registrar", up(T.registrar)] : null,
+                  ["Amount", num(L.cap) + " MW-years"],
+                  ["Drawn", num(owed) + " MW-years"],
+                  ["Rate", pc(rate) + " per cent"],
+                  T.signed ? ["Signed", T.signed] : null,
+                  T.maturity ? ["Maturity", T.maturity] : null].filter(x => x && x[1]);
+    const pricing = (r.fixed != null)
+      ? { h: "Pricing", body: `The rate is fixed at ${pc(r.fixed)} per cent.` }
+      : { h: "Pricing", body:
+          (T.reference && T.margin
+            ? `Interest is charged at the reference rate, ${T.reference}, plus a margin of ${T.margin}. `
+            : "") +
+          `The rate is ${pc(r.base == null ? 4 : r.base)} per cent at its lowest, and each ` +
+          `step below adds to it while its condition holds.`,
+          table: { head: ["When", "Added"],
+                   rows: (r.steps || []).map(x => [x.label ? x.label.charAt(0).toUpperCase() + x.label.slice(1) : "", "+" + pc(x.add || 0)]) } };
+    return {
+      id: "lender_" + id, title: title, category: "Economy", generated: true,
+      banners: [], edited: { by: "the Treasury", attested: true, note: "" },
+      summary: lede(title, (T.plural ? "are " : "is ") + (T.kind || "a loan to the Commonwealth") +
+        `, with commitments of ${num(L.cap)} MW-years from ${nWord(parties.length)} ` +
+        `${parties.length === 1 ? "lender" : "lenders"}` +
+        (lead ? ` led by ${lead.prose || lead.name}` : "") + "." +
+        (T.summary ? " " + T.summary : "")),
+      sections: [
+        { h: "Use", body: asOf((owed ? `${num(owed)} MW-years ${owed === 1 ? "is" : "are"} outstanding`
+                                     : "nothing is outstanding") +
+            `, and the rate is ${pc(rate)} per cent.`) +
+            (room.cap < L.cap ? ` Drawing is limited: ${room.why}.` : "") },
+        parties.length ? { h: T.partiesHead || "The lenders", body: "",
+          table: { head: ["Lender", "Seat", "Role", "Commitment"],
+                   rows: parties.map(p => [p.name, p.seat || "", p.role || "", num(p.commitment || 0)]) } } : null,
+        pricing
+      ].concat(liveSections(T.sections)).filter(Boolean),
+      infobox: { title: title, rows: rows },
+      see: T.see || []
+    };
+  }
+
   /* A FOREIGN BODY: the Works, and anything else that is outside the
      Commonwealth and on the campaign's table. */
   function foreignBodyArticle(b) {
@@ -657,6 +722,10 @@ const Concordance = (function () {
       if (!handIds.has("bill_" + b.id)) gen.push(billArticle(b));
     });
     C.characters.forEach(c => { if (!handIds.has("person_" + c.id)) gen.push(personArticle(c)); });
+    const LEND = (C.setup && C.setup.lenders) || {};
+    Object.keys(LEND).filter(k => LEND[k].terms).forEach(k => {
+      if (!handIds.has("lender_" + k)) gen.push(lenderArticle(k, LEND[k]));
+    });
     (C.glossary || []).forEach(g => {
       const id = "term_" + g.term.toLowerCase().replace(/\s+/g, "_");
       if (!handIds.has(id) && !handIds.has(g.term.toLowerCase())) gen.push(termArticle(g));

@@ -414,15 +414,17 @@ const ENCYCLOPEDIA = {
     edited:{ by:"unattested", attested:true, note:"" },
     summary:"**Underwriting** is the pricing of failure. The Circumterrestrial Underwriters "+"carry a named risk for a term against a premium paid now, and they are the only "+"body in the Commonwealth holding complete figures on how often people stop running.",
     sections:[
-      { h:"The firm", body:
-        "The Underwriters began as a mutual of habitat operators insuring one another "+"against a bulkhead failure. They hold the actuarial record of every suspension, "+"restoration and default since the Charter, and they do not publish it.\n\n"+
-        "They do not campaign and they do not lobby. Their position in a dispute is "+"expressed by repricing, which they do without an announcement." },
+      { h:"The market", body:
+        "The Circumterrestrial Underwriters is a market on the Bourse in which syndicates "+"and mutuals write risk. An elected Council governs it, and a Central Fund, to "+"which every member contributes, meets a claim that a failed member cannot. The "+"market grew out of the Habitat Owners' Mutual Protection and Indemnity "+"Association, known as the Hull Club, which habitat operators founded to insure "+"one another against bulkhead failure and which is still its largest member.\n\n"+
+        "The Underwriters hold the actuarial record of every suspension, restoration and "+"default since the Charter, and they do not publish it. They do not campaign and "+"they do not lobby. Their position in a dispute is expressed by repricing, which "+"they do without an announcement." },
+      { h:"Lending to the Commonwealth", body:
+        "Insurers hold reserves against claims, and in the Commonwealth those reserves "+"are thermal quota. The Treasury borrows from them by placing "+"[[lender_underwriters|Commonwealth Reserve Notes]] with members of the market, "+"at a coupon set by the Underwriters' own rating of the Commonwealth's "+"continuation." },
       { h:"The indemnity", body:
         "An **[[indemnity]]** is a premium paid now and a payout if the named risk "+"happens before the term. The government buys cover against the events it cannot "+"decide: a freeze, a blockade, a station shedding its register." },
       { h:"The politics", body:
         "Because the Underwriters price the continuation of persons, their rates are "+"read as a judgement on policy. A rise in the Commonwealth's premium is treated "+"by the House as a criticism, and by the Underwriters as arithmetic." }
     ],
-    see:["indemnity","suspension","substrate","commonwealth"] },
+    see:["indemnity","suspension","substrate","commonwealth","lender_underwriters"] },
 
   { id:"volume_leases", title:"Volume leases", category:"Economy",
     banners:["cleanup"],

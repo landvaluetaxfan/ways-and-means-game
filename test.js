@@ -2042,14 +2042,14 @@ console.log("\nBORROWING FROM THE PEOPLE YOU ARE QUARRELLING WITH:");
      some. That is Earth, and `friction` IS Earth's governments and banks. */
   const st = Engine.newGame(CONTENT);
   ok("the Commonwealth starts owing nothing", Engine.debtOf(st) === 0);
-  const r0 = Engine.debtRate(st);
+  const r0 = Engine.debtRate(st, CONTENT);
   ok("and the rate is the quarrel", r0 > 0,
      r0 + " per cent at friction " + st.scalars.friction);
 
   const hot = Engine.newGame(CONTENT);
   hot.scalars.friction = 90;
-  ok("a government at war with Earth borrows dearer", Engine.debtRate(hot) > r0,
-     r0 + " -> " + Engine.debtRate(hot));
+  ok("a government at war with Earth borrows dearer", Engine.debtRate(hot, CONTENT) > r0,
+     r0 + " -> " + Engine.debtRate(hot, CONTENT));
 
   const solv = st.scalars.solvency, fr = st.scalars.friction, sl = st.slots.used;
   const b = Engine.borrow(st, CONTENT, 10000);
@@ -2062,13 +2062,13 @@ console.log("\nBORROWING FROM THE PEOPLE YOU ARE QUARRELLING WITH:");
 
   /* AND IT IS NOT A DEFAULT MECHANIC. \u00a77.6: a government that runs out does
      not default, it sheds people. Debt moves solvency from later to now. */
-  const svc = Engine.debtService(st);
+  const svc = Engine.debtService(st, CONTENT);
   ok("the debt is serviced every sitting", svc > 0, svc + " a sitting");
   const before = st.scalars.solvency;
   Engine.advance(st, CONTENT);
   const rec = Engine.receipts(st).total;
   ok("out of the same purse the receipts go into",
-     st.scalars.solvency === before + rec - Engine.debtService(st) ||
+     st.scalars.solvency === before + rec - Engine.debtService(st, CONTENT) ||
      Math.abs(st.scalars.solvency - (before + rec - svc)) <= 1,
      before + " + " + rec + " - " + svc + " = " + st.scalars.solvency);
 
@@ -2087,6 +2087,111 @@ console.log("\nBORROWING FROM THE PEOPLE YOU ARE QUARRELLING WITH:");
   const over = Engine.canBorrow(st, CONTENT, cap + 1);
   ok("Earth will not lend past its cap", over.ok === false, over.reason);
 
+  /* THE STANDING LENDERS AS DOCUMENTS (24 Sep). Earth's banks lend through a
+     syndicated standby facility and the Underwriters through notes placed
+     at home, and the terms are content's: a rate built of steps, limits
+     that lower the cap while a clause applies, and what a drawing does
+     besides the money. The engine names none of it, so these read the
+     terms back from content rather than restating a number. */
+  (function () {
+    const L = CONTENT.setup.lenders;
+    Object.keys(L).filter(k => L[k].parties).forEach(k =>
+      ok("the parties to " + k + " commit exactly its cap",
+         L[k].parties.reduce((n, p) => n + (p.commitment || 0), 0) === L[k].cap,
+         L[k].parties.reduce((n, p) => n + (p.commitment || 0), 0) + " of " + L[k].cap));
+    const facs = Engine.facilities(Engine.newGame(CONTENT), CONTENT);
+    ok("every drawable lender is a facility on the account, owed or not",
+       facs.length === Object.keys(L).filter(k => L[k].drawable).length && facs.every(f => f.owed === 0),
+       facs.map(f => f.id).join(", "));
+
+    /* the rate: a base, and every step whose condition holds, cumulatively */
+    const g = Engine.newGame(CONTENT);
+    const base = L.earth.rate.base;
+    ok("at peace, Earth lends at the base of its grid", Engine.debtRate(g, CONTENT, "earth") === base,
+       Engine.debtRate(g, CONTENT, "earth") + " against " + base);
+    g.scalars.friction = 90;
+    const want = L.earth.rate.steps.filter(x => Engine.matches(g, x.when)).reduce((n, x) => n + x.add, base);
+    ok("the grid's steps add up while their conditions hold",
+       Engine.debtRate(g, CONTENT, "earth") === Math.round(want * 100) / 100 &&
+       Engine.debtRate(g, CONTENT, "earth") > base,
+       Engine.debtRate(g, CONTENT, "earth") + " per cent at friction 90");
+
+    /* the sanctions clause takes out the tagged lenders' commitments, read
+       from the syndicate and never written down beside it */
+    const sx = Engine.newGame(CONTENT);
+    sx.scalars.friction = 50;
+    const eu = L.earth.parties.filter(p => (p.tags || []).indexOf("eu") >= 0)
+      .reduce((n, p) => n + p.commitment, 0);
+    const c50 = Engine.lenderCap(sx, CONTENT, "earth");
+    ok("a sanctions regime suspends the European lenders' commitments", eu > 0 &&
+       c50.cap === L.earth.cap - eu && !!c50.why, c50.cap + " of " + L.earth.cap + ": " + c50.why);
+    sx.scalars.friction = 90;
+    const b90 = Engine.canBorrow(sx, CONTENT, L.earth.utilisation, "earth");
+    ok("and a blockade stops the whole syndicate, and says so",
+       b90.ok === false && /sanctions/.test(b90.reason), b90.reason);
+
+    /* the covenant: a drawstop and default interest while the reserve is
+       under it, and both lift when the reserve is restored */
+    const cv = Engine.newGame(CONTENT);
+    Engine.borrow(cv, CONTENT, L.earth.utilisation, "earth");
+    const r0 = Engine.debtRate(cv, CONTENT, "earth");
+    cv.scalars.solvency = 5000;
+    const stop = Engine.canBorrow(cv, CONTENT, L.earth.utilisation, "earth");
+    ok("a reserve under the covenant stops the drawing", stop.ok === false && /covenant/.test(stop.reason), stop.reason);
+    ok("and charges default interest while it lasts", Engine.debtRate(cv, CONTENT, "earth") > r0,
+       r0 + " -> " + Engine.debtRate(cv, CONTENT, "earth"));
+    cv.scalars.solvency = 30000;
+    ok("and both lift when the reserve is restored", Engine.debtRate(cv, CONTENT, "earth") === r0 &&
+       Engine.canBorrow(cv, CONTENT, L.earth.utilisation, "earth").ok);
+
+    /* THE LENDER AT HOME. What a drawing does is the lender's: a placement
+       with the Underwriters is not a quarrel with Earth. */
+    const hm = Engine.newGame(CONTENT);
+    const f0 = hm.scalars.friction, u0 = hm.actors.underwriters.standing;
+    const pl = Engine.borrow(hm, CONTENT, L.underwriters.utilisation, "underwriters");
+    ok("the Underwriters take a series of notes", pl.ok === true &&
+       Engine.debtOf(hm, "underwriters") === L.underwriters.utilisation, pl.reason);
+    ok("and Earth does not notice", hm.scalars.friction === f0, f0 + " -> " + hm.scalars.friction);
+    ok("and the Underwriters do", hm.actors.underwriters.standing > u0,
+       u0 + " -> " + hm.actors.underwriters.standing);
+    const keys = Engine.outlook(hm, CONTENT).map(x => x.key);
+    ok("the outlook reads debt at home apart from Earth's, lender by lender",
+       keys.indexOf("owed_underwriters") >= 0 && keys.indexOf("rate_cheap") < 0 && keys.indexOf("rate_dear") < 0,
+       keys.join(" "));
+    const cp0 = Engine.debtRate(hm, CONTENT, "underwriters");
+    hm.scalars.thermal_margin = 4;
+    ok("the coupon steps up as the thermal margin narrows",
+       Engine.debtRate(hm, CONTENT, "underwriters") > cp0, cp0 + " -> " + Engine.debtRate(hm, CONTENT, "underwriters"));
+    ok("and no notes are placed into a cascade",
+       Engine.canBorrow(hm, CONTENT, L.underwriters.utilisation, "underwriters").ok === false);
+
+    /* AN EVENT THAT DRAWS ON THE FACILITY IS CLOSED WHERE THE FACILITY IS.
+       ec_borrow_case moves the debt itself, so its draw is gated by hand on
+       the facility's two full stops; sampled here, so the gate and the
+       limits cannot drift apart. */
+    const bc = (ALL.events || []).find(e => e.id === "ec_borrow_case");
+    if (bc) {
+      const drawC = bc.choices[0];
+      const agree = [[30, 30000], [84, 30000], [86, 30000], [95, 30000], [30, 9000], [30, 10000]].every(([f, sv]) => {
+        const t = Engine.newGame(CONTENT);
+        t.scalars.friction = f; t.scalars.solvency = sv;
+        return Engine.choiceOpen(t, CONTENT, drawC) ===
+               (Engine.lenderCap(t, CONTENT, "earth").cap > 0);
+      });
+      ok("the case for the facility cannot draw on it where the facility has stopped lending", agree);
+    } else ok("ec_borrow_case is in content", false);
+
+    /* A LENDER WITH NO POLITICS HAS NONE: the engine adds nothing of its
+       own to a drawing, which is the point of moving it to content. */
+    const PV = ALL.forCampaign({ id: "plain_probe", setup: { lenders: {
+      plain: { name: "A plain probe", rate: { fixed: 6 }, cap: 9000, drawable: true, utilisation: 3000 } } } });
+    const pg = Engine.newGame(PV);
+    const sc0 = JSON.stringify(pg.scalars);
+    Engine.borrow(pg, PV, 3000, "plain");
+    const sc1 = Object.assign({}, pg.scalars); sc1.solvency -= 3000;
+    ok("a lender with no onDraw moves nothing but the money", JSON.stringify(sc1) === sc0);
+  })();
+
   /* NAMED CREDITORS. A debt is a balance owed to a named lender on the
      lender's terms, and a promise is kept when the balance is gone. The
      lender here is a probe, declared the way a campaign declares one
@@ -2100,8 +2205,10 @@ console.log("\nBORROWING FROM THE PEOPLE YOU ARE QUARRELLING WITH:");
   ok("a debt is owed to somebody", Engine.debtOf(nc, "facility") === 19800 &&
      Engine.debtOf(nc, "earth") === 12000 && Engine.debtOf(nc) === 31800,
      JSON.stringify(nc.debt));
+  /* Earth's at friction 40 is the base of its grid: the first step is
+     "above 40". Read from content, which moved it from a formula to a grid. */
   ok("each lender sets its own rate", Engine.debtRate(nc, LV, "facility") === 10 &&
-     Engine.debtRate(nc, LV, "earth") === 8,
+     Engine.debtRate(nc, LV, "earth") === LV.setup.lenders.earth.rate.base,
      Engine.debtRate(nc, LV, "facility") + " / " + Engine.debtRate(nc, LV, "earth"));
   const ds = Engine.debts(nc, LV);
   ok("a facility whose rate is in the sum costs nothing a sitting until the term",

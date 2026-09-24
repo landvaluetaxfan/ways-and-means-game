@@ -2,8 +2,10 @@
 const fs=require("fs"), vm=require("vm"), path=require("path"), root=path.join(__dirname,"..");
 /* the content files index.html loads (tools/loadcontent.js) */
 vm.runInThisContext(require("./loadcontent.js").source()+
-  "\n;globalThis.__G={ENCYCLOPEDIA,PARTIES,STATIONS,BILLS,CHARACTERS,GLOSSARY};");
-const {ENCYCLOPEDIA,PARTIES,STATIONS,BILLS,CHARACTERS,GLOSSARY}=globalThis.__G;
+  "\n;globalThis.__G={ENCYCLOPEDIA,PARTIES,STATIONS,BILLS,CHARACTERS,GLOSSARY,SETUP};");
+const {ENCYCLOPEDIA,PARTIES,STATIONS,BILLS,CHARACTERS,GLOSSARY,SETUP}=globalThis.__G;
+/* the standing lenders with terms each have a generated article (24 Sep) */
+const LENDERS=Object.keys(SETUP.lenders||{}).filter(k=>SETUP.lenders[k].terms);
 
 const ids=new Set();
 ENCYCLOPEDIA.articles.forEach(a=>ids.add(a.id));
@@ -12,9 +14,18 @@ STATIONS.forEach(s=>ids.add(s.id));
 BILLS.forEach(b=>ids.add("bill_"+b.id));
 CHARACTERS.forEach(c=>ids.add("person_"+c.id));
 GLOSSARY.forEach(g=>{const t=g.term.toLowerCase().replace(/\s+/g,"_");ids.add("term_"+t);ids.add(t);});
+LENDERS.forEach(k=>ids.add("lender_"+k));
 
 const bad=[], counts={hand:ENCYCLOPEDIA.articles.length,gen:0};
-counts.gen = PARTIES.length+STATIONS.length+BILLS.length+CHARACTERS.length+GLOSSARY.length;
+counts.gen = PARTIES.length+STATIONS.length+BILLS.length+CHARACTERS.length+GLOSSARY.length+LENDERS.length;
+
+/* a lender's authored terms are an article's prose, and are checked as one */
+LENDERS.forEach(k=>{
+  const T=SETUP.lenders[k].terms;
+  const text=[T.summary,...(T.sections||[]).map(s=>s.body)].join(" ");
+  [...text.matchAll(/\[\[([a-z0-9_-]+)/gi)].forEach(m=>{ if(!ids.has(m[1])) bad.push("lender_"+k+" → [["+m[1]+"]]"); });
+  (T.see||[]).forEach(s=>{ if(!ids.has(s)) bad.push("lender_"+k+" → see:"+s); });
+});
 
 ENCYCLOPEDIA.articles.forEach(a=>{
   const text=[a.summary,...(a.sections||[]).map(s=>s.body)].join(" ");
@@ -72,6 +83,10 @@ ENCYCLOPEDIA.articles.forEach(a => {
    fault actually was. */
 PARTIES.forEach(p => readsOutOfWorld("parties/" + p.id + "/note", p.note));
 GLOSSARY.forEach(g => readsOutOfWorld("glossary/" + g.term + "/gloss", g.gloss));
+LENDERS.forEach(k => { const T = SETUP.lenders[k].terms;
+  readsOutOfWorld("lenders/" + k + "/summary", T.summary);
+  (T.sections || []).forEach((sec, i) => readsOutOfWorld("lenders/" + k + "/sections/" + i, sec.body));
+  ((SETUP.lenders[k].rate || {}).steps || []).forEach((x, i) => readsOutOfWorld("lenders/" + k + "/steps/" + i, x.label)); });
 
 console.log("CONCORDANCE CHECK");
 console.log("=".repeat(50));
