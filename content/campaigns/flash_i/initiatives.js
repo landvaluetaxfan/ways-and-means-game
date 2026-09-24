@@ -193,4 +193,44 @@ campaign("flash_i", { initiatives: [
                    { move: { legitimacy: 12, public_standing: 7, "loyalty.cu_loyalists": -8 } } ] }
     ] },
 
+
+  /* =============================================================
+     MUTUAL VULNERABILITY (design/35): THE COMMONWEALTH'S LEVER.
+     Earth's pressure is friction and its couplings; this is the
+     Commonwealth's answer in kind. Holding back the power relays, and
+     with them the maintenance crews, costs the Commonwealth trade and
+     the Alliance's goodwill, and Earth answers after its lag. Which side
+     gives way is decided by whose stores run out first (the answer
+     event). EXAMPLES TO REWRITE, like the pivots above.
+     ============================================================= */
+  { id: "hold_the_relays",
+    title: "Hold back the power relays",
+    note: "Earth draws power from the Commonwealth's orbital relays and relies on its crews to " +
+          "maintain its satellites. Holding either back costs Earth directly, and costs the " +
+          "Commonwealth the trade.",
+    cost: 1,
+    when: { scalarAbove: { friction: 50 }, flagsAbsent: ["relays_held"] },
+    event: "f1_earth_answers",
+    tempo: [
+      { label: "The power relays", after: 2,
+        effects: [ { flag: "relays_held" }, { economy: { trade: -8 } },
+                   { move: { legitimacy: 2, "loyalty.gb": -4, "actor.earth_bloc": -6 } } ] },
+      { label: "The relays and the maintenance crews", after: 2,
+        effects: [ { flag: { relays_held: true, crews_held: true } }, { economy: { trade: -15 } },
+                   { move: { legitimacy: 3, friction: 4, "loyalty.gb": -8, "actor.earth_bloc": -10 } } ] }
+    ] },
+
+  /* and the way back, which is giving way */
+  { id: "restore_the_relays",
+    title: "Switch the relays back on",
+    note: "Restores the power relays and the maintenance crews without waiting for Earth to move.",
+    cost: 0,
+    when: { flags: ["relays_held"] },
+    event: "f1_relays_restored",
+    tempo: [
+      { label: "Restore them now", after: 1,
+        effects: [ { flag: { relays_held: false, crews_held: false } }, { economy: { trade: 8 } },
+                   { move: { legitimacy: -4, friction: -3, "loyalty.gb": 4 } } ] }
+    ] },
+
 ] });

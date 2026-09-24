@@ -631,5 +631,42 @@ guard("FLASH I IS A CAMPAIGN (design/36 §3)", ok => {
      up.campaign === "flash_i" && up.version === Engine.STATE_VERSION, up.campaign);
 });
 
+guard("MUTUAL VULNERABILITY: THE RELAYS (design/35)", ok => {
+  const open = (g, id) => (Engine.initiatives(g, CONTENT).find(i => i.id === id) || {}).ok;
+  const fresh = Engine.newGame(CONTENT);
+  ok("the relays cannot be held when there is no quarrel", !open(fresh, "hold_the_relays"));
+  const q = () => { const g = Engine.newGame(CONTENT); g.scalars.friction = 70; return g; };
+  const a = q();
+  ok("they can in one", open(a, "hold_the_relays"));
+  const t0 = a.economy.trade;
+  const r = Engine.take(a, CONTENT, "hold_the_relays", 1);
+  ok("holding the relays and the crews costs the Commonwealth its trade",
+     r.ok && a.economy.trade < t0 && !!a.flags.relays_held && !!a.flags.crews_held,
+     r.reason || t0 + " -> " + a.economy.trade);
+  ok("and Earth's answer is on its way", a.queue.some(x => x.eventId === "f1_earth_answers"));
+  ok("while the relays are held the government can switch them back on", open(a, "restore_the_relays"));
+
+  /* WHO GIVES WAY: exactly one door in every state, decided by the stores. */
+  const ev = CONTENT.eventById.f1_earth_answers;
+  const doors = (flags, consumables) => {
+    const g = Engine.newGame(CONTENT);
+    Object.assign(g.flags, flags); g.scalars.consumables = consumables;
+    return Engine.openChoices(g, CONTENT, ev).map(x => x.index);
+  };
+  const one = (d, i) => d.length === 1 && d[0] === i;
+  ok("with stores to spare Earth gives way, further if the crews were held",
+     one(doors({ relays_held: true, crews_held: true }, 60), 0) &&
+     one(doors({ relays_held: true }, 60), 1), JSON.stringify([doors({ relays_held: true, crews_held: true }, 60), doors({ relays_held: true }, 60)]));
+  ok("with stores running short Earth waits",
+     one(doors({ relays_held: true, crews_held: true }, 40), 2) && one(doors({ relays_held: true }, 49), 2) &&
+     one(doors({ relays_held: true }, 50), 1));
+  const g = q(); Engine.take(g, CONTENT, "hold_the_relays", 0);
+  g.scalars.consumables = 70;
+  const f0 = g.scalars.friction;
+  Engine.choose(g, CONTENT, ev, 1);
+  ok("and when Earth gives way the quarrel eases and the relays come back on",
+     g.scalars.friction < f0 && !g.flags.relays_held, f0 + " -> " + g.scalars.friction);
+});
+
 console.log("");
 console.log(T.failed() ? T.failed() + " FLASH I GUARD FAILURES" : "Flash I keeps its promises");

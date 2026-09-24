@@ -775,6 +775,13 @@ version of any of them is in the header of the file it names.
   narrower on the world's view, so those sweep `ALL` or every view
   (`T.views()`). The second found nothing broken; Flash I's canon election
   is the tenth chapter-three beat in a twelve-sitting campaign.
+- **COUPLINGS HAVE GROUPS** (24 Sep, mutual vulnerability). One line
+  applied across ALL couplings, so a second consequence of friction (Earth
+  paying for its own blockade) could only replace the blockade's drag. The
+  highest line applies per `group` now (default: the meter, so nothing
+  written earlier changed), and a line may carry a `when`. The canon run and
+  every playtest strategy were unchanged by it, and `test.js` breaks when
+  the grouping does.
 - **AN EVENT'S OWN `effects` WERE APPLIED BY NOTHING** (found 23 Sep).
   Content put the accounts freeze's flag on the event, "because the
   accounts freeze in the body", and `choose()` applied only the choice's.

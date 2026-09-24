@@ -143,7 +143,7 @@ messages.
 | Graduated friction into import costs into LSM | **yes** | `setup.couplings` |
 | Domestic thresholds (low SS sustained by DL through tax hikes) | **partly**: rates are the appropriation's clauses; nothing ties an emergency tax rise to legitimacy | |
 | Cascading triggers, one tier per turn | **yes** (23 Sep), as two floors before the meltdown, one a sitting at most; the meltdown needs both | `f1_brink_1`, `f1_brink_2` (flags `f1_first_floor`, `f1_second_floor`), `f1_meltdown` |
-| Mutual structural vulnerability | **no**: friction only hurts the Commonwealth; no relays, no volatiles | |
+| Mutual structural vulnerability | **yes** (24 Sep): a blockade costs Earth while it still buys from the Commonwealth, and the Commonwealth can hold back the relays and crews; whoever's stores run out first gives way | `setup.couplings` (group `earth_cost`), `hold_the_relays`, `restore_the_relays`, `f1_earth_answers` |
 | Narrative asymmetry, two-front media | **thin**: one event (`fa_two_fronts`); no player lever for Earth opinion | |
 | Committees, emergency motions, legal challenges | **yes** | committee stage and amendments, motions, the Tribunal |
 | Horse-trading with fringe delegates | **yes**, generically: a lobbied bench costs a promise | `lobbyable`, undertakings |
@@ -162,3 +162,25 @@ them found that an event's own `effects` were applied by nothing, so the
 accounts freeze had never set `f1_frozen`: the meltdown could not come in
 any run, and the indemnity could not pay. `choose()` applies them now. Left:
 mutual vulnerability, the media front and domestic thresholds.
+
+**24 Sep:** mutual vulnerability is built. Earth depends on the
+Commonwealth for compute, for power from the orbital relays and for the
+crews that maintain its satellites; the Commonwealth depends on Earth for
+the nitrogen and water that come up the tethers. Two halves:
+
+- **Earth's cost is structural** (world setup). Above the blockade line,
+  while the Commonwealth sells Earth at least as much as it buys (trade 95
+  or above), Earth's own losses pull friction down two a sitting. A total
+  embargo holds only against a Commonwealth that trades little. It changed
+  no existing run: the canon run and all seven playtest strategies end as
+  before.
+- **The Commonwealth's lever is Flash I's** (`hold_the_relays`, cost one
+  slot): hold back the relays, or the relays and the crews. It costs trade
+  and the Alliance's goodwill and gains standing at home. Earth answers two
+  sittings later (`f1_earth_answers`). With consumables at 50 or above the
+  Commonwealth can outlast Earth's grid and the Union gives way (friction
+  down 10, or 18 with the crews held too); below 50 the Union waits and cuts
+  the volatiles. `restore_the_relays` is giving way first, at a cost in
+  legitimacy.
+
+Left: the media front and domestic thresholds.

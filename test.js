@@ -4590,6 +4590,44 @@ console.log("\nA CAMPAIGN IS A UNIT (design/36 §3):");
   if (bad) { console.log("\n" + bad + " CAMPAIGN FAILURES"); process.exitCode = 1; }
 })();
 
+console.log("\nMUTUAL VULNERABILITY: A COUPLING PER GROUP, WITH A CONDITION:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  /* THE ENGINE HALF, on probe couplings: the highest line applies within
+     its group, a second group runs beside the first, and `when` can ask a
+     second meter. */
+  const K = Object.assign({}, CONTENT, { setup: Object.assign({}, CONTENT.setup, { couplings: [
+    { meter: "friction", above: 40, drag: { thermal_margin: -1 } },
+    { meter: "friction", above: 60, drag: { thermal_margin: -2 } },
+    { group: "probe", meter: "friction", above: 60, when: { economyAbove: { trade: 94 } },
+      drag: { legitimacy: -1 } } ] }) });
+  const run = trade => {
+    const g = noRevenue(Engine.newGame(K));
+    g.scalars.friction = 70; g.economy.trade = trade;
+    const m = g.scalars.thermal_margin, l = g.scalars.legitimacy;
+    Engine.advance(g, K);
+    return { margin: g.scalars.thermal_margin - m, legit: g.scalars.legitimacy - l };
+  };
+  const hi = run(100), lo = run(80);
+  ok("the highest line in a group applies, and only that one", hi.margin === -2, JSON.stringify(hi));
+  ok("a second group applies beside it", hi.legit === -1, JSON.stringify(hi));
+  ok("and a line's condition can ask another meter", lo.legit === 0 && lo.margin === -2, JSON.stringify(lo));
+
+  /* THE WORLD'S CONTENT: a blockade costs Earth while it is still buying. */
+  const blockade = trade => {
+    const g = noRevenue(Engine.newGame(CONTENT));
+    g.scalars.friction = 90; g.economy.trade = trade;
+    Engine.advance(g, CONTENT);
+    return g.scalars.friction;
+  };
+  const buying = blockade(100), not = blockade(80);
+  ok("Earth's own losses pull a blockade back while it is still buying",
+     buying === not - 2, "friction " + buying + " at trade 100, " + not + " at trade 80");
+  if (bad) { console.log("\n" + bad + " MUTUAL VULNERABILITY FAILURES"); process.exitCode = 1; }
+})();
+
 console.log("\nAN EVENT'S OWN EFFECTS APPLY, WITH THE ANSWER:");
 (function () {
   let bad = 0;

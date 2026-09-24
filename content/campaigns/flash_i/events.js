@@ -648,4 +648,50 @@ The Commonwealth has not done this before, and everyone in the chamber knows it.
       result:"The Spindle prints the statement in full, which it does for resignations and for nothing else." }
   ]},
 
+
+/* MUTUAL VULNERABILITY: EARTH'S ANSWER TO THE RELAYS. Queued by
+   `hold_the_relays` after the European Union's lag. The side whose stores
+   run out first gives way. The Commonwealth's stores are its consumables:
+   the nitrogen and water that come up the tethers. At 50 or above it can
+   outlast Earth's grid and Earth gives way, further if the crews were held
+   too; below 50 Earth waits, and the tethers carry less. One door is open
+   in every state. */
+{ id:"f1_earth_answers", queuedOnly:true, maxFires:2,
+  title:"Earth's answer on the relays",
+  speaker:"landry",
+  body:`The European Union has answered the order holding back the relays. Its members have set the time their grids can run short of orbital power against the time the Commonwealth's stores of nitrogen and water can last on a reduced supply from the tethers.`,
+  choices:[
+    { label:"The Union gives way, and the crews come back with the power.",
+      when:{ flags:["crews_held"], scalarAbove:{ consumables:49 } },
+      effects:[{ flag:{ relays_held:false, crews_held:false, earth_gave_way:true } },
+               { economy:{ trade:12 } },
+               { move:{ friction:-18, legitimacy:4, "actor.earth_bloc":4 } },
+               { wire:"UNION LIFTS MEASURES; RELAYS AND CREWS RESTORED" }],
+      result:"The Union lifts its measures, and the relays and the crews are back at work the same day." },
+    { label:"The Union gives way on the power.",
+      when:{ flagsAbsent:["crews_held"], scalarAbove:{ consumables:49 } },
+      effects:[{ flag:{ relays_held:false, earth_gave_way:true } },
+               { economy:{ trade:7 } },
+               { move:{ friction:-10, legitimacy:3, "actor.earth_bloc":3 } },
+               { wire:"UNION EASES MEASURES; RELAYS RESTORED" }],
+      result:"The Union eases its measures, and the relays are switched back on." },
+    { label:"The Union waits, and the tethers carry less.",
+      when:{ scalarBelow:{ consumables:50 } },
+      effects:[{ flag:"earth_waited" },
+               { move:{ consumables:-6, thermal_margin:-2, friction:6 } },
+               { wire:"UNION HOLDS ITS POSITION; VOLATILES CUT ON THE TETHERS" }],
+      result:"The Union holds its position. Shipments of nitrogen and water up the tethers are cut, and the relays stay off until the government restores them." }
+  ]},
+
+/* the relays switched back on by the government, before Earth moved */
+{ id:"f1_relays_restored", queuedOnly:true, maxFires:2,
+  title:"The relays are back on",
+  speaker:"landry",
+  body:`The power relays and the maintenance crews are working normally again. The European Union has welcomed the decision and has not changed its own measures.`,
+  choices:[
+    { label:"Report it to the House.",
+      effects:[{ move:{ public_standing:-1 } }],
+      result:"The House hears that the relays are back on and that nothing was asked for in return." }
+  ]},
+
 ] });

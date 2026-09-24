@@ -5222,15 +5222,27 @@ const Engine = (function () {
        every sitting until somebody does something about it. The highest
        line that matches is the one applied — worse is worse, not
        worse-squared — and the wire says so once, when it starts. */
-    const cps = (C.setup.couplings || [])
-      .filter(cp => (st.scalars[cp.meter] || 0) > cp.above)
-      .sort((a, b) => (b.above || 0) - (a.above || 0));
-    if (cps.length) {
-      const cp = cps[0];
+    /* PER GROUP, AND WITH A CONDITION (mutual vulnerability, 24 Sep). The
+       highest matching line applies within its `group`, which defaults to
+       the meter, so every coupling written before this behaves as it did.
+       A second group lets a different consequence of the same meter run
+       beside the first: Earth's own losses from a blockade are not a worse
+       line of the blockade, they are another party's cost. `when` is the
+       ordinary condition block, so a line can depend on more than one meter
+       (a blockade costs Earth only while Earth is still buying). */
+    const top = {};
+    (C.setup.couplings || [])
+      .filter(cp => (st.scalars[cp.meter] || 0) > cp.above && (!cp.when || matches(st, cp.when)))
+      .forEach(cp => {
+        const g = cp.group || cp.meter;
+        if (!top[g] || (cp.above || 0) > (top[g].above || 0)) top[g] = cp;
+      });
+    Object.keys(top).forEach(g => {
+      const cp = top[g];
       Object.keys(cp.drag || {}).forEach(k => bumpScalar(st, C, k, cp.drag[k]));
-      const key = "coupling_" + cp.meter + "_" + cp.above;
+      const key = "coupling_" + (cp.group ? cp.group + "_" : "") + cp.meter + "_" + cp.above;
       if (cp.mark && !st.flags[key]) { st.flags[key] = true; marks.push(cp.mark); }
-    }
+    });
 
     /* and the reserve pays the subsidy, every sitting the law stands */
     if (clock > 0 && clockC.costPerSitting)

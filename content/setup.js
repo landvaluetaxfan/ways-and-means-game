@@ -309,8 +309,10 @@ const SETUP = {
      applied to its targets every sitting: dearer imports, a thinner
      margin, a government that looks like it is losing. Content declares
      them; the engine only reads the list, the way it reads prices. The
-     HIGHEST line that matches is applied — worse is worse, not
-     worse-squared — so these are a ladder, not a sum.
+     HIGHEST line that matches in each `group` is applied, so the lines of
+     one group are a ladder and never a sum. `group` defaults to the meter;
+     a line in a group of its own runs beside the others. `when` is an
+     ordinary condition block, for a line that depends on a second meter.
 
      Diplomatic friction is the campaign's clock and this is what makes it
      one: nothing here is a sanction yet, it is the cost of one landing. */
@@ -320,7 +322,20 @@ const SETUP = {
     { meter: "friction", above: 65, drag: { thermal_margin: -2, solvency: -1000 },
       mark: "Earth's banks are pricing the Commonwealth's risk" },
     { meter: "friction", above: 85, drag: { thermal_margin: -3, legitimacy: -1 },
-      mark: "The blockade is beginning to bite" }
+      mark: "The blockade is beginning to bite" },
+    /* MUTUAL VULNERABILITY (the author's plan, design/35). Earth depends on
+       the Commonwealth for compute, for power from the orbital relays, and
+       for the crews that maintain its satellites; the Commonwealth depends
+       on Earth for the nitrogen and water that come up the tethers. A
+       blockade therefore costs Earth as well. While the Commonwealth sells
+       Earth at least as much as it buys (trade at 95 or above), Earth's own
+       losses pull the quarrel back below the blockade line every sitting.
+       A Commonwealth that trades little has no such protection. A group of
+       its own, so it applies beside the blockade's drag and does not
+       replace it. */
+    { group: "earth_cost", meter: "friction", above: 85, when: { economyAbove: { trade: 94 } },
+      drag: { friction: -2 },
+      mark: "Earth's own markets are paying for the blockade" }
   ],
 
   /* PRESSURE BY DEFAULT (Flash I). A government that only answers the
