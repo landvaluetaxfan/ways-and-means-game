@@ -379,16 +379,17 @@ Content is `.js` rather than `.json` on purpose: `fetch()` is blocked on
 
 ```
 npm install      # once, for jsdom
-npm run check    # all eleven, about two minutes
+npm run check    # all twelve, about two minutes
 ```
 
 `uxtest` is about seventy seconds of that and `edtest` about twenty-five
-(it opens every entry in the editor, design/34); the other nine take a few
+(it opens every entry in the editor, design/34); the other ten take a few
 seconds between them. Run one on its own with `npm run <name>`.
 
 | | |
 |---|---|
-| `test.js` | chamber arithmetic against the bible, tier reconciliation, instrument acceptance, 40-sitting smoke test |
+| `test.js` | the ENGINE on the world's content alone: chamber arithmetic against the bible, tier reconciliation, instrument acceptance, 40-sitting smoke test. Plays no campaign |
+| `tools/guards.js` | each campaign's own promises, in `content/campaigns/<id>/guards.js`: Flash I's chain, Act, tiers, pivots and canon run |
 | `tools/lint.js` | legibility: concept load per event, terms used before taught |
 | `tools/cxcheck.js` | Concordance links, see-alsos, banners |
 | `tools/roundtrip.js` | the serialiser: serialise → reload → identical play AND identical data |
@@ -552,7 +553,7 @@ version of any of them is in the header of the file it names.
 - **THE ANNEXATION ACT HAD A ONE-SITTING MARGIN** — resolved 22 Sep by
   re-dating the Flash I chain for three sessions: stranded at 14, the survey
   four sittings, the law officer's opinion three, so the dilemma lands at 21
-  with twelve sittings before the rise. `test.js` asserts at least eight, so a
+  with twelve sittings before the rise. Flash I's guards assert at least eight, so a
   longer chapter one cannot quietly spend the margin again.
 - **THE BIBLE COPIES CONTENT, AND THE COPIES ROT.** The v5 audit (22 Sep)
   compared every section with the built game: all 34 station lines in §11.3
@@ -678,9 +679,10 @@ version of any of them is in the header of the file it names.
   confidence and supply 145 of 280) with austerity to come. The canon
   government climbs the emergency ladder, asks Earth's banks for terms once
   the result is in, and reaches the count with the thermal margin at about
-  six. It is the tightest number in the game. `test.js` guards that the
-  canon ending is reachable by play and goes to the count; keep that true
-  whatever else moves.
+  six. It is the tightest number in the game. Flash I's guards
+  (`content/campaigns/flash_i/guards.js`) assert that the canon ending is
+  reachable by play and goes to the count; keep that true whatever else
+  moves, until the author rewrites the canon.
 - **AN EVENT INSERTED MID-LIST CHANGES EVERY RUN.** The pool's seeded lean
   is keyed on an event's POSITION in `EVENTS` (so renaming preserves runs).
   Inserting two events before `f1_meltdown` moved three playtest strategies
@@ -732,7 +734,7 @@ version of any of them is in the header of the file it names.
   with `campaign:"<id>"` belongs to that campaign only; untagged is the
   world's. `CONTENT.forCampaign(admin)` builds a campaign's view (its
   entries, rebuilt indexes, setup merged one level deep, `opening`
-  effects), and the shell, `test.js` and the playtest all play through it:
+  effects), and the shell, the tests and the playtest all play through it:
   **never hand the engine raw `CONTENT` for a game.** `st.campaign` and the
   `campaign` condition say which one is running. Lint checks tags and that
   no campaign can see an entry naming another campaign's id. That check was
@@ -753,6 +755,23 @@ version of any of them is in the header of the file it names.
   split), and the prose write-back (`tools/prose.js` looks in the entry's
   campaign file first, then the world's, then every campaign file, since
   administrations are not tagged).
+- **THE ENGINE'S TESTS PLAYED A CAMPAIGN** (23 Sep). `test.js` played
+  Flash I and asserted its story among the engine's rules, so a rewrite of
+  the story (which is what the author means to do) would throw at the first
+  assertion naming a removed event and take every engine test after it
+  down. The engine's tests play the world's view now (`tools/testkit.js`
+  `world()`), and each campaign's story is asserted in its folder
+  (`content/campaigns/<id>/guards.js`, `npm run guards`), each block in a
+  `guard()` that cannot take the next one with it. Proved by rewriting
+  Flash I in a scratch edit: `test.js` stayed green and two guards failed,
+  each saying why. Two traps in the move, both measured: an engine feature
+  whose only test used a Flash I fixture (reserved time, named creditors,
+  the crisis channel, an event's own effects) got a probe test in
+  `test.js`; and a check that sweeps CONTENT for well-formedness ("no event
+  opens a fourth chapter", "the count fits the campaign") went quietly
+  narrower on the world's view, so those sweep `ALL` or every view
+  (`T.views()`). The second found nothing broken; Flash I's canon election
+  is the tenth chapter-three beat in a twelve-sitting campaign.
 - **AN EVENT'S OWN `effects` WERE APPLIED BY NOTHING** (found 23 Sep).
   Content put the accounts freeze's flag on the event, "because the
   accounts freeze in the body", and `choose()` applied only the choice's.

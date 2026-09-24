@@ -125,6 +125,11 @@ That is moderate engine work plus mechanical tagging of Flash I's content.
   its guards, and `tools/playtest.js` and `tools/prose.js` read Flash I's
   content. A new campaign needs its own canon script. It can copy the
   shape.
+- **Split, 23 Sep:** `test.js` tests the engine on the world's view and
+  plays no campaign; Flash I's canon script and story guards are
+  `content/campaigns/flash_i/guards.js`, run by `npm run guards` with every
+  other campaign's. A new campaign copies that file. `tools/testkit.js` is
+  the shared ground both load from.
 
 ## 5. Mods
 

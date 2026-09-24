@@ -5,6 +5,7 @@
   "description": "A text-based narrative political thriller with real electoral mechanics, set in a federated republic of orbital habitats.",
   "scripts": {
     "test": "node test.js",
+    "guards": "node tools/guards.js",
     "lint": "node tools/lint.js",
     "cx": "node tools/cxcheck.js",
     "roundtrip": "node tools/roundtrip.js",
@@ -24,7 +25,7 @@
     "build": "node tools/build.js",
     "inksig": "node tools/inksig.js",
     "encode": "node tools/encodeaudio.js",
-    "check": "npm run test && npm run lint && npm run cx && npm run roundtrip && npm run rename && npm run editor && npm run ui && npm run ux && npm run tocheck && npm run enc && npm run prose:check",
+    "check": "npm run test && npm run guards && npm run lint && npm run cx && npm run roundtrip && npm run rename && npm run editor && npm run ui && npm run ux && npm run tocheck && npm run enc && npm run prose:check",
     "toc": "node tools/toc.js",
     "register": "node tools/register.js",
     "prosedocx": "node tools/prosedocx.js"

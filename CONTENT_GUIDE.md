@@ -54,6 +54,7 @@ content/campaigns/flash_i/
   settlements.js    the five outcome tiers
   initiatives.js    the facility, Earth's terms, the pivots
   achievements.js   its awards
+  guards.js         what the story promises, as tests (not loaded by the game)
   scaffold.example.js   the pre-build scaffold, loaded by nothing
 ```
 
@@ -105,7 +106,9 @@ branch on which one is running with the `campaign` condition:
    the world's content and before `content/index.js`. Every tool reads the
    page's list, so nothing else needs telling; lint fails if the two pages
    disagree.
-4. Empty the copied files and write the story.
+4. Empty the copied files and write the story. Keep `guards.js` and rewrite
+   its blocks to say what YOUR story promises; `npm run guards -- <id>` runs
+   them.
 
 An administration can also play **another's** campaign. The sandbox is
 `campaign:"flash_i"`: Flash I's content, setup and opening, with its own
@@ -115,6 +118,17 @@ field means the campaign they play.
 **Append, do not insert.** The pool's seeded lean is keyed on an event's
 position in the list a campaign plays, which is the world's events followed
 by the campaign's. A new event goes at the end of its file.
+
+**Guards: the story's tests are the campaign's.** `test.js` tests the
+engine on the world's content and never reads a campaign's folder. What a
+campaign promises (the crisis opens on its date, the Act can be carried,
+every tier is reachable, the canon run lands its ending and reaches the
+count) is asserted in its own `guards.js`, which `npm run guards` runs for
+every campaign the page loads, and `npm run check` runs with everything
+else. When a rewrite breaks a guard, the guard is telling you the story
+changed: change the guard to the new promise, or delete it if the promise
+is gone. Each block runs on its own, so a block naming an event you removed
+fails once with the reason and the rest still run.
 
 `npm run lint` checks that every tag names a campaign, and that nothing a
 campaign can see names something it cannot. A shared event that queues a

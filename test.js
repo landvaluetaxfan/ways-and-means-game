@@ -1,30 +1,17 @@
 /* Headless check: does the division calculator reproduce the bible's numbers? */
 const fs = require("fs"), vm = require("vm");
-/* the content files index.html loads, in its order (tools/loadcontent.js) */
-vm.runInThisContext(require("./tools/loadcontent.js").source() + "\n;globalThis.__C = CONTENT;");
-/* THE CAMPAIGN'S VIEW, not the whole set (design/36 §3): the tests below
-   assert Flash I, so they play what Flash I plays, with its own setup
-   merged in. ALL is every campaign's content, for the tests of the view. */
-const ALL = globalThis.__C;
-const CONTENT = ALL.forCampaign("flash_i");
+/* THE ENGINE AND THE WORLD, NOT A CAMPAIGN (tools/testkit.js). Every test
+   here plays the world's view: every entry with no campaign and none of any
+   campaign's. A campaign's story is asserted in its own folder
+   (content/campaigns/<id>/guards.js, `npm run guards`), so rewriting Flash I
+   rewrites its guards and leaves these standing. ALL is every campaign's
+   content, for the tests of the view itself. */
+const T = require("./tools/testkit.js");
+const ALL = T.all();
+const CONTENT = T.world();
 const Engine = require("./js/engine.js");
-
-/* HOW LONG THE OPENING IS, counted rather than written down. Chapter one's
-   prologue beats hold the first sittings of a run, and two assertions below
-   are really measuring that length: how far a dated crisis may drift, and
-   how many sittings a canon-ending run needs. Both went red when the
-   President's commission was added as a new first beat, which is a test
-   measuring the tutorial and calling it the crisis. */
-const PROLOGUE1 = CONTENT.events
-  .filter(e => (e.chapter || 1) === 1 && e.prologue).length;
-/* And how long a whole run can be: every sitting period of every session, the
-   campaign after the writs, and slack. Read from setup, because the length
-   is content's and moved from one session to three on 22 Sep 2026 — the two
-   loops that had it written in as 40 and 38 were the first two failures. */
-const RUN_BOUND = (CONTENT.setup.sittingsPerPeriod || 24) *
-                  (CONTENT.setup.periodsPerSession || 1) *
-                  (CONTENT.setup.sessionsPerParliament || 1) +
-                  (CONTENT.setup.campaignSittings || 12) + 4;
+const PROLOGUE1 = T.prologue1(CONTENT);
+const RUN_BOUND = T.runBound(CONTENT);
 
 const st = Engine.newGame(CONTENT);
 console.log("chamber", Engine.chamberTotal(st), "| popular", Engine.popularTotal(st),
@@ -112,21 +99,6 @@ console.log("\nGATES THAT WERE DEAD:");
   /* And the count it reads is actually incremented by dividing. */
   const st = Engine.newGame(CONTENT);
   ok("and nothing has kept a pair at the opening", !st.pairsKept, String(st.pairsKept));
-
-  /* The freeze records itself, which is what re-opens the payout branches. */
-  const fz = ev("f1_accounts_freeze");
-  const sets = [].concat(fz.effects || []).some(e => e.flag === "f1_frozen");
-  ok("the accounts freezing sets the flag the indemnity pays on", sets);
-  const ind = ev("indemnity_settles");
-  const payout = (ind.choices || []).filter(c =>
-    c.when && (c.when.flags || []).indexOf("f1_frozen") >= 0);
-  ok("so both payout branches of the indemnity are reachable",
-     payout.length === 2, payout.length + " branches want f1_frozen");
-  const froze = Engine.newGame(CONTENT);
-  froze.flags.f1_frozen = true; froze.flags.indemnity_suppliers = true;
-  ok("and one of them opens when the accounts have frozen",
-     Engine.matches(froze, payout[0].when) &&
-     !Engine.matches(Engine.newGame(CONTENT), payout[0].when));
 
   /* flagsAbsent was suspected and is sound; asserted so it stays that way,
      since 33 gates in content depend on it. */
@@ -387,43 +359,34 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
        rd.ok ? String(rd.approved) : rd.reason);
   }
 
-  /* RESERVED ORDER-PAPER TIME (design/32 §E.5). The dilemma's five slots
-     went into the general pool, where every bill listed earlier in content
-     spent them first, and stayed there for good: the Annexation Bill reached
-     its division in no playtest strategy, and every later session had eleven
-     slots and not six. */
+  /* RESERVED ORDER-PAPER TIME (design/32 §E.5). Time granted for one
+     measure is spent by that measure alone and goes at the rise. This is
+     the engine's half; Flash I's guards assert the crisis that uses it,
+     where the dilemma's five slots used to leak into the general pool. */
   {
-    const dil = CONTENT.eventById.f1_dilemma;
-    const annex = dil.choices.find(c => [].concat(c.effects || []).some(f => f.flag === "f1_annexing"));
+    const id = "appropriation";
     const r = Engine.newGame(CONTENT);
     const total0 = r.slots.total;
-    Engine.apply(r, CONTENT, annex.effects);
-    ok("the crisis brings its own time, reserved for the Act",
-       Engine.reservedFor(r, "annexation") === 5 && r.slots.total === total0,
-       Engine.reservedFor(r, "annexation") + " reserved, " + r.slots.total + " general");
+    Engine.apply(r, CONTENT, [{ slots: { reserve: { [id]: 5 } } }]);
+    ok("time can be reserved for one measure, beside the general pool",
+       Engine.reservedFor(r, id) === 5 && r.slots.total === total0,
+       Engine.reservedFor(r, id) + " reserved, " + r.slots.total + " general");
     r.slots.used = r.slots.total;
-    const other = CONTENT.bills.find(b => b.id !== "annexation" && !r.bills[b.id].dead &&
+    const other = CONTENT.bills.find(b => b.id !== id && !r.bills[b.id].dead &&
                                         r.bills[b.id].stage !== "drafting" &&
                                         r.bills[b.id].stage !== Engine.DIVIDES_AT);
     ok("and no other bill can spend it", !Engine.grantSlot(r, CONTENT, other.id).ok, other.id);
-    let guard = 0;
-    while (r.bills.annexation.stage !== Engine.DIVIDES_AT && guard++ < 12) {
-      const g = Engine.grantSlot(r, CONTENT, "annexation");
-      if (!g.ok) Engine.advance(r, CONTENT);
-    }
-    while (!Engine.canDivide(r, CONTENT, "annexation").ok && guard++ < 16) Engine.advance(r, CONTENT);
-    const d = Engine.divide(r, CONTENT, "annexation");
-    ok("so the Act reaches its division on its own time alone",
-       !!d.result && r.slots.used === r.slots.total && Engine.reservedFor(r, "annexation") === 0,
-       d.result ? "divided, reserve " + Engine.reservedFor(r, "annexation") : (d.reason || "no division"));
+    const g = Engine.grantSlot(r, CONTENT, id);
+    ok("while the measure it was reserved for can, with the pool spent",
+       g.ok && Engine.reservedFor(r, id) === 4, g.ok ? Engine.reservedFor(r, id) + " left" : g.reason);
 
     const x = Engine.newGame(CONTENT);
-    Engine.apply(x, CONTENT, annex.effects);
+    Engine.apply(x, CONTENT, [{ slots: { reserve: { [id]: 5 } } }]);
     const rise = x.risesAt + 1;
     while (x.sitting <= rise) Engine.advance(x, CONTENT);
     ok("and reserved time goes with the sitting period it was granted for",
-       Engine.reservedFor(x, "annexation") === 0 && x.slots.total === total0,
-       Engine.reservedFor(x, "annexation") + " reserved, " + x.slots.total + " general");
+       Engine.reservedFor(x, id) === 0 && x.slots.total === total0,
+       Engine.reservedFor(x, id) + " reserved, " + x.slots.total + " general");
   }
 
   /* SITTING PERIODS (bible §1.8). A session is sat in periods, and a recess
@@ -472,13 +435,15 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
 
   /* THREE CHAPTERS, AND NOTHING AFTER THE COUNT (bible §1.7). */
   {
-    const beyond = CONTENT.events.filter(e => (e.chapter || 1) > 3 ||
+    /* every campaign's events, not the world's alone: a sweep of content
+       is a sweep of all of it (tools/testkit.js views) */
+    const beyond = ALL.events.filter(e => (e.chapter || 1) > 3 ||
       (e.choices || []).some(c => [].concat(c.effects || []).some(f => f.chapter > 3)));
     ok("no event belongs to, or opens, a chapter after the third",
        beyond.length === 0, beyond.map(e => e.id).join(", ") || "none");
     const after = CONTENT.events.filter(e => /^ch4_/.test(e.id));
     const d = Engine.newGame(CONTENT);
-    d.resolvedAs = "f1_pyrrhic";
+    d.resolvedAs = "probe_tier";
     after.forEach(e => { d.seen[e.id] = 0; });
     d.seen.ch4_settled = 1; d.seen.ch4_after = 1; d.seen.ch4_the_answer = 1;
     d.seen.ch4_the_losers = 1;
@@ -514,9 +479,9 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
         });
       Object.keys(o).forEach(k => walk(o[k], where, false));
     };
-    Object.keys(CONTENT).forEach(k => {
+    Object.keys(ALL).forEach(k => {
       if (k === "cabinet" || /ById$/.test(k)) return;
-      [].concat(CONTENT[k] || []).forEach(x => walk(x, k + " " + ((x && x.id) || "")));
+      [].concat(ALL[k] || []).forEach(x => walk(x, k + " " + ((x && x.id) || "")));
     });
     (CONTENT.cabinet || []).forEach(p => (p.candidates || []).forEach(c => walk(c.effects, "cabinet " + p.id)));
     ok("every cabinet effect names a post and a person that exist", bad.length === 0,
@@ -678,10 +643,10 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
      silence — content had a bill parked at "lords", which is neither in
      STAGE_ORDER nor a stage the engine recognises. */
   {
-    let burned = [], sl = Engine.newGame(CONTENT);
-    CONTENT.bills.forEach(b => {
+    let burned = [], sl = Engine.newGame(ALL);
+    ALL.bills.forEach(b => {
       const before = sl.bills[b.id].stage, used = sl.slots.used;
-      const r = Engine.grantSlot(sl, CONTENT, b.id);
+      const r = Engine.grantSlot(sl, ALL, b.id);
       if (r.ok && sl.bills[b.id].stage === before && sl.slots.used > used)
         burned.push(`${b.id} (${before})`);
     });
@@ -697,7 +662,7 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
 
     /* every stage content ships must be one the engine can advance */
     const known = Engine.STAGE_ORDER.concat(["blocked"]);
-    const strays = CONTENT.bills.filter(b => !known.includes(b.stage))
+    const strays = ALL.bills.filter(b => !known.includes(b.stage))
                                 .map(b => `${b.id}:"${b.stage}"`);
     ok("every authored stage is in STAGE_ORDER", strays.length === 0, strays.join(", "));
   }
@@ -1245,63 +1210,12 @@ console.log("\nA PROMISE CAN BE KEPT (design/34):");
     if (Array.isArray(o)) return o.forEach(walk);
     if (o.bill && typeof o.bill === "object") Object.values(o.bill).forEach(v => {
       if (v && typeof v.stage === "string" && !stages.has(v.stage)) contentSets.push(v.stage); });
-    Object.values(o).forEach(walk); })(CONTENT.events.concat(CONTENT.bills, CONTENT.initiatives || []));
-  (CONTENT.bills || []).forEach(b => { if (!stages.has(b.stage)) contentSets.push(b.id + ":" + b.stage); });
+    Object.values(o).forEach(walk); })(ALL.events.concat(ALL.bills, ALL.initiatives || []));
+  (ALL.bills || []).forEach(b => { if (!stages.has(b.stage)) contentSets.push(b.id + ":" + b.stage); });
   ok("the editor's stages are every stage a bill can be in",
      !missing.length && !engineSets.length && !contentSets.length,
      missing.concat(engineSets, contentSets).join(" "));
   if (bad) { console.log("\n" + bad + " PROMISE FAILURES"); process.exitCode = 1; }
-})();
-
-console.log("\nTHE EMERGENCY FACILITY IS REPAYABLE (the author, 23 Sep):");
-(function () {
-  let bad = 0;
-  const ok = (l, c, extra) => { if (!c) bad++;
-    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
-  const loan = CONTENT.eventById.f1_loan;
-  const take = loan && loan.choices.find(c => (c.effects || []).some(e => e.undertake));
-  ok("the loan undertakes a repayment", !!take);
-  if (!take) { process.exitCode = 1; return; }
-
-  const a = Engine.newGame(CONTENT);
-  a.scalars.solvency = 25000;
-  Engine.apply(a, CONTENT, take.effects);
-  const u = a.undertakings.find(x => x.id === "f1_debt");
-  ok("and says how it is kept", !!(u && u.discharge), JSON.stringify(u && u.discharge));
-  const ini = Engine.initiatives(a, CONTENT).find(i => i.id === "repay_facility");
-  ok("repaying it is something the government can do", !!(ini && ini.ok), ini && ini.reason);
-  ok("and it takes no order-paper time", ini && ini.cost === 0, ini && ini.cost);
-  const used = a.slots.used, solv = a.scalars.solvency;
-  const r = Engine.take(a, CONTENT, "repay_facility", 0);
-  ok("paying it keeps the promise", r.ok && u.state === "kept", r.reason || u.state);
-  ok("out of the reserve, and not out of House time",
-     a.scalars.solvency === solv - 19800 && a.slots.used === used,
-     solv + " -> " + a.scalars.solvency + ", slots " + used + " -> " + a.slots.used);
-  ok("and the Alliance answers", a.queue.some(q => q.eventId === "f1_facility_closed"));
-
-  const b = Engine.newGame(CONTENT);
-  b.scalars.solvency = 0;                       /* the loan itself brings 18,000 */
-  Engine.apply(b, CONTENT, take.effects);
-  ok("a government that cannot pay in cash is not offered the cash",
-     Engine.take(JSON.parse(JSON.stringify(b)), CONTENT, "repay_facility", 0).ok === false);
-  const c2 = JSON.parse(JSON.stringify(b));
-  const rl = Engine.take(c2, CONTENT, "repay_facility", 1);
-  ok("but can settle against the leases",
-     rl.ok && c2.undertakings.find(x => x.id === "f1_debt").state === "kept" &&
-     !!c2.flags.cordell_leases_ceded, rl.reason);
-  let guard = 0;
-  while (!b.dissolved && guard++ < 200) Engine.advance(b, CONTENT);
-  const ub = b.undertakings.find(x => x.id === "f1_debt");
-  ok("unpaid when the House rises, it breaks", ub.state === "broken", ub.state);
-  ok("and the Alliance calls it", b.queue.some(q => q.eventId === "f1_debt_called") ||
-     (b.seen.f1_debt_called || 0) > 0);
-  const called = CONTENT.eventById.f1_debt_called;
-  b.scalars.solvency = 5000;
-  const shut = called && !Engine.matches(b, called.choices[0].when || {});
-  b.scalars.solvency = 30000;
-  ok("a reserve too small to pay cannot pay it, and one large enough can",
-     shut && Engine.matches(b, called.choices[0].when || {}));
-  if (bad) { console.log("\n" + bad + " FACILITY FAILURES"); process.exitCode = 1; }
 })();
 
 console.log("\nA SCALAR MOVES BY ONE RULE, WHATEVER MOVES IT (design/34):");
@@ -1515,12 +1429,13 @@ console.log("\nAN INITIATIVE'S ANSWER IS AN EVENT (design/18 §4):");
   const ok = (l, c, extra) => { if (!c) bad++;
     console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
 
-  const ids = new Set(CONTENT.events.map(e => e.id));
   const inits = CONTENT.initiatives || [];
   ok("there are initiatives", inits.length > 0, inits.length + "");
+  /* in every view: a campaign's initiative answers with its own event */
+  const unanswered = T.views().flatMap(v => (v.C.initiatives || [])
+    .filter(i => !v.C.eventById[i.event]).map(i => v.id + ":" + i.id));
   ok("and each queues an event that exists",
-     inits.every(i => ids.has(i.event)),
-     inits.filter(i => !ids.has(i.event)).map(i => i.id).join(",") || "");
+     unanswered.length === 0, unanswered.join(",") || "");
 
   /* Taking one spends the clock and puts the answer on the queue. */
   const a = Engine.newGame(CONTENT);
@@ -2070,11 +1985,7 @@ console.log("\nTHE ORDER OF THE DAY:");
    The subject did not change and neither did the assertion: the test turns
    the revenue OFF, so the only thing that can move solvency is the thing
    being tested. Setting every rate to none is a law value like any other. */
-function noRevenue(st) {
-  st.law.rate_volume = st.law.rate_thermal =
-  st.law.rate_substrate = st.law.rate_transit = "none";
-  return st;
-}
+const noRevenue = T.noRevenue;
 
 console.log("\nA DEFERRED FACT (the queue carries effects):");
 (function(){
@@ -2117,63 +2028,6 @@ console.log("\nA DEFERRED FACT (the queue carries effects):");
   ok("and a queued EVENT is still a story, not a fact",
      Engine.nextEvent(q, CONTENT) === e0);
   if (bad) { console.log("\n" + bad + " DEFERRED-FACT FAILURES"); process.exitCode = 1; }
-})();
-
-console.log("\nTHE ANNEXATION ACT CAN BE CARRIED:");
-(function(){
-  let bad = 0;
-  const ok = (l, c, extra) => { if (!c) bad++;
-    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
-
-  /* THE ASSERTION BEHIND THE GATE CHANGE. The canon endings used to gate on
-     `f1_annexing` \u2014 a flag the Prime Minister sets by DECIDING \u2014 which
-     annexed 184,000 people with no reading, no division and no Act, in a
-     game whose thesis is that things happen by parliamentary act. Moving the
-     gate to `almanac_annexed` was two words and was reverted once, because
-     the Act could not then be carried and an ending nobody can reach is
-     worse than one that is merely unearned.
-
-     This is the condition that let it move, so it is the thing to watch: if
-     balance ever drifts back, the Act stops passing and this fails LOUDLY,
-     rather than the endings quietly becoming unreachable. */
-  const st = Engine.newGame(CONTENT);
-  Engine.apply(st, CONTENT, [{ flag: "station_issue" }, { flag: "annexed_almanac_works" },
-                             { flag: "f1_annexing" }]);
-  const bill = (CONTENT.bills || []).find(b => /annex/i.test(b.id));
-  ok("there is an Annexation Bill", !!bill, bill ? bill.id : "none");
-  if (bill) {
-    ok("and passing it is what sets the flag the endings read",
-       (bill.onPass || []).some(e => e.flag === "almanac_annexed"));
-    let dividedAt = null;
-    for (let i = 0; i < 40 && st.bills[bill.id].stage !== "assented"; i++) {
-      if (st.bills[bill.id].stage === Engine.DIVIDES_AT) {
-        const r = Engine.divide(st, CONTENT, bill.id);
-        if (r && r.ok !== false && dividedAt == null) dividedAt = st.sitting;
-      }
-      if (st.slots.used < st.slots.total) Engine.grantSlot(st, CONTENT, bill.id);
-      Engine.advance(st, CONTENT);
-    }
-    ok("a government that spends its order paper on it carries it",
-       st.bills[bill.id].stage === "assented",
-       st.bills[bill.id].stage + (dividedAt ? ", divided at sitting " + dividedAt : ""));
-    ok("and the Act sets the flag the settlements gate on",
-       st.flags.almanac_annexed === true);
-    ok("and the government is still standing afterwards",
-       !Engine.checkEnd(st, CONTENT).over,
-       "friction " + st.scalars.friction + ", legitimacy " + st.scalars.legitimacy +
-       ", solvency " + st.scalars.solvency);
-
-    /* and the endings gate on the Act, not the intention */
-    const onAct = (CONTENT.settlements || []).filter(s0 =>
-      ((s0.when || {}).flags || []).indexOf("almanac_annexed") >= 0);
-    const onWish = (CONTENT.settlements || []).filter(s0 =>
-      ((s0.when || {}).flags || []).indexOf("f1_annexing") >= 0);
-    ok("the annexation endings gate on the Act", onAct.length >= 3, onAct.length + " tiers");
-    ok("and none of them gates on the intention any more", onWish.length === 0,
-       onWish.map(s0 => s0.id).join(", ") || "none");
-  }
-
-  if (bad) { console.log("\n" + bad + " ANNEXATION ACT FAILURES"); process.exitCode = 1; }
 })();
 
 console.log("\nBORROWING FROM THE PEOPLE YOU ARE QUARRELLING WITH:");
@@ -2233,40 +2087,41 @@ console.log("\nBORROWING FROM THE PEOPLE YOU ARE QUARRELLING WITH:");
   const over = Engine.canBorrow(st, CONTENT, cap + 1);
   ok("Earth will not lend past its cap", over.ok === false, over.reason);
 
-  /* NAMED CREDITORS. The Alliance's facility sat in an undertaking the
-     account could not see; it is a balance owed to a named lender now, on
-     the lender's terms, and the promise is kept when the balance is gone. */
-  const nc = Engine.newGame(CONTENT);
+  /* NAMED CREDITORS. A debt is a balance owed to a named lender on the
+     lender's terms, and a promise is kept when the balance is gone. The
+     lender here is a probe, declared the way a campaign declares one
+     (Flash I's is the Alliance's facility, in its own setup). */
+  const LV = ALL.forCampaign({ id: "lender_probe", setup: { lenders: {
+    facility: { name: "A probe facility", rate: { fixed: 10 }, serviced: false,
+                repayable: false, note: "a probe" } } } });
+  const nc = Engine.newGame(LV);
   nc.scalars.friction = 40;
-  Engine.EFFECTS.move(nc, CONTENT, { "debt.alliance": 19800, "debt.earth": 12000 });
-  ok("a debt is owed to somebody", Engine.debtOf(nc, "alliance") === 19800 &&
+  Engine.EFFECTS.move(nc, LV, { "debt.facility": 19800, "debt.earth": 12000 });
+  ok("a debt is owed to somebody", Engine.debtOf(nc, "facility") === 19800 &&
      Engine.debtOf(nc, "earth") === 12000 && Engine.debtOf(nc) === 31800,
      JSON.stringify(nc.debt));
-  ok("each lender sets its own rate", Engine.debtRate(nc, CONTENT, "alliance") === 10 &&
-     Engine.debtRate(nc, CONTENT, "earth") === 8,
-     Engine.debtRate(nc, CONTENT, "alliance") + " / " + Engine.debtRate(nc, CONTENT, "earth"));
-  const ds = Engine.debts(nc, CONTENT);
+  ok("each lender sets its own rate", Engine.debtRate(nc, LV, "facility") === 10 &&
+     Engine.debtRate(nc, LV, "earth") === 8,
+     Engine.debtRate(nc, LV, "facility") + " / " + Engine.debtRate(nc, LV, "earth"));
+  const ds = Engine.debts(nc, LV);
   ok("a facility whose rate is in the sum costs nothing a sitting until the term",
-     ds.find(d => d.id === "alliance").service === 0 &&
-     Engine.debtService(nc, CONTENT) === ds.find(d => d.id === "earth").service,
+     ds.find(d => d.id === "facility").service === 0 &&
+     Engine.debtService(nc, LV) === ds.find(d => d.id === "earth").service,
      JSON.stringify(ds.map(d => [d.id, d.service])));
-  const no = Engine.repay(nc, CONTENT, 19800, "alliance");
+  const no = Engine.repay(nc, LV, 19800, "facility");
   ok("and is not paid across the counter: its own terms say how", no.ok === false, no.reason);
-  Engine.EFFECTS.move(nc, CONTENT, { "debt.alliance": -50000 });
+  Engine.EFFECTS.move(nc, LV, { "debt.facility": -50000 });
   ok("nobody owes the Commonwealth: a balance floors at nought",
-     Engine.debtOf(nc, "alliance") === 0);
+     Engine.debtOf(nc, "facility") === 0);
 
-  const fl = Engine.newGame(CONTENT);
-  fl.scalars.solvency = 25000;
-  const loan = CONTENT.eventById.f1_loan.choices[0];
-  Engine.apply(fl, CONTENT, loan.effects);
-  ok("the emergency facility is on the account, principal and rate",
-     Engine.debtOf(fl, "alliance") === 19800, Engine.debtOf(fl, "alliance") + " owed");
-  const u = (fl.undertakings || []).find(x => x.id === "f1_debt");
-  ok("and its promise is open", u && u.state === "open");
-  Engine.EFFECTS.move(fl, CONTENT, { "debt.alliance": -19800 });
-  Engine.settle(fl, CONTENT);
-  ok("and kept when the Alliance is owed nothing, however it was paid",
+  const fl = Engine.newGame(LV);
+  Engine.apply(fl, LV, [{ move: { "debt.facility": 5000 } },
+    { undertake: { id: "probe_repaid", text: "Repay the facility", discharge: { repaid: "facility" }, by: null } }]);
+  const u = (fl.undertakings || []).find(x => x.id === "probe_repaid");
+  ok("a promise to repay is open while the lender is owed", u && u.state === "open", u && u.state);
+  Engine.EFFECTS.move(fl, LV, { "debt.facility": -5000 });
+  Engine.settle(fl, LV);
+  ok("and kept when the lender is owed nothing, however it was paid",
      u && u.state === "kept", u && u.state);
 
   /* THERE IS NO INFLATION SCALAR and there should not be: \u00a77.9 makes the four
@@ -3316,11 +3171,12 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
     s.sitting = (CONTENT.setup.settlementFloorSittings || 0) + 1;
     return s;
   };
-  ok("content carries the four settlements and the five Flash I tiers",
-     (CONTENT.settlements || []).length === 9,
-     (CONTENT.settlements || []).length + " settlements");
-  ok("and every one is a when block, not a branch",
-     CONTENT.settlements.every(s0 => s0.when && typeof s0.when === "object"));
+  ok("the world carries the four personhood answers",
+     ["restriction", "substrate_neutrality", "graduated_personhood", "federal_fudge"]
+       .every(id => (CONTENT.settlements || []).some(x => x.id === id)),
+     (CONTENT.settlements || []).map(x => x.id).join(", "));
+  ok("and every one, a campaign's too, is a when block, not a branch",
+     ALL.settlements.every(s0 => s0.when && typeof s0.when === "object"));
 
   /* A SETTLEMENT IS NOT A THING YOU INHERIT. The first draft of the
      restriction block was "the threshold is above 167", which the
@@ -3331,9 +3187,15 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
   const open0 = fresh();
   ok("an opening state has settled nothing", Engine.checkSettlement(open0, CONTENT) === null,
      JSON.stringify(Engine.checkSettlement(open0, CONTENT)));
-  ok("and no single settlement is true at the opening",
-     CONTENT.settlements.every(s0 => !Engine.matches(open0, s0.when)),
-     CONTENT.settlements.filter(s0 => Engine.matches(open0, s0.when)).map(s0 => s0.id).join(", "));
+  /* In every view, against that view's own opening: a campaign's tiers
+     are no more inheritable than the world's answers. */
+  const inherited = T.views().flatMap(v => {
+    const o = Engine.newGame(v.C);
+    o.sitting = (v.C.setup.settlementFloorSittings || 0) + 1;
+    return v.C.settlements.filter(s0 => Engine.matches(o, s0.when)).map(s0 => v.id + ":" + s0.id);
+  });
+  ok("and no single settlement is true at any campaign's opening",
+     inherited.length === 0, inherited.join(", ") || T.views().map(v => v.id).join(", "));
 
   /* Restriction: the threshold stands, and the reform was put and lost. */
   const r = fresh(); r.law.divergence_threshold_hours = 200;
@@ -3429,52 +3291,25 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
 
   /* THE TWO FAMILIES DO NOT RACE (design/32 §E.1). They were ranked
      together and only the winner recorded, so an intermediate answer landing
-     on the same sitting as a crisis tier took the canon ending off the board;
-     and four of Flash I's five tiers were routed to the intermediate channel,
-     so their achievements could never be earned. */
-  ok("every Flash I tier is on the crisis channel",
-     CONTENT.settlements.filter(x => /^f1_/.test(x.id)).every(x => x.crisis) &&
-     CONTENT.settlements.filter(x => !/^f1_/.test(x.id)).every(x => !x.crisis),
+     on the same sitting as a crisis tier took the canon ending off the board.
+     A crisis tier is a campaign's, so the one here is the probe above. */
+  ok("the world's answers are intermediate, not a crisis's result",
+     CONTENT.settlements.every(x => !x.crisis),
      CONTENT.settlements.map(x => x.id + (x.crisis ? "*" : "")).join(" "));
-  const both = fresh(); both.flags.tribunal_established = true;
-  both.flags.almanac_annexed = true;
-  Object.assign(both.scalars, { legitimacy: 80, solvency: 75000, friction: 30 });
-  Engine.checkSettlement(both, CONTENT);
+  const both = Engine.newGame(Cnt);
+  both.sitting = (Cnt.setup.settlementFloorSittings || 0) + 1;
+  both.flags.tribunal_established = true; both.flags.probe_nt_flag = true;
+  Engine.checkSettlement(both, Cnt);
   ok("an intermediate answer and a crisis tier landing together are both recorded",
-     both.settledAs === "graduated_personhood" && both.resolvedAs === "f1_triumph",
+     both.settledAs === "graduated_personhood" && both.resolvedAs === "probe_nt",
      JSON.stringify({ settledAs: both.settledAs, resolvedAs: both.resolvedAs }));
-  Object.assign(both.scalars, { legitimacy: 70, solvency: 30000, friction: 70 });
-  Engine.checkSettlement(both, CONTENT);
+  delete both.flags.probe_nt_flag;
+  Engine.checkSettlement(both, Cnt);
   ok("and the crisis result is fixed once it has landed",
-     both.resolvedAs === "f1_triumph", both.resolvedAs);
+     both.resolvedAs === "probe_nt", both.resolvedAs);
   ok("while the named form of `settled` names one answer, not any",
      Engine.matches(both, { settled: "graduated_personhood" }) &&
      !Engine.matches(both, { settled: "restriction" }));
-
-  /* FLASH I: every tier is reachable from the opening state. The meters are
-     moved by the campaign's events once they are wired, and each tier is
-     gated on the crisis flag it follows from (a government that never engaged
-     the crisis cannot settle it), so the gates are driven directly here too.
-     The canon pyrrhic tier must not end the run. */
-  const tier = (set, flags) => {
-    const s = fresh(); Object.assign(s.scalars, set);
-    (flags || []).forEach(f => s.flags[f] = true);
-    return s;
-  };
-  const t1 = tier({ legitimacy: 80, solvency: 75000, friction: 30 }, ["almanac_annexed"]);
-  ok("critical triumph", (Engine.checkSettlement(t1, CONTENT) || {}).id === "f1_triumph");
-  const t2 = tier({ legitimacy: 60, solvency: 65000, friction: 30 }, ["almanac_annexed"]);
-  ok("maritime charter", (Engine.checkSettlement(t2, CONTENT) || {}).id === "f1_maritime");
-  const t3 = tier({ legitimacy: 70, solvency: 30000, friction: 70 }, ["almanac_annexed"]);
-  ok("sovereign debt trap", (Engine.checkSettlement(t3, CONTENT) || {}).id === "f1_pyrrhic");
-  const t4 = tier({ legitimacy: 50, solvency: 50000, friction: 50 }, ["f1_referendum_carried"]);
-  ok("joint mandate", (Engine.checkSettlement(t4, CONTENT) || {}).id === "f1_joint");
-  const t5 = tier({ legitimacy: 30, solvency: 50000, friction: 80 }, ["f1_surveyed"]);
-  ok("corporate re-entry", (Engine.checkSettlement(t5, CONTENT) || {}).id === "f1_capitulation");
-  const pEnd = Engine.checkEnd(t3, CONTENT);
-  ok("and the canon pyrrhic tier does not end the run",
-     pEnd.over === false && t3.resolvedAs === "f1_pyrrhic" && !t3.settledAs,
-     JSON.stringify({ over: pEnd.over, resolvedAs: t3.resolvedAs }));
 
   /* ---- THE ROLL CALL ----
      It renders names beside a count, so the one thing that must never be
@@ -3681,9 +3516,9 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
          .every(b => Array.isArray(b.touches) && b.touches.length === 0));
 
     ok("and every interest it names is owned by some constituency",
-       (CONTENT.bills || []).every(b => (b.touches || []).every(t =>
+       (ALL.bills || []).every(b => (b.touches || []).every(t =>
          (CONTENT.functional || []).some(f => (f.interest || []).indexOf(t) >= 0))),
-       (CONTENT.bills || []).flatMap(b => (b.touches || []).filter(t =>
+       (ALL.bills || []).flatMap(b => (b.touches || []).filter(t =>
          !(CONTENT.functional || []).some(f => (f.interest || []).indexOf(t) >= 0))).join(", "));
 
     /* A STAKE IS NOT A SINGLE NUMBER (T19). Until actorAlignment read a
@@ -3861,7 +3696,7 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
     /* And the engine still names no party, station or event. */
     const named = (CONTENT.parties || []).map(p => p.id)
       .concat((CONTENT.stations || []).map(x => x.id))
-      .concat((CONTENT.events || []).map(e => e.id))
+      .concat((ALL.events || []).map(e => e.id))
       .filter(id => new RegExp('"' + id + '"').test(src));
     ok("the engine names no party, station or event", named.length === 0,
        named.join(", "));
@@ -4335,149 +4170,6 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
        item ? String(item.focus) : "no item");
   }
 
-  /* THE CANON ENDING IS REACHABLE BY PLAY (balance pass). The campaign's one
-     published ending is the sovereign debt trap: annex the platform, take
-     the friction, run the reserve down, and hold the country. A scripted
-     policy driven through the WIRED events lands the tier before the rise,
-     and the run then goes to the election — which is what `terminal:false`
-     is for. The other tiers hang on the same meters with gentler lines. */
-  {
-    const st = Engine.newGame(CONTENT);
-    const govern = s => {
-      /* IT HOLDS THE COUNTRY FIRST, before any bill is given time. The canon
-         ending is the debt trap, and the thermal drain it causes reaches
-         zero inside three sessions, so the ladder below is not optional. It
-         ran after the bills until reserved order-paper time stopped the
-         crisis time leaking into every later session: with six slots and
-         not eleven, bills granted first left none to approve a rung, and the
-         run cascaded at sitting 48. See holdTheCountry below. */
-      const keep = holdTheCountry(s);
-      /* A GOVERNMENT CARRIES ITS OWN ACT FIRST. This granted order-paper
-         time to every bill in the order content happens to list them, and
-         the Annexation Bill is last \u2014 so the six slots were spent before
-         the policy ever reached the measure the whole campaign is about,
-         and the canon ending could not land once the gate moved from the
-         intention to the Act. A government that has decided to annex and
-         then does not put the Bill down is not playing well; it is not
-         playing at all. */
-      const order = CONTENT.bills.slice().sort((a, b) => {
-        const mine = x => (s.flags.f1_annexing && /annex/i.test(x.id)) ? 0 : 1;
-        return mine(a) - mine(b);
-      });
-      order.forEach(b => {
-        if (s.bills[b.id] && !s.bills[b.id].dead &&
-            Engine.reservedFor(s, b.id) + s.slots.total - s.slots.used > keep)
-          Engine.grantSlot(s, CONTENT, b.id);
-      });
-      CONTENT.bills.forEach(b => {
-        if (!s.bills[b.id] || s.bills[b.id].dead) return;
-        if (Engine.canDivide(s, CONTENT, b.id).ok &&
-            (Engine.reported(s, CONTENT, b.id) || {}).carries) Engine.divide(s, CONTENT, b.id);
-      });
-      if (!s.instruments["si_2080_44"].made && Engine.canMake(s, CONTENT, "si_2080_44").ok)
-        Engine.makeInstrument(s, CONTENT, "si_2080_44");
-      /* AND ONCE THE RESULT IS IN, IT ASKS EARTH FOR TERMS. The debt trap
-         leaves friction where the quarrel drains the margin every sitting,
-         and a cascade during the campaign is a loss (the author, 23 Sep). */
-      if (s.resolvedAs && !s.dissolved) {
-        const ask = Engine.initiatives(s, CONTENT).find(i => i.id === "seek_terms");
-        if (ask && ask.ok) Engine.take(s, CONTENT, "seek_terms", 0);
-      }
-    };
-    const holdTheCountry = s => {
-      /* IT HOLDS THE COUNTRY, which the comment above always said and
-         the policy never did. With one session of twenty-four the debt trap
-         landed and the House rose before the thermal drain it causes could
-         reach zero; three sessions give it the time, and a government that
-         watched the margin fall to nothing for twenty-five sittings is not
-         the one the canon ending describes. So it fills the Treasury (a
-         vacant post makes no order) and climbs the emergency ladder when the
-         margin is low: approving any order that is laid and waiting first,
-         then laying the next rung. The ladder is found in content by what
-         it does, not by name. */
-      if (!s.cabinet.treasury.holder && Engine.vacancies(s, CONTENT).length)
-        Engine.fillPost(s, CONTENT, "treasury", 0);
-      const cools = CONTENT.instruments.filter(si => [].concat(si.effects || [])
-        .some(f => f.move && f.move.thermal_margin > 0)).map(si => si.id);
-      const awaiting = () => cools.filter(id => s.instruments[id].awaitingApproval);
-      if (s.scalars.thermal_margin <= 10) {
-        const waiting = awaiting().find(id => Engine.canApprove(s, CONTENT, id).ok);
-        if (waiting) Engine.approveInstrument(s, CONTENT, waiting);
-        else {
-          const next = cools.find(id => !s.instruments[id].made &&
-            Engine.canMake(s, CONTENT, id).ok);
-          if (next) Engine.makeInstrument(s, CONTENT, next);
-        }
-      }
-      /* AND IT KEEPS TIME IN HAND for an order waiting on the House. Six
-         slots a session carry a programme or hold the country, not both
-         (§7.7); a government with an emergency order laid does not spend
-         the time it would take to approve it on the order paper. */
-      /* and it keeps a slot in hand whenever the margin is low, not only
-         once an order is waiting: an order laid with no time left to
-         approve it was laid for nothing, which is how the fourth rung sat
-         unapproved from the freeze to the dissolution. */
-      return awaiting().length || s.scalars.thermal_margin <= 15 ? 1 : 0;
-    };
-    /* A PICK MAY READ THE STATE. The canon government holds out against
-       Earth until the result is in -- conciliating before it would take the
-       friction the debt trap needs -- and settles with Earth after, which is
-       what stops the quarrel's drain on the margin before the House rises.
-       Since 23 Sep a cascade during the campaign is a loss, so a government
-       that goes to the country with the drain still running does not reach
-       the count. */
-    const pick = { f1_stranded: 0, f1_referendum: 0, f1_dilemma: 0, f1_water: 0,
-      f1_loan: 1, f1_accounts_freeze: 0, fa_two_fronts: s => s.resolvedAs ? 1 : 0,
-      fa_window_closes: 0, fa_anchor_terms: 0, fa_conciliate: s => s.resolvedAs ? 0 : 1 };
-    let tier = null, end = null, tierAt = null;
-    /* The run has to outlast the parliament and its campaign, and the bound
-       is content's: a flat 45 silently became 44 of play when the prologue
-       grew by one, and a flat anything is wrong the day the length moves. */
-    for (let s = 0; s < RUN_BOUND + PROLOGUE1; s++) {
-      const e = Engine.nextEvent(st, CONTENT);
-      if (e) {
-        const n = (e.choices || []).length || 1;
-        const p0 = typeof pick[e.id] === "function" ? pick[e.id](st) : pick[e.id];
-        const want = p0 == null ? 0 : Math.min(p0, n - 1);
-        let done = false;
-        for (let i = want; i < n; i++) if (Engine.choose(st, CONTENT, e, i) !== null) { done = true; break; }
-        if (!done) for (let i = 0; i < n; i++) if (Engine.choose(st, CONTENT, e, i) !== null) { done = true; break; }
-      }
-      govern(st);
-      Engine.advance(st, CONTENT);
-      const en = Engine.checkEnd(st, CONTENT);
-      if (en.settlement && !tier) { tier = en.settlement; tierAt = st.sitting; }
-      if (en.over) { end = en; break; }
-    }
-    ok("the canon ending is reachable by play (the debt trap)",
-       !!tier && tier.id === "f1_pyrrhic", tier ? tier.id : "no tier landed");
-    ok("and it does not end the run: the campaign goes to the election",
-       !!end && end.kind === "election",
-       end ? end.kind + " " + (end.reason || "") + " at sitting " + st.sitting +
-             ", supply " + (st.bills.appropriation || {}).stage : "no end");
-    /* AND IT LANDS WITH ROOM, which is the assertion that was missing. The
-       ending used to arrive on the last sitting it possibly could, so it
-       read as passing while resting on nothing: one more prologue beat and
-       it stopped landing at all, with "no tier landed" as the only clue.
-       Five sittings of slack is the difference between an ending the chain
-       produces and one it produces by coincidence. */
-    /* THE RUN'S SHAPE (bible §1.7, design/32). The result's aftermath plays
-       while the House sits, and then the run goes to the country: until 22
-       Sep a run that resolved its crisis entered a fourth chapter that ended
-       at the dissolution, so it never had a campaign, and a run that
-       dissolved first never saw the aftermath. None of the seven playtest
-       strategies reached both. */
-    ok("and the canon run plays the result's aftermath, then the campaign and the count",
-       !!(st.seen.ch4_settled && st.seen.ch4_after && st.seen.ch3_dissolution &&
-          st.seen.ch3_the_count),
-       ["ch4_settled", "ch4_after", "ch4_the_answer", "ch3_dissolution", "ch3_the_count"]
-         .map(id => id + (st.seen[id] ? "" : " (not seen)")).join(", "));
-    ok("and the canon ending lands with sittings to spare",
-       tierAt != null && end && end.sitting != null
-         ? end.sitting - tierAt >= 5 : tierAt != null,
-       tierAt == null ? "never landed"
-         : "settled at " + tierAt + (end && end.sitting ? ", run ended " + end.sitting : ""));
-  }
 
   if (bad) { console.log("\n" + bad + " OPENING FAILURES"); process.exitCode = 1; }
 })();
@@ -4526,10 +4218,11 @@ console.log("\nTHE ECONOMY:");
      EXHAUSTIVE — a queued settle whose every condition failed would open
      an empty Decision and strand the sitting, so for each pair of outcomes
      the test asserts exactly one door is open, in BOTH directions. */
-  const three = ["take_indemnity", "charter_volume", "assume_substrate_debt"];
-  ok("content offers the other three markets",
-     three.every(id => (CONTENT.initiatives || []).some(i => i.id === id)),
-     three.filter(id => !(CONTENT.initiatives || []).some(i => i.id === id)).join(", ") || "all three");
+  /* Two of the three (the indemnity and the substrate debt) are written
+     against the platform crisis and are Flash I's, asserted in its guards. */
+  ok("the world offers a volume lease",
+     (CONTENT.initiatives || []).some(i => i.id === "charter_volume"),
+     (CONTENT.initiatives || []).map(i => i.id).join(", "));
 
   /* openChoices against a crafted state. `want` pushes the federal
      suspended total and `price` sets one of the four prices, because those
@@ -4548,14 +4241,6 @@ console.log("\nTHE ECONOMY:");
   };
   const only = (doors, i) => doors.length === 1 && doors[0] === i;
 
-  /* UNDERWRITING: the cover pays only if the risk its term named happened. */
-  ok("an indemnity pays when the risk fired",
-     only(doors("indemnity_settles", { indemnity_lifesupport: true, f1_frozen: true }), 1),
-     doors("indemnity_settles", { indemnity_lifesupport: true, f1_frozen: true }).join("/"));
-  ok("and the premium is spent when it did not",
-     only(doors("indemnity_settles", { indemnity_lifesupport: true }), 2),
-     doors("indemnity_settles", { indemnity_lifesupport: true }).join("/"));
-
   /* VOLUME LEASES: the price of volume at the term decides which currency
      the Commonwealth actually got, and 108.0 and 108.1 fall on either side
      of the split without opening two doors or none. */
@@ -4573,34 +4258,6 @@ console.log("\nTHE ECONOMY:");
        return a.length === 1;
      }), "108.0/108.1/107.9/108.2");
 
-  /* SUBSTRATE DEBT: the debt was secured on people, so the settle reads how
-     many are suspended. Integer counts, so the split at 72000 has no gap. */
-  ok("an assumed debt that held is paid by the platform",
-     only(doors("substrate_debt_settles", { debt_assumed: true }, 71000), 0),
-     doors("substrate_debt_settles", { debt_assumed: true }, 71000).join("/"));
-  ok("and one that did not hold is a hole",
-     only(doors("substrate_debt_settles", { debt_assumed: true }, 73000), 1),
-     doors("substrate_debt_settles", { debt_assumed: true }, 73000).join("/"));
-  ok("a write-off is repriced when the substrate rises",
-     only(doors("substrate_debt_settles", { debt_written_off: true }, null, { key: "substrate", value: 120 }), 2),
-     doors("substrate_debt_settles", { debt_written_off: true }, null, { key: "substrate", value: 120 }).join("/"));
-  ok("and it holds when the substrate is steady",
-     only(doors("substrate_debt_settles", { debt_written_off: true }, null, { key: "substrate", value: 100 }), 3),
-     doors("substrate_debt_settles", { debt_written_off: true }, null, { key: "substrate", value: 100 }).join("/"));
-  ok("the suspension split leaves no value without a door",
-     [71000, 72000, 72001, 73000].every(v => {
-       const a = doors("substrate_debt_settles", { debt_assumed: true }, v);
-       return a.length === 1;
-     }), "71000/72000/72001/73000");
-
-  /* AND THE POSITION IS ON THE BOOKS. Taking one queues its answer, so the
-     settle arrives from the queue and not from the weighted pool. */
-  const ind = Engine.newGame(CONTENT);
-  ind.chapter = 2; ind.flags.f1_accounts_freeze = true;
-  const took = Engine.take(ind, CONTENT, "take_indemnity", 1);
-  ok("taking a position queues its settle",
-     took.ok && ind.queue.some(q => q.eventId === "indemnity_settles"),
-     took.ok ? "queued" : took.reason);
 
   if (bad) { console.log("\n" + bad + " ECONOMY FAILURES"); process.exitCode = 1; }
 })();
@@ -4663,53 +4320,6 @@ console.log("\nTHE ECONOMY:");
   ok("a foreseeable dated event is on the calendar",
      marks.some(m => m.label === "The commission reports" || m.text === "The commission reports"),
      marks.length + " marks");
-
-  /* AND THE CHAIN IT WAS BUILT FOR ACTUALLY HAS GAPS. The Flash I steps used
-     to be flag-gated at weights 84-90, so each arrived the sitting after the
-     one before it and the session's central argument was over in three days.
-     This asserts the schedule rather than the mechanism: if someone re-gates
-     the chain on flags, the gaps collapse and this goes red. */
-  const chain = Engine.newGame(CONTENT);
-  const when = {};
-  const riseAt = {};
-  for (let i = 0; i < 40; i++) {
-    const e = Engine.nextEvent(chain, CONTENT);
-    if (e) {
-      if (when[e.id] == null && /^f1_/.test(e.id)) {
-        when[e.id] = chain.sitting; riseAt[e.id] = chain.risesAt;
-      }
-      Engine.choose(chain, CONTENT, e, 0);
-    }
-    Engine.advance(chain, CONTENT);
-  }
-  const a = when.f1_stranded, b = when.f1_referendum, c = when.f1_dilemma;
-  /* Its date is a FLOOR, not a promise of the exact day: chapter two's own
-     prologue holds sitting 8, and a prologue outranks a date. So the test is
-     that it cannot come early and cannot drift far — which is what a date in
-     a parliament is worth.
-
-     THE DRIFT IS A FUNCTION OF THE PROLOGUE, so it is derived rather than
-     written down. The tolerance was [8,10] against a seven-beat opening;
-     adding the President's commission as a new first beat pushed the crisis
-     to 11 and failed a test that was measuring the tutorial's length, not
-     the crisis's date. Counted from content, the next beat added or removed
-     moves the band with it. */
-  const strandAt = CONTENT.eventById.f1_stranded.at;
-  ok("the crisis opens on its date, not when the pool reaches it",
-     a >= strandAt && a <= Math.max(strandAt, PROLOGUE1 + 3) + 1,
-     "f1_stranded at " + a + " (dated " + strandAt + ", prologue is " + PROLOGUE1 + " beats)");
-  ok("the survey takes sittings to report",
-     b != null && b - a >= 2, "stranded " + a + " -> referendum " + b);
-  ok("and the law officer's opinion takes sittings to come back",
-     c != null && c - b >= 2, "referendum " + b + " -> dilemma " + c);
-  /* AND THE ACT HAS A SESSION TO BE CARRIED IN. Every bill not carried falls
-     when the House rises, and the dilemma is what sets the Annexation Bill
-     down. Dated for one session of twenty-four it landed at 15, one sitting
-     before the first rise of three; this is the margin that re-dating the
-     chain for three sessions bought, and a longer opening must not spend it. */
-  ok("and the dilemma leaves the Act most of a session to be carried",
-     c != null && riseAt.f1_dilemma - c >= 8,
-     "dilemma at " + c + ", the House rises at " + riseAt.f1_dilemma);
 
   /* AND A DEADLINE KNOWS WHERE IT IS KEPT. The calendar showed five kinds of
      mark and could act on none of them, because only undertakings carried a
@@ -4815,26 +4425,6 @@ console.log("\nTHE ECONOMY:");
   ok("a money trend steps in its own unit",
      m.trends.solvency === 2000, String(m.trends.solvency));
 
-  /* The whole point: the House stays governable on the annexation line. */
-  const g = Engine.newGame(CONTENT);
-  const pick = { f1_stranded: 0, f1_referendum: 0, f1_dilemma: 0, f1_loan: 1 };
-  let peak = 0;
-  for (let i = 0; i < 40; i++) {
-    const e = Engine.nextEvent(g, CONTENT);
-    if (e) {
-      const n = e.choices.length;
-      const w = pick[e.id] == null ? 0 : Math.min(pick[e.id], n - 1);
-      let done = false;
-      for (let k = w; k < n; k++) if (Engine.choose(g, CONTENT, e, k) !== null) { done = true; break; }
-      if (!done) for (let k = 0; k < n; k++) if (Engine.choose(g, CONTENT, e, k) !== null) break;
-    }
-    Engine.advance(g, CONTENT);
-    if (g.scalars.friction > peak) peak = g.scalars.friction;
-    const en = Engine.checkEnd(g, CONTENT);
-    if (en.over) break;
-  }
-  ok("the annexation line no longer drives friction to the ceiling",
-     peak < 90, "peak " + peak);
 
   if (bad) { console.log("\n" + bad + " TREND FAILURES"); process.exitCode = 1; }
 })();
@@ -4855,15 +4445,17 @@ console.log("\nTHE ECONOMY:");
   console.log("\nTHE ENDING FITS THE CAMPAIGN");
   console.log("=".repeat(56));
 
-  const window = (CONTENT.setup && CONTENT.setup.campaignSittings) || 12;
+  /* In every view: a campaign's own chapter-three beats (Flash I's canon
+     election is one) come out of the same window as the world's. */
+  T.views().forEach(v => {
+    const w0 = (v.C.setup && v.C.setup.campaignSittings) || 12;
+    const n0 = v.C.events.filter(e => e.chapter === 3 && e.prologue).length + 1;
+    ok("the campaign is long enough to read every chapter-three beat (" + v.id + ")",
+       n0 <= w0,
+       n0 + " sittings of beats in a " + w0 + "-sitting campaign" +
+       (n0 > w0 ? "  -> raise setup.campaignSittings" : ""));
+  });
   const pro3 = CONTENT.events.filter(e => e.chapter === 3 && e.prologue);
-  /* One sitting is spent on the dissolution itself before the chapter opens. */
-  const needs = pro3.length + 1;
-
-  ok("the campaign is long enough to read every chapter-three beat",
-     needs <= window,
-     needs + " sittings of beats in a " + window + "-sitting campaign" +
-     (needs > window ? "  -> raise setup.campaignSittings" : ""));
 
   const count = pro3.slice().sort((a, b) => b.prologue - a.prologue)[0];
   ok("and the last beat is the count, which ends the run",
@@ -4883,50 +4475,57 @@ console.log("\nA CAMPAIGN IS A UNIT (design/36 §3):");
   let bad = 0;
   const ok = (l, c, extra) => { if (!c) bad++;
     console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
-  /* Flash I plays everything that is its own or the world's, so nothing
-     changed for it, and its runs are the same runs. */
-  ok("Flash I's view holds every entry that is its own or the world's",
-     CONTENT.events.length === ALL.events.length && CONTENT.bills.length === ALL.bills.length,
-     CONTENT.events.length + " of " + ALL.events.length + " events");
-  ok("and its own setup is merged over the world's, one level deep",
-     !!CONTENT.setup.lenders.alliance && !!CONTENT.setup.lenders.earth &&
-     !ALL.setup.lenders.alliance, Object.keys(CONTENT.setup.lenders).join(", "));
+  /* THE WORLD'S VIEW, which is what every test in this file plays: no
+     campaign's entry is in it. Flash I's own view is asserted in its
+     guards; the machinery is asserted here on two probe campaigns, built
+     the way an author would add one: an administration, one event of its
+     own, and an opening. */
+  const tagged = k => (ALL[k] || []).filter(x => x && x.campaign != null);
+  ok("the world's view holds no campaign's entry",
+     ["events", "bills", "settlements", "initiatives", "achievements"]
+       .every(k => tagged(k).every(x => !(CONTENT[k] || []).some(y => y.id === x.id))),
+     ["events", "bills", "settlements", "initiatives", "achievements"]
+       .map(k => tagged(k).length + " " + k).join(", ") + " kept out");
+  ok("and every entry of the world's",
+     ALL.events.filter(e => e.campaign == null).every(e => CONTENT.eventById[e.id]) &&
+     CONTENT.parties.length === ALL.parties.length);
 
-  /* A SECOND CAMPAIGN, built the way an author would add one: an
-     administration, one event of its own, and an opening. */
   const next = { id: "test_next", party: "cu", leader: "flash", ordinal: "II",
-                 setup: { startDate: "2084-05-02", scalars: { friction: 30 } },
+                 setup: { startDate: "2084-05-02", scalars: { friction: 30 },
+                          lenders: { bondholders: { name: "Probe bondholders", rate: { fixed: 6 } } } },
                  opening: [{ flag: "test_opened" }, { move: { "debt.earth": 5000 } }] };
+  const other = { id: "test_other", party: "cu", leader: "flash", ordinal: "III" };
   const own = { id: "test_next_event", campaign: "test_next", chapter: 1, weight: 1,
                 title: "A test", body: "A test.", choices: [{ label: "Go.", effects: [] }] };
+  const theirs = { id: "test_other_event", campaign: "test_other", chapter: 1, weight: 1,
+                   title: "Another", body: "Another.", choices: [{ label: "Go.", effects: [] }] };
   const ALL2 = Object.assign({}, ALL, {
-    administrations: ALL.administrations.concat([next]),
-    events: ALL.events.concat([own]) });
+    administrations: ALL.administrations.concat([next, other]),
+    events: ALL.events.concat([own, theirs]) });
   const K = ALL2.forCampaign("test_next");
-  const f1 = ALL.events.filter(e => e.campaign === "flash_i");
-  ok("a second campaign sees none of Flash I's story",
-     f1.length > 0 && f1.every(e => !K.eventById[e.id]) && !K.billById.annexation &&
-     !K.settlementById.f1_pyrrhic, f1.length + " Flash I events hidden");
+  ok("a campaign sees its own entries", !!K.eventById.test_next_event);
+  ok("and none of another campaign's",
+     !K.eventById.test_other_event && !ALL2.forCampaign("test_other").eventById.test_next_event);
   ok("and all of the world's",
      ALL.events.filter(e => e.campaign == null).every(e => K.eventById[e.id]) &&
      K.parties.length === ALL.parties.length && K.stations.length === ALL.stations.length);
-  ok("and its own entries", !!K.eventById.test_next_event);
-  ok("and Flash I sees none of the second campaign's",
-     !ALL2.forCampaign("flash_i").eventById.test_next_event);
   ok("a campaign's setup changes one scalar without restating the rest",
-     K.setup.scalars.friction === 30 && K.setup.scalars.solvency === ALL.setup.scalars.solvency &&
-     !K.setup.lenders.alliance, JSON.stringify(K.setup.scalars));
+     K.setup.scalars.friction === 30 && K.setup.scalars.solvency === ALL.setup.scalars.solvency,
+     JSON.stringify(K.setup.scalars));
+  ok("and adds a lender beside the world's, one level deep",
+     !!K.setup.lenders.bondholders && !!K.setup.lenders.earth && !ALL.setup.lenders.bondholders,
+     Object.keys(K.setup.lenders).join(", "));
   const g = Engine.newGame(K);
   ok("a new game knows its campaign", g.campaign === "test_next", g.campaign);
   ok("and opens with the campaign's opening applied",
      !!g.flags.test_opened && Engine.debtOf(g, "earth") === 5000 && g.log.length === 0,
      JSON.stringify(g.debt));
   ok("the campaign condition reads it",
-     Engine.matches(g, { campaign: "test_next" }) && !Engine.matches(g, { campaign: "flash_i" }) &&
-     Engine.matches(g, { campaign: ["flash_i", "test_next"] }));
+     Engine.matches(g, { campaign: "test_next" }) && !Engine.matches(g, { campaign: "test_other" }) &&
+     Engine.matches(g, { campaign: ["test_other", "test_next"] }));
 
-  /* AND IT PLAYS. Thirty sittings of the second campaign on the world's
-     content alone: if a shared entry named something only Flash I has, a
+  /* AND IT PLAYS. Thirty sittings on the world's content and one event of
+     its own: if a shared entry named something only one campaign has, a
      queued event or a bill would be missing here and this would throw. */
   let played = 0, threw = null;
   try {
@@ -4938,97 +4537,45 @@ console.log("\nA CAMPAIGN IS A UNIT (design/36 §3):");
       Engine.advance(p2, K);
     }
   } catch (e) { threw = e.message; }
-  ok("a campaign with none of Flash I's story plays thirty sittings",
+  ok("a campaign on the world's content alone plays thirty sittings",
      !threw && played > 0, threw || played + " events");
 
-  /* The sandbox plays Flash I: its content and setup, then its own. */
-  const S = ALL.forCampaign("sandbox");
+  /* An administration may play another's campaign: its content and setup,
+     then its own on top. */
+  const sb = { id: "test_sandbox", party: "cu", leader: "flash", ordinal: "(probe)",
+               campaign: "test_next", setup: { scalars: { solvency: 999999 } } };
+  const S = Object.assign({}, ALL2, { administrations: ALL2.administrations.concat([sb]) })
+    .forCampaign("test_sandbox");
   ok("an administration may play another's campaign",
-     S.campaign === "flash_i" && !!S.billById.annexation && !!S.setup.lenders.alliance &&
-     S.setup.startDate === CONTENT.setup.startDate && S.setup.scalars.solvency === 999999,
+     S.campaign === "test_next" && !!S.eventById.test_next_event &&
+     S.setup.scalars.friction === 30 && S.setup.scalars.solvency === 999999,
      S.campaign + " from " + S.admin);
 
   /* A save from before campaigns is the campaign it is loaded as. */
-  const old = Engine.newGame(CONTENT);
+  const old = Engine.newGame(K);
   old.version = 29; delete old.campaign;
-  const up = Engine.load(Engine.save(old), CONTENT);
+  const up = Engine.load(Engine.save(old), K);
   ok("a save from before campaigns takes the campaign it is loaded as",
-     up.campaign === "flash_i" && up.version === Engine.STATE_VERSION, up.campaign);
+     up.campaign === "test_next" && up.version === Engine.STATE_VERSION, up.campaign);
   if (bad) { console.log("\n" + bad + " CAMPAIGN FAILURES"); process.exitCode = 1; }
 })();
 
-console.log("\nTHE TIER FALL AND THE PIVOTS (design/35):");
+console.log("\nAN EVENT'S OWN EFFECTS APPLY, WITH THE ANSWER:");
 (function () {
   let bad = 0;
   const ok = (l, c, extra) => { if (!c) bad++;
     console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
-  /* AN EVENT'S OWN EFFECTS APPLY, with the answer. Nothing applied them,
-     so the accounts freeze never recorded itself and every floor below
-     would have been dead too. */
-  const fz = Engine.newGame(CONTENT);
-  Engine.choose(fz, CONTENT, CONTENT.eventById.f1_accounts_freeze, 0);
-  ok("an event's own effects apply when it is answered", !!fz.flags.f1_frozen);
-  const melt = CONTENT.eventById.f1_meltdown;
-  const brink = () => {
-    const g = Engine.newGame(CONTENT);
-    g.chapter = 2; g.flags.f1_frozen = true;
-    Object.assign(g.scalars, { friction: 80, thermal_margin: 15, solvency: 15000, legitimacy: 25 });
-    return g;
-  };
-  /* "Failing a trajectory check doesn't jump straight to the worst case." */
-  const a = brink();
-  ok("the meltdown does not come straight from the numbers", !Engine.matches(a, melt.when));
-  a.flags.f1_first_floor = true;
-  ok("nor from the first floor alone", !Engine.matches(a, melt.when));
-  a.flags.f1_second_floor = true;
-  ok("it comes once both floors have given", Engine.matches(a, melt.when));
-  a.flags.f1_emergency = true;
-  ok("and not while the emergency order stands", !Engine.matches(a, melt.when));
-
-  /* one floor a sitting: the pool fires one event, and each floor needs
-     the one before */
-  /* the numbers are held down every sitting, so what is measured is the
-     fall itself and not whatever a choice happened to repair */
-  const b = brink(), when = {};
-  const pin = g => Object.assign(g.scalars, { friction: 80, thermal_margin: 15, solvency: 15000, legitimacy: 25 });
-  for (let i = 0; i < 12 && !when.f1_meltdown; i++) {
-    pin(b);
-    const e = Engine.nextEvent(b, CONTENT);
-    if (e) { if (when[e.id] == null) when[e.id] = b.sitting; Engine.choose(b, CONTENT, e, 0); }
-    Engine.advance(b, CONTENT);
-  }
-  ok("the floors give one a sitting, in order, before the meltdown",
-     when.f1_brink_1 != null && when.f1_brink_2 > when.f1_brink_1 &&
-     (when.f1_meltdown == null || when.f1_meltdown > when.f1_brink_2),
-     JSON.stringify(when));
-
-  /* THE PIVOTS: one per tier, open on that tier and on nothing else. */
-  const open = (g, id) => (Engine.initiatives(g, CONTENT).find(i => i.id === id) || {}).ok;
-  const fresh = Engine.newGame(CONTENT);
-  const P = { declare_emergency: null, sell_the_leases: "f1_pyrrhic",
-              lease_the_zone: "f1_joint", sacrifice_the_minister: "f1_capitulation" };
-  ok("no pivot is open at the opening", Object.keys(P).every(id => !open(fresh, id)));
-  Object.keys(P).filter(id => P[id]).forEach(id => {
-    const g = Engine.newGame(CONTENT); g.resolvedAs = P[id];
-    const other = Object.keys(P).filter(x => P[x] && x !== id);
-    ok(id + " opens on " + P[id] + " and only there",
-       open(g, id) && other.every(x => !open(g, x)));
-  });
-  const pl = Engine.newGame(CONTENT); pl.resolvedAs = "f1_pyrrhic"; pl.flags.cordell_leases_pledged = true;
-  ok("leases pledged against the facility cannot be sold", !open(pl, "sell_the_leases"));
-
-  const c = brink(); c.flags.f1_first_floor = c.flags.f1_second_floor = true;
-  ok("the emergency order opens on the second floor", open(c, "declare_emergency"));
-  const r = Engine.take(c, CONTENT, "declare_emergency", 0);
-  ok("and taking it holds the government up at the cost of its legitimacy",
-     r.ok && c.scalars.legitimacy === 0 && !Engine.matches(c, melt.when) &&
-     c.queue.some(q => q.eventId === "f1_emergency_lapses"), r.reason || "legitimacy " + c.scalars.legitimacy);
-
-  const d = Engine.newGame(CONTENT); d.resolvedAs = "f1_capitulation";
-  const post = () => { const p = d.cabinet.external_relations; return p && typeof p === "object" ? p.holder : p; };
-  const holder = post();
-  Engine.take(d, CONTENT, "sacrifice_the_minister", 1);
-  ok("the capitulation's pivot costs the minister the post",
-     !!holder && !post(), holder + " -> " + post());
-  if (bad) { console.log("\n" + bad + " TIER FALL FAILURES"); process.exitCode = 1; }
+  /* Nothing applied them until 23 Sep, so Flash I's accounts freeze never
+     recorded itself and the Systemic Meltdown was unreachable in every run.
+     A probe event, because the engine names no event and a test may. */
+  const ev = { id: "probe_own_effects", queuedOnly: true, title: "Probe", body: "x",
+               effects: [{ flag: "probe_event_said" }],
+               choices: [{ label: "Answer", effects: [{ flag: "probe_choice_said" }], result: "r" }] };
+  const K = Object.assign({}, CONTENT, { events: CONTENT.events.concat([ev]),
+    eventById: Object.assign({}, CONTENT.eventById, { [ev.id]: ev }) });
+  const g = Engine.newGame(K);
+  Engine.choose(g, K, ev, 0);
+  ok("an event's own effects apply when it is answered", !!g.flags.probe_event_said);
+  ok("and the choice's apply as well", !!g.flags.probe_choice_said);
+  if (bad) { console.log("\n" + bad + " EVENT EFFECT FAILURES"); process.exitCode = 1; }
 })();
