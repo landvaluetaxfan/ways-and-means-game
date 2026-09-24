@@ -84,7 +84,7 @@ campaign("flash_i", { initiatives: [
   { id: "assume_substrate_debt",
     title: "Deal with the platform's substrate debt",
     note: "The debt runs against the instances and the substrate of the " +
-          "three hundred thousand people on the platform. The Commonwealth " +
+          "184,000 people on the Almanac Works. The Commonwealth " +
           "can assume it, or write it off, and the Underwriters will price " +
           "the difference either way.",
     cost: 1,

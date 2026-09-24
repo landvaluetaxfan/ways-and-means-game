@@ -42,7 +42,14 @@ const WORLD = {
     { id:"almanac_works", name:"The Bellamy Almanac Works, Brant & Vane",
       short:"the Almanac",
       operator:"Cordell",            /* absorbed the Bellamy concern, kept the name */
-      site:"Tether 11, the Chimborazo line", lat:-2.9, lng:-79.1,
+      /* ON THE INTERNATIONAL (decided 24 Sep). The Works was placed on Tether
+         11 here while the crisis's own prose, the host actor and the author's
+         plan all put it at the foot of Kenya's tether: "Kenya's repatriation
+         plan", a two-year rescue made slow by Kenyan procurement law. Kenya
+         and the treaty elevator won. `anchor` is the link the globe and the
+         Concordance read; `site` is what a reader is told. */
+      anchor:"tether_2",
+      site:"Tether 2, the International Earth-Orbit Elevator", lat:-4.1, lng:41.2,
       population:184000, workforce:97000,
       closure:0.44, suspended:7100, attested:0.66,
       composition:{ biological:0.74, emulation:0.2, uplift:0.04, synthetic:0.02 },
@@ -61,7 +68,7 @@ const WORLD = {
   anchors: [
     { id:"tether_1",  tether:"The Beanstalk", formal:"",                               station:"anselm",       site:"Macapá, Brazil",          lat:  0.03, lng: -51.07, host:"Brazil", iso:"BRA",               mine:true },
     { id:"tether_2",  tether:"the International", formal:"International Earth-Orbit Elevator", station:"kepler", site:"Malindi, Kenya",          lat: -3.22, lng:  40.12, host:"Kenya", iso:"KEN",                mine:true },
-    { id:"tether_3",  tether:"the Sumatra line", formal:"",                            station:null,           site:"Pontianak, Indonesia",    lat: -0.02, lng: 109.34, host:"Indonesia", iso:"IDN",            mine:false },
+    { id:"tether_3",  tether:"the Pontianak line", formal:"",                            station:null,           site:"Pontianak, Indonesia",    lat: -0.02, lng: 109.34, host:"Indonesia", iso:"IDN",            mine:false },
     { id:"tether_4",  tether:"the Kourou vertical", formal:"",                         station:"bourse",       site:"Kourou, French Guiana",   lat:  5.16, lng: -52.65, host:"European Union", iso:"FRA",       mine:false },
     { id:"tether_5",  tether:"The Clothesline", formal:"The Meridian Vertical",        station:"meridian",     site:"São Tomé",                lat:  0.34, lng:   6.73, host:"São Tomé and Príncipe", iso:"STP", mine:true },
     { id:"tether_6",  tether:"the Leticia line", formal:"",                           station:"halvard",      site:"Leticia, Colombia",       lat: -4.21, lng: -69.94, host:"Colombia", iso:"COL",             mine:false },
@@ -100,10 +107,10 @@ const WORLD = {
   states: {
     "BRA": { note:"Brazil hosts Tether 1, the Beanstalk, at Macapá, the capital of Amapá state, which lies on the equator at the mouth of the Amazon. The anchor serves Anselm Ring. The concession was granted in 2065 for ninety-nine years, to 2164, at a fee fixed at grant with no indexation clause; lift tonnage through the anchor has roughly trebled since. Brazil operates its own launch range at Alcântara and a national orbital programme, and sells lift to the Commonwealth.",
              markets:"Soybeans, iron ore, beef, and launch services from Alcântara." },
-    "KEN": { actor:"earth_host", note:"Kenya hosts Tether 2, the International Earth-Orbit Elevator, at Malindi on the Indian Ocean coast, near the Broglio Space Centre at Ngomeni. The elevator serves Anchorage and was established by international treaty, whose title is its formal name. Kenya is a middle power with a large public administration and an established space programme.",
+    "KEN": { actor:"earth_host", note:"Kenya hosts Tether 2, the International Earth-Orbit Elevator, at Malindi on the Indian Ocean coast, near the Broglio Space Centre at Ngomeni. The elevator serves Anchorage and the Bellamy Almanac Works, and was established by international treaty, whose title is its formal name. Kenya is a middle power with a large public administration and an established space programme.",
              dispute:"Kenyan procurement law governs the repatriation plan for the Almanac Works' workforce, under which the approved programme runs two years. The government has said that it will not meet the cost of a private company's wind-up, and that it will not accept a foreign government taking title to the platform.",
              markets:"Tea, cut flowers, geothermal power, and corridor rights at the Malindi base." },
-    "IDN": { note:"Indonesia hosts Tether 3 at Pontianak, the capital of West Kalimantan on the island of Borneo, less than a kilometre from the equator. The concession was granted in 2068 during a currency crisis. Indonesia has sought to reopen its terms at both of the fee reviews held since. The tether serves no Commonwealth station.",
+    "IDN": { note:"Indonesia hosts Tether 3, the Pontianak line, at Pontianak, the capital of West Kalimantan on the island of Borneo, less than a kilometre from the equator. The concession was granted in 2068 during a currency crisis. Indonesia has sought to reopen its terms at both of the fee reviews held since. The tether serves no Commonwealth station.",
              markets:"Nickel, palm oil, coal, and shipping through the equatorial straits." },
     "FRA": { actor:"earth_bloc", name:"France", note:"Tether 4, the Kourou vertical, stands at Kourou in French Guiana, an overseas region of France and an outermost region of the European Union, where the Guiana Space Centre has operated since 1968. The anchor serves the Bourse. Its concession is held under European law, and the Union treats the tether as European infrastructure.",
              dispute:"The Union is a party to the dispute both as a sanctioning power and as the holder of an anchor. Its stated objections concern labour and personhood law: the orbital franchises operate below European standards, and European courts have no jurisdiction over them.",
@@ -122,7 +129,7 @@ const WORLD = {
              markets:"Fishing licences, copra, and the lease on the Kiritimati site." },
     "UGA": { note:"Uganda hosts Tether 10, the Entebbe line, on the northern shore of Lake Victoria; it is the one anchor in the dozen that stands inland. Its corridor crosses Kenyan and Tanzanian airspace before it clears the atmosphere, so the concession is renewed three ways, and the two transit agreements expire on their own schedules. The tether serves no Commonwealth station.",
              markets:"Coffee, gold, fish from Lake Victoria, and the Entebbe corridor." },
-    "ECU": { note:"Ecuador hosts Tether 11, the Chimborazo line, on the Chimborazo massif, 1.5° south of the equator. Chimborazo's summit is the point on the Earth's surface farthest from its centre. The line serves the Almanac Works. Its concession has been renegotiated twice, and both revisions reduced the fee payable by the operator.",
+    "ECU": { note:"Ecuador hosts Tether 11, the Chimborazo line, on the Chimborazo massif, 1.5° south of the equator. Chimborazo's summit is the point on the Earth's surface farthest from its centre. Cordell holds the concession, one of its two, and uses the line for its extraction platforms. The concession has been renegotiated twice, and both revisions reduced the fee Cordell pays.",
              markets:"Bananas, oil, shrimp, and the Chimborazo corridor." },
     "MDV": { name:"the Maldives", note:"The Maldives is an archipelago of coral atolls in the Indian Ocean, with an average ground level of about one and a half metres. Tether 12, the Malé line, stands on reclaimed land near the capital, Malé, and its base is the highest point in the country. The tether serves no Commonwealth station.",
              markets:"Tourism, tuna, and the Malé corridor." }

@@ -41,7 +41,7 @@ campaign("flash_i", { bills: [
      ============================================================= */
   { id:"annexation", ref:"HC 4/163", stage:"drafting", owner:"cu",
     /* It brings 184,000 people inside the services guarantee and it settles
-       what happens to a charter held on the Chimborazo line, so those are
+       what happens to a charter held on the International's corridor, so those are
        the two benches whose consent it needs. */
     touches:["essential_services_law","anchor_concession"],
     title:"Almanac Works (Annexation) Bill",

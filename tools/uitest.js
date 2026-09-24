@@ -636,6 +636,31 @@ try {
   }
 } catch (e) { ok("the parties tab and the composition fold", false, e.message); }
 
+/* THE WORKS HANGS FROM THE INTERNATIONAL, and the pages say so (24 Sep).
+   The anchor's page looked its host up by name in a table keyed by code, so
+   "The host" never appeared on any anchor; the Works' page linked its
+   operator by name to an id that does not exist. */
+try {
+  const openCx = id => {
+    const a = w.document.createElement("a");
+    a.setAttribute("data-go", id);
+    w.document.querySelector("#shell").appendChild(a);
+    a.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+    a.remove();
+    return w.document.querySelector("#cx-article");
+  };
+  const intl = openCx("anchor_tether_2");
+  ok("an anchor's page carries its host state",
+     !!intl && [...intl.querySelectorAll("h2,h3")].some(h => /host/i.test(h.textContent)),
+     intl ? [...intl.querySelectorAll("h2,h3")].map(h => h.textContent).join(" / ") : "no article");
+  ok("and the International's names the Works it serves",
+     !!intl && !!intl.querySelector('[data-go="body_almanac_works"]'));
+  const works = openCx("body_almanac_works");
+  ok("the Works' page links its operator to the operator's article",
+     !!works && !!works.querySelector('[data-go="actor_metanationals"]') &&
+     /International Earth-Orbit Elevator/.test(works.textContent));
+} catch (e) { ok("the Works and its anchor", false, e.message); }
+
 /* THE CONCORDANCE SURVIVES A SEARCH, and every route out of one works.
 
    `renderHits` wrote the results into `#cx-body`, whose only child is

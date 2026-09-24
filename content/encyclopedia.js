@@ -448,7 +448,7 @@ const ENCYCLOPEDIA = {
       { h:"The debt", body:
         "**Credit secured against one's own continuation** is the ordinary financing of a "+"habitat. A station borrows against the productive capacity of its residents, who "+"are the collateral. When the station fails, the lenders' claim runs against the "+"people rather than the place." },
       { h:"The platform", body:
-        "The abandoned platform and its three hundred thousand residents are the present "+"case. The debt has not failed with the platform; it has been assigned. A "+"government that assumes it pays for people it does not own. A government that "+"[[write-off|writes it off]] has told the lenders what its word is worth." }
+        "The Bellamy Almanac Works and its 184,000 residents are the present "+"case. The debt has not failed with the platform; it has been assigned. A "+"government that assumes it pays for people it does not own. A government that "+"[[write-off|writes it off]] has told the lenders what its word is worth." }
     ],
     see:["write-off","substrate","suspension","commonwealth"] }
 

@@ -81,7 +81,7 @@ The Works has voted. The question is what the Commonwealth says.`,
 { id:"f1_referendum", chapter:2, queuedOnly:true, once:true,
   title:"The vote",
   speaker:"ceyhan",
-  body:`The workers have voted to join the Federation, and Ceyhan's column
+  body:`The workers have voted to join the Commonwealth, and Ceyhan's column
 names the three reasons in one sentence: a two-year rescue, a
 repatriation nobody's body is ready for, and bank accounts frozen
 
@@ -323,11 +323,11 @@ who has not been a minister for nine years.
 It is the same week in two places, and there is one sentence available to
 the government that will be read in both.`,
   choices:[
-    { label:"Say it for the Federation: competence, not sentiment.",
+    { label:"Say it for the Commonwealth: competence, not sentiment.",
       effects:[{ move:{ "legitimacy":6 } }, { move:{ "actor.earth_bloc":-5 } },
                { move:{ "friction":3 } },
                { wire:"PM SPEAKS TO THE HABITATS; EARTH SERVICES CALL THE TONE 'MANAGERIAL'" }],
-      result:"The Federation hears a government in command. Earth hears a government that has stopped being polite." },
+      result:"The Commonwealth hears a government in command. Earth hears a government that has stopped being polite." },
     { label:"Say it for both: the accident, and the rescue.",
       effects:[{ move:{ "actor.earth_bloc":6 } }, { move:{ "actor.earth_host":4 } },
                { move:{ "legitimacy":-3 } }, { move:{ "friction":-2 } },

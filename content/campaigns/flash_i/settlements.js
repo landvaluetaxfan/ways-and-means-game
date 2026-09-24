@@ -56,7 +56,7 @@ campaign("flash_i", { settlements: [
             scalarBelow: { friction: 60 } } },
   { id: "f1_maritime", rank: 1, crisis: true,
     name: "Maritime Charter",
-    summary: "International courts recognise salvage rights. The platform becomes legal Federation territory.",
+    summary: "International courts recognise salvage rights. The Works becomes Commonwealth territory in law.",
     closing: "The courts recognise the salvage, and the platform is Commonwealth territory in law. " +
              "The legal and administrative bill is heavy, and so is the trust it bought.",
     when: { flags: ["almanac_annexed"],
@@ -64,7 +64,7 @@ campaign("flash_i", { settlements: [
             scalarBelow: { friction: 40 } } },
   { id: "f1_pyrrhic", rank: 2, crisis: true,
     name: "Sovereign Debt Trap",
-    summary: "Annexed, and 300,000 workers saved. The Federation assumes the defaulted corporate bonds.",
+    summary: "The Works is annexed and its 184,000 people are saved. The Commonwealth assumes the defaulted corporate bonds.",
     closing: "The platform is annexed and its workers are saved, and the Commonwealth has assumed " +
              "the defaulted bonds that paid for them. Three years of austerity begin at the next estimates.",
     when: { flags: ["almanac_annexed"],
@@ -80,7 +80,7 @@ campaign("flash_i", { settlements: [
             scalarBelow: { legitimacy: 60, solvency: 60000, friction: 60 } } },
   { id: "f1_capitulation", rank: 4, crisis: true,
     name: "Corporate Re-Entry",
-    summary: "The Federation declines the referendum. Earth corporate security reclaims and clears the platform.",
+    summary: "The Commonwealth declines the referendum. Corporate security from Earth reclaims and clears the Works.",
     closing: "The referendum is declined, and corporate security reclaims the platform. " +
              "The strikes on the outer habitats begin the same week.",
     when: { flags: ["f1_surveyed"],

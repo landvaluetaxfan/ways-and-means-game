@@ -129,6 +129,8 @@ messages.
 | Treasury into sovereign solvency | **yes** | `solvency`, receipts, named creditors (`setup.lenders`) |
 | Diplomatic friction raising sanctions, blockades, injunctions | **yes**, as gated events and couplings | `friction`; `fa_*` events; couplings at 40/65/85 |
 | The platform, the freeze, the repatriation plan, the referendum | **yes** | the `f1_*` chain, stranded at 14, dilemma at 21 |
+| 300,000 stranded workers | **184,000 residents, 97,000 on Cordell's books**, decided with the author before this plan was transcribed (`opencode-brief.md` §25): 184,000 is about four seats, which makes annexation a vote every bench has to count, and 300,000 workers would be ten to twelve. "Three hundred thousand" may survive as a figure a politician quotes | `content/world.js` |
+| The host nation | **Kenya** (decided 24 Sep): the Works hangs from Tether 2, the International Earth-Orbit Elevator at Malindi, and Kenyan procurement law makes the rescue two years long | `content/world.js`, actor `earth_host` |
 | The dilemma | **yes** | `f1_dilemma`; the Almanac Works (Annexation) Bill |
 | Four continuous meters | **yes** | `legitimacy`, `solvency`, `friction`, `thermal_margin` |
 | Delayed variable drift | **yes** | `trend.*` moves; trends decay |

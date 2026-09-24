@@ -396,27 +396,34 @@ const Concordance = (function () {
      which station depends on it. Every number is read from content. */
   function anchorArticle(a) {
     const st0 = (C.stations || []).find(x => x.id === a.station);
-    const hostState = ((C.world || {}).states || {})[a.host] || {};
+    /* BY CODE, NOT BY NAME. The states are keyed "KEN" and this looked up
+       "Kenya", so "The host" section never appeared on any anchor's page: the
+       same fault the globe had, found again on 24 Sep. */
+    const hostState = ((C.world || {}).states || {})[a.iso] || {};
+    /* A foreign body names the anchor it hangs from (the Almanac Works, on
+       the International), so the anchor can say what it serves. */
+    const bodies = ((C.world || {}).foreign || []).filter(b => b.anchor === a.id);
+    const served = (st0 ? [`[[${st0.id}|${st0.name}]]`] : [])
+      .concat(bodies.map(b => `[[body_${b.id}|${b.name}]]`));
     const rows = [["Site", a.site], ["Host", a.host]];
     if (a.formal) rows.push(["Instrument", a.formal]);
-    if (st0) rows.push(["Serves", st0.name]);
+    if (st0 || bodies.length) rows.push(["Serves", (st0 ? [st0.name] : []).concat(bodies.map(b => b.short || b.name)).join(", ")]);
     rows.push(["Held by", a.mine ? (a.leased ? "the Commonwealth, leased" : "the Commonwealth") : "a foreign power"]);
     return {
       id: "anchor_" + a.id, title: a.tether, category: "Anchors", generated: true,
       banners: [], edited: { by: "Committee on Trade and the Anchors", attested: true, note: "" },
       summary: lede(a.tether,
         `is an orbital elevator with its base at ${a.site}, on the territory of ` +
-        `${a.host}. ` + (st0 ? `It serves [[${st0.id}|${st0.name}]]. ` : "") +
+        `${a.host}. ` + (served.length ? `It serves ${served.join(" and ")}. ` : "") +
         (a.mine ? "Its concession is held by the Commonwealth."
                 : "Its concession is held by a foreign power.")),
       sections: [
-        { h: "The base", body: `A tether's base must be equatorial, stable and able to give a ` +
-          `corridor, which is why the dozen are where they are and not wherever the traffic is. ` +
-          `This one stands at ${a.site}.` },
+        { h: "The base", body: `A tether's base has to be close to the equator, on stable ground, ` +
+          `with room for a climber corridor. This one stands at ${a.site}.` },
         hostState.note ? { h: "The host", body: hostState.note } : null,
-        (a.mine ? { h: "The concession", body: "Held by the Commonwealth" +
-          (a.leased ? ", on a lease rather than a grant, which is why it is the one the " +
-            "Commonwealth holds outright." : ".") } : null)
+        (a.mine ? { h: "The concession", body: a.leased
+          ? "Held by the Commonwealth on a lease from the host state, and operated by the Commonwealth."
+          : "Held by the Commonwealth." } : null)
       ].filter(Boolean),
       infobox: { title: a.tether, rows: rows },
       see: [a.station, a.host].filter(Boolean)
@@ -426,6 +433,12 @@ const Concordance = (function () {
   /* A FOREIGN BODY: the Works, and anything else that is outside the
      Commonwealth and on the campaign's table. */
   function foreignBodyArticle(b) {
+    /* THE OPERATOR BY ITS ACTOR'S ID. `b.operator` is a name ("Cordell") and
+       the actor's id is `metanationals`, so the link and the see-also both
+       pointed at an article that does not exist. */
+    const op = (C.actors || []).find(x => x.name === b.operator || x.id === b.operator);
+    const opLink = op ? `[[actor_${op.id}|${b.operator}]]` : b.operator;
+    const anc = ((C.world || {}).anchors || []).find(x => x.id === b.anchor);
     return {
       id: "body_" + b.id, title: b.name, category: "The Earth", generated: true,
       banners: ["contested"], edited: { by: "multiple", attested: true, note: "the charter is not public" },
@@ -434,7 +447,8 @@ const Concordance = (function () {
         `Commonwealth.`) + (b.note ? " " + b.note : ""),
       sections: [
         { h: "The charter", body: b.charter || "" },
-        { h: "The operator", body: `Operated by [[actor_${b.operator}|${b.operator}]].` },
+        { h: "The operator", body: `Operated by ${opLink}.` +
+          (anc ? ` It is served by [[anchor_${anc.id}|${anc.tether}]], whose base is at ${anc.site}.` : "") },
         b.grievance ? { h: "Grievance", body: b.grievance } : null,
         { h: "The numbers", body: `Population ${(b.population || 0).toLocaleString()}, ` +
           `workforce ${(b.workforce || 0).toLocaleString()}, closure ${(b.closure || 0).toFixed(2)}, ` +
@@ -447,8 +461,8 @@ const Concordance = (function () {
         ["Closure", (b.closure || 0).toFixed(2)],
         ["Suspended", (b.suspended || 0).toLocaleString()],
         ["Operator", b.operator]
-      ]},
-      see: ["actor_" + b.operator].concat(b.interests || [])
+      ].concat(b.site ? [["Site", b.site]] : [])},
+      see: (op ? ["actor_" + op.id] : []).concat(anc ? ["anchor_" + anc.id] : [], b.interests || [])
     };
   }
 
