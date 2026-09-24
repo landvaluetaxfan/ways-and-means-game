@@ -217,9 +217,9 @@ climate change forced their hand", for a firm called Alphabet-JPMorgan Omni.
 is narrow now: anything Commonwealth is 2058–2080, anything Earth may be
 earlier, and nothing is generations old.
 
-## THE TABS, AS OF 20 SEPTEMBER 2026
+## THE TABS, AS OF 24 SEPTEMBER 2026
 
-Nine, and the arrangement is younger than most of this file, so trust this
+Ten, and the arrangement is younger than most of this file, so trust this
 list over any older sentence here that implies a different one:
 
 | | |
@@ -228,7 +228,8 @@ list over any older sentence here that implies a different one:
 | **Government** | instruments · the document · what it can do · the ledger and cabinet, with the Tribunal and the Presidency folded at the edge |
 | **Chamber** | order-paper time, the order paper, the House, the whip, and who is counted |
 | **Economy** | *Refreshed 21 Sep 2026, and the refresh was a MERGE.* Four panels on four subjects and a band: **the account** (a stock and its flows), **what everything is priced in**, **what is made and who makes it**, and — in the bottom band beside the chart — **what the Underwriters say**. The middle panel is three former ones, because `TAX_BASES` and `PRICE_META` in the engine are the SAME FOUR THINGS (volume, thermal, substrate, transit): Scarcity, What sets the prices and Ways and means were three facts about one set of four rows, in two different columns, with a third panel between two steps of one sum — `receipts()` computes each yield AS `rate × price/100 × weight`, and §7.9 says outright that the four prices are the appropriation's. One row each now: price, trend, the clause that sets it, the rate, the yield. `inflation` is that table's footing, not the account's, being a reading of those four and nothing else. §7.10's three readings and `content/labour.js` are one panel for the same reason — `st.economy.participation` and `LABOUR.totals.participation` are one fact — with the eighteen categories folded, since they are reference and not a working readout. The chart takes two columns **at either of two timescales** — the engine's per-sitting curve, or `setup.history`'s annual record 2073–2080, whose last point IS the opening value so the two join. The live window is about fifteen weeks (four sitting days a week), which is the right resolution for a price and far too short to show anything structural; that is what the record is for. **Nothing on the tab scrolls at any of the seven measured shapes** — see the layout note below. |
-| **Party** | *interparty affairs and nothing else (the author, 23 Sep: it "was built on false assumptions that it was supposed to be for all parties").* Three columns: **the arrangement** (every other party grouped by relation — in government, confidence and supply, outside — with seats, loyalty, the ledger and whether the government survives their going; your own party is on the roster for the arithmetic and does not open), **one relationship** (the terms, their leader and where you stand with them, what they want from you — their own bills, each opening where time is given to it — what you have promised their members, and where they part from you, measure by measure), and **who they vote with**. Who a party IS went to its Concordance article: members (a wikitable, `section.table`), organisation and branches (`CONTENT.partyOrg`), currents. The currents are counted on the Chamber's composition table. |
+| **Party** | *your own party (the author, 24 Sep: the tab "focuses on other parties instead of your party").* Three columns: **the benches** (one selectable row per current of the player's party: seats from `currentSeats`, live loyalty, posts held, names on the paper, and the party's figures as their footing, since `party_loyalty` IS their weighted mean), **one current** (content's description, its loyalty and where it leaves the party line in words, its named members with their LIVE office from `st.cabinet` and where each stands with you, and how many of its members vote with the party on each live measure, read off `Engine.division`'s `benches` before the whip), and **the leadership** (the loyalty meter against `thresholds.leadershipChallenge`, the paper against `thresholds.ballot`, `Engine.ballot` as the forecast, and once `paper_opened` the members closest to signing with Ask). **The paper moved here from under the whip on the Chamber tab**; it is drawn once. Member links are `person_<id>`: a bare character id is not an article, and `npm run ui` now checks each one resolves. |
+| **Relations** | *interparty affairs and nothing else (the author, 23 Sep: it "was built on false assumptions that it was supposed to be for all parties"); what the Party tab was until 24 Sep, with every id renamed `rel-` so none outlives its tab.* Three columns: **the arrangement** (every other party grouped by relation — in government, confidence and supply, outside — with seats, loyalty, the ledger and whether the government survives their going; your own party is on the roster for the arithmetic, and its "yours" mark opens the Party tab), **one relationship** (the terms, their leader and where you stand with them, what they want from you — their own bills, each opening where time is given to it — what you have promised their members, and where they part from you, measure by measure), and **who they vote with**. Who a party IS went to its Concordance article: members (a wikitable, `section.table`), organisation and branches (`CONTENT.partyOrg`), currents. The currents are counted on the Chamber's composition table. |
 | **Orbit**, **World**, **Record** | unchanged |
 | **Concordance** | *the reference work, and it can only know what the world knows.* Articles are generated from content, which is authored for the WHOLE campaign — so anything staged for later showed up at sitting one. The four bills that open in `drafting` (the Almanac Works (Annexation) Bill among them, which is the act the campaign is about) each had a full page with a division forecast for a measure nobody had laid before the House, and the page contradicted itself saying so: "A measure before the House of Delegates. Stage: drafting." `drafting` is the engine's own word for not introduced, so it is the line: `build()` skips those and the page appears the moment the bill is set down. **The gate belongs on the surface, not in the content** — the content is right, the bill SHOULD be sitting in `drafting` waiting for `f1_dilemma`. Worth re-checking whenever a new reference surface reads a content list whole. |
 
@@ -273,7 +274,7 @@ targets and now emits `"gov"`.
 to be drawn on Government and copied here by a `MutationObserver`. Do not
 reintroduce the copy.
 
-**THE COALITION ROSTER IS DRAWN ONCE, ON THE PARTY TAB.** It was drawn three
+**THE COALITION ROSTER IS DRAWN ONCE, ON RELATIONS** (the Party tab until 24 Sep). It was drawn three
 times until 21 Sep: Chamber's *Coalition* as party/seats/loyalty,
 Government's *Coalition ledger* as partner/ledger/loyalty, and the refocused
 Party tab with all four columns for all twelve parties grouped by relation —
@@ -289,7 +290,7 @@ which strictly contained both of the others. Both are gone.
   undertakings, cabinet. Six panels in four columns. A per-partner credit
   account is interparty affairs, and this tab is the executive — that mismatch
   was most of what "lacking cohesion" meant.
-- **The tips moved with the data.** `ledger` is on the Party tab's `Cr` column
+- **The tips moved with the data.** `ledger` is on Relations' `Cr` column
   and `gov`/`cs` are on its relation headings. An inline tip there restating
   the `ledger` key's own words was dropped: two explanations of one thing can
   drift apart, and `js/tips.js` already owned it.
@@ -433,7 +434,7 @@ Segoe UI, Georgia and Bodoni MT are absent here too and always will be —
 those fallbacks are expected, and the narrow one was not.
 
 `tools/laycheck.js` boots the game in headless Chromium, measures the main menu,
-walks all eight in-game tabs
+walks all ten in-game tabs
 and reports content that is **clipped** (the player never sees it) or that
 **escapes its own border**. Every CSS trap listed below was found by measuring
 rather than reading, and jsdom has no layout engine — `npm run ui` can prove a

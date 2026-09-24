@@ -2527,8 +2527,8 @@ they are finished with you, or because they want you to know."
 man with a list."`,
   choices:[
     { label:"Open the paper. Let them come and say it.",
-      note:"The names are collected one member at a time in the whip panel, on " +
-           "the Chamber tab, under the whip. A minister will not sign and a " +
+      note:"The names are collected one member at a time on the Party tab, " +
+           "under the leadership. A minister will not sign and a " +
            "loyal member will not; the ones who will are the ones closest to " +
            "the door, and every signature is a member you have lost.",
       effects:[{ flag:"paper_opened" }, { move:{ "rel.halloran":3 } },

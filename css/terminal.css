@@ -405,14 +405,20 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
   font-family:var(--f-data);font-size:11px;color:var(--ink-soft);}
 .labtot b{color:var(--ink);font-weight:400;}
 
-/* THE PARTY TAB: the arrangement on the left, one relationship in the
-   middle where the prose is, and whom that party would rather be with on
-   the right. */
-.g-party{grid-template-columns:minmax(300px,420px) minmax(0,1fr) minmax(260px,360px);
+/* THE PARTY TAB: your own benches on the left, one current in the middle
+   where the prose is, and the leadership on the right. */
+.g-party{grid-template-columns:minmax(300px,400px) minmax(0,1fr) minmax(280px,380px);
   grid-template-rows:minmax(0,1fr);height:100%;min-height:0;}
 #s-party.screen.on{height:100%;min-height:0;}
 .g-party > .stack{min-height:0;}
 .g-party .panel{min-height:0;}
+/* RELATIONS: the arrangement on the left, one relationship in the middle,
+   and whom that party would rather be with on the right. */
+.g-rel{grid-template-columns:minmax(300px,420px) minmax(0,1fr) minmax(260px,360px);
+  grid-template-rows:minmax(0,1fr);height:100%;min-height:0;}
+#s-rel.screen.on{height:100%;min-height:0;}
+.g-rel > .stack{min-height:0;}
+.g-rel .panel{min-height:0;}
 .pdot{display:inline-block;width:9px;height:9px;border:1px solid var(--rule);}
 /* the playtest transcript: a box the tester can select out of */
 .g-log{grid-template-columns:minmax(0,1fr) minmax(320px,460px);
@@ -1283,7 +1289,7 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
   .tally i{transition:none;}
 }
 @media (max-width:1080px){
-  .g-gov,.g-cham,.g-orb,.g-disp,.g-elec,.g-sit,.g-world,.g-party,.g-econ,
+  .g-gov,.g-cham,.g-orb,.g-disp,.g-elec,.g-sit,.g-world,.g-party,.g-rel,.g-econ,
   .g-log{grid-template-columns:minmax(0,1fr);}
 
   /* ONE COLUMN MEANS THE PAGE SCROLLS, and it did not. Every screen is
@@ -1301,9 +1307,9 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
      gets a floor so a stacked column reads as a page rather than as a row
      of slots. */
   #s-sit.screen.on,#s-gov.screen.on,#s-cham.screen.on,
-  #s-orb.screen.on,#s-world.screen.on,#s-party.screen.on,
+  #s-orb.screen.on,#s-world.screen.on,#s-party.screen.on,#s-rel.screen.on,
   #s-econ.screen.on{height:auto;min-height:0;}
-  .g-sit,.g-gov,.g-cham,.g-orb,.g-world,.g-party,.g-econ{
+  .g-sit,.g-gov,.g-cham,.g-orb,.g-world,.g-party,.g-rel,.g-econ{
     grid-template-rows:none;height:auto;min-height:0;}
   .g-sit > .stack,.g-gov > .stack,.g-cham > .stack,
   .g-orb > .panel,.g-world > .panel{overflow:visible;}
@@ -1672,36 +1678,49 @@ button.lnk:focus-visible{outline:1px dotted currentColor;outline-offset:1px;}
    party: a band that says which of the three relations the rows under it
    are, with the seats they add up to. Styled off the table's own rules
    rather than .rulehead, which lives in a panel body and not in a thead. */
-#party-table tr.prel td{
+#rel-table tr.prel td{
   background:var(--chrome-lt);border-top:1px solid var(--rule);
   border-bottom:1px solid var(--chrome-dk);
   padding:5px 6px 3px;cursor:default;
 }
-#party-table tr.prel:first-child td{border-top:none;}
-#party-table tr.prel b{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;}
-#party-table tr.prel em{font-style:normal;font-size:9.5px;color:var(--ink-soft);
+#rel-table tr.prel:first-child td{border-top:none;}
+#rel-table tr.prel b{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;}
+#rel-table tr.prel em{font-style:normal;font-size:9.5px;color:var(--ink-soft);
   letter-spacing:.02em;text-transform:none;}
-#party-table tr.prel:hover td{background:var(--chrome-lt);}
+#rel-table tr.prel:hover td{background:var(--chrome-lt);}
 /* "yours" on the player's own bench: it sits inside the coalition group and
    is priced differently from every other row in it. */
 /* "with them" / "opposed" beside the agreement figure: a word, because a
    signed number to two places is precise and not legible on its own. */
-#party-with .pwsay{font-size:10px;color:var(--ink-soft);white-space:nowrap;}
-#party-with td.good{color:var(--ok);}
-#party-with td.warn{color:var(--alert);}
-#party-with tr[data-party]{cursor:pointer;}
-#party-with tr[data-party]:hover{background:var(--field);}
+#rel-with .pwsay{font-size:10px;color:var(--ink-soft);white-space:nowrap;}
+#rel-with td.good{color:var(--ok);}
+#rel-with td.warn{color:var(--alert);}
+#rel-with tr[data-party]{cursor:pointer;}
+#rel-with tr[data-party]:hover{background:var(--field);}
 /* the roster: a partner row is a control, your own row is arithmetic */
-#party-table tr[data-party]{cursor:pointer;}
-#party-table tr.ownrow td{color:var(--ink-soft);}
-#party-table td.pgo{font-size:10.5px;white-space:nowrap;color:var(--ink-soft);}
-#party-table td.pgo .warn{color:var(--alert);}
-#party-table td.pgo .good{color:var(--ok);}
-#party-detail .pcx{margin-top:10px;}
+#rel-table tr[data-party]{cursor:pointer;}
+#rel-table tr.ownrow td{color:var(--ink-soft);}
+#rel-table td.pgo{font-size:10.5px;white-space:nowrap;color:var(--ink-soft);}
+#rel-table td.pgo .warn{color:var(--alert);}
+#rel-table td.pgo .good{color:var(--ok);}
+#rel-detail .pcx{margin-top:10px;}
 /* one relationship, read as prose with figures: the label takes the room
    and the figure sits at the right edge, and there is no sparkline column */
-#party-detail .prow{grid-template-columns:minmax(0,1fr) auto;}
-#party-detail .pval{font-size:12.5px;}
+#rel-detail .prow{grid-template-columns:minmax(0,1fr) auto;}
+#rel-detail .pval{font-size:12.5px;}
+/* THE PARTY TAB's rows: a current is a control, the party's footing is
+   the sum; the current and the leadership read as prose with figures, the
+   way one relationship does on Relations. */
+#party-currents tr[data-current]{cursor:pointer;}
+#party-currents td.warn{color:var(--alert);}
+#party-currents tfoot td{border-top:1px solid var(--rule);font-weight:600;}
+#party-current .prow,#party-lead .prow{grid-template-columns:minmax(0,1fr) auto;}
+#party-current .pval,#party-lead .pval{font-size:12.5px;}
+#rel-detail .pval.warn,#party-current .pval.warn,#party-lead .pval.warn{color:var(--alert);}
+#party-current .plead{margin:0 0 8px;font-size:12.5px;line-height:1.45;}
+#party-lead .pcx{margin-top:10px;}
+button.pown{background:none;cursor:pointer;font-family:inherit;}
+button.pown:hover{background:var(--field);}
 .pown{font-size:9px;letter-spacing:.08em;text-transform:uppercase;
   border:1px solid var(--chrome-dkr);border-radius:2px;padding:0 3px;
   color:var(--ink-soft);vertical-align:1px;}
@@ -2894,21 +2913,21 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
    because the row is the other end of the order-of-the-day deep link and has
    to be clickable — and an unstyled button draws the browser's own bevel,
    which is what made this panel look pasted in from a different program. */
-#gov-owed .dk,#party-detail .dk{
+#gov-owed .dk,#rel-detail .dk,#party-current .dk{
   display:block;width:100%;margin:0;padding:4px 0;text-align:left;
   font:inherit;color:inherit;background:transparent;border:0;
   border-bottom:1px dotted var(--rule);
 }
-#gov-owed .dk b,#party-detail .dk b{display:block;font-size:12px;font-weight:400;line-height:1.35;}
-#gov-owed .dk i,#party-detail .dk i{display:block;font-style:normal;font-family:var(--f-data);
+#gov-owed .dk b,#rel-detail .dk b,#party-current .dk b{display:block;font-size:12px;font-weight:400;line-height:1.35;}
+#gov-owed .dk i,#rel-detail .dk i,#party-current .dk i{display:block;font-style:normal;font-family:var(--f-data);
   font-size:9.5px;letter-spacing:.03em;color:var(--ink-soft);}
-#gov-owed .dk.owed,#party-detail .dk.owed{border-left:3px solid var(--ink);padding-left:6px;}
-#gov-owed .dk.owed b,#party-detail .dk.owed b{font-weight:700;}
-#gov-owed .dk.owed.late,#party-detail .dk.owed.late{border-left-color:var(--warn,#8a3b2a);}
-#gov-owed .dk.owed.late i,#party-detail .dk.owed.late i{color:var(--warn,#8a3b2a);}
-#gov-owed .dk.goto,#party-detail .dk.goto{cursor:pointer;}
-#gov-owed .dk.goto:hover,#party-detail .dk.goto:hover{background:var(--field);}
-#gov-owed .dk:last-child,#party-detail .dk:last-child{border-bottom:0;}
+#gov-owed .dk.owed,#rel-detail .dk.owed,#party-current .dk.owed{border-left:3px solid var(--ink);padding-left:6px;}
+#gov-owed .dk.owed b,#rel-detail .dk.owed b,#party-current .dk.owed b{font-weight:700;}
+#gov-owed .dk.owed.late,#rel-detail .dk.owed.late,#party-current .dk.owed.late{border-left-color:var(--warn,#8a3b2a);}
+#gov-owed .dk.owed.late i,#rel-detail .dk.owed.late i,#party-current .dk.owed.late i{color:var(--warn,#8a3b2a);}
+#gov-owed .dk.goto,#rel-detail .dk.goto,#party-current .dk.goto{cursor:pointer;}
+#gov-owed .dk.goto:hover,#rel-detail .dk.goto:hover,#party-current .dk.goto:hover{background:var(--field);}
+#gov-owed .dk:last-child,#rel-detail .dk:last-child,#party-current .dk:last-child{border-bottom:0;}
 
 /* The sitting screen fills the viewport. It was content-height, so a short
    event left a third of the screen as bare chrome under the panel — the

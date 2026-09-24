@@ -2112,7 +2112,7 @@ Implemented palette: institutional gray-green (`#c8c9c0` chrome, `#f2f2ec` field
 
 ## 12.4 Screens — LOCKED
 
-Nine, as built: **Sitting** · **Government** · **Chamber** · **Economy** · **Party** · **Orbit** · **World** · **Record** · **Concordance**. `CLAUDE.md` says what each holds and moves with the interface. This section listed six until v5, including *Dispatch* and *Papers*, neither of which survives as a tab (Papers folded into Government), and *Election Night*, which is not built (§12.5).
+Ten, as built: **Sitting** · **Government** · **Chamber** · **Economy** · **Party** · **Relations** · **Orbit** · **World** · **Concordance** · **Record**. `CLAUDE.md` says what each holds and moves with the interface. **Party** is the Prime Minister's own party and **Relations** the other parties (split 24 Sep 2026). This section listed six until v5, including *Dispatch* and *Papers*, neither of which survives as a tab (Papers folded into Government), and *Election Night*, which is not built (§12.5).
 
 ## 12.5 Election night — LOCKED, not yet built
 

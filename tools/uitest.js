@@ -108,37 +108,45 @@ try {
    failed; the row simply did not open. tools/edtest.js exists for exactly
    this in the editor. */
 try {
-  w.document.querySelector('.tab[data-t="party"]').click();
-  /* INTERPARTY AFFAIRS, NOT A DIRECTORY (the author, 23 Sep). The tab
-     opens every OTHER party and not your own, whose bench is managed with
-     loyalty and not by dealing; and who a party is lives in the
+  w.document.querySelector('.tab[data-t="rel"]').click();
+  /* INTERPARTY AFFAIRS, NOT A DIRECTORY (the author, 23 Sep; its own tab,
+     Relations, since 24 Sep). The tab opens every OTHER party and not your
+     own, which has the Party tab; and who a party is lives in the
      Concordance, so the members, currents and organisation panels are gone. */
   const me = w.eval("UI.state().playerParty");
-  const prows = [...w.document.querySelectorAll("#party-table tr[data-party]")];
-  ok("the Party tab opens every other party, and not your own",
+  const prows = [...w.document.querySelectorAll("#rel-table tr[data-party]")];
+  ok("Relations opens every other party, and not your own",
      prows.length === CONTENT.parties.length - 1 && !prows.some(r => r.dataset.party === me),
      prows.length + " of " + CONTENT.parties.length);
   ok("and your own is on the roster, for the arithmetic",
-     !!w.document.querySelector("#party-table tr.ownrow"));
+     !!w.document.querySelector("#rel-table tr.ownrow"));
   ok("and opens on one of them",
-     (w.document.querySelector("#party-detail").textContent || "").trim().length > 40);
+     (w.document.querySelector("#rel-detail").textContent || "").trim().length > 40);
   ok("and is not a directory any more",
-     !w.document.querySelector("#party-mps, #party-currents, #party-org"));
-  const first = w.document.querySelector("#party-hdr").textContent;
-  const detFirst = w.document.querySelector("#party-detail").textContent;
+     !w.document.querySelector("#s-rel [data-current], #s-rel .cx-wikitable, #s-rel #party-org"));
+  /* and your own row sends you to your own party */
+  const yours = w.document.querySelector('#rel-table tr.ownrow [data-goto="party"]');
+  if (yours) {
+    yours.click();
+    ok("your own row on Relations opens the Party tab",
+       w.document.querySelector('.tab[data-t="party"]').getAttribute("aria-selected") === "true");
+    w.document.querySelector('.tab[data-t="rel"]').click();
+  } else ok("your own row on Relations links to the Party tab", false);
+  const first = w.document.querySelector("#rel-hdr").textContent;
+  const detFirst = w.document.querySelector("#rel-detail").textContent;
   if (prows[1]) {
     prows[1].click();
     ok("choosing another party changes the page",
-       w.document.querySelector("#party-hdr").textContent !== first,
-       first + " -> " + w.document.querySelector("#party-hdr").textContent);
+       w.document.querySelector("#rel-hdr").textContent !== first,
+       first + " -> " + w.document.querySelector("#rel-hdr").textContent);
     ok("and the relationship with it",
-       w.document.querySelector("#party-detail").textContent !== detFirst);
+       w.document.querySelector("#rel-detail").textContent !== detFirst);
     /* THE LOYALTY COLUMN IS THE LIVE ONE. It read st.loyalty, which does
        not exist, and fell back to content, so it printed the opening figure
        for the whole run whatever happened to the party. */
     const lp = CONTENT.parties.find(p => p.id !== me && !CONTENT.currents.some(c => c.party === p.id));
     w.eval('UI.state().parties[' + JSON.stringify(lp.id) + '].loyalty = 7; UI.redraw();');
-    const lcell = w.document.querySelector('#party-table tr[data-party="' + lp.id + '"] td:nth-child(4)');
+    const lcell = w.document.querySelector('#rel-table tr[data-party="' + lp.id + '"] td:nth-child(4)');
     ok("the party table prints loyalty as it stands, not as it opened",
        lcell && lcell.textContent.trim() === "7", lcell ? lcell.textContent : "no row");
     w.eval('UI.state().parties[' + JSON.stringify(lp.id) + '].loyalty = ' + lp.loyalty + '; UI.redraw();');
@@ -148,10 +156,10 @@ try {
     const wantP = CONTENT.parties.find(p => p.id !== me &&
       CONTENT.bills.some(b => b.owner === p.id && w.eval("!!UI.state().bills[" + JSON.stringify(b.id) + "]")));
     if (wantP) {
-      w.document.querySelector('#party-table tr[data-party="' + wantP.id + '"]').click();
+      w.document.querySelector('#rel-table tr[data-party="' + wantP.id + '"]').click();
       const theirs = CONTENT.bills.filter(b => b.owner === wantP.id &&
         w.eval("!!UI.state().bills[" + JSON.stringify(b.id) + "]"));
-      const wb = [...w.document.querySelectorAll('#party-detail [data-open^="grant:"], #party-detail [data-open^="bill:"]')];
+      const wb = [...w.document.querySelectorAll('#rel-detail [data-open^="grant:"], #rel-detail [data-open^="bill:"]')];
       ok("a party's own measures are what it wants from you", wb.length === theirs.length,
          wb.length + " rows for " + theirs.length + " measures of " + wantP.short);
       const live = wb.find(b => /^grant:/.test(b.dataset.open));
@@ -161,7 +169,7 @@ try {
         ok("and a live one opens where time is given to it",
            w.document.querySelector('.tab[data-t="gov"]').getAttribute("aria-selected") === "true" &&
            !!w.document.querySelector('#gov-slots [data-slot="' + bid + '"]'), bid);
-        w.document.querySelector('.tab[data-t="party"]').click();
+        w.document.querySelector('.tab[data-t="rel"]').click();
       }
     } else ok("some party has a measure of its own", false);
 
@@ -169,22 +177,85 @@ try {
        members is on their page, staged and put back. */
     const snapP = w.eval("JSON.stringify(UI.state())");
     const their = CONTENT.characters.find(c => c.party && c.party !== me &&
-      w.document.querySelector('#party-table tr[data-party="' + c.party + '"]'));
+      w.document.querySelector('#rel-table tr[data-party="' + c.party + '"]'));
     if (their) {
       w.eval("Engine.apply(UI.state(), UI.content(), [{ undertake: { id: 'ut_party', " +
         "text: 'A promise kept for the test', owed_to: " + JSON.stringify(their.id) + ", " +
         "by: UI.state().sitting + 6, discharge: { flag: 'ut_party_kept' } } }]); UI.redraw();");
-      w.document.querySelector('#party-table tr[data-party="' + their.party + '"]').click();
+      w.document.querySelector('#rel-table tr[data-party="' + their.party + '"]').click();
       ok("a promise owed to one of their members is on their page",
-         /A promise kept for the test/.test(w.document.querySelector("#party-detail").textContent),
+         /A promise kept for the test/.test(w.document.querySelector("#rel-detail").textContent),
          their.party);
       w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapP) + "), UI.content())");
-      w.document.querySelector('.tab[data-t="party"]').click();
+      w.document.querySelector('.tab[data-t="rel"]').click();
     }
     ok("and the selection is marked on the row that was clicked",
-       (w.document.querySelector("#party-table tr.sel") || {}) === prows[1] ||
-       !!w.document.querySelector("#party-table tr.sel"));
+       (w.document.querySelector("#rel-table tr.sel") || {}) === prows[1] ||
+       !!w.document.querySelector("#rel-table tr.sel"));
   }
+
+  /* YOUR OWN PARTY (the author, 24 Sep). The Party tab is the Prime
+     Minister's own bench: one row per current, the party's figures as their
+     footing, a current read one at a time, and the leadership. Each figure
+     is the engine's, so each is checked against the engine. */
+  w.document.querySelector('.tab[data-t="party"]').click();
+  const mine = CONTENT.currents.filter(c => c.party === me);
+  const crow = [...w.document.querySelectorAll("#party-currents tr[data-current]")];
+  ok("the Party tab lists your own currents and no one else's",
+     crow.length === mine.length && crow.every(r => mine.some(c => c.id === r.dataset.current)),
+     crow.length + " rows for " + mine.length + " currents");
+  const foot = w.document.querySelector("#party-currents tfoot td:nth-child(3)");
+  ok("and the party's loyalty is their footing, as the meter reads it",
+     foot && foot.textContent.trim() === String(w.eval("UI.state().scalars.party_loyalty")),
+     foot ? foot.textContent : "no footing");
+  if (crow[1]) {
+    const h0 = w.document.querySelector("#party-cur-hdr").textContent;
+    crow[1].click();
+    ok("choosing a current reads that current",
+       w.document.querySelector("#party-cur-hdr").textContent !== h0 &&
+       w.document.querySelector("#party-cur-hdr").textContent === mine.find(c => c.id === crow[1].dataset.current).name,
+       h0 + " -> " + w.document.querySelector("#party-cur-hdr").textContent);
+    const cid = crow[1].dataset.current;
+    const named = CONTENT.characters.filter(ch => ch.party === me && ch.current === cid);
+    const links = w.document.querySelectorAll("#party-current a[data-go]");
+    const deadL = [...links].filter(a => !w.eval('Concordance.knows(' + JSON.stringify(a.dataset.go) + ')'));
+    ok("and names its members, each linked to their Concordance article",
+       links.length === named.length && !deadL.length,
+       links.length + " of " + named.length + (deadL.length ? ", dead: " + deadL.map(a => a.dataset.go).join(" ") : ""));
+    /* THE LOYALTY IS THE LIVE ONE, which the old Party tab once was not */
+    const was = w.eval("UI.state().currents[" + JSON.stringify(cid) + "].loyalty");
+    w.eval("UI.state().currents[" + JSON.stringify(cid) + "].loyalty = 7; UI.redraw();");
+    const lc = w.document.querySelector('#party-currents tr[data-current="' + cid + '"] td:nth-child(3)');
+    ok("a current's loyalty is printed as it stands", lc && lc.textContent.trim() === "7",
+       lc ? lc.textContent : "no row");
+    w.eval("UI.state().currents[" + JSON.stringify(cid) + "].loyalty = " + was + "; UI.redraw();");
+  }
+  /* HOW A CURRENT VOTES is read off the engine's own division, per measure */
+  const onPaper = [...w.document.querySelectorAll('#party-current [data-open^="bill:"]')];
+  ok("a current's page says how it votes on what is before the House", onPaper.length > 0,
+     onPaper.length + " measures");
+  if (onPaper[0]) {
+    onPaper[0].click();
+    ok("and a measure opens in the Chamber",
+       w.document.querySelector('.tab[data-t="cham"]').getAttribute("aria-selected") === "true");
+    w.document.querySelector('.tab[data-t="party"]').click();
+  }
+  /* THE PAPER lives with the party now, and nowhere else */
+  const snapL = w.eval("JSON.stringify(UI.state())");
+  w.eval("UI.state().flags.paper_opened = true; UI.redraw();");
+  const asks = w.document.querySelectorAll("#party-lead [data-sign]");
+  ok("once the paper is open, the members closest to signing are on the Party tab",
+     asks.length > 0, asks.length + " members");
+  ok("and not under the whip on the Chamber tab",
+     !w.document.querySelector("#s-cham [data-sign]"));
+  const sig0 = w.eval("UI.state().signatures || 0");
+  if (asks[0]) asks[0].dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  ok("and asking one adds a name", w.eval("UI.state().signatures || 0") === sig0 + 1);
+  const b = w.eval("Engine.ballot(UI.state(), UI.content())");
+  ok("the ballot forecast is the engine's",
+     new RegExp(b.for + " for you, " + b.against + " against").test(
+       w.document.querySelector("#party-lead").textContent));
+  w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapL) + "), UI.content())");
 
   /* A NEW GOVERNMENT IS NOT NAMED AFTER THE LAST ONE. The name box offered the
    slot's existing name when the slot already held a save, so forming a new
@@ -527,14 +598,14 @@ try {
      through Engine.benchRoll, and the count that proves it is the party's
      own seat total: a member per seat, every seat. */
   for (const pid of ["cu", "cl"]) {
-    /* In the Concordance now. A partner is reached from the Party tab's own
+    /* In the Concordance now. A partner is reached from Relations' own
        link; your own party is not a subject there, so it is opened the way
        any [data-go] reference in the shell opens an article. */
-    w.document.querySelector('.tab[data-t="party"]').click();
-    const row = w.document.querySelector('#party-table tr[data-party="' + pid + '"]');
+    w.document.querySelector('.tab[data-t="rel"]').click();
+    const row = w.document.querySelector('#rel-table tr[data-party="' + pid + '"]');
     if (row) row.click();
-    let link = row && w.document.querySelector('#party-detail a[data-go="' + pid + '"]');
-    if (row && !link) { ok("the Party tab links " + pid + " to its article", false); continue; }
+    let link = row && w.document.querySelector('#rel-detail a[data-go="' + pid + '"]');
+    if (row && !link) { ok("Relations links " + pid + " to its article", false); continue; }
     if (!link) {
       link = w.document.createElement("a");
       link.setAttribute("data-go", pid);

@@ -177,18 +177,18 @@ try {
    asserted: what is on the page, and what the source is allowed to emit. */
 try {
   const rows = [...w.document.querySelectorAll("tr.sel")];
-  const stray = rows.filter(tr => !tr.matches("[data-bill],[data-station],[data-doc],[data-cons],[data-func],[data-party]"));
+  const stray = rows.filter(tr => !tr.matches("[data-bill],[data-station],[data-doc],[data-cons],[data-func],[data-party],[data-current]"));
   ok(".sel is only on a row a click selects", rows.length >= 2 && stray.length === 0,
      rows.length + " selected, " + stray.length + " on rows that do nothing");
 
-  /* six quoted literals, in the six tables that select a row: #cham-bills,
-     #orbit-table, #pp-list, #cons-table, #func-table and #party-table.
-     A seventh is a regression. */
+  /* seven quoted literals, in the seven tables that select a row:
+     #cham-bills, #orbit-table, #pp-list, #cons-table, #func-table,
+     #rel-table and #party-currents. An eighth is a regression. */
   const jssrc = ["js/ui.js", "js/papers.js", "js/editor.js", "js/shell.js",
                  "js/encyclopedia.js", "js/orbitchart.js"]
     .map(f => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
   const lits = jssrc.match(/["']sel["']/g) || [];
-  ok("nothing else emits a sel class", lits.length === 6, lits.length + " literals");
+  ok("nothing else emits a sel class", lits.length === 7, lits.length + " literals");
 
   /* the three other states differ in texture and hue - a gutter, a hatch,
      a ghost - so they cannot be read as paler selections */

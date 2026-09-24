@@ -36,6 +36,7 @@
     <button class="tab" role="tab" aria-selected="false" data-t="cham">Chamber</button>
     <button class="tab" role="tab" aria-selected="false" data-t="econ">Economy</button>
     <button class="tab" role="tab" aria-selected="false" data-t="party">Party</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="rel">Relations</button>
     <button class="tab" role="tab" aria-selected="false" data-t="orb">Orbit</button>
     <button class="tab" role="tab" aria-selected="false" data-t="world">World</button>
     <button class="tab" role="tab" aria-selected="false" data-t="cx">Concordance</button>
@@ -340,27 +341,54 @@
          tiers, a set of internal currents that may or may not follow the
          leader, and a list of members who each sit for somewhere. -->
     <section class="screen" id="s-party">
-      <!-- INTERPARTY AFFAIRS, and nothing else (the author, 23 Sep). The
-           arrangement, one relationship at a time, and who each party would
-           rather be with. Who a party IS (its leader, members, currents and
-           organisation) is reference, and it is in the Concordance. -->
+      <!-- YOUR OWN PARTY (the author, 24 Sep). Its benches, one current at a
+           time, and whether you keep the leadership. The other parties are
+           on Relations; who the party is (officers, bodies, branches) is its
+           Concordance article. -->
       <div class="grid g-party">
         <div class="stack scrolls">
           <div class="panel">
-            <h2>The arrangement <em id="party-count"></em></h2>
-            <div class="pbody flush scrolls"><table id="party-table"></table></div>
+            <h2>The benches <em id="party-count"></em></h2>
+            <div class="pbody flush scrolls"><table id="party-currents"></table></div>
           </div>
         </div>
         <div class="stack scrolls">
           <div class="panel">
-            <h2><span id="party-hdr">With a party</span> <em id="party-sub"></em></h2>
-            <div class="pbody scrolls" id="party-detail"></div>
+            <h2><span id="party-cur-hdr">A current</span> <em id="party-cur-sub"></em></h2>
+            <div class="pbody scrolls" id="party-current"></div>
           </div>
         </div>
         <div class="stack scrolls">
           <div class="panel">
-            <h2>Who they vote with <em id="party-with-hdr"></em></h2>
-            <div class="pbody flush scrolls"><table id="party-with"></table></div>
+            <h2>The leadership <em id="party-lead-sub"></em></h2>
+            <div class="pbody scrolls" id="party-lead"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="s-rel">
+      <!-- RELATIONS: the government's dealings with the other parties, and
+           nothing else (the author, 23 Sep; its own tab since 24 Sep). The
+           arrangement, one relationship at a time, and who each party would
+           rather be with. -->
+      <div class="grid g-rel">
+        <div class="stack scrolls">
+          <div class="panel">
+            <h2>The arrangement <em id="rel-count"></em></h2>
+            <div class="pbody flush scrolls"><table id="rel-table"></table></div>
+          </div>
+        </div>
+        <div class="stack scrolls">
+          <div class="panel">
+            <h2><span id="rel-hdr">With a party</span> <em id="rel-sub"></em></h2>
+            <div class="pbody scrolls" id="rel-detail"></div>
+          </div>
+        </div>
+        <div class="stack scrolls">
+          <div class="panel">
+            <h2>Who they vote with <em id="rel-with-hdr"></em></h2>
+            <div class="pbody flush scrolls"><table id="rel-with"></table></div>
           </div>
         </div>
       </div>

@@ -257,12 +257,20 @@ const UI = (function () {
     /* The party list is a region like the order paper: its rows are
        controls, it carries .sel, and the selection has to survive a
        re-render by KEY rather than by index. */
-    Focus.region("party-table", {
+    Focus.region("rel-table", {
       rows: "tr[data-party]",
       key: tr => tr.dataset.party,
       /* the first partner, never your own party, which the tab does not open */
       fallback: () => (defaultParty() || {}).id,
-      activate: () => drawParties()
+      activate: () => drawRelations()
+    });
+    /* Your own party's currents, on the Party tab: the same pattern, one row
+       selected and its current read in the panel beside it. */
+    Focus.region("party-currents", {
+      rows: "tr[data-current]",
+      key: tr => tr.dataset.current,
+      fallback: () => (ownCurrents()[0] || {}).id,
+      activate: () => drawParty()
     });
     Focus.region("orbit-table", {
       rows: "tr[data-station]",
@@ -417,7 +425,7 @@ const UI = (function () {
       /* A tip is positioned in viewport coordinates against a node that is
          about to be replaced. Take it down first. */
       if (typeof Tips !== "undefined") Tips.hide();
-      drawTitle(); drawEconomy(); drawEconomyReal(); drawParties(); drawExport(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
+      drawTitle(); drawEconomy(); drawEconomyReal(); drawParty(); drawRelations(); drawExport(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
       if (typeof Concordance !== "undefined") Concordance.render(st, C, cxCurrent, false);
       if (typeof Papers !== "undefined") Papers.render(st, C);
       /* The globe only redraws when it is the screen the player is on: it is
@@ -491,7 +499,7 @@ const UI = (function () {
     $("#sb-slots").classList.toggle("none", sUsed >= sTot && !sRes);
     /* THE THRESHOLD IS CONTENT'S, and this readout had it wrong. It printed
        "/9" and reddened at 7 as literals, while `setup.thresholds.ballot` is
-       12 and `signaturePanel` fifty lines down reads it properly -- so the
+       12 and the paper on the Party tab (`drawLeadership`) reads it properly -- so the
        status bar told the player a ballot needed nine names when it needs
        twelve, and went red five short of the number that actually matters.
        Two places holding one number, which is the apportionment_ratio
@@ -588,6 +596,8 @@ const UI = (function () {
   const SCREEN_NOTE = {
     sit:  "One decision, then the House rises",
     gov:  "Coalition, order paper and the whip",
+    party: "Your own benches, current by current, and the leadership",
+    rel:  "The other parties: the arrangement and its terms",
     cham: "280 seats \u00b7 a bill needs 141, and a dual bill needs 21 of the functional 40",
     orb:  "Thirty-four habitats by altitude band and closure",
     pap:  "Instruments in force, and the register of what has been done",
@@ -1317,7 +1327,300 @@ const UI = (function () {
       }));
   }
 
-  /* ---------- the Party tab: interparty affairs ----------
+  /* ---------- the Party tab: your own party ----------
+     THE PRIME MINISTER'S OWN PARTY (the author, 24 Sep: the tab "focuses on
+     other parties instead of your party"). The other parties are on
+     Relations. This is the bench the government stands on, read the way a
+     Chief Whip reads it: the currents it is made of, how each will vote on
+     what is before the House, who in each holds office and who has signed
+     against you, and whether the leadership survives.
+
+     Every figure is the engine's own: `currentSeats` for the sizes,
+     `loyaltyOf` for the loyalties, a `division` for how a current votes on a
+     measure, `ballot` for the caucus, `signableMembers` for the paper.
+     Nothing here is a second way to count. Who the party IS (its officers,
+     affiliated bodies and branches) is reference, in its Concordance
+     article. */
+  function ownCurrents() {
+    return (C.currents || []).filter(c => c.party === st.playerParty && st.currents[c.id]);
+  }
+  function currentSel() {
+    const cs = ownCurrents(), want = Focus.selected("party-currents");
+    return cs.find(c => c.id === want) || cs[0] || null;
+  }
+  /* The office a member holds NOW: the live cabinet, which a reshuffle
+     moves, and never the typed `role`, which it does not. */
+  function liveOffice(id) {
+    if (id === st.pm) return "Prime Minister";
+    const post = (C.cabinet || []).find(p => (st.cabinet[p.id] || {}).holder === id);
+    if (post) return post.title || post.name;
+    const ch = (C.characterById || {})[id] || {};
+    return ch.office === "whip" ? (ch.role || "Whip") : "";
+  }
+  /* The named members of a current, from the cast, living. */
+  function namedIn(curId) {
+    return (C.characters || []).filter(ch => ch.party === st.playerParty &&
+      ch.current === curId && (st.characters[ch.id] || {}).alive !== false);
+  }
+  const signedIds = () => st.signedBy || [];
+  /* WHICH WAY A CURRENT LEANS FROM ITS PARTY, in plain words (the register's
+     table, PROSE_REGISTER.md): the axis names and their poles are the
+     engine's shorthand and not prose. [below the party, above it]. */
+  const AXIS_DRIFT = {
+    economic:    ["wants more public ownership", "wants more private ownership"],
+    authority:   ["wants firmer limits on state power", "wants a stronger state"],
+    personhood:  ["is more opposed to extending legal personhood",
+                  "is more open to extending legal personhood"],
+    sovereignty: ["wants more self-government for the stations",
+                  "wants a stronger federal government"],
+    trade:       ["wants tighter limits on trade with Earth", "wants more open trade with Earth"]
+  };
+
+  /* HOW A CURRENT VOTES ON EACH LIVE MEASURE, read off the division the
+     House would hold now, before any whip: `benches` is the per-current
+     working the engine records wherever a count came from the currents.
+     A measure your party opposes, or one whose count content states
+     outright, has no per-current working, and says so. */
+  function currentOnMeasures(curId) {
+    const out = [];
+    (C.bills || []).forEach(b => {
+      const bs = st.bills[b.id];
+      if (!bs || billState(bs) !== "live") return;
+      let d;
+      try { d = Engine.division(st, C, b.id); } catch (e) { return; }
+      const row = (d.rows || []).find(r => r.party === st.playerParty);
+      if (!row) return;
+      const bench = (row.benches || []).find(x => x.id === curId);
+      if (!bench) {
+        out.push({ b: b, line: row.popularKind });
+        return;
+      }
+      const seats = (bench.popularSeats || 0) + (bench.functionalSeats || 0);
+      const aye = (bench.popularAye || 0) + (bench.functionalAye || 0);
+      if (seats) out.push({ b: b, seats: seats, aye: aye });
+    });
+    /* the ones that cost you first */
+    return out.sort((x, y) => (x.seats ? x.aye / x.seats : 2) - (y.seats ? y.aye / y.seats : 2));
+  }
+
+  function drawParty() {
+    const tbl = $("#party-currents"); if (!tbl) return;
+    const own = C.partyById[st.playerParty] || {};
+    const total = Engine.partyTotal(st, st.playerParty);
+    const count = $("#party-count");
+    if (count) count.textContent = (own.short || own.name || "") + " · " + total + " seats";
+
+    const cs = ownCurrents();
+    const sel = currentSel();
+    const seatsOf = {};
+    (Engine.currentSeats(st, C, st.playerParty) || []).forEach(r => { seatsOf[r.id] = r.seats; });
+    const posts = id => namedIn(id).filter(ch => ch.id !== st.pm && liveOffice(ch.id)).length;
+    const signed = id => namedIn(id).filter(ch => signedIds().indexOf(ch.id) >= 0).length;
+    const loyOf = id => Engine.loyaltyOf(st, id);
+    const partyLoy = st.scalars.party_loyalty;
+
+    /* THE BENCHES. One row per current, selectable, and the party's own
+       figures under them: its loyalty IS their weighted mean (syncLoyalty),
+       so the footing is the sum and not a separate reading. */
+    tbl.innerHTML = `<thead><tr><th>Current</th>` +
+      `<th class="n" data-tip="mps">Seats</th>` +
+      `<th class="n" data-tip="loyalty">Loy</th>` +
+      `<th class="n"${tipAttr("Posts", "Members of this current who hold a " +
+        "ministry or the whip. Office makes a member less inclined to sign the paper.")}>Posts</th>` +
+      `<th class="n"${tipAttr("Signed", "Members of this current whose names " +
+        "are on the paper for a leadership ballot.")}>Sig</th></tr></thead><tbody>` +
+      (cs.length ? cs.map(c => {
+        const l = loyOf(c.id);
+        const sg = signed(c.id);
+        return `<tr data-current="${esc(c.id)}"${sel && sel.id === c.id ? ' class="sel"' : ""}>` +
+          `<td><b>${esc(c.name)}</b></td>` +
+          `<td class="n">${seatsOf[c.id] == null ? "&mdash;" : seatsOf[c.id]}</td>` +
+          `<td class="n${l != null && l < 35 ? " warn" : ""}">${l == null ? "&mdash;" : l}</td>` +
+          `<td class="n">${posts(c.id) || "&mdash;"}</td>` +
+          `<td class="n${sg ? " warn" : ""}">${sg || "&mdash;"}</td></tr>`;
+      }).join("")
+      : `<tr><td colspan="5" class="note">${esc(own.name || "The party")} has no ` +
+        `organised currents. It is one bench, and votes on the party's own loyalty.</td></tr>`) +
+      `</tbody><tfoot><tr><td>${esc(own.short || own.name || "The party")}</td>` +
+      `<td class="n">${total}</td>` +
+      `<td class="n${partyLoy <= ((C.setup.thresholds || {}).leadershipChallenge || 15) + 10 ? " warn" : ""}"` +
+      ` data-tip="party_loyalty">${partyLoy}</td>` +
+      `<td class="n">${cs.reduce((n, c) => n + posts(c.id), 0) || "&mdash;"}</td>` +
+      `<td class="n">${signedIds().length || "&mdash;"}</td></tr></tfoot>`;
+    tbl.querySelectorAll("tr[data-current]").forEach(tr =>
+      tr.addEventListener("click", () => {
+        Focus.seed("party-currents", tr.dataset.current); cue("click"); drawParty();
+      }));
+
+    drawPartyCurrent(sel, seatsOf);
+    drawLeadership();
+  }
+
+  function drawPartyCurrent(sel, seatsOf) {
+    const hdr = $("#party-cur-hdr"), sub = $("#party-cur-sub"), det = $("#party-current");
+    if (!det) return;
+    const own = C.partyById[st.playerParty] || {};
+    const prow = (lab, sub0, val, cls) =>
+      `<div class="prow"><div class="plab">${lab}${sub0 ? `<em>${sub0}</em>` : ""}</div>` +
+      `<div class="pval${cls ? " " + cls : ""}">${val}</div></div>`;
+    if (!sel) {
+      if (hdr) hdr.textContent = "One bench";
+      if (sub) sub.textContent = "";
+      det.innerHTML = `<div class="note">${esc(own.name || "The party")} has no currents ` +
+        `to read one at a time. Its members vote on the party's own loyalty.</div>`;
+      return;
+    }
+    if (hdr) hdr.textContent = sel.name;
+    const seats = seatsOf[sel.id];
+    if (sub) sub.textContent = seats == null ? "" : seats + " seat" + (seats === 1 ? "" : "s");
+
+    /* 1. WHAT IT IS: content's own description, which is Reference prose. */
+    const lead = sel.description ? `<p class="plead">${esc(sel.description)}</p>` : "";
+
+    /* 2. WHERE IT STANDS: its loyalty, and how far it sits from the party
+       line, by the engine's cosine, so the words cannot disagree with how
+       it votes. */
+    const l = Engine.loyaltyOf(st, sel.id);
+    let stands = `<div class="rulehead">Where it stands</div>` +
+      prow("Loyalty to the leadership", "", l == null ? "—" : l + (l < 35 ? " · thin" : ""),
+           l != null && l < 35 ? "warn" : "");
+    if (Object.keys(sel.axes || {}).length && Object.keys(own.axes || {}).length) {
+      /* A current is a variant of its party, so the cosine runs high for
+         every one of them (0.65 to 0.99 in content): the bands are cut for
+         that range, and the widest single gap is said in words. */
+      const a = Engine.axisAgreement(sel.axes, own.axes);
+      const say = a >= 0.97 ? "with it" : a >= 0.9 ? "close to it" : "apart from it";
+      const gap = axisPairs(sel.axes, own.axes)
+        .map(x => ({ axis: x.axis, d: (sel.axes[x.axis] || 0) - (own.axes[x.axis] || 0) }))
+        .sort((x, y) => Math.abs(y.d) - Math.abs(x.d))[0];
+      const words = gap && AXIS_DRIFT[gap.axis];
+      stands += prow("The party line", gap && words && Math.abs(gap.d) >= 0.25
+        ? "It " + words[gap.d < 0 ? 0 : 1] + " than the party." : "", say, a < 0.9 ? "warn" : "");
+    }
+
+    /* 3. ITS MEMBERS: the named ones, what each holds now, where each
+       stands with you, and whether they have signed. The rest of its
+       seats are members the cast does not name. */
+    const named = namedIn(sel.id);
+    const rest = Math.max(0, (seats || 0) - named.length);
+    const members = `<div class="rulehead">Its members <em>${named.length} named` +
+      (rest ? " · " + rest + " more" : "") + `</em></div>` +
+      (named.length ? named.map(ch => {
+        const rel = (st.characters[ch.id] || {}).relationship;
+        const off = liveOffice(ch.id);
+        const sg = signedIds().indexOf(ch.id) >= 0;
+        return `<div class="prow"><div class="plab"><a class="cx-link" tabindex="0" ` +
+          `data-go="person_${esc(ch.id)}">${esc(bare(ch.name))}</a>` +
+          `<em>${esc(off || "backbench")}${sg ? " · signed the paper" : ""}</em></div>` +
+          `<div class="pval${ch.id !== st.pm && rel != null && rel < 30 ? " warn" : ""}"` +
+          tipAttr("Relationship", "Where " + bare(ch.name) + " stands with you, from 0 to 100.") +
+          `>${ch.id === st.pm ? "you" : rel == null ? "—" : rel}</div></div>`;
+      }).join("")
+      : `<div class="note">The cast names no member of the ${esc(sel.name)}.</div>`);
+
+    /* 4. ON THE ORDER PAPER: how many of its members the House would count
+       with the party on each live measure, before the whip. */
+    const votes = currentOnMeasures(sel.id);
+    const onPaper = `<div class="rulehead">On the order paper <em>before the whip</em></div>` +
+      (votes.length ? votes.map(v => {
+        const val = v.seats == null
+          ? (v.line === "against" ? "the party votes against it" : v.line === "abstain"
+             ? "the party abstains" : "counted as a party, not by current")
+          : v.aye >= v.seats ? "all " + v.seats : v.aye + " of " + v.seats;
+        return `<button class="dk goto" data-goto="cham" data-open="bill:${esc(v.b.id)}">` +
+          `<b>${esc(v.b.title)}</b><i>${esc(val)}` +
+          (v.seats != null && v.aye < v.seats ? " · " + (v.seats - v.aye) + " will not vote with the party" : "") +
+          `</i></button>`;
+      }).join("")
+      : `<div class="note">Nothing is before the House.</div>`);
+
+    det.innerHTML = lead + stands + members + onPaper;
+    det.querySelectorAll("[data-goto]").forEach(b0 =>
+      b0.addEventListener("click", () => openTarget(b0)));
+  }
+
+  /* THE LEADERSHIP. The two ways the party removes its leader (§3.5): its
+     loyalty falling to the challenge line, and a ballot forced by names on
+     the paper. The paper was a fold under the whip on the Chamber tab until
+     24 Sep; it is the party's business and lives with the party. */
+  function drawLeadership() {
+    const det = $("#party-lead"), sub = $("#party-lead-sub");
+    if (!det) return;
+    const T = C.setup.thresholds || {};
+    const line = T.leadershipChallenge == null ? 15 : T.leadershipChallenge;
+    const need = T.ballot || 12;
+    const loy = st.scalars.party_loyalty;
+    const have = st.signatures || 0;
+    const prow = (lab, sub0, val, cls, id) =>
+      `<div class="prow"${id ? ` id="${id}"` : ""}><div class="plab">${lab}${sub0 ? `<em>${sub0}</em>` : ""}</div>` +
+      `<div class="pval${cls ? " " + cls : ""}">${val}</div></div>`;
+    if (sub) sub.textContent = st.ballot && !st.ballot.carries ? "lost"
+      : loy <= line + 10 || have >= need - 3 ? "at risk" : "secure";
+
+    const meter = `<div class="rulehead">Party loyalty</div>` +
+      prow("Loyalty", "the currents' average, weighted by size", String(loy),
+           loy <= line + 10 ? "warn" : "") +
+      prow("Challenge", "at " + line + " or below, the party replaces its leader",
+           loy > line ? (loy - line) + " above it" : "reached", loy <= line + 10 ? "warn" : "");
+
+    /* THE PAPER, and what the caucus would do if it divided now. The
+       ballot's forecast is `Engine.ballot`, the sum the engine holds when
+       the names reach the threshold, so the forecast is the result. */
+    const b = Engine.ballot(st, C);
+    const names = signedIds().map(id => (C.characterById || {})[id]).filter(Boolean);
+    let paper = `<div class="rulehead">The paper</div>`;
+    if (st.ballot) {
+      paper += prow("The ballot was held", st.ballot.for + " for, " + st.ballot.against +
+        " against, " + st.ballot.need + " needed",
+        st.ballot.carries ? "you held" : "you lost", st.ballot.carries ? "" : "warn");
+    }
+    paper += prow("Names", have >= need ? "the caucus divides"
+        : (need - have) + " more force a ballot", have + " of " + need,
+        have >= need - 3 ? "warn" : "", "party-paper") +
+      prow("If the caucus divided now", b.for + " for you, " + b.against + " against, of " +
+        b.seats + " members; " + b.need + " needed", b.carries ? "you hold" : "you lose",
+        b.carries ? "" : "warn");
+    if (names.length)
+      paper += `<div class="note">Signed: ` + names.map(ch => esc(bare(ch.name)) +
+        (ch.current ? " (" + esc(currentName(ch.current)) + ")" : "")).join(", ") + `.</div>`;
+
+    /* THE MEMBERS CLOSEST TO SIGNING, once content has opened the paper,
+       so a government whose benches are content is never shown a trap. */
+    if (st.flags.paper_opened && have < need) {
+      const list = Engine.signableMembers(st, C).slice(0, 8);
+      if (list.length)
+        paper += `<div class="note">The members closest to signing, the most ` +
+          `inclined first. Asking one adds their name to the paper.</div>` +
+          list.map(m => `<div class="sigrow"><span class="sig-n">${esc(bare(m.name))}` +
+            `<i>${esc(m.current ? currentName(m.current) : "no current")}</i></span>` +
+            `<span class="sig-w">${m.will >= 55 ? "inclined" : m.will >= 35 ? "may" : "will not"}</span>` +
+            `<button class="btn sigbtn" data-sign="${esc(m.id)}"` +
+            tipAttr("Ask " + bare(m.name),
+              "Asks this member to sign the paper. A name added is a member " +
+              "lost, and a step toward the ballot that removes you.") +
+            `>Ask</button></div>`).join("");
+    } else if (!have && !st.flags.paper_opened) {
+      paper += `<div class="note">No paper is circulating against the leadership.</div>`;
+    }
+
+    const own = C.partyById[st.playerParty] || {};
+    det.innerHTML = meter + paper +
+      `<div class="note pcx">The party's officers, affiliated bodies and branches ` +
+      `are in its <a class="cx-link" tabindex="0" data-go="${esc(own.id || "")}">` +
+      `Concordance article</a>.</div>`;
+
+    /* Asking a member to sign the paper. An action, and a member lost. */
+    det.querySelectorAll("[data-sign]").forEach(btn => btn.addEventListener("click", () => {
+      const r = acted(() => Engine.collectSignature(st, C, btn.dataset.sign));
+      if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
+      cue("stamp");
+      setStatus(bare(r.member.name) + " has signed the paper · " +
+                r.signatures + " names", "transient");
+      drawAll(); afterAction();
+    }));
+  }
+
+  /* ---------- the Relations tab: interparty affairs ----------
      THE GOVERNMENT'S DEALINGS WITH THE OTHER PARTIES, AND NOTHING ELSE.
      The author, 23 Sep: the tab "was built on false assumptions that it was
      supposed to be for all parties. It should be entirely focused on
@@ -1333,8 +1636,9 @@ const UI = (function () {
      wants from you, what you have promised it, where it will not follow
      you, and whom it would rather be with. Your own party is on the roster
      because its seats are the government's, and is not a subject here:
-     your own bench is managed with loyalty, on the Chamber tab, and not by
-     dealing. Everything is derived; nothing is stored. */
+     your own bench is managed with loyalty, on the Party tab, and not by
+     dealing, and its row says so with a link there. Everything is derived;
+     nothing is stored. */
   const REL = {
     gov: { head: "In government",
            note: "movable on ordinary business, at the ledger's price",
@@ -1363,8 +1667,8 @@ const UI = (function () {
     return others.find(p => relOf(p.id) === "gov") ||
            others.find(p => relOf(p.id) === "cs") || others[0] || null;
   }
-  function partySel() {
-    const want = Focus.selected("party-table");
+  function relSel() {
+    const want = Focus.selected("rel-table");
     return (C.parties || []).find(p => p.id === want && p.id !== st.playerParty) ||
            defaultParty();
   }
@@ -1382,11 +1686,11 @@ const UI = (function () {
 
   const bareName = n => String(n || "").replace(/^(Rt\. Hon\.|Hon\.)\s*/, "").replace(/\s+MP$/, "");
 
-  function drawParties() {
-    const tbl = $("#party-table"); if (!tbl) return;
+  function drawRelations() {
+    const tbl = $("#rel-table"); if (!tbl) return;
     const list = C.parties || [];
-    const sel = partySel();
-    const count = $("#party-count");
+    const sel = relSel();
+    const count = $("#rel-count");
     if (count) count.textContent = (list.length - 1) + " others in the House";
 
     /* THE ARRANGEMENT, grouped by relation. The engine has always priced the
@@ -1436,7 +1740,9 @@ const UI = (function () {
                 (sel && sel.id === p.id ? ' class="sel"' : "")}>` +
               `<td><i class="pdot" style="background:${p.colour}"></i></td>` +
               `<td><b>${esc(p.short || p.id)}</b> ${esc(p.name)}` +
-              (own ? ` <span class="pown">yours</span>` : "") + `</td>` +
+              (own ? ` <button class="pown" data-goto="party"` +
+                tipAttr("Your party", "Its currents, its members and the " +
+                  "leadership are on the Party tab.") + `>yours</button>` : "") + `</td>` +
               `<td class="n">${seats}</td>` +
               `<td class="n">${loy == null ? "&mdash;" : loy}</td>` +
               `<td class="n">${crCell}</td>` +
@@ -1446,12 +1752,14 @@ const UI = (function () {
 
     tbl.querySelectorAll("[data-party]").forEach(tr =>
       tr.addEventListener("click", () => {
-        Focus.seed("party-table", tr.dataset.party); cue("click"); drawParties();
+        Focus.seed("rel-table", tr.dataset.party); cue("click"); drawRelations();
       }));
+    tbl.querySelectorAll("[data-goto]").forEach(b0 =>
+      b0.addEventListener("click", () => { cue("click"); openTarget(b0); }));
 
     if (!sel) return;
     const rel = relOf(sel.id);
-    const hdr = $("#party-hdr"), sub = $("#party-sub");
+    const hdr = $("#rel-hdr"), sub = $("#rel-sub");
     if (hdr) hdr.textContent = "With " + (sel.short || sel.name);
     if (sub) sub.textContent = REL[rel].head.toLowerCase();
 
@@ -1574,7 +1882,7 @@ const UI = (function () {
         `Chamber's composition table counts them one by one.</div>`;
     }
 
-    const det = $("#party-detail");
+    const det = $("#rel-detail");
     if (det) {
       det.innerHTML = terms + wants + promises + parts +
         `<div class="note pcx">Who they are \u2014 their leader, members and ` +
@@ -1590,14 +1898,14 @@ const UI = (function () {
        is surprising in a way a seat count never shows. Engine.axisAgreement,
        not a second scoring, so a number here cannot disagree with a
        division. */
-    const withTbl = $("#party-with");
+    const withTbl = $("#rel-with");
     if (withTbl) {
       const mine = sel.axes || {};
       const rows = list
         .filter(p => p.id !== sel.id && Object.keys(p.axes || {}).length)
         .map(p => ({ p: p, a: Engine.axisAgreement(mine, p.axes) }))
         .sort((x, y) => y.a - x.a);
-      const whdr = $("#party-with-hdr");
+      const whdr = $("#rel-with-hdr");
       if (whdr) whdr.textContent = Object.keys(mine).length
         ? "by agreement with " + (sel.short || sel.id)
         : (sel.short || sel.id) + " declares no position";
@@ -1628,7 +1936,7 @@ const UI = (function () {
       }
       withTbl.querySelectorAll("[data-party]").forEach(tr =>
         tr.addEventListener("click", () => {
-          Focus.seed("party-table", tr.dataset.party); cue("click"); drawParties();
+          Focus.seed("rel-table", tr.dataset.party); cue("click"); drawRelations();
         }));
     }
   }
@@ -3256,37 +3564,9 @@ const UI = (function () {
           `Charged when the division is called.` +
           `<button class="btn ed-x" id="btn-clearwhip">clear</button></div>`
         : `<div class="note">Drag to commit members. Nothing is charged until you divide.</div>`) +
-      pairPanel(billId, b, d) +
-      signaturePanel(billId);
+      pairPanel(billId, b, d);
   }
 
-  /* THE NAMES ON THE PAPER (design/26 #11). A ballot needs twelve signatures
-     and content could supply five; the paper is a member-level thing now. The
-     panel offers the members closest to signing, one at a time, and says what
-     each of them costs. It appears only once content has opened the paper, so
-     a government whose benches are content is never shown a trap. */
-  function signaturePanel(billId) {
-    if (!st.flags.paper_opened) return "";
-    const list = Engine.signableMembers(st, C).slice(0, 8);
-    if (!list.length) return "";
-    const have = st.signatures || 0;
-    const need = (C.setup.thresholds && C.setup.thresholds.ballot) || 12;
-    return `<details class="foldsec sigfold"${have >= need - 2 ? " open" : ""}>` +
-      `<summary><b>The paper</b><span>${have} of ${need} names</span></summary>` +
-      `<div class="note">A signature is a member who has decided the party would ` +
-      `be better run by somebody else. At ${need} the caucus divides, and the ` +
-      `division is the party's own arithmetic, not the House's. A minister will ` +
-      `not sign to your face; the members below will.</div>` +
-      list.map(m => `<div class="sigrow"><span class="sig-n">${esc(bare(m.name))}` +
-        `<i>${esc(m.current ? currentName(m.current) : "no current")}</i></span>` +
-        `<span class="sig-w">${m.will >= 55 ? "inclined" : m.will >= 35 ? "may" : "will not"}</span>` +
-        `<button class="btn sigbtn" data-sign="${esc(m.id)}"` +
-        tipAttr("Ask " + bare(m.name),
-          "Adding a name to the paper. It is a member lost and a step toward " +
-          "the ballot that removes you; ask too many and the paper is the story.") +
-        `>Ask</button></div>`).join("") +
-      `</details>`;
-  }
   function currentName(id) {
     const c = (C.currents || []).find(x => x.id === id);
     return c ? c.name : String(id).replace(/_/g, " ");
@@ -4069,25 +4349,27 @@ const UI = (function () {
 
   function flashChanged(before, after) {
     const gov = screen === "gov", sit = screen === "sit",
-          party = screen === "party";
+          party = screen === "party", rel = screen === "rel";
     if (before.slots !== after.slots) {
       flash($("#sb-slots"));
       if (gov) { flash($("#gov-slots .slotbar")); flash($("#gov-slots-hdr")); }
     }
-    /* THE LEDGER AND THE LOYALTIES ARE ON THE PARTY TAB NOW, so the pulse
-       follows them. And the loyalty one had been dead for some time before
-       that: `#gov-coalition` moved to the CHAMBER when the coalition
-       arithmetic did, keeping its `gov-` prefix, and this gate still read
-       `screen === "gov"` — so a loyalty change pulsed a row on a screen the
-       player was never on when the gate allowed it. An id that outlives the
-       tab it was named for is how that hides. */
+    /* THE LEDGER AND THE OTHER PARTIES' LOYALTIES ARE ON RELATIONS, and
+       your own currents' on the Party tab, so each pulse follows its row.
+       The loyalty one had been dead for some time once: `#gov-coalition`
+       moved to the CHAMBER when the coalition arithmetic did, keeping its
+       `gov-` prefix, and this gate still read `screen === "gov"` — so a
+       loyalty change pulsed a row on a screen the player was never on when
+       the gate allowed it. An id that outlives the tab it was named for is
+       how that hides, which is why the interparty ids are `rel-` now. */
     Object.keys(after.capital || {}).forEach(pid => {
       if ((before.capital || {})[pid] === after.capital[pid]) return;
-      if (party) flash($('#party-table tr[data-party="' + pid + '"]'));
+      if (rel) flash($('#rel-table tr[data-party="' + pid + '"]'));
     });
     Object.keys(after.loyalty || {}).forEach(pid => {
       if ((before.loyalty || {})[pid] === after.loyalty[pid]) return;
-      if (party) flash($('#party-table tr[data-party="' + pid + '"]'));
+      if (rel) flash($('#rel-table tr[data-party="' + pid + '"]'));
+      if (party) flash($('#party-currents tr[data-current="' + pid + '"]'));
     });
     Object.keys(after.scalars || {}).forEach(k => {
       if ((before.scalars || {})[k] === after.scalars[k]) return;
@@ -4097,7 +4379,10 @@ const UI = (function () {
          MutationObserver filled it after the redraw. Neither is true now. */
       if (sit) flash($('#gov-meters .meterrow[data-key="' + k + '"]'));
     });
-    if ((before.sig || 0) !== (after.sig || 0)) flash($("#sb-sig"));
+    if ((before.sig || 0) !== (after.sig || 0)) {
+      flash($("#sb-sig"));
+      if (party) flash($("#party-paper"));
+    }
   }
 
   function reportMoves(before, after) {
@@ -5746,15 +6031,6 @@ const UI = (function () {
       drawChamber(); drawBill(id); drawStatus();
     }));
 
-    /* Asking a member to sign the paper. An action, and a member lost. */
-    el.querySelectorAll("[data-sign]").forEach(btn => btn.addEventListener("click", () => {
-      const r = acted(() => Engine.collectSignature(st, C, btn.dataset.sign));
-      if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
-      cue("stamp");
-      setStatus(bare(r.member.name) + " has signed the paper \u00b7 " +
-                r.signatures + " names", "transient");
-      drawAll(); afterAction();
-    }));
     /* The record's own order control, redrawing the chamber it sits in. */
     wireDvl(el, () => { drawChamber(); drawBill(id); });
   }
