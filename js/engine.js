@@ -2678,17 +2678,26 @@ const Engine = (function () {
       if (ch.party !== party) return;
       if (ch.office === "leader" || ch.id === st.pm) return;   /* not the leader */
       if (signed.indexOf(ch.id) >= 0 || refused.indexOf(ch.id) >= 0) return;
-      const cur = ch.current ? (st.currents[ch.current] || {}) : null;
-      const loy = cur && cur.loyalty != null ? cur.loyalty
-                : ((st.parties[party] || {}).loyalty || 60);
-      /* WILLINGNESS is low loyalty and a grievance with the leadership, minus
-         whatever the government holds over them. A minister does not sign. */
-      const payroll = ch.office ? 12 : 0;
-      const will = 100 - loy - payroll + (ch.grievance ? 10 : 0);
-      out.push({ id: ch.id, name: ch.name, will: will, loyalty: loy,
-                 office: ch.office || null, current: ch.current || null });
+      /* a member won back is off the paper while the promise stands */
+      if (wonBackBy(st, ch.id)) return;
+      out.push(willOf(st, ch));
     });
     return out.sort((a, b) => b.will - a.will);
+  }
+  /* WILLINGNESS is low loyalty and a grievance with the leadership, minus
+     whatever the government holds over them. One reading, for asking a
+     member to sign and for winning one back. */
+  function willOf(st, ch) {
+    const cur = ch.current ? (st.currents[ch.current] || {}) : null;
+    const loy = cur && cur.loyalty != null ? cur.loyalty
+              : ((st.parties[st.playerParty] || {}).loyalty || 60);
+    const payroll = ch.office ? 12 : 0;
+    return { id: ch.id, name: ch.name, will: 100 - loy - payroll + (ch.grievance ? 10 : 0),
+             loyalty: loy, office: ch.office || null, current: ch.current || null };
+  }
+  /* The promise that took a member's name off the paper, while it stands. */
+  function wonBackBy(st, id) {
+    return (st.undertakings || []).find(u => u.signs === id && u.state !== "broken") || null;
   }
 
   /* Ask one member, to their face. Returns what they said and what it did.
@@ -2724,6 +2733,60 @@ const Engine = (function () {
     billLogSafe(st, "Signature: " + m.name + " added to the paper");
     return { ok: true, signed: true, member: m, signatures: st.signatures || 0 };
   }
+
+  /* WINNING A NAME BACK (design/26 #14, the author, 24 Sep: "a signature
+     withdrawn at a price"). A member who has signed can be talked round,
+     unless they are too far gone (willingness at or above
+     `thresholds.winBackBelow`). The price is the afternoon it takes, one
+     slot of order-paper time, and a PROMISE: time on the order paper,
+     before the House rises, for the live measure their current agrees
+     with most. It is an undertaking like any other, kept the moment the
+     measure is given time. Broken, the member's name goes back on the
+     paper, which is the one thing the engine does on a breach besides
+     queueing the event, because the paper is the engine's own. */
+  function winBackTerms(st, C, id) {
+    const T = (C.setup && C.setup.thresholds) || {};
+    const ch = (C.characters || []).find(c => c.id === id);
+    if (!ch || (st.signedBy || []).indexOf(id) < 0)
+      return { ok: false, reason: "that member has not signed the paper" };
+    const m = willOf(st, ch);
+    if (m.will >= (T.winBackBelow == null ? 75 : T.winBackBelow))
+      return { ok: false, member: m, reason: bareName(ch.name) + " is too far gone to be talked round" };
+    const axes = ((C.currents || []).find(c => c.id === ch.current) || {}).axes ||
+                 (C.partyById[st.playerParty] || {}).axes || {};
+    const granted = st.slotsGranted || [];
+    const best = (C.bills || []).map(b => ({ b: b, bs: st.bills[b.id] }))
+      .filter(x => x.bs && !x.bs.dead && x.bs.stage !== "drafting" &&
+                   STAGE_ORDER.indexOf(x.bs.stage) >= 0 &&
+                   STAGE_ORDER.indexOf(x.bs.stage) < STAGE_ORDER.length - 1 &&
+                   x.b.axes && granted.indexOf(x.b.id) < 0)
+      .map(x => ({ b: x.b, a: axisAgreement(axes, x.b.axes) }))
+      .filter(x => x.a > 0.25)
+      .sort((x, y) => y.a - x.a)[0];
+    if (!best) return { ok: false, member: m, reason: "nothing on the order paper is a measure " +
+      bareName(ch.name) + "'s current wants" };
+    if (st.slots.used >= st.slots.total)
+      return { ok: false, member: m, bill: best.b.id, reason: "no order-paper time left this sitting period" };
+    return { ok: true, member: m, bill: best.b.id, billTitle: best.b.title };
+  }
+  function winBack(st, C, id) {
+    const t = winBackTerms(st, C, id);
+    if (!t.ok) return t;
+    const ch = (C.characters || []).find(c => c.id === id);
+    st.slots.used += 1;
+    st.signedBy = (st.signedBy || []).filter(x => x !== id);
+    apply(st, C, [{ signatures: -1 }]);
+    apply(st, C, [{ undertake: { id: "winback_" + id,
+      text: "Order-paper time for the " + t.billTitle + ", promised to " + bareName(ch.name),
+      owed_to: id, by: null, discharge: { slot: t.bill } } }]);
+    const u = (st.undertakings || []).find(x => x.id === "winback_" + id && x.state === "open");
+    if (u) u.signs = id;
+    st.actedThisSitting = true;
+    billLogSafe(st, "The paper: " + ch.name + " withdraws their name, on a promise of time for the " + t.billTitle);
+    return { ok: true, member: t.member, bill: t.bill, billTitle: t.billTitle,
+             signatures: st.signatures || 0 };
+  }
+  const bareName = n => String(n || "").replace(/^(Rt\. Hon\.|Hon\.)\s*/, "").replace(/\s+MP$/, "");
 
   function billLogSafe(st, text) {
     st.log.unshift({ sitting: st.sitting, text: text });
@@ -4417,6 +4480,16 @@ const Engine = (function () {
       st.flags["minister_resigned"] = true;
       const pname = ((C && C.cabinetById && C.cabinetById[u.post]) || {}).name || u.post;
       st.log.unshift({ sitting: st.sitting, text: "The " + pname + " resigns" });
+    }
+    /* A PROMISE THAT BOUGHT A NAME OFF THE PAPER puts it back when broken
+       (winBack). The paper is the engine's own state, so this is the
+       engine's to do. */
+    if (u.signs && (st.signedBy || []).indexOf(u.signs) < 0) {
+      (st.signedBy || (st.signedBy = [])).push(u.signs);
+      st.signatures = (st.signatures || 0) + 1;
+      const who = ((C && C.characterById) || {})[u.signs];
+      st.log.unshift({ sitting: st.sitting, text: "The paper: " +
+        (who ? who.name : u.signs) + "'s name goes back on it" });
     }
     if (u.onBreach && C && C.eventById && C.eventById[u.onBreach])
       st.queue.push({ eventId: u.onBreach, dueSitting: st.sitting });
@@ -6554,7 +6627,7 @@ const Engine = (function () {
     clausesOf, clausePlan, clauseCost, setClause, clauseEffects,
     domainTest, functionalByConstituency, lobbiedByConstituency, isSupply,
     lastSession, lastPeriod, sessionEndsAt, recess, dissolve, checkEnd, supplyCarried, supplyPending,
-    signableMembers, collectSignature,
+    signableMembers, collectSignature, winBackTerms, winBack,
     settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
     undertakingWhere,
     snapshot, changes,

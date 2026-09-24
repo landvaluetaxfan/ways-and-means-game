@@ -2533,7 +2533,8 @@ man with a list."`,
       note:"Members are asked one at a time on the Party tab, under the " +
            "leadership. A member who is willing signs, and every signature " +
            "is a member you have lost. A member who is not refuses, comes off " +
-           "the paper for good, and their current firms behind you.",
+           "the paper for good, and their current firms behind you. A member " +
+           "who has signed can be won back there, for a promise.",
       effects:[{ flag:"paper_opened" }, { move:{ "rel.halloran":3 } },
                { move:{ "loyalty.cu_loyalists":-3 } },
                { wire:"CZARNECKI'S PAPER IS ON THE DESK; MEMBERS SAY WHETHER THEY WILL SIGN" }],

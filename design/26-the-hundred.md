@@ -85,6 +85,10 @@ it.
     sittings.
 14. `IN` **`E` The letter.** Signatures already exist (`signaturesAtLeast`). Let the
     player see who signed, and let a signature be withdrawn at a price.
+    *Built 24 Sep 2026, on the Party tab:* who signed and who refused are
+    listed, willingness decides an ask, and a signed member who is not too
+    far gone is won back for a slot and a promise of time for a measure
+    their current wants. A broken promise puts the name back.
 15. `IN·mod` **`C` A party that is not a party.** A registered independents' group with
     a convenor and no whip — `ind` holds six seats and behaves like a bloc.
 16. `IN·watch` **`E` The payroll vote.** Ministers and their aides cannot rebel. Counting

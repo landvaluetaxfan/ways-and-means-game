@@ -1640,8 +1640,30 @@ const UI = (function () {
         b.carries ? "" : "warn");
     const named = ids => ids.map(id => (C.characterById || {})[id]).filter(Boolean)
       .map(ch => esc(bare(ch.name)) + (ch.current ? " (" + esc(currentName(ch.current)) + ")" : "")).join(", ");
+    /* THE NAMES, EACH WITH ITS PRICE (design/26 #14). A member who has
+       signed can be won back for a slot and a promise, unless too far
+       gone; the engine says which, and why not. */
     if (names.length)
-      paper += `<div class="note">Signed: ${named(signedIds())}.</div>`;
+      paper += `<div class="note">Signed. A member who is not too far gone can be ` +
+        `won back, for a slot of order-paper time and a promise of time for a ` +
+        `measure their current wants. Break the promise and the name goes back on.</div>` +
+        names.map(ch => {
+          const t = Engine.winBackTerms(st, C, ch.id);
+          return `<div class="sigrow"><span class="sig-n">${esc(bare(ch.name))}` +
+            `<i>${esc(ch.current ? currentName(ch.current) : "no current")}</i></span>` +
+            `<span class="sig-w">signed</span>` +
+            `<button class="btn sigbtn" data-winback="${esc(ch.id)}"${t.ok ? "" : " disabled"}` +
+            tipAttr("Win back " + bare(ch.name), t.ok
+              ? "One slot of order-paper time now, and a promise: time for the " +
+                t.billTitle + " before the House rises. Keep it and the name stays " +
+                "off the paper; break it and it goes back on."
+              : cap1(t.reason) + ".") +
+            `>Win back</button></div>`;
+        }).join("");
+    const promised = (st.undertakings || []).filter(u => u.signs && u.state === "open");
+    if (promised.length)
+      paper += `<div class="note">Promised, to keep names off the paper: ` +
+        promised.map(u => esc(u.text)).join("; ") + `.</div>`;
     if ((st.refusedBy || []).length)
       paper += `<div class="note">Refused to your face: ${named(st.refusedBy)}.</div>`;
 
@@ -1679,6 +1701,15 @@ const UI = (function () {
       `are in its <a class="cx-link" tabindex="0" data-go="${esc(own.id || "")}">` +
       `Concordance article</a>.</div>`;
 
+    /* Winning a name back: a slot now, and a promise on the books. */
+    det.querySelectorAll("[data-winback]").forEach(btn => btn.addEventListener("click", () => {
+      const r = acted(() => Engine.winBack(st, C, btn.dataset.winback));
+      if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
+      cue("stamp");
+      setStatus(bare(r.member.name) + " withdraws their name, on a promise of time for the " +
+                r.billTitle + " \u00b7 " + r.signatures + " names", "transient");
+      drawAll(); afterAction();
+    }));
     /* Asking a member to sign the paper. An action, and a member lost. */
     det.querySelectorAll("[data-sign]").forEach(btn => btn.addEventListener("click", () => {
       const r = acted(() => Engine.collectSignature(st, C, btn.dataset.sign));

@@ -4790,3 +4790,51 @@ console.log("\nTHE PAPER: A MEMBER ASKED SIGNS ONLY IF WILLING:");
   }
   if (bad) { console.log("\n" + bad + " PAPER FAILURES"); process.exitCode = 1; }
 })();
+
+console.log("\nTHE PAPER: A NAME WON BACK AT A PRICE:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  /* design/26 #14: "let a signature be withdrawn at a price". The price is a
+     slot and a promise of time for a measure the member's current wants;
+     kept, the name stays off; broken, it goes back on. The lines are
+     content's. */
+  const T = CONTENT.setup.thresholds;
+  const fresh = () => { const g = Engine.newGame(CONTENT); g.flags.paper_opened = true; return g; };
+  const g = fresh();
+  const list = Engine.signableMembers(g, CONTENT);
+  const gone = list.find(m => m.will >= T.winBackBelow);
+  const soft = list.find(m => m.will >= T.signsAt && m.will < T.winBackBelow);
+  ok("the paper has a member too far gone and one who can be talked round", !!gone && !!soft,
+     list.map(m => m.id + ":" + m.will).join(" "));
+  if (!gone || !soft) { if (bad) process.exitCode = 1; return; }
+  Engine.collectSignature(g, CONTENT, gone.id);
+  Engine.collectSignature(g, CONTENT, soft.id);
+  const far = Engine.winBackTerms(g, CONTENT, gone.id);
+  ok("a member too far gone cannot be won back", far.ok === false && /too far gone/.test(far.reason), far.reason);
+  const terms = Engine.winBackTerms(g, CONTENT, soft.id);
+  ok("one who is not can, for a promise of time for a measure their current wants",
+     terms.ok === true && !!terms.bill, terms.reason || terms.billTitle);
+  const s0 = g.signatures, used0 = g.slots.used;
+  const r = Engine.winBack(g, CONTENT, soft.id);
+  ok("winning them back takes their name off and costs a slot",
+     r.ok && g.signatures === s0 - 1 && g.slots.used === used0 + 1 && g.signedBy.indexOf(soft.id) < 0,
+     g.signatures + " names, " + g.slots.used + " slots used");
+  const u = (g.undertakings || []).find(x => x.signs === soft.id);
+  ok("and puts a promise on the books", !!u && u.state === "open" && u.discharge && u.discharge.slot === terms.bill,
+     u ? u.text : "no undertaking");
+  ok("and they cannot be asked again while it stands",
+     !Engine.signableMembers(g, CONTENT).some(m => m.id === soft.id));
+  const kept = JSON.parse(Engine.save(g));
+  Engine.grantSlot(kept, CONTENT, terms.bill);
+  ok("giving the measure time keeps the promise",
+     (kept.undertakings.find(x => x.signs === soft.id) || {}).state === "kept");
+  const broke = JSON.parse(Engine.save(g));
+  Engine.prorogue(broke, CONTENT);
+  ok("and a promise broken at the rise puts the name back on the paper",
+     (broke.undertakings.find(x => x.signs === soft.id) || {}).state === "broken" &&
+     broke.signedBy.indexOf(soft.id) >= 0 && broke.signatures === s0,
+     broke.signatures + " names");
+  if (bad) { console.log("\n" + bad + " WIN-BACK FAILURES"); process.exitCode = 1; }
+})();

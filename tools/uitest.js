@@ -251,6 +251,24 @@ try {
   const sig0 = w.eval("UI.state().signatures || 0");
   if (asks[0]) asks[0].dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
   ok("and asking one adds a name", w.eval("UI.state().signatures || 0") === sig0 + 1);
+  /* A NAME WON BACK AT A PRICE (design/26 #14): the member too far gone
+     cannot be, one who is not can, for a slot and a promise. */
+  const asked = w.eval("UI.state().signedBy[0]");
+  const far = w.document.querySelector('#party-lead [data-winback="' + asked + '"]');
+  ok("a member too far gone has no way back", !!far && far.disabled,
+     asked + (far ? (far.disabled ? " disabled" : " enabled") : " no control"));
+  const soft = w.eval("(function(){ var T = UI.content().setup.thresholds;" +
+    " var m = Engine.signableMembers(UI.state(), UI.content()).find(function(x){" +
+    " return x.will >= T.signsAt && x.will < T.winBackBelow; }); return m ? m.id : null; })()");
+  const softAsk = soft && w.document.querySelector('#party-lead [data-sign="' + soft + '"]');
+  if (softAsk) softAsk.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  const back = soft && w.document.querySelector('#party-lead [data-winback="' + soft + '"]');
+  const sig1 = w.eval("UI.state().signatures || 0");
+  if (back && !back.disabled) back.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  ok("one who is not is won back, for a promise the panel lists",
+     !!back && w.eval("UI.state().signatures || 0") === sig1 - 1 &&
+     /Promised, to keep names off the paper/.test(w.document.querySelector("#party-lead").textContent),
+     soft + ": " + sig1 + " -> " + w.eval("UI.state().signatures || 0"));
   const b = w.eval("Engine.ballot(UI.state(), UI.content())");
   ok("the ballot forecast is the engine's",
      new RegExp(b.for + " for you, " + b.against + " against").test(

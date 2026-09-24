@@ -464,8 +464,11 @@ const SETUP = {
      paper signs at or above this willingness and refuses below it (a
      member's willingness is 100 less their current's loyalty, less 12 on
      the payroll, plus 10 for a grievance). `refusalLoyalty`: what a refusal
-     to the Prime Minister's face adds to that member's current. */
-  thresholds: { leadershipChallenge: 15, ballot: 12, signsAt: 50, refusalLoyalty: 2 },
+     to the Prime Minister's face adds to that member's current.
+     `winBackBelow`: a member who has signed can be won back, for a slot and
+     a promise, only while their willingness is under this. */
+  thresholds: { leadershipChallenge: 15, ballot: 12, signsAt: 50, refusalLoyalty: 2,
+                winBackBelow: 75 },
   /* AN ENDING MUST BE CARRIED (design/26 #91). No settlement before this
      sitting, whatever the meters say: without the floor the crisis resolved
      at sitting 7 on one play policy and 13 on another, which is a third of
