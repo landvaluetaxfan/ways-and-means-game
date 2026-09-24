@@ -2345,14 +2345,32 @@ const Engine = (function () {
      resignation, when it comes, is a weapon precisely because they were
      inside.
      --------------------------------------------------------- */
+  /* EVERY REFUSAL CARRIES A `code` as well as its sentence, so the interface
+     can say WHY at a glance and not only on hover: "partner" and
+     "successor" are standing facts about a post, "time" passes with the
+     sitting period, and the cabinet table marks each differently. The
+     permanent reasons are tested first, so a minister who could never be
+     dismissed is not reported as merely waiting for time. */
   function canReshuffle(st, C, postId) {
     const p = st.cabinet[postId];
-    if (!p) return { ok: false, reason: "no such post" };
-    if (!p.holder) return { ok: false, reason: "the post is already vacant" };
-    if (postId === (C.setup && C.setup.pmPost)) return { ok: false, reason: "the Prime Minister cannot dismiss herself" };
+    if (!p) return { ok: false, code: "none", reason: "no such post" };
+    if (!p.holder) return { ok: false, code: "vacant", reason: "the post is already vacant" };
+    if (postId === (C.setup && C.setup.pmPost)) return { ok: false, code: "pm", reason: "the Prime Minister cannot dismiss herself" };
     const post0 = (C.cabinet || []).find(x => x.id === postId) || {};
-    if (st.slots.used >= st.slots.total)
-      return { ok: false, reason: "no order-paper time left this sitting period" };
+    /* A PARTNER'S MINISTER IS THE PARTNER'S. In a coalition the Prime
+       Minister appoints, and each party names its own: the partner chose
+       this minister and only the partner can withdraw one. Dismissing one
+       is not a reshuffle, it is ending the agreement, which content does
+       through events (a partner walking out) and not through this button.
+       A post the Prime Minister GIVES a partner (the Treasury to the CDA,
+       say) becomes the partner's the same way, which is part of what makes
+       giving it a bet. */
+    if (p.party && st.playerParty && p.party !== st.playerParty) {
+      const pty = ((C.partyById || {})[p.party] || {}).name || p.party;
+      return { ok: false, code: "partner",
+        reason: "the " + pty + " names its own ministers under the coalition agreement, and " +
+                "only it can withdraw one; dismissing one would end the agreement, not reshuffle it" };
+    }
     /* AND THERE HAS TO BE SOMEBODY TO APPOINT. Content declares who may hold
        a post (§15.5) and there is no other way to fill one, so dismissing
        from a post with no declared candidates would leave it permanently
@@ -2370,8 +2388,12 @@ const Engine = (function () {
        declares anybody OTHER than the incumbent. */
     const bench = (post0.candidates || []).filter(c => c.holder !== p.holder);
     if (!bench.length)
-      return { ok: false, reason: "nobody is declared eligible for this post, and an empty one cannot be filled" };
-    return { ok: true };
+      return { ok: false, code: "successor",
+        reason: "there is nobody on the list to succeed them, so the ministry would stand empty for " +
+                "the rest of the parliament, and an empty ministry cannot make an order" };
+    if (st.slots.used >= st.slots.total)
+      return { ok: false, code: "time", reason: "no order-paper time left this sitting period" };
+    return { ok: true, successors: bench.map(c => c.holder) };
   }
 
   function reshuffle(st, C, postId) {

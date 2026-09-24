@@ -81,31 +81,50 @@ const WORLD = {
      since it was written — selecting a country never lit its anchor. */
 
   /* The countries worth a summary. `actor` links the country to a modelled
-     foreign actor, so clicking it shows the relationship the game keeps. */
+     foreign actor, so clicking it shows the relationship the game keeps.
+
+     THE REGISTER IS AN ATLAS'S (the author, 24 Sep): the place, the anchor,
+     the economy, the dates, in plain declarative sentences. No aphorism to
+     close on and no contrast built for effect; a fact that makes a country
+     unusual is stated as a fact.
+
+     `note` is always shown. `dispute` is what the country has to do with the
+     Almanac Works, and appears under its own heading only once the station
+     question is before the government (the `station_issue` flag, the same
+     gate as the foreign actors), because a reference that describes the
+     crisis before it happens is a reference that knows the plot.
+
+     `name` is for a state the map has no outline for (France, São Tomé and
+     Príncipe, Kiribati, the Maldives): without it the panel printed the
+     three-letter code where the name belongs. */
   states: {
-    "BRA": { note:"Granted the Anselm anchor in 2065 on a ninety-nine-year term, so it runs to 2164. The fee was fixed at grant with no indexation clause, and lift tonnage through the anchor has roughly trebled since. Brazil runs its own launch range and a national orbital programme, and is a net seller of lift to the Commonwealth.",
-             markets:"Soy, iron, and launch capacity it would rather the Commonwealth bought than built." },
-    "KEN": { actor:"earth_host", note:"The host state. Kenyan soil carries the International Earth-Orbit Elevator, and Kenyan procurement law is why the repatriation plan runs two years rather than six months. Its stated position is that it will not fund a private wind-up, and will not accept a foreign government taking title to a platform at the foot of its own tether.",
-             markets:"Tea, geothermal power, and the corridor rights to the Malindi base — the last of which it is the only seller of." },
-    "IDN": { note:"Non-aligned, archipelagic, and the largest state on the equator. The anchor was granted in 2068 during a currency crisis, and Indonesia has moved to reopen the terms at each of the two fee reviews since.",
-             markets:"Nickel, palm, and the busiest equatorial corridor on the planet." },
-    "FRA": { actor:"earth_bloc", note:"The Kourou vertical stands on European Union territory, making the Union the only power in the dispute that is also a landlord. Its complaint is about labour and personhood law rather than the platform: the orbital franchises operate below European standards, and no European court has jurisdiction to reach them.",
-             markets:"Instruments, aircraft, and the European market the Commonwealth's compute exports want in." },
-    "STP": { note:"The anchor concession is the state's entire revenue base. São Tomé is the smallest party to the dispute and the only one with no fiscal capacity to absorb a renegotiation it did not open.",
-             markets:"Cocoa, and the concession that pays for everything the cocoa does not." },
-    "COL": { note:"The Leticia corridor runs through the Amazon tri-border, a district Colombia polices jointly with Peru and Brazil and administers thinly. Its position, written into the concession instrument and restated at every renewal, is that the lease conveys operating rights over the corridor and no territorial claim whatever.",
-             markets:"Coffee, cut flowers, and the corridor into the Amazon basin." },
-    "SOM": { note:"A federal authority holding an equatorial coast contested since the 2040s. The anchor is one of three revenue-bearing assets in the district, and the authority's writ over the corridor is recognised in Mogadishu and disputed on the ground.",
+    "BRA": { note:"Brazil hosts Tether 1, the Beanstalk, at Macapá, the capital of Amapá state, which lies on the equator at the mouth of the Amazon. The anchor serves Anselm Ring. The concession was granted in 2065 for ninety-nine years, to 2164, at a fee fixed at grant with no indexation clause; lift tonnage through the anchor has roughly trebled since. Brazil operates its own launch range at Alcântara and a national orbital programme, and sells lift to the Commonwealth.",
+             markets:"Soybeans, iron ore, beef, and launch services from Alcântara." },
+    "KEN": { actor:"earth_host", note:"Kenya hosts Tether 2, the International Earth-Orbit Elevator, at Malindi on the Indian Ocean coast, near the Broglio Space Centre at Ngomeni. The elevator serves Anchorage and was established by international treaty, whose title is its formal name. Kenya is a middle power with a large public administration and an established space programme.",
+             dispute:"Kenyan procurement law governs the repatriation plan for the Almanac Works' workforce, under which the approved programme runs two years. The government has said that it will not meet the cost of a private company's wind-up, and that it will not accept a foreign government taking title to the platform.",
+             markets:"Tea, cut flowers, geothermal power, and corridor rights at the Malindi base." },
+    "IDN": { note:"Indonesia hosts Tether 3 at Pontianak, the capital of West Kalimantan on the island of Borneo, less than a kilometre from the equator. The concession was granted in 2068 during a currency crisis. Indonesia has sought to reopen its terms at both of the fee reviews held since. The tether serves no Commonwealth station.",
+             markets:"Nickel, palm oil, coal, and shipping through the equatorial straits." },
+    "FRA": { actor:"earth_bloc", name:"France", note:"Tether 4, the Kourou vertical, stands at Kourou in French Guiana, an overseas region of France and an outermost region of the European Union, where the Guiana Space Centre has operated since 1968. The anchor serves the Bourse. Its concession is held under European law, and the Union treats the tether as European infrastructure.",
+             dispute:"The Union is a party to the dispute both as a sanctioning power and as the holder of an anchor. Its stated objections concern labour and personhood law: the orbital franchises operate below European standards, and European courts have no jurisdiction over them.",
+             markets:"Aircraft, instruments, pharmaceuticals, and access to the European market for Commonwealth compute." },
+    "STP": { name:"São Tomé and Príncipe", note:"São Tomé and Príncipe is an island state in the Gulf of Guinea, lying 0.3° north of the equator. It hosts Tether 5, the Meridian Vertical, known in the Commonwealth as the Clothesline, which serves Meridian Spindle. The concession fee is the state's principal source of public revenue.",
+             dispute:"São Tomé has no fiscal capacity to absorb a change in the concession's terms and has taken no public position in the dispute.",
+             markets:"Cocoa, coffee, and the Meridian concession." },
+    "COL": { note:"Colombia hosts Tether 6, the Leticia line, at Leticia, the capital of Amazonas department, on the tri-border with Brazil and Peru. The anchor serves Halvard Works. The district is policed jointly with Peru and Brazil. The concession instrument states, and each renewal has restated, that the lease conveys operating rights over the corridor and no territorial claim.",
+             markets:"Coffee, cut flowers, oil, and the Leticia corridor." },
+    "SOM": { note:"Tether 7, the Kismayo line, stands at Kismayo, a port in the Jubaland region of southern Somalia, and serves Layover. The coast has been contested since the 2040s. The anchor is administered by a federal authority whose writ is recognised in Mogadishu and disputed on the ground, and it is one of three revenue-bearing assets in the district.",
              markets:"Livestock, frankincense, and the Kismayo roadstead." },
-    "GAB": { note:"Cordell's charter state, and the base of its orbital operations. Gabon has run on extraction since the twenty-first century, and it is the only host here represented in the dispute by a domestic concessionaire rather than by a claim against one.",
-             markets:"Manganese, oil, and the Port-Gentil anchor." },
-    "KIR": { note:"Kiribati leased the Bond rather than granting it, and it is the only elevator the Commonwealth operates outright. A mid-Pacific state of thirty-three atolls, none of them high ground: the tether base is the tallest structure in its jurisdiction.",
-             markets:"Fishing licences, and the ground the Bond's base stands on." },
-    "UGA": { note:"The only inland anchor. Its corridor crosses Kenyan and Tanzanian airspace before it clears the atmosphere, so the concession is renewed three ways and the two transit agreements expire on their own schedules.",
-             markets:"Coffee, and the corridor the Equator crosses." },
-    "ECU": { note:"Ecuador holds the site nearest the line of any in the dozen, on the Chimborazo massif. Its concession has been renegotiated twice, and on both occasions the revised fee favoured the operator.",
-             markets:"Bananas, oil, and the Chimborazo corridor." },
-    "MDV": { note:"A low-lying island state, mean elevation under two metres. Its tether base stands on reclaimed ground and is the highest point under Maldivian jurisdiction.",
-             markets:"Tuna and tourism. Its tether is the only industry it has that does not sink." }
+    "GAB": { note:"Gabon hosts Tether 8, the Port-Gentil line, which serves Rookworks\u2014Anselm. Port-Gentil, on Mandji Island at Cape Lopez, has been the centre of the country's oil industry since the 1950s, and Gabon is among the largest producers of manganese in the world. The concession is held by Cordell, an extraction company chartered by an act of the Gabonese Assembly in 2044. Cordell is majority-owned by the Gabonese sovereign fund and directs its orbital operations from Port-Gentil.",
+             dispute:"Gabon is represented in the dispute through Cordell, whose subsidiary operated the Almanac Works until its wind-up. As the company's principal owner, the government has made no statement separate from the company's.",
+             markets:"Oil, manganese, timber, and the Port-Gentil anchor." },
+    "KIR": { name:"Kiribati", note:"Kiribati is a Pacific state of thirty-three islands, most of them low coral atolls, spread across more than three million square kilometres of ocean. Tether 9, the Bond, stands on Kiritimati (Christmas Island) in the Line Islands, the largest coral atoll in the world by land area, and serves Bondsville. The site is leased to the Commonwealth, which operates the elevator itself. The tether base is the tallest structure in the country.",
+             markets:"Fishing licences, copra, and the lease on the Kiritimati site." },
+    "UGA": { note:"Uganda hosts Tether 10, the Entebbe line, on the northern shore of Lake Victoria; it is the one anchor in the dozen that stands inland. Its corridor crosses Kenyan and Tanzanian airspace before it clears the atmosphere, so the concession is renewed three ways, and the two transit agreements expire on their own schedules. The tether serves no Commonwealth station.",
+             markets:"Coffee, gold, fish from Lake Victoria, and the Entebbe corridor." },
+    "ECU": { note:"Ecuador hosts Tether 11, the Chimborazo line, on the Chimborazo massif, 1.5° south of the equator. Chimborazo's summit is the point on the Earth's surface farthest from its centre. The line serves the Almanac Works. Its concession has been renegotiated twice, and both revisions reduced the fee payable by the operator.",
+             markets:"Bananas, oil, shrimp, and the Chimborazo corridor." },
+    "MDV": { name:"the Maldives", note:"The Maldives is an archipelago of coral atolls in the Indian Ocean, with an average ground level of about one and a half metres. Tether 12, the Malé line, stands on reclaimed land near the capital, Malé, and its base is the highest point in the country. The tether serves no Commonwealth station.",
+             markets:"Tourism, tuna, and the Malé corridor." }
   }
 };

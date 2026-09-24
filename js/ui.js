@@ -2206,9 +2206,18 @@ const UI = (function () {
        post: a post has an author for instruments and can fall vacant, and she
        is neither appointable nor dismissable by the player. */
     const pmCh = C.characterById[C.setup.pm];
+    /* WHY A MINISTER CAN OR CANNOT BE DISMISSED, SAID ON THE ROW (the
+       author, 24 Sep). A faint disabled button made the player go looking
+       for a reason; the standing ones are a tag now, each with its
+       sentence on hover, and only a refusal that passes with the sitting
+       period (no time left) is a disabled button. */
     const pmRow = pmCh ? `<tr class="pmrow"><td>Prime Minister</td>` +
       `<td>${bare(pmCh.name)}</td>` +
-      `<td class="n">${mark(pmCh.party)}</td></tr>` : "";
+      `<td class="n">${mark(pmCh.party)}</td>` +
+      `<td class="n"><span class="flag nosack"${tipAttr("The Prime Minister",
+        "Chairs the cabinet and holds no post in it, so there is nothing to dismiss her from. " +
+        "Only her party, by a leadership ballot, or the House, by a vote of no confidence, " +
+        "can remove her.")}>CHAIRS</span></td></tr>` : "";
     $("#gov-cabinet").innerHTML = pmRow + (C.cabinet || []).map(p => {
       const s = st.cabinet[p.id];
       const ch = s.holder ? C.characterById[s.holder] : null;
@@ -2218,13 +2227,22 @@ const UI = (function () {
          it. The engine says whether it can be done and why not, so the
          refusal is the engine's sentence and not a second opinion. */
       const gate = Engine.canReshuffle ? Engine.canReshuffle(st, C, p.id) : { ok: false };
-      const sack = s.holder
-        ? `<button class="btn tiny sack" data-sack="${p.id}"${gate.ok ? "" : " disabled"}` +
-          priceTip("Dismiss " + (ch ? bare(ch.name) : p.name),
-            { slots: 1, note: "They go to the back benches and do not forgive it. " +
+      const who = ch ? bare(ch.name) : (s.holder || "").replace(/_/g, " ");
+      const cap = t => t.charAt(0).toUpperCase() + t.slice(1) + ".";
+      const successors = (gate.successors || []).map(id =>
+        C.characterById[id] ? bare(C.characterById[id].name) : id).join(", ");
+      const sack = !s.holder ? ""
+        : gate.code === "partner"
+          ? `<span class="flag nosack"${tipAttr(who + " is a partner's minister", cap(gate.reason))}>PARTNER</span>`
+        : gate.code === "successor"
+          ? `<span class="flag nosack"${tipAttr("Nobody to succeed " + who, cap(gate.reason) +
+              " A post can be reshuffled only when content lists who may hold it; the Treasury does.")}>NO SUCCESSOR</span>`
+        : `<button class="btn tiny sack" data-sack="${p.id}"${gate.ok ? "" : " disabled"}` +
+          priceTip("Dismiss " + who,
+            { slots: 1, note: (gate.ok ? "Your own party's minister, and the post has a successor: " +
+                successors + ". " : "") + "They go to the back benches and do not forgive it. " +
               "Their current reads it as an attack on them." },
-            gate.ok ? null : gate.reason) + `>Dismiss</button>`
-        : "";
+            gate.ok ? null : gate.reason) + `>Dismiss</button>`;
       return `<tr class="${s.holder ? "" : "vacant"}">
         <td>${p.name}${p.senior ? " <span class='flag' data-tip='senior'>SENIOR</span>" : ""}</td>
         <td>${s.holder ? (ch ? bare(ch.name) : s.holder.replace(/_/g," "))
@@ -4927,7 +4945,7 @@ const UI = (function () {
        click is only reasonable if the country is still one step away. */
     if (a.iso) h += `<div class="rulehead">Whose soil</div>` +
       `<div class="fgn"><div class="fgn-h">` +
-      `<b><button class="lnk" data-wiso="${esc(a.iso)}">${esc(countryName(a.iso))}</button></b>` +
+      `<b><button class="lnk cx-link" data-wiso="${esc(a.iso)}">${esc(countryName(a.iso))}</button></b>` +
       `</div>` + (((WORLD.states || {})[a.iso] || {}).note
         ? `<div class="note">${esc((WORLD.states[a.iso] || {}).note)}</div>` : "") +
       `</div>`;
@@ -4955,6 +4973,9 @@ const UI = (function () {
       const here = (WORLD.anchors || []).filter(a => a.iso === sel);
       h = `<div class="w-c-h"><b>${esc(cName)}</b><span class="w-c-iso">${esc(sel)}</span></div>`;
       if (s.note) h += `<div class="note">${esc(s.note)}</div>`;
+      /* what the state has to do with the Works, once the story has raised it */
+      if (s.dispute && foreignOpen())
+        h += `<div class="rulehead">In the dispute</div><div class="note">${esc(s.dispute)}</div>`;
       if (here.length) {
         h += `<div class="rulehead">Anchors <em>${here.length}</em></div>` + here.map(a =>
           `<div class="fgn"><div class="fgn-h"><b>${cxlink("anchor_" + a.id, a.tether)}</b>` +
@@ -4999,10 +5020,19 @@ const UI = (function () {
         `government at present. They appear here when one is.</div>`;
     return foreignHTML();
   }
+  /* A STATE THE MAP HAS NO OUTLINE FOR IS STILL A STATE. France, São Tomé
+     and Príncipe, Kiribati and the Maldives are missing from the outlines,
+     so this returned the code and the panel headed Kiribati's page "KIR",
+     and printed "KIR" again as the link back from its anchor. Content's own
+     name comes first, then the outline's, then the host an anchor gives. */
   function countryName(iso) {
+    const s = ((typeof WORLD !== "undefined" && WORLD.states) || {})[iso];
+    if (s && s.name) return s.name.charAt(0).toUpperCase() + s.name.slice(1);
     const f = (typeof WORLD_COUNTRIES !== "undefined" ? WORLD_COUNTRIES : [])
       .find(c => c.i === iso);
-    return f ? f.n : iso;
+    if (f) return f.n;
+    const a = ((typeof WORLD !== "undefined" && WORLD.anchors) || []).find(x => x.iso === iso);
+    return a && a.host ? a.host.charAt(0).toUpperCase() + a.host.slice(1) : iso;
   }
 
   /* A LINK INTO THE CONCORDANCE, from the world panel. The encyclopedia

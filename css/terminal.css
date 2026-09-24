@@ -424,6 +424,8 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .btn.tiny{font-size:9.5px;padding:0 5px;letter-spacing:.06em;}
 .btn.tiny.sack{border-color:rgba(224,144,127,.55);}
 .btn.tiny.sack:disabled{opacity:.35;}
+/* a standing reason a minister cannot be dismissed: read, not pressed */
+.flag.nosack{color:var(--ink-soft);cursor:help;white-space:nowrap;}
 #gov-cabinet td:last-child{width:1%;white-space:nowrap;}
 /* the standing bands, under the national figure they add up to */
 /* THE CALENDAR IS A READOUT, NOT THE SCREEN. Measured on the sitting tab at
@@ -1468,6 +1470,12 @@ img.dith{display:block;}
 .cx-lede p{font-size:14px;}
 .cx-lede p:first-child::first-letter{font-size:14px;}
 .cx-link{color:#2b4a7a;cursor:pointer;text-decoration:none;}
+/* A LINK THAT IS A BUTTON (it acts on the globe, not the Concordance) looks
+   like the panel's other links, not like a bare browser button: the host
+   state on an anchor's page was drawn as a grey pill reading "KIR". */
+button.lnk{all:unset;cursor:pointer;font:inherit;color:#2b4a7a;}
+button.lnk:hover{text-decoration:underline;}
+button.lnk:focus-visible{outline:1px dotted currentColor;outline-offset:1px;}
 .cx-link:hover{text-decoration:underline;}
 .cx-red{color:#8a2222;}
 

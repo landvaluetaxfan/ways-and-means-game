@@ -502,6 +502,25 @@ try {
      (w.document.querySelector("#gov-cabinet") || {}).innerHTML.length > 0);
 } catch (e) { ok("the playtest transcript", false, e.message); }
 
+/* WHY A MINISTER CAN OR CANNOT BE DISMISSED (the author, 24 Sep): every
+   filled row says, as a Dismiss control or a tag, and either way with the
+   reason on hover. A row with neither is a minister the player can only
+   wonder about. */
+try {
+  const rows = [].slice.call(w.document.querySelectorAll("#gov-cabinet tr"))
+    .filter(r => !r.classList.contains("vacant"));
+  const silent = rows.filter(r => {
+    const x = r.querySelector("[data-sack], .flag.nosack");
+    return !x || !x.getAttribute("data-tip-body");
+  }).map(r => (r.querySelector("td") || {}).textContent);
+  ok("every minister's row says whether they can be dismissed, and why",
+     rows.length > 1 && silent.length === 0, silent.join(", ") || rows.length + " rows");
+  const tags = [].slice.call(w.document.querySelectorAll("#gov-cabinet .flag.nosack")).map(n => n.textContent);
+  ok("and the standing reasons are told apart",
+     tags.indexOf("PARTNER") >= 0 && tags.indexOf("NO SUCCESSOR") >= 0 && tags.indexOf("CHAIRS") >= 0,
+     [...new Set(tags)].join(", "));
+} catch (e) { ok("the cabinet says why", false, e.message); }
+
 /* EVERY MEMBER, NOT JUST THE CAST. This listed C.characters filtered by
      party \u2014 the fifty-odd people the story names \u2014 so the Liberals showed
      nineteen against forty-seven seats. The table now seats the whole House

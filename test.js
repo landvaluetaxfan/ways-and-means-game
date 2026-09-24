@@ -2519,11 +2519,41 @@ console.log("\nRECURRING BUSINESS, AND THE RESHUFFLE:");
        Engine.canReshuffle(st2, CONTENT, post.id).ok === false,
        Engine.canReshuffle(st2, CONTENT, post.id).reason);
 
-    /* and with no time left it cannot be pressed anyway */
+    /* and with no time left it cannot be pressed anyway. The post is filled
+       first: a vacant one is refused for being vacant, which this assertion
+       used to pass on without ever reaching the time. */
     const st3 = Engine.newGame(CONTENT);
+    if (!st3.cabinet[post.id].holder) Engine.fillPost(st3, CONTENT, post.id, 0);
     st3.slots.used = st3.slots.total;
     const g = Engine.canReshuffle(st3, CONTENT, post.id);
-    ok("and with no time left the House will not hear it", g.ok === false, g.reason);
+    ok("and with no time left the House will not hear it", g.ok === false && g.code === "time", g.reason);
+
+    /* WHY NOT, ON EVERY ROW (the author, 24 Sep): each refusal carries a
+       code, and a partner's minister is the partner's to withdraw. */
+    const st5 = Engine.newGame(CONTENT);
+    const theirs = (CONTENT.cabinet || []).find(p => st5.cabinet[p.id].holder &&
+      st5.cabinet[p.id].party && st5.cabinet[p.id].party !== st5.playerParty);
+    const g5 = theirs && Engine.canReshuffle(st5, CONTENT, theirs.id);
+    ok("a coalition partner's minister is theirs to withdraw, not the Prime Minister's to dismiss",
+       !!g5 && g5.ok === false && g5.code === "partner", theirs ? theirs.id + ": " + g5.reason : "no partner post");
+    const mine = (CONTENT.cabinet || []).find(p => st5.cabinet[p.id].holder &&
+      st5.cabinet[p.id].party === st5.playerParty && !(p.candidates || []).length);
+    const g6 = mine && Engine.canReshuffle(st5, CONTENT, mine.id);
+    ok("and one of her own with nobody listed to succeed them is refused for that",
+       !!g6 && g6.ok === false && g6.code === "successor", mine ? mine.id : "no such post");
+    const other = (post.candidates || []).findIndex(c => c.party && c.party !== st5.playerParty);
+    if (other >= 0) {
+      const st6 = Engine.newGame(CONTENT);
+      Engine.fillPost(st6, CONTENT, post.id, other);
+      ok("a post given to a partner becomes the partner's",
+         Engine.canReshuffle(st6, CONTENT, post.id).code === "partner",
+         post.candidates[other].holder + " (" + post.candidates[other].party + ")");
+    }
+    const st7 = Engine.newGame(CONTENT);
+    if (!st7.cabinet[post.id].holder) Engine.fillPost(st7, CONTENT, post.id, 0);
+    const g7 = Engine.canReshuffle(st7, CONTENT, post.id);
+    ok("and an allowed dismissal names who could succeed",
+       g7.ok && (g7.successors || []).length > 0, (g7.successors || []).join(", "));
   }
 
   if (bad) { console.log("\n" + bad + " MECHANISM FAILURES"); process.exitCode = 1; }
