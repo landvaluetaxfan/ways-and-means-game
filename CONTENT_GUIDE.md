@@ -260,8 +260,24 @@ a content pass does.
 
 ## The register
 
-Three kinds of prose, three registers. They are not interchangeable, and the
-legibility of the game depends on keeping them apart.
+**`PROSE_REGISTER.md` is the rulebook**, and `npm run register` checks it.
+Three registers, each tied to the surfaces that use it:
+
+- **Reference**, for what a thing is: the Concordance, country notes,
+  currents, parties, stations, constituencies, cabinet posts, actors, bills'
+  summaries, the glossary. An encyclopedia's or an atlas's register: the
+  first sentence defines the subject, then facts in the order a reader
+  needs them, one per sentence.
+- **Interface**, for what a control or a number does: tooltips, refusals,
+  initiatives, awards. What is this, what changes it, what can you do about
+  it, and stop.
+- **Voice**, for the world speaking: events, minutes, the introduction, the
+  Underwriters' outlook. The author's; a character may sound like themselves.
+
+In Reference and Interface: no contrast framing (`not X but Y`, `X rather
+than Y`, `X, not Y`), no ranking against a set the reader cannot see, no
+closing aphorism, and plain policy words for the five axes ("limits on trade
+with Earth", not "closed trade"). The detail is below and in the rulebook.
 
 ### Constituency descriptions
 
@@ -300,8 +316,8 @@ register or the event register into the Concordance.
 ### Tooltips and interface prose
 
 Every tooltip (`js/tips.js`), every menu line, every log line. These address the
-player as **you** and say what the thing does, not what it means. The test: if a
-sentence states a thesis rather than a fact, cut it.
+player as **you** and say what the thing does. The test: if a sentence states a
+thesis, cut it and keep the fact.
 
 - "No minister holds this post, so it cannot make instruments. Appoint one to
   change that." Not "The President's power to refuse an appointment and the

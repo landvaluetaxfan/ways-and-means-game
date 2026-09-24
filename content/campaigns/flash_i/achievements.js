@@ -6,16 +6,10 @@
 campaign("flash_i", { achievements: [
 
   { id:"set_triumph", name:"Orbital Powerhouse", tier:"settlement",
-    note:"You annexed the Works and Earth dropped its debt claims rather than " +
-         "test what the Commonwealth would do with the anchors it holds. Full " +
-         "annexation on the Commonwealth's terms, with no embargo and the " +
-         "bonds left where they fell.",
+    note:"You annexed the Works, and Earth dropped its debt claims sooner than test what the Commonwealth would do with the anchors it holds. Full annexation on the Commonwealth's terms, with no embargo and the bonds left where they fell.",
     when:{ resolved:"f1_triumph" } },
   { id:"set_maritime", name:"Maritime Charter", tier:"settlement",
-    note:"The Works was annexed and an international court recognised the " +
-         "salvage, which makes it Commonwealth territory in law rather than " +
-         "by force. You take the Works and the legal bill, without the " +
-         "stand-off.",
+    note:"The Works was annexed and an international court recognised the salvage, which makes it Commonwealth territory in law. You take the Works and the legal costs, with no stand-off.",
     when:{ resolved:"f1_maritime" } },
   { id:"set_pyrrhic", name:"Sovereign Debt Trap", tier:"settlement",
     note:"The Works was annexed and the Commonwealth assumed the defaulted " +

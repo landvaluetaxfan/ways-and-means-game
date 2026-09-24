@@ -113,10 +113,7 @@ const Tips = (function () {
             "of them. A party at 40 delivers 85 of every 100 seats it promised. " +
             "Whipping buys back the gap.", go: "parliament" },
     mps: { title: "Members",
-      body: "How many of the party's members sit with this current. A current " +
-            "is a faction with its own loyalty, and its members are part of " +
-            "the party's seats rather than extra ones — the currents of a " +
-            "party sum to the party." },
+      body: "The number of the party's members in this current. A party's currents add up to its total seats." },
     popular: { title: "The popular benches",
       body: "The 240 members returned by districts and lists together. A bill " +
             "needs a simple majority of them." },
@@ -161,10 +158,7 @@ const Tips = (function () {
       body: "Elected from among the members, and still counted in their party's " +
             "total. The Chair holds a seat but does not vote with the others." },
     benches: { title: "Facing benches",
-      body: "The chamber is drawn as two facing sides, not a semicircle, " +
-            "because confidence is binary. A whip can move a whole bench across " +
-            "the floor. A semicircle would make the chamber look like a " +
-            "spectrum." },
+      body: "The House drawn as two facing sides: the government and its supporters on one, everyone else on the other. Confidence is counted by which side a member sits on. The whip can move a whole bench from one side to the other." },
 
     /* ---- the functional tier ---- */
     franchise: { title: "Franchise",
@@ -173,8 +167,7 @@ const Tips = (function () {
             "constituency is everyone in no recognised sector. It returns one " +
             "seat.", go: "functional_constituency" },
     electors: { title: "Electorate",
-      body: "Enrolled electors, not population. The functional roll and the " +
-            "district roll count different people." },
+      body: "The number of enrolled electors: the people entitled to vote for this seat. The district roll and the functional roll are counted separately." },
 
     currents: { title: "Currents",
       body: "The organised factions inside a party. The triangle opens a party's " +
@@ -186,11 +179,7 @@ const Tips = (function () {
             "A party with no organised currents opens to a single bench." },
 
     underwriters: { title: "The Underwriters",
-      body: "Insurance rather than banking is the dominant institution here, " +
-            "because where failure kills everyone in the room somebody has to " +
-            "price it continuously. The consequence is that the Underwriters " +
-            "hold accurate numbers on everything, and what they sell the " +
-            "government is not money but an honest reading of its own books." },
+      body: "Circumterrestrial Underwriters, the insurers who price the risk of failure on every station. Because they insure everything, they keep the most accurate figures in the Commonwealth. What they say about the government's accounts appears here." },
 
     waysmeans: { title: "Ways and means",
       body: "What the state takes in, every sitting, on each of the four " +
@@ -209,10 +198,7 @@ const Tips = (function () {
 
     /* ---- the orbit ---- */
     schematic: { title: "The habitat schematic",
-      body: "This is a chart, not a map. Vertical position is altitude band. " +
-            "Shape is habitat type. Size is population. Tint is closure. The " +
-            "mark below is the leading party. Real orbits move in three " +
-            "dimensions, so a literal map would be unreadable." },
+      body: "A diagram of the Commonwealth's stations. Height is the altitude band, shape the kind of habitat, size the population, and tint the closure ratio. The mark below each station is its leading party. Positions show the band only." },
     form: { title: "Habitat form",
       body: "What the station physically is: a ring, a cylinder, or a cluster " +
             "of settlements. It has no mechanical effect. It explains a lot " +
@@ -231,9 +217,7 @@ const Tips = (function () {
       body: "An instruction from your office, signed and served. It is not law " +
             "and it binds nobody outside the building." },
     log: { title: "The record",
-      body: "Every decision this government has taken, newest first. It is " +
-            "written by the engine, not the display, so it records what " +
-            "happened." },
+      body: "Every decision this government has taken, newest first. Each entry is written when the decision is made." },
 
     /* ---- the coalition ---- */
     ledger: { title: "Capital",
@@ -244,8 +228,7 @@ const Tips = (function () {
       body: "This party holds ministries and is bound by collective " +
             "responsibility." },
     cs: { title: "Confidence and supply",
-      body: "Not in government, but counted toward confidence anyway. They vote " +
-            "for the budget, and against anything else they choose." },
+      body: "A party outside the government that has agreed to support it on votes of confidence and on the budget. It counts toward the government's confidence. On other measures it votes as it chooses." },
     senior: { title: "Senior post",
       body: "Life Support is the senior ministry. Its minister can be summoned " +
             "by the engineering authority. In every other brief, the minister " +
@@ -267,10 +250,7 @@ const Tips = (function () {
 
     /* ---- instruments ---- */
     instrument: { title: "Statutory instrument",
-      body: "An order signed rather than voted. A negative order takes effect " +
-            "as soon as it is made and stands unless the House prays against " +
-            "it; an affirmative one does nothing until the House approves it. " +
-            "Either can be revoked, which a bill cannot." },
+      body: "A statutory instrument: an order a minister makes under an Act, without a vote in the House. A negative order takes effect when it is made and stays in force unless the House prays against it. An affirmative order takes effect once the House approves it. The minister who made an order can revoke it." },
     prayer: { title: "Praying against",
       body: "The House's only way to challenge an order already in force. It " +
             "expires. The number is the sittings left. After that the order " +
@@ -308,22 +288,16 @@ const Tips = (function () {
             "friction means sanctions, frozen accounts and dearer imports; " +
             "it is the one meter that is bad when it rises." },
     scarcity: { title: "Scarcity index",
-      body: "All four start at 100. Each one is set by legislation, not by a " +
-            "market. A thermal appropriation moves the quota price, and the " +
-            "quota price decides whether a poor station can keep its people " +
-            "running." },
+      body: "The price index of one of the four scarce goods. Each starts at 100 and is set by legislation, chiefly the appropriation. A higher thermal price makes it harder for poor stations to keep their people running." },
 
     /* ---- the orbit ---- */
     ratio: { title: "Apportionment ratio",
-      body: "Electors per seat, measured against the Commonwealth average. " +
-            "Above 1 means under-represented. Below 1 means over-represented. " +
-            "It is calculated from the roll, not stored." },
+      body: "Electors per seat, divided by the Commonwealth average. Above 1, the seat's electors are under-represented; below 1, they are over-represented. It is calculated from the roll each time it is shown." },
     held: { title: "Held by",
       body: "The party that holds this seat now. For district seats, the roll " +
             "is the only record of who holds what." },
     band: { title: "Altitude band",
-      body: "Higher orbit is different politics. The chart is a stratification " +
-            "diagram, not a map." },
+      body: "The station's altitude band: low, middle or ring. The chart places low-orbit stations at the bottom and the ring at the top. Stations in the same band usually share an economy and a politics." },
     closure: { title: "Closure" }   /* the glossary has this one */
   };
 

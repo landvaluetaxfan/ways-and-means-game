@@ -1,187 +1,187 @@
 # The register
 
 How the prose in this game is written, stated so it can be checked rather
-than felt. Written 21 September 2026 after the author read a state note and
-said: the first half is good, the rest is too vague and ends in a way that
-feels AI.
+than felt. Revised 24 September 2026 after the author read the currents'
+tooltips and the World tab's country notes and said: still AI-sounding, with
+the contrast and the "X vs Y", confusing in its language, not close enough
+to the encyclopedic feel wanted.
 
-They were right, and it is not one line. A scan of all 2,111 player-facing
-passages found the same handful of mechanical habits in ninety-six of
-them. Thirty-four are rewritten and the rest turned out to be the scanner's
-fault, not the prose's. `npm run register` lists them.
+The first version (21 September) applied one set of rules to every passage
+in the game. That was the flaw. A country note, a tooltip and a character's
+line of dialogue are three different kinds of writing, and a habit that is a
+fault in one is a voice in another. So the rules are now **per register**,
+each register is **tied to the surfaces that use it**, and the scanner reads
+each passage against its own register.
 
-## What is wanted
+## The three registers
 
-**Encyclopedic.** The register of a reference work: the fact first, in the
-order a reader needs it. What the thing is, when, on what terms, who holds
-it. A reader should be able to take a sentence out of context and still know
-what it asserts.
-
-**Descriptive, and straight to the point.** More specific, not longer. A
-clause that adds a date, a term, a quantity or a place earns its space. A
-clause that adds emphasis does not.
-
-**Not AI-sounding.** Which in practice means: stop doing the seven things
-below.
-
-## The habits, and what the sweep learned about them
-
-The first version of the scanner reported 96 passages against seven rules.
-The sweep fixed 34 and **deleted or demoted four of the rules**, because
-reading the hits showed they were flagging correct prose. That is the more
-useful half of the exercise, so it is recorded here rather than quietly
-dropped.
-
-The report is now in two halves.
-
-### Mechanical — fix these
-
-A regex can be trusted on these, and all three read zero.
-
-**1. The empty explanatory tail.** `…, which is the point.` `…, which is what
-a ledger is for.` A sentence that has finished its work and then adds a
-clause telling the reader what to think of it. Fifty-four passages matched
-at first; **thirty were the habit and twenty-seven were not.** A tail that
-ends on a NEW fact is doing work:
-
-> which is the first elected office she has ever held
-> which is why one party holds all seven
-
-Cutting those to satisfy a regex would have flattened the prose. So the rule
-now reports a tail only where it introduces no number, no proper noun and
-fewer than four content words of its own. All thirty genuine ones are
-rewritten.
-
-> was: It sells the concession and not the sovereignty, and it has said so in
-> writing.
->
-> now: Colombia's position, stated in the concession instrument and repeated
-> at every renewal, is that the lease conveys operating rights over the
-> corridor and no territorial claim whatever.
-
-> was: The Underwriters keep the premium, which is the business they are in.
->
-> now: The Underwriters keep the premium.
-
-**2. Vague quantity.** `in a decade when it needed the money`, `ever since`,
-`long since`, `for generations`. The tells that name no period at all.
-`for a decade` and `for two centuries` came OUT of this rule: a decade is a
-quantity, and a reference work may give one.
-
-**3. The em-dash sandwich.** Zero, and the rule is kept to hold it there.
-One pair of dashes in a passage is punctuation; two is a mannerism.
-
-### Judgement — read these and decide
-
-These are real patterns that a regex cannot separate from their good uses.
-Reporting them as faults is how a style checker gets argued with once and
-ignored afterwards.
-
-**4. The corrective pair.** `It is not X. It is Y.` **Adjudicated 22 Sep
-2026: eleven read, five rewritten, six kept.** The form is informative when
-the thing being denied is what a reader would actually assume:
-
-> The office is not elected. It is held by whoever can command a majority in
-> the House of Delegates.
->
-> Its grievance is not the platform. It is that the orbital franchises
-> undercut European labour and personhood law.
-
-It is the habit when the denial is a strawman nobody offered. Nothing in the
-text distinguishes the two, which is why this is judgement and not a fault.
-
-**The six that stay, and why — so the next pass does not re-argue them.**
-The scanner will keep reporting all six; this is the verdict, not a
-suppression list, because a suppression list is how a style tool stops being
-read.
-
-| address | the denial | why it stays |
+| register | what it is for | where it is used |
 |---|---|---|
-| `encyclopedia/…/prime_minister/summary` | *not elected* | a reader assumes a head of government is elected; denying it is the constitution. The rule's own comment names this the informative case. |
-| `actors/earth_bloc/note` | *not the platform* | the whole crisis IS the platform, so this corrects the one assumption a reader certainly arrives with. The most useful sentence in the note. |
-| `events/standing_low/body` | *not catastrophic* | the assumption from a low-standing event is catastrophe, and *flat, which is worse* is a real claim the passage then substantiates. |
-| `events/f1_accounts_freeze/body` | *not an embargo yet* | Hatt speaking, and `yet` plus *the price of one* is escalation information. A character may sound like themselves. |
-| `events/the_pairing_offer/body` | *not a favour* | Okarie speaking, and the distinction is cashed out in the next clause — a favour is owed back, a kindness is remembered. |
-| `minutes/min_130/body` | *not a refusal* | an in-world minute where refusal-versus-record is legally load-bearing, and the next line (*I am aware of how this minute will read if it is ever produced*) makes the care deliberate. |
+| **Reference** | telling a reader what a thing is | the Concordance; country notes; currents; parties, stations, constituencies, cabinet posts, functional seats, actors, lenders, bills' summaries, the glossary, party organisation |
+| **Interface** | telling a player what a control or number does | tooltips (`js/tips.js`); a refusal's reason; initiatives' notes; awards; status lines; the sandbox |
+| **Voice** | the world speaking | events (body, result), minutes, the introduction, wire lines, the Underwriters' outlook, `textbook.md` |
 
-**The five that went, and what replaced them.** Every one was a two-word
-antithesis on a word nobody offered, and in each case the passage was
-carrying the real information one sentence later — so the fix was to lead
-with it:
+The scanner knows which surface a passage comes from (`npm run register`
+prints the register beside each hit). A new surface is added to the map in
+`tools/register.js` the day it is written.
 
-- `events/review_reports/body` — *It is not a scandal. It is a schedule.
-  That is the part that will be quoted.* Alliterative antithesis plus an
-  editorial sign-off in one sentence pair; the densest two habits in the
-  corpus. Now states the mechanism: every suspension lawful and minuted, the
-  number growing at the rate the standing orders permit.
-- `events/shed_order_crisis/body` — *What follows is not a headline.* A
-  headline was invented in order to be denied, two sentences after the text
-  had already said the number is never read aloud. The shed order arrives
-  directly now, and *It is what the price does when it goes up and nobody
-  pays it down* became the causal chain as fact.
-- `events/the_opposition_asks/body` — *It is not a question. It is a
-  statement.* Replaced with the observable fact that makes the point: *He
-  does not wait for an answer.*
-- `events/signatures_build/body` — *Six is not a ballot.* This one was
-  teaching a real mechanic, so it says the mechanic: six is half the twelve
-  that would force a ballot. More informative than the version it replaced,
-  because it names the threshold.
-- `events/minister_resignation/body` — *not a protest. It is a payment.*
-  The explanation that follows made the pivot redundant; *closes the
-  account* keeps the metaphor as a verb rather than an epigram.
+## Rules for every register
 
-A sixth habit was found by scanning for things the tool does not model —
-`not X but Y`, superlative framing, *what it will not do is*, *that is the
-part that* — and none of them reached three instances across 2,212
-passages. At that density they are background, not a cadence. The corrective
-pair at eleven was the last one that was.
+- **Say what a thing is and does.** Never define a thing by what it is not.
+- **No contrast framing.** `not X but Y`, `X rather than Y`, `X, not Y`,
+  `It is not X. It is Y.`, `instead of`, `unlike`, `where X, Y`. A reader
+  who meets a denial has to hold two ideas to get one fact, and the
+  construction is the single most recognisable tell of generated prose.
+  State the fact that is true. If the difference genuinely matters, state
+  both facts, each positively, in their own sentences.
+- **No closing line that comments on what came before.** No aphorism, no
+  sign-off, no "which is the point". End on a fact.
+- **No ranking against a set the reader cannot see.** "The least committed
+  of the four", "the most opposed in the party" make the reader work out
+  what the four think. Say what this one thinks.
+- **Plain words for positions.** The five axes are the engine's shorthand,
+  and their pole names are not prose. Write the policy:
 
-**5. The tricolon.** Demoted from a fault. A bill that requires a register,
-a hearing and a decision requires three things, and
-`bills/continuity_registration/contested` is an enumeration, not a cadence.
+  | axis | low end, in words | high end, in words |
+  |---|---|---|
+  | economic | public ownership (of essential systems, of the economy) | private ownership |
+  | authority | civil liberties, limits on state power | a stronger state, firmer powers |
+  | personhood | opposes extending legal personhood | supports extending legal personhood |
+  | sovereignty | more self-government for the stations | a stronger federal government |
+  | trade | limits on trade with Earth | open trade with Earth |
 
-**6. The editorial sign-off.** **None left** — the one was
-`events/review_reports/body`'s *That is the part that will be quoted*, which
-went with the corrective pair in the same sentence pair. `rather than` came OUT of this
-rule: it flagged four constituency notes whose contrasts are exactly right —
-*a technical question rather than a political one*, *a landlord's vote
-rather than a tenant's* — and a construction that useful cannot be a fault.
+  "Closed trade", "widening personhood", "for a federal Commonwealth" and
+  "the station against the federation" are the shorthand leaking out.
 
-### Deleted
+## Reference
 
-**7. Elegant variation.** Removed, and the removal is the finding. It looked
-for two clauses sharing three or more content words, and all twelve hits
-were correct prose: the Concordance's article on the Commonwealth says
-development spending raises a station's closure ratio and that a higher
-closure ratio raises its capacity to leave, which repeats the term because
-that is the causal chain. A reference work names a thing and then uses the
-name. A rule whose every hit is a false positive is worse than no rule — it
-is the line that teaches a reader to skim the report.
+The register of an encyclopedia or an atlas. The model is a Wikipedia lead
+section: it defines its subject in the first sentence and then gives facts
+in the order a reader needs them.
 
-## What stays
+1. **The first sentence defines the subject.** Its name, then *is* or
+   *are*, then what kind of thing it is, then the fact that distinguishes
+   it. "The Trades Left is the largest current in the Party of Socialists
+   and Democrats."
+2. **Then the facts, in this order**: what it consists of, what it does or
+   supports, dates and figures, its present position.
+3. **One fact per sentence, or per clause.** Fifteen to twenty-five words is
+   the usual sentence.
+4. **Specific over general.** A date, a figure, a place, a name. "Since the
+   1950s", not "for generations".
+5. **Neutral verbs.** *Says*, *states*, *holds*, *supports*, *opposes*. Not
+   *insists*, *admits*, *concedes*, *claims*.
+6. **No metaphor, no personification.** A tether stands on a site; it does
+   not bear a grievance.
+7. **"The only" and superlatives only when they are a checkable fact with
+   the set named**, and then stated flatly: "It is the one inland anchor in
+   the dozen." Never as the hook of a sentence.
 
-This is a register for the CONTENT — what a player reads. It is not a rule
-for the comments in `js/` and `tools/`, which are written to one person who
-is about to change the code and are better for being emphatic. The scanner
-only reads player-facing prose for that reason.
+**The constituency and station descriptions are Reference** in the style of
+an election desk: the roll and the ratio, the interests, the lean, one
+specific observation.
 
-Nor is it a ban on voice. `textbook.md` is Charnock's and keeps his cadence;
-bible §2.6 still governs how much a passage may cost a reader; and a
-character speaking may sound like themselves. The habits above are what
-prose does when nobody has decided how it should sound.
+**A model**, the current the author flagged:
+
+> was: The leadership's current. For public ownership and a federal
+> Commonwealth, against widening personhood, and the least committed of the
+> four to closing the Commonwealth to trade.
+>
+> now: The Soft Left is the current of the party leadership, and includes
+> Imre Whitlam, the Leader of the House. It supports public ownership and a
+> strong federal government, and it opposes extending legal personhood. It
+> favours only modest limits on trade with Earth.
+
+## Interface
+
+The register of good software help: descriptive, straightforward, and
+impossible to misread. A tooltip is read by a player in the middle of doing
+something, who wants one answer.
+
+1. **Answer three questions, in this order, and stop.** What is this? What
+   changes it? What can you do about it? Leave out any that do not apply.
+2. **Use the words on the screen.** If the label says *Slots*, the tooltip
+   says *slots*. A tooltip that introduces a second name for the same thing
+   has made two things.
+3. **Second person for what the player does**, present tense: "You can
+   dismiss a minister from your own party."
+4. **Rules are stated as rules.** "Only the House can remove her" is a rule,
+   and a rule may say *only*. What is banned is the contrast used as a hook.
+5. **Numbers come from content, with their units**: never a literal in the
+   prose that content could change.
+6. **Short.** Most tooltips are two or three sentences and under sixty words.
+7. **The world's lore belongs to the Concordance.** A tooltip explains the
+   terminal and says where to read more.
+
+**A model**:
+
+> was: The factions inside a party, with how many members each carries and
+> how loyal each is to its leadership. A party's own row is an average of
+> these; a division is not.
+>
+> now: The organised factions inside a party. The triangle opens a party's
+> row to list its currents, with the number of members in each and their
+> loyalty to the party leadership. The party's loyalty is the average of its
+> currents', weighted by size.
+
+## Voice
+
+Events, minutes and the introduction are the world speaking, and they are
+the author's to write. The narration around a scene follows the common
+rules above. **A character speaking may sound like themselves**, and that
+includes a contrast when the character would draw one; the scanner reports
+contrasts in Voice as a note, never as a fault. `textbook.md` is Charnock's
+and keeps his cadence.
+
+## How the register is tuned
+
+The rules above came from the author reading real passages and saying what
+was wrong with them. That is the method, and it is repeatable:
+
+1. **The author marks passages.** Right, or wrong and why, in a sentence.
+2. **The complaint is turned into a checkable pattern** in
+   `tools/register.js`, with the register or registers it applies to.
+3. **The scanner is run over every passage.** The hits are read before
+   anything is rewritten, because a pattern that flags correct prose is a
+   bad rule (four of the first seven were, and were deleted).
+4. **A handful are rewritten as a calibration set** and shown to the
+   author. Only when those read right is the rest of that register swept.
+5. **The verdicts are recorded here**, so the next pass does not re-argue
+   them.
+
+## Verdicts
+
+- **21 Sep.** The empty explanatory tail, the vague quantity and the
+  em-dash sandwich are faults everywhere. Elegant variation was deleted as a
+  rule: a reference work names a thing and then uses the name.
+- **22 Sep.** Eleven corrective pairs read; five rewritten and six kept as
+  informative denials.
+- **24 Sep.** **Superseded.** The author finds contrast framing
+  AI-sounding as a class, including the "rather than" that the 21 Sep pass
+  defended in four constituency notes, and the six kept pairs. Contrast is
+  now a fault in Reference and Interface and a note in Voice. The six pairs
+  kept on 22 Sep are Voice (two events, a minute) or Reference (the Prime
+  Minister's article, the European Union's note) and are to be read again
+  under this rule; the Voice ones may stay.
+- **24 Sep.** Currents are Reference. Their descriptions were lists of axis
+  poles ("for closed trade, and against widening personhood") with rankings
+  against the rest of the party; all nineteen are rewritten as the first
+  calibration set.
+- **24 Sep.** Country notes are Reference, in an atlas's register. All
+  twelve rewritten: the place, the anchor, the economy, the dates. What a
+  country has to do with the crisis is a separate note, shown once the
+  story has raised it.
 
 ## Using it
 
 ```
-npm run register           every passage carrying a habit, worst first
-npm run register events    only addresses under that prefix
-npm run register pair      only that habit
+npm run register                    every passage with a fault, by register
+npm run register -- reference       one register
+npm run register -- contrast        one habit
+npm run register -- currents        one surface (an address prefix)
+npm run register -- --notes         the Voice notes as well as the faults
 ```
 
-It reports and never rewrites. A rewrite is a decision, and four of the
-seven rules turned out to be wrong about what a fault is — which is a good
-reason for the tool not to have edited anything.
-
-The scanner is not in `npm run check`. A style check that fails a build
-turns into a style check that gets disabled, and the judgement it is standing
-in for belongs to the author.
+It reports and never rewrites. It is not in `npm run check`: a style check
+that fails a build turns into a style check that gets disabled, and the
+judgement it stands in for is the author's.

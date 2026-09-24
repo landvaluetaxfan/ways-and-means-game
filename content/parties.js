@@ -149,16 +149,16 @@ const PARTIES = [
 const CURRENTS = [
   { id:"cu_maintenance", party:"cu", name:"Trades Left",          members:31, loyalty:29,
     axes:{economic:-0.85, authority:-0.35, personhood:-0.8, sovereignty:0.4, trade:-0.6},
-    description:"The largest current, drawn from the maintenance trades. Strongly for public ownership of the systems its members keep running, for a federal Commonwealth that pays for them, for closed trade, and against widening personhood." },
+    description:"The Trades Left is the largest current in the Party of Socialists and Democrats. Its members come from the maintenance trades and their unions. It supports public ownership of the systems its members maintain, federal funding for their upkeep, and limits on trade with Earth. It opposes extending legal personhood." },
   { id:"cu_loyalists",   party:"cu", name:"Soft Left",             members:22, loyalty:88,
     axes:{economic:-0.7, authority:-0.4, personhood:-0.4, sovereignty:0.55, trade:-0.25},
-    description:"The leadership's current. For public ownership and a federal Commonwealth, against widening personhood, and the least committed of the four to closing the Commonwealth to trade." },
+    description:"The Soft Left is the current of the party leadership, and includes Imre Whitlam, the Leader of the House. It supports public ownership and a strong federal government, and it opposes extending legal personhood. It favours only modest limits on trade with Earth." },
   { id:"cu_deck",        party:"cu", name:"Station Left",          members:18, loyalty:54,
     axes:{economic:-0.7, authority:-0.55, personhood:-0.5, sovereignty:-0.4, trade:-0.85},
-    description:"The current of the deck co-operatives. The one current in the party that takes the station's side against the federation, and the most opposed to open trade." },
+    description:"The Station Left is the current of the deck co-operatives, which run the working decks of several stations. It supports public ownership, more self-government for the stations, and strict limits on trade with Earth. It opposes extending legal personhood." },
   { id:"cu_halloran",    party:"cu", name:"Hard Left",              members:11, loyalty:12,
     axes:{economic:-0.9, authority:-0.5, personhood:-0.35, sovereignty:0.2, trade:-0.5},
-    description:"The party's left flank. The strongest for public ownership, the least concerned of the four with personhood, and the current most often in revolt against the leadership. The press calls it the Czarnecki group, after the member for Tier Four who leads it." },
+    description:"The Hard Left is the party's left flank. It is led by Dan Czarnecki, the member for Tier Four, and the press calls it the Czarnecki group. It supports public ownership of the whole economy and limits on trade with Earth, and it leans against extending legal personhood. Its members have been collecting signatures to force a leadership ballot." },
 
   /* THE LIBERALS (the author, 23 Sep: "social, abundance, and classical
      liberals"). The party's own position is the member-weighted mean of
@@ -170,13 +170,13 @@ const CURRENTS = [
      first, the market second. */
   { id:"cl_classical", party:"cl", name:"Classical Liberals",  members:20, loyalty:13,
     axes:{economic:0.95, authority:-0.25, personhood:0.4, sovereignty:0.7, trade:1},
-    description:"The party's largest current, and the elevator and shipping money behind it. Strongly for private ownership and open trade, for a federal Commonwealth with few rules and balanced books, and the least eager of the three to widen personhood." },
+    description:"The Classical Liberals are the largest current in the Liberal Party, and include its leader, Darren Watkins Jr., the Leader of the Opposition. Their support comes largely from the elevator and shipping consortiums. They support private ownership, open trade with Earth, and a federal government that regulates little and balances its budget. They support a gradual extension of legal personhood." },
   { id:"cl_abundance", party:"cl", name:"Abundance Liberals",  members:15, loyalty:29,
     axes:{economic:0.55, authority:0.3, personhood:0.6, sovereignty:0.9, trade:0.9},
-    description:"Holds that the Commonwealth's shortages are shortages of building: of volume, of radiator capacity, of docks. For private capital and a federal state with the power to get things built, for open trade, and for widening personhood." },
+    description:"The Abundance Liberals hold that the Commonwealth's main shortages, of volume, radiator capacity and docks, come from building too little. They support private investment, a federal government with the power to approve and speed up construction, and open trade with Earth. They support extending legal personhood." },
   { id:"cl_social",    party:"cl", name:"Social Liberals",     members:12, loyalty:20,
     axes:{economic:0.35, authority:-0.5, personhood:0.95, sovereignty:0.65, trade:0.7},
-    description:"The rights wing of the party: civil liberties and the personhood case first, the market second. The strongest in the party for widening personhood and against the state's reach, and the least attached to private ownership." },
+    description:"The Social Liberals are the Liberal Party's civil-liberties current. Their priorities are extending legal personhood and limiting the powers of the state. They support a market economy with public provision of essential services, and open trade with Earth." },
 
   /* THE RENAMED PARTIES' ARGUMENTS (T7, design/24 B1). A party with no
      internal current is a bloc that votes, and these three names imply an
@@ -188,10 +188,10 @@ const CURRENTS = [
      Station Right wants the station's own law and nothing federal near it. */
   { id:"fh_title",     party:"fh", name:"Federal Right",           members:6, loyalty:38,
     axes:{economic:0.95, authority:-0.1, personhood:-0.45, sovereignty:0.35, trade:null},
-    description:"Holds that a title is only as good as the court that enforces it, and wants the Commonwealth's courts to do so. Strongly for private ownership, and against widening personhood." },
+    description:"The Federal Right, led by Alan Bluespan III, the leader of the Freehold Party, wants property titles enforced by the Commonwealth's federal courts. It supports private ownership and opposes extending legal personhood." },
   { id:"fh_section",   party:"fh", name:"Station Right",           members:5, loyalty:50,
     axes:{economic:0.85, authority:-0.4, personhood:null, sovereignty:-0.85, trade:null},
-    description:"Holds that a deed is the station's business: the station's own law, and nothing federal near it. Strongly for private ownership, with no settled view on personhood." },
+    description:"The Station Right holds that property should be governed by each station's own law and courts, with no federal involvement. It supports private ownership. It has no settled position on legal personhood." },
 
   /* THE CDA: a church and a coalition partner, and the two argue. The
      Confessionals put the faith first: the congregations made the party and
@@ -201,20 +201,20 @@ const CURRENTS = [
      leadership in public (8.5). */
   { id:"rv_congregation", party:"rv", name:"Confessionals",         members:11, loyalty:62,
     axes:{economic:null, authority:-0.15, personhood:-0.95, sovereignty:null, trade:null},
-    description:"The congregations that made the party, putting the faith first. Their one settled position is against widening personhood; on everything else they are free. They voted the party conference 71 to 29 against the divergence threshold." },
+    description:"The Confessionals are the religious congregations that founded the Congregational Democratic Alliance, and include the party's leader, Ryan Jung-Hee Park. Their one fixed position is opposition to extending legal personhood; on other questions their members vote freely. At the party conference they voted 71 to 29 against the divergence threshold bill." },
   { id:"rv_ministerial",  party:"rv", name:"Coalitionists",         members:6, loyalty:40,
     axes:{economic:-0.55, authority:-0.2, personhood:-0.8, sovereignty:0.45, trade:null},
-    description:"The members who hold the party's offices, putting the coalition first. Against widening personhood like the rest of the party, but also for public ownership and a federal Commonwealth. When the conference went against the leadership, they absented themselves rather than divide against it in public." },
+    description:"The Coalitionists are the Congregational Democratic Alliance members who hold office in the government, and their priority is keeping the coalition together. They oppose extending legal personhood, and they also support public ownership and a strong federal government. When the party conference voted against the leadership, they did not take part in the vote." },
 
   /* UPLIFT: two seats and one question, whether they are there to witness or
      to trade: the Purists will not deal on personhood, the Pragmatists will.
      Each current is one of the two members. */
   { id:"upl_witness", party:"upl", name:"Purists",                  members:1, loyalty:70,
     axes:{economic:-0.7, authority:-0.5, personhood:1, sovereignty:null, trade:null},
-    description:"The member who will not deal on personhood. Uplift's case argued as a principle, with nothing traded for it." },
+    description:"The Purists are one of the Uplift Alliance's two members. The member supports full legal personhood for uplifts as a matter of principle, and does not trade votes on other measures for it. The member also supports public ownership." },
   { id:"upl_bridge",  party:"upl", name:"Pragmatists",              members:1, loyalty:50,
     axes:{economic:-0.5, authority:-0.2, personhood:0.85, sovereignty:0.6, trade:0.7},
-    description:"The member who will. For widening personhood too, and also for open trade and a federal Commonwealth, and ready to vote on other measures in return for movement on the one that matters." },
+    description:"The Pragmatists are the Uplift Alliance's other member, its leader Aalborg Lindegaard. The member supports extending legal personhood, and votes with the government on other measures in exchange for progress on it. The member also supports open trade with Earth and a strong federal government." },
 
   /* THE INDEPENDENTS (T14, design/26 #15 as amended). Six district
      members with no caucus, no whip and no leader, and six different
@@ -229,22 +229,22 @@ const CURRENTS = [
      The other three share nothing with each other or with the bloc. */
   { id:"ind_grimsby",   party:"ind", name:"Homestead A",         members:1, loyalty:68,
     axes:{economic:-0.4, authority:-0.1, personhood:-0.5, sovereignty:0.3, trade:-0.7},
-    description:"Rosalind Grimsby's seat. Public ownership, closed trade and caution on personhood: the nearest of the six to the governing party, and in no bloc." },
+    description:"Rosalind Grimsby is the independent member for Homestead A. The member supports public ownership and limits on trade with Earth, is cautious about extending legal personhood, and votes most often with the governing party. The member belongs to no bloc." },
   { id:"ind_kirilenko", party:"ind", name:"Clearmont & Sowerby", members:1, loyalty:55,
     axes:{economic:-0.45, authority:-0.45, personhood:0.7, sovereignty:-0.65, trade:0.8},
-    description:"Dmitri Kirilenko's seat, and the outlier among the six: for widening personhood, for the station against the federation, and for open trade." },
+    description:"Dmitri Kirilenko is the independent member for Clearmont & Sowerby. The member supports extending legal personhood, more self-government for the stations, and open trade with Earth." },
   { id:"ind_vasquez",   party:"ind", name:"Stanbridge",          members:1, loyalty:62,
     axes:{economic:null, authority:0.15, personhood:-0.6, sovereignty:0.4, trade:-0.75},
-    description:"Marek Vasquez's seat. For a federal Commonwealth with a firmer hand, closed trade and caution on personhood, with no position on ownership." },
+    description:"Marek Vasquez is the independent member for Stanbridge. The member supports a stronger federal government, limits on trade with Earth, and caution in extending legal personhood, and takes no position on ownership." },
   { id:"ind_kettering", party:"ind", name:"Colonnade",           members:1, loyalty:70,
     axes:{economic:null, authority:-0.2, personhood:null, sovereignty:-0.8, trade:-0.8},
-    description:"Brennan Kettering's seat, held on the localist case: the station against the federation, and trade kept closed. Wrenfield-Aubrey is held on the same case." },
+    description:"Brennan Kettering is the independent member for Colonnade, elected on a localist platform of more self-government for the stations and limits on trade with Earth. The member usually votes with the members for Wrenfield-Aubrey and John Henry." },
   { id:"ind_castellan", party:"ind", name:"Wrenfield-Aubrey",    members:1, loyalty:74,
     axes:{economic:null, authority:-0.3, personhood:null, sovereignty:-0.75, trade:-0.85},
-    description:"Nadia Castellan's seat, held on the localist case alongside Colonnade: the station against the federation, and trade kept closed." },
+    description:"Nadia Castellan is the independent member for Wrenfield-Aubrey, elected on the same localist platform as the member for Colonnade: more self-government for the stations and limits on trade with Earth." },
   { id:"ind_merrick",   party:"ind", name:"John Henry",          members:1, loyalty:66,
     axes:{economic:-0.55, authority:-0.25, personhood:-0.65, sovereignty:-0.7, trade:-0.9},
-    description:"Beatrix Merrick's seat. The localist case of Colonnade and Wrenfield-Aubrey, with caution on personhood added; the three vote together often enough to be noticed." }
+    description:"Beatrix Merrick is the independent member for John Henry, elected on the localist platform of the members for Colonnade and Wrenfield-Aubrey, and also opposed to extending legal personhood. The three localist members often vote together." }
 ];
 
 

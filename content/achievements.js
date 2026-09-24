@@ -38,15 +38,11 @@ const ACHIEVEMENTS = [
     when:{ end:"election", seats:"held" } },
 
   { id:"end_supply", name:"No Confidence Without a Word", tier:"ending",
-    note:"You never carried the appropriation. The House rose without supply, " +
-         "so the government fell on the money rather than on a vote. The bill " +
-         "to pay for itself was on the order paper from the first sitting.",
+    note:"You never carried the appropriation. The House rose without supply, and the government fell for want of money. The bill was on the order paper from the first sitting.",
     when:{ end:"loss", reason:"supply" } },
 
   { id:"end_confidence", name:"Short by One", tier:"ending",
-    note:"You lost a confidence division in the House. The majority you had " +
-         "been governing with was gone, and the government fell on the floor " +
-         "rather than at the polls.",
+    note:"You lost a confidence division in the House. The majority you had been governing with was gone, and the government fell on the floor of the House.",
     when:{ end:"loss", reason:["confidence", "no confidence"] } },
 
   { id:"end_ballot", name:"The Caucus Decided", tier:"ending",
@@ -56,10 +52,7 @@ const ACHIEVEMENTS = [
     when:{ end:"loss", reason:"leadership" } },
 
   { id:"end_cascade", name:"The Cascade", tier:"ending",
-    note:"The thermal margin hit zero and the stations stopped running. This " +
-         "is the one loss that arrives from the meters rather than the " +
-         "benches: friction and a thin margin and a reserve that could not " +
-         "cover the next obligation, all at once.",
+    note:"The thermal margin reached zero and the stations stopped running. This loss comes from the meters: friction, a thin margin and a reserve that could not cover the next obligation, all at once.",
     when:{ end:"loss", reason:"cascade" } },
 
   /* ---------- the settlements ---------- */
@@ -130,9 +123,7 @@ const ACHIEVEMENTS = [
     when:{ flags:["mars_asked"] } },
 
   { id:"act_amendment", name:"Amended in Committee", tier:"action",
-    note:"You amended the divergence bill in committee instead of letting it " +
-         "be killed \u2014 either delaying it or carving the boards out of the " +
-         "franchise. The bill changed; it did not die.",
+    note:"You amended the divergence bill in committee, either delaying it or carving the boards out of the franchise, and the bill survived.",
     when:{ flagsAny:["divergence_delayed","divergence_boards"] } },
 
   { id:"act_budget_delayed", name:"Held by the Benches", tier:"action",
