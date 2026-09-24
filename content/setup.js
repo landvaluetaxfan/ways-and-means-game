@@ -440,7 +440,12 @@ const SETUP = {
      unwinnable and the government falls. ballot is the number of signatures
      that forces one (design/08 §2): below it the challenger is gathering,
      above it the caucus divides. */
-  thresholds: { leadershipChallenge: 15, ballot: 12 },
+  /* THE LEADERSHIP (bible §3.5). `signsAt`: a member asked to sign the
+     paper signs at or above this willingness and refuses below it (a
+     member's willingness is 100 less their current's loyalty, less 12 on
+     the payroll, plus 10 for a grievance). `refusalLoyalty`: what a refusal
+     to the Prime Minister's face adds to that member's current. */
+  thresholds: { leadershipChallenge: 15, ballot: 12, signsAt: 50, refusalLoyalty: 2 },
   /* AN ENDING MUST BE CARRIED (design/26 #91). No settlement before this
      sitting, whatever the meters say: without the floor the crisis resolved
      at sitting 7 on one play policy and 13 on another, which is a third of

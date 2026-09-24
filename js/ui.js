@@ -1638,24 +1638,36 @@ const UI = (function () {
       prow("If the caucus divided now", b.for + " for you, " + b.against + " against, of " +
         b.seats + " members; " + b.need + " needed", b.carries ? "you hold" : "you lose",
         b.carries ? "" : "warn");
+    const named = ids => ids.map(id => (C.characterById || {})[id]).filter(Boolean)
+      .map(ch => esc(bare(ch.name)) + (ch.current ? " (" + esc(currentName(ch.current)) + ")" : "")).join(", ");
     if (names.length)
-      paper += `<div class="note">Signed: ` + names.map(ch => esc(bare(ch.name)) +
-        (ch.current ? " (" + esc(currentName(ch.current)) + ")" : "")).join(", ") + `.</div>`;
+      paper += `<div class="note">Signed: ${named(signedIds())}.</div>`;
+    if ((st.refusedBy || []).length)
+      paper += `<div class="note">Refused to your face: ${named(st.refusedBy)}.</div>`;
 
     /* THE MEMBERS CLOSEST TO SIGNING, once content has opened the paper,
        so a government whose benches are content is never shown a trap. */
     if (st.flags.paper_opened && have < need) {
       const list = Engine.signableMembers(st, C).slice(0, 8);
+      /* THE FORECAST, against content's line: "inclined" signs if asked,
+         "will not" refuses, and "may" straddles the line. */
+      const at = T.signsAt == null ? 50 : T.signsAt;
+      const word = w => w >= at + 5 ? "inclined" : w >= at - 15 ? "may" : "will not";
       if (list.length)
         paper += `<div class="note">The members closest to signing, the most ` +
-          `inclined first. Asking one adds their name to the paper.</div>` +
+          `inclined first. Ask one to their face: a member who is willing signs, ` +
+          `and one who is not refuses, comes off the paper for good, and their ` +
+          `current firms behind you.</div>` +
           list.map(m => `<div class="sigrow"><span class="sig-n">${esc(bare(m.name))}` +
             `<i>${esc(m.current ? currentName(m.current) : "no current")}</i></span>` +
-            `<span class="sig-w">${m.will >= 55 ? "inclined" : m.will >= 35 ? "may" : "will not"}</span>` +
+            `<span class="sig-w">${word(m.will)}</span>` +
             `<button class="btn sigbtn" data-sign="${esc(m.id)}"` +
             tipAttr("Ask " + bare(m.name),
-              "Asks this member to sign the paper. A name added is a member " +
-              "lost, and a step toward the ballot that removes you.") +
+              word(m.will) === "inclined"
+                ? "This member is inclined to sign, and will if asked: a name on the paper and a step toward the ballot that removes you."
+                : word(m.will) === "will not"
+                  ? "This member will not sign. Asked, they refuse, come off the paper for good, and their current's loyalty rises."
+                  : "This member may sign. Asked, they either sign or refuse, and a refusal takes them off the paper for good.") +
             `>Ask</button></div>`).join("");
     } else if (!have && !st.flags.paper_opened) {
       paper += `<div class="note">No paper is circulating against the leadership.</div>`;
@@ -1671,9 +1683,10 @@ const UI = (function () {
     det.querySelectorAll("[data-sign]").forEach(btn => btn.addEventListener("click", () => {
       const r = acted(() => Engine.collectSignature(st, C, btn.dataset.sign));
       if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
-      cue("stamp");
-      setStatus(bare(r.member.name) + " has signed the paper · " +
-                r.signatures + " names", "transient");
+      cue(r.signed ? "stamp" : "click");
+      setStatus(r.signed
+        ? bare(r.member.name) + " has signed the paper · " + r.signatures + " names"
+        : bare(r.member.name) + " refuses to sign, to your face", "transient");
       drawAll(); afterAction();
     }));
   }

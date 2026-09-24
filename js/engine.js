@@ -2672,11 +2672,12 @@ const Engine = (function () {
   function signableMembers(st, C) {
     const party = st.playerParty;
     const signed = st.signedBy || (st.signedBy = []);
+    const refused = st.refusedBy || [];
     const out = [];
     (C.characters || []).forEach(ch => {
       if (ch.party !== party) return;
       if (ch.office === "leader" || ch.id === st.pm) return;   /* not the leader */
-      if (signed.indexOf(ch.id) >= 0) return;
+      if (signed.indexOf(ch.id) >= 0 || refused.indexOf(ch.id) >= 0) return;
       const cur = ch.current ? (st.currents[ch.current] || {}) : null;
       const loy = cur && cur.loyalty != null ? cur.loyalty
                 : ((st.parties[party] || {}).loyalty || 60);
@@ -2690,23 +2691,38 @@ const Engine = (function () {
     return out.sort((a, b) => b.will - a.will);
   }
 
-  /* Ask one member. Returns what they said and what it did. */
+  /* Ask one member, to their face. Returns what they said and what it did.
+
+     WILLINGNESS DECIDES IT (the author, 24 Sep). Every member asked used to
+     sign, including the ones the panel labelled "will not" and ministers, so
+     the only thing Ask could do was lose the Prime Minister a member, and
+     there was no reason ever to press it. Now the answer is the member's:
+     at or above `setup.thresholds.signsAt` they sign, and below it they
+     refuse. A refusal to the Prime Minister's face is a declaration, so the
+     member comes off the paper for good (`st.refusedBy`) and their current
+     firms by `thresholds.refusalLoyalty`. Deterministic, as §1.5 requires:
+     the panel's inclined / may / will not is the forecast, and "may"
+     straddles the line, which is the gamble. */
   function collectSignature(st, C, id) {
     const list = signableMembers(st, C);
     const m = list.find(x => x.id === id);
     if (!m) return { ok: false, reason: "that member is not on the paper" };
-    /* A member signs when the ask is stronger than what holds them. The
-       government can press — that is the `press` in the numbers and the reason
-       a minister does not sign — and it can also give ground, which is a
-       promise and costs a flag content reads. */
-    const signed = st.signedBy || [];
-    if (signed.length >= (C.setup.thresholds && C.setup.thresholds.ballot || 12) + 3)
+    const T = C.setup.thresholds || {};
+    const signed = st.signedBy || (st.signedBy = []);
+    if (signed.length >= (T.ballot || 12) + 3)
       return { ok: false, reason: "the paper has all the names it needs" };
+    st.actedThisSitting = true;
+    if (m.will < (T.signsAt == null ? 50 : T.signsAt)) {
+      (st.refusedBy || (st.refusedBy = [])).push(id);
+      const firm = T.refusalLoyalty == null ? 2 : T.refusalLoyalty;
+      if (firm) shiftLoyalty(st, C, m.current || st.playerParty, firm);
+      billLogSafe(st, "The paper: " + m.name + " refused to sign");
+      return { ok: true, signed: false, member: m, signatures: st.signatures || 0 };
+    }
     signed.push(id);
     apply(st, C, [{ signatures: 1 }]);
-    st.actedThisSitting = true;
     billLogSafe(st, "Signature: " + m.name + " added to the paper");
-    return { ok: true, member: m, signatures: st.signatures || 0 };
+    return { ok: true, signed: true, member: m, signatures: st.signatures || 0 };
   }
 
   function billLogSafe(st, text) {

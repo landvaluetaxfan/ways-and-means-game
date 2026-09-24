@@ -2530,10 +2530,10 @@ they are finished with you, or because they want you to know."
 man with a list."`,
   choices:[
     { label:"Open the paper. Let them come and say it.",
-      note:"The names are collected one member at a time on the Party tab, " +
-           "under the leadership. A minister will not sign and a " +
-           "loyal member will not; the ones who will are the ones closest to " +
-           "the door, and every signature is a member you have lost.",
+      note:"Members are asked one at a time on the Party tab, under the " +
+           "leadership. A member who is willing signs, and every signature " +
+           "is a member you have lost. A member who is not refuses, comes off " +
+           "the paper for good, and their current firms behind you.",
       effects:[{ flag:"paper_opened" }, { move:{ "rel.halloran":3 } },
                { move:{ "loyalty.cu_loyalists":-3 } },
                { wire:"CZARNECKI'S PAPER IS ON THE DESK; MEMBERS SAY WHETHER THEY WILL SIGN" }],

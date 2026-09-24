@@ -4754,3 +4754,37 @@ console.log("\nAN EVENT'S OWN EFFECTS APPLY, WITH THE ANSWER:");
   ok("and the choice's apply as well", !!g.flags.probe_choice_said);
   if (bad) { console.log("\n" + bad + " EVENT EFFECT FAILURES"); process.exitCode = 1; }
 })();
+
+console.log("\nTHE PAPER: A MEMBER ASKED SIGNS ONLY IF WILLING:");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  /* Every member asked used to sign, the ones the panel called "will not"
+     among them, so Ask could only ever lose the Prime Minister a member
+     (the author, 24 Sep: willingness decides). The line is content's. */
+  const T = CONTENT.setup.thresholds, at = T.signsAt;
+  const g = Engine.newGame(CONTENT);
+  g.flags.paper_opened = true;
+  const list = Engine.signableMembers(g, CONTENT);
+  const keen = list.find(m => m.will >= at), loath = list.slice().reverse().find(m => m.will < at);
+  ok("the paper offers members on both sides of the line", !!keen && !!loath,
+     list.map(m => m.id + ":" + m.will).join(" "));
+  if (keen && loath) {
+    const s0 = g.signatures || 0;
+    const a = Engine.collectSignature(g, CONTENT, keen.id);
+    ok("a willing member asked signs", a.ok && a.signed === true && g.signatures === s0 + 1,
+       keen.id + " at " + keen.will);
+    const cur = loath.current, l0 = Engine.loyaltyOf(g, cur);
+    const b = Engine.collectSignature(g, CONTENT, loath.id);
+    ok("an unwilling one refuses, and no name is added", b.ok && b.signed === false &&
+       g.signatures === s0 + 1, loath.id + " at " + loath.will);
+    ok("and their current firms behind the leader by content's figure",
+       Engine.loyaltyOf(g, cur) === Math.min(100, l0 + T.refusalLoyalty),
+       cur + " " + l0 + " -> " + Engine.loyaltyOf(g, cur));
+    ok("and they are off the paper for good",
+       !Engine.signableMembers(g, CONTENT).some(m => m.id === loath.id) &&
+       Engine.collectSignature(g, CONTENT, loath.id).ok === false);
+  }
+  if (bad) { console.log("\n" + bad + " PAPER FAILURES"); process.exitCode = 1; }
+})();
