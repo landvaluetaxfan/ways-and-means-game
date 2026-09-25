@@ -177,7 +177,7 @@ const SCHEMA = {
        cent of potential, `overshoot` as inflation less the remit's target */
     economyReadings: ["participation","trade","private",
                       "inflation","expected","overshoot","rate","fx","gap","growth",
-                      "credibility","reserves","debt","balance"],
+                      "credibility","reserves","debt","balance","arrears"],
     bands: ["ring","far","middle","low","external"],
     stationTypes: ["single","bundled","external"],
     stationForms: ["cylinder","torus","drum","sphere","cluster","yard","surface"],

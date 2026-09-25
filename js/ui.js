@@ -5077,7 +5077,8 @@ const UI = (function () {
      --------------------------------------------------------------- */
   const DOW = ["S", "M", "T", "W", "T", "F", "S"];
   const MARKNAME = { division: "Division", owed: "Promised", rises: "The House rises",
-                     prayer: "Prayer window closes", expected: "Expected" };
+                     prayer: "Prayer window closes", expected: "Expected",
+                     bank: "Reserve Bank" };
   const SITDAYS = "four";
   let calMonth = 0;                    /* months from the current sitting */
 
@@ -5114,7 +5115,7 @@ const UI = (function () {
          glance, which is the only reason a calendar is on the screen. The
          dominant mark (a division beats a promise beats a prayer) now tints
          the day's edge, and the dots say how many. */
-      const PRIORITY = { division: 0, rises: 1, owed: 2, prayer: 3, expected: 4 };
+      const PRIORITY = { division: 0, rises: 1, owed: 2, prayer: 3, expected: 4, bank: 5 };
       const dom = d.marks.slice().sort((a, b) =>
         (PRIORITY[a.kind] == null ? 9 : PRIORITY[a.kind]) -
         (PRIORITY[b.kind] == null ? 9 : PRIORITY[b.kind]))[0];
@@ -5199,6 +5200,7 @@ const UI = (function () {
         <span><s class="p-prayer"></s>prayer</span>
         <span><s class="p-expected"></s>expected</span>
         <span><s class="p-rises"></s>rises</span>
+        <span><s class="p-bank"></s>bank</span>
       </div>` +
       /* THE NEXT THREE DEADLINES ARE NOW DOORS. They were inert text on the
          one screen that knows when things are due and cannot do any of them —

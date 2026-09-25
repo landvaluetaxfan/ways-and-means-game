@@ -5703,6 +5703,10 @@ const Engine = (function () {
     if (k === "overshoot") return m.inflation - ((st.law || {}).inflation_target == null ? 2 : +st.law.inflation_target);
     if (k === "debt") return m.debtPct || 0;
     if (k === "balance") return m.balancePct == null ? 0 : m.balancePct;
+    /* what the government could not pay, past the bill authority: none
+       is a zero and not "no reading", so `economyAbove:{arrears:0}` is
+       the question "has the Treasury missed a payment?" */
+    if (k === "arrears") return m.arrears || 0;
     return m[k] == null ? null : m[k];
   }
 
@@ -6511,6 +6515,16 @@ const Engine = (function () {
     }, (from, to) => from.getTime() <= t && t <= to.getTime());
     return out;
   }
+  /* The first sitting on or after a date: the sitting that will know
+     what happened on a day the House did not sit. */
+  function sittingFrom(C, date) {
+    const t = parseDay(date).getTime();
+    let out = null;
+    walkSittings(C, (d, count) => {
+      if (d.getTime() >= t) { out = count; return true; }
+    });
+    return out;
+  }
   /* Whether a date falls in a recess, for the calendar's card. */
   function inRecess(C, date) {
     const t = parseDay(date).getTime();
@@ -6648,6 +6662,30 @@ const Engine = (function () {
       if (e.at < st.sitting) return;
       add(e.at, "expected", e.foreseen);
     });
+    /* THE RESERVE BANK MEETS ON ITS OWN DATES (design/39 §5; design/40).
+       A meeting is the one day in the economy the government can see
+       coming: the cash rate moves on it, and leaning on the Governor is
+       worth doing only before it. It is a DATE, not a sitting, since the
+       Bank does not sit with the House, so the mark keeps the meeting's
+       day and counts `away` to the first sitting that will know the
+       decision. A central bank publishes its dates for the year, and so
+       does this one: every meeting to the end of the calendar year. */
+    if (st.macro && st.macro.nextMeeting) {
+      const every = macroConst(C).meetingEvery || 42;
+      const year = st.macro.nextMeeting.slice(0, 4);
+      let t = parseDay(st.macro.nextMeeting).getTime();
+      for (let k = 0; k < 12; k++) {
+        const day = iso(new Date(t));
+        if (day.slice(0, 4) !== year) break;
+        const on = sittingFrom(C, day);
+        if (on == null) break;
+        out.push({ sitting: on, date: day, kind: "bank",
+                   text: "The Reserve Bank meets on the cash rate",
+                   away: on - st.sitting, tab: "econ",
+                   how: "What its rule asks is on the Economy tab" });
+        t += every * DAY;
+      }
+    }
     if (st.risesAt != null)
       add(st.risesAt, "rises", !lastPeriod(st, C) ? "The House rises for the recess"
         : lastSession(st, C) ? "The House rises and is dissolved"
@@ -6714,8 +6752,8 @@ const Engine = (function () {
 
   const TAB_OF = { decision: "sit", division: "gov", vacancy: "gov",
                    owed: "sit", prayer: "gov", expected: "sit", rises: "sit",
-                   slots: "gov", alert: "gov" };
-  const ORDER  = { sit: 0, gov: 1, cham: 2, orb: 3 };
+                   slots: "gov", alert: "gov", bank: "econ" };
+  const ORDER  = { sit: 0, gov: 1, cham: 2, econ: 3, orb: 4 };
   const SOON = 2;                 /* sittings. Closer than this is business. */
 
   function today(st, C, hasDecision) {

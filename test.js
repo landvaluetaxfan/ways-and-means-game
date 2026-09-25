@@ -5083,6 +5083,17 @@ console.log("\nTHE COMMONWEALTH DOLLAR (design/39 option C):");
      (d.rule > d.from ? d.to >= d.from : d.to <= d.from));
   ok("and meets again six weeks on", b.macro.nextMeeting ===
      new Date(Date.parse(M.firstMeeting) + M.meetingEvery * 864e5).toISOString().slice(0, 10), b.macro.nextMeeting);
+  /* And its dates are on the calendar, which a player can lean on the
+     Governor before. A meeting is a date, not a sitting, so the mark keeps
+     the meeting's own day. */
+  const cal0 = Engine.deadlines(Engine.newGame(CONTENT), CONTENT).filter(x => x.kind === "bank");
+  ok("the Bank's meetings are on the calendar, dated as the Bank dates them",
+     cal0.length > 1 && cal0[0].date === M.firstMeeting && cal0[0].away > 0 &&
+     cal0.every(x => x.date.slice(0, 4) === M.firstMeeting.slice(0, 4)),
+     cal0.map(x => x.date).join(", "));
+  const cal1 = Engine.deadlines(b, CONTENT).filter(x => x.kind === "bank");
+  ok("and a meeting held comes off it", cal1.length && cal1[0].date === b.macro.nextMeeting &&
+     !cal1.some(x => x.date <= b.date), cal1.map(x => x.date).join(", "));
   const hot = Engine.newGame(CONTENT);
   hot.macro.inflation = 7; hot.macro.expected = 6;
   while (hot.date < M.firstMeeting) Engine.advance(hot, CONTENT);
@@ -5129,6 +5140,9 @@ console.log("\nTHE COMMONWEALTH DOLLAR (design/39 option C):");
   ok("and past the Treasury's authority it is unpaid, on the record",
      Engine.debtOf(e, "bills") === CONTENT.setup.lenders.bills.cap && e.macro.arrears === 7000,
      e.macro.arrears + " in arrears");
+  ok("and content can ask whether the Treasury has missed a payment",
+     Engine.matches(e, { economyAbove: { arrears: 0 } }) &&
+     !Engine.matches(Engine.newGame(CONTENT), { economyAbove: { arrears: 0 } }));
 
   /* THE RADIATORS ARE THE CEILING. */
   const cool = Engine.newGame(CONTENT), thin = Engine.newGame(CONTENT);

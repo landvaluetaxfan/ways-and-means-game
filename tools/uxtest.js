@@ -2012,9 +2012,23 @@ try {
 
   /* The session end must appear as a square, not only as a sentence in
      the docket — one source, two readouts. */
-  ok("the day the House rises carries a mark",
-     w.document.querySelectorAll("#sit-cal .calgrid i.cd.m-rises").length +
-     w.document.querySelectorAll("#sit-cal .calnext .cn.rises").length > 0);
+  /* It asked the grid for `.m-rises`, a class the cells stopped carrying
+     when the kind became the day's tint, so it passed only while the rise
+     was among the next three things down — which the Reserve Bank's
+     meeting dates ended. The grid draws the rise as a pip; page forward
+     until a month shows it, and back again. */
+  const risePips = () => w.document.querySelectorAll("#sit-cal .calgrid s.p-rises").length;
+  let paged = 0, rise = risePips();
+  while (!rise && paged < 3) {
+    const b = w.document.querySelector('#sit-cal [data-cal="1"]');
+    if (!b) break;
+    b.click(); paged++; rise = risePips();
+  }
+  for (; paged > 0; paged--) {
+    const b = w.document.querySelector('#sit-cal [data-cal="-1"]');
+    if (b) b.click();
+  }
+  ok("the day the House rises carries a mark", rise > 0, rise + " pips");
 
   /* Paging must not wander off into a year of empty months. */
   const label = () => (w.document.querySelector("#sit-cal .calhead span") || {}).textContent;

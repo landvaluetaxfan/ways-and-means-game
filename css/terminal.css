@@ -2835,6 +2835,9 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .calgrid .cd.top-owed    {border-left:3px solid var(--ok);}
 .calgrid .cd.top-prayer  {border-left:3px solid var(--warn);}
 .calgrid .cd.top-expected{border-left:3px solid var(--chrome-dkr);}
+/* the Reserve Bank's meetings are dated, not sittings, so one often
+   tints a weekend: the gold says "not the House's business" */
+.calgrid .cd.top-bank    {border-left:3px solid var(--gold);}
 .calgrid .cd.now.top-division{border-left-color:var(--alert);}
 .calgrid .cd.now.top-rises   {border-left-color:var(--field);}
 .calgrid .cd.now.top-owed    {border-left-color:var(--ok);}
@@ -2856,6 +2859,7 @@ s.p-owed    {background:var(--ok);}
 s.p-prayer  {background:var(--warn);}
 s.p-expected{background:var(--chrome-dkr);}
 s.p-rises   {background:var(--ink);}
+s.p-bank    {background:var(--gold);}
 /* a fifth thing on one day is a rule, not a fifth dot */
 s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
 .calgrid .cd.now s{outline:1px solid var(--field);}

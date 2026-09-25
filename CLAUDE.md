@@ -799,7 +799,7 @@ version of any of them is in the header of the file it names.
   - **No new effect verb.** The `economy` verb moves the Bank's readings too
     (credibility, expected, inflation, shock, fx, reserves, rate), and
     `economyAbove`/`economyBelow` read them (plus `gap`, `debt`, `balance`,
-    `overshoot`). `js/schema.js` lists both vocabularies, and lint checks
+    `overshoot`, `arrears`). `js/schema.js` lists both vocabularies, and lint checks
     names against it.
   - **The Economy tab has six panels**: the Reserve Bank and the dollar took
     the top of the third column, and the productive economy moved into the
@@ -830,6 +830,25 @@ version of any of them is in the header of the file it names.
   are stable.
 - **THE DESIGN AUDIT (design/37) left fourteen decisions with the author**,
   answered 25 Sep in design/38 (built) and design/39 (the economy, proposed).
+- **THE SECOND AUDIT (design/40, 25 Sep) is the first with the dollar in
+  it, and its items E1–E14 are open.** The ones that are the model's own
+  errors: the opening is not a steady state (thermal 100 → 120 in twelve
+  quiet sittings), inflation reads price LEVELS against the opening where
+  it should read changes, and the Bank's rule reads headline inflation so
+  it raises into a blockade. And one for Flash I: the crisis tiers' reserve
+  bands predate the calendar account, so 14 of 20 random governments that
+  reach the crisis get no result. Read §4 before touching `runEconomy`.
+- **THE BANK'S MEETINGS ARE DATES, NOT SITTINGS** (design/40 F1). A
+  `bank` deadline carries the meeting's own `date` and counts `away` to the
+  first sitting after it (`sittingFrom`), so it can tint a weekend. Anything
+  that reads `deadlines()` must take `date` from the mark, never from
+  `dateOfSitting(m.sitting)`.
+- **A CHECK THAT READS A RETIRED CLASS PASSES BY ITS OTHER BRANCH.**
+  `uxtest`'s rise check OR-ed the calendar grid's `.m-rises` (gone since the
+  kind became the day's tint) with the next-three list, so it was really
+  asserting "the rise is among the next three things", and the Bank's
+  meetings ended that. An OR in an assertion is two checks, and each needs
+  breaking on its own.
 - **THE COUNT IS TAKEN AT THE END OF THE CAMPAIGN, AND IT LISTENS** (design/38
   §1).
   - `dissolve()` records the House that went to the country. `count()`
