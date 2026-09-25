@@ -39,8 +39,8 @@ rename reaches both.
 
 **New content fields to know about:** `parties[].leader` (a character id; `null`
 for `ind`) and `cabinet[].title` (the *minister's* title, e.g. "Treasurer" or
-"Leader of the House", distinct from the ministry `name`). The editor does not
-expose either yet but serialises them unchanged.
+"Leader of the House", distinct from the ministry `name`). The editor draws
+both since 25 Sep: a party's Leader, and the Cabinet tab.
 
 **Content corrections made in the same pass:** Marin is Minister for Persons and
 Continuity again (Abadi keeps `fc_medicine`, backbench); Anselm Ring's
@@ -1122,8 +1122,21 @@ version of any of them is in the header of the file it names.
   `campaign` means "plays", so the sandbox is kept with Flash I and keeps
   its field. `edtest` makes a campaign end to end. A draft saved before a
   kind was editable gets that kind from the files on restore.
-  Still hand-edited: instruments, the cabinet, party leaders and the
-  world's `setup`.
+- **AND THE EXECUTIVE, AND A CAMPAIGN'S ECONOMY** (25 Sep). An **Orders**
+  tab (instruments: author, procedure, prayer window or approval floor,
+  gate, its three effect lists, prayer stances), a **Cabinet** tab (posts,
+  holders, the minister's title, brief, the Treasury's candidates as JSON),
+  a party's **Leader**, and on a campaign record **the economy it opens
+  with**: opening inflation, cash rate, dollar and credibility into
+  `setup.macro`, the four tax rates into `setup.law`, each merged over the
+  world's. Opening the orders found an encoder fault: a set to null
+  (`{law:{reserve_direction:null}}`, how a revoked direction clears) was
+  drawn as an empty box and read back `0`. Such a value is kept as JSON
+  now, and `edtest`'s encoding check reads every effect list in content,
+  not only a choice's. **The world's `content/setup.js` stays hand-edited
+  on purpose**: an export regenerates a whole file from data, and that
+  file's comments are the documentation of every setting, and it defines
+  `campaign()`. A campaign changes the world's setup through its record.
 
 - **A NUMBER THE INTERFACE PRINTS IS CONTENT'S NUMBER — three found in two
   days.** The chart's record button read `2280-2287` as literal text while

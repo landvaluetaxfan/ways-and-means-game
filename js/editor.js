@@ -53,7 +53,10 @@ const Editor = (function () {
       achievements: clone(typeof ACHIEVEMENTS !== "undefined" ? ACHIEVEMENTS : []),
       /* and the campaign record itself: who governs, the introduction, the
          setup a campaign changes and the effects it opens with */
-      administrations: clone(typeof ADMINISTRATIONS !== "undefined" ? ADMINISTRATIONS : [])
+      administrations: clone(typeof ADMINISTRATIONS !== "undefined" ? ADMINISTRATIONS : []),
+      /* the executive: its posts, and the orders they make */
+      cabinet: clone(typeof CABINET !== "undefined" ? CABINET : []),
+      instruments: clone(typeof INSTRUMENTS !== "undefined" ? INSTRUMENTS : [])
     };
   }
 
@@ -264,6 +267,16 @@ const Editor = (function () {
        with the first in the list (design/38 §3). */
     if (d.shape === "queue" && ([].concat(v).length !== 1 || [].concat(v)[0].effects ||
         ![].concat(v)[0].event))
+      return { verb, key: "", field: "", value: JSON.stringify(v), delta: "", raw: true };
+    /* A SET TO NULL OR TO AN OBJECT. {law:{reserve_direction:null}} is how
+       a revoked order clears a direction, and the box drew nothing and read
+       back 0 (found 25 Sep, when the editor began writing instruments). A
+       value a text box cannot say is kept as JSON. */
+    const setVal = d.shape === "keyedSet" && v && typeof v === "object" ? v[Object.keys(v)[0]]
+      : d.shape === "nestedSet" && v && typeof v === "object" && v[Object.keys(v)[0]] &&
+        typeof v[Object.keys(v)[0]] === "object"
+        ? v[Object.keys(v)[0]][Object.keys(v[Object.keys(v)[0]])[0]] : undefined;
+    if (setVal === null || (setVal && typeof setVal === "object"))
       return { verb, key: "", field: "", value: JSON.stringify(v), delta: "", raw: true };
     const r = { verb, key: "", field: "", value: "", delta: "" };
     switch (d.shape) {
@@ -564,6 +577,8 @@ const Editor = (function () {
       <label>Short ${txt_("short", p.short || "", "", 70)}</label>
       <label class="ed-w">Aliases ${txt_("aliases", (p.aliases || []).join(", "), "press nicknames", 220)}</label>
       <label>Colour ${txt_("colour", p.colour, "", 130)}</label>
+      <label>Leader ${opt_("leader", vocab("characters"), p.leader)}
+        <span class="ed-hint">the Concordance reads the office from here</span></label>
       ${M.currents.some(c => c.party === p.id)
         ? `<label>Loyalty <span class="ed-hint">the mean of its currents</span></label>`
         : `<label>Loyalty ${num_("loyalty", p.loyalty)}</label>`}
@@ -1048,11 +1063,37 @@ const Editor = (function () {
     return typeof document !== "undefined" && !!document.querySelector('script[src="' + path + '"]');
   }
 
+  /* THE ECONOMY A CAMPAIGN OPENS WITH, as fields: four of the Bank's
+     opening readings (setup.macro) and the four tax rates (setup.law).
+     Setup merges one level deep, so macro:{inflation:4} changes the opening
+     inflation and keeps every other constant of the world's model. The
+     rest of macro and law stays in "Other setup". */
+  const OPEN_MACRO = [["inflation", "inflation, %"], ["rate", "cash rate, %"], ["fx", "dollar, US$"],
+                      ["credibility", "Bank's credibility, 0–1"]];
+  const OPEN_RATES = ["rate_volume", "rate_thermal", "rate_substrate", "rate_transit"];
+  /* the setup less what has a field of its own */
+  function setupRest(S) {
+    const rest = {};
+    Object.keys(S || {}).forEach(k => {
+      if (k === "startDate" || k === "scalars") return;
+      if ((k === "macro" || k === "law") && S[k] && typeof S[k] === "object" && !Array.isArray(S[k])) {
+        const own = k === "macro" ? OPEN_MACRO.map(x => x[0]) : OPEN_RATES, o = {};
+        Object.keys(S[k]).forEach(j => { if (own.indexOf(j) < 0) o[j] = S[k][j]; });
+        if (Object.keys(o).length) rest[k] = o;
+        return;
+      }
+      rest[k] = S[k];
+    });
+    return rest;
+  }
+
   function campaignForm(a) {
     const home = (typeof a.campaign === "string" && a.campaign) || a.id;
     const S = a.setup || {}, sc = S.scalars || {};
-    const rest = {};
-    Object.keys(S).forEach(k => { if (k !== "startDate" && k !== "scalars") rest[k] = S[k]; });
+    const rest = setupRest(S);
+    const mac = S.macro || {}, law = S.law || {};
+    const W = typeof SETUP !== "undefined" ? SETUP : {};
+    const levels = Object.keys((W.fiscal || {}).rates || {}).filter(x => x !== "none");
     const files = campaignFiles(home);
     const missing = files.filter(f => !onThisPage(f.path));
     const intro = a.intro;
@@ -1076,6 +1117,15 @@ const Editor = (function () {
       <label>Opens on ${txt_("startDate", S.startDate || "", "2080-04-11", 110)}</label>
       ${SCHEMA.vocab.scalars.filter(k => k !== "party_loyalty").map(k =>
         `<label>${esc(k.replace(/_/g, " "))} ${num_("sc_" + k, sc[k] == null ? "" : sc[k], 70)}</label>`).join("")}
+    </div>
+    <div class="rulehead">The economy it opens with <span class="ed-hint">blank keeps the world's; the debt it owes is an opening effect (debt.&lt;lender&gt;)</span></div>
+    <div class="ed-grid">
+      ${OPEN_MACRO.map(([k, l]) => `<label>${esc(l)} ${num_("mc_" + k, mac[k] == null ? "" : mac[k], 70)}
+        <span class="ed-hint">${esc(String(((W.macro || {})[k]) == null ? "" : "world " + W.macro[k]))}</span></label>`).join("")}
+    </div>
+    <div class="ed-grid">
+      ${OPEN_RATES.map(k => `<label>${esc(k.replace("rate_", ""))} tax ${opt_("lw_" + k, levels.map(v => [v, v]), law[k],
+        "world: " + ((W.law || {})[k] || "standard"))}</label>`).join("")}
     </div>
     <label class="ed-res">Other setup <textarea class="ed-f ed-noteta" data-f="setup_rest" rows="${
       Math.min(14, Math.max(2, restText.split("\n").length))}"
@@ -1138,10 +1188,22 @@ const Editor = (function () {
     const raw = g_("setup_rest").value.trim();
     try { rest = raw ? JSON.parse(raw) : {}; setupError = null; }
     catch (e) { setupError = a.id + ": the other setup is not valid JSON, so it was left as it was"; }
-    if (rest === null) {
-      rest = {};
-      Object.keys(was).forEach(k => { if (k !== "startDate" && k !== "scalars") rest[k] = was[k]; });
-    }
+    if (rest === null) rest = clone(setupRest(was));
+    /* the opening economy's fields go back into macro and law, each key
+       where it stood in the entry and a new one at the end */
+    const into = (key, fields) => {
+      const base = rest[key] && typeof rest[key] === "object" ? rest[key] : {};
+      const had = was[key] && typeof was[key] === "object" ? was[key] : {};
+      const o = {};
+      Object.keys(had).forEach(k => { if (k in fields) o[k] = fields[k]; else if (k in base) o[k] = base[k]; });
+      Object.keys(base).concat(Object.keys(fields)).forEach(k => {
+        if (!(k in o)) o[k] = k in fields ? fields[k] : base[k]; });
+      if (Object.keys(o).length) rest[key] = o; else delete rest[key];
+    };
+    const mf = {}, lf = {};
+    OPEN_MACRO.forEach(([k]) => { const f = g_("mc_" + k); if (f && f.value !== "") mf[k] = +f.value; });
+    OPEN_RATES.forEach(k => { const f = g_("lw_" + k); if (f && f.value) lf[k] = f.value; });
+    into("macro", mf); into("law", lf);
     const sc = {}, wasSc = was.scalars || {};
     Object.keys(wasSc).concat(SCHEMA.vocab.scalars).forEach(k => {
       if (k in sc) return;
@@ -1179,6 +1241,147 @@ const Editor = (function () {
       });
     }
     return a;
+  }
+
+  /* =========================================================
+     THE CABINET AND THE INSTRUMENTS (25 Sep)
+
+     A post is a ministry, its minister's title and who holds it; an
+     instrument is an order a post can make without a bill. Their ids are
+     named by effects, authors and conditions that js/refs.js does not
+     rename, so an id here is a plain field and the validation panel says
+     when something names one that is gone.
+     ========================================================= */
+
+  const opt_ = (name, list, cur, none) => {
+    const known = !cur || list.some(([v]) => v === cur);
+    return `<select class="ed-f" data-f="${name}">` +
+      (known ? "" : `<option value="${esc(cur)}" selected>${esc(cur)} (not in this list)</option>`) +
+      [["", none || "— none —"]].concat(list).map(([v, l]) =>
+        `<option value="${esc(v)}"${v === (cur || "") ? " selected" : ""}>${esc(l)}</option>`).join("") +
+      `</select>`;
+  };
+  /* a field whose shape the form does not draw, kept as JSON */
+  const jsonField = (name, v, rows) =>
+    `<textarea class="ed-f ed-noteta" data-f="${name}" rows="${rows || 3}" spellcheck="false" style="width:100%;font-family:var(--f-data)">${
+      esc(v === undefined ? "" : JSON.stringify(v, null, 2))}</textarea>`;
+  const readJson = (o, k, text) => {
+    const t = text.trim();
+    if (!t) { delete o[k]; return; }
+    try { o[k] = JSON.parse(t); } catch (e) { /* left as it was */ }
+  };
+
+  function cabinetForm(c) {
+    return `<div class="ed-grid">
+      <label>Id ${txt_("id", c.id, "", 150)}</label>
+      <label class="ed-w">Ministry ${txt_("name", c.name, "Life Support", 220)}</label>
+      <label class="ed-w">Minister's title ${txt_("title", c.title || "", "Minister for Life Support", 260)}</label>
+      ${campField(c)}
+    </div>
+    <div class="ed-grid">
+      <label>Holder ${opt_("holder", vocab("characters"), c.holder, "— vacant —")}</label>
+      <label>Party ${opt_("party", vocab("parties"), c.party)}</label>
+      <label class="ed-chk"><input type="checkbox" class="ed-f" data-f="senior" ${c.senior ? "checked" : ""}> senior</label>
+      <label class="ed-chk"><input type="checkbox" class="ed-f" data-f="apart" ${c.apart ? "checked" : ""}> sits apart, reporting to the Prime Minister</label>
+    </div>
+    <div class="rulehead">Brief <span class="ed-hint">the subjects it answers for, comma separated: a meter, price.&lt;k&gt;, a law, a station field</span></div>
+    ${txt_("brief", (c.brief || []).join(", "), "thermal_margin, price.thermal", 520)}
+    <div class="rulehead">Note</div>
+    <textarea class="ed-f ed-body" data-f="note" rows="3">${esc(c.note || "")}</textarea>
+    ${c.candidates !== undefined || c.vacatedBy !== undefined ? `
+    <div class="rulehead">Filling it <span class="ed-hint">who left it, and who may take it, with what each appointment does (JSON)</span></div>
+    <div class="ed-grid"><label>Vacated by ${opt_("vacatedBy", vocab("characters"), c.vacatedBy)}</label></div>
+    ${jsonField("candidates", c.candidates, 8)}` : ""}`;
+  }
+  function readCabinet(orig) {
+    const c = clone(orig || {});
+    c.id = g_("id").value.trim(); c.name = g_("name").value;
+    putText(c, "title", g_("title").value);
+    readCampaign(c);
+    c.holder = g_("holder").value || null;
+    c.party = g_("party").value || null;
+    if (g_("senior").checked) c.senior = true; else delete c.senior;
+    if (g_("apart").checked) c.apart = true; else delete c.apart;
+    const br = g_("brief").value.split(",").map(x => x.trim()).filter(Boolean);
+    if (br.length || c.brief) c.brief = br;
+    putText(c, "note", g_("note").value);
+    if (g_("vacatedBy")) { const v = g_("vacatedBy").value; if (v) c.vacatedBy = v; else if (c.vacatedBy !== undefined) c.vacatedBy = null; }
+    if (g_("candidates")) readJson(c, "candidates", g_("candidates").value);
+    return c;
+  }
+
+  /* an instrument's three lists of effects: what it does, what revoking it
+     undoes, and what laying it costs whatever happens after */
+  const SI_LISTS = [["effects", "What it does"], ["reverse", "Revoked, it undoes"], ["political_cost", "Laying it costs"]];
+  function instrumentForm(si) {
+    const posts = (M.cabinet || []).map(p => [p.id, p.title || p.name]);
+    const neg = si.procedure !== "affirmative";
+    const rows = M.parties.map(p => {
+      const v = (si.prayer_stances || {})[p.id];
+      const raw = v != null && typeof v !== "string";
+      return `<tr data-p="${p.id}"><td><i class="swatch" style="background:${p.colour}"></i>${esc(p.name)}</td><td>` +
+        (raw ? `<input class="ed-f" data-f="ps_raw" type="text" value="${esc(JSON.stringify(v))}" style="width:220px">`
+             : `<select class="ed-f" data-f="ps">${[["", "— its own view —"], ["for", "for"], ["against", "against"], ["abstain", "abstain"]]
+                 .map(([o, l]) => `<option value="${o}"${o === (v || "") ? " selected" : ""}>${l}</option>`).join("")}</select>`) +
+        `</td></tr>`;
+    }).join("");
+    return `<div class="ed-grid">
+      <label>Id ${txt_("id", si.id, "si_2080_00", 130)}</label>
+      <label>Number ${txt_("number", si.number || "", "SI 2080/00", 100)}</label>
+      <label class="ed-w">Title ${txt_("title", si.title, "", 360)}</label>
+    </div>
+    <div class="ed-grid">
+      <label>Made by ${opt_("author", posts, si.author)}</label>
+      <label>Procedure <select class="ed-f" data-f="procedure">${[["negative", "negative: in force when laid, annulled on a prayer"],
+        ["affirmative", "affirmative: in force when the House approves"]].map(([v, l]) =>
+        `<option value="${v}"${v === (si.procedure || "negative") ? " selected" : ""}>${l}</option>`).join("")}</select></label>
+      ${neg ? `<label>Prayer window ${num_("prayer_window", si.prayer_window == null ? "" : si.prayer_window)} <span class="ed-hint">sittings</span></label>`
+            : `<label>Approval floor ${num_("approvalFloor", si.approvalFloor == null ? "" : si.approvalFloor, 60)} <span class="ed-hint">of a bench that holds whatever its loyalty; blank 0.75</span></label>`}
+      <label class="ed-chk"><input type="checkbox" class="ed-f" data-f="revocable" ${si.revocable ? "checked" : ""}> revocable</label>
+      ${campField(si)}
+    </div>
+    <div class="rulehead">Open while <button class="btn ed-add" data-act="cond-add">+ condition</button>
+      <span class="ed-hint">a rung of a ladder is open once the rung below has been tried</span></div>
+    <div id="ed-conds">${condRows(si.when)}</div>
+    <div class="rulehead">Summary <span class="ed-hint">what it says, as the register prints it</span></div>
+    <textarea class="ed-f ed-body" data-f="summary" rows="3">${esc(si.summary || "")}</textarea>
+    <div class="rulehead">Effect note <span class="ed-hint">what it does, in words, beside the Lay button</span></div>
+    <textarea class="ed-f ed-body" data-f="effect_note" rows="2">${esc(si.effect_note || "")}</textarea>
+    ${SI_LISTS.map(([k, label], ci) => `
+    <div class="rulehead">${label} <button class="btn ed-add" data-act="eff-add" data-ci="${ci}">+ effect</button></div>
+    <div class="ed-effs" id="ed-si-${k}">${explodeEffects(si[k]).map((eff, ei) => effRow(eff, ci, ei)).join("")}</div>`).join("")}
+    <div class="rulehead">On a prayer <span class="ed-hint">how each party votes on annulling it (or on approving it); blank is its own view</span></div>
+    <table class="ed-stance"><tbody>${rows}</tbody></table>`;
+  }
+  function readInstrument(orig) {
+    const si = clone(orig || {});
+    si.id = g_("id").value.trim(); si.title = g_("title").value;
+    putText(si, "number", g_("number").value);
+    const au = g_("author").value; if (au) si.author = au; else delete si.author;
+    si.procedure = g_("procedure").value;
+    if (g_("prayer_window")) putNum(si, "prayer_window", g_("prayer_window").value);
+    if (g_("approvalFloor")) putNum(si, "approvalFloor", g_("approvalFloor").value);
+    si.revocable = g_("revocable").checked;
+    readCampaign(si);
+    const when = readConds(document.getElementById("ed-conds"));
+    if (when) si.when = when; else delete si.when;
+    putText(si, "summary", g_("summary").value);
+    putText(si, "effect_note", g_("effect_note").value);
+    SI_LISTS.forEach(([k]) => {
+      const effs = readEffs(document.getElementById("ed-si-" + k));
+      if (effs.length || Array.isArray(si[k])) si[k] = effs; else delete si[k];
+    });
+    const ps = {};
+    document.querySelectorAll(".ed-stance tbody tr").forEach(tr => {
+      const raw = tr.querySelector('[data-f="ps_raw"]'), sel = tr.querySelector('[data-f="ps"]');
+      if (raw) { try { ps[tr.dataset.p] = JSON.parse(raw.value); } catch (e) { ps[tr.dataset.p] = (orig.prayer_stances || {})[tr.dataset.p]; } }
+      else if (sel && sel.value) ps[tr.dataset.p] = sel.value;
+    });
+    /* in the order the entry wrote them, and the rest after */
+    const was = orig.prayer_stances || {}, out = {};
+    Object.keys(was).concat(Object.keys(ps)).forEach(k => { if (k in ps && !(k in out)) out[k] = ps[k]; });
+    if (Object.keys(out).length || orig.prayer_stances) si.prayer_stances = out;
+    return si;
   }
 
   /* =========================================================
@@ -1222,6 +1425,16 @@ const Editor = (function () {
               sub: i => (i.cost || 0) + " slot" + (i.cost === 1 ? "" : "s"),
               form: initiativeForm, blank: () => ({ id: "new_initiative", title: "New initiative", note: "",
                 cost: 1, tempo: [{ label: "Quietly", after: 2 }, { label: "In public", after: 4, cost: 1 }] }) },
+    cabinet: { arr: "cabinet", label: c => c.title || c.name || c.id,
+              sub: c => { const h = M.characters.find(x => x.id === c.holder);
+                          return h ? h.name.replace(/ MP$/, "").replace(/^Rt\. Hon\. /, "") : "vacant"; },
+              form: cabinetForm, blank: () => ({ id: "new_post", name: "New Ministry", title: "Minister for ",
+                holder: null, party: null, note: "" }) },
+    instruments: { arr: "instruments", label: si => si.title || si.id,
+              sub: si => (si.number || "") + " \u00b7 " + (si.procedure || "negative"),
+              form: instrumentForm, blank: () => ({ id: "si_new", title: "New Order", number: "SI 0000/00",
+                author: (M.cabinet[0] || {}).id, procedure: "negative", prayer_window: 6, revocable: true,
+                summary: "", effect_note: "", effects: [], reverse: [], political_cost: [] }) },
     campaigns: { arr: "administrations",
               label: a => { const c = M.characters.find(x => x.id === a.leader);
                             return (c ? c.name.replace(/ MP$/, "") : a.leader || a.id) + " " + (a.ordinal || ""); },
@@ -1293,10 +1506,14 @@ const Editor = (function () {
     else if (sel.tab === "initiatives") { arr[i] = readInitiative(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "achievements") { arr[i] = readAchievement(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "campaigns") { arr[i] = readAdministration(arr[i]); sel.id = arr[i].id; }
+    else if (sel.tab === "cabinet") { arr[i] = readCabinet(arr[i]); sel.id = arr[i].id; }
+    else if (sel.tab === "instruments") { arr[i] = readInstrument(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "parties") {
       const p = arr[i];
       p.id = g("id").value.trim(); p.name = g("name").value; p.short = g("short").value;
       p.colour = g("colour").value; p.note = g("note").value;
+      /* a party with no leader says so as null, the way the independents do */
+      if (g("leader")) { const ld = g("leader").value; if (ld) p.leader = ld; else if (p.leader !== undefined) p.leader = null; }
       /* a party with currents has no loyalty of its own to write */
       if (g("loyalty")) p.loyalty = +g("loyalty").value;
       const lg = g("logo").value.trim(); if (lg) p.logo = lg; else delete p.logo;
@@ -1518,19 +1735,18 @@ const Editor = (function () {
         soft.slice(0, 6).map(s => "  · " + s).join("\n")
       : "";
     /* REFERENCES IN FILES THIS EDITOR DOES NOT WRITE. The model holds the
-       files it exports; setup, the cabinet, instruments, minutes, business
-       and actors name the same ids and are read-only here, so a rename
-       would leave them pointing at nothing. They are found and listed so
-       they can be changed by hand. (Initiatives, settlements and the
-       administrations are the model's since 25 Sep, and a rename reaches
+       files it exports; setup, minutes, business and actors name the same
+       ids and are read-only here, so a rename would leave them pointing at
+       nothing. They are found and listed so they can be changed by hand.
+       (Initiatives, settlements, administrations, the cabinet and the
+       instruments are the model's since 25 Sep, and a rename reaches
        them.) */
     const G = n => (typeof window !== "undefined" && window[n]) ||
       (function () { try { return eval(n); } catch (e) { return undefined; } })();
     const outside = Refs.find(Object.assign({}, M, {
-      cabinet: G("CABINET"), instruments: G("INSTRUMENTS"),
       minutes: G("MINUTES"), business: G("BUSINESS"),
       actors: G("ACTORS"), setup: G("SETUP") }), kind, from)
-      .filter(h => /^(setup|cabinet|instrument|minute|business|actor) /.test(h.where));
+      .filter(h => /^(setup|minute|business|actor) /.test(h.where));
     const outNote = outside.length
       ? `\n\nNOT changed — in files this editor does not write, change by hand:\n` +
         outside.slice(0, 8).map(h => "  · " + h.where).join("\n") +
@@ -1901,6 +2117,31 @@ const Editor = (function () {
     });
     P.push(["info", "chapters: " + [...declared].sort((a,b)=>a-b).join(", ")]);
 
+    const dupes = (arr, what) => arr.map(x => x.id).forEach((id, i, a) => {
+      if (a.indexOf(id) !== i) P.push(["dup", "duplicate " + what + " id: " + id]); });
+    /* THE EXECUTIVE (25 Sep): a post held by somebody who exists, an order
+       made by a post that exists, and a gate naming an order that does */
+    const POSTS = new Set((M.cabinet || []).map(c => c.id)), SIS = new Set((M.instruments || []).map(x => x.id));
+    const PEOPLE = new Set(M.characters.map(c => c.id));
+    dupes(M.cabinet || [], "post"); dupes(M.instruments || [], "instrument");
+    (M.cabinet || []).forEach(c => {
+      if (c.holder && !PEOPLE.has(c.holder)) P.push(["err", "post " + c.id + ": held by nobody '" + c.holder + "'"]);
+    });
+    M.parties.forEach(p => {
+      if (p.leader && !PEOPLE.has(p.leader)) P.push(["err", "party " + p.id + ": led by nobody '" + p.leader + "'"]);
+    });
+    (M.instruments || []).forEach(x => {
+      if (!POSTS.has(x.author)) P.push(["err", "instrument " + x.id + ": made by no post '" + x.author + "'"]);
+    });
+    const siGates = [];
+    [M.events, M.initiatives, M.instruments, M.settlements].forEach(arr => (arr || []).forEach(o => {
+      const walk = (w, where) => ["siInForce", "siNotMade"].forEach(k => [].concat((w || {})[k] || []).forEach(id => {
+        if (!SIS.has(id)) siGates.push(where + ": names no instrument '" + id + "'"); }));
+      walk(o.when, o.id);
+      (o.choices || []).forEach((c, i) => walk(c.when, o.id + " choice " + (i + 1)));
+    }));
+    siGates.forEach(t => P.push(["err", t]));
+
     /* THE CAMPAIGN RECORDS (25 Sep) */
     if (setupError) P.push(["err", setupError]);
     const CH = new Set(M.characters.map(c => c.id)), PA = new Set(M.parties.map(p => p.id));
@@ -1923,8 +2164,6 @@ const Editor = (function () {
       })));
 
     /* THE ENDINGS, WHAT CAN BE STARTED, AND THE AWARDS (25 Sep) */
-    const dupes = (arr, what) => arr.map(x => x.id).forEach((id, i, a) => {
-      if (a.indexOf(id) !== i) P.push(["dup", "duplicate " + what + " id: " + id]); });
     dupes(M.settlements || [], "ending"); dupes(M.initiatives || [], "initiative");
     dupes(M.achievements || [], "award");
     const SE = new Set((M.settlements || []).map(x => x.id));
@@ -2096,7 +2335,7 @@ const Editor = (function () {
     document.getElementById("sb-dirty").style.color = "";
     const all = ["events", "parties", "stations", "characters", "bills", "glossary",
                  "concordance", "functional", "constituencies",
-                 "settlements", "initiatives", "achievements", "campaigns"]
+                 "settlements", "initiatives", "achievements", "campaigns", "cabinet", "instruments"]
       .reduce((a, k) => a.concat(filesOf(k)), []);
     all.forEach((f, i) => setTimeout(() => download(downloadName(f.path), f.text), i * 120));
   }
@@ -2232,8 +2471,10 @@ const Editor = (function () {
       if (act === "choice-del") cur.choices.splice(+b.dataset.ci, 1);
       /* an effect row belongs to a choice, or on the Initiatives tab to a
          tempo: the same rows, a different list */
-      const blocks = sel.tab === "initiatives" ? (cur.tempo ||= []) : sel.tab === "campaigns" ? [cur] : cur.choices;
-      const effKey = sel.tab === "campaigns" ? "opening" : "effects";
+      const blocks = sel.tab === "initiatives" ? (cur.tempo ||= [])
+                   : sel.tab === "campaigns" || sel.tab === "instruments" ? [cur, cur, cur] : cur.choices;
+      const effKey = sel.tab === "campaigns" ? "opening"
+                   : sel.tab === "instruments" ? SI_LISTS[+b.dataset.ci][0] : "effects";
       /* `move`, not `scalar`: the verb was folded into move, apply() throws
          on it, and every effect this button made was a crash in waiting. */
       if (act === "eff-add") (blocks[+b.dataset.ci][effKey] ||= []).push({ move: { public_standing: 0 } });

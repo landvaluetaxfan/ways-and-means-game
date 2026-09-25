@@ -163,13 +163,20 @@ try {
     ok("effect pairs survive the form", true, "editor exposes no test hook — skipped");
   } else {
     const lost = [];
-    w.eval("CONTENT.events").forEach(e => (e.choices || []).forEach(c => {
-      const want = [].concat(c.effects || []).flatMap(pairsOf).sort().join(" | ");
-      const got = ed.explodeEffects(c.effects)
+    const check = (where, list) => {
+      const want = [].concat(list || []).flatMap(pairsOf).sort().join(" | ");
+      const got = ed.explodeEffects(list)
         .map(x => ed.rowToEff(ed.effToRow(x)))
         .filter(Boolean).flatMap(pairsOf).sort().join(" | ");
-      if (want !== got) lost.push(e.id + ": " + want + "  ->  " + got);
-    }));
+      if (want !== got) lost.push(where + ": " + want + "  ->  " + got);
+    };
+    /* EVERY LIST OF EFFECTS THE EDITOR DRAWS, not only a choice's: an
+       order's three, a tempo's and a campaign's opening. It read events
+       alone, and an order's {law:{reserve_direction:null}} came back 0. */
+    w.eval("CONTENT.events").forEach(e => (e.choices || []).forEach((c, i) => check(e.id + " choice " + (i + 1), c.effects)));
+    w.eval("CONTENT.instruments").forEach(si => ["effects", "reverse", "political_cost"].forEach(k => check(si.id + " " + k, si[k])));
+    w.eval("CONTENT.initiatives").forEach(it => (it.tempo || []).forEach((t, i) => check(it.id + " tempo " + (i + 1), t.effects)));
+    w.eval("CONTENT.administrations").forEach(a => check(a.id + " opening", a.opening));
     ok("every effect pair in content survives the editor's own encoding",
        lost.length === 0, lost.slice(0, 3).join("  //  "));
   }
@@ -219,12 +226,15 @@ try {
     /* a tempo's effects are drawn by the same rows as a choice's */
     if (tab === "initiatives") (e.tempo || []).forEach(t => {
       if (t.effects) t.effects = JSON.parse(JSON.stringify(X(t.effects))); });
+    if (tab === "instruments") ["effects", "reverse", "political_cost"].forEach(k => {
+      if (e[k]) e[k] = JSON.parse(JSON.stringify(X(e[k]))); });
+    if (tab === "campaigns" && e.opening) e.opening = JSON.parse(JSON.stringify(X(e.opening)));
     return e; };
   const GLOB = { events: "EVENTS", parties: "PARTIES", stations: "STATIONS", characters: "CHARACTERS",
     bills: "BILLS", glossary: "GLOSSARY", constituencies: "CONSTITUENCIES", functional: "FUNCTIONAL",
     /* a campaign's own kinds, written here since 25 Sep */
     settlements: "SETTLEMENTS", initiatives: "INITIATIVES", achievements: "ACHIEVEMENTS",
-    campaigns: "ADMINISTRATIONS" };
+    campaigns: "ADMINISTRATIONS", cabinet: "CABINET", instruments: "INSTRUMENTS" };
   const diff = (a, b, p, out) => {
     if (JSON.stringify(a) === JSON.stringify(b)) return;
     if (a && b && typeof a === "object" && typeof b === "object" && Array.isArray(a) === Array.isArray(b))
@@ -249,14 +259,16 @@ try {
     want.forEach(o => diff(norm(tab, o), norm(tab, byId.get(key(o))), key(o), out));
     const one = { parties: "party", glossary: "glossary", constituencies: "constituency",
                   functional: "functional", settlements: "ending", achievements: "award",
-                  campaigns: "campaign record" }[tab] ||
+                  campaigns: "campaign record", cabinet: "cabinet post", instruments: "order" }[tab] ||
                 tab.replace(/s$/, "");
     ok("opening every " + one + " entry changes none of them",
        out.length === 0, out.length + " differences: " + out.slice(0, 4).join("  //  "));
   });
-  /* A RENAME SAYS WHAT IT CANNOT REACH. The cabinet, the instruments and
-     the rest are read-only here, and a party renamed in the editor used to
-     leave them naming a party that no longer exists without a word. */
+  /* A RENAME SAYS WHAT IT CANNOT REACH. The world's setup and the rest are
+     read-only here, and a party renamed in the editor used to leave them
+     naming a party that no longer exists without a word. The cabinet and
+     the instruments were on that list until 25 Sep, when the editor began
+     writing them: a rename reaches them now, and must not say it does not. */
   w2.eval(`window.__prompt = null; Dialog.prompt = function (m, o, cb) {
     window.__prompt = m; (typeof o === "function" ? o : cb)(null); };`);
   w2.document.querySelector('.tab[data-t="parties"]').dispatchEvent(new w2.MouseEvent("click", { bubbles: true }));
@@ -265,9 +277,12 @@ try {
   const rb = w2.document.querySelector('#ed-form [data-act="rename"]');
   if (rb) rb.dispatchEvent(new w2.MouseEvent("click", { bubbles: true }));
   const said = String(w2.__prompt || "");
+  const outsideList = said.split("NOT changed")[1] || "";
   ok("renaming a party lists what it cannot change in files it does not write",
-     /does not write/.test(said) && /cabinet /.test(said),
-     said.split("\n").filter(l => /NOT changed|cabinet |instrument /.test(l)).slice(0, 3).join(" / ") || "no prompt");
+     /does not write/.test(said) && /setup · playerParty/.test(outsideList),
+     outsideList.split("\n").filter(l => /·/.test(l)).slice(0, 3).join(" / ") || "no prompt");
+  ok("and no longer lists the cabinet or the orders, which it now reaches",
+     !/cabinet |instrument /.test(outsideList), outsideList.split("\n").filter(l => /cabinet |instrument /.test(l)).join(" / "));
 
   /* and the content the game plays is not reported as broken: the
      validator checked the schema, which describes only the verbs the forms
@@ -350,8 +365,9 @@ try {
          !!other && (back.when || {}).resolved === other, (back.when || {}).resolved);
     }
     const bad = [...w2.document.querySelectorAll("#ed-status .ed-err, #ed-status .ed-dup")]
-      .map(n => n.textContent).filter(t => /^(ending|initiative|award|duplicate (ending|initiative|award))/.test(t));
-    ok("and the validator finds nothing wrong with the endings, initiatives and awards the game plays",
+      .map(n => n.textContent).filter(t => /^(ending|initiative|award|post|instrument|party|campaign|event|bill|article|duplicate)/.test(t) ||
+                                        /names no instrument/.test(t));
+    ok("and the validator finds nothing wrong with the endings, initiatives, awards, posts, orders and records the game plays",
        bad.length === 0, bad.slice(0, 3).join(" // "));
   }
   /* A CAMPAIGN CAN BE MADE HERE (25 Sep): a new record from its id, an
@@ -388,6 +404,24 @@ try {
     try { require("vm").runInNewContext(text, box); } catch (e) { box.err = e.message; }
     ok("and the record it writes loads as a campaign()", !box.err &&
        box.ADMINISTRATIONS.length === 1 && box.ADMINISTRATIONS[0].id === "probe_campaign", box.err || "");
+    /* THE ECONOMY IT OPENS WITH goes into setup.macro and setup.law, and
+       nothing else rides along: setup merges one level deep, so a stray key
+       there would replace the world's for the whole campaign */
+    click(w2.document.querySelector('.tab[data-t="campaigns"]'));
+    click([...w2.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id === "probe_campaign"));
+    const inf = w2.document.querySelector('#ed-form [data-f="mc_inflation"]');
+    const tax = w2.document.querySelector('#ed-form [data-f="lw_rate_thermal"]');
+    if (inf) inf.value = "4.5";
+    if (tax) tax.value = "high";
+    click([...w2.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id !== "probe_campaign"));
+    const rec = JSON.parse(w2.eval("JSON.stringify(Editor.__test.campaignFiles('probe_campaign').length && " +
+      "(function(){ var b = { A: [] }; new Function('campaign', Editor.__test.campaignFiles('probe_campaign')[0].text)" +
+      "(function (id, p) { b.A = p.administrations; }); return b.A[0]; })())"));
+    const S = (rec && rec.setup) || {};
+    ok("and the economy it opens with is written into macro and law, and nothing more",
+       !!inf && !!tax && JSON.stringify(S.macro) === '{"inflation":4.5}' &&
+       JSON.stringify(S.law) === '{"rate_thermal":"high"}',
+       JSON.stringify({ macro: S.macro, law: S.law }));
   }
   if (errs2.length) ok("and the fresh editor raised no errors", false, errs2.slice(0, 2).join(" // "));
 } catch (e) { ok("opening an entry changes nothing", false, e.message); }

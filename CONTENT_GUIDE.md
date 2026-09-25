@@ -179,9 +179,10 @@ file as it was. The editor's export regenerates the whole file from data
 and drops every comment in it, so a file whose comments matter is edited by
 hand or through the prose file, not through the export.
 
-**What the editor writes.** The **campaign record**, events, bills,
-**endings** (settlements), **initiatives** and **awards** (achievements),
-parties, stations, seats,
+**What the editor writes.** The **campaign record** (with the economy it
+opens with), events, bills, **endings** (settlements), **initiatives**,
+**awards** (achievements), **orders** (instruments), the **cabinet**,
+parties (with their leader), stations, seats,
 functional seats, characters, the Concordance and the glossary. An ending's
 conditions are the events' conditions; an initiative's tempos each carry a
 delay, an extra cost, their own conditions and their own effects; an award's
@@ -191,6 +192,14 @@ offers only crisis results for "the crisis result" and only answers for "the
 answer it reached", since an award asking the wrong one can never be earned.
 A condition on several meters at once (`scalarAbove:{legitimacy:65,
 friction:65}`) is one row of pairs, with `+` for another.
+
+**What it does not write: the world's `content/setup.js`.** Its comments
+are the documentation of every setting and an export would drop them, so
+it is edited by hand. A campaign changes the world's setup through its own
+record instead, which merges over the world's one level deep: the opening
+date and meters and the opening economy (inflation, cash rate, dollar, the
+Bank's credibility, the four tax rates) have fields, and anything else
+(lenders, thresholds) goes in its "Other setup" JSON.
 
 ## Adding an event
 
