@@ -1838,6 +1838,25 @@ console.log("\nTHE CALENDAR:");
   ok("the House does not sit every day", Array.isArray(DAYS) && DAYS.length < 7,
      DAYS.length + " days in seven");
 
+  /* THE RECESS TAKES DAYS (design/37 D11). The House rose on a Wednesday
+     and sat again on the Thursday. */
+  {
+    const P = CONTENT.setup.sittingsPerPeriod, R = CONTENT.setup.recessDays;
+    const last = Engine.dateOfSitting(CONTENT, P), back = Engine.dateOfSitting(CONTENT, P + 1);
+    const gap = (Date.parse(back) - Date.parse(last)) / 86400000;
+    ok("a recess keeps the House away for recessDays",
+       R > 0 && gap > R && gap <= R + 7, last + " to " + back + ", " + gap + " days");
+    const mid = new Date(Date.parse(last) + 4 * 86400000).toISOString().slice(0, 10);
+    ok("and a day in it is no sitting, and the calendar says recess",
+       Engine.sittingOfDate(CONTENT, mid) === null && Engine.inRecess(CONTENT, mid) &&
+       !Engine.inRecess(CONTENT, last),
+       mid + " is " + Engine.sittingOfDate(CONTENT, mid));
+    const N = CONTENT.setup.periodsPerSession * (CONTENT.setup.sessionsPerParliament || 1);
+    const end = Engine.dateOfSitting(CONTENT, N * P), after = Engine.dateOfSitting(CONTENT, N * P + 1);
+    ok("but the campaign follows the last period without one",
+       (Date.parse(after) - Date.parse(end)) / 86400000 < 7, end + " to " + after);
+  }
+
   /* THE CALENDAR AND THE DOCKET MUST READ THE SAME SOURCE. A deadline on
      one and not the other is how a player learns to trust neither. */
   const cal = Engine.calendar(st, CONTENT, 0);
@@ -2544,6 +2563,42 @@ console.log("\nTHE OPPOSITION TABLES A MOTION:");
   const was = st2.motion.resolved;
   Engine.advance(st2, CONTENT);
   ok("and a resolved motion is not taken again", st2.motion.resolved === was);
+
+  /* A PARTNER WALKS OUT, AND CAN BE WON BACK (design/38 §3). Nothing in
+     content ever moved a partner, so confidence sat at 142 against 141 in
+     every run and the confidence loss could not happen. */
+  {
+    const T = CONTENT.setup.thresholds;
+    const w = Engine.newGame(CONTENT);
+    const partner = w.coalition.find(id => id !== w.playerParty);
+    Engine.apply(w, CONTENT, [{ move: { ["loyalty." + partner]: -200 } }]);
+    Engine.advance(w, CONTENT);
+    ok("a partner at partnerLeaves walks out",
+       w.coalition.indexOf(partner) < 0 && !!(w.withdrawn || {})[partner],
+       partner + " at " + Engine.loyaltyOf(w, partner) + ", threshold " + T.partnerLeaves);
+    ok("and content's event for it is due",
+       w.queue.some(q => q.eventId === CONTENT.setup.onPartnerWithdraws));
+    ok("losing the majority tables a motion, which is not the end yet",
+       Engine.confidence(w) < Engine.majority(w) && w.motion && !w.motion.resolved &&
+       !Engine.checkEnd(w, CONTENT).over,
+       Engine.confidence(w) + " of " + Engine.majority(w) + ", motion on " + (w.motion && w.motion.on));
+    ok("and the condition sees it", Engine.matches(w, { withdrawn: true }, CONTENT));
+    const back = JSON.parse(JSON.stringify(w));
+    Engine.apply(back, CONTENT, [{ court: 300 }]);
+    Engine.advance(back, CONTENT);
+    ok("courted back to partnerReturns, it takes its place again",
+       back.coalition.indexOf(partner) >= 0 && !back.withdrawn[partner],
+       back.coalition.join(", "));
+    while (back.motion && !back.motion.resolved && back.sitting < 40) Engine.advance(back, CONTENT);
+    ok("and the House divides with it there, and the government stands",
+       back.motion.carried === false && !Engine.checkEnd(back, CONTENT).over,
+       back.motion.have + " against " + back.motion.need);
+    while (w.motion && !w.motion.resolved && w.sitting < 40) Engine.advance(w, CONTENT);
+    const lost = Engine.checkEnd(w, CONTENT);
+    ok("left alone, the motion carries and the government falls",
+       w.motion.carried === true && lost.over && lost.reason === "no confidence",
+       lost.kind + ": " + lost.reason);
+  }
 
   /* content can actually reach it */
   const ev = (CONTENT.events || []).find(e =>

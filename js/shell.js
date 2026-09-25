@@ -648,7 +648,14 @@ const Shell = (function () {
        shallow copy, so every other table (`eventById`, `administrations`)
        is still the same object by reference. */
     const K = contentFor(admin || (stateStr ? adminOf(stateStr) : null));
-    try { state = stateStr ? Engine.load(stateStr, K) : Engine.newGame(K); }
+    /* A SEED PER GOVERNMENT (design/37 D10). Every game was seeded 20287, so
+       the same choices met the same events in the same order for every
+       player. The seed is drawn once here and kept in the save, so a run is
+       still a pure function of its seed and its choices (§1.5): replayable,
+       testable, and no longer the same for everybody. The engine's own
+       default stays fixed, which is what the tests and the playtest use. */
+    const seed = ((Math.random() * 0x7fffffff) >>> 0) || 1;
+    try { state = stateStr ? Engine.load(stateStr, K) : Engine.newGame(K, seed); }
     catch (e) { Dialog.alert("That save could not be read: " + e.message,
                              { title: "Could not load" }); return; }
     /* THE SANDBOX IS A STATE, NOT A SETUP FIELD. newGame starts flags empty,

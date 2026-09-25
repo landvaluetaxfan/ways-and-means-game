@@ -206,6 +206,11 @@ const Refs = (function () {
     }));
     (M.initiatives || []).forEach(i => {
       if (i.event === id) H(`initiative ${i.id} · answered by`, to => i.event = to); });
+    /* An event the rules queue, named by an `on…` hook in setup
+       (setup.onPartnerWithdraws, design/38 §3). */
+    const S = M.setup || {};
+    Object.keys(S).filter(k => /^on[A-Z]/.test(k) && S[k] === id).forEach(k =>
+      H(`setup · ${k}`, to => S[k] = to));
     M.glossary.forEach(g => {
       if (g.introduced === id) H(`glossary "${g.term}" · introduced`, to => g.introduced = to);
     });

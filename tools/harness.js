@@ -43,7 +43,14 @@ const html = fs.readFileSync(path.join(root, "index.html"), "utf8")
 const dom = new JSDOM(html, {
   runScripts: "dangerously", pretendToBeVisual: true, url: "https://x.test/",
   virtualConsole: vc,
-  beforeParse(win) { win.addEventListener("error", e => errs.push(e.message)); }
+  beforeParse(win) {
+    win.addEventListener("error", e => errs.push(e.message));
+    /* A NEW GOVERNMENT DRAWS ITS SEED FROM Math.random (design/37 D10), so
+       the harness makes that reproducible: the same page, the same run. */
+    let s = 0x2080;
+    win.Math.random = () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
 });
 const w = dom.window;
 w.alert = () => {}; w.confirm = () => true; w.prompt = () => "Test ministry";

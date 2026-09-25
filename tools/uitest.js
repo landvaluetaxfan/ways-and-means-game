@@ -70,6 +70,12 @@ try {
      !/data-gloss|data-handle/.test(doc.textContent), JSON.stringify(doc.textContent));
 } catch (e) { ok("annotate output is well-formed", false, e.message); }
 
+/* A SEED PER GOVERNMENT (design/37 D10): the shell draws one, the save
+   keeps it. Every game used to be seeded 20287. */
+ok("a new government has its own seed, not the engine's default",
+   w.eval("UI.state().seed") !== 20287 && w.eval("UI.state().seed") > 0,
+   "seed " + w.eval("UI.state().seed"));
+
 /* SAVE ROUND-TRIP through a slot */
 try {
   $("#tb-save").click();

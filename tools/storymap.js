@@ -203,8 +203,12 @@ function build(K, id) {
   /* THE LOOSE ENDS */
   const incoming = key => real.some(e => e.to === key && /queue|answer|breach/.test(e.kind));
   const loose = [];
+  /* An event setup names in an `on…` hook is queued by the rules
+     (setup.onPartnerWithdraws, design/38 §3). */
+  const hooked = new Set(Object.keys(K.setup || {}).filter(k => /^on[A-Z]/.test(k))
+    .map(k => K.setup[k]).filter(v => typeof v === "string"));
   K.events.forEach(e => {
-    if (e.queuedOnly && !incoming("e:" + e.id))
+    if (e.queuedOnly && !incoming("e:" + e.id) && !hooked.has(e.id))
       loose.push({ key: "e:" + e.id, what: "queued only, and nothing queues it" });
     arr((e.when || {}).flags).forEach(f => { if (!flags[f].set.length)
       loose.push({ key: "e:" + e.id, what: "waits on " + f + ", which nothing sets" }); });

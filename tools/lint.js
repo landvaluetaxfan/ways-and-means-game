@@ -849,7 +849,12 @@ try {
     if (!e || typeof e !== "object") return;
     if (e.bill) Object.keys(e.bill).forEach(x => { if (!BI.has(x)) refBad.push(tag + ": bill '" + x + "' is no bill"); });
     if (typeof e.si === "string" && !SI.has(e.si)) refBad.push(tag + ": si '" + e.si + "' is no instrument");
-    if (e.queue) [].concat(e.queue).forEach(q => { if (!EV.has(q.event)) refBad.push(tag + ": queues '" + q.event + "', which is no event"); });
+    /* A queued entry is an event, or effects that land on their day with no
+       story (resolveDue); the second has no event to name, and its effects
+       are checked like any others. */
+    if (e.queue) [].concat(e.queue).forEach(q => {
+      if (q.effects && !q.event) { [].concat(q.effects).forEach(x => checkEff(x, tag + " (queued)")); return; }
+      if (!EV.has(q.event)) refBad.push(tag + ": queues '" + q.event + "', which is no event"); });
     if (e.slots && e.slots.reserve) Object.keys(e.slots.reserve).forEach(x => { if (!BI.has(x)) refBad.push(tag + ": reserves time for '" + x + "', which is no bill"); });
     if (e.coalition) ["add", "remove"].forEach(k => [].concat(e.coalition[k] || []).forEach(p => { if (!PA.has(p)) refBad.push(tag + ": coalition names no party '" + p + "'"); }));
     if (e.undertake) [].concat(e.undertake).forEach(u => {
@@ -880,6 +885,11 @@ try {
      step, a limit and a drawing's consequences, in the world's setup and in
      every campaign's. An unknown condition there throws at the first
      sitting the account is drawn. */
+  /* An `on…` hook in setup names the event the rules queue (design/38 §3). */
+  [["the world", SETUP]].concat((ADMINISTRATIONS || []).map(a => [a.id, a.setup || {}])).forEach(([who, S]) =>
+    Object.keys(S).filter(k => /^on[A-Z]/.test(k)).forEach(k => {
+      if (typeof S[k] === "string" && !EV.has(S[k]))
+        refBad.push(who + "'s setup." + k + " names '" + S[k] + "', which is no event"); }));
   [["the world", SETUP.lenders || {}]].concat((ADMINISTRATIONS || []).map(a => [a.id, (a.setup || {}).lenders || {}]))
     .forEach(([who, LS]) => Object.keys(LS).forEach(id => {
       const tag = "lender " + id + " (" + who + ")";

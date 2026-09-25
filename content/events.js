@@ -382,9 +382,19 @@ and that a list can be reordered upward as easily as down.
 
 The ballot is called for the week after next.`,
   choices:[
+    /* THE BALLOT IS CALLED, AND NOW IT IS HELD (design/38 §3). This set
+       `leadership_ballot_called`, which nothing read, so the week after next
+       came and went with the paper where it was. The names go on the paper
+       eight sittings out and the engine holds the ballot the sitting after,
+       decided by how the benches feel about her then: the Party tab carries
+       the count, and the time between is the fight. */
     { label:"Fight it. Put the whole cabinet on broadcast.",
+      note:"The ballot is held the week after next and decided by the benches' loyalty " +
+           "on the day. The Party tab has the count; below half, she loses the leadership.",
       effects:[{move:{"party_loyalty":-4}},{move:{"public_standing":-5}},
                {flag:"leadership_ballot_called"},
+               {queue:[{ effects:[{ signatures:12 }], after:8,
+                         label:"Czarnecki's names are on the paper, and the caucus will divide." }]},
                {wire:"LEADERSHIP BALLOT CALLED; CABINET DECLARES FOR FLASH"}],
       result:"It becomes a public argument about whether your party believes what it says it believes." },
     { label:"Concede the shed order and the personhood line in one go",
@@ -2569,7 +2579,7 @@ man with a list."`,
   body:`He does not have a question this time.
 
 "Madam Speaker. I give notice that I shall move, on Thursday, that this House
-has no confidence in Her Majesty's Government."
+has no confidence in the government."
 
 The noise takes a while to settle, and it does not come from his side. He has
 been counting for weeks and has evidently arrived at a number he likes.
@@ -2602,7 +2612,11 @@ answer.`,
    (§7.7 prices what the government CHOOSES to do, and this is not chosen).
    Answering it properly is a day's work and is priced as one; the two ways
    of not answering it are free and are paid for somewhere else. */
-{ id:"question_time", at:4, every:4,
+/* EVERY EIGHT SITTINGS, NOT FOUR (design/38 §4). At four it took ten of a
+   run's fifty-five sittings, a quarter of what the pool had, and was read
+   ten times word for word. At eight each run met 39 distinct events rather
+   than 35 and the starved ones fell from 17 to 14. */
+{ id:"question_time", at:4, every:8,
   title:"Questions to the Prime Minister",
   speaker:"watkins",
   body:`The Leader of the Opposition has the first three and has clearly had
@@ -3176,5 +3190,38 @@ The Minister for Home Affairs and Contingencies can lay it as drawn, or reorder 
       effects:[{ move:{ "loyalty.hul":4 } }, { move:{ "public_standing":-3 } },
                { move:{ "loyalty.psa":-4 } }],
       result:"The schedule is laid as drawn, and the House reads the order in which the Commonwealth sheds its people." }
+  ]},
+
+/* A PARTNER WALKS OUT (design/38 §3). Queued by the engine when a
+   coalition or confidence-and-supply partner's loyalty falls to
+   `thresholds.partnerLeaves` (setup.onPartnerWithdraws names it). The wire
+   has already said who. If the government no longer commands the House the
+   opposition has moved against it, and a partner back at
+   `thresholds.partnerReturns` before the division is back on the benches.
+   `court` moves every partner that has walked out, which is the one set
+   this event cannot name in advance. */
+{ id:"partner_walks", queuedOnly:true,
+  title:"A partner walks out",
+  speaker:"okarie",
+  body:`The Chief Whip has the letter before the Spindle does, which is the last courtesy a partner extends. The terms of the agreement are withdrawn, their members will sit where they please, and the arithmetic the government has governed on since the formation no longer holds.
+
+"They have not joined the other side," he says. "They have left ours. The difference is worth one conversation, and it had better be this week."`,
+  choices:[
+    { label:"Send for their leader and offer terms.",
+      cost:{ slot:1 },
+      note:"A day of the order paper and a concession made in public. If their loyalty " +
+           "is back to where they would sit with you, they return before the House divides.",
+      effects:[{ court:16 }, { move:{ public_standing:-2 } },
+               { wire:"PRIME MINISTER OFFERS TERMS TO THE PARTY THAT WALKED OUT" }],
+      result:"The terms are on the table, and the other side of it is deciding whether a government that let it come to this is worth sitting with." },
+    { label:"Let the whips work the lobbies.",
+      note:"Cheaper, quieter and slower. The whips spend their own credit with the benches doing it.",
+      effects:[{ court:6 }, { move:{ party_loyalty:-2 } }],
+      result:"The whips go to work in the tea room, and the answer comes back one member at a time." },
+    { label:"Let them go, and face the House on the numbers.",
+      note:"If the numbers are short, the House decides the government's future on the day the motion is set down.",
+      effects:[{ move:{ public_standing:2 } }, { move:{ legitimacy:1 } },
+               { wire:"GOVERNMENT WILL FACE THE HOUSE WITHOUT ITS PARTNER" }],
+      result:"The government says it will meet the House, and the House will count." }
   ]},
 ];

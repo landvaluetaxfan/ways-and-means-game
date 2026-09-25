@@ -25,6 +25,9 @@ const SCHEMA = {
         version, which declared shape:"object" and had no editor support
         behind it. The engine still accepts the long form for an author
         writing by hand; this is the canonical one. */
+    court:       { label:"Court the partners who walked out", args:[
+                   {k:"value", type:"int", label:"Loyalty", hint:"moves every withdrawn partner"}],
+                   shape:"scalarVal" },
     motion:      { label:"The opposition tables a confidence motion", args:[
                    {k:"value", type:"int", label:"Sittings until the division", hint:"the House divides then"}],
                    shape:"scalarVal" },
@@ -116,7 +119,8 @@ const SCHEMA = {
     slotsLeft:      { label:"Order-paper slots left",  form:"int" },
     chapterIs:      { label:"Chapter is",              form:"int" },
     chapterAtLeast: { label:"Chapter is at least",      form:"int" },
-    inGovernment:   { label:"In government",            form:"bool" }
+    inGovernment:   { label:"In government",            form:"bool" },
+    withdrawn:      { label:"A partner has walked out", form:"bool" }
   },
 
   /* ---------- enumerations the forms draw from ---------- */

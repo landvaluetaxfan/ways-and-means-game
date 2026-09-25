@@ -792,9 +792,12 @@ const UI = (function () {
      took the whole renderer down the first time, and a renderer that throws
      takes every renderer after it with it. */
   function dateLine() {
+    /* It called dateOfSitting(st, C, n), which takes (C, n): the state was
+       read as content, the start date fell back to 2287 and the loop ran
+       its twenty thousand days out, so the transcript was dated in the
+       2340s (design/38). The state carries its own date. */
     try {
-      const d = Engine.dateOfSitting(st, C, st.sitting);
-      return typeof d === "string" ? d : (d && d.text) || String(d || "\u2014");
+      return st.date || Engine.dateOfSitting(C, st.sitting) || "\u2014";
     } catch (e) { return "\u2014"; }
   }
 
@@ -1837,11 +1840,19 @@ const UI = (function () {
                a number in either row would be a number that does nothing. */
             const crCell = (k === "opp" || own) ? "&mdash;"
               : `<span class="${cr < 0 ? "warn" : ""}">${cr > 0 ? "+" + cr : cr}</span>`;
+            /* A PARTNER WHO WALKED OUT (design/38 §3) sits outside, and says
+               what brings it back; one near the line says where the line is. */
+            const TH = (C.setup && C.setup.thresholds) || {};
+            const gone = (st.withdrawn || {})[p.id];
             const go = own ? "&mdash;"
+              : gone ? `<span class="warn"${tipAttr("Walked out", "Withdrew at sitting " + gone.at +
+                  ". Returns when its loyalty is back to " + TH.partnerReturns + ".")}>walked out</span>`
               : k === "opp"
                 ? (conf >= maj ? "&mdash;" : conf + seats >= maj
                     ? `<span class="good">a majority</span>` : "still short")
                 : (conf - seats < maj ? `<span class="warn">it falls</span>` : "it holds");
+            const nearLine = !own && k !== "opp" && TH.partnerLeaves != null && loy != null &&
+              loy <= TH.partnerLeaves + 10;
             return `<tr${own ? ' class="ownrow"' : ` data-party="${p.id}"` +
                 (sel && sel.id === p.id ? ' class="sel"' : "")}>` +
               `<td><i class="pdot" style="background:${p.colour}"></i></td>` +
@@ -1850,7 +1861,9 @@ const UI = (function () {
                 tipAttr("Your party", "Its currents, its members and the " +
                   "leadership are on the Party tab.") + `>yours</button>` : "") + `</td>` +
               `<td class="n">${seats}</td>` +
-              `<td class="n">${loy == null ? "&mdash;" : loy}</td>` +
+              `<td class="n">${loy == null ? "&mdash;" : nearLine
+                ? `<span class="warn"${tipAttr("Near the line", "Walks out at " + TH.partnerLeaves + ".")}>${loy}</span>`
+                : loy}</td>` +
               `<td class="n">${crCell}</td>` +
               `<td class="pgo">${go}</td></tr>`;
           }).join("");
@@ -5017,7 +5030,7 @@ const UI = (function () {
     for (let i = 0; i < cal.days[0].dow; i++) cells += '<i class="pad"></i>';
     cal.days.forEach(d => {
       const cls = ["cd"];
-      if (!d.sits) cls.push("dark");
+      if (!d.sits || d.recess) cls.push("dark");
       if (d.past) cls.push("past");
       if (d.today) cls.push("now");
       /* THE DAY CARRIES ITS MOST IMPORTANT MARK AS A COLOUR. A row of dots
@@ -5049,7 +5062,12 @@ const UI = (function () {
          sits four days in seven, this is not one of them" about a Monday.
          Wrong twice over -- it is one of them, and the reason it carries no
          number is the session, not the week. */
+      /* AND A FOURTH, since the recess takes days (design/37 D11): a
+         weekday between two sitting periods is a sitting day of the week
+         with no sitting on it, and it is neither before the session nor a
+         day the House never sits. */
       const title = d.sitting != null ? "Sitting " + d.sitting
+                  : d.recess ? "Recess"
                   : d.sits ? "Before this session"
                   : "The House does not sit";
       /* THE CARD LEADS WITH THE THING, IN WORDS, ONE PER LINE. It was a run
@@ -5060,6 +5078,7 @@ const UI = (function () {
       const body = d.marks.length
         ? d.marks.map(m => MARKNAME[m.kind] + ". " + m.text).join("\n")
         : d.sitting != null ? "Nothing is down for this day."
+        : d.recess ? "The House is in recess between sitting periods, and sits again when it returns."
         : d.sits ? "A sitting day, but before this session opened" +
                    (sessionOpened ? " on " + sessionOpened : "") + "."
         : "The House sits " + SITDAYS + " days in seven. This is not one of them.";
@@ -5606,7 +5625,7 @@ const UI = (function () {
 
     secs.push({ kind: "body", head: "The record",
       body: st.log.length + " entries, sitting " + st.sitting + ", session " + st.session +
-            ". Every decision is on the Record tab, where it can be read and taken " +
+            ", seed " + st.seed + ". Every decision is on the Record tab, where it can be read and taken " +
             "away, and nothing here can be taken back." });
 
     return { title: title, sections: secs, mood: endMood(end) };
@@ -5638,7 +5657,7 @@ const UI = (function () {
     return `<div class="endboard"><h3>The end of the session</h3>` +
       `<div class="rulehead">${esc(head)}</div>` + body +
       `<div class="rulehead">The record</div><div class="note">` +
-        `${st.log.length} entries, sitting ${st.sitting}, session ${st.session}. ` +
+        `${st.log.length} entries, sitting ${st.sitting}, session ${st.session}, seed ${st.seed}. ` +
         `Every decision is on the Record tab, and nothing here can be taken back.</div></div>`;
   }
 

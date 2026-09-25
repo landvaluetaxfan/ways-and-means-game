@@ -220,6 +220,13 @@ const Editor = (function () {
        "[object Object]" back: the same fault from the other side. */
     if (d.shape === "scalarVal" && v && typeof v === "object" && !Array.isArray(v))
       return { verb, key: "", field: "", value: JSON.stringify(v), delta: "", raw: true };
+    /* A QUEUE ENTRY THAT IS NOT ONE EVENT: effects that land on their day
+       with no story, or several entries in one verb. The form draws one
+       event and a delay, so it dropped the effects and filled the event
+       with the first in the list (design/38 §3). */
+    if (d.shape === "queue" && ([].concat(v).length !== 1 || [].concat(v)[0].effects ||
+        ![].concat(v)[0].event))
+      return { verb, key: "", field: "", value: JSON.stringify(v), delta: "", raw: true };
     const r = { verb, key: "", field: "", value: "", delta: "" };
     switch (d.shape) {
       case "keyed":     r.key = Object.keys(v)[0]; r.delta = v[r.key]; break;
@@ -1356,7 +1363,7 @@ const Editor = (function () {
       })));
     M.events.forEach(e => (e.choices || []).forEach((c, ci) =>
       [].concat(c.effects || []).forEach(eff => {
-        if (eff.queue) [].concat(eff.queue).forEach(q =>
+        if (eff.queue) [].concat(eff.queue).filter(q => q.event).forEach(q =>
           E.push({ from: e.id, to: q.event, kind: "queue", label: "choice " + (ci + 1) + " · +" + (q.after || 1) }));
         if (eff.chapter != null) M.events
           .filter(t => t.chapter === eff.chapter && t.prologue === 1)
@@ -1441,7 +1448,7 @@ const Editor = (function () {
              were reported as errors here (design/34). */
           const knownV = typeof Engine !== "undefined" && Engine.EFFECTS ? Engine.EFFECTS[v] : SCHEMA.effects[v];
           if (!knownV) P.push(["err", e.id + " choice " + (i + 1) + ": unknown verb " + v]);
-          if (eff.queue) [].concat(eff.queue).forEach(q => {
+          if (eff.queue) [].concat(eff.queue).filter(q => q.event || !q.effects).forEach(q => {
             if (!ids.includes(q.event)) P.push(["err", e.id + ": queues missing event " + q.event]);
             const t = M.events.find(x => x.id === q.event);
             if (t && !t.queuedOnly) P.push(["warn", q.event + " is queued but not marked queuedOnly"]);

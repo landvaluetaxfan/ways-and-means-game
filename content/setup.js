@@ -452,6 +452,13 @@ const SETUP = {
      families separated, periods and sessions play almost identically. */
   periodsPerSession: 3,
   sessionsPerParliament: 1,
+  /* HOW LONG A RECESS LASTS, in calendar days (design/37 D11). The House
+     rose on a Wednesday and sat again on the Thursday. Fourteen days is two
+     weeks away from the chamber between sitting periods, the shape of a
+     Westminster Easter or Whitsun recess, and it moves the count from
+     mid-July to early August. Nothing is counted in a recess: no sitting,
+     no price tick, no event. 0 restores the contiguous calendar. */
+  recessDays: 14,
   /* opening ledger. Positive means they owe you. */
   capital: { psa: 2, rv: -3, upl: 0, geo: 1 },
   president: { id:"tenaya", relationship:22,
@@ -467,8 +474,21 @@ const SETUP = {
      to the Prime Minister's face adds to that member's current.
      `winBackBelow`: a member who has signed can be won back, for a slot and
      a promise, only while their willingness is under this. */
+  /* PARTNERS (design/38 §3). A coalition or confidence-and-supply partner
+     whose loyalty falls to `partnerLeaves` walks out; one that recovers to
+     `partnerReturns` before the writs comes back. When the government no
+     longer commands a majority the opposition tables a motion
+     `motionAfter` sittings out, and the House decides. Measured across the
+     seven playtest strategies before this: the New Progressive Party's
+     lowest loyalty was 12 in one and 28 to 36 in the rest, the CDA's 39 to
+     54, the independents' 66; so a partner walks out when it has been
+     treated badly all session, and not otherwise. At 20 the NPP walked at
+     sitting 13 after two hostile answers in three sittings; at 15 it takes
+     three. Offering terms (+16) from the line brings it back. */
   thresholds: { leadershipChallenge: 15, ballot: 12, signsAt: 50, refusalLoyalty: 2,
-                winBackBelow: 75 },
+                winBackBelow: 75, partnerLeaves: 15, partnerReturns: 30, motionAfter: 3 },
+  /* The event content wants when a partner walks out; the engine names none. */
+  onPartnerWithdraws: "partner_walks",
   /* AN ENDING MUST BE CARRIED (design/26 #91). No settlement before this
      sitting, whatever the meters say: without the floor the crisis resolved
      at sitting 7 on one play policy and 13 on another, which is a third of
@@ -482,6 +502,17 @@ const SETUP = {
      sitting never win once. Same seed, same run, so the checks hold. Set 0 to
      order the pool by weight alone again. */
   weightJitter: 14,
+  /* HOW MUCH AN EVENT GAINS FOR EACH SITTING IT WAITS in the pool unchosen
+     (design/38 §4). Off, on the measurement. Across eight strategies and
+     five seeds, aging at 3 left each run's variety where it was (35.1
+     distinct events against 35.4), doubled the median wait from first
+     eligible to firing (8 sittings to 17), made runs more alike (79 events
+     reached across all forty against 70), and still never fired
+     fa_conciliate. The pool is not badly ordered, it is over-subscribed:
+     about twenty events eligible a sitting for one slot. Question Time
+     every eight sittings instead of four did what aging could not. Worth
+     turning on in a campaign whose pool is thin. */
+  ageWeight: 0,
 
   /* THE METER PANEL. Which numbers the standing-indicators panel shows, in
      what order, and which way is good — content declares it, so a campaign

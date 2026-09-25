@@ -3680,6 +3680,8 @@ const Engine = (function () {
        holds it. `ballotHeld` is true once the caucus has divided and before
        the event has been read; `ballotCarries` says which way it went. */
     ballotHeld:     (st, v) => v ? !!st.ballot : !st.ballot,
+    /* A partner has walked out and not come back (design/38 §3). */
+    withdrawn:      (st, v) => (Object.keys(st.withdrawn || {}).length > 0) === !!v,
     ballotCarries:  (st, v) => !!st.ballot && st.ballot.carries === !!v,
     siInForce:      (st, v) => [].concat(v).every(k => st.instruments[k] && st.instruments[k].inForce),
     siNotMade:      (st, v) => [].concat(v).every(k => st.instruments[k] && !st.instruments[k].made),
@@ -4126,6 +4128,11 @@ const Engine = (function () {
         dueSitting: st.sitting + (q.after == null ? 1 : q.after)
       })),
     signatures: (st, C, v) => { st.signatures = Math.max(0, (st.signatures || 0) + v); },
+    /* COURT THE PARTNERS WHO HAVE WALKED OUT (design/38 §3). Moves the
+       loyalty of every party that has withdrawn from the government, which
+       is the one set content cannot name in advance. */
+    court: (st, C, v) => Object.keys(st.withdrawn || {}).forEach(id =>
+      shiftLoyalty(st, C, id, Number(v) || 0)),
     si: (st, C, v) => [].concat(v).forEach(id => makeInstrument(st, C, id)),
     cabinet: (st, C, v) => Object.keys(v).forEach(post => {
       if (v[post] === null) vacate(st, C, post, "resigned");
@@ -4389,7 +4396,20 @@ const Engine = (function () {
       h ^= n; h = Math.imul(h, 16777619);
       return (h >>> 0) % (jit + 1);
     };
-    const W = e => (e.weight || 1) + lean(e);
+    /* AND AN EVENT THAT WAITS GAINS GROUND (design/37 D6). The pool was a
+       priority queue: an event outranked on the day it became eligible was
+       outranked on every day after, so the cure for the Standby default was
+       eligible for 160 sittings across 14 runs and never fired, and the
+       Meltdown's gate for 19. `st.waited` counts the sittings an event has
+       spent in the pool without being chosen, and each one adds
+       `setup.ageWeight` to its weight for selection. It accrues only while
+       the event is eligible, so it pulls a starved event forward from when
+       it could first have fired rather than toward the end of the run; the
+       authored weight still decides who goes first on the day. Firing
+       clears it. 0 turns it off. */
+    const age = (C.setup && C.setup.ageWeight) || 0;
+    const waited = st.waited || {};
+    const W = e => (e.weight || 1) + lean(e) + age * (waited[e.id] || 0);
     pool.sort((a, b) => W(b) - W(a) || (a.id < b.id ? -1 : 1));
     /* Ties used to break on id, which meant the same state always played
        the same sitting in the same order. They break on a draw now; the
@@ -4398,7 +4418,64 @@ const Engine = (function () {
        the default. */
     const top = W(pool[0]);
     const tied = pool.filter(e => W(e) === top);
-    return tied.length > 1 ? tied[Math.floor(draw(st) * tied.length)] : pool[0];
+    const pick = tied.length > 1 ? tied[Math.floor(draw(st) * tied.length)] : pool[0];
+    /* What waited this sitting, settled when the sitting ends (advance), so
+       asking twice in one sitting counts once. */
+    if (age) st.pooled = { sitting: st.sitting, ids: pool.map(e => e.id), chose: pick.id };
+    return pick;
+  }
+
+  /* PARTNERS WALK OUT, AND COME BACK (design/38 §3). A coalition or
+     confidence-and-supply partner whose loyalty falls to
+     `thresholds.partnerLeaves` withdraws; one whose loyalty recovers to
+     `thresholds.partnerReturns` before the House is dissolved takes its
+     place again. When the government no longer commands a majority and no
+     motion is pending, the opposition tables one, `thresholds.motionAfter`
+     sittings out, so a walkout is a clock the player can see and not the
+     end on the spot. `setup.onPartnerWithdraws` names the event content
+     wants when it happens; the engine names none. */
+  function partnerCheck(st, C) {
+    if (st.dissolved || !C || !C.setup) return;
+    const T = C.setup.thresholds || {};
+    const leaves = T.partnerLeaves, returns = T.partnerReturns;
+    const nameOf = id => (C.partyById && C.partyById[id] && C.partyById[id].name) || id;
+    st.withdrawn = st.withdrawn || {};
+    if (leaves != null) ["coalition", "confidenceSupply"].forEach(side => {
+      st[side].slice().forEach(id => {
+        if (id === st.playerParty || loyaltyOf(st, id) > leaves) return;
+        st[side] = st[side].filter(x => x !== id);
+        st.withdrawn[id] = { from: side, at: st.sitting };
+        st.log.unshift({ sitting: st.sitting, text: nameOf(id) + " withdraws from the " +
+          (side === "coalition" ? "government" : "confidence-and-supply agreement") + "." });
+        st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() +
+          " WALKS OUT OF THE GOVERNMENT" });
+        if (C.setup.onPartnerWithdraws && C.eventById && C.eventById[C.setup.onPartnerWithdraws])
+          st.queue.push({ eventId: C.setup.onPartnerWithdraws, dueSitting: st.sitting });
+      });
+    });
+    if (returns != null) Object.keys(st.withdrawn).forEach(id => {
+      if (loyaltyOf(st, id) < returns) return;
+      const w = st.withdrawn[id];
+      if (st[w.from].indexOf(id) < 0) st[w.from].push(id);
+      delete st.withdrawn[id];
+      st.log.unshift({ sitting: st.sitting, text: nameOf(id) + " returns to the government's side." });
+      st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() + " BACK ON THE GOVERNMENT BENCHES" });
+    });
+    const pending = st.motion && !st.motion.resolved;
+    if (!pending && !st.noConfidence && confidence(st) < majority(st))
+      EFFECTS.motion(st, C, { after: T.motionAfter == null ? 3 : T.motionAfter,
+                              label: "Motion of no confidence" });
+  }
+
+  /* The pool's wait, settled once per sitting: everything that was in the
+     pool and not chosen has waited one more; the one chosen starts again. */
+  function settleWaits(st) {
+    const p = st.pooled;
+    if (!p || p.sitting !== st.sitting) return;
+    const w = st.waited || (st.waited = {});
+    p.ids.forEach(id => { if (id !== p.chose) w[id] = (w[id] || 0) + 1; });
+    delete w[p.chose];
+    st.pooled = null;
   }
 
   /* ---------------------------------------------------------
@@ -4663,6 +4740,11 @@ const Engine = (function () {
         /* A number that moves and is not described renders as its own
            verb name — "signatures" — which teaches the player the
            engine's vocabulary instead of the world's. */
+        case "court": out.push({
+          tone: v > 0 ? "good" : "bad",
+          text: v > 0 ? "Wins back ground with the partners who walked out"
+                      : "Hardens the partners who walked out" });
+          break;
         case "signatures": out.push({
           tone: v <= 0 ? "good" : "bad",
           text: (v <= 0 ? "Thins the signatures against you"
@@ -5509,30 +5591,67 @@ const Engine = (function () {
     const d = C && C.setup && C.setup.sittingDays;
     return (Array.isArray(d) && d.length) ? d : [1, 2, 3, 4];
   }
-  /* The date the House sits for the nth time, counting the start date as
-     sitting 1 if it is itself a sitting day. */
-  function dateOfSitting(C, n) {
-    const days = sittingDays(C);
+  /* THE RECESS TAKES DAYS (design/37 D11). The House rose on a Wednesday
+     and sat again on the Thursday, so a recess was a line in the log with
+     no time in it. `setup.recessDays` calendar days now pass after every
+     sitting period but the parliament's last (after that comes the
+     dissolution, and the campaign's days are its own). Sittings are still
+     counted one by one; only the dates move. 0 restores the old calendar. */
+  function recessBreaks(C) {
+    const s = (C && C.setup) || {};
+    const days = s.recessDays || 0;
+    if (!days) return { days: 0, every: Infinity, times: 0 };
+    const every = s.sittingsPerPeriod || 24;
+    const periods = (s.periodsPerSession || 1) * (s.sessionsPerParliament || 1);
+    return { days: days, every: every, times: Math.max(0, periods - 1) };
+  }
+  /* Walk the calendar from the start date, one sitting day at a time,
+     jumping the recess after each period. `visit(date, n)` is called for
+     every sitting; returning true stops the walk. `gap(from, to)` is
+     called for every recess with its first and last day. */
+  function walkSittings(C, visit, gap) {
+    const days = sittingDays(C), R = recessBreaks(C);
     let d = parseDay((C && C.setup && C.setup.startDate) || "2287-01-01");
     let count = 0;
     for (let guard = 0; guard < 20000; guard++) {
-      if (days.indexOf(d.getUTCDay()) >= 0) { count++; if (count >= n) return iso(d); }
+      if (days.indexOf(d.getUTCDay()) >= 0) {
+        count++;
+        if (visit(d, count)) return;
+        if (count % R.every === 0 && count / R.every <= R.times) {
+          const from = new Date(d.getTime() + DAY);
+          d = new Date(d.getTime() + R.days * DAY);
+          if (gap && gap(from, d)) return;
+        }
+      }
       d = new Date(d.getTime() + DAY);
     }
-    return iso(d);
   }
-  /* The inverse, for putting a date back on the order paper. */
+  /* The date the House sits for the nth time, counting the start date as
+     sitting 1 if it is itself a sitting day. */
+  function dateOfSitting(C, n) {
+    let out = null;
+    walkSittings(C, (d, count) => { if (count >= n) { out = iso(d); return true; } });
+    return out;
+  }
+  /* The inverse, for putting a date back on the order paper. A day in a
+     recess is not a sitting. */
   function sittingOfDate(C, date) {
-    const days = sittingDays(C);
-    let d = parseDay((C && C.setup && C.setup.startDate) || "2287-01-01");
     const t = parseDay(date).getTime();
-    let count = 0;
-    for (let guard = 0; guard < 20000 && d.getTime() <= t; guard++) {
-      if (days.indexOf(d.getUTCDay()) >= 0) count++;
-      if (d.getTime() === t) return days.indexOf(d.getUTCDay()) >= 0 ? count : null;
-      d = new Date(d.getTime() + DAY);
-    }
-    return null;
+    let out = null;
+    walkSittings(C, (d, count) => {
+      if (d.getTime() === t) { out = count; return true; }
+      return d.getTime() > t;
+    }, (from, to) => from.getTime() <= t && t <= to.getTime());
+    return out;
+  }
+  /* Whether a date falls in a recess, for the calendar's card. */
+  function inRecess(C, date) {
+    const t = parseDay(date).getTime();
+    let hit = false;
+    walkSittings(C, d => d.getTime() > t,
+      (from, to) => { if (from.getTime() <= t && t <= to.getTime()) { hit = true; return true; }
+                      return from.getTime() > t; });
+    return hit;
   }
 
   /* ---------------------------------------------------------
@@ -5684,7 +5803,7 @@ const Engine = (function () {
       const n = sits ? sittingOfDate(C, day) : null;
       out.push({
         date: day, dom: d.getUTCDate(), dow: d.getUTCDay(),
-        sitting: n, sits: sits,
+        sitting: n, sits: sits, recess: sits && n == null && inRecess(C, day),
         past: n != null && n < st.sitting,
         today: n != null && n === st.sitting,
         marks: marks.filter(m => m.date === day)
@@ -6070,6 +6189,7 @@ const Engine = (function () {
        sixteen, and a run of three periods for fifty. */
     st.risesAt = st.sitting + periodLength(C) - 1;
     st.log.unshift({ sitting: st.sitting, text: "The House rises for the recess, and returns " +
+      (C && C.setup && C.setup.recessDays && st.date ? "on " + st.date + " " : "") +
       "for the " + (["", "first", "second", "third", "fourth", "fifth"][st.period] ||
       "next") + " sitting period of the session." });
     st.wire.unshift({ sitting: st.sitting, text: "THE HOUSE RISES FOR THE RECESS" });
@@ -6386,6 +6506,7 @@ const Engine = (function () {
   }
 
   function advance(st, C) {
+    settleWaits(st);
     st.sitting += 1;
     if (st.motion && !st.motion.resolved) resolveMotion(st, C);
     if (C) sampleForeign(st, C);
@@ -6430,6 +6551,7 @@ const Engine = (function () {
        must all see it, so it resolves at the top of the sitting and not
        at the point somebody happens to look. */
     if (C) resolveDue(st, C);
+    if (C) partnerCheck(st, C);
     if (C && st.risesAt != null && st.sitting > st.risesAt && !st.dissolved) {
       /* The House rises. For a recess, for the end of the session, or for
          good: whether it meets again is the whole question. */
@@ -6569,7 +6691,13 @@ const Engine = (function () {
       if (st.scalars.thermal_margin <= 0) return { lost: true, reason: "cascade" };
       return { lost: false };
     }
-    if (confidence(st) < majority(st)) return { lost: true, reason: "confidence" };
+    /* A LOST MAJORITY IS A MOTION, NOT A VERDICT (design/38 §3). This read
+       confidence below the majority as the end on the spot, and nothing in
+       content ever moved a partner, so it never happened. A partner can
+       walk out now, and when the government no longer commands the House
+       the opposition moves against it (partnerCheck); the House divides
+       and resolveMotion records the result as st.noConfidence. Bible §3.5
+       says the loss is losing a confidence VOTE, and now it is. */
     /* A ballot the Prime Minister lost is the end, through the same reason the
        old loyalty floor used, so there is one leadership loss and not two. */
     if (st.ballot && !st.ballot.carries) return { lost: true, reason: "leadership" };
@@ -6608,7 +6736,7 @@ const Engine = (function () {
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal, currentSeats,
     division, reported, ballot, benchRoll, resolveDue, pairable, setPairs, clearPairs, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss, checkSettlement,
-    dateOfSitting, sittingOfDate, deadlines, calendar, today, business,
+    dateOfSitting, sittingOfDate, inRecess, deadlines, calendar, today, business,
     initiatives, take, setDivision,
     apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,
     seedRoll, syncRoll, reconcile, partyDistrict,
