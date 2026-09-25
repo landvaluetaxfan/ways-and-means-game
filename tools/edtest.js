@@ -74,6 +74,20 @@ const ok = (label, cond, extra) => {
 console.log("EDITOR SMOKE TEST");
 console.log("=".repeat(56));
 
+/* THE PAGE IS SHOWN AT ALL (25 Sep). css/terminal.css hides #shell until
+   it carries `on`; the game adds it and the editor never did, so the editor
+   drew an empty grey page in every browser while this file said "healthy":
+   jsdom applies no stylesheet. tools/laycheck.js measures the real thing;
+   this is the same fact read statically, so `npm run check` sees it too. */
+{
+  const css = fs.readFileSync(path.join(root, "css", "terminal.css"), "utf8");
+  const hides = /#shell\{[^}]*display:none/.test(css);
+  const shown = w.document.getElementById("shell");
+  ok("the editor's #shell is shown by the class the stylesheet asks for",
+     !hides || (!!shown && shown.classList.contains("on")),
+     hides ? "terminal.css hides #shell without .on" : "terminal.css no longer hides #shell");
+}
+
 try { w.eval("Editor.boot()"); ok("boot()", true); }
 catch (e) { ok("boot()", false, e.message); process.exit(1); }
 
@@ -200,9 +214,14 @@ try {
     if (tab === "events") (e.choices || []).forEach(c => {
       if (c.effects) c.effects = JSON.parse(JSON.stringify(X(c.effects)));
       if (c.effects && !c.effects.length) delete c.effects; });
+    /* a tempo's effects are drawn by the same rows as a choice's */
+    if (tab === "initiatives") (e.tempo || []).forEach(t => {
+      if (t.effects) t.effects = JSON.parse(JSON.stringify(X(t.effects))); });
     return e; };
   const GLOB = { events: "EVENTS", parties: "PARTIES", stations: "STATIONS", characters: "CHARACTERS",
-    bills: "BILLS", glossary: "GLOSSARY", constituencies: "CONSTITUENCIES", functional: "FUNCTIONAL" };
+    bills: "BILLS", glossary: "GLOSSARY", constituencies: "CONSTITUENCIES", functional: "FUNCTIONAL",
+    /* a campaign's own kinds, written here since 25 Sep */
+    settlements: "SETTLEMENTS", initiatives: "INITIATIVES", achievements: "ACHIEVEMENTS" };
   const diff = (a, b, p, out) => {
     if (JSON.stringify(a) === JSON.stringify(b)) return;
     if (a && b && typeof a === "object" && typeof b === "object" && Array.isArray(a) === Array.isArray(b))
@@ -226,7 +245,8 @@ try {
     const out = [];
     want.forEach(o => diff(norm(tab, o), norm(tab, byId.get(key(o))), key(o), out));
     const one = { parties: "party", glossary: "glossary", constituencies: "constituency",
-                  functional: "functional" }[tab] || tab.replace(/s$/, "");
+                  functional: "functional", settlements: "ending", achievements: "award" }[tab] ||
+                tab.replace(/s$/, "");
     ok("opening every " + one + " entry changes none of them",
        out.length === 0, out.length + " differences: " + out.slice(0, 4).join("  //  "));
   });
@@ -289,6 +309,46 @@ try {
            fl.map(x => x.path).join(", "));
       }
     }
+  }
+  /* THE NEW KINDS ARE REAL CONTROLS (25 Sep). The sweep above proves
+     opening an ending, an initiative or an award keeps it; this proves an
+     edit inside a tempo and an award's condition is written back, and that
+     the content the game plays raises nothing in the validator. */
+  {
+    const click = n => n && n.dispatchEvent(new w2.MouseEvent("click", { bubbles: true }));
+    const item = id => [...w2.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id === id);
+    const exportTab = () => { w2.__cap = null; click(w2.document.getElementById("ed-exportone")); return w2.__cap || []; };
+    click(w2.document.querySelector('.tab[data-t="initiatives"]'));
+    const it = JSON.parse(w2.eval("JSON.stringify(INITIATIVES.filter(function (i) { return (i.tempo || []).length > 1; })[0] || null)"));
+    if (!it) ok("some initiative has two tempos", false);
+    else {
+      click(item(it.id));
+      const af = w2.document.querySelector('#ed-tempos .ed-tempo[data-ti="1"] [data-f="after"]');
+      if (af) af.value = String((it.tempo[1].after || 0) + 7);
+      click([...w2.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id !== it.id));
+      const back = exportTab().find(o => o.id === it.id) || {};
+      ok("an edit to a tempo is written back, and only to that tempo",
+         !!af && back.tempo && back.tempo[1].after === (it.tempo[1].after || 0) + 7 &&
+         JSON.stringify(back.tempo[0]) === JSON.stringify(norm("initiatives", it).tempo[0]),
+         back.tempo ? "after " + back.tempo[1].after : "not exported");
+    }
+    click(w2.document.querySelector('.tab[data-t="achievements"]'));
+    const aw = JSON.parse(w2.eval("JSON.stringify(ACHIEVEMENTS.filter(function (a) { return a.when && a.when.resolved; })[0] || null)"));
+    if (!aw) ok("some award reads a crisis result", false);
+    else {
+      click(item(aw.id));
+      const sel = w2.document.querySelector('#ed-aconds [data-c="resolved"] [data-f="v"]');
+      const other = sel && [...sel.options].map(o => o.value).find(v => v && v !== aw.when.resolved);
+      if (other) sel.value = other;
+      click([...w2.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id !== aw.id));
+      const back = exportTab().find(o => o.id === aw.id) || {};
+      ok("an award's ending is chosen from the endings, and written back",
+         !!other && (back.when || {}).resolved === other, (back.when || {}).resolved);
+    }
+    const bad = [...w2.document.querySelectorAll("#ed-status .ed-err, #ed-status .ed-dup")]
+      .map(n => n.textContent).filter(t => /^(ending|initiative|award|duplicate (ending|initiative|award))/.test(t));
+    ok("and the validator finds nothing wrong with the endings, initiatives and awards the game plays",
+       bad.length === 0, bad.slice(0, 3).join(" // "));
   }
   if (errs2.length) ok("and the fresh editor raised no errors", false, errs2.slice(0, 2).join(" // "));
 } catch (e) { ok("opening an entry changes nothing", false, e.message); }

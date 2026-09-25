@@ -104,71 +104,9 @@ const SHAPES =
 /* The tabs, in the order the interface presents them. */
 const TABS = ["sit", "gov", "cham", "econ", "party", "rel", "orb", "world", "cx", "log"];
 
-/* Runs inside the page. Boots the shell into a running game exactly as
-   tools/harness.js does, then measures each tab in turn. */
-const PROBE = `
-(function () {
-  var out = document.getElementById("laycheck-out");
-  function done(o) { out.textContent = JSON.stringify(o); }
-
-  /* The terminal draws its own dialogs, so answer them through Dialog's
-     callbacks — the same override the jsdom harness installs. */
-  try {
-    Dialog.confirm = function (m, o, cb) { (typeof o === "function" ? o : cb)(true); };
-    Dialog.prompt  = function (m, o, cb) { (typeof o === "function" ? o : cb)("Test ministry"); };
-    Dialog.alert   = function (m, o, cb) { var f = typeof o === "function" ? o : cb; if (f) f(); };
-  } catch (e) {}
-
-  /* THE MENU IS A SCREEN TOO, and this walked straight past it into a game
-     for as long as it existed. It cost the main menu two faults nobody could
-     see from a 1440p desktop: a printed band that grew from 12% of the glass
-     to 34% as the screen shrank, and menu buttons running underneath it on
-     the commonest laptop panel there is. Measured here, before the boot,
-     because after it the menu is gone. */
-  var menu = null;
-  try {
-    Shell.boot(CONTENT);
-    menu = (function () {
-      var out = [];
-      var band = document.querySelector(".menu-footer");
-      var plate = document.querySelector(".menu-plate");
-      var vh = document.documentElement.clientHeight;
-      if (!band || !plate) return out;
-      var br = band.getBoundingClientRect();
-
-      /* A BAND THAT GROWS AS THE GLASS SHRINKS. It is furniture, not content,
-         so a third of a short screen is a fault however correct its CSS. */
-      if (br.height > vh * 0.28)
-        out.push({ what: "the printed band", detail: Math.round(br.height) +
-                   "px is " + Math.round(br.height / vh * 100) + "% of a " + vh + "px screen" });
-
-      /* AND IT MUST NOT BE PAINTED OVER. The plate is z-index 2 and the band
-         is not, so a plate that cannot fit draws straight through it. Check
-         the plate's real content rather than the plate box, which carries
-         padding the band may legitimately sit inside. */
-      var kids = plate.querySelectorAll(".menu-title, .menu-tagline, .menu-btns, .menu-warn, .menu-text");
-      for (var i = 0; i < kids.length; i++) {
-        var kr = kids[i].getBoundingClientRect();
-        if (!kr.height) continue;
-        if (kr.bottom > br.top + 1)
-          out.push({ what: "." + (kids[i].className.split(" ")[0] || "?"),
-                     detail: "ends at y=" + Math.round(kr.bottom) +
-                             ", under a band that starts at y=" + Math.round(br.top) });
-      }
-      return out;
-    })();
-  } catch (e) { return done({ error: "menu: " + (e && e.message) }); }
-
-  try {
-    document.querySelector('[data-go="new"]').click();
-    var adm = document.querySelector("[data-admin]");
-    if (adm) adm.click();
-    /* The introduction stands between the government and the slots. */
-    var spGo = document.querySelector("[data-sp-go]");
-    if (spGo) spGo.click();
-    document.querySelector('[data-new="1"]').click();
-  } catch (e) { return done({ error: "boot: " + (e && e.message) }); }
-
+/* WHAT A FAULT IS, shared by the two probes below: the game's and the
+   editor's. Runs inside the page; a template literal, so no back-ticks. */
+const HELPERS = `
   function name(el) {
     var s = el.tagName.toLowerCase();
     if (el.id) s += "#" + el.id;
@@ -237,8 +175,10 @@ const PROBE = `
     }
     return null;
   }
-  function measure(tab) {
-    var hits = [], screen = document.querySelector(".screen.on");
+  /* EVERY ELEMENT UNDER ONE ROOT: the game's screen that is on, or the
+     editor's viewport. */
+  function measureIn(screen, tab) {
+    var hits = [];
     if (!screen) return hits;
     var els = screen.querySelectorAll("*");
     for (var i = 0; i < els.length; i++) {
@@ -273,6 +213,75 @@ const PROBE = `
     return hits;
   }
 
+  function measure(tab) { return measureIn(document.querySelector(".screen.on"), tab); }
+`;
+
+/* Runs inside the page. Boots the shell into a running game exactly as
+   tools/harness.js does, then measures each tab in turn. */
+const PROBE = `
+(function () {
+  var out = document.getElementById("laycheck-out");
+  function done(o) { out.textContent = JSON.stringify(o); }
+
+  /* The terminal draws its own dialogs, so answer them through Dialog's
+     callbacks — the same override the jsdom harness installs. */
+  try {
+    Dialog.confirm = function (m, o, cb) { (typeof o === "function" ? o : cb)(true); };
+    Dialog.prompt  = function (m, o, cb) { (typeof o === "function" ? o : cb)("Test ministry"); };
+    Dialog.alert   = function (m, o, cb) { var f = typeof o === "function" ? o : cb; if (f) f(); };
+  } catch (e) {}
+
+  /* THE MENU IS A SCREEN TOO, and this walked straight past it into a game
+     for as long as it existed. It cost the main menu two faults nobody could
+     see from a 1440p desktop: a printed band that grew from 12% of the glass
+     to 34% as the screen shrank, and menu buttons running underneath it on
+     the commonest laptop panel there is. Measured here, before the boot,
+     because after it the menu is gone. */
+  var menu = null;
+  try {
+    Shell.boot(CONTENT);
+    menu = (function () {
+      var out = [];
+      var band = document.querySelector(".menu-footer");
+      var plate = document.querySelector(".menu-plate");
+      var vh = document.documentElement.clientHeight;
+      if (!band || !plate) return out;
+      var br = band.getBoundingClientRect();
+
+      /* A BAND THAT GROWS AS THE GLASS SHRINKS. It is furniture, not content,
+         so a third of a short screen is a fault however correct its CSS. */
+      if (br.height > vh * 0.28)
+        out.push({ what: "the printed band", detail: Math.round(br.height) +
+                   "px is " + Math.round(br.height / vh * 100) + "% of a " + vh + "px screen" });
+
+      /* AND IT MUST NOT BE PAINTED OVER. The plate is z-index 2 and the band
+         is not, so a plate that cannot fit draws straight through it. Check
+         the plate's real content rather than the plate box, which carries
+         padding the band may legitimately sit inside. */
+      var kids = plate.querySelectorAll(".menu-title, .menu-tagline, .menu-btns, .menu-warn, .menu-text");
+      for (var i = 0; i < kids.length; i++) {
+        var kr = kids[i].getBoundingClientRect();
+        if (!kr.height) continue;
+        if (kr.bottom > br.top + 1)
+          out.push({ what: "." + (kids[i].className.split(" ")[0] || "?"),
+                     detail: "ends at y=" + Math.round(kr.bottom) +
+                             ", under a band that starts at y=" + Math.round(br.top) });
+      }
+      return out;
+    })();
+  } catch (e) { return done({ error: "menu: " + (e && e.message) }); }
+
+  try {
+    document.querySelector('[data-go="new"]').click();
+    var adm = document.querySelector("[data-admin]");
+    if (adm) adm.click();
+    /* The introduction stands between the government and the slots. */
+    var spGo = document.querySelector("[data-sp-go]");
+    if (spGo) spGo.click();
+    document.querySelector('[data-new="1"]').click();
+  } catch (e) { return done({ error: "boot: " + (e && e.message) }); }
+
+${HELPERS}
   var found = [], tabs = ${JSON.stringify(TABS)}, drawn = [];
   for (var t = 0; t < tabs.length; t++) {
     var btn = document.querySelector('.tab[data-t="' + tabs[t] + '"]');
@@ -380,13 +389,52 @@ const PROBE = `
 })();
 `;
 
-function run(width, height) {
+/* THE EDITOR, MEASURED (25 Sep). It drew an empty grey page in every
+   browser for as long as the main menu has existed: css/terminal.css hides
+   #shell until it is shown, the game shows it and the editor never did, and
+   every check of the editor runs in jsdom, which applies no stylesheet. So
+   this boots editor.html, asks first whether it draws at all, then walks
+   its tabs, opening each tab's first entry, and measures the same two
+   faults. Desktop shapes only: it is an authoring tool. */
+const EDITOR_MIN_WIDTH = 1280;
+const EDITOR_PROBE = `
+(function () {
+  var out = document.getElementById("laycheck-out");
+  function done(o) { out.textContent = JSON.stringify(o); }
+  try {
+    Dialog.confirm = function (m, o, cb) { (typeof o === "function" ? o : cb)(false); };
+    Dialog.prompt  = function (m, o, cb) { (typeof o === "function" ? o : cb)(null); };
+    Dialog.alert   = function (m, o, cb) { var f = typeof o === "function" ? o : cb; if (f) f(); };
+    try { localStorage.clear(); } catch (e) {}
+    Editor.boot();
+  } catch (e) { return done({ error: "editor boot: " + (e && e.message) }); }
+  ${HELPERS}
+  var shell = document.getElementById("shell");
+  var sr = shell ? shell.getBoundingClientRect() : { width: 0, height: 0 };
+  var drawsAt = shell ? getComputedStyle(shell).display : "none";
+  if (!shell || drawsAt === "none" || sr.height < 100 || sr.width < 100)
+    return done({ blank: "the editor draws nothing: #shell is " + drawsAt + ", " +
+                         Math.round(sr.width) + "x" + Math.round(sr.height) });
+  var found = [], drawn = [], btns = document.querySelectorAll(".tab[data-t]");
+  for (var t = 0; t < btns.length; t++) {
+    var id = btns[t].getAttribute("data-t");
+    try { btns[t].click(); } catch (e) { drawn.push(id + " (NOT DRAWN)"); continue; }
+    drawn.push(id);
+    found = found.concat(measureIn(document.getElementById("viewport"), id));
+  }
+  var de = document.documentElement;
+  done({ hits: found, tabs: drawn, pageX: de.scrollWidth - de.clientWidth });
+})();
+`;
+
+function run(width, height, page) {
   /* The temp page lives in the repo root so index.html's relative
      <script src> paths resolve exactly as they do for a player. */
+  const editor = page === "editor.html";
   const tmp = path.join(root, "_laycheck." + process.pid + ".html");
-  const html = fs.readFileSync(path.join(root, "index.html"), "utf8")
+  const html = fs.readFileSync(path.join(root, page || "index.html"), "utf8")
     .replace(/<script>[\s\S]*?<\/script>\s*<\/body>/,
-             '<pre id="laycheck-out"></pre><script>' + PROBE + "</script></body>");
+             '<pre id="laycheck-out"></pre><script>' + (editor ? EDITOR_PROBE : PROBE) + "</script></body>");
   fs.writeFileSync(tmp, html);
   let dom = "";
   try {
@@ -447,8 +495,21 @@ for (const [width, height] of SHAPES) {
     fail++;
   }
 
+  report(r, `the menu, then ${(r.tabs || []).length} tabs`);
+  if (width >= EDITOR_MIN_WIDTH) {
+    const e = run(width, height, "editor.html");
+    if (e.error) { console.log("    FAIL editor: " + e.error); fail++; }
+    else if (e.blank) { console.log("    FAIL " + e.blank); fail++; }
+    else {
+      if (e.pageX > 2) { console.log(`    FAIL the editor scrolls sideways by ${e.pageX}px`); fail++; }
+      report(e, `the editor, ${(e.tabs || []).length} tabs`);
+    }
+  }
+}
+
+function report(r, what) {
   const hits = (r.hits || []).sort((a, b) => b.by - a.by);
-  if (!hits.length) { console.log(`    ok   the menu, then ${(r.tabs || []).length} tabs, nothing clipped, nothing escapes its frame`); continue; }
+  if (!hits.length) { console.log(`    ok   ${what}, nothing clipped, nothing escapes its frame`); return; }
 
   fail += hits.length;
   const show = ALL ? hits : hits.slice(0, 10);

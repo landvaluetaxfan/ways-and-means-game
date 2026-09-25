@@ -44,7 +44,13 @@ const Editor = (function () {
       bills: clone(BILLS), glossary: clone(GLOSSARY),
       constituencies: clone(typeof CONSTITUENCIES !== "undefined" ? CONSTITUENCIES : []),
       functional: clone(typeof FUNCTIONAL !== "undefined" ? FUNCTIONAL : []),
-      encyclopedia: clone(ENCYCLOPEDIA)
+      encyclopedia: clone(ENCYCLOPEDIA),
+      /* A CAMPAIGN'S OWN KINDS (25 Sep): its endings, what the government
+         can put in motion, and its awards. Until then a campaign could be
+         written here only as far as its events and bills. */
+      settlements: clone(typeof SETTLEMENTS !== "undefined" ? SETTLEMENTS : []),
+      initiatives: clone(typeof INITIATIVES !== "undefined" ? INITIATIVES : []),
+      achievements: clone(typeof ACHIEVEMENTS !== "undefined" ? ACHIEVEMENTS : [])
     };
   }
 
@@ -76,6 +82,12 @@ const Editor = (function () {
       case "bills": return M.bills.map(b => [b.id, b.title]);
       case "functional": return (M.functional || []).map(f => [f.id, f.name]);
       case "events": return M.events.map(e => [e.id, e.title]);
+      case "settlements": return (M.settlements || []).map(x => [x.id, x.name]);
+      /* the two families an award can ask about: a crisis result is kept in
+         resolvedAs, an answer in settledAs, and neither is ever the other */
+      case "crisisEndings": return (M.settlements || []).filter(x => x.crisis).map(x => [x.id, x.name]);
+      case "answerEndings": return (M.settlements || []).filter(x => !x.crisis).map(x => [x.id, x.name]);
+      case "awardTiers": return SCHEMA.vocab.awardTiers.map(v => [v, v]);
       case "characters": return M.characters.map(c => [c.id, c.name]);
       case "archetypes": return [["", "— none —"]].concat(
         (typeof ARCHETYPES !== "undefined" ? ARCHETYPES : []).map(a => [a.id, a.name]));
@@ -110,13 +122,22 @@ const Editor = (function () {
         .concat(SCHEMA.vocab.scalars.map(k => ["trend." + k, "trend · " + k.replace(/_/g, " ")]))
         .concat(SCHEMA.vocab.bands.map(k => ["standing." + k, "standing · " + k]))
         .concat((typeof ACTORS !== "undefined" ? ACTORS : []).map(a => ["actor." + a.id, "actor · " + a.name]))
-        .concat(Object.entries((typeof SETUP !== "undefined" && SETUP.lenders) || {}).map(([k, L]) =>
-          ["debt." + k, "owed to · " + (L.name || k)]))
+        .concat(lenders().map(([k, L]) => ["debt." + k, "owed to · " + (L.name || k)]))
         /* a loan: the reserve's side and the debt's at the day's rate */
-        .concat(Object.entries((typeof SETUP !== "undefined" && SETUP.lenders) || {}).map(([k, L]) =>
-          ["loan." + k, "borrow from · " + (L.name || k)]));
+        .concat(lenders().map(([k, L]) => ["loan." + k, "borrow from · " + (L.name || k)]));
       default: return [];
     }
+  }
+
+  /* EVERY LENDER, the world's and each campaign's own: a campaign adds
+     lenders in its administration's setup (Flash I's emergency facility),
+     and a move on one read as "not in this list" */
+  function lenders() {
+    const out = {};
+    Object.entries((typeof SETUP !== "undefined" && SETUP.lenders) || {}).forEach(([k, L]) => out[k] = L);
+    ((typeof ADMINISTRATIONS !== "undefined" && ADMINISTRATIONS) || []).forEach(a =>
+      Object.entries((a.setup && a.setup.lenders) || {}).forEach(([k, L]) => { if (!out[k]) out[k] = L; }));
+    return Object.entries(out);
   }
 
   function allFlags() {
@@ -164,8 +185,11 @@ const Editor = (function () {
         `<option value="${esc(v)}"${v === cur ? " selected" : ""}>${esc(l)}</option>`).join("");
     return `<select class="ed-f ${cls || ""}" data-f="${name}">${opts}</select>`;
   }
+  /* as wide as the number it holds: a reserve move of -19800 was drawn
+     "-198" in a box sized for a loyalty change */
   function num_(name, cur, w) {
-    return `<input class="ed-f ed-num" data-f="${name}" type="number" value="${cur == null ? "" : cur}" style="width:${w || 54}px">`;
+    const fit = Math.max(w || 54, String(cur == null ? "" : cur).length * 8 + 22);
+    return `<input class="ed-f ed-num" data-f="${name}" type="number" value="${cur == null ? "" : cur}" style="width:${fit}px">`;
   }
   function txt_(name, cur, ph, w) {
     return `<input class="ed-f" data-f="${name}" type="text" value="${esc(cur)}" placeholder="${esc(ph || "")}"${w ? ` style="width:${w}px"` : ""}>`;
@@ -316,23 +340,34 @@ const Editor = (function () {
      for any key the schema does not describe -- settled, seen, owes,
      dissolved and nineteen more -- and for a map it drew only the first key,
      so opening an event and moving on deleted its gate (design/34). */
-  function rawCond(k, v) {
+  /* `pre` names the action that deletes a row ("cond", or "tcond" for a
+     tempo's own conditions) and `ti` which tempo, so one drawing serves an
+     entry's gate and every gate inside it. */
+  function rawCond(k, v, pre, ti) {
+    const at = ti == null ? "" : ` data-ti="${ti}"`;
     return `<div class="ed-cond" data-c="${esc(k)}" data-raw="1"><b>${esc(k)}</b>` +
       txt_("v", JSON.stringify(v), "JSON", 300) +
-      `<button class="btn ed-x" data-act="cond-del" data-c="${esc(k)}">×</button></div>`;
+      `<button class="btn ed-x" data-act="${pre || "cond"}-del" data-c="${esc(k)}"${at}>×</button></div>`;
   }
-  function condRows(when) {
+  function condRows(when, pre, ti) {
     when = when || {};
+    const raw = (k, v) => rawCond(k, v, pre, ti);
+    const at = ti == null ? "" : ` data-ti="${ti}"`;
     return Object.keys(when).map(k => {
       const d = SCHEMA.conditions[k];
-      if (!d) return rawCond(k, when[k]);
-      if (d.form === "map" && (!when[k] || typeof when[k] !== "object" ||
-          Object.keys(when[k]).length !== 1 ||
-          (d.vtype !== "stage" && d.vtype !== "any" && typeof Object.values(when[k])[0] !== "number")))
-        return rawCond(k, when[k]);
-      if (d.form === "int" && typeof when[k] !== "number") return rawCond(k, when[k]);
-      if (d.form === "bool" && typeof when[k] !== "boolean") return rawCond(k, when[k]);
-      if (d.form === "flagList" && !Array.isArray(when[k])) return rawCond(k, when[k]);
+      if (!d) return raw(k, when[k]);
+      /* A MAP MAY HOLD SEVERAL PAIRS ({scalarAbove:{legitimacy:65,
+         friction:65}}), drawn as several key-value pairs in one row. Until
+         25 Sep a second pair made the whole row raw JSON, which is how most
+         of Flash I's endings were drawn. */
+      if (d.form === "map" && (!when[k] || typeof when[k] !== "object" || Array.isArray(when[k]) ||
+          !Object.keys(when[k]).length ||
+          (d.vtype !== "stage" && d.vtype !== "any" &&
+           Object.values(when[k]).some(x => typeof x !== "number"))))
+        return raw(k, when[k]);
+      if (d.form === "int" && typeof when[k] !== "number") return raw(k, when[k]);
+      if (d.form === "bool" && typeof when[k] !== "boolean") return raw(k, when[k]);
+      if (d.form === "flagList" && !Array.isArray(when[k])) return raw(k, when[k]);
       let inner = "";
       if (d.form === "int") inner = num_("v", when[k], 60);
       else if (d.form === "bool")
@@ -341,14 +376,17 @@ const Editor = (function () {
       else if (d.form === "flagList")
         inner = txt_("v", (when[k] || []).join(", "), "flag_a, flag_b", 300);
       else if (d.form === "map") {
-        const key = Object.keys(when[k])[0], v = when[k][key];
-        inner = sel_("k", d.src, key) +
-          (d.vtype === "stage" ? sel_("v", SCHEMA.vocab.billStages, v)
-           : d.vtype === "any" ? txt_("v", typeof v === "string" ? v : JSON.stringify(v), "value", 90)
-           : num_("v", v, 70));
+        inner = Object.keys(when[k]).map(key => {
+          const v = when[k][key];
+          return `<span class="ed-pair">` + sel_("k", d.src, key) +
+            (d.vtype === "stage" ? sel_("v", SCHEMA.vocab.billStages, v)
+             : d.vtype === "any" ? txt_("v", typeof v === "string" ? v : JSON.stringify(v), "value", 90)
+             : num_("v", v, 70)) + `</span>`;
+        }).join("") +
+          `<button class="btn ed-add" data-act="${pre || "cond"}-pair" data-c="${k}"${at} title="another pair">+</button>`;
       }
       return `<div class="ed-cond" data-c="${k}"><b>${esc(d.label)}</b>${inner}` +
-             `<button class="btn ed-x" data-act="cond-del" data-c="${k}">×</button></div>`;
+             `<button class="btn ed-x" data-act="${pre || "cond"}-del" data-c="${k}"${at}>×</button></div>`;
     }).join("");
   }
 
@@ -366,11 +404,14 @@ const Editor = (function () {
       else if (d.form === "flagList")
         when[k] = g("v").value.split(",").map(s => s.trim()).filter(Boolean);
       else if (d.form === "map") {
-        const v = g("v").value;
         /* "any" is a law's value, which is as often a word as a number:
            +"all" is NaN, and a gate on NaN never opens. */
         const any = x => { try { return JSON.parse(x); } catch (e) { return x; } };
-        when[k] = { [g("k").value]: d.vtype === "stage" ? v : d.vtype === "any" ? any(v) : +v };
+        when[k] = {};
+        n.querySelectorAll(".ed-pair").forEach(pr => {
+          const v = pr.querySelector('[data-f="v"]').value;
+          when[k][pr.querySelector('[data-f="k"]').value] = d.vtype === "stage" ? v : d.vtype === "any" ? any(v) : +v;
+        });
       }
     });
     return Object.keys(when).length ? when : undefined;
@@ -483,15 +524,22 @@ const Editor = (function () {
       if (note && note.value.trim()) ch.note = note.value; else delete ch.note;
       const posture = n.querySelector('[data-f="posture"]');
       if (posture && posture.value) ch.posture = posture.value; else delete ch.posture;
-      n.querySelectorAll(".ed-eff").forEach(en => {
-        const r = { verb: en.querySelector('[data-f="verb"]').value, raw: !!en.dataset.raw };
-        en.querySelectorAll("[data-f]").forEach(f => { if (f.dataset.f !== "verb") r[f.dataset.f] = f.value; });
-        const eff = rowToEff(r); if (eff) ch.effects.push(eff);
-      });
+      ch.effects = readEffs(n);
       if (!ch.effects.length) delete ch.effects;
       return ch;
     });
     return e;
+  }
+
+  /* THE EFFECT ROWS UNDER ONE NODE, read back: a choice's, or a tempo's. */
+  function readEffs(scope) {
+    const out = [];
+    scope.querySelectorAll(".ed-eff").forEach(en => {
+      const r = { verb: en.querySelector('[data-f="verb"]').value, raw: !!en.dataset.raw };
+      en.querySelectorAll("[data-f]").forEach(f => { if (f.dataset.f !== "verb") r[f.dataset.f] = f.value; });
+      const eff = rowToEff(r); if (eff) out.push(eff);
+    });
+    return out;
   }
 
   /* =========================================================
@@ -799,6 +847,176 @@ const Editor = (function () {
   }
 
   /* =========================================================
+     A CAMPAIGN'S OWN KINDS: endings, initiatives, awards (25 Sep)
+
+     Until these, a campaign could be written here as far as its events
+     and bills, and its endings, the things its government can start and
+     the awards for playing it were JavaScript to be edited by hand. Each
+     form follows the rule readEvent learned the hard way: it edits a
+     CLONE of its entry and writes only its own fields, so whatever it
+     cannot draw survives being looked at.
+     ========================================================= */
+
+  const g_ = f => document.querySelector(`#ed-form [data-f="${f}"]`);
+  /* a text field written back: blank stays absent unless the entry had it */
+  const putText = (o, k, v) => { if (v !== "" || o[k] != null) o[k] = v; else delete o[k]; };
+  const putNum = (o, k, v) => { if (v !== "") o[k] = +v; else delete o[k]; };
+
+  function settlementForm(x) {
+    return `<div class="ed-grid">
+      <label>Id ${txt_("id", x.id, "", 170)}<button class="btn ed-add" data-act="rename">rename…</button></label>
+      <label class="ed-w">Name ${txt_("name", x.name, "", 300)}</label>
+      <label>Rank ${num_("rank", x.rank == null ? "" : x.rank)}
+        <span class="ed-hint">when two hold at once, the lower is read first</span></label>
+      ${campField(x)}
+      <label class="ed-chk"><input type="checkbox" class="ed-f" data-f="crisis" ${x.crisis ? "checked" : ""}>
+        the campaign's crisis result <span class="ed-hint">kept once and for good</span></label>
+    </div>
+    <div class="rulehead">When it lands <button class="btn ed-add" data-act="cond-add">+ condition</button>
+      <span class="ed-hint">read every sitting; every line must hold, and the player is never shown the list</span></div>
+    <div id="ed-conds">${condRows(x.when)}</div>
+    <div class="rulehead">Summary <span class="ed-hint">one line, for the record and the last page</span></div>
+    ${txt_("summary", x.summary || "", "", 620)}
+    <div class="rulehead">Closing <span class="ed-hint">the ending itself: the world as it is, never the player's virtue</span></div>
+    <textarea class="ed-f ed-body" data-f="closing" rows="12" spellcheck="true">${esc(x.closing || "")}</textarea>`;
+  }
+  function readSettlement(orig) {
+    const x = clone(orig || {});
+    x.id = g_("id").value.trim(); x.name = g_("name").value;
+    putNum(x, "rank", g_("rank").value);
+    readCampaign(x);
+    if (g_("crisis").checked) x.crisis = true; else if (x.crisis) delete x.crisis;
+    const when = readConds(document.getElementById("ed-conds"));
+    if (when) x.when = when; else delete x.when;
+    putText(x, "summary", g_("summary").value);
+    putText(x, "closing", g_("closing").value);
+    return x;
+  }
+
+  function initiativeForm(it) {
+    const evs = [["", "— none —"]].concat(vocab("events"));
+    const known = !it.event || evs.some(([v]) => v === it.event);
+    return `<div class="ed-grid">
+      <label>Id ${txt_("id", it.id, "", 170)}<button class="btn ed-add" data-act="rename">rename…</button></label>
+      <label class="ed-w">Title ${txt_("title", it.title, "", 320)}</label>
+      <label>Cost ${num_("cost", it.cost == null ? "" : it.cost)} <span class="ed-hint">order-paper slots</span></label>
+      ${campField(it)}
+      <label class="ed-w">Answered by <select class="ed-f" data-f="event">${
+        (known ? "" : `<option value="${esc(it.event)}" selected>${esc(it.event)} (not in this list)</option>`) +
+        evs.map(([v, l]) => `<option value="${esc(v)}"${v === (it.event || "") ? " selected" : ""}>${esc(l)}</option>`).join("")
+      }</select> <span class="ed-hint">the event a tempo queues</span></label>
+    </div>
+    <div class="rulehead">Note <span class="ed-hint">what the player reads before starting it</span></div>
+    <textarea class="ed-f ed-body" data-f="note" rows="3">${esc(it.note || "")}</textarea>
+    <div class="rulehead">Open while <button class="btn ed-add" data-act="cond-add">+ condition</button></div>
+    <div id="ed-conds">${condRows(it.when)}</div>
+    <div class="rulehead">Tempos <button class="btn ed-add" data-act="tempo-add">+ tempo</button>
+      <span class="ed-hint">how it is done; give each different effects, not only a different speed</span></div>
+    <div id="ed-tempos">${(it.tempo || []).map((t, i) => tempoBlock(t, i)).join("")}</div>`;
+  }
+  function tempoBlock(t, i) {
+    return `<div class="ed-choice ed-tempo" data-ti="${i}">
+      <div class="ed-choicehd">
+        <span class="ed-cnum">${i + 1}</span>
+        <input class="ed-f ed-label" data-f="label" type="text" value="${esc(t.label)}" placeholder="How it is done">
+        <button class="btn ed-x" data-act="tempo-del" data-ti="${i}">×</button>
+      </div>
+      <div class="ed-grid">
+        <label>After ${num_("after", t.after == null ? "" : t.after)} <span class="ed-hint">sittings until the answer</span></label>
+        <label>Extra cost ${num_("tcost", t.cost == null ? "" : t.cost)} <span class="ed-hint">slots on top</span></label>
+      </div>
+      <div class="ed-effhd">Only while <button class="btn ed-add" data-act="tcond-add" data-ti="${i}">+ condition</button></div>
+      <div class="ed-tconds">${condRows(t.when, "tcond", i)}</div>
+      <div class="ed-effhd">Effects <button class="btn ed-add" data-act="eff-add" data-ci="${i}">+ effect</button></div>
+      <div class="ed-effs">${explodeEffects(t.effects).map((eff, ei) => effRow(eff, i, ei)).join("")}</div>
+    </div>`;
+  }
+  function readInitiative(orig) {
+    const it = clone(orig || {});
+    it.id = g_("id").value.trim(); it.title = g_("title").value;
+    putNum(it, "cost", g_("cost").value);
+    readCampaign(it);
+    const ev = g_("event").value; if (ev) it.event = ev; else delete it.event;
+    putText(it, "note", g_("note").value);
+    const when = readConds(document.getElementById("ed-conds"));
+    if (when) it.when = when; else delete it.when;
+    const before = (orig && orig.tempo) || [];
+    const tempo = [...document.querySelectorAll("#ed-tempos .ed-tempo")].map(n => {
+      const t = clone(before[+n.dataset.ti] || {});
+      t.label = n.querySelector(':scope > .ed-choicehd [data-f="label"]').value;
+      putNum(t, "after", n.querySelector(':scope > .ed-grid [data-f="after"]').value);
+      putNum(t, "cost", n.querySelector(':scope > .ed-grid [data-f="tcost"]').value);
+      const tw = readConds(n.querySelector(":scope > .ed-tconds"));
+      if (tw) t.when = tw; else delete t.when;
+      const effs = readEffs(n.querySelector(":scope > .ed-effs"));
+      if (effs.length || Array.isArray(t.effects)) t.effects = effs; else delete t.effects;
+      return t;
+    });
+    if (tempo.length || it.tempo) it.tempo = tempo;
+    return it;
+  }
+
+  /* AN AWARD'S CONDITIONS ARE ITS OWN (SCHEMA.awardConditions): judged once,
+     on the finished record, by js/shell.js. A value of a shape the row does
+     not draw is kept as written, as JSON. `data-one` marks a single word
+     written as a word, so a list of one reads back as it was. */
+  function awardRows(when) {
+    const A = SCHEMA.awardConditions;
+    return Object.keys(when || {}).map(k => {
+      const d = A[k], v = when[k];
+      const words = x => typeof x === "string" && x.indexOf(",") < 0;
+      let form = "raw", inner;
+      if (d && d.form === "enum" && typeof v === "string") { form = "enum"; inner = sel_("v", d.options, v); }
+      else if (d && d.form === "settlement" && typeof v === "string") {
+        form = "enum"; inner = sel_("v", d.of === "crisis" ? "crisisEndings" : d.of === "answer" ? "answerEndings" : "settlements", v);
+      }
+      else if (d && d.form === "list" && (words(v) || (Array.isArray(v) && v.length && v.every(words)))) {
+        form = "list"; inner = txt_("v", [].concat(v).join(", "), d.hint || "", 320);
+      }
+      else inner = txt_("v", JSON.stringify(v), "JSON", 320);
+      return `<div class="ed-cond ed-acond" data-c="${esc(k)}" data-form="${form}"${
+        form === "list" && typeof v === "string" ? ' data-one="1"' : ""}><b>${esc(d ? d.label : k)}</b>${inner}` +
+        `<button class="btn ed-x" data-act="acond-del" data-c="${esc(k)}">×</button></div>`;
+    }).join("");
+  }
+  function readAwardConds(scope) {
+    const when = {};
+    scope.querySelectorAll(".ed-acond").forEach(n => {
+      const k = n.dataset.c, v = n.querySelector('[data-f="v"]').value;
+      if (n.dataset.form === "raw") { try { when[k] = JSON.parse(v); } catch (e) { when[k] = v; } }
+      else if (n.dataset.form === "list") {
+        const items = v.split(",").map(x => x.trim()).filter(Boolean);
+        when[k] = n.dataset.one && items.length === 1 ? items[0] : items;
+      }
+      else when[k] = v;
+    });
+    return Object.keys(when).length ? when : undefined;
+  }
+  function achievementForm(a) {
+    return `<div class="ed-grid">
+      <label>Id ${txt_("id", a.id, "", 170)}<button class="btn ed-add" data-act="rename">rename…</button></label>
+      <label class="ed-w">Name ${txt_("name", a.name, "", 300)}</label>
+      <label>Tier ${sel_("tier", "awardTiers", a.tier || "")}</label>
+      ${campField(a)}
+    </div>
+    <div class="rulehead">Note <span class="ed-hint">what the awards screen says of it</span></div>
+    <textarea class="ed-f ed-body" data-f="note" rows="3">${esc(a.note || "")}</textarea>
+    <div class="rulehead">Earned when <button class="btn ed-add" data-act="acond-add">+ condition</button>
+      <span class="ed-hint">judged once, on the finished run; every line must hold</span></div>
+    <div id="ed-aconds">${awardRows(a.when)}</div>`;
+  }
+  function readAchievement(orig) {
+    const a = clone(orig || {});
+    a.id = g_("id").value.trim(); a.name = g_("name").value;
+    a.tier = g_("tier").value;
+    readCampaign(a);
+    putText(a, "note", g_("note").value);
+    const when = readAwardConds(document.getElementById("ed-aconds"));
+    if (when) a.when = when; else delete a.when;
+    return a;
+  }
+
+  /* =========================================================
      RENDER
      ========================================================= */
 
@@ -828,7 +1046,20 @@ const Editor = (function () {
                 category: "Institutions", banners: [], edited: { by: "unattributed", attested: true, note: "" },
                 summary: "", sections: [{ h: "", body: "" }], see: [] }) },
     glossary: { arr: "glossary", label: g => g.term, sub: g => g.cluster || (g.assumed ? "assumed" : "—"),
-              form: glossForm, blank: () => ({ term: "new term", gloss: "", handle: "", cluster: "", introduced: null }) }
+              form: glossForm, blank: () => ({ term: "new term", gloss: "", handle: "", cluster: "", introduced: null }) },
+    /* a new ending opens gated on a flag nothing sets yet: an ending with
+       no condition would land at the first sitting */
+    settlements: { arr: "settlements", label: x => x.name || x.id,
+              sub: x => (x.crisis ? "crisis " : "answer ") + (x.rank == null ? "—" : x.rank),
+              form: settlementForm, blank: () => ({ id: "new_ending", rank: 5, name: "New ending",
+                summary: "", closing: "", when: { flags: ["new_ending_reached"] } }) },
+    initiatives: { arr: "initiatives", label: i => i.title || i.id,
+              sub: i => (i.cost || 0) + " slot" + (i.cost === 1 ? "" : "s"),
+              form: initiativeForm, blank: () => ({ id: "new_initiative", title: "New initiative", note: "",
+                cost: 1, tempo: [{ label: "Quietly", after: 2 }, { label: "In public", after: 4, cost: 1 }] }) },
+    achievements: { arr: "achievements", label: a => a.name || a.id, sub: a => a.tier || "—",
+              form: achievementForm, blank: () => ({ id: "new_award", name: "New award", tier: "action",
+                note: "", when: { flags: ["new_award_earned"] } }) }
   };
 
   function idOf(kind, o) { return kind === "glossary" ? o.term : o.id; }
@@ -888,6 +1119,9 @@ const Editor = (function () {
     if (!g("id") && !g("term")) return;
 
     if (sel.tab === "events") { arr[i] = readEvent(arr[i]); sel.id = arr[i].id; }
+    else if (sel.tab === "settlements") { arr[i] = readSettlement(arr[i]); sel.id = arr[i].id; }
+    else if (sel.tab === "initiatives") { arr[i] = readInitiative(arr[i]); sel.id = arr[i].id; }
+    else if (sel.tab === "achievements") { arr[i] = readAchievement(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "parties") {
       const p = arr[i];
       p.id = g("id").value.trim(); p.name = g("name").value; p.short = g("short").value;
@@ -1113,17 +1347,18 @@ const Editor = (function () {
         soft.slice(0, 6).map(s => "  · " + s).join("\n")
       : "";
     /* REFERENCES IN FILES THIS EDITOR DOES NOT WRITE. The model holds the
-       files it exports; setup, the cabinet, instruments, initiatives,
-       minutes, settlements, business, actors and administrations name the same ids
-       and are read-only here, so a rename would leave them pointing at
-       nothing. They are found and listed so they can be changed by hand. */
+       files it exports; setup, the cabinet, instruments, minutes, business,
+       actors and administrations name the same ids and are read-only here,
+       so a rename would leave them pointing at nothing. They are found and
+       listed so they can be changed by hand. (Initiatives and settlements
+       are the model's since 25 Sep, and a rename reaches them.) */
     const G = n => (typeof window !== "undefined" && window[n]) ||
       (function () { try { return eval(n); } catch (e) { return undefined; } })();
     const outside = Refs.find(Object.assign({}, M, {
-      cabinet: G("CABINET"), instruments: G("INSTRUMENTS"), initiatives: G("INITIATIVES"),
-      minutes: G("MINUTES"), settlements: G("SETTLEMENTS"), business: G("BUSINESS"),
+      cabinet: G("CABINET"), instruments: G("INSTRUMENTS"),
+      minutes: G("MINUTES"), business: G("BUSINESS"),
       actors: G("ACTORS"), administrations: G("ADMINISTRATIONS"), setup: G("SETUP") }), kind, from)
-      .filter(h => /^(setup|cabinet|instrument|initiative|minute|settlement|business|actor|administration) /.test(h.where));
+      .filter(h => /^(setup|cabinet|instrument|minute|business|actor|administration) /.test(h.where));
     const outNote = outside.length
       ? `\n\nNOT changed — in files this editor does not write, change by hand:\n` +
         outside.slice(0, 8).map(h => "  · " + h.where).join("\n") +
@@ -1494,9 +1729,45 @@ const Editor = (function () {
     });
     P.push(["info", "chapters: " + [...declared].sort((a,b)=>a-b).join(", ")]);
 
+    /* THE ENDINGS, WHAT CAN BE STARTED, AND THE AWARDS (25 Sep) */
+    const dupes = (arr, what) => arr.map(x => x.id).forEach((id, i, a) => {
+      if (a.indexOf(id) !== i) P.push(["dup", "duplicate " + what + " id: " + id]); });
+    dupes(M.settlements || [], "ending"); dupes(M.initiatives || [], "initiative");
+    dupes(M.achievements || [], "award");
+    const SE = new Set((M.settlements || []).map(x => x.id));
+    (M.settlements || []).forEach(x => {
+      /* matches() of nothing is true: an ending with no condition lands at
+         the first sitting */
+      if (!x.when || !Object.keys(x.when).length) P.push(["err", "ending " + x.id + ": no condition, so it lands at the first sitting"]);
+      if (!x.closing) P.push(["warn", "ending " + x.id + ": no closing prose"]);
+    });
+    (M.initiatives || []).forEach(it => {
+      if (!it.event) P.push(["err", "initiative " + it.id + ": no event answers it"]);
+      else if (!ids.includes(it.event)) P.push(["err", "initiative " + it.id + ": answered by missing event " + it.event]);
+      if (!(it.tempo || []).length) P.push(["warn", "initiative " + it.id + ": no tempo, so it cannot be started"]);
+    });
+    (M.achievements || []).forEach(a => {
+      ["settled", "resolved"].forEach(k => {
+        const v = (a.when || {})[k], x = (M.settlements || []).find(y => y.id === v);
+        if (typeof v === "string" && !SE.has(v)) P.push(["err", "award " + a.id + ": names no ending '" + v + "'"]);
+        /* an answer never lands in resolvedAs, nor a crisis result in
+           settledAs, so the award could never be earned */
+        else if (x && !!x.crisis !== (k === "resolved"))
+          P.push(["err", "award " + a.id + ": asks whether " + v + " was " + (k === "resolved" ? "the crisis result" : "the answer") +
+                         ", and it is " + (x.crisis ? "a crisis result" : "an answer")]);
+      });
+      Object.keys(a.when || {}).forEach(k => {
+        if (!SCHEMA.awardConditions[k]) P.push(["err", "award " + a.id + ": '" + k + "' is not a condition an award can ask"]);
+      });
+      if (!a.when || !Object.keys(a.when).length) P.push(["warn", "award " + a.id + ": no condition, so it is never awarded"]);
+    });
+
     /* the district tier must equal the sum of constituency magnitudes */
     if (M.constituencies && M.constituencies.length) {
-      const cons = M.constituencies.reduce((n, c) => n + c.magnitude, 0);
+      /* the capital's seat has a member and sits outside the tier
+         (`nonVoting`), which the engine skips and this did not, so the
+         validator opened on an error the game does not have */
+      const cons = M.constituencies.filter(c => !c.nonVoting).reduce((n, c) => n + c.magnitude, 0);
       const dist = M.parties.reduce((n, p) => n + p.seats.district, 0);
       if (cons !== dist)
         P.push(["err", "district tier: " + cons + " constituency seats vs " + dist + " party seats"]);
@@ -1505,7 +1776,9 @@ const Editor = (function () {
         if (m !== s.seats)
           P.push(["err", s.id + ": station says " + s.seats + " seats, constituencies say " + m]);
       });
-      P.push(["info", M.constituencies.length + " constituencies returning " + cons + " members"]);
+      const nv = M.constituencies.filter(c => c.nonVoting).length;
+      P.push(["info", M.constituencies.length + " constituencies returning " + cons + " voting members" +
+                      (nv ? ", and " + nv + " seat" + (nv === 1 ? "" : "s") + " that cannot vote" : "")]);
     }
 
     /* functional seats must reconcile between parties.js and functional.js */
@@ -1628,7 +1901,8 @@ const Editor = (function () {
     document.getElementById("sb-dirty").textContent = "EXPORTED";
     document.getElementById("sb-dirty").style.color = "";
     const all = ["events", "parties", "stations", "characters", "bills", "glossary",
-                 "concordance", "functional", "constituencies"]
+                 "concordance", "functional", "constituencies",
+                 "settlements", "initiatives", "achievements"]
       .reduce((a, k) => a.concat(filesOf(k)), []);
     all.forEach((f, i) => setTimeout(() => download(downloadName(f.path), f.text), i * 120));
   }
@@ -1645,6 +1919,29 @@ const Editor = (function () {
                : fs.map(f => "/* ---------- " + f.path + " ---------- */\n" + f.text).join("\n");
     document.getElementById("ed-preview").textContent = text;
     document.getElementById("ed-previewwrap").style.display = "";
+  }
+
+  /* ANOTHER PAIR IN A MAP CONDITION: the first key it does not hold yet */
+  function addPair(when, k) {
+    const d = SCHEMA.conditions[k], m = when && when[k];
+    if (!d || !m) return;
+    const free = vocab(d.src).map(([v]) => v).find(v => !(v in m));
+    if (free != null) m[free] = d.vtype === "stage" ? "committee" : 0;
+  }
+
+  /* ADD A CONDITION to anything that carries a `when`: an event, an ending,
+     an initiative or one of its tempos. */
+  function addCondition(target) {
+    Dialog.prompt("Condition:\n\n" + Object.keys(SCHEMA.conditions).join("\n"),
+      { title: "Add condition" }, k => {
+        if (k && SCHEMA.conditions[k]) {
+          target.when ||= {};
+          const d = SCHEMA.conditions[k];
+          target.when[k] = d.form === "int" ? 1 : d.form === "bool" ? true : d.form === "flagList" ? []
+                         : { [vocab(d.src)[0][0]]: d.vtype === "stage" ? "committee" : 0 };
+        }
+        draw();
+      });
   }
 
   /* =========================================================
@@ -1706,23 +2003,39 @@ const Editor = (function () {
       const cur = arrOf(sel.tab).find(o => idOf(sel.tab, o) === sel.id);
       if (act === "choice-add") cur.choices.push({ label: "New choice", effects: [] });
       if (act === "choice-del") cur.choices.splice(+b.dataset.ci, 1);
+      /* an effect row belongs to a choice, or on the Initiatives tab to a
+         tempo: the same rows, a different list */
+      const blocks = sel.tab === "initiatives" ? (cur.tempo ||= []) : cur.choices;
       /* `move`, not `scalar`: the verb was folded into move, apply() throws
          on it, and every effect this button made was a crash in waiting. */
-      if (act === "eff-add") (cur.choices[+b.dataset.ci].effects ||= []).push({ move: { public_standing: 0 } });
-      if (act === "eff-del") cur.choices[+b.dataset.ci].effects.splice(+b.dataset.ei, 1);
-      if (act === "cond-add") {
-        Dialog.prompt("Condition:\n\n" + Object.keys(SCHEMA.conditions).join("\n"),
+      if (act === "eff-add") (blocks[+b.dataset.ci].effects ||= []).push({ move: { public_standing: 0 } });
+      if (act === "eff-del") blocks[+b.dataset.ci].effects.splice(+b.dataset.ei, 1);
+      if (act === "cond-add") addCondition(cur);
+      if (act === "cond-del") delete cur.when[b.dataset.c];
+      if (act === "cond-pair") addPair(cur.when, b.dataset.c);
+      if (act === "tcond-pair") addPair(cur.tempo[+b.dataset.ti].when, b.dataset.c);
+      if (act === "tempo-add") (cur.tempo ||= []).push({ label: "New tempo", after: 1 });
+      if (act === "tempo-del") cur.tempo.splice(+b.dataset.ti, 1);
+      if (act === "tcond-add") addCondition(cur.tempo[+b.dataset.ti]);
+      if (act === "tcond-del") {
+        const t = cur.tempo[+b.dataset.ti]; delete t.when[b.dataset.c];
+        if (!Object.keys(t.when).length) delete t.when;
+      }
+      if (act === "acond-add") {
+        const A = SCHEMA.awardConditions;
+        Dialog.prompt("Condition:\n\n" + Object.keys(A).map(k => k + " \u2014 " + A[k].label).join("\n"),
           { title: "Add condition" }, k => {
-            if (k && SCHEMA.conditions[k]) {
+            if (k && A[k]) {
               cur.when ||= {};
-              const d = SCHEMA.conditions[k];
-              cur.when[k] = d.form === "int" ? 1 : d.form === "bool" ? true : d.form === "flagList" ? []
-                          : { [vocab(d.src)[0][0]]: d.vtype === "stage" ? "committee" : 0 };
+              cur.when[k] = A[k].form === "enum" ? A[k].options[0]
+                          : A[k].form === "settlement"
+                            ? ((vocab(A[k].of === "crisis" ? "crisisEndings" : "answerEndings")[0] || [""])[0])
+                          : [];
             }
             draw();
           });
       }
-      if (act === "cond-del") delete cur.when[b.dataset.c];
+      if (act === "acond-del") delete cur.when[b.dataset.c];
       if (act === "sec-add") (cur.sections ||= []).push({ h: "", body: "" });
       if (act === "sec-del") cur.sections.splice(+b.dataset.si, 1);
       if (act === "see-add") (cur.see ||= []).push(vocab("cxArticles")[0][0]);

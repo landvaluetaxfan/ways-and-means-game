@@ -1095,6 +1095,27 @@ version of any of them is in the header of the file it names.
 
 **Interface**
 
+- **THE EDITOR DREW A BLANK PAGE, AND EVERY CHECK OF IT PASSED** (found 25
+  Sep). `css/terminal.css` hides `#shell` until it carries `on`, which the
+  game adds on entering a government; `editor.html` never did, so from the
+  day the main menu arrived the editor was an empty grey window in every
+  browser. `tools/edtest.js` runs in jsdom, which applies no stylesheet, so
+  it opened every entry of every tab and reported "healthy". Found by
+  screenshotting the editor to look at a new form. `tools/laycheck.js`
+  measures the editor now (desktop shapes, every tab) and says first
+  whether it draws at all, and `edtest` reads the same fact statically so
+  `npm run check` sees it. The same pass found the filter box taking half
+  the entries column and the validator opening on a false error (it did not
+  know the capital's seat is `nonVoting`). **A page no check has LOOKED at
+  is a page nobody knows draws.**
+- **THE EDITOR WRITES A CAMPAIGN'S ENDINGS, INITIATIVES AND AWARDS** (25
+  Sep): three tabs, each form editing a clone of its entry as `readEvent`
+  does, all three in `edtest`'s open-everything sweep, `roundtrip`'s field
+  comparison and (endings) `renametest`. `js/refs.js` renames an ending
+  wherever `settled`, `resolved` or `resolvedIs` names it, awards included.
+  Still hand-edited: the campaign record, instruments, the cabinet, party
+  leaders and `setup`.
+
 - **A NUMBER THE INTERFACE PRINTS IS CONTENT'S NUMBER — three found in two
   days.** The chart's record button read `2280-2287` as literal text while
   `setup.history` owns the span, so moving the canon date left a control

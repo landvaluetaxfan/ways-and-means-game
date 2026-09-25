@@ -31,7 +31,8 @@ const Refs = (function () {
   const EFFECT_KEYS = ["effects", "onPass", "onFail", "reverse", "political_cost", "onSign", "close"];
   const COLLECTIONS = [["events", "event"], ["bills", "bill"], ["instruments", "instrument"],
     ["initiatives", "initiative"], ["minutes", "minute"], ["cabinet", "cabinet"],
-    ["settlements", "settlement"], ["business", "business"], ["actors", "actor"]];
+    ["settlements", "settlement"], ["business", "business"], ["actors", "actor"],
+    ["achievements", "achievement"]];
   function walkModel(M, visit) {
     const go = (o, where) => {
       if (!o || typeof o !== "object") return;
@@ -314,9 +315,22 @@ const Refs = (function () {
     });
   }
 
+  /* ---------- settlement ----------
+     An ending is named by the conditions that ask whether it landed
+     (`settled`, `resolved`, `resolvedIs`), in events, other endings and the
+     awards, whose conditions are their own but use the same two words. */
+  function settlementRefs(M, id) {
+    const hits = [];
+    eachCondition(M, (w, where) => ["settled", "resolved", "resolvedIs"].forEach(k => {
+      if (w[k] === id) hits.push({ where: where + " · " + k, apply: to => w[k] = to });
+    }));
+    return hits;
+  }
+
   const FINDERS = {
     parties: partyRefs, stations: stationRefs, bills: billRefs,
     events: eventRefs, characters: characterRefs, currents: currentRefs,
+    settlements: settlementRefs, initiatives: () => [], achievements: () => [],
     functional: () => [], glossary: () => [], concordance: () => [],
     constituencies: (M, id) => {
       const hits = [];

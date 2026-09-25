@@ -131,6 +131,25 @@ const SCHEMA = {
     sideBelow:      { label:"Government's side seats below (after the count)", form:"int" }
   },
 
+  /* WHAT AN AWARD ASKS OF A FINISHED RUN (content/achievements.js). Not the
+     conditions above: an award is judged once, on the record, by
+     js/shell.js `meets()`, and these are the keys it reads. `list` takes
+     one value or several, `settlement` names an ending `of` one kind (a
+     crisis result, or an answer), `enum` a word from `options`. */
+  awardConditions: {
+    end:       { label:"How the run ended",          form:"enum", options:["election","loss"] },
+    reason:    { label:"Why it was lost",            form:"list", hint:"supply, confidence, no confidence, leadership, cascade" },
+    seats:     { label:"The party's seats",          form:"enum", options:["held","lost"] },
+    settled:   { label:"The answer it reached",      form:"settlement", of:"answer" },
+    resolved:  { label:"The crisis result",          form:"settlement", of:"crisis" },
+    kept:      { label:"Promises kept",              form:"list", hint:"undertaking ids" },
+    breached:  { label:"Promises broken",            form:"list", hint:"undertaking ids" },
+    flags:     { label:"Every one of these flags",   form:"list", hint:"flag names" },
+    flagsAny:  { label:"Any one of these flags",     form:"list", hint:"flag names" },
+    log:       { label:"The record says",            form:"list", hint:"words from the session log" },
+    logAbsent: { label:"The record never says",      form:"list", hint:"words from the session log" }
+  },
+
   /* ---------- enumerations the forms draw from ---------- */
   /* What a ministry can own. A brief is the list of subjects a post
      answers for, and it is what decides which minister speaks when a
@@ -144,6 +163,9 @@ const SCHEMA = {
        screen is the careful one and not the one content happened to write
        first. The engine keeps the authored order; only the display sorts. */
     postures: ["cautious","measured","bold"],
+    /* what kind of award an achievement is, which decides where the
+       awards screen lists it */
+    awardTiers: ["ending","settlement","action","canon"],
     scalars: ["party_loyalty","public_standing","consumables","thermal_margin","solvency","legitimacy","friction"],
     laws: ["divergence_threshold_hours","civic_clock_minimum","suspension_debt_accrual","substrate_public_share",
            "shed_order_authority","tier_ratio_list","threshold_pct"],

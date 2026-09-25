@@ -8,7 +8,12 @@
 <link rel="stylesheet" href="css/editor.css">
 </head>
 <body>
-<div id="shell">
+<!-- `on`: css/terminal.css hides #shell until it is shown, which the game
+     does on entering a government and the editor must do for itself. It did
+     not, from the day the main menu arrived, and the editor drew an empty
+     grey page in every browser while every check here passed: jsdom applies
+     no stylesheet. tools/laycheck.js measures the editor now (25 Sep). -->
+<div id="shell" class="on">
   <div id="titlebar">
     <span>Content Editor &mdash; Circumterrestrial Commonwealth</span>
     <span class="sys" id="ed-file">local model</span>
@@ -18,6 +23,9 @@
   <div id="tabstrip" role="tablist">
     <button class="tab" role="tab" aria-selected="true"  data-t="events">Events</button>
     <button class="tab" role="tab" aria-selected="false" data-t="bills">Bills</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="settlements">Endings</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="initiatives">Initiatives</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="achievements">Awards</button>
     <button class="tab" role="tab" aria-selected="false" data-t="parties">Parties</button>
     <button class="tab" role="tab" aria-selected="false" data-t="stations">Stations</button>
     <button class="tab" role="tab" aria-selected="false" data-t="constituencies">Seats</button>

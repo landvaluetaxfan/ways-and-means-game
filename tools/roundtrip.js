@@ -5,7 +5,7 @@
 const fs=require("fs"), vm=require("vm"), path=require("path"), root=path.join(__dirname,"..");
 /* the content files index.html loads, in its order (tools/loadcontent.js) */
 const src=require("./loadcontent.js").source();
-vm.runInThisContext(src+"\n;globalThis.__A={SETUP,PARTIES,CURRENTS,STATIONS,CHARACTERS,BILLS,EVENTS,GLOSSARY,ENCYCLOPEDIA,CONSTITUENCIES};");
+vm.runInThisContext(src+"\n;globalThis.__A={SETUP,PARTIES,CURRENTS,STATIONS,CHARACTERS,BILLS,EVENTS,GLOSSARY,ENCYCLOPEDIA,CONSTITUENCIES,SETTLEMENTS,INITIATIVES,ACHIEVEMENTS};");
 const A=globalThis.__A;
 const Serialise=require("../js/serialise.js");
 const Engine=require("../js/engine.js");
@@ -39,13 +39,15 @@ const before=play(mkContent(A),40);
 const files=k=>Serialise.files(k,A[k.toUpperCase()]);
 const out=[].concat(files("glossary"),
   [{path:"content/parties.js",text:Serialise.partiesFile(A.PARTIES,A.CURRENTS)}],
-  files("stations"),files("characters"),files("bills"),files("constituencies"),files("events"));
+  files("stations"),files("characters"),files("bills"),files("constituencies"),files("events"),
+  /* a campaign's own kinds, which the editor writes since 25 Sep */
+  files("settlements"),files("initiatives"),files("achievements"));
 const world=out.filter(f=>!/campaigns\//.test(f.path)), camp=out.filter(f=>/campaigns\//.test(f.path));
 const regen =
   fs.readFileSync(path.join(root,"content","setup.js"),"utf8")+"\n"+
   world.map(f=>f.text).join("\n")+"\n"+camp.map(f=>f.text).join("\n");
 const ctx={};
-vm.runInNewContext(regen+"\n;__B={SETUP,PARTIES,CURRENTS,STATIONS,CHARACTERS,BILLS,EVENTS,GLOSSARY,CONSTITUENCIES};",ctx);
+vm.runInNewContext(regen+"\n;__B={SETUP,PARTIES,CURRENTS,STATIONS,CHARACTERS,BILLS,EVENTS,GLOSSARY,CONSTITUENCIES,SETTLEMENTS,INITIATIVES,ACHIEVEMENTS};",ctx);
 const B=ctx.__B;
 
 const after=play(mkContent(B),40);
@@ -59,7 +61,8 @@ console.log("=".repeat(52));
 console.log("  regenerated size:", regen.length, "chars, in", out.length, "files ("+camp.length+" a campaign's)");
 /* The split is the point: a campaign's entry written into the world's file
    as well would load twice, and one written only there would lose its folder. */
-const tagged=[].concat(A.EVENTS,A.BILLS).filter(e=>e.campaign).map(e=>'id:"'+e.id+'"');
+const tagged=[].concat(A.EVENTS,A.BILLS,A.SETTLEMENTS,A.INITIATIVES,A.ACHIEVEMENTS)
+  .filter(e=>e.campaign).map(e=>'id:"'+e.id+'"');
 eq("no campaign entry written to a world file",
    tagged.filter(t=>world.some(f=>f.text.indexOf(t)>=0)).join(" "), "");
 eq("every campaign's entries written to its folder",
@@ -77,7 +80,8 @@ eq("division identical", before.div, after.div);
    back "lossless". It was in fact lossless (design/34 measured it), which
    makes this free to assert and the only line here that can see a dropped
    field. It does NOT cover the editor's forms; tools/edtest.js does. */
-["SETUP","PARTIES","CURRENTS","STATIONS","CHARACTERS","BILLS","EVENTS","GLOSSARY","CONSTITUENCIES"]
+["SETUP","PARTIES","CURRENTS","STATIONS","CHARACTERS","BILLS","EVENTS","GLOSSARY","CONSTITUENCIES",
+ "SETTLEMENTS","INITIATIVES","ACHIEVEMENTS"]
   .forEach(k => eq(k.toLowerCase() + " identical, field for field",
                    JSON.stringify(A[k]), JSON.stringify(B[k])));
 console.log("");

@@ -20,7 +20,7 @@ const GLOBALS={setup:"SETUP",parties:"PARTIES",currents:"CURRENTS",stations:"STA
   constituencies:"CONSTITUENCIES",functional:"FUNCTIONAL",characters:"CHARACTERS",bills:"BILLS",
   glossary:"GLOSSARY",events:"EVENTS",encyclopedia:"ENCYCLOPEDIA",cabinet:"CABINET",
   instruments:"INSTRUMENTS",initiatives:"INITIATIVES",minutes:"MINUTES",settlements:"SETTLEMENTS",
-  business:"BUSINESS",actors:"ACTORS",administrations:"ADMINISTRATIONS",
+  business:"BUSINESS",actors:"ACTORS",administrations:"ADMINISTRATIONS",achievements:"ACHIEVEMENTS",
   archetypes:"ARCHETYPES",names:"NAMELISTS"};
 function loadModel(){
   const c={}; vm.runInNewContext(src+";__={"+Object.values(GLOBALS).join(",")+"};",c);
@@ -55,10 +55,13 @@ const A=loadModel(); const before=play(A,40);
 
 /* rename every entity of every kind */
 const B=loadModel();
-const map={party:{},station:{},bill:{},event:{},character:{},current:{}};
+const map={party:{},station:{},bill:{},event:{},character:{},current:{},settlement:{}};
 let total=0;
-[["parties","party"],["stations","station"],["bills","bill"],
- ["events","event"],["characters","character"],["currents","current"]].forEach(([kind,tag])=>{
+/* and the endings, which the editor writes since 25 Sep: an award or a gate
+   that still names the old id could never be earned or opened */
+const KINDS=[["parties","party"],["stations","station"],["bills","bill"],
+ ["events","event"],["characters","character"],["currents","current"],["settlements","settlement"]];
+KINDS.forEach(([kind,tag])=>{
   const arr=kind==="currents"?B.currents:B[kind];
   arr.slice().forEach(o=>{
     const from=o.id, to="x_"+tag+"_"+from;
@@ -92,8 +95,7 @@ eq("division on the threshold bill", before.div, after.div);
 /* Ask the reference finder rather than scanning for strings: a tag that
    happens to share a word with an id is not a reference to it. */
 const stale=[];
-[["parties","party"],["stations","station"],["bills","bill"],
- ["events","event"],["characters","character"],["currents","current"]].forEach(([kind,tag])=>{
+KINDS.forEach(([kind,tag])=>{
   Object.values(map[tag]).forEach(old=>{
     const n=Refs.find(B,kind,old).length;
     if(n) stale.push(kind+" "+old+" ×"+n);

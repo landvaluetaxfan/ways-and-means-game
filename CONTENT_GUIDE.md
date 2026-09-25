@@ -163,6 +163,18 @@ file as it was. The editor's export regenerates the whole file from data
 and drops every comment in it, so a file whose comments matter is edited by
 hand or through the prose file, not through the export.
 
+**What the editor writes.** Events, bills, **endings** (settlements),
+**initiatives** and **awards** (achievements), parties, stations, seats,
+functional seats, characters, the Concordance and the glossary. An ending's
+conditions are the events' conditions; an initiative's tempos each carry a
+delay, an extra cost, their own conditions and their own effects; an award's
+conditions are its own (`SCHEMA.awardConditions`: how the run ended, which
+ending it reached, promises kept or broken, flags, the record), and it
+offers only crisis results for "the crisis result" and only answers for "the
+answer it reached", since an award asking the wrong one can never be earned.
+A condition on several meters at once (`scalarAbove:{legitimacy:65,
+friction:65}`) is one row of pairs, with `+` for another.
+
 ## Adding an event
 
 Copy an entry in `content/events.js`, or in a campaign's `events.js` for
