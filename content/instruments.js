@@ -167,7 +167,7 @@ const INSTRUMENTS = [
 
   { id:"rung4_appropriation",
     title:"Emergency Thermal (Appropriation) Order 2080", number:"SI 2080/64",
-    author:"treasury", procedure:"affirmative", revocable:true,
+    author:"treasury", procedure:"affirmative", approvalFloor:0.9, revocable:true,
     when:{ flags:["rung3_tried"] },
     summary:"Appropriates directly against the reserve to buy thermal capacity at whatever the "+
             "market asks. The reserve was built for exactly this and has never been spent on it.",
@@ -210,7 +210,7 @@ const INSTRUMENTS = [
 
   { id:"rung7_standards",
     title:"Life Support (Performance Standards) Order 2080", number:"SI 2080/67",
-    author:"life_support", procedure:"affirmative", revocable:true,
+    author:"life_support", procedure:"affirmative", approvalFloor:0.9, revocable:true,
     when:{ flags:["rung6_tried"] },
     summary:"Lowers the certified performance standard on radiator and seal integrity by one "+
             "grade. The margin improves because the standard was the margin. The boards that "+

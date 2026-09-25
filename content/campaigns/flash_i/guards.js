@@ -211,7 +211,7 @@ guard("THE FIVE TIERS (design/35)", ok => {
     return s;
   };
   const f1 = (CONTENT.settlements || []).filter(x => x.campaign === "flash_i");
-  ok("Flash I carries its five tiers", f1.length === 5, f1.map(x => x.id).join(", "));
+  ok("Flash I carries its five tiers and the question left open", f1.length === 6, f1.map(x => x.id).join(", "));
   /* THE TWO FAMILIES DO NOT RACE (design/32 §E.1). They were ranked
      together and only the winner recorded, so an intermediate answer landing
      on the same sitting as a crisis tier took the canon ending off the board;
@@ -245,16 +245,24 @@ guard("THE FIVE TIERS (design/35)", ok => {
     (flags || []).forEach(f => s.flags[f] = true);
     return s;
   };
-  const t1 = tier({ legitimacy: 80, solvency: 75000, friction: 30 }, ["almanac_annexed"]);
+  const t1 = tier({ legitimacy: 80, solvency: 45000, friction: 30 }, ["almanac_annexed"]);
   ok("critical triumph", (Engine.checkSettlement(t1, CONTENT) || {}).id === "f1_triumph");
-  const t2 = tier({ legitimacy: 60, solvency: 65000, friction: 30 }, ["almanac_annexed"]);
+  const t2 = tier({ legitimacy: 60, solvency: 35000, friction: 30 }, ["almanac_annexed"]);
   ok("maritime charter", (Engine.checkSettlement(t2, CONTENT) || {}).id === "f1_maritime");
   const t3 = tier({ legitimacy: 70, solvency: 30000, friction: 70 }, ["almanac_annexed"]);
   ok("sovereign debt trap", (Engine.checkSettlement(t3, CONTENT) || {}).id === "f1_pyrrhic");
-  const t4 = tier({ legitimacy: 50, solvency: 50000, friction: 50 }, ["f1_referendum_carried"]);
+  const t4 = tier({ legitimacy: 35, solvency: 20000, friction: 30 }, ["f1_referendum_carried", "f1_held_the_line"]);
   ok("joint mandate", (Engine.checkSettlement(t4, CONTENT) || {}).id === "f1_joint");
-  const t5 = tier({ legitimacy: 30, solvency: 50000, friction: 80 }, ["f1_surveyed"]);
-  ok("corporate re-entry", (Engine.checkSettlement(t5, CONTENT) || {}).id === "f1_capitulation");
+  const t5 = tier({ legitimacy: 30, solvency: 50000, friction: 20 }, ["f1_surveyed", "f1_referendum_declined"]);
+  ok("corporate re-entry, once the referendum is declined", (Engine.checkSettlement(t5, CONTENT) || {}).id === "f1_capitulation");
+  /* THE QUESTION LEFT OPEN (design/40 E10): late, and only for a government
+     that met the crisis, and never before a tier the state reaches */
+  const t6 = tier({ legitimacy: 50, solvency: 20000, friction: 50 }, ["f1_surveyed", "almanac_annexed"]);
+  ok("nothing lands early for a crisis left unsettled", !Engine.checkSettlement(t6, CONTENT));
+  t6.sitting = 44;
+  ok("and by the last period's end it is the question left open", (Engine.checkSettlement(t6, CONTENT) || {}).id === "f1_open");
+  const t7 = tier({ legitimacy: 50, solvency: 20000, friction: 50 }, []); t7.sitting = 44;
+  ok("which a government that never met the crisis does not get", !Engine.checkSettlement(t7, CONTENT));
   const pEnd = Engine.checkEnd(t3, CONTENT);
   ok("and the canon pyrrhic tier does not end the run",
      pEnd.over === false && t3.resolvedAs === "f1_pyrrhic" && !t3.settledAs,
@@ -296,8 +304,15 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
             Engine.reservedFor(s, b.id) + s.slots.total - s.slots.used > keep)
           Engine.grantSlot(s, CONTENT, b.id);
       });
+      /* A DIVISION COSTS TIME TOO, and the time the ladder needs was spent
+         dividing on whatever had reached the floor: a rung laid at sitting
+         44 could never be approved, and the canon reached the count with a
+         margin of one (design/40). Down to the time it keeps, the government
+         divides only on supply and its own Act. */
+      const essential = b => b.test === "supply" || (s.flags.f1_annexing && /annex/i.test(b.id));
       CONTENT.bills.forEach(b => {
         if (!s.bills[b.id] || s.bills[b.id].dead) return;
+        if (s.slots.total - s.slots.used <= keep && !essential(b)) return;
         if (Engine.canDivide(s, CONTENT, b.id).ok &&
             (Engine.reported(s, CONTENT, b.id) || {}).carries) Engine.divide(s, CONTENT, b.id);
       });
@@ -327,7 +342,8 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
       const cools = CONTENT.instruments.filter(si => [].concat(si.effects || [])
         .some(f => f.move && f.move.thermal_margin > 0)).map(si => si.id);
       const awaiting = () => cools.filter(id => s.instruments[id].awaitingApproval);
-      if (s.scalars.thermal_margin <= 10) {
+      const lastDays = s.risesAt != null && s.sitting > 40 && s.risesAt - s.sitting <= 5;
+      if (s.scalars.thermal_margin <= 10 || (lastDays && s.scalars.thermal_margin <= 16)) {
         const waiting = awaiting().find(id => Engine.canApprove(s, CONTENT, id).ok);
         if (waiting) Engine.approveInstrument(s, CONTENT, waiting);
         else {
@@ -344,7 +360,7 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
          once an order is waiting: an order laid with no time left to
          approve it was laid for nothing, which is how the fourth rung sat
          unapproved from the freeze to the dissolution. */
-      return awaiting().length || s.scalars.thermal_margin <= 15 ? 1 : 0;
+      return awaiting().length || s.scalars.thermal_margin <= 15 ? 2 : 0;
     };
     /* A PICK MAY READ THE STATE. The canon government holds out against
        Earth until the result is in -- conciliating before it would take the
@@ -367,7 +383,17 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
          money in the last week, because the reserve is the next
          government's. That returns it with a working majority just over the
          line: 163 of 280 at standing 56, the PSD on 102. */
-      ch3_the_campaign: 1, ch3_the_airwaves: 3, ch3_the_dossier: 2, ch3_the_ground: 3 };
+      ch3_the_campaign: 1, ch3_the_airwaves: 3, ch3_the_dossier: 2, ch3_the_ground: 3,
+      /* AND IN THE LAST DAYS BEFORE THE RISE IT KEEPS ITS TIME for the
+         ladder: an afternoon answering questions, or the last of the paper
+         spent on the benches, left the fourth rung laid and never approved,
+         and the canon reached the count with a margin of one (design/40). */
+      ch4_rises_on_it: 1,
+      /* the Governor's letter comes with the crisis inflation now, and
+         endorsing it costs the benches the votes that approve the fourth
+         rung: the canon government acknowledges it and says nothing more */
+      rb_open_letter: 1,
+      question_time: s => (s.risesAt != null && s.sitting > 40 && s.risesAt - s.sitting <= 6 ? 1 : 0) };
     let tier = null, end = null, tierAt = null;
     /* The run has to outlast the parliament and its campaign, and the bound
        is content's: a flat 45 silently became 44 of play when the prologue

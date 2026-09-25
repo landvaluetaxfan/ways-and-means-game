@@ -466,7 +466,7 @@ const ENCYCLOPEDIA = {
       { h:"History", body:
         "From the Charter in 2064 the Commonwealth's money was issued by a currency board, "+"which issued a dollar only against a millionth of an MW-year of thermal quota lodged "+"with it. The Reserve Bank Act 2071 replaced the board with a central bank, and its "+"first Governor, [[person_flash|Adriana Flash]], floated the dollar in 2073 and gave the "+"Bank the inflation target it has had since. Her critics say she gave away the one "+"thing that made the money mean something. Her successors describe the float as the "+"reason the Commonwealth has had a monetary policy at all." },
       { h:"The remit and the rule", body:
-        "Once a year the Treasurer writes the Governor a remit, which names the target. It "+"has named two per cent since the float. The Bank meets every six weeks and publishes "+"the rule by which it sets the rate: a neutral real rate of one per cent, plus "+"inflation, plus half the amount by which inflation misses the target, plus half the "+"amount by which output exceeds what the radiators and the labour force can sustain. "+"It moves in quarter points and no more than half a point at a meeting. When inflation "+"misses the target by more than two points, the Governor writes to the Treasurer in "+"public." },
+        "Once a year the Treasurer writes the Governor a remit, which names the target. It "+"has named two per cent since the float. The Bank meets every six weeks and publishes "+"the rule by which it sets the rate: a neutral real rate of one per cent, plus "+"underlying inflation, plus half the amount by which it misses the target, plus half the "+"amount by which output exceeds what the radiators and the labour force can sustain. "+"Underlying inflation leaves out what a change in the price of heat, substrate, volume "+"or transit, or in the dollar, is still passing on to the shops, which moves the price "+"level once and then fades; the Bank looks through it, and the public pays it. "+"It moves in quarter points and no more than half a point at a meeting. When inflation "+"misses the target by more than two points, the Governor writes to the Treasurer in "+"public." },
       { h:"A dual mandate", when:{ lawIs:{ bank_mandate:"dual" } }, body:
         "In 2080 the Treasurer's remit gave the Bank full participation as a second object "+"beside the target, and the rule weighs the output gap in full." },
       { h:"A higher target", when:{ lawAbove:{ inflation_target:2 } }, body:
@@ -478,7 +478,7 @@ const ENCYCLOPEDIA = {
       { h:"The overdraft", when:{ flags:["ways_and_means_opened"] }, body:
         "The Treasury has drawn on a Ways and Means advance, the first since the Act. The "+"advance is owed to the Bank at the cash rate." },
       { h:"The Governor", body:
-        "The Governor is [[person_castellane|Maren Castellane]], Flash's deputy for six "+"years and her successor." }
+        "The Governor is [[person_castellane|Maren Castellane]], Flash's deputy from the "+"Bank's founding and Governor since Flash left for the Treasury in 2076." }
     ],
     see:["commonwealth_dollar","underwriting","lender_earth","person_flash","person_castellane"] },
 

@@ -138,6 +138,12 @@ const SCHEMA = {
   briefSubjects: ["scalars", "laws", "prices", "stationFields"],
 
   vocab: {
+    /* A CHOICE'S POSTURE (design/40 E7): how far it goes, not how much it
+       moves. The Sitting screen lists an event's choices cautious first,
+       then measured, then bold, and marks each, so the first answer on the
+       screen is the careful one and not the one content happened to write
+       first. The engine keeps the authored order; only the display sorts. */
+    postures: ["cautious","measured","bold"],
     scalars: ["party_loyalty","public_standing","consumables","thermal_margin","solvency","legitimacy","friction"],
     laws: ["divergence_threshold_hours","civic_clock_minimum","suspension_debt_accrual","substrate_public_share",
            "shed_order_authority","tier_ratio_list","threshold_pct"],

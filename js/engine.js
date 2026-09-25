@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 31;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar
+  const STATE_VERSION = 32;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar, 32 core inflation and the quarter
 
   /* ---------------------------------------------------------
      1. STATE
@@ -201,7 +201,7 @@ const Engine = (function () {
          credibility, the dollar, and the day the account was last run to.
          Content's opening figures (`setup.macro`); a setup without one has
          no macroeconomy and the account runs on receipts alone. */
-      macro: macroOf(C, dateOfSitting(C, 1)),
+      macro: openMacroState(macroOf(C, dateOfSitting(C, 1)), dateOfSitting(C, 1)),
 
       president: Object.assign({}, C.setup.president),
 
@@ -516,6 +516,15 @@ const Engine = (function () {
       if (st.macro === undefined) st.macro = null;
       st.version = 31;
     }
+    if (st.version < 32) {                    // core inflation and the quarter
+      /* design/40 E2-E4. A save's economy gains what the model now keeps:
+         core inflation (the headline less what the scarcity prices and the
+         dollar pass through), the lagged indices the pass-through is read
+         against, and a dated log of output for growth over a quarter. Each
+         opens where the save stood, so nothing jumps on load. */
+      if (st.macro) openMacroState(st.macro, st.date);
+      st.version = 32;
+    }
     return st;
   }
 
@@ -600,7 +609,7 @@ const Engine = (function () {
        before the dollar, or a setup that has since gained one), dated to
        the save's own day. The save owns everything after that. */
     if (!st.macro && macroConst(C)) {
-      st.macro = macroOf(C, st.date);
+      st.macro = openMacroState(macroOf(C, st.date), st.date);
       st.macro.balancePct = openingBalancePct(C);
       st.macro.debtPct = 0;
     }
@@ -944,6 +953,7 @@ const Engine = (function () {
              marginMin: E.marginMin == null ? 0.005 : E.marginMin,
              marginSpan: E.marginSpan == null ? 0.35 : E.marginSpan,
              marginShape: E.marginShape == null ? 1.6 : E.marginShape,
+             legitimacy: E.legitimacy || 0,
              functional: E.functional || {} };
   }
   /* The last election's list vote, as shares of every vote cast. A party
@@ -1124,7 +1134,21 @@ const Engine = (function () {
      carry 0. Inside a side the points go in proportion to the vote, so a
      party with nothing in a seat gains nothing there. */
   function swing(st, band, C) {
-    return electionConst(C).swing * (standingIn(st, band) - 50) / 100;
+    return electionConst(C).swing * (standingIn(st, band) + believed(st, C) - 50) / 100;
+  }
+  /* A GOVERNMENT THAT IS NOT BELIEVED CAMPAIGNS AT A DISCOUNT (design/40
+     E11). Legitimacy, "the government being believed, at home", was read
+     by the crisis tiers and two drags and never by the count, so one of the
+     two meters that sound alike decided the election and the other did
+     not. `setup.election.legitimacy` is points of standing, at the count,
+     per point of legitimacy away from where it opened; 0 or absent keeps
+     it out. */
+  function believed(st, C) {
+    const k = electionConst(C).legitimacy;
+    const open = ((C && C.setup && C.setup.scalars) || {}).legitimacy;
+    const now = (st.scalars || {}).legitimacy;
+    if (!k || open == null || now == null) return 0;
+    return k * (now - open);
   }
   function govSide(st) { return st.coalition.concat(st.confidenceSupply); }
   function tide(C, id) {
@@ -2267,6 +2291,14 @@ const Engine = (function () {
   function approvalForecast(st, C, siId) {
     const si = C.instrumentById[siId];
     const total = popularTotal(st), need = Math.floor(total / 2) + 1;
+    /* HOW HARD A BENCH HOLDS ON THIS ORDER (design/40). A whipped bench
+       keeps `approvalFloor` of its members whatever its loyalty, 0.75 by
+       default; an order that keeps the heat on is not where a government
+       bench rebels, and content says so on the order. At 0.75 the canon
+       government's own benches refused the emergency appropriation by two
+       votes with the thermal margin at eleven. */
+    const floor = si.approvalFloor == null ? 0.75 : si.approvalFloor;
+    const holds = pid => floor === 0.75 ? discipline(st, C, pid, null) : turnout(st, C, null, pid, floor);
     let aye = 0;
     Object.keys(st.parties).forEach(pid => {
       const seats = partyPopular(st, pid);
@@ -2274,12 +2306,12 @@ const Engine = (function () {
       const stance = (si.prayer_stances || {})[pid];
       if (stance && typeof stance === "object" && stance.ifLoyaltyBelow != null) {
         if ((st.parties[pid] ? st.parties[pid].loyalty : 100) >= stance.ifLoyaltyBelow)
-          aye += Math.round(seats * discipline(st, C, pid, null));
+          aye += Math.round(seats * holds(pid));
         return;
       }
       if (stance === "against") aye += seats;          /* against annulling it */
       else if (stance === "for") return;               /* for annulling it */
-      else if (inGov) aye += Math.round(seats * discipline(st, C, pid, null));
+      else if (inGov) aye += Math.round(seats * holds(pid));
     });
     return { aye: aye, total: total, need: need, carries: aye >= need };
   }
@@ -4254,7 +4286,10 @@ const Engine = (function () {
       else if (!m) return;
       else if (k === "credibility") m.credibility = clamp(m.credibility + v[k], 0, 1);
       else if (k === "expected") m.expected += v[k];
-      else if (k === "inflation") m.inflation += v[k];
+      /* headline inflation is core plus what passes through (design/40
+         E2), rebuilt every tick, so a move lands on core or it is gone by
+         the next sitting */
+      else if (k === "inflation") { m.core = (m.core == null ? m.inflation : m.core) + v[k]; m.inflation += v[k]; }
       else if (k === "shock") m.shock += v[k];
       else if (k === "fx") nudgeFx(st, v[k]);
       else if (k === "reserves") m.reserves = Math.max(0, m.reserves + v[k]);
@@ -4375,8 +4410,8 @@ const Engine = (function () {
     /* COURT THE PARTNERS WHO HAVE WALKED OUT (design/38 §3). Moves the
        loyalty of every party that has withdrawn from the government, which
        is the one set content cannot name in advance. */
-    court: (st, C, v) => Object.keys(st.withdrawn || {}).forEach(id =>
-      shiftLoyalty(st, C, id, Number(v) || 0)),
+    court: (st, C, v) => Object.keys(st.withdrawn || {}).concat(Object.keys(st.stoodAside || {}))
+      .forEach(id => shiftLoyalty(st, C, id, Number(v) || 0)),
     si: (st, C, v) => [].concat(v).forEach(id => makeInstrument(st, C, id)),
     cabinet: (st, C, v) => Object.keys(v).forEach(post => {
       if (v[post] === null) vacate(st, C, post, "resigned");
@@ -4680,33 +4715,76 @@ const Engine = (function () {
      sittings out, so a walkout is a clock the player can see and not the
      end on the spot. `setup.onPartnerWithdraws` names the event content
      wants when it happens; the engine names none. */
+  /* TWO LINES, NOT ONE (design/40 E9). A junior partner that has had
+     enough does not usually vote its own government down: it leaves the
+     agreement and keeps the government alive on confidence and supply,
+     free on everything else, and brings it down only if things get worse.
+     So with `thresholds.supplyWithdrawn` set, a coalition partner at
+     `partnerLeaves` STANDS ASIDE (it moves to confidence and supply,
+     `st.stoodAside`), and a confidence-and-supply party at
+     `supplyWithdrawn` WALKS OUT (`st.withdrawn`). Without it, both walk out
+     at `partnerLeaves`, which is what design/38 §3 built. In sixty random
+     governments the one-line rule ended 17 in the NPP's walkout between
+     sittings 13 and 20, with nothing on the screen saying it was near. */
+  function partnerLines(C) {
+    const T = (C && C.setup && C.setup.thresholds) || {};
+    return { leaves: T.partnerLeaves, withdraws: T.supplyWithdrawn == null ? T.partnerLeaves : T.supplyWithdrawn,
+             returns: T.partnerReturns, twoStage: T.supplyWithdrawn != null };
+  }
   function partnerCheck(st, C) {
     if (st.dissolved || !C || !C.setup) return;
-    const T = C.setup.thresholds || {};
-    const leaves = T.partnerLeaves, returns = T.partnerReturns;
+    const L = partnerLines(C), T = C.setup.thresholds || {};
     const nameOf = id => (C.partyById && C.partyById[id] && C.partyById[id].name) || id;
     st.withdrawn = st.withdrawn || {};
-    if (leaves != null) ["coalition", "confidenceSupply"].forEach(side => {
-      st[side].slice().forEach(id => {
-        if (id === st.playerParty || loyaltyOf(st, id) > leaves) return;
-        st[side] = st[side].filter(x => x !== id);
-        st.withdrawn[id] = { from: side, at: st.sitting };
-        st.log.unshift({ sitting: st.sitting, text: nameOf(id) + " withdraws from the " +
-          (side === "coalition" ? "government" : "confidence-and-supply agreement") + "." });
-        st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() +
-          " WALKS OUT OF THE GOVERNMENT" });
-        if (C.setup.onPartnerWithdraws && C.eventById && C.eventById[C.setup.onPartnerWithdraws])
-          st.queue.push({ eventId: C.setup.onPartnerWithdraws, dueSitting: st.sitting });
+    st.stoodAside = st.stoodAside || {};
+    const walk = (side, id) => {
+      st[side] = st[side].filter(x => x !== id);
+      const aside = st.stoodAside[id];
+      st.withdrawn[id] = { from: aside ? "coalition" : side, at: st.sitting };
+      delete st.stoodAside[id];
+      st.log.unshift({ sitting: st.sitting, text: nameOf(id) + " withdraws from the " +
+        (side === "coalition" ? "government" : aside ? "government's side and its confidence"
+                                             : "confidence-and-supply agreement") + "." });
+      st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() +
+        (side === "coalition" ? " WALKS OUT OF THE GOVERNMENT" : " WITHDRAWS CONFIDENCE") });
+      if (C.setup.onPartnerWithdraws && C.eventById && C.eventById[C.setup.onPartnerWithdraws])
+        st.queue.push({ eventId: C.setup.onPartnerWithdraws, dueSitting: st.sitting });
+    };
+    if (L.leaves != null) st.coalition.slice().forEach(id => {
+      if (id === st.playerParty || loyaltyOf(st, id) > L.leaves) return;
+      if (!L.twoStage) { walk("coalition", id); return; }
+      st.coalition = st.coalition.filter(x => x !== id);
+      if (st.confidenceSupply.indexOf(id) < 0) st.confidenceSupply.push(id);
+      st.stoodAside[id] = { at: st.sitting };
+      st.log.unshift({ sitting: st.sitting, text: nameOf(id) + " leaves the coalition agreement and " +
+        "keeps the government on confidence and supply, free on everything else." });
+      st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() +
+        " LEAVES THE COALITION AGREEMENT; WILL NOT BRING THE GOVERNMENT DOWN" });
+      if (C.setup.onPartnerStandsAside && C.eventById && C.eventById[C.setup.onPartnerStandsAside])
+        st.queue.push({ eventId: C.setup.onPartnerStandsAside, dueSitting: st.sitting });
+    });
+    if (L.withdraws != null) st.confidenceSupply.slice().forEach(id => {
+      if (id === st.playerParty || loyaltyOf(st, id) > L.withdraws) return;
+      walk("confidenceSupply", id);
+    });
+    if (L.returns != null) {
+      Object.keys(st.withdrawn).forEach(id => {
+        if (loyaltyOf(st, id) < L.returns) return;
+        const w = st.withdrawn[id];
+        if (st[w.from].indexOf(id) < 0) st[w.from].push(id);
+        delete st.withdrawn[id];
+        st.log.unshift({ sitting: st.sitting, text: nameOf(id) + " returns to the government's side." });
+        st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() + " BACK ON THE GOVERNMENT BENCHES" });
       });
-    });
-    if (returns != null) Object.keys(st.withdrawn).forEach(id => {
-      if (loyaltyOf(st, id) < returns) return;
-      const w = st.withdrawn[id];
-      if (st[w.from].indexOf(id) < 0) st[w.from].push(id);
-      delete st.withdrawn[id];
-      st.log.unshift({ sitting: st.sitting, text: nameOf(id) + " returns to the government's side." });
-      st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() + " BACK ON THE GOVERNMENT BENCHES" });
-    });
+      Object.keys(st.stoodAside).forEach(id => {
+        if (loyaltyOf(st, id) < L.returns) return;
+        st.confidenceSupply = st.confidenceSupply.filter(x => x !== id);
+        if (st.coalition.indexOf(id) < 0) st.coalition.push(id);
+        delete st.stoodAside[id];
+        st.log.unshift({ sitting: st.sitting, text: nameOf(id) + " returns to the coalition agreement." });
+        st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() + " BACK IN THE COALITION" });
+      });
+    }
     const pending = st.motion && !st.motion.resolved;
     if (!pending && !st.noConfidence && confidence(st) < majority(st))
       EFFECTS.motion(st, C, { after: T.motionAfter == null ? 3 : T.motionAfter,
@@ -5383,11 +5461,39 @@ const Engine = (function () {
       credibility: M.credibility == null ? 1 : M.credibility,
       rate: M.rate, fx: M.fx, reserves: M.reserves || 0, level: 1,
       shock: 0, asOf: date || null,
+      /* the pass-through's lagged indices, core inflation, and the dated
+         output the quarter's growth is read from (openMacroState) */
+      core: M.inflation, supplyLag: 1, importLag: 1, outputLog: null,
       nextMeeting: M.firstMeeting || null,
       decisions: [],
       history: { inflation: [], rate: [], fx: [], gap: [], growth: [], balance: [], debt: [] }
     };
   }
+
+  /* WHAT THE MODEL KEEPS BESIDES THE READINGS (design/40 E2-E4), filled in
+     where it is missing: on a save from before it, and on a new game, whose
+     output log opens with the quarter before the start implied by the
+     opening growth, so the first reading is the record's and not a
+     division by one day. Idempotent. */
+  function openMacroState(m, date) {
+    if (!m) return m;
+    if (m.core == null) m.core = m.inflation;
+    if (m.supplyLag == null) m.supplyLag = m.supplyNow == null ? 1 : m.supplyNow;
+    if (m.importLag == null) m.importLag = 1;
+    if (!Array.isArray(m.outputLog)) {
+      const day = date || m.asOf;
+      m.outputLog = [];
+      if (day) {
+        const t = parseDay(day).getTime();
+        const back = QUARTER_DAYS / 365;
+        m.outputLog.push({ d: iso(new Date(t - QUARTER_DAYS * DAY)),
+                           y: m.output / Math.pow(1 + (m.growth || 0) / 100, back) });
+        m.outputLog.push({ d: day, y: m.output });
+      }
+    }
+    return m;
+  }
+  const QUARTER_DAYS = 91;
 
   function nominalOutput(st, C) {
     const M = macroConst(C), m = st.macro;
@@ -5415,6 +5521,7 @@ const Engine = (function () {
       gap: Math.round((m.output / m.potential - 1) * 1000) / 10,
       growth: Math.round(m.growth * 10) / 10,
       inflation: Math.round(m.inflation * 10) / 10,
+      core: Math.round((m.core == null ? m.inflation : m.core) * 10) / 10,
       expected: Math.round(m.expected * 10) / 10,
       target: targetOf(st, C),
       credibility: Math.round(m.credibility * 100) / 100,
@@ -5435,8 +5542,13 @@ const Engine = (function () {
     const R = M.rule || {};
     const gap = (m.output / m.potential - 1) * 100;
     const dual = (st.law || {}).bank_mandate === "dual";
-    const i = (M.neutral == null ? 1 : M.neutral) + m.inflation +
-              (R.inflation == null ? 0.5 : R.inflation) * (m.inflation - targetOf(st, C)) +
+    /* It reads CORE inflation (design/40 E3): a bank that targets
+       inflation looks through the first round of a supply shock, or a
+       blockade that is shrinking the economy gets a tightening on top.
+       The headline is what the public feels and what the vote reads. */
+    const core = m.core == null ? m.inflation : m.core;
+    const i = (M.neutral == null ? 1 : M.neutral) + core +
+              (R.inflation == null ? 0.5 : R.inflation) * (core - targetOf(st, C)) +
               (dual ? (R.dualGap == null ? 1 : R.dualGap) : (R.gap == null ? 0.5 : R.gap)) * gap;
     return Math.round(i * 100) / 100;
   }
@@ -5479,6 +5591,22 @@ const Engine = (function () {
     const v = budget(probe, C).balancePct;
     OPENING_BALANCE.set(C, v);
     return v;
+  }
+
+  /* THE TREASURY'S COSTING (design/40 E5). What a set of effects would do
+     to the year's account if it were law today: the laws it writes are
+     applied to a copy, prices and output held, and the budget read twice.
+     It is how a rate level says "raises CW$8.8bn a year" instead of "costs
+     nothing", and it names no clause: anything that writes law is costed. */
+  function costing(st, C, effects) {
+    const law = {};
+    [].concat(effects || []).forEach(e => { if (e && e.law) Object.assign(law, e.law); });
+    const probe = Object.assign({}, st, { law: Object.assign({}, st.law, law) });
+    const a = budget(st, C), b = budget(probe, C);
+    const out = a.output || 1;
+    return { receipts: b.receipts - a.receipts, spending: b.spending - a.spending,
+             balance: b.balance - a.balance,
+             pct: Math.round((b.balance - a.balance) / out * 1000) / 10 };
   }
 
   /* THE FISCAL STANCE: what POLICY does to the balance, as a share of
@@ -5596,29 +5724,58 @@ const Engine = (function () {
       + (D.trade || 0) * (trade - 100) / 100
       - (D.friction || 0) * Math.max(0, (st.scalars.friction || 0) - fr0) / 100
       + m.shock / 100);
-    const before = m.output;
     m.output = approach(m.output, demand, D.speed || 4, dt);
-    const inst = (Math.pow(m.output / before, 1 / dt) - 1) * 100;
-    m.growth = approach(m.growth, inst, 2, dt);
     m.shock = approach(m.shock, 0, D.shockFade || 1.5, dt);
+    /* GROWTH OVER THE QUARTER, annualised, the way a statistics office
+       prints it (design/40 E4). It was the change over one tick, a day or
+       two, annualised, which turned a small step in output into a reading
+       of forty per cent. The log keeps the one sample at or before ninety-
+       one days ago and everything since. */
+    openMacroState(m, st.date);
+    if (st.date) {
+      m.outputLog.push({ d: st.date, y: m.output });
+      const now = parseDay(st.date).getTime();
+      const cut = now - QUARTER_DAYS * DAY;
+      while (m.outputLog.length > 2 && parseDay(m.outputLog[1].d).getTime() <= cut)
+        m.outputLog.shift();
+      const base = m.outputLog[0];
+      const span = (now - parseDay(base.d).getTime()) / DAY / 365;
+      if (span > 0 && base.y > 0) m.growth = (Math.pow(m.output / base.y, 1 / span) - 1) * 100;
+    }
     const gap = (m.output / m.potential - 1) * 100;
 
-    /* PRICES. Supply is the four scarcity prices against where they
-       opened, weighted by what each base yields; imports are the dollar
-       against where it opened. */
+    /* PRICES (design/40 E2). Core inflation is expectations plus the
+       output gap. Headline inflation adds what the scarcity prices and
+       the dollar PASS THROUGH, and that is read from their CHANGE: each
+       index is followed by a lagged copy at `lag` a year, and the
+       distance between them, times the lag, is the rate at which a move
+       is still reaching the shops. So a price that rises and stays up
+       lifts the price LEVEL once, by `passThrough` of its rise, and
+       inflation comes back; it used to read the level against the
+       opening, and a price that stayed up was inflation for ever.
+       Supply is the four scarcity prices, weighted by what each base
+       yields; imports are the dollar, dearer abroad as it falls. */
     const P = M.phillips || {};
     let supply = 0, wsum = 0;
     basesOf(C).forEach(x => {
       /* every price is an index rebased to 100 at the opening */
-      const open = 100;
-      const now = (st.prices || {})[x.k] == null ? open : st.prices[x.k];
-      supply += x.weight * (now / open - 1); wsum += x.weight;
+      const now = (st.prices || {})[x.k] == null ? 100 : st.prices[x.k];
+      supply += x.weight * now / 100; wsum += x.weight;
     });
-    supply = wsum ? supply / wsum : 0;
-    const imports = M.fx / m.fx - 1;
-    const aim = m.expected + (P.gap || 0) * gap + (P.supply || 0) * supply * 100
-              + (P.imports || 0) * imports * 100;
-    m.inflation = approach(m.inflation, aim, P.speed || 3, dt);
+    supply = wsum ? supply / wsum : 1;
+    const imports = M.fx / m.fx;
+    const T = P.passThrough || {};
+    const lag = P.lag || 2;
+    m.supplyLag = approach(m.supplyLag, supply, lag, dt);
+    m.importLag = approach(m.importLag, imports, lag, dt);
+    const passing = lag * 100 * ((T.supply || 0) * Math.log(supply / m.supplyLag) +
+                                 (T.imports || 0) * Math.log(imports / m.importLag));
+    m.core = approach(m.core, m.expected + (P.gap || 0) * gap, P.speed || 3, dt);
+    /* the pass-through is already a smoothed rate, so it adds to the
+       headline as it stands; smoothing it again put a second lag in
+       series and a price rise was still arriving nine months on */
+    m.passing = passing;
+    m.inflation = m.core + passing;
     m.level = m.level * Math.pow(1 + m.inflation / 100, dt);
 
     /* EXPECTATIONS AND CREDIBILITY. A credible Bank anchors expectations
@@ -5661,13 +5818,8 @@ const Engine = (function () {
 
     /* THE ECONOMY VOTES. A pull on every band, per year, carried in the
        same fractions the drift carries so a small one is not rounded
-       away. Inflation over the target by more than the band, and output
-       below potential, cost; a steady economy pays a little. */
-    const V = M.vote || {};
-    const over = Math.max(0, m.inflation - target - (V.band == null ? 1 : V.band));
-    const slack = Math.max(0, -gap - (V.slackBand == null ? 0.5 : V.slackBand));
-    const calm = over === 0 && slack === 0 && Math.abs(m.inflation - target) <= (V.band == null ? 1 : V.band) / 2;
-    const pull = dt * (-(V.inflation || 0) * over - (V.slack || 0) * slack + (calm ? (V.calm || 0) : 0));
+       away. economyVote() says what and why. */
+    const pull = dt * economyVote(st, C).pull;
     if (pull && st.standing) {
       st.standingCarry = st.standingCarry || {};
       Object.keys(st.standing).forEach(k => {
@@ -5708,6 +5860,28 @@ const Engine = (function () {
        the question "has the Treasury missed a payment?" */
     if (k === "arrears") return m.arrears || 0;
     return m[k] == null ? null : m[k];
+  }
+
+  /* WHAT THE ECONOMY IS DOING TO THE GOVERNMENT, in points of standing a
+     year (design/40 E6). Headline inflation over the target by more than
+     the band costs, output below what the country can produce costs, and a
+     steady economy is worth a little. The public reads the HEADLINE: the
+     Bank may look through a rise in the price of heat, and the voters who
+     pay it do not. One function, so the model and every screen that says
+     what the economy is costing read the same number. */
+  function economyVote(st, C) {
+    const M = macroConst(C), m = st.macro;
+    if (!M || !m) return { pull: 0, over: 0, slack: 0, calm: false };
+    const V = M.vote || {}, band = V.band == null ? 1 : V.band;
+    const target = targetOf(st, C);
+    const gap = (m.output / m.potential - 1) * 100;
+    const over = Math.max(0, m.inflation - target - band);
+    const slack = Math.max(0, -gap - (V.slackBand == null ? 0.5 : V.slackBand));
+    const calm = over === 0 && slack === 0 && Math.abs(m.inflation - target) <= band / 2;
+    const fromPrices = -(V.inflation || 0) * over, fromSlack = -(V.slack || 0) * slack;
+    return { pull: fromPrices + fromSlack + (calm ? (V.calm || 0) : 0),
+             prices: fromPrices, slack: fromSlack, calm: calm,
+             over: over, slackPts: slack, inflation: m.inflation, target: target, gap: gap };
   }
 
   /* THE DOLLAR'S SIDE OF A TRADE, for effects and initiatives: selling the
@@ -6110,7 +6284,7 @@ const Engine = (function () {
     }
 
     /* the one rate nobody has set, which is the Georgist point */
-    if ((st.law || {}).rate_volume === "none" || (st.law || {}).rate_volume === "low")
+    if (["none", "relief", "low"].indexOf((st.law || {}).rate_volume) >= 0)
       keys.push("volume_forgone");
 
     return keys.filter(k => ((C.setup || {}).outlook || {})[k])
@@ -6163,8 +6337,25 @@ const Engine = (function () {
       if (t.ref == null) ref = 1;
       if (per == null) per = (basesOf(C).find(b => "rate." + b.k === from[0]) || {}).passthrough || 0;
     }
-    const x = from.reduce((n, f) => n + ruleInput(st, C, f, P, t), 0) / (t.scale || 1);
-    return (per || 0) * (x - ref);
+    const read = (s0, P0) => from.reduce((n, f) => n + ruleInput(s0, C, f, P0, t), 0) / (t.scale || 1);
+    /* `ref: "opening"` measures the input from where the world opened
+       (design/40 E1), so a rule whose base is the opening price is at rest
+       on the opening state by construction, and nobody copies the opening
+       margin or the reserve into a rule as a second number. */
+    if (ref === "opening") { const o = openingProbe(C); ref = read(o, o.prices); }
+    return (per || 0) * (read(st, P) - ref);
+  }
+  /* The world as it opens, for anything measured from there. Memoised by
+     content, like the opening balance. */
+  const OPENING_PROBE = new WeakMap();
+  function openingProbe(C) {
+    if (OPENING_PROBE.has(C)) return OPENING_PROBE.get(C);
+    const S = (C && C.setup) || {};
+    const o = { law: Object.assign({}, S.law), prices: pricesOf(C),
+                scalars: Object.assign({}, S.scalars),
+                economy: Object.assign({}, S.economy) };
+    OPENING_PROBE.set(C, o);
+    return o;
   }
   function ruleTarget(st, C, r, P) {
     return (r.terms || []).reduce((n, t) => n + ruleTerm(st, C, t, P), r.base || 0);
@@ -6752,8 +6943,8 @@ const Engine = (function () {
 
   const TAB_OF = { decision: "sit", division: "gov", vacancy: "gov",
                    owed: "sit", prayer: "gov", expected: "sit", rises: "sit",
-                   slots: "gov", alert: "gov", bank: "econ" };
-  const ORDER  = { sit: 0, gov: 1, cham: 2, econ: 3, orb: 4 };
+                   slots: "gov", alert: "gov", bank: "econ", partner: "rel" };
+  const ORDER  = { sit: 0, gov: 1, cham: 2, party: 3, rel: 4, econ: 5, orb: 6 };
   const SOON = 2;                 /* sittings. Closer than this is business. */
 
   function today(st, C, hasDecision) {
@@ -6793,6 +6984,39 @@ const Engine = (function () {
       push("vacancy", (post.title || post.name || v) + " is vacant",
            { when: "soon", away: null });
     });
+
+    /* A PARTNER NEAR ITS LINE (design/40 E9). The walkout was the commonest
+       way to lose and the one nothing on the screen warned of: the Relations
+       tab showed the loyalty, and the line it would be read against lived in
+       setup. Within `thresholds.partnerWarn` of the next line, the docket
+       says whose, which line, and how far. */
+    if (!st.dissolved && C && C.setup) {
+      const L = partnerLines(C), warn = (C.setup.thresholds || {}).partnerWarn;
+      const nameOf = id => (C.partyById && C.partyById[id] && (C.partyById[id].short || C.partyById[id].name)) || id;
+      if (warn != null) [["coalition", L.leaves], ["confidenceSupply", L.withdraws]].forEach(([side, line]) => {
+        if (line == null) return;
+        st[side].forEach(id => {
+          const loy = loyaltyOf(st, id);
+          if (id === st.playerParty || loy == null || loy > line + warn) return;
+          const goes = side === "coalition" && L.twoStage ? "leave the coalition agreement"
+                     : side === "coalition" ? "walk out of the government" : "withdraw confidence";
+          push("partner", nameOf(id) + " is close to the line: it will " + goes +
+               " at loyalty " + line + " and stands at " + Math.round(loy),
+               { away: null, when: loy <= line + warn / 2 ? "now" : "soon", tab: "rel",
+                 how: "Court them on the Relations tab, or give time to what they want",
+                 focus: "party:" + id });
+        });
+      });
+      /* and the government's own party, whose floor ends the run outright:
+         at `leadershipChallenge` the caucus has the numbers to replace its
+         leader, and the Party tab was the only place that said so */
+      const floor = (C.setup.thresholds || {}).leadershipChallenge, own = st.scalars.party_loyalty;
+      if (warn != null && floor != null && own != null && own <= floor + warn)
+        push("partner", "Your own party is close to replacing you: the caucus moves at loyalty " +
+             floor + " and stands at " + Math.round(own),
+             { away: null, when: own <= floor + warn / 2 ? "now" : "soon", tab: "party",
+               how: "Hold the benches on the Party tab" });
+    }
 
     /* WHAT CONTENT ASKS THE DOCKET TO WARN OF (design/38 §7). Three
        playtest strategies cascaded because nothing said the emergency orders
@@ -7728,7 +7952,7 @@ const Engine = (function () {
   }
 
   return {
-    STATE_VERSION, newGame, migrate, save, load, chapters, reportedActor, receipts,
+    STATE_VERSION, newGame, migrate, save, load, chapters, reportedActor, receipts, believed,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal, currentSeats,
     division, reported, ballot, benchRoll, resolveDue, pairable, setPairs, clearPairs, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss, checkSettlement,
@@ -7743,7 +7967,7 @@ const Engine = (function () {
     packBoard, canPackBoard, boardsMoved, boardsTotal,
     borrow, repay, canBorrow, debtOf, debtRate, debtService, debts, lenderOf, inflation, outlook,
     facilities, lenderCap, rateSteps,
-    budget, spending, interestDue, debtHome, macro, taylorRate, fxTarget, money,
+    budget, spending, interestDue, debtHome, macro, taylorRate, fxTarget, money, costing, economyVote,
     scarcity, economyReading, nominalOutput, targetOf,
     reshuffle, canReshuffle, resolveMotion, motionDeadline,
     standingIn, bandsOf, bandWeight, syncStanding, assent, presidentDecides, referralRisk, reviewReturns,

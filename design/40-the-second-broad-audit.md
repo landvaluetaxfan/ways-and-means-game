@@ -7,6 +7,39 @@ taken after the dollar (`design/39`), the price rules moving into content, and
 the ladder going on the docket (`design/38` §7). Like `design/37` it lists
 what is wrong and leaves out what works.
 
+**Answered 25 Sep 2026.** The author took the recommendations: the tax
+steps "realistic, but feel like they have impact the same way a real
+politician would understand"; the economy "should play a role in public
+perception and thus the election"; the choices "cautious, in between,
+aggressive"; the government's falls fixed, "maybe adjusting seat numbers";
+and everything else, the canon included, left to me. All built:
+
+| Item | Outcome |
+|---|---|
+| E1 | A price rule may measure from `"opening"`, and every base is the opening price, so the world opens at rest. Price-gated events that fired only on the old drift were re-gated to where the crisis takes prices (`thermal_squeeze` 108, `substrate_price_bite` 104, `shed_order_crisis` 103) |
+| E2, E3, E4 | Headline inflation is core plus a lagged pass-through of CHANGES in the scarcity prices and the dollar (`phillips.passThrough`, `lag`); the Taylor rule reads core; growth is the quarter's, annualised, from a dated output log. `STATE_VERSION 32` |
+| E5 | Five steps a base, a fifth and a tenth each way (`setup.fiscal.rates`); each step names who pays and moves the paying bands' standing; the clause prints the Treasury's costing (`Engine.costing`) against the rate in force |
+| E6 | `Engine.economyVote` is the one reading of what the economy costs the government, printed on the Bank panel and the polls; two dated world shocks (`ec_earth_slows` at 25, on the calendar; `ec_decks_fail` at 39) |
+| E7 | A `posture` on every decision choice; the Sitting screen lists cautious, measured, bold and marks each; lint requires it; the editor carries it. `thermal_drift`'s quota sale now costs the quota it sells, and two prologue choices that could jointly end a run before chapter two were softened |
+| E8 | Left at a lean of 14: four Flash I sequences in six seeds, diverging at sitting 10 (it was three, at 15). The prologue is fixed on purpose; more variety is variant beats, for the rewrite |
+| E9 | Five district seats to the government (147 against 141); partners leave in two steps (`supplyWithdrawn`); `partner_stands_aside` gives the government the negotiation; the docket warns near either line and near the leadership floor. Random play reaches the count in 44 of 60 (it was 28) |
+| E10 | The tiers re-banded for the calendar account; the joint mandate gates on holding the line after the referendum, corporate re-entry on declining it; `f1_open`, the question left open, lands late for a government that met the crisis and settled nothing |
+| E11 | Legitimacy counts at the election: `setup.election.legitimacy`, 0.15 points of standing per point from the opening, printed on the polls |
+| E12 | Charnock's unit of account is in the past tense: "We denominated, until 2073, in thermal rejection capacity" |
+| E13 | Governor 2071 to 2076, Treasurer from outside the House 2076 to 2080 (a new §3.8 oddity: a minister need not sit), leader and First Spin at a by-election in 2080; the introduction says she has one session |
+| E14 | The last page carries the state of the country, opening against now |
+
+**The canon moved, and is the debt trap still** (`f1_pyrrhic` at 28, the count
+at 57): the PSD 85 to 87, the side 149 of 280 at standing 41 (narrow), the
+thermal margin 17. The crisis's inflation reaches the vote now (about 6% at the
+count) and costs a dozen seats the canon used to have; the larger majority
+gives them back. Two model changes and one policy change were needed to keep
+the margin off one: the emergency appropriation and the standards order carry
+`approvalFloor: 0.9` (a government bench does not rebel on keeping the heat
+on, and at the default 0.75 the canon's own benches refused the fourth rung
+by two votes), and the canon government keeps its last order-paper time for
+the ladder.
+
 The ranking follows `design/37`. **Fixed** means a clear defect or an item I
 had planned and not built, with the check that now holds it. **Needs you**
 means a decision, with a recommendation. **Noted** is realism and judgement

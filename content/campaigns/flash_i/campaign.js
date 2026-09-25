@@ -49,11 +49,13 @@ campaign("flash_i", { administrations: [
 
        DATES, settled with the author. The draft put her arrival in 2081 and
        the governorship in 2082, which cannot stand: Flash I opens 11 April
-       2080 and she is already Prime Minister. She comes up in 2070 and takes
-       the Bank in 2071, which gives her nine years as Governor before the
-       premiership — long enough to be a record, recent enough that the
-       people she priced are still sitting in the chamber. The bible's 2080
-       is a placeholder older than the term and is not the year. */
+       2080 and she is already Prime Minister. She comes up in 2070, takes
+       the Bank in 2071, floats the dollar in 2073, and goes to the Treasury
+       in 2076 from outside the House (bible §3.8): nine years in the two
+       money offices before the premiership, none of them elected, and
+       recent enough that the people she priced are still sitting in the
+       chamber. design/40 E13 reconciled it: it said nine years as Governor
+       while the cabinet had her at the Treasury until last week. */
     intro:{
       /* A BED, not the readout. js/music.js exports its moods by name and
          `state` is the state readout, so it was never going to play.
@@ -78,10 +80,10 @@ campaign("flash_i", { administrations: [
 
 She came up to the Winter Garden in 2070, in the Commonwealth's springtime, when orbital industry was finding its flourishing and nobody yet knew what any of it was worth. A year later she was Governor of the Reserve Bank of the Circumterrestrial Commonwealth. She was to be the first in a line of faceless bankers who would set the precedent for the composed monetary policy of this novel polity.
 
-That could have been the whole of it. A decade of steady hands and unread minutes, a portrait in a corridor, a pension. But it's not like every capable leader was evidently destined to do it beforehand.` },
+That could have been the whole of it. A decade of steady hands and unread minutes, a portrait in a corridor, a pension. Instead, in 2076, the Party of Socialists and Democrats asked her to the Treasury from outside the House, which the Charter has never forbidden, and for four years she ran the Commonwealth's money from the other side of the desk. But it's not like every capable leader was evidently destined to do it beforehand.` },
 
         { kind:"body", head:"How she came to it", body:
-`The Party of Socialists and Democrats did not choose her because she was one of them. It chose her because the party was seemingly in between worlds, in constant melancholic turmoil, unsure of what was to come next. And so, dark horse she was, she hammered her way to the leadership election, and then she won it. She took First Spin at the election that made her Prime Minister, which is the first elected office she has ever held.
+`The Party of Socialists and Democrats did not choose her because she was one of them. It chose her because the party was seemingly in between worlds, in constant melancholic turmoil, unsure of what was to come next. And so, dark horse she was, she hammered her way to the leadership election, and then she won it. She took First Spin at the by-election that followed, which is the first elected office she has ever held.
 
 So she is a banker at the head of the party of maintenance labour, which occasionally mitigates the two facts; occasionally it exemplifies it. The members who put her there did it to keep a government.` },
 
@@ -90,7 +92,7 @@ So she is a banker at the head of the party of maintenance labour, which occasio
 
 The PSD are in power because of labour and trade unions. Expanding personhood is a natural threat against that, while the CDA agree from a humanist perspective. The New Progressive Party sees otherwise.
 
-She has four years. The session that opens on the eleventh of April is the fourth, and the House is already sitting.` },
+She has one session. The one that opens on the eleventh of April is the parliament's fourth and its last, and the House is already sitting.` },
 
         { kind:"signature", head:"Adriana Eireann Flash \u00b7 Prime Minister" }
       ] } },

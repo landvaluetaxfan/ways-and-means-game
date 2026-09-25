@@ -196,13 +196,16 @@ const Tips = (function () {
             "House approves, and every meeting under one costs the Bank " +
             "credibility." },
     inflation: { title: "Inflation",
-      body: "How fast prices rise, per cent a year. It follows what people " +
-            "expect, how hard output presses on capacity, the four scarcity " +
-            "prices, and the dollar. Well over the target, it costs the " +
-            "government standing every week." },
+      body: "How fast prices rise, per cent a year. Underlying inflation " +
+            "follows what people expect and how hard output presses on " +
+            "capacity; the headline adds what a change in the four scarcity " +
+            "prices or the dollar is still passing on, which moves the price " +
+            "level once and then fades. The Bank's rule reads the underlying " +
+            "figure. The public pays the headline, and well over the target it " +
+            "costs the government standing every week." },
     rate: { title: "The cash rate",
       body: "The Reserve Bank's rate. The rule under it is the neutral real " +
-            "rate, plus inflation, plus half the miss from the target, plus " +
+            "rate, plus underlying inflation, plus half its miss from the target, plus " +
             "half the output gap. A higher rate cools demand, lifts the dollar " +
             "and raises what the Treasury pays at home." },
     dollar: { title: "The dollar",
@@ -211,7 +214,8 @@ const Tips = (function () {
             "debt and the deficit. A weaker dollar makes imports dearer and " +
             "the Standby Facility, which is owed in US dollars, heavier." },
     growth: { title: "Growth",
-      body: "Real output against a year earlier. Capacity is set by the " +
+      body: "Real output over the last quarter, at a yearly rate, as a " +
+            "statistics office prints it. Capacity is set by the " +
             "radiators and the labour force: under a thermal margin of 15 " +
             "every point costs output, and more people in paid work adds it." },
     credibility: { title: "Credibility",
@@ -219,6 +223,19 @@ const Tips = (function () {
             "target. Believed, expectations stay on the target; doubted, they " +
             "follow prices, and every point of inflation costs more to take " +
             "out. Directions and advances spend it." },
+    posture_cautious: { title: "Cautious",
+      body: "The careful answer: it goes least far, commits least, and is " +
+            "usually worth least. The choices are listed cautious first." },
+    posture_measured: { title: "Measured",
+      body: "The middle answer: it does something, and keeps something back." },
+    posture_bold: { title: "Bold",
+      body: "The answer that goes furthest: the most to gain, and the most " +
+            "that can go wrong, now or later." },
+    economyvote: { title: "The public",
+      body: "What the economy is doing to the government's standing, a year. " +
+            "Headline inflation more than a point over the target costs, output " +
+            "under capacity costs, and a steady economy is worth a little. It " +
+            "reaches every band, and it lasts as long as the economy does." },
     balance: { title: "The balance",
       body: "Receipts less spending less interest, a year. A deficit is paid " +
             "from the reserve, and when the reserve is empty, in Treasury bills " +

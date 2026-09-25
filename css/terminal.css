@@ -2516,6 +2516,13 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .cm.cost {border-style:dashed;}
 .cm.owed {border-width:1px 1px 1px 3px;font-weight:700;}
 .cm.grave{border-style:double;border-width:3px;}
+/* THE POSTURE (design/40 E7): how far the choice goes. Form carries it as
+   well as weight, so it reads without colour: a hairline for the careful
+   answer, a rule under the word for the middle one, a heavy box for the
+   bold one. */
+.cm.pose.cautious{border-color:var(--chrome-dk);color:var(--ink-soft);}
+.cm.pose.measured{border-width:1px 1px 2px 1px;}
+.cm.pose.bold{border-width:2px;font-weight:700;}
 .ch.open .cm{border-color:var(--gold);}
 
 .ch-body{padding:8px 10px 10px;border-top:1px solid var(--rule);}

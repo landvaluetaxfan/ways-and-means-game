@@ -926,6 +926,10 @@ try {
     [["priceRules", PR], ["economyRules", ECON]].forEach(([key, own]) => (S[key] || []).forEach(r => {
       const tag = who + "'s " + key + " " + r.k;
       if (!own.has(r.k)) refBad.push(tag + ": moves '" + r.k + "', which is not one");
+      (r.terms || []).forEach(t => {
+        if (t.ref != null && t.ref !== "opening" && typeof t.ref !== "number")
+          refBad.push(tag + ": measures from " + JSON.stringify(t.ref) + ", which is neither a number nor \"opening\"");
+      });
       (r.terms || []).forEach(t => [].concat(t.from || []).forEach(f => {
         const dot = f.indexOf("."), ns = dot < 0 ? "scalar" : f.slice(0, dot), k = dot < 0 ? f : f.slice(dot + 1);
         if (ns === "scalar" && !SC.has(k)) refBad.push(tag + ": reads meter '" + k + "', which is none");
@@ -951,6 +955,33 @@ try {
   }));
   Object.keys(lawTypes).forEach(k => { const t = Object.keys(lawTypes[k]).filter(x => x !== "object");
     if (t.length > 1) refBad.push("law " + k + " is written as " + t.map(x => x + " (" + lawTypes[k][x] + ")").join(" and ")); });
+
+  /* THE EVENTS SETUP NAMES FOR THE ENGINE TO QUEUE, which would otherwise
+     be queued as nothing, silently, on the day a partner walks. */
+  ["onPartnerWithdraws", "onPartnerStandsAside"].forEach(k => {
+    const id = SETUP[k];
+    if (id != null && !(EVENTS || []).some(e => e.id === id))
+      refBad.push("setup." + k + " names no event '" + id + "'");
+  });
+
+  /* A CHOICE'S POSTURE (design/40 E7). The Sitting screen orders an
+     event's choices by it, so a missing one sends a choice to the bottom
+     of the list and an unknown one is a word the screen cannot rank. An
+     event whose choices are all gated is an outcome, one of which the
+     state picks, and carries none. */
+  const POSTURES = new Set(require(path.join(root, "js", "schema.js")).vocab.postures || []);
+  (EVENTS || []).forEach(ev => {
+    const cs = ev.choices || [];
+    cs.forEach((c, i) => { if (c.posture != null && !POSTURES.has(c.posture))
+      refBad.push("event " + ev.id + " choice " + i + ": posture '" + c.posture + "' is not one of " + [...POSTURES].join(", ")); });
+    const free = cs.filter(c => !c.when).length;
+    /* the sandbox's own console is a list of developer controls, not a
+       decision, and is gated on the sandbox's flag */
+    const console_ = [].concat((ev.when || {}).flags || []).indexOf("test_mode") >= 0;
+    if (!console_ && cs.length >= 2 && free >= 2 && cs.some(c => !c.posture))
+      refBad.push("event " + ev.id + ": " + cs.filter(c => !c.posture).length + " of " + cs.length +
+                  " choices carry no posture, so the Sitting screen cannot order them");
+  });
 
   /* AND THE AWARDS, which have a matcher of their own in js/shell.js. Its
      vocabulary is listed here because it is small; a key it does not know

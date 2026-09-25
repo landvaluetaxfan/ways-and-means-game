@@ -68,12 +68,12 @@ repatriation plan is fully funded, legally complete, and two years long.
 
 The Works has voted. The question is what the Commonwealth says.`,
   choices:[
-    { label:"Send the survey team.",
+    { posture:"bold", label:"Send the survey team.",
       effects:[{ flag:"f1_surveyed" }, { wire:"FEDERATION SURVEYS THE ABANDONED PLATFORM" },
                { queue:[{ event:"f1_referendum", after:4,
                           label:"The survey team reports from the Almanac" }] }],
       result:"The survey's first return is the scrubber schedule. The second is the debt." },
-    { label:"Wait for Earth's process.",
+    { posture:"cautious", label:"Wait for Earth's process.",
       effects:[{ move:{ "legitimacy":-5 } }, { wire:"PM: THE REPATRIATION PLAN IS EARTH'S TO RUN" }],
       result:"The outer stations read the delay as an answer, and it is not the one they wanted." }
   ]},
@@ -90,15 +90,15 @@ overnight on Earth's say-so.
 "The referendum is on your desk," he says. "Earth's is reading the same
 wire."`,
   choices:[
-    { label:"Recognise the referendum.",
+    { posture:"bold", label:"Recognise the referendum.",
       effects:[{ flag:"f1_referendum_carried" }, { move:{ "friction":10 } },
                { move:{ "legitimacy":8 } },
                { wire:"FEDERATION RECOGNISES THE PLATFORM REFERENDUM" },
                { queue:[{ event:"f1_dilemma", after:3,
                           label:"Law and the Charter reports on the platform" }] }],
       result:"The Works is the Commonwealth's question now, and Earth's banks are reading the same wire." },
-    { label:"Decline to recognise it.",
-      effects:[{ move:{ "legitimacy":-8 } }, { move:{ "friction":-3 } }],
+    { posture:"cautious", label:"Decline to recognise it.",
+      effects:[{ move:{ "legitimacy":-8 } }, { move:{ "friction":-3 } }, { flag:"f1_referendum_declined" }],
       result:"The strikes start on the outer habitats before the sitting ends." }
   ]},
 
@@ -115,7 +115,7 @@ kept the leases, and left the parent's exposure at nothing. Every step of it was
 
 Neither future is a vote the government can lose quietly.`,
   choices:[
-    { label:"Move to annex.",
+    { posture:"bold", label:"Move to annex.",
       /* AND THE BILL IS ACTUALLY SET DOWN. The result line has always said
          it was; until now nothing was, and the annexation settlements gated
          on the flag this choice sets rather than on any Act. Moving it out
@@ -156,8 +156,8 @@ Neither future is a vote the government can lose quietly.`,
                { slots:{ reserve:{ annexation:5 } } },
                { wire:"GOVERNMENT MOVES TO ANNEX THE WORKS" }],
       result:"The annexation bill is set down. Acting is popular at home; Earth notices, a little more, every sitting." },
-    { label:"Hold the line.",
-      effects:[{ move:{ "trend.legitimacy":-3 } }, { move:{ "friction":-4 } }],
+    { posture:"cautious", label:"Hold the line.",
+      effects:[{ move:{ "trend.legitimacy":-3 } }, { move:{ "friction":-4 } }, { flag:"f1_held_the_line" }],
       result:"The outer habitats have heard the answer, and they will repeat it back every sitting." }
   ]},
 
@@ -178,11 +178,11 @@ Neither future is a vote the government can lose quietly.`,
   body:`The Minister for Life Support brings the platform's water recycling
 estimate. It holds, or it does not hold, and the difference is a funding line that will not be felt for a month.`,
   choices:[
-    { label:"Fund it in full.",
+    { posture:"bold", label:"Fund it in full.",
       effects:[{ move:{ "solvency":-3000 } }, { move:{ "trend.thermal_margin":1 } },
                { move:{ "legitimacy":4 } }],
       result:"The margin improves, a point at a time, and the country sees a government paying for the platform it claimed." },
-    { label:"Trim it and take the margin.",
+    { posture:"cautious", label:"Trim it and take the margin.",
       effects:[{ move:{ "solvency":2000 } }, { move:{ "trend.thermal_margin":-2 } }],
       result:"Nothing happens today. That is what a drift is." }
   ]},
@@ -205,7 +205,7 @@ The rate is printed. The term is printed. The condition is one line.`,
        rises the Alliance calls it. The sum owed is on the account as a
        named creditor, principal and printed rate together, and the promise
        is kept when that balance is nothing, however it got there. */
-    { label:"Take the loan.",
+    { posture:"bold", label:"Take the loan.",
       effects:[{ move:{ "solvency":18000 } }, { move:{ "debt.alliance":19800 } },
                { move:{ "legitimacy":-10 } }, { flag:"cordell_leases_pledged" },
                { undertake:{ id:"f1_debt", text:"Repay the emergency facility",
@@ -213,7 +213,7 @@ The rate is printed. The term is printed. The condition is one line.`,
                              discharge:{ repaid:"alliance" },
                              onBreach:"f1_debt_called" } }],
       result:"Eighteen billion dollars reach the reserve. The facility is repayable at nineteen billion eight hundred million before the House rises, and the Cordell leases stand as its security until then." },
-    { label:"Refuse the rate.",
+    { posture:"cautious", label:"Refuse the rate.",
       effects:[{ move:{ "legitimacy":3 } }, { move:{ "trend.solvency":-1000 } }],
       result:"A solvent government could have refused it. This one is not solvent, and refusing costs a little, every sitting." }
   ]},
@@ -273,12 +273,12 @@ must find a way to pay for out of what it holds.
 Hatt puts the position in a sentence. "It is not an embargo yet. It is the
 price of one, and it is being charged to us by the hour."`,
   choices:[
-    { label:"Pay for the platform out of the reserve.",
+    { posture:"bold", label:"Pay for the platform out of the reserve.",
       effects:[{ move:{ "solvency":-10000 } }, { move:{ "legitimacy":6 } },
                { move:{ "trend.friction":-1 } },
                { wire:"COMMONWEALTH FUNDS THE PLATFORM FROM THE RESERVE; SANCTIONS STAND" }],
       result:"The workers keep running and the reserve pays. The friction stops worsening, which is not the same as improving." },
-    { label:"Let the platform's suppliers carry the risk.",
+    { posture:"cautious", label:"Let the platform's suppliers carry the risk.",
       effects:[{ move:{ "legitimacy":-8 } }, { move:{ "trend.friction":1 } },
                { wire:"SUPPLIERS ASKED TO CARRY PLATFORM RISK; OUTER HABITATS OBJECT" }],
       result:"The government keeps its money and loses the argument, and the sanctions deepen on their own." }
@@ -299,7 +299,7 @@ three and the measures are lifted, for a quarter, and reviewed.
 
 It is not a bargain an ordinary year would take. This is not one.`,
   choices:[
-    { label:"Pay the bond and take the suspension.",
+    { posture:"cautious", label:"Pay the bond and take the suspension.",
       /* paying the bond also cures the Standby Facility's default, if the
          agent has declared one (f1_standby_notice) */
       effects:[{ move:{ "friction":-9 } }, { move:{ "solvency":-7000 } },
@@ -307,7 +307,7 @@ It is not a bargain an ordinary year would take. This is not one.`,
                { flag:{ works_bond_paid:true, standby_default:false } },
                { wire:"COMMONWEALTH PAYS THE BOND; EARTH SUSPENDS THE MEASURES FOR A QUARTER" }],
       result:"The measures lift and the reserve pays for a suspension that lasts a quarter." },
-    { label:"Refuse, and wear the measures.",
+    { posture:"bold", label:"Refuse, and wear the measures.",
       effects:[{ move:{ "friction":2 } }, { move:{ "legitimacy":5 } },
                { move:{ "loyalty.cu_maintenance":4 } },
                { wire:"PM REFUSES EARTH'S TERMS: 'THE COMMONWEALTH DOES NOT PAY RANSOM' (as of 6 days ago)" }],
@@ -326,12 +326,12 @@ who has not been a minister for nine years.
 It is the same week in two places, and there is one sentence available to
 the government that will be read in both.`,
   choices:[
-    { label:"Say it for the Commonwealth: competence, not sentiment.",
+    { posture:"bold", label:"Say it for the Commonwealth: competence, not sentiment.",
       effects:[{ move:{ "legitimacy":6 } }, { move:{ "actor.earth_bloc":-5 } },
                { move:{ "friction":3 } },
                { wire:"PM SPEAKS TO THE HABITATS; EARTH SERVICES CALL THE TONE 'MANAGERIAL'" }],
       result:"The Commonwealth hears a government in command. Earth hears a government that has stopped being polite." },
-    { label:"Say it for both: the accident, and the rescue.",
+    { posture:"cautious", label:"Say it for both: the accident, and the rescue.",
       effects:[{ move:{ "actor.earth_bloc":6 } }, { move:{ "actor.earth_host":4 } },
                { move:{ "legitimacy":-3 } }, { move:{ "friction":-2 } },
                { wire:"PM ADDRESSES BOTH AUDIENCES ON THE PLATFORM (Earth services carry it in full)" }],
@@ -502,11 +502,11 @@ be stacked, and closing it hands the sitting back to the pool.`,
 
 Hatt offers to keep the line open as a standing facility on the same terms, drawn only when the Commonwealth asks for it.`,
   choices:[
-    { label:"Keep the line open.",
+    { posture:"cautious", label:"Keep the line open.",
       effects:[{ flag:"abg_standing_line" }, { move:{ "loyalty.gb":4 } }, { move:{ "legitimacy":-2 } },
                { wire:"ALLIANCE HOLDS STANDING LINE ON COMMONWEALTH SHORT POSITION" }],
       result:"The Alliance holds a standing line on the Commonwealth's short position, on the terms of the emergency facility." },
-    { label:"Close it.",
+    { posture:"bold", label:"Close it.",
       effects:[{ move:{ "legitimacy":3 } }, { move:{ "loyalty.gb":-2 } }],
       result:"The Commonwealth owes the Alliance nothing and has no line with it." }
   ]},
@@ -520,13 +520,13 @@ Hatt offers to keep the line open as a standing facility on the same terms, draw
 
 The security is the Cordell leases. The Alliance will accept the leases in settlement, or the sum from the reserve.`,
   choices:[
-    { label:"Pay it from the reserve.",
+    { posture:"bold", label:"Pay it from the reserve.",
       when:{ scalarAbove:{ solvency:21599 } },
       effects:[{ move:{ "solvency":-21600 } }, { move:{ "debt.alliance":-19800 } },
                { move:{ "legitimacy":-2 } }, { flag:{ cordell_leases_pledged:false } },
                { wire:"TREASURY PAYS CALLED FACILITY IN FULL FROM THE RESERVE" }],
       result:"The reserve pays the Alliance in full, and the Cordell leases stay with the Commonwealth." },
-    { label:"Let the Alliance take the leases.",
+    { posture:"cautious", label:"Let the Alliance take the leases.",
       effects:[{ flag:"cordell_leases_ceded" }, { move:{ "debt.alliance":-19800 } },
                { move:{ "loyalty.gb":6 } },
                { move:{ "public_standing":-5 } }, { move:{ "legitimacy":-6 } },
@@ -565,10 +565,10 @@ The security is the Cordell leases. The Alliance will accept the leases in settl
 
 This is the first of three floors under the government. The last one is the House.`,
   choices:[
-    { label:"Ration the ring ahead of the shed order.",
+    { posture:"bold", label:"Ration the ring ahead of the shed order.",
       effects:[{ move:{ thermal_margin:3, public_standing:-3 } }],
       result:"The ring runs cooler and louder. The margin buys a sitting or two." },
-    { label:"Hold the line and say nothing.",
+    { posture:"cautious", label:"Hold the line and say nothing.",
       effects:[{ move:{ legitimacy:-2 } }],
       result:"Nothing changes today, which is the point and the danger." }
   ]},
@@ -583,10 +583,10 @@ This is the first of three floors under the government. The last one is the Hous
 
 One floor is left under the government. The Cabinet Office has drafted the order that would hold it up.`,
   choices:[
-    { label:"Leave the order drafted and unsigned.",
+    { posture:"cautious", label:"Leave the order drafted and unsigned.",
       effects:[{ move:{ legitimacy:-2 } }],
       result:"The emergency order is on the Prime Minister's desk, unsigned." },
-    { label:"Concede something to Earth's banks in public.",
+    { posture:"bold", label:"Concede something to Earth's banks in public.",
       effects:[{ move:{ friction:-3, legitimacy:-4 } }],
       result:"The concession is small and printed large. The quarrel eases by a point or two." }
   ]},
@@ -609,10 +609,10 @@ The Commonwealth has not done this before, and everyone in the chamber knows it.
   speaker:null,
   body:`The emergency order expires at midnight. The House sits again with its powers restored, and the first question on the order paper is whether the government should have had them.`,
   choices:[
-    { label:"Let it lapse.",
+    { posture:"cautious", label:"Let it lapse.",
       effects:[{ flag:{ f1_emergency:false } }, { move:{ legitimacy:10 } }],
       result:"The order lapses. Some of what it cost comes back; most of it does not." },
-    { label:"Renew it for four sittings.",
+    { posture:"bold", label:"Renew it for four sittings.",
       effects:[{ move:{ public_standing:-6, party_loyalty:-6 } },
                { queue:[{ event:"f1_emergency_lapses", after:4 }] }],
       result:"The order is renewed, and the renewal is the story." }
@@ -714,15 +714,15 @@ The Commonwealth has not done this before, and everyone in the chamber knows it.
 
 Until it is cured, the agent will fund no drawing, and anything already drawn carries default interest. The letter names two cures. The Commonwealth can pay the bondholders, or it can buy a waiver for a fee and a higher margin.`,
   choices:[
-    { label:"Dispute it. The Act bought the charter, and the bonds are Cordell's.",
+    { posture:"bold", label:"Dispute it. The Act bought the charter, and the bonds are Cordell's.",
       effects:[{ flag:"standby_default" },
                { wire:"TREASURY DISPUTES DEFAULT NOTICE ON EARTH STANDBY FACILITY" }],
       result:"The facility is closed to the Commonwealth until the notice is withdrawn, and the letter goes into a file." },
-    { label:"Buy the waiver.",
+    { posture:"measured", label:"Buy the waiver.",
       effects:[{ move:{ solvency:-900 } }, { flag:"standby_waiver" },
                { wire:"COMMONWEALTH PAYS FOR A WAIVER ON THE EARTH STANDBY FACILITY" }],
       result:"The syndicate waives the default for nine hundred million dollars, and the margin carries half a point more until the facility matures." },
-    { label:"Pay the bondholders.",
+    { posture:"cautious", label:"Pay the bondholders.",
       effects:[{ move:{ solvency:-7000, friction:-4, legitimacy:-3, "actor.earth_bloc":5 } },
                { flag:"works_bond_paid" },
                { wire:"COMMONWEALTH PAYS THE ALMANAC WORKS BONDHOLDERS; BRUSSELS NOTES THE PAYMENT" }],

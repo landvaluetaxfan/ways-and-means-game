@@ -11,8 +11,10 @@ const SETUP = {
   /* THE INDEPENDENTS HOLD IT UP. Six district members with no whip, no
      leader and no caucus position, which is why this is confidence and
      supply and not a coalition: there is nobody to negotiate with, only six
-     people. 136 + 6 = 142 against a majority of 141 — a working majority of
-     one, where it used to be nil. */
+     people. 141 + 6 = 147 against a majority of 141 (design/40 E9: it was
+     136 + 6 = 142, a majority of one, and two in five uninformed governments
+     fell to it before the crisis). Without the six the coalition holds the
+     House exactly. */
   confidenceSupply: ["ind"],
   /* THE PRODUCTIVE ECONOMY (bible §7.10). The prices are the cost of
      existing; this is what the Commonwealth makes, sells and employs.
@@ -121,7 +123,15 @@ const SETUP = {
       { k: "substrate", weight: 51000, passthrough: 24, name: "Substrate-hours" },
       { k: "transit",   weight: 26000, passthrough: 20, name: "Mass to orbit" }
     ],
-    rates: { none: 0, low: 0.5, standard: 1, high: 1.6 },
+    /* THE STEPS A BUDGET CAN TAKE (design/40 E5). They were none, half,
+       standard and half again, on four bases that are the whole of revenue,
+       so every choice moved the balance by five to fifteen per cent of
+       output: raising all four ran a surplus of 29% of output and took
+       standing to 22. Budgets move receipts by one or two per cent. A tenth
+       of the volume levy is 1.4% of output and a fifth of it 2.9%, which is
+       as large as a real budget gets. `none` is kept so a probe can zero a
+       base; no bill offers it. */
+    rates: { none: 0, relief: 0.8, low: 0.9, standard: 1, high: 1.1, surcharge: 1.2 },
     standing: 176000
   },
 
@@ -139,6 +149,14 @@ const SETUP = {
      run, every playtest strategy and 126 probes across the laws came out
      byte-identical.
 
+     THE OPENING IS AT REST (design/40 E1). `ref: "opening"` measures an
+     input from where the world opens, and every base is the opening price,
+     so nothing drifts until something moves. It used to: the margin was
+     read against 35, the reserve against 50,000 and the public share
+     against all of it, so at the opening thermal wanted 121.6 and
+     substrate 117.6, and every run began with a price shock and a
+     windfall nobody had caused.
+
        thermal    scarce as the federal margin thins below 35; the quota the
                   appropriation releases; the levy passed through; and the
                   civic clock's heat, six points at real time
@@ -151,19 +169,19 @@ const SETUP = {
        transit    the reserve again, the subsidy, and the levy */
   priceRules: [
     { k: "thermal", base: 100, terms: [
-      { from: "thermal_margin", ref: 35, per: -1.2 },
+      { from: "thermal_margin", ref: "opening", per: -1.2 },
       { from: "law.thermal_release", map: { tight: 14, open: -16 } },
       { from: "rate.thermal" },
       { from: "law.civic_clock_minimum", per: 6 } ] },
-    { k: "substrate", base: 70, terms: [
-      { from: "law.substrate_public_share", default: 0.35, ref: 1, per: -60 },
+    { k: "substrate", base: 100, terms: [
+      { from: "law.substrate_public_share", default: 0.35, ref: "opening", per: -60 },
       { from: "price.thermal", ref: 100, per: 0.4 },
       { from: "rate.substrate" } ] },
     { k: "volume", base: 100, terms: [
-      { from: "solvency", scale: 1000, ref: 50, per: -0.28 },
+      { from: "solvency", scale: 1000, ref: "opening", per: -0.28 },
       { from: "law.capital_works", map: { ring: -9, outer: -5 } } ] },
     { k: "transit", base: 100, terms: [
-      { from: "solvency", scale: 1000, ref: 50, per: -0.3 },
+      { from: "solvency", scale: 1000, ref: "opening", per: -0.3 },
       { from: "law.transit_subsidy", map: { anchors: -8, all: -14 } },
       { from: "rate.transit" } ] }
   ],
@@ -231,10 +249,15 @@ const SETUP = {
        `friction` per point of the quarrel above where it opened. A shock
        fades at `shockFade` a year. */
     demand: { speed: 4, fiscal: 0.8, rate: 0.6, fx: 0.15, trade: 0.1, friction: 0.08, shockFade: 1.5 },
-    /* THE PHILLIPS CURVE: points of inflation per point of output gap,
-       per per cent of the four prices above where they opened (weighted
-       by yield), and per per cent of a weaker dollar */
-    phillips: { gap: 0.3, supply: 0.08, imports: 0.12, speed: 3 },
+    /* THE PHILLIPS CURVE: points of CORE inflation per point of output
+       gap, closing `speed` of its distance a year. The headline adds what
+       passes through: `passThrough.supply` of every rise in the four
+       scarcity prices (weighted by yield) reaches the price level, and
+       `passThrough.imports` of every fall in the dollar, spread over a
+       lag that closes `lag` of its distance a year (about four months to
+       half). A price that rises and stays up moves the level once; it is
+       not inflation for ever (design/40 E2). */
+    phillips: { gap: 0.3, passThrough: { supply: 0.1, imports: 0.15 }, lag: 2, speed: 3 },
     /* CREDIBILITY is earned inside `band` points of the target at `earn` a
        year and lost at `lose`, down to `floor`; a directed Bank can be
        believed no more than `directedCeiling`. Expectations follow it at
@@ -752,7 +775,12 @@ const SETUP = {
      and the campaign moves either by fifteen to twenty points. 0 turns it
      off. */
   standingDrift: { toward: 45, rate: 0.05 },
-  election: { swing: 0.35, localFloor: 0.4, localLift: 2.0, marginMin: 0.005, marginSpan: 0.35, marginShape: 1.6,
+  /* `legitimacy` (design/40 E11): points of standing, at the count, per
+     point of legitimacy away from where it opened. A government that is
+     believed at home campaigns at a premium and one that is not at a
+     discount: at 0.15 the whole meter is worth about seven points of
+     standing either way, a fifth of what the campaign can move. */
+  election: { swing: 0.35, legitimacy: 0.15, localFloor: 0.4, localLift: 2.0, marginMin: 0.005, marginSpan: 0.35, marginShape: 1.6,
               functional: { licensure: 0.4, corporate: 0.15, union_bloc: 0.3, residual: 1 } },
 
   /* THE EPILOGUE (design/38 §2): what the count means, printed on the last
@@ -876,11 +904,25 @@ const SETUP = {
      54, the independents' 66; so a partner walks out when it has been
      treated badly all session, and not otherwise. At 20 the NPP walked at
      sitting 13 after two hostile answers in three sittings; at 15 it takes
-     three. Offering terms (+16) from the line brings it back. */
+     three. Offering terms (+16) from the line brings it back.
+
+     TWO LINES SINCE design/40 E9. With `supplyWithdrawn` set, a coalition
+     partner at `partnerLeaves` leaves the agreement and moves to confidence
+     and supply (free on ordinary business, still holding the government
+     up), and only a party on confidence and supply at `supplyWithdrawn`
+     withdraws confidence. One line lost 17 of 60 random governments to the
+     NPP between sittings 13 and 20. `partnerWarn` puts either line on the
+     docket before it is crossed. */
   thresholds: { leadershipChallenge: 15, ballot: 12, signsAt: 50, refusalLoyalty: 2,
-                winBackBelow: 75, partnerLeaves: 15, partnerReturns: 30, motionAfter: 3 },
+                winBackBelow: 75, partnerLeaves: 15, partnerReturns: 30, motionAfter: 3,
+                /* design/40 E9: a coalition partner at partnerLeaves leaves the
+                   agreement and keeps the government on confidence and supply;
+                   only at supplyWithdrawn does a party on confidence and supply
+                   withdraw it. The docket warns within partnerWarn of either. */
+                supplyWithdrawn: 8, partnerWarn: 8 },
   /* The event content wants when a partner walks out; the engine names none. */
   onPartnerWithdraws: "partner_walks",
+  onPartnerStandsAside: "partner_stands_aside",
   /* AN ENDING MUST BE CARRIED (design/26 #91). No settlement before this
      sitting, whatever the meters say: without the floor the crisis resolved
      at sitting 7 on one play policy and 13 on another, which is a third of

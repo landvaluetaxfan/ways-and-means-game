@@ -58,163 +58,163 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 - §1.7 · L307 — Chapters  *LOCKED*
 - §1.8 · L355 — Campaigns and the canon  *LOCKED*
 
-**Part II — DESIGN PRINCIPLES** · L434
-- §2.1 · L436 — Date your novelties  *LOCKED*
-- §2.2 · L446 — Light-lag discipline  *LOCKED*
-- §2.3 · L452 — Physical parameters are legislative outputs  *LOCKED*
-- §2.4 · L458 — Founding ambiguity is a feature  *LOCKED*
-- §2.5 · L462 — Keep the constitutional question open  *LOCKED*
-- §2.6 · L466 — Explanation cost is the real budget  *LOCKED*
-- §2.7 · L470 — Generation drift is the main production risk  *LOCKED*
+**Part II — DESIGN PRINCIPLES** · L438
+- §2.1 · L440 — Date your novelties  *LOCKED*
+- §2.2 · L450 — Light-lag discipline  *LOCKED*
+- §2.3 · L456 — Physical parameters are legislative outputs  *LOCKED*
+- §2.4 · L462 — Founding ambiguity is a feature  *LOCKED*
+- §2.5 · L466 — Keep the constitutional question open  *LOCKED*
+- §2.6 · L470 — Explanation cost is the real budget  *LOCKED*
+- §2.7 · L474 — Generation drift is the main production risk  *LOCKED*
 
-**Part III — CONSTITUTIONAL ORDER** · L480
-- §3.1 · L482 — Form of government  *LOCKED*
-- §3.2 · L495 — The legislature  *LOCKED*
-- §3.3 · L520 — The presidency  *LOCKED*
-- §3.4 · L538 — The player character  *LOCKED*
-- §3.5 · L546 — Loss conditions  *LOCKED*
-- §3.5.1 · L569 — Win conditions — the settlements  *LOCKED*
-- §3.6 · L621 — Opposition versus government  *LEANING*
-- §3.7 · L629 — The central constitutional question  *LOCKED*
-- §3.8 · L635 — Constitutional oddities  *LOCKED as available material*
-- §3.9 · L643 — Naming scheme  *LOCKED*
+**Part III — CONSTITUTIONAL ORDER** · L484
+- §3.1 · L486 — Form of government  *LOCKED*
+- §3.2 · L499 — The legislature  *LOCKED*
+- §3.3 · L524 — The presidency  *LOCKED*
+- §3.4 · L542 — The player character  *LOCKED*
+- §3.5 · L550 — Loss conditions  *LOCKED*
+- §3.5.1 · L579 — Win conditions — the settlements  *LOCKED*
+- §3.6 · L631 — Opposition versus government  *LEANING*
+- §3.7 · L639 — The central constitutional question  *LOCKED*
+- §3.8 · L645 — Constitutional oddities  *LOCKED as available material*
+- §3.9 · L659 — Naming scheme  *LOCKED*
 
-**Part IV — THE ELECTORAL SYSTEM** · L711
-- §4.1 · L713 — Parallel voting  *LOCKED*
-- §4.2 · L717 — The tier split as a tonal structure  *LOCKED*
-- §4.3 · L726 — Consequences of parallel specifically  *LOCKED*
-- §4.4 · L733 — The tier ratio is amendable  *LOCKED*
-- §4.5 · L737 — Dual candidacy and revenants  *LOCKED*
-- §4.6 · L743 — Functional constituencies  *LOCKED*
-- §4.6.1 · L753 — Dual majority  *LOCKED*
-- §4.6.2 · L759 — Corporate voting  *LOCKED*
-- §4.6.3 · L765 — Electorate sizes  *LOCKED*
-- §4.6.4 · L769 — The licensing board  *LOCKED*
-- §4.6.5 · L777 — The residual constituency (the "super-seat")  *LOCKED*
-- §4.6.6 · L783 — Abolition  *LOCKED as permanent open question*
-- §4.6.7 · L787 — Costs, acknowledged
-- §4.7 · L792 — Apportionment population ≠ voting population  *LOCKED*
-- §4.8 · L798 — Thresholds  *LOCKED*
-- §4.9 · L804 — External constituencies  *LOCKED*
-- §4.10 · L810 — Apportionment method as plot  *LOCKED*
-- §4.11 · L814 — Campaign finance in substrate-hours  *LOCKED*
-- §4.12 · L818 — Attestation as voter ID  *LOCKED*
-- §4.13 · L822 — Franchise weighting  *OPEN*
-- §4.14 · L826 — Compulsory voting variant  *OPEN*
-- §4.15 · L830 — Redistricting  *OPEN*
-- §4.16 · L834 — The count  *LEANING*
+**Part IV — THE ELECTORAL SYSTEM** · L727
+- §4.1 · L729 — Parallel voting  *LOCKED*
+- §4.2 · L733 — The tier split as a tonal structure  *LOCKED*
+- §4.3 · L742 — Consequences of parallel specifically  *LOCKED*
+- §4.4 · L749 — The tier ratio is amendable  *LOCKED*
+- §4.5 · L753 — Dual candidacy and revenants  *LOCKED*
+- §4.6 · L759 — Functional constituencies  *LOCKED*
+- §4.6.1 · L769 — Dual majority  *LOCKED*
+- §4.6.2 · L775 — Corporate voting  *LOCKED*
+- §4.6.3 · L781 — Electorate sizes  *LOCKED*
+- §4.6.4 · L785 — The licensing board  *LOCKED*
+- §4.6.5 · L793 — The residual constituency (the "super-seat")  *LOCKED*
+- §4.6.6 · L799 — Abolition  *LOCKED as permanent open question*
+- §4.6.7 · L803 — Costs, acknowledged
+- §4.7 · L808 — Apportionment population ≠ voting population  *LOCKED*
+- §4.8 · L814 — Thresholds  *LOCKED*
+- §4.9 · L820 — External constituencies  *LOCKED*
+- §4.10 · L826 — Apportionment method as plot  *LOCKED*
+- §4.11 · L830 — Campaign finance in substrate-hours  *LOCKED*
+- §4.12 · L834 — Attestation as voter ID  *LOCKED*
+- §4.13 · L838 — Franchise weighting  *OPEN*
+- §4.14 · L842 — Compulsory voting variant  *OPEN*
+- §4.15 · L846 — Redistricting  *OPEN*
+- §4.16 · L850 — The count  *LEANING*
 
-**Part V — CONSTITUENCIES** · L860
-- §5.1 · L862 — The district list is the setting bible  *LOCKED*
-- §5.2 · L866 — Constituency type is a real variable  *LOCKED*
-- §5.3 · L874 — Schema  *LOCKED*
-- §5.4 · L899 — Roster discipline  *LOCKED*
+**Part V — CONSTITUENCIES** · L876
+- §5.1 · L878 — The district list is the setting bible  *LOCKED*
+- §5.2 · L882 — Constituency type is a real variable  *LOCKED*
+- §5.3 · L890 — Schema  *LOCKED*
+- §5.4 · L915 — Roster discipline  *LOCKED*
 
-**Part VI — TRANSHUMANIST MECHANICS** · L905
-- §6.1 · L907 — Legal categories  *LOCKED*
-- §6.2 · L941 — Substrate  *LOCKED*
-- §6.3 · L949 — Clock speed  *LOCKED*
-- §6.4 · L957 — Forking and the divergence threshold  *LOCKED*
-- §6.5 · L975 — Census law  *LOCKED*
-- §6.6 · L981 — Suspension  *LOCKED*
-- §6.7 · L997 — Backups  *LOCKED*
-- §6.8 · L1003 — Embodiment  *LOCKED*
-- §6.9 · L1009 — State object variables  *LOCKED*
-- §6.10 · L1040 — The biological position  *LOCKED*
-- §6.10.1 · L1081 — The real class axis is exposure, not substrate  *LOCKED*
-- §6.10.2 · L1102 — Two emulated populations with nothing in common  *LOCKED*
-- §6.10.3 · L1116 — Uploading as an economic decision  *LOCKED*
-- §6.11 · L1147 — Physiological class  *LOCKED*
+**Part VI — TRANSHUMANIST MECHANICS** · L921
+- §6.1 · L923 — Legal categories  *LOCKED*
+- §6.2 · L957 — Substrate  *LOCKED*
+- §6.3 · L965 — Clock speed  *LOCKED*
+- §6.4 · L973 — Forking and the divergence threshold  *LOCKED*
+- §6.5 · L991 — Census law  *LOCKED*
+- §6.6 · L997 — Suspension  *LOCKED*
+- §6.7 · L1013 — Backups  *LOCKED*
+- §6.8 · L1019 — Embodiment  *LOCKED*
+- §6.9 · L1025 — State object variables  *LOCKED*
+- §6.10 · L1056 — The biological position  *LOCKED*
+- §6.10.1 · L1097 — The real class axis is exposure, not substrate  *LOCKED*
+- §6.10.2 · L1118 — Two emulated populations with nothing in common  *LOCKED*
+- §6.10.3 · L1132 — Uploading as an economic decision  *LOCKED*
+- §6.11 · L1163 — Physiological class  *LOCKED*
 
-**Part VII — ECONOMY AND SCARCITY** · L1162
-- §7.1 · L1164 — What got cheap, what stayed scarce  *LOCKED*
-- §7.2 · L1187 — Closure as the sovereignty number  *LOCKED*
-- §7.3 · L1195 — Taxation  *LOCKED*
-- §7.4 · L1199 — Welfare  *LOCKED*
-- §7.5 · L1205 — The shape of the economy  *LOCKED*
-- §7.5.1 · L1218 — Why nothing floats  *LOCKED*
-- §7.5.2 · L1232 — The financial sector  *LOCKED*
-- §7.5.3 · L1264 — Money  *LOCKED*
-- §7.5.4 · L1300 — The Reserve Bank  *LOCKED*
-- §7.6 · L1333 — Model depth, and the state object  *LOCKED*
-- §7.7 · L1386 — Order-paper time  *LOCKED*
-- §7.8 · L1422 — Discipline and the whip  *LOCKED*
-- §7.9 · L1452 — Scarcity prices  *LOCKED*
-- §7.10 · L1500 — The productive economy  *LOCKED*
+**Part VII — ECONOMY AND SCARCITY** · L1178
+- §7.1 · L1180 — What got cheap, what stayed scarce  *LOCKED*
+- §7.2 · L1203 — Closure as the sovereignty number  *LOCKED*
+- §7.3 · L1211 — Taxation  *LOCKED*
+- §7.4 · L1231 — Welfare  *LOCKED*
+- §7.5 · L1237 — The shape of the economy  *LOCKED*
+- §7.5.1 · L1250 — Why nothing floats  *LOCKED*
+- §7.5.2 · L1264 — The financial sector  *LOCKED*
+- §7.5.3 · L1296 — Money  *LOCKED*
+- §7.5.4 · L1332 — The Reserve Bank  *LOCKED*
+- §7.6 · L1374 — Model depth, and the state object  *LOCKED*
+- §7.7 · L1427 — Order-paper time  *LOCKED*
+- §7.8 · L1463 — Discipline and the whip  *LOCKED*
+- §7.9 · L1493 — Scarcity prices  *LOCKED*
+- §7.10 · L1541 — The productive economy  *LOCKED*
 
-**Part VIII — AXES AND PARTIES** · L1547
-- §8.1 · L1549 — The five signed axes  *LOCKED*
-- §8.2 · L1607 — Depth budget  *LOCKED*
-- §8.3 · L1616 — Naming register  *LOCKED*
-- §8.4 · L1641 — The seated parties  *LOCKED (280 seats*
-- §8.5 · L1680 — Party notes
-- §8.6 · L1704 — Parties available but not currently seated  *LOCKED as reserve material*
-- §8.7 · L1740 — Extraparliamentary  *LOCKED*
-- §8.8 · L1746 — Historical and defunct  *LOCKED*
-- §8.9 · L1752 — Ideologies as doctrines  *LOCKED*
+**Part VIII — AXES AND PARTIES** · L1588
+- §8.1 · L1590 — The five signed axes  *LOCKED*
+- §8.2 · L1648 — Depth budget  *LOCKED*
+- §8.3 · L1657 — Naming register  *LOCKED*
+- §8.4 · L1682 — The seated parties  *LOCKED (280 seats*
+- §8.5 · L1723 — Party notes
+- §8.6 · L1747 — Parties available but not currently seated  *LOCKED as reserve material*
+- §8.7 · L1783 — Extraparliamentary  *LOCKED*
+- §8.8 · L1789 — Historical and defunct  *LOCKED*
+- §8.9 · L1795 — Ideologies as doctrines  *LOCKED*
 
-**Part IX — THE PLAYER'S PARTY** · L1764
-- §9.1 · L1766 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
-- §9.2 · L1783 — Inherited platform  *LOCKED*
-- §9.3 · L1787 — Two alliance structures  *LOCKED*
-- §9.4 · L1796 — Refraction  *LOCKED as a writing principle*
-- §9.5 · L1800 — Current caucus (Party of Socialists and Democrats, 82)  *LOCKED*
+**Part IX — THE PLAYER'S PARTY** · L1807
+- §9.1 · L1809 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
+- §9.2 · L1826 — Inherited platform  *LOCKED*
+- §9.3 · L1830 — Two alliance structures  *LOCKED*
+- §9.4 · L1839 — Refraction  *LOCKED as a writing principle*
+- §9.5 · L1843 — Current caucus (Party of Socialists and Democrats, 85)  *LOCKED*
 
-**Part X — SOCIETY, CULTURE, LAW** · L1817
-- §10.1 · L1819 — Aesthetic register — orbital warmth  *LOCKED*
-- §10.2 · L1831 — Nativism, inverted  *LOCKED*
-- §10.3 · L1837 — Labour  *LOCKED*
-- §10.3.1 · L1861 — Four overlays that matter more than the sectors  *LOCKED*
-- §10.4 · L1890 — Who is not in paid work  *LOCKED*
-- §10.5 · L1928 — Fork-rentiers  *LOCKED*
-- §10.6 · L1943 — Labour conflict  *LOCKED*
-- §10.7 · L1951 — Media and information  *LOCKED*
-- §10.8 · L1957 — Courts and law  *LOCKED*
-- §10.9 · L1963 — Religion  *LOCKED*
-- §10.10 · L1967 — External pressures  *LOCKED*
+**Part X — SOCIETY, CULTURE, LAW** · L1860
+- §10.1 · L1862 — Aesthetic register — orbital warmth  *LOCKED*
+- §10.2 · L1874 — Nativism, inverted  *LOCKED*
+- §10.3 · L1880 — Labour  *LOCKED*
+- §10.3.1 · L1904 — Four overlays that matter more than the sectors  *LOCKED*
+- §10.4 · L1933 — Who is not in paid work  *LOCKED*
+- §10.5 · L1971 — Fork-rentiers  *LOCKED*
+- §10.6 · L1986 — Labour conflict  *LOCKED*
+- §10.7 · L1994 — Media and information  *LOCKED*
+- §10.8 · L2000 — Courts and law  *LOCKED*
+- §10.9 · L2006 — Religion  *LOCKED*
+- §10.10 · L2010 — External pressures  *LOCKED*
 
-**Part XI — NAMED CANON** · L1975
-- §11.1 · L1979 — The polity
-- §11.2 · L2040 — Persons
-- §11.3 · L2084 — Stations and constituencies
-- §11.4 · L2161 — The functional roster  *LOCKED*
-- §11.5 · L2183 — The live bill
-- §11.6 · L2192 — Other business on the order paper
+**Part XI — NAMED CANON** · L2018
+- §11.1 · L2022 — The polity
+- §11.2 · L2093 — Persons
+- §11.3 · L2137 — Stations and constituencies
+- §11.4 · L2214 — The functional roster  *LOCKED*
+- §11.5 · L2236 — The live bill
+- §11.6 · L2245 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L2210
-- §12.1 · L2212 — The core principle  *LOCKED*
-- §12.2 · L2216 — Split visual language  *LOCKED*
-- §12.3 · L2223 — Chrome direction  *LOCKED*
-- §12.4 · L2229 — Screens  *LOCKED*
-- §12.5 · L2233 — Election night  *LOCKED*
-- §12.6 · L2243 — The orbital map  *LOCKED*
-- §12.7 · L2271 — The parliament diagram  *LOCKED*
-- §12.8 · L2297 — Documents  *LOCKED*
-- §12.9 · L2303 — The feed  *LOCKED*
-- §12.10 · L2307 — Build cost  *LOCKED*
-- §12.11 · L2311 — Images  *LOCKED*
-- §12.12 · L2339 — Existing artifact
-- §12.13 · L2351 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L2263
+- §12.1 · L2265 — The core principle  *LOCKED*
+- §12.2 · L2269 — Split visual language  *LOCKED*
+- §12.3 · L2276 — Chrome direction  *LOCKED*
+- §12.4 · L2282 — Screens  *LOCKED*
+- §12.5 · L2286 — Election night  *LOCKED*
+- §12.6 · L2296 — The orbital map  *LOCKED*
+- §12.7 · L2324 — The parliament diagram  *LOCKED*
+- §12.8 · L2350 — Documents  *LOCKED*
+- §12.9 · L2356 — The feed  *LOCKED*
+- §12.10 · L2360 — Build cost  *LOCKED*
+- §12.11 · L2364 — Images  *LOCKED*
+- §12.12 · L2392 — Existing artifact
+- §12.13 · L2404 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2410
-- §13.1 · L2412 — Scandal taxonomy  *LOCKED*
-- §13.2 · L2425 — The spine  *LOCKED*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2463
+- §13.1 · L2465 — Scandal taxonomy  *LOCKED*
+- §13.2 · L2478 — The spine  *LOCKED*
 
-**Part XIV — PRIOR ART** · L2433
-- §14.1 · L2435 — The gap  *LOCKED*
-- §14.2 · L2439 — Works
-- §14.3 · L2447 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L2486
+- §14.1 · L2488 — The gap  *LOCKED*
+- §14.2 · L2492 — Works
+- §14.3 · L2500 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2460
-- §15.1 · L2462 — Team  *LOCKED*
-- §15.2 · L2468 — Documentation  *LOCKED*
-- §15.3 · L2484 — Where this gets hard  *LOCKED*
-- §15.4 · L2495 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2512 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2513
+- §15.1 · L2515 — Team  *LOCKED*
+- §15.2 · L2521 — Documentation  *LOCKED*
+- §15.3 · L2537 — Where this gets hard  *LOCKED*
+- §15.4 · L2548 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2565 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2542
+**Part XVI — OPEN DECISIONS** · L2595
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2586
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2639
 
 <!-- /TOC -->
 
@@ -374,14 +374,18 @@ and failure". It is a positive-leaning success that returns the PSD to
 government for Flash II, where her popularity wanes for a reason rooted in
 Flash I's resolution. The Works is annexed and its 184,000 people saved, and
 the government is returned: under the canon policy the PSD goes
-from 84 seats to 88, and the coalition with confidence and supply holds 145 of
-280. Austerity begins at the next estimates, which is Flash II's inheritance.
+from 85 seats to 87, and the coalition with confidence and supply holds 149 of
+280 at standing 41, a narrow majority. Austerity begins at the next estimates,
+which is Flash II's inheritance. (Measured 25 Sep 2026 after `design/40`: the
+crisis's inflation now reaches the vote, which costs the canon a dozen seats
+it used to have, and the larger opening majority gives them back.)
 
 **Holding the country is part of the canon.** The trap leaves friction where
 the quarrel with Earth drains the thermal margin every sitting, and since 23
 Sep a cascade during the campaign is a loss (§3.5). The canon government
-climbs the emergency ladder, and asks Earth's banks for terms once the result
-is in. It reaches the count with the margin held, just. Flash I's guards
+climbs the emergency ladder, keeps its last order-paper time to approve the
+emergency appropriation before the House rises, and asks Earth's banks for
+terms once the result is in. It reaches the count with the margin at 17. Flash I's guards
 (`content/campaigns/flash_i/guards.js`) assert that the canon ending is
 reachable by play and goes to the count.
 
@@ -546,10 +550,16 @@ Two or three pregenerated leaders with different opening constraints as a replay
 ## 3.5 Loss conditions — LOCKED
 
 1. Lose a confidence vote. **A lost majority is a motion, not a verdict**
-   (`design/38` §3). A partner walks out when its loyalty falls to
-   `thresholds.partnerLeaves`. The government that no longer commands the
-   House faces a motion `motionAfter` sittings later and may win the partner
-   back before it. The House decides.
+   (`design/38` §3). **And a partner leaves in two steps** (`design/40` E9):
+   a coalition partner whose loyalty falls to `thresholds.partnerLeaves`
+   leaves the coalition agreement and keeps the government on confidence
+   and supply, free on everything else; only a party on confidence and
+   supply at `thresholds.supplyWithdrawn` withdraws confidence. The docket
+   warns within `thresholds.partnerWarn` of either line, and of the
+   leadership floor. The government that no longer commands the House faces
+   a motion `motionAfter` sittings later and may win the partner back before
+   it. The House decides. With one line, two in five uninformed governments
+   fell to the NPP between sittings 13 and 20.
 2. Lose a leadership challenge from inside your own party.
 3. Lose the general election.
 4. Life-support cascade (setting-specific catastrophe). **At any time,
@@ -638,6 +648,12 @@ Emergency *declaration* is easy. Emergency *termination* is the fight. Who ends 
 - **Quorum under variable clock speed.** Can a fast-running member be counted twice?
 - **The Continuity Provision.** If a habitat is lost, do its members retain seats until the next census? Ghost constituencies with real votes.
 - **Voting age for a fork** instantiated adult with complete memories.
+- **A minister need not sit.** The Charter says the Prime Minister must command
+  the House and says nothing about her ministers, so a minister can be
+  appointed from outside it, answer in it by right of office, and vote in
+  nobody's name. It has been used once, and it is the Prime Minister's own
+  history: Flash ran the Treasury from 2076 to 2080 without a seat. Added
+  deliberately 25 Sep 2026 (design/40 E13) to reconcile her career.
 - **Is suspension a vacancy?** If a member goes cold for want of substrate funds, does the seat empty — and could a party quietly fail to pay a rebel's bill?
 
 ## 3.9 Naming scheme — LOCKED
@@ -1196,6 +1212,22 @@ The federation is therefore something no real polity is: **a union held together
 
 Volume, thermal quota, substrate-hours, and mass-to-orbit. Not income. Land value taxation becomes literally correct, which is why the Georgists exist and are not a joke.
 
+**A budget moves a rate by a tenth or a fifth** (`design/40` E5, the author:
+"realistic numbers, but feel like they have impact"). The four bases are the
+whole of revenue, about CW$220bn on output of CW$612bn, and the rates were
+none, half, standard and half again, so every Ways and Means choice moved the
+balance by five to fifteen per cent of output. The steps are cut a fifth, cut
+a tenth, standing, raise a tenth, raise a fifth (`setup.fiscal.rates`): a
+tenth of the volume levy is CW$8.8bn, 1.4% of output, which is as large as a
+real budget measure gets. Each step names who pays it and moves standing in
+the bands that do (the ring for volume, the low band for thermal, the far and
+external bands for transit), the clause prints the Treasury's costing against
+the rate in force, and the rest follows through the model: the stance moves
+demand, the levy passes into the price of what it taxes, and the Bank answers.
+Raising all four a tenth turns a 0.7% deficit into a 3.3% surplus and costs
+about a point and a half of output; raising all four a fifth is an austerity
+budget.
+
 ## 7.4 Welfare — LOCKED
 
 - **Consumables floor:** guaranteed air, water, calories, minimum volume.
@@ -1306,11 +1338,20 @@ Reserve Bank Act 2071 gives the **Governor** the cash rate and the
 and can amend the Act; the Perigee Charter does not mention the Bank.
 
 - **The rule.** The Bank meets every six weeks and sets the rate by a
-  published Taylor rule: a neutral real rate of one per cent, plus inflation,
-  plus half the miss, plus half the output gap (all of it under a dual
-  mandate), in quarter points and no more than a half at a meeting. It
-  decides by rule, deterministically (§1.5), and the rule is printed beside
-  every decision.
+  published Taylor rule: a neutral real rate of one per cent, plus
+  **underlying** inflation, plus half its miss, plus half the output gap (all
+  of it under a dual mandate), in quarter points and no more than a half at a
+  meeting. It decides by rule, deterministically (§1.5), and the rule is
+  printed beside every decision.
+- **Underlying and headline** (`design/40` E2-E3). Underlying inflation
+  follows expectations and the output gap. The headline adds what a change
+  in the four scarcity prices or the dollar is still passing on: a price
+  that rises and stays up moves the price LEVEL once, by a share of its rise
+  over about a year, and then inflation comes back. The Bank looks through
+  that first round, as inflation-targeting banks do; the public pays the
+  headline, and the economy's vote reads it. It read the price levels
+  against the opening until 25 Sep, so a price that stayed up was inflation
+  for ever and the Bank raised into a blockade.
 - **A reserve direction** is an affirmative order telling the Bank to hold or
   cut at every meeting while it stands. Every meeting under one costs the
   Bank credibility.
@@ -1642,12 +1683,12 @@ a lie is a slogan.
 
 | Party | Dist | List | Func | Total |
 |---|---|---|---|---|
-| Party of Socialists and Democrats | 48 | 25 | 9 | **82** |
+| Party of Socialists and Democrats | 51 | 25 | 9 | **85** |
 | Liberal Party | 22 | 18 | 6 | **46** |
 | New Progressive Party | 6 | 28 | 2 | **36** |
-| Home Rule | 26 | 8 | 0 | **34** |
-| Association of Engineers and Systems | 9 | 6 | 7 | **22** |
-| Congregational Democratic Alliance | 12 | 5 | 1 | **18** |
+| Home Rule | 22 | 8 | 0 | **30** |
+| Association of Engineers and Systems | 8 | 6 | 7 | **21** |
+| Congregational Democratic Alliance | 14 | 5 | 1 | **20** |
 | Freehold Party | 8 | 3 | 6 | **17** |
 | Alliance of Business and Government | 0 | 0 | 9 | **9** |
 | Independents | 6 | 0 | 0 | **6** |
@@ -1671,7 +1712,9 @@ stale. Hullism and Descensionism remain doctrines (§8.9) and Georgism an
 economics (§7.3), so their adherents keep those names; *the Guild Bench* is
 what everyone calls the Alliance of Business and Government.
 
-**Government:** Party of Socialists and Democrats 82 + New Progressive Party 36 + the CDA 18 = 136, plus confidence-and-supply from the Independents (6) = **142.** Working majority of **one**.
+**Amended 25 Sep 2026 again: five district seats moved to the government's side** (`design/40` E9, the author: "a slightly more convincing majority"). Lindenhall–Peck (from the AES), High Lagos and Calloway Green–Tewkes (from Home Rule) to the PSD; Homestead VI and Passerine (from Home Rule) to the CDA. With a majority of one, the six independents alone could bring the government down, and random play lost two governments in five before the crisis.
+
+**Government:** Party of Socialists and Democrats 85 + New Progressive Party 36 + the CDA 20 = 141, plus confidence-and-supply from the Independents (6) = **147.** Six over the line; without the independents the coalition holds the House exactly. Until 25 Sep: 82 + 36 + 18 = 136, and 142 with the independents, a working majority of **one**.
 
 Amended 21 September 2026. It was the Uplift Alliance (2) and the Single Tax Party (3) for 141 exactly and a working majority of nil. Six independents is the same position one seat less sharp, and it is a different KIND of position: a bloc of two and a bloc of three can each be bargained with as a bloc, and six independents cannot be bargained with at all — there is no whip, no leader and no caucus position, only six people who agree on nothing except that. The functional arithmetic is untouched, because the Independents return no functional member: the coalition still holds 12 of 40 and still needs 21.
 
@@ -1797,20 +1840,20 @@ So you can pact with one party in districts and govern with another, and the pac
 
 Other ideologies are refracted through the player's party's view of them. Hullists appear the way the caucus talks about Hullists — as a threat, a temptation during a crisis, and a caricature that some of your own MPs privately half-agree with. Cheaper to write than neutral encyclopedia entries, and better prose.
 
-## 9.5 Current caucus (Party of Socialists and Democrats, 82) — LOCKED
+## 9.5 Current caucus (Party of Socialists and Democrats, 85) — LOCKED
 
 | Current | MPs | Loyalty |
 |---|---|---|
-| Trades Left | 31 | 29 |
-| Soft Left | 22 | 88 |
-| Station Left | 18 | 54 |
+| Trades Left | 32 | 29 |
+| Soft Left | 23 | 88 |
+| Station Left | 19 | 54 |
 | Hard Left | 11 | 12 |
 
 **Dan Czarnecki** (Ashfield) leads the Hard Left, which the press calls the Czarnecki group. A leadership ballot needs twelve signatures (`setup.thresholds.ballot`) and his group is eleven.
 
 **Currents are named for where they stand** (the author, 23 Sep 2026), the way real factions are: hard left, soft left. The old names (*Maintenance bloc*, *Leadership loyalists*, *Deck cooperativists*, *Czarnecki group*) were descriptions an analyst would write. The Trades Left is the maintenance trades' wing, union-based, protectionist and restrictionist; the Soft Left is the leadership's mainstream; the Station Left is the one PSD current on the station side of the federation; the Hard Left is the furthest left and the rebels. The poles are the game's own axis words, so the federation argument shows in the names across parties: Freehold splits into a **Federal Right** and a **Station Right**. Where a split is about what comes first rather than where, the name says that: the CDA's **Confessionals** and **Coalitionists**, Uplift's **Purists** and **Pragmatists**. The Liberals split three ways on what liberalism is for (the author, 23 Sep 2026): **Classical Liberals** (the market, and the elevator and shipping money), **Abundance Liberals** (the shortages are shortages of building) and **Social Liberals** (rights and personhood first); their weighted positions are the party's own, so the split moves who turns out and not the party line. The independents' currents stay named for their seats, because they are members and not factions. `content/parties.js` holds the names; the ids did not change.
 
-Composition by tier: 48 district, 25 list, 9 functional. The twenty-five list members hold no constituency and no independent base — they whip reliably and will not survive a leadership change that reorders the list. Nine members are revenants returned after losing a district.
+Composition by tier: 51 district, 25 list, 9 functional (48 until `design/40` E9 moved three district seats to the PSD). The twenty-five list members hold no constituency and no independent base — they whip reliably and will not survive a leadership change that reorders the list. Nine members are revenants returned after losing a district.
 
 ---
 
@@ -2013,18 +2056,28 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
   | 2068 | The Indonesian anchor granted during a currency crisis. |
   | 2070 | **Flash comes up to the Winter Garden.** The Commonwealth's springtime. |
   | 2071 | Flash is Governor of the Reserve Bank, a year after arriving. |
+  | 2073 | Flash floats the dollar (§7.5.3). |
+  | 2076 | Flash leaves the Bank for the Treasury, appointed from outside the House (§3.8). Castellane, her deputy, becomes Governor. |
   | 2072 | The last amendment to the Allocation Act; the functional-tier position unchanged since. |
   | 2073–2080 | The economy's annual record (`setup.history`). |
   | 2077 | President van Ryneveld elected. |
   | 2079 | Charnock's primer, fourth edition. |
-  | **2080** | **The campaign.** Flash is Prime Minister. The Commonwealth is sixteen. |
+  | **2080** | **The campaign.** Flash wins the leadership of the PSD in the spring and First Spin at the by-election after it, and is Prime Minister. The Commonwealth is sixteen. |
 
   **The compression VALIDATES two things that read badly at two centuries.**
   Flash arriving in 2070 and governing the Reserve Bank in 2071 is absurd in a
   two-hundred-year-old republic and obvious in a sixteen-year-old one standing
-  up its first institutions and hiring a proven Earth banker to do it; and her
-  nine years as Governor are "long enough to be a record" only because the
-  Bank is barely older than that. Her career needed no change at all.
+  up its first institutions and hiring a proven Earth banker to do it. Her
+  five years as Governor are the Bank's record only because the Bank is
+  barely older than that, and the four at the Treasury after them, appointed
+  from outside the House (§3.8), are why a party that needed a name the
+  markets would take found hers. **Corrected 25 Sep 2026 (design/40 E13):**
+  this said "nine years as Governor" while the cabinet had her at the
+  Treasury until last week and the introduction said she had never held
+  elected office. Governor 2071 to 2076, Treasurer 2076 to 2080 without a
+  seat, leader in the spring of 2080 and member for First Spin at the
+  by-election after it. Nine years in the Commonwealth's two money offices,
+  and none of them elected.
 
   **And §2.1 gets cleaner, not weaker.** The principle is that whatever is
   radical is already settled; the old text bought that with "two or three

@@ -51,8 +51,15 @@ campaign("flash_i", { settlements: [
     summary: "Full annexation. Earth drops the debt claims under threat of satellite transit tariffs.",
     closing: "The platform is Commonwealth territory, and Earth has dropped its claims. " +
              "Heavy orbital manufacturing is unlocked, and Earth will remember this.",
+    /* THE RESERVE FLOORS ARE THE CALENDAR ACCOUNT'S (design/40 E10). They
+       were 70,000 and 60,000, written when receipts filled the reserve
+       every sitting a government governed. Since the dollar the account
+       runs a small deficit and the crisis is paid for, so no random
+       government that annexed held more than 9,600 afterwards, and the two
+       good endings were out of reach by play. A reserve still near where it
+       opened, after paying for the Act, is the achievement now. */
     when: { flags: ["almanac_annexed"],
-            scalarAbove: { legitimacy: 75, solvency: 70000 },
+            scalarAbove: { legitimacy: 75, solvency: 40000 },
             scalarBelow: { friction: 60 } } },
   { id: "f1_maritime", rank: 1, crisis: true,
     name: "Maritime Charter",
@@ -60,7 +67,7 @@ campaign("flash_i", { settlements: [
     closing: "The courts recognise the salvage, and the platform is Commonwealth territory in law. " +
              "The legal and administrative bill is heavy, and so is the trust it bought.",
     when: { flags: ["almanac_annexed"],
-            scalarAbove: { legitimacy: 55, solvency: 60000 },
+            scalarAbove: { legitimacy: 55, solvency: 30000 },
             scalarBelow: { friction: 40 } } },
   { id: "f1_pyrrhic", rank: 2, crisis: true,
     name: "Sovereign Debt Trap",
@@ -75,16 +82,38 @@ campaign("flash_i", { settlements: [
     summary: "A co-administered international free trade zone. No embargo, no territory, mild voter apathy.",
     closing: "The platform is a co-administered free trade zone under a joint mandate. " +
              "No embargo, no territory, and a country that shrugs.",
-    when: { flags: ["f1_referendum_carried"],
-            scalarAbove: { legitimacy: 40, solvency: 40000, friction: 40 },
-            scalarBelow: { legitimacy: 60, solvency: 60000, friction: 60 } } },
+    /* THE LINE HELD AFTER THE REFERENDUM, AND THE MIDDLE BANDS (design/40
+       E10): a mandate is what a government that declines to annex gets. Every
+       random government that carried the referendum was under the old
+       floors (legitimacy 15 to 38, reserve 17,600 to 37,100), and a joint
+       mandate over a platform the House had annexed read as nothing. */
+    when: { flags: ["f1_referendum_carried", "f1_held_the_line"], flagsAbsent: ["almanac_annexed"],
+            scalarAbove: { legitimacy: 25, solvency: 15000, friction: 20 },
+            scalarBelow: { legitimacy: 60, friction: 60 } } },
   { id: "f1_capitulation", rank: 4, crisis: true,
     name: "Corporate Re-Entry",
     summary: "The Commonwealth declines the referendum. Corporate security from Earth reclaims and clears the Works.",
     closing: "The referendum is declined, and corporate security reclaims the platform. " +
              "The strikes on the outer habitats begin the same week.",
-    when: { flags: ["f1_surveyed"],
-            scalarBelow: { legitimacy: 35 },
-            scalarAbove: { friction: 75 } } },
+    /* ON WHAT ITS SUMMARY SAYS: the referendum declined (design/40 E10).
+       It gated on friction over 75 after the survey, and a government that
+       declined the referendum takes friction DOWN, so the surveyed runs sat
+       at 18 to 33 and the tier never landed for the choice it describes. */
+    when: { flags: ["f1_referendum_declined"],
+            scalarBelow: { legitimacy: 45 } } },
+
+  /* THE QUESTION LEFT OPEN (design/40 E10). Of sixty random governments,
+     twenty reached the crisis and fourteen of those ended it with no
+     result at all: the campaign's central question went unanswered, the
+     aftermath never played and the last page said nothing about it. A
+     government that met the crisis and settled nothing by the last
+     sitting period's end has an outcome too, and it is this one. Ranked
+     last and dated late, so any tier the state reaches first takes it. */
+  { id: "f1_open", rank: 5, crisis: true,
+    name: "Unfinished Business",
+    summary: "No settlement is reached before the House rises. The Works stays in limbo, its people on emergency terms.",
+    closing: "The House rises with the platform's future unsettled and its people on emergency terms. " +
+             "The next government inherits the question, and Earth's lawyers inherit the time.",
+    when: { flags: ["f1_surveyed"], minSitting: 44 } },
 
 ] });

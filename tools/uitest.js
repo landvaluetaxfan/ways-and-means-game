@@ -232,6 +232,13 @@ try {
     /* and what it means, in content's words (design/38 §2) */
     const epi = w.eval("(Engine.epilogue(UI.state(), UI.content()) || {}).title");
     ok("and the epilogue the count earned", !!epi && endText.indexOf(epi) >= 0, epi || "no epilogue");
+    /* AND WHAT IT LEAVES (design/40 E14): the country the next government
+       inherits, opening against now, with the debt and the dollar in it */
+    const fx = w.eval("Engine.macro(UI.state(), UI.content()).fx.toFixed(2)");
+    ok("and the state of the country it leaves: the dollar, the debt, the heat",
+       /The state of the country/.test(endText) && endText.indexOf("US$" + fx) >= 0 &&
+       /Owed/.test(endText) && /Thermal margin/.test(endText),
+       (endText.match(/The state of the country.{0,160}/) || ["not drawn"])[0]);
     w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapE) + "), UI.content())");
   }
 

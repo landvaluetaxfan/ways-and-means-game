@@ -260,7 +260,7 @@ const CHARACTERS = [
      author's to rename or recast. */
   { id:"castellane", name:"Maren Castellane", role:"Governor, Reserve Bank",
     party:null, category:"biological", relationship:52,
-    note:"Flash's deputy for six years and her successor. She knows the Prime Minister " +
+    note:"Flash's deputy at the Bank from its founding, and Governor since Flash left for the Treasury in 2076. She knows the Prime Minister " +
          "understands the Bank better than she does, and she will not be told. Her tool is " +
          "the open letter, and the rule she publishes beside every decision." }
 ];

@@ -444,7 +444,7 @@ are not liked.
 
 ### The unit of account
 
-We denominate in thermal rejection capacity.
+We denominated, until 2073, in thermal rejection capacity.
 
 Students find this arbitrary until they attempt an alternative. Hours will not
 serve, because clock rates differ twentyfold and a subjective hour is not a
@@ -452,12 +452,20 @@ constant. Mass will not serve, because mass is nearly free. Energy will not serv
 because energy is abundant.
 
 Thermal capacity is the only quantity that is simultaneously objective, scarce,
-and universally required. A unit of currency here is a claim on radiator area,
-which is a claim on the room for something to happen, which is — if one follows it
-all the way down — a claim on the room for someone to be alive.
+and universally required. The founders' currency board issued a dollar only
+against a millionth of a megawatt-year of quota lodged with it, and so a unit of
+our currency was a claim on radiator area, which is a claim on the room for
+something to happen, which is — if one follows it all the way down — a claim on
+the room for someone to be alive.
+
+The Reserve Bank floated the dollar in 2073, and it is now a claim on nothing in
+particular, like every other money worth having. We still keep the accounts in
+millions of dollars that were once megawatt-years, and the habit tells the truth:
+every price here is, underneath, a price of heat.
 
 I do not think our founders intended the metaphor. I think it is nonetheless the
-truest thing about our money.
+truest thing about our money, and I think it is truer now that it is only a
+metaphor.
 
 ---
 

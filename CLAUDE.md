@@ -128,9 +128,10 @@ positions are numbers from −1 to +1. Bible §8.1 is rewritten for it.
 window as the prices. Opening figures are in `content/setup.js`, not the
 engine. `private` is authored and never drifts, so it keeps no curve.
 Participation moves on the divergence threshold: cut it to forty hours and
-participation goes 39 → **48.1** over twenty-six sittings against **39.0** if
-it is left alone (49.2 and 40.1 before the dollar, while the reserve filled
-every sitting), and `test.js` asserts both so the canon cannot rot.
+participation goes 39 → **47.9** over twenty-six sittings against **39.0** if
+it is left alone (48.1 before the opening came to rest in design/40; 49.2 and
+40.1 before the dollar, while the reserve filled every sitting), and
+`test.js` asserts both so the canon cannot rot.
 
 `ROADMAP.md` and `AUTHORING_FORMAT.md` came across too, each with a header
 saying what in it is out of date — the roadmap was written against a nine-tab
@@ -208,8 +209,9 @@ up, so nobody in the chamber won it and nobody in the chamber owns it.
 **Flash's career needed no change, and that is the confirmation.** Arriving
 in 2070 and governing the Reserve Bank in 2071 reads as absurd in a
 two-century-old republic and as obvious in a sixteen-year-old one standing up
-its first institutions; her nine years as Governor are "long enough to be a
-record" only because the Bank is barely older than that. Her introduction was
+its first institutions. (Her years were corrected 25 Sep, design/40 E13:
+Governor 2071-2076, Treasurer from outside the House 2076-2080, bible §3.8,
+then the leadership and First Spin at a by-election.) Her introduction was
 already written for this world — she banks through "the latter half of a
 century defined by an upheaval in the institutions of the old order as
 climate change forced their hand", for a firm called Alphabet-JPMorgan Omni.
@@ -683,18 +685,18 @@ version of any of them is in the header of the file it names.
   ending; the next leader's campaign assumes the canon one, so a narrative
   runs across parliaments. **Flash I's canon is the debt trap, decided 23
   Sep: "a middle ground between perfect and failure".** It returns the PSD to
-  government with austerity to come. Since the count listens (design/38),
-  the canon government campaigns as one with austerity coming (the guard's
-  pick list says how) and reaches the count on 19 August at standing 58: the
-  PSD holds 103 seats, and the government's side has a working majority of
-  165 of 280, just over the line. Since the dollar (design/39) the crisis is
-  financed rather than free: the canon reaches the count owing CW$59.8bn in
-  Treasury bills, about a tenth of output, with the dollar near 0.79 and
-  inflation 3.4%. A first-option campaign won 184, one short
-  of a landslide, which is not a middle ground. The canon government climbs the emergency ladder, asks Earth's
-  banks for terms once the result is in, and reaches the count with the
-  thermal margin at about five. It is the tightest number in the game, and
-  the guard prints it with the side and the epilogue. Flash I's guards
+  government with austerity to come. Since design/40 (25 Sep) the canon
+  reaches the count on 15 August, sitting 57, at standing 41: the PSD holds
+  87 of 280 and the government's side 149, a narrow majority. The crisis is
+  financed and now felt: it owes CW$60bn in Treasury bills (the whole
+  authority, about a tenth of output), with the dollar near 0.79 and headline
+  inflation 5.2% against 2.9% underlying, which the vote reads. The canon
+  government climbs the emergency ladder, keeps its last order-paper time to
+  approve the emergency appropriation before the House rises (see
+  `approvalFloor` below), asks Earth's banks for terms once the result is in,
+  and reaches the count with the thermal margin at 17. The guard prints the
+  margin, the side and the epilogue. (Before design/40: 103 seats, 165 of 280
+  at standing 58, margin about five.) Flash I's guards
   (`content/campaigns/flash_i/guards.js`) assert that the canon ending is
   reachable by play and goes to the count; keep that true whatever else
   moves, until the author rewrites the canon.
@@ -830,14 +832,34 @@ version of any of them is in the header of the file it names.
   are stable.
 - **THE DESIGN AUDIT (design/37) left fourteen decisions with the author**,
   answered 25 Sep in design/38 (built) and design/39 (the economy, proposed).
-- **THE SECOND AUDIT (design/40, 25 Sep) is the first with the dollar in
-  it, and its items E1–E14 are open.** The ones that are the model's own
-  errors: the opening is not a steady state (thermal 100 → 120 in twelve
-  quiet sittings), inflation reads price LEVELS against the opening where
-  it should read changes, and the Bank's rule reads headline inflation so
-  it raises into a blockade. And one for Flash I: the crisis tiers' reserve
-  bands predate the calendar account, so 14 of 20 random governments that
-  reach the crisis get no result. Read §4 before touching `runEconomy`.
+- **THE SECOND AUDIT (design/40, 25 Sep) is built, E1–E14** (its
+  "Answered" table says how). The parts to know before touching things:
+  - **The world opens at rest.** A price rule's `ref: "opening"` measures
+    an input from where the world opened; every base is the opening price.
+    An event gated on a price must be gated where PLAY takes the price:
+    three fired only on the old drift and were re-gated.
+  - **Inflation is core plus pass-through** (`phillips.passThrough`, `lag`),
+    and the pass-through reads CHANGES, so a price that stays up moves the
+    level once. The Taylor rule reads `m.core`; the vote reads the headline.
+    `m.inflation` is rebuilt every tick, so the `economy` verb's
+    `inflation` lands on core. Growth is the quarter's, from `outputLog`.
+    `STATE_VERSION 32`.
+  - **Tax steps are a tenth and a fifth** (`setup.fiscal.rates`: relief,
+    low, standard, high, surcharge; `none` stays for probes, no bill offers
+    it). `Engine.costing(st, C, effects)` is the Treasury's costing of any
+    law a level writes.
+  - **`Engine.economyVote`** is the one reading of what the economy costs
+    the government; `Engine.believed` is legitimacy's weight at the count
+    (`setup.election.legitimacy`).
+  - **Postures.** Every decision choice carries `posture`; the Sitting
+    screen sorts by it and the engine keeps the authored index. See
+    CONTENT_GUIDE.md.
+  - **The opening House is 147** (five district seats moved, bible §8.4),
+    and partners leave in two steps (`thresholds.supplyWithdrawn`).
+  - **`approvalFloor`** on an instrument is how much of a government bench
+    holds on its approval whatever its loyalty (default 0.75; 0.9 on the
+    emergency appropriation and the standards order). Without it the
+    canon's own benches refused the fourth rung by two votes.
 - **THE BANK'S MEETINGS ARE DATES, NOT SITTINGS** (design/40 F1). A
   `bank` deadline carries the meeting's own `date` and counts `away` to the
   first sitting after it (`sittingFrom`), so it can tint a weekend. Anything

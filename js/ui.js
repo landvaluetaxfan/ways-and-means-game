@@ -1272,8 +1272,14 @@ const UI = (function () {
       spark(hist(key).slice(-40), 76, 18) +
       `<div class="pval ${cls || ""}">${val}<span>${unit}</span></div></div>`;
     const miss = m.inflation - m.target;
+    /* the headline against the target, and underlying inflation beside it
+       when a price change is passing through, since that is what the Bank's
+       rule reads (design/40 E3) */
     const inflSay = (miss > 2 ? "well over" : miss > 0.5 ? "over" : miss < -1 ? "under" : "close to") +
-      " the " + m.target + "% target; " + m.expected.toFixed(1) + "% expected" + trend("inflation");
+      " the " + m.target + "% target; " +
+      (m.core != null && Math.abs(m.core - m.inflation) >= 0.3 ? m.core.toFixed(1) + "% underlying"
+                                                               : m.expected.toFixed(1) + "% expected") +
+      trend("inflation");
     const move = rule - m.rate;
     const next = m.directed
       ? "under a Treasury direction to " + m.directed + ", at every meeting"
@@ -1300,15 +1306,39 @@ const UI = (function () {
       `<div class="prow"><div class="plab" data-tip="credibility">Credibility<em>${esc(credSay)}; ` +
         `reserves ${cw(m.reserves, (C.setup.money && C.setup.money.foreign || {}).code)}</em></div><div></div>` +
         `<div class="pval">${Math.round(m.credibility * 100)}<span>/100</span></div></div>` +
+      voteRow() +
       `<div class="note">The Governor sets the rate at a meeting every ` +
         `${M.meetingEvery || 42} days, by her rule: ${M.neutral == null ? 1 : M.neutral}% real, plus ` +
-        `inflation, plus half the miss, plus ${m.mandate === "dual" ? "all" : "half"} the output gap. ` +
+        `underlying inflation, plus half its miss, plus ${m.mandate === "dual" ? "all" : "half"} the output gap. ` +
         (last ? "Last: " + (last.kind === "hold" ? "held at " + last.to.toFixed(2)
                            : (last.kind === "raise" ? "raised to " : "cut to ") + last.to.toFixed(2)) +
                 " on " + dayLabel(last.date) + ". " : "") +
         `The remit is ${m.target}%` + (m.mandate === "dual" ? " and full participation" : "") + `.</div>`;
   }
 
+
+  /* WHAT THE PUBLIC MAKES OF IT (design/40 E6): the economy's pull on the
+     government's standing, a year, and why. It was in the model and on no
+     screen, so the one channel from the economy to the election was one a
+     player could only infer from the polls moving. */
+  function voteSay() {
+    const v = Engine.economyVote ? Engine.economyVote(st, C) : null;
+    if (!v) return null;
+    const pts = Math.round(Math.abs(v.pull));
+    const why = [];
+    if (v.prices < 0) why.push("prices rising " + v.inflation.toFixed(1) + "% against " + v.target + "%");
+    if (v.slack < 0) why.push("output " + (-v.gap).toFixed(1) + "% under capacity");
+    return { pull: v.pull, pts: pts,
+             say: v.pull < 0 ? "costing " + pts + " points of standing a year: " + why.join(", and ")
+                : v.calm ? "a steady economy, worth " + pts + " points of standing a year"
+                : "neither helping nor costing" };
+  }
+  function voteRow() {
+    const v = voteSay();
+    if (!v) return "";
+    return `<div class="prow"><div class="plab" data-tip="economyvote">The public<em>${esc(v.say)}</em></div><div></div>` +
+      `<div class="pval ${v.pull < 0 ? "up" : ""}">${v.pull > 0 ? "+" : v.pull < 0 ? "\u2212" : ""}${v.pts}<span>/yr</span></div></div>`;
+  }
 
   /* MONEY, AS A FINANCE MINISTRY PRINTS IT: CW$52.0bn, US$8.0bn. The
      engine's one formatter, so no second spelling of a sum can disagree
@@ -1913,15 +1943,24 @@ const UI = (function () {
                what brings it back; one near the line says where the line is. */
             const TH = (C.setup && C.setup.thresholds) || {};
             const gone = (st.withdrawn || {})[p.id];
+            const aside = (st.stoodAside || {})[p.id];
             const go = own ? "&mdash;"
               : gone ? `<span class="warn"${tipAttr("Walked out", "Withdrew at sitting " + gone.at +
                   ". Returns when its loyalty is back to " + TH.partnerReturns + ".")}>walked out</span>`
+              : aside ? `<span class="warn"${tipAttr("Stood aside", "Left the coalition agreement at sitting " +
+                  aside.at + " and keeps the government on confidence and supply, free on everything else. " +
+                  "It withdraws confidence at loyalty " + TH.supplyWithdrawn + " and returns to the agreement at " +
+                  TH.partnerReturns + ".")}>stood aside</span>`
               : k === "opp"
                 ? (conf >= maj ? "&mdash;" : conf + seats >= maj
                     ? `<span class="good">a majority</span>` : "still short")
                 : (conf - seats < maj ? `<span class="warn">it falls</span>` : "it holds");
-            const nearLine = !own && k !== "opp" && TH.partnerLeaves != null && loy != null &&
-              loy <= TH.partnerLeaves + 10;
+            /* the line that matters is the next one it would cross: the
+               agreement for a partner in government, confidence for one on
+               confidence and supply (design/40 E9) */
+            const line = k === "cs" && TH.supplyWithdrawn != null ? TH.supplyWithdrawn : TH.partnerLeaves;
+            const nearLine = !own && k !== "opp" && line != null && loy != null &&
+              loy <= line + 10;
             return `<tr${own ? ' class="ownrow"' : ` data-party="${p.id}"` +
                 (sel && sel.id === p.id ? ' class="sel"' : "")}>` +
               `<td><i class="pdot" style="background:${p.colour}"></i></td>` +
@@ -1931,7 +1970,11 @@ const UI = (function () {
                   "leadership are on the Party tab.") + `>yours</button>` : "") + `</td>` +
               `<td class="n">${seats}</td>` +
               `<td class="n">${loy == null ? "&mdash;" : nearLine
-                ? `<span class="warn"${tipAttr("Near the line", "Walks out at " + TH.partnerLeaves + ".")}>${loy}</span>`
+                ? `<span class="warn"${tipAttr("Near the line", k === "cs" && TH.supplyWithdrawn != null
+                    ? "Withdraws confidence at " + line + "."
+                    : TH.supplyWithdrawn != null ? "Leaves the coalition agreement at " + line +
+                      ", and keeps the government on confidence and supply."
+                    : "Walks out at " + line + ".")}>${loy}</span>`
                 : loy}</td>` +
               `<td class="n">${crCell}</td>` +
               `<td class="pgo">${go}</td></tr>`;
@@ -3896,17 +3939,31 @@ const UI = (function () {
     const cost = Engine.clauseCost(st, C, id);
     const rows = cls.map(cl => {
       const now = plan[cl.id] || {};
+      /* A LEVEL THAT WRITES LAW AND SPENDS NOTHING IS A RATE, and a rate
+         is costed by what it raises (design/40 E5): the Treasury's figure
+         against the level in force, at today's prices, not "costs nothing". */
+      const isRate = (cl.levels || []).every(lv => !lv.cost && [].concat(lv.effects || []).some(e => e && e.law));
+      const inForce = (cl.levels || []).find(lv => lv.id === now.id);
       const opts = (cl.levels || []).map(lv => {
         const on = lv.id === now.id;
-        const probe = on ? null : Engine.clauseCost(st, C, id);
         const would = cost.total - (now.cost || 0) + (lv.cost || 0);
         const bad = !on && would > cost.solvency;
+        let chip = cw(lv.cost || 0), said = " Costs " + cw(lv.cost || 0) + " a year.";
+        if (isRate && Engine.costing) {
+          const base = Engine.costing(st, C, inForce ? inForce.effects : []);
+          const k = Engine.costing(st, C, lv.effects);
+          const d = k.receipts - base.receipts, pct = k.pct - base.pct;
+          chip = on ? "in force" : (d >= 0 ? "+" : "\u2212") + cw(Math.abs(d));
+          said = on ? " In force." : " The Treasury's costing: " + (d >= 0 ? "raises " : "forgoes ") +
+            cw(Math.abs(d)) + " a year against the rate in force, " +
+            Math.abs(Math.round(pct * 10) / 10).toFixed(1) + "% of output.";
+        }
         return `<button class="btn cl-opt${on ? " on" : ""}${bad ? " over" : ""}"` +
           ` data-cl="${esc(cl.id)}" data-lv="${esc(lv.id)}"` +
           ` data-tip-title="${esc(lv.label)}"` +
-          ` data-tip-body="${esc((lv.note || "") + " Costs " + cw(lv.cost || 0) + " a year." +
+          ` data-tip-body="${esc((lv.note || "") + said +
              (bad ? " The Treasury is short by " + cw(would - cost.solvency) + "." : ""))}"` +
-          `>${esc(lv.label)}<i>${cw(lv.cost || 0)}</i></button>`;
+          `>${esc(lv.label)}<i>${chip}</i></button>`;
       }).join("");
       return `<div class="cl-row"><b data-tip-title="${esc(cl.name)}" ` +
         `data-tip-body="${esc(cl.note || "")}">${esc(cl.name)}</b>` +
@@ -4786,6 +4843,7 @@ const UI = (function () {
     const grave = Engine.grave(st, C, c);
     const cab = cabinetView(c.effects);
     const strip = [
+      c.posture ? `<span class="cm pose ${esc(c.posture)}" data-tip="posture_${esc(c.posture)}">${esc(c.posture)}</span>` : "",
       c.cost && c.cost.slot ? `<span class="cm cost">costs order-paper time</span>` : "",
       owed.length ? `<span class="cm owed">commits you</span>` : "",
       grave && !owed.length && !(c.cost && c.cost.slot)
@@ -4940,7 +4998,8 @@ const UI = (function () {
      sends you. And every item CLEARS when it is dealt with — a mark
      that never goes out teaches a player to stop reading it.
      --------------------------------------------------------------- */
-  const TABNAME = { sit: "Sitting", gov: "Government", cham: "Chamber", orb: "Orbit" };
+  const TABNAME = { sit: "Sitting", gov: "Government", cham: "Chamber", econ: "Economy",
+                    party: "Party", rel: "Relations", orb: "Orbit" };
   const WHENWORD = { overdue: "overdue", now: "today", soon: "soon" };
 
   /* A ROW THAT NAMES A THING AS WELL AS A SCREEN. An undertaking is kept by
@@ -4982,6 +5041,9 @@ const UI = (function () {
       }
     } else if (kind === "bill" && typeof Focus !== "undefined") {
       Focus.activate("cham-bills", id);
+    } else if (kind === "party" && typeof Focus !== "undefined") {
+      /* a partner near its line (design/40 E9): its row on Relations, opened */
+      Focus.activate("rel-table", id);
     } else if (kind === "grant") {
       /* where order-paper time is given: the bill's row in the Government
          tab's order-paper panel, pulsed, the way an instrument's is */
@@ -5255,6 +5317,13 @@ const UI = (function () {
     const rows = [`<div class="dk poll"><b>The government's side on ${f.side} of ${f.total}</b>` +
       `<i>${esc(lead)}${first ? " \u00b7 " + (moved >= 0 ? "+" : "") + moved + " since the writs" : ""}` +
       ` \u00b7 your party ${f.mine}, was ${st.dissolved.was}</i></div>`];
+    /* THE ECONOMY AND WHETHER THE GOVERNMENT IS BELIEVED, the two things
+       besides standing the count now hears (design/40 E6, E11) */
+    const v = voteSay();
+    if (v && v.pull !== 0) rows.push(`<div class="dk poll"><b>The economy</b><i>${esc(v.say)}</i></div>`);
+    const trust = Engine.believed ? Math.round(Engine.believed(st, C)) : 0;
+    if (trust) rows.push(`<div class="dk poll"><b>Whether it is believed</b><i>legitimacy ${st.scalars.legitimacy}, ` +
+      `worth ${trust > 0 ? "+" : "\u2212"}${Math.abs(trust)} points of standing at the count</i></div>`);
     Object.keys(f.bands).sort((a, b) => f.bands[b].close - f.bands[a].close || f.bands[b].seats - f.bands[a].seats)
       .forEach(b => { const x = f.bands[b];
         rows.push(`<div class="dk poll"><b>${esc(bandName(b))}: ${x.gov} of ${x.seats}</b>` +
@@ -5705,6 +5774,13 @@ const UI = (function () {
       secs.push({ kind: "body", head: "What the session settled: " + settlementName(st.settledAs),
                   body: closingOf(st.settledAs) || settlementName(st.settledAs) + "." });
 
+    /* WHAT IT LEAVES (design/40 E14): the country the next government
+       inherits, the opening against now. */
+    const country = stateOfCountry();
+    if (country.length) secs.push({ kind: "document", head: "The state of the country",
+      body: country.map(r => r.k + ": " + r.then + " when the session opened, " + r.now + " now.").join("\n\n"),
+      source: "Treasury and Reserve Bank, " + (st.date || "") });
+
     /* WHAT THE GOVERNMENT DID TO THE COUNTRY, which is the thing a player
        wants at the end and which no board has ever printed: where it was
        liked and where it was not, band by band. */
@@ -5734,6 +5810,40 @@ const UI = (function () {
     return { title: title, sections: secs, mood: endMood(end) };
   }
 
+  /* THE STATE OF THE COUNTRY (design/40 E14). The last page said who governs
+     and nothing about what they inherit, and for a campaign whose canon
+     ending is "austerity to come" the inheritance IS the ending: what is
+     owed and to whom, what the dollar buys, what prices are doing, how much
+     heat is left. Each line is the opening against now, read from a fresh
+     opening state so nothing here is a second copy of content's figures. */
+  function stateOfCountry() {
+    if (!st.macro) return [];
+    const o = Engine.newGame(C), m = Engine.macro(st, C), m0 = Engine.macro(o, C) || {};
+    const b = Engine.budget(st, C), b0 = Engine.budget(o, C);
+    const pct = x => (x == null ? "\u2014" : (Math.round(x * 10) / 10).toFixed(1) + "%");
+    const owed = Engine.debts(st, C);
+    const out = [
+      { k: "The dollar", then: "US$" + (m0.fx || 0).toFixed(2), now: "US$" + m.fx.toFixed(2) },
+      { k: "Inflation", then: pct(m0.inflation), now: pct(m.inflation) +
+          (m.core != null && Math.abs(m.core - m.inflation) >= 0.3 ? ", " + pct(m.core) + " underlying" : "") },
+      { k: "The cash rate", then: pct(m0.rate), now: pct(m.rate) },
+      { k: "The reserve", then: cw(o.scalars.solvency), now: cw(st.scalars.solvency) },
+      { k: "Owed", then: b0.debt > 0 ? cw(b0.debt) : "nothing",
+        now: owed.length ? owed.map(d => (d.name || d.id) + " " +
+          (d.currency ? cw(d.owed, d.currency) : cw(d.owedHome)) + " at " + d.rate.toFixed(1) + "%").join("; ")
+          : "nothing" },
+      { k: "Debt against output", then: pct(b0.debtPct), now: pct(b.debtPct) },
+      { k: "The year's balance", then: pct(b0.balancePct), now: pct(b.balancePct) },
+      { k: "Thermal margin", then: String(o.scalars.thermal_margin), now: String(st.scalars.thermal_margin) }
+    ];
+    if (Engine.federalSuspended)
+      out.push({ k: "Suspended", then: Engine.federalSuspended(o).toLocaleString("en-GB"),
+                 now: Engine.federalSuspended(st).toLocaleString("en-GB") });
+    if (st.economy && st.economy.participation != null)
+      out.push({ k: "In paid work", then: pct(o.economy.participation), now: pct(st.economy.participation) });
+    return out;
+  }
+
   function endBoardHTML(end) {
     const seatsOf = map => Object.keys(map || {}).sort((a, b) => map[b] - map[a])
       .map(id => `${mark(id)}${esc(ps(id))} ${map[id]}`).join(" &middot; ");
@@ -5759,8 +5869,11 @@ const UI = (function () {
       head = "The government has fallen";
       body = `<div class="note">${esc(end.reason || "It lost the House.")}</div>`;
     }
+    const country = stateOfCountry();
     return `<div class="endboard"><h3>The end of the session</h3>` +
       `<div class="rulehead">${esc(head)}</div>` + body +
+      (country.length ? `<div class="rulehead">The state of the country</div><div class="note">` +
+        country.map(r => `${esc(r.k)} ${esc(r.then)} &rarr; ${esc(r.now)}`).join(" &middot; ") + `</div>` : "") +
       `<div class="rulehead">The record</div><div class="note">` +
         `${st.log.length} entries, sitting ${st.sitting}, session ${st.session}, seed ${st.seed}. ` +
         `Every decision is on the Record tab, and nothing here can be taken back.</div></div>`;
@@ -5996,7 +6109,16 @@ const UI = (function () {
       return;
     }
 
-    const open = Engine.openChoices(st, C, e);
+    /* CAUTIOUS FIRST, THEN MEASURED, THEN BOLD (design/40 E7). The first
+       choice content wrote was strictly the best by its immediate effects
+       in 67 of 119 events, so "take the top one" was a strategy. The list
+       now orders by how far each choice goes, which the choice itself
+       declares, and keeps the authored order within a posture; the engine
+       is still handed the authored index. */
+    const RANK = { cautious: 0, measured: 1, bold: 2 };
+    const rank = x => RANK[x.choice.posture] == null ? 3 : RANK[x.choice.posture];
+    const open = Engine.openChoices(st, C, e).slice()
+      .sort((a, b) => rank(a) - rank(b) || a.index - b.index);
     foot.innerHTML = `<div class="rulehead">Decision</div><div class="choices">` +
       open.map(x => choiceRow(e, x.choice, x.index, openRow.i === x.index)).join("") +
       `</div>`;

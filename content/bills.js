@@ -202,36 +202,40 @@ const BILLS = [
          design/33). The mechanism and the levels are settled; the notes are
          serviceable and no more. */
       { id:"rate_volume", name:"Ways and Means: volume", default:"standard",
-        note:"The levy on habitable volume, charged on the lease and not on what is done inside it. What it falls on is position inside a habitat, which nobody made.",
+        note:"The levy on habitable volume, charged on the lease and not on what is done inside it. What it falls on is position inside a habitat, which nobody made. It is the largest base the Commonwealth has, about CW$88bn a year at the opening, and a tenth of it is one of the largest single measures a budget can carry.",
         levels:[
-          { id:"none", label:"Not levied", cost:0, note:"The lease is charged nothing. The Commonwealth forgoes its largest single base.", effects:[{ law:{ rate_volume:"none" } }, { move:{ "public_standing":3 } }] },
-          { id:"low", label:"Reduced", cost:0, note:"Charged at half. The holders of the long leases keep the difference.", effects:[{ law:{ rate_volume:"low" } }, { move:{ "public_standing":1 } }] },
+          { id:"relief", label:"Cut by a fifth", cost:0, note:"About CW$17bn a year handed back, and nearly all of it to the holders of the long leases on the ring. Nobody else holds enough volume to notice.", effects:[{ law:{ rate_volume:"relief" } }, { move:{ "standing.ring":4, "public_standing":1 } }] },
+          { id:"low", label:"Cut by a tenth", cost:0, note:"About CW$9bn a year back to the lease holders. The ring hears it as a promise kept.", effects:[{ law:{ rate_volume:"low" } }, { move:{ "standing.ring":2 } }] },
           { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_volume:"standard" } }] },
-          { id:"high", label:"Raised", cost:0, note:`Charged half again. The lease is dearer to hold and no dearer to live in. That is the government's argument and the ring band does not accept it.`, effects:[{ law:{ rate_volume:"high" } }, { move:{ "public_standing":-2 } }] }
+          { id:"high", label:"Raised by a tenth", cost:0, note:"About CW$9bn a year more, from the holders of the long leases. The lease is dearer to hold and no dearer to live in. That is the government's argument, and the ring band does not accept it.", effects:[{ law:{ rate_volume:"high" } }, { move:{ "standing.ring":-3 } }] },
+          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$17bn a year more, and the ring will call it confiscation in every paper it owns. It falls on position, so nobody's rent rises, which the government will say until it is hoarse.", effects:[{ law:{ rate_volume:"surcharge" } }, { move:{ "standing.ring":-5, "public_standing":-1 } }] }
         ] },
       { id:"rate_thermal", name:"Ways and Means: thermal quota", default:"standard",
-        note:"The levy on quota rejected. It is charged on the right to run, so it is paid by everything that runs, and it is in every price downstream.",
+        note:"The levy on quota rejected, about CW$55bn a year at the opening. It is charged on the right to run, so it is paid by everything that runs, and a quarter of any change reaches the price of heat within the session.",
         levels:[
-          { id:"none", label:"Not levied", cost:0, note:"Quota is charged nothing. The price falls and the reserve falls with it.", effects:[{ law:{ rate_thermal:"none" } }, { move:{ "public_standing":4 } }] },
-          { id:"low", label:"Reduced", cost:0, note:"Charged at half.", effects:[{ law:{ rate_thermal:"low" } }, { move:{ "public_standing":2 } }] },
+          { id:"relief", label:"Cut by a fifth", cost:0, note:"About CW$11bn a year forgone, and the price of heat falls with it. Every household on every deck feels it, and the reserve pays for it.", effects:[{ law:{ rate_thermal:"relief" } }, { move:{ "public_standing":3, "standing.low":1 } }] },
+          { id:"low", label:"Cut by a tenth", cost:0, note:"About CW$5.5bn a year forgone. Heat is a little cheaper, and it is the one price nobody can do without.", effects:[{ law:{ rate_thermal:"low" } }, { move:{ "public_standing":1 } }] },
           { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_thermal:"standard" } }] },
-          { id:"high", label:"Raised", cost:0, note:"Charged half again, and passed on within the session to everyone buying the right to keep running.", effects:[{ law:{ rate_thermal:"high" } }, { move:{ "public_standing":-5 } }] }
+          { id:"high", label:"Raised by a tenth", cost:0, note:"About CW$5.5bn a year more, passed on within the session to everyone buying the right to keep running, and hardest on the low band, which runs closest to its quota.", effects:[{ law:{ rate_thermal:"high" } }, { move:{ "public_standing":-2, "standing.low":-2 } }] },
+          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$11bn a year more, and a rise in the price of heat that every station will see on the next bill. Governments have fallen for less.", effects:[{ law:{ rate_thermal:"surcharge" } }, { move:{ "public_standing":-4, "standing.low":-3 } }] }
         ] },
       { id:"rate_substrate", name:"Ways and Means: substrate-hours", default:"standard",
-        note:"The levy on mind-hours run. It is charged on the hour, so it is charged hardest on those who exist only as hours.",
+        note:"The levy on mind-hours run, about CW$51bn a year at the opening. It is charged on the hour, so it is charged hardest on those who exist only as hours.",
         levels:[
-          { id:"none", label:"Not levied", cost:0, note:"The hour is charged nothing.", effects:[{ law:{ rate_substrate:"none" } }, { move:{ "public_standing":3 } }] },
-          { id:"low", label:"Reduced", cost:0, note:"Charged at half.", effects:[{ law:{ rate_substrate:"low" } }, { move:{ "public_standing":2 } }] },
+          { id:"relief", label:"Cut by a fifth", cost:0, note:"About CW$10bn a year forgone. The rent on continuing to be a person falls, and the people who pay nothing else notice first.", effects:[{ law:{ rate_substrate:"relief" } }, { move:{ "public_standing":2, "legitimacy":1 } }] },
+          { id:"low", label:"Cut by a tenth", cost:0, note:"About CW$5bn a year forgone.", effects:[{ law:{ rate_substrate:"low" } }, { move:{ "public_standing":1 } }] },
           { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_substrate:"standard" } }] },
-          { id:"high", label:"Raised", cost:0, note:"Charged half again. The rent on continuing to be a person goes up, and it goes up for the people with the least of anything else.", effects:[{ law:{ rate_substrate:"high" } }, { move:{ "public_standing":-6, "legitimacy":-2 } }] }
+          { id:"high", label:"Raised by a tenth", cost:0, note:"About CW$5bn a year more. The rent on continuing to be a person goes up, and it goes up for the people with the least of anything else.", effects:[{ law:{ rate_substrate:"high" } }, { move:{ "public_standing":-2, "legitimacy":-1 } }] },
+          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$10bn a year more, raised from people who are only hours. The personhood benches will read it as a tax on existing, and they will not be wrong.", effects:[{ law:{ rate_substrate:"surcharge" } }, { move:{ "public_standing":-3, "legitimacy":-3 } }] }
         ] },
       { id:"rate_transit", name:"Ways and Means: mass to orbit", default:"standard",
-        note:"The levy on mass lifted and moved. Charged at the tether and carried into the price of everything the outer stations cannot make.",
+        note:"The levy on mass lifted and moved, about CW$26bn a year at the opening. Charged at the tether and carried into the price of everything the outer stations cannot make.",
         levels:[
-          { id:"none", label:"Not levied", cost:0, note:"Mass moves untaxed.", effects:[{ law:{ rate_transit:"none" } }, { move:{ "public_standing":2 } }] },
-          { id:"low", label:"Reduced", cost:0, note:"Charged at half.", effects:[{ law:{ rate_transit:"low" } }, { move:{ "public_standing":1 } }] },
+          { id:"relief", label:"Cut by a fifth", cost:0, note:"About CW$5bn a year forgone, and the far stations' imports are cheaper by the next schedule.", effects:[{ law:{ rate_transit:"relief" } }, { move:{ "standing.far":3, "standing.external":3 } }] },
+          { id:"low", label:"Cut by a tenth", cost:0, note:"About CW$2.6bn a year forgone, and all of it lands at the end of the schedule.", effects:[{ law:{ rate_transit:"low" } }, { move:{ "standing.far":2, "standing.external":1 } }] },
           { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_transit:"standard" } }] },
-          { id:"high", label:"Raised", cost:0, note:"Charged half again. It reaches the stations at the end of the schedule first and hardest.", effects:[{ law:{ rate_transit:"high" } }, { move:{ "public_standing":-3 } }] }
+          { id:"high", label:"Raised by a tenth", cost:0, note:"About CW$2.6bn a year more. It reaches the stations at the end of the schedule first and hardest.", effects:[{ law:{ rate_transit:"high" } }, { move:{ "standing.far":-2, "standing.external":-2 } }] },
+          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$5bn a year more, charged on everything the outer stations import. Home Rule will campaign on nothing else.", effects:[{ law:{ rate_transit:"surcharge" } }, { move:{ "standing.far":-4, "standing.external":-4, "public_standing":-1 } }] }
         ] } ],
     stances:{ cu:"for", psa:"for", rv:"for", upl:{forPct:0.5}, geo:{forPct:0.5},
               cl:"against", sc:{forPct:0.3}, hul:{forPct:0.4}, fh:"against",

@@ -178,11 +178,39 @@ that campaign's story. Nothing else changes.
   speaker:"halloran",     // a character id, or null
   body:`Prose. Blank lines become paragraphs.`,
   choices:[
-    { label:"What the button says",
+    { posture:"cautious",   // cautious, measured or bold: see below
+      label:"What the button says",
       effects:[ {scalar:{public_standing:-4}}, {flag:"already_done"} ],
       result:"One or two lines shown after the choice." }
   ]}
 ```
+
+### Posture: cautious, measured, bold
+
+Every choice in an event with two or more ungated choices says how far it
+goes (`design/40` E7). The Sitting screen lists the cautious answer first,
+then the measured one, then the bold one, and marks each; the engine keeps
+the order you wrote, so reordering a posture never changes a run. `npm run
+lint` fails an event that leaves one out. An event whose choices are all
+gated, so the state picks one, is an outcome and carries none.
+
+Posture is the ACTION, not the size of its consequences. Doing nothing can
+be expensive and still be the cautious answer; a big public stand can cost
+little and still be bold. As written across the world's content the three
+read as a political trade, and new content should keep it that way:
+
+| | on average |
+|---|---|
+| **cautious** | keeps the party, costs public standing, spends little, and is usually worth least |
+| **measured** | does something and keeps something back |
+| **bold** | buys standing, a partner and legitimacy, strains the party and the reserve, and is where things go wrong later |
+
+A government that always takes one posture should lose, each in its own
+way. Measured on Flash I: always cautious reaches the count and loses it
+heavily; always bold is removed by its own party; always measured loses a
+partner. Keep the first answer on the screen from being the best one: it was
+strictly best by its immediate effects in 67 of 119 events before postures,
+because content had a habit of writing the good answer first.
 
 ### Conditions (`when`)
 

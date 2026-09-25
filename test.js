@@ -34,9 +34,11 @@ const expect = (label, got, want) => {
 console.log("\nAGAINST THE BIBLE:");
 expect("chamber", Engine.chamberTotal(st), 280);
 expect("majority", Engine.majority(st), 141);
-/* 136 coalition + 6 Independents. The bible §8.4 carries the arithmetic and
-   the amendment that changed it from 141 on 21 September 2026. */
-expect("confidence", Engine.confidence(st), 142);
+/* 141 coalition + 6 Independents. The bible §8.4 carries the arithmetic and
+   both amendments: from 141 to 142 on 21 September 2026, and to 147 on 25
+   September (design/40 E9), so that the six independents alone cannot
+   bring the government down. */
+expect("confidence", Engine.confidence(st), 147);
 expect("popular total", d.popular.total, 240);
 expect("functional total", d.functional.total, 40);
 expect("popular aye", d.popular.aye, 130);
@@ -137,14 +139,29 @@ console.log("\nTHE PRODUCTIVE ECONOMY:");
   ok("left alone, participation stays near its opening", a >= 38.5 && a < 42,
      a + " (measured 39.0)");
   ok("cut to forty hours, it rises to about 48", b > 46 && b < 51,
-     b + " (measured 48.1)");
+     b + " (measured 47.9 since design/40; 48.1 before the opening came to rest)");
   ok("and the gap is the finding, not the figure", b - a > 7,
      "+" + Math.round((b - a) * 10) / 10 + " points");
 
-  /* Trade falls off transit and substrate, so it must actually MOVE. */
-  ok("trade moves off the prices rather than sitting at its opening",
-     control.economy.trade !== CONTENT.setup.economy.trade,
-     control.economy.trade + " from " + CONTENT.setup.economy.trade);
+  /* THE WORLD OPENS AT REST (design/40 E1). Every price rule measures from
+     where the world opened, so twelve quiet sittings move nothing: the
+     margin used to be read against 35 and the reserve against 50,000, and
+     every run began with thermal climbing to 121 on its own. */
+  const quiet = Engine.newGame(CONTENT);
+  for (let i = 0; i < 12; i++) Engine.advance(quiet, CONTENT);
+  const drifted = Object.keys(quiet.prices).filter(k => Math.abs(quiet.prices[k] - 100) > 0.5);
+  ok("left alone, the world is at rest: every price holds where it opened",
+     drifted.length === 0, Object.keys(quiet.prices).map(k => k + " " + quiet.prices[k]).join(", "));
+
+  /* Trade falls off transit and substrate, so it must actually MOVE when
+     one of them does. */
+  const subsidised = Engine.newGame(CONTENT);
+  subsidised.law.transit_subsidy = "all";
+  for (let i = 0; i < 26; i++) Engine.advance(subsidised, CONTENT);
+  ok("trade moves off the prices: subsidise transit and it rises",
+     subsidised.economy.trade > CONTENT.setup.economy.trade + 1,
+     subsidised.economy.trade + " from " + CONTENT.setup.economy.trade +
+     " (transit " + subsidised.prices.transit + ")");
   ok("and both keep a curve, the same window as the prices",
      control.economyHistory.participation.length === 27 &&
      control.economyHistory.trade.length === 27,
@@ -2712,6 +2729,41 @@ console.log("\nTHE OPPOSITION TABLES A MOTION:");
     ok("left alone, the motion carries and the government falls",
        w.motion.carried === true && lost.over && lost.reason === "no confidence",
        lost.kind + ": " + lost.reason);
+
+    /* TWO LINES (design/40 E9). Between them a partner stands aside: out of
+       the agreement, on confidence and supply, and the government stands. */
+    const a = Engine.newGame(CONTENT);
+    const drop = Engine.loyaltyOf(a, partner) - (T.partnerLeaves + T.supplyWithdrawn) / 2;
+    const near = JSON.parse(JSON.stringify(a));
+    Engine.apply(near, CONTENT, [{ move: { ["loyalty." + partner]: -(Engine.loyaltyOf(near, partner) - T.partnerLeaves - 2) } }]);
+    ok("a partner near the line is on the docket before it crosses it",
+       Engine.today(near, CONTENT, false).items.some(i => i.kind === "partner" && i.tab === "rel"),
+       Engine.today(near, CONTENT, false).items.filter(i => i.kind === "partner").map(i => i.text).join(" | ") || "nothing");
+    ok("and one well above it is not",
+       !Engine.today(a, CONTENT, false).items.some(i => i.kind === "partner"));
+    const conf0 = Engine.confidence(a);
+    Engine.apply(a, CONTENT, [{ move: { ["loyalty." + partner]: -drop } }]);
+    Engine.advance(a, CONTENT);
+    ok("between the lines a partner stands aside: off the agreement, on confidence and supply",
+       a.coalition.indexOf(partner) < 0 && a.confidenceSupply.indexOf(partner) >= 0 &&
+       !!(a.stoodAside || {})[partner] && !(a.withdrawn || {})[partner],
+       partner + " at " + Engine.loyaltyOf(a, partner));
+    ok("and the government keeps its majority, with no motion",
+       Engine.confidence(a) === conf0 && !a.motion, Engine.confidence(a) + " of " + Engine.majority(a));
+    ok("but it is free on ordinary business, which is what standing aside costs",
+       /free on ordinary business/.test((Engine.whippable(a, CONTENT,
+         (CONTENT.bills.find(b => !b.supply && !b.confidence && !b.test) || {}).id, partner) || {}).reason || ""));
+    const back2 = JSON.parse(JSON.stringify(a));
+    Engine.apply(back2, CONTENT, [{ court: 300 }]);
+    Engine.advance(back2, CONTENT);
+    ok("courted, a partner that stood aside comes back into the agreement",
+       back2.coalition.indexOf(partner) >= 0 && back2.confidenceSupply.indexOf(partner) < 0 &&
+       !(back2.stoodAside || {})[partner], back2.coalition.join(", "));
+    Engine.apply(a, CONTENT, [{ move: { ["loyalty." + partner]: -200 } }]);
+    Engine.advance(a, CONTENT);
+    ok("and below the second line it withdraws confidence, and returns to the agreement if won back",
+       !!(a.withdrawn || {})[partner] && a.withdrawn[partner].from === "coalition" &&
+       a.confidenceSupply.indexOf(partner) < 0, JSON.stringify((a.withdrawn || {})[partner]));
   }
 
   /* content can actually reach it */
@@ -5291,7 +5343,7 @@ console.log("\nTHE PRICE RULES ARE CONTENT'S (design/39 §6):");
   /* the levy term reads the base's passthrough, written once */
   const bases = CONTENT.setup.fiscal.bases.map(b => b.k === "thermal" ? Object.assign({}, b, { passthrough: 60 }) : b);
   const PV = ALL.forCampaign({ id: "pass_probe", setup: { fiscal: Object.assign({}, CONTENT.setup.fiscal, { bases: bases }) } });
-  const hi = st => { st.law.rate_thermal = "high"; };
+  const hi = st => { st.law.rate_thermal = "surcharge"; };
   ok("a rate's pass-through is the base's own figure",
      run(PV, 12, hi).prices.thermal > run(CONTENT, 12, hi).prices.thermal + 5,
      run(CONTENT, 12, hi).prices.thermal + " -> " + run(PV, 12, hi).prices.thermal);

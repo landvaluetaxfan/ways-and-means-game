@@ -424,6 +424,11 @@ const Editor = (function () {
         <input class="ed-f ed-label" data-f="label" type="text" value="${esc(c.label)}" placeholder="What the button says">
         <button class="btn ed-x" data-act="choice-del" data-ci="${i}">×</button>
       </div>
+      <label class="ed-res">Posture <select class="ed-f" data-f="posture">${
+        [["", "(none)"]].concat((SCHEMA.vocab.postures || []).map(p => [p, p])).map(([v, l]) =>
+          `<option value="${esc(v)}"${(c.posture || "") === v ? " selected" : ""}>${esc(l)}</option>`).join("")
+      }${c.posture && (SCHEMA.vocab.postures || []).indexOf(c.posture) < 0
+          ? `<option value="${esc(c.posture)}" selected>${esc(c.posture)} (not in this list)</option>` : ""}</select></label>
       <label class="ed-res">Result <input class="ed-f" data-f="result" type="text" value="${esc(c.result || "")}" placeholder="Line shown after the choice"></label>
       <label class="ed-res">Note <textarea class="ed-f ed-noteta" data-f="note" rows="3" placeholder="A paragraph shown beside 'what this does'">${esc(c.note || "")}</textarea></label>
       <div class="ed-effhd">Effects <button class="btn ed-add" data-act="eff-add" data-ci="${i}">+ effect</button></div>
@@ -476,6 +481,8 @@ const Editor = (function () {
       if (res) ch.result = res; else delete ch.result;
       const note = n.querySelector('[data-f="note"]');
       if (note && note.value.trim()) ch.note = note.value; else delete ch.note;
+      const posture = n.querySelector('[data-f="posture"]');
+      if (posture && posture.value) ch.posture = posture.value; else delete ch.posture;
       n.querySelectorAll(".ed-eff").forEach(en => {
         const r = { verb: en.querySelector('[data-f="verb"]').value, raw: !!en.dataset.raw };
         en.querySelectorAll("[data-f]").forEach(f => { if (f.dataset.f !== "verb") r[f.dataset.f] = f.value; });

@@ -45,7 +45,7 @@
 const PARTIES = [
   { id:"cu",  name:"Party of Socialists and Democrats", short:"PSD", colour:"var(--p-cu)",
     leader:"flash", logo:"cu.png", wordmark:"cu_mark.png",
-    seats:{district:48,list:25,functional:9}, vote:23.3,
+    seats:{district:51,list:25,functional:9}, vote:23.3,
     kind:"national",
     axes:{economic:-0.75, authority:-0.4, personhood:-0.55, sovereignty:0.5, trade:-0.35},
     note:"Old left. Embodied maintenance labour, and the strike weapon." },
@@ -67,21 +67,21 @@ const PARTIES = [
 
   { id:"sc",  name:"Home Rule",                    short:"HR",  colour:"var(--p-sc)",
     leader:"laughon", logo:"sc.png", wordmark:"sc_mark.png",
-    seats:{district:26,list:8,functional:0}, vote:7.8,
+    seats:{district:22,list:8,functional:0}, vote:7.8,
     kind:"national", loyalty:35,
     axes:{economic:-0.1, authority:-0.5, personhood:0, sovereignty:-0.9, trade:-0.75},
     note:"Confederalist. Cannot whip its own members." },
 
   { id:"hul", name:"Association of Engineers and Systems", short:"AES", colour:"var(--p-hul)",
     leader:"wilde_hayward", logo:"hul.png", wordmark:"hul_mark.png",
-    seats:{district:9,list:6,functional:7}, vote:5.9,
+    seats:{district:8,list:6,functional:7}, vote:5.9,
     kind:"national", loyalty:15,
     axes:{economic:0, authority:0.95, personhood:-0.6, sovereignty:0.1, trade:-0.6},
     note:"Habitat as lifeboat. Engineering authority supreme." },
 
   { id:"rv",  name:"Congregational Democratic Alliance", short:"CDA", colour:"var(--p-rv)",
     leader:"park", logo:"rv.png", wordmark:"rv_mark.png",
-    seats:{district:12,list:5,functional:1}, vote:5.0,
+    seats:{district:14,list:5,functional:1}, vote:5.0,
     kind:"national",
     axes:{economic:-0.45, authority:-0.2, personhood:-0.9, sovereignty:0, trade:-0.1},
     note:"Continuity of soul. A copy is not the person. Economically left, culturally immovable." },
