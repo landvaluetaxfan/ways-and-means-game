@@ -419,6 +419,16 @@ const SETUP = {
      leads its nearest rival by `marginMin` plus up to `marginSpan` as its
      hold on the station and band grows. `functional` is how far each
      franchise follows the country. */
+  /* STANDING FADES (design/38 §1): every band closes `rate` of its distance
+     to `toward` each sitting, so standing settles near `toward` plus what
+     the government keeps earning divided by `rate`. Without it a player
+     taking the standing on offer reached 100 before the writs and every
+     competent run was a landslide. Measured at 0.05: a government that
+     cycles its answers reaches the count at 35 (a defeat, 122 seats), one
+     that takes the best answer every time at 74 (a working majority, 183),
+     and the campaign moves either by fifteen to twenty points. 0 turns it
+     off. */
+  standingDrift: { toward: 45, rate: 0.05 },
   election: { swing: 0.35, localFloor: 0.4, localLift: 2.0, marginMin: 0.005, marginSpan: 0.35, marginShape: 1.6,
               functional: { licensure: 0.4, corporate: 0.15, union_bloc: 0.3, residual: 1 } },
 

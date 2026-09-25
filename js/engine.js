@@ -1055,6 +1055,27 @@ const Engine = (function () {
     if (den > 0) st.scalars.public_standing = clamp(Math.round(num / den), 0, 100);
   }
 
+  /* STANDING FADES (design/38 §1). Standing only ever went up: 61 of 125
+     events offered a gain for the taking, nothing drew it back, and a
+     player who took them reached 100 before the writs, which made every
+     competent run a landslide once the count listened to it. A government's
+     standing is earned and then forgotten: each sitting every band closes
+     `setup.standingDrift.rate` of its distance to `toward`, so it settles
+     near `toward + inflow / rate` and has to be kept, not banked. The
+     fractions carry, so a small pull is not rounded away. */
+  function driftStanding(st, C) {
+    const D = C && C.setup && C.setup.standingDrift;
+    if (!D || !D.rate || !st.standing) return;
+    st.standingCarry = st.standingCarry || {};
+    Object.keys(st.standing).forEach(b => {
+      const c = (st.standingCarry[b] || 0) + (D.toward - st.standing[b]) * D.rate;
+      const whole = c > 0 ? Math.floor(c) : Math.ceil(c);
+      st.standing[b] = clamp(st.standing[b] + whole, 0, 100);
+      st.standingCarry[b] = c - whole;
+    });
+    syncStanding(st, C);
+  }
+
   /* What the government's standing is where this seat is. */
   function standingIn(st, band) {
     if (band && st.standing && st.standing[band] != null) return st.standing[band];
@@ -5409,6 +5430,7 @@ const Engine = (function () {
 
   function tick(st, C) {
     const P = st.prices, marks = [];
+    driftStanding(st, C);
 
     /* thermal: scarce when the federal margin is thin, AND SET BY THE
        APPROPRIATION. The quota the vote releases is the price's other

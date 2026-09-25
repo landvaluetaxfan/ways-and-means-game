@@ -704,6 +704,19 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
        band + " " + f0.bands[band].gov + " -> " + fb.bands[band].gov);
   }
 
+  /* STANDING FADES (design/38 §1). It only ever rose, so a player taking
+     what was on offer reached 100 before the writs. */
+  {
+    const D = CONTENT.setup.standingDrift;
+    const t = Engine.newGame(CONTENT);
+    Engine.apply(t, CONTENT, [{ move: { public_standing: 50 } }]);
+    const high = t.scalars.public_standing;
+    for (let i = 0; i < 20; i++) Engine.advance(t, CONTENT);
+    ok("standing that is not kept up fades toward its resting level",
+       D && D.rate > 0 && t.scalars.public_standing < high - 10 && t.scalars.public_standing > D.toward,
+       high + " -> " + t.scalars.public_standing + " toward " + (D && D.toward));
+  }
+
   /* THE COUNT IS TAKEN AT THE END OF THE CAMPAIGN (design/38 §1). It was
      taken at the writs, so nothing in chapter three could move a seat. */
   {
