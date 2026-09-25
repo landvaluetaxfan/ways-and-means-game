@@ -129,10 +129,15 @@ console.log("\nTHE PRODUCTIVE ECONOMY:");
   for (let i = 0; i < 26; i++) Engine.advance(cut, CONTENT);
 
   const a = control.economy.participation, b = cut.economy.participation;
-  ok("left alone, participation stays near its opening", a > 39 && a < 42,
-     a + " (bible says 40.1)");
-  ok("cut to forty hours, it rises to about 49", b > 47 && b < 51,
-     b + " (bible says 49.2)");
+  /* 39.0 and 48.1 since the Commonwealth dollar (design/39). They were 40.1
+     and 49.2 while receipts filled the reserve every sitting and nothing was
+     spent: the volume price fell with the growing reserve, building got
+     cheaper, and participation drifted up a point on its own. A charged
+     budget leaves the reserve where it opened, and so the price. */
+  ok("left alone, participation stays near its opening", a >= 38.5 && a < 42,
+     a + " (measured 39.0)");
+  ok("cut to forty hours, it rises to about 48", b > 46 && b < 51,
+     b + " (measured 48.1)");
   ok("and the gap is the finding, not the figure", b - a > 7,
      "+" + Math.round((b - a) * 10) / 10 + " points");
 
@@ -1395,9 +1400,13 @@ console.log("\nTHE LAWS THAT DID NOTHING NOW DO SOMETHING (design/34 D6):");
     Object.assign(s0.law, law); for (let i = 0; i < n; i++) Engine.advance(s0, CONTENT); return s0; };
   const none = run({}, 6), clock = run({ civic_clock_minimum: 1 }, 6);
   /* net of the receipts its own heat raises on the thermal levy */
-  ok("a civic clock costs the reserve every sitting it stands",
-     none.scalars.solvency - clock.scalars.solvency >= 6 * CONTENT.setup.civicClock.costPerSitting * 0.9,
-     none.scalars.solvency + " against " + clock.scalars.solvency);
+  /* a year's cost charged by the day since the dollar (design/39), so six
+     sittings are the twelve days they span and not six sittings' worth */
+  const days = (Date.parse(clock.date) - Date.parse(Engine.newGame(CONTENT).date)) / 864e5;
+  ok("a civic clock costs the reserve every day it stands",
+     none.scalars.solvency - clock.scalars.solvency >=
+       CONTENT.setup.civicClock.costPerYear * days / 365 * 0.9,
+     none.scalars.solvency + " against " + clock.scalars.solvency + " over " + days + " days");
   ok("and runs the thermal price up", clock.prices.thermal > none.prices.thermal,
      none.prices.thermal + " against " + clock.prices.thermal);
   /* the moratorium: restorations faster when the debt is paused */
@@ -2171,10 +2180,9 @@ console.log("\nBORROWING FROM THE PEOPLE YOU ARE QUARRELLING WITH:");
   const ok = (l, c, extra) => { if (!c) bad++;
     console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
 
-  /* \u00a77.5.3 makes the currency the thermal quota and the treasury the state's
-     holding of it, so there is no central bank to print anything: a state
-     that wants more quota than it holds must get it from somebody who has
-     some. That is Earth, and `friction` IS Earth's governments and banks. */
+  /* Since the dollar (design/39) the Commonwealth borrows at home in its own
+     money and from Earth's banks in theirs, and `friction` IS Earth's
+     governments and banks, so the rate on Earth's money is the quarrel. */
   const st = Engine.newGame(CONTENT);
   ok("the Commonwealth starts owing nothing", Engine.debtOf(st) === 0);
   const r0 = Engine.debtRate(st, CONTENT);
@@ -2189,31 +2197,38 @@ console.log("\nBORROWING FROM THE PEOPLE YOU ARE QUARRELLING WITH:");
   const solv = st.scalars.solvency, fr = st.scalars.friction, sl = st.slots.used;
   const b = Engine.borrow(st, CONTENT, 10000);
   ok("it can borrow", b && b.ok === true, b && b.reason);
-  ok("and the money arrives", st.scalars.solvency === solv + 10000,
-     solv + " -> " + st.scalars.solvency);
-  ok("and it is owed", Engine.debtOf(st) === 10000);
+  /* in US dollars: the reserve receives what ten billion of them buys */
+  ok("and the money arrives, at the day's rate", st.scalars.solvency === solv + Math.round(10000 / st.macro.fx),
+     solv + " -> " + st.scalars.solvency + " at " + st.macro.fx);
+  ok("and it is owed, in the lender's money", Engine.debtOf(st) === 10000);
   ok("it costs order-paper time (\u00a77.7)", st.slots.used === sl + 1);
   ok("and Earth notices", st.scalars.friction > fr, fr + " -> " + st.scalars.friction);
 
   /* AND IT IS NOT A DEFAULT MECHANIC. \u00a77.6: a government that runs out does
      not default, it sheds people. Debt moves solvency from later to now. */
-  const svc = Engine.debtService(st, CONTENT);
-  ok("the debt is serviced every sitting", svc > 0, svc + " a sitting");
-  const before = st.scalars.solvency;
+  /* interest a YEAR, in dollars, at the lender's rate: it was a month's
+     interest every sitting, about seventeen times what a lender asks */
+  const svc = Engine.interestDue(st, CONTENT);
+  ok("the debt costs interest by the year", svc > 0 &&
+     Math.abs(svc - Math.round(10000 / st.macro.fx * Engine.debtRate(st, CONTENT) / 100)) <= 1,
+     svc + " a year");
+  const before = st.scalars.solvency, d0 = st.date;
   Engine.advance(st, CONTENT);
-  const rec = Engine.receipts(st).total;
+  const bg = Engine.budget(st, CONTENT);
+  const dd = (Date.parse(st.date) - Date.parse(d0)) / 864e5;
   ok("out of the same purse the receipts go into",
-     st.scalars.solvency === before + rec - Engine.debtService(st, CONTENT) ||
-     Math.abs(st.scalars.solvency - (before + rec - svc)) <= 1,
-     before + " + " + rec + " - " + svc + " = " + st.scalars.solvency);
+     bg.interest > 0 && Math.abs((st.scalars.solvency - before) - bg.balance * dd / 365) <= 2,
+     before + " + " + bg.balance + " a year for " + dd + " days = " + st.scalars.solvency);
 
   const lg0 = st.scalars.legitimacy;
+  /* in dollars out of the reserve, and the lender is paid what they buy */
+  const fx1 = st.macro.fx;
   const rp = Engine.repay(st, CONTENT, 4000);
-  ok("and it can be repaid", rp && rp.ok === true && Engine.debtOf(st) === 6000,
+  ok("and it can be repaid", rp && rp.ok === true && Engine.debtOf(st) === 10000 - Math.round(4000 * fx1),
      Engine.debtOf(st) + " still owed");
   ok("a part-payment buys no legitimacy, or a debt paid by the unit would buy it by the unit",
      st.scalars.legitimacy === lg0, lg0 + " -> " + st.scalars.legitimacy);
-  Engine.repay(st, CONTENT, 6000);
+  Engine.repay(st, CONTENT, 999999);
   ok("clearing the lender does", st.scalars.legitimacy === lg0 + 2 && Engine.debtOf(st) === 0,
      lg0 + " -> " + st.scalars.legitimacy);
   Engine.borrow(st, CONTENT, 6000);
@@ -2368,16 +2383,20 @@ console.log("\nBORROWING FROM THE PEOPLE YOU ARE QUARRELLING WITH:");
   ok("and kept when the lender is owed nothing, however it was paid",
      u && u.state === "kept", u && u.state);
 
-  /* THERE IS NO INFLATION SCALAR and there should not be: \u00a77.9 makes the four
-     prices the cost of existing, and a fifth number summarising them is the
-     .sel mistake. This is a READING of the four, derived in one place. */
+  /* THE COST OF EXISTING IS A READING OF THE FOUR PRICES, derived in one
+     place (`scarcity`). Inflation was that reading until the dollar; it is
+     the Bank's figure now, a rate a year, and the four prices are one input
+     to it (design/39). */
   const fresh2 = Engine.newGame(CONTENT);
-  ok("inflation opens at nothing, because nothing has moved yet",
-     Math.abs(Engine.inflation(fresh2)) < 0.05, Engine.inflation(fresh2) + "%");
+  ok("the cost of existing opens at nothing, because nothing has moved yet",
+     Math.abs(Engine.scarcity(fresh2)) < 0.05, Engine.scarcity(fresh2) + "%");
   Object.keys(fresh2.prices).forEach(k => { fresh2.prices[k] = fresh2.prices[k] * 1.2; });
   ok("and reads the four prices against where they opened",
-     Engine.inflation(fresh2) > 15 && Engine.inflation(fresh2) < 25,
-     Engine.inflation(fresh2) + "% after a fifth on every price");
+     Engine.scarcity(fresh2) > 15 && Engine.scarcity(fresh2) < 25,
+     Engine.scarcity(fresh2) + "% after a fifth on every price");
+  ok("inflation is the Bank's reading, a rate a year, from content's opening",
+     Engine.inflation(Engine.newGame(CONTENT)) === CONTENT.setup.macro.inflation,
+     Engine.inflation(Engine.newGame(CONTENT)) + "%");
 
   const old = Engine.newGame(CONTENT);
   delete old.debt;
@@ -2998,39 +3017,47 @@ console.log("\nWAYS AND MEANS (the state has an income):");
   const ok = (l, c, extra) => { if (!c) bad++;
     console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
 
-  /* THE TREASURY USED TO ONLY FALL. Nothing in the engine added to solvency:
-     the Commonwealth opened holding 52,000, the appropriation spent 48,000
-     and nothing put anything back, which also left the four scarcity prices
-     decorative \u2014 the tick read solvency to SET them and nothing ever read
-     them. Bible \u00a77.3 named the four bases all along. */
+  /* THE TREASURY USED TO ONLY FALL, and then it only rose. Nothing in the
+     engine added to solvency until Ways and Means gave the state receipts;
+     then nothing took from it, because the appropriation was never charged
+     (design/39 §3). Since the dollar the account runs by the calendar: the
+     receipts, the standing programmes, the voted estimates and the interest
+     are rates a year, and each tick charges the days since the last. */
   const a = Engine.newGame(CONTENT);
   const s0 = a.scalars.solvency;
   Engine.advance(a, CONTENT);
-  ok("a sitting raises revenue", a.scalars.solvency > s0,
-     s0 + " -> " + a.scalars.solvency);
+  const days = (Date.parse(a.date) - Date.parse(Engine.newGame(CONTENT).date)) / 864e5;
+  const b1 = Engine.budget(a, CONTENT);
+  ok("a sitting is charged the days since the last, at the budget's yearly rate",
+     days > 0 && Math.abs((a.scalars.solvency - s0) - b1.balance * days / 365) <= 2,
+     s0 + " -> " + a.scalars.solvency + " over " + days + " days at " + b1.balance + " a year");
 
-  const z = noRevenue(Engine.newGame(CONTENT));
+  const z = Engine.newGame(CONTENT);
+  z.law.rate_volume = z.law.rate_thermal = z.law.rate_substrate = z.law.rate_transit = "none";
+  ok("and raises nothing when nothing is levied", Engine.receipts(z, CONTENT).total === 0 &&
+     Engine.budget(z, CONTENT).spending > 0, JSON.stringify(Engine.budget(z, CONTENT)));
   const z0 = z.scalars.solvency;
   Engine.advance(z, CONTENT);
-  ok("and raises none when nothing is levied", z.scalars.solvency === z0,
+  ok("so the reserve pays for everything and falls", z.scalars.solvency < z0,
      z0 + " -> " + z.scalars.solvency);
 
-  /* THE CALIBRATION IS THE POINT, and it is one sentence: at the standing
-     rate on all four bases the state raises what the appropriation's own
-     defaults cost, over a run, and not a unit more. Below that the
-     government runs down; above it, it accumulates at a political price. */
+  /* THE CALIBRATION IS ONE SENTENCE (content/setup.js): the standing rates
+     raise what the standing programmes and the appropriation's defaults
+     cost, less a deficit of about two-thirds of a per cent of output, which
+     is the deficit the reserve has run since 2073. */
   const spend = (Engine.clausesOf(CONTENT, "appropriation") || []).reduce((sum, c) => {
     const d = (c.levels || []).find(l => l.id === c.default);
     return sum + ((d && d.cost) || 0);
   }, 0);
-  const run = Engine.newGame(CONTENT);
-  const r0 = run.scalars.solvency;
-  for (let i = 0; i < 40; i++) Engine.advance(run, CONTENT);
-  const raised = run.scalars.solvency - r0;
-  ok("the appropriation's defaults are a real number", spend > 0, spend + "");
-  ok("and forty sittings at the standing rate raise about that much",
-     Math.abs(raised - spend) < spend * 0.35,
-     "raised " + raised + " against " + spend + " of default spending");
+  const b0 = Engine.budget(Engine.newGame(CONTENT), CONTENT);
+  ok("the appropriation's defaults are a real number, and charged",
+     spend > 0 && b0.voted === spend, spend + " against " + b0.voted);
+  ok("and the opening budget runs a small deficit, as the record says",
+     b0.balance < 0 && b0.balancePct > -1.5, b0.balance + " a year, " + b0.balancePct + "% of output");
+  const hist = CONTENT.setup.history.solvency;
+  ok("the record agrees: the reserve fell every year to where it opens",
+     hist.every((v, i) => i === 0 || v < hist[i - 1]) &&
+     hist[hist.length - 1] === CONTENT.setup.scalars.solvency);
 
   /* PASS-THROUGH, AND THE ONE BASE THAT HAS NONE. A levy on thermal is a
      levy on the cost of producing the thing and it lands on whoever buys
@@ -3062,11 +3089,11 @@ console.log("\nWAYS AND MEANS (the state has an income):");
      voHigh <= voStd, voStd.toFixed(1) + " -> " + voHigh.toFixed(1));
 
   const hiV = Engine.newGame(CONTENT); hiV.law.rate_volume = "high";
-  ok("and it does raise revenue", Engine.receipts(hiV).total >
-     Engine.receipts(Engine.newGame(CONTENT)).total);
+  ok("and it does raise revenue", Engine.receipts(hiV, CONTENT).total >
+     Engine.receipts(Engine.newGame(CONTENT), CONTENT).total);
 
   /* THE TABLE, NOT THE ANSWER (\u00a77.6). The player is owed the arithmetic. */
-  const tb = Engine.receipts(Engine.newGame(CONTENT));
+  const tb = Engine.receipts(Engine.newGame(CONTENT), CONTENT);
   ok("the revenue is readable base by base", tb.rows.length === 4 &&
      tb.rows.every(r => r.name && r.rate && typeof r.yield === "number"),
      tb.rows.map(r => r.name + " " + r.yield).join(", "));
@@ -3083,11 +3110,11 @@ console.log("\nWAYS AND MEANS (the state has an income):");
   const back = Engine.load(Engine.save(old), CONTENT);
   ok("a save with no rates gets them back from content",
      back.law.rate_volume === "standard" && back.law.rate_transit === "standard");
-  const b0 = back.scalars.solvency;
+  const bk0 = back.scalars.solvency;
   Engine.advance(back, CONTENT);
   ok("and its treasury is a number afterwards, not NaN",
-     isFinite(back.scalars.solvency) && back.scalars.solvency > b0,
-     b0 + " -> " + back.scalars.solvency);
+     isFinite(back.scalars.solvency) && back.scalars.solvency !== bk0,
+     bk0 + " -> " + back.scalars.solvency);
 
   if (bad) { console.log("\n" + bad + " WAYS AND MEANS FAILURES"); process.exitCode = 1; }
 })();
@@ -5008,4 +5035,156 @@ console.log("\nTHE PAPER: A NAME WON BACK AT A PRICE:");
      broke.signedBy.indexOf(soft.id) >= 0 && broke.signatures === s0,
      broke.signatures + " names");
   if (bad) { console.log("\n" + bad + " WIN-BACK FAILURES"); process.exitCode = 1; }
+})();
+
+console.log("\nTHE COMMONWEALTH DOLLAR (design/39 option C):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const M = CONTENT.setup.macro;
+  const run = (st, n) => { for (let i = 0; i < n; i++) Engine.advance(st, CONTENT); return st; };
+
+  /* WHERE IT OPENS: content's figures, and nothing in the opening economy
+     that the tick would have to correct. */
+  const o = Engine.newGame(CONTENT), om = Engine.macro(o, CONTENT);
+  ok("a new game opens on content's economy",
+     om.inflation === M.inflation && om.rate === M.rate && om.fx === M.fx && om.output === M.output,
+     JSON.stringify({ i: om.inflation, r: om.rate, fx: om.fx }));
+  ok("and the dollar's resting point is where it opens",
+     Math.abs(Engine.fxTarget(o, CONTENT) - M.fx) < 1e-9, Engine.fxTarget(o, CONTENT) + "");
+  ok("the same world plays the same economy twice (§1.5)",
+     JSON.stringify(run(Engine.newGame(CONTENT), 30).macro) ===
+     JSON.stringify(run(Engine.newGame(CONTENT), 30).macro));
+
+  /* THE CALENDAR. A recess is days, and the account is charged for them. */
+  const r = Engine.newGame(CONTENT);
+  let crossed = null;
+  for (let i = 0; i < 40 && !crossed; i++) {
+    const d0 = r.date, s0 = r.scalars.solvency;
+    Engine.advance(r, CONTENT);
+    const days = (Date.parse(r.date) - Date.parse(d0)) / 864e5;
+    if (days > 7) crossed = { days: days, moved: r.scalars.solvency - s0,
+                              b: Engine.budget(r, CONTENT).balance };
+  }
+  ok("a recess is charged the days it lasts", !!crossed &&
+     Math.abs(crossed.moved - crossed.b * crossed.days / 365) <= Math.abs(crossed.b) * 0.1 + 2,
+     crossed ? crossed.days + " days, " + crossed.moved + " against " + Math.round(crossed.b * crossed.days / 365) : "no recess in forty sittings");
+
+  /* THE BANK MEETS ON ITS CALENDAR, BY ITS RULE. */
+  const b = Engine.newGame(CONTENT);
+  while (b.date < M.firstMeeting) Engine.advance(b, CONTENT);
+  const d = b.macro.decisions[0];
+  ok("the Bank meets on its first date and says so", !!d && d.date === M.firstMeeting,
+     d ? d.date + ": " + d.from + " -> " + d.to + " (rule " + d.rule + ")" : "no decision");
+  ok("in quarter points, toward its rule, and no more than its most at once",
+     d && Math.abs((d.to - d.from) / 0.25 - Math.round((d.to - d.from) / 0.25)) < 1e-9 &&
+     Math.abs(d.to - d.from) <= M.rule.maxMove &&
+     (d.rule > d.from ? d.to >= d.from : d.to <= d.from));
+  ok("and meets again six weeks on", b.macro.nextMeeting ===
+     new Date(Date.parse(M.firstMeeting) + M.meetingEvery * 864e5).toISOString().slice(0, 10), b.macro.nextMeeting);
+  const hot = Engine.newGame(CONTENT);
+  hot.macro.inflation = 7; hot.macro.expected = 6;
+  while (hot.date < M.firstMeeting) Engine.advance(hot, CONTENT);
+  ok("inflation well over target and the Bank raises as far as it goes",
+     hot.macro.rate === M.rate + M.rule.maxMove, M.rate + " -> " + hot.macro.rate);
+  ok("and it is on the wire", hot.wire.some(w => /RESERVE BANK RAISES/.test(w.text)));
+
+  /* INDEPENDENT BY STATUTE: a direction overrides the rule, and costs. */
+  const dir = Engine.newGame(CONTENT);
+  dir.macro.inflation = 7; dir.macro.expected = 6;
+  Engine.apply(dir, CONTENT, [{ law: { reserve_direction: "ease" } }]);
+  const c0 = dir.macro.credibility;
+  while (dir.date < M.firstMeeting) Engine.advance(dir, CONTENT);
+  ok("under a direction to ease, the Bank cuts whatever its rule says",
+     dir.macro.rate === M.rate - 0.5 && dir.macro.decisions[0].rule > M.rate,
+     M.rate + " -> " + dir.macro.rate + " against a rule of " + dir.macro.decisions[0].rule);
+  ok("and its credibility pays for it", dir.macro.credibility < c0, c0 + " -> " + dir.macro.credibility);
+  const si = CONTENT.instruments.find(x => x.id === "si_2080_72");
+  ok("the direction is an affirmative order the House must approve",
+     !!si && si.procedure === "affirmative" &&
+     [].concat(si.effects).some(e => e.law && e.law.reserve_direction === "ease"));
+
+  /* ORIGINAL SIN. What is owed to Earth is owed in US dollars. */
+  const os = Engine.newGame(CONTENT);
+  Engine.apply(os, CONTENT, [{ move: { "loan.earth": 16000 } }]);
+  ok("a loan brings the dollars into the reserve and is owed in the lender's money",
+     os.scalars.solvency === 52000 + 16000 && Engine.debtOf(os, "earth") === Math.round(16000 * M.fx),
+     os.scalars.solvency + ", owed " + Engine.debtOf(os, "earth"));
+  const h0 = Engine.debtHome(os, CONTENT);
+  os.macro.fx = M.fx * 0.8;
+  ok("so a fall in the dollar makes the debt heavier with nothing more borrowed",
+     Engine.debtHome(os, CONTENT) > h0 * 1.2, h0 + " -> " + Engine.debtHome(os, CONTENT));
+  Engine.apply(os, CONTENT, [{ move: { "loan.earth": -999999 } }]);
+  ok("and a loan repaid at the day's rate clears it", Engine.debtOf(os, "earth") === 0,
+     Engine.debtOf(os, "earth") + " owed");
+
+  /* AN EMPTY RESERVE BORROWS; it does not spend for nothing. */
+  const e = Engine.newGame(CONTENT);
+  e.scalars.solvency = 1000;
+  Engine.apply(e, CONTENT, [{ move: { solvency: -5000 } }]);
+  ok("a payment the reserve cannot meet is tendered as bills",
+     e.scalars.solvency === 0 && Engine.debtOf(e, "bills") === 4000, Engine.debtOf(e, "bills") + " in bills");
+  Engine.apply(e, CONTENT, [{ move: { solvency: -(CONTENT.setup.lenders.bills.cap + 3000) } }]);
+  ok("and past the Treasury's authority it is unpaid, on the record",
+     Engine.debtOf(e, "bills") === CONTENT.setup.lenders.bills.cap && e.macro.arrears === 7000,
+     e.macro.arrears + " in arrears");
+
+  /* THE RADIATORS ARE THE CEILING. */
+  const cool = Engine.newGame(CONTENT), thin = Engine.newGame(CONTENT);
+  thin.scalars.thermal_margin = 4;
+  Engine.advance(cool, CONTENT); Engine.advance(thin, CONTENT);
+  ok("a thin thermal margin is capacity lost",
+     thin.macro.potential < cool.macro.potential * 0.95,
+     Math.round(cool.macro.potential) + " against " + Math.round(thin.macro.potential));
+
+  /* THE STANCE, NOT THE WINDFALL. Raising every rate tightens the budget
+     and takes demand out; dearer heat alone does not. */
+  const tight = Engine.newGame(CONTENT), loose = Engine.newGame(CONTENT);
+  ["volume", "thermal", "substrate", "transit"].forEach(k => { tight.law["rate_" + k] = "high"; });
+  run(tight, 20); run(loose, 20);
+  ok("a tighter budget cools the economy",
+     Engine.macro(tight, CONTENT).gap < Engine.macro(loose, CONTENT).gap - 0.5,
+     Engine.macro(loose, CONTENT).gap + " -> " + Engine.macro(tight, CONTENT).gap);
+
+  /* THE ECONOMY VOTES. */
+  const angry = Engine.newGame(CONTENT), calm = Engine.newGame(CONTENT);
+  angry.macro.inflation = 8; angry.macro.expected = 8;
+  run(angry, 16); run(calm, 16);
+  ok("inflation well over the target costs the government standing",
+     angry.scalars.public_standing < calm.scalars.public_standing,
+     calm.scalars.public_standing + " against " + angry.scalars.public_standing);
+
+  /* THE DOLLAR TRADES ON THE QUARREL, and controls slow it. */
+  const q = Engine.newGame(CONTENT), qc = Engine.newGame(CONTENT);
+  q.scalars.friction = qc.scalars.friction = 80; qc.law.capital_controls = true;
+  run(q, 10); run(qc, 10);
+  /* markets are quick but not instant: ten sittings are about a fortnight,
+     and the dollar is on its way to a resting point well below */
+  ok("the quarrel with Earth takes the dollar down",
+     q.macro.fx < M.fx * 0.97 && Engine.fxTarget(q, CONTENT) < M.fx * 0.9,
+     q.macro.fx.toFixed(3) + " on its way to " + Engine.fxTarget(q, CONTENT).toFixed(3));
+  ok("and exchange controls slow the fall", qc.macro.fx > q.macro.fx, qc.macro.fx.toFixed(3));
+
+  /* A REMIT IS LAW, and the rule reads it. */
+  const rm = Engine.newGame(CONTENT);
+  const t0 = Engine.taylorRate(rm, CONTENT);
+  rm.law.inflation_target = 3;
+  ok("a higher target lowers what the rule asks", Engine.taylorRate(rm, CONTENT) < t0,
+     t0 + " -> " + Engine.taylorRate(rm, CONTENT));
+  ok("and a condition reads inflation against the target in force",
+     Engine.matches(rm, { economyBelow: { overshoot: 0 } }) &&
+     !Engine.matches(Engine.newGame(CONTENT), { economyBelow: { overshoot: 0 } }));
+
+  /* A SAVE FROM BEFORE THE DOLLAR opens an economy dated to its own day. */
+  const v30 = run(Engine.newGame(CONTENT), 5);
+  v30.version = 30; delete v30.macro;
+  const up = Engine.load(Engine.save(v30), CONTENT);
+  ok("a v30 save loads with an economy dated to where it stood",
+     up.version === Engine.STATE_VERSION && up.macro && up.macro.asOf === up.date,
+     up.macro ? up.macro.asOf + " at sitting " + up.sitting : "no macro");
+  Engine.advance(up, CONTENT);
+  ok("and runs from there", isFinite(up.scalars.solvency) && up.macro.history.inflation.length === 1);
+
+  if (bad) { console.log("\n" + bad + " DOLLAR FAILURES"); process.exitCode = 1; }
 })();

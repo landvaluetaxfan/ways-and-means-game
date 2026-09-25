@@ -42,178 +42,179 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 
 **THE ORBITAL POLITICAL THRILLER — PROJECT BIBLE** · L1
 
-**PART 0 — HOW TO USE THIS FILE** · L220
-- §0.1 · L222 — What this file is
-- §0.2 · L228 — Briefing protocol — instructions to Claude
-- §0.3 · L246 — Maintaining this file
-- §0.4 · L263 — Status legend
+**PART 0 — HOW TO USE THIS FILE** · L221
+- §0.1 · L223 — What this file is
+- §0.2 · L229 — Briefing protocol — instructions to Claude
+- §0.3 · L247 — Maintaining this file
+- §0.4 · L264 — Status legend
 
-**Part I — PROJECT FRAME** · L272
-- §1.1 · L274 — What the game is  *LOCKED*
-- §1.2 · L280 — Audience  *LOCKED*
-- §1.3 · L286 — The tonal target  *LOCKED*
-- §1.4 · L290 — Implementation method  *LOCKED*
-- §1.5 · L294 — Engine constraints  *LOCKED*
-- §1.6 · L300 — A second, parallel design thread  *OPEN*
-- §1.7 · L306 — Chapters  *LOCKED*
-- §1.8 · L354 — Campaigns and the canon  *LOCKED*
+**Part I — PROJECT FRAME** · L273
+- §1.1 · L275 — What the game is  *LOCKED*
+- §1.2 · L281 — Audience  *LOCKED*
+- §1.3 · L287 — The tonal target  *LOCKED*
+- §1.4 · L291 — Implementation method  *LOCKED*
+- §1.5 · L295 — Engine constraints  *LOCKED*
+- §1.6 · L301 — A second, parallel design thread  *OPEN*
+- §1.7 · L307 — Chapters  *LOCKED*
+- §1.8 · L355 — Campaigns and the canon  *LOCKED*
 
-**Part II — DESIGN PRINCIPLES** · L433
-- §2.1 · L435 — Date your novelties  *LOCKED*
-- §2.2 · L445 — Light-lag discipline  *LOCKED*
-- §2.3 · L451 — Physical parameters are legislative outputs  *LOCKED*
-- §2.4 · L457 — Founding ambiguity is a feature  *LOCKED*
-- §2.5 · L461 — Keep the constitutional question open  *LOCKED*
-- §2.6 · L465 — Explanation cost is the real budget  *LOCKED*
-- §2.7 · L469 — Generation drift is the main production risk  *LOCKED*
+**Part II — DESIGN PRINCIPLES** · L434
+- §2.1 · L436 — Date your novelties  *LOCKED*
+- §2.2 · L446 — Light-lag discipline  *LOCKED*
+- §2.3 · L452 — Physical parameters are legislative outputs  *LOCKED*
+- §2.4 · L458 — Founding ambiguity is a feature  *LOCKED*
+- §2.5 · L462 — Keep the constitutional question open  *LOCKED*
+- §2.6 · L466 — Explanation cost is the real budget  *LOCKED*
+- §2.7 · L470 — Generation drift is the main production risk  *LOCKED*
 
-**Part III — CONSTITUTIONAL ORDER** · L479
-- §3.1 · L481 — Form of government  *LOCKED*
-- §3.2 · L494 — The legislature  *LOCKED*
-- §3.3 · L519 — The presidency  *LOCKED*
-- §3.4 · L537 — The player character  *LOCKED*
-- §3.5 · L545 — Loss conditions  *LOCKED*
-- §3.5.1 · L568 — Win conditions — the settlements  *LOCKED*
-- §3.6 · L620 — Opposition versus government  *LEANING*
-- §3.7 · L628 — The central constitutional question  *LOCKED*
-- §3.8 · L634 — Constitutional oddities  *LOCKED as available material*
-- §3.9 · L642 — Naming scheme  *LOCKED*
+**Part III — CONSTITUTIONAL ORDER** · L480
+- §3.1 · L482 — Form of government  *LOCKED*
+- §3.2 · L495 — The legislature  *LOCKED*
+- §3.3 · L520 — The presidency  *LOCKED*
+- §3.4 · L538 — The player character  *LOCKED*
+- §3.5 · L546 — Loss conditions  *LOCKED*
+- §3.5.1 · L569 — Win conditions — the settlements  *LOCKED*
+- §3.6 · L621 — Opposition versus government  *LEANING*
+- §3.7 · L629 — The central constitutional question  *LOCKED*
+- §3.8 · L635 — Constitutional oddities  *LOCKED as available material*
+- §3.9 · L643 — Naming scheme  *LOCKED*
 
-**Part IV — THE ELECTORAL SYSTEM** · L710
-- §4.1 · L712 — Parallel voting  *LOCKED*
-- §4.2 · L716 — The tier split as a tonal structure  *LOCKED*
-- §4.3 · L725 — Consequences of parallel specifically  *LOCKED*
-- §4.4 · L732 — The tier ratio is amendable  *LOCKED*
-- §4.5 · L736 — Dual candidacy and revenants  *LOCKED*
-- §4.6 · L742 — Functional constituencies  *LOCKED*
-- §4.6.1 · L752 — Dual majority  *LOCKED*
-- §4.6.2 · L758 — Corporate voting  *LOCKED*
-- §4.6.3 · L764 — Electorate sizes  *LOCKED*
-- §4.6.4 · L768 — The licensing board  *LOCKED*
-- §4.6.5 · L776 — The residual constituency (the "super-seat")  *LOCKED*
-- §4.6.6 · L782 — Abolition  *LOCKED as permanent open question*
-- §4.6.7 · L786 — Costs, acknowledged
-- §4.7 · L791 — Apportionment population ≠ voting population  *LOCKED*
-- §4.8 · L797 — Thresholds  *LOCKED*
-- §4.9 · L803 — External constituencies  *LOCKED*
-- §4.10 · L809 — Apportionment method as plot  *LOCKED*
-- §4.11 · L813 — Campaign finance in substrate-hours  *LOCKED*
-- §4.12 · L817 — Attestation as voter ID  *LOCKED*
-- §4.13 · L821 — Franchise weighting  *OPEN*
-- §4.14 · L825 — Compulsory voting variant  *OPEN*
-- §4.15 · L829 — Redistricting  *OPEN*
-- §4.16 · L833 — The count  *LEANING*
+**Part IV — THE ELECTORAL SYSTEM** · L711
+- §4.1 · L713 — Parallel voting  *LOCKED*
+- §4.2 · L717 — The tier split as a tonal structure  *LOCKED*
+- §4.3 · L726 — Consequences of parallel specifically  *LOCKED*
+- §4.4 · L733 — The tier ratio is amendable  *LOCKED*
+- §4.5 · L737 — Dual candidacy and revenants  *LOCKED*
+- §4.6 · L743 — Functional constituencies  *LOCKED*
+- §4.6.1 · L753 — Dual majority  *LOCKED*
+- §4.6.2 · L759 — Corporate voting  *LOCKED*
+- §4.6.3 · L765 — Electorate sizes  *LOCKED*
+- §4.6.4 · L769 — The licensing board  *LOCKED*
+- §4.6.5 · L777 — The residual constituency (the "super-seat")  *LOCKED*
+- §4.6.6 · L783 — Abolition  *LOCKED as permanent open question*
+- §4.6.7 · L787 — Costs, acknowledged
+- §4.7 · L792 — Apportionment population ≠ voting population  *LOCKED*
+- §4.8 · L798 — Thresholds  *LOCKED*
+- §4.9 · L804 — External constituencies  *LOCKED*
+- §4.10 · L810 — Apportionment method as plot  *LOCKED*
+- §4.11 · L814 — Campaign finance in substrate-hours  *LOCKED*
+- §4.12 · L818 — Attestation as voter ID  *LOCKED*
+- §4.13 · L822 — Franchise weighting  *OPEN*
+- §4.14 · L826 — Compulsory voting variant  *OPEN*
+- §4.15 · L830 — Redistricting  *OPEN*
+- §4.16 · L834 — The count  *LEANING*
 
-**Part V — CONSTITUENCIES** · L859
-- §5.1 · L861 — The district list is the setting bible  *LOCKED*
-- §5.2 · L865 — Constituency type is a real variable  *LOCKED*
-- §5.3 · L873 — Schema  *LOCKED*
-- §5.4 · L898 — Roster discipline  *LOCKED*
+**Part V — CONSTITUENCIES** · L860
+- §5.1 · L862 — The district list is the setting bible  *LOCKED*
+- §5.2 · L866 — Constituency type is a real variable  *LOCKED*
+- §5.3 · L874 — Schema  *LOCKED*
+- §5.4 · L899 — Roster discipline  *LOCKED*
 
-**Part VI — TRANSHUMANIST MECHANICS** · L904
-- §6.1 · L906 — Legal categories  *LOCKED*
-- §6.2 · L940 — Substrate  *LOCKED*
-- §6.3 · L948 — Clock speed  *LOCKED*
-- §6.4 · L956 — Forking and the divergence threshold  *LOCKED*
-- §6.5 · L974 — Census law  *LOCKED*
-- §6.6 · L980 — Suspension  *LOCKED*
-- §6.7 · L996 — Backups  *LOCKED*
-- §6.8 · L1002 — Embodiment  *LOCKED*
-- §6.9 · L1008 — State object variables  *LOCKED*
-- §6.10 · L1039 — The biological position  *LOCKED*
-- §6.10.1 · L1080 — The real class axis is exposure, not substrate  *LOCKED*
-- §6.10.2 · L1101 — Two emulated populations with nothing in common  *LOCKED*
-- §6.10.3 · L1115 — Uploading as an economic decision  *LOCKED*
-- §6.11 · L1146 — Physiological class  *LOCKED*
+**Part VI — TRANSHUMANIST MECHANICS** · L905
+- §6.1 · L907 — Legal categories  *LOCKED*
+- §6.2 · L941 — Substrate  *LOCKED*
+- §6.3 · L949 — Clock speed  *LOCKED*
+- §6.4 · L957 — Forking and the divergence threshold  *LOCKED*
+- §6.5 · L975 — Census law  *LOCKED*
+- §6.6 · L981 — Suspension  *LOCKED*
+- §6.7 · L997 — Backups  *LOCKED*
+- §6.8 · L1003 — Embodiment  *LOCKED*
+- §6.9 · L1009 — State object variables  *LOCKED*
+- §6.10 · L1040 — The biological position  *LOCKED*
+- §6.10.1 · L1081 — The real class axis is exposure, not substrate  *LOCKED*
+- §6.10.2 · L1102 — Two emulated populations with nothing in common  *LOCKED*
+- §6.10.3 · L1116 — Uploading as an economic decision  *LOCKED*
+- §6.11 · L1147 — Physiological class  *LOCKED*
 
-**Part VII — ECONOMY AND SCARCITY** · L1161
-- §7.1 · L1163 — What got cheap, what stayed scarce  *LOCKED*
-- §7.2 · L1186 — Closure as the sovereignty number  *LOCKED*
-- §7.3 · L1194 — Taxation  *LOCKED*
-- §7.4 · L1198 — Welfare  *LOCKED*
-- §7.5 · L1204 — The shape of the economy  *LOCKED*
-- §7.5.1 · L1217 — Why nothing floats  *LOCKED*
-- §7.5.2 · L1231 — The financial sector  *LOCKED*
-- §7.5.3 · L1258 — Money  *LOCKED*
-- §7.6 · L1287 — Model depth, and the state object  *LOCKED*
-- §7.7 · L1338 — Order-paper time  *LOCKED*
-- §7.8 · L1374 — Discipline and the whip  *LOCKED*
-- §7.9 · L1404 — Scarcity prices  *LOCKED*
-- §7.10 · L1444 — The productive economy  *LOCKED*
+**Part VII — ECONOMY AND SCARCITY** · L1162
+- §7.1 · L1164 — What got cheap, what stayed scarce  *LOCKED*
+- §7.2 · L1187 — Closure as the sovereignty number  *LOCKED*
+- §7.3 · L1195 — Taxation  *LOCKED*
+- §7.4 · L1199 — Welfare  *LOCKED*
+- §7.5 · L1205 — The shape of the economy  *LOCKED*
+- §7.5.1 · L1218 — Why nothing floats  *LOCKED*
+- §7.5.2 · L1232 — The financial sector  *LOCKED*
+- §7.5.3 · L1264 — Money  *LOCKED*
+- §7.5.4 · L1300 — The Reserve Bank  *LOCKED*
+- §7.6 · L1333 — Model depth, and the state object  *LOCKED*
+- §7.7 · L1386 — Order-paper time  *LOCKED*
+- §7.8 · L1422 — Discipline and the whip  *LOCKED*
+- §7.9 · L1452 — Scarcity prices  *LOCKED*
+- §7.10 · L1492 — The productive economy  *LOCKED*
 
-**Part VIII — AXES AND PARTIES** · L1489
-- §8.1 · L1491 — The five signed axes  *LOCKED*
-- §8.2 · L1549 — Depth budget  *LOCKED*
-- §8.3 · L1558 — Naming register  *LOCKED*
-- §8.4 · L1583 — The seated parties  *LOCKED (280 seats*
-- §8.5 · L1622 — Party notes
-- §8.6 · L1646 — Parties available but not currently seated  *LOCKED as reserve material*
-- §8.7 · L1682 — Extraparliamentary  *LOCKED*
-- §8.8 · L1688 — Historical and defunct  *LOCKED*
-- §8.9 · L1694 — Ideologies as doctrines  *LOCKED*
+**Part VIII — AXES AND PARTIES** · L1539
+- §8.1 · L1541 — The five signed axes  *LOCKED*
+- §8.2 · L1599 — Depth budget  *LOCKED*
+- §8.3 · L1608 — Naming register  *LOCKED*
+- §8.4 · L1633 — The seated parties  *LOCKED (280 seats*
+- §8.5 · L1672 — Party notes
+- §8.6 · L1696 — Parties available but not currently seated  *LOCKED as reserve material*
+- §8.7 · L1732 — Extraparliamentary  *LOCKED*
+- §8.8 · L1738 — Historical and defunct  *LOCKED*
+- §8.9 · L1744 — Ideologies as doctrines  *LOCKED*
 
-**Part IX — THE PLAYER'S PARTY** · L1706
-- §9.1 · L1708 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
-- §9.2 · L1725 — Inherited platform  *LOCKED*
-- §9.3 · L1729 — Two alliance structures  *LOCKED*
-- §9.4 · L1738 — Refraction  *LOCKED as a writing principle*
-- §9.5 · L1742 — Current caucus (Party of Socialists and Democrats, 82)  *LOCKED*
+**Part IX — THE PLAYER'S PARTY** · L1756
+- §9.1 · L1758 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
+- §9.2 · L1775 — Inherited platform  *LOCKED*
+- §9.3 · L1779 — Two alliance structures  *LOCKED*
+- §9.4 · L1788 — Refraction  *LOCKED as a writing principle*
+- §9.5 · L1792 — Current caucus (Party of Socialists and Democrats, 82)  *LOCKED*
 
-**Part X — SOCIETY, CULTURE, LAW** · L1759
-- §10.1 · L1761 — Aesthetic register — orbital warmth  *LOCKED*
-- §10.2 · L1773 — Nativism, inverted  *LOCKED*
-- §10.3 · L1779 — Labour  *LOCKED*
-- §10.3.1 · L1803 — Four overlays that matter more than the sectors  *LOCKED*
-- §10.4 · L1832 — Who is not in paid work  *LOCKED*
-- §10.5 · L1870 — Fork-rentiers  *LOCKED*
-- §10.6 · L1885 — Labour conflict  *LOCKED*
-- §10.7 · L1893 — Media and information  *LOCKED*
-- §10.8 · L1899 — Courts and law  *LOCKED*
-- §10.9 · L1905 — Religion  *LOCKED*
-- §10.10 · L1909 — External pressures  *LOCKED*
+**Part X — SOCIETY, CULTURE, LAW** · L1809
+- §10.1 · L1811 — Aesthetic register — orbital warmth  *LOCKED*
+- §10.2 · L1823 — Nativism, inverted  *LOCKED*
+- §10.3 · L1829 — Labour  *LOCKED*
+- §10.3.1 · L1853 — Four overlays that matter more than the sectors  *LOCKED*
+- §10.4 · L1882 — Who is not in paid work  *LOCKED*
+- §10.5 · L1920 — Fork-rentiers  *LOCKED*
+- §10.6 · L1935 — Labour conflict  *LOCKED*
+- §10.7 · L1943 — Media and information  *LOCKED*
+- §10.8 · L1949 — Courts and law  *LOCKED*
+- §10.9 · L1955 — Religion  *LOCKED*
+- §10.10 · L1959 — External pressures  *LOCKED*
 
-**Part XI — NAMED CANON** · L1917
-- §11.1 · L1921 — The polity
-- §11.2 · L1982 — Persons
-- §11.3 · L2026 — Stations and constituencies
-- §11.4 · L2103 — The functional roster  *LOCKED*
-- §11.5 · L2125 — The live bill
-- §11.6 · L2134 — Other business on the order paper
+**Part XI — NAMED CANON** · L1967
+- §11.1 · L1971 — The polity
+- §11.2 · L2032 — Persons
+- §11.3 · L2076 — Stations and constituencies
+- §11.4 · L2153 — The functional roster  *LOCKED*
+- §11.5 · L2175 — The live bill
+- §11.6 · L2184 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L2152
-- §12.1 · L2154 — The core principle  *LOCKED*
-- §12.2 · L2158 — Split visual language  *LOCKED*
-- §12.3 · L2165 — Chrome direction  *LOCKED*
-- §12.4 · L2171 — Screens  *LOCKED*
-- §12.5 · L2175 — Election night  *LOCKED*
-- §12.6 · L2185 — The orbital map  *LOCKED*
-- §12.7 · L2213 — The parliament diagram  *LOCKED*
-- §12.8 · L2239 — Documents  *LOCKED*
-- §12.9 · L2245 — The feed  *LOCKED*
-- §12.10 · L2249 — Build cost  *LOCKED*
-- §12.11 · L2253 — Images  *LOCKED*
-- §12.12 · L2281 — Existing artifact
-- §12.13 · L2293 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L2202
+- §12.1 · L2204 — The core principle  *LOCKED*
+- §12.2 · L2208 — Split visual language  *LOCKED*
+- §12.3 · L2215 — Chrome direction  *LOCKED*
+- §12.4 · L2221 — Screens  *LOCKED*
+- §12.5 · L2225 — Election night  *LOCKED*
+- §12.6 · L2235 — The orbital map  *LOCKED*
+- §12.7 · L2263 — The parliament diagram  *LOCKED*
+- §12.8 · L2289 — Documents  *LOCKED*
+- §12.9 · L2295 — The feed  *LOCKED*
+- §12.10 · L2299 — Build cost  *LOCKED*
+- §12.11 · L2303 — Images  *LOCKED*
+- §12.12 · L2331 — Existing artifact
+- §12.13 · L2343 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2352
-- §13.1 · L2354 — Scandal taxonomy  *LOCKED*
-- §13.2 · L2367 — The spine  *LOCKED*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2402
+- §13.1 · L2404 — Scandal taxonomy  *LOCKED*
+- §13.2 · L2417 — The spine  *LOCKED*
 
-**Part XIV — PRIOR ART** · L2375
-- §14.1 · L2377 — The gap  *LOCKED*
-- §14.2 · L2381 — Works
-- §14.3 · L2389 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L2425
+- §14.1 · L2427 — The gap  *LOCKED*
+- §14.2 · L2431 — Works
+- §14.3 · L2439 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2402
-- §15.1 · L2404 — Team  *LOCKED*
-- §15.2 · L2410 — Documentation  *LOCKED*
-- §15.3 · L2426 — Where this gets hard  *LOCKED*
-- §15.4 · L2437 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2454 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2452
+- §15.1 · L2454 — Team  *LOCKED*
+- §15.2 · L2460 — Documentation  *LOCKED*
+- §15.3 · L2476 — Where this gets hard  *LOCKED*
+- §15.4 · L2487 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2504 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2484
+**Part XVI — OPEN DECISIONS** · L2534
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2525
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2578
 
 <!-- /TOC -->
 
@@ -1028,7 +1029,7 @@ district side of the ratio is the roll's own count of voting seats, not a law.
 **Every variable above does something, as of 23 Sep 2026.** Until then three
 did nothing: no bill set them and nothing read them. `civic_clock_minimum` is
 set by the Civic Clock (Minimum Rate) Bill (§6.3). At real time it costs the
-reserve 500 MW-years a sitting and pushes the thermal price up (`setup.civicClock`).
+reserve CW$70bn a year and pushes the thermal price up (`setup.civicClock`).
 `suspension_debt_accrual` is switched off by the Suspended Persons (Debt
 Moratorium) Bill (§6.6). With the debt paused, restorations run half as fast
 again and suspensions a fifth more often (`setup.suspension`); accruing is
@@ -1245,44 +1246,89 @@ rather than shareholder-owned.
   whether particular people keep running.
 - **Substrate debt** is credit secured against your own continuation. Time-
   imprisonment, and the darkest instrument available.
-- **The state borrows from two lenders** (decided 24 Sep 2026, retiring
-  `design/13` §8.3's "no lender"). **Earth's banks** lend through the Standby
-  Facility, a syndicated facility signed in 2078 and undrawn when the campaign
-  opens, priced on a margin grid that ratchets with the quarrel, with a
-  sanctions clause and a reserve covenant. **The Underwriters** lend at home by
-  taking Commonwealth Reserve Notes out of their reserves, at a coupon their
-  own continuity rating sets from the thermal margin. The Reserve Bank keeps
-  the register and prints nothing (§7.5.3). The syndicates, the placees and
-  every term are content's (`setup.lenders`), not this section's.
+- **The state borrows at home and abroad** (decided 24 Sep 2026, retiring
+  `design/13` §8.3's "no lender"; the money rewritten 25 Sep, §7.5.3).
+  **Earth's banks** lend through the Standby Facility, a syndicated facility
+  signed in 2078, undrawn when the campaign opens and **denominated in US
+  dollars**, priced on a margin grid that ratchets with the quarrel, with a
+  sanctions clause and a reserve covenant. **The Underwriters** lend at home
+  by taking Commonwealth Reserve Notes, at half a point over the Reserve
+  Bank's cash rate plus a coupon their own continuity rating sets from the
+  thermal margin. **Treasury bills** are tendered weekly for whatever the
+  reserve cannot meet, up to the Treasury's standing authority, so an empty
+  reserve is a debt and not a pause. **The Reserve Bank** lends to the
+  Treasury only under a Ways and Means order (§7.5.4). The syndicates, the
+  placees and every term are content's (`setup.lenders`), not this
+  section's.
 
 ### 7.5.3 Money — LOCKED
 
-Denominate in **thermal rejection capacity**. Energy is trivial; dumping waste
-heat is the hard limit on everything including computation, including how many
-minds may exist. A currency that is a claim on radiator capacity is literally a
-claim on room for someone to be alive.
+**The Commonwealth dollar** (CW$, code CWD) floats, and a Reserve Bank
+targets inflation (the author, 25 Sep 2026, choosing option C of
+`design/39`: "This is a political simulation that is supposed to feel real").
+Heat rejection is still the ceiling of everything, and it is the ceiling **of
+output**: potential output rises with the trend and with participation, and
+falls as the federal thermal margin thins below fifteen. The franchise
+question and the budget question are still one question, and the float makes
+it sharper: spending past the radiators' capacity is inflation, and inflation
+in the thermal price is people suspended.
 
-It also solves a real problem: subjective-hours cannot be the unit of account
-when clock rates differ twentyfold. The unit must be objective, and thermal is
-the most objective scarce thing there is.
+**The history, which is the backstory design/39 offered and the author has
+not overruled.** From the Charter in 2064 the dollar was issued by a currency
+board against thermal quota, a dollar for a millionth of an MW-year, so the
+Commonwealth's money was in effect the quota and the board had no policy to
+make. The Reserve Bank Act 2071 replaced the board with a central bank; its
+first Governor, Adriana Flash, **floated the dollar in 2073** at parity with
+the US dollar. It has drifted to about 84 US cents by 2080. That gives Flash a
+record as Governor that is more than "long enough to be a record": she is the
+banker who broke the peg, and both sides of the chamber can say so.
 
-**The unit is the MW-year rejected, and no coin is named.** The Commonwealth's
-money *is* the quota; a claim on rejection capacity is the claim, and the
-state's holding of it is the treasury (§7.6). Everything fiscal is denominated
-in it: the treasury holds it, the appropriation divides it, and a person costs
-it. Locking this is what makes the franchise question and the budget question
-the same question, and it invents no setting term (§2.7).
+**The unit of account is the million dollars**, one for one with the old
+MW-year, so every sum content wrote reads unchanged: the reserve's 52,000 is
+CW$52 billion. The quota is a commodity priced in dollars, and the scarcity
+price of thermal is the economy's energy price.
 
-Locked 17 September 2026; it was LEANING precisely because it touches every
-price in the game, which is an argument for deciding it before the economy
-pass rather than during it (`design/13` §1, `design/28` §2).
+**Debt is owed in the lender's money.** What is owed to Earth's banks is owed
+in US dollars, so a falling dollar makes the debt heavier without anything
+more being borrowed (Eichengreen and Hausmann's "original sin"). That is the
+modern shape of the debt trap Flash I's canon ends in.
 
-**Proposed for reopening, 25 Sep 2026** (`design/39`). A currency that *is* a
-physical quantity is a commodity standard, and it leaves the Reserve Bank
-nothing to do; the author wants fiscal and monetary policy that feels modern.
-The proposal keeps heat as the physical ceiling (it becomes potential output)
-and moves money to a floating Commonwealth currency with an inflation-targeting
-Bank. Nothing is built until the author decides.
+Superseded: the MW-year as the unit and "no coin is named" (locked 17 Sep
+2026). A currency that is a physical quantity is a commodity standard, and
+it left the Reserve Bank nothing to do (`design/39` §3).
+
+### 7.5.4 The Reserve Bank — LOCKED
+
+**Independent by statute, not by the Charter** (the author, 25 Sep 2026). The
+Reserve Bank Act 2071 gives the **Governor** the cash rate and the
+**Treasurer** the remit: the inflation target (two per cent) and the mandate
+(inflation, or inflation and full participation). Parliament keeps two powers
+and can amend the Act; the Perigee Charter does not mention the Bank.
+
+- **The rule.** The Bank meets every six weeks and sets the rate by a
+  published Taylor rule: a neutral real rate of one per cent, plus inflation,
+  plus half the miss, plus half the output gap (all of it under a dual
+  mandate), in quarter points and no more than a half at a meeting. It
+  decides by rule, deterministically (§1.5), and the rule is printed beside
+  every decision.
+- **A reserve direction** is an affirmative order telling the Bank to hold or
+  cut at every meeting while it stands. Every meeting under one costs the
+  Bank credibility.
+- **A Ways and Means order** opens the Treasury's overdraft at the Bank: the
+  Bank creates the money the Treasury spends, and expected inflation and the
+  dollar pay for it.
+- **Credibility** is whether the market believes the target. Believed,
+  expectations stay on it; doubted, they follow prices.
+
+The Governor is **Maren Castellane**, Flash's deputy and successor, a
+deliberate addition to the roster (§2.7) and the author's to recast.
+
+**The six readings** a finance ministry reads every morning are the model's
+whole surface: growth, inflation, the cash rate, the dollar, the budget
+balance, and debt against output. Every constant is content's
+(`setup.macro`, `setup.fiscal`, `setup.money`); the engine names no tax, no
+currency and no lender. The economy votes: inflation over the target and
+output under capacity pull standing down, and a steady economy lifts it.
 
 ## 7.6 Model depth, and the state object — LOCKED
 
@@ -1294,18 +1340,20 @@ party_loyalty     // own caucus
 public_standing   // national polling
 consumables       // the material floor
 thermal_margin    // the existential clock
-solvency          // THE QUOTA THE STATE HOLDS, in the unit of §7.5.3.
-                  //   A quantity, not an index — shown exactly, for the same
-                  //   reason capital is: this game is for people who want the
-                  //   arithmetic. (Was `treasury`, an index of "capacity to
-                  //   act"; renamed and denominated for the economy pass,
-                  //   design/13 §5 and design/28.)
-                  //   One point of the old index is a thousand MW-years, so
-                  //   the Commonwealth opens holding 52,000 and the whole
-                  //   appropriation is read in the same unit: the defaults
-                  //   come to 48,000 of it. Floor at nought, no ceiling — a
-                  //   government that runs out does not default, it sheds
-                  //   people (§7.9).
+solvency          // THE RESERVE: the Treasury's dollars at the Reserve Bank,
+                  //   in millions (§7.5.3). A quantity, not an index — shown
+                  //   exactly, for the same reason capital is: this game is
+                  //   for people who want the arithmetic. (Was `treasury`,
+                  //   an index; then the quota in MW-years; now dollars, one
+                  //   for one with the MW-years.) The Commonwealth opens
+                  //   holding CW$52bn, and the account runs BY THE CALENDAR:
+                  //   receipts, the standing programmes, the voted estimates
+                  //   and interest are rates a year charged for the days
+                  //   since the last tick, so a recess counts. Floor at
+                  //   nought; a payment the reserve cannot meet is tendered
+                  //   as Treasury bills, and past the Treasury's authority
+                  //   it goes unpaid. A government that runs out of both
+                  //   does not default, it sheds people (§7.9).
 legitimacy        // Flash I: the government being believed, at home
 friction          // Flash I: Earth's governments and banks against you.
                   //   The one meter that is BAD when it rises.
@@ -1464,10 +1512,12 @@ worth having. Measured over twenty-six sittings from the opening state:
 
 | divergence threshold | participation after 26 sittings |
 |---|---|
-| left at 168 hours | 40.1 |
-| cut to 40 hours | **49.2** |
+| left at 168 hours | 39.0 |
+| cut to 40 hours | **48.1** |
 
-Nine points, because invisible instance-hours become counted jobs. The bill
+Nine points, because invisible instance-hours become counted jobs. (Measured
+again under the Commonwealth dollar, §7.5.3; it was 40.1 and 49.2 while the
+reserve filled every sitting and the volume price fell with it.) The bill
 everyone debates as a personhood measure is the largest intervention in this
 labour market anyone has contemplated, and nobody in the chamber discusses it
 in those terms. `test.js` asserts both figures, so the claim cannot rot.
@@ -2500,6 +2550,9 @@ reads that as a bug.
   and ends nothing.
 - ~~**Money denominated in thermal rejection capacity**~~ — **CLOSED, LOCKED
   17 September 2026** (§7.5.3): the MW-year rejected, no coin named.
+  **Reopened and closed again 25 September 2026** (`design/39` option C): a
+  floating Commonwealth dollar and a Reserve Bank independent by statute
+  (§7.5.3, §7.5.4).
 - **Foreign affairs and the international map** — deferred. When built, the
   organising axis should be **light-lag**, the way the orbital chart's is
   altitude: a map ordered by delay is a map of how alien each relationship is.

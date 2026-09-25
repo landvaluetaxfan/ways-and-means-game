@@ -1,7 +1,8 @@
 # 39 — THE ECONOMY FROM FIRST PRINCIPLES
 
-**Status: PROPOSAL, 25 Sep 2026. Nothing here is built.** The author,
-answering design/37 D7:
+**Status: DECIDED AND BUILT, 25 Sep 2026: option C.** The proposal is kept
+below as written; what the author decided and what was built are in
+"Decided, and built" at the end. The author, answering design/37 D7:
 
 > "let's approach it again from first principles, try to map out how our IRL
 > modern-day economy reached the economy in the game, and try to compare
@@ -380,3 +381,92 @@ most worth reading for this game are:
   real shape;
 - Arnott and Stiglitz on the Henry George theorem, which is the strongest
   case for the Single Tax Party that the world has.
+
+---
+
+## Decided, and built (25 Sep 2026)
+
+The author's answer:
+
+> "fuck it, let's do C. This is a political simulation that is supposed to
+> feel real, so if there is to be semi-complex fiscal mechanics (compared to
+> other games out there) then let's do it. it's fine if we have to hand-hold
+> at some parts, it should be an in-depth game / Commonwealth Dollar works /
+> and yes, let's make the reserve bank independent as you said, but not
+> written into the charter"
+
+| # | Decision | Answer |
+|---|---|---|
+| 1 | A, B or C | **C**: a floating currency and an inflation-targeting Reserve Bank |
+| 2 | A thermal peg that Flash floated | **Taken as backstory**, not overruled: a currency board 2064–2071, the Reserve Bank Act 2071, the float in 2073 at parity. The author's to reverse; it lives in bible §7.5.3 and two Concordance articles |
+| 3 | Is the Bank independent under the Charter | **By statute, not by the Charter**: the Reserve Bank Act 2071 gives the Governor the rate and the Treasurer the remit; Parliament keeps a reserve direction and a Ways and Means order, both affirmative |
+| 4 | The currency's name | **The Commonwealth dollar** (CW$, CWD). Earth's banks lend in US dollars |
+| 5 | Income untaxed | **Yes**, by default: the four bases stand |
+| 6 | Phase 1 | **Built with the rest** |
+
+### What was built
+
+**The account runs by the calendar.** Receipts, the standing programmes, the
+voted estimates, the civic clock and interest are rates a year
+(`Engine.budget`), and each tick charges the days since the last, so a
+recess of fifteen days is fifteen days' money. Interest is a year's at the
+lender's rate, not a month's every sitting. The appropriation is charged:
+a supply bill at its clauses' defaults until it passes, then at what the
+House voted. The four bases and the rate levels moved from the engine to
+`setup.fiscal`, with annual weights: CW$220bn of receipts at standard rates,
+CW$176bn of standing programmes and CW$48bn of default estimates, a deficit
+of CW$4bn a year, which is the fall the reserve has shown since 2073.
+
+**The macroeconomy** (`setup.macro`, `Engine.macro`, `runEconomy`):
+
+- output closes on demand; demand is potential plus the opening strength,
+  plus the fiscal STANCE against where it opened (the rates set and lines
+  voted, at opening prices and output, so a windfall from dearer heat is not
+  the government tightening), less the real rate against where it opened, a
+  strong dollar and the quarrel, plus trade and any shock content deals;
+- potential rises with the trend and participation and falls under a
+  thermal margin of fifteen (0.8% a point): the radiators are the capacity;
+- a Phillips curve with expectations anchored by the Bank's credibility, the
+  four scarcity prices as supply and the dollar as imports;
+- the Bank meets every 42 days from 6 May on a published Taylor rule;
+- the dollar trades on the real-rate gap with Earth, friction, the debt, the
+  balance, credibility and trade, slowed by exchange controls;
+- the economy votes: inflation over the target and slack cost standing, a
+  steady economy lifts it.
+
+**Debt in two currencies.** A lender with a `currency` lends in it and is
+owed in it (`Engine.debtHome` converts). `{move:{"loan.<id>": n}}` borrows
+both sides at the day's rate. **Treasury bills** (`automatic: true`) take any
+payment the reserve cannot meet, up to CW$60bn; past that, arrears.
+
+**Content.** The Governor, Maren Castellane (a deliberate roster addition);
+four orders (two reserve directions, the Ways and Means advance, exchange
+controls); two initiatives (lean on the Governor, defend the dollar); eight
+events (the remit, the inflation figure, the open letter, the dollar falls,
+the downgrade, the Bank in the campaign, and the two initiative answers);
+eleven readings for the Underwriters; the Reserve Bank and Commonwealth
+dollar articles; two glossary terms taught and three assumed; tooltips.
+
+**The Economy tab.** The account became a year's budget in dollars, the
+bases yield a year, and a sixth panel, the Reserve Bank and the dollar,
+carries inflation, the cash rate with what its rule asks and when it meets,
+the dollar, growth against capacity, and credibility. The chart takes
+inflation, the rate, the dollar, growth, the gap, the balance and the debt,
+with 2073–2080 records for the first four. Nothing on the tab scrolls at any
+of the seven measured shapes, and the one-column collapse no longer draws
+two panels two pixels wide (a fault that predates this).
+
+**What it did to the canon.** The canon still lands the debt trap at sitting
+28 and goes to the count, now on 19 August at sitting 58, at standing 58:
+the PSD holds 103 seats and the government's side 165 of 280, a working
+majority, with the thermal margin at 5. The crisis it pays for is financed
+now rather than free: it reaches the count owing CW$59.8bn in Treasury bills,
+about a tenth of output, with the dollar near 0.79, inflation 3.4% and the
+Bank raising again. Every playtest strategy ends where it ended before.
+
+**Not built, and why.** The four price rules are still in the engine's tick
+(design/39 §6 phase 1 asked for them in content too); they are the §7.9
+chain and moving them needs an expression language the schema does not have.
+The Bank's meeting in the campaign is a weighted chapter-three event, and
+chapter three is a fixed sequence, so it is rare.
+

@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 30;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns
+  const STATE_VERSION = 31;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar
 
   /* ---------------------------------------------------------
      1. STATE
@@ -196,6 +196,13 @@ const Engine = (function () {
       economy: economyOf(C),
       economyHistory: economyHistoryOf(C),
 
+      /* THE MONEY (design/39 option C): output and its ceiling, inflation
+         and what people expect of it, the Reserve Bank's rate and its
+         credibility, the dollar, and the day the account was last run to.
+         Content's opening figures (`setup.macro`); a setup without one has
+         no macroeconomy and the account runs on receipts alone. */
+      macro: macroOf(C, dateOfSitting(C, 1)),
+
       president: Object.assign({}, C.setup.president),
 
       flags: {},
@@ -269,6 +276,7 @@ const Engine = (function () {
     }
     /* the party figures and the government's meter are the currents' */
     syncLoyalty(st, C);
+    if (st.macro) { st.macro.balancePct = openingBalancePct(C); st.macro.debtPct = 0; }
     return st;
   }
 
@@ -498,6 +506,16 @@ const Engine = (function () {
       if (st.campaign === undefined) st.campaign = null;
       st.version = 30;
     }
+    if (st.version < 31) {                    // the Commonwealth dollar
+      /* The reserve and every debt were MW-years of quota; they are millions
+         of dollars now, one for one, because content's sums did not move
+         (design/39: one MW-year of the old account is a million dollars).
+         There is no macroeconomy in an old save: reconcile() opens one
+         from content, dated to the save's own day, so the account runs
+         from where the save stood and not from the campaign's first day. */
+      if (st.macro === undefined) st.macro = null;
+      st.version = 31;
+    }
     return st;
   }
 
@@ -578,6 +596,21 @@ const Engine = (function () {
        read — and a content opening figure it never saw; a save from before
        a measure was ADDED arrives with a hole. Both are the same fix, and
        it is the reason reconcile runs on every load. */
+    /* THE MONEY, opened from content if the save has none (a save from
+       before the dollar, or a setup that has since gained one), dated to
+       the save's own day. The save owns everything after that. */
+    if (!st.macro && macroConst(C)) {
+      st.macro = macroOf(C, st.date);
+      st.macro.balancePct = openingBalancePct(C);
+      st.macro.debtPct = 0;
+    }
+    if (st.macro) {
+      st.macro.history = st.macro.history || {};
+      ["inflation", "rate", "fx", "gap", "growth", "balance", "debt"].forEach(k => {
+        if (!st.macro.history[k]) st.macro.history[k] = [];
+      });
+      st.macro.decisions = st.macro.decisions || [];
+    }
     st.economy = st.economy || {};
     st.economyHistory = st.economyHistory || {};
     Object.keys(economyOf(C)).forEach(k => {
@@ -3860,10 +3893,13 @@ const Engine = (function () {
        the cost of existing. A save being migrated has no economy for the
        instant before the guard runs, so an absent one answers false rather
        than throwing. */
-    economyAbove:   (st, v) => !!st.economy &&
-      Object.keys(v).every(k => st.economy[k] > v[k]),
-    economyBelow:   (st, v) => !!st.economy &&
-      Object.keys(v).every(k => st.economy[k] < v[k]),
+    /* and the money's readings (option C): inflation, rate, fx, gap,
+       growth, credibility, expected, reserves, and `debt` and `balance` as
+       shares of output. One reading per name, whichever table holds it. */
+    economyAbove:   (st, v) => Object.keys(v).every(k => {
+      const x = economyReading(st, k); return x != null && x > v[k]; }),
+    economyBelow:   (st, v) => Object.keys(v).every(k => {
+      const x = economyReading(st, k); return x != null && x < v[k]; }),
     slotsLeft:      (st, v) => (st.slots.total - st.slots.used) >= v,
     /* Conditions are not under the twenty-verb cap (§15.5), so the world
        may be read in as many ways as content needs. */
@@ -4063,6 +4099,18 @@ const Engine = (function () {
     /* the government's party's loyalty is its currents' (syncLoyalty) */
     if (k === "party_loyalty" && st.parties && st.parties[st.playerParty])
       return shiftLoyalty(st, C, st.playerParty, d);
+    /* A PAYMENT THE RESERVE CANNOT MEET IS BORROWED, not forgiven. Until the
+       dollar the reserve floored at nought and whatever took it lower was
+       simply not paid, so a government at nought spent for nothing. Now the
+       shortfall goes to the lenders content marks `automatic` (the
+       Treasury's bills at the weekly tender), and only what they will not
+       take is left unpaid, on the record as arrears. */
+    if (k === "solvency" && d < 0 && (st.scalars.solvency || 0) + d < 0) {
+      const short = -((st.scalars.solvency || 0) + d);
+      st.scalars.solvency = 0;
+      coverShortfall(st, C, short);
+      return;
+    }
     st.scalars[k] = clamp((st.scalars[k] || 0) + d, 0,
       SCALAR_MAX[k] == null ? 100 : SCALAR_MAX[k]);
     /* A NATIONAL MOVE IS A MOVE IN EVERY BAND. Content written before
@@ -4157,6 +4205,18 @@ const Engine = (function () {
         case "debt":
           owedTable(st)[k] = Math.max(0, debtOf(st, k) + d);
           break;
+        /* {move:{"loan.earth":16000}} -- BORROW, both sides at once and at
+           the day's exchange rate: the reserve gains 16,000 dollars and the
+           lender is owed what 16,000 dollars are worth in its own money. A
+           negative loan repays the same way. `debt.` stays for what a
+           content author means literally (a sum owed in the lender's money,
+           with the reserve's side written separately). */
+        case "loan": {
+          const n = d > 0 ? d : -Math.min(-d, Math.ceil(inHome(st, C, k, debtOf(st, k))));
+          owedTable(st)[k] = Math.max(0, debtOf(st, k) + Math.round(inLenders(st, C, k, n)));
+          st.scalars.solvency = Math.max(0, (st.scalars.solvency || 0) + n);
+          break;
+        }
         case "actor":
           if (st.actors[k])
             st.actors[k].standing = clamp(st.actors[k].standing + d, 0, 100);
@@ -4173,10 +4233,32 @@ const Engine = (function () {
        a per cent of adults and trade is an index at 100, and banding
        either against the 0..100 scalar scale would misreport every
        effect. */
+    /* AND THE MONEY (option C), in the same verb rather than a new one, so
+       EFFECTS stays where §15.5 wants it. What content may move:
+
+         credibility   the Reserve Bank's, 0..1, in hundredths as written
+                       (-0.1 is a tenth of it)
+         expected      expected inflation, points
+         inflation     inflation itself, points (a price shock)
+         shock         demand, per cent of potential, fading away
+         fx            the dollar, per cent (+2 is two per cent dearer)
+         reserves      the Bank's foreign reserves, in their money
+         rate          the policy rate, points: only a Bank decision content
+                       stages (an emergency cut); the rule sets it otherwise */
     economy: (st, C, v) => Object.keys(v).forEach(k => {
-      if (!st.economy) return;
-      if (k === "private") st.economy.private = clamp(st.economy.private + v[k], 0, 1);
-      else st.economy[k] = clamp((st.economy[k] || 0) + v[k], 0, 300);
+      const m = st.macro;
+      if (k === "private") { if (st.economy) st.economy.private = clamp(st.economy.private + v[k], 0, 1); }
+      else if (k === "participation" || k === "trade") {
+        if (st.economy) st.economy[k] = clamp((st.economy[k] || 0) + v[k], 0, 300);
+      }
+      else if (!m) return;
+      else if (k === "credibility") m.credibility = clamp(m.credibility + v[k], 0, 1);
+      else if (k === "expected") m.expected += v[k];
+      else if (k === "inflation") m.inflation += v[k];
+      else if (k === "shock") m.shock += v[k];
+      else if (k === "fx") nudgeFx(st, v[k]);
+      else if (k === "reserves") m.reserves = Math.max(0, m.reserves + v[k]);
+      else if (k === "rate") m.rate = Math.max(0, Math.round((m.rate + v[k]) * 100) / 100);
     }),
 
     law: (st, C, v) => Object.assign(st.law, v),
@@ -4828,6 +4910,15 @@ const Engine = (function () {
             out.push({ tone: d >= 0 ? "good" : "bad",
               text: (d >= 0 ? "Steadies " : "Unsettles ") +
                     id.replace(/_/g, " ") + ", a little, each sitting" });
+          } else if (ns === "debt" || ns === "loan") {
+            const L = lenderOf(C, id);
+            const who = L.name || id.replace(/_/g, " ");
+            out.push({ tone: d > 0 ? "grave" : "good",
+              text: ns === "loan"
+                ? (d > 0 ? "Borrows " + money(C, d) + " from " + who
+                         : "Repays " + money(C, -d) + " to " + who)
+                : (d > 0 ? "Adds " + money(C, d, L.currency) + " to what is owed " + who
+                         : "Takes " + money(C, -d, L.currency) + " off what is owed " + who) });
           }
         });
           break;
@@ -4866,6 +4957,24 @@ const Engine = (function () {
            schema entry, and a line here saying what it did. */
         case "economy": Object.keys(v).forEach(ek => {
           const d = v[ek];
+          const MACRO_SAY = {
+            credibility: ["The Reserve Bank is believed more", "The Reserve Bank is believed less", 100],
+            expected:    ["Raises the inflation people expect", "Lowers the inflation people expect", 1],
+            inflation:   ["Pushes inflation up", "Brings inflation down", 1],
+            shock:       ["Lifts demand", "Takes demand out of the economy", 1],
+            fx:          ["Strengthens the dollar", "Weakens the dollar", 1],
+            reserves:    ["Adds to the Bank's reserves", "Spends the Bank's reserves", 0.001],
+            rate:        ["Raises the Bank's rate", "Cuts the Bank's rate", 4]
+          };
+          if (MACRO_SAY[ek]) {
+            const [up, down, per] = MACRO_SAY[ek];
+            const worse = ek === "expected" || ek === "inflation" ? d > 0
+                        : ek === "rate" ? false : d < 0;
+            const b = band(d * per * 4);
+            out.push({ tone: ek === "rate" ? "grave" : worse ? "bad" : "good",
+                       text: (d >= 0 ? up : down) + (b ? ", " + b : "") });
+            return;
+          }
           const say =
             ek === "participation"
               ? (d >= 0 ? "Puts more adults in paid work" : "Puts adults out of paid work")
@@ -5110,33 +5219,499 @@ const Engine = (function () {
      and the Single Tax Party exists in this world to make it. The player
      can find it by reading the table, and the table does not explain it.
      ========================================================= */
-  const TAX_BASES = [
-    { k: "volume",    weight: 480, passthrough: 0,  name: "Volume" },
-    { k: "thermal",   weight: 300, passthrough: 26, name: "Thermal quota" },
-    { k: "substrate", weight: 280, passthrough: 24, name: "Substrate-hours" },
-    { k: "transit",   weight: 140, passthrough: 20, name: "Mass to orbit" }
-  ];
-  /* The levels are the clause levels' own words, like every other law value. */
-  const RATE_STEP = { none: 0, low: 0.5, standard: 1, high: 1.6 };
+  /* THE BASES AND THE RATES ARE CONTENT'S (design/39 §6; the author, 25 Sep
+     2026). They were `TAX_BASES` and `RATE_STEP` here, which made the engine
+     the one place in the game that named a tax. `setup.fiscal.bases` is the
+     table, each weight the base's annual yield in the unit of account at the
+     standard rate, every price at 100 and output where it opened; `rates` are
+     the clause levels' own words. A setup with no fiscal frame raises nothing,
+     which is what a probe with no economy should do. */
+  function fiscalOf(C) { return (C && C.setup && C.setup.fiscal) || {}; }
+  function basesOf(C) { return fiscalOf(C).bases || []; }
 
-  function rateOf(st, k) {
+  function rateOf(st, k, C) {
+    const steps = fiscalOf(C).rates || {};
     const v = (st.law || {})["rate_" + k];
-    return RATE_STEP[v] == null ? RATE_STEP.standard : RATE_STEP[v];
+    return steps[v] == null ? (steps.standard == null ? 1 : steps.standard) : steps[v];
+  }
+
+  /* HOW MUCH BIGGER THE ECONOMY IS IN MONEY THAN WHEN IT OPENED: real output
+     against its opening, times the price level. Receipts are levied on
+     activity, so a recession takes revenue with it and inflation brings some
+     back; the standing programmes are indexed, so inflation costs them too.
+     These are the automatic stabilisers, and they are the whole reason a
+     finance ministry reads the output gap before the receipts. One with no
+     macroeconomy reads 1. */
+  function nominalIndex(st, C) {
+    const M = macroConst(C), m = st.macro;
+    if (!M || !m || !M.output) return 1;
+    return (m.output / M.output) * (m.level || 1);
   }
 
   /* The whole revenue side, as a table rather than a number, because the
      player is owed the arithmetic and not the answer (7.6). Reads state and
-     writes none, so the interface may call it on any draw. */
-  function receipts(st) {
-    const rows = TAX_BASES.map(b => {
-      const factor = rateOf(st, b.k);
+     writes none, so the interface may call it on any draw. Every yield is a
+     rate a YEAR, in the unit of account: the tick charges each sitting its
+     share of the days since the last. */
+  function receipts(st, C) {
+    const scale = nominalIndex(st, C);
+    const rows = basesOf(C).map(b => {
+      const factor = rateOf(st, b.k, C);
       const price = (st.prices || {})[b.k] == null ? 100 : st.prices[b.k];
       return { base: b.k, name: b.name,
                rate: (st.law || {})["rate_" + b.k] || "standard",
-               factor: factor, price: price,
-               yield: Math.round(factor * (price / 100) * b.weight) };
+               factor: factor, price: price, passthrough: b.passthrough || 0,
+               yield: Math.round(factor * (price / 100) * b.weight * scale) };
     });
     return { rows: rows, total: rows.reduce((a, r) => a + r.yield, 0) };
+  }
+
+  /* THE SPENDING SIDE, a year at a time (design/39 §3: "the appropriation is
+     never charged"). Three lines and the interest:
+
+       standing   the programmes a statute carries and no annual vote
+                  touches — the courts, the attestation registry, the
+                  stations' grants. Indexed to prices. Content's figure.
+       voted      what the bills carrying clauses appropriate. A supply bill
+                  (`test: "supply"`) is charged at its clauses' DEFAULTS
+                  until it passes, because a government that has not yet
+                  carried its estimates spends at last session's; once
+                  carried it is charged at the levels the House voted. Any
+                  other bill with clauses is charged only once it is law.
+       clock      the civic clock (bible 6.3), per unit of the minimum the
+                  law sets, indexed.
+
+     What the Commonwealth owes its lenders is `interestDue` below, since a
+     facility is serviced in its own money. */
+  function carried(st, id) {
+    const b = (st.bills || {})[id];
+    return !!(b && (b.stage === "assented" || b.stage === "in_force"));
+  }
+  function spending(st, C) {
+    const F = fiscalOf(C), level = (st.macro && st.macro.level) || 1;
+    const standing = Math.round((F.standing || 0) * level);
+    let voted = 0;
+    ((C && C.bills) || []).forEach(b => {
+      if (!b.clauses || !b.clauses.length) return;
+      if (carried(st, b.id)) voted += clauseCost(st, C, b.id).total;
+      else if (b.test === "supply") voted += (b.clauses || []).reduce((n, cl) => {
+        const lv = (cl.levels || []).find(l => l.id === cl.default) || (cl.levels || [])[0];
+        return n + ((lv && lv.cost) || 0);
+      }, 0);
+    });
+    const clock = +((st.law || {}).civic_clock_minimum) || 0;
+    const clockC = (C && C.setup && C.setup.civicClock) || {};
+    const civic = Math.round(clock * (clockC.costPerYear || 0) * level);
+    return { standing: standing, voted: voted, clock: civic,
+             total: standing + voted + civic };
+  }
+
+  /* THE BUDGET AS A FINANCE MINISTRY PRINTS IT: receipts, spending, the
+     primary balance, interest, and the overall balance, each a rate a year,
+     and the overall balance and the debt as shares of output. */
+  function budget(st, C) {
+    const r = receipts(st, C), s = spending(st, C);
+    const interest = interestDue(st, C);
+    const primary = r.total - s.total;
+    const nominal = nominalOutput(st, C);
+    return { receipts: r.total, spending: s.total, standing: s.standing,
+             voted: s.voted, clock: s.clock, primary: primary, interest: interest,
+             balance: primary - interest, output: nominal,
+             balancePct: nominal ? Math.round((primary - interest) / nominal * 1000) / 10 : 0,
+             debt: debtHome(st, C),
+             debtPct: nominal ? Math.round(debtHome(st, C) / nominal * 1000) / 10 : 0 };
+  }
+
+  /* =========================================================
+     THE MACROECONOMY (design/39 option C; the author, 25 Sep 2026: "This is
+     a political simulation that is supposed to feel real").
+
+     THE COMMONWEALTH DOLLAR FLOATS, AND THE RESERVE BANK TARGETS INFLATION.
+     Heat rejection is still the ceiling of everything, and it is the ceiling
+     OF OUTPUT now: potential output rises with the trend, with participation,
+     and falls as the federal thermal margin thins. The bible's central idea
+     survives the change of money and gets sharper: spending past the
+     radiators' capacity is inflation, and inflation in the thermal price is
+     people suspended.
+
+     SIX READINGS, and a handful of rules, every constant content's
+     (`setup.macro`): growth, inflation, the policy rate, the exchange rate,
+     the budget balance, and the debt against output. Each is a textbook
+     relation in its plainest form, because §7.6 wants shallow simulation and
+     deep consequence:
+
+       output      closes a share of the gap to DEMAND every year it runs.
+                   Demand is potential plus the opening strength, plus the
+                   fiscal impulse (the primary balance against where it
+                   opened, times a multiplier), less the real policy rate
+                   against where it opened, less a strong dollar, plus
+                   trade, less the quarrel with Earth, plus any shock
+                   content has dealt it.
+       inflation   a Phillips curve: expectations, plus the output gap, plus
+                   the four scarcity prices above where they opened (supply),
+                   plus a weaker dollar (imports).
+       expected    anchored on the target by the Bank's CREDIBILITY, and on
+                   inflation itself by whatever credibility the Bank lacks.
+       the rate    set at a meeting every `meetingEvery` days by a Taylor
+                   rule, in quarter points, no more than `maxMove` at a
+                   meeting, unless a reserve direction is in force.
+       the dollar  follows the real rate gap with Earth, the quarrel, the
+                   debt and the deficit, credibility and trade.
+       the vote    inflation over the target and output under potential pull
+                   standing down, and a steady economy lifts it a little.
+
+     DETERMINISTIC, like everything else in the engine (§1.5): no draw, no
+     noise. The Bank decides by rule, and the rule is printed.
+
+     WHY INDEPENDENT BY STATUTE AND NOT BY CHARTER (the author, 25 Sep). The
+     Treasurer sets the remit, the Governor sets the rate, and Parliament can
+     take the power back: a RESERVE DIRECTION (`law.reserve_direction`) is an
+     affirmative order, and while it is in force the Bank moves the way it
+     is told and its credibility pays for every meeting of it. None of that
+     is in the engine by name: it reads a law key, and content writes the
+     order that sets it.
+     ========================================================= */
+  function macroConst(C) { return (C && C.setup && C.setup.macro) || null; }
+
+  function macroOf(C, date) {
+    const M = macroConst(C);
+    if (!M) return null;
+    return {
+      output: M.output, potential: M.potential, path: M.potential,
+      growth: M.growth == null ? M.trend || 0 : M.growth,
+      inflation: M.inflation, expected: M.expected == null ? M.inflation : M.expected,
+      credibility: M.credibility == null ? 1 : M.credibility,
+      rate: M.rate, fx: M.fx, reserves: M.reserves || 0, level: 1,
+      shock: 0, asOf: date || null,
+      nextMeeting: M.firstMeeting || null,
+      decisions: [],
+      history: { inflation: [], rate: [], fx: [], gap: [], growth: [], balance: [], debt: [] }
+    };
+  }
+
+  function nominalOutput(st, C) {
+    const M = macroConst(C), m = st.macro;
+    if (!M || !m) return 0;
+    return Math.round(m.output * (m.level || 1));
+  }
+
+  /* The target in force: the remit's, which is law the Treasurer sets. */
+  function targetOf(st, C) {
+    const t = (st.law || {}).inflation_target;
+    return t == null ? 2 : +t;
+  }
+
+  /* THE READINGS, in one place, for conditions, the interface and the
+     Underwriters. Nothing here is stored twice: the gap is output against
+     potential, the debt is the debt against output, the balance is the
+     budget's own. */
+  function macro(st, C) {
+    const m = st.macro;
+    if (!m) return null;
+    const b = budget(st, C);
+    return {
+      output: Math.round(m.output), potential: Math.round(m.potential),
+      nominal: b.output,
+      gap: Math.round((m.output / m.potential - 1) * 1000) / 10,
+      growth: Math.round(m.growth * 10) / 10,
+      inflation: Math.round(m.inflation * 10) / 10,
+      expected: Math.round(m.expected * 10) / 10,
+      target: targetOf(st, C),
+      credibility: Math.round(m.credibility * 100) / 100,
+      rate: m.rate, fx: Math.round(m.fx * 1000) / 1000,
+      reserves: Math.round(m.reserves), level: m.level,
+      balance: b.balancePct, debt: b.debtPct,
+      directed: (st.law || {}).reserve_direction || null,
+      mandate: (st.law || {}).bank_mandate || "inflation",
+      nextMeeting: m.nextMeeting, lastDecision: (m.decisions || [])[0] || null
+    };
+  }
+
+  /* What the Taylor rule asks for today, so the interface can print the
+     Bank's arithmetic beside its decision. */
+  function taylorRate(st, C) {
+    const M = macroConst(C), m = st.macro;
+    if (!M || !m) return null;
+    const R = M.rule || {};
+    const gap = (m.output / m.potential - 1) * 100;
+    const dual = (st.law || {}).bank_mandate === "dual";
+    const i = (M.neutral == null ? 1 : M.neutral) + m.inflation +
+              (R.inflation == null ? 0.5 : R.inflation) * (m.inflation - targetOf(st, C)) +
+              (dual ? (R.dualGap == null ? 1 : R.dualGap) : (R.gap == null ? 0.5 : R.gap)) * gap;
+    return Math.round(i * 100) / 100;
+  }
+
+  /* The dollar's resting point: where the markets would put it on today's
+     fundamentals. Relative to where every term opened, so the opening
+     economy sits exactly on its opening rate. */
+  function fxTarget(st, C) {
+    const M = macroConst(C), m = st.macro;
+    if (!M || !m) return null;
+    const X = M.fxModel || {}, E = M.earth || {};
+    const earthReal = (E.rate || 0) - (E.inflation || 0);
+    const real = (m.rate - m.expected) - earthReal;
+    const real0 = (M.rate - (M.expected == null ? M.inflation : M.expected)) - earthReal;
+    const fr0 = ((C.setup || {}).scalars || {}).friction || 0;
+    const controls = !!(st.law || {}).capital_controls;
+    const b = budget(st, C);
+    const bal0 = openingBalancePct(C);
+    const trade = st.economy && st.economy.trade != null ? st.economy.trade : 100;
+    const x =
+        (X.realRate || 0) * (real - real0) / 100
+      - (X.friction || 0) * (controls ? 0.5 : 1) * ((st.scalars.friction || 0) - fr0) / 100
+      - (X.debt || 0) * b.debtPct / 100
+      + (X.balance || 0) * (b.balancePct - bal0) / 100
+      + (X.credibility || 0) * (m.credibility - (M.credibility == null ? 1 : M.credibility))
+      + (X.trade || 0) * (trade - 100) / 100;
+    return M.fx * Math.exp(x);
+  }
+
+  /* The primary-plus-interest balance the opening economy runs, as a share
+     of output, read off content the way a new game would open. Memoised by
+     content, since it is a property of the world and not of play. */
+  const OPENING_BALANCE = new WeakMap();
+  function openingBalancePct(C) {
+    if (!C) return 0;
+    if (OPENING_BALANCE.has(C)) return OPENING_BALANCE.get(C);
+    const probe = { law: Object.assign({}, C.setup.law), prices: pricesOf(C), bills: {},
+                    clauses: {}, scalars: Object.assign({}, C.setup.scalars),
+                    macro: macroOf(C), debt: { owed: {} } };
+    const v = budget(probe, C).balancePct;
+    OPENING_BALANCE.set(C, v);
+    return v;
+  }
+
+  /* THE FISCAL STANCE: what POLICY does to the balance, as a share of
+     output, with every price and output held where they opened. The
+     balance itself moves with the scarcity prices and the cycle, and a
+     receipts windfall from dearer heat is not the government tightening;
+     the rates it sets and the lines it votes are. This is the figure a
+     finance ministry reads to say whether a budget is loose or tight, and
+     the only one the demand side answers to. */
+  function stance(st, C) {
+    const M = macroConst(C);
+    if (!M) return 0;
+    const r = basesOf(C).reduce((n, b) => n + rateOf(st, b.k, C) * b.weight, 0);
+    const F = fiscalOf(C);
+    const s0 = spending(st, C), level = (st.macro && st.macro.level) || 1;
+    const spent = (F.standing || 0) + s0.voted + s0.clock / level;
+    return (r - spent) / M.output * 100;
+  }
+  const OPENING_STANCE = new WeakMap();
+  function openingStance(C) {
+    if (!C) return 0;
+    if (OPENING_STANCE.has(C)) return OPENING_STANCE.get(C);
+    const probe = { law: Object.assign({}, C.setup.law), prices: pricesOf(C), bills: {},
+                    clauses: {}, scalars: Object.assign({}, C.setup.scalars),
+                    macro: macroOf(C), debt: { owed: {} } };
+    const v = stance(probe, C);
+    OPENING_STANCE.set(C, v);
+    return v;
+  }
+
+  /* HOW FAR THE RADIATORS LIMIT OUTPUT. Above the line the margin is slack
+     the economy does not use; below it every point is capacity lost. */
+  function heatFactor(st, C) {
+    const H = (macroConst(C) || {}).heat || {};
+    const m = st.scalars.thermal_margin;
+    const line = H.line == null ? 20 : H.line;
+    return m >= line ? 1 : Math.max(0.5, 1 - (line - m) * (H.perPoint == null ? 0.006 : H.perPoint));
+  }
+
+  /* One move toward a target over `dt` years at `speed` a year, the same
+     exponential approach for every reading so a long recess is not a jump
+     and two short ticks equal one long one. */
+  function approach(now, target, speed, dt) {
+    return now + (target - now) * (1 - Math.exp(-speed * dt));
+  }
+
+  /* THE BANK MEETS. A decision is the rule's, in quarter points and no more
+     than `maxMove` at once, unless a direction is in force: then the Bank
+     moves the way it is told, and its credibility pays for each meeting of
+     it. Content says every word of it (`setup.macro.say`). */
+  function bankMeets(st, C, date) {
+    const M = macroConst(C), m = st.macro, R = M.rule || {};
+    const step = R.step || 0.25, most = R.maxMove || 0.5, floor = R.floor == null ? 0.25 : R.floor;
+    const from = m.rate;
+    const dir = (st.law || {}).reserve_direction || null;
+    const want = taylorRate(st, C);
+    let move;
+    if (dir) {
+      const D = (M.directions || {})[dir] || {};
+      move = D.move || 0;
+      m.credibility = clamp(m.credibility - (D.credibility == null ? 0.04 : D.credibility), 0, 1);
+    } else {
+      const raw = want - from;
+      move = Math.abs(raw) < step / 2 ? 0 : Math.round(raw / step) * step;
+      move = clamp(move, -most, most);
+    }
+    m.rate = Math.max(floor, Math.round((from + move) * 100) / 100);
+    const kind = m.rate > from ? "raise" : m.rate < from ? "cut" : "hold";
+    const d = { date: date, sitting: st.sitting, from: from, to: m.rate, rule: want,
+                kind: kind, directed: dir };
+    m.decisions.unshift(d);
+    if (m.decisions.length > 12) m.decisions.pop();
+    const S = M.say || {};
+    const fill = t => String(t || "").replace(/\{rate\}/g, m.rate.toFixed(2))
+      .replace(/\{from\}/g, from.toFixed(2)).replace(/\{rule\}/g, want.toFixed(2))
+      .replace(/\{date\}/g, date);
+    const key = (dir ? "directed_" : "") + kind;
+    const wire = S[key] || S[kind];
+    if (wire && wire.wire) st.wire.unshift({ sitting: st.sitting, text: fill(wire.wire) });
+    if (wire && wire.log) st.log.unshift({ sitting: st.sitting, text: fill(wire.log) });
+    return d;
+  }
+
+  /* THE ECONOMY RUNS FOR `dt` YEARS. Called by tick() with the days since
+     the last tick, so a recess counts and a sitting on consecutive days is
+     a day's worth. Order: capacity, demand, output, prices, expectations,
+     credibility, the Bank, the dollar, the vote. */
+  function runEconomy(st, C, dt) {
+    const M = macroConst(C), m = st.macro;
+    if (!M || !m || !(dt > 0)) return [];
+    const marks = [];
+    const target = targetOf(st, C);
+
+    /* CAPACITY. The trend path, times what the radiators allow, times the
+       labour the economy can call on. */
+    m.path = m.path * Math.pow(1 + (M.trend || 0) / 100, dt);
+    const L = M.labour || {};
+    const part = st.economy && st.economy.participation != null ? st.economy.participation : (L.opening || 0);
+    const labour = 1 + (part - (L.opening || part)) * (L.perPoint || 0) / 100;
+    m.potential = m.path * heatFactor(st, C) * labour;
+
+    /* DEMAND. Every term is measured from where the economy opened, so a
+       government that changes nothing gets the economy it inherited. */
+    const D = M.demand || {};
+    const impulse = (openingStance(C) - stance(st, C)) / 100;
+    const real = m.rate - m.expected;
+    const real0 = M.rate - (M.expected == null ? M.inflation : M.expected);
+    const fr0 = ((C.setup || {}).scalars || {}).friction || 0;
+    const trade = st.economy && st.economy.trade != null ? st.economy.trade : 100;
+    const strength = (M.output / M.potential - 1);
+    const demand = m.potential * (1 + strength
+      + (D.fiscal || 0) * impulse
+      - (D.rate || 0) * (real - real0) / 100
+      - (D.fx || 0) * (m.fx / M.fx - 1)
+      + (D.trade || 0) * (trade - 100) / 100
+      - (D.friction || 0) * Math.max(0, (st.scalars.friction || 0) - fr0) / 100
+      + m.shock / 100);
+    const before = m.output;
+    m.output = approach(m.output, demand, D.speed || 4, dt);
+    const inst = (Math.pow(m.output / before, 1 / dt) - 1) * 100;
+    m.growth = approach(m.growth, inst, 2, dt);
+    m.shock = approach(m.shock, 0, D.shockFade || 1.5, dt);
+    const gap = (m.output / m.potential - 1) * 100;
+
+    /* PRICES. Supply is the four scarcity prices against where they
+       opened, weighted by what each base yields; imports are the dollar
+       against where it opened. */
+    const P = M.phillips || {};
+    let supply = 0, wsum = 0;
+    basesOf(C).forEach(x => {
+      /* every price is an index rebased to 100 at the opening */
+      const open = 100;
+      const now = (st.prices || {})[x.k] == null ? open : st.prices[x.k];
+      supply += x.weight * (now / open - 1); wsum += x.weight;
+    });
+    supply = wsum ? supply / wsum : 0;
+    const imports = M.fx / m.fx - 1;
+    const aim = m.expected + (P.gap || 0) * gap + (P.supply || 0) * supply * 100
+              + (P.imports || 0) * imports * 100;
+    m.inflation = approach(m.inflation, aim, P.speed || 3, dt);
+    m.level = m.level * Math.pow(1 + m.inflation / 100, dt);
+
+    /* EXPECTATIONS AND CREDIBILITY. A credible Bank anchors expectations
+       on the target; an incredible one lets them follow inflation. The
+       Bank earns credibility slowly by hitting the target and loses it
+       faster by missing, and every meeting under direction costs it
+       more (bankMeets). */
+    const K = M.credibilityModel || {};
+    const miss = Math.abs(m.inflation - target);
+    const earned = (st.law || {}).reserve_direction ? (K.directedCeiling == null ? 0.5 : K.directedCeiling)
+                 : miss <= (K.band == null ? 1 : K.band) ? 1
+                 : Math.max(K.floor == null ? 0.2 : K.floor, 1 - (miss - (K.band == null ? 1 : K.band)) * (K.perPoint == null ? 0.15 : K.perPoint));
+    m.credibility = clamp(approach(m.credibility, earned,
+      earned > m.credibility ? (K.earn || 0.3) : (K.lose || 0.8), dt), 0, 1);
+    const anchor = m.credibility * target + (1 - m.credibility) * m.inflation;
+    m.expected = approach(m.expected, anchor, K.expectations || 2, dt);
+
+    /* THE BANK, on every meeting date that has passed since the last tick,
+       a recess's included. */
+    const every = M.meetingEvery || 42;
+    let guard = 0;
+    while (m.nextMeeting && st.date && m.nextMeeting <= st.date && guard++ < 20) {
+      bankMeets(st, C, m.nextMeeting);
+      m.nextMeeting = iso(new Date(parseDay(m.nextMeeting).getTime() + every * DAY));
+    }
+
+    /* THE DOLLAR. Markets are quick, and capital controls slow them. */
+    const X = M.fxModel || {};
+    const controls = !!(st.law || {}).capital_controls;
+    m.fx = approach(m.fx, fxTarget(st, C), (X.speed || 6) * (controls ? (X.controlled || 0.35) : 1), dt);
+    const fxOpen = M.fx;
+    [0.9, 0.8, 0.7].forEach(line => {
+      const key = "_fx_below_" + line;
+      if (m.fx < fxOpen * line && !st.flags[key]) {
+        st.flags[key] = true;
+        const say = ((M.say || {}).dollar || {}).wire;
+        if (say) marks.push(String(say).replace(/\{fx\}/g, m.fx.toFixed(2)));
+      }
+    });
+
+    /* THE ECONOMY VOTES. A pull on every band, per year, carried in the
+       same fractions the drift carries so a small one is not rounded
+       away. Inflation over the target by more than the band, and output
+       below potential, cost; a steady economy pays a little. */
+    const V = M.vote || {};
+    const over = Math.max(0, m.inflation - target - (V.band == null ? 1 : V.band));
+    const slack = Math.max(0, -gap - (V.slackBand == null ? 0.5 : V.slackBand));
+    const calm = over === 0 && slack === 0 && Math.abs(m.inflation - target) <= (V.band == null ? 1 : V.band) / 2;
+    const pull = dt * (-(V.inflation || 0) * over - (V.slack || 0) * slack + (calm ? (V.calm || 0) : 0));
+    if (pull && st.standing) {
+      st.standingCarry = st.standingCarry || {};
+      Object.keys(st.standing).forEach(k => {
+        const c = (st.standingCarry[k] || 0) + pull;
+        const whole = c > 0 ? Math.floor(c) : Math.ceil(c);
+        st.standing[k] = clamp(st.standing[k] + whole, 0, 100);
+        st.standingCarry[k] = c - whole;
+      });
+      syncStanding(st, C);
+    }
+
+    /* A CURVE, the same sixty-sitting window as the prices. */
+    const r = macro(st, C);
+    m.debtPct = r.debt; m.balancePct = r.balance;
+    const H = m.history;
+    [["inflation", r.inflation], ["rate", r.rate], ["fx", r.fx], ["gap", r.gap],
+     ["growth", r.growth], ["balance", r.balance], ["debt", r.debt]].forEach(([k, v]) => {
+      const h = H[k] || (H[k] = []);
+      h.push(v); if (h.length > 60) h.shift();
+    });
+    return marks;
+  }
+
+  /* ONE READING BY NAME, for conditions, which see the state and not
+     content: the productive economy's three, the Bank's, and the two
+     shares of output the last tick recorded. */
+  function economyReading(st, k) {
+    if (st.economy && st.economy[k] != null) return st.economy[k];
+    const m = st.macro;
+    if (!m) return null;
+    if (k === "gap") return (m.output / m.potential - 1) * 100;
+    /* inflation against the remit's target, whatever the remit says */
+    if (k === "overshoot") return m.inflation - ((st.law || {}).inflation_target == null ? 2 : +st.law.inflation_target);
+    if (k === "debt") return m.debtPct || 0;
+    if (k === "balance") return m.balancePct == null ? 0 : m.balancePct;
+    return m[k] == null ? null : m[k];
+  }
+
+  /* THE DOLLAR'S SIDE OF A TRADE, for effects and initiatives: selling the
+     Bank's reserves to buy dollars, or the reverse. Content's `economy`
+     verb calls it with `fx` in per cent. */
+  function nudgeFx(st, pct) {
+    if (!st.macro) return;
+    st.macro.fx = Math.max(0.05, st.macro.fx * (1 + pct / 100));
   }
 
   /* =========================================================
@@ -5165,6 +5740,21 @@ const Engine = (function () {
      those four against where they opened — one figure, derived in one place,
      owned by nobody. */
   const BASE_RATE = 4;
+
+  /* HOW A SUM IS WRITTEN. The account is kept in millions of the unit of
+     account (`setup.money`), and a sum is printed the way a finance
+     ministry prints one: CW$52.0bn, US$8.0bn, CW$640m. A setup with no
+     money prints the bare figure, which is what the probes want. */
+  function money(C, n, currency) {
+    const M = (C && C.setup && C.setup.money) || null;
+    if (!M) return Math.round(n).toLocaleString("en-GB");
+    const F = M.foreign || {};
+    const sym = currency && currency !== M.code ? (F.code === currency ? F.symbol : currency + " ")
+                                                : M.symbol;
+    const a = Math.abs(n), neg = n < 0 ? "\u2212" : "";
+    if (a >= 1000) return neg + sym + (a / 1000).toFixed(1) + "bn";
+    return neg + sym + Math.round(a) + "m";
+  }
 
   /* NAMED CREDITORS (the author, 23 Sep: "flesh out the economy"). The debt
      was one principal owed to Earth, and the Alliance's emergency facility
@@ -5206,38 +5796,69 @@ const Engine = (function () {
   function debtRate(st, C, lender) {
     const r = lenderOf(C, lender || "earth").rate || {};
     if (r.fixed != null) return r.fixed;
-    const base = (r.base == null ? BASE_RATE : r.base) +
+    /* A lender at home prices off the Reserve Bank's rate (`policy`, a
+       multiple of it, usually one), which is how a rise at the Bank reaches
+       the Treasury's own borrowing within the week. */
+    const policy = r.policy && st.macro ? r.policy * st.macro.rate : 0;
+    const base = (r.base == null ? BASE_RATE : r.base) + policy +
                  Math.round((st.scalars.friction || 0) * (r.perFriction || 0));
     const add = rateSteps(st, C, lender).reduce((n, x) => n + (x.add || 0), 0);
     return Math.round((base + add) * 100) / 100;
   }
 
-  /* What is owed, to one lender or to all of them. */
+  /* What is owed, to one lender in that lender's own money, or to all of
+     them added as they stand. The sum is only honest when every lender
+     lends in dollars; `debtHome` is the figure that converts. */
   function debtOf(st, lender) {
     const o = (st.debt && st.debt.owed) || {};
     if (lender) return o[lender] || 0;
     return Object.keys(o).reduce((n, k) => n + (o[k] || 0), 0);
   }
 
+  /* ORIGINAL SIN (Eichengreen and Hausmann, 1999). A lender with a
+     `currency` other than the Commonwealth's lends in its own money, and
+     the Commonwealth owes it in that money whatever the dollar does. So a
+     falling dollar makes the debt heavier without anybody borrowing a
+     cent more, which is the modern shape of a debt trap. `fx` is foreign
+     money per dollar. */
+  function foreign(C, id) {
+    const L = lenderOf(C, id), home = ((C && C.setup && C.setup.money) || {}).code;
+    return !!(L.currency && L.currency !== home);
+  }
+  function fxOf(st) { return (st.macro && st.macro.fx) || 1; }
+  function inHome(st, C, id, n) { return foreign(C, id) ? n / fxOf(st) : n; }
+  function inLenders(st, C, id, n) { return foreign(C, id) ? n * fxOf(st) : n; }
+  function debtHome(st, C) {
+    const o = (st.debt && st.debt.owed) || {};
+    return Math.round(Object.keys(o).reduce((n, k) => n + inHome(st, C, k, o[k] || 0), 0));
+  }
+
   /* Every lender the Commonwealth owes, with the terms, for the account. */
+  /* `service` is the interest a YEAR, in dollars at today's rate. It was
+     a month's interest charged every sitting, about seventeen times what a
+     lender asks (design/39 §3). */
   function debts(st, C) {
     const o = (st.debt && st.debt.owed) || {};
     return Object.keys(o).filter(k => o[k] > 0).map(k => {
       const L = lenderOf(C, k);
-      return { id: k, name: L.name || k, owed: o[k], rate: debtRate(st, C, k),
+      const home = inHome(st, C, k, o[k]);
+      return { id: k, name: L.name || k, owed: o[k], owedHome: Math.round(home),
+               currency: foreign(C, k) ? L.currency : null,
+               rate: debtRate(st, C, k),
                service: L.serviced === false ? 0
-                      : Math.round(o[k] * (debtRate(st, C, k) / 100) / 12),
+                      : Math.round(home * (debtRate(st, C, k) / 100)),
                label: L.label || "", note: L.note || "", short: L.short || L.note || "",
-               repayable: L.repayable !== false, home: !!L.home };
+               repayable: L.repayable !== false, home: !foreign(C, k) };
     });
   }
 
-  /* What the debt costs every sitting, in the unit everything else is in:
-     each lender's principal at that lender's rate, a sitting's share of a
-     year. */
-  function debtService(st, C) {
+  /* What the debt costs a year, in dollars: each lender's principal at that
+     lender's rate, the foreign ones at today's exchange rate. */
+  function interestDue(st, C) {
     return debts(st, C).reduce((n, d) => n + d.service, 0);
   }
+  /* the old name, kept because content tools and the interface read it */
+  function debtService(st, C) { return interestDue(st, C); }
 
   /* HOW FAR A LENDER WILL GO NOW. The cap is the commitment; a LIMIT is a
      clause that lowers it while its condition holds -- a sanctions clause
@@ -5259,6 +5880,38 @@ const Engine = (function () {
       if (c < cap && matches(st, x.when)) { cap = c; why = x.why || ""; }
     });
     return { cap: cap, why: why };
+  }
+
+  /* THE TENDER. Each `automatic` lender, in content's order, takes as much
+     of the shortfall as its cap has room for, in dollars; what none will
+     take is arrears. The first tender says so on the wire, once. */
+  function coverShortfall(st, C, short) {
+    const L = (C && C.setup && C.setup.lenders) || {};
+    let left = Math.round(short);
+    Object.keys(L).filter(k => L[k].automatic).forEach(k => {
+      if (left <= 0) return;
+      const room = Math.max(0, lenderCap(st, C, k).cap - debtOf(st, k));
+      const n = Math.min(left, Math.floor(inHome(st, C, k, room)));
+      if (n <= 0) return;
+      owedTable(st)[k] = debtOf(st, k) + Math.round(inLenders(st, C, k, n));
+      left -= n;
+      const key = "_tender_" + k;
+      if (!st.flags[key]) {
+        st.flags[key] = true;
+        if (L[k].wire) st.wire.unshift({ sitting: st.sitting, text: String(L[k].wire).toUpperCase() });
+        if (L[k].log) st.log.unshift({ sitting: st.sitting, text: L[k].log });
+      }
+    });
+    if (left > 0 && st.macro) {
+      st.macro.arrears = (st.macro.arrears || 0) + left;
+      if (!st.flags._arrears) {
+        st.flags._arrears = true;
+        st.log.unshift({ sitting: st.sitting, text:
+          "The reserve is empty and the tender is full: " + money(C, left) +
+          " of the Commonwealth's payments are unpaid." });
+      }
+    }
+    return left;
   }
 
   function canBorrow(st, C, amount, lender) {
@@ -5285,8 +5938,11 @@ const Engine = (function () {
     if (!gate.ok) return gate;
     const L = lenderOf(C, id);
     const n = Math.max(0, Math.round(amount));
+    /* A drawing is in the lender's money, and the reserve receives what it
+       buys in dollars today. */
+    const got = Math.round(inHome(st, C, id, n));
     owedTable(st)[id] = debtOf(st, id) + n;
-    st.scalars.solvency = (st.scalars.solvency || 0) + n;
+    st.scalars.solvency = (st.scalars.solvency || 0) + got;
     st.slots.used += (L.slots == null ? 1 : L.slots);
     st.actedThisSitting = true;
     /* WHAT A DRAWING DOES BEYOND THE MONEY is the lender's own: Earth's
@@ -5296,15 +5952,16 @@ const Engine = (function () {
     if (L.onDraw) apply(st, C, L.onDraw);
     /* a rate is printed to two places, the way a lender quotes one */
     const pc = rate.toFixed(2);
-    const fill = t => String(t).replace(/\{n\}/g, n.toLocaleString()).replace(/\{rate\}/g, pc);
+    const fill = t => String(t).replace(/\{n\}/g, money(C, n, L.currency))
+      .replace(/\{got\}/g, money(C, got)).replace(/\{rate\}/g, pc);
     st.log.unshift({ sitting: st.sitting, text: L.log ? fill(L.log)
-      : "Borrowed " + n.toLocaleString() + " MW-years from " + (L.name || id) +
+      : "Borrowed " + money(C, n, L.currency) + " from " + (L.name || id) +
         ", at " + pc + " per cent." });
     st.wire = st.wire || [];
     st.wire.unshift({ sitting: st.sitting, text: L.wire ? fill(L.wire)
-      : "COMMONWEALTH BORROWS " + n.toLocaleString() + " FROM " +
+      : "COMMONWEALTH BORROWS " + money(C, n, L.currency).toUpperCase() + " FROM " +
         String(L.name || id).toUpperCase() + " AT " + pc + " PER CENT" });
-    return { ok: true, borrowed: n, rate: rate };
+    return { ok: true, borrowed: n, received: got, rate: rate };
   }
 
   /* EVERY FACILITY THE COMMONWEALTH CAN DRAW ON, owed or not, for the
@@ -5326,35 +5983,46 @@ const Engine = (function () {
                      : ((L[k].rate || {}).base == null ? BASE_RATE : L[k].rate.base)),
                utilisation: size, ok: gate.ok, reason: gate.reason || "",
                slots: L[k].slots == null ? 1 : L[k].slots,
-               home: !!L[k].home, note: L[k].note || "", drawNote: L[k].drawNote || "" };
+               home: !foreign(C, k), currency: foreign(C, k) ? L[k].currency : null,
+               received: Math.round(inHome(st, C, k, size)),
+               note: L[k].note || "", drawNote: L[k].drawNote || "" };
     });
   }
 
+  /* `amount` is dollars out of the reserve; a foreign lender is paid what
+     those dollars buy today. */
   function repay(st, C, amount, lender) {
     const id = lender || "earth";
     const p = debtOf(st, id);
     const L = lenderOf(C, id);
     if (!p) return { ok: false, reason: "the Commonwealth owes " + (L.name || id) + " nothing" };
-    const n = Math.min(p, Math.max(0, Math.round(amount || 0)),
+    const n = Math.min(Math.ceil(inHome(st, C, id, p)), Math.max(0, Math.round(amount || 0)),
                        st.scalars.solvency || 0);
     if (!n) return { ok: false, reason: "nothing it can pay" };
     if (L.repayable === false)
       return { ok: false, reason: (L.name || id) + " is repaid on its own terms" };
-    owedTable(st)[id] = p - n;
+    const off = Math.min(p, Math.round(inLenders(st, C, id, n)));
+    owedTable(st)[id] = p - off;
     st.scalars.solvency -= n;
     /* The credit is for being clear of the lender, not for each payment, or
        a debt paid a unit at a time would buy legitimacy by the unit. */
-    if (p - n <= 0)
+    if (p - off <= 0)
       st.scalars.legitimacy = clamp((st.scalars.legitimacy || 0) + 2, 0, 100);
     st.log.unshift({ sitting: st.sitting,
-      text: "Repaid " + n.toLocaleString() + " MW-years to " + (L.name || id) + "." });
+      text: "Repaid " + money(C, n) + " to " + (L.name || id) + "." });
     settle(st, C);
     return { ok: true, repaid: n };
   }
 
-  /* THE FOUR PRICES, AS ONE READING. Against where each opened, weighted
-     evenly because the goods are not substitutes: a household pays all four. */
+  /* INFLATION IS THE BANK'S READING NOW (option C), a rate a year. Before
+     the currency floated it was the four scarcity prices against where they
+     opened, and that reading survives as `scarcity()`: the cost of existing,
+     which is one input to inflation and no longer the whole of it. */
   function inflation(st) {
+    if (st.macro && st.macro.inflation != null) return Math.round(st.macro.inflation * 10) / 10;
+    return scarcity(st);
+  }
+  function scarcity(st) {
     const keys = Object.keys(st.prices || {});
     if (!keys.length) return 0;
     let sum = 0, n = 0;
@@ -5387,26 +6055,26 @@ const Engine = (function () {
   function outlook(st, C) {
     const keys = [];
     const solv = st.scalars.solvency || 0;
-    const rec = receipts(st).total;
-    const svc = debtService(st, C);
-    const net = rec - svc;
-    const debt = debtOf(st);
-    const infl = inflation(st);
+    const b = budget(st, C);
+    const net = b.balance;
+    const debt = debtHome(st, C);
+    const m = macro(st, C);
 
-    /* the reserve, against what it is spending */
+    /* the reserve, against what it is spending: how many months it lasts */
     if (solv <= 0) keys.push("reserve_gone");
-    else if (net < 0 && solv / Math.max(1, -net) < 12) keys.push("reserve_thin");
+    else if (net < 0 && solv / Math.max(1, -net) < 0.5) keys.push("reserve_thin");
     else if (solv > 80000) keys.push("reserve_deep");
 
     /* the flow */
     if (net < 0) keys.push("receipts_short");
-    else if (rec > 0 && net > 0) keys.push("receipts_cover");
+    else if (b.receipts > 0 && net > 0) keys.push("receipts_cover");
 
-    /* the debt and its price. What is owed at home (a lender marked
-       `home`) is read apart from what is owed off-world, because the rate
-       readings are about the quarrel and a domestic lender is not in it. */
+    /* the debt and its price. What is owed at home is read apart from what
+       is owed off-world, because the rate readings are about the quarrel
+       and a domestic lender is not in it. The line is a share of output,
+       the way anybody who lends reads a sovereign's debt. */
     if (!debt) keys.push("debt_none");
-    else if (debt > 30000) keys.push("debt_heavy");
+    else if (b.debtPct > 12) keys.push("debt_heavy");
     else keys.push("debt_light");
     const all = debts(st, C), away = all.filter(d => !d.home);
     if (away.length) keys.push(Math.max(...away.map(d => d.rate)) >= 10 ? "rate_dear" : "rate_cheap");
@@ -5414,11 +6082,28 @@ const Engine = (function () {
        about that lender in particular (`owed_<id>`) */
     all.forEach(d => keys.push("owed_" + d.id));
 
-    /* the cost of existing */
-    if (infl <= -5) keys.push("prices_falling");
-    else if (infl < 5) keys.push("prices_steady");
-    else if (infl < 20) keys.push("prices_rising");
+    /* the cost of existing: the four prices against where they opened */
+    const sc = scarcity(st);
+    if (sc <= -5) keys.push("prices_falling");
+    else if (sc < 5) keys.push("prices_steady");
+    else if (sc < 20) keys.push("prices_rising");
     else keys.push("prices_spiking");
+
+    /* and the money: inflation against the remit, the Bank's grip on it,
+       and the dollar against where it opened */
+    if (m) {
+      const over = m.inflation - m.target;
+      if (over > 2) keys.push("inflation_high");
+      else if (over < -1) keys.push("inflation_low");
+      else keys.push("inflation_target");
+      if (m.credibility < 0.6) keys.push("bank_doubted");
+      if (m.directed) keys.push("bank_directed");
+      const M = macroConst(C);
+      if (m.fx < M.fx * 0.9) keys.push("dollar_weak");
+      else if (m.fx > M.fx * 1.08) keys.push("dollar_strong");
+      if (m.gap < -1.5) keys.push("output_slack");
+      else if (m.gap > 1.5) keys.push("output_hot");
+    }
 
     /* the one rate nobody has set, which is the Georgist point */
     if ((st.law || {}).rate_volume === "none" || (st.law || {}).rate_volume === "low")
@@ -5442,7 +6127,7 @@ const Engine = (function () {
     const pressure = (35 - st.scalars.thermal_margin) * 1.2;
     /* the levy, passed through to whoever buys the thing. Nought at the
        standard rate, so the calibration of everything above is unmoved. */
-    const taxT = (rateOf(st, "thermal") - 1) * 26;
+    const taxT = (rateOf(st, "thermal", C) - 1) * 26;
     /* THE CIVIC CLOCK (bible 6.3): a minimum clock rate for every
        enfranchised mind, publicly subsidised. Every watt of computation
        becomes heat, so the rate is thermal pressure as well as a cost,
@@ -5457,7 +6142,7 @@ const Engine = (function () {
     const pub = st.law.substrate_public_share == null ? 0.35 : st.law.substrate_public_share;
     P.substrate = clamp(P.substrate + drift(P.substrate,
       70 + (1 - pub) * 60 + (P.thermal - 100) * 0.4 +
-      (rateOf(st, "substrate") - 1) * 24), 20, 400);
+      (rateOf(st, "substrate", C) - 1) * 24), 20, 400);
 
     /* volume: pressurised cubic metres, capped by the construction
        schedule, which is bought out of the treasury.
@@ -5490,7 +6175,7 @@ const Engine = (function () {
     const ts = st.law.transit_subsidy;
     const trBump = ts === "anchors" ? -8 : ts === "all" ? -14 : 0;
     P.transit = clamp(P.transit + drift(P.transit,
-      100 - (solv - 50) * 0.3 + trBump + (rateOf(st, "transit") - 1) * 20), 20, 400);
+      100 - (solv - 50) * 0.3 + trBump + (rateOf(st, "transit", C) - 1) * 20), 20, 400);
 
     Object.keys(P).forEach(k => {
       P[k] = Math.round(P[k] * 10) / 10;
@@ -5567,18 +6252,27 @@ const Engine = (function () {
       }
     })();
 
-    /* AND THE STATE TAKES ITS REVENUE, on the prices this sitting has just
-       set rather than last sitting's. This is the only place in the engine
-       that ADDS to solvency: everything else that touches it is a content
-       effect spending it. See the Ways and Means note above tick(). */
+    /* THE ACCOUNT RUNS BY THE CALENDAR (design/39 §3). Every flow is a rate
+       a year, charged for the days since the last tick, so a recess of a
+       fortnight is a fortnight's receipts, spending and interest and not
+       nothing, and a sitting the day after the last is a day's. The
+       economy runs over the same days first, so the revenue is levied on
+       the output and prices this sitting has just set. This is still the
+       only place the engine ADDS to solvency. */
     (function () {
-      const r = receipts(st);
-      /* AND THE DEBT IS SERVICED OUT OF THE SAME PURSE, before anything else
-         is done with it. A government that has borrowed is paying Earth
-         every sitting whether it thinks about it or not. */
-      const owed = debtService(st, C);
-      const net = r.total - owed;
-      if (net) st.scalars.solvency = Math.max(0, (st.scalars.solvency || 0) + net);
+      const was = st.macro && st.macro.asOf;
+      const days = was && st.date ? Math.max(0, (parseDay(st.date) - parseDay(was)) / DAY) : 0;
+      if (st.macro) st.macro.asOf = st.date;
+      if (!days) return;
+      const dt = days / 365;
+      runEconomy(st, C, dt).forEach(x => marks.push(x));
+      const b = budget(st, C);
+      st.macro && (st.macro.lastFlow = { days: days, receipts: Math.round(b.receipts * dt),
+        spending: Math.round(b.spending * dt), interest: Math.round(b.interest * dt) });
+      const net = b.balance * dt + (st.accountCarry || 0);
+      const whole = Math.trunc(net);
+      st.accountCarry = net - whole;
+      if (whole) bumpScalar(st, C, "solvency", whole);
     })();
 
     /* THE RESERVE KEEPS A CURVE, the way the four prices already do. It is
@@ -5662,9 +6356,8 @@ const Engine = (function () {
       if (cp.mark && !st.flags[key]) { st.flags[key] = true; marks.push(cp.mark); }
     });
 
-    /* and the reserve pays the subsidy, every sitting the law stands */
-    if (clock > 0 && clockC.costPerSitting)
-      bumpScalar(st, C, "solvency", -Math.round(clock * clockC.costPerSitting));
+    /* The subsidy is on the spending side of the account now, a rate a
+       year like everything else there (spending()). */
 
     /* Stations answer to the substrate price. A habitat that cannot pay does
        not economise — it sheds people, and the shed order says which. */
@@ -6978,6 +7671,8 @@ const Engine = (function () {
     packBoard, canPackBoard, boardsMoved, boardsTotal,
     borrow, repay, canBorrow, debtOf, debtRate, debtService, debts, lenderOf, inflation, outlook,
     facilities, lenderCap, rateSteps,
+    budget, spending, interestDue, debtHome, macro, taylorRate, fxTarget, money,
+    scarcity, economyReading, nominalOutput, targetOf,
     reshuffle, canReshuffle, resolveMotion, motionDeadline,
     standingIn, bandsOf, bandWeight, syncStanding, assent, presidentDecides, referralRisk, reviewReturns,
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,

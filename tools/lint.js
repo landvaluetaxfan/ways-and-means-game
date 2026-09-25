@@ -215,7 +215,7 @@ try {
         : ns === "actor" ? actorIds.has(k)
         : ns === "capital" ? partyIds.has(k)
         : ns === "price" ? priceIds.has(k)
-        : ns === "debt" ? lenderIds.has(k)
+        : ns === "debt" || ns === "loan" ? lenderIds.has(k)
         /* AND AN UNKNOWN NAMESPACE IS A FAULT, not "the engine's business".
            That escape hatch is how `move:{"relationship.watkins":-6}` sat in
            Questions to the Prime Minister passing every check: the engine's
@@ -805,7 +805,10 @@ try {
         CH = ids(CHARACTERS), CAB = ids(CABINET);
   const LAW = new Set(Object.keys(SETUP.law || {})), SC = new Set(Object.keys(SETUP.scalars || {}).concat(require(path.join(root, "js", "schema.js")).vocab.scalars))  /* party_loyalty is derived, so setup opens no value for it */;
   const PR = new Set(["thermal", "substrate", "volume", "transit"]);
-  const ECK = new Set(Object.keys(SETUP.economy || {}));
+  /* the productive economy's measures, and since the dollar the Bank's
+     readings, which the schema lists because no one table holds them all */
+  const ECK = new Set(Object.keys(SETUP.economy || {})
+    .concat(SETUP.macro ? require(path.join(root, "js", "schema.js")).vocab.economyReadings : []));
   /* Every stage a bill can be in, from the schema, which test.js holds to
      the engine's ladder. */
   const STAGES = new Set(require(path.join(root, "js", "schema.js")).vocab.billStages);

@@ -828,10 +828,19 @@ const UI = (function () {
     ["party_loyalty","public_standing","consumables","thermal_margin",
      "legitimacy","friction"].forEach(k =>
       L.push(k.padEnd(18) + (st.scalars[k] == null ? "—" : st.scalars[k])));
-    L.push("solvency          " + (st.scalars.solvency || 0).toLocaleString() + " MW-years");
+    L.push("solvency          " + cw(st.scalars.solvency || 0));
     try {
-      const r = Engine.receipts(st);
-      L.push("receipts          " + r.total.toLocaleString() + " a sitting");
+      const b = Engine.budget(st, C), m = Engine.macro(st, C);
+      L.push("receipts          " + cw(b.receipts) + " a year");
+      L.push("spending          " + cw(b.spending) + " a year");
+      L.push("balance           " + cw(b.balance) + " a year, " + b.balancePct + "% of output");
+      L.push("debt              " + cw(b.debt) + ", " + b.debtPct + "% of output");
+      if (m) {
+        L.push("inflation         " + m.inflation + "% against " + m.target + "%");
+        L.push("cash rate         " + m.rate.toFixed(2) + "%" + (m.directed ? " (directed)" : ""));
+        L.push("the dollar        US$" + m.fx.toFixed(3));
+        L.push("growth            " + m.growth + "%, output gap " + m.gap + "%");
+      }
     } catch (e) {}
 
     rule("THE PRICES");
@@ -940,96 +949,88 @@ const UI = (function () {
      writes them. A measure with no authored past says so rather than drawing
      a flat line, which would be a claim about history rather than an absence
      of one. */
+  /* WHAT EACH FIGURE IS CALLED, WHAT IT IS COUNTED IN, AND HOW A READING
+     OF IT IS WRITTEN. One table, so the two timescales cannot disagree
+     about the name of the thing they draw. `signed` charts from zero. */
+  const SERIES = {
+    solvency:  { label: "The reserve", unit: "dollars", fmt: n => cw(n) },
+    scarcity:  { label: "Cost of existing", unit: "% on the opening", fmt: n => (n >= 0 ? "+" : "") + n.toFixed(1) + "%", signed: true },
+    inflation: { label: "Inflation", unit: "% a year", fmt: n => n.toFixed(1) + "%" },
+    rate:      { label: "The cash rate", unit: "% a year", fmt: n => n.toFixed(2) + "%" },
+    fx:        { label: "The dollar", unit: "US dollars", fmt: n => n.toFixed(3) },
+    growth:    { label: "Growth", unit: "% a year", fmt: n => (n >= 0 ? "+" : "") + n.toFixed(1) + "%", signed: true },
+    gap:       { label: "Output against capacity", unit: "%", fmt: n => (n >= 0 ? "+" : "") + n.toFixed(1) + "%", signed: true },
+    balance:   { label: "The budget balance", unit: "% of output", fmt: n => (n >= 0 ? "+" : "") + n.toFixed(1) + "%", signed: true },
+    debt:      { label: "Debt", unit: "% of output", fmt: n => n.toFixed(1) + "%" },
+    participation: { label: "Adults in paid work", unit: "per cent", fmt: n => n.toFixed(1) },
+    trade:     { label: "Trade balance", unit: "index", fmt: n => Math.round(n).toLocaleString() }
+  };
+  function seriesMeta(key) {
+    const meta = PRICE_META.find(m => m.k === key);
+    return SERIES[key] || { label: (meta || {}).label || key, unit: "index",
+                            fmt: n => Math.round(n).toLocaleString() };
+  }
+
+  /* THE COST OF EXISTING, DERIVED, the same way Engine.scarcity derives the
+     live one: the mean relative change of the four prices against their own
+     first reading. Over 2073 to 2080 it comes to about +24%: thermal +41,
+     substrate +28, volume +18, transit +9. */
+  function scarcityOf(series) {
+    const ks = ["thermal", "substrate", "volume", "transit"].filter(k => (series[k] || []).length);
+    if (!ks.length) return [];
+    const n = Math.min.apply(null, ks.map(k => series[k].length));
+    const pts = [];
+    for (let i = 0; i < n; i++) {
+      let sum = 0, c = 0;
+      ks.forEach(k => { const base = series[k][0] || 100; sum += (series[k][i] - base) / base; c++; });
+      pts.push(c ? Math.round(sum / c * 1000) / 10 : 0);
+    }
+    return pts;
+  }
+
+  /* THE YEARS BEFORE THE GAME. Content owns them; this reads them and never
+     writes them. A measure with no authored past says so rather than drawing
+     a flat line, which would be a claim about history rather than an absence
+     of one. The live value is the last point once play has moved it, so the
+     record and the present are one line. */
   function recordSeries(key) {
     const H = (C.setup && C.setup.history) || {};
-    /* INFLATION IS DERIVED HERE TOO, the same way Engine.inflation derives
-       the live one and the session chart derives its curve: the mean relative
-       change of the scarce goods against their own first reading. It said
-       "no annual record" before, which was true of the stored data and wrong
-       as an answer — the record is in the four price series and this is the
-       reading of them. Derived, never stored, which is the rule this project
-       learned from apportionment_ratio.
-
-       Over 2073 to 2080 it comes to about +24%: thermal +41, substrate +28,
-       volume +18, transit +9. That is the cost of existing in this
-       Commonwealth, and it is the reason every one of the four prices is an
-       argument. */
-    if (key === "inflation") {
-      const ks = ["thermal", "substrate", "volume", "transit"].filter(k => (H[k] || []).length);
-      if (!ks.length) return { label: "Cost of existing", unit: "%", pts: [],
-                               record: true, none: "No annual price record is kept." };
-      const n = Math.min.apply(null, ks.map(k => H[k].length));
-      const pts = [];
-      for (let i = 0; i < n; i++) {
-        let sum = 0, c = 0;
-        ks.forEach(k => {
-          const base = H[k][0];
-          if (!base) return;
-          sum += (H[k][i] - base) / base; c++;
-        });
-        pts.push(c ? Math.round(sum / c * 1000) / 10 : 0);
-      }
-      return { label: "Cost of existing", unit: "%", pts: pts, signed: true,
-               record: true, from: H.from, to: H.to };
+    const meta = seriesMeta(key);
+    const base = { label: meta.label, unit: meta.unit, fmt: meta.fmt, signed: meta.signed,
+                   record: true, from: H.from, to: H.to };
+    if (key === "scarcity") {
+      const pts = scarcityOf(H);
+      return Object.assign(base, pts.length ? { pts: pts }
+        : { pts: [], none: "No annual price record is kept." });
     }
     const a = H[key];
-    const meta = PRICE_META.find(m => m.k === key);
-    const label = key === "participation" ? "Adults in paid work"
-                : key === "trade" ? "Trade balance"
-                : key === "solvency" ? "The reserve"
-                : key === "inflation" ? "Cost of existing"
-                : (meta || {}).label || key;
-    const unit = key === "participation" ? "per cent"
-               : key === "solvency" ? "MW-years" : "index";
-    if (!a || !a.length) return { label: label, unit: unit, pts: [], record: true,
-                                  none: "No annual record is kept for this." };
-    /* THE LIVE VALUE IS THE LAST POINT, not the authored one, once play has
-       moved it: the record runs to the opening and the present continues it,
-       so the curve stays one line. */
+    if (!a || !a.length) return Object.assign(base, { pts: [], none: "No annual record is kept for this." });
     const pts = a.slice();
+    const m = st.macro || {};
     const live = key === "solvency" ? (st.scalars || {}).solvency
-               : key === "participation" || key === "trade"
-                 ? ((st.economy || {})[key])
+               : key === "participation" || key === "trade" ? ((st.economy || {})[key])
+               : key === "inflation" || key === "rate" || key === "fx" || key === "growth" ? m[key]
                : (st.prices || {})[key];
     if (typeof live === "number") pts[pts.length - 1] = live;
-    return { label: label, unit: unit, pts: pts, record: true,
-             from: H.from, to: H.to };
+    return Object.assign(base, { pts: pts });
   }
 
   function chartSeries(key) {
     if (chartScale === "record") return recordSeries(key);
-    if (key === "inflation") {
-      /* derived per sitting from the price histories, the same way
-         Engine.inflation derives the live one: one source, read backwards. */
-      const ks = Object.keys(st.priceHistory || {});
-      if (!ks.length) return { label: "Cost of existing", unit: "%", pts: [] };
-      const n = Math.min.apply(null, ks.map(k => (st.priceHistory[k] || []).length));
-      const pts = [];
-      for (let i = 0; i < n; i++) {
-        let sum = 0, c = 0;
-        ks.forEach(k => {
-          const h = st.priceHistory[k], base = h[0] || 100;
-          if (!base) return;
-          sum += (h[i] - base) / base; c++;
-        });
-        pts.push(c ? Math.round(sum / c * 1000) / 10 : 0);
-      }
-      return { label: "Cost of existing", unit: "%", pts: pts, signed: true };
-    }
-    /* §7.10. Both keep a curve on the same sixty-sitting window as the
-       prices, so they plot through the same machinery; `private` is authored
-       and never drifts, so it has no curve and is not offered. */
+    const meta = seriesMeta(key);
+    const base = { label: meta.label, unit: meta.unit, fmt: meta.fmt, signed: meta.signed };
+    if (key === "scarcity") return Object.assign(base, { pts: scarcityOf(st.priceHistory || {}) });
+    const mh = (st.macro && st.macro.history) || {};
+    if (mh[key] && mh[key].length) return Object.assign(base, { pts: mh[key].slice() });
     if (st.economyHistory && st.economyHistory[key])
-      return { label: key === "participation" ? "Adults in paid work" : "Trade balance",
-               unit: key === "participation" ? "per cent" : "index",
-               pts: st.economyHistory[key].slice() };
+      return Object.assign(base, { pts: st.economyHistory[key].slice() });
     if (st.priceHistory && st.priceHistory[key])
-      return { label: (PRICE_META.find(m => m.k === key) || {}).label || key,
-               unit: "index", pts: st.priceHistory[key].slice() };
+      return Object.assign(base, { pts: st.priceHistory[key].slice() });
     if (key === "solvency")
-      return { label: "The reserve", unit: "MW-years",
-               pts: (st.solvencyHistory || [st.scalars.solvency || 0]).slice() };
-    return { label: key, unit: "", pts: [st.scalars[key] || 0] };
+      return Object.assign(base, { pts: (st.solvencyHistory || [st.scalars.solvency || 0]).slice() });
+    const r = Engine.macro ? Engine.macro(st, C) : null;
+    if (r && typeof r[key] === "number") return Object.assign(base, { pts: [r[key]] });
+    return Object.assign(base, { pts: [st.scalars[key] || 0] });
   }
 
   /* THE TWO TIMESCALES, as a control rather than a setting: a reader looking
@@ -1100,16 +1101,15 @@ const UI = (function () {
     const span = (hi - lo) || 1;
     box.innerHTML =
       `<div class="chartwrap"><div class="cnum">` +
-        `<div class="chartnow">${s.unit === "%" ? (now >= 0 ? "+" : "") + now.toFixed(1) + "%"
-                                                : Math.round(now).toLocaleString()}` +
+        `<div class="chartnow">${s.fmt ? s.fmt(now) : Math.round(now).toLocaleString()}` +
         `<small> now</small></div>` +
         /* TWO LINES, NOT ONE. "low 53,219 \u00b7 high 85,003" is about 145px
            of text in a 120px column, so it wrapped between the word "high"
            and its own number -- a label on one line and its figure on the
            next. Widening the column would only move the fault to the
            narrowest window, and a low and a high are two readings anyway. */
-        `<div class="note">low ${s.unit === "%" ? lo.toFixed(1) : Math.round(lo).toLocaleString()}` +
-        `<br>high ${s.unit === "%" ? hi.toFixed(1) : Math.round(hi).toLocaleString()}</div>` +
+        `<div class="note">low ${s.fmt ? s.fmt(lo) : Math.round(lo).toLocaleString()}` +
+        `<br>high ${s.fmt ? s.fmt(hi) : Math.round(hi).toLocaleString()}</div>` +
       `</div><div class="cplot">` +
         `<div class="bigchart">` + pts.map((v, i) => {
           const pc = Math.max(2, Math.round((v - lo) / span * 100));
@@ -1175,7 +1175,7 @@ const UI = (function () {
      state, and volume carries a third of it. */
   function drawBases() {
     const box = $("#econ-bases"); if (!box) return;
-    const r = Engine.receipts(st);
+    const r = Engine.receipts(st, C);
     const L = st.law || {};
     const rows = r.rows.slice().sort((a, b) => b.yield - a.yield);
 
@@ -1201,7 +1201,7 @@ const UI = (function () {
         `<td class="bspark">${spark(h.slice(-40), 58, 20)}</td>` +
         `<td>${lawCell(k)}</td>` +
         `<td class="brate">${esc(RATE_WORD[row.rate] || row.rate)}</td>` +
-        `<td class="byield">${row.yield.toLocaleString()}</td></tr>`;
+        `<td class="byield">${cw(row.yield)}</td></tr>`;
     }).join("");
 
     /* THE COST OF EXISTING BELONGS HERE. It was a row in the treasury
@@ -1209,135 +1209,171 @@ const UI = (function () {
        these four prices against where they opened and of nothing else, so
        it is this table's footing. §7.9's note in the engine says the same:
        one figure, derived in one place, owned by nobody. */
-    const infl = Engine.inflation ? Engine.inflation(st) : 0;
+    const infl = Engine.scarcity ? Engine.scarcity(st) : 0;
 
     box.innerHTML =
       `<table><thead><tr><th>Base</th>` +
       `<th class="n" data-tip="scarcity">Price</th><th></th>` +
       `<th>What the law does</th><th class="n">Levied</th>` +
-      `<th class="n" data-tip="waysmeans">Yields</th></tr></thead><tbody>` +
+      `<th class="n" data-tip="waysmeans">A year</th></tr></thead><tbody>` +
       body +
-      `<tr class="btot"><td class="bname">Every sitting</td><td></td><td></td>` +
+      `<tr class="btot"><td class="bname">Every year</td><td></td><td></td>` +
       `<td class="blaw">the appropriation's own clauses<b>what it all comes to</b></td>` +
-      `<td></td><td class="byield">${r.total.toLocaleString()}</td></tr>` +
+      `<td></td><td class="byield">${cw(r.total)}</td></tr>` +
       `</tbody></table>` +
-      `<div class="bfoot${chartOn === "inflation" ? " on" : ""}" data-chart="inflation">` +
+      `<div class="bfoot${chartOn === "scarcity" ? " on" : ""}" data-chart="scarcity">` +
         `<b>The cost of existing</b>` +
         `<i class="${infl > 5 ? "up" : infl < -5 ? "down" : ""}">` +
         `${infl >= 0 ? "+" : ""}${infl.toFixed(1)}%</i></div>` +
       `<div class="note" style="padding:4px 6px 6px">Index, 100 at the opening of ` +
       `the series. None of these four is a market: every one is a line of the ` +
       `appropriation, which is why a price here can be argued with — and each ` +
-      `yield is that price times the rate the clause sets.</div>`;
+      `yield is that price times the rate the clause sets, on an economy the ` +
+      `size it is now.</div>`;
   }
 
-  /* THE ACCOUNT. A stock and its flows, and no per-base breakdown: the
-     arithmetic behind Receipts is the panel next to it, and the two used to
-     be separate panels in separate columns saying one number twice. */
+  /* THE RESERVE BANK AND THE DOLLAR (design/39 option C). Six readings,
+     each with what it MEANS beside it, and the Bank's own arithmetic:
+     what its rule asks for today, when it meets next, and who set the
+     remit. The Bank decides by rule and the rule is printed, because a
+     player who can read the rule can argue with the Bank, which is the
+     only way the government can. Each reading picks into the chart. */
+  function drawBank() {
+    const box = $("#econ-bank"); if (!box) return;
+    const m = Engine.macro ? Engine.macro(st, C) : null;
+    if (!m) { box.innerHTML = `<div class="note">No money in this save: the account runs on receipts alone.</div>`; return; }
+    const M = (C.setup && C.setup.macro) || {};
+    const rule = Engine.taylorRate(st, C);
+    const hist = k => ((st.macro.history || {})[k] || []);
+    const trend = k => { const h = hist(k); if (h.length < 4) return "";
+      const d = h[h.length - 1] - h[Math.max(0, h.length - 9)];
+      return Math.abs(d) < 0.05 * Math.max(1, Math.abs(h[h.length - 1])) ? ", steady"
+           : d > 0 ? ", rising" : ", falling"; };
+    const row = (key, label, val, unit, say, cls) =>
+      `<div class="prow pick${chartOn === key ? " on" : ""}" data-chart="${key}">` +
+      `<div class="plab" data-tip="${key === "fx" ? "dollar" : key}">${label}<em>${esc(say)}</em></div>` +
+      spark(hist(key).slice(-40), 76, 18) +
+      `<div class="pval ${cls || ""}">${val}<span>${unit}</span></div></div>`;
+    const miss = m.inflation - m.target;
+    const inflSay = (miss > 2 ? "well over" : miss > 0.5 ? "over" : miss < -1 ? "under" : "close to") +
+      " the " + m.target + "% target; " + m.expected.toFixed(1) + "% expected" + trend("inflation");
+    const move = rule - m.rate;
+    const next = m.directed
+      ? "under a Treasury direction to " + m.directed + ", at every meeting"
+      : "the rule asks " + rule.toFixed(2) + (Math.abs(move) < 0.125 ? ", a hold"
+          : move > 0 ? ", a rise" : ", a cut") + " on " + dayLabel(m.nextMeeting);
+    const fx0 = M.fx || m.fx;
+    const fxSay = (m.fx < fx0 * 0.97 ? "down " : m.fx > fx0 * 1.03 ? "up " : "near where it opened, ") +
+      (Math.abs(m.fx / fx0 - 1) >= 0.03 ? Math.abs(Math.round((m.fx / fx0 - 1) * 100)) + "% since the opening" : "") +
+      trend("fx");
+    const gapSay = m.gap > 1.5 ? "pressing on the radiators: output over capacity by " + m.gap.toFixed(1) + "%"
+      : m.gap < -1.5 ? "slack: output under capacity by " + (-m.gap).toFixed(1) + "%"
+      : "close to capacity (" + (m.gap >= 0 ? "+" : "") + m.gap.toFixed(1) + "%)";
+    const credSay = m.credibility >= 0.85 ? "the market believes the target"
+      : m.credibility >= 0.6 ? "believed, with reservations"
+      : m.credibility >= 0.4 ? "doubted: expectations follow prices"
+      : "not believed";
+    const last = m.lastDecision;
+    box.innerHTML =
+      row("inflation", "Inflation", m.inflation.toFixed(1), "%", inflSay, miss > 2 ? "up" : "") +
+      row("rate", "Cash rate", m.rate.toFixed(2), "%", next, m.directed ? "up" : "") +
+      row("fx", "The dollar", m.fx.toFixed(3), "US$", fxSay, m.fx < fx0 * 0.9 ? "up" : "") +
+      row("growth", "Growth", (m.growth >= 0 ? "+" : "") + m.growth.toFixed(1), "%", gapSay,
+          m.gap < -1.5 || m.growth < 0 ? "up" : "") +
+      `<div class="prow"><div class="plab" data-tip="credibility">Credibility<em>${esc(credSay)}; ` +
+        `reserves ${cw(m.reserves, (C.setup.money && C.setup.money.foreign || {}).code)}</em></div><div></div>` +
+        `<div class="pval">${Math.round(m.credibility * 100)}<span>/100</span></div></div>` +
+      `<div class="note">The Governor sets the rate at a meeting every ` +
+        `${M.meetingEvery || 42} days, by her rule: ${M.neutral == null ? 1 : M.neutral}% real, plus ` +
+        `inflation, plus half the miss, plus ${m.mandate === "dual" ? "all" : "half"} the output gap. ` +
+        (last ? "Last: " + (last.kind === "hold" ? "held at " + last.to.toFixed(2)
+                           : (last.kind === "raise" ? "raised to " : "cut to ") + last.to.toFixed(2)) +
+                " on " + dayLabel(last.date) + ". " : "") +
+        `The remit is ${m.target}%` + (m.mandate === "dual" ? " and full participation" : "") + `.</div>`;
+  }
+
+
+  /* MONEY, AS A FINANCE MINISTRY PRINTS IT: CW$52.0bn, US$8.0bn. The
+     engine's one formatter, so no second spelling of a sum can disagree
+     with the log's. */
+  function cw(n, cur) { return Engine.money ? Engine.money(C, n, cur) : Math.round(n).toLocaleString(); }
+
+  /* THE ACCOUNT. A stock and its flows, a year at a time (design/39: the
+     account runs by the calendar), and no per-base breakdown: the
+     arithmetic behind Receipts is the panel next to it. */
   function drawEconomy() {
     const box = $("#econ-account");
     if (box) {
-      const r = Engine.receipts(st);
+      const b = Engine.budget(st, C);
       const solv = st.scalars.solvency || 0;
-      /* What the appropriation's settled clauses come to, from the engine's
-         own costing — not a second sum that can drift from it. */
-      let spend = 0;
-      try { spend = (Engine.clauseCost(st, C, "appropriation") || {}).total || 0; }
-      catch (e) { spend = 0; }
       const row = (lab, val, sub, cls, pick) =>
         `<div class="prow${pick ? " pick" + (chartOn === pick ? " on" : "") : ""}"` +
         (pick ? ` data-chart="${esc(pick)}"` : "") +
-        `><div class="plab">${esc(lab)}${sub ? `<em>${esc(sub)}</em>` : ""}</div>` +
+        `><div class="plab"${pick === "balance" || pick === "debt" ? ` data-tip="${pick}"` : ""}>` +
+        `${esc(lab)}${sub ? `<em>${esc(sub)}</em>` : ""}</div>` +
         `<div class="pval ${cls || ""}">${val}</div></div>`;
-      /* ONE ROW PER CREDITOR. The account said "Owed to Earth" while the
-         emergency facility's nineteen thousand eight hundred sat in an
-         undertaking on another tab, so the one debt the campaign is built
-         around was the one the account could not see. Who is owed, and on
-         what terms, is the engine's (`Engine.debts`), and the words are
-         content's (`setup.lenders`). */
+      /* ONE ROW PER CREDITOR, in the creditor's own money, with what it
+         comes to in dollars today when that is not the same thing. Who is
+         owed, and on what terms, is the engine's (`Engine.debts`), and the
+         words are content's (`setup.lenders`). */
       const owed = Engine.debts ? Engine.debts(st, C) : [];
-      const svc = Engine.debtService ? Engine.debtService(st, C) : 0;
       const pc = r => Number(r).toFixed(2);
       const repayBtn = d => d.repayable
         ? `<button class="btn tiny" data-repay="${esc(d.id)}"` +
-          (solv >= d.owed ? "" : " disabled") + ` data-tip="repay">Repay</button>`
+          (solv >= d.owedHome ? "" : " disabled") + ` data-tip="repay">Repay</button>`
         : "";
-      /* A LENDER OWED THAT IS NOT A STANDING FACILITY (a campaign's own,
-         like the Alliance's). The row says who and the short form of its
-         terms; the whole note is its tooltip, because at 1366 by 768 a
-         two-line label and a two-line note were most of why the account
-         scrolled once three lenders were owed. */
+      const owedSay = d => d.currency ? cw(d.owed, d.currency) : cw(d.owed);
       const lender = d =>
         `<div class="prow"><div class="plab"${tipAttr(d.name, cap1(d.note) +
           (d.note ? ". " : "") + "The rate is " + pc(d.rate) + " per cent" +
-          (d.service ? ", paid every sitting." : ", added to the sum owed at the term."))}>` +
+          (d.service ? ", " + cw(d.service) + " a year in interest." : ", added to the sum owed at the term.") +
+          (d.currency ? " It is owed in " + d.currency + ", " + cw(d.owedHome) + " at today's rate." : ""))}>` +
         `${esc(cap1(d.label || d.name))}<em>${esc(d.short || ("at " + pc(d.rate) + " per cent"))}</em></div>` +
-        `<div class="pval up">${d.owed.toLocaleString()}</div>` +
+        `<div class="pval up">${owedSay(d)}</div>` +
         repayBtn(d) + `</div>`;
-      /* THE STANDING LENDERS (24 Sep): one row each, owed or not, because a
-         facility the Commonwealth has not drawn is still a choice it has.
-         What is drawn and at what rate is on the row; the terms in force,
-         and why the lender will go no further, are in its tooltip; Draw
-         takes one drawing at the lender's own size. */
+      /* THE STANDING LENDERS: one row each, owed or not, because a facility
+         the Commonwealth has not drawn is still a choice it has. */
       const facs = Engine.facilities ? Engine.facilities(st, C) : [];
       const facIds = facs.map(f => f.id);
       const facRow = f => {
         const d = owed.find(x => x.id === f.id);
         const room = Math.max(0, f.cap - f.owed);
-        const terms = f.name + ", " + f.facility + ": " + f.commitment.toLocaleString() +
-          " MW-years, of which " + f.owed.toLocaleString() + " is drawn. The rate is " +
+        const terms = f.name + ", " + f.facility + ": " + cw(f.commitment, f.currency) +
+          ", of which " + cw(f.owed, f.currency) + " is drawn. The rate is " +
           pc(f.rate) + " per cent" + (f.steps.length ? ": " + pc(f.base) +
             f.steps.map(x => ", plus " + pc(x.add) + " " + x.label).join("") : "") + ". " +
           (f.limit ? f.limit.charAt(0).toUpperCase() + f.limit.slice(1) + ", so " +
-                     room.toLocaleString() + " can be drawn. " : "") +
-          "A drawing is " + f.utilisation.toLocaleString() + " MW-years" +
+                     cw(room, f.currency) + " can be drawn. " : "") +
+          "A drawing is " + cw(f.utilisation, f.currency) +
+          (f.currency ? ", " + cw(f.received) + " at today's rate," : "") +
           (f.slots ? " and takes " + slotWord(f.slots) + " of order-paper time" : "") + ".";
         return `<div class="prow fac"><div class="plab"${tipAttr(f.name, terms)}>${esc(cap1(f.name))}` +
-          `<em>${pc(f.rate)} per cent · ${room.toLocaleString()} undrawn</em></div>` +
-          `<div class="pval${f.owed ? " up" : ""}">${f.owed ? f.owed.toLocaleString() : "none"}</div>` +
+          `<em>${pc(f.rate)} per cent · ${cw(room, f.currency)} undrawn</em></div>` +
+          `<div class="pval${f.owed ? " up" : ""}">${f.owed ? cw(f.owed, f.currency) : "none"}</div>` +
           `<div class="facbtn"><button class="btn tiny" data-draw="${esc(f.id)}"` +
           (f.ok ? "" : " disabled") +
-          tipAttr("Draw " + f.utilisation.toLocaleString(), f.ok ? f.drawNote : cap1(f.reason) + ".") +
+          tipAttr("Draw " + cw(f.utilisation, f.currency), f.ok ? f.drawNote : cap1(f.reason) + ".") +
           `>Draw</button>` + (d ? repayBtn(d) : "") + `</div></div>`;
       };
+      const sign = n => (n >= 0 ? "+" : "\u2212") + cw(Math.abs(n));
+      const arrears = (st.macro && st.macro.arrears) || 0;
       box.innerHTML =
-        /* THE RUNWAY IS THE RESERVE'S OWN SUB-LINE (24 Sep). It was the
-           note at the foot of the panel, and once the standing lenders took
-           a row each that note was the part of the panel that scrolled. It
-           is still a conditional and not an assertion. */
-        row("Held", solv.toLocaleString(), r.total > 0
-              ? "would last " + Math.floor(solv / Math.max(1, r.total)) + " sittings if receipts stopped"
-              : "the quota the state has", "", "solvency") +
-        row("Receipts", "+" + r.total.toLocaleString(), "every sitting, from four bases", "down") +
+        /* HOW LONG THE RESERVE LASTS is its own sub-line, and a conditional:
+           at the rate the budget is running, not a claim that it will. */
+        row("Held", cw(solv), b.balance < 0 && solv > 0
+              ? "lasts " + Math.max(1, Math.round(solv / -b.balance * 12)) + " months at this rate"
+              : b.balance < 0 ? "empty: the Treasury is tendering bills"
+              : "in the Treasury's account at the Bank", solv <= 0 ? "up" : "", "solvency") +
+        row("Receipts", "+" + cw(b.receipts), "a year, from four bases", "down") +
+        row("Spending", "\u2212" + cw(b.spending), cw(b.standing) + " standing, " + cw(b.voted) +
+            " voted" + (b.clock ? ", " + cw(b.clock) + " civic clock" : ""), "up") +
+        row("The balance", sign(b.balance),
+            (b.interest ? "after " + cw(b.interest) + " of interest, " : "") +
+            (b.balancePct >= 0 ? "+" : "") + b.balancePct + "% of output", b.balance < 0 ? "up" : "down", "balance") +
         facs.map(facRow).join("") +
         owed.filter(d => facIds.indexOf(d.id) < 0).map(lender).join("") +
-        (!owed.length && !facs.length ? row("Owed", "none", "nothing is pledged to any lender") : "") +
-        /* THE DEBT SERVICE IS THE NET'S OWN WORKING, so it is the net's
-           sub-line and not a row of its own: one row fewer, and the two
-           figures a reader subtracts are read in one place. */
-        row("Net a sitting", (r.total - svc >= 0 ? "+" : "−") +
-              Math.abs(r.total - svc).toLocaleString(),
-            svc ? "receipts less " + svc.toLocaleString() + " of debt service"
-                : "receipts, with no debt to service", r.total - svc < 0 ? "up" : "down") +
-        (spend ? row("The appropriation", spend.toLocaleString(),
-                     "what the settled clauses cost", spend > solv ? "up" : "") : "") +
-        /* ONE NOTE, NOT TWO. The panel carried a standing sentence about the
-           rates and a second about the runway, and at 768px the pair of them
-           were most of the reason this column scrolled. The runway is the
-           one worth the height, because it is the only line here that says
-           how long the government has. */
-        /* THE RUNWAY, AS A CONDITIONAL AND NOT AN ASSERTION. This read
-           "Nothing coming in, and what is held would cover 43 sittings" on a
-           panel whose line above it says Receipts +1,200 — a hypothetical
-           phrased as a statement of fact. It is the Held row's sub-line now,
-           and the note is kept for the two cases that are warnings. */
-        (spend > solv
-          ? `<div class="note">The budget as it stands costs more than the ` +
-            `Commonwealth holds. It cannot be carried without either the ` +
-            `reserve it does not have or a rate it has not set.</div>`
-          : r.total > 0 ? ""
-          : `<div class="note">Nothing is coming in at all. A government that ` +
-            `runs out does not default; it sheds people.</div>`);
+        row("Debt", cw(b.debt), b.debtPct + "% of output" +
+            (arrears ? ", and " + cw(arrears) + " unpaid" : ""), b.debt ? "up" : "", "debt");
     }
 
     /* A DRAWING, confirmed with what it costs beyond the money. */
@@ -1346,8 +1382,10 @@ const UI = (function () {
         const f = (Engine.facilities(st, C) || []).find(x => x.id === b.dataset.draw);
         if (!f) return;
         Dialog.confirm(
-          `Draw ${f.utilisation.toLocaleString()} MW-years from ${f.name} ` +
+          `Draw ${cw(f.utilisation, f.currency)} from ${f.name} ` +
           `(${f.facility}) at ${Number(f.rate).toFixed(2)} per cent?` +
+          (f.currency ? ` At today's rate it brings ${cw(f.received)} into the reserve, ` +
+                        `and it is owed in ${f.currency} whatever the dollar does.` : "") +
           (f.slots ? ` It takes ${slotWord(f.slots)} of order-paper time.` : "") +
           (f.drawNote ? " " + f.drawNote : ""),
           { title: "Draw on " + f.facility, yes: "Draw" },
@@ -1356,7 +1394,7 @@ const UI = (function () {
             const r = acted(() => Engine.borrow(st, C, f.utilisation, f.id));
             if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); drawAll(); return; }
             cue("stamp");
-            setStatus("Drew " + r.borrowed.toLocaleString() + " on " + f.facility +
+            setStatus("Drew " + cw(r.borrowed, f.currency) + " on " + f.facility +
                       " at " + Number(r.rate).toFixed(2) + " per cent", "transient");
             drawAll(); saved(); afterAction();
           });
@@ -1366,15 +1404,16 @@ const UI = (function () {
         const d = (Engine.debts(st, C) || []).find(x => x.id === b.dataset.repay);
         if (!d) return;
         Dialog.confirm(
-          `Pay ${d.name} ${d.owed.toLocaleString()} MW-years from the reserve, ` +
-          `leaving ${((st.scalars.solvency || 0) - d.owed).toLocaleString()}?`,
+          `Pay ${d.name} ${cw(d.owedHome)} from the reserve` +
+          (d.currency ? ` (${cw(d.owed, d.currency)} at today's rate)` : "") +
+          `, leaving ${cw((st.scalars.solvency || 0) - d.owedHome)}?`,
           { title: "Repay in full", yes: "Repay" },
           ok => {
             if (!ok) return;
-            const r = acted(() => Engine.repay(st, C, d.owed, d.id));
+            const r = acted(() => Engine.repay(st, C, d.owedHome, d.id));
             if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); drawAll(); return; }
             cue("stamp");
-            setStatus("Repaid " + r.repaid.toLocaleString() + " to " + d.name, "transient");
+            setStatus("Repaid " + cw(r.repaid) + " to " + d.name, "transient");
             drawAll(); saved(); afterAction();
           });
       }));
@@ -1390,6 +1429,7 @@ const UI = (function () {
     }
 
     drawBases();
+    drawBank();
     drawChart();
 
     /* ONE LISTENER FOR THE WHOLE TAB, bound after the rows are drawn. The
@@ -2393,7 +2433,7 @@ const UI = (function () {
         : "";
       return `<div class="meterrow" data-key="${k}"><label data-tip="${k}">${lab}</label>` +
         `<div class="meter ${cls}"><i style="width:${pc}%"></i>${tick}</div>` +
-        `<output>${v}</output></div>` + strip;
+        `<output>${k === "solvency" ? cw(v) : v}</output></div>` + strip;
     }).join("");
 
     /* THE LEDGER TABLE MOVED TO THE PARTY TAB. It was partner/ledger/loyalty
@@ -3847,18 +3887,18 @@ const UI = (function () {
         return `<button class="btn cl-opt${on ? " on" : ""}${bad ? " over" : ""}"` +
           ` data-cl="${esc(cl.id)}" data-lv="${esc(lv.id)}"` +
           ` data-tip-title="${esc(lv.label)}"` +
-          ` data-tip-body="${esc((lv.note || "") + " Costs " + (lv.cost || 0) + "." +
-             (bad ? " The Treasury is short by " + (would - cost.solvency) + "." : ""))}"` +
-          `>${esc(lv.label)}<i>${lv.cost || 0}</i></button>`;
+          ` data-tip-body="${esc((lv.note || "") + " Costs " + cw(lv.cost || 0) + " a year." +
+             (bad ? " The Treasury is short by " + cw(would - cost.solvency) + "." : ""))}"` +
+          `>${esc(lv.label)}<i>${cw(lv.cost || 0)}</i></button>`;
       }).join("");
       return `<div class="cl-row"><b data-tip-title="${esc(cl.name)}" ` +
         `data-tip-body="${esc(cl.note || "")}">${esc(cl.name)}</b>` +
         `<div class="cl-opts">${opts}</div></div>`;
     }).join("");
     return `<div class="clsec"><h4>The estimates</h4>${rows}` +
-      `<div class="whipcost">Allocated <b>${cost.total}</b> of ` +
-      `${cost.solvency} the Treasury holds. A line the Treasury cannot ` +
-      `fund is refused; trade one against another.</div></div>`;
+      `<div class="whipcost">Allocated <b>${cw(cost.total)}</b> a year, against the ` +
+      `${cw(cost.solvency)} the Treasury holds. The Treasury certifies no ` +
+      `estimate the reserve could not meet; trade one line against another.</div></div>`;
   }
 
   function benchBar(label, r) {

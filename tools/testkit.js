@@ -83,9 +83,15 @@ function runBound(C) {
 
 /* A state whose four tax rates are off, so a test of what a sitting DRAGS
    is not also measuring what it earns. */
+/* A STILL ACCOUNT, so the reserve is an inert tracer for a test watching
+   something else land. It used to be enough to levy nothing, when receipts
+   were the only flow; since the dollar the account charges spending and
+   interest by the day as well (design/39), so the tracer freezes the
+   account whole: a state with no macroeconomy runs no account at all. */
 function noRevenue(st) {
   st.law.rate_volume = st.law.rate_thermal =
   st.law.rate_substrate = st.law.rate_transit = "none";
+  st.macro = null;
   return st;
 }
 

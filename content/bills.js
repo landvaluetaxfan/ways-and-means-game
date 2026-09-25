@@ -323,7 +323,7 @@ const BILLS = [
     effectNote:"Estimated 34,000 fewer default suspensions a year. Cost falls on thermal appropriations.",
     contested:"The means test decides whether a person who cannot pay for substrate is "+
             "insured or suspended, and the bill says that is not a line a decent polity "+
-            "draws. It costs the reserve eleven and takes thirty-four thousand people a "+
+            "draws. It costs the reserve eleven billion dollars and takes thirty-four thousand people a "+
             "year off the default register. The objection is not to the people: it is that "+
             "a floor with no test under it is a floor nobody can leave, and the consortiums "+
             "will price the guarantee into the rent of every person it covers.",
@@ -409,7 +409,7 @@ const BILLS = [
     contested:"At 0.3x a four-year parliament is fourteen subjective months, and 560,000 "+
             "people vote on a campaign they could not follow at the speed it was fought. The "+
             "case for the minimum is that a vote cast without the argument is a vote in name. "+
-            "The case against is who pays: five hundred MW-years a sitting from the reserve, "+
+            "The case against is who pays: seventy billion dollars a year from the reserve, "+
             "and the heat of running half a million minds faster through radiators that are "+
             "already the binding constraint. The PSD's embodied base pays for it, and knows it.",
     dualMajority:false,

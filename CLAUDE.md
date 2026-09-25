@@ -128,8 +128,9 @@ positions are numbers from −1 to +1. Bible §8.1 is rewritten for it.
 window as the prices. Opening figures are in `content/setup.js`, not the
 engine. `private` is authored and never drifts, so it keeps no curve.
 Participation moves on the divergence threshold: cut it to forty hours and
-participation goes 39 → **49.2** over twenty-six sittings against **40.1** if
-it is left alone, and `test.js` asserts both so the canon cannot rot.
+participation goes 39 → **48.1** over twenty-six sittings against **39.0** if
+it is left alone (49.2 and 40.1 before the dollar, while the reserve filled
+every sitting), and `test.js` asserts both so the canon cannot rot.
 
 `ROADMAP.md` and `AUTHORING_FORMAT.md` came across too, each with a header
 saying what in it is out of date — the roadmap was written against a nine-tab
@@ -227,7 +228,7 @@ list over any older sentence here that implies a different one:
 | **Sitting** | the event, the docket (the polls, once the writs are out: design/38), the calendar, and the one indicator panel |
 | **Government** | instruments · the document · what it can do · the ledger and cabinet, with the Tribunal and the Presidency folded at the edge |
 | **Chamber** | order-paper time, the order paper, the House, the whip, and who is counted |
-| **Economy** | *Refreshed 21 Sep 2026, and the refresh was a MERGE.* Four panels on four subjects and a band: **the account** (a stock and its flows), **what everything is priced in**, **what is made and who makes it**, and — in the bottom band beside the chart — **what the Underwriters say**. The middle panel is three former ones, because `TAX_BASES` and `PRICE_META` in the engine are the SAME FOUR THINGS (volume, thermal, substrate, transit): Scarcity, What sets the prices and Ways and means were three facts about one set of four rows, in two different columns, with a third panel between two steps of one sum — `receipts()` computes each yield AS `rate × price/100 × weight`, and §7.9 says outright that the four prices are the appropriation's. One row each now: price, trend, the clause that sets it, the rate, the yield. `inflation` is that table's footing, not the account's, being a reading of those four and nothing else. §7.10's three readings and `content/labour.js` are one panel for the same reason — `st.economy.participation` and `LABOUR.totals.participation` are one fact — with the eighteen categories folded, since they are reference and not a working readout. The chart takes two columns **at either of two timescales** — the engine's per-sitting curve, or `setup.history`'s annual record 2073–2080, whose last point IS the opening value so the two join. The live window is about fifteen weeks (four sitting days a week), which is the right resolution for a price and far too short to show anything structural; that is what the record is for. **Nothing on the tab scrolls at any of the seven measured shapes** — see the layout note below. |
+| **Economy** | *Rebuilt for the dollar 25 Sep 2026 (design/39): six panels.* Top: **the account** (a year's budget in dollars: held, receipts, spending, the balance, each lender in its own money, the debt against output), **what everything is priced in**, and **the Reserve Bank and the dollar** (inflation, the cash rate with what its rule asks and when it meets, the dollar, growth against capacity, credibility). Band: **what the Underwriters say**, the chart, and **what is made and who makes it**. *What follows is the 21 Sep refresh, still true of the bases panel:* Four panels on four subjects and a band: **the account** (a stock and its flows), **what everything is priced in**, **what is made and who makes it**, and — in the bottom band beside the chart — **what the Underwriters say**. The middle panel is three former ones, because `TAX_BASES` and `PRICE_META` in the engine are the SAME FOUR THINGS (volume, thermal, substrate, transit): Scarcity, What sets the prices and Ways and means were three facts about one set of four rows, in two different columns, with a third panel between two steps of one sum — `receipts()` computes each yield AS `rate × price/100 × weight`, and §7.9 says outright that the four prices are the appropriation's. One row each now: price, trend, the clause that sets it, the rate, the yield. `inflation` is that table's footing, not the account's, being a reading of those four and nothing else. §7.10's three readings and `content/labour.js` are one panel for the same reason — `st.economy.participation` and `LABOUR.totals.participation` are one fact — with the eighteen categories folded, since they are reference and not a working readout. The chart takes two columns **at either of two timescales** — the engine's per-sitting curve, or `setup.history`'s annual record 2073–2080, whose last point IS the opening value so the two join. The live window is about fifteen weeks (four sitting days a week), which is the right resolution for a price and far too short to show anything structural; that is what the record is for. **Nothing on the tab scrolls at any of the seven measured shapes** — see the layout note below. |
 | **Party** | *your own party (the author, 24 Sep: the tab "focuses on other parties instead of your party").* Three columns: **the benches** (one selectable row per current of the player's party: seats from `currentSeats`, live loyalty, posts held, names on the paper, and the party's figures as their footing, since `party_loyalty` IS their weighted mean), **one current** (content's description, its loyalty and where it leaves the party line in words, its named members with their LIVE office from `st.cabinet` and where each stands with you, and how many of its members vote with the party on each live measure, read off `Engine.division`'s `benches` before the whip), and **the leadership** (the loyalty meter against `thresholds.leadershipChallenge`, the paper against `thresholds.ballot`, `Engine.ballot` as the forecast, and once `paper_opened` the members closest to signing with Ask). **The paper moved here from under the whip on the Chamber tab**; it is drawn once. **Willingness decides an Ask** (24 Sep): a member at or above `thresholds.signsAt` signs, one below refuses, comes off the paper for good (`st.refusedBy`, lazy like `st.signedBy`) and firms their current by `thresholds.refusalLoyalty`. Every member asked used to sign, "will not" included, so Ask could only lose the Prime Minister a member. **And a name can be won back** (design/26 #14): a signed member under `thresholds.winBackBelow` withdraws for a slot and a PROMISE, an undertaking (`signs: <id>`) of time before the House rises for the live measure their current agrees with most, discharged by `{slot: bill}`. Kept, they stay off the paper; broken, `breakUndertaking` puts the name back, the one number a breach moves in the engine, because the paper is the engine's own. Member links are `person_<id>`: a bare character id is not an article, and `npm run ui` now checks each one resolves. |
 | **Relations** | *interparty affairs and nothing else (the author, 23 Sep: it "was built on false assumptions that it was supposed to be for all parties"); what the Party tab was until 24 Sep, with every id renamed `rel-` so none outlives its tab.* Three columns: **the arrangement** (every other party grouped by relation — in government, confidence and supply, outside — with seats, loyalty, the ledger and whether the government survives their going; your own party is on the roster for the arithmetic, and its "yours" mark opens the Party tab), **one relationship** (the terms, their leader and where you stand with them, what they want from you — their own bills, each opening where time is given to it — what you have promised their members, and where they part from you, measure by measure), and **who they vote with**. Who a party IS went to its Concordance article: members (a wikitable, `section.table`), organisation and branches (`CONTENT.partyOrg`), currents. The currents are counted on the Chamber's composition table. |
 | **Orbit**, **World**, **Record** | unchanged |
@@ -311,9 +312,12 @@ which strictly contained both of the others. Both are gone.
 
 Three things worth knowing before you touch the engine:
 
-- `Engine.receipts(st)` is the revenue side of the budget (bible §7.3), and
-  `tick()` is the only place in the engine that ADDS to `solvency`. Everything
-  else that touches it is a content effect spending it.
+- `Engine.budget(st, C)` is the whole account a YEAR (receipts, spending,
+  interest, the balance and the debt as shares of output), and
+  `Engine.receipts(st, C)` its revenue side (bible §7.3). **Both take C now**:
+  the bases and rates are content's (`setup.fiscal`). `tick()` charges the
+  account for the days since the last tick; borrowing (`borrow`, the `loan.`
+  move) is the only other thing that adds to `solvency`.
 - `Engine.benchRoll(st, C)` seats the whole House without a division. It is the
   first half of `rollCall` lifted out; do not write a second way to seat it.
 - `CONTENT.partyOrg` is the party outside Parliament, printed in the party's
@@ -681,9 +685,12 @@ version of any of them is in the header of the file it names.
   Sep: "a middle ground between perfect and failure".** It returns the PSD to
   government with austerity to come. Since the count listens (design/38),
   the canon government campaigns as one with austerity coming (the guard's
-  pick list says how) and reaches the count on 15 August at standing 56: the
-  PSD holds 102 seats, and the government's side has a working majority of
-  163 of 280, just over the line. A first-option campaign won 184, one short
+  pick list says how) and reaches the count on 19 August at standing 58: the
+  PSD holds 103 seats, and the government's side has a working majority of
+  165 of 280, just over the line. Since the dollar (design/39) the crisis is
+  financed rather than free: the canon reaches the count owing CW$59.8bn in
+  Treasury bills, about a tenth of output, with the dollar near 0.79 and
+  inflation 3.4%. A first-option campaign won 184, one short
   of a landslide, which is not a middle ground. The canon government climbs the emergency ladder, asks Earth's
   banks for terms once the result is in, and reaches the count with the
   thermal margin at about five. It is the tightest number in the game, and
@@ -762,6 +769,45 @@ version of any of them is in the header of the file it names.
   run is about 52 sittings was taken on it. Corrected, and `test.js` holds
   each period to `sittingsPerPeriod`. (The canon's numbers have moved again
   since; the canon paragraph above has them.)
+- **THE COMMONWEALTH DOLLAR** (25 Sep, `STATE_VERSION 31`; design/39
+  option C, the author's decision; bible §7.5.3–§7.5.4).
+  - **The account runs by the calendar.** Every flow is a rate a year and
+    `tick()` charges the days since the last, so a recess counts. The
+    appropriation is charged (it never was), interest is a year's and not a
+    month's every sitting, and the bases are content's (`setup.fiscal`).
+    The reserve used to RISE in every run that governed; it runs a CW$4bn
+    deficit a year at the opening now, which is what the record shows.
+  - **The unit is the million dollars, one for one with the MW-year**, so
+    no sum in content moved. Print money with `Engine.money(C, n, cur)`
+    (`cw()` in the interface), never `toLocaleString`.
+  - **`st.macro`** is output, potential, inflation, expectations,
+    credibility, the cash rate, the dollar and the Bank's reserves, run by
+    `runEconomy` over the same days. The Bank meets every 42 days by a
+    printed Taylor rule; a `law.reserve_direction` overrides it at a price.
+    Every constant is `setup.macro`.
+  - **The demand side reads the fiscal STANCE, not the balance.** The first
+    cut read the balance, so the thermal price's drift (receipts on dearer
+    heat) read as the government tightening and the Bank cut into rising
+    inflation. `stance()` holds prices and output at the opening.
+  - **A payment the reserve cannot meet is tendered as Treasury bills**
+    (`automatic` lenders, `coverShortfall` in `bumpScalar`), up to the
+    authority; past it, `st.macro.arrears`. Before this, spending at a zero
+    reserve was free.
+  - **A lender with a `currency` is owed in it.** `debtOf(st, id)` is the
+    lender's own money; `debtHome(st, C)` converts. `{move:{"loan.<id>": n}}`
+    borrows both sides at the day's rate; `debt.` stays literal.
+  - **No new effect verb.** The `economy` verb moves the Bank's readings too
+    (credibility, expected, inflation, shock, fx, reserves, rate), and
+    `economyAbove`/`economyBelow` read them (plus `gap`, `debt`, `balance`,
+    `overshoot`). `js/schema.js` lists both vocabularies, and lint checks
+    names against it.
+  - **The Economy tab has six panels**: the Reserve Bank and the dollar took
+    the top of the third column, and the productive economy moved into the
+    band. Below the collapse the panels are unplaced (`#s-econ .g-econ >
+    .panel`): their id placements used to survive into one column and draw
+    two of them two pixels wide.
+  - **`T.noRevenue` freezes the whole account** (`st.macro = null`), because
+    levying nothing no longer keeps the reserve still.
 - **THE DESIGN AUDIT (design/37) left fourteen decisions with the author**,
   answered 25 Sep in design/38 (built) and design/39 (the economy, proposed).
 - **THE COUNT IS TAKEN AT THE END OF THE CAMPAIGN, AND IT LISTENS** (design/38

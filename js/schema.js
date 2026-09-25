@@ -33,8 +33,13 @@ const SCHEMA = {
                    shape:"scalarVal" },
     /* §7.10 the productive economy. Its own verb and not a move namespace,
        because these are not 0..100 scalars: participation is a per cent of
-       adults, trade an index at 100, private a share of one. */
-    economy:     { label:"Move the productive economy", args:[
+       adults, trade an index at 100, private a share of one. And since the
+       dollar (design/39 option C) the Reserve Bank's readings, in the same
+       verb so EFFECTS does not grow: credibility (a share of one), expected
+       and inflation (points), shock (per cent of potential output, fading),
+       fx (per cent), reserves (the Bank's, in Earth's money) and rate
+       (points, for a decision content stages). */
+    economy:     { label:"Move the economy", args:[
                    {k:"key", type:"enum", src:"economyKeys", label:"Measure"},
                    {k:"delta", type:"num", label:"Change"}],
                    shape:"keyed" },
@@ -114,8 +119,8 @@ const SCHEMA = {
     capitalAbove:   { label:"Debt above",              form:"map", src:"parties", vtype:"int" },
     capitalBelow:   { label:"Debt below",              form:"map", src:"parties", vtype:"int" },
     pairsKeptAtLeast: { label:"Pairs honoured at least", form:"int" },
-    economyAbove:   { label:"Productive economy above", form:"map", src:"economyKeys", vtype:"num" },
-    economyBelow:   { label:"Productive economy below", form:"map", src:"economyKeys", vtype:"num" },
+    economyAbove:   { label:"Economy reading above", form:"map", src:"economyReadings", vtype:"num" },
+    economyBelow:   { label:"Economy reading below", form:"map", src:"economyReadings", vtype:"num" },
     slotsLeft:      { label:"Order-paper slots left",  form:"int" },
     chapterIs:      { label:"Chapter is",              form:"int" },
     chapterAtLeast: { label:"Chapter is at least",      form:"int" },
@@ -165,7 +170,14 @@ const SCHEMA = {
             personhood:  { min:-1, max:1, low:"restrictionist", high:"expansionist" },
             sovereignty: { min:-1, max:1, low:"station",        high:"federal" },
             trade:       { min:-1, max:1, low:"closurist",      high:"integrationist" } },
-    economyKeys: ["participation","trade","private"],
+    economyKeys: ["participation","trade","private",
+                  "credibility","expected","inflation","shock","fx","reserves","rate"],
+    /* what a condition may read: the productive economy's three, the Bank's
+       readings, and `debt` and `balance` as per cent of output, `gap` as per
+       cent of potential, `overshoot` as inflation less the remit's target */
+    economyReadings: ["participation","trade","private",
+                      "inflation","expected","overshoot","rate","fx","gap","growth",
+                      "credibility","reserves","debt","balance"],
     bands: ["ring","far","middle","low","external"],
     stationTypes: ["single","bundled","external"],
     stationForms: ["cylinder","torus","drum","sphere","cluster","yard","surface"],

@@ -60,6 +60,7 @@ const Editor = (function () {
       case "laws": return [...new Set(V.laws.concat(Object.keys(
           (typeof SETUP !== "undefined" && SETUP.law) || {})))].map(v => [v, v.replace(/_/g, " ")]);
       case "economyKeys": return (V.economyKeys || []).map(v => [v, v]);
+      case "economyReadings": return (V.economyReadings || []).map(v => [v, v]);
       case "tiers": return V.tiers.map(v => [v, v]);
       case "stationFields": return V.stationFields.map(v => [v, v]);
       case "billFields": return V.billFields.map(v => [v, v]);
@@ -110,7 +111,10 @@ const Editor = (function () {
         .concat(SCHEMA.vocab.bands.map(k => ["standing." + k, "standing · " + k]))
         .concat((typeof ACTORS !== "undefined" ? ACTORS : []).map(a => ["actor." + a.id, "actor · " + a.name]))
         .concat(Object.entries((typeof SETUP !== "undefined" && SETUP.lenders) || {}).map(([k, L]) =>
-          ["debt." + k, "owed to · " + (L.name || k)]));
+          ["debt." + k, "owed to · " + (L.name || k)]))
+        /* a loan: the reserve's side and the debt's at the day's rate */
+        .concat(Object.entries((typeof SETUP !== "undefined" && SETUP.lenders) || {}).map(([k, L]) =>
+          ["loan." + k, "borrow from · " + (L.name || k)]));
       default: return [];
     }
   }

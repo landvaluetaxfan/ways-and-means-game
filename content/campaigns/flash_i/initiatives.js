@@ -13,8 +13,8 @@ campaign("flash_i", { initiatives: [
      what is owed to the Alliance, which is what discharges `f1_debt`. */
   { id: "repay_facility",
     title: "Repay the emergency facility",
-    note: "The Alliance of Business and Government is owed nineteen thousand " +
-          "eight hundred MW-years, principal and the printed rate, secured on " +
+    note: "The Alliance of Business and Government is owed nineteen billion " +
+          "eight hundred million dollars, principal and the printed rate, secured on " +
           "the Cordell leases. Unpaid when the House rises, it is called with " +
           "a margin of ten per cent.",
     cost: 0,

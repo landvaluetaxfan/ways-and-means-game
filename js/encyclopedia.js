@@ -443,6 +443,8 @@ const Concordance = (function () {
     const parties = L.parties || [];
     const lead = parties[0];
     const num = n => Number(n).toLocaleString();
+    /* in the lender's own money: Earth's banks lend in US dollars */
+    const cur = n => Engine.money ? Engine.money(C, n, L.currency) : num(n);
     const pc = r => Number(r).toFixed(2);
     const words = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight",
                    "nine", "ten", "eleven", "twelve"];
@@ -457,8 +459,9 @@ const Concordance = (function () {
                   [parties.length === 1 ? "Lender" : "Lenders", String(parties.length)],
                   lead ? ["Lead", lead.name] : null,
                   T.registrar ? ["Registrar", up(T.registrar)] : null,
-                  ["Amount", num(L.cap) + " MW-years"],
-                  ["Drawn", num(owed) + " MW-years"],
+                  L.currency ? ["Currency", L.currency] : null,
+                  ["Amount", cur(L.cap)],
+                  ["Drawn", cur(owed)],
                   ["Rate", pc(rate) + " per cent"],
                   T.signed ? ["Signed", T.signed] : null,
                   T.maturity ? ["Maturity", T.maturity] : null].filter(x => x && x[1]);
@@ -468,26 +471,30 @@ const Concordance = (function () {
           (T.reference && T.margin
             ? `Interest is charged at the reference rate, ${T.reference}, plus a margin of ${T.margin}. `
             : "") +
-          `The rate is ${pc(r.base == null ? 4 : r.base)} per cent at its lowest, and each ` +
-          `step below adds to it while its condition holds.`,
+          (r.policy ? `The rate is ${pc(r.base || 0)} per cent over the Reserve Bank's ` +
+                      `cash rate, and each step below adds to it while its condition holds.`
+                    : `The rate is ${pc(r.base == null ? 4 : r.base)} per cent at its lowest, and each ` +
+                      `step below adds to it while its condition holds.`),
           table: { head: ["When", "Added"],
                    rows: (r.steps || []).map(x => [x.label ? x.label.charAt(0).toUpperCase() + x.label.slice(1) : "", "+" + pc(x.add || 0)]) } };
     return {
       id: "lender_" + id, title: title, category: "Economy", generated: true,
       banners: [], edited: { by: "the Treasury", attested: true, note: "" },
       summary: lede(title, (T.plural ? "are " : "is ") + (T.kind || "a loan to the Commonwealth") +
-        `, with commitments of ${num(L.cap)} MW-years from ${nWord(parties.length)} ` +
-        `${parties.length === 1 ? "lender" : "lenders"}` +
-        (lead ? ` led by ${lead.prose || lead.name}` : "") + "." +
+        (parties.length
+          ? `, with commitments of ${cur(L.cap)} from ${nWord(parties.length)} ` +
+            `${parties.length === 1 ? "lender" : "lenders"}` +
+            (lead ? ` led by ${lead.prose || lead.name}` : "")
+          : `, up to ${cur(L.cap)}`) + "." +
         (T.summary ? " " + T.summary : "")),
       sections: [
-        { h: "Use", body: asOf((owed ? `${num(owed)} MW-years ${owed === 1 ? "is" : "are"} outstanding`
+        { h: "Use", body: asOf((owed ? `${cur(owed)} is outstanding`
                                      : "nothing is outstanding") +
             `, and the rate is ${pc(rate)} per cent.`) +
             (room.cap < L.cap ? ` Drawing is limited: ${room.why}.` : "") },
         parties.length ? { h: T.partiesHead || "The lenders", body: "",
           table: { head: ["Lender", "Seat", "Role", "Commitment"],
-                   rows: parties.map(p => [p.name, p.seat || "", p.role || "", num(p.commitment || 0)]) } } : null,
+                   rows: parties.map(p => [p.name, p.seat || "", p.role || "", cur(p.commitment || 0)]) } } : null,
         pricing
       ].concat(liveSections(T.sections)).filter(Boolean),
       infobox: { title: title, rows: rows },

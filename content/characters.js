@@ -250,5 +250,17 @@ const CHARACTERS = [
     note:"Will print what he is given and what he is not." },
   { id:"ansar", portrait:"ansar.png",    name:"Sevi Ansar", role:"Deck 9",
     party:null, category:"uplift", relationship:55,
-    note:"A civilian voice. Used for warmth. Not a lobbyist." }
+    note:"A civilian voice. Used for warmth. Not a lobbyist." },
+
+  /* ---- the Reserve Bank (design/39 option C, 25 Sep 2026) ----
+     A DELIBERATE ADDITION TO THE ROSTER (§2.7), the one person the dollar
+     needs: somebody the Treasurer writes the remit to and the government
+     cannot instruct without an order of the House. Flash's deputy at the
+     Bank, and Governor since Flash left it for the premiership. The
+     author's to rename or recast. */
+  { id:"castellane", name:"Maren Castellane", role:"Governor, Reserve Bank",
+    party:null, category:"biological", relationship:52,
+    note:"Flash's deputy for six years and her successor. She knows the Prime Minister " +
+         "understands the Bank better than she does, and she will not be told. Her tool is " +
+         "the open letter, and the rule she publishes beside every decision." }
 ];

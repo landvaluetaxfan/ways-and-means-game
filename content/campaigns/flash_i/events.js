@@ -212,7 +212,7 @@ The rate is printed. The term is printed. The condition is one line.`,
                              owed_to:"hatt", post:"treasury", by:null,
                              discharge:{ repaid:"alliance" },
                              onBreach:"f1_debt_called" } }],
-      result:"Eighteen thousand MW-years reach the reserve. The facility is repayable at nineteen thousand eight hundred before the House rises, and the Cordell leases stand as its security until then." },
+      result:"Eighteen billion dollars reach the reserve. The facility is repayable at nineteen billion eight hundred million before the House rises, and the Cordell leases stand as its security until then." },
     { label:"Refuse the rate.",
       effects:[{ move:{ "legitimacy":3 } }, { move:{ "trend.solvency":-1000 } }],
       result:"A solvent government could have refused it. This one is not solvent, and refusing costs a little, every sitting." }
@@ -516,7 +516,7 @@ Hatt offers to keep the line open as a standing facility on the same terms, draw
 { id:"f1_debt_called", queuedOnly:true, once:true,
   title:"The facility is called",
   speaker:"hatt",
-  body:`The emergency facility was still owed when the House rose, and the Alliance of Business and Government has called it. The sum due is twenty-one thousand six hundred MW-years: the principal, the printed rate, and the default margin of ten per cent the agreement sets.
+  body:`The emergency facility was still owed when the House rose, and the Alliance of Business and Government has called it. The sum due is twenty-one billion six hundred million dollars: the principal, the printed rate, and the default margin of ten per cent the agreement sets.
 
 The security is the Cordell leases. The Alliance will accept the leases in settlement, or the sum from the reserve.`,
   choices:[
@@ -721,7 +721,7 @@ Until it is cured, the agent will fund no drawing, and anything already drawn ca
     { label:"Buy the waiver.",
       effects:[{ move:{ solvency:-900 } }, { flag:"standby_waiver" },
                { wire:"COMMONWEALTH PAYS FOR A WAIVER ON THE EARTH STANDBY FACILITY" }],
-      result:"The syndicate waives the default for nine hundred MW-years, and the margin carries half a point more until the facility matures." },
+      result:"The syndicate waives the default for nine hundred million dollars, and the margin carries half a point more until the facility matures." },
     { label:"Pay the bondholders.",
       effects:[{ move:{ solvency:-7000, friction:-4, legitimacy:-3, "actor.earth_bloc":5 } },
                { flag:"works_bond_paid" },

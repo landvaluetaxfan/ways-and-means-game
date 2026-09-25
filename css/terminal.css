@@ -261,9 +261,16 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    fifteen pixels each, which is a trend. */
 #p-acct   {grid-column:1;grid-row:1;}
 #p-bases  {grid-column:2;grid-row:1;}
-#p-real   {grid-column:3;grid-row:1;}
+#p-bank   {grid-column:3;grid-row:1;}
 #p-outlook{grid-column:1;grid-row:2;min-height:0;}
-#econ-chart{grid-column:2/-1;grid-row:2;min-height:0;}
+#econ-chart{grid-column:2;grid-row:2;min-height:0;}
+#p-real   {grid-column:3;grid-row:2;min-height:0;}
+/* SIX PANELS SINCE THE DOLLAR (design/39 option C). The Reserve Bank took
+   the top of the third column, because its readings are the working ones:
+   what the rate is, what inflation is, what the dollar is. What is made and
+   who makes it moved to the band beside the chart, which is where the slack
+   is, and the chart took one column where it had two -- sixty bars in the
+   narrowest column still draw a trend at eight pixels each. */
 /* THE TOP ROW TAKES WHAT IT NEEDS AND THE BAND TAKES THE REST, which is why
    the rows read `auto` then `1fr` and not the other way round.
 
@@ -1317,6 +1324,13 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
   #s-econ.screen.on{height:auto;min-height:0;}
   .g-sit,.g-gov,.g-cham,.g-orb,.g-world,.g-party,.g-rel,.g-econ{
     grid-template-rows:none;height:auto;min-height:0;}
+  /* AND A PLACED PANEL IS UNPLACED. The Economy's panels are put in named
+     cells by id, and an id outranks the one-column rule, so below the
+     collapse the placements survived: they made implicit columns beside the
+     one real one, and the account and the Underwriters were drawn two pixels
+     wide. Measured, not read (design/39's layout pass). The selector carries
+     the screen's id so it outranks the panels' own. */
+  #s-econ .g-econ > .panel{grid-column:auto;grid-row:auto;}
   .g-sit > .stack,.g-gov > .stack,.g-cham > .stack,
   .g-orb > .panel,.g-world > .panel{overflow:visible;}
   .grid > .panel,.grid > .stack > .panel{min-height:170px;}

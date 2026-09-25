@@ -4,7 +4,7 @@
    SUPERSEDED, and kept as a record. This was the scaffold written before
    Flash I was built; the campaign is now the files beside this one, and
    design/35 is the author's own plan. Several figures here are older than
-   the build (solvency is a reserve in MW-years now, not 0-100).
+   the build (solvency is a reserve in millions of dollars now, not 0-100).
 
    This file is example content in the vein of the author's plan. It is
    loaded by NOTHING: index.html does not name it.

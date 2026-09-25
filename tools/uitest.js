@@ -432,7 +432,8 @@ try {
   const cred = w.eval("(function(){ var s = UI.state(); s.debt = {owed:{earth:12000, alliance:19800}};" +
     " UI.redraw(); var b = document.querySelector('#econ-account');" +
     " return { text: b.textContent, repay: [].map.call(b.querySelectorAll('[data-repay]'), function(x){ return x.dataset.repay; }) }; })()");
-  ok("the account names each creditor", /Earth's banks/.test(cred.text) && /12,000/.test(cred.text) &&
+  /* in the lender's own money since the dollar: Earth's banks lend in US dollars */
+  ok("the account names each creditor", /Earth's banks/.test(cred.text) && /US\$12\.0bn/.test(cred.text) &&
      /The Alliance's facility/.test(cred.text), cred.text.slice(0, 200));
   ok("and only the lender paid across the counter has a Repay control",
      cred.repay.length === 1 && cred.repay[0] === "earth", JSON.stringify(cred.repay));
@@ -446,11 +447,11 @@ try {
   ok("Draw takes one drawing on the facility, through the engine",
      d1.owed === d0.owed + CONTENT.setup.lenders.earth.utilisation && d1.used === d0.used + 1 &&
      /Standby Facility/.test(d1.log), JSON.stringify(d1));
-  ok("and the row says what is drawn",
-     /8,000/.test((w.document.querySelector('#econ-account [data-draw="earth"]').closest(".prow") || {}).textContent || ""));
+  ok("and the row says what is drawn, in the lender's money",
+     /US\$8\.0bn/.test((w.document.querySelector('#econ-account [data-draw="earth"]').closest(".prow") || {}).textContent || ""));
   w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapC) + "), UI.content())");
-  ok("and the net position, not just the two halves", /Net a sitting/.test(tre),
-     (tre.match(/Net a sitting[^A-Z]*/) || [""])[0].slice(0, 44));
+  ok("and the net position, not just the two halves", /The balance/.test(tre) && /Spending/.test(tre),
+     (tre.match(/The balance[^A-Z]*/) || [""])[0].slice(0, 44));
 
   /* THE MERGE, ASSERTED. Scarcity, What sets the prices and Ways and means
      were three panels about the same four things — `TAX_BASES` and
@@ -467,21 +468,40 @@ try {
      (brows[0] || { textContent: "" }).textContent.replace(/\s+/g, " ").trim().slice(0, 70));
   ok("and the four bases are the four prices, not a second list",
      brows.map(r => r.dataset.chart).sort().join(",") ===
-       w.eval("Engine.receipts(UI.state()).rows.map(r=>r.base).sort().join(',')"),
+       w.eval("Engine.receipts(UI.state(), UI.content()).rows.map(r=>r.base).sort().join(',')"),
      brows.map(r => r.dataset.chart).sort().join(","));
   const bnum = el => Number((el.textContent || "").replace(/[^0-9-]/g, ""));
   const byield = brows.map(r => bnum(r.querySelector(".byield")));
   const btot = bnum(w.document.querySelector("#econ-bases tr.btot .byield"));
+  /* printed in tenths of a billion, so four rounded rows may miss the
+     rounded total by a tenth or two and no more */
   ok("the printed yields add up to the printed total",
-     byield.reduce((a, b) => a + b, 0) === btot, byield.join("+") + " = " + btot);
+     Math.abs(byield.reduce((a, b) => a + b, 0) - btot) <= 2, byield.join("+") + " = " + btot);
   ok("which is the engine's number and not the interface's",
-     btot === w.eval("Engine.receipts(UI.state()).total"), btot + "");
+     w.document.querySelector("#econ-bases tr.btot .byield").textContent ===
+       w.eval("Engine.money(UI.content(), Engine.receipts(UI.state(), UI.content()).total)"), btot + "");
   ok("and it names the rate each base is charged at",
      brows.every(r => /levied|reduced|standing rate|raised/.test(r.textContent)),
      (brows[0] || { textContent: "" }).textContent.trim().slice(0, 40));
   ok("the cost of existing is a reading of those four and sits under them",
      /cost of existing/i.test((w.document.querySelector("#econ-bases") || {}).textContent || "") &&
      !/cost of existing/i.test(tre), "moved out of the account panel");
+
+  /* THE RESERVE BANK AND THE DOLLAR (design/39 option C): the working
+     readings, each pickable into the chart, and the Bank's own arithmetic
+     printed beside its rate. */
+  const bank = w.document.querySelector("#econ-bank");
+  const bankPicks = bank ? [...bank.querySelectorAll("[data-chart]")].map(x => x.dataset.chart) : [];
+  ok("the Bank's panel carries inflation, the cash rate, the dollar and growth",
+     ["inflation", "rate", "fx", "growth"].every(k => bankPicks.indexOf(k) >= 0), bankPicks.join(" "));
+  ok("and prints what its rule asks, from the engine",
+     !!bank && bank.textContent.indexOf(w.eval("Engine.taylorRate(UI.state(), UI.content()).toFixed(2)")) >= 0,
+     ((bank || {}).textContent || "").replace(/\s+/g, " ").slice(0, 120));
+  const rateRow = bank && bank.querySelector('[data-chart="rate"]');
+  if (rateRow) rateRow.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  ok("and a reading picks into the chart",
+     /cash rate/i.test((w.document.querySelector("#chart-hdr") || {}).textContent || ""),
+     (w.document.querySelector("#chart-hdr") || {}).textContent);
 
   /* WHO WORKS IS FOLDED, and the fold says what is behind it: eighteen
      categories at 429px were most of the reason this tab scrolled. */

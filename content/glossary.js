@@ -111,6 +111,22 @@ const GLOSSARY = [
     handle:"Washington or Whitehall: the place standing in for the people in it.",
     assumed:true },
 
+  /* THE MONEY (design/39 option C). One cluster, taught where the government
+     first meets the Bank: the remit letter. The ordinary words of central
+     banking are assumed; the one power the Reserve Bank Act keeps back for
+     Parliament is not. */
+  { term:"reserve direction", cluster:"bank", gloss:"An order of the House telling the Reserve Bank what to do with the cash rate.",
+    handle:"A minister overruling the referee, in public, with a vote to prove it.",
+    introduced:"rb_remit" },
+
+  { term:"continuity rating", cluster:"bank", gloss:"The Underwriters' judgement of whether a borrower keeps running. It sets the price of the debt.",
+    handle:"A credit rating, from people who insure against the thing itself.",
+    introduced:"rb_downgrade" },
+
+  { term:"cash rate", gloss:"The Reserve Bank's policy rate: what an overnight dollar costs.", assumed:true },
+  { term:"Commonwealth dollar", gloss:"The currency. It has floated against Earth's money since 2073.", assumed:true },
+  { term:"Treasury bills", gloss:"Short loans the Treasury tenders weekly when the reserve cannot pay.", assumed:true },
+
   { term:"emulation", gloss:"A person running as software, without a body.", assumed:true },
   { term:"root",      gloss:"The original, of which instances are copies.",       assumed:true },
   { term:"the Charter", gloss:"The Perigee Charter. The founding document.",      assumed:true },

@@ -395,11 +395,11 @@ const ENCYCLOPEDIA = {
   { id:"quota_forwarding", title:"Quota trading and forwarding", category:"Economy",
     banners:["neutrality"],
     edited:{ by:"multiple", attested:true, note:"the fraud section is the most edited on the Concordance" },
-    summary:"**Quota trading** is the market in the MW-year rejected, the unit in which the "+"Commonwealth keeps its accounts. The quota is the money: the state issues it, the "+"appropriation divides it, and a claim on radiator capacity is a claim on room for "+"someone to be alive.",
+    summary:"**Quota trading** is the market in the MW-year rejected: the right to dump a "+"megawatt of waste heat for a year. Quota was the Commonwealth's money until the "+"[[commonwealth_dollar|Commonwealth dollar]] floated in 2073, and it is still the "+"price inside every other price. The state issues it, the appropriation releases it, "+"the market trades it in dollars, and a claim on radiator capacity is a claim on room "+"for someone to be alive.",
     sections:[
       { h:"The unit", body:
-        "Rejection capacity is the limiting resource of the orbital economy. Energy is "+"trivial to gather and hard to discard, so the right to dump waste heat binds "+"before any other. The Commonwealth therefore keeps its accounts in the MW-year "+"rejected and names no coin.\n\n"+
-        "The consequence is that the franchise and the budget are one question. To "+"hold quota is to hold a claim on how many minds a station may run." },
+        "Rejection capacity is the limiting resource of the orbital economy. Energy is "+"trivial to gather and hard to discard, so the right to dump waste heat binds "+"before any other. From the Charter until 2073 the Commonwealth kept its accounts "+"in the MW-year rejected, and its currency board issued a dollar only against a "+"millionth of one. Since the float the dollar has been a currency like any other, "+"and quota a commodity priced in it.\n\n"+
+        "The consequence survived the float. The radiators are the ceiling of the "+"economy's output, so the franchise and the budget are still one question: to "+"hold quota is to hold a claim on how many minds a station may run." },
       { h:"Forwarding", body:
         "A **[[quota_forward|quota forward]]** fixes a price now for capacity delivered at a "+"named sitting. The seller takes the money today and hands over the margin later. "+"Into a tight release the sale is a hedge; into a loose one it is a hole, and the "+"consortiums price the difference because they hold the only complete numbers." },
       { h:"Fraud", body:
@@ -407,7 +407,7 @@ const ENCYCLOPEDIA = {
       { h:"The Commonwealth's position", body:
         "The state is the issuer of the quota and a participant in the market for it. "+"Critics of the arrangement note that a government which sets the release also "+"trades on it. The Treasury's answer is that the release is set by a division and "+"the trading is not." }
     ],
-    see:["quota_forward","thermal_margin","commonwealth","perigee_charter"] },
+    see:["quota_forward","thermal_margin","commonwealth_dollar","commonwealth","perigee_charter"] },
 
   { id:"underwriting", title:"Underwriting", category:"Economy",
     banners:["single"],
@@ -418,7 +418,7 @@ const ENCYCLOPEDIA = {
         "The Circumterrestrial Underwriters is a market on the Bourse in which syndicates "+"and mutuals write risk. An elected Council governs it, and a Central Fund, to "+"which every member contributes, meets a claim that a failed member cannot. The "+"market grew out of the Habitat Owners' Mutual Protection and Indemnity "+"Association, known as the Hull Club, which habitat operators founded to insure "+"one another against bulkhead failure and which is still its largest member.\n\n"+
         "The Underwriters hold the actuarial record of every suspension, restoration and "+"default since the Charter, and they do not publish it. They do not campaign and "+"they do not lobby. Their position in a dispute is expressed by repricing, which "+"they do without an announcement." },
       { h:"Lending to the Commonwealth", body:
-        "Insurers hold reserves against claims, and in the Commonwealth those reserves "+"are thermal quota. The Treasury borrows from them by placing "+"[[lender_underwriters|Commonwealth Reserve Notes]] with members of the market, "+"at a coupon set by the Underwriters' own rating of the Commonwealth's "+"continuation." },
+        "Insurers hold reserves against claims, in dollars and in quota. The Treasury "+"borrows from them by placing "+"[[lender_underwriters|Commonwealth Reserve Notes]] with members of the market, "+"at a coupon half a point over the [[reserve_bank|Reserve Bank]]'s cash rate that "+"rises as the Underwriters' own [[continuity_rating|continuity rating]] of the Commonwealth falls." },
       { h:"The indemnity", body:
         "An **[[indemnity]]** is a premium paid now and a payout if the named risk "+"happens before the term. The government buys cover against the events it cannot "+"decide: a freeze, a blockade, a station shedding its register." },
       { h:"The politics", body:
@@ -446,13 +446,57 @@ const ENCYCLOPEDIA = {
     summary:"**Substrate futures** are forward contracts on mind-hours, and the debt written "+"against them is secured by the continuation of the persons who run. Where a "+"platform is abandoned, its debt survives its residents, and the choice between "+"assuming that debt and writing it off is a choice about who is owed.",
     sections:[
       { h:"The contract", body:
-        "A substrate future fixes a price now for computation delivered later. Because "+"clock rates differ twentyfold between persons, the contract is written on "+"objective hours and settled in MW-years." },
+        "A substrate future fixes a price now for computation delivered later. Because "+"clock rates differ twentyfold between persons, the contract is written on "+"objective hours and settled in dollars." },
       { h:"The debt", body:
         "**Credit secured against one's own continuation** is the ordinary financing of a "+"habitat. A station borrows against the productive capacity of its residents, who "+"are the collateral. When the station fails, the lenders' claim runs against the "+"people." },
       { h:"The platform", body:
         "The Bellamy Almanac Works and its 184,000 residents are the present "+"case. The debt has not failed with the platform; it has been assigned. A "+"government that assumes it pays for people it does not own. A government that "+"[[write-off|writes it off]] has told the lenders what its word is worth." }
     ],
-    see:["write-off","substrate","suspension","commonwealth"] }
+    see:["write-off","substrate","suspension","commonwealth"] },
+
+  /* THE MONEY (design/39 option C, 25 Sep 2026). The Bank is independent by
+     statute and not by the Charter, at the author's direction; the currency
+     board and the float are the backstory the design note offered, which
+     gives Flash's years at the Bank a record. */
+  { id:"reserve_bank", title:"Reserve Bank of the Circumterrestrial Commonwealth", category:"Institutions",
+    banners:[],
+    edited:{ by:"the Bank", attested:true, note:"the history section is the Bank's own" },
+    summary:"The **Reserve Bank of the Circumterrestrial Commonwealth** is the Commonwealth's "+"central bank. It issues the [[commonwealth_dollar|Commonwealth dollar]], keeps the "+"Treasury's account and the register of its debt, and sets the cash rate to hold "+"inflation to a target the Treasurer's remit names. Its independence is statutory: "+"the Reserve Bank Act 2071 gives the Governor the rate, and Parliament may direct the "+"Bank by an order of the House or take the power back by amending the Act. The "+"[[perigee_charter|Perigee Charter]] does not mention the Bank.",
+    sections:[
+      { h:"History", body:
+        "From the Charter in 2064 the Commonwealth's money was issued by a currency board, "+"which issued a dollar only against a millionth of an MW-year of thermal quota lodged "+"with it. The Reserve Bank Act 2071 replaced the board with a central bank, and its "+"first Governor, [[person_flash|Adriana Flash]], floated the dollar in 2073 and gave the "+"Bank the inflation target it has had since. Her critics say she gave away the one "+"thing that made the money mean something. Her successors describe the float as the "+"reason the Commonwealth has had a monetary policy at all." },
+      { h:"The remit and the rule", body:
+        "Once a year the Treasurer writes the Governor a remit, which names the target. It "+"has named two per cent since the float. The Bank meets every six weeks and publishes "+"the rule by which it sets the rate: a neutral real rate of one per cent, plus "+"inflation, plus half the amount by which inflation misses the target, plus half the "+"amount by which output exceeds what the radiators and the labour force can sustain. "+"It moves in quarter points and no more than half a point at a meeting. When inflation "+"misses the target by more than two points, the Governor writes to the Treasurer in "+"public." },
+      { h:"A dual mandate", when:{ lawIs:{ bank_mandate:"dual" } }, body:
+        "In 2080 the Treasurer's remit gave the Bank full participation as a second object "+"beside the target, and the rule weighs the output gap in full." },
+      { h:"A higher target", when:{ lawAbove:{ inflation_target:2 } }, body:
+        "In 2080 the Treasurer's remit raised the target above two per cent for the first "+"time since the float." },
+      { h:"Direction", body:
+        "The Act keeps two powers for Parliament. A [[reserve_direction|reserve direction]] tells the Bank what "+"to do with the rate at every meeting while it stands, and a Ways and Means order lets "+"the Treasury overdraw its account at the Bank, which is to say lets the Bank create "+"the money the Treasury spends. Both are affirmative orders, which the House must "+"approve before they take effect, and neither had been made by April 2080." },
+      { h:"Under direction", when:{ flags:["bank_directed"] }, body:
+        "A reserve direction is in force, and the Bank sets the rate by it rather than by "+"its rule. It publishes both figures after every meeting." },
+      { h:"The overdraft", when:{ flags:["ways_and_means_opened"] }, body:
+        "The Treasury has drawn on a Ways and Means advance, the first since the Act. The "+"advance is owed to the Bank at the cash rate." },
+      { h:"The Governor", body:
+        "The Governor is [[person_castellane|Maren Castellane]], Flash's deputy for six "+"years and her successor." }
+    ],
+    see:["commonwealth_dollar","underwriting","lender_earth","person_flash","person_castellane"] },
+
+  { id:"commonwealth_dollar", title:"Commonwealth dollar", category:"Economy",
+    banners:[],
+    edited:{ by:"multiple", attested:true, note:"" },
+    summary:"The **Commonwealth dollar** (CW$; code CWD) is the currency of the "+"Circumterrestrial Commonwealth, issued by the [[reserve_bank|Reserve Bank]]. It has "+"floated against Earth's currencies since 2073, when it left the currency board that "+"had issued it against thermal quota since the Charter.",
+    sections:[
+      { h:"The board", body:
+        "Under the board a dollar was a claim on a millionth of an MW-year of rejection "+"capacity, and the board issued no dollar it did not hold the quota for. The "+"arrangement suited founders who did not trust Earth's money, and it left the "+"Commonwealth with no monetary policy: the supply of dollars was the supply of "+"radiators. The Treasury's accounts are still kept in millions of dollars for that "+"reason, and a figure from the board's years reads the same today." },
+      { h:"The float", body:
+        "The dollar was floated in 2073 at parity with the US dollar. It fell through the "+"first two years of the float, as the board's quota was sold, and more slowly since, "+"to about eighty-four US cents in April 2080. It trades on the gap between the "+"Reserve Bank's rate and Earth's, on the state of relations with Earth, and on the "+"Commonwealth's debt." },
+      { h:"Debt in other money", body:
+        "The Commonwealth borrows at home in dollars and from Earth's banks in theirs. The "+"[[lender_earth|Standby Facility]] is denominated in US dollars, so a fall in the "+"Commonwealth dollar makes the sum owed on it larger without anything more being "+"borrowed." },
+      { h:"Exchange controls", when:{ flags:["exchange_controls"] }, body:
+        "An Exchange Control Order requires a Treasury licence for any payment of more than "+"a million dollars to a person outside the Commonwealth, except for trade in goods." }
+    ],
+    see:["reserve_bank","quota_forwarding","lender_earth","commonwealth"] }
 
   ]
 };

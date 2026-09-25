@@ -140,4 +140,46 @@ const INITIATIVES = [
                    { move: { "legitimacy": 4 } }, { move: { "price.volume": 4 } },
                    { flag: { charter_closure: true, volume_chartered: true } } ] }
     ] },
+
+  /* THE MONEY (design/39 option C). The Bank is independent by statute, so
+     the government's hand on the rate is a word to the Governor, which the
+     market can hear if it is said loudly enough; and the dollar is the
+     Treasury's to defend with the Bank's reserves, which run out. */
+  { id: "lean_on_governor",
+    title: "Lean on the Governor",
+    note: "The Reserve Bank sets the cash rate and the government does not. " +
+          "It can still say what it would like, and the Governor can still " +
+          "decide what she heard.",
+    cost: 1,
+    when: { flagsAbsent: ["governor_leaned"], dissolved: false },
+    event: "governor_answers",
+    tempo: [
+      { label: "Say it at the despatch box", after: 1,
+        effects: [ { economy: { credibility: -0.08, expected: 0.2 } },
+                   { move: { public_standing: 2 } },
+                   { flag: { governor_leaned: true, lean_public: true } } ] },
+      { label: "A private word from the Treasury", after: 2,
+        effects: [ { economy: { credibility: -0.02 } },
+                   { flag: { governor_leaned: true, lean_private: true } } ] }
+    ] },
+
+  { id: "defend_dollar",
+    title: "Defend the dollar",
+    note: "The Bank holds the Commonwealth's reserves of Earth's money, and the " +
+          "Treasury decides whether to sell them. A dollar bought back is a " +
+          "cheaper import bill and a lighter debt to Earth's banks, for as long " +
+          "as the reserves last.",
+    cost: 1,
+    when: { economyBelow: { fx: 0.82 }, economyAbove: { reserves: 6000 },
+            flagsAbsent: ["dollar_defended"] },
+    event: "dollar_line_tested",
+    tempo: [
+      { label: "Intervene quietly", after: 2,
+        effects: [ { economy: { fx: 2.5, reserves: -6000 } },
+                   { flag: { dollar_defended: true } } ] },
+      { label: "Declare a line and defend it", after: 4, cost: 1,
+        when: { economyAbove: { reserves: 12000 } },
+        effects: [ { economy: { fx: 5, reserves: -12000, credibility: 0.02 } },
+                   { flag: { dollar_defended: true, dollar_line: true } } ] }
+    ] },
 ];

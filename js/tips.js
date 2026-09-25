@@ -182,12 +182,50 @@ const Tips = (function () {
       body: "Circumterrestrial Underwriters, the insurers who price the risk of failure on every station. Because they insure everything, they keep the most accurate figures in the Commonwealth. What they say about the government's accounts appears here." },
 
     waysmeans: { title: "Ways and means",
-      body: "What the state takes in, every sitting, on each of the four " +
-            "bases it taxes. The appropriation sets the rate; the scarcity " +
-            "index above is what the rate is charged on. At the standing " +
-            "rate on all four it raises about what the budget's own " +
-            "defaults cost, so a government that cuts a rate is spending " +
-            "its reserve to do it." },
+      body: "What the state takes in a year on each of the four bases it " +
+            "taxes. The appropriation sets the rate; the price is what the " +
+            "rate is charged on, and the yield grows and shrinks with the " +
+            "economy. At the standing rates the budget runs a small deficit, " +
+            "so a government that cuts a rate is borrowing to do it." },
+
+    /* ---- the Reserve Bank (design/39 option C) ---- */
+    reservebank: { title: "The Reserve Bank",
+      body: "Sets the cash rate at a meeting every six weeks, by a rule it " +
+            "publishes, to hold inflation to the target the Treasurer's remit " +
+            "sets. The government cannot move the rate except by an order the " +
+            "House approves, and every meeting under one costs the Bank " +
+            "credibility." },
+    inflation: { title: "Inflation",
+      body: "How fast prices rise, per cent a year. It follows what people " +
+            "expect, how hard output presses on capacity, the four scarcity " +
+            "prices, and the dollar. Well over the target, it costs the " +
+            "government standing every week." },
+    rate: { title: "The cash rate",
+      body: "The Reserve Bank's rate. The rule under it is the neutral real " +
+            "rate, plus inflation, plus half the miss from the target, plus " +
+            "half the output gap. A higher rate cools demand, lifts the dollar " +
+            "and raises what the Treasury pays at home." },
+    dollar: { title: "The dollar",
+      body: "US dollars per Commonwealth dollar. It rises with the rate gap " +
+            "over Earth and a believed Bank, and falls with the quarrel, the " +
+            "debt and the deficit. A weaker dollar makes imports dearer and " +
+            "the Standby Facility, which is owed in US dollars, heavier." },
+    growth: { title: "Growth",
+      body: "Real output against a year earlier. Capacity is set by the " +
+            "radiators and the labour force: under a thermal margin of 15 " +
+            "every point costs output, and more people in paid work adds it." },
+    credibility: { title: "Credibility",
+      body: "Whether the market believes the Bank will hold inflation to the " +
+            "target. Believed, expectations stay on the target; doubted, they " +
+            "follow prices, and every point of inflation costs more to take " +
+            "out. Directions and advances spend it." },
+    balance: { title: "The balance",
+      body: "Receipts less spending less interest, a year. A deficit is paid " +
+            "from the reserve, and when the reserve is empty, in Treasury bills " +
+            "at the weekly tender." },
+    debt: { title: "Debt",
+      body: "Everything the Commonwealth owes, in dollars at today's rate, " +
+            "against a year's output. The share is what lenders read." },
 
     repay: { title: "Repay",
       body: "Pays this lender everything owed, from the reserve, and costs " +
@@ -276,9 +314,10 @@ const Tips = (function () {
             "vacuum. When this reaches zero, people die.",
       go: "the_permanent_emergency" },
     solvency: { title: "Sovereign solvency",
-      body: "The Commonwealth's ability to pay what it owes as it comes due: " +
-            "the reserve, the emergency facility, the debt it assumes. When it " +
-            "runs out, the government must beg, borrow or cut." },
+      body: "The reserve: the Treasury's dollars at the Reserve Bank, which " +
+            "every payment comes out of. When it runs out the Treasury tenders " +
+            "bills, and when the tender is full the government must beg, " +
+            "borrow or cut." },
     legitimacy: { title: "Legitimacy",
       body: "Whether the House and the stations still believe the government. " +
             "Low legitimacy is strikes, walkouts and a no-confidence motion " +

@@ -43,8 +43,16 @@ const SETUP = {
          below 100 is a year when the thing was CHEAPER. Thermal has risen
          hardest, which is why the margin is 17 and why Ember Ridge is three
          days from a shed order.
-       the reserve drains, 78,000 to 52,000 MW-years. Four administrations
-         spent it and none of them replaced it.
+       the reserve drains, CW$78bn to CW$52bn. Four administrations spent
+         it and none of them replaced it.
+       the money (design/39, option C): the dollar floated in 2073, the
+         year this record opens, when the Governor of the Reserve Bank
+         broke the thermal currency board the Commonwealth was founded on.
+         Inflation ran high in the first year of the float and the Bank
+         brought it down; the dollar has drifted from parity to 84 US
+         cents; the cash rate fell as inflation did and has been rising
+         again for two years. `growth` is real output against the year
+         before, per cent.
 
      The engine reads this and never writes it: it is the record, and the
      record does not change. */
@@ -56,7 +64,11 @@ const SETUP = {
     substrate:     [78, 81, 84, 88, 91, 94, 97, 100],
     volume:        [85, 87, 89, 91, 94, 96, 98, 100],
     transit:       [92, 93, 95, 96, 97, 98, 99, 100],
-    solvency:      [78000, 74000, 70500, 66000, 62000, 58500, 55000, 52000]
+    solvency:      [78000, 74000, 70500, 66000, 62000, 58500, 55000, 52000],
+    inflation:     [4.6, 3.4, 2.5, 1.9, 1.8, 2.2, 2.6, 2.8],
+    rate:          [6.0, 5.25, 4.0, 3.25, 3.0, 3.5, 4.0, 4.5],
+    fx:            [1.00, 0.95, 0.92, 0.90, 0.89, 0.87, 0.85, 0.84],
+    growth:        [4.9, 4.4, 4.0, 3.5, 3.1, 2.8, 2.6, 2.4]
   },
 
   economy: { participation: 39, trade: 100, private: 0.72 },
@@ -73,6 +85,137 @@ const SETUP = {
   /* HOW OFTEN THE CHARTER LETS A GOVERNMENT APPOINT TO ONE BOARD
      (bible §4.6.4). Two is a fight; unlimited is a cheat code. */
   boardCap: 2,
+  /* THE MONEY (design/39 option C; the author, 25 Sep 2026: "Commonwealth
+     Dollar works"). The account is kept in MILLIONS of dollars, so the
+     reserve's 52,000 is CW$52 billion and every sum content already wrote
+     reads one for one: a thousand of the old MW-years is a billion
+     dollars. `foreign` is the money Earth's banks lend in, which the
+     Commonwealth owes in that money whatever its own does (a lender's
+     `currency`). */
+  money: {
+    name: "Commonwealth dollar", plural: "Commonwealth dollars",
+    symbol: "CW$", code: "CWD",
+    foreign: { name: "US dollar", plural: "US dollars", symbol: "US$", code: "USD" }
+  },
+
+  /* WAYS AND MEANS (bible §7.3), as a year's budget. The four bases and
+     what each yields a YEAR at the standard rate, with every price at its
+     index of 100 and output where it opened; the rate levels, which are
+     the appropriation clauses' own words; and the STANDING programmes,
+     what statutes spend without an annual vote (the courts, the
+     attestation registry, the stations' grants), indexed to prices.
+
+     THE CALIBRATION IS ONE SENTENCE. Receipts of CW$220bn at standard
+     rates against CW$176bn of standing programmes and the appropriation's
+     CW$48bn of defaults leave a deficit of CW$4bn a year, two-thirds of a
+     per cent of output: the reserve falls as it has fallen every year
+     since 2073, and nothing forces anybody to notice. Raise every rate
+     and the budget is CW$128bn in surplus; cut the floor and the insurance
+     and it is CW$30bn in surplus at standard rates. `passthrough` is how
+     far a rate above standard moves its own price (content's, read by the
+     interface; the tick's coefficients are the same figures). */
+  fiscal: {
+    bases: [
+      { k: "volume",    weight: 88000, passthrough: 0,  name: "Volume" },
+      { k: "thermal",   weight: 55000, passthrough: 26, name: "Thermal quota" },
+      { k: "substrate", weight: 51000, passthrough: 24, name: "Substrate-hours" },
+      { k: "transit",   weight: 26000, passthrough: 20, name: "Mass to orbit" }
+    ],
+    rates: { none: 0, low: 0.5, standard: 1, high: 1.6 },
+    standing: 176000
+  },
+
+  /* THE ECONOMY AND THE RESERVE BANK (design/39 §5). Opening figures, then
+     every constant of the model, so the author can retune it here. Output
+     is real, a year, in millions of dollars at 2080 prices; rates and
+     inflation are per cent a year; `fx` is US dollars per Commonwealth
+     dollar.
+
+     THE BANK IS INDEPENDENT BY STATUTE, NOT BY CHARTER (the author, 25
+     Sep). The Reserve Bank Act 2071 gives the Governor the rate and the
+     Treasurer the remit (`target`, `mandate`), and keeps for Parliament a
+     reserve direction: an affirmative order under which the Bank moves
+     the way it is told (`directions`), at a price in credibility each
+     meeting. Parliament can amend the Act, and the Charter says nothing.
+
+     WHERE IT OPENS. Output is a per cent above what the radiators and the
+     labour force can sustain, inflation is 2.8 against a target of 2, and
+     the Bank has been raising for two years: the rule asks for about 4.7
+     and the rate is 4.5, so the first meeting, on 6 May, raises a quarter.
+     Nothing here is random: the Bank decides by rule, and the rule is
+     printed on the Economy tab. */
+  macro: {
+    output: 612000, potential: 606000, trend: 2.2, growth: 2.4,
+    /* the target and the mandate are the remit's, and the remit is law
+       (`law.inflation_target`, `law.bank_mandate`), because the Treasurer
+       sets it and an event can change it */
+    inflation: 2.8, expected: 2.5,
+    credibility: 0.8, rate: 4.5, neutral: 1.0,
+    fx: 0.84, reserves: 38000,
+    /* Earth's own money, for the real-rate gap the dollar trades on */
+    earth: { rate: 3.25, inflation: 2.1 },
+    firstMeeting: "2080-05-06", meetingEvery: 42,
+    /* THE TAYLOR RULE: neutral real rate, plus inflation, plus half the
+       miss, plus half the output gap (a whole gap under a dual mandate),
+       in quarter points and no more than a half at a meeting */
+    rule: { inflation: 0.5, gap: 0.5, dualGap: 1.0, step: 0.25, maxMove: 0.5, floor: 0.25 },
+    /* THE CEILING. Under a federal thermal margin of 15, each point costs
+       0.8 per cent of potential output: the radiators are the capacity */
+    heat: { line: 15, perPoint: 0.008 },
+    /* and each point of participation above where it opened adds 0.4 per
+       cent of potential */
+    labour: { opening: 39, perPoint: 0.4 },
+    /* DEMAND closes `speed` of its distance a year. `fiscal` is the
+       multiplier on the budget balance against where it opened, `rate`
+       the output lost per point of real rate above where it opened, `fx`
+       per unit of a dearer dollar, `trade` per point of the trade index,
+       `friction` per point of the quarrel above where it opened. A shock
+       fades at `shockFade` a year. */
+    demand: { speed: 4, fiscal: 0.8, rate: 0.6, fx: 0.15, trade: 0.1, friction: 0.08, shockFade: 1.5 },
+    /* THE PHILLIPS CURVE: points of inflation per point of output gap,
+       per per cent of the four prices above where they opened (weighted
+       by yield), and per per cent of a weaker dollar */
+    phillips: { gap: 0.3, supply: 0.08, imports: 0.12, speed: 3 },
+    /* CREDIBILITY is earned inside `band` points of the target at `earn` a
+       year and lost at `lose`, down to `floor`; a directed Bank can be
+       believed no more than `directedCeiling`. Expectations follow it at
+       `expectations` a year. */
+    credibilityModel: { band: 1, perPoint: 0.15, floor: 0.2, earn: 0.3, lose: 0.8,
+                        expectations: 2, directedCeiling: 0.5 },
+    /* THE DOLLAR: per point of the real-rate gap with Earth, per point of
+       friction, per point of debt to output, per point of the budget
+       balance, per unit of credibility, per point of trade; `speed` a
+       year, and `controlled` of it under capital controls */
+    fxModel: { realRate: 4, friction: 0.35, debt: 0.4, balance: 1.0, credibility: 0.25,
+               trade: 0.2, speed: 6, controlled: 0.35 },
+    /* THE ECONOMY VOTES: points of standing a year, per point of inflation
+       over the target beyond `band`, per point of output below potential
+       beyond `slackBand`, and for a steady economy */
+    vote: { band: 1, inflation: 20, slackBand: 0.5, slack: 14, calm: 10 },
+    /* WHAT A RESERVE DIRECTION TELLS THE BANK TO DO AT A MEETING, and
+       the credibility each meeting of it costs */
+    directions: {
+      hold:    { move: 0,    credibility: 0.04 },
+      ease:    { move: -0.5, credibility: 0.06 },
+      tighten: { move: 0.5,  credibility: 0.02 }
+    },
+    /* the record's words, with {rate}, {from}, {rule}, {date} filled */
+    say: {
+      raise: { wire: "RESERVE BANK RAISES CASH RATE TO {rate} PER CENT",
+               log: "The Reserve Bank raised the cash rate from {from} to {rate} per cent." },
+      cut:   { wire: "RESERVE BANK CUTS CASH RATE TO {rate} PER CENT",
+               log: "The Reserve Bank cut the cash rate from {from} to {rate} per cent." },
+      hold:  { log: "The Reserve Bank held the cash rate at {rate} per cent." },
+      directed_raise: { wire: "RESERVE BANK RAISES TO {rate} PER CENT UNDER A TREASURY DIRECTION",
+                        log: "Under the Treasurer's direction the Reserve Bank raised the cash rate to {rate} per cent. Its own rule asked for {rule}." },
+      directed_cut:   { wire: "RESERVE BANK CUTS TO {rate} PER CENT UNDER A TREASURY DIRECTION",
+                        log: "Under the Treasurer's direction the Reserve Bank cut the cash rate to {rate} per cent. Its own rule asked for {rule}." },
+      directed_hold:  { wire: "RESERVE BANK HOLDS AT {rate} PER CENT UNDER A TREASURY DIRECTION",
+                        log: "Under the Treasurer's direction the Reserve Bank held the cash rate at {rate} per cent. Its own rule asked for {rule}." },
+      dollar: { wire: "COMMONWEALTH DOLLAR FALLS TO {fx} US DOLLARS" }
+    }
+  },
+
   /* WHO LENDS TO THE COMMONWEALTH, AND ON WHAT TERMS (named creditors, 23
      Sep; the two standing lenders, 24 Sep). The engine keeps what is owed to
      each, by id, and reads everything else from here. An effect moves a
@@ -127,8 +270,14 @@ const SETUP = {
        85) so the account and the couplings agree about when the quarrel has
        changed. The European lenders' twenty thousand go when the sanctions
        regime is in force; the whole syndicate stops at the blockade. */
+    /* IN US DOLLARS, which is the whole of its danger since the dollar
+       floated (design/39 §7): the Commonwealth owes Earth's banks in their
+       money, so a fall in its own makes the debt heavier without a cent
+       more borrowed. The cap, the utilisation and the commitments are US
+       dollars; the reserve receives what a drawing buys at the day's rate. */
     earth: {
       name: "Earth's banks", facility: "the Standby Facility",
+      currency: "USD",
       drawable: true, utilisation: 8000,
       cap: 60000,
       rate: { base: 5, steps: [
@@ -160,7 +309,7 @@ const SETUP = {
       onDraw: [ { move: { friction: 3, legitimacy: -2 } } ],
       drawNote: "Earth's governments read a drawing as a political act: " +
         "friction with Earth rises, and the government's legitimacy falls.",
-      log: "Drew {n} MW-years on the Standby Facility from Earth's banks, at {rate} per cent.",
+      log: "Drew {n} on the Standby Facility from Earth's banks, at {rate} per cent: {got} into the reserve.",
       wire: "COMMONWEALTH DRAWS {n} ON EARTH STANDBY FACILITY AT {rate} PER CENT",
       note: "the Standby Facility",
       parties: [
@@ -185,22 +334,24 @@ const SETUP = {
           "Treasury did not intend to draw.",
         sections: [
           { h: "Drawing", body:
+            "The facility is denominated in US dollars, and the Commonwealth " +
+            "owes in US dollars whatever its own currency does. " +
             "The Commonwealth draws on the facility by a utilisation request " +
-            "from the Treasurer to the agent, in amounts of 8,000 MW-years. " +
+            "from the Treasurer to the agent, in amounts of US$8 billion. " +
             "Each drawing is announced to the House. Amounts drawn may be " +
             "repaid at any time without penalty and drawn again, and all " +
             "amounts outstanding fall due at final maturity." },
           { h: "Covenants", body:
             "The Commonwealth undertakes to keep its reserve at or above " +
-            "10,000 MW-years while any amount is drawn. The facility carries a " +
+            "CW$10 billion while any amount is drawn. The facility carries a " +
             "negative pledge, a pari passu clause and a cross-default clause in " +
             "the usual form, and an expropriation clause under which the taking " +
             "of an Earth-registered company's property without compensation is " +
             "an event of default." },
           { h: "Sanctions", body:
             "A lender is not obliged to fund a drawing that its own government's " +
-            "sanctions forbid. The European lenders' commitments, 20,000 " +
-            "MW-years between them, are suspended while the European Union's " +
+            "sanctions forbid. The European lenders' commitments, US$20 billion " +
+            "between them, are suspended while the European Union's " +
             "measures against the Commonwealth are in force." },
           /* live: these appear when a campaign declares a default or buys a
              waiver, and say nothing about which campaign it was */
@@ -213,37 +364,80 @@ const SETUP = {
             "for a fee and an increase of 0.50 per cent in the margin for the " +
             "rest of its term." } ] } },
 
+    /* THE TREASURY'S BILLS. Not a facility anybody draws on: when the
+       reserve cannot meet a payment the Treasury tenders bills for the
+       shortfall at the weekly auction, at a quarter over the Reserve Bank's
+       cash rate, and the market takes them up to the Treasury's standing
+       authority. That is how a government with an empty reserve keeps
+       paying, and why an empty reserve is a debt and not a pause. Past the
+       authority nothing is borrowed and payments go unpaid (the engine's
+       arrears). The market asks more as the debt rises against output. */
+    bills: {
+      name: "the Treasury's bills", facility: "Treasury bills",
+      automatic: true, cap: 60000,
+      rate: { base: 0.25, policy: 1, steps: [
+        { when: { economyAbove: { debt: 10 } }, add: 0.5,
+          label: "while the debt is more than a tenth of output" },
+        { when: { economyAbove: { debt: 20 } }, add: 1,
+          label: "while it is more than a fifth" },
+        { when: { economyBelow: { credibility: 0.5 } }, add: 0.75,
+          label: "while the market doubts the Reserve Bank" },
+        { when: { flags: ["rating_cut"] }, add: 0.25,
+          label: "since the Underwriters cut the continuity rating" } ] },
+      label: "Treasury bills", short: "tendered weekly when the reserve cannot pay",
+      note: "tendered at the weekly auction for whatever the reserve cannot meet, up to the Treasury's standing authority of CW$60bn",
+      wire: "TREASURY TENDERS BILLS AS THE RESERVE RUNS OUT",
+      log: "The reserve could not meet a payment, and the Treasury tendered bills for the difference at the weekly auction." },
+
+    /* THE RESERVE BANK: WAYS AND MEANS ADVANCES. The Treasury's overdraft at
+       the Bank, opened only by an affirmative order (content/instruments.js),
+       because an advance is the Bank creating the money the Treasury spends.
+       Charged at the cash rate. Nobody draws on it from the account and
+       nothing tenders into it; the order is the only way in, and repaying it
+       is the only way out. */
+    reserve_bank: {
+      name: "the Reserve Bank", facility: "Ways and Means advances",
+      label: "Ways and Means advances", cap: 30000,
+      rate: { base: 0, policy: 1 },
+      note: "the Treasury's overdraft at the Reserve Bank, opened by order of the House",
+      short: "the Treasury's overdraft at the Bank" },
+
     /* THE CIRCUMTERRESTRIAL UNDERWRITERS: COMMONWEALTH RESERVE NOTES. The
        lender at home. The Underwriters are a market and not a firm (bible
        §7.5.2): 46 syndicates and 94 mutuals trade on it, and 140 of them
        elect Insurance and Underwriting's three seats (content/functional.js).
-       Insurers hold reserves against claims, and those reserves are quota;
-       the Treasury borrows them by placing notes, through the market's own
-       Central Fund, with the Reserve Bank as registrar.
+       Insurers hold reserves against claims, in dollars; the Treasury
+       borrows them by placing notes, through the market's own Central Fund,
+       with the Reserve Bank as registrar.
 
-       Priced on continuation, not on the quarrel: the coupon steps up as the
-       thermal margin narrows, which is the Underwriters' own reading of
-       whether the borrower keeps running, and no new notes are placed into
-       a cascade. No friction, because Earth is not a party to it; the price
-       is at home, in the standing of a body that votes three seats. */
+       Priced on the Reserve Bank's cash rate and on continuation, not on the
+       quarrel: half a point over the cash rate (`policy: 1`), so a rise at
+       the Bank reaches the Treasury's own borrowing within the week, and a
+       coupon that steps up as the thermal margin narrows, which is the
+       Underwriters' own reading of whether the borrower keeps running; no
+       new notes are placed into a cascade. No friction, because Earth is
+       not a party to it; the price is at home, in the standing of a body
+       that votes three seats. */
     underwriters: {
       name: "the Underwriters", facility: "Commonwealth Reserve Notes",
       drawable: true, utilisation: 6000, home: true,
       cap: 36000,
-      rate: { base: 3.5, steps: [
+      rate: { base: 0.5, policy: 1, steps: [
         { when: { scalarBelow: { thermal_margin: 15 } }, add: 1,
           label: "while the federal thermal margin is under 15" },
         { when: { scalarBelow: { thermal_margin: 10 } }, add: 1.5,
           label: "while it is under 10" },
         { when: { scalarBelow: { thermal_margin: 6 } }, add: 2,
-          label: "while it is under 6" } ] },
+          label: "while it is under 6" },
+        { when: { flags: ["rating_cut"] }, add: 0.25,
+          label: "since the continuity rating was cut" } ] },
       limits: [
         { when: { scalarBelow: { thermal_margin: 6 } }, cap: 0,
           why: "the Underwriters place no notes while the thermal margin is under six" } ],
       onDraw: [ { move: { "actor.underwriters": 3, party_loyalty: -1 } } ],
       drawNote: "The Underwriters' standing with the government rises. The " +
         "party's own benches like borrowing from the insurers less.",
-      log: "Placed {n} MW-years of Commonwealth Reserve Notes with the Underwriters, at {rate} per cent.",
+      log: "Placed {n} of Commonwealth Reserve Notes with the Underwriters, at {rate} per cent.",
       wire: "TREASURY PLACES {n} OF RESERVE NOTES WITH UNDERWRITERS AT {rate} PER CENT",
       note: "Commonwealth Reserve Notes",
       parties: [
@@ -268,15 +462,15 @@ const SETUP = {
           "issued under it by April 2080.",
         sections: [
           { h: "Issue", body:
-            "Notes are issued in series of 6,000 MW-years and placed with the " +
+            "Notes are issued in series of CW$6 billion and placed with the " +
             "members listed below in proportion to their commitments. Each " +
             "series runs for three years and may be redeemed early at par. The " +
             "Reserve Bank keeps the register of holders and pays the coupon." },
           { h: "The coupon", body:
-            "The coupon is set by the Underwriters' continuity rating of the " +
-            "Commonwealth, which follows the federal thermal margin. It is 3.50 " +
-            "per cent at the rating the programme opened on, and it steps up " +
-            "when the rating falls. The members place no new notes while the " +
+            "The coupon is half a point over the Reserve Bank's cash rate at " +
+            "the date of issue, and it steps up with the Underwriters' " +
+            "continuity rating of the Commonwealth, which follows the federal " +
+            "thermal margin. The members place no new notes while the " +
             "margin is below the level at which their own schedules treat a " +
             "cascade as likely." },
           { h: "The Hull Club", body:
@@ -298,9 +492,9 @@ const SETUP = {
      they did not have to. */
   outlook: {
     reserve_gone: { text:
-      "The reserve is exhausted. Nothing is left to appropriate and nothing " +
-      "is left to borrow against; the next shortfall is met by shedding load, " +
-      "which means by shedding people." },
+      "The reserve is exhausted. The Treasury is paying its way in bills at the " +
+      "weekly tender, and when the tender is full the next shortfall is met by " +
+      "shedding load, which means by shedding people." },
     reserve_thin: { text:
       "At the present rate of loss the reserve is gone inside a year. There is " +
       "time to raise a rate or cut a line, and there will not be time twice." },
@@ -310,7 +504,7 @@ const SETUP = {
       "refused to fund." },
     receipts_short: { text:
       "Outgoings exceed receipts. The gap is met from the reserve every " +
-      "sitting, whether or not anybody votes on it." },
+      "day, whether or not anybody votes on it." },
     receipts_cover: { text:
       "Receipts cover what the government is spending and add to the reserve. " +
       "That position holds while the prices hold, and the prices are set by " +
@@ -345,6 +539,48 @@ const SETUP = {
       "stops being economic: substrate rent is the price of continuing to be " +
       "a person, and a register of people who cannot pay it is a political " +
       "document." },
+    /* THE MONEY (option C). Inflation against the remit, the Bank's grip on
+       it, the dollar, and where output stands against what the radiators
+       allow. */
+    inflation_target: { text:
+      "Inflation is inside a point of the Reserve Bank's target. The Bank has " +
+      "no reason to surprise anybody at its next meeting, which is worth more " +
+      "to a borrower than any rate it could set." },
+    inflation_high: { text:
+      "Inflation is more than two points over the target, and the Bank's rule " +
+      "says what it will do about that. A household reads it in the price of " +
+      "heat first and in the government's standing second." },
+    inflation_low: { text:
+      "Inflation is under the target. The Bank will ease, and the reserve's " +
+      "receipts will grow more slowly than the lines they pay for." },
+    bank_doubted: { text:
+      "The market no longer believes the Bank will hold inflation to its " +
+      "target. Expectations are following prices rather than the remit, and " +
+      "every point of inflation now costs more to take out than it did." },
+    bank_directed: { text:
+      "The Reserve Bank is setting the cash rate under a Treasury direction. " +
+      "The market prices every meeting of it, and so do the Underwriters." },
+    dollar_weak: { text:
+      "The dollar is down a tenth on where it opened. Everything the " +
+      "Commonwealth buys from Earth costs more, and everything it owes Earth's " +
+      "banks is a larger sum in its own money than when it borrowed it." },
+    dollar_strong: { text:
+      "The dollar is strong. Imports are cheap, and the compute the Commonwealth " +
+      "sells is dearer to everybody buying it." },
+    output_slack: { text:
+      "Output is running under what the radiators and the labour force would " +
+      "allow. There is room to spend without heating the price of anything, " +
+      "and people out of work are counting the room." },
+    output_hot: { text:
+      "Output is pressing on capacity. The radiators, not demand, are the limit, " +
+      "and anything more the government spends arrives as inflation in the " +
+      "thermal price." },
+    owed_bills: { text:
+      "The Treasury is rolling bills at the weekly tender. The market takes " +
+      "them at a quarter over the cash rate, and asks more as the debt grows." },
+    owed_reserve_bank: { text:
+      "The Treasury owes the Reserve Bank an advance. The money was created to " +
+      "lend it, and the market will not forget that until it is repaid." },
     volume_forgone: { text:
       "Volume is the largest base and the one being taxed least. A levy on " +
       "position inside a habitat has nowhere to be passed on to, so it is the " +
@@ -378,12 +614,22 @@ const SETUP = {
             so no divisor applies: highest averages over one seat IS plurality.
             The value is kept for the editor and for any future bill that
             merges seats back into multi-member districts. */
-         district_divisor:"fptp", list_divisor:"dhondt" },
+         district_divisor:"fptp", list_divisor:"dhondt",
+         /* THE RESERVE BANK ACT 2071 (design/39 option C). The remit the
+            Treasurer writes to the Governor: the inflation target, per cent a
+            year, and the mandate, "inflation" or "dual" (inflation and
+            participation, which weighs the output gap twice as heavily in the
+            rule). A reserve direction ("hold" | "ease" | "tighten") is set by
+            an affirmative order and is null while the Bank sets its own rate.
+            Exchange controls are an order too. */
+         inflation_target:2, bank_mandate:"inflation",
+         reserve_direction:null, capital_controls:false },
   /* THE CIVIC CLOCK (bible 6.3), at a minimum of 1 (real time): what the
-     subsidy costs the reserve a sitting, and the points it adds to the
-     thermal price's target. Scaled by the minimum the law sets. Keeping
-     560,000 slow-running minds at real time is expensive and it is heat. */
-  civicClock: { costPerSitting: 500, heat: 6 },
+     subsidy costs a YEAR, on the spending side of the budget, and the
+     points it adds to the thermal price's target. Scaled by the minimum
+     the law sets. Keeping 560,000 slow-running minds at real time is
+     expensive, CW$70bn a year, and it is heat. */
+  civicClock: { costPerYear: 70000, heat: 6 },
   /* SUSPENSION, WITH THE DEBT PAUSED (bible 6.6). Restorations run this
      much faster and suspensions this much more often than with the debt
      accruing, which is the status quo and the calibration. */

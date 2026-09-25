@@ -255,6 +255,78 @@ const INSTRUMENTS = [
               {move:{"loyalty.cu_maintenance":22}}, {move:{"loyalty.psa":20}},
               {move:{"loyalty.cu_halloran":20}}, { flag:{ rung9_tried:false } } ],
     political_cost:[ {move:{"public_standing":-20}}, {move:{"loyalty.cu_maintenance":-16}},
-                     {move:{"loyalty.psa":-14}} ] }
+                     {move:{"loyalty.psa":-14}} ] },
+  /* THE RESERVE BANK ACT'S ORDERS (design/39 option C; the author, 25 Sep
+     2026: the Bank is independent "as you said, but not written into the
+     charter"). The Act gives the Governor the rate and keeps for Parliament
+     two things: a reserve direction, and the Treasury's overdraft. Both are
+     affirmative, so the House must approve before either takes effect, and
+     both cost the Bank's credibility. A direction is a law key the engine's
+     Bank reads at each meeting (`setup.macro.directions`); the overdraft is
+     a loan from the Bank, `loan.reserve_bank`. One direction at a time. */
+  { id:"si_2080_71",
+    title:"Reserve Bank (Direction) Order 2080", number:"SI 2080/71",
+    author:"treasury", procedure:"affirmative", revocable:true,
+    when:{ flagsAbsent:["bank_directed"] },
+    summary:"Directs the Reserve Bank to hold the cash rate at its present level " +
+            "at every meeting while the order stands. The Governor sets the rate " +
+            "under the Reserve Bank Act 2071; this is the power the Act kept back.",
+    effect_note:"The rate stops rising, and the market prices a Bank that can be told. " +
+                "Credibility falls at every meeting the order stands, and expected " +
+                "inflation follows it.",
+    effects:[ { law:{ reserve_direction:"hold" } }, { flag:"bank_directed" },
+              { economy:{ credibility:-0.06, fx:-1.5 } },
+              { wire:"TREASURY DIRECTS RESERVE BANK TO HOLD THE CASH RATE" } ],
+    reverse:[ { law:{ reserve_direction:null } }, { flag:{ bank_directed:false } } ],
+    political_cost:[ { move:{ "actor.underwriters":-4, legitimacy:-2 } }, { move:{ "rel.castellane":-15 } } ],
+    prayer_stances:{ cl:"for", fh:"for", gb:"for", hul:"for", geo:"for" } },
+
+  { id:"si_2080_72",
+    title:"Reserve Bank (Direction) (No. 2) Order 2080", number:"SI 2080/72",
+    author:"treasury", procedure:"affirmative", revocable:true,
+    when:{ flagsAbsent:["bank_directed"] },
+    summary:"Directs the Reserve Bank to lower the cash rate by half a point at " +
+            "every meeting while the order stands, whatever its own rule asks.",
+    effect_note:"Money is cheaper within the week. The dollar falls on the day, and " +
+                "the Bank's credibility pays for every meeting of it.",
+    effects:[ { law:{ reserve_direction:"ease" } }, { flag:"bank_directed" },
+              { economy:{ credibility:-0.1, fx:-3, expected:0.3 } },
+              { wire:"TREASURY DIRECTS RESERVE BANK TO CUT" } ],
+    reverse:[ { law:{ reserve_direction:null } }, { flag:{ bank_directed:false } } ],
+    political_cost:[ { move:{ "actor.underwriters":-6, legitimacy:-3 } }, { move:{ "rel.castellane":-25 } } ],
+    prayer_stances:{ cl:"for", fh:"for", gb:"for", hul:"for", geo:"for", sc:"for" } },
+
+  { id:"si_2080_73",
+    title:"Treasury (Ways and Means Advances) Order 2080", number:"SI 2080/73",
+    author:"treasury", procedure:"affirmative", revocable:false,
+    when:{ flagsAbsent:["ways_and_means_opened"] },
+    summary:"Opens the Treasury's overdraft at the Reserve Bank and draws CW$20 " +
+            "billion on it. The Bank credits the Treasury's account; nobody lends " +
+            "the money, because the Bank creates it.",
+    effect_note:"The reserve is paid on the day. Expected inflation rises and the " +
+                "Bank's credibility falls, and the Underwriters mark the Commonwealth " +
+                "down as a borrower that has printed once.",
+    effects:[ { move:{ "loan.reserve_bank":20000 } }, { flag:"ways_and_means_opened" },
+              { economy:{ credibility:-0.2, expected:0.8, fx:-4 } },
+              { wire:"RESERVE BANK TO FINANCE THE TREASURY DIRECTLY" } ],
+    reverse:[],
+    political_cost:[ { move:{ "actor.underwriters":-8, legitimacy:-4 } }, { move:{ "rel.castellane":-20 } } ],
+    prayer_stances:{ cl:"for", fh:"for", gb:"for", hul:"for", geo:"for", des:"for" } },
+
+  { id:"si_2080_74",
+    title:"Exchange Control Order 2080", number:"SI 2080/74",
+    author:"treasury", procedure:"negative", prayer_window:6, revocable:true,
+    summary:"Requires a Treasury licence for any payment of more than CW$1 million " +
+            "to a person outside the Commonwealth, except for trade in goods.",
+    effect_note:"The dollar steadies, because money cannot leave in a hurry. Earth " +
+                "reads it as a wall, the consortiums as a confiscation in waiting, and " +
+                "trade in compute pays the licence fee.",
+    effects:[ { law:{ capital_controls:true } }, { flag:"exchange_controls" },
+              { move:{ friction:6 } }, { economy:{ trade:-4, fx:2 } },
+              { wire:"EXCHANGE CONTROLS IMPOSED; PAYMENTS TO EARTH NEED A LICENCE" } ],
+    reverse:[ { law:{ capital_controls:false } }, { flag:{ exchange_controls:false } },
+              { move:{ friction:-6 } }, { economy:{ trade:4 } } ],
+    political_cost:[ { move:{ "loyalty.cl":-8, "actor.underwriters":-3 } } ],
+    prayer_stances:{ cu:"against", psa:"against", rv:"against", cl:"for", fh:"for", gb:"for", hul:"for" } }
 
 ];

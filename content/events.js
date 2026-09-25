@@ -68,8 +68,8 @@ const SANDBOX = [
     effects:[{ move:{ friction:40 } }, { move:{ legitimacy:-10 } },
              { wire:"SANDBOX: FRICTION IS PUSHED UP" }] },
   { id:"drain", label:"Drain the reserve",
-    note:"Drops solvency under thirty thousand.",
-    result:"Solvency is under thirty thousand, so the emergency loan and the low-reserve events are in reach.",
+    note:"Drops the reserve under CW$30bn.",
+    result:"The reserve is under CW$30bn, so the emergency loan and the low-reserve events are in reach.",
     effects:[{ move:{ solvency:-970000 } }, { wire:"SANDBOX: THE RESERVE IS DRAINED" }] },
   { id:"paper", label:"Open Czarnecki's paper",
     note:"Opens the paper and fills the signatures.",
@@ -3003,7 +3003,10 @@ you already have.`,
          without the other fails. */
       when:{ scalarBelow:{ friction:86 }, scalarAbove:{ solvency:9999 },
              flagsAbsent:["standby_default"] },
-      effects:[{ move:{ solvency:16000 } }, { move:{ "debt.earth":16000 } },
+      /* A LOAN, both sides at the day's rate (design/39): the reserve
+         receives CW$16bn and Earth's banks are owed its worth in US dollars,
+         which grows if the dollar falls. */
+      effects:[{ move:{ "loan.earth":16000 } },
                { economy:{ participation:2, trade:-2 } },
                { move:{ friction:5 } },
                { move:{ "actor.earth_bloc":-4 } },
@@ -3203,7 +3206,7 @@ you already have.`,
   when:{ lawAbove:{ civic_clock_minimum:0 } },
   title:"What the clock costs",
   speaker:"girard",
-  body:`The civic clock subsidy has run for a month. It keeps 560,000 slow-running minds at real time, at five hundred MW-years a sitting from the reserve and the heat of running them through the radiators.
+  body:`The civic clock subsidy has run for a month. It keeps 560,000 slow-running minds at real time, at seventy billion dollars a year from the reserve and the heat of running them through the radiators.
 
 The Minister for Substrate and Thermal asks whether the rate is to be held through the campaign or halved until the estimates.`,
   choices:[
@@ -3328,4 +3331,168 @@ put it in order."`,
                { wire:"GOVERNMENT WILL FACE THE HOUSE WITHOUT ITS PARTNER" }],
       result:"The government says it will meet the House, and the House will count." }
   ]},
+
+/* =============================================================
+   THE RESERVE BANK AND THE DOLLAR (design/39 option C, 25 Sep 2026)
+
+   The Bank sets the cash rate by its own rule at a meeting every six weeks,
+   and the engine writes every decision to the wire. These are the moments a
+   government has to answer for money it does not control: the remit it
+   writes, the inflation figure, the Governor's open letter, a falling
+   dollar, a cut in the Underwriters' rating, and the Bank meeting in the
+   middle of a campaign. Each gates on a reading of the economy
+   (`economyAbove`/`economyBelow`), so each arrives when the economy has
+   earned it and not on a date.
+   ============================================================= */
+{ id:"rb_remit", chapter:2, weight:72, once:true,
+  title:"The remit letter",
+  speaker:"castellane",
+  body:`The Reserve Bank Act gives the Governor the cash rate and gives the Treasury one letter a year to say what the rate is for. The last letter said two per cent. Maren Castellane has asked, politely and in writing, whether the new government means to say the same.
+
+She has also attached, without being asked, the section of the Act under which the House may give her a reserve direction. She would like it understood that she has read it.`,
+  choices:[
+    { label:"Two per cent, as before.",
+      effects:[{ economy:{ credibility:0.08 } }, { move:{ "rel.castellane":6, "actor.underwriters":2 } }],
+      result:"The letter is two lines long. The market reads it in a minute and has forgotten it by the afternoon, which is what a remit is for." },
+    { label:"Three per cent. Growth first.",
+      effects:[{ law:{ inflation_target:3 } }, { economy:{ credibility:-0.08, expected:0.5 } },
+               { move:{ "loyalty.cu":4, "actor.underwriters":-3 } },
+               { wire:"TREASURY RAISES THE INFLATION TARGET TO THREE PER CENT" }],
+      result:"The target moves a point, and so does every rate of interest struck in the Commonwealth that week. The unions call it the first honest remit since the float." },
+    { label:"Two per cent, and full participation beside it.",
+      effects:[{ law:{ bank_mandate:"dual" } }, { economy:{ credibility:-0.02 } },
+               { move:{ "loyalty.cu_maintenance":4 } },
+               { wire:"RESERVE BANK GIVEN A DUAL MANDATE" }],
+      result:"The Bank will weigh the people out of work as heavily as the prices. It will cut sooner and raise later, and the Governor's reply says she will need both halves of the remit to be believed." }
+  ]},
+
+{ id:"rb_inflation_print", chapter:2, weight:70, maxFires:1,
+  when:{ economyAbove:{ overshoot:1.2 }, dissolved:false },
+  title:"The inflation figure",
+  speaker:"ceyhan",
+  body:`The quarterly figure reaches the Spindle an hour before the Treasury's own copy reaches the Treasurer. Inflation is well over the Bank's target, and the price of heat is most of it.
+
+Ceyhan's question at the door is the one every paper prints the next morning: whose fault is it?`,
+  choices:[
+    { label:"Back the Bank. It will bring it down.",
+      effects:[{ move:{ legitimacy:2, public_standing:-3 } }, { economy:{ credibility:0.05 } }],
+      result:"The government stands behind a rate rise it has not yet seen. The Bank notices, and so does every household paying for heat." },
+    { label:"Blame Earth's prices.",
+      effects:[{ move:{ friction:3, public_standing:2, "actor.earth_bloc":-2 } }],
+      result:"It is partly true, and Earth's press office says the other part by the evening." },
+    { label:"Promise relief on the thermal bill.",
+      effects:[{ move:{ solvency:-6000, public_standing:4 } }, { economy:{ expected:0.3, credibility:-0.03 } }],
+      result:"The relief is paid out of the reserve and spent on heat, which is the thing the Bank was trying to make dearer." }
+  ]},
+
+{ id:"rb_open_letter", chapter:2, weight:66, once:true,
+  when:{ economyAbove:{ overshoot:2 } },
+  title:"An open letter from the Governor",
+  speaker:"castellane",
+  body:`The Reserve Bank Act requires the Governor to write to the Treasurer, in public, whenever inflation misses the target by more than two points. Castellane's letter is four pages long. It says what went wrong, what the Bank will do about it, and how long that will take.
+
+The last paragraph says what the Bank cannot do. It cannot make heat cheaper, and it cannot make the government spend less.`,
+  choices:[
+    { label:"Publish a reply that endorses every word.",
+      effects:[{ economy:{ credibility:0.06 } }, { move:{ "rel.castellane":6, "loyalty.cu":-3 } }],
+      result:"The two letters are printed side by side, and the market reads them as one voice. The party reads them as the Governor writing the government's budget." },
+    { label:"Acknowledge it and say nothing more.",
+      effects:[{ move:{ legitimacy:-1 } }],
+      result:"The letter stands on its own, and people read it that way." },
+    { label:"Answer it in the House.",
+      effects:[{ move:{ public_standing:3, "rel.castellane":-10 } }, { economy:{ credibility:-0.06 } }],
+      result:"The Prime Minister tells the House that the Bank has missed its target for one year in nine. The Governor watches from the gallery." }
+  ]},
+
+{ id:"rb_dollar_falls", chapter:2, weight:74, once:true,
+  when:{ economyBelow:{ fx:0.78 } },
+  title:"The dollar falls",
+  speaker:null,
+  body:`The dollar has fallen through seventy-eight US cents, and the first line of the Treasury's morning note is the arithmetic. Every cent it falls adds to what the Commonwealth owes Earth's banks, and to the price of everything the stations import.
+
+The Reserve Bank holds the reserves, and the Treasury decides whether to spend them.`,
+  choices:[
+    { label:"Sell reserves and hold the line.",
+      when:{ economyAbove:{ reserves:10000 } },
+      effects:[{ economy:{ reserves:-10000, fx:4 } }, { move:{ legitimacy:1 } }],
+      result:"The Bank sells ten billion of its US dollars in a morning, and the dollar steadies. The market has learned how many mornings like it the Bank has left." },
+    { label:"Ask the Governor for a rise between meetings.",
+      effects:[{ economy:{ rate:0.5, fx:3, shock:-0.6, credibility:-0.02 } }, { move:{ "rel.castellane":2, public_standing:-2 } },
+               { wire:"RESERVE BANK RAISES HALF A POINT BETWEEN MEETINGS" }],
+      result:"The Bank raises half a point between meetings, which it has done once before, in the year of the float. Mortgages on long leases reprice by the end of the week." },
+    { label:"Let it find its level.",
+      effects:[{ economy:{ trade:3, expected:0.3 } }, { move:{ public_standing:-1 } }],
+      result:"The dollar finds a lower level than the one it had. Commonwealth compute is cheaper to Earth by the same margin, and the order books lengthen." }
+  ]},
+
+{ id:"rb_downgrade", chapter:2, weight:71, once:true,
+  when:{ economyAbove:{ debt:6 } },
+  title:"The continuity rating",
+  speaker:null,
+  body:`The Underwriters have cut the Commonwealth's continuity rating by a notch. The note that goes with it is three sentences long: the debt is rising against output, the thermal margin is thin, and the government has not said how it means to pay.
+
+The bills tendered on Friday will cost a quarter of a point more. So will every series of notes after them.`,
+  choices:[
+    { label:"Announce a plan to consolidate.",
+      effects:[{ flag:"rating_cut" }, { flag:"consolidation_promised" },
+               { move:{ public_standing:-3, legitimacy:3 } }, { economy:{ shock:-0.8, credibility:0.03 } }],
+      result:"The plan is a page of figures and a promise. The rating stays where it was cut to, and the Underwriters' next note is shorter." },
+    { label:"Dispute the rating.",
+      effects:[{ flag:"rating_cut" }, { move:{ "actor.underwriters":-5, public_standing:1 } }, { economy:{ fx:-1.5 } }],
+      result:"The Treasury's rebuttal is longer than the Underwriters' note, and the Underwriters take the length as their answer." },
+    { label:"Say nothing and tender the bills.",
+      effects:[{ flag:"rating_cut" }],
+      result:"The bills are taken, at the price the note gave." }
+  ]},
+
+{ id:"rb_campaign", chapter:3, weight:55, once:true,
+  when:{ dissolved:true, economyAbove:{ overshoot:0.5 } },
+  title:"The Bank does not wait for the count",
+  speaker:"castellane",
+  body:`The Reserve Bank meets in the second week of the campaign, as its calendar said it would when nobody knew there would be a campaign. The Governor's statement does not mention the election, and it does not need to.`,
+  choices:[
+    { label:"Say nothing. The Bank is independent.",
+      effects:[{ move:{ legitimacy:2, public_standing:-2 } }, { economy:{ credibility:0.04 } }],
+      result:"The government's answer to every question about the rate is the Act, and the Act is not a popular document." },
+    { label:"Say the government would have done otherwise.",
+      effects:[{ move:{ public_standing:3, "rel.castellane":-10 } }, { economy:{ credibility:-0.08 } }],
+      result:"The Opposition asks whether that is a promise to direct the Bank, and the Prime Minister does not answer it." },
+    { label:"Promise to review the Reserve Bank Act.",
+      effects:[{ move:{ "loyalty.cu":5, public_standing:1, "actor.underwriters":-4 } }, { economy:{ credibility:-0.12 } }],
+      result:"The review would take a year, and the market prices it in an afternoon." }
+  ]},
+
+/* the answers to the two money initiatives (content/initiatives.js) */
+{ id:"governor_answers", queuedOnly:true,
+  title:"The Governor's answer",
+  speaker:"castellane",
+  body:`Castellane's reply is in her own hand, which at the Bank means it is not for the file.
+
+She will not move the cash rate for a government. She will say, at her next meeting, that the Bank expects the price of heat to fall back, and that it can wait to see whether it does. That is worth a quarter of a point, and she would like it understood that it was her decision.`,
+  choices:[
+    { label:"Take what she offers.",
+      effects:[{ economy:{ rate:-0.25, credibility:-0.02 } }, { move:{ "rel.castellane":3 } }],
+      result:"The Bank cuts a quarter and says the heat price is temporary. If it is, nobody will remember the cut." },
+    { label:"Remind her the House can direct her.",
+      effects:[{ economy:{ credibility:-0.05 } }, { move:{ "rel.castellane":-12 } }, { flag:"direction_threatened" }],
+      result:"The Governor does not reply. The next meeting's statement is two sentences longer, and both are about the Act." },
+    { label:"Let it go.",
+      effects:[{ move:{ "rel.castellane":4 } }],
+      result:"The Bank decides by its rule, and the rule is printed beside the decision." }
+  ]},
+
+{ id:"dollar_line_tested", queuedOnly:true,
+  title:"The line is tested",
+  speaker:null,
+  body:`The market has spent a week finding out whether the Treasury meant it. The Bank has spent its reserves answering, and the dealers on the Bourse have been counting what is left.`,
+  choices:[
+    { label:"Spend what it takes.",
+      when:{ economyAbove:{ reserves:15000 } },
+      effects:[{ economy:{ reserves:-15000, fx:3, credibility:0.02 } }],
+      result:"The line holds, and the reserves are fifteen billion lighter for holding it." },
+    { label:"Let the line go.",
+      effects:[{ economy:{ fx:-5, credibility:-0.06 } }, { move:{ legitimacy:-3 } }],
+      result:"The dollar falls through the line the Treasury drew, and the next line anybody draws will cost more to believe." }
+  ]}
+
 ];
