@@ -50,7 +50,10 @@ const Editor = (function () {
          written here only as far as its events and bills. */
       settlements: clone(typeof SETTLEMENTS !== "undefined" ? SETTLEMENTS : []),
       initiatives: clone(typeof INITIATIVES !== "undefined" ? INITIATIVES : []),
-      achievements: clone(typeof ACHIEVEMENTS !== "undefined" ? ACHIEVEMENTS : [])
+      achievements: clone(typeof ACHIEVEMENTS !== "undefined" ? ACHIEVEMENTS : []),
+      /* and the campaign record itself: who governs, the introduction, the
+         setup a campaign changes and the effects it opens with */
+      administrations: clone(typeof ADMINISTRATIONS !== "undefined" ? ADMINISTRATIONS : [])
     };
   }
 
@@ -73,9 +76,9 @@ const Editor = (function () {
       /* THE CAMPAIGNS an entry may belong to (design/36 §3): every
          administration's, or its own id. Blank is the world's: every
          campaign plays it. */
-      case "campaigns": return [["", "every campaign (the world's)"]].concat(
-        [...new Set(((typeof ADMINISTRATIONS !== "undefined" && ADMINISTRATIONS) || [])
-          .map(a => a.campaign || a.id))].map(c => [c, c]));
+      case "campaigns": return [["", "every campaign (the world's)"]].concat(campaignIds().map(c => [c, c]));
+      case "playable": return [["", "its own"]].concat(campaignIds().map(c => [c, c]));
+      case "introKinds": return ["epigraph", "lede", "body", "voices", "document", "signature"].map(v => [v, v]);
       case "parties": return M.parties.map(p => [p.id, p.name]);
       case "stations": return M.stations.map(s => [s.id, s.name]);
       case "bands": return SCHEMA.vocab.bands.map(v => [v, v]);
@@ -129,13 +132,20 @@ const Editor = (function () {
     }
   }
 
+  /* THE CAMPAIGNS THERE ARE: every administration's, from the model, so a
+     campaign made here is offered the moment it exists */
+  function campaignIds() {
+    return [...new Set(((M && M.administrations) || []).map(a =>
+      (typeof a.campaign === "string" && a.campaign) || a.id))];
+  }
+
   /* EVERY LENDER, the world's and each campaign's own: a campaign adds
      lenders in its administration's setup (Flash I's emergency facility),
      and a move on one read as "not in this list" */
   function lenders() {
     const out = {};
     Object.entries((typeof SETUP !== "undefined" && SETUP.lenders) || {}).forEach(([k, L]) => out[k] = L);
-    ((typeof ADMINISTRATIONS !== "undefined" && ADMINISTRATIONS) || []).forEach(a =>
+    (((M && M.administrations) || (typeof ADMINISTRATIONS !== "undefined" && ADMINISTRATIONS)) || []).forEach(a =>
       Object.entries((a.setup && a.setup.lenders) || {}).forEach(([k, L]) => { if (!out[k]) out[k] = L; }));
     return Object.entries(out);
   }
@@ -1017,6 +1027,161 @@ const Editor = (function () {
   }
 
   /* =========================================================
+     THE CAMPAIGN RECORD (25 Sep)
+
+     An administration is a government the menu offers and the campaign it
+     opens: who governs, the setup it changes, the effects it opens with
+     and its introduction. The id is the campaign's name, on every entry
+     tagged with it and on every save, so it is not renamed here.
+     ========================================================= */
+
+  /* the files a campaign is kept in, in the order the pages load them */
+  const CAMP_KINDS = ["events", "bills", "settlements", "initiatives", "achievements"];
+  function campaignFiles(id) {
+    const out = Serialise.administrationsFiles(M.administrations)
+      .filter(f => f.path === "content/campaigns/" + id + "/campaign.js");
+    CAMP_KINDS.concat(["concordance"]).forEach(k => filesOf(k)
+      .filter(f => f.path.indexOf("content/campaigns/" + id + "/") === 0).forEach(f => out.push(f)));
+    return out;
+  }
+  function onThisPage(path) {
+    return typeof document !== "undefined" && !!document.querySelector('script[src="' + path + '"]');
+  }
+
+  function campaignForm(a) {
+    const home = (typeof a.campaign === "string" && a.campaign) || a.id;
+    const S = a.setup || {}, sc = S.scalars || {};
+    const rest = {};
+    Object.keys(S).forEach(k => { if (k !== "startDate" && k !== "scalars") rest[k] = S[k]; });
+    const files = campaignFiles(home);
+    const missing = files.filter(f => !onThisPage(f.path));
+    const intro = a.intro;
+    const restText = Object.keys(rest).length ? JSON.stringify(rest, null, 2) : "";
+    return `<div class="ed-grid">
+      <label>Id <input class="ed-f" data-f="id" type="text" value="${esc(a.id)}" disabled style="width:130px">
+        <span class="ed-hint">the campaign's name, on every entry and save: not renamed here</span></label>
+      <label>Plays ${sel_("plays", "playable", typeof a.campaign === "string" ? a.campaign : "")}
+        <span class="ed-hint">another campaign's story, for a sandbox</span></label>
+    </div>
+    <div class="ed-grid">
+      <label>Party ${sel_("party", "parties", a.party)}</label>
+      <label>Prime Minister ${sel_("leader", "characters", a.leader)}</label>
+      <label>Ordinal ${txt_("ordinal", a.ordinal || "", "I", 90)}</label>
+      <label>From ${num_("from", a.from)}</label>
+      <label>To ${num_("to", a.to)}</label>
+      <label>Session ${num_("session", a.session)} <span class="ed-hint">of the term</span></label>
+    </div>
+    <div class="rulehead">Setup <span class="ed-hint">merged one level deep over the world's; blank keeps the world's</span></div>
+    <div class="ed-grid">
+      <label>Opens on ${txt_("startDate", S.startDate || "", "2080-04-11", 110)}</label>
+      ${SCHEMA.vocab.scalars.filter(k => k !== "party_loyalty").map(k =>
+        `<label>${esc(k.replace(/_/g, " "))} ${num_("sc_" + k, sc[k] == null ? "" : sc[k], 70)}</label>`).join("")}
+    </div>
+    <label class="ed-res">Other setup <textarea class="ed-f ed-noteta" data-f="setup_rest" rows="${
+      Math.min(14, Math.max(2, restText.split("\n").length))}"
+      spellcheck="false" placeholder="{}">${esc(restText)}</textarea></label>
+    <div class="ed-hint" style="padding:0 5px 4px">JSON: lenders, thresholds, and any other key of content/setup.js this campaign changes.</div>
+    <div class="rulehead">Opening effects <button class="btn ed-add" data-act="eff-add" data-ci="0">+ effect</button>
+      <span class="ed-hint">applied at the first sitting: how the last campaign's canon ending becomes this one's start</span></div>
+    <div class="ed-effs" id="ed-opening">${explodeEffects(a.opening).map((eff, ei) => effRow(eff, 0, ei)).join("")}</div>
+    <div class="rulehead">Introduction ${intro
+      ? `<button class="btn ed-add" data-act="intro-del">remove</button>`
+      : `<button class="btn ed-add" data-act="intro-add">+ introduction</button>`}
+      <span class="ed-hint">the page read before the first sitting</span></div>
+    ${intro ? `<div class="ed-grid">
+      <label class="ed-w">Title ${txt_("in_title", intro.title || "", "", 260)}</label>
+      <label>Art ${txt_("in_art", intro.art || "", "artifact slot", 110)}</label>
+      <label>Mood ${txt_("in_mood", intro.mood || "", "moment", 90)}</label>
+      <label>Anthem ${txt_("in_anthem", intro.anthem || "", "track id", 100)}</label>
+    </div>
+    <div class="rulehead">Sections <button class="btn ed-add" data-act="isec-add">+ section</button>
+      <span class="ed-hint">a kind is how the passage reads, not what it means</span></div>
+    <div id="ed-isecs">${(intro.sections || []).map((sec, i) => introSection(sec, i)).join("")}</div>` : ""}
+    <div class="rulehead">This campaign's files</div>
+    <div class="${missing.length ? "ed-warnbox" : "ed-arch"}">${missing.length
+      ? `Not on this page yet. Export the campaign, move each file into <b>content/campaigns/${esc(home)}/</b> ` +
+        `under the name after the dash, and add these lines to <b>index.html</b> and <b>editor.html</b>, ` +
+        `after the world's content and before content/index.js:`
+      : `Loaded by this page. Both pages load them, in this order:`}
+      <pre class="ed-tags">${files.map(f => esc('<script src="' + f.path + '"></script>')).join("\n")}</pre>
+      <button class="btn" data-act="camp-export">Export this campaign (${files.length} file${files.length === 1 ? "" : "s"})</button></div>`;
+  }
+  function introSection(sec, i) {
+    const plain = sec.body == null || typeof sec.body === "string";
+    return `<div class="ed-choice ed-isec" data-si="${i}">
+      <div class="ed-choicehd">
+        <span class="ed-cnum">${i + 1}</span>
+        ${sel_("kind", "introKinds", sec.kind || "body")}
+        <input class="ed-f ed-label" data-f="head" type="text" value="${esc(sec.head || "")}" placeholder="Heading (blank for none)">
+        <button class="btn ed-x" data-act="isec-del" data-si="${i}">&times;</button>
+      </div>
+      <textarea class="ed-f ed-body" data-f="body"${plain ? "" : ' data-json="1"'} rows="${plain ? 6 : 4}"
+        style="border:none">${esc(plain ? (sec.body || "") : JSON.stringify(sec.body, null, 2))}</textarea>
+      <label class="ed-res">Source ${txt_("source", sec.source || "", "an epigraph's attribution, a document's origin", 300)}</label>
+    </div>`;
+  }
+  /* the last campaign record whose "other setup" would not parse, for the
+     validation panel: it is left as it was rather than lost */
+  let setupError = null;
+  function readAdministration(orig) {
+    const a = clone(orig || {});
+    const plays = g_("plays").value;
+    if (plays) a.campaign = plays; else delete a.campaign;
+    a.party = g_("party").value; a.leader = g_("leader").value;
+    putText(a, "ordinal", g_("ordinal").value);
+    putNum(a, "from", g_("from").value); putNum(a, "to", g_("to").value);
+    putNum(a, "session", g_("session").value);
+    /* THE SETUP IN THE ORDER IT WAS WRITTEN: the form's two fields and the
+       JSON's keys, each where it stood, and anything new at the end. */
+    const was = a.setup || {};
+    let rest = null;
+    const raw = g_("setup_rest").value.trim();
+    try { rest = raw ? JSON.parse(raw) : {}; setupError = null; }
+    catch (e) { setupError = a.id + ": the other setup is not valid JSON, so it was left as it was"; }
+    if (rest === null) {
+      rest = {};
+      Object.keys(was).forEach(k => { if (k !== "startDate" && k !== "scalars") rest[k] = was[k]; });
+    }
+    const sc = {}, wasSc = was.scalars || {};
+    Object.keys(wasSc).concat(SCHEMA.vocab.scalars).forEach(k => {
+      if (k in sc) return;
+      const f = g_("sc_" + k);
+      if (f) { if (f.value !== "") sc[k] = +f.value; }
+      else if (wasSc[k] != null) sc[k] = wasSc[k];
+    });
+    const date = g_("startDate").value.trim();
+    const setup = {};
+    const put = k => {
+      if (k === "startDate") { if (date) setup.startDate = date; }
+      else if (k === "scalars") { if (Object.keys(sc).length) setup.scalars = sc; }
+      else if (k in rest) setup[k] = rest[k];
+    };
+    Object.keys(was).forEach(put);
+    ["startDate", "scalars"].concat(Object.keys(rest)).forEach(k => { if (!(k in setup)) put(k); });
+    if (Object.keys(setup).length || orig.setup) a.setup = setup;
+    const opening = readEffs(document.getElementById("ed-opening"));
+    if (opening.length || Array.isArray(a.opening)) a.opening = opening; else delete a.opening;
+    if (a.intro) {
+      const I = a.intro;
+      [["in_title", "title"], ["in_art", "art"], ["in_mood", "mood"], ["in_anthem", "anthem"]].forEach(([f, k]) => {
+        const n = g_(f); if (n) putText(I, k, n.value);
+      });
+      const before = I.sections || [];
+      I.sections = [...document.querySelectorAll("#ed-isecs .ed-isec")].map(n => {
+        const sec = clone(before[+n.dataset.si] || {});
+        sec.kind = n.querySelector('[data-f="kind"]').value;
+        putText(sec, "head", n.querySelector('[data-f="head"]').value);
+        const b = n.querySelector('[data-f="body"]');
+        if (b.dataset.json) { try { sec.body = JSON.parse(b.value); } catch (e) {} }
+        else putText(sec, "body", b.value);
+        putText(sec, "source", n.querySelector('[data-f="source"]').value);
+        return sec;
+      });
+    }
+    return a;
+  }
+
+  /* =========================================================
      RENDER
      ========================================================= */
 
@@ -1057,6 +1222,11 @@ const Editor = (function () {
               sub: i => (i.cost || 0) + " slot" + (i.cost === 1 ? "" : "s"),
               form: initiativeForm, blank: () => ({ id: "new_initiative", title: "New initiative", note: "",
                 cost: 1, tempo: [{ label: "Quietly", after: 2 }, { label: "In public", after: 4, cost: 1 }] }) },
+    campaigns: { arr: "administrations",
+              label: a => { const c = M.characters.find(x => x.id === a.leader);
+                            return (c ? c.name.replace(/ MP$/, "") : a.leader || a.id) + " " + (a.ordinal || ""); },
+              sub: a => (typeof a.campaign === "string" ? "plays " + a.campaign : a.id),
+              form: campaignForm, blank: () => ({}) },
     achievements: { arr: "achievements", label: a => a.name || a.id, sub: a => a.tier || "—",
               form: achievementForm, blank: () => ({ id: "new_award", name: "New award", tier: "action",
                 note: "", when: { flags: ["new_award_earned"] } }) }
@@ -1122,6 +1292,7 @@ const Editor = (function () {
     else if (sel.tab === "settlements") { arr[i] = readSettlement(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "initiatives") { arr[i] = readInitiative(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "achievements") { arr[i] = readAchievement(arr[i]); sel.id = arr[i].id; }
+    else if (sel.tab === "campaigns") { arr[i] = readAdministration(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "parties") {
       const p = arr[i];
       p.id = g("id").value.trim(); p.name = g("name").value; p.short = g("short").value;
@@ -1347,18 +1518,19 @@ const Editor = (function () {
         soft.slice(0, 6).map(s => "  · " + s).join("\n")
       : "";
     /* REFERENCES IN FILES THIS EDITOR DOES NOT WRITE. The model holds the
-       files it exports; setup, the cabinet, instruments, minutes, business,
-       actors and administrations name the same ids and are read-only here,
-       so a rename would leave them pointing at nothing. They are found and
-       listed so they can be changed by hand. (Initiatives and settlements
-       are the model's since 25 Sep, and a rename reaches them.) */
+       files it exports; setup, the cabinet, instruments, minutes, business
+       and actors name the same ids and are read-only here, so a rename
+       would leave them pointing at nothing. They are found and listed so
+       they can be changed by hand. (Initiatives, settlements and the
+       administrations are the model's since 25 Sep, and a rename reaches
+       them.) */
     const G = n => (typeof window !== "undefined" && window[n]) ||
       (function () { try { return eval(n); } catch (e) { return undefined; } })();
     const outside = Refs.find(Object.assign({}, M, {
       cabinet: G("CABINET"), instruments: G("INSTRUMENTS"),
       minutes: G("MINUTES"), business: G("BUSINESS"),
-      actors: G("ACTORS"), administrations: G("ADMINISTRATIONS"), setup: G("SETUP") }), kind, from)
-      .filter(h => /^(setup|cabinet|instrument|minute|business|actor|administration) /.test(h.where));
+      actors: G("ACTORS"), setup: G("SETUP") }), kind, from)
+      .filter(h => /^(setup|cabinet|instrument|minute|business|actor) /.test(h.where));
     const outNote = outside.length
       ? `\n\nNOT changed — in files this editor does not write, change by hand:\n` +
         outside.slice(0, 8).map(h => "  · " + h.where).join("\n") +
@@ -1729,6 +1901,27 @@ const Editor = (function () {
     });
     P.push(["info", "chapters: " + [...declared].sort((a,b)=>a-b).join(", ")]);
 
+    /* THE CAMPAIGN RECORDS (25 Sep) */
+    if (setupError) P.push(["err", setupError]);
+    const CH = new Set(M.characters.map(c => c.id)), PA = new Set(M.parties.map(p => p.id));
+    (M.administrations || []).forEach(a => {
+      const home = (typeof a.campaign === "string" && a.campaign) || a.id;
+      if (!PA.has(a.party)) P.push(["err", "campaign " + a.id + ": governed by no party '" + a.party + "'"]);
+      if (!CH.has(a.leader)) P.push(["err", "campaign " + a.id + ": led by nobody '" + a.leader + "'"]);
+      if (typeof a.campaign === "string" && campaignIds().indexOf(a.campaign) < 0)
+        P.push(["err", "campaign " + a.id + ": plays '" + a.campaign + "', which is no campaign"]);
+      if (!onThisPage("content/campaigns/" + home + "/campaign.js"))
+        P.push(["warn", "campaign " + home + ": not on this page yet; its tab says what to add"]);
+    });
+
+    /* an entry belongs to a campaign that exists, or it is played by none */
+    const known = new Set(campaignIds());
+    [["event", M.events], ["bill", M.bills], ["ending", M.settlements], ["initiative", M.initiatives],
+     ["award", M.achievements], ["article", (M.encyclopedia || {}).articles]].forEach(([what, arr]) =>
+      (arr || []).forEach(x => [].concat(x.campaign == null ? [] : x.campaign).forEach(c => {
+        if (!known.has(c)) P.push(["err", what + " " + (x.id || "?") + ": belongs to '" + c + "', which has no campaign record"]);
+      })));
+
     /* THE ENDINGS, WHAT CAN BE STARTED, AND THE AWARDS (25 Sep) */
     const dupes = (arr, what) => arr.map(x => x.id).forEach((id, i, a) => {
       if (a.indexOf(id) !== i) P.push(["dup", "duplicate " + what + " id: " + id]); });
@@ -1889,6 +2082,7 @@ const Editor = (function () {
   function filesOf(kind) {
     if (kind === "parties") return [{ path: "content/parties.js", text: Serialise.partiesFile(M.parties, M.currents) }];
     if (kind === "concordance") return Serialise.encyclopediaFiles(M.encyclopedia);
+    if (kind === "campaigns") return Serialise.administrationsFiles(M.administrations);
     return Serialise.files(kind, M[KIND[kind].arr] || []);
   }
   function downloadName(p) {
@@ -1902,7 +2096,7 @@ const Editor = (function () {
     document.getElementById("sb-dirty").style.color = "";
     const all = ["events", "parties", "stations", "characters", "bills", "glossary",
                  "concordance", "functional", "constituencies",
-                 "settlements", "initiatives", "achievements"]
+                 "settlements", "initiatives", "achievements", "campaigns"]
       .reduce((a, k) => a.concat(filesOf(k)), []);
     all.forEach((f, i) => setTimeout(() => download(downloadName(f.path), f.text), i * 120));
   }
@@ -1919,6 +2113,36 @@ const Editor = (function () {
                : fs.map(f => "/* ---------- " + f.path + " ---------- */\n" + f.text).join("\n");
     document.getElementById("ed-preview").textContent = text;
     document.getElementById("ed-previewwrap").style.display = "";
+  }
+
+  /* A NEW CAMPAIGN: its id first, because the id is the folder, the tag on
+     everything it holds and the name every save records. It opens as the
+     world's governing party and Prime Minister, on the world's date, with
+     an introduction to write; its events, bills and endings are made on
+     their own tabs with this campaign chosen. */
+  function newCampaign() {
+    Dialog.prompt("A new campaign's id: lowercase letters, numbers and underscores.\n\n" +
+      "It names the folder (content/campaigns/<id>/), and every entry of the campaign carries it.",
+      { title: "New campaign", value: "", yes: "Create" }, id => {
+        if (!id) return;
+        const clean = id.trim();
+        if (!/^[a-z][a-z0-9_]*$/.test(clean)) {
+          Dialog.alert("Ids start with a letter and use lowercase letters, numbers and underscores.", { title: "Invalid id" });
+          return;
+        }
+        if (campaignIds().indexOf(clean) >= 0 || M.administrations.some(a => a.id === clean)) {
+          Dialog.alert('"' + clean + '" is already a campaign.', { title: "Id taken" });
+          return;
+        }
+        snapshot("new campaign");
+        const world = typeof SETUP !== "undefined" ? SETUP : {};
+        const year = +String(world.startDate || "2080").slice(0, 4) || 2080;
+        M.administrations.push({ id: clean, party: world.playerParty || (M.parties[0] || {}).id,
+          leader: world.pm || "", ordinal: "I", from: year, to: year + 4, session: 1,
+          setup: { startDate: world.startDate || (year + "-01-01") },
+          intro: { title: "", sections: [{ kind: "lede", body: "" }] } });
+        sel.id = clean; touch(); draw();
+      });
   }
 
   /* ANOTHER PAIR IN A MAP CONDITION: the first key it does not hold yet */
@@ -1958,7 +2182,10 @@ const Editor = (function () {
         { title: "Draft found", yes: "Restore", no: "Discard" },
         restore => {
           if (restore) {
-            M = d.model;
+            /* a draft saved before a kind was editable has no list of it:
+               take that list from the files, or its tab has nothing to open */
+            const fresh = M; M = d.model;
+            Object.keys(fresh).forEach(k => { if (M[k] == null) M[k] = fresh[k]; });
             stampDraft("restored draft from " + when);
           } else { clearDraft(); }
           draw();
@@ -2005,11 +2232,20 @@ const Editor = (function () {
       if (act === "choice-del") cur.choices.splice(+b.dataset.ci, 1);
       /* an effect row belongs to a choice, or on the Initiatives tab to a
          tempo: the same rows, a different list */
-      const blocks = sel.tab === "initiatives" ? (cur.tempo ||= []) : cur.choices;
+      const blocks = sel.tab === "initiatives" ? (cur.tempo ||= []) : sel.tab === "campaigns" ? [cur] : cur.choices;
+      const effKey = sel.tab === "campaigns" ? "opening" : "effects";
       /* `move`, not `scalar`: the verb was folded into move, apply() throws
          on it, and every effect this button made was a crash in waiting. */
-      if (act === "eff-add") (blocks[+b.dataset.ci].effects ||= []).push({ move: { public_standing: 0 } });
-      if (act === "eff-del") blocks[+b.dataset.ci].effects.splice(+b.dataset.ei, 1);
+      if (act === "eff-add") (blocks[+b.dataset.ci][effKey] ||= []).push({ move: { public_standing: 0 } });
+      if (act === "eff-del") blocks[+b.dataset.ci][effKey].splice(+b.dataset.ei, 1);
+      if (act === "intro-add") cur.intro = { title: "", sections: [{ kind: "lede", body: "" }] };
+      if (act === "intro-del") delete cur.intro;
+      if (act === "isec-add") ((cur.intro ||= {}).sections ||= []).push({ kind: "body", body: "" });
+      if (act === "isec-del") cur.intro.sections.splice(+b.dataset.si, 1);
+      if (act === "camp-export") {
+        const home = (typeof cur.campaign === "string" && cur.campaign) || cur.id;
+        campaignFiles(home).forEach((f, i) => setTimeout(() => download(downloadName(f.path), f.text), i * 120));
+      }
       if (act === "cond-add") addCondition(cur);
       if (act === "cond-del") delete cur.when[b.dataset.c];
       if (act === "cond-pair") addPair(cur.when, b.dataset.c);
@@ -2055,7 +2291,9 @@ const Editor = (function () {
       draw();
     });
     document.getElementById("ed-new").addEventListener("click", () => {
-      commit(); snapshot("new");
+      commit();
+      if (sel.tab === "campaigns") return newCampaign();
+      snapshot("new");
       const o = KIND[sel.tab].blank();
       arrOf(sel.tab).push(o); sel.id = idOf(sel.tab, o); draw();
     });
@@ -2098,5 +2336,5 @@ const Editor = (function () {
      effect losing every pair after the first — lives in the encoding
      rather than in anything the DOM shows, so a check that drove the
      form would not see it. */
-  return { boot, __test: { explodeEffects, effToRow, rowToEff } };
+  return { boot, __test: { explodeEffects, effToRow, rowToEff, campaignFiles } };
 })();

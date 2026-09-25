@@ -28,11 +28,13 @@ const Refs = (function () {
      of reference, found by renaming everything and looking for what was
      left). The walk is by known KEY -- an effect list is found under one of
      these names, a gate under `when` -- so prose is never touched. */
-  const EFFECT_KEYS = ["effects", "onPass", "onFail", "reverse", "political_cost", "onSign", "close"];
+  /* `opening`: an administration's effects at the first sitting, since the
+     editor writes the campaign record (25 Sep) */
+  const EFFECT_KEYS = ["effects", "onPass", "onFail", "reverse", "political_cost", "onSign", "close", "opening"];
   const COLLECTIONS = [["events", "event"], ["bills", "bill"], ["instruments", "instrument"],
     ["initiatives", "initiative"], ["minutes", "minute"], ["cabinet", "cabinet"],
     ["settlements", "settlement"], ["business", "business"], ["actors", "actor"],
-    ["achievements", "achievement"]];
+    ["achievements", "achievement"], ["administrations", "administration"]];
   function walkModel(M, visit) {
     const go = (o, where) => {
       if (!o || typeof o !== "object") return;

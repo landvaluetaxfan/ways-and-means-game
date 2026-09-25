@@ -5,7 +5,7 @@
 const fs=require("fs"), vm=require("vm"), path=require("path"), root=path.join(__dirname,"..");
 /* the content files index.html loads, in its order (tools/loadcontent.js) */
 const src=require("./loadcontent.js").source();
-vm.runInThisContext(src+"\n;globalThis.__A={SETUP,PARTIES,CURRENTS,STATIONS,CHARACTERS,BILLS,EVENTS,GLOSSARY,ENCYCLOPEDIA,CONSTITUENCIES,SETTLEMENTS,INITIATIVES,ACHIEVEMENTS};");
+vm.runInThisContext(src+"\n;globalThis.__A={SETUP,PARTIES,CURRENTS,STATIONS,CHARACTERS,BILLS,EVENTS,GLOSSARY,ENCYCLOPEDIA,CONSTITUENCIES,SETTLEMENTS,INITIATIVES,ACHIEVEMENTS,ADMINISTRATIONS};");
 const A=globalThis.__A;
 const Serialise=require("../js/serialise.js");
 const Engine=require("../js/engine.js");
@@ -41,13 +41,16 @@ const out=[].concat(files("glossary"),
   [{path:"content/parties.js",text:Serialise.partiesFile(A.PARTIES,A.CURRENTS)}],
   files("stations"),files("characters"),files("bills"),files("constituencies"),files("events"),
   /* a campaign's own kinds, which the editor writes since 25 Sep */
-  files("settlements"),files("initiatives"),files("achievements"));
+  files("settlements"),files("initiatives"),files("achievements"),
+  /* and the campaign record, which is not untagged: its `campaign` says
+     which campaign it plays */
+  Serialise.administrationsFiles(A.ADMINISTRATIONS));
 const world=out.filter(f=>!/campaigns\//.test(f.path)), camp=out.filter(f=>/campaigns\//.test(f.path));
 const regen =
   fs.readFileSync(path.join(root,"content","setup.js"),"utf8")+"\n"+
   world.map(f=>f.text).join("\n")+"\n"+camp.map(f=>f.text).join("\n");
 const ctx={};
-vm.runInNewContext(regen+"\n;__B={SETUP,PARTIES,CURRENTS,STATIONS,CHARACTERS,BILLS,EVENTS,GLOSSARY,CONSTITUENCIES,SETTLEMENTS,INITIATIVES,ACHIEVEMENTS};",ctx);
+vm.runInNewContext(regen+"\n;__B={SETUP,PARTIES,CURRENTS,STATIONS,CHARACTERS,BILLS,EVENTS,GLOSSARY,CONSTITUENCIES,SETTLEMENTS,INITIATIVES,ACHIEVEMENTS,ADMINISTRATIONS};",ctx);
 const B=ctx.__B;
 
 const after=play(mkContent(B),40);
@@ -81,7 +84,7 @@ eq("division identical", before.div, after.div);
    makes this free to assert and the only line here that can see a dropped
    field. It does NOT cover the editor's forms; tools/edtest.js does. */
 ["SETUP","PARTIES","CURRENTS","STATIONS","CHARACTERS","BILLS","EVENTS","GLOSSARY","CONSTITUENCIES",
- "SETTLEMENTS","INITIATIVES","ACHIEVEMENTS"]
+ "SETTLEMENTS","INITIATIVES","ACHIEVEMENTS","ADMINISTRATIONS"]
   .forEach(k => eq(k.toLowerCase() + " identical, field for field",
                    JSON.stringify(A[k]), JSON.stringify(B[k])));
 console.log("");

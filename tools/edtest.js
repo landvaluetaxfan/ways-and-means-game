@@ -207,7 +207,9 @@ try {
       window.__files = out.map(function (x) { return { path: x.path, text: x.text }; });
       return out; };
       const pf = Serialise.partiesFile; Serialise.partiesFile = function (p, c) {
-      window.__cap = JSON.parse(JSON.stringify(p)); return pf.apply(this, arguments); }; })();
+      window.__cap = JSON.parse(JSON.stringify(p)); return pf.apply(this, arguments); };
+      const af = Serialise.administrationsFiles; Serialise.administrationsFiles = function (arr) {
+      window.__cap = JSON.parse(JSON.stringify(arr)); return af.apply(this, arguments); }; })();
     Editor.boot();`);
   const X = w2.eval("Editor.__test.explodeEffects");
   const norm = (tab, e) => { if (!e) return e; e = JSON.parse(JSON.stringify(e));
@@ -221,7 +223,8 @@ try {
   const GLOB = { events: "EVENTS", parties: "PARTIES", stations: "STATIONS", characters: "CHARACTERS",
     bills: "BILLS", glossary: "GLOSSARY", constituencies: "CONSTITUENCIES", functional: "FUNCTIONAL",
     /* a campaign's own kinds, written here since 25 Sep */
-    settlements: "SETTLEMENTS", initiatives: "INITIATIVES", achievements: "ACHIEVEMENTS" };
+    settlements: "SETTLEMENTS", initiatives: "INITIATIVES", achievements: "ACHIEVEMENTS",
+    campaigns: "ADMINISTRATIONS" };
   const diff = (a, b, p, out) => {
     if (JSON.stringify(a) === JSON.stringify(b)) return;
     if (a && b && typeof a === "object" && typeof b === "object" && Array.isArray(a) === Array.isArray(b))
@@ -245,7 +248,8 @@ try {
     const out = [];
     want.forEach(o => diff(norm(tab, o), norm(tab, byId.get(key(o))), key(o), out));
     const one = { parties: "party", glossary: "glossary", constituencies: "constituency",
-                  functional: "functional", settlements: "ending", achievements: "award" }[tab] ||
+                  functional: "functional", settlements: "ending", achievements: "award",
+                  campaigns: "campaign record" }[tab] ||
                 tab.replace(/s$/, "");
     ok("opening every " + one + " entry changes none of them",
        out.length === 0, out.length + " differences: " + out.slice(0, 4).join("  //  "));
@@ -349,6 +353,41 @@ try {
       .map(n => n.textContent).filter(t => /^(ending|initiative|award|duplicate (ending|initiative|award))/.test(t));
     ok("and the validator finds nothing wrong with the endings, initiatives and awards the game plays",
        bad.length === 0, bad.slice(0, 3).join(" // "));
+  }
+  /* A CAMPAIGN CAN BE MADE HERE (25 Sep): a new record from its id, an
+     event that belongs to it, and the folder's files, each where the page
+     would load it. This is the whole of "write a campaign in the editor",
+     end to end, short of the author moving the files. */
+  {
+    const click = n => n && n.dispatchEvent(new w2.MouseEvent("click", { bubbles: true }));
+    w2.eval(`Dialog.prompt = function (m, o, cb) { (typeof o === "function" ? o : cb)("probe_campaign"); };`);
+    click(w2.document.querySelector('.tab[data-t="campaigns"]'));
+    click(w2.document.getElementById("ed-new"));
+    const made = w2.document.querySelector('#ed-list .ed-item.on');
+    ok("New on the Campaigns tab makes a campaign from its id",
+       !!made && made.dataset.id === "probe_campaign", made ? made.dataset.id : "nothing selected");
+    const warn = w2.document.querySelector("#ed-form .ed-warnbox .ed-tags");
+    ok("and says which script tags the two pages need",
+       !!warn && /content\/campaigns\/probe_campaign\/campaign\.js/.test(warn.textContent),
+       warn ? warn.textContent.split("\n")[0] : "no list");
+    w2.eval(`Dialog.prompt = function (m, o, cb) { (typeof o === "function" ? o : cb)(null); };`);
+    click(w2.document.querySelector('.tab[data-t="events"]'));
+    click(w2.document.getElementById("ed-new"));
+    const cf = w2.document.querySelector('#ed-form [data-f="campaign"]');
+    const offered = !!cf && [...cf.options].some(o => o.value === "probe_campaign");
+    if (offered) { cf.value = "probe_campaign"; cf.dispatchEvent(new w2.Event("change", { bubbles: true })); }
+    click([...w2.document.querySelectorAll("#ed-list .ed-item[data-id]")][0]);
+    ok("an event can be given to it", offered, offered ? "" : "the campaign is not offered");
+    const paths = JSON.parse(w2.eval("JSON.stringify(Editor.__test.campaignFiles('probe_campaign').map(function (f) { return f.path; }))"));
+    ok("and the campaign exports as its folder: the record and the event's file",
+       paths[0] === "content/campaigns/probe_campaign/campaign.js" &&
+       paths.indexOf("content/campaigns/probe_campaign/events.js") > 0, paths.join(", "));
+    const text = w2.eval("Editor.__test.campaignFiles('probe_campaign')[0].text");
+    const box = { ADMINISTRATIONS: [] };
+    box.campaign = (id, parts) => (parts.administrations || []).forEach(a => box.ADMINISTRATIONS.push(a));
+    try { require("vm").runInNewContext(text, box); } catch (e) { box.err = e.message; }
+    ok("and the record it writes loads as a campaign()", !box.err &&
+       box.ADMINISTRATIONS.length === 1 && box.ADMINISTRATIONS[0].id === "probe_campaign", box.err || "");
   }
   if (errs2.length) ok("and the fresh editor raised no errors", false, errs2.slice(0, 2).join(" // "));
 } catch (e) { ok("opening an entry changes nothing", false, e.message); }

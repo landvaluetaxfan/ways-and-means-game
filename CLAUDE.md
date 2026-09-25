@@ -1113,8 +1113,17 @@ version of any of them is in the header of the file it names.
   does, all three in `edtest`'s open-everything sweep, `roundtrip`'s field
   comparison and (endings) `renametest`. `js/refs.js` renames an ending
   wherever `settled`, `resolved` or `resolvedIs` names it, awards included.
-  Still hand-edited: the campaign record, instruments, the cabinet, party
-  leaders and `setup`.
+- **AND THE CAMPAIGN RECORD, AND A NEW CAMPAIGN** (25 Sep). The Campaigns
+  tab edits each administration (party, leader, term, `setup` overrides,
+  `opening`, the introduction); **New** asks for the id and makes one;
+  **Export this campaign** writes the folder and lists the `<script>` lines
+  both pages need. `Serialise.administrationsFiles` keeps a record in the
+  folder of the campaign it PLAYS and never untags it: an administration's
+  `campaign` means "plays", so the sandbox is kept with Flash I and keeps
+  its field. `edtest` makes a campaign end to end. A draft saved before a
+  kind was editable gets that kind from the files on restore.
+  Still hand-edited: instruments, the cabinet, party leaders and the
+  world's `setup`.
 
 - **A NUMBER THE INTERFACE PRINTS IS CONTENT'S NUMBER — three found in two
   days.** The chart's record button read `2280-2287` as literal text while

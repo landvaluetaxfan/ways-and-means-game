@@ -84,7 +84,23 @@ meant for several campaigns stays in the world's files, untagged, and can
 branch on which one is running with the `campaign` condition:
 `when:{ campaign:"flash_ii" }`.
 
-**Starting a new campaign:**
+**Starting a new campaign in the editor** (since 25 Sep):
+
+1. Open `editor.html`, go to **Campaigns** and press **New**. Give the id;
+   it names the folder and goes on every entry of the campaign.
+2. Fill in the record: party, Prime Minister, the term, the setup it
+   changes (the opening date and meters as fields, anything else as JSON),
+   the opening effects, and the introduction, section by section.
+3. Write its events, bills, endings, initiatives and awards on their own
+   tabs, choosing the campaign in each entry's **Campaign** field.
+4. Press **Export this campaign** on the Campaigns tab. Each file downloads
+   as `<id>-<kind>.js`: move it to `content/campaigns/<id>/<kind>.js`. The
+   tab lists the `<script>` lines to add to **both** `index.html` and
+   `editor.html`, after the world's content and before `content/index.js`,
+   and warns until the editor's own page loads them.
+5. Write its `guards.js` (below) when the story has promises worth keeping.
+
+**Or by hand:**
 
 1. Copy `content/campaigns/flash_i/` to `content/campaigns/<new id>/`, and
    change the id in every `campaign()` call.
@@ -163,8 +179,9 @@ file as it was. The editor's export regenerates the whole file from data
 and drops every comment in it, so a file whose comments matter is edited by
 hand or through the prose file, not through the export.
 
-**What the editor writes.** Events, bills, **endings** (settlements),
-**initiatives** and **awards** (achievements), parties, stations, seats,
+**What the editor writes.** The **campaign record**, events, bills,
+**endings** (settlements), **initiatives** and **awards** (achievements),
+parties, stations, seats,
 functional seats, characters, the Concordance and the glossary. An ending's
 conditions are the events' conditions; an initiative's tempos each carry a
 delay, an extra cost, their own conditions and their own effects; an award's
