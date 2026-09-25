@@ -683,7 +683,8 @@ version of any of them is in the header of the file it names.
   confidence and supply 145 of 280) with austerity to come. The canon
   government climbs the emergency ladder, asks Earth's banks for terms once
   the result is in, and reaches the count with the thermal margin at about
-  six. It is the tightest number in the game. Flash I's guards
+  eight (six before the periods were corrected, design/37). It is the
+  tightest number in the game. Flash I's guards
   (`content/campaigns/flash_i/guards.js`) assert that the canon ending is
   reachable by play and goes to the count; keep that true whatever else
   moves, until the author rewrites the canon.
@@ -750,6 +751,19 @@ version of any of them is in the header of the file it names.
   58 to 56 and its thermal margin from 4 to 6, both printed by the guard;
   the First and Cheapest playtest strategies still cascade, a sitting
   earlier.
+- **EVERY SITTING PERIOD AFTER THE FIRST SAT SEVENTEEN** (found 25 Sep,
+  design/37). `recess()` counted sixteen on from a sitting that was already
+  the new period's first, so a session of "three periods of sixteen" sat 16,
+  17 and 17 and dissolved at 51, while `sessionEndsAt()` dated everything
+  owed "before the House rises" at 48. Every measurement above that says a
+  run is about 52 sittings was taken on it. Corrected: the canon count
+  moved from sitting 56 to 55 (16 July), its thermal margin from 6 to 8 and
+  the PSD from 89 seats to 86, still the debt trap; `test.js` holds each
+  period to `sittingsPerPeriod`.
+- **THE DESIGN AUDIT (design/37) left fourteen decisions with the author**,
+  and the first two are the ones to read before touching chapter three: the
+  count is taken at the writs, so the campaign cannot move a seat, and the
+  whole standing meter moves the PSD by fifteen seats.
 - **A STYLE THAT NAMES A PANEL WHICH NO LONGER EXISTS DOES NOTHING,
   SILENTLY.** The composition table listed a party's currents twice when
   it was opened with a measure named: the detail that opens with the

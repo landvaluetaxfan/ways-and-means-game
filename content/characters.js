@@ -237,7 +237,7 @@ const CHARACTERS = [
   /* ---- the faction leader ---- */
   { id:"halloran", portrait:"halloran.png", name:"Dan Czarnecki MP", role:"Leader, Hard Left",
     party:"cu", current:"cu_halloran", category:"biological", seat:"Tier Four", relationship:12,
-    note:"Has the signatures for a leadership ballot if he finds nine more." },
+    note:"Short of the twelve names that force a leadership ballot, and looking." },
 
   /* ---- the panel chair ---- */
   { id:"gb_chair", portrait:"gb_chair.png", name:"Kazuya Tanako MP", role:"Chair, Life Support panel",

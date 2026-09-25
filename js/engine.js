@@ -6062,7 +6062,13 @@ const Engine = (function () {
     st.slots.used = 0;
     st.slots.reserved = {};
     st.slotsGranted = [];
-    st.risesAt = st.sitting + periodLength(C);
+    /* THIS SITTING IS THE NEW PERIOD'S FIRST. The House rises when the
+       sitting passes risesAt, and the rise is taken at the top of the
+       sitting after the last, so the period that opens here runs from this
+       sitting to risesAt inclusive. Counting a full period on from it sat
+       every period after the first for seventeen sittings where setup says
+       sixteen, and a run of three periods for fifty. */
+    st.risesAt = st.sitting + periodLength(C) - 1;
     st.log.unshift({ sitting: st.sitting, text: "The House rises for the recess, and returns " +
       "for the " + (["", "first", "second", "third", "fourth", "fifth"][st.period] ||
       "next") + " sitting period of the session." });
@@ -6226,7 +6232,7 @@ const Engine = (function () {
     st.slots.used = 0;
     st.slots.reserved = {};                   /* reserved time is the period's */
     st.slotsGranted = [];
-    st.risesAt = st.sitting + periodLength(C);
+    st.risesAt = st.sitting + periodLength(C) - 1;   /* this sitting is the first; see recess() */
     st.log.unshift({ sitting: st.sitting,
       text: "The House rises. Session " + st.session + " opens" +
             (fell.length ? "; " + fell.length + " bill" + (fell.length > 1 ? "s" : "") +

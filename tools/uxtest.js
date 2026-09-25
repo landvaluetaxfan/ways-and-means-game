@@ -807,6 +807,12 @@ try {
      /RISES IN/.test(ui) && w.eval(`/RISES IN \\d+/.test(
        document.getElementById("tb-sys").textContent)`),
      w.eval(`document.getElementById("tb-sys").textContent`));
+  /* design/37: the topbar said RISES IN 16 over a status bar saying RISE
+     IN 15. One count, printed twice. */
+  const twoClocks = w.eval(`[(document.getElementById("tb-sys").textContent.match(/RISES IN (\\d+)/) || [])[1],
+    (document.getElementById("sb-rise").textContent.match(/RISE IN (\\d+)/) || [])[1]]`);
+  ok("and it is the same count as the status bar's",
+     twoClocks[0] != null && twoClocks[0] === twoClocks[1], twoClocks.join(" / "));
 } catch (e) { ok("the division dialog", false, e.message); }
 
 /* STREAMING IS A PLAYER PREFERENCE, so it lives in Shell.opts with the

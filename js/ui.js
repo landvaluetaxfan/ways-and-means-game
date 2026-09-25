@@ -457,8 +457,11 @@ const UI = (function () {
        every tab and already carries the sitting, so the count belongs beside
        it. Order-paper time is the currency that cannot be topped up (bible
        7.7) and this is the only place that says how much of it is left. */
-    const rise = st.risesAt != null
-      ? " / RISES IN " + Math.max(0, st.risesAt - st.sitting + 1) : "";
+    /* The same count as the status bar's chip and the calendar's "in n
+       sittings". This one added a sitting, so the top of the screen said
+       RISES IN 16 over a status bar saying RISE IN 15 (design/37). */
+    const left = st.risesAt != null ? Math.max(0, st.risesAt - st.sitting) : null;
+    const rise = left == null ? "" : left === 0 ? " / RISES TODAY" : " / RISES IN " + left;
     /* The period beside the session (bible §1.8), only where a session has
        more than one: "SESS 4.2" is the second sitting period of Session 4. */
     const per = (C.setup && C.setup.periodsPerSession) || 1;
@@ -471,12 +474,13 @@ const UI = (function () {
     $("#sb-margin").textContent = `MARGIN ${conf - maj >= 0 ? "+" : ""}${conf - maj}`;
     $("#sb-thermal").textContent = `THERMAL ${st.scalars.thermal_margin}%`;
     $("#sb-chapter").textContent = `CHAPTER ${st.chapter}`;
-    /* THE CLOCK, ON EVERY SCREEN (design/26 #88). The session's end is the one
+    /* THE CLOCK, ON EVERY SCREEN (design/26 #88). The next rise is the
        deadline that governs everything else on the board — order-paper time
-       refills when the House rises, business not carried falls, and every
-       undertaking due "before the House rises" comes due at once — and it was
-       only ever visible on the calendar, on one tab, halfway down a column.
-       It is a chip in the status bar now, and it turns red inside three. */
+       refills at every rise, and at the session's last one business not
+       carried falls and every undertaking due "before the House rises"
+       comes due at once — and it was only ever visible on the calendar, on
+       one tab, halfway down a column. It is a chip in the status bar now,
+       and it turns red inside three. */
     const rise = $("#sb-rise");
     if (rise) {
       if (st.risesAt == null) { rise.textContent = ""; }
@@ -5505,10 +5509,36 @@ const UI = (function () {
      THE MOOD IS RETURNED AND NOT CUED, like every other set piece, because
      sound comes from user actions and engine effects and never from a draw.
      The caller cues it on the action that ended the run. */
+  /* WHO GOVERNS NOW, which is the question an election answers and the one
+     the last page did not (design/37). It printed the Prime Minister's own
+     party, as "the government", and said "It held where it stood" over a
+     count in which the coalition and its partners fell six short of a
+     majority. The side is the one that went to the country; whether it
+     can form a government after the count is not modelled, so the page
+     says what the arithmetic is and no more. */
+  function governmentReturn(r) {
+    const side = (st.coalition || []).concat(st.confidenceSupply || []);
+    const sum = m => side.reduce((n, id) => n + ((m || {})[id] || 0), 0);
+    const now = sum(r.after), maj = Engine.majority(st);
+    return { then: sum(r.before), now: now, maj: maj,
+             line: "The coalition and its partners on confidence and supply went to " +
+                   "the country with " + sum(r.before) + " seats and come back with " +
+                   now + ", against a majority of " + maj + ": " +
+                   (now > maj ? "a majority, with " + (now - maj) + " to spare."
+                    : now === maj ? "a majority, with none to spare."
+                    : (maj - now) + " short of one.") };
+  }
+  const ownSeatsLine = (was, held) => {
+    return "The Prime Minister's own party went to the country with " + was +
+      " seat" + (was === 1 ? "" : "s") + " and came back with " + held + ". " +
+      (held > was ? "It gained." : held < was ? "It lost." : "It held where it stood.");
+  };
+
   function endMood(end) {
     if (end.kind === "loss") return "grave";
     if (end.kind === "election" && end.result) {
       const r = end.result;
+      if (r.after && governmentReturn(r).now < governmentReturn(r).maj) return "sombre";
       if ((r.held || 0) > (r.was || 0)) return "triumph";
       if ((r.held || 0) < (r.was || 0)) return "sombre";
       return "moment";
@@ -5527,10 +5557,7 @@ const UI = (function () {
     if (end.kind === "election" && end.result) {
       const r = end.result, was = r.was || 0, held = r.held || 0;
       title = "The Commonwealth has voted";
-      secs.push({ kind: "lede", body:
-        "The government went to the country with " + was + " seat" + (was === 1 ? "" : "s") +
-        " and came back with " + held + ". " +
-        (held > was ? "It gained." : held < was ? "It lost." : "It held where it stood.") });
+      secs.push({ kind: "lede", body: governmentReturn(r).line + " " + ownSeatsLine(was, held) });
       secs.push({ kind: "document", head: "The House it returns",
                   body: seatLine(r.after), source: "Return of the writs" });
     } else if (end.kind === "settlement" && end.settlement) {
@@ -5594,9 +5621,7 @@ const UI = (function () {
       head = "The Commonwealth has voted";
       body =
         `<div class="rulehead">The answer</div><div class="note">` +
-          `The government went to the country with <b>${was}</b> seat${was === 1 ? "" : "s"} and ` +
-          `came back with <b>${held}</b>. ` +
-          (held > was ? "It gained." : held < was ? "It lost." : "It held where it stood.") +
+          esc(governmentReturn(r).line) + " " + esc(ownSeatsLine(was, held)) +
         `</div>` +
         `<div class="rulehead">The House it returns</div><div class="note">${seatsOf(r.after)}</div>` +
         (st.settledAs ? `<div class="rulehead">What the session settled</div>` +

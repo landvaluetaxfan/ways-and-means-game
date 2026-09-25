@@ -194,6 +194,28 @@ try {
        !!w.document.querySelector("#rel-table tr.sel"));
   }
 
+  /* THE LAST PAGE SAYS WHO GOVERNS (design/37). It printed the Prime
+     Minister's party as "the government" and "It held where it stood" over
+     a count that left the coalition and its partners short of a majority. */
+  {
+    const snapE = w.eval("JSON.stringify(UI.state())");
+    /* the introduction is drawn before an ending, so mark it read, and
+       re-boot on the session's own content (see the set-piece test below) */
+    w.eval("(function(){var s=UI.state(), K=UI.content(); s.flags._introRead=true;" +
+           "K.bills.forEach(function(b){ if (b.test==='supply') s.bills[b.id].stage='assented'; });" +
+           "Engine.dissolve(s, K); s.sitting += 40;" +
+           "UI.boot(s, Shell.contentFor((CONTENT.administrations||[])" +
+           ".find(function(x){return x.id===s.admin;})));})()");
+    w.document.querySelector('.tab[data-t="sit"]').click();
+    const endText = w.document.querySelector("#sitting-body").textContent;
+    const conf = w.eval("Engine.confidence(UI.state())"), maj = w.eval("Engine.majority(UI.state())");
+    ok("the last page says whether the government's side has a majority",
+       new RegExp("come back with " + conf + ", against a majority of " + maj).test(endText) &&
+       (conf >= maj ? /a majority, with/ : / short of one/).test(endText),
+       (endText.match(/The coalition[^:]*:[^.]*\./) || [endText.slice(0, 200)])[0]);
+    w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapE) + "), UI.content())");
+  }
+
   /* YOUR OWN PARTY (the author, 24 Sep). The Party tab is the Prime
      Minister's own bench: one row per current, the party's figures as their
      footing, a current read one at a time, and the leadership. Each figure

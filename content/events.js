@@ -336,11 +336,11 @@ recognise. You are not reforming personhood. You are reforming us."`,
 
 { id:"halloran_signatures", prologue:5,
   when:{ loyaltyBelow:{cu_halloran:20}, flagsAbsent:["halloran_confronted"] },
-  title:"Nine signatures",
+  title:"Twelve signatures",
   speaker:"halloran",
   body:`The number is not a secret. Everyone in the tea room can count, and the
-count is nine. Czarnecki needs nine more names and he has spent three weeks not
-getting them, which means either he cannot or he is waiting.
+count that matters is twelve: the names it takes to force a ballot. Czarnecki has
+spent three weeks not getting them, which means either he cannot or he is waiting.
 
 He catches you in the division lobby, which is deliberate, because it is the one
 place the two of you cannot be photographed apart.
@@ -357,16 +357,16 @@ hours make a stranger. Give me the shed order. Give me anything on the shed orde
                {flag:"halloran_confronted"},{flag:"shed_order_promised"},
                {bill:{shedorder:{stage:"second_reading"}}}],
       result:"He writes nothing down. He does not need to; you said it in a lobby with forty witnesses." },
-    { label:"Offer her a junior ministry and the silence that comes with it",
+    { label:"Offer him a junior ministry and the silence that comes with it",
       note:"An office buys the leader and not the group. The members who followed him " +
            "are left with a grievance and nobody to carry it into the chamber.",
       effects:[{move:{"loyalty.cu_halloran":14}},{move:{"party_loyalty":4}},{move:{"public_standing":-3}},
                {flag:"halloran_confronted"},{flag:"halloran_bought"},
                {wire:"CZARNECKI TIPPED FOR OFFICE; ASHFIELD DELEGATION SEEKS ASSURANCES"}],
       result:"He takes it. His group does not all follow him, and the ones who don't now have a grievance and no leader." },
-    { label:"Refuse. He does not have the nine and you both know it.",
-      note:"You keep the office and the money. He goes looking for the ninth name, and " +
-           "the session gives him four weeks to find it.",
+    { label:"Refuse. He does not have twelve and you both know it.",
+      note:"You keep the office and the money. He goes looking for the names, and " +
+           "gives himself four sittings to find them.",
       effects:[{move:{"loyalty.cu_halloran":-11}},{move:{"loyalty.cu_maintenance":-6}},{move:{"party_loyalty":-6}},
                {flag:"halloran_confronted"},{queue:[{event:"halloran_finds_nine",after:4}]}],
       result:"\"No,\" he agrees. \"Not today.\"" }
@@ -375,7 +375,7 @@ hours make a stranger. Give me the shed order. Give me anything on the shed orde
 { id:"halloran_finds_nine", queuedOnly:true, once:true,
   title:"He found them",
   speaker:"halloran",
-  body:`Four of the nine are revenants: members returned on the list after losing
+  body:`Four of his names are revenants: members returned on the list after losing
 a district, who owe their seats entirely to the party and were therefore supposed
 to be unbuyable. They have worked out that a leadership change reorders the list,
 and that a list can be reordered upward as easily as down.

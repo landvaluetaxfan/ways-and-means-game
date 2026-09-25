@@ -416,10 +416,31 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
        live.filter(id => r.bills[id].dead).join(", ") || live.length + " live bills survive");
     ok("and a promise owed before the House rises is still owed",
        probe && probe.state === "open", probe ? probe.state : "no probe");
+    const endsAt = Engine.sessionEndsAt(r, CONTENT);
     while (!r.dissolved && r.sitting < 200) Engine.advance(r, CONTENT);
     ok("until the session ends, when it is judged",
        !!r.dissolved && probe.state === "broken",
        (r.dissolved ? "dissolved at " + r.dissolved.at : "not dissolved") + ", " + probe.state);
+
+    /* EVERY PERIOD IS AS LONG AS SETUP SAYS (design/37). The recess counted
+       a full period on from the sitting that was already the new period's
+       first, so the first period sat sixteen and every later one seventeen,
+       and the House rose two sittings after the deadline the calendar gave
+       for everything owed "before the House rises". */
+    const P = CONTENT.setup.sittingsPerPeriod, N = CONTENT.setup.periodsPerSession;
+    const g = Engine.newGame(CONTENT), firsts = [1];
+    while (!g.dissolved && g.sitting < 200) {
+      const was = g.period; Engine.advance(g, CONTENT);
+      if (g.period !== was) firsts.push(g.sitting);
+    }
+    firsts.push(g.dissolved ? g.dissolved.at : NaN);
+    const lengths = firsts.slice(1).map((s, i) => s - firsts[i]);
+    ok("every sitting period is sittingsPerPeriod long",
+       lengths.length === N && lengths.every(n => n === P),
+       lengths.join(", ") + " against " + P);
+    ok("and the House rises when the calendar said it would",
+       r.dissolved && r.dissolved.at === endsAt + 1,
+       "deadline " + endsAt + ", dissolved at " + (r.dissolved && r.dissolved.at));
 
     /* A save written while the blocks were sessions: its later session
        numbers were periods all along. */
