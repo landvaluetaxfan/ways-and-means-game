@@ -680,9 +680,11 @@ version of any of them is in the header of the file it names.
   runs across parliaments. **Flash I's canon is the debt trap, decided 23
   Sep: "a middle ground between perfect and failure".** It returns the PSD to
   government with austerity to come. Since the count listens (design/38),
-  the canon government reaches the count on 15 August at standing 70: the
-  PSD holds 119 seats, and the government's side has a working majority of
-  183 of 280. The canon government climbs the emergency ladder, asks Earth's
+  the canon government campaigns as one with austerity coming (the guard's
+  pick list says how) and reaches the count on 15 August at standing 56: the
+  PSD holds 102 seats, and the government's side has a working majority of
+  163 of 280, just over the line. A first-option campaign won 184, one short
+  of a landslide, which is not a middle ground. The canon government climbs the emergency ladder, asks Earth's
   banks for terms once the result is in, and reaches the count with the
   thermal margin at about five. It is the tightest number in the game, and
   the guard prints it with the side and the epilogue. Flash I's guards
@@ -775,8 +777,10 @@ version of any of them is in the header of the file it names.
     is ranked within its OWN party's seats; ranked across the House, the
     big party came out all safe.
   - `Engine.forecast()` is the count on a copy, and it feeds the polls.
-  - The Single Tax Party cannot hold three list seats under 4% and D'Hondt.
-    It is held at 4.1%, and the choice is the author's.
+  - The Single Tax Party could not hold three list seats under 4% and
+    D'Hondt, so it holds four and the Liberals eighteen (the author, 25
+    Sep). At standing 50 the count returns the opening House exactly, and
+    `test.js` holds it to that.
 - **STANDING FADES** (design/38 §1). 61 of 125 events offered free standing,
   and a greedy player hit 100 before the writs and won every count.
   `setup.standingDrift` pulls every band 5% a sitting toward 45, so standing

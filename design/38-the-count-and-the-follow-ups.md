@@ -42,8 +42,10 @@ The author's answers, in order:
   eight sittings instead of four did what aging could not.
 - **The recess takes fourteen days, and every government draws its own seed.**
 - **Canon moved.** It is still the debt trap and still the count. The count
-  now falls on 15 August at sitting 57, with the thermal margin at 5. The PSD
-  returns with 119 seats and a working majority of 183 at standing 70.
+  now falls on 15 August at sitting 57, with the thermal margin at 5.
+  Campaigning as a government with austerity coming, the canon government
+  returns at standing 56 with a working majority of 163, just over the line.
+  The PSD holds 102 seats.
 
 ---
 
@@ -72,18 +74,19 @@ Measured on the opening House:
 |---|---|---|---|---|---|---|---|---|---|---|
 | government's side | 94 | 106 | 116 | 127 | 141 | 166 | 178 | 189 | 201 | 213 |
 
-At 50 the count returns the opening House, except for **the Single Tax
-Party**, which takes a fourth seat from the NPP. No list vote at or above a 4%
-threshold earns three seats of a hundred under D'Hondt, so the opening House
-contradicts its own threshold. The party is held at 4.1% ("within a point of
-the threshold", as its note says). **The author's call:**
+At 50 the count returns the opening House exactly. It first did so with
+one exception, **the Single Tax Party**:
 
-- four seats in the opening House;
-- a lower threshold at the last election;
-- or an exemption.
+- No list vote at or above a 4% threshold earns three seats of a hundred
+  under D'Hondt, so the opening House contradicted its own threshold.
+- The old count barred the party at every standing, because it diluted a
+  list-only party's vote with the district tier.
 
-The old count barred the party at every standing, because it diluted a
-list-only party's vote with the district tier.
+**Decided 25 Sep 2026 (the author: "adjust each party's seats as you see
+fit").** The party holds four list seats at 4.1%, still within a point of
+the threshold. The Liberals hold eighteen, and the Classical Liberals lose
+the member. The seat came from the opposition so that the government's
+one-seat margin is unchanged. Bible §8.4 carries the table.
 
 **The campaign.** Every beat had +2 to +4 standing on every answer, so no
 path could lose ground. Now:
@@ -276,11 +279,14 @@ Measure: with 1 and 2 in, First, Cheapest and Costliest should reach the count.
 
 ## For the author
 
-1. **The Single Tax Party:** four seats, a lower threshold at the last
-   election, or an exemption.
-2. **The canon numbers:** 15 August at sitting 57, the thermal margin at 5,
-   the PSD at 119 seats, and a working majority of 183 at standing 70. CLAUDE.md
-   and bible §1.8 carry them.
+1. ~~The Single Tax Party~~: decided, four seats (§1).
+2. ~~The canon numbers~~: decided 25 Sep 2026.
+   - The canon campaign runs on the promise, admits in the debate, lets the
+     dossier run and keeps the money.
+   - The result is 15 August at sitting 57, standing 56, a working majority
+     of 163 and the PSD on 102, with the thermal margin at 5.
+   - A first-option campaign won 184, one short of a landslide, which is not
+     a middle ground.
 3. **A Flash I epilogue** for the debt trap.
 4. **§6 and §7**, which are content and a small interface change.
 5. **The economy**, design/39.

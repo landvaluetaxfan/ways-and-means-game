@@ -28,28 +28,31 @@
    Chartists — none currently seated. */
 /* `vote` IS THE LAST ELECTION'S LIST VOTE, per cent of all votes cast
    (design/38 §1). The count starts from it: at a neutral mood (standing
-   50) the list tier returns the opening list seats under D'Hondt and the
+   50) the list tier returns these list seats exactly under D'Hondt and the
    4% threshold, and districts are derived from it and the roll. The shares
-   were solved to reproduce the list seats, with one exception the author
-   should decide: no vote at or above a 4% threshold earns three seats of a
-   hundred under D'Hondt, so the Single Tax Party is held at 4.1, "within a
-   point of the threshold", and a neutral count returns it four (the NPP's
-   twenty-eighth). The alternatives are four seats in the opening House, a
-   lower threshold at the last election, or an exemption. What the parties
-   leave (1.9) went to lists that won nothing.
+   were solved from the seats. What the parties leave (1.9) went to lists
+   that won nothing.
+   THE SINGLE TAX PARTY HOLDS FOUR LIST SEATS, NOT THREE (the author, 25
+   Sep: "adjust each party's seats as you see fit"). No vote at or above a
+   4% threshold earns three seats of a hundred under D'Hondt, so the opening
+   House contradicted its own threshold. The fourth came from the Liberal
+   list (19 to 18) and not the NPP's, so the government's majority is the
+   one-seat margin it always was. At 4.1% the party is still "within a point
+   of the threshold": a government a few points more popular pushes it
+   under, and it leaves the House.
    `swing` (default 1) is how much of the national tide reaches a party:
    independents hold their seats on a personal vote and take none of it. */
 const PARTIES = [
   { id:"cu",  name:"Party of Socialists and Democrats", short:"PSD", colour:"var(--p-cu)",
     leader:"flash", logo:"cu.png", wordmark:"cu_mark.png",
-    seats:{district:48,list:25,functional:9}, vote:23.0,
+    seats:{district:48,list:25,functional:9}, vote:23.3,
     kind:"national",
     axes:{economic:-0.75, authority:-0.4, personhood:-0.55, sovereignty:0.5, trade:-0.35},
     note:"Old left. Embodied maintenance labour, and the strike weapon." },
 
   { id:"cl",  name:"Liberal Party",                short:"LIB", colour:"var(--p-cl)",
     leader:"watkins", logo:"cl.png", wordmark:"cl_mark.png",
-    seats:{district:22,list:19,functional:6}, vote:17.6,
+    seats:{district:22,list:18,functional:6}, vote:16.9,
     kind:"national",
     axes:{economic:0.7, authority:-0.1, personhood:0.6, sovereignty:0.75, trade:0.9},
     note:"Cosmopolitan market party. Elevator and shipping money." },
@@ -57,14 +60,14 @@ const PARTIES = [
   { id:"psa", name:"New Progressive Party",        short:"NPP", colour:"var(--p-psa)",
     leader:"trottier", logo:"psa.png", wordmark:"psa_mark.png",
     aliases:["Substrate Left"],
-    seats:{district:6,list:28,functional:2}, vote:25.7,
+    seats:{district:6,list:28,functional:2}, vote:26.0,
     kind:"national", loyalty:41,
     axes:{economic:-0.8, authority:-0.3, personhood:0.85, sovereignty:0.6, trade:0.55},
     note:"List-tier strength and almost no districts. Left on economics and expansionist on personhood, which sets it against the old left on the question it cares most about." },
 
   { id:"sc",  name:"Home Rule",                    short:"HR",  colour:"var(--p-sc)",
     leader:"laughon", logo:"sc.png", wordmark:"sc_mark.png",
-    seats:{district:26,list:8,functional:0}, vote:7.7,
+    seats:{district:26,list:8,functional:0}, vote:7.8,
     kind:"national", loyalty:35,
     axes:{economic:-0.1, authority:-0.5, personhood:0, sovereignty:-0.9, trade:-0.75},
     note:"Confederalist. Cannot whip its own members." },
@@ -107,13 +110,13 @@ const PARTIES = [
 
   { id:"geo", name:"Single Tax Party",             short:"STP", colour:"var(--p-geo)",
     leader:"wheeler", logo:"geo.png", wordmark:"geo_mark.png",
-    seats:{district:0,list:3,functional:0}, vote:4.1,
+    seats:{district:0,list:4,functional:0}, vote:4.1,
     kind:"national", loyalty:66,
     axes:{economic:0.05, authority:0.2, personhood:0.1, sovereignty:0.7, trade:0.6},
     /* No carve-out: a national ideological party with no district roots and
        no category to protect. It lives or dies on the threshold every time,
        which is exactly the party 4.8 says will agonise just below the line. */
-    note:"Volume tax, land value tax, nothing else. Three seats, and always "+
+    note:"Volume tax, land value tax, nothing else. Four seats, and always "+
          "within a point of the threshold." },
 
   { id:"upl", name:"Uplift Alliance",              short:"UPA", colour:"var(--p-upl)",
@@ -181,7 +184,7 @@ const CURRENTS = [
      Classical: the elevator and shipping money, the largest. Abundance:
      the shortages are shortages of building. Social: rights and personhood
      first, the market second. */
-  { id:"cl_classical", party:"cl", name:"Classical Liberals",  members:20, loyalty:13,
+  { id:"cl_classical", party:"cl", name:"Classical Liberals",  members:19, loyalty:13,
     axes:{economic:0.95, authority:-0.25, personhood:0.4, sovereignty:0.7, trade:1},
     description:"The Classical Liberals are the largest current in the Liberal Party, and include its leader, Darren Watkins Jr., the Leader of the Opposition. Their support comes largely from the elevator and shipping consortiums. They support private ownership, open trade with Earth, and a federal government that regulates little and balances its budget. They support a gradual extension of legal personhood." },
   { id:"cl_abundance", party:"cl", name:"Abundance Liberals",  members:15, loyalty:29,
@@ -448,7 +451,7 @@ const PARTY_ORG = {
   geo: {
     officers: [
       { role:"Secretary", name:"Lucien Abara",
-        note:"The party's only officer, and does the agent's work as well. Three seats do not need an organogram." }
+        note:"The party's only officer, and does the agent's work as well. Four seats do not need an organogram." }
     ],
     bodies: [
       { name:"The Ground Rent Society", kind:"society",

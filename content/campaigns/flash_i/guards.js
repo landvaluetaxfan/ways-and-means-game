@@ -355,7 +355,19 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
        the count. */
     const pick = { f1_stranded: 0, f1_referendum: 0, f1_dilemma: 0, f1_water: 0,
       f1_loan: 1, f1_accounts_freeze: 0, fa_two_fronts: s => s.resolvedAs ? 1 : 0,
-      fa_window_closes: 0, fa_anchor_terms: 0, fa_conciliate: s => s.resolvedAs ? 0 : 1 };
+      fa_window_closes: 0, fa_anchor_terms: 0, fa_conciliate: s => s.resolvedAs ? 0 : 1,
+      /* THE CANON CAMPAIGN (the author, 25 Sep: "adjust the canon numbers as
+         you see fit"). Since the count listens (design/38), the campaign
+         decides the canon's seats, and a first-option campaign returned the
+         debt-trap government at standing 70 with 184, one short of a
+         landslide, which is not "a middle ground between perfect and
+         failure". The canon government campaigns as a government with
+         austerity coming: on the promise, not the record; in the debate it
+         says what went wrong; it lets the dossier run; and it keeps the
+         money in the last week, because the reserve is the next
+         government's. That returns it with a working majority just over the
+         line: 163 of 280 at standing 56, the PSD on 102. */
+      ch3_the_campaign: 1, ch3_the_airwaves: 3, ch3_the_dossier: 2, ch3_the_ground: 3 };
     let tier = null, end = null, tierAt = null;
     /* The run has to outlast the parliament and its campaign, and the bound
        is content's: a flat 45 silently became 44 of play when the prologue

@@ -680,7 +680,7 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     const base = Engine.newGame(CONTENT), mid = at(50);
     const drift = CONTENT.parties.map(p => Math.abs(Engine.partyTotal(mid, p.id) - Engine.partyTotal(base, p.id)));
     ok("at the mood it was elected in, the count returns the House it came from",
-       Math.max(...drift) <= 1 && drift.reduce((a, b) => a + b, 0) <= 2,
+       Math.max(...drift) === 0,
        CONTENT.parties.map(p => p.id + " " + Engine.partyTotal(base, p.id) + "->" + Engine.partyTotal(mid, p.id)).join(" "));
     const fns = CONTENT.functional || [];
     const sorted = h => JSON.stringify(Object.keys(h).sort().map(k => [k, h[k]]));

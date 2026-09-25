@@ -146,74 +146,74 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 - §8.2 · L1549 — Depth budget  *LOCKED*
 - §8.3 · L1558 — Naming register  *LOCKED*
 - §8.4 · L1583 — The seated parties  *LOCKED (280 seats*
-- §8.5 · L1615 — Party notes
-- §8.6 · L1639 — Parties available but not currently seated  *LOCKED as reserve material*
-- §8.7 · L1675 — Extraparliamentary  *LOCKED*
-- §8.8 · L1681 — Historical and defunct  *LOCKED*
-- §8.9 · L1687 — Ideologies as doctrines  *LOCKED*
+- §8.5 · L1622 — Party notes
+- §8.6 · L1646 — Parties available but not currently seated  *LOCKED as reserve material*
+- §8.7 · L1682 — Extraparliamentary  *LOCKED*
+- §8.8 · L1688 — Historical and defunct  *LOCKED*
+- §8.9 · L1694 — Ideologies as doctrines  *LOCKED*
 
-**Part IX — THE PLAYER'S PARTY** · L1699
-- §9.1 · L1701 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
-- §9.2 · L1718 — Inherited platform  *LOCKED*
-- §9.3 · L1722 — Two alliance structures  *LOCKED*
-- §9.4 · L1731 — Refraction  *LOCKED as a writing principle*
-- §9.5 · L1735 — Current caucus (Party of Socialists and Democrats, 82)  *LOCKED*
+**Part IX — THE PLAYER'S PARTY** · L1706
+- §9.1 · L1708 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
+- §9.2 · L1725 — Inherited platform  *LOCKED*
+- §9.3 · L1729 — Two alliance structures  *LOCKED*
+- §9.4 · L1738 — Refraction  *LOCKED as a writing principle*
+- §9.5 · L1742 — Current caucus (Party of Socialists and Democrats, 82)  *LOCKED*
 
-**Part X — SOCIETY, CULTURE, LAW** · L1752
-- §10.1 · L1754 — Aesthetic register — orbital warmth  *LOCKED*
-- §10.2 · L1766 — Nativism, inverted  *LOCKED*
-- §10.3 · L1772 — Labour  *LOCKED*
-- §10.3.1 · L1796 — Four overlays that matter more than the sectors  *LOCKED*
-- §10.4 · L1825 — Who is not in paid work  *LOCKED*
-- §10.5 · L1863 — Fork-rentiers  *LOCKED*
-- §10.6 · L1878 — Labour conflict  *LOCKED*
-- §10.7 · L1886 — Media and information  *LOCKED*
-- §10.8 · L1892 — Courts and law  *LOCKED*
-- §10.9 · L1898 — Religion  *LOCKED*
-- §10.10 · L1902 — External pressures  *LOCKED*
+**Part X — SOCIETY, CULTURE, LAW** · L1759
+- §10.1 · L1761 — Aesthetic register — orbital warmth  *LOCKED*
+- §10.2 · L1773 — Nativism, inverted  *LOCKED*
+- §10.3 · L1779 — Labour  *LOCKED*
+- §10.3.1 · L1803 — Four overlays that matter more than the sectors  *LOCKED*
+- §10.4 · L1832 — Who is not in paid work  *LOCKED*
+- §10.5 · L1870 — Fork-rentiers  *LOCKED*
+- §10.6 · L1885 — Labour conflict  *LOCKED*
+- §10.7 · L1893 — Media and information  *LOCKED*
+- §10.8 · L1899 — Courts and law  *LOCKED*
+- §10.9 · L1905 — Religion  *LOCKED*
+- §10.10 · L1909 — External pressures  *LOCKED*
 
-**Part XI — NAMED CANON** · L1910
-- §11.1 · L1914 — The polity
-- §11.2 · L1975 — Persons
-- §11.3 · L2019 — Stations and constituencies
-- §11.4 · L2096 — The functional roster  *LOCKED*
-- §11.5 · L2118 — The live bill
-- §11.6 · L2127 — Other business on the order paper
+**Part XI — NAMED CANON** · L1917
+- §11.1 · L1921 — The polity
+- §11.2 · L1982 — Persons
+- §11.3 · L2026 — Stations and constituencies
+- §11.4 · L2103 — The functional roster  *LOCKED*
+- §11.5 · L2125 — The live bill
+- §11.6 · L2134 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L2145
-- §12.1 · L2147 — The core principle  *LOCKED*
-- §12.2 · L2151 — Split visual language  *LOCKED*
-- §12.3 · L2158 — Chrome direction  *LOCKED*
-- §12.4 · L2164 — Screens  *LOCKED*
-- §12.5 · L2168 — Election night  *LOCKED*
-- §12.6 · L2178 — The orbital map  *LOCKED*
-- §12.7 · L2206 — The parliament diagram  *LOCKED*
-- §12.8 · L2232 — Documents  *LOCKED*
-- §12.9 · L2238 — The feed  *LOCKED*
-- §12.10 · L2242 — Build cost  *LOCKED*
-- §12.11 · L2246 — Images  *LOCKED*
-- §12.12 · L2274 — Existing artifact
-- §12.13 · L2286 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L2152
+- §12.1 · L2154 — The core principle  *LOCKED*
+- §12.2 · L2158 — Split visual language  *LOCKED*
+- §12.3 · L2165 — Chrome direction  *LOCKED*
+- §12.4 · L2171 — Screens  *LOCKED*
+- §12.5 · L2175 — Election night  *LOCKED*
+- §12.6 · L2185 — The orbital map  *LOCKED*
+- §12.7 · L2213 — The parliament diagram  *LOCKED*
+- §12.8 · L2239 — Documents  *LOCKED*
+- §12.9 · L2245 — The feed  *LOCKED*
+- §12.10 · L2249 — Build cost  *LOCKED*
+- §12.11 · L2253 — Images  *LOCKED*
+- §12.12 · L2281 — Existing artifact
+- §12.13 · L2293 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2345
-- §13.1 · L2347 — Scandal taxonomy  *LOCKED*
-- §13.2 · L2360 — The spine  *LOCKED*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2352
+- §13.1 · L2354 — Scandal taxonomy  *LOCKED*
+- §13.2 · L2367 — The spine  *LOCKED*
 
-**Part XIV — PRIOR ART** · L2368
-- §14.1 · L2370 — The gap  *LOCKED*
-- §14.2 · L2374 — Works
-- §14.3 · L2382 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L2375
+- §14.1 · L2377 — The gap  *LOCKED*
+- §14.2 · L2381 — Works
+- §14.3 · L2389 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2395
-- §15.1 · L2397 — Team  *LOCKED*
-- §15.2 · L2403 — Documentation  *LOCKED*
-- §15.3 · L2419 — Where this gets hard  *LOCKED*
-- §15.4 · L2430 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2447 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2402
+- §15.1 · L2404 — Team  *LOCKED*
+- §15.2 · L2410 — Documentation  *LOCKED*
+- §15.3 · L2426 — Where this gets hard  *LOCKED*
+- §15.4 · L2437 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2454 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2477
+**Part XVI — OPEN DECISIONS** · L2484
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2518
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2525
 
 <!-- /TOC -->
 
@@ -1585,7 +1585,7 @@ a lie is a slogan.
 | Party | Dist | List | Func | Total |
 |---|---|---|---|---|
 | Party of Socialists and Democrats | 48 | 25 | 9 | **82** |
-| Liberal Party | 22 | 19 | 6 | **47** |
+| Liberal Party | 22 | 18 | 6 | **46** |
 | New Progressive Party | 6 | 28 | 2 | **36** |
 | Home Rule | 26 | 8 | 0 | **34** |
 | Association of Engineers and Systems | 9 | 6 | 7 | **22** |
@@ -1594,8 +1594,15 @@ a lie is a slogan.
 | Alliance of Business and Government | 0 | 0 | 9 | **9** |
 | Independents | 6 | 0 | 0 | **6** |
 | One-G | 3 | 1 | 0 | **4** |
-| Single Tax Party | 0 | 3 | 0 | **3** |
+| Single Tax Party | 0 | 4 | 0 | **4** |
 | Uplift Alliance | 0 | 2 | 0 | **2** |
+
+**Amended 25 Sep 2026: the Single Tax Party holds four list seats, not
+three, and the Liberals eighteen, not nineteen** (`design/38`). The count
+became a real vote (§4.16), and no vote at or above §4.8's 4% threshold earns
+three seats of a hundred under D'Hondt, so the table contradicted its own
+threshold. The seat came from the Liberal list so that the government's
+one-seat margin is unchanged.
 
 **Corrected in v5 to `content/parties.js`.** The seat counts were right; the
 names were from before the renames (Station Compact, Hullists, Guild Bench &
