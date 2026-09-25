@@ -140,81 +140,81 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 - §7.7 · L1386 — Order-paper time  *LOCKED*
 - §7.8 · L1422 — Discipline and the whip  *LOCKED*
 - §7.9 · L1452 — Scarcity prices  *LOCKED*
-- §7.10 · L1492 — The productive economy  *LOCKED*
+- §7.10 · L1500 — The productive economy  *LOCKED*
 
-**Part VIII — AXES AND PARTIES** · L1539
-- §8.1 · L1541 — The five signed axes  *LOCKED*
-- §8.2 · L1599 — Depth budget  *LOCKED*
-- §8.3 · L1608 — Naming register  *LOCKED*
-- §8.4 · L1633 — The seated parties  *LOCKED (280 seats*
-- §8.5 · L1672 — Party notes
-- §8.6 · L1696 — Parties available but not currently seated  *LOCKED as reserve material*
-- §8.7 · L1732 — Extraparliamentary  *LOCKED*
-- §8.8 · L1738 — Historical and defunct  *LOCKED*
-- §8.9 · L1744 — Ideologies as doctrines  *LOCKED*
+**Part VIII — AXES AND PARTIES** · L1547
+- §8.1 · L1549 — The five signed axes  *LOCKED*
+- §8.2 · L1607 — Depth budget  *LOCKED*
+- §8.3 · L1616 — Naming register  *LOCKED*
+- §8.4 · L1641 — The seated parties  *LOCKED (280 seats*
+- §8.5 · L1680 — Party notes
+- §8.6 · L1704 — Parties available but not currently seated  *LOCKED as reserve material*
+- §8.7 · L1740 — Extraparliamentary  *LOCKED*
+- §8.8 · L1746 — Historical and defunct  *LOCKED*
+- §8.9 · L1752 — Ideologies as doctrines  *LOCKED*
 
-**Part IX — THE PLAYER'S PARTY** · L1756
-- §9.1 · L1758 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
-- §9.2 · L1775 — Inherited platform  *LOCKED*
-- §9.3 · L1779 — Two alliance structures  *LOCKED*
-- §9.4 · L1788 — Refraction  *LOCKED as a writing principle*
-- §9.5 · L1792 — Current caucus (Party of Socialists and Democrats, 82)  *LOCKED*
+**Part IX — THE PLAYER'S PARTY** · L1764
+- §9.1 · L1766 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
+- §9.2 · L1783 — Inherited platform  *LOCKED*
+- §9.3 · L1787 — Two alliance structures  *LOCKED*
+- §9.4 · L1796 — Refraction  *LOCKED as a writing principle*
+- §9.5 · L1800 — Current caucus (Party of Socialists and Democrats, 82)  *LOCKED*
 
-**Part X — SOCIETY, CULTURE, LAW** · L1809
-- §10.1 · L1811 — Aesthetic register — orbital warmth  *LOCKED*
-- §10.2 · L1823 — Nativism, inverted  *LOCKED*
-- §10.3 · L1829 — Labour  *LOCKED*
-- §10.3.1 · L1853 — Four overlays that matter more than the sectors  *LOCKED*
-- §10.4 · L1882 — Who is not in paid work  *LOCKED*
-- §10.5 · L1920 — Fork-rentiers  *LOCKED*
-- §10.6 · L1935 — Labour conflict  *LOCKED*
-- §10.7 · L1943 — Media and information  *LOCKED*
-- §10.8 · L1949 — Courts and law  *LOCKED*
-- §10.9 · L1955 — Religion  *LOCKED*
-- §10.10 · L1959 — External pressures  *LOCKED*
+**Part X — SOCIETY, CULTURE, LAW** · L1817
+- §10.1 · L1819 — Aesthetic register — orbital warmth  *LOCKED*
+- §10.2 · L1831 — Nativism, inverted  *LOCKED*
+- §10.3 · L1837 — Labour  *LOCKED*
+- §10.3.1 · L1861 — Four overlays that matter more than the sectors  *LOCKED*
+- §10.4 · L1890 — Who is not in paid work  *LOCKED*
+- §10.5 · L1928 — Fork-rentiers  *LOCKED*
+- §10.6 · L1943 — Labour conflict  *LOCKED*
+- §10.7 · L1951 — Media and information  *LOCKED*
+- §10.8 · L1957 — Courts and law  *LOCKED*
+- §10.9 · L1963 — Religion  *LOCKED*
+- §10.10 · L1967 — External pressures  *LOCKED*
 
-**Part XI — NAMED CANON** · L1967
-- §11.1 · L1971 — The polity
-- §11.2 · L2032 — Persons
-- §11.3 · L2076 — Stations and constituencies
-- §11.4 · L2153 — The functional roster  *LOCKED*
-- §11.5 · L2175 — The live bill
-- §11.6 · L2184 — Other business on the order paper
+**Part XI — NAMED CANON** · L1975
+- §11.1 · L1979 — The polity
+- §11.2 · L2040 — Persons
+- §11.3 · L2084 — Stations and constituencies
+- §11.4 · L2161 — The functional roster  *LOCKED*
+- §11.5 · L2183 — The live bill
+- §11.6 · L2192 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L2202
-- §12.1 · L2204 — The core principle  *LOCKED*
-- §12.2 · L2208 — Split visual language  *LOCKED*
-- §12.3 · L2215 — Chrome direction  *LOCKED*
-- §12.4 · L2221 — Screens  *LOCKED*
-- §12.5 · L2225 — Election night  *LOCKED*
-- §12.6 · L2235 — The orbital map  *LOCKED*
-- §12.7 · L2263 — The parliament diagram  *LOCKED*
-- §12.8 · L2289 — Documents  *LOCKED*
-- §12.9 · L2295 — The feed  *LOCKED*
-- §12.10 · L2299 — Build cost  *LOCKED*
-- §12.11 · L2303 — Images  *LOCKED*
-- §12.12 · L2331 — Existing artifact
-- §12.13 · L2343 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L2210
+- §12.1 · L2212 — The core principle  *LOCKED*
+- §12.2 · L2216 — Split visual language  *LOCKED*
+- §12.3 · L2223 — Chrome direction  *LOCKED*
+- §12.4 · L2229 — Screens  *LOCKED*
+- §12.5 · L2233 — Election night  *LOCKED*
+- §12.6 · L2243 — The orbital map  *LOCKED*
+- §12.7 · L2271 — The parliament diagram  *LOCKED*
+- §12.8 · L2297 — Documents  *LOCKED*
+- §12.9 · L2303 — The feed  *LOCKED*
+- §12.10 · L2307 — Build cost  *LOCKED*
+- §12.11 · L2311 — Images  *LOCKED*
+- §12.12 · L2339 — Existing artifact
+- §12.13 · L2351 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2402
-- §13.1 · L2404 — Scandal taxonomy  *LOCKED*
-- §13.2 · L2417 — The spine  *LOCKED*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2410
+- §13.1 · L2412 — Scandal taxonomy  *LOCKED*
+- §13.2 · L2425 — The spine  *LOCKED*
 
-**Part XIV — PRIOR ART** · L2425
-- §14.1 · L2427 — The gap  *LOCKED*
-- §14.2 · L2431 — Works
-- §14.3 · L2439 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L2433
+- §14.1 · L2435 — The gap  *LOCKED*
+- §14.2 · L2439 — Works
+- §14.3 · L2447 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2452
-- §15.1 · L2454 — Team  *LOCKED*
-- §15.2 · L2460 — Documentation  *LOCKED*
-- §15.3 · L2476 — Where this gets hard  *LOCKED*
-- §15.4 · L2487 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2504 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2460
+- §15.1 · L2462 — Team  *LOCKED*
+- §15.2 · L2468 — Documentation  *LOCKED*
+- §15.3 · L2484 — Where this gets hard  *LOCKED*
+- §15.4 · L2495 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2512 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2534
+**Part XVI — OPEN DECISIONS** · L2542
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2578
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2586
 
 <!-- /TOC -->
 
@@ -1482,6 +1482,14 @@ outputs, and the appropriation is the legislation: each of its clauses sets a
 law key for the level chosen, and the tick reads those keys where it now reads a
 scalar. A price whose only input is a scalar is a placeholder for the
 appropriation that has not been written yet (`design/13` §2.3, `design/28` §4).
+
+**The rules are content's** (25 Sep 2026, design/39 §6). What moves each price,
+and the productive economy's two drifting readings, is `setup.priceRules` and
+`setup.economyRules`: a base, plus terms that read a meter, a law, a rate or
+another price, each weighted and measured from a reference. The engine keeps
+the arithmetic and names no price. A campaign retunes a price in its own
+setup. The move was checked byte for byte against the rules the engine used
+to hold.
 
 **And the markets in §7.5.2 are positions, not prices.** Quota forwards,
 underwriting, volume leases and substrate futures are things the government can

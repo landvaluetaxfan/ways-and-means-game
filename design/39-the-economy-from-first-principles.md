@@ -464,9 +464,20 @@ now rather than free: it reaches the count owing CW$59.8bn in Treasury bills,
 about a tenth of output, with the dollar near 0.79, inflation 3.4% and the
 Bank raising again. Every playtest strategy ends where it ended before.
 
-**Not built, and why.** The four price rules are still in the engine's tick
-(design/39 §6 phase 1 asked for them in content too); they are the §7.9
-chain and moving them needs an expression language the schema does not have.
-The Bank's meeting in the campaign is a weighted chapter-three event, and
-chapter three is a fixed sequence, so it is rare.
+**Built after, the same day: the price rules are content's.** §6 phase 1
+asked for the four price rules to move out of the engine too, and they did
+without an expression language. A rule is a base plus linear terms, each
+reading a meter, a price, a law (as a number or through a map), a tax rate
+(whose weight defaults to the base's `passthrough`, so that figure is written
+once) or the productive economy, in `move`'s namespaces (`setup.priceRules`,
+`setup.economyRules`). The engine names no price now. The suspension
+mechanic's price is `setup.suspension.price`. The canon run, the playtest and
+126 probes across every law the rules read came out byte-identical to the old
+engine. That needed one extra form, a term that sums several prices: splitting
+"the cost of building" into two terms flipped a participation reading by a
+tenth in six of the probes. Lint checks every input a rule names, and the
+chain audit counts a law a rule reads as seen.
+
+**Not built, and why.** The Bank's meeting in the campaign is a weighted
+chapter-three event, and chapter three is a fixed sequence, so it is rare.
 

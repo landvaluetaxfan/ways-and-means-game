@@ -524,8 +524,15 @@ try {
      read for the key (the rates by their shared prefix), so a law nothing
      reads at all -- not the engine, not an event -- is still a break. */
   const engSrc3 = fs.readFileSync(path.join(root, "js", "engine.js"), "utf8");
+  /* and since 25 Sep a law a price or economy RULE reads is read the same
+     way: the rules moved out of tick() into setup, and the price they set
+     is what is gated (design/39 §6) */
+  const ruleLaws = new Set();
+  (SETUP.priceRules || []).concat(SETUP.economyRules || []).forEach(r => (r.terms || []).forEach(t =>
+    [].concat(t.from || []).forEach(f => { if (/^law\./.test(f)) ruleLaws.add(f.slice(4)); })));
   const engineReads = k => {
     const law = k.slice(4);
+    if (ruleLaws.has(law)) return true;
     return new RegExp("law(\\.|\\[\"|\\)\\.)" + law + "\\b").test(engSrc3) ||
            new RegExp("\\b" + law + "\\b").test(engSrc3) ||
            (/^rate_/.test(law) && /"rate_"\s*\+/.test(engSrc3));
@@ -907,6 +914,28 @@ try {
       });
     }));
   walk(ENCYCLOPEDIA, o => { if (o.when) checkWhen(o.when, "concordance " + (o.heading || o.title || "section")); });
+
+  /* THE RULES THAT MOVE THE PRICES AND THE ECONOMY are content since 25 Sep
+     (design/39 §6), so a term naming a price, a meter or a tax base that
+     does not exist reads nought and says nothing. A law nobody declares is
+     advisory: it reads its default until a bill writes it, which is how
+     `closure_target` is meant to wait. */
+  const BASES = new Set(((SETUP.fiscal || {}).bases || []).map(b => b.k));
+  const ECON = new Set(Object.keys(SETUP.economy || {}));
+  [["the world", SETUP]].concat((ADMINISTRATIONS || []).map(a => [a.id, a.setup || {}])).forEach(([who, S]) =>
+    [["priceRules", PR], ["economyRules", ECON]].forEach(([key, own]) => (S[key] || []).forEach(r => {
+      const tag = who + "'s " + key + " " + r.k;
+      if (!own.has(r.k)) refBad.push(tag + ": moves '" + r.k + "', which is not one");
+      (r.terms || []).forEach(t => [].concat(t.from || []).forEach(f => {
+        const dot = f.indexOf("."), ns = dot < 0 ? "scalar" : f.slice(0, dot), k = dot < 0 ? f : f.slice(dot + 1);
+        if (ns === "scalar" && !SC.has(k)) refBad.push(tag + ": reads meter '" + k + "', which is none");
+        else if (ns === "price" && !PR.has(k)) refBad.push(tag + ": reads price '" + k + "', which is none");
+        else if (ns === "rate" && !BASES.has(k)) refBad.push(tag + ": reads the rate on '" + k + "', which is no tax base");
+        else if (ns === "economy" && !ECON.has(k)) refBad.push(tag + ": reads '" + k + "', which is no economy measure");
+        else if (ns === "law" && !LAW.has(k)) refAdv.push(tag + ": reads law '" + k + "', which setup does not declare, so it reads its default");
+        else if (["scalar", "price", "rate", "economy", "law"].indexOf(ns) < 0) refBad.push(tag + ": reads '" + f + "', which is no input a rule knows");
+      }));
+    })));
 
   /* ONE LAW, ONE VOCABULARY. transit_subsidy was written "none"/"anchors"/
      "all" by the appropriation and 1/0 by two events, and the engine and the

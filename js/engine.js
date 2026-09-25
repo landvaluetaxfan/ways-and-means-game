@@ -6113,69 +6113,77 @@ const Engine = (function () {
                .map(k => ({ key: k, text: C.setup.outlook[k].text }));
   }
 
+  /* A RULE'S TARGET: its `base`, plus each term's `per` times how far its
+     input stands from `ref` (nought if not given). The input is named by
+     `from`, in the namespaces `move` already uses:
+
+       "thermal_margin"        a meter (a bare name, as in a move); the
+                               reserve is read in thousands by `scale`
+       "price.thermal"         another price, as this sitting has set it;
+                               a list of them is their sum (the cost of
+                               building is volume and transit together)
+       "economy.trade"         a reading of the productive economy
+       "rate.thermal"          the multiple a tax base is levied at, against
+                               a `ref` of one; `per` defaults to that base's
+                               `passthrough` in setup.fiscal, so the figure is
+                               written once
+       "law.capital_works"     a law value as a number (`default` when unset),
+                               or through a `map` from the clause level's word
+                               to points
+
+     and any number may be divided by a `scale` first, so a rule can read
+     the reserve in thousands or a threshold as a share of a week.
+
+     Linear and additive on purpose: §7.6 wants a model a player can hold in
+     their head, and a rule that needed an expression language would be one
+     nobody could read off the Economy tab. */
+  function ruleInput(st, C, name, P, t) {
+    const dot = name.indexOf(".");
+    const ns = dot < 0 ? "scalar" : name.slice(0, dot), k = dot < 0 ? name : name.slice(dot + 1);
+    if (ns === "price") return P[k] == null ? 100 : P[k];
+    if (ns === "economy") return (st.economy || {})[k] || 0;
+    if (ns === "rate") return rateOf(st, k, C);
+    if (ns === "law") {
+      const v = (st.law || {})[k];
+      return v == null ? (t.default == null ? 0 : t.default) : +v || 0;
+    }
+    return (st.scalars || {})[k] || 0;
+  }
+  function ruleTerm(st, C, t, P) {
+    const from = [].concat(t.from || []);
+    if (!from.length) return 0;
+    if (t.map) return +(t.map[(st.law || {})[String(from[0]).replace(/^law\./, "")]] || 0);
+    let per = t.per, ref = t.ref || 0;
+    const rate = /^rate\./.test(from[0]);
+    if (rate) {
+      if (t.ref == null) ref = 1;
+      if (per == null) per = (basesOf(C).find(b => "rate." + b.k === from[0]) || {}).passthrough || 0;
+    }
+    const x = from.reduce((n, f) => n + ruleInput(st, C, f, P, t), 0) / (t.scale || 1);
+    return (per || 0) * (x - ref);
+  }
+  function ruleTarget(st, C, r, P) {
+    return (r.terms || []).reduce((n, t) => n + ruleTerm(st, C, t, P), r.base || 0);
+  }
+
   function tick(st, C) {
     const P = st.prices, marks = [];
     driftStanding(st, C);
 
-    /* thermal: scarce when the federal margin is thin, AND SET BY THE
-       APPROPRIATION. The quota the vote releases is the price's other
-       input, which §7.9 has said all along and the tick did not read:
-       the four prices are legislative outputs, and the appropriation is
-       the legislation (design/13 §2.3, design/28 §4). */
-    const rel = st.law.thermal_release;
-    const relBump = rel === "tight" ? 14 : rel === "open" ? -16 : 0;
-    const pressure = (35 - st.scalars.thermal_margin) * 1.2;
-    /* the levy, passed through to whoever buys the thing. Nought at the
-       standard rate, so the calibration of everything above is unmoved. */
-    const taxT = (rateOf(st, "thermal", C) - 1) * 26;
-    /* THE CIVIC CLOCK (bible 6.3): a minimum clock rate for every
-       enfranchised mind, publicly subsidised. Every watt of computation
-       becomes heat, so the rate is thermal pressure as well as a cost,
-       and both scale with the minimum the law sets (0 none, 1 real time).
-       The coefficients are content's (setup.civicClock). */
-    const clock = +((st.law || {}).civic_clock_minimum) || 0;
-    const clockC = (C.setup && C.setup.civicClock) || {};
-    const heatT = clock * (clockC.heat || 0);
-    P.thermal = clamp(P.thermal + drift(P.thermal, 100 + pressure + relBump + taxT + heatT), 20, 400);
-
-    /* substrate: cheaper the more of it is publicly held, dearer as thermal rises */
-    const pub = st.law.substrate_public_share == null ? 0.35 : st.law.substrate_public_share;
-    P.substrate = clamp(P.substrate + drift(P.substrate,
-      70 + (1 - pub) * 60 + (P.thermal - 100) * 0.4 +
-      (rateOf(st, "substrate", C) - 1) * 24), 20, 400);
-
-    /* volume: pressurised cubic metres, capped by the construction
-       schedule, which is bought out of the treasury.
-
-       CONTINUOUS, NOT A SWITCH. This was `solvency < 40 ? 14 : -4`, so
-       the volume price had exactly two target states and a treasury
-       moving from 80 to 41 changed nothing at all. Under 7.9's design
-       rule a price nothing meaningfully moves is a price no event can
-       honestly be gated on, which is most of why nothing is.
-
-       The real driver is the budget (7.5.2: "a market in
-       permission-to-exist-at-scale whose price is set by an
-       money vote"), and that waits on the canon decision in
-       design/13. This is the honest interim: continuous in the one
-       input it actually has. */
-    const cw = st.law.capital_works;
-    const volBump = cw === "ring" ? -9 : cw === "outer" ? -5 : 0;
-    /* The price targets are index arithmetic; solvency is now the quota in
-       MW-years, so it is read back through its scale here. The proportion
-       is unchanged, which is the whole point of the denomination. */
-    const solv = st.scalars.solvency / (MONEY_SCALE.solvency || 1);
-    /* AND NO TAX TERM. The other three carry one; volume does not, because
-       a levy on position inside a habitat has nowhere to be passed on to.
-       See the Ways and Means note above — this blank line is the mechanic. */
-    P.volume = clamp(P.volume + drift(P.volume,
-      100 + (50 - solv) * 0.28 + volBump), 20, 400);
-
-    /* transit: launch windows and delta-v, and the subsidy the budget
-       carries for the stations the traffic does not reach */
-    const ts = st.law.transit_subsidy;
-    const trBump = ts === "anchors" ? -8 : ts === "all" ? -14 : 0;
-    P.transit = clamp(P.transit + drift(P.transit,
-      100 - (solv - 50) * 0.3 + trBump + (rateOf(st, "transit", C) - 1) * 20), 20, 400);
+    /* THE FOUR PRICES MOVE BY CONTENT'S RULES (design/39 §6). Each drifts a
+       fifth of the way toward a target that `setup.priceRules` builds from
+       terms -- the thermal margin, the appropriation's clauses, the rates,
+       the reserve, the other prices -- in the order content lists them, so
+       a price that reads another reads it as this sitting has already set
+       it. The rules were written here, which made the engine the one place
+       that knew what thermal quota costs and why; the arithmetic and every
+       coefficient are content's now, and ruleTarget() above is all the
+       engine keeps. A setup with no rules holds every price where it is. */
+    ((C.setup && C.setup.priceRules) || []).forEach(r => {
+      if (P[r.k] == null) return;
+      P[r.k] = clamp(P[r.k] + drift(P[r.k], ruleTarget(st, C, r, P)),
+                     r.min == null ? 20 : r.min, r.max == null ? 400 : r.max);
+    });
 
     Object.keys(P).forEach(k => {
       P[k] = Math.round(P[k] * 10) / 10;
@@ -6200,14 +6208,12 @@ const Engine = (function () {
        zero until it exists rather than being left out and forgotten. */
     const E = st.economy;
     if (E) {
-      const forkRatio = (st.law.divergence_threshold_hours || 168) / 168;
-      const buildCost = (P.volume + P.transit) / 200;
-      E.participation = clamp(E.participation + drift(E.participation,
-        39 + (1 - forkRatio) * 12 - (buildCost - 1) * 15), 18, 62);
-
-      const closurism = st.law.closure_target ? st.law.closure_target * 24 : 0;
-      E.trade = clamp(E.trade + drift(E.trade,
-        100 + (100 - P.transit) * 0.4 + (100 - P.substrate) * 0.35 - closurism), 40, 190);
+      /* the same rules, over the productive economy (`setup.economyRules`) */
+      ((C.setup && C.setup.economyRules) || []).forEach(r => {
+        if (E[r.k] == null) return;
+        E[r.k] = clamp(E[r.k] + drift(E[r.k], ruleTarget(st, C, r, P)),
+                       r.min == null ? 0 : r.min, r.max == null ? 300 : r.max);
+      });
 
       E.participation = Math.round(E.participation * 10) / 10;
       E.trade = Math.round(E.trade * 10) / 10;
@@ -6361,7 +6367,10 @@ const Engine = (function () {
 
     /* Stations answer to the substrate price. A habitat that cannot pay does
        not economise — it sheds people, and the shed order says which. */
-    const strain = (P.substrate - 100) / 100;
+    /* which price it is is content's (`setup.suspension.price`): the rent on
+       running, in this world substrate */
+    const susp0 = (C.setup && C.setup.suspension) || {};
+    const strain = susp0.price && P[susp0.price] != null ? (P[susp0.price] - 100) / 100 : 0;
     /* WHETHER A SUSPENDED PERSON'S DEBT ACCRUES (bible 6.6): "the debt
        question decides how bad it is". Accruing is the status quo and the
        calibration below. Paused, a restoration owes only what it owed going

@@ -112,8 +112,8 @@ const SETUP = {
      since 2073, and nothing forces anybody to notice. Raise every rate
      and the budget is CW$128bn in surplus; cut the floor and the insurance
      and it is CW$30bn in surplus at standard rates. `passthrough` is how
-     far a rate above standard moves its own price (content's, read by the
-     interface; the tick's coefficients are the same figures). */
+     far a rate above standard moves its own price: the `rate` term of each
+     price rule below reads it, so the figure is written once. */
   fiscal: {
     bases: [
       { k: "volume",    weight: 88000, passthrough: 0,  name: "Volume" },
@@ -124,6 +124,65 @@ const SETUP = {
     rates: { none: 0, low: 0.5, standard: 1, high: 1.6 },
     standing: 176000
   },
+
+  /* WHAT MOVES THE FOUR PRICES (bible §7.9; design/39 §6). Each price drifts
+     a fifth of the way a sitting toward a target: `base`, plus every term's
+     `per` times how far its input stands from `ref`. A term reads `from` in
+     the namespaces a move uses: a meter by its bare name (the reserve read in
+     thousands, by `scale`), "price.<k>" as this sitting has set it (a list
+     is their sum), "law.<k>" as a number or through a `map` from the clause
+     level's word to points, "rate.<k>" the multiple a base is levied at,
+     whose `per` is that base's `passthrough` above unless a rule says
+     otherwise, and "economy.<k>". The order is the order they move in:
+     substrate reads thermal after thermal has moved. These were the
+     engine's until 25 Sep 2026, coefficient for coefficient, and the canon
+     run, every playtest strategy and 126 probes across the laws came out
+     byte-identical.
+
+       thermal    scarce as the federal margin thins below 35; the quota the
+                  appropriation releases; the levy passed through; and the
+                  civic clock's heat, six points at real time
+       substrate  cheaper the more of it is publicly held, dearer as thermal
+                  rises, and the levy passed through
+       volume     the construction schedule, bought out of the reserve, and
+                  the works the appropriation funds. NO RATE TERM: a levy on
+                  position inside a habitat has nowhere to be passed on to,
+                  and that missing line is the Georgist mechanic
+       transit    the reserve again, the subsidy, and the levy */
+  priceRules: [
+    { k: "thermal", base: 100, terms: [
+      { from: "thermal_margin", ref: 35, per: -1.2 },
+      { from: "law.thermal_release", map: { tight: 14, open: -16 } },
+      { from: "rate.thermal" },
+      { from: "law.civic_clock_minimum", per: 6 } ] },
+    { k: "substrate", base: 70, terms: [
+      { from: "law.substrate_public_share", default: 0.35, ref: 1, per: -60 },
+      { from: "price.thermal", ref: 100, per: 0.4 },
+      { from: "rate.substrate" } ] },
+    { k: "volume", base: 100, terms: [
+      { from: "solvency", scale: 1000, ref: 50, per: -0.28 },
+      { from: "law.capital_works", map: { ring: -9, outer: -5 } } ] },
+    { k: "transit", base: 100, terms: [
+      { from: "solvency", scale: 1000, ref: 50, per: -0.3 },
+      { from: "law.transit_subsidy", map: { anchors: -8, all: -14 } },
+      { from: "rate.transit" } ] }
+  ],
+
+  /* AND WHAT MOVES THE PRODUCTIVE ECONOMY (§7.10), by the same rules.
+     Participation rises as the divergence threshold falls below a week
+     (instance-hours become counted jobs) and as building gets cheaper;
+     trade answers to transit and to substrate, because compute is the
+     export, and to a closure target once a bill writes one (the law key
+     reads nothing until then). */
+  economyRules: [
+    { k: "participation", base: 39, min: 18, max: 62, terms: [
+      { from: "law.divergence_threshold_hours", default: 168, scale: 168, ref: 1, per: -12 },
+      { from: ["price.volume", "price.transit"], scale: 200, ref: 1, per: -15 } ] },
+    { k: "trade", base: 100, min: 40, max: 190, terms: [
+      { from: "price.transit", ref: 100, per: -0.4 },
+      { from: "price.substrate", ref: 100, per: -0.35 },
+      { from: "law.closure_target", per: -24 } ] }
+  ],
 
   /* THE ECONOMY AND THE RESERVE BANK (design/39 §5). Opening figures, then
      every constant of the model, so the author can retune it here. Output
@@ -640,15 +699,18 @@ const SETUP = {
   ],
 
   /* THE CIVIC CLOCK (bible 6.3), at a minimum of 1 (real time): what the
-     subsidy costs a YEAR, on the spending side of the budget, and the
-     points it adds to the thermal price's target. Scaled by the minimum
-     the law sets. Keeping 560,000 slow-running minds at real time is
-     expensive, CW$70bn a year, and it is heat. */
-  civicClock: { costPerYear: 70000, heat: 6 },
+     subsidy costs a YEAR, on the spending side of the budget, scaled by the
+     minimum the law sets. Keeping 560,000 slow-running minds at real time is
+     expensive, CW$70bn a year, and it is heat: the six points it adds to the
+     thermal price at real time are a term of `priceRules`. */
+  civicClock: { costPerYear: 70000 },
   /* SUSPENSION, WITH THE DEBT PAUSED (bible 6.6). Restorations run this
      much faster and suspensions this much more often than with the debt
      accruing, which is the status quo and the calibration. */
-  suspension: { pausedRestore: 1.5, pausedShed: 1.2 },
+  suspension: { pausedRestore: 1.5, pausedShed: 1.2,
+                /* the price a station that cannot pay sheds people against:
+                   the rent on running (bible §7.9) */
+                price: "substrate" },
   divisionsPerSitting: 2,
   /* AND HOW MANY MEASURES THE HOUSE TAKES A DAY. Six slots spendable on
      sitting one made the session budget a lump sum; order-paper time is

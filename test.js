@@ -5249,3 +5249,45 @@ console.log("\nTHE LADDER IS ON THE DOCKET (design/38 §7):");
 
   if (bad) { console.log("\n" + bad + " LADDER FAILURES"); process.exitCode = 1; }
 })();
+
+console.log("\nTHE PRICE RULES ARE CONTENT'S (design/39 §6):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const run = (K, n, f) => { const st = Engine.newGame(K); if (f) f(st);
+    for (let i = 0; i < n; i++) Engine.advance(st, K); return st; };
+  const R = CONTENT.setup.priceRules;
+  ok("every scarce price has a rule", ["thermal", "substrate", "volume", "transit"]
+     .every(k => R.some(r => r.k === k)), R.map(r => r.k).join(" "));
+
+  /* a campaign retunes a price by its own setup, merged one level deep */
+  const hot = R.map(r => r.k === "thermal" ? Object.assign({}, r, { base: r.base + 50 }) : r);
+  const HV = ALL.forCampaign({ id: "price_probe", setup: { priceRules: hot } });
+  ok("a campaign that raises a rule's base raises the price",
+     run(HV, 12).prices.thermal > run(CONTENT, 12).prices.thermal + 20,
+     run(CONTENT, 12).prices.thermal + " -> " + run(HV, 12).prices.thermal);
+
+  /* and with no rules at all, nothing moves a price */
+  const NV = ALL.forCampaign({ id: "still_probe", setup: { priceRules: [] } });
+  const still = run(NV, 12);
+  ok("a setup with no price rules holds every price where it opens",
+     Object.values(still.prices).every(v => v === 100), JSON.stringify(still.prices));
+
+  /* the levy term reads the base's passthrough, written once */
+  const bases = CONTENT.setup.fiscal.bases.map(b => b.k === "thermal" ? Object.assign({}, b, { passthrough: 60 }) : b);
+  const PV = ALL.forCampaign({ id: "pass_probe", setup: { fiscal: Object.assign({}, CONTENT.setup.fiscal, { bases: bases }) } });
+  const hi = st => { st.law.rate_thermal = "high"; };
+  ok("a rate's pass-through is the base's own figure",
+     run(PV, 12, hi).prices.thermal > run(CONTENT, 12, hi).prices.thermal + 5,
+     run(CONTENT, 12, hi).prices.thermal + " -> " + run(PV, 12, hi).prices.thermal);
+
+  /* and the productive economy's rules the same way */
+  const ER = CONTENT.setup.economyRules.map(r => r.k === "trade" ? Object.assign({}, r, { base: r.base + 30 }) : r);
+  const EV = ALL.forCampaign({ id: "econ_probe", setup: { economyRules: ER } });
+  ok("and a campaign can retune the productive economy's",
+     run(EV, 12).economy.trade > run(CONTENT, 12).economy.trade + 10,
+     run(CONTENT, 12).economy.trade + " -> " + run(EV, 12).economy.trade);
+
+  if (bad) { console.log("\n" + bad + " PRICE RULE FAILURES"); process.exitCode = 1; }
+})();

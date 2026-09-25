@@ -808,6 +808,16 @@ version of any of them is in the header of the file it names.
     two of them two pixels wide.
   - **`T.noRevenue` freezes the whole account** (`st.macro = null`), because
     levying nothing no longer keeps the reserve still.
+- **THE PRICE RULES ARE CONTENT'S** (25 Sep; design/39 §6). What moves the
+  four prices and the productive economy is `setup.priceRules` and
+  `setup.economyRules`: a base plus linear terms reading `from` a meter,
+  "price.k" (a list sums), "law.k" (a number, or a `map` of level words),
+  "rate.k" (weight defaults to the base's `passthrough`) or "economy.k".
+  The engine names no price. **Proved byte-identical** against the old
+  engine on the canon, the playtest and 126 probes. Two traps on the way:
+  term keys named `scalar`/`price` matched lint's retired-verb scan (hence
+  `from`), and the chain audit had to learn that a law a rule reads is
+  seen.
 - **THE LADDER IS ON THE DOCKET** (25 Sep; design/38 §7). `setup.alerts`
   puts a content-declared warning on the order of the day, and one that
   `raises` a scalar names the next order to lay or approve, found by what
