@@ -439,7 +439,19 @@ There are four thousand two hundred suspended persons on Ember Ridge.`,
            "thousand two hundred people under a register the authority can shed " +
            "without telling you first.",
       effects:[{move:{"thermal_margin":-6}},{queue:[{event:"vantage_cascade",after:3}]}],
-      result:"The fault does not clear." }
+      result:"The fault does not clear." },
+    /* THE LADDER, MET INSIDE A DECISION (design/38 §7). Three playtest
+       strategies cascaded because the emergency orders were on the
+       Government tab and nowhere else. The first rung is offered here, where
+       the margin first bites, and the order it lays is the one the docket
+       then points past. Appended, so no existing choice changes its place. */
+    { label:"Issue a conservation appeal to every station",
+      when:{ siNotMade:"rung1_conservation" },
+      note:"The first of the emergency orders, and the cheapest: SI 2080/61 asks every " +
+           "station to draw down non-essential load, and Ember Ridge gets the headroom. " +
+           "The rest of the ladder is on the Government tab, each rung dearer than the last.",
+      effects:[{si:"rung1_conservation"},{flag:"vantage_handled"}],
+      result:"The appeal goes out under the Minister's name. The margin improves a little, Ember Ridge holds, and the next order on the ladder is one the House will argue about." }
   ]},
 
 { id:"vantage_cascade", queuedOnly:true, once:true,
@@ -808,7 +820,20 @@ bidding with money that came, in the end, from the appropriation.`,
       effects:[{move:{"public_standing":-7}},{move:{"loyalty.hul":7}},{move:{"thermal_margin":-4}},
                {flag:"thermal_squeeze_seen"},{flag:"left_thermal_market"},
                {wire:"PM: THERMAL PRICE 'A SIGNAL, NOT A SCANDAL'"}],
-      result:`The signal reaches the stations that cannot pay it first.` }
+      result:`The signal reaches the stations that cannot pay it first.` },
+    /* and the next rung, whichever of the first two it is (design/38 §7) */
+    { label:"Ask the stations to draw down load instead",
+      when:{ siNotMade:"rung1_conservation" },
+      note:"SI 2080/61, the first emergency order. It costs almost nothing and buys " +
+           "almost nothing, and it is the first of nine.",
+      effects:[{si:"rung1_conservation"},{flag:"thermal_squeeze_seen"}],
+      result:"The appeal goes out, the stations shed what they can spare, and the exchange notices a little less heat to price." },
+    { label:"Slow the emulated clocks for the duration",
+      when:{ flags:["rung1_tried"], siNotMade:"rung2_clockrate" },
+      note:"SI 2080/62, the second emergency order. It slows the emulated blocs by four " +
+           "per cent, which buys margin out of the patience of the people who run fastest.",
+      effects:[{si:"rung2_clockrate"},{flag:"thermal_squeeze_seen"}],
+      result:"The clocks slow, the margin widens, and the Substrate Left calls it a wage cut, which it is." }
   ]},
 
 /* REACH: party_loyalty below 22; whipping and defeats drive it down. */

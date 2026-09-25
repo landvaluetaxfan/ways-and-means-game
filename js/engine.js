@@ -6705,7 +6705,7 @@ const Engine = (function () {
 
   const TAB_OF = { decision: "sit", division: "gov", vacancy: "gov",
                    owed: "sit", prayer: "gov", expected: "sit", rises: "sit",
-                   slots: "gov" };
+                   slots: "gov", alert: "gov" };
   const ORDER  = { sit: 0, gov: 1, cham: 2, orb: 3 };
   const SOON = 2;                 /* sittings. Closer than this is business. */
 
@@ -6745,6 +6745,31 @@ const Engine = (function () {
       const post = (C.cabinetById || {})[v] || {};
       push("vacancy", (post.title || post.name || v) + " is vacant",
            { when: "soon", away: null });
+    });
+
+    /* WHAT CONTENT ASKS THE DOCKET TO WARN OF (design/38 §7). Three
+       playtest strategies cascaded because nothing said the emergency orders
+       exist: the ladder was on the Government tab and nowhere else. An alert
+       is content's (`setup.alerts`): a condition, the words, and optionally
+       the scalar it `raises`, in which case the engine finds the orders that
+       raise it the way the canon script does (by what they do, not by name)
+       and names the one to lay or approve next. No order left to reach for,
+       no alert: a warning with nothing to do about it is noise. */
+    ((C && C.setup && C.setup.alerts) || []).forEach(a => {
+      if (!a.when || !matches(st, a.when)) return;
+      const o = { away: null, tab: a.tab || "gov", raises: a.raises || null,
+                  when: a.urgent && matches(st, a.urgent) ? "now" : "soon" };
+      if (a.raises) {
+        const up = (C.instruments || []).filter(si => [].concat(si.effects || [])
+          .some(f => f && f.move && f.move[a.raises] > 0));
+        const waiting = up.find(si => canApprove(st, C, si.id).ok);
+        const next = waiting || up.find(si => !(st.instruments[si.id] || {}).made &&
+                                              canMake(st, C, si.id).ok);
+        if (!next) return;
+        o.how = (waiting ? "approve " : "lay ") + (next.number || next.title);
+        o.focus = "order:" + next.id;
+      }
+      push("alert", a.text, o);
     });
 
     /* Order-paper time does not carry over, so time left unspent in the

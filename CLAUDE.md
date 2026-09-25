@@ -808,6 +808,16 @@ version of any of them is in the header of the file it names.
     two of them two pixels wide.
   - **`T.noRevenue` freezes the whole account** (`st.macro = null`), because
     levying nothing no longer keeps the reserve still.
+- **THE LADDER IS ON THE DOCKET** (25 Sep; design/38 §7). `setup.alerts`
+  puts a content-declared warning on the order of the day, and one that
+  `raises` a scalar names the next order to lay or approve, found by what
+  the orders do. The THERMAL chip reads the same alert. The thermal events
+  offer the first rungs as choices. The playtest's strategies climb by
+  reading the docket (`climbs`), and *First option, never climbs* keeps the
+  case that ignores it. Costliest used to cascade and now reaches the count.
+  **A choice appended to an event still moves every strategy that picks by
+  position** (Cycles, Programme first). Only the canon script's named picks
+  are stable.
 - **THE DESIGN AUDIT (design/37) left fourteen decisions with the author**,
   answered 25 Sep in design/38 (built) and design/39 (the economy, proposed).
 - **THE COUNT IS TAKEN AT THE END OF THE CAMPAIGN, AND IT LISTENS** (design/38

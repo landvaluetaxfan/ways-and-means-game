@@ -624,6 +624,21 @@ const SETUP = {
             Exchange controls are an order too. */
          inflation_target:2, bank_mandate:"inflation",
          reserve_direction:null, capital_controls:false },
+  /* WHAT THE DOCKET WARNS OF (design/38 §7). An alert goes on the order of
+     the day while its `when` holds, on `tab`, and `urgent` says when it is
+     today's business rather than soon. `raises` names a scalar: the engine
+     then finds the orders whose effects raise it, and the alert names the
+     next one to lay or approve, or stands down when none is left to reach
+     for. The thermal line is fifteen because that is where the radiators
+     start to cost output (`macro.heat.line`) as well as people. */
+  alerts: [
+    { id: "thermal_orders", tab: "gov",
+      when: { scalarBelow: { thermal_margin: 15 } },
+      urgent: { scalarBelow: { thermal_margin: 8 } },
+      raises: "thermal_margin",
+      text: "The thermal margin is under 15, and the emergency orders are open" }
+  ],
+
   /* THE CIVIC CLOCK (bible 6.3), at a minimum of 1 (real time): what the
      subsidy costs a YEAR, on the spending side of the budget, and the
      points it adds to the thermal price's target. Scaled by the minimum

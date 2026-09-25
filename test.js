@@ -5188,3 +5188,64 @@ console.log("\nTHE COMMONWEALTH DOLLAR (design/39 option C):");
 
   if (bad) { console.log("\n" + bad + " DOLLAR FAILURES"); process.exitCode = 1; }
 })();
+
+console.log("\nTHE LADDER IS ON THE DOCKET (design/38 §7):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const alertOf = st => Engine.today(st, CONTENT, false).items.find(i => i.kind === "alert");
+  const A = (CONTENT.setup.alerts || []).find(a => a.raises === "thermal_margin");
+  ok("content declares a thermal alert", !!A);
+  if (!A) { process.exitCode = 1; return; }
+  const line = A.when.scalarBelow.thermal_margin;
+
+  const calm = Engine.newGame(CONTENT);
+  calm.scalars.thermal_margin = line;
+  ok("no alert while the margin is at the line", !alertOf(calm));
+  /* and it would not have been true at the opening: a gate that holds from
+     the first sitting is the trap CLAUDE.md records */
+  ok("nor at the opening", !alertOf(Engine.newGame(CONTENT)),
+     "margin opens at " + Engine.newGame(CONTENT).scalars.thermal_margin);
+
+  const thin = Engine.newGame(CONTENT);
+  thin.scalars.thermal_margin = line - 3;
+  const a1 = alertOf(thin);
+  const up = CONTENT.instruments.filter(si => [].concat(si.effects || [])
+    .some(f => f && f.move && f.move.thermal_margin > 0));
+  const first = up.find(si => Engine.canMake(thin, CONTENT, si.id).ok);
+  ok("under the line the docket names the next order to lay",
+     !!a1 && a1.focus === "order:" + first.id && /^lay /.test(a1.how || ""), a1 && a1.how);
+  ok("on the tab that holds it, as soon business", a1 && a1.tab === A.tab && a1.when === "soon");
+  Engine.makeInstrument(thin, CONTENT, first.id);
+  const a2 = alertOf(thin);
+  /* an affirmative order laid is not done: the House must approve it, and
+     that is the next thing to do; a negative one is in force, so the next
+     order is another */
+  ok("and once it is laid, the next step: its approval, or the next order",
+     !!a2 && (first.procedure === "affirmative"
+       ? a2.focus === a1.focus && /^approve /.test(a2.how)
+       : a2.focus !== a1.focus && /^lay /.test(a2.how)), a2 && a2.how);
+
+  const dire = Engine.newGame(CONTENT);
+  dire.scalars.thermal_margin = 3;
+  ok("under the urgent line it is today's business", (alertOf(dire) || {}).when === "now");
+
+  /* an affirmative rung laid and waiting is named for approval first */
+  const wait = Engine.newGame(CONTENT);
+  wait.scalars.thermal_margin = 5;
+  const aff = up.find(si => si.procedure === "affirmative" && !si.when);
+  if (aff) {
+    Engine.makeInstrument(wait, CONTENT, aff.id);
+    ok("a laid order waiting on the House is named for approval",
+       (alertOf(wait) || {}).focus === "order:" + aff.id && /^approve /.test((alertOf(wait) || {}).how || ""));
+  }
+
+  /* and with nothing left to reach for, it stands down */
+  const spent = Engine.newGame(CONTENT);
+  spent.scalars.thermal_margin = 3;
+  up.forEach(si => { spent.instruments[si.id].made = true; spent.instruments[si.id].awaitingApproval = false; });
+  ok("with every order already made, no alert", !alertOf(spent));
+
+  if (bad) { console.log("\n" + bad + " LADDER FAILURES"); process.exitCode = 1; }
+})();

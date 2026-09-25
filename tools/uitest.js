@@ -548,6 +548,35 @@ try {
        .every(b => !b.getAttribute("title")));
 } catch (e) { ok("the economy tab", false, e.message); }
 
+/* THE LADDER NOBODY FOUND (design/38 §7). Under the alert's line the
+   THERMAL chip turns red and says where the orders are, and the order of
+   the day carries a row that opens the order it names. Staged on a copy
+   and put back. */
+try {
+  const snapT = w.eval("JSON.stringify(UI.state())");
+  w.eval("UI.state().scalars.thermal_margin = 5; UI.redraw();");
+  const chip = w.document.querySelector("#sb-thermal");
+  ok("a thin margin turns the THERMAL chip red and says where the orders are",
+     !!chip && chip.style.color !== "" &&
+     /orders are open/.test(chip.getAttribute("data-tip-title") || "") &&
+     /Government tab/.test(chip.getAttribute("data-tip-body") || ""),
+     chip && chip.getAttribute("data-tip-body"));
+  const row = [...w.document.querySelectorAll("#sit-today .tdo")]
+    .find(b => /^order:/.test(b.dataset.open || ""));
+  ok("and the order of the day carries it, naming the order",
+     !!row && /SI \d+\/\d+/.test(row.textContent), row && row.textContent.replace(/\s+/g, " ").trim());
+  if (row) {
+    row.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+    const id = row.dataset.open.slice("order:".length);
+    ok("which opens the Government tab on that order's row",
+       !!w.document.querySelector("#s-gov.on") &&
+       !!w.document.querySelector('#gov-si tr[data-si="' + id + '"]'), id);
+  }
+  w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapT) + "), UI.content())");
+  ok("and a calm margin leaves the chip plain",
+     !w.document.querySelector("#sb-thermal").getAttribute("data-tip-body"));
+} catch (e) { ok("the thermal alert", false, e.message); }
+
 /* A NUMBER THE INTERFACE PRINTS IS CONTENT'S NUMBER. The status bar had
    "SIGNATURES n/9" and reddened at 7 as literals, while
    setup.thresholds.ballot is 12 and signaturePanel reads it properly -- so

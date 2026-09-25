@@ -277,6 +277,44 @@ exist. The suggestion:
 
 Measure: with 1 and 2 in, First, Cheapest and Costliest should reach the count.
 
+**Built 25 Sep 2026, and measured.**
+
+1. **The docket asks for it.** Alerts are content's (`setup.alerts`): a
+   condition, the words, the tab, an `urgent` condition, and the scalar the
+   alert `raises`. For a `raises` alert the engine finds the orders whose
+   effects raise that scalar, the way the canon script does, and names the
+   one to approve or lay next. With none left to reach for, the alert stands
+   down. The thermal line is 15, which is also where the radiators start to
+   cost output (design/39); it is urgent under 8. The row opens the
+   Government tab on the order's own row.
+2. **The thermal events offer the order.** Ember Ridge (`vantage_radiator`)
+   offers the conservation appeal, rung one. The thermal squeeze offers rung
+   one, or rung two once rung one is tried. Both choices are appended, so the
+   canon's picks keep their meaning. `reserve_low` was left alone, because it
+   is about the reserve and not the margin.
+3. **The THERMAL chip turns red** while the alert stands. Its card names the
+   next order, from the same engine reading as the docket.
+4. **The playtest climbs by reading the docket.** A strategy that `climbs`
+   approves or lays whatever an urgent alert names, and keeps a slot in hand
+   while any alert stands. That makes the table a test of the warning as
+   well. *First option, never climbs* keeps the ignorant case.
+
+The result, on the playtest:
+
+| Strategy | Before | After |
+|---|---|---|
+| First, Cheapest | election | election (thermal 11 at the count, not 4) |
+| Costliest | cascade | **election** |
+| First, never climbs | — | election at thermal 4 |
+| Last | no confidence at 16 | **election** (it picks the new appeal at Ember Ridge) |
+| Cycles | election | no confidence at 23 |
+| Programme first | supply at 17 | no confidence at 15 |
+
+Cycles and Programme first pick by position, so a fourth choice at Ember
+Ridge sends them down different paths from sitting six. Cycles loses the same
+way with climbing turned off, so the ladder is not the cause. The canon run
+is unchanged.
+
 ## For the author
 
 1. ~~The Single Tax Party~~: decided, four seats (§1).

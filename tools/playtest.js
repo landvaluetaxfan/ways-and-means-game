@@ -79,6 +79,28 @@ const WANT_LOG = argv.indexOf("--log") >= 0 ? String(argv[argv.indexOf("--log") 
    CLAUDE.md records and this obeys. */
 function govern(st, strategy) {
   const acts = [];
+  /* IT HOLDS THE COUNTRY BY READING THE DOCKET (design/38 §7). Three
+     strategies cascaded because nothing told them the emergency orders
+     exist, which made a cascade in this table a finding about the tool and
+     not the player. A strategy that `climbs` does what the order of the day
+     says when an alert on it is today's business: approves the order that
+     is laid and waiting, or lays the one it names. It reads Engine.today()
+     and nothing else, so the table is also a test of the warning: an alert
+     that named the wrong order, or none, would show up here as a cascade. */
+  const alerts = strategy.climbs
+    ? Engine.today(st, CONTENT, false).items.filter(i => i.kind === "alert" && /^order:/.test(i.focus || ""))
+    : [];
+  alerts.filter(a => a.when === "now").forEach(a => {
+    const id = a.focus.slice("order:".length);
+    const s = st.instruments[id] || {};
+    const r = s.awaitingApproval ? Engine.approveInstrument(st, CONTENT, id)
+                                 : Engine.makeInstrument(st, CONTENT, id);
+    if (r && r.ok !== false)
+      acts.push((s.awaitingApproval ? "approved " : "laid ") + ((CONTENT.instrumentById[id] || {}).title || id));
+  });
+  /* and keeps time in hand while an order waits on the House, or one is
+     about to be wanted, as the canon script does */
+  const holding = alerts.length ? 1 : 0;
   /* supply first, for a government that wants to survive the rise */
   const order = (CONTENT.bills || []).slice().sort((a, b) => {
     const s = (x) => (x.test === "supply" ? 0 : 1);
@@ -133,7 +155,7 @@ function govern(st, strategy) {
      only the surplus on its programme. A programme-first government does
      not, because putting its programme ahead of the budget is the whole of
      what that strategy is testing, and it should be allowed to lose on it. */
-  const reserve = strategy.budget ? supplyNeed(st) : 0;
+  const reserve = (strategy.budget ? supplyNeed(st) : 0) + holding;
   let budgetSlots = strategy.slotsPerSitting == null ? 2 : strategy.slotsPerSitting;
   /* AND A MEASURE WITH TIME OF ITS OWN IS GIVEN IT FIRST (reserved
      order-paper time, design/32 §E.5). It costs the session's own time
@@ -179,16 +201,22 @@ function supplyNeed(st) {
   return (divides - at) + 1;
 }
 
+/* EVERY SUPPLY-FIRST STRATEGY CLIMBS THE LADDER when the docket says so
+   (design/38 §7), and one does not, so the ignorant case is still measured:
+   a cascade there is what the warning is for. */
 const STRATEGIES = [
   { id: "first",   name: "First option, supply first",
     note: "What a player does when they have stopped reading, but who does pay for the government.",
-    budget: true, pick: () => 0 },
+    budget: true, climbs: true, pick: () => 0 },
+  { id: "blind",   name: "First option, never climbs",
+    note: "The same player, ignoring the order of the day's warning about the thermal margin.",
+    budget: true, climbs: false, pick: () => 0 },
   { id: "last",    name: "Last option, supply first",
     note: "The other end of the same non-decision.",
-    budget: true, pick: (e) => e.choices.length - 1 },
+    budget: true, climbs: true, pick: (e) => e.choices.length - 1 },
   { id: "cycle",   name: "Cycles the options, supply first",
     note: "Reaches more of the content than either end does.",
-    budget: true, pick: (e, st, n) => n % e.choices.length },
+    budget: true, climbs: true, pick: (e, st, n) => n % e.choices.length },
   { id: "prog",    name: "Programme first, supply last",
     note: "Spends its order paper on its own bills and leaves the budget to the end. The oldest way to lose.",
     budget: false, pick: (e, st, n) => n % e.choices.length },
@@ -197,7 +225,7 @@ const STRATEGIES = [
     budget: true, slotsPerSitting: 0, pick: () => 0 },
   { id: "cheap",   name: "Cheapest option, supply first",
     note: "Never spends a slot on an ANSWER if it can avoid one.",
-    budget: true,
+    budget: true, climbs: true,
     pick: (e) => {
       let best = 0, cost = Infinity;
       e.choices.forEach((c, i) => {
@@ -208,7 +236,7 @@ const STRATEGIES = [
     } },
   { id: "spender", name: "Costliest option, supply first",
     note: "The opposite, so a slot economy that only works one way shows up.",
-    budget: true,
+    budget: true, climbs: true,
     pick: (e) => {
       let best = 0, cost = -1;
       e.choices.forEach((c, i) => {
@@ -332,6 +360,23 @@ runs.forEach(r => {
     num((function () { try { return Engine.confidence(r.st); } catch (e) { return "-"; } })(), 9) +
     METERS.map(m => num(r.st.scalars[m] == null ? "—" :
       (m === "solvency" ? Math.round(r.st.scalars[m] / 1000) + "k" : r.st.scalars[m]), 9)).join(""));
+});
+
+/* AND THE MONEY AT THE CLOSE (design/39), because a run that reached the
+   count owing a tenth of output with the dollar down a fifth is not the
+   same run as one that reached it square. */
+console.log("\n  the money at the close");
+console.log("  " + pad("strategy", 34) + num("reserve", 9) + num("debt", 9) + num("of out", 8) +
+            num("arrears", 9) + num("inflat", 8) + num("rate", 7) + num("dollar", 8) + num("gap", 7));
+console.log("  " + "-".repeat(92));
+runs.forEach(r => {
+  const b = Engine.budget(r.st, CONTENT), m = Engine.macro(r.st, CONTENT) || {};
+  const bn = n => (n / 1000).toFixed(1) + "bn";
+  console.log("  " + pad(r.strategy.name, 34) + num(bn(r.st.scalars.solvency || 0), 9) +
+    num(bn(b.debt), 9) + num(b.debtPct + "%", 8) +
+    num(bn((r.st.macro && r.st.macro.arrears) || 0), 9) +
+    num(m.inflation == null ? "-" : m.inflation + "%", 8) + num(m.rate == null ? "-" : m.rate.toFixed(2), 7) +
+    num(m.fx == null ? "-" : m.fx.toFixed(3), 8) + num(m.gap == null ? "-" : m.gap, 7));
 });
 
 /* WHAT NOBODY REACHED. The most useful column in the whole tool: content

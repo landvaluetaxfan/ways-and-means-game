@@ -480,7 +480,24 @@ const UI = (function () {
     const conf = f ? f.side : Engine.confidence(st), maj = f ? f.majority : Engine.majority(st);
     $("#sb-conf").textContent = `${f ? "POLL" : "CONFIDENCE"} ${conf}/${f ? f.total : Engine.chamberTotal(st)}`;
     $("#sb-margin").textContent = `MARGIN ${conf - maj >= 0 ? "+" : ""}${conf - maj}`;
-    $("#sb-thermal").textContent = `THERMAL ${st.scalars.thermal_margin}%`;
+    /* AND THE THERMAL CHIP SAYS WHERE THE ORDERS ARE (design/38 §7). While
+       the docket carries an alert on the margin, the chip is red and its
+       card names the next order, from the same engine reading, so the
+       status bar and the order of the day cannot disagree. Otherwise the
+       chip explains the meter, as every chip does. */
+    const th = $("#sb-thermal");
+    th.textContent = `THERMAL ${st.scalars.thermal_margin}%`;
+    const alert = Engine.today(st, C, false).items
+      .find(i => i.kind === "alert" && i.raises === "thermal_margin");
+    th.style.color = alert ? "var(--alert)" : "";
+    if (alert) {
+      th.setAttribute("data-tip-title", "Thermal margin: the orders are open");
+      th.setAttribute("data-tip-body", alert.text + ". The next is on the Government tab" +
+        (alert.how ? ": " + alert.how + "." : "."));
+    } else {
+      th.removeAttribute("data-tip-title");
+      th.removeAttribute("data-tip-body");
+    }
     $("#sb-chapter").textContent = `CHAPTER ${st.chapter}`;
     /* THE CLOCK, ON EVERY SCREEN (design/26 #88). The next rise is the
        deadline that governs everything else on the board — order-paper time
@@ -4939,7 +4956,7 @@ const UI = (function () {
     if (!spec) return;
     const c = spec.indexOf(":");
     const kind = spec.slice(0, c), id = spec.slice(c + 1);
-    if (kind === "si") {
+    if (kind === "si" || kind === "order") {
       siOpen = id;
       drawAll();
       const row = document.querySelector('#gov-si tr[data-si="' + id + '"]');
@@ -4953,9 +4970,15 @@ const UI = (function () {
         flash(row);
         const si = (C.instruments || []).find(x => x.id === id);
         const s = st.instruments[id];
+        /* a promise's order and an alert's read differently: one keeps a
+           word given, the other is the next thing to reach for */
         if (si && s && !s.made)
-          setStatus("This promise is kept by " + (si.number || si.id) +
+          setStatus((kind === "order" ? (si.number || si.id) + " is the next order to lay"
+                                      : "This promise is kept by " + (si.number || si.id)) +
             ". Press Make to lay it.", "transient");
+        else if (si && s && s.awaitingApproval)
+          setStatus((si.number || si.id) + " is laid and waiting. Press Approve to put it to the House.",
+                    "transient");
       }
     } else if (kind === "bill" && typeof Focus !== "undefined") {
       Focus.activate("cham-bills", id);
