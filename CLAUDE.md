@@ -224,7 +224,7 @@ list over any older sentence here that implies a different one:
 
 | | |
 |---|---|
-| **Sitting** | the event, the docket, the calendar, and the one indicator panel |
+| **Sitting** | the event, the docket (the polls, once the writs are out: design/38), the calendar, and the one indicator panel |
 | **Government** | instruments · the document · what it can do · the ledger and cabinet, with the Tribunal and the Presidency folded at the edge |
 | **Chamber** | order-paper time, the order paper, the House, the whip, and who is counted |
 | **Economy** | *Refreshed 21 Sep 2026, and the refresh was a MERGE.* Four panels on four subjects and a band: **the account** (a stock and its flows), **what everything is priced in**, **what is made and who makes it**, and — in the bottom band beside the chart — **what the Underwriters say**. The middle panel is three former ones, because `TAX_BASES` and `PRICE_META` in the engine are the SAME FOUR THINGS (volume, thermal, substrate, transit): Scarcity, What sets the prices and Ways and means were three facts about one set of four rows, in two different columns, with a third panel between two steps of one sum — `receipts()` computes each yield AS `rate × price/100 × weight`, and §7.9 says outright that the four prices are the appropriation's. One row each now: price, trend, the clause that sets it, the rate, the yield. `inflation` is that table's footing, not the account's, being a reading of those four and nothing else. §7.10's three readings and `content/labour.js` are one panel for the same reason — `st.economy.participation` and `LABOUR.totals.participation` are one fact — with the eighteen categories folded, since they are reference and not a working readout. The chart takes two columns **at either of two timescales** — the engine's per-sitting curve, or `setup.history`'s annual record 2073–2080, whose last point IS the opening value so the two join. The live window is about fifteen weeks (four sitting days a week), which is the right resolution for a price and far too short to show anything structural; that is what the record is for. **Nothing on the tab scrolls at any of the seven measured shapes** — see the layout note below. |
@@ -679,12 +679,13 @@ version of any of them is in the header of the file it names.
   ending; the next leader's campaign assumes the canon one, so a narrative
   runs across parliaments. **Flash I's canon is the debt trap, decided 23
   Sep: "a middle ground between perfect and failure".** It returns the PSD to
-  government (84 to 88 seats under the canon policy, the coalition with
-  confidence and supply 145 of 280) with austerity to come. The canon
-  government climbs the emergency ladder, asks Earth's banks for terms once
-  the result is in, and reaches the count with the thermal margin at about
-  eight (six before the periods were corrected, design/37). It is the
-  tightest number in the game. Flash I's guards
+  government with austerity to come. Since the count listens (design/38),
+  the canon government reaches the count on 15 August at standing 70: the
+  PSD holds 119 seats, and the government's side has a working majority of
+  183 of 280. The canon government climbs the emergency ladder, asks Earth's
+  banks for terms once the result is in, and reaches the count with the
+  thermal margin at about five. It is the tightest number in the game, and
+  the guard prints it with the side and the epilogue. Flash I's guards
   (`content/campaigns/flash_i/guards.js`) assert that the canon ending is
   reachable by play and goes to the count; keep that true whatever else
   moves, until the author rewrites the canon.
@@ -756,14 +757,49 @@ version of any of them is in the header of the file it names.
   the new period's first, so a session of "three periods of sixteen" sat 16,
   17 and 17 and dissolved at 51, while `sessionEndsAt()` dated everything
   owed "before the House rises" at 48. Every measurement above that says a
-  run is about 52 sittings was taken on it. Corrected: the canon count
-  moved from sitting 56 to 55 (16 July), its thermal margin from 6 to 8 and
-  the PSD from 89 seats to 86, still the debt trap; `test.js` holds each
-  period to `sittingsPerPeriod`.
+  run is about 52 sittings was taken on it. Corrected, and `test.js` holds
+  each period to `sittingsPerPeriod`. (The canon's numbers have moved again
+  since; the canon paragraph above has them.)
 - **THE DESIGN AUDIT (design/37) left fourteen decisions with the author**,
-  and the first two are the ones to read before touching chapter three: the
-  count is taken at the writs, so the campaign cannot move a seat, and the
-  whole standing meter moves the PSD by fifteen seats.
+  answered 25 Sep in design/38 (built) and design/39 (the economy, proposed).
+- **THE COUNT IS TAKEN AT THE END OF THE CAMPAIGN, AND IT LISTENS** (design/38
+  §1).
+  - `dissolve()` records the House that went to the country. `count()`
+    takes the vote when `campaign_done` is set (inside `apply()`) or when
+    `campaignSittings` run out, and `checkEnd` waits for `counted()`.
+    **Never put the election back into `dissolve()`**: that is how the
+    campaign became decoration.
+  - A district's holder had a fixed 0.68 share, so no swing took a seat and
+    the whole meter moved the PSD fifteen seats. Now a district has a
+    notional result from `parties[].vote` and the roll. The holder's margin
+    is ranked within its OWN party's seats; ranked across the House, the
+    big party came out all safe.
+  - `Engine.forecast()` is the count on a copy, and it feeds the polls.
+  - The Single Tax Party cannot hold three list seats under 4% and D'Hondt.
+    It is held at 4.1%, and the choice is the author's.
+- **STANDING FADES** (design/38 §1). 61 of 125 events offered free standing,
+  and a greedy player hit 100 before the writs and won every count.
+  `setup.standingDrift` pulls every band 5% a sitting toward 45, so standing
+  has to be kept, not banked. **An event that adds standing and costs nothing
+  is worth less than it was; one late in the run is worth more.**
+- **A LOST MAJORITY IS A MOTION, NOT A VERDICT** (design/38 §3).
+  - Partners walk out at `thresholds.partnerLeaves` and come back at
+    `partnerReturns`.
+  - A government below the majority faces a motion `motionAfter` sittings
+    out. `checkLoss` no longer ends the run on the arithmetic.
+  - `court` moves every partner that walked; `withdrawn` asks whether one
+    has. `setup.onPartnerWithdraws` names the event; the engine names none.
+- **AGING THE EVENT POOL WAS MEASURED AND LEFT OFF** (design/38 §4). The pool
+  is over-subscribed (about twenty eligible for one slot), and aging only
+  made runs alike. Question Time every eight sittings did what aging could
+  not. `ageWeight` is 0 in setup.
+- **THE RECESS TAKES DAYS, AND A GOVERNMENT HAS ITS OWN SEED** (design/38
+  §5).
+  - `recessDays` moves only the dates; `walkSittings()` is the one calendar.
+  - The shell draws a seed at a new government, and the harness pins
+    `Math.random` so the UI tests stay reproducible.
+  - `Engine.newGame(C)` with no seed is still 20287, which is what the
+    tests and the playtest use.
 - **A STYLE THAT NAMES A PANEL WHICH NO LONGER EXISTS DOES NOTHING,
   SILENTLY.** The composition table listed a party's currents twice when
   it was opened with a measure named: the detail that opens with the

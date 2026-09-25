@@ -11,6 +11,21 @@ possible, so this is a list of what is wrong. What works is not listed.
 The ranking follows design/34: fixed (with the check that now holds it),
 needs you, for the content round, and noted.
 
+**Answered 25 Sep 2026** (`design/38`, `design/39`):
+
+| Item | Outcome |
+|---|---|
+| D1, D2, D3 | Built: the count at the end, the vote model and the functional recount, with the campaign rewritten |
+| D4 | Built as the epilogue |
+| D5 | Built: partner walkouts and the ballot |
+| D6 | Measured: Question Time halved, aging built and left off |
+| D7 | Proposed in design/39 |
+| D8 | The standing fade ends its arithmetic; a content fix is proposed in design/38 §6 |
+| D9 | Proposed in design/38 §7 |
+| D10, D11 | Built: a seed per government, and recess days |
+| D13 | Folded into design/39 phase 1 |
+| D12 | Still the author's |
+
 **Method.** Measured where it can be measured, read by hand where it cannot,
 and labelled when it is judgement. Measurements are taken from:
 
