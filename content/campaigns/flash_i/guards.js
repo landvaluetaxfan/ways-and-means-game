@@ -342,15 +342,54 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
       const cools = CONTENT.instruments.filter(si => [].concat(si.effects || [])
         .some(f => f.move && f.move.thermal_margin > 0)).map(si => si.id);
       const awaiting = () => cools.filter(id => s.instruments[id].awaitingApproval);
-      const lastDays = s.risesAt != null && s.sitting > 40 && s.risesAt - s.sitting <= 5;
+      /* the last days before the House RISES: once it is dissolved the
+         rise is behind it, and this read true for the whole campaign, so
+         the canon climbed a rung after the dissolution that it could not
+         pay for (25 Sep) */
+      const lastDays = !s.dissolved && s.risesAt != null && s.sitting > 40 &&
+                       s.risesAt - s.sitting <= 5;
+      /* AND IT LAYS NO ORDER IT CANNOT PAY FOR, short of an emergency: what
+         an order costs the reserve, against the reserve and the room left
+         under the bill authority. Past that the Treasury is in arrears. */
+      const cost = id => {
+        const si = CONTENT.instruments.find(x => x.id === id);
+        return -[].concat(si.effects || [], si.political_cost || [])
+          .reduce((n, f) => n + Math.min(0, (f && f.move && f.move.solvency) || 0), 0);
+      };
+      const affords = id => cost(id) <= s.scalars.solvency +
+        (s.macro && s.macro.headroom != null ? s.macro.headroom : Infinity);
       if (s.scalars.thermal_margin <= 10 || (lastDays && s.scalars.thermal_margin <= 16)) {
         const waiting = awaiting().find(id => Engine.canApprove(s, CONTENT, id).ok);
         if (waiting) Engine.approveInstrument(s, CONTENT, waiting);
         else {
           const next = cools.find(id => !s.instruments[id].made &&
             Engine.canMake(s, CONTENT, id).ok);
-          if (next) Engine.makeInstrument(s, CONTENT, next);
+          if (next && (affords(next) || s.scalars.thermal_margin <= 6))
+            Engine.makeInstrument(s, CONTENT, next);
         }
+      }
+      /* AND IT PAYS ITS BILLS (25 Sep). Past the bill authority the
+         Treasury stops paying, and arrears cost standing and legitimacy
+         every sitting (setup.couplings). Until they did, the canon run left
+         CW$16.8bn unpaid for its last seven sittings and nothing noticed.
+         When the docket says the reserve is empty and the tender more than
+         half full, the canon government opens the Treasury's overdraft at the Bank: laid
+         for nothing, approved for a slot, and the money is the Bank's own.
+         Only while the House sits and there is a slot to approve it with:
+         an order laid that cannot be approved pays its political cost for
+         nothing. Found by what it does (a loan), not by name. */
+      const finance = CONTENT.instruments.filter(si => [].concat(si.effects || [])
+        .some(f => f && f.move && Object.keys(f.move).some(k => /^loan\./.test(k) && f.move[k] > 0)))
+        .map(si => si.id);
+      /* it reads the docket for the warning, as a player would: content's
+         `bill_authority` and `arrears` alerts (setup.alerts) */
+      const owedSoon = Engine.today(s, CONTENT, false).items
+        .some(i => i.kind === "alert" && (i.id === "bill_authority" || i.id === "arrears"));
+      const fWaiting = finance.find(id => Engine.canApprove(s, CONTENT, id).ok);
+      if (fWaiting) Engine.approveInstrument(s, CONTENT, fWaiting);
+      else if (owedSoon && !s.dissolved && s.slots.total - s.slots.used >= 1) {
+        const lay = finance.find(id => !s.instruments[id].made && Engine.canMake(s, CONTENT, id).ok);
+        if (lay) Engine.makeInstrument(s, CONTENT, lay);
       }
       /* AND IT KEEPS TIME IN HAND for an order waiting on the House. Six
          slots a session carry a programme or hold the country, not both
@@ -360,7 +399,8 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
          once an order is waiting: an order laid with no time left to
          approve it was laid for nothing, which is how the fourth rung sat
          unapproved from the freeze to the dissolution. */
-      return awaiting().length || s.scalars.thermal_margin <= 15 ? 2 : 0;
+      const financing = finance.some(id => s.instruments[id].awaitingApproval);
+      return (awaiting().length || s.scalars.thermal_margin <= 15 ? 2 : 0) + (financing ? 1 : 0);
     };
     /* A PICK MAY READ THE STATE. The canon government holds out against
        Earth until the result is in -- conciliating before it would take the
@@ -446,6 +486,16 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
           st.seen.ch3_the_count),
        ["ch4_settled", "ch4_after", "ch4_the_answer", "ch3_dissolution", "ch3_the_count"]
          .map(id => id + (st.seen[id] ? "" : " (not seen)")).join(", "));
+    /* AND IT PAYS ITS WAY TO THE COUNT (25 Sep). Arrears were free until
+       this date, and the canon ran CW$16.8bn of them for seven sittings. */
+    const owed = (st.debt && st.debt.owed) || {};
+    ok("and it reaches the count with its payments current",
+       !(st.macro && st.macro.arrears > 0),
+       "arrears " + Engine.money(CONTENT, (st.macro && st.macro.arrears) || 0) +
+       "; owed " + Object.keys(owed).filter(k => owed[k] > 0)
+         .map(k => k + " " + Engine.money(CONTENT, owed[k])).join(", ") +
+       "; room under the bill authority " + Engine.money(CONTENT, (st.macro && st.macro.headroom) || 0) +
+       "; inflation " + (st.macro ? st.macro.inflation.toFixed(1) + " (core " + st.macro.core.toFixed(1) + ")" : "none"));
     ok("and the canon ending lands with sittings to spare",
        tierAt != null && end && end.sitting != null
          ? end.sitting - tierAt >= 5 : tierAt != null,

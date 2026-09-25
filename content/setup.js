@@ -465,7 +465,9 @@ const SETUP = {
         { when: { economyBelow: { credibility: 0.5 } }, add: 0.75,
           label: "while the market doubts the Reserve Bank" },
         { when: { flags: ["rating_cut"] }, add: 0.25,
-          label: "since the Underwriters cut the continuity rating" } ] },
+          label: "since the Underwriters cut the continuity rating" },
+        { when: { economyAbove: { arrears: 0 } }, add: 1,
+          label: "while the Treasury is in arrears" } ] },
       label: "Treasury bills", short: "tendered weekly when the reserve cannot pay",
       note: "tendered at the weekly auction for whatever the reserve cannot meet, up to the Treasury's standing authority of CW$60bn",
       wire: "TREASURY TENDERS BILLS AS THE RESERVE RUNS OUT",
@@ -512,7 +514,9 @@ const SETUP = {
         { when: { scalarBelow: { thermal_margin: 6 } }, add: 2,
           label: "while it is under 6" },
         { when: { flags: ["rating_cut"] }, add: 0.25,
-          label: "since the continuity rating was cut" } ] },
+          label: "since the continuity rating was cut" },
+        { when: { economyAbove: { arrears: 0 } }, add: 1,
+          label: "while the Treasury is in arrears" } ] },
       limits: [
         { when: { scalarBelow: { thermal_margin: 6 } }, cap: 0,
           why: "the Underwriters place no notes while the thermal margin is under six" } ],
@@ -657,6 +661,12 @@ const SETUP = {
       "Output is pressing on capacity. The radiators, not demand, are the limit, " +
       "and anything more the government spends arrives as inflation in the " +
       "thermal price." },
+    arrears: { text:
+      "The Treasury has missed payments. Past the bill authority the tender " +
+      "takes nothing more, and what the reserve cannot meet is simply owed: " +
+      "to suppliers, to the stations, to the public payroll. Every lender " +
+      "adds a point for it, and it is the first thing any money coming in " +
+      "will pay." },
     owed_bills: { text:
       "The Treasury is rolling bills at the weekly tender. The market takes " +
       "them at a quarter over the cash rate, and asks more as the debt grows." },
@@ -679,9 +689,10 @@ const SETUP = {
          thermal_release:"steady", capital_works:"none", transit_subsidy:"none",
          /* WAYS AND MEANS (bible §7.3). The four bases the Commonwealth
             taxes — volume, thermal quota, substrate-hours, mass to orbit —
-            each at a rate the appropriation sets. Levels: none | low |
-            standard | high. At standard on all four the state raises
-            exactly what the appropriation's own defaults cost. */
+            each at a rate the appropriation sets. At standard on all four the state raises
+            exactly what the appropriation's own defaults cost. The
+            levels are `fiscal.rates`': relief, low, standard, high and
+            surcharge (a tenth and a fifth either way, design/40 E5). */
          rate_volume:"standard", rate_thermal:"standard",
          rate_substrate:"standard", rate_transit:"standard",
          /* The list side of the tier ratio (bible 4.4). The district side
@@ -718,7 +729,21 @@ const SETUP = {
       when: { scalarBelow: { thermal_margin: 15 } },
       urgent: { scalarBelow: { thermal_margin: 8 } },
       raises: "thermal_margin",
-      text: "The thermal margin is under 15, and the emergency orders are open" }
+      text: "The thermal margin is under 15, and the emergency orders are open" },
+    /* THE ACCOUNT'S TWO (25 Sep). Before: the reserve is empty and the bill
+       tender is close to its authority, so the next large payment will not
+       be met. After: it was not. `how` is what to do, in words, since what
+       refills the reserve is a drawing as often as an order. `headroom` is
+       the room left under the tender, in dollars. */
+    { id: "bill_authority", tab: "econ",
+      when: { scalarBelow: { solvency: 5000 }, economyBelow: { headroom: 30000, arrears: 1 } },
+      urgent: { economyBelow: { headroom: 10000 } },
+      how: "draw on a facility from the account, or lay the Ways and Means order",
+      text: "The reserve is empty and the Treasury's bills are near their authority" },
+    { id: "arrears", tab: "econ",
+      when: { economyAbove: { arrears: 0 } }, urgent: { economyAbove: { arrears: 0 } },
+      how: "draw on a facility from the account, or lay the Ways and Means order",
+      text: "The Treasury is in arrears, and every sitting it stays there costs standing" }
   ],
 
   /* THE CIVIC CLOCK (bible 6.3), at a minimum of 1 (real time): what the
@@ -999,7 +1024,18 @@ const SETUP = {
        replace it. */
     { group: "earth_cost", meter: "friction", above: 85, when: { economyAbove: { trade: 94 } },
       drag: { friction: -2 },
-      mark: "Earth's own markets are paying for the blockade" }
+      mark: "Earth's own markets are paying for the blockade" },
+    /* UNPAID BILLS (25 Sep). Past the bill authority the Treasury does not
+       stop spending; it stops paying. A supplier waiting a month is a story,
+       and a public payroll waiting is a government's last one. The meter is
+       an economy reading, what the tender would not take, in dollars: CW$10
+       billion is about sixteen days of the Commonwealth's spending. */
+    { group: "arrears", meter: "economy.arrears", above: 0,
+      drag: { public_standing: -1, legitimacy: -1 },
+      mark: "The Treasury is in arrears: suppliers and stations are waiting to be paid" },
+    { group: "arrears", meter: "economy.arrears", above: 10000,
+      drag: { public_standing: -2, legitimacy: -2, party_loyalty: -1 },
+      mark: "The Commonwealth has missed its own payroll" }
   ],
 
   /* PRESSURE BY DEFAULT (Flash I). A government that only answers the

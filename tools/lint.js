@@ -914,6 +914,25 @@ try {
       });
     }));
   walk(ENCYCLOPEDIA, o => { if (o.when) checkWhen(o.when, "concordance " + (o.heading || o.title || "section")); });
+  /* THE COUPLINGS AND THE ALERTS are conditions too, and neither was read
+     here until 25 Sep, when a coupling learned to read an economy reading
+     (`economy.arrears`): a meter that names nothing reads nought and never
+     drags, and an alert whose condition names nothing never shows. */
+  [["the world", SETUP]].concat((ADMINISTRATIONS || []).map(a => [a.id, a.setup || {}])).forEach(([who, S]) => {
+    (S.couplings || []).forEach((cp, i) => {
+      const tag = "coupling " + (cp.group || cp.meter) + " " + cp.above + " (" + who + ")";
+      const m = String(cp.meter || "");
+      if (/^economy\./.test(m) ? !ECK.has(m.slice(8)) : !SC.has(m))
+        refBad.push(tag + ": reads '" + m + "', which is no meter and no economy reading");
+      Object.keys(cp.drag || {}).forEach(k => { if (!SC.has(k)) refBad.push(tag + ": drags '" + k + "', which is no meter"); });
+      checkWhen(cp.when, tag);
+    });
+    (S.alerts || []).forEach(a => {
+      const tag = "alert " + (a.id || "?") + " (" + who + ")";
+      checkWhen(a.when, tag); checkWhen(a.urgent, tag);
+      if (a.raises && !SC.has(a.raises)) refBad.push(tag + ": raises '" + a.raises + "', which is no meter");
+    });
+  });
 
   /* THE RULES THAT MOVE THE PRICES AND THE ECONOMY are content since 25 Sep
      (design/39 §6), so a term naming a price, a meter or a tax base that

@@ -686,16 +686,19 @@ version of any of them is in the header of the file it names.
   runs across parliaments. **Flash I's canon is the debt trap, decided 23
   Sep: "a middle ground between perfect and failure".** It returns the PSD to
   government with austerity to come. Since design/40 (25 Sep) the canon
-  reaches the count on 15 August, sitting 57, at standing 41: the PSD holds
+  reaches the count on 15 August, sitting 57, at standing 42: the PSD holds
   87 of 280 and the government's side 149, a narrow majority. The crisis is
-  financed and now felt: it owes CW$60bn in Treasury bills (the whole
-  authority, about a tenth of output), with the dollar near 0.79 and headline
-  inflation 5.2% against 2.9% underlying, which the vote reads. The canon
+  financed and now felt: it owes CW$44.9bn in Treasury bills (three quarters
+  of the authority, 7% of output), with the dollar near 0.79 and headline
+  inflation 5.8% against 3.0% underlying, which the vote reads. The canon
   government climbs the emergency ladder, keeps its last order-paper time to
   approve the emergency appropriation before the House rises (see
   `approvalFloor` below), asks Earth's banks for terms once the result is in,
-  and reaches the count with the thermal margin at 17. The guard prints the
-  margin, the side and the epilogue. (Before design/40: 103 seats, 165 of 280
+  lays no order it cannot pay for, and reaches the count with the thermal
+  margin at 8 and its payments current. The guard prints the margin, the
+  side, the epilogue and the account. (25 Sep: it had been CW$16.8bn in
+  arrears through the campaign, which cost nothing until that day; see
+  ARREARS below.) (Before design/40: 103 seats, 165 of 280
   at standing 58, margin about five.) Flash I's guards
   (`content/campaigns/flash_i/guards.js`) assert that the canon ending is
   reachable by play and goes to the count; keep that true whatever else
@@ -827,6 +830,13 @@ version of any of them is in the header of the file it names.
   offer the first rungs as choices. The playtest's strategies climb by
   reading the docket (`climbs`), and *First option, never climbs* keeps the
   case that ignores it. Costliest used to cascade and now reaches the count.
+  **And the docket says how much TIME the ladder needs** (25 Sep): while a
+  meter an alert `raises` drains past the alert's line before the House
+  next rises (`Engine.meterDrift`: its trend plus the couplings dragging
+  it), a `ladder` item counts the affirmative orders that raise it, laid or
+  next, against the order-paper time left. Climbing strategies keep that
+  much time, and Cheapest now reaches the count too; First option still
+  spends its kept slot on a first-option choice and cascades.
   **A choice appended to an event still moves every strategy that picks by
   position** (Cycles, Programme first). Only the canon script's named picks
   are stable.
@@ -983,6 +993,30 @@ version of any of them is in the header of the file it names.
   bench roll, the members list, the signature count and the reshuffle, and
   carried by nobody. `test.js` asserts every popular-seat member of a party
   with currents has one of their own party's.
+- **ARREARS COST NOTHING, AND THE CANON RAN ON THEM** (25 Sep). Past the
+  bill authority `coverShortfall` wrote `st.macro.arrears` and nothing read
+  it, so spending past the cap was free, and the canon ran CW$16.8bn unpaid
+  for its last seven sittings. Its policy's "last days before the rise"
+  test stayed true after the dissolution, so it laid a CW$32bn rung during
+  the campaign. Now:
+  - money coming in pays arrears first (`credit()`: receipts, loans and
+    drawings alike);
+  - a coupling may read an economy reading (`meter: "economy.arrears"`), and
+    content's two lines cost standing, legitimacy and loyalty;
+  - the bills and the notes add a point while in arrears;
+  - `economyBelow:{headroom:n}` reads the room left under the tender;
+  - two alerts (`bill_authority`, `arrears`) carry a `how` in words and an
+    `id` on the docket item, which the canon policy reads.
+
+  Lint now checks couplings and alerts, which it never read before.
+- **A SECOND `function` OF THE SAME NAME REPLACES THE FIRST EVERYWHERE.**
+  The engine is one closure, and a function declaration is hoisted, so a
+  new `function drift(st, C, k)` for the docket silently replaced the
+  price rules' `function drift(now, target)` two thousand lines up. Every
+  price and economy rule read the wrong function, and the only symptom was
+  a playtest strategy that never calls the new code cascading four
+  sittings early. `grep -n "function <name>"` before naming one; the
+  docket's is `meterDrift`.
 
 **CSS and layout traps, every one found by measuring rather than reading**
 

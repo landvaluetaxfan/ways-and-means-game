@@ -5195,6 +5195,35 @@ console.log("\nTHE COMMONWEALTH DOLLAR (design/39 option C):");
   ok("and content can ask whether the Treasury has missed a payment",
      Engine.matches(e, { economyAbove: { arrears: 0 } }) &&
      !Engine.matches(Engine.newGame(CONTENT), { economyAbove: { arrears: 0 } }));
+  /* AND WHAT COMES IN PAYS THEM FIRST (25 Sep). Until then the arrears only
+     rose, so a government past the authority spent for nothing. */
+  ok("the room left under the tender is a reading, and none is left at the authority",
+     e.macro.headroom === 0 && Engine.matches(e, { economyBelow: { headroom: 1 } }), e.macro.headroom);
+  Engine.apply(e, CONTENT, [{ move: { solvency: 5000 } }]);
+  ok("money coming in pays the arrears before any reaches the reserve",
+     e.macro.arrears === 2000 && e.scalars.solvency === 0,
+     e.macro.arrears + " in arrears, reserve " + e.scalars.solvency);
+  Engine.apply(e, CONTENT, [{ move: { "loan.underwriters": 6000 } }]);
+  ok("and so does a loan, the rest going to the reserve",
+     e.macro.arrears === 0 && e.scalars.solvency === 4000 && !e.flags._arrears,
+     e.macro.arrears + " in arrears, reserve " + e.scalars.solvency);
+  /* WHAT ARREARS COST is content's: a coupling may read an economy reading */
+  const cp = (CONTENT.setup.couplings || []).filter(c => c.meter === "economy.arrears");
+  ok("content prices arrears with a coupling on the economy reading", cp.length > 0,
+     cp.map(c => c.above).join(", "));
+  const paid = Engine.newGame(CONTENT), owing = Engine.newGame(CONTENT);
+  paid.scalars.solvency = owing.scalars.solvency = 0;
+  owing.macro.arrears = Math.max(...cp.map(c => c.above)) + 1000;
+  Engine.advance(paid, CONTENT); Engine.advance(owing, CONTENT);
+  const top = cp.reduce((a, b) => b.above > a.above ? b : a);
+  ok("and a Treasury in arrears pays for it every sitting",
+     Object.keys(top.drag).every(k => k === "party_loyalty" ||
+       owing.scalars[k] <= paid.scalars[k] + top.drag[k] + 0.5),
+     Object.keys(top.drag).map(k => k + " " + paid.scalars[k] + " -> " + owing.scalars[k]).join(", "));
+  const docket = Engine.today(owing, CONTENT, false).items.filter(i => i.kind === "alert");
+  ok("and the docket says so, with what to do about it",
+     docket.some(i => i.id === "arrears" && i.when === "now" && i.how),
+     docket.map(i => i.id + (i.how ? ": " + i.how : "")).join("; "));
 
   /* THE RADIATORS ARE THE CEILING. */
   const cool = Engine.newGame(CONTENT), thin = Engine.newGame(CONTENT);
@@ -5312,6 +5341,33 @@ console.log("\nTHE LADDER IS ON THE DOCKET (design/38 §7):");
   spent.scalars.thermal_margin = 3;
   up.forEach(si => { spent.instruments[si.id].made = true; spent.instruments[si.id].awaitingApproval = false; });
   ok("with every order already made, no alert", !alertOf(spent));
+
+  /* AND THE TIME IT WILL TAKE (25 Sep). Three strategies spent the last
+     period's order-paper time at its first sitting and could not approve
+     the rung they needed before the House rose. While the margin drains
+     toward the line before the rise, the docket says how much time the
+     House's approvals will want. */
+  const ladderOf = st => Engine.today(st, CONTENT, false).items.find(i => i.kind === "ladder");
+  const affUp = up.filter(si => si.procedure === "affirmative");
+  const drains = Engine.newGame(CONTENT);
+  drains.scalars.thermal_margin = line + 5;
+  drains.risesAt = drains.sitting + 10;
+  ok("a margin holding steady above the line says nothing of time",
+     Engine.meterDrift(drains, CONTENT, "thermal_margin") >= 0 && !ladderOf(drains));
+  drains.trends.thermal_margin = -2;
+  const l1 = ladderOf(drains);
+  ok("draining past the line before the rise, the docket asks for time",
+     affUp.length > 0 && !!l1 && l1.need >= 1 && l1.when === "soon" && /^keep /.test(l1.how || ""),
+     l1 && l1.text + " \u00b7 " + l1.how);
+  drains.slots.used = drains.slots.total;
+  const l2 = ladderOf(drains);
+  ok("and with no time left it is today's business, and says so",
+     !!l2 && l2.when === "now" && /no order-paper time/.test(l2.how || ""), l2 && l2.how);
+  drains.trends.thermal_margin = -0.2;
+  ok("a drain that stays above the line by the rise says nothing", !ladderOf(drains));
+  drains.trends.thermal_margin = -2;
+  drains.dissolved = { at: drains.sitting };
+  ok("nor once the House has risen for good", !ladderOf(drains));
 
   if (bad) { console.log("\n" + bad + " LADDER FAILURES"); process.exitCode = 1; }
 })();

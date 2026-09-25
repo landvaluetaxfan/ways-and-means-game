@@ -4143,6 +4143,7 @@ const Engine = (function () {
       coverShortfall(st, C, short);
       return;
     }
+    if (k === "solvency" && d > 0) { credit(st, C, d); return; }
     st.scalars[k] = clamp((st.scalars[k] || 0) + d, 0,
       SCALAR_MAX[k] == null ? 100 : SCALAR_MAX[k]);
     /* A NATIONAL MOVE IS A MOVE IN EVERY BAND. Content written before
@@ -4246,7 +4247,8 @@ const Engine = (function () {
         case "loan": {
           const n = d > 0 ? d : -Math.min(-d, Math.ceil(inHome(st, C, k, debtOf(st, k))));
           owedTable(st)[k] = Math.max(0, debtOf(st, k) + Math.round(inLenders(st, C, k, n)));
-          st.scalars.solvency = Math.max(0, (st.scalars.solvency || 0) + n);
+          if (n > 0) credit(st, C, n);
+          else st.scalars.solvency = Math.max(0, (st.scalars.solvency || 0) + n);
           break;
         }
         case "actor":
@@ -5834,6 +5836,7 @@ const Engine = (function () {
     /* A CURVE, the same sixty-sitting window as the prices. */
     const r = macro(st, C);
     m.debtPct = r.debt; m.balancePct = r.balance;
+    m.headroom = headroomOf(st, C);
     const H = m.history;
     [["inflation", r.inflation], ["rate", r.rate], ["fx", r.fx], ["gap", r.gap],
      ["growth", r.growth], ["balance", r.balance], ["debt", r.debt]].forEach(([k, v]) => {
@@ -5859,6 +5862,8 @@ const Engine = (function () {
        is a zero and not "no reading", so `economyAbove:{arrears:0}` is
        the question "has the Treasury missed a payment?" */
     if (k === "arrears") return m.arrears || 0;
+    /* and how much more the bill tender will take (headroomOf), set at
+       every tick: null before the first, so no alert reads it on day one */
     return m[k] == null ? null : m[k];
   }
 
@@ -6026,7 +6031,12 @@ const Engine = (function () {
                service: L.serviced === false ? 0
                       : Math.round(home * (debtRate(st, C, k) / 100)),
                label: L.label || "", note: L.note || "", short: L.short || L.note || "",
-               repayable: L.repayable !== false, home: !foreign(C, k) };
+               repayable: L.repayable !== false, home: !foreign(C, k),
+               /* a lender the shortfall is tendered to, and the room it has
+                  left in dollars: the authority is a limit the player hits */
+               automatic: !!L.automatic,
+               room: L.automatic ? Math.max(0, Math.floor(inHome(st, C, k,
+                       Math.max(0, lenderCap(st, C, k).cap - o[k])))) : null };
     });
   }
 
@@ -6089,7 +6099,41 @@ const Engine = (function () {
           " of the Commonwealth's payments are unpaid." });
       }
     }
+    if (st.macro) st.macro.headroom = headroomOf(st, C);
     return left;
+  }
+
+  /* MONEY IN PAYS WHAT IS UNPAID FIRST (25 Sep). Arrears are payments the
+     Commonwealth owes today, to suppliers, to the stations and to its own
+     payroll, so a receipt, a loan or a drawing settles them before a
+     dollar reaches the reserve. Until this the arrears only ever rose, and
+     a government past the bill authority spent for nothing: the canon run
+     left CW$16.8bn unpaid for its last seven sittings and nothing noticed.
+     What unpaid bills cost is content's (setup.couplings reads
+     `economy.arrears`); that they are paid first is the engine's. */
+  function credit(st, C, n) {
+    const m = st.macro;
+    if (n > 0 && m && m.arrears > 0) {
+      const pay = Math.min(m.arrears, n);
+      m.arrears -= pay; n -= pay;
+      if (m.arrears <= 0) {
+        m.arrears = 0;
+        delete st.flags._arrears;
+        st.log.unshift({ sitting: st.sitting, text:
+          "The Treasury has paid its arrears, and the Commonwealth's payments are current again." });
+      }
+    }
+    st.scalars.solvency = Math.max(0, (st.scalars.solvency || 0) + n);
+  }
+
+  /* HOW MUCH MORE THE TENDER WILL TAKE: the room left under every
+     `automatic` lender's cap, in dollars. Read as `economyBelow:{headroom:n}`,
+     which is how content warns before the authority is full and not after. */
+  function headroomOf(st, C) {
+    const L = (C && C.setup && C.setup.lenders) || {};
+    return Object.keys(L).filter(k => L[k].automatic).reduce((sum, k) =>
+      sum + Math.max(0, Math.floor(inHome(st, C, k,
+        Math.max(0, lenderCap(st, C, k).cap - debtOf(st, k))))), 0);
   }
 
   function canBorrow(st, C, amount, lender) {
@@ -6120,7 +6164,7 @@ const Engine = (function () {
        buys in dollars today. */
     const got = Math.round(inHome(st, C, id, n));
     owedTable(st)[id] = debtOf(st, id) + n;
-    st.scalars.solvency = (st.scalars.solvency || 0) + got;
+    credit(st, C, got);
     st.slots.used += (L.slots == null ? 1 : L.slots);
     st.actedThisSitting = true;
     /* WHAT A DRAWING DOES BEYOND THE MONEY is the lender's own: Earth's
@@ -6242,6 +6286,8 @@ const Engine = (function () {
     if (solv <= 0) keys.push("reserve_gone");
     else if (net < 0 && solv / Math.max(1, -net) < 0.5) keys.push("reserve_thin");
     else if (solv > 80000) keys.push("reserve_deep");
+    /* and payments the tender would not take, which no lender forgets */
+    if (st.macro && st.macro.arrears > 0) keys.push("arrears");
 
     /* the flow */
     if (net < 0) keys.push("receipts_short");
@@ -6543,15 +6589,7 @@ const Engine = (function () {
        line of the blockade, they are another party's cost. `when` is the
        ordinary condition block, so a line can depend on more than one meter
        (a blockade costs Earth only while Earth is still buying). */
-    const top = {};
-    (C.setup.couplings || [])
-      .filter(cp => (st.scalars[cp.meter] || 0) > cp.above && (!cp.when || matches(st, cp.when)))
-      .forEach(cp => {
-        const g = cp.group || cp.meter;
-        if (!top[g] || (cp.above || 0) > (top[g].above || 0)) top[g] = cp;
-      });
-    Object.keys(top).forEach(g => {
-      const cp = top[g];
+    activeCouplings(st, C).forEach(cp => {
       Object.keys(cp.drag || {}).forEach(k => bumpScalar(st, C, k, cp.drag[k]));
       const key = "coupling_" + (cp.group ? cp.group + "_" : "") + cp.meter + "_" + cp.above;
       if (cp.mark && !st.flags[key]) { st.flags[key] = true; marks.push(cp.mark); }
@@ -6943,9 +6981,36 @@ const Engine = (function () {
 
   const TAB_OF = { decision: "sit", division: "gov", vacancy: "gov",
                    owed: "sit", prayer: "gov", expected: "sit", rises: "sit",
-                   slots: "gov", alert: "gov", bank: "econ", partner: "rel" };
+                   slots: "gov", alert: "gov", ladder: "gov", bank: "econ", partner: "rel" };
   const ORDER  = { sit: 0, gov: 1, cham: 2, party: 3, rel: 4, econ: 5, orb: 6 };
   const SOON = 2;                 /* sittings. Closer than this is business. */
+
+  /* THE COUPLINGS THAT APPLY NOW: the highest matching line in each group.
+     One reading, for the tick that applies them and for `drift` that
+     reports them. A coupling's meter may be an economy reading,
+     `economy.<name>`, so content can price what the account does (arrears,
+     25 Sep) the way it prices the quarrel. */
+  function activeCouplings(st, C) {
+    const top = {};
+    const gauge = k => /^economy\./.test(k) ? (economyReading(st, k.slice(8)) || 0)
+                                            : (st.scalars[k] || 0);
+    ((C && C.setup && C.setup.couplings) || [])
+      .filter(cp => gauge(cp.meter) > cp.above && (!cp.when || matches(st, cp.when)))
+      .forEach(cp => {
+        const g = cp.group || cp.meter;
+        if (!top[g] || (cp.above || 0) > (top[g].above || 0)) top[g] = cp;
+      });
+    return Object.keys(top).map(g => top[g]);
+  }
+
+  /* WHAT A METER DOES BY ITSELF, a sitting: its trend and every coupling
+     now dragging it, which is what the tick applies before any event or
+     order. Not a forecast of what will happen; a reading of the pressure
+     on it, which is as much as the docket can honestly say. */
+  function meterDrift(st, C, k) {
+    return activeCouplings(st, C).reduce((d, cp) => d + ((cp.drag || {})[k] || 0),
+                                         (st.trends || {})[k] || 0);
+  }
 
   function today(st, C, hasDecision) {
     const items = [];
@@ -7028,7 +7093,7 @@ const Engine = (function () {
        no alert: a warning with nothing to do about it is noise. */
     ((C && C.setup && C.setup.alerts) || []).forEach(a => {
       if (!a.when || !matches(st, a.when)) return;
-      const o = { away: null, tab: a.tab || "gov", raises: a.raises || null,
+      const o = { id: a.id || null, away: null, tab: a.tab || "gov", raises: a.raises || null,
                   when: a.urgent && matches(st, a.urgent) ? "now" : "soon" };
       if (a.raises) {
         const up = (C.instruments || []).filter(si => [].concat(si.effects || [])
@@ -7040,7 +7105,47 @@ const Engine = (function () {
         o.how = (waiting ? "approve " : "lay ") + (next.number || next.title);
         o.focus = "order:" + next.id;
       }
+      /* an alert with nothing the engine can find to reach for may say in
+         words what to do (the account's, 25 Sep: draw, or lay an order) */
+      if (!o.how && a.how) o.how = a.how;
       push("alert", a.text, o);
+    });
+
+    /* TIME FOR THE LADDER (25 Sep). Three playtest strategies annexed, spent
+       the last period's order-paper time on bills at its first sitting, and
+       cascaded in the campaign: an order that needs the House's approval
+       needs a slot, cannot be approved at all once the House has risen, and
+       the rungs above it wait on it. The thermal alert named the next order
+       and said nothing about the time it would take. So while a meter an
+       alert `raises` is draining past the alert's line before the House
+       next rises, the docket says how much time the orders that raise it
+       need from the House, against the time left. */
+    ((C && C.setup && C.setup.alerts) || []).forEach(a => {
+      if (!a.raises || st.dissolved || st.risesAt == null) return;
+      const line = ((a.when || {}).scalarBelow || {})[a.raises];
+      const d = meterDrift(st, C, a.raises);
+      if (line == null || d >= 0) return;
+      const now = st.scalars[a.raises] || 0, toRise = Math.max(0, st.risesAt - st.sitting);
+      if (now + d * toRise >= line) return;
+      const up = (C.instruments || []).filter(si => si.procedure === "affirmative" &&
+        [].concat(si.effects || []).some(f => f && f.move && f.move[a.raises] > 0));
+      const waiting = up.filter(si => (st.instruments[si.id] || {}).awaitingApproval);
+      const unlaid = up.find(si => !(st.instruments[si.id] || {}).made);
+      const need = waiting.length + (unlaid ? 1 : 0);
+      if (!need) return;
+      const left = st.slots.total - st.slots.used;
+      const meter = ((C.setup.meters || []).find(m => m.k === a.raises) || {}).label || a.raises;
+      const slot = n => (n === 1 ? "a slot" : n + " slots");
+      push("ladder", meter + (now < line ? " is under " + line : " falls under " + line +
+             " before the House rises") + ", and " + (need === 1
+             ? "the next order that raises it needs the House's approval"
+             : need + " orders that raise it need the House's approval"),
+           { away: toRise, when: left < need ? "now" : "soon", tab: a.tab || "gov", need: need,
+             how: left >= need
+               ? "keep " + slot(need) + " of order-paper time for " + (need === 1 ? "it" : "them")
+               : (left ? "only " + slot(left) + " left" : "no order-paper time is left") +
+                 " before it rises",
+             focus: waiting.length ? "order:" + waiting[0].id : unlaid ? "order:" + unlaid.id : null });
     });
 
     /* Order-paper time does not carry over, so time left unspent in the
@@ -7967,7 +8072,7 @@ const Engine = (function () {
     packBoard, canPackBoard, boardsMoved, boardsTotal,
     borrow, repay, canBorrow, debtOf, debtRate, debtService, debts, lenderOf, inflation, outlook,
     facilities, lenderCap, rateSteps,
-    budget, spending, interestDue, debtHome, macro, taylorRate, fxTarget, money, costing, economyVote,
+    budget, spending, interestDue, debtHome, macro, taylorRate, fxTarget, money, costing, economyVote, meterDrift,
     scarcity, economyReading, nominalOutput, targetOf,
     reshuffle, canReshuffle, resolveMotion, motionDeadline,
     standingIn, bandsOf, bandWeight, syncStanding, assent, presidentDecides, referralRisk, reviewReturns,

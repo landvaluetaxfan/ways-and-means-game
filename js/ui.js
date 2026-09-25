@@ -1375,7 +1375,10 @@ const UI = (function () {
           (d.note ? ". " : "") + "The rate is " + pc(d.rate) + " per cent" +
           (d.service ? ", " + cw(d.service) + " a year in interest." : ", added to the sum owed at the term.") +
           (d.currency ? " It is owed in " + d.currency + ", " + cw(d.owedHome) + " at today's rate." : ""))}>` +
-        `${esc(cap1(d.label || d.name))}<em>${esc(d.short || ("at " + pc(d.rate) + " per cent"))}</em></div>` +
+        `${esc(cap1(d.label || d.name))}<em>${esc(d.automatic
+          ? (d.room > 0 ? cw(d.room) + " more before the authority is full"
+                        : "at the authority: the tender takes no more")
+          : d.short || ("at " + pc(d.rate) + " per cent"))}</em></div>` +
         `<div class="pval up">${owedSay(d)}</div>` +
         repayBtn(d) + `</div>`;
       /* THE STANDING LENDERS: one row each, owed or not, because a facility
@@ -1409,6 +1412,7 @@ const UI = (function () {
            at the rate the budget is running, not a claim that it will. */
         row("Held", cw(solv), b.balance < 0 && solv > 0
               ? "lasts " + Math.max(1, Math.round(solv / -b.balance * 12)) + " months at this rate"
+              : arrears > 0 ? "empty, and the tender is full: payments are going unpaid"
               : b.balance < 0 ? "empty: the Treasury is tendering bills"
               : "in the Treasury's account at the Bank", solv <= 0 ? "up" : "", "solvency") +
         row("Receipts", "+" + cw(b.receipts), "a year, from four bases", "down") +

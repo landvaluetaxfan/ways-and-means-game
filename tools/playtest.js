@@ -99,8 +99,15 @@ function govern(st, strategy) {
       acts.push((s.awaitingApproval ? "approved " : "laid ") + ((CONTENT.instrumentById[id] || {}).title || id));
   });
   /* and keeps time in hand while an order waits on the House, or one is
-     about to be wanted, as the canon script does */
-  const holding = alerts.length ? 1 : 0;
+     about to be wanted, as the canon script does; and as much as the docket
+     says the ladder will want from the House before it rises (25 Sep),
+     which is the line that tells a player not to spend the period's time
+     on bills at its first sitting */
+  const ladder = strategy.climbs
+    ? Engine.today(st, CONTENT, false).items.filter(i => i.kind === "ladder")
+        .reduce((n, i) => Math.max(n, i.need || 0), 0)
+    : 0;
+  const holding = Math.max(alerts.length ? 1 : 0, ladder);
   /* supply first, for a government that wants to survive the rise */
   const order = (CONTENT.bills || []).slice().sort((a, b) => {
     const s = (x) => (x.test === "supply" ? 0 : 1);

@@ -180,10 +180,12 @@ const SCHEMA = {
                   "credibility","expected","inflation","shock","fx","reserves","rate"],
     /* what a condition may read: the productive economy's three, the Bank's
        readings, and `debt` and `balance` as per cent of output, `gap` as per
-       cent of potential, `overshoot` as inflation less the remit's target */
+       cent of potential, `overshoot` as inflation less the remit's target,
+       `arrears` as what went unpaid and `headroom` as what the bill tender
+       will still take, both in dollars */
     economyReadings: ["participation","trade","private",
                       "inflation","expected","overshoot","rate","fx","gap","growth",
-                      "credibility","reserves","debt","balance","arrears"],
+                      "credibility","reserves","debt","balance","arrears","headroom"],
     bands: ["ring","far","middle","low","external"],
     stationTypes: ["single","bundled","external"],
     stationForms: ["cylinder","torus","drum","sphere","cluster","yard","surface"],
