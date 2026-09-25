@@ -387,7 +387,10 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
                 tightest number in the game (CLAUDE.md), and the seats are
                 the government the next campaign opens on */
              "; thermal margin " + st.scalars.thermal_margin +
-             ", PSD " + Engine.partyTotal(st, "cu") + " seats" : "no end");
+             ", PSD " + Engine.partyTotal(st, "cu") + " seats" +
+             (st.dissolved && st.dissolved.after ? ", the government's side " + st.dissolved.sideNow +
+               " of 280 at standing " + st.scalars.public_standing +
+               " (" + ((Engine.epilogue(st, CONTENT) || {}).id || "no epilogue") + ")" : "") : "no end");
     /* AND IT LANDS WITH ROOM, which is the assertion that was missing. The
        ending used to arrive on the last sitting it possibly could, so it
        read as passing while resting on nothing: one more prologue beat and

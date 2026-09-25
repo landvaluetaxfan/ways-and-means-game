@@ -26,17 +26,30 @@
    Bible 8.6 holds further professional bodies as reserve material —
    the Underwriters, the Anchor Party, the Deck Cooperatives, the
    Chartists — none currently seated. */
+/* `vote` IS THE LAST ELECTION'S LIST VOTE, per cent of all votes cast
+   (design/38 §1). The count starts from it: at a neutral mood (standing
+   50) the list tier returns the opening list seats under D'Hondt and the
+   4% threshold, and districts are derived from it and the roll. The shares
+   were solved to reproduce the list seats, with one exception the author
+   should decide: no vote at or above a 4% threshold earns three seats of a
+   hundred under D'Hondt, so the Single Tax Party is held at 4.1, "within a
+   point of the threshold", and a neutral count returns it four (the NPP's
+   twenty-eighth). The alternatives are four seats in the opening House, a
+   lower threshold at the last election, or an exemption. What the parties
+   leave (1.9) went to lists that won nothing.
+   `swing` (default 1) is how much of the national tide reaches a party:
+   independents hold their seats on a personal vote and take none of it. */
 const PARTIES = [
   { id:"cu",  name:"Party of Socialists and Democrats", short:"PSD", colour:"var(--p-cu)",
     leader:"flash", logo:"cu.png", wordmark:"cu_mark.png",
-    seats:{district:48,list:25,functional:9},
+    seats:{district:48,list:25,functional:9}, vote:23.0,
     kind:"national",
     axes:{economic:-0.75, authority:-0.4, personhood:-0.55, sovereignty:0.5, trade:-0.35},
     note:"Old left. Embodied maintenance labour, and the strike weapon." },
 
   { id:"cl",  name:"Liberal Party",                short:"LIB", colour:"var(--p-cl)",
     leader:"watkins", logo:"cl.png", wordmark:"cl_mark.png",
-    seats:{district:22,list:19,functional:6},
+    seats:{district:22,list:19,functional:6}, vote:17.6,
     kind:"national",
     axes:{economic:0.7, authority:-0.1, personhood:0.6, sovereignty:0.75, trade:0.9},
     note:"Cosmopolitan market party. Elevator and shipping money." },
@@ -44,35 +57,35 @@ const PARTIES = [
   { id:"psa", name:"New Progressive Party",        short:"NPP", colour:"var(--p-psa)",
     leader:"trottier", logo:"psa.png", wordmark:"psa_mark.png",
     aliases:["Substrate Left"],
-    seats:{district:6,list:28,functional:2},
+    seats:{district:6,list:28,functional:2}, vote:25.7,
     kind:"national", loyalty:41,
     axes:{economic:-0.8, authority:-0.3, personhood:0.85, sovereignty:0.6, trade:0.55},
     note:"List-tier strength and almost no districts. Left on economics and expansionist on personhood, which sets it against the old left on the question it cares most about." },
 
   { id:"sc",  name:"Home Rule",                    short:"HR",  colour:"var(--p-sc)",
     leader:"laughon", logo:"sc.png", wordmark:"sc_mark.png",
-    seats:{district:26,list:8,functional:0},
+    seats:{district:26,list:8,functional:0}, vote:7.7,
     kind:"national", loyalty:35,
     axes:{economic:-0.1, authority:-0.5, personhood:0, sovereignty:-0.9, trade:-0.75},
     note:"Confederalist. Cannot whip its own members." },
 
   { id:"hul", name:"Association of Engineers and Systems", short:"AES", colour:"var(--p-hul)",
     leader:"wilde_hayward", logo:"hul.png", wordmark:"hul_mark.png",
-    seats:{district:9,list:6,functional:7},
+    seats:{district:9,list:6,functional:7}, vote:5.9,
     kind:"national", loyalty:15,
     axes:{economic:0, authority:0.95, personhood:-0.6, sovereignty:0.1, trade:-0.6},
     note:"Habitat as lifeboat. Engineering authority supreme." },
 
   { id:"rv",  name:"Congregational Democratic Alliance", short:"CDA", colour:"var(--p-rv)",
     leader:"park", logo:"rv.png", wordmark:"rv_mark.png",
-    seats:{district:12,list:5,functional:1},
+    seats:{district:12,list:5,functional:1}, vote:5.0,
     kind:"national",
     axes:{economic:-0.45, authority:-0.2, personhood:-0.9, sovereignty:0, trade:-0.1},
     note:"Continuity of soul. A copy is not the person. Economically left, culturally immovable." },
 
   { id:"fh",  name:"Freehold Party",               short:"FH",  colour:"var(--p-fh)",
     leader:"bluespan", logo:"fh.png", wordmark:"fh_mark.png",
-    seats:{district:8,list:3,functional:6},
+    seats:{district:8,list:3,functional:6}, vote:3.2,
     kind:"national",
     axes:{economic:0.9, authority:-0.25, personhood:-0.4, sovereignty:-0.6, trade:0.3},
     note:"Volume owners. Property absolutists." },
@@ -80,21 +93,21 @@ const PARTIES = [
   { id:"gb",  name:"Alliance of Business and Government", short:"ABG", colour:"var(--p-gb)",
     leader:"hatt", logo:"gb.png", wordmark:"gb_mark.png",
     aliases:["Guild Bench"],
-    seats:{district:0,list:0,functional:9},
+    seats:{district:0,list:0,functional:9}, vote:2.2,
     kind:"professional", loyalty:30,
     axes:{economic:0.15, authority:0.85, personhood:-0.5, sovereignty:0.4, trade:-0.4},
     note:"Exists only in the functional tier. It does not campaign and cannot be voted out." },
 
   { id:"des", name:"One-G",                        short:"ONE", colour:"var(--p-des)",
     leader:"edelstein_powell", logo:"des.png", wordmark:"des_mark.png",
-    seats:{district:3,list:1,functional:0},
+    seats:{district:3,list:1,functional:0}, vote:1.4,
     kind:"national", loyalty:18,
     axes:{economic:-0.2, authority:-0.15, personhood:-0.7, sovereignty:-0.3, trade:-0.2},
     note:"Gravity as birthright. Draws the physiologically excluded." },
 
   { id:"geo", name:"Single Tax Party",             short:"STP", colour:"var(--p-geo)",
     leader:"wheeler", logo:"geo.png", wordmark:"geo_mark.png",
-    seats:{district:0,list:3,functional:0},
+    seats:{district:0,list:3,functional:0}, vote:4.1,
     kind:"national", loyalty:66,
     axes:{economic:0.05, authority:0.2, personhood:0.1, sovereignty:0.7, trade:0.6},
     /* No carve-out: a national ideological party with no district roots and
@@ -105,7 +118,7 @@ const PARTIES = [
 
   { id:"upl", name:"Uplift Alliance",              short:"UPA", colour:"var(--p-upl)",
     leader:"lindegaard", logo:"upl.png", wordmark:"upl_mark.png",
-    seats:{district:0,list:2,functional:0},
+    seats:{district:0,list:2,functional:0}, vote:2.3,
     kind:"national",
     /* Bible 4.8: the list threshold exempts a party representing a single
        legal-person category, as minority protection. The Uplift Alliance is
@@ -119,7 +132,7 @@ const PARTIES = [
 
   { id:"ind", name:"Independents",                 short:"IND", colour:"var(--p-ind)",
     leader:null,
-    seats:{district:6,list:0,functional:0},
+    seats:{district:6,list:0,functional:0}, vote:0, swing:0,
     kind:"national",
     axes:{},
     note:"District independents. No caucus position, no whip, no leader. Six members " +

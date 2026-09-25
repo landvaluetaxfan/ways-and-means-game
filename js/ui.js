@@ -461,7 +461,10 @@ const UI = (function () {
        sittings". This one added a sitting, so the top of the screen said
        RISES IN 16 over a status bar saying RISE IN 15 (design/37). */
     const left = st.risesAt != null ? Math.max(0, st.risesAt - st.sitting) : null;
-    const rise = left == null ? "" : left === 0 ? " / RISES TODAY" : " / RISES IN " + left;
+    /* After the writs there is no House to rise: the clock is the campaign's. */
+    const campaignDay = st.dissolved ? st.sitting - st.dissolved.at + 1 : null;
+    const rise = campaignDay != null ? " / THE CAMPAIGN, DAY " + campaignDay
+      : left == null ? "" : left === 0 ? " / RISES TODAY" : " / RISES IN " + left;
     /* The period beside the session (bible §1.8), only where a session has
        more than one: "SESS 4.2" is the second sitting period of Session 4. */
     const per = (C.setup && C.setup.periodsPerSession) || 1;
@@ -469,8 +472,13 @@ const UI = (function () {
     $("#tb-sys").textContent = `SESS ${sess} / SITTING ${String(st.sitting).padStart(3, "0")} / ${st.date}${rise}`;
   }
   function drawStatus() {
-    const conf = Engine.confidence(st), maj = Engine.majority(st);
-    $("#sb-conf").textContent = `CONFIDENCE ${conf}/${Engine.chamberTotal(st)}`;
+    /* DURING THE CAMPAIGN THE NUMBER IS THE POLL (design/38 §1): there is
+       no House to command, and the count the engine will take at the end
+       is the one worth watching. */
+    const polling = st.dissolved && !Engine.counted(st);
+    const f = polling ? Engine.forecast(st, C) : null;
+    const conf = f ? f.side : Engine.confidence(st), maj = f ? f.majority : Engine.majority(st);
+    $("#sb-conf").textContent = `${f ? "POLL" : "CONFIDENCE"} ${conf}/${f ? f.total : Engine.chamberTotal(st)}`;
     $("#sb-margin").textContent = `MARGIN ${conf - maj >= 0 ? "+" : ""}${conf - maj}`;
     $("#sb-thermal").textContent = `THERMAL ${st.scalars.thermal_margin}%`;
     $("#sb-chapter").textContent = `CHAPTER ${st.chapter}`;
@@ -483,7 +491,11 @@ const UI = (function () {
        and it turns red inside three. */
     const rise = $("#sb-rise");
     if (rise) {
-      if (st.risesAt == null) { rise.textContent = ""; }
+      if (st.dissolved) {
+        rise.textContent = "CAMPAIGN DAY " + (st.sitting - st.dissolved.at + 1);
+        rise.style.color = "";
+      }
+      else if (st.risesAt == null) { rise.textContent = ""; }
       else {
         const left = st.risesAt - st.sitting;
         rise.textContent = left <= 0 ? "RISE TODAY" : `RISE IN ${left}`;
@@ -5163,7 +5175,30 @@ const UI = (function () {
       }));
   }
 
+  /* THE POLLS, WHERE THE DOCKET WAS (design/38 §1). Once the writs are
+     out nothing is before the House, and what a campaign needs to know is
+     where it stands and where it is close: the government's side against
+     the majority, each band's seats and its close ones, and how far the
+     numbers have moved since the writs. The same count the engine will
+     take at the end, on today's standing. */
+  function pollsHTML() {
+    const f = Engine.forecast(st, C);
+    const lead = f.side >= f.majority ? "a majority of " + (2 * f.side - f.total)
+                                      : (f.majority - f.side) + " short of a majority";
+    const first = (st.polls || [])[0];
+    const moved = first ? f.side - first.side : 0;
+    const rows = [`<div class="dk poll"><b>The government's side on ${f.side} of ${f.total}</b>` +
+      `<i>${esc(lead)}${first ? " \u00b7 " + (moved >= 0 ? "+" : "") + moved + " since the writs" : ""}` +
+      ` \u00b7 your party ${f.mine}, was ${st.dissolved.was}</i></div>`];
+    Object.keys(f.bands).sort((a, b) => f.bands[b].close - f.bands[a].close || f.bands[b].seats - f.bands[a].seats)
+      .forEach(b => { const x = f.bands[b];
+        rows.push(`<div class="dk poll"><b>${esc(bandName(b))}: ${x.gov} of ${x.seats}</b>` +
+          `<i>${x.close ? x.close + " within three points" : "none close"} \u00b7 standing ${x.standing}</i></div>`); });
+    return rows.join("");
+  }
+
   function docketHTML() {
+    if (st.dissolved && !Engine.counted(st)) return pollsHTML();
     const owed = Engine.outstanding(st);
     const bill = (C.bills || []).find(b => st.bills[b.id] && !st.bills[b.id].dead &&
       st.bills[b.id].stage !== "assented");
@@ -5577,6 +5612,9 @@ const UI = (function () {
       const r = end.result, was = r.was || 0, held = r.held || 0;
       title = "The Commonwealth has voted";
       secs.push({ kind: "lede", body: governmentReturn(r).line + " " + ownSeatsLine(was, held) });
+      /* WHAT IT MEANS, in content's words (design/38 §2). */
+      const epi = Engine.epilogue(st, C);
+      if (epi) secs.push({ kind: "body", head: epi.title, body: epi.body });
       secs.push({ kind: "document", head: "The House it returns",
                   body: seatLine(r.after), source: "Return of the writs" });
     } else if (end.kind === "settlement" && end.settlement) {
@@ -5642,6 +5680,8 @@ const UI = (function () {
         `<div class="rulehead">The answer</div><div class="note">` +
           esc(governmentReturn(r).line) + " " + esc(ownSeatsLine(was, held)) +
         `</div>` +
+        (Engine.epilogue(st, C) ? `<div class="rulehead">${esc(Engine.epilogue(st, C).title)}</div>` +
+          `<div class="note">${esc(Engine.epilogue(st, C).body)}</div>` : "") +
         `<div class="rulehead">The House it returns</div><div class="note">${seatsOf(r.after)}</div>` +
         (st.settledAs ? `<div class="rulehead">What the session settled</div>` +
           `<div class="note">${esc(settlementName(st.settledAs))}.</div>` : "") +
@@ -5665,6 +5705,10 @@ const UI = (function () {
     const dk = $("#sit-docket");
     if (dk) {
       dk.innerHTML = docketHTML();
+      const polling = st.dissolved && !Engine.counted(st);
+      const h = $("#dk-head"), sub = $("#dk-sub");
+      if (h) h.textContent = polling ? "The polls" : "Before the House";
+      if (sub) sub.textContent = polling ? "the count, on today's standing" : "the docket";
       dk.querySelectorAll("[data-goto]").forEach(b =>
         b.addEventListener("click", () => openTarget(b)));
     }

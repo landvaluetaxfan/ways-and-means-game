@@ -1483,7 +1483,7 @@ budget."`,
 clerks cover the benches, and the building does the only thing it knows how
 to do: it hands the question to the country.
 
-The campaign is one session long by law, and the Commonwealth is now in it.
+The campaign is a fortnight by law, and the Commonwealth is now in it.
 Every member goes home to their station and their roll, and the government
 goes home to the record of what it did, which is what the electorate is
 about to be asked about.`,
@@ -1502,15 +1502,32 @@ say the country is deciding between the record and the promise, which is
 every election.
 
 Ceyhan's column is short, and it ends where it always ends: that the
-campaign is one session long and a government that has used all of it has
+campaign is a fortnight and a government that has used its session has
 already made its case.`,
+  /* THE CAMPAIGN DECIDES THE COUNT NOW (design/38 §1), so every beat has an
+     answer that can lose ground. Whether the record carries a government
+     is whether the country believes it, which is legitimacy; the two
+     "record" choices are one choice seen in two states, and each says
+     which it is. */
   choices:[
     { label:"Campaign on the record.",
-      effects:[{ move:{ "public_standing":4 } }, { move:{ "loyalty.cu_maintenance":4 } }],
-      result:"The record is what it is. You run on it because it is all a one-session government has." },
+      when:{ scalarAbove:{ legitimacy:54 } },
+      note:"The country believes the record. Running on it puts the government's best argument first.",
+      effects:[{ move:{ "public_standing":7 } }, { move:{ "loyalty.cu_maintenance":3 } }],
+      result:"The record is what it is, and the country has decided it is worth something." },
+    { label:"Campaign on the record.",
+      when:{ scalarBelow:{ legitimacy:55 } },
+      note:"The country does not believe the record, and the other side will read it back at every stop.",
+      effects:[{ move:{ "public_standing":-3 } }, { move:{ "loyalty.cu_maintenance":3 } }],
+      result:"The record is read back to the government at every stop, in the other side's voice." },
     { label:"Campaign on the promise of the next session.",
-      effects:[{ move:{ "public_standing":3 } }, { move:{ "loyalty.psa":5 } }],
-      result:"The promise is newer than the record, which is its only advantage and it uses all of it." }
+      note:"Safer and smaller. A promise is believed a little, everywhere.",
+      effects:[{ move:{ "public_standing":3 } }, { move:{ "loyalty.psa":4 } }],
+      result:"The promise is newer than the record, which is its only advantage and it uses all of it." },
+    { label:"Campaign against the other side.",
+      note:"It moves votes now, and it spends the belief the debate will need.",
+      effects:[{ move:{ "public_standing":6 } }, { move:{ "legitimacy":-5 } }],
+      result:"The campaign becomes an argument about the opposition, which is an argument the government can win this week." }
   ]},
 
 { id:"ch3_open_question", chapter:3, prologue:2, once:true,
@@ -1526,13 +1543,25 @@ the parties would rather it were about.
 
 Every candidate is asked the same thing at every door, and every answer is a
 position now, because a campaign is where a preference becomes a promise.`,
+  /* A government ahead can divide the country on the question and keep
+     the larger half; one behind hands the other side its reason. */
   choices:[
     { label:"Make the election about the question.",
       act:"Say it",
-      effects:[{ move:{ "public_standing":4 } }, { move:{ "loyalty.psa":5 } },
+      when:{ scalarAbove:{ public_standing:49 } },
+      note:"The government is ahead. Dividing the country on the question hardens the larger half.",
+      effects:[{ move:{ "public_standing":7 } }, { move:{ "loyalty.psa":5 } },
                { move:{ "loyalty.cu_maintenance":-4 } },
                { wire:"PM PUTS THE OPEN QUESTION AT THE CENTRE OF THE CAMPAIGN" }],
-      result:"The country is asked to answer what the chamber would not, which is either courage or a gamble and will be judged as one of them." },
+      result:"The country is asked to answer what the chamber would not, and the larger part of it answers with the government." },
+    { label:"Make the election about the question.",
+      act:"Say it",
+      when:{ scalarBelow:{ public_standing:50 } },
+      note:"The government is behind. Dividing the country on the question gives the larger half a reason to vote against it.",
+      effects:[{ move:{ "public_standing":-4 } }, { move:{ "loyalty.psa":5 } },
+               { move:{ "loyalty.cu_maintenance":-4 } },
+               { wire:"PM PUTS THE OPEN QUESTION AT THE CENTRE OF THE CAMPAIGN" }],
+      result:"The country is asked to answer what the chamber would not, and more of it answers against the government than for it." },
     { label:"Run on the record. Let the question wait.",
       effects:[{ move:{ "public_standing":2 } }, { move:{ "loyalty.cu_maintenance":4 } },
                { move:{ "loyalty.psa":-5 } },
@@ -1552,7 +1581,8 @@ sentence that was left out.
 he writes. "Somebody will notice, and it will not be you."`,
   choices:[
     { label:"Print the answer the government would give.",
-      effects:[{ move:{ "public_standing":3 } }, { move:{ "loyalty.cu_maintenance":-3 } },
+      effects:[{ move:{ "public_standing":4 } }, { move:{ "legitimacy":3 } },
+               { move:{ "loyalty.cu_maintenance":-3 } },
                { wire:"GOVERNMENT PRINTS ITS ANSWER TO THE OPEN QUESTION" }],
       result:"The paper has an answer on it, which is the hardest thing to take back and the easiest thing for the other side to quote." },
     { label:"Print the programme and leave the question open.",
@@ -1614,36 +1644,71 @@ has made fair.
 
 The country watches this hour together. It is the only hour of the campaign
 anyone watches together.`,
+  /* The hour the country watches together, and the record is on trial in
+     it: defended well where it is believed, badly where it is not. */
   choices:[
     { label:"Defend the record.",
-      effects:[{ move:{ "public_standing":3 } }, { move:{ "loyalty.cu_maintenance":3 } },
+      when:{ scalarAbove:{ legitimacy:54 } },
+      note:"The country believes the record, and an hour defending it is an hour well spent.",
+      effects:[{ move:{ "public_standing":6 } }, { move:{ "loyalty.cu_maintenance":3 } },
                { wire:"PM DEFENDS THE RECORD IN THE LEADERS' DEBATE" }],
-      result:"The record is what the government has. It is defended well and it is shorter than the argument against it." },
+      result:"The record is what the government has, and it is defended by the person who made it, in front of everybody." },
+    { label:"Defend the record.",
+      when:{ scalarBelow:{ legitimacy:55 } },
+      note:"The country does not believe the record, and an hour is a long time to defend what it does not believe.",
+      effects:[{ move:{ "public_standing":-4 } }, { move:{ "loyalty.cu_maintenance":3 } },
+               { wire:"PM DEFENDS THE RECORD IN THE LEADERS' DEBATE" }],
+      result:"The record is defended for an hour, and the country watches the government defend what it does not believe." },
     { label:"Attack the other side's answer.",
-      effects:[{ move:{ "public_standing":2 } }, { move:{ "legitimacy":-3 } },
+      note:"It lands, and it spends belief.",
+      effects:[{ move:{ "public_standing":3 } }, { move:{ "legitimacy":-3 } },
                { move:{ "loyalty.psa":4 } },
                { wire:"PM ATTACKS THE OPPOSITION'S ANSWER IN THE DEBATE" }],
-      result:"It lands. It also tells the country what the government is against and not what it is for." }
+      result:"It lands. It also tells the country what the government is against and not what it is for." },
+    { label:"Say what went wrong, and what comes next.",
+      note:"The country hears it. The benches hear it too, and some of them were the thing that went wrong.",
+      effects:[{ move:{ "public_standing":4 } }, { move:{ "legitimacy":4 } },
+               { move:{ "party_loyalty":-4 } },
+               { wire:"PM CONCEDES MISTAKES IN THE LEADERS' DEBATE" }],
+      result:"An admission is the one thing a debate cannot rehearse against, and the other side has nothing prepared for it." }
   ]},
 
+/* THE LAST WEEK IS WHERE, NOT WHETHER (design/38 §1). A band's standing
+   moves that band's seats and no other, and the polls on the Sitting screen
+   say where the close seats are: the ring has most of the Commonwealth's
+   districts and most of its marginals, the low band is the government's own
+   ground. It played only where the question was open, and said so; it plays
+   for every campaign now. */
 { id:"ch3_the_ground", chapter:3, prologue:8, once:true,
-  when:{ resolved:false },
   title:"The last week",
   speaker:null,
-  body:`The last week of a one-session campaign is the only part of it anyone
-remembers. The parties spend what they have left, and the government spends the
-record it has, and both of those run out on the same day.
+  body:`The last week of a campaign is the only part of it anyone remembers.
+The parties spend what they have left, and the government spends the record it
+has, and both of those run out on the same day.
 
-The count is a week away and the question is still open.`,
+The count is a week away, and the polls say where it will be decided.`,
   choices:[
-    { label:"Put everything into the marginals.",
-      effects:[{ move:{ "public_standing":4 } }, { move:{ "solvency":-4000 } },
-               { wire:"GOVERNMENT SPENDS THE LAST WEEK IN THE MARGINALS" }],
+    { label:"Put everything into the ring.",
+      note:"Most of the Commonwealth's seats are on the ring, and most of the close ones. It costs the reserve.",
+      effects:[{ move:{ "standing.ring":9 } }, { move:{ "solvency":-4000 } },
+               { wire:"GOVERNMENT SPENDS THE LAST WEEK ON THE RING" }],
       result:"The money goes where the seats are. Whether the seats were there to be had is what the count is for." },
-    { label:"Hold the ground the government has.",
-      effects:[{ move:{ "loyalty.cu_maintenance":3 } }, { move:{ "party_loyalty":2 } },
-               { wire:"GOVERNMENT HOLDS ITS GROUND IN THE LAST WEEK" }],
-      result:"A campaign that defends is a campaign that thinks it is ahead, and the other side reads it that way." }
+    { label:"Hold the low band.",
+      note:"The government's own ground. Its seats are safe until they are not, and then they are the whole majority.",
+      effects:[{ move:{ "standing.low":9 } }, { move:{ "loyalty.cu_maintenance":3 } },
+               { move:{ "solvency":-2000 } },
+               { wire:"GOVERNMENT HOLDS ITS GROUND IN THE LOW BAND" }],
+      result:"A campaign that defends is a campaign that thinks it is ahead, and the other side reads it that way." },
+    { label:"Spread it across the Commonwealth.",
+      note:"Every band a little, for the same money.",
+      effects:[{ move:{ "public_standing":3 } }, { move:{ "solvency":-4000 } },
+               { wire:"GOVERNMENT SPREADS ITS LAST WEEK ACROSS THE COMMONWEALTH" }],
+      result:"The campaign is everywhere for a week, which is how a campaign is nowhere for a week." },
+    { label:"Keep the money.",
+      note:"The reserve is what the next government governs with.",
+      effects:[{ move:{ "party_loyalty":2 } },
+               { wire:"GOVERNMENT KEEPS ITS MONEY IN THE LAST WEEK" }],
+      result:"The reserve is where it was, and the other side's last week is louder." }
   ]},
 
 { id:"ch3_the_count", chapter:3, prologue:9, once:true,
@@ -3190,6 +3255,45 @@ The Minister for Home Affairs and Contingencies can lay it as drawn, or reorder 
       effects:[{ move:{ "loyalty.hul":4 } }, { move:{ "public_standing":-3 } },
                { move:{ "loyalty.psa":-4 } }],
       result:"The schedule is laid as drawn, and the House reads the order in which the Commonwealth sheds its people." }
+  ]},
+
+/* THE OPPOSITION'S DOSSIER (design/38 §1). The campaign's seventh beat,
+   which was empty: the other side publishes its case against the record,
+   and how well an answer lands depends on whether the country believes
+   the record it answers for. */
+{ id:"ch3_the_dossier", chapter:3, prologue:7, once:true,
+  title:"The dossier",
+  speaker:"watkins",
+  body:`The opposition publishes its case against the government in a single
+document, and the Spindle prints the whole of it. It is forty pages, and every
+page is a sitting of the session with the government's answer on one side and
+the other side's on the other.
+
+"We did not write it," Watkins says on the wire. "The government did. We only
+put it in order."`,
+  choices:[
+    { label:"Answer it line by line.",
+      when:{ scalarAbove:{ legitimacy:54 } },
+      note:"The country believes the record, so an answer to every page is forty chances to be right.",
+      effects:[{ move:{ "public_standing":5 } }, { move:{ "legitimacy":2 } },
+               { wire:"GOVERNMENT ANSWERS THE OPPOSITION DOSSIER LINE BY LINE" }],
+      result:"Every page is answered by the evening, and most of the answers are better than the pages." },
+    { label:"Answer it line by line.",
+      when:{ scalarBelow:{ legitimacy:55 } },
+      note:"The country does not believe the record, so an answer to every page is forty chances to repeat the charge.",
+      effects:[{ move:{ "public_standing":-5 } },
+               { wire:"GOVERNMENT ANSWERS THE OPPOSITION DOSSIER LINE BY LINE" }],
+      result:"Every page is answered, and every answer puts the page back on the front of the Spindle." },
+    { label:"Say nothing and keep campaigning.",
+      note:"It costs a little and it ends the story sooner.",
+      effects:[{ move:{ "public_standing":-2 } },
+               { wire:"GOVERNMENT WILL NOT ANSWER THE OPPOSITION DOSSIER" }],
+      result:"The dossier runs for a day and then the campaign runs over it." },
+    { label:"Publish one of our own.",
+      note:"It moves votes, and it tells the country the campaign is now about who was worse.",
+      effects:[{ move:{ "public_standing":4 } }, { move:{ "legitimacy":-5 } },
+               { wire:"GOVERNMENT ANSWERS WITH A DOSSIER ON THE OPPOSITION" }],
+      result:"Two dossiers, one day apart, and the Spindle prints both under one headline." }
   ]},
 
 /* A PARTNER WALKS OUT (design/38 §3). Queued by the engine when a

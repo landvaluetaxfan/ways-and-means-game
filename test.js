@@ -654,8 +654,90 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     ok("the carve-out saves a sub-threshold party",
        a.parties.upl.seats.list > 0 && r1.barred.indexOf("upl") < 0,
        "UPL " + a.parties.upl.seats.list + ", barred: " + (r1.barred.join(",") || "none"));
+    /* The rule, not a party: every list under the threshold that won no
+       district and has no carve-out is barred. This named the Single Tax
+       Party, which the old count barred at every standing because it
+       diluted a list-only party's vote with the district tier (design/38). */
+    const cut = a.law.threshold_pct / 100, natV = r1.national;
+    const underLine = Object.keys(natV).filter(id => natV[id] > 0 && natV[id] < cut &&
+      !Engine.partyDistrict(a, id) && !(CONTENT.partyById[id] || {}).carve_out);
     ok("a party with no carve-out and no district seat is barred",
-       r1.barred.indexOf("geo") >= 0, r1.barred.join(",") || "none");
+       underLine.length > 0 && underLine.every(id => r1.barred.indexOf(id) >= 0),
+       "under the line: " + underLine.join(",") + "; barred: " + (r1.barred.join(",") || "none"));
+  }
+
+  /* THE COUNT LISTENS (design/38 §1). Across the whole standing meter the
+     old count moved the PSD from 78 seats to 93: a district's holder got a
+     fixed 0.68 share, so no swing took a seat. */
+  {
+    const at = s => {
+      const t = Engine.newGame(CONTENT);
+      t.scalars.public_standing = s;
+      Object.keys(t.standing || {}).forEach(b => t.standing[b] = s);
+      Engine.generalElection(t, CONTENT);
+      return t;
+    };
+    const base = Engine.newGame(CONTENT), mid = at(50);
+    const drift = CONTENT.parties.map(p => Math.abs(Engine.partyTotal(mid, p.id) - Engine.partyTotal(base, p.id)));
+    ok("at the mood it was elected in, the count returns the House it came from",
+       Math.max(...drift) <= 1 && drift.reduce((a, b) => a + b, 0) <= 2,
+       CONTENT.parties.map(p => p.id + " " + Engine.partyTotal(base, p.id) + "->" + Engine.partyTotal(mid, p.id)).join(" "));
+    const fns = CONTENT.functional || [];
+    const sorted = h => JSON.stringify(Object.keys(h).sort().map(k => [k, h[k]]));
+    ok("and every functional sector returns its roll",
+       fns.every(f => sorted(mid.functional[f.id].held) === sorted(base.functional[f.id].held)));
+    const sides = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(s => Engine.confidence(at(s)));
+    const maj = Engine.majority(base);
+    ok("the standing meter runs from a rout to a landslide",
+       sides[1] < maj - 25 && sides[7] > maj + 35, sides.join(", ") + " against " + maj);
+    ok("and every point of it is worth something in the middle",
+       sides[3] < sides[4] && sides[4] < sides[5] && sides[5] < sides[6],
+       sides.slice(3, 7).join(", "));
+    ok("and more standing never costs a seat",
+       sides.every((x, i) => !i || x >= sides[i - 1]), sides.join(", "));
+    /* a band's standing moves that band's seats */
+    const band = (CONTENT.constituencies || []).find(k => !k.nonVoting).band;
+    const tb = Engine.newGame(CONTENT); Engine.apply(tb, CONTENT, [{ move: { ["standing." + band]: 30 } }]);
+    const fb = Engine.forecast(tb, CONTENT), f0 = Engine.forecast(Engine.newGame(CONTENT), CONTENT);
+    ok("a band's standing moves that band's seats",
+       fb.bands[band].gov > f0.bands[band].gov,
+       band + " " + f0.bands[band].gov + " -> " + fb.bands[band].gov);
+  }
+
+  /* THE COUNT IS TAKEN AT THE END OF THE CAMPAIGN (design/38 §1). It was
+     taken at the writs, so nothing in chapter three could move a seat. */
+  {
+    const t = Engine.newGame(CONTENT);
+    CONTENT.bills.forEach(b => { if (b.test === "supply") t.bills[b.id].stage = "assented"; });
+    const before = Engine.partyTotal(t, t.playerParty);
+    Engine.dissolve(t, CONTENT);
+    ok("the writs do not count the votes",
+       !Engine.counted(t) && Engine.partyTotal(t, t.playerParty) === before && !Engine.checkEnd(t, CONTENT).over);
+    const f1 = Engine.forecast(t, CONTENT);
+    Engine.apply(t, CONTENT, [{ move: { public_standing: 30 } }]);
+    const f2 = Engine.forecast(t, CONTENT);
+    ok("so the campaign moves the result", f2.side > f1.side + 10, f1.side + " -> " + f2.side);
+    Engine.advance(t, CONTENT);
+    ok("and the wire carries the polls", (t.wire || []).some(w => /THE POLLS PUT/.test(w.text)));
+    Engine.apply(t, CONTENT, [{ flag: "campaign_done" }]);
+    ok("the last beat takes the count", Engine.counted(t) && Engine.checkEnd(t, CONTENT).over,
+       "side " + t.dissolved.sideNow + ", majority " + t.dissolved.majority);
+    const epi = Engine.epilogue(t, CONTENT);
+    ok("and the epilogue is the one the result earns",
+       !!epi && Engine.matches(t, epi.when || {}) &&
+       (t.dissolved.sideNow >= t.dissolved.majority) === !!(epi.when && epi.when.returned),
+       epi ? epi.id + " at " + t.dissolved.sideNow : "none");
+    const u = Engine.newGame(CONTENT);
+    CONTENT.bills.forEach(b => { if (b.test === "supply") u.bills[b.id].stage = "assented"; });
+    Engine.dissolve(u, CONTENT);
+    Engine.apply(u, CONTENT, [{ move: { public_standing: -40 } }]);
+    for (let i = 0; i < (CONTENT.setup.campaignSittings || 12) && !Engine.counted(u); i++) Engine.advance(u, CONTENT);
+    ok("without a last beat, the campaign's sittings take it",
+       Engine.counted(u) && Engine.checkEnd(u, CONTENT).over && u.dissolved.countedAt === u.dissolved.at + (CONTENT.setup.campaignSittings || 12));
+    const lost = Engine.epilogue(u, CONTENT);
+    ok("and a government that lost the country reads a different ending",
+       !!lost && !!epi && lost.id !== epi.id && !(lost.when && lost.when.returned),
+       (lost && lost.id) + " at " + u.dissolved.sideNow);
   }
 
   /* ORDER-PAPER TIME. Slots are the scarce good that generates capital

@@ -209,16 +209,29 @@ try {
        re-boot on the session's own content (see the set-piece test below) */
     w.eval("(function(){var s=UI.state(), K=UI.content(); s.flags._introRead=true;" +
            "K.bills.forEach(function(b){ if (b.test==='supply') s.bills[b.id].stage='assented'; });" +
-           "Engine.dissolve(s, K); s.sitting += 40;" +
+           "Engine.dissolve(s, K); s.sitting += 1;" +
            "UI.boot(s, Shell.contentFor((CONTENT.administrations||[])" +
            ".find(function(x){return x.id===s.admin;})));})()");
     w.document.querySelector('.tab[data-t="sit"]').click();
+    /* THE CAMPAIGN SHOWS THE POLLS (design/38 §1): where the docket was, and
+       on the status bar in place of confidence in a House that is gone. */
+    const f = w.eval("Engine.forecast(UI.state(), UI.content())");
+    ok("the campaign shows the polls where the docket was",
+       w.document.querySelector("#dk-head").textContent === "The polls" &&
+       new RegExp("on " + f.side + " of " + f.total).test(w.document.querySelector("#sit-docket").textContent),
+       w.document.querySelector("#sit-docket").textContent.slice(0, 120));
+    ok("and the status bar reads the poll", /^POLL \d+\/\d+$/.test(w.document.querySelector("#sb-conf").textContent),
+       w.document.querySelector("#sb-conf").textContent);
+    w.eval("(function(){var s=UI.state(); s.sitting += 40; Engine.count(s, UI.content()); UI.redraw();})()");
     const endText = w.document.querySelector("#sitting-body").textContent;
     const conf = w.eval("Engine.confidence(UI.state())"), maj = w.eval("Engine.majority(UI.state())");
     ok("the last page says whether the government's side has a majority",
        new RegExp("come back with " + conf + ", against a majority of " + maj).test(endText) &&
        (conf >= maj ? /a majority, with/ : / short of one/).test(endText),
        (endText.match(/The coalition[^:]*:[^.]*\./) || [endText.slice(0, 200)])[0]);
+    /* and what it means, in content's words (design/38 §2) */
+    const epi = w.eval("(Engine.epilogue(UI.state(), UI.content()) || {}).title");
+    ok("and the epilogue the count earned", !!epi && endText.indexOf(epi) >= 0, epi || "no epilogue");
     w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapE) + "), UI.content())");
   }
 

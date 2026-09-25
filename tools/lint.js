@@ -885,6 +885,9 @@ try {
      step, a limit and a drawing's consequences, in the world's setup and in
      every campaign's. An unknown condition there throws at the first
      sitting the account is drawn. */
+  /* The epilogues' conditions are conditions like any other (design/38 §2). */
+  [["the world", SETUP]].concat((ADMINISTRATIONS || []).map(a => [a.id, a.setup || {}])).forEach(([who, S]) =>
+    (S.epilogues || []).forEach(x => checkWhen(x.when, "epilogue " + x.id + " (" + who + ")")));
   /* An `on…` hook in setup names the event the rules queue (design/38 §3). */
   [["the world", SETUP]].concat((ADMINISTRATIONS || []).map(a => [a.id, a.setup || {}])).forEach(([who, S]) =>
     Object.keys(S).filter(k => /^on[A-Z]/.test(k)).forEach(k => {

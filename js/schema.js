@@ -120,7 +120,10 @@ const SCHEMA = {
     chapterIs:      { label:"Chapter is",              form:"int" },
     chapterAtLeast: { label:"Chapter is at least",      form:"int" },
     inGovernment:   { label:"In government",            form:"bool" },
-    withdrawn:      { label:"A partner has walked out", form:"bool" }
+    withdrawn:      { label:"A partner has walked out", form:"bool" },
+    returned:       { label:"The count returned the government", form:"bool" },
+    sideAtLeast:    { label:"Government's side seats at least (after the count)", form:"int" },
+    sideBelow:      { label:"Government's side seats below (after the count)", form:"int" }
   },
 
   /* ---------- enumerations the forms draw from ---------- */

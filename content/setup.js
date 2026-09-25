@@ -409,6 +409,65 @@ const SETUP = {
      off and restores the old behaviour. */
   trendDecay: 4,
 
+  /* THE COUNT (design/38 §1). `swing`: points of the vote that move
+     between the government's side and everybody else for each point of
+     standing away from 50, so standing 10 is a swing of fourteen points
+     against and 100 of seventeen and a half for. The district constants
+     shape the notional result: a party's local strength runs from
+     `localFloor` of its national vote where it held nothing to
+     `localFloor + localLift` where it held every seat around, and a holder
+     leads its nearest rival by `marginMin` plus up to `marginSpan` as its
+     hold on the station and band grows. `functional` is how far each
+     franchise follows the country. */
+  election: { swing: 0.35, localFloor: 0.4, localLift: 2.0, marginMin: 0.005, marginSpan: 0.35, marginShape: 1.6,
+              functional: { licensure: 0.4, corporate: 0.15, union_bloc: 0.3, residual: 1 } },
+
+  /* THE EPILOGUE (design/38 §2): what the count means, printed on the last
+     page. The first whose `when` matches the counted result is read.
+     `returned` is whether the government's side has a majority in the new
+     House, `sideAtLeast`/`sideBelow` its seats; a campaign may put its own
+     list in its setup, and an entry may carry any other condition too (a
+     settlement, a flag). The chamber is 280 and the majority 141. */
+  epilogues: [
+    { id:"landslide", when:{ returned:true, sideAtLeast:185 }, title:"A landslide",
+      body:"The new House sits with the government's side on three benches and part of a fourth. " +
+           "The President sends for the Prime Minister before the last returns are in, and the " +
+           "formation takes an afternoon. A majority this size is a mandate for everything the " +
+           "manifesto said and several things it left out, and the first thing the whips learn is " +
+           "that a government this large has more members than posts. The opposition will spend " +
+           "the parliament deciding who lost it." },
+    { id:"working", when:{ returned:true, sideAtLeast:160 }, title:"A working majority",
+      body:"The government is returned with room to govern. The President sends for the Prime " +
+           "Minister on the morning after the count, the partners renew their terms the same " +
+           "afternoon, and the new parliament opens with the government's business on the paper. " +
+           "A majority of this size survives a rebellion or two, which is the only measure of a " +
+           "majority the whips use." },
+    { id:"narrow", when:{ returned:true }, title:"Returned, narrowly",
+      body:"The government is returned with a majority the whips can count on one hand. The " +
+           "partners know it and price their terms accordingly: the formation takes a week, and " +
+           "the programme that comes out of it is shorter than the manifesto. Every division of the " +
+           "new parliament will be close, and the Prime Minister governs on the arithmetic of the " +
+           "last session with less of its patience." },
+    { id:"hung", when:{ sideAtLeast:125 }, title:"No majority",
+      body:"Nobody commands the House. The President calls the leaders in one at a time, in order " +
+           "of seats, and the government stays on as caretaker until somebody can show the numbers. " +
+           "The government's side is the nearest to a majority, so the talks begin with it; whether " +
+           "they end with it depends on who else is in the room and what the partners want for " +
+           "coming back." },
+    { id:"defeat", when:{ sideAtLeast:100 }, title:"Defeat",
+      body:"The government's side comes back short by more than any partner can make up. The " +
+           "President sends for the Leader of the Opposition, and the Prime Minister goes to the " +
+           "residence the next morning to resign. The benches that won the count will form the next " +
+           "government, and the party that governed will spend its first weeks in opposition " +
+           "deciding whether the record lost it or the campaign did." },
+    { id:"rout", title:"A rout",
+      body:"The government is swept out. Seats that returned the party at every election since the " +
+           "Charter change hands on the night, and the parliamentary party that comes back fits in " +
+           "the room where its whips used to meet. The Leader of the Opposition forms a government " +
+           "within the week, and the Prime Minister's resignation is accepted on the day it is " +
+           "offered." }
+  ],
+
   /* HOW LONG THE CAMPAIGN RUNS, in sittings after the writs go out.
      Chapter three fires one prologue a sitting and the COUNT is the last of
      them, so this is really "how many beats the ending is allowed". It was

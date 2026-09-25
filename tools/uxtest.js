@@ -1360,9 +1360,11 @@ try {
   while (e.sitting < endAt) E.advance(e, Cx);
   ok("the House is dissolved rather than prorogued", !!e.dissolved,
      "session " + e.session);
-  ok("and the electorate answers", e.dissolved &&
-     typeof e.dissolved.held === "number",
-     e.dissolved ? e.dissolved.was + " seats to " + e.dissolved.held : "");
+  /* THE WRITS RECORD THE HOUSE THAT WENT TO THE COUNTRY; the electorate
+     answers at the count, when the campaign ends (design/38 §1). */
+  ok("and the writs record the House that went to the country", e.dissolved &&
+     typeof e.dissolved.was === "number" && e.dissolved.held == null,
+     e.dissolved ? e.dissolved.was + " seats, not yet counted" : "");
   /* DISSOLUTION ENDS THE PARLIAMENT, NOT THE RUN: chapter three is the
      campaign and it plays after the writs (endgame pass). The run is over
      once the campaign has been counted, or once a campaign's worth of
@@ -1379,6 +1381,8 @@ try {
   const after = E.checkEnd(e, Cx);
   ok("a run therefore cannot go on for ever",
      after.over === true && after.kind === "election", after.kind);
+  ok("and the electorate answers at the count", typeof e.dissolved.held === "number",
+     e.dissolved.was + " seats to " + e.dissolved.held);
 
   /* an undertaking owed before the House rises */
   const c = mk();

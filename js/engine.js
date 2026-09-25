@@ -882,22 +882,122 @@ const Engine = (function () {
 
   /* ---- votes ----------------------------------------------------
 
-     Deterministic, per 1.5. A constituency's strength is its current
-     roll; a party's national strength is its list bench. Blending the
-     two means a party holding nothing here still has a floor to grow
-     from, which is what makes a by-election worth watching rather
-     than a foregone conclusion. */
-  function shares(st, C, cons) {
-    const roll = seatsFor(st, cons.id);
-    const natTotal = Object.values(st.parties)
-      .reduce((n, p) => n + (p.seats.list || 0), 0) || 1;
+     THE ELECTION IS A VOTE, NOT A SEAT COUNT WITH A MOOD (design/38 §1).
+     A seat's share was 0.68 for its holder and 0.32 times a national figure
+     for everybody else, so no swing any meter could produce took a single
+     district, and across the whole standing meter the PSD moved from 78
+     seats to 93. A district now has a NOTIONAL RESULT, the last election's
+     vote there, derived once from content:
+
+       - each party's list vote at the last election (`parties[].vote`,
+         per cent), which is its strength anywhere;
+       - raised where it is strong locally, by the share of the station's
+         and the band's seats it held, and lowered where it held none;
+       - and the holder ahead of the runner-up by a margin that grows with
+         how completely it held the station and the band around the seat.
+         A party that held every seat on its station is safe; one that
+         holds a seat on a station the others share is marginal.
+
+     Nothing here names a station, a party or a band: every number is read
+     off the opening roll, and `setup.election` holds the constants. A
+     constituency may carry `notional` (its own shares, per cent) to replace
+     the derivation, which is where an author puts a real result. */
+  const NOTIONAL = new WeakMap();
+  function electionConst(C) {
+    const E = (C && C.setup && C.setup.election) || {};
+    return { swing: E.swing == null ? 0.35 : E.swing,
+             localFloor: E.localFloor == null ? 0.4 : E.localFloor,
+             localLift: E.localLift == null ? 2.0 : E.localLift,
+             marginMin: E.marginMin == null ? 0.005 : E.marginMin,
+             marginSpan: E.marginSpan == null ? 0.35 : E.marginSpan,
+             marginShape: E.marginShape == null ? 1.6 : E.marginShape,
+             functional: E.functional || {} };
+  }
+  /* The last election's list vote, as shares of every vote cast. A party
+     with no `vote` is derived from its list seats, so a world that has not
+     written one still works; whatever the parties do not account for went
+     to lists that won nothing. */
+  function lastVote(C) {
     const out = {};
-    C.parties.forEach(p => {
-      const local = (roll.held[p.id] || 0) / cons.magnitude;
-      const nat = (st.parties[p.id].seats.list || 0) / natTotal;
-      out[p.id] = 0.68 * local + 0.32 * nat;
-    });
+    const written = C.parties.some(p => p.vote != null);
+    if (written) C.parties.forEach(p => out[p.id] = (p.vote || 0) / 100);
+    else {
+      const tot = C.parties.reduce((n, p) => n + ((p.seats && p.seats.list) || 0), 0) || 1;
+      C.parties.forEach(p => out[p.id] = ((p.seats && p.seats.list) || 0) / tot * 0.97);
+    }
     return out;
+  }
+  function notionalAll(C) {
+    let m = NOTIONAL.get(C);
+    if (m) return m;
+    m = {};
+    const K = electionConst(C), vote = lastVote(C);
+    const seats = (C.constituencies || []).filter(k => !k.nonVoting);
+    const held = k => Object.keys(k.held || {}).find(id => k.held[id] > 0) || null;
+    const shareIn = (list, id) => list.length ? list.filter(k => held(k) === id).length / list.length : 0;
+    const byStation = {}, byBand = {};
+    seats.forEach(k => { (byStation[k.station] = byStation[k.station] || []).push(k);
+                         (byBand[k.band] = byBand[k.band] || []).push(k); });
+    /* Natural shares first: national vote, lifted where the party is
+       strong around the seat. */
+    const local = (k, id) => 0.6 * shareIn(byStation[k.station] || [], id) +
+                             0.4 * shareIn(byBand[k.band] || [], id);
+    const nat = {}, dom = [];
+    seats.forEach(k => {
+      if (k.notional) return;
+      const h = held(k), out = {};
+      C.parties.forEach(p => {
+        const v = vote[p.id] || 0;
+        if (v > 0) out[p.id] = v * (K.localFloor + K.localLift * local(k, p.id));
+      });
+      if (h && out[h] == null) out[h] = 0;
+      const tot = Object.values(out).reduce((a, b) => a + b, 0) || 1;
+      Object.keys(out).forEach(id => out[id] /= tot);
+      nat[k.id] = out;
+      if (h) dom.push({ id: k.id, by: h, d: local(k, h) + 1e-6 * dom.length });
+    });
+    /* THE HOLDER WON IT, BY A MARGIN THAT SAYS HOW SAFE THE SEAT IS. Each
+       party's seats are ranked against its own by how completely it held
+       the ground around them, and the rank sets the margin:
+       `marginMin + marginSpan * r^marginShape` for rank r from 0 (its most
+       exposed seat) to 1 (its heartland). A margin read straight off local
+       strength put nearly every seat ten or more points clear, so nothing
+       moved until everything did; ranked across the whole House, the
+       largest party's concentrated seats all came out safe and a
+       government could lose standing for twenty points without losing a
+       seat. Every party has marginals and heartlands, which is what makes
+       a swing of a few points worth a few seats in either direction. */
+    const rank = {};
+    Array.from(new Set(dom.map(x => x.by))).forEach(pid => {
+      const mine = dom.filter(x => x.by === pid).sort((a, b) => a.d - b.d);
+      mine.forEach((x, i) => rank[x.id] = mine.length > 1 ? i / (mine.length - 1) : 0.5);
+    });
+    seats.forEach(k => {
+      if (k.notional) {
+        const t = Object.values(k.notional).reduce((a, b) => a + b, 0) || 1;
+        m[k.id] = {}; Object.keys(k.notional).forEach(id => m[k.id][id] = k.notional[id] / t);
+        return;
+      }
+      const out = nat[k.id], h = held(k);
+      if (h) {
+        const want = K.marginMin + K.marginSpan * Math.pow(rank[k.id], K.marginShape);
+        const others = Object.keys(out).filter(id => id !== h);
+        const r = Math.max(0, ...others.map(id => out[id]));
+        const O = 1 - out[h];
+        /* x moves from the holder to the others in proportion, so the
+           rival stays the rival and the margin lands exactly on `want`. */
+        const x = O > 0 ? (out[h] - r - want) / (1 + r / O) : 0;
+        others.forEach(id => out[id] += x * out[id] / (O || 1));
+        out[h] -= x;
+      }
+      m[k.id] = out;
+    });
+    NOTIONAL.set(C, m);
+    return m;
+  }
+  /* The notional result in one seat, as shares of one. */
+  function shares(st, C, cons) {
+    return Object.assign({}, notionalAll(C)[cons.id] || {});
   }
 
   /* ---------------------------------------------------------
@@ -961,50 +1061,74 @@ const Engine = (function () {
     return st.scalars.public_standing;
   }
 
-  /* Swing. Government carries the standing of the government; the
-     opposition picks up a fraction of what it drops. Read WHERE THE SEAT IS
-     when the caller knows, which is what makes a closure on one band a
-     political fact rather than a national average. */
-  function swing(st, band) { return (standingIn(st, band) - 50) / 100; }
-
-  function swungShares(st, C, cons) {
-    const s = shares(st, C, cons), k = swing(st, cons && cons.band);
-    const gov = st.coalition.concat(st.confidenceSupply);
-    let tot = 0;
-    Object.keys(s).forEach(id => {
-      s[id] *= gov.includes(id) ? (1 + k) : (1 - k * 0.4);
-      if (s[id] < 0) s[id] = 0;
-      tot += s[id];
+  /* THE SWING, IN POINTS OF THE VOTE (design/38 §1). Standing 50 is the
+     mood the last parliament was elected in; every point of standing away
+     from it moves `setup.election.swing` of a point of the vote between the
+     government's side and everybody else, read WHERE THE SEAT IS when the
+     caller knows. A party's `swing` (default 1) weights how much of the
+     tide reaches it: independents who hold their seats on a personal vote
+     carry 0. Inside a side the points go in proportion to the vote, so a
+     party with nothing in a seat gains nothing there. */
+  function swing(st, band, C) {
+    return electionConst(C).swing * (standingIn(st, band) - 50) / 100;
+  }
+  function govSide(st) { return st.coalition.concat(st.confidenceSupply); }
+  function tide(C, id) {
+    const p = C && C.partyById && C.partyById[id];
+    return p && p.swing != null ? p.swing : 1;
+  }
+  function applySwing(st, C, sh, delta) {
+    const gov = govSide(st);
+    const w = id => (sh[id] || 0) * tide(C, id);
+    const G = Object.keys(sh).filter(id => gov.includes(id)).reduce((n, id) => n + w(id), 0);
+    const O = Object.keys(sh).filter(id => !gov.includes(id)).reduce((n, id) => n + w(id), 0);
+    if (!G || !O) return sh;
+    const d = Math.max(-0.95 * G, Math.min(0.95 * O, delta));
+    const out = {};
+    Object.keys(sh).forEach(id => {
+      out[id] = Math.max(0, gov.includes(id) ? sh[id] + d * w(id) / G : sh[id] - d * w(id) / O);
     });
-    if (tot > 0) Object.keys(s).forEach(id => s[id] /= tot);
-    return s;
+    return out;
+  }
+  function swungShares(st, C, cons) {
+    return applySwing(st, C, shares(st, C, cons), swing(st, cons && cons.band, C));
   }
 
-  /* THE LIST IS A SECOND BALLOT (4.1), not a projection of the first.
-
-     Deriving it from constituency strength quietly makes a pure-list party
-     impossible — and 4.3 states the opposite, that a party strong nationally
-     with no roots is viable and is the shape of the Public Substrate
-     Association and the Georgists. So national standing carries the list,
-     with a quarter weight on district strength to represent ticket-splitting
-     in the other direction (4.3 puts it at 21.4%), which is also what lets a
-     district-rooted party with no list bench win one. */
+  /* THE LIST IS A SECOND BALLOT (4.1), not a projection of the first: the
+     last election's list vote (`parties[].vote`), swung on the national
+     standing. Shares of every vote cast, so what the parties do not account
+     for is the wasted vote, and the threshold reads against the whole. */
   function nationalShares(st, C) {
-    const listTot = Object.values(st.parties)
-      .reduce((n, p) => n + (p.seats.list || 0), 0) || 1;
-    const distTot = Object.values(st.parties)
-      .reduce((n, p) => n + (p.seats.district || 0), 0) || 1;
-    const gov = st.coalition.concat(st.confidenceSupply), k = swing(st);
-    const out = {}; let sum = 0;
-    C.parties.forEach(p => {
-      const nat = (st.parties[p.id].seats.list || 0) / listTot;
-      const loc = (st.parties[p.id].seats.district || 0) / distTot;
-      let v = 0.75 * nat + 0.25 * loc;
-      v *= gov.includes(p.id) ? (1 + k) : (1 - k * 0.4);
-      out[p.id] = v < 0 ? 0 : v; sum += out[p.id];
-    });
-    if (sum > 0) Object.keys(out).forEach(i => out[i] /= sum);
-    return out;
+    return applySwing(st, C, lastVote(C), swing(st, null, C));
+  }
+
+  /* THE FUNCTIONAL TIER IS ELECTED TOO (bible 4.6; design/38 §1). It went
+     through every count unchanged. Each sector's result is its current
+     roll, so the licensing board's widened franchise carries into it, and
+     the tide reaches it by franchise: `setup.election.functional` weights
+     how far a sector's electors follow the country (a residual seat of
+     everyone follows it all the way; a sector where companies vote barely
+     at all). */
+  function functionalShares(st, C, f) {
+    const h = ((st.functional || {})[f.id] || {}).held || f.held || {};
+    const n = Object.values(h).reduce((a, b) => a + b, 0) || 1;
+    const sh = {}; Object.keys(h).forEach(id => { if (h[id] > 0) sh[id] = h[id] / n; });
+    const k = electionConst(C).functional[f.franchise];
+    return applySwing(st, C, sh, swing(st, null, C) * (k == null ? 0.3 : k));
+  }
+  /* Largest remainders: at no swing it returns the roll exactly, which a
+     divisor method over a sector of three or four seats does not. */
+  function largestRemainder(sh, seats) {
+    const ids = Object.keys(sh).filter(i => sh[i] > 0).sort();
+    const tot = ids.reduce((n, i) => n + sh[i], 0) || 1;
+    const won = {}, rem = [];
+    let given = 0;
+    ids.forEach(i => { const q = sh[i] / tot * seats; won[i] = Math.floor(q + 1e-9); given += won[i];
+                       rem.push([i, q - won[i]]); });
+    rem.sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
+    for (let j = 0; given < seats && j < rem.length; j++, given++) won[rem[j][0]] += 1;
+    Object.keys(won).forEach(i => { if (!won[i]) delete won[i]; });
+    return won;
   }
 
   /* Highest averages. Ties break on party id so a rerun is identical. */
@@ -1069,7 +1193,8 @@ const Engine = (function () {
 
     const before = {};
     C.parties.forEach(p => before[p.id] = {
-      district: partyDistrict(st, p.id), list: st.parties[p.id].seats.list || 0
+      district: partyDistrict(st, p.id), list: st.parties[p.id].seats.list || 0,
+      functional: st.parties[p.id].seats.functional || 0
     });
 
     Object.keys(districtResults).forEach(cid => {
@@ -1095,6 +1220,13 @@ const Engine = (function () {
     const listWon = divisorAllocate(eligibleList, listSeats, st.law.list_divisor);
     C.parties.forEach(p => st.parties[p.id].seats.list = listWon[p.id] || 0);
 
+    /* The functional tier, sector by sector (design/38 §1). */
+    (C.functional || []).forEach(f => {
+      if (!st.functional || !st.functional[f.id]) return;
+      st.functional[f.id].held = largestRemainder(functionalShares(st, C, f), f.seats);
+    });
+    syncFunctional(st, C);
+
     syncRoll(st, C);
     st.lastElection = { sitting: st.sitting, nat: nat, threshold: cut,
                         barred: Object.keys(nat).filter(id => !eligibleList[id] && nat[id] > 0),
@@ -1104,14 +1236,16 @@ const Engine = (function () {
 
     const after = {};
     C.parties.forEach(p => after[p.id] = {
-      district: partyDistrict(st, p.id), list: st.parties[p.id].seats.list
+      district: partyDistrict(st, p.id), list: st.parties[p.id].seats.list,
+      functional: st.parties[p.id].seats.functional || 0
     });
+    const tot = x => x.district + x.list + (x.functional || 0);
     st.log.unshift({ sitting: st.sitting, text: "GENERAL ELECTION" });
     C.parties.forEach(p => {
-      const d = (after[p.id].district + after[p.id].list) -
-                (before[p.id].district + before[p.id].list);
+      const d = tot(after[p.id]) - tot(before[p.id]);
       if (d) st.log.unshift({ sitting: st.sitting,
-        text: `  ${p.id}: ${d > 0 ? "+" : ""}${d} (${after[p.id].district} district, ${after[p.id].list} list)` });
+        text: `  ${(C.partyById[p.id] && C.partyById[p.id].short) || p.id}: ${d > 0 ? "+" : ""}${d} ` +
+              `(${after[p.id].district} district, ${after[p.id].list} list, ${after[p.id].functional} functional)` });
     });
     return { ok: true, before: before, after: after, national: nat,
              barred: st.lastElection.barred };
@@ -3682,6 +3816,13 @@ const Engine = (function () {
     ballotHeld:     (st, v) => v ? !!st.ballot : !st.ballot,
     /* A partner has walked out and not come back (design/38 §3). */
     withdrawn:      (st, v) => (Object.keys(st.withdrawn || {}).length > 0) === !!v,
+    /* THE COUNT'S RESULT (design/38 §2), for the epilogue and anything
+       after it: whether the government's side came back with a majority,
+       and its seats in the new House. All false until the count. */
+    returned:       (st, v) => counted(st) &&
+                      (st.dissolved.sideNow >= st.dissolved.majority) === !!v,
+    sideAtLeast:    (st, v) => counted(st) && st.dissolved.sideNow >= v,
+    sideBelow:      (st, v) => counted(st) && st.dissolved.sideNow < v,
     ballotCarries:  (st, v) => !!st.ballot && st.ballot.carries === !!v,
     siInForce:      (st, v) => [].concat(v).every(k => st.instruments[k] && st.instruments[k].inForce),
     siNotMade:      (st, v) => [].concat(v).every(k => st.instruments[k] && !st.instruments[k].made),
@@ -4206,6 +4347,8 @@ const Engine = (function () {
         EFFECTS[k](st, C, eff[k]);
       });
     });
+    /* The campaign's last beat ends it, and the count is taken then. */
+    if (C && st.dissolved && !counted(st) && st.flags && st.flags.campaign_done) count(st, C);
   }
 
   /* ---------------------------------------------------------
@@ -6210,19 +6353,71 @@ const Engine = (function () {
       if (u.state !== "open" || u.by != null) return;
       breakUndertaking(st, C, u, "dissolution");
     });
+    /* THE COUNT IS TAKEN AT THE END OF THE CAMPAIGN, NOT AT THE WRITS
+       (design/38 §1). It was taken here, so chapter three's beats moved
+       standing and spent the reserve with the result already decided, and
+       the new House sat on the Chamber tab a week before the count read it
+       out. The dissolved House stands until the count; count() takes it. */
     const before = Object.keys(st.parties).reduce((m, p) =>
       (m[p] = partyTotal(st, p), m), {});
-    const res = generalElection(st, C);
-    const after = Object.keys(st.parties).reduce((m, p) =>
-      (m[p] = partyTotal(st, p), m), {});
-    const mine = st.playerParty;
     st.dissolved = { at: st.sitting, session: st.session, period: st.period || 1,
-                     before: before, after: after,
-                     held: after[mine] || 0, was: before[mine] || 0 };
+                     before: before, was: before[st.playerParty] || 0,
+                     side: confidence(st), sideParties: govSide(st).slice() };
     st.log.unshift({ sitting: st.sitting,
       text: "The House is dissolved. The Commonwealth goes to the country." });
     st.wire.unshift({ sitting: st.sitting, text: "PARLIAMENT DISSOLVED" });
+    return { ok: true };
+  }
+
+  /* THE COUNT. Once, when the campaign ends: content sets `campaign_done`
+     on its last beat, or `campaignSittings` run out. */
+  function counted(st) { return !!(st.dissolved && st.dissolved.after); }
+  function count(st, C) {
+    if (!st.dissolved || counted(st)) return null;
+    const res = generalElection(st, C);
+    const after = Object.keys(st.parties).reduce((m, p) =>
+      (m[p] = partyTotal(st, p), m), {});
+    st.dissolved.after = after;
+    st.dissolved.held = after[st.playerParty] || 0;
+    st.dissolved.countedAt = st.sitting;
+    st.dissolved.sideNow = confidence(st);
+    st.dissolved.majority = majority(st);
+    st.wire.unshift({ sitting: st.sitting, text: "THE COUNT: THE GOVERNMENT'S SIDE " +
+      st.dissolved.sideNow + " OF " + chamberTotal(st) + ", " +
+      (st.dissolved.sideNow >= st.dissolved.majority ? "A MAJORITY" : "SHORT OF A MAJORITY") });
     return res;
+  }
+  /* THE EPILOGUE (design/38 §2). The election ends the run, and what it
+     means is content's to say: `setup.epilogues` is a list of passages,
+     each with a `when`, and the first that matches the counted result is
+     the one the last page prints. */
+  function epilogue(st, C) {
+    if (!counted(st)) return null;
+    return ((C.setup && C.setup.epilogues) || []).find(x => !x.when || matches(st, x.when)) || null;
+  }
+
+  /* WHAT THE COUNT WOULD SAY TODAY. The same count on a copy, so the
+     campaign can be read as it goes: the interface's polls and the wire's
+     daily projection. Reads state and writes none. */
+  function forecast(st, C) {
+    const t = JSON.parse(JSON.stringify(st));
+    /* WHERE IT IS CLOSE, band by band: the seats the government's side
+       would take, and those within three points either way, so a campaign
+       can be aimed (design/38 §1). */
+    const gov = govSide(t), bands = {};
+    (C.constituencies || []).forEach(k => {
+      if (k.nonVoting || !t.roll[k.id]) return;
+      const sh = swungShares(t, C, k);
+      const g = Math.max(0, ...Object.keys(sh).filter(id => gov.includes(id)).map(id => sh[id]));
+      const o = Math.max(0, ...Object.keys(sh).filter(id => !gov.includes(id)).map(id => sh[id]));
+      const b = bands[k.band] || (bands[k.band] = { seats: 0, gov: 0, close: 0, standing: standingIn(t, k.band) });
+      b.seats++; if (g > o) b.gov++; if (Math.abs(g - o) < 0.03) b.close++;
+    });
+    generalElection(t, C);
+    const after = Object.keys(t.parties).reduce((m, p) => (m[p] = partyTotal(t, p), m), {});
+    return { after: after, side: confidence(t), majority: majority(t),
+             total: chamberTotal(t), mine: after[t.playerParty] || 0,
+             national: nationalShares(t, C), bands: bands };
   }
 
   /* The one place that answers "is this run over, and how". Losing is
@@ -6284,10 +6479,10 @@ const Engine = (function () {
       if (lostNow.lost) return { over: true, kind: "loss", reason: lostNow.reason };
     }
     const sEarly = checkSettlement(st, C);
+    /* OVER WHEN THE COUNT HAS BEEN TAKEN (design/38 §1), which is when the
+       last beat sets `campaign_done` or the campaign's sittings run out. */
     if (sEarly && st.dissolved)
-      return { over: !!(st.flags && st.flags.campaign_done) ||
-                     (st.dissolved.at != null && st.sitting >= st.dissolved.at + window),
-               kind: "election", result: st.dissolved, settlement: sEarly };
+      return { over: counted(st), kind: "election", result: st.dissolved, settlement: sEarly };
     if (st.dissolved) {
       /* THE WRITS ARE OUT AND THE CAMPAIGN RUNS. Chapter three IS the
          campaign and it plays after dissolution, so dissolution cannot be
@@ -6295,9 +6490,7 @@ const Engine = (function () {
          over when the count has been read — `campaign_done`, set by
          ch3_the_count — or when a campaign's worth of sittings has gone by,
          so a missing or gated chapter can never leave a run open for ever. */
-      const done = !!(st.flags && st.flags.campaign_done);
-      const ran = st.dissolved.at != null && st.sitting >= st.dissolved.at + window;
-      return { over: done || ran, kind: "election", result: st.dissolved };
+      return { over: counted(st), kind: "election", result: st.dissolved };
     }
     const lost = checkLoss(st, C);
     if (lost.lost) return { over: true, kind: "loss", reason: lost.reason };
@@ -6552,6 +6745,22 @@ const Engine = (function () {
        at the point somebody happens to look. */
     if (C) resolveDue(st, C);
     if (C) partnerCheck(st, C);
+    /* THE CAMPAIGN'S CLOCK. The count is taken when `campaignSittings` run
+       out if the last beat has not taken it, and until then the wire
+       carries the day's projection, so the campaign can be read as it
+       moves. */
+    if (C && st.dissolved && !counted(st)) {
+      const window = (C.setup && C.setup.campaignSittings) || 12;
+      if (st.sitting >= st.dissolved.at + window) count(st, C);
+      else {
+        const f = forecast(st, C);
+        st.polls = st.polls || [];
+        st.polls.push({ sitting: st.sitting, side: f.side, mine: f.mine });
+        st.wire.unshift({ sitting: st.sitting, text: "THE POLLS PUT THE GOVERNMENT'S SIDE ON " +
+          f.side + " OF " + f.total + ", " + (f.side >= f.majority ? "A MAJORITY OF " + (2 * f.side - f.total)
+                                                                   : (f.majority - f.side) + " SHORT") });
+      }
+    }
     if (C && st.risesAt != null && st.sitting > st.risesAt && !st.dissolved) {
       /* The House rises. For a recess, for the end of the session, or for
          good: whether it meets again is the whole question. */
@@ -6742,6 +6951,7 @@ const Engine = (function () {
     seedRoll, syncRoll, reconcile, partyDistrict,
     lastReconcile: () => lastReconcile, nationalShares, vacantSeats, seatsFor,
     vacateSeat, crossFloor, byElection, generalElection, shares, swungShares,
+    count, counted, forecast, functionalShares, epilogue,
     divisorAllocate,
     packBoard, canPackBoard, boardsMoved, boardsTotal,
     borrow, repay, canBorrow, debtOf, debtRate, debtService, debts, lenderOf, inflation, outlook,
