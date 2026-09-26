@@ -31,7 +31,10 @@ function registerOf(addr) {
   /* a lender's terms are an article's prose (Reference); what the account
      says about a drawing and why it is refused is Interface */
   if (coll === "setup" && /\/lenders\/[^/]+\/(drawNote|limits|rate)\b/.test(addr)) return "interface";
-  if (coll === "setup") return /\/outlook\//.test(addr) ? "voice" : "reference";
+  /* the Underwriters' outlook is a briefing, and a briefing is Interface
+     (design/45): it was Voice until 26 Sep, which excused a wry insider
+     with no figures */
+  if (coll === "setup") return /\/outlook\//.test(addr) ? "interface" : "reference";
   if (coll === "settlements") return /\/closing$/.test(addr) ? "voice" : "reference";
   if (["tips", "initiatives", "achievements", "sandbox"].indexOf(coll) >= 0) return "interface";
   return "reference";
@@ -134,6 +137,27 @@ const HABITS = [
     why: "three parallel items: a real list, or a rhythm outshouting the facts?",
     re: /\b(?:a|an|the)\s+\w+(?:\s+\w+)?,\s+(?:a|an|the)\s+\w+(?:\s+\w+)?,\s+and\s+(?:a|an|the)\s+\w+/gi },
 
+  /* THE EPIGRAM (design/45). A sentence shaped to sound knowing, standing
+     where a fact should be: an institution with a temperament ("it
+     remembers", "it does not hurry"), the paired negation ("cannot be
+     whipped and it does not need to be"), and "the X is the Y" as a reason
+     ("because the name is the brand"). Measured 26 Sep: every hit of the
+     first two was the habit, and two of three of the third. */
+  { id: "epigram", sev: { reference: "fault", interface: "fault" }, name: "epigram",
+    why: "a knowing shape where a fact should be; say what it has and does",
+    re: new RegExp([
+      "\\b(?:it|they)\\s+(?:remembers?|forgets?|forgives?|notices|has never forgotten|will not forgive|does not hurry|is patient)\\b",
+      "\\b(?:does not|cannot|need not|will not)\\s+\\w+[^.;]{0,25},?\\s+(?:and|because)\\s+(?:it|they|he|she)\\s+(?:does not|cannot|need not|will not|has not)\\b",
+      "(?:^|[.;,]\\s+|because\\s+)(?:the|its|their)\\s+[\\w'\u2019]+\\s+(?:is|was)\\s+(?:the|its|their|a)\\s+[\\w'\u2019]+\\s*[.;]"
+    ].join("|"), "gi") },
+
+  /* A REASON IN SIX WORDS. Half of these are the habit ("because the
+     numbers do") and half are real reasons ("because demand for it is
+     lowest"), so it is read, not fixed. */
+  { id: "because", sev: { reference: "note", interface: "note" }, name: "short 'because'",
+    why: "a real reason, or a twist? a reason usually names something",
+    re: /\bbecause\s+(?:[\w'\u2019]+\s+){0,5}[\w'\u2019]+\s*[.;]/gi },
+
   /* A TOOLTIP IS READ MID-ACTION: one answer, short. */
   { id: "long", sev: { interface: "note" }, name: "long for a tooltip",
     why: "over sixty words, or a sentence over thirty: split it or cut it",
@@ -174,6 +198,38 @@ for (const r of rows) {
     if (hit) found.push(Object.assign({ level: sev }, h));
   }
   if (found.length) hits.push({ addr: r.addr, reg: reg, text: t, habits: found });
+}
+
+/* ---- density (design/45) ---------------------------------------------- */
+/* CHECKABLE FACTS PER HUNDRED WORDS, by surface: a figure, a year, or a
+   proper name after a sentence's first word. A map, not a verdict (a
+   tooltip needs fewer facts than an atlas entry), but a Reference surface
+   far below the Foreign Affairs notes is where to read first. */
+if (argv.indexOf("--density") >= 0) {
+  const sents = t => t.split(/(?<=[.!?])\s+(?=[A-Z"'\u2018\u201c])/).filter(x => x.trim());
+  const words = t => (t.match(/[A-Za-z0-9\u2019'-]+/g) || []).length;
+  const facts = t => {
+    let n = (t.match(/\b\d[\d,.]*\b|\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|hundred|thousand|million|billion)\b/gi) || []).length;
+    for (const x of sents(t)) n += (x.replace(/^\W*\w+/, "").match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*/g) || []).length;
+    return n;
+  };
+  const G = {};
+  for (const r of rows) {
+    const reg = registerOf(r.addr);
+    if (!reg || reg === "voice") continue;
+    const t = String(r.text || "").replace(/\s+/g, " ");
+    if (words(t) < 12 || /\/(title|label|wire)$/.test(r.addr)) continue;
+    const k = r.addr.split("/")[0] + (r.addr.startsWith("setup/outlook") ? " (outlook)" :
+      r.addr.startsWith("world/states") ? " (country notes)" : "");
+    const g = G[k] = G[k] || { n: 0, w: 0, f: 0 };
+    g.n++; g.w += words(t); g.f += facts(t);
+  }
+  console.log("\n  checkable facts per hundred words, Reference and Interface\n");
+  Object.keys(G).map(k => [k, G[k]]).sort((a, b) => a[1].f / a[1].w - b[1].f / b[1].w)
+    .forEach(([k, g]) => console.log("  " + (100 * g.f / g.w).toFixed(1).padStart(6) + "   " +
+      k.padEnd(28) + String(g.n).padStart(5) + " passages " + String(g.w).padStart(7) + " words"));
+  console.log("");
+  process.exit(0);
 }
 
 /* ---- report ------------------------------------------------------------ */

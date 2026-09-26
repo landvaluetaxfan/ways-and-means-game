@@ -18,8 +18,8 @@ each passage against its own register.
 | register | what it is for | where it is used |
 |---|---|---|
 | **Reference** | telling a reader what a thing is | the Concordance; country notes; currents; parties, stations, constituencies, cabinet posts, functional seats, actors, lenders, bills' summaries, the glossary, party organisation |
-| **Interface** | telling a player what a control or number does | tooltips (`js/tips.js`); a refusal's reason; initiatives' notes; awards; status lines; the sandbox |
-| **Voice** | the world speaking | events (body, result), minutes, the introduction, wire lines, the Underwriters' outlook, `textbook.md` |
+| **Interface** | telling a player what a control or number does, and what the numbers mean together | tooltips (`js/tips.js`); a refusal's reason; initiatives' notes; awards; status lines; the sandbox; **the Underwriters' outlook**, which is a briefing (below) |
+| **Voice** | the world speaking | events (body, result), minutes, the introduction, wire lines, `textbook.md` |
 
 The scanner knows which surface a passage comes from (`npm run register`
 prints the register beside each hit). A new surface is added to the map in
@@ -52,6 +52,57 @@ prints the register beside each hit). A new surface is added to the map in
 
   "Closed trade", "widening personhood", "for a federal Commonwealth" and
   "the station against the federation" are the shorthand leaking out.
+
+## What a passage owes the reader
+
+*Reference and Interface. Added 26 September 2026 (design/45).* Every rule
+above is a prohibition, and a passage can obey all of them and still tell
+the reader nothing: the passes that applied them removed habits and added
+no information. These six say what a passage must put on the page. They
+came from the author's three examples and the Foreign Affairs prose the
+author singled out as better.
+
+1. **State what you refer to.** A sentence that mentions a name, a figure, a
+   date, a law or a question says which. The reader should never have to
+   look back three clauses, or already know.
+
+   > was: established by international treaty, whose title is its formal name.
+   >
+   > now: Its formal name, the International Earth-Orbit Elevator, is the
+   > title of the treaty that established it.
+
+2. **One antecedent per pronoun.** If *it* could be either of two things,
+   name the thing.
+3. **A figure carries its scale, and a judgement carries its figure.** "A
+   loyalty of 29" says nothing until the reader knows it is out of 100 and
+   what 29 does. "Deep enough", "small", "close to where they opened" are
+   verdicts, and the reader needs the number the verdict was drawn from.
+
+   > was: Trades Left, 32 members at a discipline of 29.
+   >
+   > now: The Trades Left has 32 members, and its loyalty to the party
+   > leadership stands at 29 of 100: on a whipped vote about 82 of every 100
+   > vote with the party.
+
+4. **Say the mechanism.** What causes it, what it changes, and what the
+   player can do about it, in the game's terms. A consequence without its
+   cause is a mood.
+5. **Describe an institution by what it has and does**: its members, its
+   money, its powers, its record, what it wants. Never by its temperament
+   ("it does not hurry", "it remembers", "its politics is a schedule").
+6. **Write for a reader who arrived from a link.** A Concordance article, a
+   tooltip or a briefing is often the first thing a player has read on the
+   subject. Define the thing before using it, or link it.
+
+**Explaining is not padding.** The Interface limits stand: a tooltip is
+still two or three sentences, and one that needs more says where to read
+it. An explanation that grows long has usually found a second subject,
+which belongs in its own article.
+
+**The epigram is the habit this replaces.** A sentence shaped to sound
+knowing (a tautology, a chiasmus, a paradox, a paired negation, a closing
+twist) is almost always standing where a fact should be. The scanner
+reports the shapes as `epigram` and the thin passages as `thin`.
 
 ## Reference
 
@@ -124,6 +175,31 @@ something, who wants one answer.
 > loyalty to the party leadership. The party's loyalty is the average of its
 > currents', weighted by size.
 
+### Briefings
+
+The Underwriters' outlook on the Economy tab is a **briefing**: the
+register of a good financial column or a central bank's statement. It was
+filed as Voice until 26 September, which licensed a wry insider ("which is
+worth more to a borrower than any rate it could set") and no figures at
+all, because its readings were fixed sentences.
+
+1. **Every reading leads with the figure**, filled by the engine (`{deficit}`,
+   `{reserve}`, `{rate}`: CONTENT_GUIDE.md lists them), never typed.
+2. **Then what it means for the government**, in the next sitting or the
+   next meeting of the Bank, with the date where there is one.
+3. **Then what would change it**, where the player holds the lever.
+4. **Two or three sentences a reading**, grouped by subject (the account,
+   borrowing, prices, the Bank and the dollar), so the panel reads as one
+   briefing.
+
+> was: Outgoings exceed receipts. The gap is met from the reserve every
+> day, whether or not anybody votes on it.
+>
+> now: The Commonwealth spends CW$224bn a year and collects CW$220bn, a
+> deficit of CW$4bn or 0.7% of output. The reserve of CW$52bn would cover it
+> for about thirteen years at this rate, so money is not this session's
+> constraint.
+
 ## Voice
 
 Events, minutes and the introduction are the world speaking, and they are
@@ -192,6 +268,17 @@ was wrong with them. That is the method, and it is repeatable:
   formula every description ended on ("The recorded interests are X and Y",
   128 of 141) is gone, since the dossier prints the interests beside it.
 
+- **26 Sep.** **The prose did not explain** (design/45). The author's
+  three examples (the outlook, the Bellamy line, the Kenya note) were one
+  fault: prose written for a reader who already knows. It pointed at facts,
+  put an epigram where the explanation should be, and gave verdicts without
+  figures. The Foreign Affairs prose did not, and the author said it read
+  better: it carried 15.7 checkable facts per hundred words against 3 to 6
+  on the surfaces never rewritten. The six rules in *What a passage owes
+  the reader* were added. The outlook became a briefing with the engine's
+  figures, and the Reference and Interface surfaces were swept against the
+  new rules.
+
 ## Using it
 
 ```
@@ -200,6 +287,7 @@ npm run register -- reference       one register
 npm run register -- contrast        one habit
 npm run register -- currents        one surface (an address prefix)
 npm run register -- --notes         the Voice notes as well as the faults
+npm run register -- --density       checkable facts per hundred words, by surface
 ```
 
 It reports and never rewrites. It is not in `npm run check`: a style check
