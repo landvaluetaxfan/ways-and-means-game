@@ -58,7 +58,7 @@ campaign("flash_i", { resolutions: [
   /* An important question: two thirds of those present and voting. */
   { id: "un_works_administration", forum: "un_ga", sponsor: "commonwealth_mission", majority: 0.6667,
     title: "A United Nations administration of the Almanac Works",
-    summary: "Places the Almanac Works under a transitional administration of the United Nations and the Commonwealth jointly, as a free trade zone, until its residents' status is settled.",
+    summary: "Under the Uniting for Peace procedure, the Security Council being unable to act, places the Almanac Works under a transitional administration of the United Nations and the Commonwealth jointly, as a free trade zone, until its residents' status is settled.",
     axes: { orbital: 0.3, creditors: 0.1 },
     when: { flags: ["f1_referendum_carried", "f1_held_the_line"], flagsAbsent: ["f1_annexing", "almanac_annexed"] },
     whenText: "the referendum recognised and the line held, with no move to annex",

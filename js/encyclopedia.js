@@ -743,7 +743,7 @@ const Concordance = (function () {
       infobox: { title: f.short || f.name, rows: [["Seats", seats.toLocaleString()],
         ["The Commonwealth", "a full member"],
         fs.next ? ["Next sitting", longDate(fs.next)] : null].filter(Boolean) },
-      see: []
+      see: (f.see || []).slice()
     };
   }
   function resolutionArticle(r, f) {

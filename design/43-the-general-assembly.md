@@ -174,12 +174,41 @@ Kiribati and São Tomé, whose revenue is the Commonwealth's lease, open
 friendly; the African Group leans toward self-determination and debt relief;
 the Western European and Others Group leans toward creditors.
 
-## Deferred
+## The Security Council and the accession (decided 26 Sep)
 
-- **The Security Council.** Sanctions and administrations are the Council's
-  in the real UN. Modelling it means naming its permanent members in 2080,
-  which is the author's canon to write. The Assembly is written so a Council
-  could be a second forum with a veto rule.
+The author offered two shapes, a permanent five of China, Russia, the United
+States, the European Union and one more, or an overhaul, and asked for a
+preference and an accession date.
+
+**The reform, with the African Union as the fifth.** Four reasons:
+
+1. **It explains itself.** A veto and five names is something a player
+   already knows; an overhauled Council is a new institution, and one more
+   concept to teach where §2.6 says teaching costs.
+2. **The timeline already asks for it.** The locked 2040s row makes the
+   equatorial coasts strategic, and the tethers stand on them: an African
+   permanent seat is what that decade would have produced.
+3. **The anchors are African.** Kenya, Gabon, São Tomé, Somalia and Uganda
+   host tethers, so a veto on the Council now speaks for the anchor states.
+4. **It deadlocks the Works by construction.** The Union speaks for the
+   bondholders and the African Union for the hosts; neither lets the Council
+   act against the other, so the question goes to the Assembly under Uniting
+   for Peace. That is the reason the joint administration was already the
+   Assembly's, by two thirds, and nothing in Flash I had to change.
+
+**Admitted in 2066**, the 194th member: two years after the Charter and the
+year after the Anselm anchor's treaty with Brazil, on the Council's
+recommendation with the Union abstaining.
+
+Left open for the author: **how the United Kingdom gave up its permanent
+seat.** The Charter's amendment rule needs every permanent member's
+ratification, so it agreed to something; what, is the author's story.
+
+The Council is a Concordance article, not a forum: on the only question
+Flash I puts to the UN it cannot act. A forum with a `veto` list is the next
+step when a campaign needs a Council vote.
+
+## Deferred
 - **Emergency special sessions**, which would let the government call a
   sitting. A later lever.
 

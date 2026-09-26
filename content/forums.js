@@ -20,6 +20,7 @@
                     its own standing, from a meter
 
      summary        the Concordance's lede, continuing from the name
+     see            Concordance articles the forum's page points to
 
    RESOLUTIONS are put to a forum:
      forum, sponsor (a member id), title, summary,
@@ -38,7 +39,8 @@ const FORUMS = [
 
   { id: "un_ga", name: "United Nations General Assembly", short: "General Assembly",
     /* the Concordance's lede continues from the name */
-    summary: "is the plenary organ of the United Nations, in which every member state holds a seat and a vote. The Commonwealth sits as a full member.",
+    summary: "is the plenary organ of the United Nations, in which every member state holds a seat and a vote. The Commonwealth has sat as a full member since 2066.",
+    see: ["un_security_council"],
     /* Resumed session through the northern summer, every third Tuesday:
        in Flash I that is 11 June, 2 July, 23 July and 13 August, one sitting
        after the dilemma, two while the House sits and one in the campaign. */

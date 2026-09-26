@@ -175,46 +175,46 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 
 **Part XI — NAMED CANON** · L2029
 - §11.1 · L2033 — The polity
-- §11.2 · L2111 — Persons
-- §11.3 · L2155 — Stations and constituencies
-- §11.4 · L2232 — The functional roster  *LOCKED*
-- §11.5 · L2254 — The live bill
-- §11.6 · L2263 — Other business on the order paper
+- §11.2 · L2132 — Persons
+- §11.3 · L2176 — Stations and constituencies
+- §11.4 · L2253 — The functional roster  *LOCKED*
+- §11.5 · L2275 — The live bill
+- §11.6 · L2284 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L2281
-- §12.1 · L2283 — The core principle  *LOCKED*
-- §12.2 · L2287 — Split visual language  *LOCKED*
-- §12.3 · L2294 — Chrome direction  *LOCKED*
-- §12.4 · L2300 — Screens  *LOCKED*
-- §12.5 · L2304 — Election night  *LOCKED*
-- §12.6 · L2314 — The orbital map  *LOCKED*
-- §12.7 · L2342 — The parliament diagram  *LOCKED*
-- §12.8 · L2368 — Documents  *LOCKED*
-- §12.9 · L2374 — The feed  *LOCKED*
-- §12.10 · L2378 — Build cost  *LOCKED*
-- §12.11 · L2382 — Images  *LOCKED*
-- §12.12 · L2410 — Existing artifact
-- §12.13 · L2422 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L2302
+- §12.1 · L2304 — The core principle  *LOCKED*
+- §12.2 · L2308 — Split visual language  *LOCKED*
+- §12.3 · L2315 — Chrome direction  *LOCKED*
+- §12.4 · L2321 — Screens  *LOCKED*
+- §12.5 · L2325 — Election night  *LOCKED*
+- §12.6 · L2335 — The orbital map  *LOCKED*
+- §12.7 · L2363 — The parliament diagram  *LOCKED*
+- §12.8 · L2389 — Documents  *LOCKED*
+- §12.9 · L2395 — The feed  *LOCKED*
+- §12.10 · L2399 — Build cost  *LOCKED*
+- §12.11 · L2403 — Images  *LOCKED*
+- §12.12 · L2431 — Existing artifact
+- §12.13 · L2443 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2481
-- §13.1 · L2483 — Scandal taxonomy  *LOCKED*
-- §13.2 · L2496 — The spine  *LOCKED*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2502
+- §13.1 · L2504 — Scandal taxonomy  *LOCKED*
+- §13.2 · L2517 — The spine  *LOCKED*
 
-**Part XIV — PRIOR ART** · L2504
-- §14.1 · L2506 — The gap  *LOCKED*
-- §14.2 · L2510 — Works
-- §14.3 · L2518 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L2525
+- §14.1 · L2527 — The gap  *LOCKED*
+- §14.2 · L2531 — Works
+- §14.3 · L2539 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2531
-- §15.1 · L2533 — Team  *LOCKED*
-- §15.2 · L2539 — Documentation  *LOCKED*
-- §15.3 · L2555 — Where this gets hard  *LOCKED*
-- §15.4 · L2566 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2583 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2552
+- §15.1 · L2554 — Team  *LOCKED*
+- §15.2 · L2560 — Documentation  *LOCKED*
+- §15.3 · L2576 — Where this gets hard  *LOCKED*
+- §15.4 · L2587 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2604 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2613
+**Part XVI — OPEN DECISIONS** · L2634
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2657
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2678
 
 <!-- /TOC -->
 
@@ -2046,13 +2046,32 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
   something anyone chose. Asked what they are, people name a station. §7.2 made
   lexical.
 - **The Perigee Charter** — the founding document. Deliberately ambiguous on contested items. Functional-tier sunset clause extended four times.
-- **A member of the United Nations** (the author, 26 Sep 2026; `design/43`).
-  The Commonwealth holds a full seat and vote in the General Assembly, can
-  table resolutions, and has diplomatic standing to spend. The European Union
-  votes there as a caucus: its twenty-seven members keep their own seats and
-  vote on the Union's line. The General Assembly is modelled
-  (`content/forums.js`); the Security Council is not yet written, because
-  naming its permanent members in 2080 is canon still to decide.
+- **A member of the United Nations since 2066** (the author, 26 Sep 2026;
+  `design/43`). The Commonwealth holds a full seat and vote in the General
+  Assembly, can table resolutions, and has diplomatic standing to spend. It
+  applied the year after the Charter and was admitted in 2066, the 194th
+  member, on the Security Council's recommendation (the Union abstaining) and
+  two thirds of the Assembly; the year was chosen by Claude at the author's
+  request. The European Union votes in the Assembly as a caucus: its
+  twenty-seven members keep their own seats and vote on the Union's line. The
+  General Assembly is modelled (`content/forums.js`).
+- **The Security Council** (decided 26 Sep 2026 by Claude, at the author's
+  request, between a reformed permanent five and an overhaul). Fifteen
+  members, ten elected, and five permanent with the veto: **China, Russia,
+  the United States, the European Union and the African Union.** The two
+  unions hold the seats made by the reform of the early 2050s, when the
+  climate decade had made the equatorial coasts the most contested ground on
+  Earth (the 2040s row below): the Union in place of its members' national
+  seats, and the African Union in the permanent seat Africa had asked for
+  since the Ezulwini Consensus. **How the United Kingdom came to give up its
+  seat is not written**, and is the author's to write if a campaign needs
+  it. On the Almanac Works the Union (the bondholders) and the African Union
+  (the anchor hosts, Kenya among them) stand on opposite sides, so the
+  Council cannot act and the Assembly takes the question up under **Uniting
+  for Peace**: that is why Flash I's joint administration is the Assembly's,
+  by two thirds. The Council is a Concordance article
+  (`un_security_council`) and not a forum in play; a forum with a veto rule
+  is the next step if a campaign needs a Council vote.
 - **Current date in play:** 11 April 2080. Session 4, Week 112.
 - **THE TIMELINE — LOCKED 22 Sep 2026, and it is TWO DECADES and not two
   centuries.** The Commonwealth was drafted as two hundred years old and dated
@@ -2065,12 +2084,14 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
   | | |
   |---|---|
   | 2040s | Earth: automation takes bulk production; climate forces the institutions of the old order open. Equatorial coasts become strategic — Somalia's is contested from here. **The personhood and emulation fights are fought and settled here, on Earth, before anybody comes up.** |
+  | early 2050s | Earth: the Security Council reformed. The European Union and the African Union take permanent seats; China, Russia and the United States keep theirs. *(Added 26 Sep 2026 at the author's request.)* |
   | ~2058 | Orbital industry at scale. Permanent habitation begins. |
   | 2060 | The Tribunal's presiding judge is emulated — before the founding, which is why she was in the room for its arguments. |
   | 2061 | *The Spindle* founded. The stations begin acting together as a treaty organisation, whose head is styled **Secretary-General**. |
   | 2063 | The rising against the provisional administration, suppressed in five weeks. Its survivors are alive and in their fifties now. |
   | 2064 | **The Perigee Charter.** The treaty organisation becomes a state and the Secretary-General title goes vestigial — no holder addressed by it since. The consumables floor is in it from the start. |
   | 2065 | The Anselm anchor granted to Brazil on a ninety-nine-year term, running to 2164. |
+  | 2066 | **Admitted to the United Nations**, its 194th member, the Union abstaining in the Council. *(Added 26 Sep 2026: the year chosen by Claude at the author's request.)* |
   | 2068 | The Indonesian anchor granted during a currency crisis. |
   | 2070 | **Flash comes up to the Winter Garden.** The Commonwealth's springtime. |
   | 2071 | Flash is Governor of the Reserve Bank, a year after arriving. |

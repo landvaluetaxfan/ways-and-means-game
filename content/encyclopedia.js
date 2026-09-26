@@ -472,7 +472,44 @@ This produces a recurring constitutional argument. Federal development spending 
       { h:"Exchange controls", when:{ flags:["exchange_controls"] }, body:
         "An Exchange Control Order requires a Treasury licence for any payment of more than "+"a million dollars to a person outside the Commonwealth, except for trade in goods." }
     ],
-    see:["reserve_bank","quota_forwarding","lender_earth","commonwealth"] }
+    see:["reserve_bank","quota_forwarding","lender_earth","commonwealth"] },
+
+  /* THE COUNCIL (26 Sep 2026, design/43). Chosen at the author's
+     invitation: the permanent five reformed rather than overhauled, the
+     two unions in place of the European national seats and a seat for
+     Africa. Not a forum in play: on the Works it is deadlocked by design,
+     which is why the Assembly acts. */
+  { id:"un_security_council", title:"United Nations Security Council", category:"The Earth",
+    banners:[],
+    edited:{ by:"the Commonwealth's mission", attested:true, note:"" },
+    summary:"The **United Nations Security Council** is the organ of the United Nations that "+
+            "decides on sanctions, the use of force and the administration of territory, and "+
+            "recommends new members for admission. It has fifteen members: five permanent, each "+
+            "with a veto, and ten elected by the [[forum_un_ga|General Assembly]] for two years.",
+    sections:[
+      { h:"The permanent members", body:
+        "China, Russia, the United States, the European Union and the African Union. The two "+
+        "unions hold the seats made by the reform of the early 2050s, when the climate decade "+
+        "had made the equatorial coasts the most contested ground on Earth: the Union took the "+
+        "place of its members' national seats, and the African Union took the permanent seat "+
+        "Africa had asked for since the Ezulwini Consensus." },
+      { h:"The Commonwealth's admission", body:
+        "The Commonwealth applied the year after the [[perigee_charter|Perigee Charter]] and was "+
+        "admitted in 2066, the hundred and ninety-fourth member, on the Council's recommendation "+
+        "and a vote of two thirds in the Assembly. The Union abstained in the Council." },
+      { h:"Deadlock", body:
+        "A permanent member's vote against a resolution defeats it, whatever the rest of the "+
+        "Council does. Where two permanent members stand on opposite sides of a question the "+
+        "Council cannot act, and under the procedure known as Uniting for Peace the General "+
+        "Assembly may take the question up and recommend, by two thirds, what the Council "+
+        "could not decide." },
+      { h:"The Almanac Works", when:{ flags:["f1_referendum_carried"] }, body:
+        "The Union speaks for the Works' bondholders, and the African Union for the states that "+
+        "host the anchors, Kenya among them, where the Works' tether stands. Neither will let "+
+        "the Council act against the other, and the question of the Works has gone to the "+
+        "Assembly." }
+    ],
+    see:["forum_un_ga","commonwealth"] }
 
   ]
 };
