@@ -82,6 +82,9 @@ textarea.ed-body{
 .ed-stance{width:100%;}
 .ed-stance td{padding:1px 4px;}
 .ed-stance td:first-child{white-space:nowrap;}
+/* a forum member: its id above its name (design/43) */
+.ed-members td.ed-mname input,.ed-members td.ed-mname select{display:block;margin:1px 0;}
+.ed-members td.ed-mname input[data-f="m_id"]{font-family:var(--f-data);font-size:10px;color:var(--ink-soft);}
 .ed-forecast{margin-top:8px;}
 
 #ed-status{overflow:auto;flex:1;min-height:0;font-family:var(--f-data);font-size:10px;}

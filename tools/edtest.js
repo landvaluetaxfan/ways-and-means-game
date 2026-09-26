@@ -216,7 +216,11 @@ try {
       const pf = Serialise.partiesFile; Serialise.partiesFile = function (p, c) {
       window.__cap = JSON.parse(JSON.stringify(p)); return pf.apply(this, arguments); };
       const af = Serialise.administrationsFiles; Serialise.administrationsFiles = function (arr) {
-      window.__cap = JSON.parse(JSON.stringify(arr)); return af.apply(this, arguments); }; })();
+      window.__cap = JSON.parse(JSON.stringify(arr)); return af.apply(this, arguments); };
+      /* the forums and their resolutions leave through one writer */
+      const ff = Serialise.forumsFiles; Serialise.forumsFiles = function (f, r) {
+      window.__capF = JSON.parse(JSON.stringify(f)); window.__capR = JSON.parse(JSON.stringify(r));
+      return ff.apply(this, arguments); }; })();
     Editor.boot();`);
   const X = w2.eval("Editor.__test.explodeEffects");
   const norm = (tab, e) => { if (!e) return e; e = JSON.parse(JSON.stringify(e));
@@ -229,12 +233,16 @@ try {
     if (tab === "instruments") ["effects", "reverse", "political_cost"].forEach(k => {
       if (e[k]) e[k] = JSON.parse(JSON.stringify(X(e[k]))); });
     if (tab === "campaigns" && e.opening) e.opening = JSON.parse(JSON.stringify(X(e.opening)));
+    if (tab === "resolutions") ["onTable", "onPass", "onFail"].forEach(k => {
+      if (e[k]) e[k] = JSON.parse(JSON.stringify(X(e[k]))); });
     return e; };
   const GLOB = { events: "EVENTS", parties: "PARTIES", stations: "STATIONS", characters: "CHARACTERS",
     bills: "BILLS", glossary: "GLOSSARY", constituencies: "CONSTITUENCIES", functional: "FUNCTIONAL",
     /* a campaign's own kinds, written here since 25 Sep */
     settlements: "SETTLEMENTS", initiatives: "INITIATIVES", achievements: "ACHIEVEMENTS",
-    campaigns: "ADMINISTRATIONS", cabinet: "CABINET", instruments: "INSTRUMENTS" };
+    campaigns: "ADMINISTRATIONS", cabinet: "CABINET", instruments: "INSTRUMENTS",
+    /* the forums (design/43) */
+    resolutions: "RESOLUTIONS", forums: "FORUMS" };
   const diff = (a, b, p, out) => {
     if (JSON.stringify(a) === JSON.stringify(b)) return;
     if (a && b && typeof a === "object" && typeof b === "object" && Array.isArray(a) === Array.isArray(b))
@@ -250,9 +258,9 @@ try {
       const it = [...w2.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id === id);
       if (it) it.dispatchEvent(new w2.MouseEvent("click", { bubbles: true }));
     });
-    w2.__cap = null;
+    w2.__cap = null; w2.__capF = null; w2.__capR = null;
     w2.document.getElementById("ed-exportone").dispatchEvent(new w2.MouseEvent("click", { bubbles: true }));
-    const got = w2.__cap || [], want = JSON.parse(w2.eval("JSON.stringify(" + GLOB[tab] + ")"));
+    const got = (tab === "forums" ? w2.__capF : tab === "resolutions" ? w2.__capR : w2.__cap) || [], want = JSON.parse(w2.eval("JSON.stringify(" + GLOB[tab] + ")"));
     const key = o => o.id || o.term;
     const byId = new Map(got.map(o => [key(o), o]));
     const out = [];
@@ -364,8 +372,41 @@ try {
       ok("an award's ending is chosen from the endings, and written back",
          !!other && (back.when || {}).resolved === other, (back.when || {}).resolved);
     }
+    /* THE FORUMS (design/43): a resolution's position on an axis and a
+       member's standing are written back, each to its own entry */
+    click(w2.document.querySelector('.tab[data-t="resolutions"]'));
+    const rz = JSON.parse(w2.eval("JSON.stringify(RESOLUTIONS[0] || null)"));
+    if (!rz) ok("some resolution to edit", false);
+    else {
+      click(item(rz.id));
+      const ax = Object.keys(rz.axes || {})[0];
+      const box = ax && w2.document.querySelector('#ed-form [data-f="ax_' + ax + '"]');
+      if (box) box.value = "-0.25";
+      click([...w2.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id !== rz.id));
+      w2.__capR = null; click(w2.document.getElementById("ed-exportone"));
+      const back = (w2.__capR || []).find(o => o.id === rz.id) || {};
+      ok("a resolution's position is written back on the axis that was edited",
+         !!box && (back.axes || {})[ax] === -0.25 &&
+         Object.keys(rz.axes).filter(k => k !== ax).every(k => back.axes[k] === rz.axes[k]),
+         JSON.stringify(back.axes));
+    }
+    click(w2.document.querySelector('.tab[data-t="forums"]'));
+    const fz = JSON.parse(w2.eval("JSON.stringify(FORUMS[0] || null)"));
+    const mi = fz ? fz.members.findIndex(m => !m.self && !m.actor) : -1;
+    if (mi < 0) ok("some forum member with a standing of its own", false);
+    else {
+      click(item(fz.id));
+      const sb = w2.document.querySelector('#ed-form .ed-members tr[data-mi="' + mi + '"] [data-f="m_standing"]');
+      if (sb) sb.value = "73";
+      click(w2.document.querySelector('.tab[data-t="resolutions"]'));
+      w2.__capF = null; click(w2.document.getElementById("ed-exportone"));
+      const back = (w2.__capF || []).find(o => o.id === fz.id) || {};
+      ok("a member's standing is written back, to that member",
+         !!sb && back.members && back.members[mi].standing === 73 &&
+         back.members.length === fz.members.length, back.members ? String(back.members[mi].standing) : "not exported");
+    }
     const bad = [...w2.document.querySelectorAll("#ed-status .ed-err, #ed-status .ed-dup")]
-      .map(n => n.textContent).filter(t => /^(ending|initiative|award|post|instrument|party|campaign|event|bill|article|duplicate)/.test(t) ||
+      .map(n => n.textContent).filter(t => /^(ending|initiative|award|post|instrument|party|campaign|event|bill|article|duplicate|forum|resolution)/.test(t) ||
                                         /names no instrument/.test(t));
     ok("and the validator finds nothing wrong with the endings, initiatives, awards, posts, orders and records the game plays",
        bad.length === 0, bad.slice(0, 3).join(" // "));

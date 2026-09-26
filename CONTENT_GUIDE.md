@@ -25,6 +25,7 @@ content/stations.js   the station roster
 content/characters.js the fixed cast
 content/bills.js      bills and how each party votes on them
 content/events.js     the world's events
+content/forums.js     the forums (the General Assembly) and the world's resolutions
 content/campaigns/<id>/  a campaign's own story, one file per kind
                       ← you will live here
 ```
@@ -310,6 +311,51 @@ charter. Those must carry separately on both benches — the trap the campaign i
 built on.
 
 `onPass` and `onFail` are effect arrays, same vocabulary as events.
+
+---
+
+## Adding a resolution (design/43)
+
+The House is where the government whips; a **forum** is where it asks. The
+General Assembly is the world's forum, in `content/forums.js`, and a
+campaign's resolutions go in its folder (`resolutions.js`), or on the
+editor's **Resolutions** tab.
+
+```js
+{ id: "un_icj_salvage", forum: "un_ga", sponsor: "commonwealth_mission",
+  title: "Request for an advisory opinion on the salvage of abandoned orbital platforms",
+  summary: "Asks the International Court of Justice whether ...",
+  axes: { orbital: 0.6, creditors: -0.6 },      // on the forum's own axes
+  when: { flags: ["almanac_annexed"] },         // when the government may table it
+  whenText: "the Annexation Act has to be law first",
+  onPass: [ { flag: "un_icj_requested" }, { queue: [ { event: "f1_icj_opinion", after: 4 } ] } ],
+  onFail: [ { move: { legitimacy: -3 } } ] }
+```
+
+- **A member votes** its position projected on the resolution's, plus the
+  Commonwealth's vote times its standing, plus the forum's climate (the
+  General Assembly reads friction). Beyond the forum's `line` it votes; inside
+  it, it abstains. A bloc votes its line with `cohesion` of its seats.
+- **Majority** is of those present and voting; `majority: 0.6667` makes an
+  important question. `vote` sets the Commonwealth's vote until the
+  government changes it (`"against"` for a resolution aimed at it).
+- **Table it from content** with `{resolution:{<id>:"table"}}`. This does NOT
+  check the resolution's `when`, because another member tables its own
+  through an event; a choice that tables the Commonwealth's own should carry
+  the same `when`.
+- **Move a member** with `{move:{"member.<id>": n}}`. A member with an
+  `actor` moves the actor, so the powers panel and the forum agree.
+- **Read the result** with `resolutionIs:{<id>: "adopted"}` (or a list of
+  statuses), or with the flags its `onPass` and `onFail` set.
+- **Deliver its story by queue, not by weight.** Chapter two's pool is
+  saturated: an event above weight 75 takes a sitting from the crisis and one
+  below it rarely fires. Queue the event from the choice that makes it true,
+  or better, make it a choice on an event already there (the World Court's
+  question is the bondholders' notice's fourth answer). Then run the guards
+  and the playtest and compare.
+- **Keep friction out of a forum's consequences** in an annexing run until
+  measured: friction feeds the thermal drain, and two points of it tipped a
+  playtest strategy into a cascade that three did not.
 
 ---
 

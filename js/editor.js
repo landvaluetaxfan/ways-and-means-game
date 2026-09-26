@@ -1061,7 +1061,7 @@ const Editor = (function () {
      ========================================================= */
 
   /* the files a campaign is kept in, in the order the pages load them */
-  const CAMP_KINDS = ["events", "bills", "settlements", "initiatives", "achievements"];
+  const CAMP_KINDS = ["events", "bills", "settlements", "initiatives", "achievements", "resolutions"];
   function campaignFiles(id) {
     const out = Serialise.administrationsFiles(M.administrations)
       .filter(f => f.path === "content/campaigns/" + id + "/campaign.js");
@@ -1395,6 +1395,152 @@ const Editor = (function () {
   }
 
   /* =========================================================
+     THE FORUMS AND THEIR RESOLUTIONS (design/43)
+
+     A forum is the world's: its members, its dates and its rule for
+     carrying. A resolution is usually a campaign's: who tables it, where
+     it sits on the forum's axes, when the government may table it, and
+     what it does tabled, carried and failed. Both edit a clone, so a field
+     the form does not draw survives being looked at.
+     ========================================================= */
+  const RES_LISTS = [["onTable", "When it is tabled"], ["onPass", "If it carries"], ["onFail", "If it fails"]];
+  const RES_VOTES = [["for", "for"], ["against", "against"], ["abstain", "abstain"]];
+  function forumOfRes(r) { return (M.forums || []).find(f => f.id === r.forum) || null; }
+  function resolutionForm(r) {
+    const f = forumOfRes(r) || {};
+    const members = (f.members || []).map(m => [m.id, m.name + (m.self ? " (the Commonwealth)" : "")]);
+    const axes = Object.keys(f.axes || {});
+    return `<div class="ed-grid">
+      <label>Id ${txt_("id", r.id, "", 200)}<button class="btn ed-add" data-act="rename">rename…</button></label>
+      <label>Forum ${opt_("forum", (M.forums || []).map(x => [x.id, x.short || x.name]), r.forum)}</label>
+      <label>Sponsor ${opt_("sponsor", members, r.sponsor)}</label>
+      ${campField(r)}
+    </div>
+    <div class="ed-grid">
+      <label class="ed-w">Title ${txt_("title", r.title || "", "", 470)}</label>
+    </div>
+    <div class="ed-grid">
+      <label>Majority ${num_("majority", r.majority == null ? "" : r.majority, 70)}
+        <span class="ed-hint">blank: the forum's; 0.6667 is two thirds</span></label>
+      <label>The Commonwealth votes ${opt_("vote", RES_VOTES, r.vote, "— for its own, else abstain —")}</label>
+    </div>
+    <div class="rulehead">Summary <span class="ed-hint">what it says, for the Concordance and the count</span></div>
+    <textarea class="ed-f ed-body" data-f="summary" rows="3">${esc(r.summary || "")}</textarea>
+    <div class="rulehead">Position <span class="ed-hint">on the forum's axes, −1 to +1; each member reads it against its own</span></div>
+    <div class="ed-grid">${axes.length ? axes.map(a =>
+      `<label>${esc(a)} ${num_("ax_" + a, (r.axes || {})[a] == null ? "" : r.axes[a], 64)}
+        <span class="ed-hint">${esc(f.axes[a])}</span></label>`).join("")
+      : `<span class="ed-hint">choose a forum to set a position</span>`}</div>
+    <div class="rulehead">The government may table it when <button class="btn ed-add" data-act="cond-add">+ condition</button>
+      <span class="ed-hint">its own only; an effect tables any resolution whatever this says</span></div>
+    <div id="ed-conds">${condRows(r.when)}</div>
+    <div class="ed-grid"><label class="ed-w">Why not yet ${txt_("whenText", r.whenText || "", "the Act has to be law first", 460)}
+      <span class="ed-hint">shown beside Table it while the condition fails</span></label></div>
+    <div class="rulehead">Fixed votes <span class="ed-hint">JSON, {member: "for" | "against" | "abstain"}; the sponsor always votes for</span></div>
+    ${jsonField("stances", r.stances, 2)}
+    ${RES_LISTS.map(([k, label], ci) => `
+    <div class="rulehead">${label} <button class="btn ed-add" data-act="eff-add" data-ci="${ci}">+ effect</button></div>
+    <div class="ed-effs" id="ed-res-${k}">${explodeEffects(r[k]).map((eff, ei) => effRow(eff, ci, ei)).join("")}</div>`).join("")}`;
+  }
+  function readResolution(orig) {
+    const r = clone(orig || {});
+    r.id = g_("id").value.trim(); r.title = g_("title").value;
+    const fo = g_("forum").value; if (fo) r.forum = fo; else delete r.forum;
+    const sp = g_("sponsor").value; if (sp) r.sponsor = sp; else delete r.sponsor;
+    readCampaign(r);
+    putNum(r, "majority", g_("majority").value);
+    const v = g_("vote").value; if (v) r.vote = v; else delete r.vote;
+    putText(r, "summary", g_("summary").value);
+    /* the forum's axes as the form drew them; an axis it did not draw is kept */
+    const f = forumOfRes(orig || {}) || {};
+    const ax = Object.assign({}, r.axes || {});
+    Object.keys(f.axes || {}).forEach(a => {
+      const n = g_("ax_" + a); if (!n) return;
+      if (n.value === "") delete ax[a]; else ax[a] = +n.value;
+    });
+    if (Object.keys(ax).length || r.axes) r.axes = ax;
+    const when = readConds(document.getElementById("ed-conds"));
+    if (when) r.when = when; else delete r.when;
+    putText(r, "whenText", g_("whenText").value);
+    readJson(r, "stances", g_("stances").value);
+    RES_LISTS.forEach(([k]) => {
+      const effs = readEffs(document.getElementById("ed-res-" + k));
+      if (effs.length || Array.isArray(r[k])) r[k] = effs; else delete r[k];
+    });
+    return r;
+  }
+
+  /* A FORUM'S MEMBERS, one row each: seats, how much of a bloc keeps its
+     line, its standing toward the Commonwealth, the actor it reads, and its
+     position on each of the forum's axes. */
+  function forumForm(f) {
+    const axes = Object.keys(f.axes || {});
+    const actors = [["", "— none —"]].concat((typeof ACTORS !== "undefined" ? ACTORS : []).map(a => [a.id, a.name]));
+    /* the id above the name in one cell, so the table fits the pane and
+       the form never needs scrolling sideways */
+    const rows = (f.members || []).map((m, i) => `<tr data-mi="${i}">
+      <td class="ed-mname">${txt_("m_id", m.id, "id", 130)}${txt_("m_name", m.name || "", "name", 130)}<select class="ed-f" data-f="m_actor" style="width:130px">${actors.map(([v, l]) =>
+        `<option value="${esc(v)}"${v === (m.actor || "") ? " selected" : ""}>${esc(v ? "reads " + l : "reads no actor")}</option>`).join("")}</select></td>
+      <td>${num_("m_votes", m.votes == null ? "" : m.votes, 40)}</td>
+      <td>${num_("m_cohesion", m.cohesion == null ? "" : m.cohesion, 46)}</td>
+      <td>${m.actor ? `<span class="ed-hint">the actor's</span>` : num_("m_standing", m.standing == null ? "" : m.standing, 42)}</td>
+      <td><input type="checkbox" class="ed-f" data-f="m_self" ${m.self ? "checked" : ""}></td>
+      ${axes.map(a => `<td>${num_("m_ax_" + a, (m.axes || {})[a] == null ? "" : m.axes[a], 46)}</td>`).join("")}
+      <td><button class="btn ed-x" data-act="mem-del" data-mi="${i}">×</button></td></tr>`).join("");
+    const seats = (f.members || []).reduce((n, m) => n + (m.votes || 1), 0);
+    return `<div class="ed-grid">
+      <label>Id ${txt_("id", f.id, "", 110)}</label>
+      <label class="ed-w">Name ${txt_("name", f.name || "", "", 320)}</label>
+      <label>Short ${txt_("short", f.short || "", "", 160)}</label>
+    </div>
+    <div class="rulehead">Summary <span class="ed-hint">the Concordance's lede, continuing from the name: "is the …"</span></div>
+    <textarea class="ed-f ed-body" data-f="summary" rows="2">${esc(f.summary || "")}</textarea>
+    <div class="ed-grid">
+      <label>First sits ${num_("firstAfter", f.firstAfter == null ? "" : f.firstAfter)} <span class="ed-hint">days from the campaign's start</span></label>
+      <label>Then every ${num_("every", f.every == null ? "" : f.every)} <span class="ed-hint">days</span></label>
+      <label>Majority ${num_("majority", f.majority == null ? "" : f.majority, 64)} <span class="ed-hint">of those voting</span></label>
+      <label>Line ${num_("line", f.line == null ? "" : f.line, 64)} <span class="ed-hint">how far a member leans before it votes</span></label>
+      <label>Standing weight ${num_("standingWeight", f.standingWeight == null ? "" : f.standingWeight, 64)}</label>
+    </div>
+    <div class="rulehead">Axes <span class="ed-hint">JSON, {name: "what the two ends mean"}</span></div>
+    ${jsonField("axes", f.axes, 3)}
+    <div class="rulehead">Climate <span class="ed-hint">JSON, [{from, at, weight}]: what every member reads besides its standing</span></div>
+    ${jsonField("climate", f.climate, 2)}
+    <div class="rulehead">Members <button class="btn ed-add" data-act="mem-add">+ member</button>
+      <span class="ed-hint">${seats} seats; cohesion is a bloc's share on its line; exactly one is the Commonwealth's own</span></div>
+    <table class="ed-stance ed-members"><thead><tr><th>Member</th><th>Seats</th><th>Cohesion</th>
+      <th>Standing</th><th>Ours</th>${axes.map(a => `<th>${esc(a)}</th>`).join("")}<th></th></tr></thead>
+      <tbody>${rows}</tbody></table>`;
+  }
+  function readForum(orig) {
+    const f = clone(orig || {});
+    f.id = g_("id").value.trim(); f.name = g_("name").value;
+    putText(f, "short", g_("short").value);
+    putText(f, "summary", g_("summary").value);
+    ["firstAfter", "every", "majority", "line", "standingWeight"].forEach(k => putNum(f, k, g_(k).value));
+    readJson(f, "axes", g_("axes").value);
+    readJson(f, "climate", g_("climate").value);
+    const axes = Object.keys((orig || {}).axes || {});
+    const before = (orig && orig.members) || [];
+    f.members = [...document.querySelectorAll("#ed-form .ed-members tbody tr")].map(tr => {
+      const m = clone(before[+tr.dataset.mi] || {});
+      const q = k => tr.querySelector(`[data-f="${k}"]`);
+      m.id = q("m_id").value.trim(); m.name = q("m_name").value;
+      putNum(m, "votes", q("m_votes").value);
+      putNum(m, "cohesion", q("m_cohesion").value);
+      if (q("m_standing")) putNum(m, "standing", q("m_standing").value);
+      const a = q("m_actor").value; if (a) m.actor = a; else delete m.actor;
+      if (q("m_self").checked) m.self = true; else delete m.self;
+      const ax = Object.assign({}, m.axes || {});
+      axes.forEach(k => { const n = q("m_ax_" + k); if (!n) return;
+        if (n.value === "") delete ax[k]; else ax[k] = +n.value; });
+      if (Object.keys(ax).length || m.axes) m.axes = ax;
+      return m;
+    });
+    return f;
+  }
+
+  /* =========================================================
      RENDER
      ========================================================= */
 
@@ -1450,6 +1596,21 @@ const Editor = (function () {
                             return (c ? c.name.replace(/ MP$/, "") : a.leader || a.id) + " " + (a.ordinal || ""); },
               sub: a => (typeof a.campaign === "string" ? "plays " + a.campaign : a.id),
               form: campaignForm, blank: () => ({}) },
+    /* a new resolution is the government's own and gated on a flag nothing
+       sets yet, so it cannot be tabled until the author says when */
+    resolutions: { arr: "resolutions", label: r => r.title || r.id,
+              sub: r => { const f = forumOfRes(r);
+                          return (f ? f.short || f.name : r.forum || "no forum") + " \u00b7 " + (r.sponsor || "no sponsor"); },
+              form: resolutionForm, blank: () => {
+                const f = (M.forums || [])[0] || {}, me = (f.members || []).find(m => m.self);
+                return { id: "new_resolution", forum: f.id, sponsor: me ? me.id : undefined,
+                  title: "A new resolution", summary: "", axes: {}, when: { flags: ["new_resolution_open"] },
+                  onPass: [], onFail: [] }; } },
+    forums: { arr: "forums", label: f => f.name || f.id,
+              sub: f => (f.members || []).reduce((n, m) => n + (m.votes || 1), 0) + " seats",
+              form: forumForm, blank: () => ({ id: "new_forum", name: "A new forum", short: "",
+                firstAfter: 30, every: 21, majority: 0.5, line: 0.15, standingWeight: 0.6, axes: {},
+                members: [{ id: "commonwealth_seat", name: "The Circumterrestrial Commonwealth", votes: 1, self: true }] }) },
     achievements: { arr: "achievements", label: a => a.name || a.id, sub: a => a.tier || "—",
               form: achievementForm, blank: () => ({ id: "new_award", name: "New award", tier: "action",
                 note: "", when: { flags: ["new_award_earned"] } }) }
@@ -1518,6 +1679,8 @@ const Editor = (function () {
     else if (sel.tab === "campaigns") { arr[i] = readAdministration(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "cabinet") { arr[i] = readCabinet(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "instruments") { arr[i] = readInstrument(arr[i]); sel.id = arr[i].id; }
+    else if (sel.tab === "resolutions") { arr[i] = readResolution(arr[i]); sel.id = arr[i].id; }
+    else if (sel.tab === "forums") { arr[i] = readForum(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "parties") {
       const p = arr[i];
       p.id = g("id").value.trim(); p.name = g("name").value; p.short = g("short").value;
@@ -2168,7 +2331,8 @@ const Editor = (function () {
     /* an entry belongs to a campaign that exists, or it is played by none */
     const known = new Set(campaignIds());
     [["event", M.events], ["bill", M.bills], ["ending", M.settlements], ["initiative", M.initiatives],
-     ["award", M.achievements], ["article", (M.encyclopedia || {}).articles]].forEach(([what, arr]) =>
+     ["award", M.achievements], ["resolution", M.resolutions],
+     ["article", (M.encyclopedia || {}).articles]].forEach(([what, arr]) =>
       (arr || []).forEach(x => [].concat(x.campaign == null ? [] : x.campaign).forEach(c => {
         if (!known.has(c)) P.push(["err", what + " " + (x.id || "?") + ": belongs to '" + c + "', which has no campaign record"]);
       })));
@@ -2202,6 +2366,20 @@ const Editor = (function () {
         if (!SCHEMA.awardConditions[k]) P.push(["err", "award " + a.id + ": '" + k + "' is not a condition an award can ask"]);
       });
       if (!a.when || !Object.keys(a.when).length) P.push(["warn", "award " + a.id + ": no condition, so it is never awarded"]);
+    });
+
+    /* THE FORUMS (design/43): a resolution put to no forum is never voted,
+       and a sponsor who sits in no seat of it votes for nothing */
+    dupes(M.forums || [], "forum"); dupes(M.resolutions || [], "resolution");
+    (M.forums || []).forEach(f => {
+      const n = (f.members || []).filter(m => m.self).length;
+      if (n !== 1) P.push(["err", "forum " + f.id + ": " + n + " seats marked the Commonwealth's own, and it needs one"]);
+    });
+    (M.resolutions || []).forEach(r => {
+      const f = forumOfRes(r);
+      if (!f) P.push(["err", "resolution " + r.id + ": put to no forum '" + r.forum + "'"]);
+      else if (!(f.members || []).some(m => m.id === r.sponsor))
+        P.push(["err", "resolution " + r.id + ": sponsored by '" + r.sponsor + "', who sits in no seat of " + f.id]);
     });
 
     /* the district tier must equal the sum of constituency magnitudes */
@@ -2332,6 +2510,8 @@ const Editor = (function () {
     if (kind === "parties") return [{ path: "content/parties.js", text: Serialise.partiesFile(M.parties, M.currents) }];
     if (kind === "concordance") return Serialise.encyclopediaFiles(M.encyclopedia);
     if (kind === "campaigns") return Serialise.administrationsFiles(M.administrations);
+    /* the forums and the world's resolutions share content/forums.js */
+    if (kind === "forums" || kind === "resolutions") return Serialise.forumsFiles(M.forums, M.resolutions);
     return Serialise.files(kind, M[KIND[kind].arr] || []);
   }
   function downloadName(p) {
@@ -2345,7 +2525,9 @@ const Editor = (function () {
     document.getElementById("sb-dirty").style.color = "";
     const all = ["events", "parties", "stations", "characters", "bills", "glossary",
                  "concordance", "functional", "constituencies",
-                 "settlements", "initiatives", "achievements", "campaigns", "cabinet", "instruments"]
+                 "settlements", "initiatives", "achievements", "campaigns", "cabinet", "instruments",
+                 /* one kind for the pair: forums brings the resolutions with it */
+                 "forums"]
       .reduce((a, k) => a.concat(filesOf(k)), []);
     all.forEach((f, i) => setTimeout(() => download(downloadName(f.path), f.text), i * 120));
   }
@@ -2492,9 +2674,11 @@ const Editor = (function () {
       /* an effect row belongs to a choice, or on the Initiatives tab to a
          tempo: the same rows, a different list */
       const blocks = sel.tab === "initiatives" ? (cur.tempo ||= [])
-                   : sel.tab === "campaigns" || sel.tab === "instruments" ? [cur, cur, cur] : cur.choices;
+                   : sel.tab === "campaigns" || sel.tab === "instruments" || sel.tab === "resolutions"
+                     ? [cur, cur, cur] : cur.choices;
       const effKey = sel.tab === "campaigns" ? "opening"
-                   : sel.tab === "instruments" ? SI_LISTS[+b.dataset.ci][0] : "effects";
+                   : sel.tab === "instruments" ? SI_LISTS[+b.dataset.ci][0]
+                   : sel.tab === "resolutions" ? RES_LISTS[+b.dataset.ci][0] : "effects";
       /* `move`, not `scalar`: the verb was folded into move, apply() throws
          on it, and every effect this button made was a crash in waiting. */
       if (act === "eff-add") (blocks[+b.dataset.ci][effKey] ||= []).push({ move: { public_standing: 0 } });
@@ -2511,6 +2695,8 @@ const Editor = (function () {
       if (act === "cond-del") delete cur.when[b.dataset.c];
       if (act === "cond-pair") addPair(cur.when, b.dataset.c);
       if (act === "tcond-pair") addPair(cur.tempo[+b.dataset.ti].when, b.dataset.c);
+      if (act === "mem-add") (cur.members ||= []).push({ id: "new_member", name: "A new member", votes: 1, standing: 50 });
+      if (act === "mem-del") cur.members.splice(+b.dataset.mi, 1);
       if (act === "tempo-add") (cur.tempo ||= []).push({ label: "New tempo", after: 1 });
       if (act === "tempo-del") cur.tempo.splice(+b.dataset.ti, 1);
       if (act === "tcond-add") addCondition(cur.tempo[+b.dataset.ti]);

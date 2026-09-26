@@ -1188,6 +1188,18 @@ version of any of them is in the header of the file it names.
   file's comments are the documentation of every setting, and it defines
   `campaign()`. A campaign changes the world's setup through its record.
 
+- **AND THE FORUMS** (26 Sep, design/43). A **Resolutions** tab (forum,
+  sponsor from that forum's members, the position on the forum's axes, when
+  the government may table it and why not yet, fixed votes as JSON, and the
+  three effect lists) and a **Forums** tab (dates, majority, line, standing
+  weight, axes and climate as JSON, and a member table: id, name and actor
+  stacked in one cell so the form fits the pane at 1280, then seats,
+  cohesion, standing, the Commonwealth's own seat and a position per axis).
+  The world's resolutions share `content/forums.js` with the forums
+  (`Serialise.forumsFiles`); a campaign's go in its folder, and **Export this
+  campaign** lists `resolutions.js`. `edtest` sweeps both tabs and edits
+  each; `roundtrip` compares both field for field.
+
 - **A NUMBER THE INTERFACE PRINTS IS CONTENT'S NUMBER — three found in two
   days.** The chart's record button read `2280-2287` as literal text while
   `setup.history` owns the span, so moving the canon date left a control

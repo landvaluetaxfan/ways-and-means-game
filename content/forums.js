@@ -109,4 +109,3 @@ const RESOLUTIONS = [
 
 ];
 
-if (typeof module !== "undefined") module.exports = { FORUMS, RESOLUTIONS };
