@@ -7180,6 +7180,15 @@ const UI = (function () {
 
   /* The detail that used to sit in its own panel, now expanded under the row
      it belongs to. It reads the same state the row does. */
+  /* The office a character holds now: the Prime Minister, a post in the
+     live cabinet, or failing both the role content gave them. */
+  function heldOffice(ch) {
+    if (!ch) return null;
+    if (ch.id === st.pm) return "Prime Minister";
+    const post = (C.cabinet || []).find(p => (st.cabinet[p.id] || {}).holder === ch.id);
+    if (post) return post.title || post.name;
+    return ch.role || null;
+  }
   function constituencyDetail(k) {
     const r = Engine.seatsFor(st, k.id);
     const held = Object.keys(r.held).sort((a, b) => r.held[b] - r.held[a]);
@@ -7192,14 +7201,17 @@ const UI = (function () {
       </div>` +
       (k.nonVoting ? `<div class="rulehead">Status</div>` +
         `<div class="note">A territory delegate: may speak, may not vote. The seat is outside the district tier, the chamber arithmetic and every division.</div>` : "") +
+      /* The prose reads the figures above it rather than copying them
+         (Engine.seatText), and the member's office is the one they hold
+         NOW: a role string is the opening's, and a reshuffle moves it. */
       (k.description ? `<div class="rulehead">Description</div>` +
-        `<div class="note">${esc(k.description)}</div>` : "") +
+        `<div class="note">${esc(Engine.seatText(C, k, k.description))}</div>` : "") +
       (k.tendency ? `<div class="rulehead">Voting and tendencies</div>` +
-        `<div class="note">${esc(k.tendency)}</div>` : "") +
+        `<div class="note">${esc(Engine.seatText(C, k, k.tendency))}</div>` : "") +
       `<div class="rulehead">Member</div>
       <div class="note">${r.vacant ? `<span class="hn vac">vacant</span>`
         : esc(bare(ch ? ch.name : (k.member || "\u2014"))) +
-          (ch && ch.role ? ` \u00b7 ${esc(ch.role)}` : "")}</div>
+          (heldOffice(ch) ? ` \u00b7 ${esc(heldOffice(ch))}` : "")}</div>
       <div class="rulehead">Held by</div>
       <div class="note">${held.length
         ? held.map(pid => `${logoMark(pid, "lg")}${esc(pn(pid))} ${r.held[pid]}`).join(", ")

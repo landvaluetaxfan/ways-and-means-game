@@ -120,9 +120,9 @@ The argument is closed by winning it. What is made of a person stops being a leg
              "single hulls answer as city-states, one council and no subdivision. The " +
              "mid-size charters have the powers and have never had the money. Homestead's " +
              "ten settlements share a delegation and disagree about everything, which is " +
-             "the hardest federalism of the thirty-four. The low band appoints an officer " +
+             "the hardest federalism of the thirty-five. The low band appoints an officer " +
              "and holds meetings that outrank him.\n\n" +
-             "The Commonwealth has thirty-four answers now, and one of them is yours.",
+             "The Commonwealth has thirty-five answers now, and one of them is yours.",
     when: { flags: ["federal_schedule"] } },
 ];
 

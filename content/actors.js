@@ -104,7 +104,7 @@ const ACTORS = [
     reach: { fc_maintenance: 4 },
     wants: { divergence_threshold_hours: 1, essential_services_law: 1, shed_order_priority: 1 },
     asks: "no reduction in the embodied labour floor",
-    note: "The strike weapon, and the player's own party's base. It is blunt, it is patient, and it has never forgotten that the party came out of the same sheds it did." },
+    note: `The strike weapon, and the base of the Party of Socialists and Democrats. It is blunt, it is patient, and it has never forgotten that the party came out of the same sheds it did.` },
 
   { id: "anselm_elevator", name: "Anselm Elevator", kind: "consortium",
     standing: 44, patience: 80,
@@ -142,14 +142,14 @@ const ACTORS = [
     reach: { fc_legal: 3 },
     wants: { divergence_threshold_hours: -1, reclassification_practice: 1, charter_interpretation: 1 },
     asks: "no ministerial direction over reclassification practice",
-    note: "Licenses the practitioners who argue what a person is, and is appointed by the government whose law they argue about. It has outlasted forty ministries, and it knows it." },
+    note: `Licenses the practitioners who argue what a person is, and is appointed by the government whose law they argue about. It has outlasted every Minister for Attestation since the Charter.` },
 
   { id: "college_medicine", name: "College of Medicine and Embodiment", kind: "board",
     standing: 57, patience: 50,
     reach: { fc_medicine: 3 },
     wants: { divergence_threshold_hours: 1, embodiment_access: 1, bone_density_standards: 1 },
     asks: "hold the embodiment access standard for a full session",
-    note: "Decides who may practise on a body, in a Commonwealth arguing about whether one is required. Its membership is ancient and its minutes are published two years late." },
+    note: `Decides who may practise on a body, in a Commonwealth arguing about whether one is required. It admits by election of its own fellows, and its minutes are published two years late.` },
 
   { id: "underwriters", name: "Circumterrestrial Underwriters", kind: "consortium",
     standing: 41, patience: 85,
@@ -200,7 +200,7 @@ const ACTORS = [
     standing: 44, patience: 80,
     reach: {}, wants: {},
     asks: "a public statement of the Commonwealth's position on the metanationals",
-    note: "Eleven sittings away, and permanently divided at home: the Chryse Basin wants to dig, and Nili, where Mars' strongest evidence of ancient life sits, will not let it. It buys from the same extraction companies that abandoned the platform, and it has been watching. Everything the Commonwealth hears from it is a fortnight old." },
+    note: `Eleven sittings away, and permanently divided at home: the Chryse Basin wants to dig, and Nili, where Mars' strongest evidence of ancient life sits, will not let it. It buys from the same extraction companies that abandoned the platform, and it has been watching. A dispatch reaches it in minutes, and its answer comes when both halves have agreed, about three weeks later.` },
 
   { id: "metanationals", name: "Cordell", kind: "metanational", foreign: true, lag: 3,
     standing: 47, patience: 70,

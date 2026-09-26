@@ -43,7 +43,7 @@ const ENCYCLOPEDIA = {
 
   { id:"biological_majority", title:"Biological population", category:"Personhood",
     banners:["neutrality"],
-    edited:{ by:"multiple", attested:true, note:"the uploading section has been reverted eleven times this session" },
+    edited:{ by:"multiple", attested:true, note:`the uploading section has been reverted fourteen times this session` },
     summary:"The **biological population** is the largest of the four legal categories of person in "+
       "the [[commonwealth|Commonwealth]]. A biological person is single-instanced, embodied, runs at "+
       "standard rate and dies. They are 64 per cent of adults.",
@@ -130,13 +130,8 @@ const ENCYCLOPEDIA = {
         "The far-band delegations objected at the founding that the word described an orbit and "+
         "named no nation. The founders adopted it for the same reason." },
       { h:"The demonym", body:
-        "**Commonwealther** is the most-used demonym for a citizen of the Commonwealth, and the "+
-        "one the papers and the House use. *Circumterrestrials* is the Charter-era form: it "+
-        "appears in four founding documents and is not used in speech. Several alternatives have "+
-        "been proposed and have failed.\n\n"+
-        "The word caught on slowly, because what holds the union together is shared metabolism: "+
-        "the stations' dependence on one another for air, heat and transit. Asked what they are, many residents still name a station "+
-        "first, and add Commonwealther second, as though the two answered different questions." },
+        `The Commonwealth has no demonym in use. *Circumterrestrials* is the Charter's form: it appears in four founding documents and has not been said aloud by anyone not paid to. Proposals for a spoken word have failed at every attempt.
+Asked what they are, residents name a station. The union is held together by shared metabolism, the stations' dependence on one another for air, heat and transit, and a dependence nobody chose has not produced a name anybody uses.` },
       { h:"Composition", body:
         "The Commonwealth has thirty stations across four altitude bands, and five external "+
         "constituencies. Anselm Ring holds more residents than the seven smallest stations "+
@@ -145,21 +140,13 @@ const ENCYCLOPEDIA = {
          the article does not mention the Works at all, because before that
          the Works is not part of the Commonwealth. */
       { h:"Accession of the Almanac Works", when:{ flags:["almanac_annexed"] }, body:
-        "The Bellamy Almanac Works, Brant & Vane was brought within the Commonwealth by Act, "+
-        "its private charter surrendered and its 184,000 residents admitted as Commonwealth "+
-        "persons. It is the first accession since the founding and the first addition to the "+
-        "roll that was not a station built inside it.\n\n"+
-        "The Works enters the [[functional_constituency|apportionment]] at the next "+
-        "redistribution, which is the part the chamber argued about: a works station of that "+
-        "size is worth seats, and the seats have to come from somewhere." },
+        `The Bellamy Almanac Works, Brant & Vane was brought within the Commonwealth by Act, its private charter surrendered and its 184,000 residents admitted as Commonwealth persons. It is the first accession since the founding and the first addition to the roll that was not a station built inside it.
+
+The Works enters the apportionment at the next redistribution, which is the part the chamber argued about: a works station of that size is worth seats, and the seats have to come from somewhere.` },
       { h:"What holds it together", body:
-        "Neither force, nor consent, nor identity. A station's closure ratio is the fraction of "+
-        "its material cycle it can sustain without imports, and most stations are below the "+
-        "level at which leaving is survivable.\n\n"+
-        "This produces a recurring constitutional argument. Federal development spending raises "+
-        "a station's closure ratio, and a higher closure ratio raises its capacity to secede. "+
-        "Every appropriation can therefore be called a subsidy toward the dissolution of the "+
-        "body making it. The Chartists treat this as the central fact of Commonwealth politics." }
+        `The union rests on closure. A station's closure ratio is the fraction of its material cycle it can sustain without imports, and most stations are below the level at which leaving is survivable.
+
+This produces a recurring constitutional argument. Federal development spending raises a station's closure ratio, and a higher closure ratio raises its capacity to secede. Every appropriation can therefore be called a subsidy toward the dissolution of the body making it. The Chartists treat this as the central fact of Commonwealth politics.` }
     ],
     see:["perigee_charter","parliament","prime_minister","cabinet"] },
 
@@ -180,8 +167,7 @@ const ENCYCLOPEDIA = {
         "members. A government may hold a working majority of the House and still be unable to "+
         "legislate. See [[dual_majority]]." },
       { h:"Time", body:
-        "A session has a fixed number of order-paper slots. The Prime Minister decides who "+
-        "gets them. In practice, they are traded for coalition support." }
+        `Each sitting period gives the government a fixed allotment of order-paper time, refilled at every recess. The Prime Minister decides which measures receive it. In practice, it is traded for coalition support.` }
     ],
     see:["dual_majority","functional_constituency","prime_minister","cabinet"] },
 
@@ -197,10 +183,7 @@ const ENCYCLOPEDIA = {
         "division, losing the leadership of their own party, losing a general election, or "+
         "resigning. The first two need no election and can happen within a day." },
       { h:"Powers", body:
-        "The Prime Minister nominates ministers, chairs [[cabinet|Cabinet]], controls the order "+
-        "paper, and can request a dissolution, which the [[person_tenaya|President]] can "+
-        "refuse. Control of the order paper matters most in practice, because a session has a "+
-        "fixed number of slots." },
+        `The Prime Minister nominates ministers, chairs [[cabinet|Cabinet]], controls the order paper, and can request a dissolution, which the [[person_tenaya|President]] can refuse. Control of the order paper matters most in practice, because each sitting period gives the government a fixed allotment of time.` },
       { h:"Style", body:
         "The office is styled *the Right Honourable*, and is *Prime Minister* on every "+
         "instrument of appointment. The honorific is spoken in the House; the office does the "+
@@ -250,11 +233,7 @@ const ENCYCLOPEDIA = {
             "questions.",
     sections:[
       { h:"Drafting", body:
-        "The congress sat for eleven weeks and produced a text no single delegation would "+
-        "have written. Where agreement was impossible, the drafters used language that could "+
-        "be read more than one way. Contemporary accounts call this a failure of nerve. Later "+
-        "constitutional scholarship generally calls it the reason the union survived its first "+
-        "decade." },
+        `The congress sat for seven weeks and produced a text no single delegation would have written. Where agreement was impossible, the drafters used language that could be read more than one way. Contemporary accounts call this a failure of nerve. Later constitutional scholarship generally calls it the reason the union survived its first decade.` },
       { h:"The silences", body:
         "The Charter says who can declare an emergency, but not who can end one. It does not "+
         "define the relation between a person and an instance of that person. It does not say "+
@@ -324,8 +303,7 @@ const ENCYCLOPEDIA = {
         "therefore change who votes in a functional constituency by regulation, without "+
         "legislation or a division." },
       { h:"Size", body:
-        "Functional electorates range from 62 voters to 214,000, against district electorates "+
-        "averaging under thirty thousand." },
+        `The licensed and corporate rolls range from 62 voters to 214,000, against district electorates averaging under thirty thousand.` },
       { h:"The residual constituency", body:
         "People in no recognised sector, including the unemployed, the dependent and the "+
         "suspended, vote in a single residual functional constituency. It is the largest "+
@@ -347,9 +325,7 @@ const ENCYCLOPEDIA = {
         "integrity. It does not apply to ordinary legislation, appropriation, or instruments "+
         "made under existing statutory powers." },
       { h:"Effect", body:
-        "A government with a comfortable majority among elected members can still be unable "+
-        "to legislate in the field it was elected to reform. The present coalition holds "+
-        "twelve of forty functional seats and needs twenty-one." }
+        `A government with a comfortable majority among elected members can still be unable to legislate in the field it was elected to reform. At the opening of the fourth session the coalition held twelve of the forty functional seats and needed twenty-one.` }
     ],
     see:["functional_constituency","divergence_threshold"] },
 
@@ -432,7 +408,7 @@ const ENCYCLOPEDIA = {
     summary:"A **volume lease** is a long-dated right to occupy pressurised volume, let by "+"the Commonwealth to a station or a body for a term. It is the principal store of "+"household wealth in the outer bands and the instrument by which stations buy the "+"time to close their own cycles.",
     sections:[
       { h:"Volume", body:
-        "Volume is positional. Ring-band volume is dear because everyone wants to be "+"there; low-band volume is nearly free because nobody does. A lease converts that "+"difference into a term of years." },
+        `Volume is positional. Ring-band volume is dear because demand for it is highest, and low-band volume is nearly free because demand for it is lowest. A lease converts that difference into a term of years.` },
       { h:"The lease", body:
         "The rent is paid in one of two currencies: cash, or work on the station's own "+"material cycle. The second is worth more and is not guaranteed, which is what "+"makes a lease a political instrument. A station that "+"raises its closure under a lease needs less of the federal lift, and is closer to "+"feeding itself in the event of a separation." },
       { h:"Inheritance", body:
@@ -474,7 +450,7 @@ const ENCYCLOPEDIA = {
       { h:"Direction", body:
         "The Act keeps two powers for Parliament. A [[reserve_direction|reserve direction]] tells the Bank what "+"to do with the rate at every meeting while it stands, and a Ways and Means order lets "+"the Treasury overdraw its account at the Bank, which is to say lets the Bank create "+"the money the Treasury spends. Both are affirmative orders, which the House must "+"approve before they take effect, and neither had been made by April 2080." },
       { h:"Under direction", when:{ flags:["bank_directed"] }, body:
-        "A reserve direction is in force, and the Bank sets the rate by it rather than by "+"its rule. It publishes both figures after every meeting." },
+        `A reserve direction is in force, and the Bank sets the rate by the direction. After every meeting it publishes the rate its own rule would have set beside the one it was directed to.` },
       { h:"The overdraft", when:{ flags:["ways_and_means_opened"] }, body:
         "The Treasury has drawn on a Ways and Means advance, the first since the Act. The "+"advance is owed to the Bank at the cash rate." },
       { h:"The Governor", body:

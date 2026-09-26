@@ -1018,6 +1018,26 @@ version of any of them is in the header of the file it names.
   sittings early. `grep -n "function <name>"` before naming one; the
   docket's is `meterDrift`.
 
+- **THE PROSE OUTLIVED THE RENAMES, AND A SEAT'S PROSE NAMED PEOPLE WHO
+  DID NOT HOLD IT** (26 Sep, the prose pass; `design/42`). A rename edits the
+  entry and nothing reads the prose that talks about it: seventeen passages
+  still said Okarie, Vellan, Halloran, Vantage High, Ashfield, Tsiolkovsky,
+  Kepler, Sinter, PSA or the Martian Concord. And the constituencies copied
+  what they should read: all 141 tendencies wrote their roll and ratio out,
+  and thirty-six named the backbencher a roster character had displaced from
+  the seat (Anselm Proper's said Kofi Ashworth; Darren Watkins holds it).
+  - `npm run lint` fails on both now: a word of an id its entry's name no
+    longer contains, a party id that is not its short name, a displaced
+    member's name, anywhere a player reads; and a constituency figure written
+    out. `ALLOW` in the check says why each exception is one.
+  - A seat's prose says `{electorate}`, `{ratio}`, `{represented}` and
+    `{member}`; `Engine.seatText` fills them where it is drawn. The ratio is
+    seats per elector, so above 1 is over-represented; the ratio tooltip had
+    it backwards until this pass.
+  - `npm run prose:in` writes prose.txt back over the source. **Regenerate the
+    export after any hand edit to a content file**, or the next write-back
+    reverts it (it did, once, in this pass).
+
 **CSS and layout traps, every one found by measuring rather than reading**
 
 - An id outranks `.screen{display:none}`, so `#s-orb.screen{display:block}` put

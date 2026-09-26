@@ -182,6 +182,16 @@ was wrong with them. That is the method, and it is repeatable:
   list is the only record of it"). Reference and Interface stand at zero
   faults. Voice keeps its contrasts as notes, as decided.
 
+- **26 Sep.** The author gave a model for the constituencies ("The centre of
+  the Rookworks district, and a commercial hub. Rookworks Centre hosts the
+  berth offices that work the Anselm locks.") and asked for all of them in
+  that register, with occasional worldbuilding. All 141 are rewritten:
+  description as what the place is and what it hosts; tendency as who lives
+  there, what they vote on, the figures, the seat's history and its member.
+  The figures and the member are placeholders now (CONTENT_GUIDE.md), and the
+  formula every description ended on ("The recorded interests are X and Y",
+  128 of 141) is gone, since the dossier prints the interests beside it.
+
 ## Using it
 
 ```

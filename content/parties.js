@@ -138,10 +138,7 @@ const PARTIES = [
     seats:{district:6,list:0,functional:0}, vote:0, swing:0,
     kind:"national",
     axes:{},
-    note:"District independents. No caucus position, no whip, no leader. Six members " +
-         "and six arguments: the seats on Sinter share one, and the others share " +
-         "nothing. Where three of them vote together, the division list is the " +
-         "only record of it." }
+    note:`District independents. No caucus position, no whip, no leader. Six members and six arguments: the three localist members share one, and the others share nothing. Where three of them vote together, the division list is the only record of it.` }
 ];
 
 /* CURRENTS — factions inside a party. Same axes as a party; a current that
@@ -254,7 +251,7 @@ const CURRENTS = [
     description:"Marek Vasquez is the independent member for Stanbridge. The member supports a stronger federal government, limits on trade with Earth, and caution in extending legal personhood, and takes no position on ownership." },
   { id:"ind_kettering", party:"ind", name:"Colonnade",           members:1, loyalty:70,
     axes:{economic:null, authority:-0.2, personhood:null, sovereignty:-0.8, trade:-0.8},
-    description:"Brennan Kettering is the independent member for Colonnade, elected on a localist platform of more self-government for the stations and limits on trade with Earth. The member usually votes with the members for Wrenfield-Aubrey and John Henry." },
+    description:"Adam King is the independent member for Colonnade, elected on a localist platform of more self-government for the stations and limits on trade with Earth. The member usually votes with the members for Wrenfield-Aubrey and John Henry." },
   { id:"ind_castellan", party:"ind", name:"Wrenfield-Aubrey",    members:1, loyalty:74,
     axes:{economic:null, authority:-0.3, personhood:null, sovereignty:-0.75, trade:-0.85},
     description:"Nadia Castellan is the independent member for Wrenfield-Aubrey, elected on the same localist platform as the member for Colonnade: more self-government for the stations and limits on trade with Earth." },
@@ -299,7 +296,7 @@ const PARTY_ORG = {
       { role:"General Secretary", name:"Bevan Osei",
         note:"Runs the card vote. Knows what the maintenance trades will wear before they do." },
       { role:"Chief Agent", name:"Tovah Sandquist",
-        note:"Forty-eight district seats and a canvass return for each of them." }
+        note:`A canvass return for every district seat the party holds.` }
     ],
     bodies: [
       { name:"Combined Maintenance Trades", kind:"union",
@@ -440,7 +437,7 @@ const PARTY_ORG = {
     ],
     bodies: [
       { name:"The Bone Register", kind:"society",
-        note:"A mutual society for the physiologically excluded, which pays out when a member is refused work on a medical. It kept a list of those refusals for thirty years before anyone thought to call it a party." }
+        note:`A mutual society for the physiologically excluded, which pays out when a member is refused work on a medical. It kept a list of those refusals from before the Charter was written, and the party grew out of the list.` }
     ],
     branches: [
       { station:"dredge", note:"John Henry. Where the refusals are, and where the Register started." },
@@ -469,7 +466,7 @@ const PARTY_ORG = {
     ],
     bodies: [
       { name:"The Uplift Compact", kind:"society",
-        note:"The charter that fixes the price of the party's support, in writing, in advance. It has never been renegotiated and is the reason nobody bothers trying." }
+        note:`The charter that fixes the price of the party's support, in writing, in advance. It has never been renegotiated, and no partner has tried.` }
     ],
     branches: [
       { station:"drift", note:"The Verge. The whole party, more or less, in one habitat." }

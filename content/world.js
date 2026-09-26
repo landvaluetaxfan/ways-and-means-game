@@ -54,13 +54,7 @@ const WORLD = {
       closure:0.44, suspended:7100, attested:0.66,
       composition:{ biological:0.74, emulation:0.2, uplift:0.04, synthetic:0.02 },
       charter:"A private charter held by the operator and not granted by any Commonwealth.",
-      note:"A works station built by the Bellamy concern and absorbed by Cordell, which kept the name " +
-           "because the name is the brand. It is the largest single employer outside the Commonwealth's " +
-           "jurisdiction and it is not in the apportionment: it returns no members, it pays no federal " +
-           "consumables levy, and its constitution is a contract between a company and its workforce. " +
-           "Whether it should come in — and on what terms, and who pays for the charter to be " +
-           "surrendered — is the question the session is for. These are the last figures filed: " +
-           "nobody files a return after abandoning a station.",
+      note:`A works station built by the Bellamy concern and absorbed by Cordell, which kept the name because the name is the brand. It is the largest single employer outside the Commonwealth's jurisdiction and it is not in the apportionment: it returns no members, it pays no federal consumables levy, and its constitution is a contract between a company and its workforce. Whether it should come in — and on what terms, and who pays for the charter to be surrendered — is the question the session is for. These are the last figures Cordell filed before it abandoned the station.`,
       grievance:"That everyone in the House has an opinion about it and nobody has read the charter.",
       interests:["shed_order_priority", "essential_services_law", "consumables_subsidy"] }
   ],

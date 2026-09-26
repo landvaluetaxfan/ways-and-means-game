@@ -36,9 +36,9 @@ const INITIATIVES = [
     when: { flagsAbsent: ["guild_met"] },
     event: "guild_answers",
     tempo: [
-      { label: "Send the Minister he will see", after: 2,
+      { label: `Send the Minister she will see`, after: 2,
         effects: [ { flag: { guild_via_minister: true } } ] },
-      { label: "Write to him yourself, and be seen to", after: 5, cost: 1,
+      { label: `Write to her yourself, and be seen to`, after: 5, cost: 1,
         effects: [ { flag: { guild_direct: true } }, { move: { public_standing: 2 } } ] }
     ] },
 
@@ -68,8 +68,7 @@ const INITIATIVES = [
      and the government can be seen to have failed. */
   { id: "state_the_position",
     title: "State the government's position on the threshold",
-    note: "Everyone has inferred the government's position. Saying it out loud " +
-          "makes it something she can be held to.",
+    note: `The benches and the Spindle have each inferred the government's position. Stating it makes it something the government can be held to.`,
     cost: 2,
     /* Same hole as commission_review: `position_stated` is what stops the
        government stating its position twice, and nothing set it. A position

@@ -823,11 +823,7 @@ const SETUP = {
            "that a government this large has more members than posts. The opposition will spend " +
            "the parliament deciding who lost it." },
     { id:"working", when:{ returned:true, sideAtLeast:160 }, title:"A working majority",
-      body:"The government is returned with room to govern. The President sends for the Prime " +
-           "Minister on the morning after the count, the partners renew their terms the same " +
-           "afternoon, and the new parliament opens with the government's business on the paper. " +
-           "A majority of this size survives a rebellion or two, which is the only measure of a " +
-           "majority the whips use." },
+      body:`The government is returned with room to govern. The President sends for the Prime Minister on the morning after the count, the partners renew their terms the same afternoon, and the new parliament opens with the government's business on the paper. The whips measure a majority by the rebellions it survives, and this one survives two.` },
     { id:"narrow", when:{ returned:true }, title:"Returned, narrowly",
       body:"The government is returned with a majority the whips can count on one hand. The " +
            "partners know it and price their terms accordingly: the formation takes a week, and " +

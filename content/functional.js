@@ -52,9 +52,7 @@ const FUNCTIONAL = [
       { body:"Certifying Engineers, Institute of Life Support", count:1240 },
       { body:"Systems Engineers, Institute of Life Support", count:2860 } ],
     excluded:{ body:"Licensed Technicians", count:11000,
-      note:"Admitting them would take the roll from 4,100 to 15,100 and swamp "+
-           "the certifying grades. This is the board-packing lever in 4.6.4, "+
-           "named: it is these eleven thousand people." }, board:"Life Support Licensing Board",
+      note:`Admitting them would take the roll from 4,100 to 15,100 and swamp the certifying grades. The board that sets the roll can do it by order, and these eleven thousand people are what a packed board would add.` }, board:"Life Support Licensing Board",
     held:{ gb:5, hul:1 },
     members:[ { ref:"LS-1", party:"gb", name:"Kazuya Tanako" },
               { ref:"LS-2", party:"gb", name:"Sunniva Osei" },
@@ -149,9 +147,7 @@ const FUNCTIONAL = [
       { body:"Anchor lessees", count:5 },
       { body:"Loop operators", count:23 },
       { body:"Tether service consortiums", count:34 } ],
-    note_franchise:"Weighted by each voter's share of tether capacity. "+
-      "Sixty-two voters and the largest balance sheet in the Commonwealth; a "+
-      "flat franchise would understate them and everyone knows it.", board:null,
+    note_franchise:`Weighted by each voter's share of tether capacity. Sixty-two voters and the largest balance sheet in the Commonwealth; a flat franchise would understate their stake.`, board:null,
     held:{ cl:3, fh:1 },
     members:[ { ref:"TA-1", party:"cl", name:"Lorcan Estévez" },
               { ref:"TA-2", party:"cl", name:"Ottilie Jekabs" },
@@ -182,16 +178,13 @@ const FUNCTIONAL = [
     electors:[
       { body:"Registrars", count:340 },
       { body:"Attestation officers", count:550 } ],
-    note_franchise:"It administers the roll that decides who may vote anywhere, "+
-      "and is returned by eight hundred and ninety people who admit each other. "+
-      "The recursion is not an oversight; nobody has been able to propose a fix "+
-      "that does not hand the roll to someone worse.", board:"Registry Practice Board",
+    note_franchise:`It administers the roll that decides who may vote anywhere, and is returned by eight hundred and ninety people who admit each other. The recursion is deliberate. Every fix proposed since the Charter would hand the roll to a body less trusted than the one that holds it.`, board:"Registry Practice Board",
     held:{ gb:2 },
     members:[ { ref:"AR-1", party:"gb", name:"Edward Hatt" },
               { ref:"AR-2", party:"gb", name:"Imre Chatterjee" } ],
     interest:["attestation_enforcement","registry_powers"],
     note:"Administers the roll that decides who may vote, and is itself elected by a roll of 890.",
-    description:"Two seats on 890 registrars and attestation officers, on a roll that decides who may vote anywhere else. The recursion is not an oversight, and nobody has proposed a fix that does not hand the roll to someone worse." },
+    description:`Two seats on 890 registrars and attestation officers, on a roll that decides who may vote anywhere else. The recursion is deliberate: every fix proposed since the Charter would hand the roll to a body less trusted than the one that holds it.` },
 
   { id:"fc_underwriting", name:"Insurance and Underwriting", seats:3,
     franchise:"corporate", electorate:140,
@@ -227,17 +220,12 @@ const FUNCTIONAL = [
     complement:true,
     gatekeeper:{ board:"none", appointed_by:"none",
                  test:"every adult on the roll enrolled in no other functional constituency" },
-    note_franchise:"THE RESIDUAL IS THE COMPLEMENT OF THE OTHER TEN. Nobody "+
-      "registers for it; you arrive by being excluded from everything else. "+
-      "Narrow a licensed roll and the excluded fall in here, where three million "+
-      "nine hundred thousand people return one member. Widen one and it shrinks. "+
-      "Every board-packing decision moves people across this line, which is the "+
-      "strongest argument against the government's own sharpest tool.", board:null,
+    note_franchise:`The residual is the complement of the other ten rolls. Nobody registers for it; a person arrives in it by being excluded from everything else. Narrow a licensed roll and the excluded fall in here, where three million nine hundred thousand people return one member. Widen one and it shrinks. Every board-packing order moves people across this line.`, board:null,
     held:{ hul:1 },
     members:[ { ref:"RC-1", party:"hul", name:"Perpetua Volkov" } ],
     interest:["consumables_floor","substrate_insurance"],
     note:"Everyone in no recognised sector: the unemployed, the dependent, the suspended. " +
          "Three million nine hundred thousand electors, one seat. Held, at present, by a Hullist.",
-    description:"One seat on the complement of every other roll: the unemployed, the dependent, the suspended, 3,910,000 electors in all. Nobody registers for it, you arrive by being excluded, and narrowing any licensed roll enlarges it." }
+    description:`One seat on the complement of every other roll: the unemployed, the dependent, the suspended, 3,910,000 electors in all. A person is enrolled in it by being excluded from every other roll, so narrowing any licensed roll enlarges it.` }
 
 ];

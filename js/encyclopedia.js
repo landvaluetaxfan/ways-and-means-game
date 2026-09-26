@@ -362,8 +362,8 @@ const Concordance = (function () {
       return p ? p.name : String(id).replace(/_/g, " ");
     };
     const sections = [];
-    if (k.description) sections.push({ h: "The seat", body: k.description });
-    if (k.tendency) sections.push({ h: "How it votes", body: k.tendency });
+    if (k.description) sections.push({ h: "The seat", body: Engine.seatText(C, k, k.description) });
+    if (k.tendency) sections.push({ h: "How it votes", body: Engine.seatText(C, k, k.tendency) });
     sections.push({ h: "Returns", body:
       `Magnitude ${k.magnitude}, on a roll of ${(k.electorate || 0).toLocaleString()}. ` +
       (k.at_large ? "Elected at large: the whole station is the constituency. " : "") +

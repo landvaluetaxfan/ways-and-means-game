@@ -347,21 +347,43 @@ with Earth", not "closed trade"). The detail is below and in the rulebook.
 
 ### Constituency descriptions
 
-Dry, data-first political analysis, of the kind a serious election desk writes.
-State the roll and the apportionment ratio, the interests, and one specific
-observation. No rhetorical closers, no aphorisms, and **no em dashes**: a comma
-or a semicolon does the work. Two fields per seat:
+The register the author asked for in the prose pass of 26 Sep 2026: an encyclopedia's, with an
+election desk's read of the seat. Two fields per seat.
 
-- `description` — the district: its geography, economy and electorate. On a
-  station with many seats this is where the district's own character lives,
-  because the station description cannot reach it. On a one-seat station the
-  station description carries the place, so this field describes the *electorate*
-  instead. The rule: **the constituency describes whatever the station
-  description cannot reach.**
-- `tendency` — the read. Lead with the lean, not the party name: "left and
-  embodied-labour", "market-liberal", "left-leaning but restrictionist",
-  "confederalist", "property-rights", "engineering-first and restrictionist".
-  Then the roll and ratio, then the observation.
+- `description` — what the place is, then what it hosts. "The centre of the
+  Rookworks district, and a commercial hub. Rookworks Centre hosts the berth
+  offices that work the Anselm locks." On a station with many seats this is
+  where the district's own character lives; on a one-seat station it says the
+  seat is elected at large and what the station lives by. A detail of the
+  place (a monument, a custom, what the district's lights are for) is welcome;
+  a new station, character or setting term is not (bible §2.7).
+- `tendency` — who lives there, what they vote on, the figures, then the
+  seat's history and its member. "Educated and commercial: berth brokers, and
+  enterprises across a range of sizes and interests. Its voters generally put
+  tether traffic and open trade with Earth first. There are {electorate}
+  voters, which gives an apportionment ratio of {ratio}: {represented}. It has
+  been a Liberal stronghold since the Charter. {member} is popular and
+  economically liberal, and challengers here have to be as well to compete."
+
+**The figures and the member are placeholders**, filled by
+`Engine.seatText` wherever the text is drawn (the Orbit tab's expanded row
+and the seat's Concordance article):
+
+| placeholder | becomes |
+|---|---|
+| `{electorate}` | the roll, as "26,685" |
+| `{ratio}` | the apportionment ratio, as "1.11" |
+| `{represented}` | "heavily / moderately over-represented", "close to parity", "moderately / heavily under-represented", or "over-/under-represented" |
+| `{member}` | the sitting member: the roster character who sits for the seat, or the seat's `member` |
+
+The ratio is seats per elector against the average, so **above 1 is
+over-represented** (a small roll) and below 1 under-represented. Writing the
+roll or the member's name out is what `npm run lint` fails: every tendency
+used to carry its figures as literals, and thirty-six named a backbencher a
+roster character had displaced. There have been four general elections, in
+2064, 2068, 2072 and 2076, so "since the Charter" and "at all four elections"
+are the same claim; five seats changed hands in 2076 (bible §8.4). Avoid
+pronouns for members whose pronouns content has not set: use the name.
 
 ### Station descriptions
 

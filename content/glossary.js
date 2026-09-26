@@ -107,7 +107,7 @@ const GLOSSARY = [
     handle:"Tearing up the invoice because the debtor is the collateral.",
     introduced:"substrate_debt_settles" },
 
-  { term:"Perigee", gloss:"Metonym for the government, from the Charter signed there.",
+  { term:"Perigee", gloss:`Metonym for the government, from the Perigee Charter.`,
     handle:"Washington or Whitehall: the place standing in for the people in it.",
     assumed:true },
 

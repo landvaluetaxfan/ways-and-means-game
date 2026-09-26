@@ -62,7 +62,7 @@ const INSTRUMENTS = [
     effects:[ {move:{"thermal_margin":7}}, {move:{"price.thermal":-9}},
               { station:{ vantage:{ suspended:-900 } } },
               { flag:"vantage_diverted" },
-              { wire:"EMERGENCY THERMAL DIVERSION APPROVED FOR VANTAGE HIGH" } ],
+              { wire:`EMERGENCY THERMAL DIVERSION APPROVED FOR EMBER RIDGE` } ],
     reverse:[ {move:{"thermal_margin":-7}}, {move:{"price.thermal":9}} ],
     political_cost:[ {move:{"solvency": -6000}} ],
     prayer_stances:{ cu:"against", psa:"against", cl:"for", fh:"for" } },
@@ -245,8 +245,7 @@ const INSTRUMENTS = [
     summary:"Suspends the tier-four register across the exposed stations without notice and "+
             "without a minister being told first. The margin improves at once. The order is "+
             "lawful, the schedule is published, and the people on it stop running.",
-    effect_note:"The most margin in the game at the worst price in the game. It is here so "+
-                "that it is always an option, and never the efficient one.",
+    effect_note:`The most margin of any order, at the worst price of any order. It is always available, and it is never the cheap answer.`,
     effects:[ {move:{"thermal_margin":18}}, {move:{"public_standing":-30}},
               {move:{"loyalty.cu_maintenance":-22}}, {move:{"loyalty.psa":-20}},
               {move:{"loyalty.cu_halloran":-20}}, { flag:"rung9_tried" },

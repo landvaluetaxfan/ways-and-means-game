@@ -50,9 +50,7 @@ const Tips = (function () {
   const TIPS = {
     /* ---- the status bar, left to right ---- */
     state: { title: "Government status",
-      body: "READY while you are in office. You lose office if confidence falls " +
-            "below a majority, or if the House passes a no-confidence motion. " +
-            "There is no undo." },
+      body: `READY while you are in office. You lose office if the House carries a motion of no confidence, if your party removes you at a leadership ballot, if the House rises without supply, or if the thermal margin reaches zero. There is no undo.` },
     chapter: { title: "Chapter",
       body: "The act of the story you are in. Chapters control which events can " +
             "fire. They do not advance on a timer." },
@@ -83,12 +81,7 @@ const Tips = (function () {
             "and a ruling is complied with. A case before it is due on a named " +
             "sitting, and it can strike an order, read it narrowly, or uphold it." },
     slots: { title: "Order paper time",
-      body: "One slot moves one bill one stage closer to its division, and the " +
-            "session holds only a few. Give a slot to a partner's bill and you " +
-            "earn capital with that partner; spend one on your own and only your " +
-            "programme advances. Slots refill when the House rises for a recess. " +
-            "A hollow mark is time a crisis measure brought with " +
-            "it: only that measure can spend it, and it goes when the House rises." },
+      body: `One slot moves one bill one stage closer to its division, and each sitting period holds only a few. Give a slot to a partner's bill and you earn capital with that partner; spend one on your own and only your programme advances. Slots refill when the House rises for a recess. A hollow mark is time a crisis measure brought with it: only that measure can spend it, and it goes when the House rises.` },
     signatures: { title: "Signatures",
       body: "Names Czarnecki has collected, against the number that forces a " +
             "leadership ballot, which the bar prints beside them. Your own conduct " +
@@ -120,9 +113,7 @@ const Tips = (function () {
     functional: { title: "The functional benches", go: "functional_constituency" },
     dual: { title: "Dual majority", go: "dual_majority" },
     simple: { title: "Simple majority",
-      body: "Carried on the popular benches alone. The functional forty still " +
-            "vote, and their votes count in the same total. They are not tested " +
-            "separately." },
+      body: `Carried on the popular benches alone: a majority of the 240 members returned by districts and lists. The functional forty vote and their votes are recorded, and they do not decide the result.` },
     stage: { title: "Stage",
       body: "Drafting, first reading, second reading, committee, report, third " +
             "reading, assent. A bill divides at third reading. Each order-paper " +
@@ -260,8 +251,7 @@ const Tips = (function () {
             "about who lives there." },
 
     wire: { title: "The wire",
-      body: "Headlines, newest first. Every item is pushed by an effect, so " +
-            "everything here follows from something you did." },
+      body: `Headlines, newest first. Each is printed by something that happened: a decision of yours, a division, a meeting of the Reserve Bank, or a move from abroad.` },
 
     /* ---- papers and the record ---- */
     register: { title: "The register",
@@ -326,9 +316,7 @@ const Tips = (function () {
       body: "Food, water and everything else a habitat consumes. When it is " +
             "low, stations go short." },
     thermal_margin: { title: "Thermal margin",
-      body: "Waste-heat headroom across the ring. Everything a habitat does " +
-            "produces heat, and heat is the hardest thing to get rid of in " +
-            "vacuum. When this reaches zero, people die.",
+      body: `Waste-heat headroom across the Commonwealth. Everything a habitat does produces heat, and heat is the hardest thing to get rid of in vacuum. When this reaches zero, people die.`,
       go: "the_permanent_emergency" },
     solvency: { title: "Sovereign solvency",
       body: "The reserve: the Treasury's dollars at the Reserve Bank, which " +
@@ -348,12 +336,12 @@ const Tips = (function () {
 
     /* ---- the orbit ---- */
     ratio: { title: "Apportionment ratio",
-      body: "Electors per seat, divided by the Commonwealth average. Above 1, the seat's electors are under-represented; below 1, they are over-represented. It is calculated from the roll each time it is shown." },
+      body: `Seats per elector, against the Commonwealth average: the average seat's roll divided by this seat's. Above 1, the seat's electors are over-represented; below 1, they are under-represented. It is calculated from the roll each time it is shown.` },
     held: { title: "Held by",
       body: "The party that holds this seat now. For district seats, the roll " +
             "is the only record of who holds what." },
     band: { title: "Altitude band",
-      body: "The station's altitude band: low, middle or ring. The chart places low-orbit stations at the bottom and the ring at the top. Stations in the same band usually share an economy and a politics." },
+      body: `The station's altitude band: low, middle, ring (geostationary) or far, and the external stations at the Lagrange points and on the Moon. The chart places the low band at the bottom and the external stations at the top. Stations in the same band usually share an economy and a politics.` },
     closure: { title: "Closure" }   /* the glossary has this one */
   };
 

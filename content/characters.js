@@ -91,7 +91,7 @@ const CHARACTERS = [
   { id:"landry", name:"Jean Landry MP", role:"Minister for External Relations",
     party:"cu", current:"cu_loyalists", category:"biological", seat:"Anchor Head—Cable Row", relationship:43, office:"minister",
     note:"The anchors stand on foreign soil, so this is really a domestic brief." },
-  { id:"skye", name:"Aster Skye MP", role:"Treasurer",
+  { id:"skye", name:"Aster Skye MP", role:"Financial Secretary to the Treasury",
     party:"cu", current:"cu_loyalists", category:"biological", seat:"Deep Deck", relationship:66, office:"minister",
     note:"Sits apart and reports directly to the Prime Minister. Knows what everything costs." },
   /* Two portfolios held from functional seats: the sector elects the minister

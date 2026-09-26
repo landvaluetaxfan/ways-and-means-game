@@ -2673,6 +2673,40 @@ const Engine = (function () {
     return out;
   }
 
+  /* A SEAT'S PROSE READS ITS FIGURES, IT DOES NOT COPY THEM (26 Sep 2026).
+     A constituency's `description` and `tendency` may carry {electorate},
+     {ratio}, {represented} and {member}, and whatever draws the text fills
+     them from the same record the rest of the dossier reads. The prose used to
+     copy them: all 141 tendencies carried their roll and ratio as literals,
+     and thirty-six named a member who had not held the seat since roster
+     characters were seated, because the text was written before them and
+     nothing compared the two. `represented` says which way and how far, with
+     the ratio's own sense: seats per elector against the average, so above
+     one is over-represented. */
+  function representedAs(r) {
+    if (r == null) return "outside the apportionment";
+    return r >= 1.5 ? "heavily over-represented"
+      : r >= 1.15 ? "over-represented"
+      : r > 1.03 ? "moderately over-represented"
+      : r >= 0.97 ? "close to parity"
+      : r > 0.85 ? "moderately under-represented"
+      : r > 0.7 ? "under-represented"
+      : "heavily under-represented";
+  }
+  function seatMember(C, k) {
+    const ch = (C.characters || []).find(c => c.seat === k.name);
+    return String(ch ? ch.name : (k.member || "")).replace(/^Rt\. Hon\. /, "").replace(/ MP$/, "");
+  }
+  function seatText(C, k, text) {
+    if (!text) return text || "";
+    const r = apportionment(C)[k.id];
+    return String(text)
+      .replace(/\{electorate\}/g, (k.electorate || 0).toLocaleString("en-GB"))
+      .replace(/\{ratio\}/g, r != null ? r.toFixed(2) : "\u2014")
+      .replace(/\{represented\}/g, representedAs(r))
+      .replace(/\{member\}/g, seatMember(C, k));
+  }
+
   /* The district tier must equal the sum of constituency magnitudes.
      Nothing checked this before and the two had drifted by 84 seats. */
   function tierCheck(st, C) {
@@ -8063,7 +8097,7 @@ const Engine = (function () {
     division, reported, ballot, benchRoll, resolveDue, pairable, setPairs, clearPairs, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss, checkSettlement,
     dateOfSitting, sittingOfDate, inRecess, deadlines, calendar, today, business,
     initiatives, take, setDivision,
-    apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,
+    apportionment, representedAs, seatMember, seatText, tierCheck, DIVIDES_AT, STAGE_ORDER,
     seedRoll, syncRoll, reconcile, partyDistrict,
     lastReconcile: () => lastReconcile, nationalShares, vacantSeats, seatsFor,
     vacateSeat, crossFloor, byElection, generalElection, shares, swungShares,

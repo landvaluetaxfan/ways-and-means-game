@@ -46,7 +46,7 @@ const CABINET = [
                  {move:{solvency:3000}},
                  {wire:"SKYE CONFIRMED AT THE TREASURY; NO CHANGE OF DIRECTION SIGNALLED"}] },
       { holder:"halloran", party:"cu",
-        note:"Leads the eleven members collecting signatures against you. Inside the tent, he cannot count them.",
+        note:`Leads the members collecting signatures against you. Inside the tent, he cannot count them.`,
         effects:[{move:{"loyalty.cu_halloran":26}},
                  {move:{"loyalty.cu_loyalists":-11}},
                  {move:{public_standing:-4}},

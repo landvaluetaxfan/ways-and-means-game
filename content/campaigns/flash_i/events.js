@@ -84,7 +84,6 @@ The Works has voted. The question is what the Commonwealth says.`,
   body:`The workers have voted to join the Commonwealth, and Ceyhan's column
 names the three reasons in one sentence: a two-year rescue, a
 repatriation nobody's body is ready for, and bank accounts frozen
-
 overnight on Earth's say-so.
 
 "The referendum is on your desk," he says. "Earth's is reading the same
@@ -175,8 +174,12 @@ Neither future is a vote the government can lose quietly.`,
     "an event today — the drift is the point.",
   title:"The recycling line",
   speaker:"vellan",
-  body:`The Minister for Life Support brings the platform's water recycling
-estimate. It holds, or it does not hold, and the difference is a funding line that will not be felt for a month.`,
+  body:`The Minister for Life Support has brought the Works' water-recycling estimate.
+The line was built for a company that meant to leave, and it runs at the edge of
+its certified rate. Funded in full, it holds for the quarter. Trimmed, it holds
+for a month, and then the margin goes a point at a time.
+
+"Neither answer shows today," Vidyasagar says. "One of them shows in a month."`,
   choices:[
     { posture:"bold", label:"Fund it in full.",
       effects:[{ move:{ "solvency":-3000 } }, { move:{ "trend.thermal_margin":1 } },
@@ -184,7 +187,7 @@ estimate. It holds, or it does not hold, and the difference is a funding line th
       result:"The margin improves, a point at a time, and the country sees a government paying for the platform it claimed." },
     { posture:"cautious", label:"Trim it and take the margin.",
       effects:[{ move:{ "solvency":2000 } }, { move:{ "trend.thermal_margin":-2 } }],
-      result:"Nothing happens today. That is what a drift is." }
+      result:`Nothing happens today. The recycling margin slips a point at a time from here, and the next estimate will say so.` }
   ]},
 
 /* a panic button: visible, expensive, and the way back from the cascade */
@@ -344,8 +347,8 @@ the government that will be read in both.`,
   title:"The mandate",
   speaker:null,
   body:`The returns are complete, and they are a verdict on the debt the
-Commonwealth assumed. The country has decided that saving three hundred
-thousand people was worth the austerity, and that the government that did
+Commonwealth assumed. The country has decided that saving a hundred and
+eighty-four thousand people was worth the austerity, and that the government that did
 it deserves the session that follows.
 
 The victory is real and it is expensive. No cheaper one was on offer.`,
@@ -375,7 +378,7 @@ it that way because they could read the numbers and we could not."`,
       when:{ flags:["indemnity_suppliers","f1_frozen"] },
       effects:[{ move:{ "solvency":9000 } }, { move:{ "actor.underwriters":-2 } },
                { wire:"UNDERWRITERS PAY ON THE FROZEN ACCOUNTS" }],
-      result:"The payout arrives after the freeze and it is smaller than the freeze. The reserve ends the term nine points better than the sanctions left it." },
+      result:`The payout arrives after the freeze and it is smaller than the freeze. The reserve ends the term nine billion dollars better than the sanctions left it.` },
     { label:"The accounts froze. The cover carries the whole line.",
       when:{ flags:["indemnity_lifesupport","f1_frozen"] },
       effects:[{ move:{ "solvency":18000 } }, { move:{ "legitimacy":3 } },
@@ -498,7 +501,7 @@ be stacked, and closing it hands the sitting back to the pool.`,
 { id:"f1_facility_closed", queuedOnly:true, once:true,
   title:"The facility is closed",
   speaker:"hatt",
-  body:`The emergency facility is discharged, and the Alliance of Business and Government has no further claim under it: in cash from the reserve, or in the Cordell leases, as the Treasury chose.
+  body:`The emergency facility is discharged, in cash from the reserve or in the Cordell leases as the Treasury chose, and the Alliance of Business and Government has no further claim under it.
 
 Hatt offers to keep the line open as a standing facility on the same terms, drawn only when the Commonwealth asks for it.`,
   choices:[

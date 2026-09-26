@@ -117,9 +117,7 @@ const ACHIEVEMENTS = [
     when:{ flags:["quota_forward_sold"] } },
 
   { id:"act_mars", name:"Eleven Sittings", tier:"action",
-    note:"You sent a dispatch to the Chryse Basin and Nili Republic and the " +
-         "answer came back eleven sittings later, to a Commonwealth that had " +
-         "moved on in between. That gap is what the light-lag means.",
+    note:`You sent a dispatch to the Chryse Basin and Nili Republic and the answer came back eleven sittings later, to a Commonwealth that had moved on in between. The signal takes minutes; the Republic takes weeks, because the basin and Nili must agree before either answers.`,
     when:{ flags:["mars_asked"] } },
 
   { id:"act_amendment", name:"Amended in Committee", tier:"action",

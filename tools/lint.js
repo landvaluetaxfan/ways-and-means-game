@@ -1092,6 +1092,88 @@ try {
 } catch (e) { campBad.push("could not check the campaigns: " + e.message); }
 n += section("CAMPAIGNS THAT REACH INTO ANOTHER'S CONTENT", campBad, x => x);
 
+/* RETIRED NAMES IN THE PROSE (26 Sep 2026). A station, a character or a
+   party renamed in content keeps its id, and the id is usually the name it
+   had before: `vantage` was Vantage High and is Ember Ridge, `okarie` was a
+   Chief Whip called Okarie and is Anil Devi, `psa` was a party whose initials
+   those were. The prose pass found seventeen passages still saying the old
+   name, in speech, in wires and in a party's note, because a rename edits the
+   entry and nothing reads the prose that talks about it. So: every word of an
+   id that its entry's name no longer contains, and every party id that is not
+   the party's short name, is looked for in every passage a player can read.
+   The author's design notes (a character's `note`, a cabinet post's) are not
+   printed and are skipped. ALLOW is a word that is an id's leftover AND a word
+   the prose means: say why when adding one. */
+const retiredBad = [];
+try {
+  const Prosemap = require("../js/prosemap.js");
+  const CX = LC.loadContent();
+  const rows = Prosemap.collect(CX).filter(r =>
+    !/^characters\/[^/]+\/note$|^cabinet\/[^/]+\/note$/.test(r.addr));
+  const ALLOW = {
+    Chair:   "the Chair of the House; gb_chair is Kazuya Tanako",
+    Perigee: "the Perigee Charter and the government's metonym (bible §11.1)",
+    Drift:   "a word: the prices drift; `drift` is The Verge",
+    Selene:  "the Selene settlements, a place on the Moon (bible §2.2)"
+  };
+  /* Names retired before an id could carry them: the placeholder Mars polity
+     of design/29 and the Works and its owner before design/29 named them. */
+  const RETIRED = [["Martian Concord", "the Chryse Basin and Nili Republic"],
+                   ["Halcyon", "Cordell"], ["Ashen Reach", "the Almanac Works"]];
+  const inUse = new Set([].concat(
+    CX.characters.map(c => c.name), CX.stations.map(s => s.name),
+    (CX.constituencies || []).map(c => c.name), (CX.currents || []).map(c => c.name),
+    CX.parties.map(p => p.name)).join(" ").split(/[^A-Za-zÀ-ɏ]+/));
+  const cand = [];
+  const byWord = (list, kind) => list.forEach(x => String(x.id).split("_").forEach(w => {
+    if (w.length < 4 || String(x.name).toLowerCase().indexOf(w) >= 0) return;
+    const W = w[0].toUpperCase() + w.slice(1);
+    if (inUse.has(W) || ALLOW[W]) return;
+    cand.push({ re: new RegExp("\\b(?:" + W + "|" + W.toUpperCase() + ")\\b"), said: W, now: x.name, kind: kind });
+  }));
+  byWord(CX.characters, "character"); byWord(CX.stations, "station");
+  CX.parties.forEach(p => { if (p.id.length >= 3 && p.id.toUpperCase() !== p.short)
+    cand.push({ re: new RegExp("\\b" + p.id.toUpperCase() + "\\b"), said: p.id.toUpperCase(), now: p.name, kind: "party" }); });
+  RETIRED.forEach(([old, now]) => cand.push({ re: new RegExp("\\b" + old + "\\b", "i"), said: old, now: now, kind: "name" }));
+  rows.forEach(r => cand.forEach(c => { if (c.re.test(String(r.text || "")))
+    retiredBad.push(r.addr + ' says "' + c.said + '", and the ' + c.kind + " is " + c.now + " now"); }));
+} catch (e) { retiredBad.push("could not read the prose: " + e.message); }
+n += section("RETIRED NAMES IN THE PROSE", retiredBad, x => x);
+
+/* A SEAT'S PROSE READS ITS FIGURES (26 Sep 2026). All 141 tendencies
+   carried their roll and ratio as literals, and thirty-six named a member
+   who had not held the seat since roster characters were seated in it: the
+   character wins the seat, and the text went on naming the backbencher it
+   displaced. So a constituency's prose names its member and its figures
+   through {member}, {electorate}, {ratio} and {represented}
+   (Engine.seatText), and three things fail here: a placeholder the filler
+   does not know, the seat's own roll written out, and anywhere in the prose
+   a person who is not in the world, meaning a `member` a character has
+   displaced. */
+const seatBad = [];
+try {
+  const CX = LC.loadContent();
+  const KNOWN = ["electorate", "ratio", "represented", "member"];
+  const rows = require("../js/prosemap.js").collect(CX)
+    .filter(r => !/^characters\/[^/]+\/note$|^cabinet\/[^/]+\/note$/.test(r.addr));
+  const displaced = (CX.constituencies || []).filter(k =>
+    k.member && CX.characters.some(c => c.seat === k.name && c.name.indexOf(k.member) < 0));
+  (CX.constituencies || []).forEach(k => ["description", "tendency"].forEach(f => {
+    const t = String(k[f] || "");
+    (t.match(/\{[^}]*\}/g) || []).forEach(p => { if (KNOWN.indexOf(p.slice(1, -1)) < 0)
+      seatBad.push(k.id + "." + f + " has " + p + ", which nothing fills"); });
+    /* Any roll or ratio written out, not only this seat's own: a copy of
+       another seat's figure is the same fault one step removed. */
+    const figs = (t.match(/\b\d{1,3}(?:,\d{3})+\b|\b\d{4,}\b|\b\d\.\d\d\b/g) || [])
+      .filter(x => !/^(?:19|20)\d\d$/.test(x));   /* a year is a date, not a figure */
+    if (figs.length) seatBad.push(k.id + "." + f + " writes out " + figs.join(", ") +
+      "; say {electorate} or {ratio}");
+  }));
+  rows.forEach(r => displaced.forEach(k => { if (String(r.text || "").indexOf(k.member) >= 0)
+    seatBad.push(r.addr + " names " + k.member + ", who was displaced from " + k.name + " by a roster character"); }));
+} catch (e) { seatBad.push("could not read the constituencies: " + e.message); }
+n += section("CONSTITUENCY PROSE THAT COPIES WHAT IT SHOULD READ", seatBad, x => x);
+
 /* THE EDITOR LOADS WHAT THE GAME LOADS. Two pages each name the content
    files, and the editor had fallen three behind: it could not see an
    initiative, a minute or an award, so its rename dialog could not warn
@@ -1118,6 +1200,8 @@ if (gateBad.length) R.push(`${gateBad.length} GATES NOTHING CAN SATISFY`);
 if (refBad.length) R.push(`${refBad.length} IDS THAT NAME NOTHING`);
 if (campBad.length) R.push(`${campBad.length} CAMPAIGN FAULTS`);
 if (pageBad.length) R.push(`${pageBad.length} CONTENT FILES THE EDITOR DOES NOT LOAD`);
+if (retiredBad.length) R.push(`${retiredBad.length} RETIRED NAMES IN THE PROSE`);
+if (seatBad.length) R.push(`${seatBad.length} CONSTITUENCY PROSE FAULTS`);
 if (popBad.length) R.push("THE POPULATION IS STORED TWICE AND HAS DRIFTED (advisory)");
 console.log(R.join("\n"));
 /* HARD FAILURES: everything except popBad. The chain is one of them now —
@@ -1130,4 +1214,4 @@ console.log(R.join("\n"));
 if (artBad.length || chainBad.length || cssBad.length || verbBad.length ||
     parseBad.length || initBad.length || gridBad.length || targetBad.length ||
     labelBad.length || gateBad.length || refBad.length || campBad.length ||
-    pageBad.length) process.exit(1);
+    pageBad.length || retiredBad.length || seatBad.length) process.exit(1);

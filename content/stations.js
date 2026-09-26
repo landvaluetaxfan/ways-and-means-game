@@ -92,7 +92,7 @@ const STATIONS = [
     composition:{biological:0.71,emulation:0.21,uplift:0.05,synthetic:0.03},
     material_interest:["volume_rationing", "tether_traffic"],
     dependency:"Nothing. It rents to those who do.",
-    grievance:"Every proposal to tax volume by position, of which there have been eleven." },
+    grievance:`Every proposal to tax volume by position, of which there have been six.` },
 
   { id:"bourse", name:"The Bourse", band:"ring", type:"single", form:"sphere",
     seats:2, population:33000,
@@ -153,7 +153,7 @@ const STATIONS = [
     composition:{biological:0.68,emulation:0.24,uplift:0.05,synthetic:0.03},
     material_interest:["thermal_quota", "yard_contracts"],
     dependency:"It builds radiators. It depends on the appropriation that funds them.",
-    grievance:"Eleven years of deferred maintenance on its own array." },
+    grievance:`Eight years of deferred maintenance on its own array.` },
 
   { id:"vantage", name:"Ember Ridge", band:"middle", type:"single", form:"torus",
     seats:4, population:213000,

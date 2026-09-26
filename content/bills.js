@@ -66,18 +66,12 @@ const BILLS = [
        stops wanting it, so every price is written next to the thing it buys. */
     amendments:[
       { id:"div_delay", label:"Commence at the next session",
-        note:"The threshold moves to forty hours and commencement is put off a "+
-             "session, which gives every employer a year to come into line and "+
-             "every maintenance bench a year of not being undercut. The "+
-             "Substrate Left made the bill the price of the coalition and will "+
-             "read the delay as a payment on account.",
+        note:`The threshold moves to forty hours and takes effect when the next parliament first sits, which gives every employer until then to come into line and every maintenance bench that long before it is undercut. The New Progressive Party made the bill the price of the coalition and will read the delay as a payment on account.`,
         effects:[ { flag:{ divergence_delayed:true } },
                   { move:{ "loyalty.cu_maintenance":7 } },
                   { move:{ "loyalty.psa":-7 } }, { move:{ "capital.psa":-2 } } ] },
       { id:"div_boards", label:"Carve the licensing boards out",
-        note:"The Guild's own ask, moved as an amendment: the threshold binds "+
-             "the boards' members and leaves their licensure untouched. It buys the functional bench, and the Substrate Left "+
-             "reads it as the government selling the bill behind them.",
+        note:`The Guild's own ask, moved as an amendment: the threshold binds the boards' members and leaves their licensure untouched. It buys the functional bench, and the New Progressive Party reads it as the government selling the bill behind them.`,
         effects:[ { flag:{ divergence_boards:true } },
                   { move:{ "loyalty.gb":7 } }, { move:{ "rel.gb_chair":5 } },
                   { move:{ "loyalty.psa":-6 } } ] }
@@ -248,13 +242,7 @@ const BILLS = [
     title:"Thermal Quota Allocation (No. 2) Bill",
     summary:"Reallocates radiator capacity toward the middle band. Ember Ridge has been "+
             "below statutory reserve since the radiator fault of 6 April.",
-    contested:"The middle band gets the quota and the ring gives it up, which is what the "+
-            "Allocation Act is for and the first time in nine years anyone has used it. "+
-            "Ember Ridge is four thousand two hundred people three days from a shed order. "+
-            "Anselm Ring paid for the last diversion and remembers the invoice, and the "+
-            "objection is not that the middle band does not need the heat — it is that a "+
-            "quota moved to answer one fault becomes the ordinary way heat is allocated, "+
-            "and the ring will be paying for the next fault before anyone has found it.",
+    contested:`The middle band gets the quota and the ring gives it up, which is what the Allocation Act is for and the first time in nine years anyone has used it. Ember Ridge is two hundred and thirteen thousand people three days from a shed order. Anselm Ring paid for the last diversion and remembers the invoice, and the objection is not that the middle band does not need the heat — it is that a quota moved to answer one fault becomes the ordinary way heat is allocated, and the ring will be paying for the next fault before anyone has found it.`,
     dualMajority:false,
     axes:{economic:-0.6, authority:0.2, personhood:0, sovereignty:0.7, trade:0.4},
     stances:{ cu:"for", psa:"for", rv:"for", upl:"for", geo:"for", sc:{forPct:0.4}, cl:{forPct:0.3} },
@@ -304,19 +292,13 @@ const BILLS = [
     touches:["anchor_concession"],
     author:"estevez",
     title:"Anchor Concession (Anchorage) Ratification Bill",
-    summary:"Ratifies renewed terms for the International Earth-Orbit Elevator, whose anchor stands on Kenyan "+
-            "territory of an Earth state.",
-    contested:"The anchor stands on soil the Commonwealth does not own, so the choice is "+
-            "not between good terms and better ones. Ratifying keeps the International running and "+
-            "puts eight points into the year; refusing is a statement of sovereignty that a "+
-            "station of two hundred and thirty-one thousand people cannot eat. The honest "+
-            "objection is that a lease renewed is still a lease, and the price is paid again "+
-            "at the next renewal with less left to trade.",
+    summary:`Ratifies renewed terms for the International Earth-Orbit Elevator, whose anchor stands at Malindi, on Kenyan territory.`,
+    contested:`The anchor stands on soil the Commonwealth does not own, so the choice is not between good terms and better ones. Ratifying keeps the International running and puts eight billion dollars into the year; refusing is a statement of sovereignty that a station of two hundred and thirty-one thousand people cannot eat. The honest objection is that a lease renewed is still a lease, and the price is paid again at the next renewal with less left to trade.`,
     dualMajority:false,
     axes:{economic:0.6, authority:0.1, personhood:0, sovereignty:0.5, trade:0.95},
     stances:{ cl:"for", cu:{forPct:0.7}, psa:{forPct:0.5}, sc:"against", hul:"against" },
     onPass:[{move:{"solvency": 8000}},{station:{kepler:{closure:0.02}}},{move:{"price.transit":-11}}],
-    onFail:[{move:{"solvency": -6000}},{wire:"KEPLER CONCESSION LAPSES; EARTH STATE SIGNALS REVIEW"}] },
+    onFail:[{move:{"solvency": -6000}},{wire:`ANCHORAGE CONCESSION LAPSES; EARTH STATE SIGNALS REVIEW`}] },
 
   { id:"substrate_insurance", ref:"HC 4/121", stage:"drafting", owner:"psa",
     touches:["substrate_insurance","risk_pricing"],
