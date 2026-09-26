@@ -965,6 +965,30 @@ try {
        .filter(k => w.eval('CONTENT.partyById.cu.axes.' + k) !== null).length + " axes") >= 0,
      (pos.match(/the \d+ axes/) || [""])[0]);
 
+  /* A SEAT'S ARTICLE NAMES WHO HOLDS IT (design/45). The lede and the
+     infobox read the roll's `member`, the backbencher a roster character
+     displaced, while the prose under them named the character: Anselm
+     Proper was "held by Kofi Ashworth" and the seat of Darren Watkins Jr.
+     in one page. Every seat a character holds, not one example. */
+  const seated = w.eval(`JSON.parse(JSON.stringify(UI.content().constituencies
+    .map(k => ({ id: k.id, stale: k.member,
+                 ch: UI.content().characters.find(c => c.seat === k.name) }))
+    .filter(x => x.ch && x.stale && x.ch.name.indexOf(x.stale) < 0)
+    .map(x => ({ id: x.id, stale: x.stale, id2: x.ch.id,
+                 name: x.ch.name.replace(/^Rt\\. Hon\\. /, "").replace(/ MP$/, "") }))))`);
+  const wrongMember = seated.filter(x => {
+    const el = open(x.id);
+    const box = el.querySelector(".cx-infobox") || el;
+    const lede = el.querySelector(".cx-lede");
+    return !lede || el.textContent.indexOf(x.stale) >= 0 ||
+           lede.textContent.indexOf(x.name) < 0 || box.textContent.indexOf(x.name) < 0 ||
+           !lede.querySelector('[data-go="person_' + x.id2 + '"]');
+  });
+  ok("a seat's article names the member who holds it, and links them",
+     seated.length > 0 && wrongMember.length === 0,
+     wrongMember.length ? wrongMember.slice(0, 3).map(x => x.id + " (" + x.stale + ")").join(", ")
+                        : seated.length + " seats held by a roster character");
+
   /* CATEGORIES, which Wikipedia closes every article with. */
   ok("and closes on its categories", !!open("cu").querySelector(".cx-cats span"),
      [...open("cu").querySelectorAll(".cx-cats span")].map(x => x.textContent).join(" \u00b7 "));

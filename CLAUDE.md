@@ -1094,6 +1094,27 @@ version of any of them is in the header of the file it names.
   - `npm run prose:in` writes prose.txt back over the source. **Regenerate the
     export after any hand edit to a content file**, or the next write-back
     reverts it (it did, once, in this pass).
+- **THE PROSE DOES NOT EXPLAIN, AND THE PASSES THAT APPROVED IT ONLY
+  SUBTRACTED** (26 Sep, `design/45`; the author: "what do they actually get
+  from it?"). Much of the Reference and Interface prose is written for a
+  reader who already knows the world, in four ways:
+  - it points at a fact instead of stating it ("whose title is its formal
+    name");
+  - it puts an epigram where the explanation should be ("It does not
+    campaign, because the numbers do");
+  - it gives a verdict without the figure behind it ("deep enough"), or a
+    figure without its meaning ("a discipline of 29");
+  - its generated person and glossary articles are stubs.
+
+  The Foreign Affairs prose is the model: 15.7 checkable facts per hundred
+  words, against 3–6 on the surfaces never rewritten. The Underwriters'
+  outlook cannot say a number at all, because it is fixed sentences chosen
+  by thresholds. **Read design/45 before writing Reference or Interface
+  prose.** Its proposed rules and the do-over's order await the author.
+  The same pass found the Concordance's constituency articles reading the
+  roll's stale `member`, so thirty-seven named a member who is not in the
+  world. They ask `Engine.seatMember` now, and `uitest` checks every such
+  seat.
 
 **CSS and layout traps, every one found by measuring rather than reading**
 

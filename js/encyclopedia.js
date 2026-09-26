@@ -370,6 +370,14 @@ const Concordance = (function () {
       (party ? `Held by [[${party}|${pName(party)}]]. ` : "") +
       `The recorded material interests are ${(k.material_interest || [])
         .map(x => String(x).replace(/_/g, " ")).join(", ") || "none recorded"}.` });
+    /* WHO HOLDS IT is the engine's answer (`seatMember`), the one the seat's
+       own prose is filled from. `k.member` is the backbencher the roll was
+       drafted with, and where a roster character sits for the seat it names
+       somebody who is not in the world: thirty-seven articles said so in
+       their lede and infobox while the prose under them named the
+       character (design/45). */
+    const holder = (C.characters || []).find(c => c.seat === k.name);
+    const member = Engine.seatMember(C, k);
     return {
       id: k.id, title: k.name + (k.at_large ? " (at large)" : ""),
       category: "Constituencies", generated: true,
@@ -378,14 +386,14 @@ const Concordance = (function () {
         `is an electoral district of ${s0 ? `[[${s0.id}|${s0.name}]]` : "the Commonwealth"}. ` +
         `It returns ${k.magnitude} member${k.magnitude === 1 ? "" : "s"} to the ` +
         `[[parliament|House of Delegates]]` +
-        `${k.member ? `, and is held by ${k.member}` : ""}.`),
+        `${member ? `, and is held by ${holder ? `[[person_${holder.id}|${member}]]` : member}` : ""}.`),
       sections,
       infobox: { title: k.name, rows: [
         ["Station", s0 ? s0.name : k.station],
         ["Band", k.band || ""],
         ["Magnitude", String(k.magnitude)],
         ["Electorate", (k.electorate || 0).toLocaleString()],
-        ["Member", k.member || "\u2014"],
+        ["Member", member || "\u2014"],
         ["Held by", party ? pName(party) : "\u2014"]
       ]},
       see: [k.station, party].filter(Boolean)
