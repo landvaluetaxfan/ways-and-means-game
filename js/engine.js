@@ -6603,21 +6603,20 @@ const Engine = (function () {
     const debt = debtHome(st, C);
     const m = macro(st, C);
 
-    /* the reserve, against what it is spending: how many months it lasts */
+    /* THE ACCOUNT: one reading, and they exclude each other. The line
+       between a thin reserve and a short one is a year of the present
+       deficit, which is how long a budget has to answer it. */
     if (solv <= 0) keys.push("reserve_gone");
-    else if (net < 0 && solv / Math.max(1, -net) < 0.5) keys.push("reserve_thin");
-    else if (solv > 80000) keys.push("reserve_deep");
-    /* and payments the tender would not take, which no lender forgets */
+    else if (net < 0 && solv / Math.max(1, -net) < 1) keys.push("reserve_thin");
+    else if (net < 0) keys.push("receipts_short");
+    else keys.push("receipts_cover");
+    /* and payments the tender would not take, which every lender reads */
     if (st.macro && st.macro.arrears > 0) keys.push("arrears");
 
-    /* the flow */
-    if (net < 0) keys.push("receipts_short");
-    else if (b.receipts > 0 && net > 0) keys.push("receipts_cover");
-
-    /* the debt and its price. What is owed at home is read apart from what
-       is owed off-world, because the rate readings are about the quarrel
-       and a domestic lender is not in it. The line is a share of output,
-       the way anybody who lends reads a sovereign's debt. */
+    /* BORROWING. What is owed at home is read apart from what is owed
+       off-world, because the rate readings are about the quarrel and a
+       domestic lender is not in it. The line is a share of output, the way
+       anybody who lends reads a sovereign's debt. */
     if (!debt) keys.push("debt_none");
     else if (b.debtPct > 12) keys.push("debt_heavy");
     else keys.push("debt_light");
@@ -6627,22 +6626,23 @@ const Engine = (function () {
        about that lender in particular (`owed_<id>`) */
     all.forEach(d => keys.push("owed_" + d.id));
 
-    /* the cost of existing: the four prices against where they opened */
+    /* PRICES: the four against where they opened */
     const sc = scarcity(st);
     if (sc <= -5) keys.push("prices_falling");
     else if (sc < 5) keys.push("prices_steady");
     else if (sc < 20) keys.push("prices_rising");
     else keys.push("prices_spiking");
 
-    /* and the money: inflation against the remit, the Bank's grip on it,
-       and the dollar against where it opened */
+    /* THE BANK AND THE DOLLAR: inflation against the remit, the Bank's
+       grip on it, the dollar against where it opened, output against what
+       the radiators allow */
     if (m) {
       const over = m.inflation - m.target;
-      if (over > 2) keys.push("inflation_high");
+      if (m.directed) keys.push("bank_directed");
+      else if (over > 2) keys.push("inflation_high");
       else if (over < -1) keys.push("inflation_low");
       else keys.push("inflation_target");
       if (m.credibility < 0.6) keys.push("bank_doubted");
-      if (m.directed) keys.push("bank_directed");
       const M = macroConst(C);
       if (m.fx < M.fx * 0.9) keys.push("dollar_weak");
       else if (m.fx > M.fx * 1.08) keys.push("dollar_strong");
@@ -6654,8 +6654,152 @@ const Engine = (function () {
     if (["none", "relief", "low"].indexOf((st.law || {}).rate_volume) >= 0)
       keys.push("volume_forgone");
 
-    return keys.filter(k => ((C.setup || {}).outlook || {})[k])
-               .map(k => ({ key: k, text: C.setup.outlook[k].text }));
+    /* THE WORDS ARE CONTENT'S AND THE FIGURES ARE THE ENGINE'S (design/45).
+       Every reading used to be a fixed sentence, so "Outgoings exceed
+       receipts" was printed for a gap of forty million and of forty
+       billion alike. A reading's text may name any figure `briefing()`
+       returns, as `{deficit}`, and a reading about one lender may name
+       `{lender}`, `{lenderOwed}` and `{lenderRate}`. */
+    const O = (C.setup || {}).outlook || {};
+    const F = briefing(st, C);
+    return keys.filter(k => O[k]).map(k => {
+      let extra = {};
+      if (k.indexOf("owed_") === 0) {
+        const d = all.find(x => "owed_" + x.id === k);
+        if (d) {
+          const T = lenderTerms(st, C, d.id);
+          extra = { lender: d.name, lenderOwed: money(C, d.owed, d.currency),
+                    lenderRate: pctText(d.rate), lenderBase: T.base, lenderWhy: T.why };
+        }
+      }
+      return { key: k, topic: O[k].topic || "", text: fillFigures(O[k].text, F, extra) };
+    });
+  }
+
+  /* WHAT A LENDER'S RATE IS MADE OF, in words: its base, then each margin in
+     force with the condition content gave it ("1.25 points while Earth's
+     sanctions regime is in force"). Read off the lender's own terms, so a
+     reading never restates a threshold content owns. */
+  function lenderTerms(st, C, id) {
+    const R = (lenderOf(C, id).rate) || {};
+    const b = R.base == null ? (R.fixed != null ? R.fixed : BASE_RATE) : R.base;
+    const base = R.policy ? (b ? pointsText(b) + " over the cash rate" : "the cash rate")
+                          : "a base of " + pctText(R.fixed != null ? R.fixed : b);
+    const steps = rateSteps(st, C, id).filter(x => x.add);
+    const parts = steps.map((x, i) => (i === 0 ? pointsText(x.add) : String(x.add)) + " " + (x.label || ""));
+    const list = parts.length > 1 ? parts.slice(0, -1).join(", ") + ", and " + parts[parts.length - 1] : parts.join("");
+    return { base: base, why: list ? ", plus " + list : "" };
+  }
+  function pointsText(x) {
+    const n = Math.round(x * 100) / 100;
+    return n === 0.25 ? "a quarter of a point" : n === 0.5 ? "half a point"
+         : n === 1 ? "a point" : n + " points";
+  }
+
+  /* A figure as a financial column prints it: 4.5%, 4.25%, never 4.50%. */
+  function pctText(x) {
+    if (x == null || isNaN(x)) return "\u2014";
+    return (Math.round(x * 100) / 100).toString() + "%";
+  }
+  const SMALL = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight",
+                 "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+                 "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
+  function countText(n) { return n >= 0 && n <= 20 ? SMALL[n] : String(n); }
+  function fillFigures(text, F, extra) {
+    return String(text || "").replace(/\{(\w+)\}/g, (all, k) =>
+      extra && extra[k] != null ? extra[k] : F[k] != null ? F[k] : all);
+  }
+
+  /* THE BRIEFING'S FIGURES: every number the Underwriters' readings may
+     print, already in words or with their units, read off the same
+     functions the Economy tab's panels draw from. Nothing here is new
+     state. A placeholder no reading names costs nothing; one a reading
+     names and this does not supply is left as written, and lint fails on
+     it. */
+  function briefing(st, C) {
+    const b = budget(st, C), m = macro(st, C), M = macroConst(C) || {};
+    const solv = st.scalars.solvency || 0;
+    const $ = n => money(C, Math.round(n));
+    const F = {
+      receipts: $(b.receipts), spending: $(b.spending), outgoings: $(b.spending + (b.interest || 0)),
+      standing: $(b.standing), voted: $(b.voted),
+      balance: $(Math.abs(b.balance)), balancePct: pctText(Math.abs(b.balancePct)),
+      output: $(b.output), reserve: $(Math.max(0, solv)),
+      debt: $(debtHome(st, C)), debtPct: pctText(b.debtPct), service: $(interestDue(st, C))
+    };
+    /* how long the reserve lasts at the present deficit, in the unit a
+       reader would use */
+    const yrs = b.balance < 0 ? solv / -b.balance : Infinity;
+    F.runway = !isFinite(yrs) ? "indefinitely"
+      : yrs >= 2 ? "about " + countText(Math.round(yrs)) + " years"
+      : yrs >= 1 ? "about a year"
+      : yrs * 12 >= 1.5 ? "about " + countText(Math.round(yrs * 12)) + " months"
+      : "less than a month";
+    /* the facilities signed and undrawn, each in its own money */
+    const fac = facilities(st, C).filter(f => f.ok && f.cap - f.owed > 0);
+    F.facilities = fac.length
+      ? fac.map(f => money(C, f.cap - f.owed, f.currency) + " from " + f.name).join(" and ")
+      : "nothing";
+    /* the Treasury's bills, the room left under their authority, arrears */
+    const owed = debts(st, C);
+    const tender = owed.filter(d => d.automatic);
+    F.bills = $(tender.reduce((n, d) => n + d.owedHome, 0));
+    F.headroom = $(tender.reduce((n, d) => n + (d.room || 0), 0));
+    F.arrears = $((st.macro && st.macro.arrears) || 0);
+    /* the dearest off-world lender, for the rate readings */
+    const away = owed.filter(d => !d.home).sort((x, y) => y.rate - x.rate)[0];
+    F.earthLender = away ? away.name : "";
+    F.earthRate = away ? pctText(away.rate) : "";
+    const ET = away ? lenderTerms(st, C, away.id) : { base: "", why: "" };
+    F.earthBase = ET.base; F.earthWhy = ET.why;
+    /* the prices, against where they opened */
+    const sc = scarcity(st);
+    F.pricesVs = Math.abs(sc) < 0.5 ? "level with where they opened"
+      : Math.abs(sc).toFixed(1) + "% " + (sc > 0 ? "above" : "below") + " where they opened";
+    Object.keys(st.prices || {}).forEach(k => { F[k] = String(Math.round(st.prices[k])); });
+    /* the volume levy, against what the standard rate would raise */
+    const vol = (receipts(st, C).rows || []).find(r => r.base === "volume");
+    if (vol) {
+      F.volumeYield = $(vol.yield);
+      F.volumeForgone = $(Math.max(0, vol.yield / (vol.factor || 1) - vol.yield));
+    }
+    if (m) {
+      F.inflation = pctText(m.inflation); F.core = pctText(m.core);
+      F.expected = pctText(m.expected); F.target = pctText(m.target);
+      F.rate = pctText(m.rate); F.growth = pctText(m.growth);
+      F.credibility = Math.round(m.credibility * 100) + " of 100";
+      const want = taylorRate(st, C);
+      F.ruleRate = pctText(want);
+      /* what the Bank will do at its next meeting, by its own rule, or by
+         the direction in force; the same arithmetic bankMeets() uses */
+      const R = M.rule || {}, step = R.step || 0.25, most = R.maxMove || 0.5;
+      let move;
+      if (m.directed) move = (((M.directions || {})[m.directed]) || {}).move || 0;
+      else {
+        const raw = want - m.rate;
+        move = Math.abs(raw) < step / 2 ? 0 : clamp(Math.round(raw / step) * step, -most, most);
+      }
+      const size = Math.abs(move) === 0.25 ? "a quarter-point" : Math.abs(move) === 0.5 ? "a half-point"
+                 : Math.abs(move) === 0.75 ? "a three-quarter-point" : pctText(Math.abs(move)).replace("%", "-point");
+      F.bankMove = move > 0 ? size + " rise" : move < 0 ? size + " cut" : "no change";
+      F.meeting = m.nextMeeting ? new Date(m.nextMeeting + "T00:00:00Z")
+        .toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: "UTC" }) : "its next meeting";
+      F.directed = m.directed || "";
+      F.fx = "US$" + m.fx.toFixed(2);
+      const fx0 = M.fx || m.fx;
+      F.fxOpen = "US$" + fx0.toFixed(2);
+      const ch = Math.round((m.fx / fx0 - 1) * 100);
+      F.fxChange = ch === 0 ? "unchanged since the opening"
+        : (ch < 0 ? "down " : "up ") + Math.abs(ch) + "% since the opening";
+      const hist = ((C.setup || {}).history || {});
+      const first = (hist.fx || [])[0];
+      F.fxFirst = first != null ? "US$" + first.toFixed(2) : F.fxOpen;
+      F.fxFirstYear = hist.from != null ? String(hist.from) : "";
+      F.gap = Math.abs(m.gap).toFixed(1) + "%";
+      F.gapWords = Math.abs(m.gap) < 0.5 ? "at its capacity"
+        : Math.abs(m.gap).toFixed(1) + "% " + (m.gap > 0 ? "above" : "below") + " its capacity";
+    }
+    return F;
   }
 
   /* A RULE'S TARGET: its `base`, plus each term's `per` times how far its
@@ -8411,7 +8555,7 @@ const Engine = (function () {
     count, counted, forecast, functionalShares, epilogue,
     divisorAllocate,
     packBoard, canPackBoard, boardsMoved, boardsTotal,
-    borrow, repay, canBorrow, debtOf, debtRate, debtService, debts, lenderOf, inflation, outlook,
+    borrow, repay, canBorrow, debtOf, debtRate, debtService, debts, lenderOf, inflation, outlook, briefing,
     facilities, lenderCap, rateSteps,
     budget, spending, interestDue, debtHome, macro, taylorRate, fxTarget, money, costing, economyVote, meterDrift,
     scarcity, economyReading, nominalOutput, targetOf,

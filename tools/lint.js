@@ -1230,6 +1230,37 @@ try {
 } catch (e) { seatBad.push("could not read the constituencies: " + e.message); }
 n += section("CONSTITUENCY PROSE THAT COPIES WHAT IT SHOULD READ", seatBad, x => x);
 
+/* THE BRIEFING'S FIGURES ARE THE ENGINE'S (design/45). Each Underwriters'
+   reading names its figures as `{deficit}`, `{rate}`, and the engine fills
+   them from `Engine.briefing`. A name the engine does not supply is printed
+   as written, braces and all, so it fails here; so does a reading with no
+   subject in `outlookTopics`, which would be drawn after every other
+   paragraph with no lead. A reading about one lender (`owed_<id>`) may also
+   name that lender's own three. */
+const briefBad = [];
+try {
+  const CX = LC.loadContent();
+  const Eng = require("../js/engine.js");
+  const admins = CX.administrations || [];
+  const views = admins.length ? admins.map(a => CX.forCampaign(a)) : [CX];
+  const known = new Set();
+  views.forEach(V => Object.keys(Eng.briefing(Eng.newGame(V), V) || {}).forEach(k => known.add(k)));
+  const LENDER = ["lender", "lenderOwed", "lenderRate", "lenderBase", "lenderWhy"];
+  const S = CX.setup || {};
+  const topics = new Set((S.outlookTopics || []).map(t => t.id));
+  Object.keys(S.outlook || {}).forEach(k => {
+    const o = S.outlook[k] || {};
+    (String(o.text || "").match(/\{(\w+)\}/g) || []).forEach(p => {
+      const name = p.slice(1, -1);
+      if (known.has(name)) return;
+      if (k.indexOf("owed_") === 0 && LENDER.indexOf(name) >= 0) return;
+      briefBad.push("setup.outlook." + k + " names " + p + ", which the engine does not fill");
+    });
+    if (!topics.has(o.topic)) briefBad.push("setup.outlook." + k + " has no subject in outlookTopics (" + (o.topic || "none") + ")");
+  });
+} catch (e) { briefBad.push("could not read the briefing: " + e.message); }
+n += section("A BRIEFING FIGURE THE ENGINE DOES NOT FILL", briefBad, x => x);
+
 /* THE EDITOR LOADS WHAT THE GAME LOADS. Two pages each name the content
    files, and the editor had fallen three behind: it could not see an
    initiative, a minute or an award, so its rename dialog could not warn

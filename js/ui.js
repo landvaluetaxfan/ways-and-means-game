@@ -1480,13 +1480,24 @@ const UI = (function () {
       }));
 
     /* WHAT THE UNDERWRITERS SAY. The engine finds which readings apply and
-       content supplies every word, so the advice is in the prose file. */
+       fills their figures; content supplies every word, so the briefing is
+       in the prose file. ONE PARAGRAPH A SUBJECT, led by its name in bold
+       (design/45): the panel is 328px wide and 312px tall at 1366x768, and a
+       run-in lead costs no line where a heading costs one. Subjects in the
+       order content gives; a reading with no subject comes last. */
     const ob = $("#econ-outlook");
     if (ob && Engine.outlook) {
       const found = Engine.outlook(st, C) || [];
-      ob.innerHTML = found.length
-        ? found.map(f => `<div class="note ulook">${esc(f.text)}</div>`).join("")
-        : `<div class="note">Nothing they would put in writing.</div>`;
+      const topics = (C.setup.outlookTopics || []).slice();
+      found.forEach(f => { if (!topics.some(t => t.id === f.topic)) topics.push({ id: f.topic, name: "" }); });
+      const paras = topics.map(t => {
+        const inT = found.filter(f => f.topic === t.id);
+        if (!inT.length) return "";
+        return `<p class="note ulook" data-topic="${esc(t.id)}">` +
+          (t.name ? `<b>${esc(t.name)}.</b> ` : "") +
+          inT.map(f => `<span data-reading="${esc(f.key)}">${esc(f.text)}</span>`).join(" ") + `</p>`;
+      }).join("");
+      ob.innerHTML = paras || `<div class="note">Nothing they would put in writing.</div>`;
     }
 
     drawBases();

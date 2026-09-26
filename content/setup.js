@@ -568,116 +568,133 @@ const SETUP = {
   },
 
   /* WHAT THE UNDERWRITERS SAY (bible §7.5.2 — the only party with accurate
-     numbers on everything). The engine finds which of these apply and says
-     nothing itself; every word here is in the prose file and can be
-     rewritten without touching a line of code.
+     numbers on everything). The engine finds which of these apply
+     (`Engine.outlook`) and supplies the figures (`Engine.briefing`); every
+     word is here, and in the prose file, and can be rewritten without
+     touching a line of code.
 
-     One reading each, in the register of somebody who prices risk for a
-     living: the fact, then what it means for the next few sittings. No
-     advice the player could not have worked out, because the point is that
-     they did not have to. */
+     A BRIEFING, NOT A VOICE (design/45; PROSE_REGISTER.md, Briefings).
+     Until 26 Sep these were fixed sentences in the voice of a wry insider,
+     so "Outgoings exceed receipts" was printed for a gap of forty million
+     and of forty billion alike, and the author asked what a player gets
+     from it. Each reading now leads with the figure, says what it means for
+     the government, and where the player holds the lever says what would
+     change it. A `{name}` is a figure the engine fills: CONTENT_GUIDE.md
+     lists them, and lint fails on one it does not know. `topic` groups the
+     readings into one paragraph each, in the order `outlookTopics` gives. */
+  outlookTopics: [
+    { id: "account",   name: "The account" },
+    { id: "borrowing", name: "Borrowing" },
+    { id: "prices",    name: "Prices" },
+    { id: "bank",      name: "The Bank and the dollar" }
+  ],
   outlook: {
-    reserve_gone: { text:
-      "The reserve is exhausted. The Treasury is paying its way in bills at the " +
-      "weekly tender, and when the tender is full the next shortfall is met by " +
-      "shedding load, which means by shedding people." },
-    reserve_thin: { text:
-      "At the present rate of loss the reserve is gone inside a year. There is " +
-      "time to raise a rate or cut a line, and there will not be time twice." },
-    reserve_deep: { text:
-      "The reserve is deep enough to carry a bad session. It is also deep " +
-      "enough to be noticed by anybody arguing for a line the government has " +
-      "refused to fund." },
-    receipts_short: { text:
-      "Outgoings exceed receipts. The gap is met from the reserve every " +
-      "day, whether or not anybody votes on it." },
-    receipts_cover: { text:
-      "Receipts cover what the government is spending and add to the reserve. " +
-      "That position holds while the prices hold, and the prices are set by " +
-      "legislation." },
-    debt_none: { text:
-      "The Commonwealth owes nothing. Everything it holds is its own, which is " +
-      "a stronger position at a negotiation than it looks on a ledger." },
-    debt_light: { text:
-      "The debt is small enough to service out of receipts." },
-    debt_heavy: { text:
-      "Servicing the debt is now a line of the budget of its own." },
-    owed_underwriters: { text:
-      "The coupon on the Underwriters' notes follows the thermal margin, so " +
-      "the notes cost more when everything else does." },
-    rate_cheap: { text:
-      "Earth is lending at a rate that assumes the quarrel is temporary." },
-    rate_dear: { text:
-      "Earth is charging for the quarrel. The rate is not a judgement about " +
-      "whether the Commonwealth can pay; it is a judgement about whether it " +
-      "will still be on speaking terms when the payment falls due." },
-    prices_falling: { text:
-      "The cost of existing is falling. Somebody is being paid less for " +
-      "something, and they will say so before the session rises." },
-    prices_steady: { text:
-      "The four prices are close to where they opened. Nothing the government " +
-      "has done has reached a household yet." },
-    prices_rising: { text:
-      "The cost of existing is rising across all four goods. A household " +
-      "notices thermal first, because it is in every other price." },
-    prices_spiking: { text:
-      "The cost of existing has risen sharply. At this level the question " +
-      "stops being economic: substrate rent is the price of continuing to be " +
-      "a person, and a register of people who cannot pay it is a political " +
-      "document." },
-    /* THE MONEY (option C). Inflation against the remit, the Bank's grip on
-       it, the dollar, and where output stands against what the radiators
-       allow. */
-    inflation_target: { text:
-      "Inflation is inside a point of the Reserve Bank's target. The Bank has " +
-      "no reason to surprise anybody at its next meeting, which is worth more " +
-      "to a borrower than any rate it could set." },
-    inflation_high: { text:
-      "Inflation is more than two points over the target, and the Bank's rule " +
-      "says what it will do about that. A household reads it in the price of " +
-      "heat first and in the government's standing second." },
-    inflation_low: { text:
-      "Inflation is under the target. The Bank will ease, and the reserve's " +
-      "receipts will grow more slowly than the lines they pay for." },
-    bank_doubted: { text:
-      "The market no longer believes the Bank will hold inflation to its " +
-      "target. Expectations are following prices rather than the remit, and " +
-      "every point of inflation now costs more to take out than it did." },
-    bank_directed: { text:
-      "The Reserve Bank is setting the cash rate under a Treasury direction. " +
-      "The market prices every meeting of it, and so do the Underwriters." },
-    dollar_weak: { text:
-      "The dollar is down a tenth on where it opened. Everything the " +
-      "Commonwealth buys from Earth costs more, and everything it owes Earth's " +
-      "banks is a larger sum in its own money than when it borrowed it." },
-    dollar_strong: { text:
-      "The dollar is strong. Imports are cheap, and the compute the Commonwealth " +
-      "sells is dearer to everybody buying it." },
-    output_slack: { text:
-      "Output is running under what the radiators and the labour force would " +
-      "allow. There is room to spend without heating the price of anything, " +
-      "and people out of work are counting the room." },
-    output_hot: { text:
-      "Output is pressing on capacity. The radiators, not demand, are the limit, " +
-      "and anything more the government spends arrives as inflation in the " +
-      "thermal price." },
-    arrears: { text:
-      "The Treasury has missed payments. Past the bill authority the tender " +
-      "takes nothing more, and what the reserve cannot meet is simply owed: " +
-      "to suppliers, to the stations, to the public payroll. Every lender " +
-      "adds a point for it, and it is the first thing any money coming in " +
-      "will pay." },
-    owed_bills: { text:
-      "The Treasury is rolling bills at the weekly tender. The market takes " +
-      "them at a quarter over the cash rate, and asks more as the debt grows." },
-    owed_reserve_bank: { text:
-      "The Treasury owes the Reserve Bank an advance. The money was created to " +
-      "lend it, and the market will not forget that until it is repaid." },
-    volume_forgone: { text:
-      "Volume is the largest base and the one being taxed least. A levy on " +
-      "position inside a habitat has nowhere to be passed on to, so it is the " +
-      "only rate that raises revenue without raising the cost of living. " +
-      "Every Single Tax member in the House knows this figure." }
+    reserve_gone: { topic: "account", text:
+      "The reserve is empty, so every payment the Treasury makes is borrowed, in " +
+      "Treasury bills sold at the weekly tender. When the bill authority is used up, " +
+      "payments go unmet." },
+    reserve_thin: { topic: "account", text:
+      "Spending runs {balance} a year ahead of receipts, and the reserve of {reserve} " +
+      "lasts {runway} at that rate. After that every payment is borrowed. Raising a " +
+      "rate or cutting a clause of the appropriation closes the gap." },
+    receipts_short: { topic: "account", text:
+      "The Commonwealth spends {outgoings} a year, interest included, and collects " +
+      "{receipts}: a deficit of {balance} ({balancePct} of output). The reserve of " +
+      "{reserve} covers it for {runway}." },
+    receipts_cover: { topic: "account", text:
+      "Receipts of {receipts} a year exceed spending of {outgoings}, interest " +
+      "included, so the reserve of " +
+      "{reserve} grows by {balance} a year. Every levy is charged on one of the four " +
+      "prices, so the surplus lasts as long as they do." },
+    arrears: { topic: "account", text:
+      "The Treasury is {arrears} behind on its payments: the reserve is empty and the " +
+      "bill authority is used up. Money coming in pays the arrears first, and Treasury " +
+      "bills and the Underwriters' notes cost a point more until they are cleared." },
+    volume_forgone: { topic: "account", text:
+      "The volume levy is set below standard and raises {volumeYield} a year; at " +
+      "standard it would raise {volumeForgone} more. It is the one levy of the four " +
+      "that raises no price, since a charge on occupied space cannot be passed on." },
+
+    debt_none: { topic: "borrowing", text:
+      "The Commonwealth owes nothing. If the reserve runs low it can draw on " +
+      "{facilities}." },
+    debt_light: { topic: "borrowing", text:
+      "The Commonwealth owes {debt}, {debtPct} of output, and pays {service} a year in " +
+      "interest." },
+    debt_heavy: { topic: "borrowing", text:
+      "The Commonwealth owes {debt}, {debtPct} of output, and pays {service} a year in " +
+      "interest. The larger the debt, the weaker the dollar and the dearer every new " +
+      "bill." },
+    owed_underwriters: { topic: "borrowing", text:
+      "{lenderOwed} is owed on the Underwriters' notes at {lenderRate}: " +
+      "{lenderBase}{lenderWhy}. The coupon rises as the federal thermal margin falls, " +
+      "so the notes cost most when the stations are in most danger." },
+    owed_bills: { topic: "borrowing", text:
+      "The Treasury has {lenderOwed} of bills out at {lenderRate} ({lenderBase}" +
+      "{lenderWhy}), with {headroom} of room left under the bill authority." },
+    owed_reserve_bank: { topic: "borrowing", text:
+      "The Treasury owes the Reserve Bank {lenderOwed} at {lenderRate}, an advance of " +
+      "money the Bank created. Taking it cost the Bank credibility and raised expected " +
+      "inflation." },
+    rate_cheap: { topic: "borrowing", text:
+      "{earthLender} charge {earthRate}: {earthBase}{earthWhy}. Their margin rises in " +
+      "steps as friction with Earth rises." },
+    rate_dear: { topic: "borrowing", text:
+      "{earthLender} charge {earthRate}: {earthBase}{earthWhy}. Each margin comes off " +
+      "when its condition ends." },
+
+    prices_falling: { topic: "prices", text:
+      "The four prices are {pricesVs}: thermal {thermal}, substrate {substrate}, volume " +
+      "{volume}, transit {transit}. Cheaper goods lower the cost of living and the yield " +
+      "of every levy charged on them." },
+    prices_steady: { topic: "prices", text:
+      "The four prices are {pricesVs}: thermal {thermal}, substrate {substrate}, volume " +
+      "{volume}, transit {transit}. The appropriation's clauses and tax rates move them, " +
+      "and so do the thermal margin and the reserve." },
+    prices_rising: { topic: "prices", text:
+      "The four prices are {pricesVs}: thermal {thermal}, substrate {substrate}, volume " +
+      "{volume}, transit {transit}. Substrate is priced on heat, so a thermal rise " +
+      "passes into substrate rent, and all four pass into inflation." },
+    prices_spiking: { topic: "prices", text:
+      "The four prices are {pricesVs}: thermal {thermal}, substrate {substrate}, volume " +
+      "{volume}, transit {transit}. Substrate rent is what an emulated person pays to " +
+      "keep running, and one who cannot pay it and is not insured is suspended." },
+
+    inflation_target: { topic: "bank", text:
+      "Inflation is {inflation} against the Bank's target of {target}. Its rule points " +
+      "to a cash rate of {ruleRate} against {rate} today, so expect {bankMove} on " +
+      "{meeting}." },
+    inflation_high: { topic: "bank", text:
+      "Inflation is {inflation}, more than two points over the {target} target, and " +
+      "{core} underlying. The Bank's rule points to {ruleRate} against {rate} today: " +
+      "expect {bankMove} on {meeting}, which slows output and makes the Treasury's " +
+      "borrowing dearer." },
+    inflation_low: { topic: "bank", text:
+      "Inflation is {inflation}, under the {target} target. The Bank's rule points to " +
+      "{ruleRate} against {rate} today, so expect {bankMove} on {meeting}, which lifts " +
+      "output and weakens the dollar." },
+    bank_directed: { topic: "bank", text:
+      "The Bank is setting the cash rate under a Treasury direction to {directed}: " +
+      "{bankMove} on {meeting}, whatever its rule asks ({ruleRate}). Each meeting under " +
+      "the direction costs it credibility, now {credibility}, and expected inflation " +
+      "follows." },
+    bank_doubted: { topic: "bank", text:
+      "The Bank's credibility is {credibility}. At that level expected inflation " +
+      "({expected}) follows prices instead of the target, so inflation persists and the " +
+      "rate has to stay higher for longer to bring it down." },
+    dollar_weak: { topic: "bank", text:
+      "The dollar buys {fx}, {fxChange}, and it bought {fxFirst} in {fxFirstYear}. " +
+      "Everything bought from Earth costs more, and a debt owed in Earth's money is " +
+      "larger in dollars." },
+    dollar_strong: { topic: "bank", text:
+      "The dollar buys {fx}, {fxChange}. Imports from Earth are cheaper, and the " +
+      "compute the Commonwealth sells to Earth is dearer for its buyers." },
+    output_slack: { topic: "bank", text:
+      "Output is {gapWords}, growing {growth} a year. There is room to spend, or to cut " +
+      "the rate, without raising prices." },
+    output_hot: { topic: "bank", text:
+      "Output is {gapWords}, growing {growth} a year. The radiators set that capacity, " +
+      "so further spending raises inflation faster than it raises output." }
   },
   law: { divergence_threshold_hours:168, civic_clock_minimum:0,
          suspension_debt_accrual:true, substrate_public_share:0.35, shed_order_authority:"engineering_authority",

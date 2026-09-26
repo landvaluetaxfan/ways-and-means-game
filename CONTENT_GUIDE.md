@@ -415,15 +415,58 @@ Three registers, each tied to the surfaces that use it:
   first sentence defines the subject, then facts in the order a reader
   needs them, one per sentence.
 - **Interface**, for what a control or a number does: tooltips, refusals,
-  initiatives, awards. What is this, what changes it, what can you do about
-  it, and stop.
-- **Voice**, for the world speaking: events, minutes, the introduction, the
-  Underwriters' outlook. The author's; a character may sound like themselves.
+  initiatives, awards, and the Underwriters' outlook, which is a briefing
+  (below). What is this, what changes it, what can you do about it, and stop.
+- **Voice**, for the world speaking: events, minutes, the introduction. The
+  author's; a character may sound like themselves.
 
 In Reference and Interface: no contrast framing (`not X but Y`, `X rather
 than Y`, `X, not Y`), no ranking against a set the reader cannot see, no
 closing aphorism, and plain policy words for the five axes ("limits on trade
 with Earth", not "closed trade"). The detail is below and in the rulebook.
+
+**And what a passage owes the reader** (design/45): state what you refer
+to; one antecedent per pronoun; a figure carries its scale and a judgement
+its figure; say the mechanism; describe an institution by what it has and
+does, never by its temperament; write for a reader who arrived from a
+link. A passage can obey every prohibition above and still tell the reader
+nothing, which is what the author found on 26 Sep. Explaining is not
+padding: a tooltip is still two or three sentences.
+
+### The Underwriters' briefing
+
+`setup.outlook` in `content/setup.js`. The engine decides which readings
+apply (`Engine.outlook`) and fills their figures (`Engine.briefing`); every
+word is content's. Each reading has a `topic` (`account`, `borrowing`,
+`prices`, `bank`, in the order `setup.outlookTopics` gives), and the Economy
+tab draws one paragraph a topic, led by its name. Lead with the figure, say
+what it means for the government, and where the player holds the lever say
+what would change it. Two or three sentences: the panel is 328px by 312px at
+1366x768, and the opening briefing fills it.
+
+| figure | becomes |
+|---|---|
+| `{receipts}` `{spending}` `{outgoings}` | a year's receipts; spending; spending with interest, as "CW$224.0bn" |
+| `{standing}` `{voted}` | spending outside the appropriation, and what it votes |
+| `{balance}` `{balancePct}` | the deficit or surplus, unsigned, and its share of output |
+| `{reserve}` `{runway}` | the reserve, and how long it lasts at the present deficit ("about thirteen years") |
+| `{output}` `{debt}` `{debtPct}` `{service}` | output; the debt, its share of output, and a year's interest |
+| `{facilities}` | what can be drawn today, each in its own money ("US$60.0bn from Earth's banks and ...") |
+| `{bills}` `{headroom}` `{arrears}` | Treasury bills out, the room under their authority, payments missed |
+| `{earthLender}` `{earthRate}` `{earthBase}` `{earthWhy}` | the dearest off-world lender, its rate, its base, and each margin in force with its condition |
+| `{pricesVs}` `{thermal}` `{substrate}` `{volume}` `{transit}` | the four prices against the opening ("16.8% above where they opened"), and each index |
+| `{volumeYield}` `{volumeForgone}` | the volume levy's yield, and what the standard rate would add |
+| `{inflation}` `{core}` `{expected}` `{target}` | headline, underlying, expected, and the remit |
+| `{rate}` `{ruleRate}` `{bankMove}` `{meeting}` | the cash rate, what the rule asks, the move to expect ("a quarter-point rise"), and the meeting's date |
+| `{directed}` `{credibility}` | a direction in force, and the Bank's credibility ("80 of 100") |
+| `{fx}` `{fxOpen}` `{fxChange}` `{fxFirst}` `{fxFirstYear}` | the dollar, where it opened, the change since, and the record's first year |
+| `{gap}` `{gapWords}` `{growth}` | output against capacity ("1.0% above its capacity"), and growth |
+
+A reading about one lender, `owed_<id>`, may also name `{lender}`,
+`{lenderOwed}`, `{lenderRate}`, `{lenderBase}` and `{lenderWhy}`. Never
+restate a threshold a lender's terms own ("friction 40, 65 and 85"):
+`{lenderWhy}` and `{earthWhy}` read them. `npm run lint` fails on a figure the
+engine does not fill and on a reading with no topic.
 
 ### Constituency descriptions
 

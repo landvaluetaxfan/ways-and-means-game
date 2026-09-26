@@ -525,14 +525,28 @@ try {
        lab.querySelectorAll("#econ-lab tbody tr").length + " rows");
   }
 
-  const look = [...w.document.querySelectorAll("#econ-outlook .ulook")];
+  const look = [...w.document.querySelectorAll("#econ-outlook [data-reading]")];
   ok("the Underwriters say something", look.length > 0, look.length + " readings");
-  ok("and every word of it is content, not the engine",
-     look.every(n => {
-       const t = (n.textContent || "").trim();
-       return Object.keys(CONTENT.setup.outlook).some(k =>
-         CONTENT.setup.outlook[k].text === t);
-     }), "all from CONTENT.setup.outlook");
+  /* A BRIEFING (design/45): every word is content's and every figure the
+     engine's. Each reading must be its content template with the figures
+     filled, no brace left standing, and carry at least one figure: the old
+     readings were fixed sentences that could not say one. */
+  const asPattern = t => new RegExp("^" + String(t).replace(/[.*+?^$()|[\]\\]/g, "\\$&")
+    .replace(/\\\{\w+\\\}|\{\w+\}/g, ".+?") + "$");
+  const unfilled = look.filter(n => {
+    const k = n.dataset.reading, t = (n.textContent || "").trim();
+    const src = (CONTENT.setup.outlook[k] || {}).text;
+    return !src || /[{}]/.test(t) || !asPattern(src).test(t) ||
+           (/\{\w+\}/.test(src) && !/\d/.test(t));
+  });
+  ok("and every word of it is content, with the engine's figures filled",
+     unfilled.length === 0,
+     unfilled.length ? unfilled.map(n => n.dataset.reading).join(", ")
+                     : look.map(n => n.dataset.reading).join(", "));
+  const paras = [...w.document.querySelectorAll("#econ-outlook p.ulook")];
+  ok("one paragraph a subject, each led by its name",
+     paras.length > 0 && paras.every(p => p.firstElementChild && p.firstElementChild.tagName === "B"),
+     paras.map(p => p.dataset.topic).join(" · "));
 
   /* THE FIGURE TAKEN APART. A chart nobody can change the subject of is a
      sparkline with ambitions. */

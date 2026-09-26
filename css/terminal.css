@@ -405,6 +405,10 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .g-econ .prow.fac .plab{cursor:help;}
 .g-econ .prow.fac{padding:2px 0;}
 .g-econ .note{font-size:12px;line-height:1.5;}
+/* THE BRIEFING: one paragraph a subject, its name run in bold (design/45) */
+.g-econ p.ulook{margin:0 0 7px;}
+.g-econ p.ulook:last-child{margin-bottom:0;}
+.g-econ p.ulook b{color:var(--ink);font-weight:600;}
 .g-econ .sparkline{width:110px;height:26px;}
 .g-econ table{font-size:12.5px;}
 .g-econ td,.g-econ th{padding:3px 6px;}
