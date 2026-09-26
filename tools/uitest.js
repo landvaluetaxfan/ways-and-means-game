@@ -966,42 +966,26 @@ try {
      /As of sitting \d+/.test(open("cu").textContent),
      (open("cu").textContent.match(/As of sitting \d+[^.]*\./) || [""])[0].slice(0, 70));
 
-  /* A POSITION IN WORDS, from js/schema.js's poles -- and the count of the
-     axes taken from the data, not typed. "the four axes" was written when
-     there were four and survived the conversion to five. */
+  /* A POSITION AS POLICY (design/45), from js/schema.js's `says`: "strongly
+     supports public ownership of essential systems", never the pole word
+     ("closurist" is the shorthand PROSE_REGISTER.md says is not prose) and
+     never a co-ordinate. Every axis the party has a position on is said,
+     read from the data: the old check counted "the four axes" in a
+     sentence written when there were four. */
   const pos = open("cu").textContent;
-  ok("and renders a party's position in words, not co-ordinates",
-     /strongly (public|private|liberal|authoritarian|restrictionist|expansionist|station|federal|closurist|integrationist)/.test(pos) &&
-     !/economic: -?\d/.test(pos),
-     (pos.match(/position on the \d+ axes[^.]*\./) || [""])[0].slice(0, 96));
-  ok("and counts its axes rather than naming a number that can go stale",
-     pos.indexOf("the " + Object.keys(w.eval("JSON.parse(JSON.stringify(CONTENT.partyById.cu.axes))"))
-       .filter(k => w.eval('CONTENT.partyById.cu.axes.' + k) !== null).length + " axes") >= 0,
-     (pos.match(/the \d+ axes/) || [""])[0]);
-
-  /* A SEAT'S ARTICLE NAMES WHO HOLDS IT (design/45). The lede and the
-     infobox read the roll's `member`, the backbencher a roster character
-     displaced, while the prose under them named the character: Anselm
-     Proper was "held by Kofi Ashworth" and the seat of Darren Watkins Jr.
-     in one page. Every seat a character holds, not one example. */
-  const seated = w.eval(`JSON.parse(JSON.stringify(UI.content().constituencies
-    .map(k => ({ id: k.id, stale: k.member,
-                 ch: UI.content().characters.find(c => c.seat === k.name) }))
-    .filter(x => x.ch && x.stale && x.ch.name.indexOf(x.stale) < 0)
-    .map(x => ({ id: x.id, stale: x.stale, id2: x.ch.id,
-                 name: x.ch.name.replace(/^Rt\\. Hon\\. /, "").replace(/ MP$/, "") }))))`);
-  const wrongMember = seated.filter(x => {
-    const el = open(x.id);
-    const box = el.querySelector(".cx-infobox") || el;
-    const lede = el.querySelector(".cx-lede");
-    return !lede || el.textContent.indexOf(x.stale) >= 0 ||
-           lede.textContent.indexOf(x.name) < 0 || box.textContent.indexOf(x.name) < 0 ||
-           !lede.querySelector('[data-go="person_' + x.id2 + '"]');
+  const cuAxes = JSON.parse(w.eval("JSON.stringify(CONTENT.partyById.cu.axes)"));
+  const AX = JSON.parse(w.eval("JSON.stringify(SCHEMA.vocab.axes)"));
+  const said = Object.keys(cuAxes).filter(k => cuAxes[k] !== null).filter(k => {
+    const v = cuAxes[k], a = AX[k];
+    return Math.abs(v) < 0.15 ? pos.indexOf(a.topic) >= 0 : pos.indexOf(a.says[v < 0 ? "low" : "high"]) >= 0;
   });
-  ok("a seat's article names the member who holds it, and links them",
-     seated.length > 0 && wrongMember.length === 0,
-     wrongMember.length ? wrongMember.slice(0, 3).map(x => x.id + " (" + x.stale + ")").join(", ")
-                        : seated.length + " seats held by a roster character");
+  ok("and renders a party's position as policy, not pole words or co-ordinates",
+     said.length === Object.keys(cuAxes).filter(k => cuAxes[k] !== null).length &&
+     !/\b(closurist|integrationist|restrictionist|expansionist)\b/.test(pos) && !/economic: -?\d/.test(pos),
+     (pos.match(/The party strongly[^.]*\./) || [""])[0].slice(0, 110));
+  ok("and says what its loyalty means, out of 100",
+     /loyalty to the party leadership stands at \d+ of 100: on a whipped vote about \d+ of every 100/.test(pos),
+     (pos.match(/loyalty to the party leadership[^.]*\./) || [""])[0].slice(0, 110));
 
   /* CATEGORIES, which Wikipedia closes every article with. */
   ok("and closes on its categories", !!open("cu").querySelector(".cx-cats span"),

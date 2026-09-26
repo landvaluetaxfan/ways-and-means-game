@@ -206,11 +206,23 @@ const SCHEMA = {
        and had no categorical equivalent — nothing in the old four
        distinguished a party that wants the state to decide from one that
        wants nobody to. */
-    axes: { economic:    { min:-1, max:1, low:"public",         high:"private" },
-            authority:   { min:-1, max:1, low:"liberal",        high:"authoritarian" },
-            personhood:  { min:-1, max:1, low:"restrictionist", high:"expansionist" },
-            sovereignty: { min:-1, max:1, low:"station",        high:"federal" },
-            trade:       { min:-1, max:1, low:"closurist",      high:"integrationist" } },
+    /* `low`/`high` are the engine's pole names, for the editor and the
+       tooltips. `says` is the same position AS POLICY, which is what prose
+       uses (PROSE_REGISTER.md: "closed trade" is the shorthand leaking out):
+       a party at the low end of `trade` supports limits on trade with Earth.
+       `topic` is what the axis is about, for a party that holds the centre.
+       A pole whose `verb` is "opposes" is stated as opposition to the other
+       pole's policy. */
+    axes: { economic:    { min:-1, max:1, low:"public",         high:"private", topic:"ownership",
+                           says:{ low:"public ownership of essential systems", high:"private ownership" } },
+            authority:   { min:-1, max:1, low:"liberal",        high:"authoritarian", topic:"the powers of the state",
+                           says:{ low:"civil liberties", high:"a stronger state" } },
+            personhood:  { min:-1, max:1, low:"restrictionist", high:"expansionist", topic:"legal personhood",
+                           says:{ low:"extending legal personhood", high:"extending legal personhood" }, verb:{ low:"opposes" } },
+            sovereignty: { min:-1, max:1, low:"station",        high:"federal", topic:"the federation's powers",
+                           says:{ low:"more self-government for the stations", high:"a stronger federal government" } },
+            trade:       { min:-1, max:1, low:"closurist",      high:"integrationist", topic:"trade with Earth",
+                           says:{ low:"limits on trade with Earth", high:"open trade with Earth" } } },
     /* A FORUM RESOLUTION'S LIFE (design/43): drafted in content, tabled for
        the forum's next sitting, decided there, or withdrawn before it. */
     resolutionStatuses: ["draft","tabled","adopted","rejected","withdrawn"],

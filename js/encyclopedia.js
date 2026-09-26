@@ -87,22 +87,45 @@ const Concordance = (function () {
         because the conversion from four categorical axes to five signed
         ones moved the data and left the prose. A sentence that states its
         own arity is a sentence that goes stale. */
-  function axisProse(axes) {
-    const poles = (typeof SCHEMA !== "undefined" && SCHEMA.vocab && SCHEMA.vocab.axes)
-      ? SCHEMA.vocab.axes : {};
-    const said = Object.keys(axes || {})
-      .filter(k => axes[k] != null)
-      .map(k => {
-        const v = axes[k];
-        if (typeof v !== "number") return k + ": " + v;
-        const pl = poles[k];
-        if (!pl) return k + ": " + v;
-        const m = Math.abs(v);
-        if (m < 0.15) return k + ": the centre";
-        return k + ": " + (m >= 0.7 ? "strongly " : m >= 0.35 ? "" : "mildly ") +
-               (v < 0 ? pl.low : pl.high);
-      });
-    return { count: said.length, line: said.join(" \u00b7 ") };
+  /* 3a. A POSITION AS POLICY (design/45). This printed the pole's own
+     word, "closurist", which PROSE_REGISTER.md calls the shorthand leaking
+     out; it says what the party supports and opposes now, in SCHEMA's
+     `says`, grouped by how strongly. `null` is no position and is left out;
+     a position near zero is the centre, and is said as such. */
+  function andList(xs) {
+    return xs.length < 2 ? xs.join("") : xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1];
+  }
+  function policyProse(axes, who) {
+    const A = (typeof SCHEMA !== "undefined" && SCHEMA.vocab && SCHEMA.vocab.axes) ? SCHEMA.vocab.axes : {};
+    const bands = { strong: [], plain: [], mild: [] }, centre = [];
+    let count = 0;
+    Object.keys(axes || {}).forEach(k => {
+      const v = axes[k], a = A[k];
+      if (v == null || typeof v !== "number" || !a || !a.says) return;
+      count++;
+      const m = Math.abs(v);
+      if (m < 0.15) { centre.push(a.topic || k); return; }
+      const end = v < 0 ? "low" : "high";
+      bands[m >= 0.7 ? "strong" : m >= 0.35 ? "plain" : "mild"]
+        .push({ verb: (a.verb && a.verb[end]) || "supports", obj: a.says[end] });
+    });
+    const ADV = { strong: "strongly ", plain: "", mild: "mildly " }, clauses = [];
+    ["strong", "plain", "mild"].forEach(b => ["supports", "opposes"].forEach(vb => {
+      const objs = bands[b].filter(x => x.verb === vb).map(x => x.obj);
+      if (objs.length) clauses.push(ADV[b] + vb + " " + andList(objs));
+    }));
+    let text = clauses.length ? who + " " + (clauses.length < 3 ? andList(clauses)
+      : clauses.slice(0, -1).join(", ") + ", and " + clauses[clauses.length - 1]) + "." : "";
+    if (centre.length) text += (text ? " It" : who) + " takes the centre on " + andList(centre) + ".";
+    return { count: count, text: text };
+  }
+
+  /* 3b. WHAT A LOYALTY MEANS. A figure carries its scale (design/45): out of
+     100, and the share of a bench that votes with the party on a whipped
+     vote, from the engine's one formula. */
+  function loyaltyText(l) {
+    const holds = Engine.holdsOnWhip ? Math.round(Engine.holdsOnWhip(l) * 100) : null;
+    return `${l} of 100` + (holds != null ? `: on a whipped vote about ${holds} of every 100 of its members vote with the party` : "");
   }
 
   /* 4. WHAT KIND OF THING THIS IS. Wikipedia's categories, drawn from what
@@ -149,6 +172,10 @@ const Concordance = (function () {
     if (ch.office === "opposition") add("House", "Leader of the Opposition");
     if (ch.office === "whip") add("House", "Chief Whip");
     if (ch.office === "shadow" && ch.role) add("House", ch.role);
+    /* a junior minister (the Financial Secretary) holds office without a
+       cabinet post, and said "no ministerial office" until design/45 */
+    if (ch.office === "minister" && ch.role && !out.some(o => o.title === ch.role))
+      add("Government", ch.role);
     (C.parties || []).forEach(p => { if (p.leader === ch.id) add("Party", "Leader, " + p.name); });
     return out;
   }
@@ -180,8 +207,7 @@ const Concordance = (function () {
        dimensions the party declares, and says which end rather than the
        number: "public" and not "-0.75". The poles come from SCHEMA, which
        index.html loads for exactly this. */
-    const ax = axisProse(p.axes);
-    const axisLine = ax.line || "no settled position";
+    const pol = policyProse(p.axes, "The party");
 
     /* The leader is a character id on the party, and the office is read
        from the same cabinet the game runs on — so the article can say
@@ -194,12 +220,9 @@ const Concordance = (function () {
       /* THE AXES ARE COUNTED, NOT NAMED. "the four axes" was written when
          there were four and survived the conversion to five. */
       { h: "Position", body:
-        (ax.count
-          ? `The party's recorded position on the ${ax.count} axes of Commonwealth ` +
-            `politics is ${axisLine}.`
-          : "The party has no position recorded on any axis of Commonwealth politics.") },
+        (pol.count ? pol.text : "The party has no recorded position on the questions that divide the House.") },
       { h: "Representation", body:
-        `${total} seats: ${seats.district} district, ${seats.list} list, ${seats.functional} functional. ` +
+        `The party holds ${total} seats: ${seats.district} district, ${seats.list} list and ${seats.functional} functional. ` +
         (seats.district === 0 && seats.list > 0
           ? "The party holds no geographic constituency at all, a fact its opponents raise and it does not much dispute."
           : seats.functional > seats.district
@@ -209,12 +232,17 @@ const Concordance = (function () {
     if (leader) sections.push({ h: "Leadership", body:
       `Led by [[person_${leader.id}|${leader.name}]]. ` +
       (leadOffice ? officeLine(leadOffice) : "Holds no ministerial office.") });
+    /* LOYALTY, WITH ITS SCALE AND WHAT IT DOES (design/45). This said "its
+       discipline is recorded at 48": a figure with no scale, under a second
+       name for what every screen calls loyalty. */
+    const loyal = `Its members' loyalty to the party leadership stands at ` +
+      loyaltyText(st.parties[p.id].loyalty) + ".";
     if (inGov) sections.push({ h: "In government", body:
-      asOf(`the party sits in the governing coalition, and its discipline is ` +
-           `recorded at ${st.parties[p.id].loyalty}.`) });
+      asOf(`the party sits in the governing coalition. `) + loyal });
     else if (cs) sections.push({ h: "Confidence and supply", body:
-      asOf(`the party sustains the government without holding office, and its ` +
-           `discipline is recorded at ${st.parties[p.id].loyalty}.`) });
+      asOf(`the party sustains the government on votes of confidence and on the budget, ` +
+           `without holding office. `) + loyal });
+    else sections.push({ h: "In opposition", body: asOf(`the party sits in opposition. `) + loyal });
     /* A current's name is a position ("Hard Left") or a seat ("Homestead
        A"), neither of which takes a verb as a subject, so each paragraph
        leads with the name and its figures and then says what it is. A
@@ -222,12 +250,13 @@ const Concordance = (function () {
        where it is described, in content's own words. */
     if (currents.length) sections.push({ h: "Currents", body:
       `The party recognises ${currents.length} internal current` +
-      (currents.length === 1 ? "" : "s") + ". " +
-      asOf("they stand as follows.") + "\n\n" +
+      (currents.length === 1 ? "" : "s") + ", each with its own loyalty to the leadership, out of " +
+      `100. On a whipped vote three-quarters of a current votes with the party even at a loyalty ` +
+      `of 0, and all of it at 100. ` + asOf("they stand as follows.") + "\n\n" +
       (Engine.currentSeats(st, C, p.id) || []).map(c => {
         const d = (currents.find(x => x.id === c.id) || {}).description;
-        return `**${c.name}**, ${c.seats} member${c.seats === 1 ? "" : "s"} at a discipline ` +
-               `of ${c.loyalty}.` + (d ? " " + d : "");
+        return `**${c.name}**: ${c.seats} member${c.seats === 1 ? "" : "s"}, loyalty ${c.loyalty}.` +
+               (d ? " " + d : "");
       }).join("\n\n") });
 
     /* THE PARTY OUTSIDE PARLIAMENT, moved here from the Party tab, which is
@@ -280,6 +309,8 @@ const Concordance = (function () {
          holding 82 of 280 seats" -- a sentence with no subject in it. */
       summary: lede(p.name,
         `is a political party of the [[parliament|House of Delegates]]. ` +
+        /* the party's own note says what it is and who it speaks for */
+        (p.note ? p.note + " " : "") +
         (p.aliases ? `It is known in the press as the ${p.aliases[0]}. ` : "") +
         asOf(`it holds ${total} of the ${Engine.chamberTotal(st)} seats in the ` +
              `chamber and ${inGov ? "sits in the governing coalition"
@@ -606,17 +637,42 @@ const Concordance = (function () {
     };
   }
 
+  /* A TERM IS DEFINED, NOT GLOSSED (design/45). The article was the
+     tooltip's one line after "is a term of Commonwealth politics", then the
+     Earth analogy the tooltip uses ("Voter ID, for a world where copies are
+     cheap") as an untitled paragraph, under a stub banner. A term with an
+     authored `article` gets a definition: what it is, how it works, where it
+     matters. The analogy stays the tooltip's. */
   function termArticle(g) {
+    const title = g.term.charAt(0).toUpperCase() + g.term.slice(1);
     return {
       id: "term_" + g.term.toLowerCase().replace(/\s+/g, "_"),
-      title: g.term.charAt(0).toUpperCase() + g.term.slice(1),
-      category: "Definitions", generated: true, banners: ["stub"],
+      title: title,
+      category: "Definitions", generated: true, banners: g.article ? [] : ["stub"],
       edited: { by: "unattributed", attested: true, note: "" },
-      summary: lede(g.term, `is a term of Commonwealth politics. ` + g.gloss),
-      sections: g.handle ? [{ h: "", body: g.handle }] : [],
-      see: []
+      /* a definition may bold its own subject, as "A **fork** is ...",
+         which reads as English where "**Fork** is" does not */
+      summary: g.article ? (/\*\*/.test(g.article) ? g.article : lede(title, g.article))
+                         : lede(title, `is a term of Commonwealth politics. ` + g.gloss),
+      sections: [],
+      see: g.see || []
     };
   }
+
+  /* PRONOUNS ARE CONTENT'S. A character with none set is "they", which is
+     never wrong; `pronouns` is set only where the author's own prose says
+     "she" or "he" of the person. */
+  function pronounsOf(ch) {
+    const p = String(ch.pronouns || "they").toLowerCase();
+    if (p.indexOf("she") === 0) return { sub: "she", poss: "her", s: "s", are: "is" };
+    if (p.indexOf("he") === 0) return { sub: "he", poss: "his", s: "s", are: "is" };
+    return { sub: "they", poss: "their", s: "", are: "are" };
+  }
+  const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  /* what kind of person, in the glossary's words, for the few the lede
+     should say it of; a biological member is the Commonwealth's default */
+  const KIND = { emulation: "an [[term_emulation|emulation]], a person running as software without a body",
+                 uplift: "an uplift", synthetic: "a synthetic person" };
 
   function personArticle(ch) {
     const offices = officesOf(ch);
@@ -634,15 +690,24 @@ const Concordance = (function () {
        the thing that makes a page read as an encyclopedia entry. */
     const lead = mainOffice(offices);
     const partyOffice = offices.find(o => o.kind === "Party");
-    const seatPhrase = fc ? `the ${fc.name} functional constituency`
-                     : ch.seat ? ch.seat : null;
-    let summary = lede(ch.name, "is a Commonwealth politician");
-    if (party) summary += ` of the [[${party.id}|${party.name}]]`;
+    const P = pronounsOf(ch);
+    /* the seat links its own article, and a functional seat its franchise */
+    const k = ch.seat ? (C.constituencies || []).find(x => x.name === ch.seat) : null;
+    const seatPhrase = fc ? `the ${fc.name} [[functional_constituency|functional constituency]]`
+                     : k ? `[[${k.id}|${ch.seat}]]` : ch.seat ? ch.seat : null;
+    /* A PERSON WITHOUT A SEAT IS DESCRIBED BY WHAT THEY ARE: the President,
+       the Governor, an editor. `descriptor` is content's; a member of the
+       House is a politician of a party sitting for a seat. */
+    const politician = !!seatPhrase;
+    let summary = lede(ch.name, politician ? "is a Commonwealth politician"
+                                : "is " + (ch.descriptor || "a figure in Commonwealth public life"));
+    if (politician && party) summary += ` of the [[${party.id}|${party.name}]]`;
     if (seatPhrase) summary += `, sitting for ${seatPhrase}`;
     summary += ".";
-    if (lead) summary += ` ${asOf(`they serve as ${lead.title}.`)}`;
-    else if (partyOffice) summary += ` ${asOf(`they are ${partyOffice.label}.`)}`;
-    else summary += " They hold no ministerial office.";
+    if (KIND[ch.category]) summary += ` ${cap(P.sub)} ${P.are} ${KIND[ch.category]}.`;
+    if (lead) summary += ` ${asOf(`${P.sub} serve${P.s} as ${lead.title}.`)}`;
+    else if (partyOffice) summary += ` ${asOf(`${P.sub} ${P.are} ${partyOffice.label}.`)}`;
+    else if (politician) summary += ` ${cap(P.sub)} hold${P.s} no ministerial office.`;
 
     const sections = [];
     /* `ch.note` IS NOT PRINTED, and that is the point of this pass. The
@@ -655,11 +720,20 @@ const Concordance = (function () {
        maintained article can honestly say is what the registry knows, so
        that is what it says now, and it stays true through a reshuffle
        because every word of it is derived. */
+    /* A CAREER, where content has written one (`bio`, design/45): facts a
+       registry cannot derive, in the Concordance's register. The design
+       note stays unprinted. */
+    if (ch.bio) sections.push({ h: "Career", body: ch.bio });
+    /* the current within the party, in its own words */
+    const cur = ch.current ? (C.currents || []).find(x => x.id === ch.current) : null;
+    if (cur && party) sections.push({ h: "In the party", body:
+      `${cap(P.sub)} belong${P.s} to the ${cur.name}, one of the currents of the ` +
+      `[[${party.id}|${party.name}]]. ` + (cur.description || "") });
     if (offices.length > 1) sections.push({ h: "Offices", body:
-      `They hold ${offices.length} recorded offices: ` +
-      offices.map(o => o.label).join("; ") + "." });
+      `${cap(P.sub)} hold${P.s} ${offices.length} offices: ` +
+      andList(offices.map(o => o.label)) + "." });
     if (isPM) sections.push({ h: "Government", body:
-      asOf(`the government they lead commands ${Engine.confidence(st)} of ` +
+      asOf(`the government ${P.sub} lead${P.s} commands ${Engine.confidence(st)} of ` +
            `${Engine.chamberTotal(st)} seats, against a majority of ` +
            `${Engine.majority(st)}.`) });
 
@@ -831,7 +905,11 @@ const Concordance = (function () {
     });
     (C.glossary || []).forEach(g => {
       const id = "term_" + g.term.toLowerCase().replace(/\s+/g, "_");
-      if (!handIds.has(id) && !handIds.has(g.term.toLowerCase())) gen.push(termArticle(g));
+      /* a term with a full hand-written article under its own name
+         ("dual_majority") is that article; a thin second page would only
+         split the reader between two */
+      const u = g.term.toLowerCase().replace(/\s+/g, "_");
+      if (!handIds.has(id) && !handIds.has(g.term.toLowerCase()) && !handIds.has(u)) gen.push(termArticle(g));
     });
     /* THE WORLD (design/29). The anchors, the states and the foreign bodies
        are content now, so they get articles like everything else — generated,

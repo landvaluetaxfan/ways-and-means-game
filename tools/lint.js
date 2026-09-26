@@ -1289,6 +1289,7 @@ if (campBad.length) R.push(`${campBad.length} CAMPAIGN FAULTS`);
 if (pageBad.length) R.push(`${pageBad.length} CONTENT FILES THE EDITOR DOES NOT LOAD`);
 if (retiredBad.length) R.push(`${retiredBad.length} RETIRED NAMES IN THE PROSE`);
 if (seatBad.length) R.push(`${seatBad.length} CONSTITUENCY PROSE FAULTS`);
+if (briefBad.length) R.push(`${briefBad.length} BRIEFING FIGURES THE ENGINE DOES NOT FILL`);
 if (popBad.length) R.push("THE POPULATION IS STORED TWICE AND HAS DRIFTED (advisory)");
 console.log(R.join("\n"));
 /* HARD FAILURES: everything except popBad. The chain is one of them now —
@@ -1301,4 +1302,4 @@ console.log(R.join("\n"));
 if (artBad.length || chainBad.length || cssBad.length || verbBad.length ||
     parseBad.length || initBad.length || gridBad.length || targetBad.length ||
     labelBad.length || gateBad.length || refBad.length || campBad.length ||
-    pageBad.length || retiredBad.length || seatBad.length) process.exit(1);
+    pageBad.length || retiredBad.length || seatBad.length || briefBad.length) process.exit(1);

@@ -679,9 +679,9 @@ const SETUP = {
       "the direction costs it credibility, now {credibility}, and expected inflation " +
       "follows." },
     bank_doubted: { topic: "bank", text:
-      "The Bank's credibility is {credibility}. At that level expected inflation " +
-      "({expected}) follows prices instead of the target, so inflation persists and the " +
-      "rate has to stay higher for longer to bring it down." },
+      "The Bank's credibility is {credibility}. At that level the market takes its " +
+      "expectation of inflation, now {expected}, from recent prices, so inflation " +
+      "persists and the rate has to stay higher for longer to bring it down." },
     dollar_weak: { topic: "bank", text:
       "The dollar buys {fx}, {fxChange}, and it bought {fxFirst} in {fxFirstYear}. " +
       "Everything bought from Earth costs more, and a debt owed in Earth's money is " +

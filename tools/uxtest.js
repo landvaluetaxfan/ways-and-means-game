@@ -802,6 +802,36 @@ try {
      w.eval('!!CONTENT.partyById["' + ptip[0] + '"]'), ptip[0]);
   ok("and it can carry the party's logo", ptip[2] === "1");
 
+  /* A GLOSSARY TERM LINKS TO ITS ARTICLE AND SHOWS ITS HANDLE (design/45).
+     The handle was passed as data-tip-go, which the card reads as an article
+     id, so it matched nothing and was dropped: no term linked anywhere and
+     the analogy was never shown. annotate() on a sentence that uses terms
+     with a hand-written article and with a generated one, then the card. */
+  const gl = JSON.parse(w.eval(`(function () {
+    var host = document.createElement("p");
+    host.id = "gl-probe";
+    host.innerHTML = UI.annotate("A fork past the divergence threshold may face suspension under the shed order, and attestation decides who votes.");
+    document.querySelector("#s-sit.on, .screen.on").appendChild(host);
+    return JSON.stringify([].slice.call(host.querySelectorAll(".gl")).map(function (el) {
+      var t = el.getAttribute("data-tip-title"), go = el.getAttribute("data-tip-go") || "";
+      var g = CONTENT.glossary.find(function (x) { return x.term === t; }) || {};
+      return { t: t, go: go, known: !!go && Concordance.knows(go),
+               aside: (el.getAttribute("data-tip-aside") || "") === (g.handle || "") };
+    }));
+  })()`));
+  const glBad = gl.filter(x => !x.known || !x.aside);
+  ok("a glossary term links to its own article and carries its handle",
+     gl.length >= 4 && glBad.length === 0,
+     glBad.length ? glBad.slice(0, 3).map(x => x.t + " -> " + (x.go || "nothing")).join(", ")
+                  : gl.map(x => x.t + " -> " + x.go).join(", "));
+  const probe = w.document.querySelector("#gl-probe .gl");
+  if (probe) { probe.setAttribute("tabindex", "0"); probe.focus(); }
+  const card = (w.document.getElementById("tipcard") || {}).innerHTML || "";
+  ok("and the card draws the link and the handle",
+     /tip-go/.test(card) && /tip-aside/.test(card), card.replace(/<[^>]+>/g, " ").slice(0, 110));
+  if (probe) probe.blur();
+  const gp = w.document.getElementById("gl-probe"); if (gp) gp.remove();
+
   /* design/19: how long until the House rises, answerable by looking. */
   ok("the topbar carries how long the session has left",
      /RISES IN/.test(ui) && w.eval(`/RISES IN \\d+/.test(

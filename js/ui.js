@@ -4366,6 +4366,13 @@ const UI = (function () {
 
      After each insertion the segments are re-split, so a term can never land
      inside markup added moments earlier by another term. */
+  /* A term's article: the hand-written one where the Concordance has it
+     ("suspension", "dual_majority"), else the generated definition. */
+  function termGo(g) {
+    if (typeof Concordance === "undefined" || !Concordance.knows) return null;
+    const u = g.term.toLowerCase().replace(/\s+/g, "_");
+    return Concordance.knows(u) ? u : Concordance.knows("term_" + u) ? "term_" + u : null;
+  }
   function annotate(html) {
     const terms = (C.glossary || []).filter(g => !g.assumed)
       .sort((a, b) => b.term.length - a.term.length);
@@ -4392,7 +4399,14 @@ const UI = (function () {
              dozens of stops between a keyboard user and the decision. */
           `<span class="gl" data-tip="term:${esc(g.term)}"` +
           ` data-tip-title="${esc(g.term)}" data-tip-body="${esc(g.gloss)}"` +
-          (g.handle ? ` data-tip-go="${esc(g.handle)}"` : "") + `>${m}</span>`);
+          /* THE HANDLE IS AN ASIDE AND THE LINK IS AN ARTICLE (design/45).
+             The handle, the familiar shape the term hangs on, was passed as
+             data-tip-go, which tips.js reads as an article id: it matched
+             nothing, so the card dropped it without a word. The analogy
+             the glossary calls its teaching device was never shown, and no
+             term ever linked to its Concordance article. */
+          (g.handle ? ` data-tip-aside="${esc(g.handle)}"` : "") +
+          (termGo(g) ? ` data-tip-go="${esc(termGo(g))}"` : "") + `>${m}</span>`);
         done.add(g.term);
         parts = parts.join("").split(/(<[^>]*>)/);
         break;

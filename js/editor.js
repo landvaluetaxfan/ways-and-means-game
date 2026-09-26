@@ -675,8 +675,16 @@ const Editor = (function () {
       }</select></label>
       <label>Relationship ${num_("relationship", c.relationship)}</label>
       <label class="ed-w">Portrait ${txt_("portrait", c.portrait || "", "name.png", 180)}</label>
+      <label>Pronouns <select class="ed-f" data-f="pronouns">${
+        [["", "they (unset)"], ["she", "she"], ["he", "he"], ["they", "they"]].map(([v, l]) =>
+          `<option value="${v}"${(c.pronouns || "") === v ? " selected" : ""}>${l}</option>`).join("")
+      }</select></label>
+      <label class="ed-w">Descriptor ${txt_("descriptor", c.descriptor || "", "the Governor of the Reserve Bank", 300)}
+        <span class="ed-hint">for someone without a seat: what the Concordance's lede calls them</span></label>
     </div>
-    <div class="rulehead">Note</div>
+    <div class="rulehead">Biography <span class="ed-hint">printed in the Concordance as Career: facts a registry cannot derive, in its register</span></div>
+    <textarea class="ed-f ed-body" data-f="bio" rows="4">${esc(c.bio || "")}</textarea>
+    <div class="rulehead">Note <span class="ed-hint">the author's design note, never printed</span></div>
     <textarea class="ed-f ed-body" data-f="note" rows="3">${esc(c.note || "")}</textarea>`;
   }
 
@@ -768,8 +776,10 @@ const Editor = (function () {
     </div>
     <div class="rulehead">Gloss <span class="ed-hint">one line. If it needs two, the concept is too big.</span></div>
     ${txt_("gloss", g.gloss, "", 620)}
-    <div class="rulehead">Handle <span class="ed-hint">the familiar real-world shape it hangs on</span></div>
-    ${txt_("handle", g.handle || "", "", 620)}`;
+    <div class="rulehead">Handle <span class="ed-hint">the familiar real-world shape it hangs on; shown in the tooltip</span></div>
+    ${txt_("handle", g.handle || "", "", 620)}
+    <div class="rulehead">Article <span class="ed-hint">the Concordance's definition: what it is, how it works, where it matters. "A **fork** is ..."</span></div>
+    <textarea class="ed-f ed-body" data-f="article" rows="4">${esc(g.article || "")}</textarea>`;
   }
 
 
@@ -1727,6 +1737,9 @@ const Editor = (function () {
       const po = g("portrait").value.trim(); if (po) c.portrait = po; else delete c.portrait;
       const of = g("office").value; if (of) c.office = of; else delete c.office;
       const fn = g("functional").value; if (fn) c.functional = fn; else delete c.functional;
+      /* design/45: printed prose, and the pronoun the articles use */
+      ["pronouns", "descriptor", "bio"].forEach(k => {
+        const v = (g(k).value || "").trim(); if (v) c[k] = v; else delete c[k]; });
       if (!c.seat) delete c.seat;
       sel.id = c.id;
     }
@@ -1785,6 +1798,7 @@ const Editor = (function () {
       /* an empty box is an absent field, not an empty string or a null, unless
          the entry already said so */
       const h = g("handle").value; if (h || t.handle != null) t.handle = h;
+      const ar = g("article").value.trim(); if (ar) t.article = ar; else delete t.article;
       const cl = g("cluster").value.trim(); if (cl) t.cluster = cl; else delete t.cluster;
       const iv = g("introduced").value;
       if (iv) t.introduced = iv; else if (t.introduced !== undefined) t.introduced = null;

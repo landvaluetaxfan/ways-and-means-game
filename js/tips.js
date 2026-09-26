@@ -428,11 +428,15 @@ const Tips = (function () {
      article is generated. It resolves a generated subject from its own
      roster now, which is what turns a party hover into a hand-off rather
      than a dead end. */
-  function goLine(go) {
+  function goLine(go, title) {
     if (!go || typeof CONTENT === "undefined") return "";
-    const subj = (CONTENT.encyclopediaById || {})[go] ||
-                 (CONTENT.partyById || {})[go] ||
-                 (CONTENT.stationById || {})[go];
+    let subj = (CONTENT.encyclopediaById || {})[go] ||
+               (CONTENT.partyById || {})[go] ||
+               (CONTENT.stationById || {})[go];
+    /* a generated article (a term's definition, a person) is known to the
+       Concordance and not to CONTENT's indexes */
+    if (!subj && typeof Concordance !== "undefined" && Concordance.knows && Concordance.knows(go))
+      subj = { title: title || go };
     if (!subj) return "";
     /* A LINK, NOT A LABEL. It said "Concordance · Freehold Party" in
        italic and did nothing, which is worse than silence: it names a
@@ -467,6 +471,7 @@ const Tips = (function () {
     const t = inline
       ? { title: el.getAttribute("data-tip-title") || "", body: inline,
           go: el.getAttribute("data-tip-go") || null,
+          aside: el.getAttribute("data-tip-aside") || null,
           img: el.getAttribute("data-tip-img") || null,
           members: parseMembers(el.getAttribute("data-tip-members")) }
       : find(el.getAttribute("data-tip"));
@@ -475,8 +480,9 @@ const Tips = (function () {
     c.innerHTML =
       imgLine(t.img) +
       '<b>' + esc(t.title) + '</b>' +
-      goLine(t.go) +
+      goLine(t.go, t.title) +
       '<span>' + esc(t.body) + '</span>' +
+      (t.aside ? '<span class="tip-aside">' + esc(t.aside) + '</span>' : '') +
       membersTable(t.members);
     /* A member table carries a full office title in its last column, so the
        card is allowed to run wider than a one-line explanation needs. The

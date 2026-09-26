@@ -1701,7 +1701,7 @@ const Engine = (function () {
      position, 0 on a free vote, where there is no line to hold.
      `detail`, if given, collects the per-current working for the UI. */
   function turnout(st, C, bill, partyId, floor, detail) {
-    const rate = l => floor + (1 - floor) * ((l == null ? 60 : l) / 100);
+    const rate = l => holdsOnWhip(l, floor);
     const bs = benches(st, C, partyId);
 
     if (!bs) {
@@ -1727,6 +1727,14 @@ const Engine = (function () {
 
   function discipline(st, C, partyId, bill, detail) {
     return turnout(st, C, bill, partyId, 0.75, detail);
+  }
+
+  /* THE SHARE OF A BENCH AT LOYALTY `l` THAT VOTES WITH THE PARTY, the one
+     formula turnout() uses, exported so the Concordance can say what a
+     loyalty of 29 means (design/45) without keeping a second copy of it. */
+  function holdsOnWhip(l, floor) {
+    const f = floor == null ? 0.75 : floor;
+    return f + (1 - f) * ((l == null ? 60 : l) / 100);
   }
 
   /* Split `total` across `weights` so the parts are whole numbers that
@@ -8555,7 +8563,7 @@ const Engine = (function () {
     count, counted, forecast, functionalShares, epilogue,
     divisorAllocate,
     packBoard, canPackBoard, boardsMoved, boardsTotal,
-    borrow, repay, canBorrow, debtOf, debtRate, debtService, debts, lenderOf, inflation, outlook, briefing,
+    borrow, repay, canBorrow, debtOf, debtRate, debtService, debts, lenderOf, inflation, outlook, briefing, holdsOnWhip,
     facilities, lenderCap, rateSteps,
     budget, spending, interestDue, debtHome, macro, taylorRate, fxTarget, money, costing, economyVote, meterDrift,
     scarcity, economyReading, nominalOutput, targetOf,

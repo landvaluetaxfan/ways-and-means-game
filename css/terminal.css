@@ -2433,6 +2433,8 @@ th[data-tip],.plab[data-tip],.meterrow label[data-tip]{
   color:var(--ink-soft);margin-bottom:2px;
 }
 #tipcard span{display:block;font-family:var(--f-read);font-size:12px;line-height:1.45;}
+/* a glossary term's familiar shape, under its definition (design/45) */
+#tipcard span.tip-aside{margin-top:4px;font-style:italic;color:var(--ink-soft);}
 #tipcard i{
   display:block;margin-top:4px;padding-top:3px;border-top:1px solid var(--chrome-dk);
   font-style:normal;font-family:var(--f-data);font-size:10px;color:var(--ink-soft);

@@ -48,14 +48,14 @@ const PARTIES = [
     seats:{district:51,list:25,functional:9}, vote:23.3,
     kind:"national",
     axes:{economic:-0.75, authority:-0.4, personhood:-0.55, sovereignty:0.5, trade:-0.35},
-    note:"Old left. Embodied maintenance labour, and the strike weapon." },
+    note:"It is the party of the maintenance trades and their unions, and supports public ownership of the systems its members keep running. The maintenance union is affiliated to it and votes as a block at its conference." },
 
   { id:"cl",  name:"Liberal Party",                short:"LIB", colour:"var(--p-cl)",
     leader:"watkins", logo:"cl.png", wordmark:"cl_mark.png",
     seats:{district:22,list:18,functional:6}, vote:16.9,
     kind:"national",
     axes:{economic:0.7, authority:-0.1, personhood:0.6, sovereignty:0.75, trade:0.9},
-    note:"Cosmopolitan market party. Elevator and shipping money." },
+    note:"It is the party of the elevator and shipping consortiums, and supports private ownership and open trade with Earth." },
 
   { id:"psa", name:"New Progressive Party",        short:"NPP", colour:"var(--p-psa)",
     leader:"trottier", logo:"psa.png", wordmark:"psa_mark.png",
@@ -63,35 +63,35 @@ const PARTIES = [
     seats:{district:6,list:28,functional:2}, vote:26.0,
     kind:"national", loyalty:41,
     axes:{economic:-0.8, authority:-0.3, personhood:0.85, sovereignty:0.6, trade:0.55},
-    note:"List-tier strength and almost no districts. Left on economics and expansionist on personhood, which sets it against the old left on the question it cares most about." },
+    note:"It wins most of its seats from the party lists and holds few districts. It supports public ownership and extending legal personhood, which divides it from the Party of Socialists and Democrats on the question it cares most about." },
 
   { id:"sc",  name:"Home Rule",                    short:"HR",  colour:"var(--p-sc)",
     leader:"laughon", logo:"sc.png", wordmark:"sc_mark.png",
     seats:{district:22,list:8,functional:0}, vote:7.8,
     kind:"national", loyalty:35,
     axes:{economic:-0.1, authority:-0.5, personhood:0, sovereignty:-0.9, trade:-0.75},
-    note:"Confederalist. Cannot whip its own members." },
+    note:"It stands for self-government for the stations and a looser federation, and does not whip its members." },
 
   { id:"hul", name:"Association of Engineers and Systems", short:"AES", colour:"var(--p-hul)",
     leader:"wilde_hayward", logo:"hul.png", wordmark:"hul_mark.png",
     seats:{district:8,list:6,functional:7}, vote:5.9,
     kind:"national", loyalty:15,
     axes:{economic:0, authority:0.95, personhood:-0.6, sovereignty:0.1, trade:-0.6},
-    note:"Habitat as lifeboat. Engineering authority supreme." },
+    note:"It holds that a habitat is a life-support system first, and that the engineering authority's judgement should prevail on anything that touches one." },
 
   { id:"rv",  name:"Congregational Democratic Alliance", short:"CDA", colour:"var(--p-rv)",
     leader:"park", logo:"rv.png", wordmark:"rv_mark.png",
     seats:{district:14,list:5,functional:1}, vote:5.0,
     kind:"national",
     axes:{economic:-0.45, authority:-0.2, personhood:-0.9, sovereignty:0, trade:-0.1},
-    note:"Continuity of soul. A copy is not the person. Economically left, culturally immovable." },
+    note:"It holds that a copy is not the person it was copied from, and opposes extending legal personhood. On the economy it supports public ownership." },
 
   { id:"fh",  name:"Freehold Party",               short:"FH",  colour:"var(--p-fh)",
     leader:"bluespan", logo:"fh.png", wordmark:"fh_mark.png",
     seats:{district:8,list:3,functional:6}, vote:3.2,
     kind:"national",
     axes:{economic:0.9, authority:-0.25, personhood:-0.4, sovereignty:-0.6, trade:0.3},
-    note:"Volume owners. Property absolutists." },
+    note:"It speaks for the holders of volume leases, supports property titles enforced by the federal courts, and opposes any tax on volume." },
 
   { id:"gb",  name:"Alliance of Business and Government", short:"ABG", colour:"var(--p-gb)",
     leader:"hatt", logo:"gb.png", wordmark:"gb_mark.png",
@@ -99,14 +99,14 @@ const PARTIES = [
     seats:{district:0,list:0,functional:9}, vote:2.2,
     kind:"professional", loyalty:30,
     axes:{economic:0.15, authority:0.85, personhood:-0.5, sovereignty:0.4, trade:-0.4},
-    note:"Exists only in the functional tier. It does not campaign and cannot be voted out." },
+    note:"Its members sit only for functional constituencies, elected by business and professional electorates, and it does not contest district or list seats." },
 
   { id:"des", name:"One-G",                        short:"ONE", colour:"var(--p-des)",
     leader:"edelstein_powell", logo:"des.png", wordmark:"des_mark.png",
     seats:{district:3,list:1,functional:0}, vote:1.4,
     kind:"national", loyalty:18,
     axes:{economic:-0.2, authority:-0.15, personhood:-0.7, sovereignty:-0.3, trade:-0.2},
-    note:"Gravity as birthright. Draws the physiologically excluded." },
+    note:"It draws its support from people whose health suffers in orbit, and holds that a person's proper place is in gravity." },
 
   { id:"geo", name:"Single Tax Party",             short:"STP", colour:"var(--p-geo)",
     leader:"wheeler", logo:"geo.png", wordmark:"geo_mark.png",
@@ -116,7 +116,7 @@ const PARTIES = [
     /* No carve-out: a national ideological party with no district roots and
        no category to protect. It lives or dies on the threshold every time,
        which is exactly the party 4.8 says will agonise just below the line. */
-    note:"Volume tax, land value tax, nothing else. Four seats, and always "+
+    note:"It stands for a single tax on volume, on the principle of the land value tax, and for no other tax. Its list vote is always close to the threshold."+
          "within a point of the threshold." },
 
   { id:"upl", name:"Uplift Alliance",              short:"UPA", colour:"var(--p-upl)",
@@ -129,7 +129,7 @@ const PARTIES = [
        permanently contested, which is the point of having it. */
     carve_out:"category",
     axes:{economic:-0.6, authority:-0.35, personhood:0.95, sovereignty:0.3, trade:0.4},
-    note:"Two seats. Permanently kingmaker-adjacent. Price is always the same thing. "+
+    note:"It speaks for uplifted persons. It is exempt from the list threshold under the provision for parties representing a single category of person, which much of the House would repeal, and its votes are often decisive in a close House."+
          "Exempt from the list threshold under the single-category carve-out, which "+
          "half the chamber would repeal tomorrow." },
 
@@ -138,7 +138,7 @@ const PARTIES = [
     seats:{district:6,list:0,functional:0}, vote:0, swing:0,
     kind:"national",
     axes:{},
-    note:`District independents. No caucus position, no whip, no leader. Six members and six arguments: the three localist members share one, and the others share nothing. Where three of them vote together, the division list is the only record of it.` }
+    note:"The members elected for districts without a party. They have no common position, whip or leader, and the three localist members among them often vote together." }
 ];
 
 /* CURRENTS — factions inside a party. Same axes as a party; a current that
