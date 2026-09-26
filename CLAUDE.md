@@ -686,22 +686,23 @@ version of any of them is in the header of the file it names.
   ending; the next leader's campaign assumes the canon one, so a narrative
   runs across parliaments. **Flash I's canon is the debt trap, decided 23
   Sep: "a middle ground between perfect and failure".** It returns the PSD to
-  government with austerity to come. Since design/43 (26 Sep) the canon
-  reaches the count on 14 August, sitting 56, at standing 42: the PSD holds
+  government with austerity to come. Since design/44 (26 Sep) the canon
+  reaches the count on 15 August, sitting 57, at standing 42: the PSD holds
   87 of 280 and the government's side 149, a narrow majority. The crisis is
-  financed and now felt: it owes CW$44.8bn in Treasury bills (three quarters
-  of the authority, 7% of output), with the dollar near 0.79 and headline
-  inflation 5.7% against 3.0% underlying, which the vote reads. The Union's
+  financed and now felt: it owes CW$52.6bn in Treasury bills (seven eighths
+  of the authority, CW$7.4bn of room left), with the dollar near 0.79 and
+  headline inflation 5.4% against 2.9% underlying, which the vote reads. The Union's
   measures are adopted at the General Assembly on 11 June and cost it three
   points of legitimacy. The canon
   government climbs the emergency ladder, keeps its last order-paper time to
   approve the emergency appropriation before the House rises (see
   `approvalFloor` below), asks Earth's banks for terms once the result is in,
   lays no order it cannot pay for, and reaches the count with the thermal
-  margin at 9 and its payments current. The guard prints the margin, the
+  margin at 17 and its payments current. The guard prints the margin, the
   side, the epilogue and the account. (25 Sep: it had been CW$16.8bn in
   arrears through the campaign, which cost nothing until that day; see
-  ARREARS below.) (Before design/43: sitting 57, margin 8, CW$44.9bn, 5.8%.
+  ARREARS below.) (Before design/44: sitting 56, margin 9, CW$44.8bn, 5.7%.
+  Before design/43: sitting 57, margin 8, CW$44.9bn, 5.8%.
   Before design/40: 103 seats, 165 of 280 at standing 58, margin about
   five.) Flash I's guards
   (`content/campaigns/flash_i/guards.js`) assert that the canon ending is
@@ -733,6 +734,32 @@ version of any of them is in the header of the file it names.
   - `tools/renametest.js` compared whole keys, so a missed `member.<id>` (or
     `loyalty.`, `rel.`, `capital.`) rename could not be seen; it reads the id
     after the dot now, and was proved by breaking the member finder.
+  - **The Security Council and the accession** (26 Sep, chosen by Claude at
+    the author's request; bible §11.1): permanent members China, Russia, the
+    United States, the European Union and the African Union, after a reform
+    of the early 2050s; the Commonwealth admitted in 2066, the 194th member.
+    On the Works the two unions deadlock the Council, which is why the
+    Assembly acts under Uniting for Peace. It is a Concordance article
+    (`un_security_council`), not a forum; how the United Kingdom gave up
+    its seat is left for the author.
+- **ONE SEED IS AN ANECDOTE** (26 Sep, design/44). The playtest's table
+  plays the default seed, and the pool's lean is keyed on POSITION, so any
+  edit to the event list reshuffles every run after it: cutting an event
+  that never fires moved Cheapest from 18 of twenty seeds to 14. At eighty
+  seeds the whole nine-event cut changed nothing measurable. **Judge a
+  content edit with `node tools/playtest.js --seeds 80`** (about forty
+  seconds): per-strategy outcomes, the mean eligible pool, the events losing
+  it and the events never met. Differences under about five runs in eighty
+  are the reshuffle. The single-seed findings recorded above ("Cheapest now
+  reaches the count") are samples; across seeds the ladder-climbing
+  strategies reach the count about half the time.
+- **CUT EVENTS ARE ARCHIVED, NOT DELETED** (26 Sep, design/44). Nine
+  duplicates and dead events left the pool (141 to 132; chapter two's pool
+  held 16.8 eligible a sitting and holds 13.8). They are whole in
+  `content/archive/cut-events.js`, which no page loads, each with where it
+  came from and why. Paste one back at the END of its list. Lint and
+  `test.js` still read the archive's text (retired verbs, retired names), so
+  it stays valid content.
 - **AN EVENT INSERTED MID-LIST CHANGES EVERY RUN.** The pool's seeded lean
   is keyed on an event's POSITION in `EVENTS` (so renaming preserves runs).
   Inserting two events before `f1_meltdown` moved three playtest strategies

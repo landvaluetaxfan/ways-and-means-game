@@ -2796,7 +2796,14 @@ console.log("\nRECURRING BUSINESS, AND THE RESHUFFLE:");
   if (qt) {
     const st = Engine.newGame(CONTENT);
     const fired = [];
-    for (let i = 0; i < 24; i++) {
+    /* THREE CADENCES, READ OFF CONTENT. A recurring item yields its sitting
+       to a one-off (nextScheduled), so one queued event on a cadence sitting
+       skips that week's questions. Twenty-four sittings held two cadences,
+       and the day an edit to the event list moved a queued conference onto
+       sitting 20 the test read one firing (26 Sep). The gaps below already
+       allow a skipped week. */
+    const span = qt.at + 3 * qt.every + 1;
+    for (let i = 0; i < span; i++) {
       /* ANSWER WHATEVER COMES. The first version only answered Question
          Time, so every other event sat unresolved and was handed back
          forever — and the scheduled item, which nextEvent reaches only

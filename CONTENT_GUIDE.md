@@ -219,10 +219,27 @@ that campaign's story. Nothing else changes.
   choices:[
     { posture:"cautious",   // cautious, measured or bold: see below
       label:"What the button says",
-      effects:[ {scalar:{public_standing:-4}}, {flag:"already_done"} ],
+      effects:[ {move:{public_standing:-4}}, {flag:"already_done"} ],
       result:"One or two lines shown after the choice." }
   ]}
 ```
+
+**Where it goes, and whether it will fire** (design/44):
+
+- Add it at the **end** of its list. The pool's seeded lean is keyed on an
+  event's position, so an insertion mid-list reshuffles every run after it.
+- **Chapter two's pool holds about fourteen eligible events a sitting**, and
+  the heaviest wins. An event eligible from the chapter's first sitting
+  competes with all of them; one gated on a condition (a price, a flag, a
+  bill's stage) meets only the events sharing its moment. Gate texture on
+  something, and give a consequence the weight to beat texture.
+- **Measure it**: `node tools/playtest.js --seeds 80` lists every event
+  that is eligible in many runs and almost never drawn, and every event never
+  met. Differences under about five runs in eighty are the reshuffle, not
+  the edit.
+- An event cut from the game is kept whole in
+  `content/archive/cut-events.js` (not loaded), with why; paste one back at
+  the end of its list to restore it.
 
 ### Posture: cautious, measured, bold
 
@@ -264,23 +281,40 @@ because content had a habit of writing the good answer first.
 | `billStage` | `billStage:{divergence:"committee"}` |
 | `inGovernment` | `inGovernment:false` |
 
-All conditions in a `when` must hold. Omit `when` for always-eligible.
+All conditions in a `when` must hold. Omit `when` for always-eligible, and
+read "Where it goes" above before you do: an always-eligible event competes
+with the whole pool. The engine knows fifty conditions; `js/schema.js` lists
+them, among them `priceAbove`, `economyAbove`, `actorBelow`, `seen` (an event
+already met), `settled` and `resolved` (the endings), `postVacant`,
+`owes`/`breached` (promises) and `resolutionIs` (a forum's business).
 
 ### Effects
 
 | verb | example | notes |
 |---|---|---|
-| `scalar` | `{scalar:{party_loyalty:-6}}` | clamped 0–100 |
-| `loyalty` | `{loyalty:{psa:-9, cu_halloran:12}}` | party or current |
-| `law` | `{law:{divergence_threshold_hours:40}}` | sets, does not add |
-| `station` | `{station:{vantage:{closure:0.03}}}` | numbers add, strings set |
-| `seats` | `{seats:{cu:{district:-1}}}` | defections, by-elections |
-| `flag` / `unflag` | `{flag:"gb_approached"}` | string or array |
-| `bill` | `{bill:{shedorder:{stage:"second_reading"}}}` | |
-| `relationship` | `{relationship:{president:-8}}` | `president` or a character id |
+| `move` | `{move:{public_standing:-4}}` | adds to a meter; a namespaced key moves something else (below) |
+| `law` | `{law:{divergence_threshold_hours:40}}` | sets, does not add; `null` clears |
+| `economy` | `{economy:{participation:2}}` | the productive economy and the Reserve Bank's readings |
+| `station` | `{station:{perigee:{closure:0.03}}}` | numbers add, strings set |
+| `flag` | `{flag:"gb_approached"}` | a string, a list, or `{flag:{x:false}}` to clear one |
+| `bill` | `{bill:{shedorder:{stage:"second_reading"}}}` | a stage, or `dead:true` |
 | `coalition` | `{coalition:{remove:["rv"]}}` | also `add` |
+| `cabinet` | `{cabinet:{treasury:{holder:"skye", party:"cu"}}}` | `null` leaves the post vacant |
+| `si` | `{si:"si_2080_44"}` | lays an instrument |
+| `slots` | `{slots:{reserve:{annexation:5}}}` | order-paper time; `total` for the general pool |
+| `undertake` | `{undertake:{id:"carry_threshold", …}}` | a promise, with its discharge and breach |
+| `resolution` | `{resolution:{un_icj_salvage:"table"}}` | a forum's business (design/43) |
 | `wire` | `{wire:"HEADLINE IN CAPS"}` | appears in the wire panel |
 | `queue` | `{queue:[{event:"followup", after:4}]}` | fires in N sittings |
+
+`move`'s namespaces: `loyalty.<party or current>`, `rel.<character>` (or
+`rel.president`), `price.<good>`, `capital.<party>` (the ledger),
+`trend.<meter>` (a drift each sitting), `standing.<band>`, `actor.<id>`,
+`member.<forum member>`, `debt.<lender>` and `loan.<lender>`. Seats move
+only by `cross` and `vacate_seat`; `court`, `motion`, `election`,
+`chapter`, `functional` and `signatures` are the rest. `js/schema.js`
+describes every verb, and **`scalar`, `loyalty`, `relationship`, `price`,
+`capital` and `unflag` are retired**: lint fails content that uses them.
 
 To add a new verb, add it to `EFFECTS` in `engine.js`. Keep the list short —
 if the vocabulary grows past twenty, content is leaking into the engine.

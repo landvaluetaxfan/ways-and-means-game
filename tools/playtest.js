@@ -4,6 +4,8 @@
      npm run playtest                 every strategy, one table
      node tools/playtest.js --log cut the run's own record, sitting by sitting
      node tools/playtest.js --sittings 60
+     node tools/playtest.js --seeds 80   every strategy across 80 seeds:
+                                         outcomes, the pool, what never fires
 
    design/33 §6. Two problems, one machine.
 
@@ -55,6 +57,14 @@ const RUN_LENGTH = (CONTENT.setup.sittingsPerPeriod || 24) *
                    (CONTENT.setup.campaignSittings || 12) + 6;
 const SITTINGS = Number(arg("--sittings", RUN_LENGTH));
 const WANT_LOG = argv.indexOf("--log") >= 0 ? String(argv[argv.indexOf("--log") + 1] || "") : null;
+/* ONE SEED IS AN ANECDOTE (26 Sep). The table below plays the default seed,
+   and a content edit anywhere in the event list reshuffles every run after
+   it, because the pool's lean is keyed on position: cutting an event that
+   never fires moved Cheapest from 18 to 14 of twenty seeds. At eighty seeds
+   the cut of nine events changed nothing measurable, which one seed could
+   not have shown. `--seeds N` plays every strategy on N seeds. */
+const SEEDS = Number(arg("--seeds", 0));
+let SEED;                                   /* undefined: the engine's default */
 
 /* ---------- the strategies ----------
    Each is a name and a pick(event, state) returning a choice index. They are
@@ -256,7 +266,7 @@ const STRATEGIES = [
 
 /* ---------- one run ---------- */
 function play(strategy, sittings) {
-  const st = Engine.newGame(CONTENT);
+  const st = Engine.newGame(CONTENT, SEED);
   const seen = new Set();
   const marks = [];
   let picks = 0, refused = 0, ended = null, endedAt = null;
@@ -331,6 +341,54 @@ function play(strategy, sittings) {
 /* ---------- the table ---------- */
 const pad = (s, n) => String(s === undefined || s === null ? "" : s).padEnd(n);
 const num = (s, n) => String(s === undefined || s === null ? "" : s).padStart(n);
+
+/* THE SWEEP, instead of the table: outcomes per strategy, how full the pool
+   is, and which events a spread of dumb players almost never meets. An
+   event eligible for long stretches and never drawn is losing the pool,
+   not waiting for its condition. */
+if (SEEDS > 0) {
+  const tally = {}, eligible = {}, eligibleRuns = {}, pool = {};
+  const next = Engine.nextEvent;
+  let runSeen = null;
+  Engine.nextEvent = function (st, C) {
+    const p = Engine.eligible(st, C);
+    (pool[st.chapter] = pool[st.chapter] || []).push(p.length);
+    p.forEach(e => { eligible[e.id] = (eligible[e.id] || 0) + 1;
+      if (!runSeen.has(e.id)) { runSeen.add(e.id); eligibleRuns[e.id] = (eligibleRuns[e.id] || 0) + 1; } });
+    return next.apply(this, arguments);
+  };
+  const out = {};
+  let n = 0;
+  for (let k = 0; k < SEEDS; k++) {
+    SEED = k === 0 ? undefined : 7919 * k + 13;
+    STRATEGIES.forEach(sg => {
+      runSeen = new Set(); n++;
+      const r = play(sg, SITTINGS);
+      r.seen.forEach(id => tally[id] = (tally[id] || 0) + 1);
+      const o = (r.resolved ? r.resolved.replace(/^f1_/, "") : "-") + " / " + r.ended.replace(/: .*/, "");
+      const row = out[sg.name] = out[sg.name] || {};
+      row[o] = (row[o] || 0) + 1;
+    });
+  }
+  Engine.nextEvent = next;
+  console.log("SWEEP: " + SEEDS + " seeds x " + STRATEGIES.length + " strategies, " + n + " runs, " +
+              (CONTENT.events || []).length + " events\n");
+  Object.keys(out).forEach(name => console.log("  " + pad(name, 34) +
+    Object.keys(out[name]).sort((a, b) => out[name][b] - out[name][a]).map(k => k + " " + out[name][k]).join(" · ")));
+  const avg = a => (a.reduce((x, y) => x + y, 0) / (a.length || 1)).toFixed(1);
+  console.log("\n  mean eligible pool per sitting: " +
+              Object.keys(pool).map(c => "chapter " + c + " " + avg(pool[c])).join(", "));
+  const drawn = e => !e.queuedOnly && !e.prologue && e.at == null;
+  const rare = (CONTENT.events || []).filter(e => drawn(e) && (eligibleRuns[e.id] || 0) >= n * 0.2 &&
+                                                   (tally[e.id] || 0) < (eligibleRuns[e.id] || 0) * 0.1);
+  console.log("\n  losing the pool: eligible in a fifth of runs or more, met in under a tenth of those (" + rare.length + ")");
+  rare.forEach(e => console.log("    " + pad(e.id, 28) + "met " + (tally[e.id] || 0) + " of " +
+                                eligibleRuns[e.id] + " runs it could have been  w" + (e.weight == null ? 50 : e.weight)));
+  const never = (CONTENT.events || []).filter(e => !tally[e.id]);
+  console.log("\n  never met in any run (" + never.length + "): conditions these players never create, or dead");
+  console.log("    " + never.map(e => e.id).join(", "));
+  process.exit(0);
+}
 
 console.log("PLAYTEST");
 console.log("=".repeat(96));

@@ -329,6 +329,9 @@ It is not a bargain an ordinary year would take. This is not one.`,
 
 /* REACH: no gate; always eligible in ch2 and loses on weight. */
 { id:"fa_two_fronts", chapter:2, weight:57, maxFires:2,
+  /* it reports the platform's scrubbers, so it waits for the stranding:
+     ungated, it could lead the news before there was a platform to report */
+  when:{ seen:["f1_stranded"] },
   title:"Two audiences, one sentence",
   speaker:"ceyhan",
   body:`The Spindle leads with the platform's scrubbers and the government
