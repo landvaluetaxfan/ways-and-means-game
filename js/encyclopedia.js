@@ -691,6 +691,94 @@ const Concordance = (function () {
     return roll;
   }
 
+  /* THE FORUMS (design/43). A forum is always written up, since the
+     Commonwealth sits in it from the first day; a resolution only once it
+     has been tabled, by the rule that keeps a bill in drafting out of the
+     Concordance: the reference work can only know what the world knows. A
+     member's standing is a number the terminal prints and the Concordance
+     says in words. */
+  function longDate(iso) {
+    if (!iso) return "";
+    const [y, m, d] = String(iso).split("-").map(Number);
+    return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-GB",
+      { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+  }
+  function disposition(n) {
+    return n >= 70 ? "friendly" : n >= 58 ? "well disposed" : n > 42 ? "indifferent"
+         : n > 30 ? "cool" : "hostile";
+  }
+  const capital = t => { t = String(t || ""); return t.charAt(0).toUpperCase() + t.slice(1); };
+  function sponsorName(f, r, mid) {
+    const m = (f.members || []).find(x => x.id === r.sponsor);
+    if (!m) return r.sponsor;
+    if (m.self) return "the Commonwealth";
+    return mid ? String(m.name).replace(/^The /, "the ") : m.name;
+  }
+  function forumArticle(f) {
+    const fs = (st.forums || {})[f.id] || {};
+    const seats = (f.members || []).reduce((n, m) => n + (m.votes || 1), 0);
+    const res = (C.resolutions || []).filter(r => r.forum === f.id &&
+      ((st.resolutions || {})[r.id] || {}).status && st.resolutions[r.id].status !== "draft");
+    const two = (C.resolutions || []).some(r => r.forum === f.id && (r.majority || 0) > 0.5);
+    const STATUS = { tabled: "on the agenda", adopted: "adopted", rejected: "rejected", withdrawn: "withdrawn" };
+    return {
+      id: "forum_" + f.id, title: f.name, category: "The Earth", generated: true,
+      banners: [], edited: { by: "the Commonwealth's mission", attested: true, note: "" },
+      summary: lede(f.name, f.summary || `is a forum of ${seats.toLocaleString()} seats in which the Commonwealth holds one.`),
+      sections: [
+        { h: "Procedure", body:
+          `A resolution carries by a majority of the members present and voting, and ` +
+          `abstentions are not counted.` + (two ? " An important question needs two thirds." : "") +
+          (fs.next ? " " + asOf(`it next sits on ${longDate(fs.next)}.`) : "") },
+        { h: "Members", body: asOf("the members' disposition toward the Commonwealth is as below. " +
+            "A bloc votes on a common line, and not every member of it keeps to the line."),
+          table: { head: ["Member", "Seats", "Disposition"],
+                   rows: (f.members || []).map(m => [capital(m.name), String(m.votes || 1),
+                     m.self ? "\u2014" : disposition(Engine.memberStanding(st, C, f, m))]) } },
+        res.length ? { h: "Resolutions concerning the Commonwealth", body: "",
+          table: { head: ["Resolution", "Sponsor", "Status"],
+                   rows: res.map(r => [`[[resolution_${r.id}|${r.title}]]`, capital(sponsorName(f, r)),
+                     STATUS[st.resolutions[r.id].status] || st.resolutions[r.id].status]) } } : null
+      ].filter(Boolean),
+      infobox: { title: f.short || f.name, rows: [["Seats", seats.toLocaleString()],
+        ["The Commonwealth", "a full member"],
+        fs.next ? ["Next sitting", longDate(fs.next)] : null].filter(Boolean) },
+      see: []
+    };
+  }
+  function resolutionArticle(r, f) {
+    const rs = (st.resolutions || {})[r.id] || {};
+    const d = rs.decided;
+    const need = r.majority || f.majority || 0.5;
+    const fs = (st.forums || {})[f.id] || {};
+    const at = `[[forum_${f.id}|${f.short || f.name}]]`;
+    const how = d ? `, and was ${rs.status} on ${longDate(d.date)} by ${d.yes} votes to ${d.no}, ` +
+                    `with ${d.abstain} abstaining`
+      : rs.status === "tabled" ? `, and is to be voted on ${longDate(fs.next)}`
+      : rs.status === "withdrawn" ? ", and was withdrawn before it was voted on" : "";
+    const nameOf = id => capital(((f.members || []).find(m => m.id === id) || {}).name || id);
+    const vote = x => [[x.yes, "for"], [x.no, "against"], [x.abstain, "abstaining"]]
+      .filter(p => p[0]).map(p => (x.yes + x.no + x.abstain === 1 ? "" : p[0] + " ") + p[1]).join(", ");
+    return {
+      id: "resolution_" + r.id, title: r.title, category: "The Earth", generated: true,
+      banners: [], edited: { by: "the Commonwealth's mission", attested: true, note: "" },
+      summary: lede(r.title, `is a resolution put to the ${at} by ${sponsorName(f, r, true)}${how}.` +
+        (r.summary ? " " + r.summary : "")),
+      sections: [
+        { h: "Majority", body: need > 0.5
+          ? "It is an important question, and needs two thirds of the members present and voting."
+          : "It needs a majority of the members present and voting." },
+        d ? { h: "The vote", body: "",
+          table: { head: ["Member", "Vote"], rows: d.rows.map(x => [nameOf(x.id), vote(x)]) } } : null
+      ].filter(Boolean),
+      infobox: { title: "Resolution", rows: [["Forum", f.short || f.name],
+        ["Sponsor", capital(sponsorName(f, r))],
+        ["Status", capital(rs.status)],
+        d ? ["Result", `${d.yes} to ${d.no}, ${d.abstain} abstaining`] : null].filter(Boolean) },
+      see: ["forum_" + f.id]
+    };
+  }
+
   function build() {
     roll = null;
     const hand = ENCYCLOPEDIA.articles.map(a => Object.assign({ generated: false }, a));
@@ -751,6 +839,14 @@ const Concordance = (function () {
     });
     (C.actors || []).filter(a => a.foreign).forEach(a => {
       if (!handIds.has("actor_" + a.id)) gen.push(foreignActorArticle(a));
+    });
+    (C.forums || []).forEach(f => {
+      if (!handIds.has("forum_" + f.id)) gen.push(forumArticle(f));
+      (C.resolutions || []).filter(r => r.forum === f.id).forEach(r => {
+        const rs = (st.resolutions || {})[r.id];
+        if (!rs || rs.status === "draft") return;
+        if (!handIds.has("resolution_" + r.id)) gen.push(resolutionArticle(r, f));
+      });
     });
     all = hand.concat(gen);
     byId = all.reduce((m, a) => (m[a.id] = a, m), {});

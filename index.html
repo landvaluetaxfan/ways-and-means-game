@@ -38,7 +38,7 @@
     <button class="tab" role="tab" aria-selected="false" data-t="party">Party</button>
     <button class="tab" role="tab" aria-selected="false" data-t="rel">Relations</button>
     <button class="tab" role="tab" aria-selected="false" data-t="orb">Orbit</button>
-    <button class="tab" role="tab" aria-selected="false" data-t="world">World</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="world">Foreign Affairs</button>
     <button class="tab" role="tab" aria-selected="false" data-t="cx">Concordance</button>
     <button class="tab" role="tab" aria-selected="false" data-t="log">Record</button>
     <!-- Shown only under the Sandbox government (js/ui.js reveals it). -->
@@ -447,6 +447,15 @@
         <div class="panel">
           <h2><span data-tip="actors">Relevant actors</span> <em data-tip="foreign">ordered by delay</em></h2>
           <div class="pbody scrolls" id="w-actors"></div>
+        </div>
+        <!-- THE FORUMS (design/43): where the government asks rather than
+             whips. A band under the two columns, because a resolution's
+             title, its count and the Commonwealth's vote need a line each
+             and the actors' column is too narrow for any of them. The
+             globe keeps the full height. -->
+        <div class="panel" id="ga-panel">
+          <h2><span id="ga-hdr" data-tip="forum">The forums</span> <em id="ga-sub"></em></h2>
+          <div class="pbody scrolls" id="ga-agenda"></div>
         </div>
       </div>
     </section>

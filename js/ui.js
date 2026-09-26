@@ -296,6 +296,16 @@ const UI = (function () {
        used to carry: a card cannot be read with a keyboard, cannot stay open
        while you compare two seats, and put the tier's whole information
        budget in a mechanism the player has to discover. */
+    /* THE FORUMS' BUSINESS (design/43): a resolution row selects, and the
+       window beside the globe shows its count member by member. Nothing is
+       selected until one is clicked, so the window keeps the globe's
+       selection; clicking the globe clears this one. */
+    Focus.region("ga-agenda", {
+      rows: "[data-res]",
+      key: el => el.dataset.res,
+      fallback: () => null,
+      activate: () => { drawAssembly(); drawWorldSide(); }
+    });
     Focus.region("func-table", {
       rows: "tr[data-func]",
       key: tr => tr.dataset.func,
@@ -5144,7 +5154,7 @@ const UI = (function () {
   const DOW = ["S", "M", "T", "W", "T", "F", "S"];
   const MARKNAME = { division: "Division", owed: "Promised", rises: "The House rises",
                      prayer: "Prayer window closes", expected: "Expected",
-                     bank: "Reserve Bank" };
+                     bank: "Reserve Bank", forum: "Abroad" };
   const SITDAYS = "four";
   let calMonth = 0;                    /* months from the current sitting */
 
@@ -5181,7 +5191,7 @@ const UI = (function () {
          glance, which is the only reason a calendar is on the screen. The
          dominant mark (a division beats a promise beats a prayer) now tints
          the day's edge, and the dots say how many. */
-      const PRIORITY = { division: 0, rises: 1, owed: 2, prayer: 3, expected: 4, bank: 5 };
+      const PRIORITY = { division: 0, rises: 1, owed: 2, prayer: 3, expected: 4, bank: 5, forum: 6 };
       const dom = d.marks.slice().sort((a, b) =>
         (PRIORITY[a.kind] == null ? 9 : PRIORITY[a.kind]) -
         (PRIORITY[b.kind] == null ? 9 : PRIORITY[b.kind]))[0];
@@ -5267,6 +5277,7 @@ const UI = (function () {
         <span><s class="p-expected"></s>expected</span>
         <span><s class="p-rises"></s>rises</span>
         <span><s class="p-bank"></s>bank</span>
+        <span><s class="p-forum"></s>abroad</span>
       </div>` +
       /* THE NEXT THREE DEADLINES ARE NOW DOORS. They were inert text on the
          one screen that knows when things are due and cannot do any of them —
@@ -5457,6 +5468,8 @@ const UI = (function () {
        map (a lit country, an annexed body); the window needs redrawing every
        time. So: repaint the canvas in place, then the window. */
     World.onSelect(() => {
+      /* the globe's pick replaces a resolution's in the window */
+      if (Focus.selected("ga-agenda") != null) { Focus.seed("ga-agenda", null); drawAssembly(); }
       const c = $("#w-canvas");
       if (c) c.innerHTML = World.render();
       const sd = $("#w-side");
@@ -5472,6 +5485,7 @@ const UI = (function () {
       if (c) c.innerHTML = World.render();
     });
 
+    drawAssembly();
     if (side) side.innerHTML = worldSideHTML();
     const act = $("#w-actors");
     if (act) {
@@ -5480,6 +5494,18 @@ const UI = (function () {
         b.addEventListener("click", () => openTarget(b)));
     }
     worldSelHead();
+    wireWorldSide();
+  }
+
+  /* THE WINDOW ALONE, for a selection that changes nothing else */
+  function drawWorldSide() {
+    const side = $("#w-side");
+    if (side) side.innerHTML = worldSideHTML();
+    worldSelHead();
+    wireWorldSide();
+  }
+  function wireWorldSide() {
+    const side = $("#w-side");
     side && side.querySelectorAll("[data-goto]").forEach(b =>
       b.addEventListener("click", () => openTarget(b)));
     /* The anchor panel's link back to its host. */
@@ -5494,6 +5520,13 @@ const UI = (function () {
   function worldSelHead() {
     const hdr = $("#w-sel-hdr"), sub = $("#w-sel-sub");
     if (!hdr) return;
+    const rid = Focus.selected("ga-agenda"), res = rid && Engine.resolutionOf(C, rid);
+    if (res) {
+      const f = Engine.forumOf(C, res.forum);
+      hdr.textContent = "The count";
+      sub.textContent = f ? "member by member, " + (f.short || f.name) : "member by member";
+      return;
+    }
     const anc = World.selectedAnchor();
     const body = World.selectedBody(), sel = World.selected();
     if (anc) {
@@ -5531,6 +5564,188 @@ const UI = (function () {
     return !!(st.flags && st.flags.station_issue);
   }
 
+  /* =============================================================
+     THE FORUMS (design/43). The House is where the government whips; a
+     forum is where it asks. Each resolution the Commonwealth has an
+     interest in is a row: what it is and where it stands, the count drawn
+     as the House's two lobbies (the forecast while it waits, the record
+     once decided), and what the government can do. A draft the government
+     may not table yet is not listed, for the reason the Concordance does
+     not list a bill in drafting: the surface can only know what the world
+     knows.
+     ============================================================= */
+  function forumDay(iso) { return iso ? dayLabel(iso) : ""; }
+  function forumLobbies(yes, no, abstain, need, total) {
+    const pct = n => (Math.min(total, Math.max(0, n)) / (total || 1) * 100).toFixed(1);
+    /* the ayes a resolution needs, against the noes it has: more than them
+       for a simple majority, twice them for two thirds */
+    const want = need >= 1 ? Infinity : need / (1 - need) * no;
+    const needYes = need <= 0.5 ? no + 1 : Math.ceil(want - 1e-9);
+    return `<div class="lobbyl">` +
+      `<div class="lrow ayes"><b>For</b><div class="lbar"><i style="width:${pct(yes)}%"></i>` +
+        `<span class="thr" style="left:${pct(needYes)}%"></span></div>` +
+        `<span class="ln">${yes} · needs ${needYes}</span></div>` +
+      `<div class="lrow noes"><b>Against</b><div class="lbar"><i style="width:${pct(no)}%"></i></div>` +
+        `<span class="ln">${no} · ${abstain} abstain</span></div>` +
+      `</div>`;
+  }
+  function forumSponsor(f, r) {
+    const m = (f.members || []).find(x => x.id === r.sponsor);
+    /* mid-sentence, so a bloc's own "The" is lowercased: "tabled by the
+       European Union's twenty-seven" */
+    return m ? (m.self ? "the Commonwealth" : String(m.name).replace(/^The /, "the ")) : r.sponsor;
+  }
+  function resolutionRowHTML(f, r, selId) {
+    const rs = (st.resolutions || {})[r.id] || { status: "draft" };
+    const need = r.majority || f.majority || 0.5;
+    const total = (f.members || []).reduce((n, m) => n + (m.votes || 1), 0);
+    const me = (f.members || []).find(m => m.self);
+    const ours = me && r.sponsor === me.id;
+    const rule = need > 0.5 ? "two thirds of those voting" : "a majority of those voting";
+    const TAG = { tabled: "on the agenda", adopted: "adopted", rejected: "rejected",
+                  withdrawn: "withdrawn", draft: "not tabled" };
+    let h = `<div class="ga-res${selId === r.id ? " sel" : ""}" data-res="${esc(r.id)}">` +
+      `<div class="ga-h"><b>${esc(r.title)}</b><span class="ga-tag ${rs.status}">${TAG[rs.status] || rs.status}</span></div>`;
+    if (rs.decided) {
+      const d = rs.decided;
+      h += `<div class="ga-meta">Tabled by ${esc(forumSponsor(f, r))} · ${forumDay(d.date)} · ` +
+        `the Commonwealth voted ${esc(d.own === "abstain" ? "to abstain" : d.own)}</div>` +
+        forumLobbies(d.yes, d.no, d.abstain, need, total);
+      return h + `</div>`;
+    }
+    if (rs.status === "withdrawn") return h + `<div class="ga-meta">Withdrawn before the sitting.</div></div>`;
+    const c = Engine.forumCount(st, C, r.id);
+    h += `<div class="ga-meta">${rs.status === "tabled" ? "Tabled by " + esc(forumSponsor(f, r)) + " · " : ""}` +
+      `needs ${rule} · ${rs.status === "tabled" ? "the count if it sat today" : "the count if it were tabled"}` +
+      `</div>` + forumLobbies(c.yes, c.no, c.abstain, need, total);
+    let ctl = "";
+    if (rs.status === "draft" && ours) {
+      ctl = `<button class="btn tiny" data-restab="${esc(r.id)}">Table it</button>`;
+    } else if (rs.status === "tabled" && ours) {
+      ctl = `<span class="ga-lab">Ours</span>` +
+        `<button class="btn tiny" data-reswd="${esc(r.id)}">Withdraw</button>`;
+    } else if (rs.status === "tabled") {
+      ctl = `<span class="ga-lab">The Commonwealth votes</span>` +
+        ["for", "against", "abstain"].map(v =>
+          `<button class="chv rad${c.own === v ? " on" : ""}" data-rv="${esc(r.id)}:${v}">${v === "abstain" ? "Abstain" : v === "for" ? "For" : "Against"}</button>`).join("");
+    }
+    /* THE CONTROLS SIT UNDER THE ROW, NOT IN IT. The row is a focus
+       region's row, and the region takes Enter to select it: a button inside
+       would have its own Enter swallowed. */
+    return h + `</div>` + (ctl ? `<div class="ga-ctl${selId === r.id ? " sel" : ""}">${ctl}</div>` : "");
+  }
+  function drawAssembly() {
+    const box = $("#ga-agenda"), hdr = $("#ga-hdr"), sub = $("#ga-sub");
+    if (!box) return;
+    const forums = C.forums || [];
+    if (hdr) hdr.textContent = forums.length === 1 ? (forums[0].short || forums[0].name) : "The forums";
+    const selId = Focus.selected("ga-agenda");
+    let html = "", subs = [];
+    forums.forEach(f => {
+      const fs = (st.forums || {})[f.id] || {};
+      subs.push(fs.next ? "sits " + forumDay(fs.next) : "");
+      const mine = (C.resolutions || []).filter(r => r.forum === f.id);
+      const stat = r => ((st.resolutions || {})[r.id] || {}).status || "draft";
+      const tabled = mine.filter(r => stat(r) === "tabled");
+      const open = mine.filter(r => stat(r) === "draft" && Engine.canTable(st, C, r.id).ok);
+      const done = mine.filter(r => ["adopted", "rejected", "withdrawn"].indexOf(stat(r)) >= 0)
+        .sort((a, b) => ((st.resolutions[b.id].decided || {}).sitting || 0) -
+                        ((st.resolutions[a.id].decided || {}).sitting || 0));
+      if (forums.length > 1) html += `<div class="rulehead">${esc(f.short || f.name)}</div>`;
+      if (!tabled.length && !open.length && !done.length) {
+        html += `<div class="note">Nothing on the ${esc(f.short || f.name)}'s agenda concerns the ` +
+          `Commonwealth. It sits next on ${esc(forumDay(fs.next) || "a date not yet set")}, and ` +
+          `anything the government tables before then is voted on that day. ` +
+          `${cxlink("forum_" + f.id, "How it counts, and who sits in it")}.</div>`;
+        return;
+      }
+      if (tabled.length) html += `<div class="ga-f">On the agenda for ${esc(forumDay(fs.next))}</div>` +
+        tabled.map(r => resolutionRowHTML(f, r, selId)).join("");
+      if (open.length) html += `<div class="ga-f">The government may table</div>` +
+        open.map(r => resolutionRowHTML(f, r, selId)).join("");
+      if (done.length) html += `<div class="ga-f">Decided</div>` +
+        done.map(r => resolutionRowHTML(f, r, selId)).join("");
+    });
+    box.innerHTML = html || `<div class="note">The Commonwealth sits in no forum.</div>`;
+    if (sub) sub.textContent = forums.length === 1 ? subs[0] : "";
+    box.querySelectorAll("[data-res]").forEach(row =>
+      row.addEventListener("click", e => {
+        if (e.target.closest("button")) return;
+        Focus.activate("ga-agenda", row.dataset.res);
+      }));
+    box.querySelectorAll("[data-restab]").forEach(b => b.addEventListener("click", () => {
+      const r = Engine.resolutionOf(C, b.dataset.restab);
+      const f = r && Engine.forumOf(C, r.forum);
+      const fs = f && (st.forums || {})[f.id];
+      Dialog.confirm(`Table “${r.title}” at the ${f.short || f.name}? It is voted on ` +
+        `${forumDay(fs && fs.next)}, and whatever it does lands then.`,
+        { title: "Table a resolution", yes: "Table it" }, ok => {
+          if (!ok) return;
+          const out = acted(() => Engine.table(st, C, r.id));
+          if (!out.ok) { cue("deny"); setStatus(out.reason, "transient"); drawAll(); return; }
+          cue("stamp");
+          setStatus("Tabled at the " + (f.short || f.name) + ": " + r.title, "transient");
+          drawAll(); saved(); afterAction();
+        });
+    }));
+    box.querySelectorAll("[data-reswd]").forEach(b => b.addEventListener("click", () => {
+      const r = Engine.resolutionOf(C, b.dataset.reswd);
+      Dialog.confirm(`Withdraw “${r.title}” before the sitting? It can be tabled again.`,
+        { title: "Withdraw a resolution", yes: "Withdraw" }, ok => {
+          if (!ok) return;
+          const out = acted(() => Engine.withdrawResolution(st, C, r.id));
+          if (!out.ok) { cue("deny"); setStatus(out.reason, "transient"); drawAll(); return; }
+          cue("click");
+          setStatus("Withdrawn: " + r.title, "transient");
+          drawAll(); saved(); afterAction();
+        });
+    }));
+    box.querySelectorAll("[data-rv]").forEach(b => b.addEventListener("click", () => {
+      const [id, v] = b.dataset.rv.split(":");
+      const r = Engine.resolutionOf(C, id);
+      const out = acted(() => Engine.castVote(st, C, id, v));
+      if (!out.ok) { cue("deny"); setStatus(out.reason, "transient"); drawAll(); return; }
+      cue("click");
+      setStatus("The Commonwealth will vote " + (v === "abstain" ? "to abstain on " : v + " ") + r.title, "transient");
+      drawAll(); saved();
+    }));
+  }
+
+  /* THE COUNT, MEMBER BY MEMBER, in the window beside the globe: who votes
+     which way, how many seats each casts, and what each thinks of the
+     Commonwealth. Standing is the lever, so it is the column to read. */
+  function resolutionSideHTML(id) {
+    const r = Engine.resolutionOf(C, id), f = r && Engine.forumOf(C, r.forum);
+    if (!r || !f) return `<div class="note">No such resolution.</div>`;
+    const rs = (st.resolutions || {})[r.id] || {};
+    const c = Engine.forumCount(st, C, r.id);
+    const rows = rs.decided ? rs.decided.rows.map(x => Object.assign({}, x,
+      (c.rows.find(y => y.id === x.id) || {}), { yes: x.yes, no: x.no, abstain: x.abstain })) : c.rows;
+    const word = x => x.yes && !x.no && !x.abstain ? "for" : x.no && !x.yes && !x.abstain ? "against"
+      : x.abstain && !x.yes && !x.no ? "abstain" : "split";
+    let h = `<div class="w-c-h"><b>${esc(r.title)}</b></div>` +
+      (r.summary ? `<div class="note">${esc(r.summary)}</div>` : "") +
+      /* a tabled or decided resolution has a Concordance page; a draft does not */
+      (rs.status && rs.status !== "draft"
+        ? `<div class="note">${cxlink("resolution_" + r.id, "Concordance")} &middot; ` +
+          `${cxlink("forum_" + f.id, f.short || f.name)}</div>` : "") +
+      `<div class="note">${rs.decided ? "As counted on " + esc(forumDay(rs.decided.date)) + "."
+        : "As the mission counts it today. Standing moves it; so does the Commonwealth's vote."}</div>` +
+      `<table class="ga-mt"><thead><tr><th>Member</th><th class="n">Seats</th>` +
+      `<th class="n" data-tip="forum">Standing</th><th>Vote</th></tr></thead><tbody>` +
+      rows.map(x => {
+        const w = word(x);
+        const how = w === "split" ? [[x.yes, "for"], [x.no, "against"], [x.abstain, "abstain"]]
+          .filter(p => p[0]).map(p => p[0] + " " + p[1]).join(", ") : w;
+        /* a cell begins a line: "the Maldives" is written for mid-sentence */
+        const nm = String(x.name || x.id);
+        return `<tr><td>${esc(nm.charAt(0).toUpperCase() + nm.slice(1))}</td><td class="n">${x.votes || 1}</td>` +
+          `<td class="n">${x.self ? "—" : (x.standing == null ? "" : x.standing)}</td>` +
+          `<td class="${w}">${esc(how)}</td></tr>`;
+      }).join("") + `</tbody></table>`;
+    return h;
+  }
+
   /* AN ANCHOR'S OWN PAGE. It used to have none: clicking a tether selected
      its host and the window showed the country, so the twelve things the
      globe exists to draw were the one subject it could not display. */
@@ -5561,6 +5776,8 @@ const UI = (function () {
   }
 
   function worldSideHTML() {
+    const rid = Focus.selected("ga-agenda");
+    if (rid && Engine.resolutionOf(C, rid)) return resolutionSideHTML(rid);
     const anc = World.selectedAnchor();
     if (anc) return worldAnchorHTML(anc);
     const body = World.selectedBody();

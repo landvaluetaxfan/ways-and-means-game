@@ -286,6 +286,17 @@ const Tips = (function () {
       body: "Held by the President and available now. Dissolution, formation, " +
             "referral and appointments are constitutional powers. They do not " +
             "need the House's agreement.", go: "perigee_charter" },
+    /* THE FORUMS (design/43): the count, not the institution. What the
+       General Assembly IS belongs to the Concordance. */
+    forum: { title: "The count abroad",
+      body: "A forum counts those present and voting: abstentions count for " +
+            "nothing, so a resolution carries with more for than against, or " +
+            "twice as many for a two-thirds question. A bloc votes its line with " +
+            "most of its seats and abstains with the rest. Each member reads the " +
+            "resolution against its own position, then the Commonwealth's vote, " +
+            "its standing toward the Commonwealth (fifty is indifferent), and how " +
+            "deep the quarrel with Earth runs. The bars are the count if the forum " +
+            "sat today; a decided resolution shows the count it was decided on." },
     foreign: { title: "Foreign affairs",
       body: "Powers outside the Commonwealth, ordered by delay: the nearer the " +
             "row, the fresher the news. A foreign fact is never current, so each " +

@@ -2,8 +2,8 @@
 const fs=require("fs"), vm=require("vm"), path=require("path"), root=path.join(__dirname,"..");
 /* the content files index.html loads (tools/loadcontent.js) */
 vm.runInThisContext(require("./loadcontent.js").source()+
-  "\n;globalThis.__G={ENCYCLOPEDIA,PARTIES,STATIONS,BILLS,CHARACTERS,GLOSSARY,SETUP};");
-const {ENCYCLOPEDIA,PARTIES,STATIONS,BILLS,CHARACTERS,GLOSSARY,SETUP}=globalThis.__G;
+  "\n;globalThis.__G={ENCYCLOPEDIA,PARTIES,STATIONS,BILLS,CHARACTERS,GLOSSARY,SETUP,FORUMS,RESOLUTIONS};");
+const {ENCYCLOPEDIA,PARTIES,STATIONS,BILLS,CHARACTERS,GLOSSARY,SETUP,FORUMS,RESOLUTIONS}=globalThis.__G;
 /* the standing lenders with terms each have a generated article (24 Sep) */
 const LENDERS=Object.keys(SETUP.lenders||{}).filter(k=>SETUP.lenders[k].terms);
 
@@ -15,9 +15,13 @@ BILLS.forEach(b=>ids.add("bill_"+b.id));
 CHARACTERS.forEach(c=>ids.add("person_"+c.id));
 GLOSSARY.forEach(g=>{const t=g.term.toLowerCase().replace(/\s+/g,"_");ids.add("term_"+t);ids.add(t);});
 LENDERS.forEach(k=>ids.add("lender_"+k));
+/* the forums, always written up, and their resolutions once tabled (design/43) */
+(FORUMS||[]).forEach(f=>ids.add("forum_"+f.id));
+(RESOLUTIONS||[]).forEach(r=>ids.add("resolution_"+r.id));
 
 const bad=[], counts={hand:ENCYCLOPEDIA.articles.length,gen:0};
-counts.gen = PARTIES.length+STATIONS.length+BILLS.length+CHARACTERS.length+GLOSSARY.length+LENDERS.length;
+counts.gen = PARTIES.length+STATIONS.length+BILLS.length+CHARACTERS.length+GLOSSARY.length+LENDERS.length+
+  (FORUMS||[]).length+(RESOLUTIONS||[]).length;
 
 /* a lender's authored terms are an article's prose, and are checked as one */
 LENDERS.forEach(k=>{
@@ -87,6 +91,9 @@ LENDERS.forEach(k => { const T = SETUP.lenders[k].terms;
   readsOutOfWorld("lenders/" + k + "/summary", T.summary);
   (T.sections || []).forEach((sec, i) => readsOutOfWorld("lenders/" + k + "/sections/" + i, sec.body));
   ((SETUP.lenders[k].rate || {}).steps || []).forEach((x, i) => readsOutOfWorld("lenders/" + k + "/steps/" + i, x.label)); });
+(FORUMS || []).forEach(f => readsOutOfWorld("forums/" + f.id + "/summary", f.summary));
+(RESOLUTIONS || []).forEach(r => { readsOutOfWorld("resolutions/" + r.id + "/title", r.title);
+  readsOutOfWorld("resolutions/" + r.id + "/summary", r.summary); });
 
 console.log("CONCORDANCE CHECK");
 console.log("=".repeat(50));

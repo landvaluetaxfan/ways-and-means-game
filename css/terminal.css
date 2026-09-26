@@ -26,6 +26,8 @@
   --gold:#c9a227;
   --gold-lt:#f2e4b3;
   --gold-dk:#d8c07a;
+  /* the forums (design/43): business abroad, which is not the House's */
+  --abroad:#3b6ea8;
 
   --p-cu:#fe0000;
   --p-psa:#0c9bdf;
@@ -510,13 +512,52 @@ tr.compopen .compdis{border-color:var(--gold-dk);color:var(--ink);background:var
   font-size:10.5px;color:var(--ink-soft);}
 #comp-table tr.bench .cdl.warn{color:var(--alert);}
 .g-world{grid-template-columns:minmax(0,1fr) minmax(260px,330px) minmax(230px,300px);height:100%;min-height:0;
-  align-items:stretch;grid-template-rows:minmax(0,1fr);}
+  align-items:stretch;grid-template-rows:minmax(0,1fr) fit-content(46%);}
+/* THE GLOBE KEEPS THE FULL HEIGHT and the forums take a band under the two
+   narrow columns: a resolution's title, its count and the Commonwealth's
+   vote need the width of both (design/43). The band is sized to what is on
+   the agenda, up to not quite half the screen, and scrolls past that. */
+#s-world .g-world > .panel:first-child{grid-row:1 / span 2;}
+#s-world #ga-panel{grid-column:2 / span 2;}
 #s-world.screen.on{display:flex;flex-direction:column;height:100%;min-height:0;}
 #s-world .grid{flex:1 1 auto;min-height:0;}
 #s-world .panel{min-height:0;overflow:hidden;display:flex;flex-direction:column;}
 #s-world #w-map{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column;
   padding:0;}
 #s-world #w-side{flex:1 1 auto;min-height:0;overflow:auto;}
+#s-world #ga-agenda{flex:1 1 auto;min-height:0;}
+/* ONE RESOLUTION: the title and where it stands, the count drawn as the
+   House's two lobbies, and what the Commonwealth can do about it. The row
+   selects, and the window beside the globe shows the count member by
+   member. */
+.ga-f{font-family:var(--f-ui);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-soft);margin:2px 0 4px;}
+.ga-res{border:1px solid var(--chrome-dk);background:var(--field);padding:5px 7px;margin-bottom:5px;
+  cursor:pointer;}
+.ga-res:focus-visible{outline:1px dotted var(--ink);outline-offset:1px;}
+.ga-res.sel{background:var(--gold-lt);border-color:var(--gold-dk);}
+.ga-h{display:flex;align-items:baseline;gap:8px;}
+.ga-h b{flex:1 1 auto;font-size:12px;line-height:1.3;}
+.ga-tag{flex:0 0 auto;font-family:var(--f-ui);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-soft);}
+.ga-tag.adopted{color:var(--ok);}
+.ga-tag.rejected{color:var(--alert);}
+.ga-tag.tabled{color:var(--abroad);}
+.ga-meta{font-family:var(--f-data);font-size:10.5px;color:var(--ink-soft);margin:2px 0 3px;}
+.ga-res .lobbyl{margin-top:2px;}
+.ga-res .ln{width:150px;}
+/* under its row and joined to it, since a control inside the row would lose
+   its Enter to the row's selection */
+.ga-res:has(+ .ga-ctl){margin-bottom:0;border-bottom:0;}
+.ga-ctl{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:0 0 5px;padding:0 7px 5px;
+  border:1px solid var(--chrome-dk);border-top:0;background:var(--field);}
+.ga-ctl.sel{background:var(--gold-lt);border-color:var(--gold-dk);}
+.ga-ctl .ga-lab{font-family:var(--f-ui);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-soft);margin-right:2px;}
+/* the member-by-member count in the window beside the globe */
+.ga-mt td.n{font-family:var(--f-data);text-align:right;}
+.ga-mt td.for{color:var(--ok);}
+.ga-mt td.against{color:var(--alert);}
 /* THE GLOBE'S OWN HAND: sea, coastline, an anchor that is ours lit and theirs
    plain. Drawn in the terminal's palette like everything else, so it reads as
    the orbit chart's sibling rather than as a data-visualisation demo. */
@@ -1340,6 +1381,9 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
      however many class selectors were pointed at them. Measured, not read:
      the computed min-height came back 0px. */
   #s-world .panel,#s-orb .panel{min-height:170px;overflow:visible;}
+  /* and the placed panels are unplaced, or the band keeps its two columns
+     beside the one real one (the Economy's trap, above) */
+  #s-world .g-world > .panel:first-child,#s-world #ga-panel{grid-column:auto;grid-row:auto;}
   #s-world .panel:first-child{min-height:340px;}
   #s-world #w-side,#s-world #w-actors{flex:1 1 auto;min-height:140px;}
   #s-world .grid{flex:0 0 auto;}
@@ -2845,6 +2889,8 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 /* the Reserve Bank's meetings are dated, not sittings, so one often
    tints a weekend: the gold says "not the House's business" */
 .calgrid .cd.top-bank    {border-left:3px solid var(--gold);}
+/* a forum's sitting (design/43), abroad and on its own dates */
+.calgrid .cd.top-forum   {border-left:3px solid var(--abroad);}
 .calgrid .cd.now.top-division{border-left-color:var(--alert);}
 .calgrid .cd.now.top-rises   {border-left-color:var(--field);}
 .calgrid .cd.now.top-owed    {border-left-color:var(--ok);}
@@ -2867,6 +2913,7 @@ s.p-prayer  {background:var(--warn);}
 s.p-expected{background:var(--chrome-dkr);}
 s.p-rises   {background:var(--ink);}
 s.p-bank    {background:var(--gold);}
+s.p-forum   {background:var(--abroad);}
 /* a fifth thing on one day is a rule, not a fifth dot */
 s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
 .calgrid .cd.now s{outline:1px solid var(--field);}

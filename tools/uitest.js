@@ -1314,6 +1314,86 @@ try {
   ok("and the page is back where it started", shape() === before);
 } catch (e) { ok("artifact slots", false, e.message); }
 
+/* FOREIGN AFFAIRS: THE GENERAL ASSEMBLY (design/43). A panel is the kind of
+   thing every static check passes and nobody can use, so this puts real
+   business on the agenda and drives it: the Union's measures tabled, the
+   Commonwealth's own open to table, a vote cast, a resolution tabled, a row
+   selected and its count read member by member, and the calendar naming the
+   sitting in words and not "undefined". */
+try {
+  const snapF = w.eval("JSON.stringify(UI.state())");
+  w.eval("(function(){var s=UI.state(), K=UI.content(); s.flags.f1_referendum_carried=true;" +
+         "s.flags.f1_annexing=true; s.flags.station_issue=true;" +
+         "Engine.apply(s, K, [{ resolution: { un_eu_measures: 'table' } }]); UI.redraw();})()");
+  const tab = w.document.querySelector('.tab[data-t="world"]');
+  ok("the World tab is Foreign Affairs", tab && tab.textContent.trim() === "Foreign Affairs",
+     tab && tab.textContent);
+  tab.click();
+  const row = id => w.document.querySelector('#ga-agenda [data-res="' + id + '"]');
+  ok("the forum's panel is headed with its name",
+     $("#ga-hdr").textContent === "General Assembly" && /sits /.test($("#ga-sub").textContent),
+     $("#ga-hdr").textContent + " / " + $("#ga-sub").textContent);
+  ok("the Union's measures are on the agenda, with a count",
+     !!row("un_eu_measures") && /on the agenda/.test(row("un_eu_measures").textContent) &&
+     !!row("un_eu_measures").querySelector(".lobbyl"));
+  ok("and the Commonwealth's own may be tabled",
+     !!row("un_works_selfdet") && !!w.document.querySelector('[data-restab="un_works_selfdet"]'));
+  ok("but a draft whose gate does not hold is not listed", !row("un_icj_salvage"));
+  w.document.querySelector('[data-rv="un_eu_measures:abstain"]').click();
+  ok("a vote cast from the panel is the Commonwealth's vote",
+     w.eval("UI.state().forums.un_ga.votes.un_eu_measures") === "abstain" &&
+     w.document.querySelector('[data-rv="un_eu_measures:abstain"]').classList.contains("on"));
+  w.document.querySelector('[data-restab="un_works_selfdet"]').click();
+  ok("Table it tables it", w.eval("UI.state().resolutions.un_works_selfdet.status") === "tabled" &&
+     /on the agenda/.test(row("un_works_selfdet").textContent) &&
+     !!w.document.querySelector('[data-reswd="un_works_selfdet"]'));
+  row("un_eu_measures").dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  const members = w.eval("UI.content().forumById.un_ga.members.length");
+  ok("selecting a resolution shows its count member by member beside the globe",
+     $("#w-sel-hdr").textContent === "The count" &&
+     w.document.querySelectorAll("#w-side .ga-mt tbody tr").length === members &&
+     row("un_eu_measures").classList.contains("sel"),
+     $("#w-sel-hdr").textContent + ", " + w.document.querySelectorAll("#w-side .ga-mt tbody tr").length + " rows");
+  /* and a tabled resolution has its Concordance page, reached from the window */
+  const cxl = w.document.querySelector('#w-side [data-go="resolution_un_eu_measures"]');
+  ok("the window links a tabled resolution to its Concordance page", !!cxl);
+  if (cxl) {
+    cxl.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+    const art = $("#cx-article").textContent;
+    ok("which reads as a reference work", /Measures concerning the Almanac Works is a resolution put to the General Assembly by the European Union's twenty-seven, and is to be voted on/.test(art) &&
+       !/undefined|NaN/.test(art), art.slice(0, 160));
+    w.eval("(function(){var s=UI.state(), K=UI.content(), c=Engine.forumCount(s, K, 'un_eu_measures');" +
+           "s.resolutions.un_eu_measures.status='adopted'; s.resolutions.un_eu_measures.decided={date:'2080-06-11'," +
+           "sitting:27, yes:c.yes, no:c.no, abstain:c.abstain, own:c.own, rows:c.rows.map(function(x){" +
+           "return {id:x.id, yes:x.yes, no:x.no, abstain:x.abstain};})};" +
+           "Concordance.render(s, K, 'resolution_un_eu_measures', true);})()");
+    const dec = $("#cx-article").textContent;
+    ok("and once decided, says how and prints the vote",
+       /was adopted on 11 June 2080 by \d+ votes to \d+, with \d+ abstaining/.test(dec) &&
+       w.document.querySelectorAll("#cx-article table").length >= 1 && !/undefined|NaN/.test(dec),
+       dec.slice(0, 200));
+    w.eval("Concordance.render(UI.state(), UI.content(), 'forum_un_ga', true)");
+    const fo = $("#cx-article").textContent;
+    ok("the forum's own page lists its members and the Commonwealth's business",
+       /is the plenary organ of the United Nations/.test(fo) && /Disposition/.test(fo) &&
+       /Resolutions concerning the Commonwealth/.test(fo) && !/undefined|NaN/.test(fo), fo.slice(0, 160));
+    w.document.querySelector('.tab[data-t="world"]').click();
+    const r2 = w.document.querySelector('#ga-agenda [data-res="un_eu_measures"]');
+    r2 && r2.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  }
+  w.eval("World.select('KEN')");
+  ok("and a pick on the globe gives the window back to the country",
+     !w.document.querySelector("#w-side .ga-mt") && !row("un_eu_measures").classList.contains("sel"),
+     $("#w-sel-hdr").textContent);
+  w.document.querySelector('.tab[data-t="sit"]').click();
+  for (let i = 0; i < 2; i++) w.document.querySelector('#sit-cal [data-cal="1"]').click();
+  const cal = $("#sit-cal").innerHTML;
+  ok("the calendar names the Assembly's sitting in words", /Abroad\. The General Assembly sits/.test(cal) &&
+     !/undefined\./.test(cal), (cal.match(/[^"]{0,20}General Assembly[^"]{0,40}/) || ["none"])[0]);
+  for (let i = 0; i < 2; i++) w.document.querySelector('#sit-cal [data-cal="-1"]').click();
+  w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapF) + "), UI.content())");
+} catch (e) { ok("the General Assembly panel", false, e.message); }
+
 /* THE SESSION LOG OUTLIVES EVERY SAVE. wm.opts is a different key from
    wm.slot.N and deleting a slot never touches it. */
 try {

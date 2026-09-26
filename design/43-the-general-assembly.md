@@ -185,8 +185,23 @@ the Western European and Others Group leans toward creditors.
 
 ## The tab
 
-**World becomes Foreign Affairs.** The globe stays; the powers stay, ordered
-by delay; the General Assembly gets its own panel (the next sitting, the
-agenda with each resolution's count drawn like a division, the Commonwealth's
-vote, and Table where a resolution can be tabled); and the selection window
-shows a resolution's member-by-member count when one is selected.
+**World becomes Foreign Affairs** (built 26 Sep). The globe keeps the full
+left column; the powers stay, ordered by delay; and the forums take a band
+under the selection window and the powers, since a resolution's title, its
+count and the Commonwealth's vote need the width of both. Each resolution is
+a row: the count drawn as the House's two lobbies with the threshold notched
+(the forecast while it waits, the record once decided), and under it the
+government's controls, Table it, Withdraw or the Commonwealth's vote. A
+selected resolution fills the window beside the globe with its count member
+by member, and a pick on the globe gives the window back. A draft whose gate
+does not hold is not listed, for the reason a bill in drafting has no
+Concordance page.
+
+The calendar marks the Assembly's sitting **Abroad**, in its own blue. It
+printed "undefined." for a day before this commit, because the engine commit
+added the deadline kind and not its name; the UI test now reads June.
+
+**The Concordance** writes up the forum (procedure, the members'
+disposition toward the Commonwealth in words, the resolutions that concern
+it) and each resolution once it is tabled (its sponsor, when it is voted or
+how it was decided, and the vote member by member).
