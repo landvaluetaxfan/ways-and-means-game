@@ -1111,6 +1111,7 @@ function campaign(id, parts) {
     minutes:      typeof MINUTES !== "undefined" ? MINUTES : null,
     characters:   typeof CHARACTERS !== "undefined" ? CHARACTERS : null,
     actors:       typeof ACTORS !== "undefined" ? ACTORS : null,
+    resolutions:  typeof RESOLUTIONS !== "undefined" ? RESOLUTIONS : null,
     business:     typeof BUSINESS !== "undefined" ? BUSINESS : null,
     glossary:     typeof GLOSSARY !== "undefined" ? GLOSSARY : null,
     articles:     typeof ENCYCLOPEDIA !== "undefined" ? ENCYCLOPEDIA.articles : null

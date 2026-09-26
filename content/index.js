@@ -16,6 +16,10 @@ const CONTENT = (function () {
     business: typeof BUSINESS !== "undefined" ? BUSINESS : [],
     settlements: typeof SETTLEMENTS !== "undefined" ? SETTLEMENTS : [],
     actors: typeof ACTORS !== "undefined" ? ACTORS : [],
+    /* THE FORUMS (design/43): chambers the Commonwealth sits in and does
+       not command, and the resolutions put to them. */
+    forums: typeof FORUMS !== "undefined" ? FORUMS : [],
+    resolutions: typeof RESOLUTIONS !== "undefined" ? RESOLUTIONS : [],
     /* THE EARTH, and the anchors on it (design/29). Not read by the engine:
        the foreign layer is a price and a debt, and the globe is the ground it
        stands on. The World screen reads it, and `content/world.js` is where the
@@ -60,6 +64,8 @@ const CONTENT = (function () {
     K.encyclopediaById = idx((K.encyclopedia || {}).articles);
     K.settlementById = idx(K.settlements);
     K.actorById = idx(K.actors);
+    K.forumById = idx(K.forums);
+    K.resolutionById = idx(K.resolutions);
     K.glossaryByTerm = (K.glossary || []).reduce((m, g) => (m[g.term.toLowerCase()] = g, m), {});
     return K;
   }

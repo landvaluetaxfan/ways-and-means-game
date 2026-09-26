@@ -21,7 +21,7 @@ const GLOBALS={setup:"SETUP",parties:"PARTIES",currents:"CURRENTS",stations:"STA
   glossary:"GLOSSARY",events:"EVENTS",encyclopedia:"ENCYCLOPEDIA",cabinet:"CABINET",
   instruments:"INSTRUMENTS",initiatives:"INITIATIVES",minutes:"MINUTES",settlements:"SETTLEMENTS",
   business:"BUSINESS",actors:"ACTORS",administrations:"ADMINISTRATIONS",achievements:"ACHIEVEMENTS",
-  archetypes:"ARCHETYPES",names:"NAMELISTS"};
+  archetypes:"ARCHETYPES",names:"NAMELISTS",forums:"FORUMS",resolutions:"RESOLUTIONS"};
 function loadModel(){
   const c={}; vm.runInNewContext(src+";__={"+Object.values(GLOBALS).join(",")+"};",c);
   const M={}; Object.keys(GLOBALS).forEach(k=>M[k]=c.__[GLOBALS[k]]);
@@ -37,6 +37,11 @@ function content(M){
 }
 function play(M,n){
   const C=content(M); let s=Engine.newGame(C), out=[], k=0;
+  /* EVERY RESOLUTION ON THE AGENDA FROM THE FIRST SITTING. Forty sittings
+     of play table none of them, and a comparison of four drafts passes
+     however badly a rename went. Tabled by effect, each is voted through
+     its renamed forum, sponsor and stances and lands its consequences. */
+  Engine.apply(s,C,(M.resolutions||[]).map(r=>({resolution:{[r.id]:"table"}})));
   for(let i=0;i<n;i++){
     const e=Engine.nextEvent(s,C);
     if(e){ out.push(s.sitting+":"+(M.__map&&M.__map[e.id]||e.id)); Engine.choose(s,C,e,(k++)%e.choices.length); }
@@ -44,7 +49,13 @@ function play(M,n){
     Engine.advance(s,C);
   }
   const caps=Object.keys(s.capital).sort().map(k2=>(M.__cap&&M.__cap[k2]||k2)+"="+s.capital[k2]).join(",");
-  return { trace: out.join("|"),
+  /* the forums' business, keyed back to the original ids: what was tabled
+     and decided, and every member's standing (design/43) */
+  const un=k2=>(M.__res&&M.__res[k2])||(M.__mem&&M.__mem[k2])||k2;
+  const res=Object.keys(s.resolutions||{}).map(k2=>un(k2)+"="+s.resolutions[k2].status+
+    (s.resolutions[k2].decided?":"+s.resolutions[k2].decided.yes+"-"+s.resolutions[k2].decided.no:"")).sort().join(",");
+  const mem=Object.keys(s.forums||{}).map(f=>Object.keys(s.forums[f].standing).map(m=>un(m)+"="+s.forums[f].standing[m]).sort().join(",")).join("|");
+  return { trace: out.join("|"), res, mem,
            scalars: JSON.stringify(s.scalars),
            capital: caps,
            div: JSON.stringify(Engine.division(s,C,M.__bill||"divergence").popular),
@@ -55,14 +66,17 @@ const A=loadModel(); const before=play(A,40);
 
 /* rename every entity of every kind */
 const B=loadModel();
-const map={party:{},station:{},bill:{},event:{},character:{},current:{},settlement:{}};
+const map={party:{},station:{},bill:{},event:{},character:{},current:{},settlement:{},resolution:{},forum:{},member:{}};
 let total=0;
 /* and the endings, which the editor writes since 25 Sep: an award or a gate
    that still names the old id could never be earned or opened */
 const KINDS=[["parties","party"],["stations","station"],["bills","bill"],
- ["events","event"],["characters","character"],["currents","current"],["settlements","settlement"]];
+ ["events","event"],["characters","character"],["currents","current"],["settlements","settlement"],
+ ["resolutions","resolution"],["forums","forum"],["members","member"]];
+/* a member lives inside its forum, not in a collection of its own */
+const listOf=(M,kind)=>kind==="members"?[].concat(...(M.forums||[]).map(f=>f.members||[])):M[kind];
 KINDS.forEach(([kind,tag])=>{
-  const arr=kind==="currents"?B.currents:B[kind];
+  const arr=listOf(B,kind);
   arr.slice().forEach(o=>{
     const from=o.id, to="x_"+tag+"_"+from;
     total+=Refs.rename(B,kind==="currents"?"currents":kind,from,to,o);
@@ -70,7 +84,7 @@ KINDS.forEach(([kind,tag])=>{
   });
 });
 /* map renamed ids back for comparison */
-B.__map=map.event; B.__cap=map.party; B.__party=map.party;
+B.__map=map.event; B.__cap=map.party; B.__party=map.party; B.__res=map.resolution; B.__mem=map.member;
 B.__bill=Object.keys(map.bill).find(k=>map.bill[k]==="divergence");
 
 const after=play(B,40);
@@ -90,6 +104,8 @@ eq("final scalars", before.scalars, after.scalars);
 eq("coalition ledger", before.capital, after.capital);
 eq("party loyalties", before.loy, after.loy);
 eq("division on the threshold bill", before.div, after.div);
+eq("the forums' resolutions", before.res, after.res);
+eq("the forums' members' standing", before.mem, after.mem);
 
 /* no stale ids anywhere */
 /* Ask the reference finder rather than scanning for strings: a tag that
@@ -124,6 +140,10 @@ const left={};
   Object.keys(o).forEach(k=>{
     if(PROSE.has(k)||k.startsWith("__")) return;
     if(oldIds[k]) (left[p+".{key}"]=left[p+".{key}"]||new Set()).add(oldIds[k]+" "+k);
+    /* and a namespaced key, `member.<id>` or `loyalty.<id>`, whose id is
+       the part after the dot: compared whole, it never matched */
+    const dot=k.indexOf("."), tail=dot>0?k.slice(dot+1):null;
+    if(tail&&oldIds[tail]) (left[p+".{key}"]=left[p+".{key}"]||new Set()).add(oldIds[tail]+" "+k);
     walk(o[k],p+"."+k);
   });
 })(Object.fromEntries(Object.keys(GLOBALS).filter(k=>k!=="names"&&k!=="archetypes").map(k=>[k,B[k]])),"model");

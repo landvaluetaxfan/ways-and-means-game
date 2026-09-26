@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 32;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar, 32 core inflation and the quarter
+  const STATE_VERSION = 33;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar, 32 core inflation and the quarter, 33 the forums
 
   /* ---------------------------------------------------------
      1. STATE
@@ -260,6 +260,7 @@ const Engine = (function () {
     seedRoll(st, C);
     seedFunctional(st, C);
     seedActors(st, C);
+    seedForums(st, C);
     /* WHICH CAMPAIGN, AND HOW IT OPENS (design/36 §3). A campaign's view of
        the content (`CONTENT.forCampaign`) names itself and carries its
        opening: ordinary effects, applied once, here, after the world is
@@ -525,6 +526,15 @@ const Engine = (function () {
       if (st.macro) openMacroState(st.macro, st.date);
       st.version = 32;
     }
+    if (st.version < 33) {                    // the forums
+      /* design/43. The forums and the resolutions put to them. reconcile()
+         seeds both from content on every load, so a save only needs the
+         tables to exist; each forum's first sitting is counted from the
+         campaign's opening, as a new game's is. */
+      st.forums = st.forums || {};
+      st.resolutions = st.resolutions || {};
+      st.version = 33;
+    }
     return st;
   }
 
@@ -566,6 +576,9 @@ const Engine = (function () {
        content standing; one removed from content goes. Same contract as
        stations: content owns identity, the save owns simulation. */
     seedActors(st, C, notes);
+    /* and the forums, the same contract: a forum or a resolution content
+       added since the save was written opens where content says (design/43) */
+    seedForums(st, C);
 
     /* THE SCALARS CONTENT DECLARES. Content owns the ROSTER (which meters
        exist); the save owns each meter's value, because every one of them
@@ -824,6 +837,213 @@ const Engine = (function () {
     st.lobby = st.lobby || {};
     st.clauses = st.clauses || {};
     return st;
+  }
+
+  /* =============================================================
+     THE FORUMS (design/43). A chamber the Commonwealth sits in and does
+     not command: the House turned inside out. In the House the government
+     whips; in a forum it asks. Content declares each one (`C.forums`): its
+     members, the dates it sits and what carries, and the resolutions put
+     to it (`C.resolutions`). The engine names no forum, no member and no
+     resolution. The General Assembly is the first forum content wrote.
+
+     A MEMBER is a state or a bloc: a number of votes, a position on the
+     forum's axes, a standing toward the Commonwealth and, for a bloc, a
+     cohesion, the share of its votes that follow its line (the rest
+     abstain). That is the House's party-and-loyalty model in small, and it
+     is how a caucus keeps its members' own votes. A member naming an
+     `actor` reads and moves that actor's standing, so the powers panel and
+     the forum never disagree; one without keeps its own in the save. The
+     member marked `self` is the Commonwealth's seat.
+
+     The save owns what moved: each forum's next sitting, members'
+     standings, the Commonwealth's votes and the agenda; each resolution's
+     status and, once decided, its count.
+     ============================================================= */
+  function forumOf(C, id) { return (C.forumById || {})[id] || (C.forums || []).find(f => f.id === id) || null; }
+  function resolutionOf(C, id) {
+    return (C.resolutionById || {})[id] || (C.resolutions || []).find(r => r.id === id) || null;
+  }
+  function memberOf(C, id) {
+    for (const f of (C.forums || [])) {
+      const m = (f.members || []).find(x => x.id === id);
+      if (m) return { forum: f, member: m };
+    }
+    return null;
+  }
+  function selfOf(f) { return (f.members || []).find(m => m.self) || null; }
+  function firstForumSitting(C, f) {
+    if (f.firstSitting) return f.firstSitting;
+    const start = C.setup && C.setup.startDate;
+    if (!start) return null;
+    return iso(new Date(parseDay(start).getTime() + (f.firstAfter || 0) * DAY));
+  }
+  function seedForums(st, C) {
+    st.forums = st.forums || {};
+    st.resolutions = st.resolutions || {};
+    (C.forums || []).forEach(f => {
+      const s = st.forums[f.id] ||
+        (st.forums[f.id] = { next: null, standing: {}, votes: {}, agenda: [], sat: [] });
+      if (!s.next) s.next = firstForumSitting(C, f);
+      (f.members || []).forEach(m => {
+        if (m.actor || m.self || s.standing[m.id] != null) return;
+        s.standing[m.id] = m.standing == null ? 50 : m.standing;
+      });
+    });
+    (C.resolutions || []).forEach(r => {
+      if (!st.resolutions[r.id]) st.resolutions[r.id] = { status: "draft" };
+    });
+  }
+  function memberStanding(st, C, f, m) {
+    if (m.actor && st.actors && st.actors[m.actor]) return st.actors[m.actor].standing;
+    const s = ((st.forums || {})[f.id] || {}).standing || {};
+    return s[m.id] != null ? s[m.id] : (m.standing == null ? 50 : m.standing);
+  }
+  /* HOW FAR A MEMBER IS WITH A RESOLUTION: its position projected onto the
+     resolution's direction. Not the House's cosine: a bloc with faint views
+     should abstain, and a cosine gives a faint position full strength. */
+  function projection(memberAxes, resAxes) {
+    let dot = 0, mag = 0;
+    Object.keys(resAxes || {}).forEach(a => {
+      const r = resAxes[a], m = (memberAxes || {})[a];
+      if (typeof r !== "number") return;
+      mag += r * r;
+      if (typeof m === "number") dot += m * r;
+    });
+    return mag ? dot / Math.sqrt(mag) : 0;
+  }
+  /* THE CLIMATE: what every member reads besides its own standing, declared
+     by the forum as terms on a meter, {from, at, weight}. The General
+     Assembly reads diplomatic friction, so a Commonwealth in a quarrel with
+     Earth finds every vote harder. */
+  function forumClimate(st, C, f) {
+    return (f.climate || []).reduce((n, t) => {
+      const v = t.from && t.from.indexOf("actor.") === 0
+        ? ((st.actors || {})[t.from.slice(6)] || {}).standing
+        : (st.scalars || {})[t.from];
+      return v == null ? n : n + (t.weight || 0) * (v - (t.at == null ? 50 : t.at)) / 50;
+    }, 0);
+  }
+  function ownVote(st, C, f, r) {
+    const v = (((st.forums || {})[f.id] || {}).votes || {})[r.id];
+    if (v) return v;
+    if (r.vote) return r.vote;            /* content's default: the Commonwealth votes against measures aimed at it */
+    const me = selfOf(f);
+    return me && r.sponsor === me.id ? "for" : "abstain";
+  }
+  /* THE COUNT, the mission's before a sitting and the forum's at it. */
+  function forumCount(st, C, resId) {
+    const r = resolutionOf(C, resId); if (!r) return null;
+    const f = forumOf(C, r.forum); if (!f) return null;
+    const own = ownVote(st, C, f, r);
+    const dir = own === "for" ? 1 : own === "against" ? -1 : 0;
+    const line = f.line == null ? 0.15 : f.line;
+    const w = f.standingWeight == null ? 0.6 : f.standingWeight;
+    const climate = forumClimate(st, C, f);
+    const KEY = { for: "yes", against: "no", abstain: "abstain" };
+    const rows = (f.members || []).map(m => {
+      const n = m.votes || 1;
+      const row = { id: m.id, name: m.name, votes: n, yes: 0, no: 0, abstain: 0 };
+      if (m.self) { row.line = own; row.self = true; row[KEY[own]] = n; return row; }
+      row.standing = memberStanding(st, C, f, m);
+      let fixed = (r.stances || {})[m.id];
+      if (!fixed && r.sponsor === m.id) fixed = "for";
+      let score = null;
+      if (!KEY[fixed]) score = projection(m.axes, r.axes) +
+        dir * ((row.standing - 50) / 50 * w + climate);
+      row.line = score == null ? fixed : score >= line ? "for" : score <= -line ? "against" : "abstain";
+      row.score = score == null ? null : Math.round(score * 100) / 100;
+      const onLine = Math.round(n * (m.cohesion == null ? 1 : m.cohesion)), rest = n - onLine;
+      row[KEY[row.line]] += onLine;
+      if (row.line === "abstain" && score != null) {
+        const y = Math.round(rest * clamp(0.5 + score, 0, 1));
+        row.yes += y; row.no += rest - y;
+      } else row.abstain += rest;
+      return row;
+    });
+    const sum = k => rows.reduce((t, x) => t + x[k], 0);
+    const yes = sum("yes"), no = sum("no"), abstain = sum("abstain");
+    const need = r.majority || f.majority || 0.5;
+    const cast = yes + no;
+    const carries = cast > 0 && (need <= 0.5 ? yes > no : yes >= cast * need - 1e-9);
+    return { resolution: r.id, forum: f.id, own: own, yes: yes, no: no, abstain: abstain,
+             need: need, carries: carries, rows: rows, status: ((st.resolutions || {})[r.id] || {}).status || "draft" };
+  }
+  function canTable(st, C, resId) {
+    const r = resolutionOf(C, resId);
+    if (!r) return { ok: false, reason: "there is no such resolution" };
+    const f = forumOf(C, r.forum), me = f && selfOf(f);
+    const status = ((st.resolutions || {})[resId] || {}).status || "draft";
+    if (status === "tabled") return { ok: false, reason: "it is already on the agenda" };
+    if (status === "adopted" || status === "rejected") return { ok: false, reason: "it has been decided" };
+    if (!me || r.sponsor !== me.id) return { ok: false, reason: "another member sponsors it" };
+    if (st.dissolved) return { ok: false, reason: "a caretaker government does not table resolutions" };
+    if (r.when && !matches(st, r.when)) return { ok: false, reason: r.whenText || "it cannot be tabled yet" };
+    return { ok: true };
+  }
+  /* Content tables a resolution by effect, whoever sponsors it (the Union
+     tables its own through an event); the government tables its own through
+     canTable. Either way it is voted at the forum's next sitting. */
+  function tableResolution(st, C, resId) {
+    const r = resolutionOf(C, resId); if (!r) return { ok: false, reason: "there is no such resolution" };
+    const f = forumOf(C, r.forum); if (!f) return { ok: false, reason: "there is no such forum" };
+    seedForums(st, C);
+    const rs = st.resolutions[resId];
+    if (rs.status === "tabled" || rs.status === "adopted" || rs.status === "rejected")
+      return { ok: false, reason: "it is " + rs.status };
+    rs.status = "tabled"; rs.tabledAt = st.sitting;
+    const s = st.forums[f.id];
+    if (s.agenda.indexOf(resId) < 0) s.agenda.push(resId);
+    st.log.unshift({ sitting: st.sitting, text: "Tabled at the " + (f.short || f.name) + ": " + r.title +
+                     ". It is voted on " + s.next + "." });
+    apply(st, C, r.onTable || []);
+    return { ok: true };
+  }
+  function table(st, C, resId) {
+    const g = canTable(st, C, resId);
+    return g.ok ? tableResolution(st, C, resId) : g;
+  }
+  function withdrawResolution(st, C, resId) {
+    const r = resolutionOf(C, resId), rs = (st.resolutions || {})[resId];
+    if (!r || !rs || rs.status !== "tabled") return { ok: false, reason: "it is not on the agenda" };
+    rs.status = "withdrawn";
+    const s = st.forums[r.forum];
+    if (s) s.agenda = s.agenda.filter(x => x !== resId);
+    return { ok: true };
+  }
+  function castVote(st, C, resId, v) {
+    const r = resolutionOf(C, resId);
+    if (!r || ["for", "against", "abstain"].indexOf(v) < 0) return { ok: false, reason: "no such vote" };
+    seedForums(st, C);
+    st.forums[r.forum].votes[resId] = v;
+    return { ok: true };
+  }
+  /* THE SITTING: every resolution on the agenda is voted, in the order it
+     was tabled, on each sitting date the calendar has passed. */
+  function forumsSit(st, C) {
+    (C.forums || []).forEach(f => {
+      const s = st.forums && st.forums[f.id];
+      if (!s || !s.next || !st.date) return;
+      let guard = 0;
+      while (s.next <= st.date && guard++ < 20) {
+        const day = s.next;
+        s.agenda.slice().forEach(rid => decideResolution(st, C, f, rid, day));
+        s.agenda = [];
+        s.sat.push(day);
+        s.next = iso(new Date(parseDay(day).getTime() + (f.every || 21) * DAY));
+      }
+    });
+  }
+  function decideResolution(st, C, f, rid, day) {
+    const r = resolutionOf(C, rid), rs = st.resolutions[rid];
+    if (!r || !rs || rs.status !== "tabled") return;
+    const c = forumCount(st, C, rid);
+    rs.status = c.carries ? "adopted" : "rejected";
+    rs.decided = { date: day, sitting: st.sitting, yes: c.yes, no: c.no, abstain: c.abstain,
+                   own: c.own, rows: c.rows.map(x => ({ id: x.id, yes: x.yes, no: x.no, abstain: x.abstain })) };
+    st.log.unshift({ sitting: st.sitting, text: (f.short || f.name) + ": " + r.title +
+      (c.carries ? " adopted, " : " rejected, ") + c.yes + " to " + c.no + ", " + c.abstain + " abstaining." });
+    apply(st, C, (c.carries ? r.onPass : r.onFail) || []);
   }
 
   function seedRoll(st, C) {
@@ -3929,6 +4149,10 @@ const Engine = (function () {
     stationBelow: (st, v) => Object.keys(v).every(id =>
                     Object.keys(v[id]).every(f => st.stations[id][f] < v[id][f])),
     billStage:    (st, v) => Object.keys(v).every(id => st.bills[id] && st.bills[id].stage === v[id]),
+    /* a resolution's standing in its forum (design/43): draft, tabled,
+       adopted, rejected or withdrawn; a list is any of them */
+    resolutionIs: (st, v) => Object.keys(v).every(id =>
+                    [].concat(v[id]).indexOf(((st.resolutions || {})[id] || {}).status || "draft") >= 0),
     signaturesAtLeast: (st, v) => (st.signatures || 0) >= v,
     /* The leadership ballot (design/08 §2). Content narrates it; the engine
        holds it. `ballotHeld` is true once the caucus has divided and before
@@ -4289,6 +4513,23 @@ const Engine = (function () {
           if (st.actors[k])
             st.actors[k].standing = clamp(st.actors[k].standing + d, 0, 100);
           break;
+        /* {move:{"member.african_group":6}} -- a forum member's standing
+           toward the Commonwealth (design/43). A member that names an actor
+           moves the actor's, so the two are never told apart. */
+        case "member": {
+          const hit = memberOf(C, k);
+          if (!hit) { st.log.unshift({ sitting: st.sitting, text:
+            "IGNORED: no forum has a member called " + k + "." }); break; }
+          if (hit.member.actor && st.actors[hit.member.actor]) {
+            const a = st.actors[hit.member.actor];
+            a.standing = clamp(a.standing + d, 0, 100);
+          } else {
+            seedForums(st, C);
+            const t = st.forums[hit.forum.id].standing;
+            t[k] = clamp((t[k] == null ? 50 : t[k]) + d, 0, 100);
+          }
+          break;
+        }
         default:
           st.log.unshift({ sitting: st.sitting, text:
             "IGNORED: a move effect named no such target: " + key + "." });
@@ -4313,6 +4554,18 @@ const Engine = (function () {
          reserves      the Bank's foreign reserves, in their money
          rate          the policy rate, points: only a Bank decision content
                        stages (an emergency cut); the rule sets it otherwise */
+    /* THE FORUMS (design/43): {resolution:{<id>: "table" | "withdraw" |
+       "for" | "against" | "abstain"}}. Table puts a resolution on its
+       forum's agenda whoever sponsors it; a vote is the Commonwealth's seat. */
+    resolution: (st, C, v) => Object.keys(v).forEach(id => {
+      const a = v[id];
+      const r = a === "table" ? tableResolution(st, C, id)
+        : a === "withdraw" ? withdrawResolution(st, C, id)
+        : castVote(st, C, id, a);
+      if (!r.ok) st.log.unshift({ sitting: st.sitting, text:
+        "IGNORED: resolution " + id + " (" + a + "): " + r.reason + "." });
+    }),
+
     economy: (st, C, v) => Object.keys(v).forEach(k => {
       const m = st.macro;
       if (k === "private") { if (st.economy) st.economy.private = clamp(st.economy.private + v[k], 0, 1); }
@@ -4989,7 +5242,25 @@ const Engine = (function () {
       const v = eff[k];
       switch (k) {
         /* One verb in, five readings out — the namespace decides which. */
-        case "move": Object.keys(v).forEach(key => {
+        case "move": {
+          /* A FORUM'S MEMBERS are courted several at a time, and six lines
+             of "Warms" is a list, not a consequence: one line per forum. */
+          const courted = {};
+          Object.keys(v).forEach(key => {
+            if (key.indexOf("member.") !== 0) return;
+            const hit = memberOf(C, key.slice(7)); if (!hit) return;
+            const f = hit.forum, g = courted[f.id] || (courted[f.id] = { f, up: [], down: [] });
+            (v[key] >= 0 ? g.up : g.down).push(hit.member.name || hit.member.id);
+          });
+          Object.values(courted).forEach(g => {
+            const where = " at the " + (g.f.short || g.f.name);
+            const say = (names, verb) => names.length === 1 ? verb + " " + names[0] + where
+              : verb + " " + (["", "one", "two", "three", "four", "five", "six", "seven", "eight",
+                  "nine", "ten", "eleven", "twelve"][names.length] || names.length) + " members" + where;
+            if (g.up.length) out.push({ tone: "good", text: say(g.up, "Wins over") });
+            if (g.down.length) out.push({ tone: "bad", text: say(g.down, "Loses") });
+          });
+          Object.keys(v).forEach(key => {
           const dot = key.indexOf("."), d = v[key];
           const ns = dot < 0 ? "scalar" : key.slice(0, dot);
           const id = dot < 0 ? key : key.slice(dot + 1);
@@ -5033,7 +5304,23 @@ const Engine = (function () {
                          : "Repays " + money(C, -d) + " to " + who)
                 : (d > 0 ? "Adds " + money(C, d, L.currency) + " to what is owed " + who
                          : "Takes " + money(C, -d, L.currency) + " off what is owed " + who) });
+          } else if (ns === "actor") {
+            out.push({ tone: d >= 0 ? "good" : "bad",
+              text: (d >= 0 ? "Warms " : "Cools ") + nameOf("actors", id, "name") +
+                    (band(d) ? ", " + band(d) : "") });
           }
+        });
+          break;
+        }
+        /* THE FORUMS (design/43): what the government does with its seat */
+        case "resolution": Object.keys(v).forEach(rid => {
+          const r = resolutionOf(C, rid), f = r && forumOf(C, r.forum);
+          const title = r ? r.title : rid.replace(/_/g, " ");
+          const where = f ? " at the " + (f.short || f.name) : "";
+          const a = v[rid];
+          out.push(a === "table" ? { tone: "plain", text: "Tables \u201c" + title + "\u201d" + where }
+            : a === "withdraw" ? { tone: "plain", text: "Withdraws \u201c" + title + "\u201d" }
+            : { tone: "plain", text: (a === "abstain" ? "Abstains on" : "Votes " + a) + " \u201c" + title + "\u201d" + where });
         });
           break;
         case "scalar": Object.keys(v).forEach(sk => {
@@ -6556,6 +6843,11 @@ const Engine = (function () {
       if (whole) bumpScalar(st, C, "solvency", whole);
     })();
 
+    /* THE FORUMS SIT ON THEIR OWN DATES (design/43), as the Bank meets on
+       its own: every resolution on an agenda is voted at the first sitting
+       date the calendar has passed. */
+    forumsSit(st, C);
+
     /* THE RESERVE KEEPS A CURVE, the way the four prices already do. It is
        the one figure on the economy tab whose history nothing recorded, so
        the chart had a single bar for the number everything else is measured
@@ -6949,6 +7241,20 @@ const Engine = (function () {
         t += every * DAY;
       }
     }
+    /* A FORUM SITS ON ITS OWN DATES (design/43), and the government can
+       see them coming, with what is on the agenda. */
+    (C.forums || []).forEach(f => {
+      const s = (st.forums || {})[f.id];
+      if (!s || !s.next) return;
+      const on = sittingFrom(C, s.next);
+      if (on == null) return;
+      const n = (s.agenda || []).length;
+      out.push({ sitting: on, date: s.next, kind: "forum",
+                 text: "The " + (f.short || f.name) + " sits" +
+                   (n ? ", " + n + " resolution" + (n === 1 ? "" : "s") + " on the agenda" : ""),
+                 away: on - st.sitting, tab: "world",
+                 how: "The count is on the Foreign Affairs tab" });
+    });
     if (st.risesAt != null)
       add(st.risesAt, "rises", !lastPeriod(st, C) ? "The House rises for the recess"
         : lastSession(st, C) ? "The House rises and is dissolved"
@@ -8098,6 +8404,7 @@ const Engine = (function () {
     dateOfSitting, sittingOfDate, inRecess, deadlines, calendar, today, business,
     initiatives, take, setDivision,
     apportionment, representedAs, seatMember, seatText, tierCheck, DIVIDES_AT, STAGE_ORDER,
+    forumCount, forumOf, resolutionOf, canTable, table, withdrawResolution, castVote, memberStanding,
     seedRoll, syncRoll, reconcile, partyDistrict,
     lastReconcile: () => lastReconcile, nationalShares, vacantSeats, seatsFor,
     vacateSeat, crossFloor, byElection, generalElection, shares, swungShares,

@@ -1995,8 +1995,15 @@ console.log("\nTHE CALENDAR:");
   ok("the session end is a deadline like any other",
      dl.some(d => d.kind === "rises" && d.sitting === st.risesAt),
      dl.map(d => d.kind).join(", ") || "(none)");
+  /* A mark on a sitting day is that sitting. One with a date of its own
+     (the Bank's meetings, a forum's sittings) may fall between sittings,
+     and counts to the first sitting on or after it. */
+  const lands = d => Engine.sittingOfDate(CONTENT, d.date) === d.sitting ||
+    (Engine.sittingOfDate(CONTENT, d.date) == null &&
+     Engine.dateOfSitting(CONTENT, d.sitting) > d.date &&
+     (d.sitting <= 1 || Engine.dateOfSitting(CONTENT, d.sitting - 1) < d.date));
   ok("every deadline lands on a square the calendar drew",
-     dl.every(d => Engine.sittingOfDate(CONTENT, d.date) === d.sitting));
+     dl.every(lands), dl.filter(d => !lands(d)).map(d => d.kind + " " + d.date + " at " + d.sitting).join(", "));
   ok("and carries how far away it is, in sittings",
      dl.every(d => d.away === d.sitting - st.sitting));
 
@@ -5412,4 +5419,147 @@ console.log("\nTHE PRICE RULES ARE CONTENT'S (design/39 §6):");
      run(CONTENT, 12).economy.trade + " -> " + run(EV, 12).economy.trade);
 
   if (bad) { console.log("\n" + bad + " PRICE RULE FAILURES"); process.exitCode = 1; }
+})();
+
+/* ---- THE FORUMS (design/43) ----
+   A chamber the Commonwealth sits in and does not command. The world's view
+   holds the General Assembly and none of its business (Flash I's is in its
+   folder, and its guards assert it), so these put two probe resolutions to
+   whatever forum the world declares: one the government sponsors, one a bloc
+   does. The engine names no forum, member or resolution, so a test may. */
+(function () {
+  let bad = 0;
+  const ok = (label, cond, extra) => {
+    if (!cond) bad++;
+    console.log((cond ? "  ok   " : "  FAIL ") + label + (extra ? "  " + extra : ""));
+  };
+  console.log("\nTHE FORUMS (design/43):");
+  const F = (CONTENT.forums || [])[0];
+  ok("the world declares a forum to test", !!F, F ? F.id : "none");
+  if (!F) { bad && (process.exitCode = 1); return; }
+  const me = F.members.find(m => m.self);
+  const bloc = F.members.find(m => !m.self && m.cohesion != null && m.cohesion < 1 && !m.actor);
+  const one = F.members.find(m => !m.self && !m.actor && m.cohesion == null && (m.votes || 1) === 1);
+  const withActor = F.members.find(m => m.actor);
+  const axis = Object.keys(F.axes)[0];
+  const probe = { id: "t_res", forum: F.id, sponsor: me.id, title: "Probe", summary: "x",
+    axes: { [axis]: 0.5 }, when: { flags: ["t_res_ok"] },
+    onPass: [{ flag: "t_res_passed" }], onFail: [{ flag: "t_res_failed" }] };
+  const two = Object.assign({}, probe, { id: "t_two", majority: 0.6667, when: null, onPass: [], onFail: [] });
+  const high = Object.assign({}, two, { id: "t_high", majority: 0.99 });
+  const theirs = { id: "t_theirs", forum: F.id, sponsor: bloc.id, title: "Theirs", summary: "x",
+    axes: { [axis]: -0.5 } };
+  const C2 = Object.assign({}, CONTENT, { resolutions: (CONTENT.resolutions || []).concat([probe, two, high, theirs]) });
+  C2.resolutionById = Object.assign({}, CONTENT.resolutionById, { t_res: probe, t_two: two, t_high: high, t_theirs: theirs });
+  const day = n => { const [y, m, d] = C2.setup.startDate.split("-").map(Number);
+    return new Date(Date.UTC(y, m - 1, d) + n * 86400000).toISOString().slice(0, 10); };
+
+  /* SEEDED FROM CONTENT */
+  const s = Engine.newGame(C2);
+  const first = day(F.firstAfter);
+  ok("a forum opens with its first sitting firstAfter days from the start",
+     s.forums[F.id].next === first, s.forums[F.id].next + " against " + first);
+  ok("every member without an actor has a standing, from content or 50",
+     F.members.filter(m => !m.self && !m.actor).every(m => s.forums[F.id].standing[m.id] === (m.standing == null ? 50 : m.standing)));
+  ok("a member with an actor reads the actor's standing",
+     !withActor || Engine.memberStanding(s, C2, F, withActor) === s.actors[withActor.actor].standing);
+  ok("and every resolution opens a draft", ["t_res", "t_two", "t_theirs"].every(id => s.resolutions[id].status === "draft"));
+
+  /* THE COUNT */
+  const votes = F.members.reduce((n, m) => n + (m.votes || 1), 0);
+  const c = Engine.forumCount(s, C2, "t_res");
+  ok("every seat is counted once", c.yes + c.no + c.abstain === votes, c.yes + "-" + c.no + "-" + c.abstain + " of " + votes);
+  ok("abstentions count for nothing: a simple majority is more for than against",
+     c.carries === (c.yes > c.no));
+  const c2 = Engine.forumCount(s, C2, "t_two");
+  ok("two thirds is two thirds of those present and voting",
+     c2.carries === (c2.yes >= (c2.yes + c2.no) * 0.6667 - 1e-9), c2.yes + "-" + c2.no);
+  const c9 = Engine.forumCount(s, C2, "t_high");
+  ok("and a resolution's own majority overrides the forum's",
+     c.carries && c9.yes === c.yes && !c9.carries, c9.yes + "-" + c9.no + " needs " + c9.need);
+  const br = Engine.forumCount(s, C2, "t_theirs").rows.find(r => r.id === bloc.id);
+  const onLine = Math.round(bloc.votes * bloc.cohesion);
+  ok("a bloc casts its cohesion's share for its own resolution, and keeps every seat",
+     br.yes >= onLine && br.yes + br.no + br.abstain === bloc.votes, JSON.stringify(br));
+  const self = c.rows.find(r => r.self);
+  ok("the Commonwealth votes for its own by default", self.yes === 1, JSON.stringify(self));
+  ok("and abstains on another's unless content says otherwise",
+     Engine.forumCount(s, C2, "t_theirs").rows.find(r => r.self).abstain === 1);
+
+  /* THE COMMONWEALTH'S VOTE AND STANDING TURN THE COUNT */
+  const v = Engine.newGame(C2);
+  const abst = Engine.forumCount(v, C2, "t_theirs");
+  Engine.castVote(v, C2, "t_theirs", "against");
+  const agn = Engine.forumCount(v, C2, "t_theirs");
+  ok("a vote against brings members with it", agn.no > abst.no, abst.no + " -> " + agn.no);
+  const w0 = Engine.forumCount(v, C2, "t_res");
+  Engine.apply(v, C2, [{ move: Object.fromEntries(F.members.filter(m => !m.self && !m.actor).map(m => ["member." + m.id, 30])) }]);
+  const w1 = Engine.forumCount(v, C2, "t_res");
+  ok("and standing turns votes toward it", w1.yes - w1.no > w0.yes - w0.no, (w0.yes - w0.no) + " -> " + (w1.yes - w1.no));
+  const m0 = Engine.memberStanding(v, C2, F, one);
+  Engine.apply(v, C2, [{ move: { ["member." + one.id]: -7 } }]);
+  ok("a move on a member moves its standing", Engine.memberStanding(v, C2, F, one) === m0 - 7);
+  if (withActor) {
+    const a0 = v.actors[withActor.actor].standing;
+    Engine.apply(v, C2, [{ move: { ["member." + withActor.id]: -5 } }]);
+    ok("and on a member with an actor, the actor's", v.actors[withActor.actor].standing === a0 - 5);
+  }
+
+  /* TABLING */
+  ok("the government cannot table its own before its gate holds", !Engine.canTable(s, C2, "t_res").ok);
+  ok("nor another member's at all", !Engine.canTable(s, C2, "t_theirs").ok);
+  s.flags.t_res_ok = true;
+  const t = Engine.table(s, C2, "t_res");
+  ok("once the gate holds it tables it for the next sitting",
+     t.ok && s.resolutions.t_res.status === "tabled" && s.forums[F.id].agenda.indexOf("t_res") >= 0, t.reason);
+  ok("and not twice", !Engine.canTable(s, C2, "t_res").ok);
+  Engine.apply(s, C2, [{ resolution: { t_theirs: "table" } }]);
+  ok("content tables any member's by effect", s.resolutions.t_theirs.status === "tabled");
+  ok("resolutionIs reads a status, and a list of them",
+     Engine.matches(s, { resolutionIs: { t_res: "tabled" } }) &&
+     Engine.matches(s, { resolutionIs: { t_res: ["adopted", "tabled"] } }) &&
+     !Engine.matches(s, { resolutionIs: { t_res: "draft" } }));
+  ok("the sitting is on the calendar with its agenda",
+     Engine.deadlines(s, C2).some(d => d.kind === "forum" && d.date === first && /2 resolutions/.test(d.text)));
+  const wd = Engine.newGame(C2); wd.flags.t_res_ok = true; Engine.table(wd, C2, "t_res");
+  Engine.apply(wd, C2, [{ resolution: { t_res: "withdraw" } }]);
+  ok("a tabled resolution may be withdrawn before the sitting",
+     wd.resolutions.t_res.status === "withdrawn" && !wd.forums[F.id].agenda.length);
+
+  /* THE SITTING */
+  for (let i = 0; i < 80 && s.resolutions.t_res.status === "tabled"; i++) {
+    const e = Engine.nextEvent(s, C2);
+    if (e) Engine.choose(s, C2, e, 0);
+    Engine.advance(s, C2);
+  }
+  const rs = s.resolutions.t_res;
+  ok("the forum decides its agenda on its sitting date",
+     rs.decided && rs.decided.date === first, JSON.stringify(rs.decided && rs.decided.date));
+  ok("and lands the result's consequences, and only that result's",
+     (rs.status === "adopted") === !!s.flags.t_res_passed && (rs.status === "rejected") === !!s.flags.t_res_failed,
+     rs.status);
+  ok("the count it records is the whole forum", rs.decided.yes + rs.decided.no + rs.decided.abstain === votes);
+  ok("then clears its agenda and sits again `every` days on",
+     !s.forums[F.id].agenda.length && s.forums[F.id].next === day(F.firstAfter + F.every),
+     s.forums[F.id].next);
+
+  /* SAVES */
+  const again = Engine.reconcile(JSON.parse(JSON.stringify(s)), C2);
+  ok("a save keeps the forums' business", JSON.stringify(again.forums) === JSON.stringify(s.forums) &&
+     JSON.stringify(again.resolutions) === JSON.stringify(s.resolutions));
+  const old = Engine.newGame(C2); delete old.forums; delete old.resolutions;
+  const up = Engine.reconcile(old, C2);
+  ok("and a save from before them is given the forums on load",
+     up.forums && up.forums[F.id] && up.forums[F.id].next === first && up.resolutions.t_res.status === "draft");
+
+  /* THE ENGINE NAMES NONE OF IT */
+  const src = require("fs").readFileSync(__dirname + "/js/engine.js", "utf8")
+    .replace(/\/\*[^]*?\*\//g, "").replace(/\/\/.*/g, "");
+  const named = (ALL.forums || []).map(f => f.id)
+    .concat(...(ALL.forums || []).map(f => (f.members || []).map(m => m.id)))
+    .concat((ALL.resolutions || []).map(r => r.id))
+    .filter(id => new RegExp('"' + id + '"').test(src));
+  ok("the engine names no forum, member or resolution", named.length === 0, named.join(", "));
+
+  if (bad) { console.log("\n" + bad + " FORUM FAILURES"); process.exitCode = 1; }
 })();

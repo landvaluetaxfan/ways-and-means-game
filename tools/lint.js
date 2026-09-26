@@ -27,8 +27,8 @@ const root = path.join(__dirname, "..");
 const LC = require("./loadcontent.js");
 const files = LC.files.map(f => path.join(root, f));
 vm.runInThisContext(LC.source() +
-  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA, ADMINISTRATIONS};");
-const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA, ADMINISTRATIONS } = globalThis.__G;
+  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA, ADMINISTRATIONS, FORUMS, RESOLUTIONS};");
+const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA, ADMINISTRATIONS, FORUMS, RESOLUTIONS } = globalThis.__G;
 
 const MAX_NEW_CLUSTERS = 1;  // per event. Raise this and you are choosing to confuse people.
 
@@ -193,6 +193,9 @@ try {
   /* the world's lenders and every campaign's own (design/36 §3) */
   const lenderIds = new Set(Object.keys(SETUP.lenders || {}).concat(
     ...(ADMINISTRATIONS || []).map(a => Object.keys((a.setup || {}).lenders || {}))));
+  /* a forum's members (design/43); the Commonwealth's own seat has no
+     standing toward itself, so it is not a target */
+  const memberIds = new Set([].concat(...(FORUMS || []).map(f => (f.members || []).filter(m => !m.self).map(m => m.id))));
 
   /* The `case` labels of the move: dispatch in js/engine.js, so this list
      cannot drift from the engine the way a copied one would. */
@@ -216,6 +219,7 @@ try {
         : ns === "capital" ? partyIds.has(k)
         : ns === "price" ? priceIds.has(k)
         : ns === "debt" || ns === "loan" ? lenderIds.has(k)
+        : ns === "member" ? memberIds.has(k)
         /* AND AN UNKNOWN NAMESPACE IS A FAULT, not "the engine's business".
            That escape hatch is how `move:{"relationship.watkins":-6}` sat in
            Questions to the Prime Minister passing every check: the engine's
@@ -260,6 +264,14 @@ try {
     (b.clauses || []).forEach(cl => (cl.levels || []).forEach(lv =>
       checkEffects(lv.effects, "bill " + b.id + " clause " + cl.id + "/" + lv.id)));
   });
+  /* AND THE TWO KINDS THAT CAME LATER: an initiative's tempos and a
+     resolution's consequences move numbers like any effect list. */
+  (INITIATIVES || []).forEach(i => {
+    checkEffects(i.effects, "initiative " + i.id);
+    (i.tempo || []).forEach((t, k) => checkEffects(t.effects, "initiative " + i.id + " tempo " + (k + 1)));
+  });
+  (RESOLUTIONS || []).forEach(r => ["onTable", "onPass", "onFail"].forEach(k =>
+    checkEffects(r[k], "resolution " + r.id + " " + k)));
 } catch (e) { targetBad.push("could not resolve the targets: " + e.message); }
 section("MOVE TARGETS THAT NAME NOTHING", targetBad, x => x);
 
@@ -511,6 +523,12 @@ try {
     (b.amendments || []).forEach(a => walkEffects(a.effects));
     (b.clauses || []).forEach(cl => (cl.levels || []).forEach(lv => walkEffects(lv.effects)));
   });
+  /* A FORUM'S RESOLUTIONS move numbers when the forum decides them
+     (design/43), and a government-sponsored one is gated on its `when`. */
+  (typeof RESOLUTIONS !== "undefined" ? RESOLUTIONS : []).forEach(r => {
+    walkWhen(r.when);
+    walkEffects(r.onTable); walkEffects(r.onPass); walkEffects(r.onFail);
+  });
   /* A coupling drags a scalar every sitting (Flash I). A number that moves
      and is not watched is exactly the bug this audit exists to catch, so
      the couplings are movers too. */
@@ -728,7 +746,7 @@ const flagSet = new Set();
     });
   };
   [EVENTS, BILLS, INSTRUMENTS, INITIATIVES, SETTLEMENTS, BUSINESS,
-   ACHIEVEMENTS, MINUTES].forEach(coll => (coll || []).forEach(walk));
+   ACHIEVEMENTS, MINUTES, RESOLUTIONS].forEach(coll => (coll || []).forEach(walk));
   /* AND THE ENGINE'S OWN. `paired` and `minister_resigned` are set by the
      rules rather than by content, and reading the awards made the first of
      them look unsettable. */
@@ -756,6 +774,7 @@ const gateNeeds = {}, gateAbsent = {};
   (INSTRUMENTS || []).forEach(i => cw(i.when, "instrument " + i.id));
   (SETTLEMENTS || []).forEach(x => cw(x.when, "settlement " + x.id));
   (INITIATIVES || []).forEach(x => cw(x.when, "initiative " + x.id));
+  (RESOLUTIONS || []).forEach(x => cw(x.when, "resolution " + x.id));
   /* AND THE TWO THAT WERE MISSING. An award waited on `gb_carveout_broken`,
      which nothing sets, and this audit never saw it because it did not read
      the awards (design/34). `flagsAny` is the awards' own spelling. */
@@ -809,7 +828,9 @@ try {
   const ids = a => new Set((a || []).map(x => x.id));
   const EV = ids(EVENTS), BI = ids(BILLS), SI = ids(INSTRUMENTS), SE = ids(SETTLEMENTS),
         PA = ids(PARTIES), CU = ids(CURRENTS), AC = ids(ACTORS), ST = ids(STATIONS),
-        CH = ids(CHARACTERS), CAB = ids(CABINET);
+        CH = ids(CHARACTERS), CAB = ids(CABINET), RES = ids(RESOLUTIONS), FO = ids(FORUMS);
+  const SCHEMA_V = require(path.join(root, "js", "schema.js")).vocab;
+  const RES_STATUS = new Set(SCHEMA_V.resolutionStatuses || []), RES_ACT = new Set(SCHEMA_V.resolutionActions || []);
   const LAW = new Set(Object.keys(SETUP.law || {})), SC = new Set(Object.keys(SETUP.scalars || {}).concat(require(path.join(root, "js", "schema.js")).vocab.scalars))  /* party_loyalty is derived, so setup opens no value for it */;
   const PR = new Set(["thermal", "substrate", "volume", "transit"]);
   /* the productive economy's measures, and since the dollar the Bank's
@@ -823,7 +844,8 @@ try {
     if (Array.isArray(o)) return o.forEach(x => walk(x, f));
     f(o); Object.keys(o).forEach(k => walk(o[k], f)); };
   const COLLS = { event: EVENTS, bill: BILLS, instrument: INSTRUMENTS, initiative: INITIATIVES,
-    settlement: SETTLEMENTS, business: BUSINESS, minute: MINUTES, cabinet: CABINET, actor: ACTORS };
+    settlement: SETTLEMENTS, business: BUSINESS, minute: MINUTES, cabinet: CABINET, actor: ACTORS,
+    resolution: RESOLUTIONS };
 
   const UND = new Set();
   Object.values(COLLS).forEach(c => walk(c, o => { if (o.undertake) [].concat(o.undertake).forEach(u => UND.add(u.id)); }));
@@ -852,6 +874,7 @@ try {
         case "stationBelow": keys(ST, "station"); break;
         case "suspendedAbove": case "suspendedBelow": Object.keys(v).forEach(x => { if (x !== "federal" && !ST.has(x)) bad("names no station '" + x + "'"); }); break;
         case "postVacant": list(CAB, "cabinet post"); break;
+        case "resolutionIs": keys(RES, "resolution"); Object.values(v).forEach(x => [].concat(x).forEach(y => { if (!RES_STATUS.has(y)) bad("names no status '" + y + "'"); })); break;
       }
     });
   };
@@ -859,6 +882,10 @@ try {
     if (!e || typeof e !== "object") return;
     if (e.bill) Object.keys(e.bill).forEach(x => { if (!BI.has(x)) refBad.push(tag + ": bill '" + x + "' is no bill"); });
     if (typeof e.si === "string" && !SI.has(e.si)) refBad.push(tag + ": si '" + e.si + "' is no instrument");
+    if (e.resolution) Object.keys(e.resolution).forEach(x => {
+      if (!RES.has(x)) refBad.push(tag + ": resolution '" + x + "' is no resolution");
+      if (!RES_ACT.has(e.resolution[x])) refBad.push(tag + ": resolution " + x + " '" + e.resolution[x] + "' is not one of " + [...RES_ACT].join(", "));
+    });
     /* A queued entry is an event, or effects that land on their day with no
        story (resolveDue); the second has no event to name, and its effects
        are checked like any others. */
@@ -887,10 +914,39 @@ try {
     const tag = kind + " " + (x.id || "?");
     walk(x, o => {
       ["when", "gate"].forEach(k => checkWhen(o[k], tag));
-      ["effects", "onPass", "onFail", "reverse", "onSign", "close"].forEach(k => [].concat(o[k] || []).forEach(e => checkEff(e, tag)));
+      ["effects", "onPass", "onFail", "onTable", "reverse", "onSign", "close"].forEach(k => [].concat(o[k] || []).forEach(e => checkEff(e, tag)));
     });
   }));
   (INITIATIVES || []).forEach(i => { if (i.event && !EV.has(i.event)) refBad.push("initiative " + i.id + ": answers with '" + i.event + "', which is no event"); });
+  /* THE FORUMS' OWN WIRING (design/43). A resolution put to no forum is
+     never voted; a sponsor or a fixed stance naming no member is a vote
+     nobody casts; an axis the forum does not declare is a position every
+     member reads as nought; a member's actor naming no actor reads 50 for
+     ever; and a forum with no seat of the Commonwealth's, or two, has no
+     one vote to cast. */
+  (FORUMS || []).forEach(f => {
+    const tag = "forum " + f.id, ax = new Set(Object.keys(f.axes || {}));
+    const selves = (f.members || []).filter(m => m.self).length;
+    if (selves !== 1) refBad.push(tag + ": has " + selves + " seats marked self, and needs exactly one");
+    (f.members || []).forEach(m => {
+      if (m.actor && !AC.has(m.actor)) refBad.push(tag + " member " + m.id + ": reads actor '" + m.actor + "', which is no actor");
+      Object.keys(m.axes || {}).forEach(a => { if (!ax.has(a)) refBad.push(tag + " member " + m.id + ": sits on axis '" + a + "', which the forum does not declare"); });
+    });
+    (f.climate || []).forEach(t => {
+      const k = String(t.from || "");
+      if (/^actor\./.test(k) ? !AC.has(k.slice(6)) : !SC.has(k)) refBad.push(tag + ": its climate reads '" + k + "', which is no meter and no actor");
+    });
+    if (!f.firstAfter && !f.firstSitting) refBad.push(tag + ": has no first sitting (firstAfter or firstSitting)");
+  });
+  (RESOLUTIONS || []).forEach(r => {
+    const tag = "resolution " + r.id, f = (FORUMS || []).find(x => x.id === r.forum);
+    if (!f) return refBad.push(tag + ": is put to '" + r.forum + "', which is no forum");
+    const mem = new Set((f.members || []).map(m => m.id)), ax = new Set(Object.keys(f.axes || {}));
+    if (!mem.has(r.sponsor)) refBad.push(tag + ": is sponsored by '" + r.sponsor + "', who sits in no seat of " + f.id);
+    Object.keys(r.stances || {}).forEach(m => { if (!mem.has(m)) refBad.push(tag + ": fixes the vote of '" + m + "', who sits in no seat of " + f.id); });
+    Object.keys(r.axes || {}).forEach(a => { if (!ax.has(a)) refBad.push(tag + ": sits on axis '" + a + "', which " + f.id + " does not declare"); });
+    if (r.vote != null && ["for", "against", "abstain"].indexOf(r.vote) < 0) refBad.push(tag + ": the Commonwealth's default vote '" + r.vote + "' is not for, against or abstain");
+  });
   /* THE LENDERS' CLAUSES are conditions and effects too (24 Sep): a rate
      step, a limit and a drawing's consequences, in the world's setup and in
      every campaign's. An unknown condition there throws at the first

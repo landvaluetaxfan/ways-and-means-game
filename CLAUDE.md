@@ -685,24 +685,53 @@ version of any of them is in the header of the file it names.
   ending; the next leader's campaign assumes the canon one, so a narrative
   runs across parliaments. **Flash I's canon is the debt trap, decided 23
   Sep: "a middle ground between perfect and failure".** It returns the PSD to
-  government with austerity to come. Since design/40 (25 Sep) the canon
-  reaches the count on 15 August, sitting 57, at standing 42: the PSD holds
+  government with austerity to come. Since design/43 (26 Sep) the canon
+  reaches the count on 14 August, sitting 56, at standing 42: the PSD holds
   87 of 280 and the government's side 149, a narrow majority. The crisis is
-  financed and now felt: it owes CW$44.9bn in Treasury bills (three quarters
+  financed and now felt: it owes CW$44.8bn in Treasury bills (three quarters
   of the authority, 7% of output), with the dollar near 0.79 and headline
-  inflation 5.8% against 3.0% underlying, which the vote reads. The canon
+  inflation 5.7% against 3.0% underlying, which the vote reads. The Union's
+  measures are adopted at the General Assembly on 11 June and cost it three
+  points of legitimacy. The canon
   government climbs the emergency ladder, keeps its last order-paper time to
   approve the emergency appropriation before the House rises (see
   `approvalFloor` below), asks Earth's banks for terms once the result is in,
   lays no order it cannot pay for, and reaches the count with the thermal
-  margin at 8 and its payments current. The guard prints the margin, the
+  margin at 9 and its payments current. The guard prints the margin, the
   side, the epilogue and the account. (25 Sep: it had been CW$16.8bn in
   arrears through the campaign, which cost nothing until that day; see
-  ARREARS below.) (Before design/40: 103 seats, 165 of 280
-  at standing 58, margin about five.) Flash I's guards
+  ARREARS below.) (Before design/43: sitting 57, margin 8, CW$44.9bn, 5.8%.
+  Before design/40: 103 seats, 165 of 280 at standing 58, margin about
+  five.) Flash I's guards
   (`content/campaigns/flash_i/guards.js`) assert that the canon ending is
   reachable by play and goes to the count; keep that true whatever else
   moves, until the author rewrites the canon.
+- **THE GENERAL ASSEMBLY IS A FORUM, AND FORUMS ARE CONTENT** (26 Sep,
+  `STATE_VERSION 33`; design/43, the author's decisions: the UN by name, the
+  Commonwealth a full member, the Union a caucus whose twenty-seven keep
+  their seats). `content/forums.js` declares a forum's members (votes, axes,
+  standing, cohesion, an `actor` to read and move), its dates and its
+  majority; resolutions are the world's there and a campaign's in its folder.
+  The engine names no forum. One verb, `{resolution:{<id>:"table"|
+  "withdraw"|"for"|"against"|"abstain"}}`, one namespace, `member.<id>`,
+  and one condition, `resolutionIs`. Four things measured on the way:
+  - **The effect verb tables whatever it names without the resolution's
+    `when`**, because the Union tables its own through the dilemma. A choice
+    that tables the Commonwealth's own carries the gate itself.
+  - **Chapter two's pool is saturated**: the heaviest of about twenty
+    eligible events wins, the median weight is 70, so a new event above
+    about 75 takes a sitting from the crisis and one below it never fires
+    (one run in 120). The Assembly's events are QUEUED by the choice that
+    makes them true. A queued sitting still displaces something: the Court's
+    question, queued after the Act, took the canon's thermal margin from 8 to
+    1, so it is the bondholders' notice's fourth answer and costs no sitting.
+    **Before adding an event to chapter two, ask what it displaces.**
+  - **Friction is a knife edge in an annexing run**: it feeds the thermal
+    drain, and +2 cascaded a playtest strategy that +3 did not. A new
+    consequence there is tried as legitimacy first.
+  - `tools/renametest.js` compared whole keys, so a missed `member.<id>` (or
+    `loyalty.`, `rel.`, `capital.`) rename could not be seen; it reads the id
+    after the dot now, and was proved by breaking the member finder.
 - **AN EVENT INSERTED MID-LIST CHANGES EVERY RUN.** The pool's seeded lean
   is keyed on an event's POSITION in `EVENTS` (so renaming preserves runs).
   Inserting two events before `f1_meltdown` moved three playtest strategies

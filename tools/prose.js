@@ -59,7 +59,8 @@ const HOME = {
   settlements: "content/settlements.js", actors: "content/actors.js",
   achievements: "content/achievements.js", sandbox: "content/events.js",
   scarcities: "content/setup.js", notice: "content/artifacts.js",
-  world: "content/world.js", tips: "js/tips.js"
+  world: "content/world.js", tips: "js/tips.js",
+  forums: "content/forums.js", resolutions: "content/forums.js"
 };
 
 /* THE WHITELIST, and it is a whitelist on purpose. Walking for "any long
@@ -70,7 +71,8 @@ const PROSE = new Set([
   "body", "title", "label", "text", "note", "result", "summary", "closing",
   "contested", "description", "tendency", "gloss", "grievance", "effect_note",
   "wire", "note_franchise", "head", "source", "said", "hint", "lede",
-  "epigraph", "caption", "blurb", "why", "asks", "answer", "question"
+  "epigraph", "caption", "blurb", "why", "asks", "answer", "question",
+  "whenText"
 ]);
 
 /* Keys whose value is a name or an id and never prose, even where the key

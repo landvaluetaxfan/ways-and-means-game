@@ -56,7 +56,11 @@ const Editor = (function () {
       administrations: clone(typeof ADMINISTRATIONS !== "undefined" ? ADMINISTRATIONS : []),
       /* the executive: its posts, and the orders they make */
       cabinet: clone(typeof CABINET !== "undefined" ? CABINET : []),
-      instruments: clone(typeof INSTRUMENTS !== "undefined" ? INSTRUMENTS : [])
+      instruments: clone(typeof INSTRUMENTS !== "undefined" ? INSTRUMENTS : []),
+      /* the chambers the Commonwealth sits in and does not command, and what
+         is put to them (design/43) */
+      forums: clone(typeof FORUMS !== "undefined" ? FORUMS : []),
+      resolutions: clone(typeof RESOLUTIONS !== "undefined" ? RESOLUTIONS : [])
     };
   }
 
@@ -89,6 +93,8 @@ const Editor = (function () {
       case "functional": return (M.functional || []).map(f => [f.id, f.name]);
       case "events": return M.events.map(e => [e.id, e.title]);
       case "settlements": return (M.settlements || []).map(x => [x.id, x.name]);
+      case "resolutions": return (M.resolutions || []).map(x => [x.id, x.title]);
+      case "resolutionActions": return (V.resolutionActions || []).map(v => [v, v]);
       /* the two families an award can ask about: a crisis result is kept in
          resolvedAs, an answer in settledAs, and neither is ever the other */
       case "crisisEndings": return (M.settlements || []).filter(x => x.crisis).map(x => [x.id, x.name]);
@@ -130,7 +136,11 @@ const Editor = (function () {
         .concat((typeof ACTORS !== "undefined" ? ACTORS : []).map(a => ["actor." + a.id, "actor · " + a.name]))
         .concat(lenders().map(([k, L]) => ["debt." + k, "owed to · " + (L.name || k)]))
         /* a loan: the reserve's side and the debt's at the day's rate */
-        .concat(lenders().map(([k, L]) => ["loan." + k, "borrow from · " + (L.name || k)]));
+        .concat(lenders().map(([k, L]) => ["loan." + k, "borrow from · " + (L.name || k)]))
+        /* a forum member's standing (design/43); the Commonwealth's own seat
+           has none toward itself */
+        .concat([].concat(...(M.forums || []).map(f => (f.members || []).filter(m => !m.self)
+          .map(m => ["member." + m.id, "member · " + m.name]))));
       default: return [];
     }
   }
@@ -385,8 +395,8 @@ const Editor = (function () {
          of Flash I's endings were drawn. */
       if (d.form === "map" && (!when[k] || typeof when[k] !== "object" || Array.isArray(when[k]) ||
           !Object.keys(when[k]).length ||
-          (d.vtype !== "stage" && d.vtype !== "any" &&
-           Object.values(when[k]).some(x => typeof x !== "number"))))
+          (wordsOf(d) ? Object.values(when[k]).some(x => typeof x !== "string")
+           : d.vtype !== "any" && Object.values(when[k]).some(x => typeof x !== "number"))))
         return raw(k, when[k]);
       if (d.form === "int" && typeof when[k] !== "number") return raw(k, when[k]);
       if (d.form === "bool" && typeof when[k] !== "boolean") return raw(k, when[k]);
@@ -402,7 +412,7 @@ const Editor = (function () {
         inner = Object.keys(when[k]).map(key => {
           const v = when[k][key];
           return `<span class="ed-pair">` + sel_("k", d.src, key) +
-            (d.vtype === "stage" ? sel_("v", SCHEMA.vocab.billStages, v)
+            (wordsOf(d) ? sel_("v", wordsOf(d), v)
              : d.vtype === "any" ? txt_("v", typeof v === "string" ? v : JSON.stringify(v), "value", 90)
              : num_("v", v, 70)) + `</span>`;
         }).join("") +
@@ -433,7 +443,7 @@ const Editor = (function () {
         when[k] = {};
         n.querySelectorAll(".ed-pair").forEach(pr => {
           const v = pr.querySelector('[data-f="v"]').value;
-          when[k][pr.querySelector('[data-f="k"]').value] = d.vtype === "stage" ? v : d.vtype === "any" ? any(v) : +v;
+          when[k][pr.querySelector('[data-f="k"]').value] = wordsOf(d) ? v : d.vtype === "any" ? any(v) : +v;
         });
       }
     });
@@ -2389,7 +2399,17 @@ const Editor = (function () {
     const d = SCHEMA.conditions[k], m = when && when[k];
     if (!d || !m) return;
     const free = vocab(d.src).map(([v]) => v).find(v => !(v in m));
-    if (free != null) m[free] = d.vtype === "stage" ? "committee" : 0;
+    if (free != null) m[free] = firstWord(d);
+  }
+
+  /* A MAP CONDITION WHOSE VALUE IS A WORD: a bill's stage, or since the
+     forums a resolution's status, each from its own list in the schema. */
+  function wordsOf(d) {
+    return d.vtype === "stage" ? SCHEMA.vocab.billStages
+      : d.vtype === "word" ? SCHEMA.vocab[d.words] || [] : null;
+  }
+  function firstWord(d) {
+    return d.vtype === "stage" ? "committee" : wordsOf(d) ? wordsOf(d)[0] : 0;
   }
 
   /* ADD A CONDITION to anything that carries a `when`: an event, an ending,
@@ -2401,7 +2421,7 @@ const Editor = (function () {
           target.when ||= {};
           const d = SCHEMA.conditions[k];
           target.when[k] = d.form === "int" ? 1 : d.form === "bool" ? true : d.form === "flagList" ? []
-                         : { [vocab(d.src)[0][0]]: d.vtype === "stage" ? "committee" : 0 };
+                         : { [vocab(d.src)[0][0]]: firstWord(d) };
         }
         draw();
       });

@@ -247,12 +247,21 @@ guard("THE FIVE TIERS (design/35)", ok => {
   };
   const t1 = tier({ legitimacy: 80, solvency: 45000, friction: 30 }, ["almanac_annexed"]);
   ok("critical triumph", (Engine.checkSettlement(t1, CONTENT) || {}).id === "f1_triumph");
-  const t2 = tier({ legitimacy: 60, solvency: 35000, friction: 30 }, ["almanac_annexed"]);
+  /* Two tiers go through the General Assembly (design/43): the charter needs
+     the World Court's opinion, which only the Assembly can ask for, and the
+     mandate needs the Assembly's administration. */
+  const t2 = tier({ legitimacy: 60, solvency: 35000, friction: 30 }, ["almanac_annexed", "icj_salvage"]);
   ok("maritime charter", (Engine.checkSettlement(t2, CONTENT) || {}).id === "f1_maritime");
+  const t2x = tier({ legitimacy: 60, solvency: 35000, friction: 30 }, ["almanac_annexed"]);
+  ok("and not without the Court's opinion", (Engine.checkSettlement(t2x, CONTENT) || {}).id !== "f1_maritime",
+     (Engine.checkSettlement(t2x, CONTENT) || {}).id);
   const t3 = tier({ legitimacy: 70, solvency: 30000, friction: 70 }, ["almanac_annexed"]);
   ok("sovereign debt trap", (Engine.checkSettlement(t3, CONTENT) || {}).id === "f1_pyrrhic");
-  const t4 = tier({ legitimacy: 35, solvency: 20000, friction: 30 }, ["f1_referendum_carried", "f1_held_the_line"]);
+  const t4 = tier({ legitimacy: 35, solvency: 20000, friction: 30 }, ["f1_referendum_carried", "f1_held_the_line", "un_administration"]);
   ok("joint mandate", (Engine.checkSettlement(t4, CONTENT) || {}).id === "f1_joint");
+  const t4x = tier({ legitimacy: 35, solvency: 20000, friction: 30 }, ["f1_referendum_carried", "f1_held_the_line"]);
+  ok("and not without the Assembly's administration", (Engine.checkSettlement(t4x, CONTENT) || {}).id !== "f1_joint",
+     (Engine.checkSettlement(t4x, CONTENT) || {}).id);
   const t5 = tier({ legitimacy: 30, solvency: 50000, friction: 20 }, ["f1_surveyed", "f1_referendum_declined"]);
   ok("corporate re-entry, once the referendum is declined", (Engine.checkSettlement(t5, CONTENT) || {}).id === "f1_capitulation");
   /* THE QUESTION LEFT OPEN (design/40 E10): late, and only for a government
@@ -795,6 +804,89 @@ guard("MUTUAL VULNERABILITY: THE RELAYS (design/35)", ok => {
   Engine.choose(g, CONTENT, ev, 1);
   ok("and when Earth gives way the quarrel eases and the relays come back on",
      g.scalars.friction < f0 && !g.flags.relays_held, f0 + " -> " + g.scalars.friction);
+});
+
+guard("THE GENERAL ASSEMBLY (design/43)", ok => {
+  /* The Assembly first sits after the dilemma, so nothing the government
+     tables can be voted before the crisis is on the table. */
+  const g = Engine.newGame(CONTENT);
+  const first = g.forums.un_ga && g.forums.un_ga.next;
+  let firstSitting = null;
+  for (let n = 1; first && n < 200 && firstSitting == null; n++) if (Engine.dateOfSitting(CONTENT, n) >= first) firstSitting = n;
+  /* The dilemma is chained, not dated, so its sitting is measured by play,
+     as the chain's own guard measures it. */
+  let dilemma = null;
+  const c = Engine.newGame(CONTENT);
+  for (let i = 0; i < 40 && dilemma == null; i++) {
+    const e = Engine.nextEvent(c, CONTENT);
+    if (e && e.id === "f1_dilemma") dilemma = c.sitting;
+    if (e) Engine.choose(c, CONTENT, e, 0);
+    Engine.advance(c, CONTENT);
+  }
+  ok("the Assembly first sits after the dilemma", dilemma != null && firstSitting > dilemma,
+     first + " is sitting " + firstSitting + ", the dilemma " + dilemma);
+
+  /* 194 votes: the Commonwealth among the United Nations' 193. */
+  const un = CONTENT.forumById.un_ga;
+  const votes = un.members.reduce((n, m) => n + (m.votes || 1), 0);
+  ok("the Commonwealth is one vote in a hundred and ninety-four",
+     votes === 194 && un.members.filter(m => m.self).length === 1, votes + " votes");
+
+  /* The count listens to the quarrel: a Commonwealth that keeps friction
+     down carries its own, and one deep in it loses them. Measured from the
+     opening, not asserted of an exact number. */
+  const count = (fr, id) => { const s = Engine.newGame(CONTENT); s.scalars.friction = fr; return Engine.forumCount(s, CONTENT, id); };
+  ok("the self-determination resolution carries at the opening's friction and fails at eighty",
+     count(g.scalars.friction, "un_works_selfdet").carries && !count(80, "un_works_selfdet").carries);
+  ok("and the Union's measures the other way round",
+     !count(g.scalars.friction, "un_eu_measures").carries && count(80, "un_eu_measures").carries);
+  ok("the Union's twenty-seven keep their seats and most of them vote its line",
+     (() => { const r = count(50, "un_eu_measures").rows.find(x => x.id === "eu_caucus");
+              return r.yes + r.no + r.abstain === 27 && r.yes >= 20; })());
+
+  /* Standing is the diplomatic lever: working the floor moves a count. */
+  const w = Engine.newGame(CONTENT); w.scalars.friction = 58;
+  const before = Engine.forumCount(w, CONTENT, "un_works_selfdet");
+  Engine.apply(w, CONTENT, [{ move: { "member.african_group": 10, "member.latin_american_group": 10, "member.asia_pacific_group": 10 } }]);
+  const after = Engine.forumCount(w, CONTENT, "un_works_selfdet");
+  ok("raising the groups' standing turns votes toward the Commonwealth",
+     after.yes - after.no > before.yes - before.no, (before.yes - before.no) + " -> " + (after.yes - after.no));
+
+  /* A resolution the government sponsors is tabled only when its gate holds;
+     the Union's is not the government's to table. */
+  const t = Engine.newGame(CONTENT);
+  ok("the Court's question cannot be tabled before the Act is law", !Engine.canTable(t, CONTENT, "un_icj_salvage").ok);
+  ok("and the Union's resolution is never the government's to table", !Engine.canTable(t, CONTENT, "un_eu_measures").ok);
+
+  /* THE MARITIME CHARTER'S ROUTE, BY PLAY: the Act is law, the question is
+     tabled, the Assembly sits and asks, and the Court answers four sittings
+     on for a Commonwealth the world believes. The loop does not stop at an
+     end: choosing the first option every time loses supply at the first
+     rise, and the calendar is what is under test. Friction is held at 35,
+     where the charter lives (it needs under forty): a first-option run drifts
+     to sixty by the sitting, and there the question fails, as it should. */
+  const p = Engine.newGame(CONTENT);
+  p.flags.almanac_annexed = true;
+  const tabled = Engine.table(p, CONTENT, "un_icj_salvage");
+  ok("with the Act law the government tables the Court's question", tabled.ok, tabled.reason);
+  let opinion = null;
+  for (let i = 0; i < 40 && !opinion; i++) {
+    const e = Engine.nextEvent(p, CONTENT);
+    if (e && e.id === "f1_icj_opinion") { opinion = e; break; }
+    if (e) Engine.choose(p, CONTENT, e, 0);
+    p.scalars.friction = 35;
+    Engine.advance(p, CONTENT);
+  }
+  const rs = p.resolutions.un_icj_salvage;
+  ok("the Assembly decides it at its first sitting", rs.status !== "tabled" && rs.decided &&
+     rs.decided.date === first, JSON.stringify({ status: rs.status, decided: rs.decided && rs.decided.date }));
+  ok("and asks the Court, whose opinion arrives", rs.status === "adopted" && !!opinion,
+     rs.status + (rs.decided ? " " + rs.decided.yes + "-" + rs.decided.no : ""));
+  if (opinion) {
+    p.scalars.legitimacy = 60;
+    Engine.choose(p, CONTENT, opinion, 0);
+    ok("and finds the salvage lawful for a Commonwealth the world believes", !!p.flags.icj_salvage);
+  }
 });
 
 console.log("");

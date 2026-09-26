@@ -94,7 +94,10 @@ wire."`,
                { move:{ "legitimacy":8 } },
                { wire:"FEDERATION RECOGNISES THE PLATFORM REFERENDUM" },
                { queue:[{ event:"f1_dilemma", after:3,
-                          label:"Law and the Charter reports on the platform" }] }],
+                          label:"Law and the Charter reports on the platform" }] },
+               /* the mission in New York, before the dilemma: one way out
+                  of it runs through the General Assembly (design/43) */
+               { queue:[{ event:"un_the_mission", after:2 }] }],
       result:"The Works is the Commonwealth's question now, and Earth's banks are reading the same wire." },
     { posture:"cautious", label:"Decline to recognise it.",
       effects:[{ move:{ "legitimacy":-8 } }, { move:{ "friction":-3 } }, { flag:"f1_referendum_declined" }],
@@ -138,6 +141,12 @@ Neither future is a vote the government can lose quietly.`,
          is not balanced, it is coincident. */
       effects:[{ flag:"f1_annexing" }, { move:{ "friction":14 } },
                { move:{ "trend.friction":3 } },
+               /* THE UNION ANSWERS AT THE GENERAL ASSEMBLY (design/43), and
+                  does not wait for an event to be drawn: it tables its
+                  measures for the Assembly's next sitting the day the
+                  government moves. `un_eu_tables` is the government's reply. */
+               { resolution:{ un_eu_measures:"table" } },
+               { queue:[{ event:"un_eu_tables", after:1 }] },
                { move:{ "solvency":-6000 } }, { move:{ "legitimacy":12 } },
                { bill:{ annexation:{ stage:"first_reading" } } },
                /* AND THE HOUSE WILL SIT FOR IT. Six slots is the whole
@@ -156,7 +165,8 @@ Neither future is a vote the government can lose quietly.`,
                { wire:"GOVERNMENT MOVES TO ANNEX THE WORKS" }],
       result:"The annexation bill is set down. Acting is popular at home; Earth notices, a little more, every sitting." },
     { posture:"cautious", label:"Hold the line.",
-      effects:[{ move:{ "trend.legitimacy":-3 } }, { move:{ "friction":-4 } }, { flag:"f1_held_the_line" }],
+      effects:[{ move:{ "trend.legitimacy":-3 } }, { move:{ "friction":-4 } }, { flag:"f1_held_the_line" },
+               { queue:[{ event:"un_joint_offer", after:1 }] }],
       result:"The outer habitats have heard the answer, and they will repeat it back every sitting." }
   ]},
 
@@ -729,7 +739,156 @@ Until it is cured, the agent will fund no drawing, and anything already drawn ca
       effects:[{ move:{ solvency:-7000, friction:-4, legitimacy:-3, "actor.earth_bloc":5 } },
                { flag:"works_bond_paid" },
                { wire:"COMMONWEALTH PAYS THE ALMANAC WORKS BONDHOLDERS; BRUSSELS NOTES THE PAYMENT" }],
-      result:"The bond is paid out of the reserve, the notice is withdrawn, and Brussels acknowledges it in one sentence." }
+      result:"The bond is paid out of the reserve, the notice is withdrawn, and Brussels acknowledges it in one sentence." },
+    /* THE WORLD COURT'S QUESTION (design/43), answered here and not in an
+       event of its own: a sitting spent on it the day after the Act took the
+       canon's thermal margin from eight to one, by moving which event the
+       ladder's rungs arrived on. Appended, so the canon's first choice and
+       every positional strategy keep their picks. */
+    { posture:"bold", label:"Dispute it, and ask the General Assembly to ask the World Court.",
+      when:{ resolutionIs:{ un_icj_salvage:"draft" } },
+      effects:[{ flag:"standby_default" },
+               { resolution:{ un_icj_salvage:"table" } },
+               { wire:"COMMONWEALTH SEEKS A WORLD COURT OPINION ON ORBITAL SALVAGE" }],
+      result:"The facility is closed until the notice is withdrawn. At the Assembly's next sitting the Commonwealth asks it to put one question to the International Court of Justice: whether a state that rescues a platform's people may take the platform. If the Assembly asks, the Court answers four sittings later." }
+  ]},
+
+
+/* =============================================================
+   THE GENERAL ASSEMBLY (design/43). Appended at the end of the list,
+   because the seeded lean is keyed on position. The first choice of each
+   is the one the canon script takes, so the first is the one that moves
+   the least: the canon government waits at the mission and does not work
+   the floor against the Union.
+   ============================================================= */
+
+/* THE TEACHING BEAT, one concept cluster: the Assembly, a resolution, and
+   the count. It fires once the referendum is recognised, which is when the
+   Commonwealth first has something to ask the world for. */
+/* THE ASSEMBLY'S EVENTS ARE QUEUED, NOT DRAWN (design/43). Chapter two's
+   pool is over-subscribed and takes the heaviest eligible event: at weights
+   78-85 these took the emergency loan's and the anchor state's sittings and
+   moved every playtest strategy, and at 50-60 they fired in one run of 120.
+   Each is queued by the choice that makes it true, as the chain is, and
+   takes one sitting at a known moment. */
+{ id:"un_the_mission", chapter:2, queuedOnly:true, once:true,
+  title:"One vote in a hundred and ninety-four",
+  speaker:"landry",
+  body:`The Commonwealth's mission in New York has sent its first cable since the
+referendum, and Jean Landry reads it aloud.
+
+The General Assembly sits every three weeks through the summer. A resolution
+tabled before a sitting is voted at it: a majority of the states present and
+voting carries it, and abstentions count for nothing. The Commonwealth has one
+vote. The European Union's twenty-seven vote on a line their ministers agree in
+Brussels, and most of them keep to it. The rest of the world votes by region,
+and each region by what it thinks of the Commonwealth.
+
+"The mission can table a resolution affirming the Works' right to decide its
+own future," Landry says. "The count is on the Foreign Affairs tab. It moves
+with everything this government does between now and the sitting."`,
+  choices:[
+    { posture:"cautious", label:"Wait. The referendum can speak for itself.",
+      result:`The draft stays in the mission's safe. It can be tabled from the Foreign Affairs tab before any sitting.` },
+    { posture:"bold", label:"Table it now.",
+      effects:[{ resolution:{ un_works_selfdet:"table" } },
+               { wire:"COMMONWEALTH TABLES A RESOLUTION ON THE WORKS AT THE UNITED NATIONS" }],
+      result:`The resolution is tabled for the Assembly's next sitting. The Union's mission asks for a copy within the hour.` },
+    { posture:"measured", label:"Table it, and write to the anchor states first.",
+      effects:[{ resolution:{ un_works_selfdet:"table" } },
+               { move:{ solvency:-1500 } },
+               { move:{ "member.sao_tome":6, "member.kiribati":6, "member.brazil":6,
+                        "member.maldives":6, "member.somalia":6, "member.uganda":6 } },
+               { wire:"COMMONWEALTH TABLES A RESOLUTION ON THE WORKS AND REMITS ANCHOR FEES" }],
+      result:`Six capitals receive a letter and a quarter's anchor fees back, and the resolution is tabled for the next sitting.` }
+  ]},
+
+/* THE UNION TABLES ITS OWN once the government moves to annex (the
+   dilemma's choice does it, and queues this the sitting after), and this is
+   the government's reply while it is still on the agenda: the Assembly first
+   sits some four sittings later. */
+{ id:"un_eu_tables", chapter:2, queuedOnly:true, once:true,
+  title:"The Union's resolution",
+  speaker:"landry",
+  body:`The European Union has tabled a resolution at the General Assembly calling
+on every member state to keep its measures in place until the Works'
+bondholders are paid. The Union's twenty-seven will vote for it, the
+Commonwealth will vote against, and the rest of the Assembly will decide it.
+
+"It says 'compensation' four times and 'residents' once," Landry says. "It is
+written to be voted for by delegates who have not read it."`,
+  choices:[
+    { posture:"cautious", label:"Vote against it and leave the floor to the Union.",
+      result:`The Commonwealth's vote is recorded against. The rest of the count is the Assembly's.` },
+    { posture:"measured", label:"Work the floor against it.",
+      effects:[{ move:{ solvency:-2500 } },
+               { move:{ "member.african_group":8, "member.latin_american_group":8,
+                        "member.asia_pacific_group":6 } },
+               { wire:"COMMONWEALTH MISSION WORKS THE ASSEMBLY AGAINST THE UNION'S RESOLUTION" }],
+      result:`The mission spends three weeks in the delegates' lounge, and the Treasury offers compute at cost to the capitals that ask. The count moves.` },
+    { posture:"bold", label:"Answer it with the Commonwealth's own.",
+      when:{ flags:["f1_referendum_carried"], resolutionIs:{ un_works_selfdet:"draft" } },
+      effects:[{ resolution:{ un_works_selfdet:"table" } }, { move:{ friction:2 } },
+               { wire:"COMMONWEALTH ANSWERS THE UNION WITH A RESOLUTION ON THE WORKS' RESIDENTS" }],
+      result:`Both resolutions go to the same sitting, and the delegates are asked to choose between the Works' residents and its bondholders on one afternoon.` }
+  ]},
+
+/* THE WORLD COURT'S ANSWER, four sittings after the Assembly asks. Which
+   way it goes is the state's: the Court reads a Commonwealth the world
+   believes. */
+{ id:"f1_icj_opinion", queuedOnly:true, once:true,
+  title:"The Court's opinion",
+  speaker:"fenwick",
+  body:`The International Court of Justice has given its advisory opinion on the
+salvage of abandoned orbital platforms. It runs to sixty pages, and Adaeze
+Fenwick has read the last four first.`,
+  choices:[
+    { label:"The Court finds the salvage lawful.",
+      when:{ scalarAbove:{ legitimacy:49 } },
+      effects:[{ flag:"icj_salvage" }, { move:{ legitimacy:4 } }, { move:{ friction:-4 } },
+               { wire:"WORLD COURT: A STATE THAT RESCUES A PLATFORM'S PEOPLE MAY TAKE THE PLATFORM" }],
+      result:`The Court finds that a state which rescues the residents of an abandoned platform may take the platform as salvage. Earth's courts are not bound by an advisory opinion, and every one of them will read it.` },
+    { label:"The Court finds for the bondholders.",
+      when:{ scalarBelow:{ legitimacy:50 } },
+      effects:[{ flag:"icj_bondholders" }, { move:{ friction:5 } }, { move:{ legitimacy:-3 } },
+               { wire:"WORLD COURT: THE WORKS' BONDS SURVIVE THE RESCUE" }],
+      result:`The Court finds that the rescue does not extinguish the bondholders' claim, and the Union's mission circulates the paragraph that says so before lunch.` }
+  ]},
+
+/* THE MISSION REPORTS, the answer to working the floor. */
+{ id:"un_floor_report", queuedOnly:true,
+  title:"The mission reports",
+  speaker:"landry",
+  effects:[{ flag:{ un_floor_working:false } }],
+  body:`The mission's cable is two pages: who was seen, what was offered, and which
+delegations now answer the Commonwealth's calls on the first ring. The count on
+the Foreign Affairs tab has the rest.`,
+  choices:[
+    { label:"Noted.",
+      result:`The cable is filed with the others. The mission can be sent again.` }
+  ]},
+
+
+/* THE TWO ROUTES THE ENDINGS NOW TAKE (design/43), each offered once the
+   state allows it; the tab's Table control offers the same at any time. */
+{ id:"un_joint_offer", chapter:2, queuedOnly:true, once:true,
+  title:"Kenya's proposal",
+  speaker:"landry",
+  body:`Kenya's foreign ministry has proposed a middle course by cable. The Works
+would be administered jointly by the United Nations and the Commonwealth as a
+free trade zone, its residents would keep their Earth passports and gain
+Commonwealth protection, and nobody would own the platform until they decide
+who should.
+
+"It needs two thirds of the Assembly," Landry says. "Kenya will vote for it.
+Whether anybody else does depends on what we are seen to want."`,
+  choices:[
+    { posture:"cautious", label:"Thank Kenya and keep the proposal in the drawer.",
+      result:`The proposal is acknowledged and not tabled. It can be tabled from the Foreign Affairs tab before any sitting.` },
+    { posture:"bold", label:"Table it as the Commonwealth's own.",
+      effects:[{ resolution:{ un_works_administration:"table" } }, { move:{ "actor.earth_host":4 } },
+               { wire:"COMMONWEALTH TABLES A JOINT ADMINISTRATION OF THE WORKS AT THE UNITED NATIONS" }],
+      result:`The resolution is tabled for the Assembly's next sitting, with Kenya's name beside the Commonwealth's.` }
   ]},
 
 ] });

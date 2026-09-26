@@ -11,11 +11,12 @@ const SCHEMA = {
   effects: {
     /* ONE VERB for every clamp-and-add against a keyed table. The target
        is namespaced: a bare key is a scalar, otherwise loyalty. / rel. /
-       price. / capital. / trend. / standing. / actor. / debt. — so the
+       price. / capital. / trend. / standing. / actor. / debt. / member. — so the
        editor offers one picker rather than eight near-identical verbs.
        `debt.<lender>` is what is owed to a lender in setup.lenders; a loan
        is that AND a move of solvency, written as two. See js/engine.js
-       EFFECTS.move. */
+       EFFECTS.move. `member.<id>` is a forum member's standing toward the
+       Commonwealth (design/43); a member with an actor moves the actor. */
     move:        { label:"Move a number", args:[
                    {k:"key",   type:"enum", src:"moveTargets", label:"Target"},
                    {k:"delta", type:"int",  label:"Change", hint:"+ or −"}],
@@ -43,6 +44,15 @@ const SCHEMA = {
                    {k:"key", type:"enum", src:"economyKeys", label:"Measure"},
                    {k:"delta", type:"num", label:"Change"}],
                    shape:"keyed" },
+    /* THE FORUMS (design/43). "table" puts a resolution on its forum's
+       agenda whoever sponsors it (the Union tables its own through an
+       event); a choice that tables the Commonwealth's own should carry the
+       resolution's `when`, since an effect does not check it. "for",
+       "against" and "abstain" set the Commonwealth's vote. */
+    resolution:  { label:"Act on a forum resolution", args:[
+                   {k:"key", type:"enum", src:"resolutions", label:"Resolution"},
+                   {k:"value", type:"enum", src:"resolutionActions", label:"Action"}],
+                   shape:"keyedSet" },
     law:         { label:"Set a law value", args:[
                    {k:"key", type:"enum", src:"laws", label:"Law"},
                    {k:"value", type:"any", label:"New value"}],
@@ -114,6 +124,9 @@ const SCHEMA = {
     loyaltyAbove: { label:"Loyalty above",             form:"map", src:"loyaltyTargets", vtype:"int" },
     loyaltyBelow: { label:"Loyalty below",             form:"map", src:"loyaltyTargets", vtype:"int" },
     billStage:    { label:"Bill is at stage",          form:"map", src:"bills", vtype:"stage" },
+    /* a value may be one status or a list of them, which the editor keeps
+       as JSON */
+    resolutionIs: { label:"Resolution is",             form:"map", src:"resolutions", vtype:"word", words:"resolutionStatuses" },
     priceAbove:     { label:"Price above",             form:"map", src:"prices", vtype:"int" },
     priceBelow:     { label:"Price below",             form:"map", src:"prices", vtype:"int" },
     capitalAbove:   { label:"Debt above",              form:"map", src:"parties", vtype:"int" },
@@ -198,6 +211,10 @@ const SCHEMA = {
             personhood:  { min:-1, max:1, low:"restrictionist", high:"expansionist" },
             sovereignty: { min:-1, max:1, low:"station",        high:"federal" },
             trade:       { min:-1, max:1, low:"closurist",      high:"integrationist" } },
+    /* A FORUM RESOLUTION'S LIFE (design/43): drafted in content, tabled for
+       the forum's next sitting, decided there, or withdrawn before it. */
+    resolutionStatuses: ["draft","tabled","adopted","rejected","withdrawn"],
+    resolutionActions: ["table","withdraw","for","against","abstain"],
     economyKeys: ["participation","trade","private",
                   "credibility","expected","inflation","shock","fx","reserves","rate"],
     /* what a condition may read: the productive economy's three, the Bank's

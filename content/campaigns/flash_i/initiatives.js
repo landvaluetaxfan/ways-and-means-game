@@ -233,4 +233,32 @@ campaign("flash_i", { initiatives: [
                    { move: { legitimacy: -4, friction: -3, "loyalty.gb": 4 } } ] }
     ] },
 
+
+  /* WORKING THE FLOOR IN NEW YORK (design/43): standing with the
+     Assembly's members, bought with something real. One at a time; the
+     mission's report ends it. */
+  { id: "work_the_floor",
+    title: "Work the floor at the General Assembly",
+    note: "The mission in New York can move votes before a sitting, and every way of doing it costs the Commonwealth something it has.",
+    cost: 0,
+    when: { flags: ["station_issue"], flagsAbsent: ["un_floor_working"] },
+    event: "un_floor_report",
+    tempo: [
+      { label: "Remit the anchor states' fees for a quarter", after: 1,
+        effects: [ { flag: "un_floor_working" }, { move: { solvency: -3000 } },
+                   { move: { "member.brazil": 8, "member.indonesia": 8, "member.sao_tome": 8,
+                             "member.colombia": 8, "member.somalia": 8, "member.kiribati": 8,
+                             "member.uganda": 8, "member.ecuador": 8, "member.maldives": 8,
+                             "member.kenya": 4 } } ] },
+      { label: "Offer compute at cost to the African, Asian and Latin American groups", after: 2,
+        effects: [ { flag: "un_floor_working" }, { economy: { trade: -3 } },
+                   { move: { "member.african_group": 10, "member.asia_pacific_group": 10,
+                             "member.latin_american_group": 10 } } ] },
+      { label: "Send the Foreign Minister to speak in the Assembly", after: 1, cost: 1,
+        effects: [ { flag: "un_floor_working" },
+                   { move: { "member.african_group": 4, "member.asia_pacific_group": 4,
+                             "member.latin_american_group": 4, "member.eastern_european_group": 4,
+                             "member.western_group": 4, "member.eu_caucus": 3 } } ] }
+    ] },
+
 ] });

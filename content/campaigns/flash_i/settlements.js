@@ -66,7 +66,10 @@ campaign("flash_i", { settlements: [
     summary: "International courts recognise salvage rights. The Works becomes Commonwealth territory in law.",
     closing: "The courts recognise the salvage, and the platform is Commonwealth territory in law. " +
              "The legal and administrative bill is heavy, and so is the trust it bought.",
-    when: { flags: ["almanac_annexed"],
+    /* AND THE COURTS HAVE SAID SO (design/43): "international courts
+       recognise salvage rights" is the World Court's opinion, which only
+       the General Assembly can ask for. */
+    when: { flags: ["almanac_annexed", "icj_salvage"],
             scalarAbove: { legitimacy: 55, solvency: 30000 },
             scalarBelow: { friction: 40 } } },
   { id: "f1_pyrrhic", rank: 2, crisis: true,
@@ -87,7 +90,9 @@ campaign("flash_i", { settlements: [
        random government that carried the referendum was under the old
        floors (legitimacy 15 to 38, reserve 17,600 to 37,100), and a joint
        mandate over a platform the House had annexed read as nothing. */
-    when: { flags: ["f1_referendum_carried", "f1_held_the_line"], flagsAbsent: ["almanac_annexed"],
+    /* AND THE ASSEMBLY HAS VOTED IT (design/43): a co-administered zone
+       is a United Nations administration, adopted by two thirds. */
+    when: { flags: ["f1_referendum_carried", "f1_held_the_line", "un_administration"], flagsAbsent: ["almanac_annexed"],
             scalarAbove: { legitimacy: 25, solvency: 15000, friction: 20 },
             scalarBelow: { legitimacy: 60, friction: 60 } } },
   { id: "f1_capitulation", rank: 4, crisis: true,

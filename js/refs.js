@@ -30,11 +30,13 @@ const Refs = (function () {
      these names, a gate under `when` -- so prose is never touched. */
   /* `opening`: an administration's effects at the first sitting, since the
      editor writes the campaign record (25 Sep) */
-  const EFFECT_KEYS = ["effects", "onPass", "onFail", "reverse", "political_cost", "onSign", "close", "opening"];
+  /* `onTable`: a forum resolution's, beside its onPass and onFail (design/43) */
+  const EFFECT_KEYS = ["effects", "onPass", "onFail", "onTable", "reverse", "political_cost", "onSign", "close", "opening"];
   const COLLECTIONS = [["events", "event"], ["bills", "bill"], ["instruments", "instrument"],
     ["initiatives", "initiative"], ["minutes", "minute"], ["cabinet", "cabinet"],
     ["settlements", "settlement"], ["business", "business"], ["actors", "actor"],
-    ["achievements", "achievement"], ["administrations", "administration"]];
+    ["achievements", "achievement"], ["administrations", "administration"],
+    ["resolutions", "resolution"]];
   function walkModel(M, visit) {
     const go = (o, where) => {
       if (!o || typeof o !== "object") return;
@@ -329,7 +331,48 @@ const Refs = (function () {
     return hits;
   }
 
+  /* ---------- the forums (design/43) ----------
+     A resolution is named by the verb that acts on it and the condition
+     that reads its status. A forum is named by the resolutions put to it.
+     A member is named by the moves on its standing, by the resolutions it
+     sponsors and by any vote a resolution fixes for it. */
+  function resolutionRefs(M, id) {
+    const hits = [];
+    eachEffect(M, (eff, where) => {
+      if (eff.resolution && eff.resolution[id] !== undefined)
+        hits.push({ where: where + " · resolution", apply: to => renameKey(eff.resolution, id, to) });
+    });
+    eachCondition(M, (w, where) => {
+      if (w.resolutionIs && w.resolutionIs[id] !== undefined)
+        hits.push({ where: where + " · resolutionIs", apply: to => renameKey(w.resolutionIs, id, to) });
+    });
+    prose(M, "resolution_" + id, hits, "resolution_");
+    return hits;
+  }
+  function forumRefs(M, id) {
+    const hits = [];
+    (M.resolutions || []).forEach(r => {
+      if (r.forum === id) hits.push({ where: `resolution ${r.id} · forum`, apply: to => r.forum = to });
+    });
+    prose(M, "forum_" + id, hits, "forum_");
+    return hits;
+  }
+  function memberRefs(M, id) {
+    const hits = [];
+    eachEffect(M, (eff, where) => {
+      if (eff.move && eff.move["member." + id] !== undefined)
+        hits.push({ where: where + " · move", apply: to => renameKey(eff.move, "member." + id, "member." + to) });
+    });
+    (M.resolutions || []).forEach(r => {
+      if (r.sponsor === id) hits.push({ where: `resolution ${r.id} · sponsor`, apply: to => r.sponsor = to });
+      if (r.stances && r.stances[id] !== undefined)
+        hits.push({ where: `resolution ${r.id} · stance`, apply: to => renameKey(r.stances, id, to) });
+    });
+    return hits;
+  }
+
   const FINDERS = {
+    resolutions: resolutionRefs, forums: forumRefs, members: memberRefs,
     parties: partyRefs, stations: stationRefs, bills: billRefs,
     events: eventRefs, characters: characterRefs, currents: currentRefs,
     settlements: settlementRefs, initiatives: () => [], achievements: () => [],
