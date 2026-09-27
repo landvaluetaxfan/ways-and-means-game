@@ -1407,6 +1407,25 @@ try {
   ok("and a pick on the globe gives the window back to the country",
      !w.document.querySelector("#w-side .ga-mt") && !row("un_eu_measures").classList.contains("sel"),
      $("#w-sel-hdr").textContent);
+  /* EVERY COUNTRY HAS A PAGE, not only the twelve hosts (design/45): its
+     description, and the member of the Assembly it votes through with that
+     member's live standing. Chile is a group member and no host; Kenya
+     holds its own seat and reads its standing from an actor. */
+  const chl = w.eval("((WORLD.states || {}).CHL || {}).note") || "";
+  w.eval("World.select('CHL')");
+  const side = $("#w-side").textContent;
+  ok("a country that hosts no anchor shows its description",
+     !!chl && side.indexOf(chl.slice(0, 40)) >= 0, side.slice(0, 80));
+  ok("and the Assembly bloc it votes in, with the bloc's standing",
+     /In the General Assembly/.test(side) && /Latin American and Caribbean Group, whose 30 votes/.test(side) &&
+     /standing toward the Commonwealth is \d+ out of 100/.test(side),
+     (side.match(/In the General Assembly.{0,160}/) || ["none"])[0]);
+  w.eval("World.select('KEN')");
+  ok("an anchor host votes in its own seat",
+     /Kenya holds its own seat in the General Assembly and casts one vote/.test($("#w-side").textContent),
+     ($("#w-side").textContent.match(/In the General Assembly.{0,120}/) || ["none"])[0]);
+  ok("France's outline carries its code, so Kourou's host can be clicked",
+     !!w.document.querySelector('#world-svg path.w-c[data-iso="FRA"]'));
   w.document.querySelector('.tab[data-t="sit"]').click();
   for (let i = 0; i < 2; i++) w.document.querySelector('#sit-cal [data-cal="1"]').click();
   const cal = $("#sit-cal").innerHTML;

@@ -1261,6 +1261,25 @@ try {
 } catch (e) { briefBad.push("could not read the briefing: " + e.message); }
 n += section("A BRIEFING FIGURE THE ENGINE DOES NOT FILL", briefBad, x => x);
 
+/* A COUNTRY VOTES THROUGH A MEMBER THAT EXISTS. `ga` on a state in
+   content/world.js names the General Assembly member it votes through, and
+   the Foreign Affairs panel looks it up among every forum's members and
+   prints nothing when it finds none, so a misspelt bloc would drop the line
+   from that country's page without a word. */
+const gaBad = [];
+try {
+  const CX = LC.loadContent();
+  const members = new Set();
+  (CX.forums || []).forEach(f => (f.members || []).forEach(m => members.add(m.id)));
+  const states = ((CX.world || {}).states) || {};
+  Object.keys(states).forEach(iso => {
+    const g = states[iso].ga;
+    if (g != null && !members.has(g))
+      gaBad.push("world.states." + iso + ".ga names " + g + ", which is no forum's member");
+  });
+} catch (e) { gaBad.push("could not read the world's states: " + e.message); }
+n += section("A COUNTRY THAT VOTES THROUGH NO MEMBER", gaBad, x => x);
+
 /* THE EDITOR LOADS WHAT THE GAME LOADS. Two pages each name the content
    files, and the editor had fallen three behind: it could not see an
    initiative, a minute or an award, so its rename dialog could not warn
@@ -1290,6 +1309,7 @@ if (pageBad.length) R.push(`${pageBad.length} CONTENT FILES THE EDITOR DOES NOT 
 if (retiredBad.length) R.push(`${retiredBad.length} RETIRED NAMES IN THE PROSE`);
 if (seatBad.length) R.push(`${seatBad.length} CONSTITUENCY PROSE FAULTS`);
 if (briefBad.length) R.push(`${briefBad.length} BRIEFING FIGURES THE ENGINE DOES NOT FILL`);
+if (gaBad.length) R.push(`${gaBad.length} COUNTRIES THAT VOTE THROUGH NO MEMBER`);
 if (popBad.length) R.push("THE POPULATION IS STORED TWICE AND HAS DRIFTED (advisory)");
 console.log(R.join("\n"));
 /* HARD FAILURES: everything except popBad. The chain is one of them now —
@@ -1302,4 +1322,5 @@ console.log(R.join("\n"));
 if (artBad.length || chainBad.length || cssBad.length || verbBad.length ||
     parseBad.length || initBad.length || gridBad.length || targetBad.length ||
     labelBad.length || gateBad.length || refBad.length || campBad.length ||
-    pageBad.length || retiredBad.length || seatBad.length || briefBad.length) process.exit(1);
+    pageBad.length || retiredBad.length || seatBad.length || briefBad.length ||
+    gaBad.length) process.exit(1);

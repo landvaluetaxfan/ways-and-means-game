@@ -30,6 +30,19 @@ const World = (function () {
                  anchor: null, zoom: 1 };
   let W = 720, H = 480, R = 200;
 
+  /* THREE OUTLINES CAME WITHOUT A CODE. Natural Earth leaves the ISO field
+     blank for France, Norway and Kosovo (the first two for their overseas
+     parts, the third for its status), so their paths were drawn with an
+     empty `data-iso` and a click on them selected nothing. France's outline
+     carries French Guiana, where the Kourou anchor stands, so the host of a
+     tether could not be selected from its own ground. The file is generated
+     and is not edited by hand; the codes are given here, once, as it loads.
+     Northern Cyprus and Somaliland stay blank on purpose: the Commonwealth
+     has no view on either, and a code would claim one. */
+  const ISO_BY_NAME = { France: "FRA", Norway: "NOR", Kosovo: "XKX" };
+  if (typeof WORLD_COUNTRIES !== "undefined")
+    WORLD_COUNTRIES.forEach(c => { if (!c.i && ISO_BY_NAME[c.n]) c.i = ISO_BY_NAME[c.n]; });
+
   function set(state, content) { st = state; C = content; }
 
   /* ZOOM WAS PLUMBED AND NEVER DRIVEN. `view.zoom` is read in four places —

@@ -5845,8 +5845,37 @@ const UI = (function () {
           `Wants: ${esc(a.asks || "something unstated")}.</div>`;
       }
       if (s.markets) h += `<div class="rulehead">What it sells</div><div class="note">${esc(s.markets)}</div>`;
+      h += worldAssemblyHTML(s, cName);
     }
     return h;
+  }
+
+  /* WHERE A STATE VOTES. Every country the globe can select sits in the
+     General Assembly, most of them inside a group the mission counts as one
+     bloc, and `ga` in content/world.js names the member it votes through.
+     The standing is that member's, read live, because it is the figure the
+     count of every resolution turns on: a country the player clicks for its
+     description learns in the same panel which lever reaches it. */
+  function worldAssemblyHTML(s, name) {
+    if (!s.ga) return "";
+    let f = null, m = null;
+    (C.forums || []).some(x => (m = (x.members || []).find(y => y.id === s.ga)) && (f = x));
+    if (!f || !m) return "";
+    const sd = Engine.memberStanding(st, C, f, m);
+    const n = m.votes || 1;
+    const mn = String(m.name || m.id);
+    const bloc = mn.charAt(0).toLowerCase() + mn.slice(1);
+    const where = cxlink("forum_" + f.id, f.short || f.name);
+    const t = n === 1
+      ? `${esc(name)} holds its own seat in the ${where} and casts one vote. ` +
+        `Its standing toward the Commonwealth is ${sd} out of 100, where 50 is indifferent.`
+      : `${esc(name)} votes in the ${where} within ${esc(bloc)}, whose ${n} votes the ` +
+        `Commonwealth's mission counts as one bloc` +
+        (m.cohesion != null && m.cohesion < 1
+          ? `, expecting about ${Math.round(m.cohesion * 100)} per cent of them to follow ` +
+            `the bloc's line and the rest to abstain` : "") +
+        `. The bloc's standing toward the Commonwealth is ${sd} out of 100, where 50 is indifferent.`;
+    return `<div class="rulehead">In the ${esc(f.short || f.name)}</div><div class="note">${t}</div>`;
   }
 
   /* THE ACTORS, in a panel of their own. This was a fold at the foot of the
@@ -5869,8 +5898,9 @@ const UI = (function () {
         `government at present. They appear here when one is.</div>`;
     return foreignHTML();
   }
-  /* A STATE THE MAP HAS NO OUTLINE FOR IS STILL A STATE. France, São Tomé
-     and Príncipe, Kiribati and the Maldives are missing from the outlines,
+  /* A STATE THE MAP HAS NO OUTLINE FOR IS STILL A STATE. São Tomé and
+     Príncipe, Kiribati and the Maldives are missing from the outlines (and
+     France's came without a code until js/world.js supplied one),
      so this returned the code and the panel headed Kiribati's page "KIR",
      and printed "KIR" again as the link back from its anchor. Content's own
      name comes first, then the outline's, then the host an anchor gives. */
