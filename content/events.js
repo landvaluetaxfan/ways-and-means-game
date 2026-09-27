@@ -58,7 +58,7 @@ const SANDBOX = [
     result:"The federal settlement is in reach.",
     effects:[{ flag:"federal_schedule" }, { wire:"SANDBOX: THE FEDERAL SCHEDULE IS IMPOSED" }] },
   { campaign:"flash_i", id:"licensing_order", label:"Make the licensing order",
-    note:"Makes SI 2080/44 in force and offers the carve-out flag.",
+    note:"Makes SI 2080/44 in force, and offers the carve-out, which opens SI 2080/45.",
     result:"The order is in force, which opens its reaction and the challenge at the tribunal.",
     effects:[{ si:"si_2080_44" }, { flag:"licensure_carveout_offered" },
              { wire:"SANDBOX: THE LICENSING ORDER IS IN FORCE" }] },
@@ -328,17 +328,13 @@ changing who elects us."`,
     { posture:"measured", label:"Offer an exemption: the threshold moves, but the licensing rules do not",
       act:"Offer it",
       note:`The threshold moves and licensure does not. That is what the panel asked for. It buys the chair's goodwill and the New Progressive Party's fury, and it puts a promise on the order paper with a date.`,
-      /* MECHANICAL PLACEHOLDER, opencode's to reword: the undertaking's
-         `text` is the line the order paper carries and the wording is
-         prose. The shape is right — this choice is a promise made to a
-         named person who will notice — but the sentence is engineering. */
       effects:[{flag:"gb_approached"},{chapter:2},{move:{"rel.gb_chair":12}},{move:{"loyalty.gb":6}},{move:{"loyalty.psa":-9}},
                {undertake:{ id:"licensure_carveout",
-                            text:"Lay the licensing order carrying the carve-out",
+                            text:"Lay the order that keeps copies off the Life Support licence",
                             owed_to:"gb_chair", by:4,
-                             discharge:{ si:"si_2080_44" },
+                             discharge:{ si:"si_2080_45" },
                              onBreach:"gb_carveout_broken" }},
-               {wire:"GOVERNMENT SIGNALS LICENSURE CARVE-OUT; SUBSTRATE LEFT FURIOUS"},
+               {wire:"GOVERNMENT SIGNALS LICENSURE CARVE-OUT; NPP FURIOUS"},
                {flag:"licensure_carveout_offered"}],
       result:"She does not agree. She says she will put it to the panel, which from her is a considerable concession." },
     { posture:"bold", label:"Remind her that the functional seats' sunset clause has been extended four times, and will not be a fifth",
@@ -1309,7 +1305,7 @@ who owes. The difference is the next bill."`,
       result:`Your own party likes the firmness. The Alliance's members begin totting up what they are owed, and they will present the figure.` }
   ]},
 
-/* REACH: SI 2080/44 in force; the carve-out undertaking discharges it. */
+/* REACH: SI 2080/44 in force. */
 { id:"the_licensing_reaction", chapter:2, weight:82, once:true,
   when:{ siInForce:["si_2080_44"] },
   title:"What the order did to the panel",
@@ -1891,8 +1887,9 @@ and a government moves on from what is finished."`,
   when:{ breached:["licensure_carveout"] },
   title:"The order that was never laid",
   speaker:"gb_chair",
-  body:`You promised the Life Support panel a licensing order within four sittings.
-The four sittings have passed, and the order has not been laid.
+  body:`You promised the Life Support panel an order keeping copies off the
+life-support licence, and gave yourself four sittings to lay it. The four
+sittings have passed, and the order has not been laid.
 
 Kazuya Tanako, the panel's chair, does not call it a breach. She calls it a
 schedule, as the panel calls everything, and says her members will now treat
@@ -1902,7 +1899,7 @@ government has now discovered."`,
   choices:[
     { posture:"measured", label:"Lay the order next sitting and say the delay was yours.",
       effects:[{ move:{ "rel.gb_chair":4 } }, { move:{ "legitimacy":-4 } },
-               { si:"si_2080_44" },
+               { si:"si_2080_45" },
                { wire:"PM CONCEDES THE LICENSING DELAY AND LAYS THE ORDER" }],
       result:`The order is laid late, and the government takes the blame in public. It is the only form of apology the panel accepts.` },
     { posture:"cautious", label:"Let the promise lapse.",
@@ -2624,7 +2621,7 @@ every licensing board in the Commonwealth.`,
       effects:[{ flag:"tr_narrowed" }, { flag:"licensing_order_narrowed" },
                { move:{ "actor.tribunal":2 } },
                { wire:"TRIBUNAL READS THE LICENSING ORDER NARROWLY, WITHIN THE BOARDS' JURISDICTION" }],
-      result:`The order stands and does less. The carve-out reaches the panel's own members and nobody the board did not already license.` },
+      result:`The order stands and does less. It admits only the technicians the licensing board had certified itself, not everyone certified before 2067.` },
     { label:"The order stands.",
       when:{ actorAbove:{ tribunal:57 } },
       effects:[{ flag:"tr_upheld" }, { move:{ "actor.tribunal":3 } },

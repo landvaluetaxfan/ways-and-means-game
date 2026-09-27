@@ -225,10 +225,24 @@ named something without saying what it was. The teaching-order check also
 caught four places where a rewrite named a term before the scene that
 teaches it.
 
-**Left for the author, a design question and not prose:** the Life Support
-Engineering (Licensing) Order (SI 2080/44) is at once the "carve-out" the
-government promises the Life Support panel (`gb_carveout_broken` lays it to
-keep the promise, and an award counts it as kept) and the order that widens
-the licence and moves two of the panel's seats to the government
-(`the_licensing_reaction`, the instrument's own note). A promise to the
-panel cannot be kept by the order that takes its seats.
+**The licensing order, settled (27 Sep).** The Life Support Engineering
+(Licensing) Order (SI 2080/44) was at once the "carve-out" promised to the
+Life Support panel and the order that widens the licence and moves two of
+the panel's seats to the government. The author left the choice to me. The
+carve-out is now its own order, the Life Support Engineering (Licensing
+Exemption) Order (SI 2080/45). It keeps the licence closed to copies made
+persons under a lowered threshold, moves no seat, and discharges the
+promise. It can be made only once the promise has been offered. SI 2080/44
+stays what its own header says it is: the ugly answer to the threshold
+bill's functional division. `gb_carveout_broken`'s late apology lays SI
+2080/45, and the award names it. The canon lays both, the carve-out first,
+and a guard asserts that it keeps the promise by SI 2080/45 (broken by
+taking SI 2080/45 out of the policy: the guard fails).
+
+The split moved the sweep. No playtest strategy lays a licensing order of
+its own accord, so the first-option players reached SI 2080/44 only through
+the breach scene's apology, and they packed the board by accident. Without
+that, fewer of them land the debt trap and die of its late cascade: the
+four crisis strategies now lose 33, 54, 21 and 25 runs of 80 (from 33, 51,
+32 and 35), every loss still a thermal cascade. The canon's figures are
+unchanged.

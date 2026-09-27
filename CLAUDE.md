@@ -78,8 +78,8 @@ run; nothing comes after the count (design/32). The guards assert that the
 canon is reachable by play and print these figures. Keep that true until the
 author rewrites the canon.
 
-Across 80 seeds the four crisis strategies lose 33, 51, 32 and 35 runs, every
-loss a thermal cascade late in the run.
+Across 80 seeds the four crisis strategies lose 33, 54, 21 and 25 runs, every
+loss a thermal cascade late in the run (design/51, after the licensing split).
 
 ## The interface
 

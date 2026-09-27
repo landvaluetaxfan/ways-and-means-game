@@ -325,8 +325,10 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
         if (Engine.canDivide(s, CONTENT, b.id).ok &&
             (Engine.reported(s, CONTENT, b.id) || {}).carries) Engine.divide(s, CONTENT, b.id);
       });
-      if (!s.instruments["si_2080_44"].made && Engine.canMake(s, CONTENT, "si_2080_44").ok)
-        Engine.makeInstrument(s, CONTENT, "si_2080_44");
+      ["si_2080_45", "si_2080_44"].forEach(id => {
+        if (!s.instruments[id].made && Engine.canMake(s, CONTENT, id).ok)
+          Engine.makeInstrument(s, CONTENT, id);
+      });
       /* AND ONCE THE RESULT IS IN, IT ASKS EARTH FOR TERMS. The debt trap
          leaves friction where the quarrel drains the margin every sitting,
          and a cascade during the campaign is a loss (the author, 23 Sep). */
@@ -499,6 +501,14 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
          .map(k => k + " " + Engine.money(CONTENT, owed[k])).join(", ") +
        "; room under the bill authority " + Engine.money(CONTENT, (st.macro && st.macro.headroom) || 0) +
        "; inflation " + (st.macro ? st.macro.inflation.toFixed(1) + " (core " + st.macro.core.toFixed(1) + ")" : "none"));
+    /* AND IT KEEPS ITS WORD TO THE PANEL (27 Sep). The carve-out was kept
+       by SI 2080/44, the order that takes two of the panel's seats, so the
+       promise and the betrayal were one act. It is its own order now. */
+    const cv = (st.undertakings || []).find(u => u.id === "licensure_carveout");
+    ok("and it keeps the carve-out it promised the panel, by the carve-out's own order",
+       !!(cv && cv.state === "kept" && (st.instruments.si_2080_45 || {}).made),
+       cv ? cv.state + ", SI 2080/45 " + ((st.instruments.si_2080_45 || {}).made ? "made" : "not made")
+          : "never promised");
     ok("and the canon ending lands with sittings to spare",
        tierAt != null && end && end.sitting != null
          ? end.sitting - tierAt >= 5 : tierAt != null,

@@ -48,6 +48,32 @@ const INSTRUMENTS = [
     political_cost:[ {move:{"public_standing":-5}}, {move:{"loyalty.cu_halloran":-9}} ],
     prayer_stances:{ cu:"against", psa:"against", rv:{}, gb:"for", hul:"for", fh:"for", cl:"for" } },
 
+  /* THE CARVE-OUT IS ITS OWN ORDER. SI 2080/44 packs the board, and it
+     also used to discharge the promise made to the Life Support panel, so
+     the one order kept the panel's promise and took two of its seats. The
+     promise is this order: the licence stays closed to copies, and no seat
+     moves. It is on the table only once the promise has been made. */
+  { id:"si_2080_45",
+    title:"Life Support Engineering (Licensing Exemption) Order 2080",
+    number:"SI 2080/45",
+    author:"attestation_registry",
+    procedure:"negative",
+    prayer_window:6,
+    revocable:true,
+    when:{ flags:["licensure_carveout_offered"] },
+    summary:"Keeps the Life Support Engineering licence closed to copies recognised as "+
+            "persons under a lowered divergence threshold. Such a copy may own property and "+
+            "vote in a district, but it may not hold the licence, and so it may not vote for "+
+            "the six Life Support seats.",
+    effect_note:"It keeps the promise made to Kazuya Tanako, who chairs the Life Support panel, and it moves no seat. The Alliance of Business and Government, her party, gains loyalty to the government. The New Progressive Party, which wants copies licensed on the same terms as anyone else, loses it.",
+    effects:[ { flag:"licensing_exempted" },
+              {move:{"rel.gb_chair":6}},
+              {move:{"loyalty.gb":4}},
+              { wire:"ORDER KEEPS COPIES OFF THE LIFE SUPPORT LICENCE, AS PROMISED TO THE PANEL" } ],
+    reverse:[ { flag:{ licensing_exempted:false } } ],
+    political_cost:[ {move:{"loyalty.psa":-6}} ],
+    prayer_stances:{ cu:"against", gb:"against", hul:"against", psa:"for" } },
+
   { id:"si_2080_51",
     title:"Thermal Allocation (Ember Ridge) Emergency Order 2080",
     number:"SI 2080/51",

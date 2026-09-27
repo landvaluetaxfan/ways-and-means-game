@@ -81,7 +81,7 @@ const ACHIEVEMENTS = [
 
   /* ---------- unique actions ---------- */
   { id:"act_carveout_kept", name:"The Order Was Laid", tier:"action",
-    note:"You promised the Guild Bench a licensure carve-out and laid SI 2080/44 inside the four sittings you named. The promise was kept on time.",
+    note:"You promised the Guild Bench a licensure carve-out and laid SI 2080/45, the order keeping copies off the licence, inside the four sittings you named. The promise was kept on time.",
     when:{ kept:["licensure_carveout"] } },
 
   { id:"act_carveout_broken", name:"The Order That Was Never Laid", tier:"action",
