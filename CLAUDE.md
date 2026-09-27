@@ -35,7 +35,8 @@ the end says which).
   is keyed on position. **Judge a content edit with
   `node tools/playtest.js --seeds 80`**; one seed is an anecdote. Cut events
   are archived in `content/archive/cut-events.js`, never deleted.
-- **An event page is a news report, and lint fails one that does not explain**
+- **An event page is a news report, and lint fails one that does not explain;
+  a decision is held to the same rules less the news ones** (`checkDecision`)
   (`tools/pagecheck.js`, design/51): a headline in `setpiece.title`, a lede
   saying what happened, short sentences, the third person, and every name
   introduced where it first appears. Add a new company, institution or setting

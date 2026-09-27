@@ -185,3 +185,50 @@ view.
 
 The Sandbox menu item and each campaign's Sandbox bench lost their
 subtitles.
+
+## Every decision, to the same rules (27 Sep)
+
+The author, after reading the opening decision: "all of these gripes should
+be taken into consideration and added into additional prose passes." All 99
+decisions were rewritten in batches, each checked against content before it
+was written. Decisions stay in the second person, because the player is the
+Prime Minister, and the chamber is called Parliament, which is the author's
+preference.
+
+**Facts the old prose had wrong:**
+
+- the President was said to be elected by 7,086,000 people (the population)
+  and as an independent (his character entry says the Liberal ticket);
+- Tanako's objection used a copy "eight days old", which is already a
+  person under the 168-hour law;
+- Ember Ridge's suspended count, the thirty-five stations of the campaign
+  opener and the thirty-four thresholds (there are thirty stations);
+- Mars was one "Republic" where canon has two governments, the Chryse Basin
+  and the Nili Republic;
+- "the Association" was the Alliance;
+- a personhood panel was called a tribunal, beside the Tribunal that is the
+  constitutional court;
+- two wires still said "Substrate Left", the press's name for the New
+  Progressive Party;
+- the dilemma said Cordell kept the leases (design/50's open item). It now
+  follows the initiatives: the leases came with the platform.
+
+**The check covers decisions now.** `checkDecision` in `tools/pagecheck.js`
+applies the rules that fit a decision: every name and person introduced, no
+sentence over forty words, sanctions with an owner and a war with a place.
+It leaves out the headline, the lede and the ban on "you". A glossary term
+is exempt, because the game footnotes it where it first appears and lint's
+teaching-order check keeps it in order. Lint fails a decision that breaks a
+rule (**DECISIONS THAT DO NOT EXPLAIN**). The check was proved by breaking a
+decision. Its first run over the rewritten decisions found 32 that still
+named something without saying what it was. The teaching-order check also
+caught four places where a rewrite named a term before the scene that
+teaches it.
+
+**Left for the author, a design question and not prose:** the Life Support
+Engineering (Licensing) Order (SI 2080/44) is at once the "carve-out" the
+government promises the Life Support panel (`gb_carveout_broken` lays it to
+keep the promise, and an award counts it as kept) and the order that widens
+the licence and moves two of the panel's seats to the government
+(`the_licensing_reaction`, the instrument's own note). A promise to the
+panel cannot be kept by the order that takes its seats.

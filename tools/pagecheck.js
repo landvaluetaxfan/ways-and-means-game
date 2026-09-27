@@ -177,5 +177,23 @@ function checkPage(ev, characters) {
   return faults;
 }
 
-const api = { checkPage, pageParts, INTRODUCE };
+/* A DECISION IS HELD TO THE SAME RULES, less the ones that belong to a
+   news report (design/51, the author: "all of these gripes should be taken
+   into consideration" on every prose pass). It has no headline or lede, it
+   addresses the player as Prime Minister, so "you" is its register, and a
+   glossary term is footnoted where it first appears and taught in order
+   by lint's own check, so it need not be glossed again in every scene.
+   What stays: every name and person introduced, no sentence over forty
+   words, sanctions with an owner and a war with a place. */
+function checkDecision(ev, characters, glossary) {
+  const gl = new Set((glossary || []).map(g => String(g.term || g).toLowerCase()));
+  const isTerm = n => gl.has(n.toLowerCase()) || gl.has(n.toLowerCase().replace(/^the /, ""));
+  return checkPage(ev, characters).filter(f => {
+    if (/^no headline|^headline is|the lede is|"you" outside|^sentences average/.test(f)) return false;
+    const m = f.match(/^names (.+?) without/);
+    return !(m && isTerm(m[1]));
+  });
+}
+
+const api = { checkPage, checkDecision, pageParts, INTRODUCE };
 if (typeof module !== "undefined") module.exports = api;

@@ -306,9 +306,10 @@ choice the government makes will be the one it is judged on at the election.`,
   title:"The recycling line",
   speaker:"vellan",
   body:`Suravaram Vidyasagar, the Minister for Life Support, has brought the
-estimate for the Works' water-recycling plant. Cordell built it to last only
-as long as the company meant to stay, and it is running at the top of its
-certified rate.
+estimate for the water-recycling plant on the Bellamy Almanac Works, the
+orbital refinery the Commonwealth is taking over. Cordell, the Gabonese
+mining company that abandoned it, built it to last only as long as the
+company meant to stay, and it is running at the top of its certified rate.
 
 Since the Act was set down, the Works' heat counts against the
 Commonwealth's thermal margin, the spare capacity of its radiators, and a
@@ -340,9 +341,10 @@ below thirty billion dollars and falling.
 
 The loan is eighteen billion dollars, repayable at nineteen billion eight
 hundred million before the House rises at the end of the session, a rate of
-ten per cent. Its security is the Cordell leases: the rights to the ore that
-feeds the Works, which came to the Commonwealth with the platform. If the
-loan is not repaid on time, the Alliance may take the leases.
+ten per cent. Its security is the Cordell leases: the rights to the ore,
+mined by Cordell's extraction platforms, that feeds the Works, which came to
+the Commonwealth with the platform. If the loan is not repaid on time, the
+Alliance may take the leases.
 
 The rate, the term and the security are printed on a single page, and Hatt
 has signed it already.`,
@@ -536,10 +538,11 @@ place.`,
   title:"Two audiences, one sentence",
   speaker:"ceyhan",
   body:`The Spindle, the Commonwealth's newspaper of record, leads with the Works'
-failing air scrubbers and the governments on Earth that let Cordell walk
-away. Earth's news services report a tragic industrial accident that orbital
-politicians are exploiting, and quote as an expert a former minister who
-left office nine years ago.
+failing air scrubbers and the governments on Earth that let Cordell, the
+Gabonese mining company that owned the platform, walk away. Earth's news
+services report a tragic industrial accident that orbital politicians are
+exploiting, and quote as an expert a former minister who left office nine
+years ago.
 
 The government can make one statement, and both audiences will read it.`,
   choices:[
@@ -1234,13 +1237,14 @@ banks can decline to lend while the argument runs.`,
   title:"One vote in a hundred and ninety-four",
   speaker:"landry",
   body:`The Commonwealth's mission to the United Nations in New York has sent its
-first cable since the Works' referendum, and Jean Landry, the Minister for
-External Relations, reads it aloud.
+first cable since the referendum on the Bellamy Almanac Works, the orbital
+refinery, and Jean Landry, the Minister for External Relations, reads it
+aloud.
 
-The General Assembly, where every member state has one vote, sits every
-three weeks through the summer. A resolution tabled before a sitting is
-voted on at it. A majority of the states present and voting carries it, and
-abstentions do not count.
+The United Nations General Assembly, where every member state has one vote,
+sits every three weeks through the summer. A resolution tabled before a
+sitting is voted on at it. A majority of the states present and voting
+carries it, and abstentions do not count.
 
 The Commonwealth has one vote. The European Union's twenty-seven members
 vote on a line their ministers agree in Brussels, and most keep to it. The

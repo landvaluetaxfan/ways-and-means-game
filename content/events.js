@@ -133,8 +133,8 @@ This morning his task is narrow. The Charter obliges him to appoint as Prime
 Minister whoever can command a majority of the House, and to sign the
 commission, the document that makes the appointment, once he is satisfied
 that they can. He also holds the Charter's reserve powers: he may dissolve
-the House, refer a bill to the Tribunal for constitutional review, and
-refuse an appointment.
+the House, refer a bill to the Tribunal, the constitutional court, for
+review, and refuse an appointment.
 
 The commission is on the desk in front of him. He has not signed it.
 
@@ -279,9 +279,10 @@ Employers who now run copies of their staff for a week at a time, and merge
 them back unpaid, would have to employ and pay them.
 
 The New Progressive Party made the bill its price for joining your
-government. The Trades Left, your party's maintenance workers, is divided on
-it. A copy that must be paid no longer undercuts their wages, but a copy
-that is a citizen can hold a maintenance licence and compete for their jobs.`,
+government. The Trades Left, the current of your party that speaks for the
+maintenance unions, is divided on it. A copy that must be paid no longer
+undercuts their wages, but a copy that is a citizen can hold a maintenance
+licence and compete for their jobs.`,
   choices:[
     { posture:"cautious", label:"Read the whips' count before deciding anything",
       note:"Reading costs nothing and commits you to nothing. It tells you where the " +
@@ -623,9 +624,10 @@ of all 280, and it is a different count.
 
 "Second, the functional members. Forty members are elected by professions
 and industries rather than by places. A bill that touches life-support
-integrity, or amends the Charter, must also carry among them: 21 of the 40.
-That is the dual majority, and it is why a bill can win the House and fail
-on the same afternoon. The government holds twelve of the forty.
+integrity, or amends the Charter, the Commonwealth's constitution, must also
+carry among them: 21 of the 40. That is the dual majority, and it is why a
+bill can win the House and fail on the same afternoon. The government holds
+twelve of the forty.
 
 "Third, the objection. If most of the functional members whose trade a bill
 touches vote against it, the bill fails unless three-fifths of the elected
@@ -753,7 +755,7 @@ will read the clause within the hour.`,
 Parliament to review whether the party should stay in the coalition. The
 motion is not binding; conference motions never are.
 
-Most of the six hundred delegates are emulated minds, and the party pays for
+Most of the six hundred delegates are emulated minds. The party pays for
 them to run at a high clock rate, faster than real time, so a debate that
 took them four hours of their own time was over in far less on the clock.`,
   choices:[
@@ -777,9 +779,9 @@ per cent above its usual level. Emulated people pay rent for the hardware
 they run on, and in the low band many can no longer pay it.
 
 When they cannot pay, they are moved to the tier-four register and switched
-off first. On Homestead the register has grown by several thousand without
-any announcement, because none was needed: the price rose and people stopped
-running.
+off first. On Homestead, the low-band station of 880,000 people, the
+register has grown by several thousand without any announcement, because
+none was needed: the price rose and people stopped running.
 
 Sevi Ansar, a resident of Homestead's Deck 9, has written to every member
 who sits for a low-band seat, eleven of them from your party. "You did not
@@ -825,9 +827,9 @@ published every quarter and has never been read aloud in Parliament.
 
 It has now passed the level the Allocation Act, the law that governs a
 shortage, calls a federal strain, and the Act's consequence followed
-automatically. A shed order was posted at 06:00: on Homestead, eleven
-hundred more people from tier four will be switched off from the next
-sitting.
+automatically. A shed order was posted at 06:00: on Homestead, the low-band
+station of 880,000 people, eleven hundred more people from tier four will be
+switched off from the next sitting.
 
 No vote authorised it and none was needed. The substrate price rose, nothing
 in the appropriation brought it down, and the order followed from the Act.
@@ -1000,8 +1002,8 @@ tomorrow, who would notice? Not who would be pleased. Who would notice."`,
   speaker:null,
   body:`The divergence threshold has fallen, so the electoral rolls must change.
 Every copy of a person that has run separately for longer than the new limit
-is now a person, and the Registry must find out how many there are, where
-each of them votes, and whether any was already counted somewhere else.
+is now a person. The Registry must find out how many there are, where each
+of them votes, and whether any was already counted somewhere else.
 
 Officials estimate the number at 1.9 million. Six districts must be redrawn,
 and two of them are held by your party. The functional rolls will grow by an
@@ -1268,9 +1270,9 @@ is for. Six is half the twelve signatures that would force a ballot on your
 leadership, and enough to tell the whips that twelve is within reach. The
 number reaches the lobby the same afternoon.
 
-Ivor Ceyhan, political editor of The Spindle, puts the choice plainly: the
-government can find out what the six want, or wait to see how many they
-become.`,
+Ivor Ceyhan, political editor of The Spindle, the Commonwealth's newspaper
+of record, puts the choice plainly: the government can find out what the six
+want, or wait to see how many they become.`,
   choices:[
     { posture:"cautious", label:"Meet them, and ask what the letter is really about.",
       effects:[{ move:{ "loyalty.cu_maintenance":7 } }, { move:{ "loyalty.cu_halloran":4 } },
@@ -1379,11 +1381,11 @@ stations, asks for a meeting and does not waste it. Every answer the
 government can give on the divergence threshold has a price in Parliament.
 He has come to offer one that costs nothing there.
 
-"A threshold for each station," he says. "Let Anselm Ring set its own line
-and Homestead its own, and let the Commonwealth say only that it is not the
-Commonwealth's business. The union survives by not asking the question
-nationally. That is all my party has ever asked for, and nobody in this room
-pays for it."`,
+"A threshold for each station," he says. "Let each station set its own line,
+Anselm Ring one and Homestead another, and let the Commonwealth say only
+that it is not the Commonwealth's business. The union survives by not asking
+the question nationally. That is all my party has ever asked for, and nobody
+in this room pays for it."`,
   choices:[
     { posture:"bold", label:"Accept: let every station set its own threshold.",
       effects:[{ flag:"federal_schedule" },
@@ -1429,7 +1431,7 @@ have been given in return."`,
   title:"The waiting list",
   speaker:"edelstein_powell",
   body:`Rachel Edelstein-Powell, leader of One-G, the party of people whose health
-suffers in orbit, brings the number her party exists for: eleven thousand
+suffers in orbit, brings the number her party exists for. Eleven thousand
 residents are waiting to be fitted with a body, and the list grows by four
 hundred a month.
 
@@ -1863,8 +1865,8 @@ room."`,
 every group that spent the session waiting for this one to be over.
 
 "It is not that the answer is wrong," writes Sevi Ansar, a resident of Deck
-9 on Homestead. "It is that the answer is finished, and a government moves
-on from what is finished."`,
+9 on Homestead, the low-band station. "It is that the answer is finished,
+and a government moves on from what is finished."`,
   choices:[
     { posture:"bold", label:"Take up the next question now.",
       effects:[{ move:{ "loyalty.psa":4 } }, { move:{ "public_standing":-2 } },
@@ -1953,9 +1955,9 @@ feel it first, because their deliveries run to someone else's timetable.`,
 carry consumables have begun adding the difference to every station's
 quarterly bill.
 
-Edward Hatt, whose Alliance of Business and Government speaks for the
-freight lines in Parliament, says the rise is not their decision and not
-their fault. Both are true.`,
+Edward Hatt, leader of the Alliance of Business and Government, the party
+that speaks for the freight lines in Parliament, says the rise is not their
+decision and not their fault. Both are true.`,
   choices:[
     { posture:"bold", label:"Subsidise the freight of consumables from the reserve.",
       effects:[{ move:{ "consumables":4 } }, { move:{ "solvency":-10000 } },
@@ -2013,8 +2015,8 @@ fortnight before we were told it existed."`,
 and the Nili Republic, which will not allow it, because the strongest
 evidence of ancient life on Mars lies in its territory. Together they have
 asked twice what the Commonwealth thinks of the metanationals, the
-companies, like Cordell, that operate on Earth, in orbit and on Mars at
-once.
+companies, like Cordell, the Gabonese mining company, that operate on Earth,
+in orbit and on Mars at once.
 
 Jean Landry, the Minister for External Relations, has a draft and no strong
 view about it. "Whatever we send, they will have in twenty minutes and
@@ -2107,10 +2109,10 @@ timetables.`,
 from Earth, has fallen far enough that the quarterly supply run is being cut
 on the stations that depend on it most.
 
-Sevi Ansar, a resident of Deck 9 on Homestead, has circulated the new
-delivery schedule. "It is not the number," Ansar writes. "It is that the
-number is a schedule, and the schedule is a list of who is carried and who
-is not."`,
+Sevi Ansar, a resident of Deck 9 on Homestead, the low-band station, has
+circulated the new delivery schedule. "It is not the number," Ansar writes.
+"It is that the number is a schedule, and the schedule is a list of who is
+carried and who is not."`,
   choices:[
     { posture:"bold", label:"Pay from the reserve to restore the supply run.",
       effects:[{ move:{ "consumables":7 } }, { move:{ "solvency":-9000 } },
@@ -2294,8 +2296,8 @@ the market will not."`,
   speaker:"fenwick",
   body:`The Tribunal is the court that hears challenges to the government's orders.
 Its presiding judge is an emulated mind, copied in 2060, who has sat
-continuously since and was present for some of the Charter's founding
-arguments.
+continuously since and was present for some of the arguments over the
+Charter, the Commonwealth's constitution.
 
 She has asked Adaeze Fenwick, the Minister for Law and the Charter, for a
 ruling on a narrow point. Reclassification is the practice of moving a
@@ -2395,10 +2397,10 @@ always going to fail.`,
 meets in fourteen rented halls across the low and middle bands, and its
 congregations are not one faith. What they share is that they do not accept
 reclassification, the moving of a person from one legal category to another,
-much as a pacifist does not accept a war.
+much as a pacifist will not take up arms.
 
 They have sent Florence Marin, the Minister for Persons, Health and
-Continuity and a member of the Alliance, with one question in writing: will
+Continuity and a member of the Alliance, with one question in writing. Will
 the Commonwealth require proof that a person is on the attested register
 before a marriage, a burial or a school place?
 
@@ -2511,7 +2513,8 @@ which is where a courtesy is remembered.`,
   body:`The Tribunal, the court that hears challenges to the government's orders,
 now has the reclassification cases the government gave it, and the first is
 listed. Before hearing it, the judges have put a question to the government
-in writing, as they have done only twice since the Charter.
+in writing, as they have done only twice since the Charter, the
+Commonwealth's constitution, was signed in 2064.
 
 They ask by what test a court should decide whether a person was lawfully
 moved from one legal category to another: by the entry in the register, or
@@ -2546,10 +2549,11 @@ answering takes no time at all, and the judges write the test themselves."`,
   when:{ siInForce:["si_2080_44"], flagsAbsent:["tr_challenged"] },
   title:"The order is challenged",
   speaker:"fenwick",
-  body:`The Liberal Party has challenged the Life Support Engineering (Licensing)
-Order at the Tribunal. The argument is narrow and not about licensing
-itself: that the order was made under a power the law gives to the licensing
-boards, and that a minister may not use a board's power by order.
+  body:`The Liberal Party, the main opposition party, has challenged the Life
+Support Engineering (Licensing) Order at the Tribunal, the court that hears
+challenges to the government's orders. The argument is narrow and not about
+licensing itself: that the order was made under a power the law gives to the
+licensing boards, and that a minister may not use a board's power by order.
 
 "The Tribunal will hear it in four sittings," says Adaeze Fenwick, the
 Minister for Law and the Charter. "If we send lawyers, the government is in
@@ -2752,9 +2756,10 @@ The government has until the division to change the count.`,
   body:`At Question Time, Darren Watkins Jr., the Leader of the Opposition, has the
 first three questions, and he has plainly had them prepared for a week.
 
-"The Prime Minister told this House the reserve was sound," he says. "Will
-she tell us today what it stands at, or will she tell us again that the
-figure is a matter for the Treasurer, who is also not answering?"
+"The Prime Minister told this House the Treasury's cash reserve was sound,"
+he says. "Will she tell us today what it stands at, or will she tell us
+again that the figure is a matter for the Treasurer, who is also not
+answering?"
 
 The reserve is the Treasury's cash in hand. Your own members are already
 working out what the figure means for their seats, and the opposition worked
@@ -2816,8 +2821,9 @@ it out last week.`,
   title:"The figure nobody argued for",
   speaker:"herrera",
   body:`The Census Bureau's quarterly figures show that the share of adults in paid
-work has risen more in one quarter than in any year since the Charter. Jason
-Herrera, the Minister for Labour and Participation, brings them in person.
+work has risen more in one quarter than in any year since the Commonwealth
+was founded in 2064. Jason Herrera, the Minister for Labour and
+Participation, brings them in person.
 
 The Bureau gives the reason in its second line: the lower divergence
 threshold. Copies that became persons now draw wages, so work they did
@@ -2855,8 +2861,8 @@ question is whether the government stands beside it."`,
   title:"The work that is not wages",
   speaker:"herrera",
   body:`The share of adults in paid work has fallen below thirty-seven per cent, the
-lowest since the Charter. Jason Herrera, the Minister for Labour and
-Participation, says the economy has not shrunk.
+lowest since the Commonwealth was founded in 2064. Jason Herrera, the
+Minister for Labour and Participation, says the economy has not shrunk.
 
 "The work is being done," Herrera says. "The berths are cleaned, the
 accounts are kept, the computer racks are watched. Instances are doing it,
@@ -2897,14 +2903,15 @@ stopped counting who works."`,
   title:"What the surplus buys",
   speaker:"landry",
   body:`The Commonwealth has sold more than it bought for the third quarter running,
-and nearly all of the surplus is computing: mind-hours run on the
+and nearly all of the surplus is computing. Mind-hours are run on the
 Commonwealth's racks and sold to Earth's firms, which cannot shed the heat
 of running them as cheaply as a radiator in orbit can.
 
 Jean Landry, the Minister for External Relations, has been asked about the
-figure twice this morning, once by Kenya's embassy and once by a Home Rule
-member. "Earth's governments see this number as leverage," Landry says. "Our
-members see it as money. It can only be spent once."`,
+figure twice this morning, once by Kenya's embassy and once by a member for
+Home Rule, the party of self-government for the stations. "Earth's
+governments see this number as leverage," Landry says. "Our members see it
+as money. It can only be spent once."`,
   choices:[
     { posture:"bold", label:"Spend it on the stations that are short.",
       brief:"Redistribution inside the union. Popular where it lands and "+
@@ -2934,7 +2941,7 @@ members see it as money. It can only be spent once."`,
   title:"Buying more than it sells",
   speaker:"hatt",
   body:`The Commonwealth has bought more than it sold for two quarters, and the gap
-is being paid from the reserve.
+is being paid from the reserve, the Treasury's cash in hand.
 
 Edward Hatt, leader of the Alliance of Business and Government, asked for
 ten minutes and uses four. "My members sell computing and buy everything
@@ -2970,11 +2977,12 @@ buy less, which hurts the stations that cannot feed themselves."`,
     "government needs the money this quarter.",
   title:"An offer for the substrate works",
   speaker:"hatt",
-  body:`A consortium of the Alliance of Business and Government's member firms has
-offered twenty-two billion dollars for the Commonwealth's stake in the
-public substrate works, the state-owned computing plant. The Treasury's own
-valuation is within a billion of it. The price is fair, and it is fair
-because the buyers can see how low the reserve is.
+  body:`A consortium of firms whose owners are members of the Alliance of Business
+and Government, the business party, has offered twenty-two billion dollars
+for the Commonwealth's stake in the public substrate works, the state-owned
+computing plant. The Treasury's own valuation is within a billion of it. The
+price is fair, and it is fair because the buyers can see how low the
+Treasury's cash reserve is.
 
 Edward Hatt, the Alliance's leader, brings the offer himself. "The money is
 in the account by the end of the week," he says. "My members will run the
@@ -3075,15 +3083,17 @@ does."`,
     "everyone in the room knows the figure.",
   title:"The second conversation",
   speaker:"hatt",
-  body:`The consortium that bought the substrate works has written again. It wants a
-licence to host above the capacity cap the Ministry sets, and it presents the
-request as the second half of the sale.
+  body:`The consortium that bought the public substrate works has written again. It
+wants a licence to run more computing than the capacity limit the Ministry
+sets, and it presents the request as the second half of the sale.
 
-"We paid a fair price in a hard quarter," Hatt says, "and the ledger between us
-shows what that was worth to you. The licence closes it. Refuse, and the account
-stays open, which my members will remember at every division that needs them."`,
+"We paid a fair price in a hard quarter," says Edward Hatt, leader of the
+Alliance of Business and Government, whose member firms make up the
+consortium. "The whips' ledger shows what that was worth to you. The licence
+settles it. Refuse, and the account stays open, and my members will remember
+it at every division that needs them."`,
   choices:[
-    { posture:"cautious", label:"Grant the licence. Settle the ledger.",
+    { posture:"cautious", label:"Grant the licence, and settle the account.",
       brief:"Paying the debt with a regulatory decision. Clears the books "+
         "and establishes what the credit was actually for.",
       effects:[{ move:{ "capital.gb":-6 } },
@@ -3091,14 +3101,14 @@ stays open, which my members will remember at every division that needs them."`,
                { move:{ "loyalty.cu_maintenance":-7 } },
                { move:{ legitimacy:-5 } },
                { flag:"ec_licence_granted" }],
-      result:`The licence is granted and the account between the government and the Alliance is closed. The maintenance benches read the capacity figure in it.` },
+      result:`The licence is granted and the government's account with the Alliance is settled. Your maintenance members read the new capacity figure and count the jobs in it; the country thinks the sale has been sweetened.` },
     { posture:"bold", label:"Refuse, and keep owing them.",
       brief:"Declining while carrying the debt. Nothing is spent and "+
         "nothing is settled, which is a position rather than a decision.",
       effects:[{ move:{ "loyalty.gb":-10 } },
                { move:{ "rel.hatt":-8 } },
                { move:{ "loyalty.cu_maintenance":5 } }],
-      result:`The request is refused in a letter of four lines. Hatt's answer is shorter, and the Alliance's benches are harder to find at the next division.` }
+      result:`The request is refused in a letter of four lines. Hatt's reply is shorter, and the Alliance's members are harder to find at the next division. Your maintenance members approve.` }
   ]},
 
 /* THE ECONOMY AS A REASON TO BORROW, gating on both halves of §7.10 at
@@ -3114,15 +3124,17 @@ stays open, which my members will remember at every division that needs them."`,
     "understanding that the lender sets the rate and the lender is abroad.",
   title:"The case for the facility",
   speaker:"hatt",
-  body:`The trade account is short and the share of adults in paid work is short, and
-the Treasury has costed a drawing on the Standby Facility to pay for a building
-programme in the yards.
+  body:`The Commonwealth is buying more than it sells, and fewer adults are in paid
+work than could be. The Treasury has costed borrowing sixteen billion
+dollars from the Standby Facility, the credit line Earth's banks hold open
+for it, to pay for a building programme in the shipyards.
 
-Hatt makes the case for it, because his members would build it. "An economy that
-sells less than it buys and employs fewer than it could should borrow to build,"
-he says. "Earth's banks set the rate, and it moves with every quarrel you have
-with them. That is the price of the money. The other way to pay for the
-programme is a reserve that is already short."`,
+Edward Hatt, leader of the Alliance of Business and Government, whose member
+firms would do the building, makes the case. "An economy that sells less
+than it buys and employs fewer than it could should borrow to build," he
+says. "Earth's banks set the rate, and it moves with every quarrel you have
+with them. That is the price of the money. The other way to pay is from a
+reserve that is already short."`,
   choices:[
     { posture:"bold", label:"Draw on the facility and build.",
       brief:"Borrowing to raise participation. The rate is the quarrel and "+
@@ -3143,7 +3155,7 @@ programme is a reserve that is already short."`,
                { move:{ "actor.earth_bloc":-4 } },
                { flag:"ec_drew_facility" },
                { wire:"COMMONWEALTH DRAWS ON EARTH FACILITY" }],
-      result:`Sixteen billion dollars are drawn, owed in US dollars, and the yards begin hiring. The debt grows whenever the Commonwealth dollar falls.` },
+      result:`Sixteen billion dollars are drawn, owed in US dollars, and the shipyards begin hiring. The debt grows whenever the Commonwealth dollar falls, and Earth reads the borrowing as dependence.` },
     { posture:"cautious", label:"Balance it at home instead.",
       brief:"Refusing the facility and finding the money internally. "+
         "Slower, cheaper in sovereignty, expensive in everything else.",
@@ -3151,7 +3163,7 @@ programme is a reserve that is already short."`,
                { move:{ consumables:-3 } },
                { move:{ "loyalty.sc":6 } },
                { move:{ legitimacy:3 } }],
-      result:`The programme is cut to the four billion dollars the reserve can pay, and the consumables budget gives up the rest. Home Rule calls it a budget that owes Earth nothing.` }
+      result:`The programme is cut to the four billion dollars the reserve can pay, and the supply budget gives up the rest. Home Rule praises a budget that owes Earth nothing.` }
   ]},
 
 /* =============================================================
@@ -3194,15 +3206,17 @@ programme is a reserve that is already short."`,
     "fact about the House's appetite and not about the law.",
   title:"Whether it holds",
   speaker:"watkins",
-  body:`Darren Watkins has given notice of a motion to reopen the settled question. His
-own whips know it cannot carry. It can put the question back on the order paper
-with the government's standing where it is, and let the country watch whether
-the answer is defended.
+  body:`Darren Watkins Jr., the Leader of the Opposition, has given notice of a
+motion to reopen the question the government settled. His own whips know it
+cannot pass. It can put the question back on the order paper while the
+government is weak, and let the country see whether the government defends
+its answer.
 
-"A settlement lasts as long as the House wants it to," Watkins tells the
-Spindle. "I would like to know how long that is."`,
+"A settlement lasts as long as Parliament wants it to," Watkins tells The
+Spindle, the Commonwealth's newspaper of record. "I would like to know how
+long that is."`,
   choices:[
-    { posture:"cautious", label:"Refuse it the floor. The question is closed.",
+    { posture:"cautious", label:"Give the motion no time: the question is closed.",
       brief:"Using the government's control of time to deny a hearing. "+
         "Effective, and it concedes that the answer needs protecting.",
       effects:[{ move:{ legitimacy:-5 } },
@@ -3210,7 +3224,7 @@ Spindle. "I would like to know how long that is."`,
                { move:{ public_standing:3 } },
                { flag:"ch4_refused_reopening" },
                { wire:"GOVERNMENT DENIES TIME TO REOPENING MOTION" }],
-      result:`The Leader of the House finds no time for the motion. It stays on the order paper, uncalled, and Watkins asks about it at every Question Time until the House rises.` },
+      result:`The Leader of the House finds no time for the motion. It stays on the order paper, never called, and Watkins asks about it at every Question Time until the House rises.` },
     { posture:"bold", label:"Give it a day and beat it in the open.",
       brief:"Spending order-paper time to win the argument twice. Costs a "+
         "slot and settles the question harder than the settlement did.",
@@ -3220,7 +3234,7 @@ Spindle. "I would like to know how long that is."`,
                { move:{ "loyalty.cu_maintenance":-4 } },
                { flag:"ch4_beat_reopening" },
                { wire:"REOPENING MOTION DEFEATED ON THE FLOOR" }],
-      result:`The motion is called, debated for a day and defeated. The division list is a second record of the same answer, with more names on it.` }
+      result:`The motion is debated for a day, at the cost of one slot of order-paper time, and defeated. The vote records the answer a second time, with more names behind it, and the country trusts it more.` }
   ]},
 
 /* THE COALITION HAS NO QUESTION LEFT. A partner that joined for one measure
@@ -3238,14 +3252,16 @@ Spindle. "I would like to know how long that is."`,
     "threat — a question neither of them can answer quickly.",
   title:"What the arrangement is for",
   speaker:"trottier",
-  body:`The coalition agreement still carries the undertaking to carry the threshold
-bill, and the threshold question is closed. Mandelina Trottier has come to talk
-about what the agreement is for now.
+  body:`The coalition agreement still commits the government to carrying the
+Divergence Threshold Bill, and the question the bill was about is now
+settled.
 
-"We joined your government for one measure," Trottier says. "That question is
-answered. The undertaking is still on the register, and I would like it to say
-something true. We write a second programme, or we close this one and govern on
-what is left."`,
+Mandelina Trottier, the Deputy Prime Minister and leader of the New
+Progressive Party, has come to talk about what the agreement is for now. "We
+joined your government for one measure," she says. "That question is
+answered. The commitment is still on the register, and I would like it to
+say something true. Either we write a second programme, or we close this one
+and govern on what is left."`,
   choices:[
     { posture:"bold", label:"Write them a second programme.",
       brief:"Giving the coalition a new purpose, which costs order-paper "+
@@ -3256,15 +3272,15 @@ what is left."`,
                { move:{ "loyalty.cu_maintenance":-5 } },
                { flag:"ch4_second_programme" },
                { wire:"COALITION AGREES A SECOND PROGRAMME" }],
-      result:`A second programme is drafted in an afternoon and agreed by the evening: substrate provision, the insurance floor and the civic clock. The Trades Left reads the list and counts what it will cost its members.` },
-    { posture:"cautious", label:"Discharge the undertaking and let the agreement stand as it is.",
+      result:`A second programme is drafted in an afternoon and agreed by evening: public substrate provision, a minimum level of suspension insurance, and a guaranteed running speed for emulated minds. It takes a slot of order-paper time. The Trades Left reads the list and counts what it will cost its members.` },
+    { posture:"cautious", label:"Mark the commitment as met, and let the agreement stand as it is.",
       brief:"Closing the promise formally without replacing it. Honest, and "+
         "it leaves a partner in a coalition about nothing.",
       effects:[{ move:{ legitimacy:4 } },
                { move:{ "loyalty.psa":-9 } },
                { move:{ "trend.party_loyalty":-1 } },
                { flag:"ch4_agreement_hollow" }],
-      result:`The undertaking is discharged on the record and neither side proposes a replacement. The New Progressive Party stays in the government with nothing in writing about why.` }
+      result:`The commitment is marked as met, and neither side proposes a replacement. The New Progressive Party stays in the government with nothing in writing about why, and its loyalty begins to drift.` }
   ]},
 
 /* AND THE SESSION RISES ON IT. `risesWithin` had no content reading it, and
@@ -3284,13 +3300,13 @@ what is left."`,
      first after the result, and since a session is sat in periods (bible
      §1.8) that is usually a recess. Time does not carry over a recess
      either, so the rest of the line is true of both. */
-  body:`The House rises within three sittings, and the Chief Whip has the last of the
-order paper in his hand: time the government holds and cannot carry past the
-rise.
+  body:`Parliament rises within three sittings, and Anil Devi, the Chief Whip, has
+the last of the order paper: the time the government still holds, which
+cannot be carried past the rise.
 
-"Time left on the paper at the rise is time gone," Devi says. "The benches have
-a list of small measures they have wanted since the spring. Or we rise early,
-and the answer is the last thing the House said."`,
+"Time left on the paper when the House rises is lost," Devi says. "Our
+members have a list of small measures they have wanted since the spring. Or
+we rise early, and the settlement is the last thing Parliament said."`,
   choices:[
     { posture:"cautious", label:"Spend it on the small things the benches have been asking for.",
       brief:"Using the remainder on backbench business. Buys loyalty broadly "+
@@ -3299,15 +3315,15 @@ and the answer is the last thing the House said."`,
                { move:{ party_loyalty:9 } },
                { move:{ "loyalty.cu_maintenance":6 } },
                { move:{ "loyalty.cu_deck":5 } }],
-      result:`The last days go to the backbenches' own measures, and three of them pass. The benches rise in a better temper than they sat.` },
-    { posture:"bold", label:"Rise early. Let the answer be the last thing said.",
+      result:`The last two slots go to your own members' measures, and three of them pass. The party goes into the recess in a better temper than it came.` },
+    { posture:"bold", label:"Rise early, and let the settlement be the last thing said.",
       brief:"Ending the session on the settlement rather than on ordinary "+
         "business. Cheap, and it wastes time that had a use.",
       effects:[{ move:{ public_standing:4 } },
                { move:{ legitimacy:3 } },
                { move:{ party_loyalty:-5 } },
                { wire:`HOUSE RISES EARLY ON THE SETTLEMENT` }],
-      result:`The House rises early and the record closes on the answer. The members with measures waiting take them home.` }
+      result:`Parliament rises early and the record closes on the settlement, which the country respects. The members with measures waiting take them home, disappointed.` }
   ]},
 
 /* APPENDED, NOT INSERTED. The pool's seeded lean is keyed on an event's
@@ -3322,35 +3338,48 @@ and the answer is the last thing the House said."`,
   when:{ lawAbove:{ civic_clock_minimum:0 } },
   title:"What the clock costs",
   speaker:"girard",
-  body:`The civic clock subsidy has run for a month. It keeps 560,000 slow-running minds at real time, at seventy billion dollars a year from the reserve and the heat of running them through the radiators.
+  body:`Emulated minds that cannot afford full speed run slower than real time, so
+that a day passes for them in hours. For a month the civic clock subsidy has
+paid to keep 560,000 such minds running at real time.
 
-The Minister for Substrate and Thermal asks whether the rate is to be held through the campaign or halved until the estimates.`,
+It costs seventy billion dollars a year from the reserve, and the heat of
+running them goes through the Commonwealth's radiators. Vesna Girard, the
+Minister for Substrate and Thermal, asks whether to keep the subsidy at real
+time through the campaign, or halve it until the next budget.`,
   choices:[
     { posture:"cautious", label:"Hold it at real time.",
       effects:[{ move:{ "legitimacy":3 } }, { move:{ "loyalty.psa":3 } },
                { move:{ "loyalty.cu_maintenance":-3 } }],
-      result:"The minimum stands at real time, and so does its cost." },
+      result:"The minimum stays at real time, and so does its cost. The New Progressive Party approves; your maintenance members count the money." },
     { posture:"bold", label:"Halve it until the estimates.",
       effects:[{ law:{ civic_clock_minimum:0.5 } }, { move:{ "loyalty.psa":-6 } },
                { move:{ "loyalty.cu_maintenance":3 } },
                { wire:"CIVIC CLOCK MINIMUM HALVED UNTIL THE ESTIMATES" }],
-      result:"The minimum falls to half real time, at half the cost and half the heat." }
+      result:"The minimum falls to half of real time, at half the cost and half the heat. For 560,000 people, a day now takes two. The New Progressive Party is angry." }
   ]},
 
 { id:"ec_first_restorations", chapter:2, weight:60, once:true,
   when:{ lawIs:{ suspension_debt_accrual:false } },
   title:"The first restorations",
   speaker:"herrera",
-  body:`The first cohort restored under the debt moratorium owe what they owed on the day they went cold. The Underwriters have repriced suspension cover to match: a quarter spent suspended now costs less than a quarter's rent, and the new policies say so in their schedules.`,
+  body:`Under the debt moratorium, debts stop growing while a person is suspended.
+The first people switched back on under it owe exactly what they owed on the
+day they were switched off.
+
+The Underwriters, the Commonwealth's insurers, have repriced suspension
+insurance to match. A quarter spent suspended now costs less than a
+quarter's rent, and the new policies say so in their terms. Jason Herrera,
+the Minister for Labour and Participation, asks whether the government is
+content with that.`,
   choices:[
     { posture:"cautious", label:"Let the repricing stand.",
       effects:[{ move:{ "actor.underwriters":4 } }, { move:{ "loyalty.psa":2 } }],
-      result:"Suspension cover is priced as a way to wait out a bad quarter." },
-    { posture:"bold", label:"Cap the premium by order.",
+      result:"Suspension insurance is now sold as a way to wait out a bad quarter. The Underwriters are pleased, and so, mildly, is the New Progressive Party." },
+    { posture:"bold", label:"Cap the premium by government order.",
       effects:[{ move:{ "actor.underwriters":-6 } }, { move:{ "solvency":-3000 } },
                { move:{ "legitimacy":2 } },
                { wire:"GOVERNMENT CAPS SUSPENSION COVER PREMIUMS BY ORDER" }],
-      result:"The premium is capped, and the reserve carries the difference the Underwriters would have charged." }
+      result:"The premium is capped, and the reserve pays the three billion dollars the Underwriters would have charged. The Underwriters take note." }
   ]},
 
 /* THE SHED ORDER, PUBLISHED. `shed_order_authority` moved from the
@@ -3361,19 +3390,29 @@ The Minister for Substrate and Thermal asks whether the rate is to be held throu
   when:{ lawIs:{ shed_order_authority:"statute" } },
   title:"The shed order, laid before the House",
   speaker:"brakk",
-  body:`Under the Shed Order (Civilian Oversight) Act the schedule that decides who stops running first in a shortfall is published and laid before the House. The first schedule laid is the one the engineering authority was already using: the residual constituency heads it, and the stations with the least closure follow.
+  body:`Under the new Shed Order (Civilian Oversight) Act, the shed order, the list
+of who stops running first in a power shortage, must be published and laid
+before Parliament.
 
-The Minister for Home Affairs and Contingencies can lay it as drawn, or reorder it by exposure before the House reads it.`,
+The first list laid is the one the engineering authority was already using.
+At its head is the residual constituency: the people who belong to no
+recognised trade or profession, the unemployed, the dependent and the
+already suspended. After them come the stations least able to supply
+themselves.
+
+Sunniva Brakk, the Minister for Home Affairs and Contingencies, can lay the
+list as the engineers drew it, or reorder it by how exposed each station is
+before Parliament reads it.`,
   choices:[
-    { posture:"bold", label:"Reorder it by exposure.",
+    { posture:"bold", label:"Reorder it, so the most exposed stations are shed last.",
       effects:[{ move:{ "standing.low":4 } }, { move:{ "loyalty.hul":-8 } },
                { move:{ "legitimacy":3 } },
                { wire:"SHED ORDER REORDERED BY EXPOSURE BEFORE IT IS LAID" }],
-      result:"The published schedule puts the stations with the least margin last, and the engineers call it a political document." },
+      result:"The published list puts the stations with the least margin last. The low band welcomes it, and the engineers' party calls it a political document." },
     { posture:"cautious", label:"Lay it as the engineers drew it.",
       effects:[{ move:{ "loyalty.hul":4 } }, { move:{ "public_standing":-3 } },
                { move:{ "loyalty.psa":-4 } }],
-      result:"The schedule is laid as drawn, and the House reads the order in which the Commonwealth sheds its people." }
+      result:"The list is laid as drawn, and Parliament reads the order in which the Commonwealth switches off its people. The engineers' party approves; the country and the New Progressive Party do not." }
   ]},
 
 /* THE OPPOSITION'S DOSSIER (design/38 §1). The campaign's seventh beat,
@@ -3427,9 +3466,10 @@ Opposition. "The government did. We only put it in order."`,
   title:"A partner walks out",
   speaker:"okarie",
   body:`One of the government's coalition partners has written to Anil Devi, the
-Chief Whip, shortly before The Spindle gets the letter, the last courtesy a
-departing partner extends. The party has withdrawn from the coalition
-agreement, and its members will vote as they choose.
+Chief Whip, shortly before The Spindle, the Commonwealth's newspaper of
+record, gets the letter, the last courtesy a departing partner extends. The
+party has withdrawn from the coalition agreement, and its members will vote
+as they choose.
 
 Without them the government no longer has the majority it has relied on
 since it was formed. If it cannot find one, it will face a vote of
@@ -3471,102 +3511,126 @@ difference is worth one conversation, and it had better be this week."`,
 { id:"rb_remit", chapter:2, weight:72, once:true,
   title:"The remit letter",
   speaker:"castellane",
-  body:`The Reserve Bank Act gives the Governor the cash rate and gives the Treasury one letter a year to say what the rate is for. The last letter said two per cent. Maren Castellane has asked, politely and in writing, whether the new government means to say the same.
+  body:`The Reserve Bank Act gives the Governor control of the cash rate, the
+interest rate the Bank sets, and gives the Treasury one letter a year saying
+what the rate is for. The last letter set an inflation target of two per
+cent.
 
-She has also attached, without being asked, the section of the Act under which the House may give her a reserve direction. She would like it understood that she has read it.`,
+Maren Castellane, the Governor of the Reserve Bank, has asked in writing
+whether the new government means to say the same. Unasked, she has attached
+the section of the Act under which Parliament may give her a reserve
+direction, an order telling the Bank what to do with the rate. She wants it
+understood that she has read it.`,
   choices:[
     { posture:"cautious", label:"Two per cent, as before.",
       effects:[{ economy:{ credibility:0.08 } }, { move:{ "rel.castellane":6, "actor.underwriters":2 } }],
-      result:"The letter is two lines long. The market reads it in a minute and has forgotten it by the afternoon, which is what a remit is for." },
-    { posture:"bold", label:"Three per cent. Growth first.",
+      result:"The letter is two lines long. The markets read it in a minute and forget it by the afternoon, which is what a remit is for, and they trust the Bank a little more." },
+    { posture:"bold", label:"Three per cent: growth first.",
       effects:[{ law:{ inflation_target:3 } }, { economy:{ credibility:-0.08, expected:0.5 } },
                { move:{ "loyalty.cu":4, "actor.underwriters":-3 } },
                { wire:"TREASURY RAISES THE INFLATION TARGET TO THREE PER CENT" }],
-      result:"The target moves a point, and so does every rate of interest struck in the Commonwealth that week. The unions call it the first honest remit since the float." },
-    { posture:"measured", label:"Two per cent, and full participation beside it.",
+      result:"The target moves a point, and so does every interest rate agreed in the Commonwealth that week. The unions call it the first honest remit since the dollar was floated in 2073; the markets expect higher prices." },
+    { posture:"measured", label:"Two per cent, with full employment as an equal goal.",
       effects:[{ law:{ bank_mandate:"dual" } }, { economy:{ credibility:-0.02 } },
                { move:{ "loyalty.cu_maintenance":4 } },
                { wire:"RESERVE BANK GIVEN A DUAL MANDATE" }],
-      result:"The Bank will weigh the people out of work as heavily as the prices. It will cut sooner and raise later, and the Governor's reply says she will need both halves of the remit to be believed." }
+      result:"The Bank will weigh people out of work as heavily as prices, so it will cut rates sooner and raise them later. The Governor replies that she will need both halves of the remit to be believed." }
   ]},
 
 { id:"rb_inflation_print", chapter:2, weight:70, maxFires:1,
   when:{ economyAbove:{ overshoot:1.2 }, dissolved:false },
   title:"The inflation figure",
   speaker:"ceyhan",
-  body:`The quarterly figure reaches the Spindle an hour before the Treasury's own copy reaches the Treasurer. Inflation is well over the Bank's target, and the price of heat is most of it.
+  body:`The quarterly inflation figure reaches The Spindle, the Commonwealth's
+newspaper of record, an hour before the Treasury's own copy reaches the
+Treasurer. Inflation is well above the Reserve Bank's target, and most of it
+is the rising price of heat, the thermal quota the stations pay for.
 
-Ceyhan's question at the door is the one every paper prints the next morning: whose fault is it?`,
+Ivor Ceyhan, The Spindle's political editor, asks the question at the door
+that every paper prints the next morning: whose fault is it?`,
   choices:[
-    { posture:"cautious", label:"Back the Bank. It will bring it down.",
+    { posture:"cautious", label:"Back the Bank: it will bring inflation down.",
       effects:[{ move:{ legitimacy:2, public_standing:-3 } }, { economy:{ credibility:0.05 } }],
-      result:"The government stands behind a rate rise it has not yet seen. The Bank notices, and so does every household paying for heat." },
+      result:"The government backs a rate rise it has not yet seen. Markets trust the Bank more; every household paying for heat trusts the government less." },
     { posture:"measured", label:"Blame Earth's prices.",
       effects:[{ move:{ friction:3, public_standing:2, "actor.earth_bloc":-2 } }],
-      result:"It is partly true, and Earth's press office says the other part by the evening." },
+      result:"It is partly true, and voters like it. By evening Earth's governments have answered with the other part, and the quarrel with Earth grows." },
     { posture:"bold", label:"Promise relief on the thermal bill.",
       effects:[{ move:{ solvency:-6000, public_standing:4 } }, { economy:{ expected:0.3, credibility:-0.03 } }],
-      result:"The relief is paid out of the reserve and spent on heat, which is the thing the Bank was trying to make dearer." }
+      result:"The reserve pays six billion dollars of relief, which households spend on heat: the very thing the Bank was trying to make dearer. Markets expect higher prices." }
   ]},
 
 { id:"rb_open_letter", chapter:2, weight:66, once:true,
   when:{ economyAbove:{ overshoot:2 } },
   title:"An open letter from the Governor",
   speaker:"castellane",
-  body:`The Reserve Bank Act requires the Governor to write to the Treasurer, in public, whenever inflation misses the target by more than two points. Castellane's letter is four pages long. It says what went wrong, what the Bank will do about it, and how long that will take.
+  body:`The Reserve Bank Act requires the Governor to write publicly to the
+Treasurer whenever inflation misses the target by more than two points. The
+letter from Maren Castellane, the Governor, runs to four pages.
 
-The last paragraph says what the Bank cannot do. It cannot make heat cheaper, and it cannot make the government spend less.`,
+It says what went wrong, what the Bank will do, and how long that will take.
+The last paragraph says what the Bank cannot do: it cannot make heat
+cheaper, and it cannot make the government spend less.`,
   choices:[
     { posture:"measured", label:"Publish a reply that endorses every word.",
       effects:[{ economy:{ credibility:0.06 } }, { move:{ "rel.castellane":6, "loyalty.cu":-3 } }],
-      result:"The two letters are printed side by side, and the market reads them as one voice. The party reads them as the Governor writing the government's budget." },
+      result:"The two letters are printed side by side, and the markets read them as one voice. Your party reads them as the Governor writing the government's budget." },
     { posture:"cautious", label:"Acknowledge it and say nothing more.",
       effects:[{ move:{ legitimacy:-1 } }],
-      result:"The letter stands on its own, and people read it that way." },
+      result:"The letter stands on its own, and people read it as the Bank blaming the government." },
     { posture:"bold", label:"Answer it in the House.",
       effects:[{ move:{ public_standing:3, "rel.castellane":-10 } }, { economy:{ credibility:-0.06 } }],
-      result:"The Prime Minister tells the House that the Bank has missed its target for one year in nine. The Governor watches from the gallery." }
+      result:"You tell Parliament the Bank has missed its target one year in nine. The Governor watches from the gallery, the country enjoys the fight, and markets trust the Bank less." }
   ]},
 
 { id:"rb_dollar_falls", chapter:2, weight:74, once:true,
   when:{ economyBelow:{ fx:0.78 } },
   title:"The dollar falls",
   speaker:null,
-  body:`The dollar has fallen through seventy-eight US cents, and the first line of the Treasury's morning note is the arithmetic. Every cent it falls adds to what the Commonwealth owes Earth's banks, and to the price of everything the stations import.
+  body:`The Commonwealth dollar has fallen below seventy-eight US cents, and the
+Treasury's morning note begins with the arithmetic. Every cent it falls adds
+to what the Commonwealth owes Earth's banks, which lend in their own
+currencies, and to the price of everything the stations import.
 
-The Reserve Bank holds the reserves, and the Treasury decides whether to spend them.`,
+The Reserve Bank holds the Commonwealth's reserves of Earth currencies, and
+the Treasury decides whether to spend them buying dollars.`,
   choices:[
     { posture:"measured", label:"Sell reserves and hold the line.",
       when:{ economyAbove:{ reserves:10000 } },
       effects:[{ economy:{ reserves:-10000, fx:4 } }, { move:{ legitimacy:1 } }],
-      result:"The Bank sells ten billion of its US dollars in a morning, and the dollar steadies. The market has learned how many mornings like it the Bank has left." },
+      result:"The Bank sells ten billion of its US dollars in a morning, and the dollar steadies. The markets have also learned how many such mornings the Bank can afford." },
     { posture:"bold", label:"Ask the Governor for a rise between meetings.",
       effects:[{ economy:{ rate:0.5, fx:3, shock:-0.6, credibility:-0.02 } }, { move:{ "rel.castellane":2, public_standing:-2 } },
                { wire:"RESERVE BANK RAISES HALF A POINT BETWEEN MEETINGS" }],
-      result:"The Bank raises half a point between meetings, which it has done once before, in the year of the float. Mortgages on long leases reprice by the end of the week." },
+      result:"The Bank raises its rate half a point between meetings, which it has done only once before, in 2073. Mortgages on long leases cost more by the end of the week." },
     { posture:"cautious", label:"Let it find its level.",
       effects:[{ economy:{ trade:3, expected:0.3 } }, { move:{ public_standing:-1 } }],
-      result:"The dollar finds a lower level than the one it had. Commonwealth compute is cheaper to Earth by the same margin, and the order books lengthen." }
+      result:"The dollar settles lower. The Commonwealth's computing is cheaper to Earth by the same margin, and orders grow, but so does the price of imports." }
   ]},
 
 { id:"rb_downgrade", chapter:2, weight:71, once:true,
   when:{ economyAbove:{ debt:6 } },
   title:"The continuity rating",
   speaker:null,
-  body:`The Underwriters have cut the Commonwealth's continuity rating by a notch. The note that goes with it is three sentences long: the debt is rising against output, the thermal margin is thin, and the government has not said how it means to pay.
+  body:`The Underwriters, the Commonwealth's own insurers and lenders, have cut its
+continuity rating, their judgement of whether a borrower will keep running,
+by one notch. Their note is three sentences long: debt is rising against
+output, the thermal margin is thin, and the government has not said how it
+will pay.
 
-The bills tendered on Friday will cost a quarter of a point more. So will every series of notes after them.`,
+The Treasury bills sold on Friday will cost a quarter of a point more in
+interest, and so will every issue of the Commonwealth's notes after them.`,
   choices:[
-    { posture:"bold", label:"Announce a plan to consolidate.",
+    { posture:"bold", label:"Announce a plan to cut the deficit.",
       effects:[{ flag:"rating_cut" }, { flag:"consolidation_promised" },
                { move:{ public_standing:-3, legitimacy:3 } }, { economy:{ shock:-0.8, credibility:0.03 } }],
-      result:"The plan is a page of figures and a promise. The rating stays where it was cut to, and the Underwriters' next note is shorter." },
+      result:"The plan is a page of figures and a promise. The rating stays where it was cut to, but the Underwriters' next note is shorter and the country trusts the government a little more." },
     { posture:"measured", label:"Dispute the rating.",
       effects:[{ flag:"rating_cut" }, { move:{ "actor.underwriters":-5, public_standing:1 } }, { economy:{ fx:-1.5 } }],
-      result:"The Treasury's rebuttal is longer than the Underwriters' note, and the Underwriters take the length as their answer." },
+      result:"The Treasury's rebuttal is longer than the Underwriters' note, and the Underwriters take its length as their answer. The dollar dips." },
     { posture:"cautious", label:"Say nothing and tender the bills.",
       effects:[{ flag:"rating_cut" }],
-      result:"The bills are taken, at the price the note gave." }
+      result:"The bills are sold, at the higher price the rating set." }
   ]},
 
 /* the answers to the two money initiatives (content/initiatives.js) */
@@ -3639,47 +3703,57 @@ morning's figure without comment.`,
   foreseen:"Earth's quarterly accounts",
   title:"Earth's quarterly accounts",
   speaker:null,
-  body:`The figures from Earth's statistical offices land overnight. Output across the treaty states fell last quarter, the first fall since before the Charter, and the first thing Earth's firms cancel in a bad quarter is compute bought from orbit.
+  body:`Earth's statistical offices report that output across Earth's major
+economies fell last quarter, the first fall since before the Commonwealth
+was founded in 2064. The first thing Earth's firms cancel in a bad quarter
+is computing bought from orbit, and the Treasury expects the Commonwealth's
+orders to fall within the month.
 
-The Treasury expects the Commonwealth's order books to shorten within the month. It has three answers ready, because a Treasury always does, and they differ in how much of the fall the government means to stand in front of.`,
+The Treasury has three answers ready, which differ in how much of the fall
+the government means to cushion.`,
   choices:[
-    { posture:"cautious", label:"Hold the budget, and let the account take the strain.",
+    { posture:"cautious", label:"Hold the budget, and let trade take the strain.",
       note:"Nothing new is spent. Receipts fall with the orders and the deficit widens on its own. The fall in demand is taken in full.",
       effects:[{ economy:{ shock:-2.5, trade:-4 } }, { move:{ public_standing:-1 } }],
-      result:"The Treasury says the budget is sound, and the order books shorten as it said they would." },
-    { posture:"measured", label:"Bring forward the works the House has already voted.",
+      result:"The Treasury says the budget is sound, and orders fall as it said they would. The economy takes the full blow." },
+    { posture:"measured", label:"Bring forward the public works Parliament has already approved.",
       note:"CW$6bn of capital works, spent this year instead of next. It cushions about half the fall and needs no new vote.",
       effects:[{ economy:{ shock:-1.2, trade:-4 } }, { move:{ solvency:-6000, public_standing:1 } }],
-      result:"The yards are told to start what they were told to start next year, and they hire before the orders fall." },
+      result:"The shipyards are told to start now the six billion dollars of work planned for next year, and they hire before the orders fall. The blow is halved." },
     { posture:"bold", label:"Borrow CW$15bn and spend it now.",
       note:"Enough to fill the hole in demand and some over. The Underwriters will mark the debt, and the Bank will see the spending coming.",
       effects:[{ economy:{ shock:0.5, trade:-4, credibility:-0.02 } },
                { move:{ solvency:-15000, public_standing:2, "actor.underwriters":-3 } },
                { wire:"GOVERNMENT ANSWERS EARTH'S SLOWDOWN WITH CW$15BN" }],
-      result:"The package is announced before the markets open. The Underwriters' note on it is one line, and the line is the size of the debt." }
+      result:"The package is announced before the markets open and the economy barely feels the fall. The Underwriters' note on it is one line, and the line is the size of the debt." }
   ]},
 
 { id:"ec_decks_fail", chapter:2, at:39, once:true,
   title:"The harvest on the decks",
   speaker:null,
-  body:`Blight has taken a third of the season on the agricultural decks of Homestead and Harvest, and the growers say so before the ministry does. What the decks cannot grow the stations import, at the price of lifting it, and the price of food is the first price every household reads.
+  body:`Blight has destroyed a third of the season's crop on the farm decks of
+Homestead and Harvest, and the growers announce it before the ministry does.
+Whatever the decks cannot grow the stations must import, at the cost of
+bringing it up from Earth, and the price of food is the first price every
+household notices.
 
-The shortfall is a season. The price will be on every bill before the House rises.`,
+The shortfall will last a season. The higher price will be on every
+household's bill before Parliament rises.`,
   effects:[{ move:{ consumables:-4 } }],
   choices:[
     { posture:"cautious", label:"Let the stations import what the decks cannot grow.",
       note:"The market fills the gap at the market's price. Food is dearer for a season, and dearest for the low band.",
       effects:[{ economy:{ inflation:0.8, trade:-3 } }, { move:{ "standing.low":-2 } }],
-      result:"The imports arrive on the next schedule, and so does the bill." },
+      result:"The imports arrive on the next delivery, and so does the bill: inflation rises almost a point, and the low band feels it most." },
     { posture:"measured", label:"Carry the cost of the imports for the season.",
       note:"About CW$4bn from the reserve, so the price barely moves. The growers are paid for nothing they grew.",
       effects:[{ economy:{ inflation:0.2, trade:-3 } }, { move:{ solvency:-4000, public_standing:1 } }],
-      result:"The ministry buys the season's shortfall at the lift price and sells it at last year's." },
+      result:"The ministry buys the season's shortfall at the import price and sells it at last year's, at a cost of four billion dollars. Prices barely move." },
     { posture:"bold", label:"Fix the price of food until the next harvest.",
       note:"The price is held by order and nobody measures a rise. The shelves on the far stations empty first, and the decks' own growers are ruined by it.",
       effects:[{ economy:{ inflation:-0.1 } }, { move:{ consumables:-3, public_standing:2, "loyalty.rv":-4 } },
                { wire:"FOOD PRICES FROZEN BY ORDER UNTIL THE NEXT HARVEST" }],
-      result:"The order is posted on every deck by morning. The growers' meeting houses read it aloud, and nobody there applauds." }
+      result:"The order is posted on every deck by morning, and prices hold. The growers, many of them members of the Congregational Democratic Alliance, read it aloud in their meeting houses, and nobody applauds. With no profit in it, less food is brought up." }
   ]},
 
 /* A PARTNER STANDS ASIDE (design/40 E9). The first of the two lines: it

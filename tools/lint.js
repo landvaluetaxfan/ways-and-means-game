@@ -1315,18 +1315,16 @@ n += section("A COUNTRY THAT VOTES THROUGH NO MEMBER", gaBad, x => x);
    name introduced where it first appears. tools/pagecheck.js holds the
    rules. A decision is counted and not failed: it sits inside the
    interface that explains it, and its prose is the next pass. */
-const newsBad = [];
-let newsAdv = 0;
+const newsBad = [], decBad = [];
 try {
   const PC = require("./pagecheck.js");
   (EVENTS || []).forEach(ev => {
-    const f = PC.checkPage(ev, CHARACTERS);
-    if (ev.setpiece) f.forEach(x => newsBad.push(ev.id + ": " + x));
-    else if (f.some(x => !/headline/.test(x))) newsAdv++;
+    if (ev.setpiece) PC.checkPage(ev, CHARACTERS).forEach(x => newsBad.push(ev.id + ": " + x));
+    else PC.checkDecision(ev, CHARACTERS, GLOSSARY).forEach(x => decBad.push(ev.id + ": " + x));
   });
 } catch (e) { newsBad.push("could not read the event pages: " + e.message); }
 n += section("EVENT PAGES THAT DO NOT EXPLAIN", newsBad, x => x);
-if (newsAdv) R.push(newsAdv + " decisions would fail the same rules, headline aside (advisory)");
+n += section("DECISIONS THAT DO NOT EXPLAIN", decBad, x => x);
 
 /* THE EDITOR LOADS WHAT THE GAME LOADS. Two pages each name the content
    files, and the editor had fallen three behind: it could not see an
@@ -1359,6 +1357,7 @@ if (seatBad.length) R.push(`${seatBad.length} CONSTITUENCY PROSE FAULTS`);
 if (briefBad.length) R.push(`${briefBad.length} BRIEFING FIGURES THE ENGINE DOES NOT FILL`);
 if (gaBad.length) R.push(`${gaBad.length} COUNTRIES THAT VOTE THROUGH NO MEMBER`);
 if (newsBad.length) R.push(`${newsBad.length} FAULTS IN EVENT PAGES THAT DO NOT EXPLAIN`);
+if (decBad.length) R.push(`${decBad.length} FAULTS IN DECISIONS THAT DO NOT EXPLAIN`);
 if (popBad.length) R.push("THE POPULATION IS STORED TWICE AND HAS DRIFTED (advisory)");
 console.log(R.join("\n"));
 /* HARD FAILURES: everything except popBad. The chain is one of them now —
@@ -1372,4 +1371,4 @@ if (artBad.length || chainBad.length || cssBad.length || verbBad.length ||
     parseBad.length || initBad.length || gridBad.length || targetBad.length ||
     labelBad.length || gateBad.length || refBad.length || campBad.length ||
     pageBad.length || retiredBad.length || seatBad.length || briefBad.length ||
-    gaBad.length || newsBad.length) process.exit(1);
+    gaBad.length || newsBad.length || decBad.length) process.exit(1);
