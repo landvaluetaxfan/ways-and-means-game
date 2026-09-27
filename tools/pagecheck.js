@@ -33,6 +33,11 @@
    ============================================================= */
 "use strict";
 
+/* a place is a capitalised word after "in", "between" or "over", and a
+   month or a weekday is not one: "imposed in March" names no war */
+const MONTHS_DAYS = "January|February|March|April|May|June|July|August|September|October|" +
+  "November|December|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday";
+
 /* name (a regular expression's source) -> the words that introduce it */
 const INTRODUCE = [
   ["Cordell", /mining|extraction|Gabon/i],
@@ -67,7 +72,14 @@ const INTRODUCE = [
   ["Home Rule", /\bpart(y|ies)\b/i],
   ["Trades Left", /current|wing|faction|unions?/i],
   ["Liberal Party|the Liberals", /opposition|consortium|shipping/i],
-  ["(?<!Law and )the Charter", /constitution/i]
+  ["(?<!Law and )the Charter", /constitution/i],
+  /* NOT A NAME BUT A VAGUENESS (the author on the Bellamy page: "Conflict?
+     What conflict? A real news article wouldn't just vaguely bring up a
+     conflict"). Sanctions say who imposed them; a war says where. */
+  ["[Ss]anctions", /European Union|United Nations|Brussels|Security Council|imposed by|[A-Z][a-z]+'s\s/,
+   "sanctions", "saying whose they are"],
+  ["conflict|war", new RegExp("\\b(?:in|between|over) (?:the )?(?!(?:" + MONTHS_DAYS + ")\\b)[A-Z][a-z]+|[A-Z][a-z]+ (?:war|conflict)"),
+   "a conflict", "saying where it is and between whom"]
 ];
 
 const STOP = new Set(["the", "and", "for", "of", "to", "mp", "rt.", "hon.", "jr.", "minister", "shadow"]);
@@ -141,14 +153,14 @@ function checkPage(ev, characters) {
   /* names: the first sentence that uses one must say what it is */
   const flow = [].concat(...parts.filter(p => p.kind !== "document").map(p =>
     (p.kind === "who" ? [p.text] : sentences(p.text))));
-  INTRODUCE.forEach(([name, gloss]) => {
+  INTRODUCE.forEach(([name, gloss, label, why]) => {
     const re = new RegExp("\\b(?:" + name + ")\\b");
     const at = flow.findIndex(s => re.test(s));
     if (at < 0) return;
     const first = flow[at], next = flow[at + 1] || "";
     if (!gloss.test(first.replace(re, " ")) && !gloss.test(next.replace(re, " ")))
-      faults.push("names " + name.split("|")[0].replace(/\(\?:[^)]*\)\??/g, "").trim() +
-                  " without saying what it is, where it first appears: \"" + first.slice(0, 70) + "\"");
+      faults.push("names " + (label || name.split("|")[0].replace(/\(\?:[^)]*\)\??/g, "").trim()) +
+                  " without " + (why || "saying what it is") + ", where it first appears: \"" + first.slice(0, 70) + "\"");
   });
   (characters || []).forEach(c => {
     if (!c || /prime minister/i.test(c.role || "")) return;

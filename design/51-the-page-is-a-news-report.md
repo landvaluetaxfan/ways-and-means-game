@@ -143,3 +143,45 @@ sooner, and it pays for that in standing:
 
 The dead `lastDays` test in the canon policy went with the old threshold,
 since climbing at 16 already covers it.
+
+## After the author's read (27 Sep)
+
+The author's notes on the rewritten Bellamy page all came to one thing: it
+abstracted where a reporter would be specific. "No employer, no money and
+two months of air" did not say why. "A conflict" was not named. "The people
+who feed, treat and teach them" was a figure of speech standing in for a
+list of jobs. "No treaty with it and no duty to it" read as a slogan. And it
+did not say why returning to Earth takes medical care.
+
+The page now gives the cause of each fact:
+
+- the European Union froze Gabon's sovereign fund in March;
+- European rules freeze any company the fund owns more than half of;
+- the operator banked in Europe, and other banks would not take its
+  business;
+- the air plant's filters and catalyst come up from Earth every month;
+- Kenya's two years are a tender, an inspection, the certification of the
+  descent cars, and the June budget;
+- partial gravity thins bone and wastes muscle (bible §6.11);
+- the charter's elected council of delegates is the body that asked for
+  help.
+
+**Proposed, for the author to confirm or replace:** the sanctions follow a
+United Nations panel's finding that the Gabonese fund paid for weapons used
+by separatists in Cabinda, the oil-producing Angolan exclave. That is the
+"international proxy conflict" of design/35, which canon had never named.
+
+**The check learned the fault.** `INTRODUCE` now carries two vagueness rules
+as well as names. The first mention of sanctions must say whose they are.
+The first mention of a conflict or a war must say where, and a month or a
+weekday does not count as a place. Both were proved by breaking the page. On
+the first run they caught three pages that said "sanctions" without an owner.
+
+**An event keeps the side columns.** Only the last page, after the count,
+takes the screen (`#s-sit.fullpage`). With the columns hidden, an event's
+answers ran the full width of the window under a 66ch page. In the centre
+column they are a decision's width, and the docket and calendar stay in
+view.
+
+The Sandbox menu item and each campaign's Sandbox bench lost their
+subtitles.

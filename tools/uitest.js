@@ -401,8 +401,8 @@ try {
   const page = w.document.querySelector("#sitting-body .sp-page");
   ok("a finished run draws the last page as a set piece", !!page);
   const sit = w.document.querySelector("#s-sit");
-  ok("and the screen wears the set-piece class, so the columns give way",
-     !!sit && sit.classList.contains("setpiece"));
+  ok("and the screen wears the set-piece and full-page classes, so the columns give way",
+     !!sit && sit.classList.contains("setpiece") && sit.classList.contains("fullpage"));
   const text = page ? page.textContent : "";
   ok("it names what happened", /fallen|voted|confidence/i.test(text),
      text.slice(0, 60));
@@ -1543,8 +1543,9 @@ try {
        $("#sbx-detail-hdr").textContent === "The outcome event", $("#sbx-detail-hdr").textContent);
     const at = w.eval("UI.state().sitting");
     $(`#sbx-event [data-sbxshow="${plainEvent}"]`).click();
-    ok("an event takes the screen as a page, dated, with its answer under it",
-       $("#s-sit").classList.contains("setpiece") && !!$("#sitting-body .sp-page") &&
+    ok("an event is set as a page, dated, with its answer under it and the side columns kept",
+       $("#s-sit").classList.contains("setpiece") && !$("#s-sit").classList.contains("fullpage") &&
+       !!$("#sitting-body .sp-page") &&
        /^Sitting \d+/.test(($("#sitting-body .sp-kicker") || {}).textContent || "") &&
        $("#sit-decide-head") && $("#sit-decide-head").textContent === "Your answer",
        plainEvent + ": " + ($("#sit-decide-head") ? $("#sit-decide-head").textContent : "no head"));

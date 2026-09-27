@@ -6279,22 +6279,24 @@ const UI = (function () {
       const sitEnd = $("#s-sit");
       if (typeof SetPiece !== "undefined" && SetPiece.html) {
         box.innerHTML = SetPiece.html({ setpiece: endPiece(ending) }).html;
-        if (sitEnd) sitEnd.classList.add("setpiece");
+        if (sitEnd) sitEnd.classList.add("setpiece", "fullpage");
       } else {
         box.innerHTML = endBoardHTML(ending);
-        if (sitEnd) sitEnd.classList.remove("setpiece");
+        if (sitEnd) sitEnd.classList.remove("setpiece", "fullpage");
       }
       return;
     }
     if (!currentEvent) currentEvent = Engine.nextEvent(st, C);
-    /* A SET PIECE TAKES THE SCREEN (design/31). The class collapses the
-       columns either side; the prose becomes the page and the decision rows
-       below it are untouched, so there is still exactly one way to commit an
-       act. Toggled on every draw rather than only when one opens, because a
-       screen that got stuck wearing it would hide the whole tab. */
+    /* AN EVENT IS SET AS A PAGE (design/31, design/51). The class sets the
+       prose as the page; the side columns stay, and the decision rows below
+       it are untouched, so there is still exactly one way to commit an act.
+       Toggled on every draw rather than only when one opens, and the last
+       page's `fullpage` cleared, because a screen that got stuck wearing
+       either would restyle or hide the whole tab. */
     const sit = $("#s-sit");
     if (sit) sit.classList.toggle("setpiece",
       typeof SetPiece !== "undefined" && SetPiece.is(currentEvent));
+    if (sit) sit.classList.remove("fullpage");
     if (!currentEvent) {
       /* A QUIET SITTING IS NOT THE SAME AS AN EMPTY GAME, and the screen
          used to say the same sentence for both. A player met "nothing

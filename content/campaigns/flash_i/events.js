@@ -72,44 +72,76 @@ campaign("flash_i", { events: [
   effects:[{ flag:"station_issue" }],
   title:"A hundred and eighty-four thousand",
   speaker:null,
-  body:`Cordell, the Gabonese mining company, has abandoned the Bellamy Almanac
-Works, an orbital refinery that is home to 184,000 people. It wound up the
-company that ran the platform at midnight, leaving the residents with no
-employer, no money and two months of air.
+  body:`Cordell, the Gabonese mining company, shut down the operator of the Bellamy
+Almanac Works at midnight on Sunday, abandoning an orbital refinery where
+184,000 people live and work.
 
-The Works lies outside the Commonwealth, which has no treaty with it and no
-duty to it. Its residents have asked the Commonwealth for help all the same,
-because the help Earth has offered is two years away.
+The company had been unable to pay the refinery's bills since March, when
+the European Union froze the assets of Gabon's sovereign wealth fund,
+Cordell's majority owner. With the operator gone, the platform's 97,000
+workers have no employer and no wages, and the contracts that supplied its
+air, water and fuel have ended. Engineers aboard say the air will last about
+two months.
 
-The Works hangs from Tether 2, the space elevator anchored at Malindi on the
-coast of Kenya. It is a refinery and a foundry. It smelts the ore that
-Cordell's extraction platforms bring in and rolls it into structural metal
-and hull plate. Until last night, 97,000 of its residents worked for it. The
-rest are their families, and the people who feed, treat and teach them.
+The Works is outside the Commonwealth, and no treaty obliges the government
+to act. On Monday the residents' elected council asked it to, because the
+rescue Kenya has approved will take two years.
 
-Another 7,100 residents are held in suspension in the platform's store,
-their minds intact but not running. Until midnight they were Cordell's
-responsibility. This morning they are nobody's.
+The Works is supplied by Tether 2, the space elevator whose anchor stands at
+Malindi on the Kenyan coast. It is a refinery and foundry. It smelts ore
+from Cordell's mining platforms and rolls it into structural metal and hull
+plate. Its workforce includes furnace and rolling-mill crews, maintenance
+engineers, administrative staff, cooks, teachers, medical staff and
+managers. Most of the other residents are their families.
 
-The closure was legal at every step. The operating company's bank accounts
-had been frozen under international sanctions arising from a conflict on
-Earth, and no bank would process its payments. It could not buy fuel, pay
-for the water sent up the elevator, or pay wages. Gabon's sovereign wealth
-fund, which owns most of Cordell, ordered the company to cut its losses and
-protect its business on the ground.
+Another 7,100 residents are emulated minds held in suspension in the
+platform's data store, preserved but not running. The charter that governed
+the Works obliged Cordell to keep them stored. The notice filed on Sunday
+ends that obligation.
 
-Kenya has approved a plan to bring the residents down to Earth. The plan is
-fully funded and lawful, and under Kenya's procurement rules it will take
-two years. The contract to maintain the platform's air plant ended with the
-company. The engineers aboard estimate that the air will last two months.
+The European Union imposed its sanctions in March, after a United Nations
+panel found that the Gabonese fund had paid for weapons used by separatists
+in Cabinda, the oil-producing Angolan exclave where fighting has continued
+since last year. Under European rules, a company more than half-owned by a
+sanctioned body is frozen with it, which caught Cordell.
 
-Few residents want to go. For people who have spent their working lives in
-orbit, the return to Earth is a medical programme of its own, and many of
-their children have never been there. The workers' elected delegates have
-called a vote on asking to join the Commonwealth.
+The operating company kept its accounts with European banks, where the
+platform's bonds were issued. Banks elsewhere refused its business rather
+than risk European penalties. It could no longer pay the Kenyan suppliers
+who send water and air-plant parts up the elevator, buy fuel, or buy the
+Commonwealth dollars its workers are paid in. The last full wages were paid
+in March.
 
-The Ministry for Life Support could have a survey team aboard within a day,
-and a report back within a week. Nothing in law requires it to send one.`,
+On Sunday the fund, which directs Cordell from Port-Gentil, ordered the
+company to cut its losses. Cordell's mines in Gabon and its concession on
+the Port-Gentil elevator are worth far more to it than a refinery it could
+no longer run. Because the operator was a separate company, its debts,
+including the platform's bonds, end with it and do not pass to Cordell.
+
+Kenya has approved a fully funded plan to bring the residents down. Kenyan
+law requires an open tender for the transport contract, a safety inspection
+of the platform and certification of each descent car. The money must also
+pass in the budget Kenya's parliament votes on in June. The interior
+ministry expects the first residents to come down early next year and the
+last in 2082.
+
+The engineers' estimate of the air is simpler. The air plant needs
+replacement filters and catalyst from Earth every month, and the April
+shipment was never paid for. The stock aboard lasts about two months.
+
+Few residents have asked to go. Many have lived for years in the platform's
+partial gravity, in which bones thin and muscles waste. Returning to Earth's
+full gravity means months of supervised rehabilitation, and doctors say some
+residents born aboard may never manage it.
+
+The charter gave the workforce an elected council of delegates to bargain
+with the company, and with the company gone it is the only elected body
+aboard. It has called a vote on asking to join the Commonwealth. On Monday
+it asked the government to send engineers to inspect the air plant before
+the vote.
+
+The Ministry for Life Support says it could have a survey team aboard within
+a day and a report back within a week.`,
   choices:[
     { posture:"bold", label:"Send the survey team.",
       effects:[{ flag:"f1_surveyed" }, { wire:"FEDERATION SURVEYS THE ABANDONED PLATFORM" },
@@ -404,11 +436,11 @@ directly, out of the reserve, the Treasury's cash in hand. The residents
 were paid this week. Next week they will be paid only if the reserve pays
 them.
 
-The sanctions work by naming accounts. The water suppliers at the Malindi
-anchor, the fuel brokers in Mombasa and the bank that runs the platform's
-payroll all now hold Commonwealth money they are forbidden to move. Three of
-them rang the platform before breakfast to ask whether selling it water
-would break the law.
+The Union's sanctions work by naming accounts. The water suppliers at the
+Malindi anchor, the fuel brokers in Mombasa and the bank that runs the
+platform's payroll all now hold Commonwealth money they are forbidden to
+move. Three of them rang the platform before breakfast to ask whether
+selling it water would break the law.
 
 The Union holds most of the platform's bonds, through its banks and pension
 funds. It says the sanctions will stand until the bondholders are paid.
@@ -760,7 +792,7 @@ has the money.`,
   body:`The Commonwealth's thermal margin, the spare capacity its radiators have to
 shed heat, has fallen below 30 and is dropping faster than the Treasury
 forecast. The coolant the habitats need is bought on Earth, through banks
-now under sanctions.
+now under the European Union's sanctions.
 
 Every tanker of coolant is now paid for twice: once in money and once in
 delay. The margin matters because the Commonwealth's people, bodies and
@@ -818,10 +850,10 @@ their mind kept intact but stopped, until the power returns. The Allocation
 Act, the law that governs a shortage, lets the authority act first and give
 notice afterwards.
 
-The sanctions cost more every week than the Treasury has to spend. The
-thermal margin, the spare heat capacity of the Commonwealth's radiators, is
-under 25, inside the range where the authority cuts power without being
-asked.
+The European Union's sanctions cost more every week than the Treasury has to
+spend. The thermal margin, the spare heat capacity of the Commonwealth's
+radiators, is under 25, inside the range where the authority cuts power
+without being asked.
 
 One floor is left under the government, and it is the House of Delegates.
 The quarrel with Earth has never been worse, members on every bench can read

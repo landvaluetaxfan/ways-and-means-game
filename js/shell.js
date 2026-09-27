@@ -430,7 +430,7 @@ const Shell = (function () {
       (was ? `<button class="mbtn cont" data-sbx-cont="1">Continue the sandbox
           <i>${esc(was.name)} &middot; sitting ${was.sitting}</i></button>` : "") +
       list.map(a => `<button class="mbtn adm" data-sbx-admin="${esc(a.id)}">` + admFace(a) +
-        `<span class="adm-t">${esc(adminLabel(a))}<i>a fresh bench, every event in reach</i></span></button>`).join("") +
+        `<span class="adm-t">${esc(adminLabel(a))}</span></button>`).join("") +
       `</div><div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
   }
 
@@ -484,8 +484,7 @@ const Shell = (function () {
             last.date ? " &middot; " + esc(last.date) : ""}</i></button>` : ""}
       <button class="mbtn" data-go="new">New Government</button>
       <button class="mbtn${any ? "" : " off"}" data-go="load"${any ? "" : " disabled"}>Load</button>
-      <button class="mbtn" data-go="sandbox">Sandbox
-        <i>any event, as a player meets it</i></button>
+      <button class="mbtn" data-go="sandbox">Sandbox</button>
       <button class="mbtn" data-go="awards">Achievements
         <i>${sc.have} of ${sc.of}${sc.canon ? " &middot; Ways and Means" : ""}</i></button>
       <button class="mbtn" data-go="options">Options</button>

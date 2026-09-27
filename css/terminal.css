@@ -3455,11 +3455,14 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .sbxflags{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 8px;}
 
 /* ---------- the set piece (design/31) ---------- */
-/* THE PAGE THAT TAKES THE SCREEN. Every other surface here is a panel in a
-   grid that reads at a glance; this one is the game stopping to be read, so
-   it takes the whole sitting screen and the columns either side go away
-   while it is up. The rule from CLAUDE.md still holds: the PAGE never
-   scrolls, the thing inside it does. */
+/* THE LAST PAGE TAKES THE SCREEN (#s-sit.fullpage): after the count there
+   is nothing left to govern, so the columns either side go away. An EVENT
+   keeps them (design/51; the author: "the decision is just sort of
+   awkwardly squished into the bottom ... why does this have to be the
+   case?"). With the columns hidden its answers ran the full width of the
+   window under a 66ch page; in the centre column they are a decision's
+   width, and the docket and calendar stay in view while the page is read.
+   The page never scrolls; the thing inside it does. */
 /* ONE COLUMN THAT STILL HAS A HEIGHT. This was `display:block`, which hid
    the columns either side and also took the page's column out of the
    grid's height, so a long page grew the panel past the window and the
@@ -3467,11 +3470,11 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
    scrolling inside its panel. A short set piece hid it; an event page with
    a portrait and four paragraphs did not, in a 768 laptop's browser window
    (design/49). */
-#s-sit.setpiece .grid{display:flex;flex-direction:column;}
-#s-sit.setpiece .stackmain{flex:1 1 auto;min-height:0;}
-#s-sit.setpiece .stack:not(.stackmain){display:none;}
-#s-sit.setpiece .stackmain > .panel{flex:1 1 auto;min-height:0;}
-#s-sit.setpiece .stackmain > .panel > .pbody{display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+#s-sit.fullpage .grid{display:flex;flex-direction:column;}
+#s-sit.fullpage .stackmain{flex:1 1 auto;min-height:0;}
+#s-sit.fullpage .stack:not(.stackmain){display:none;}
+#s-sit.fullpage .stackmain > .panel{flex:1 1 auto;min-height:0;}
+#s-sit.fullpage .stackmain > .panel > .pbody{display:flex;flex-direction:column;min-height:0;overflow:hidden;}
 .sp-scroll{flex:1 1 auto;min-height:0;overflow:auto;padding:0 2px;}
 .sp-page{max-width:60ch;margin:0 auto;padding:18px 10px 8px;}
 .sp-title{font-family:var(--f-disp);font-size:21px;letter-spacing:.02em;
