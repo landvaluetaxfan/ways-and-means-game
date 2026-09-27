@@ -2103,24 +2103,26 @@ timetables.`,
   when:{ scalarBelow:{ consumables:52 } },
   title:"The floor, and what it is carrying",
   speaker:"ansar",
-  body:`The consumables figure has come down far enough that the quarterly
-lift is being cut on the stations that need it most, and the ninth deck has
-circulated the schedule again.
+  body:`The Commonwealth's stock of consumables, the air, water and food brought up
+from Earth, has fallen far enough that the quarterly supply run is being cut
+on the stations that depend on it most.
 
-"It is not the number," Ansar writes. "It is that the number is a schedule,
-and the schedule is a list of who is carried and who is not."`,
+Sevi Ansar, a resident of Deck 9 on Homestead, has circulated the new
+delivery schedule. "It is not the number," Ansar writes. "It is that the
+number is a schedule, and the schedule is a list of who is carried and who
+is not."`,
   choices:[
-    { posture:"bold", label:"Buy the lift back out of the reserve.",
+    { posture:"bold", label:"Pay from the reserve to restore the supply run.",
       effects:[{ move:{ "consumables":7 } }, { move:{ "solvency":-9000 } },
                { move:{ "loyalty.cu_maintenance":6 } }, { move:{ "loyalty.psa":5 } },
                { wire:"QUARTERLY LIFT RESTORED FROM THE RESERVE" }],
-      result:`The schedule is restored and the reserve carries it.` },
-    { posture:"cautious", label:"Let the stations that can pay, pay.",
+      result:`The reserve pays nine billion dollars and the full schedule is restored. Your maintenance members and the New Progressive Party approve.` },
+    { posture:"cautious", label:"Let the stations that can pay for deliveries pay.",
       effects:[{ move:{ "consumables":-3 } }, { move:{ "public_standing":-6 } },
                { move:{ "loyalty.cu_maintenance":-8 } },
                { station:{ ashfield:{ closure:-0.02 }, drift:{ closure:-0.02 } } },
                { wire:"CONSUMABLES LIFT CUT ON THE LOW-CLOSURE STATIONS" }],
-      result:"The figure steadies and the stations with the least closure take the difference." }
+      result:"The national figure steadies. Homestead and The Verge, the low-band stations least able to supply themselves, take the cut, and your maintenance members are angry." }
   ]},
 
 /* A POSITION SETTLES (design/28 §3). The forward was sold for cash at a
@@ -2254,15 +2256,17 @@ to move."`,
 { id:"the_minimum_berth", chapter:2, weight:64, once:true,
   title:"The minimum berth",
   speaker:"vellan",
-  body:`The Ministry has measured the berths on the low band and a third of them
-are under the standard of 2072. Most of the shortfall is in the last six years,
-and most of it is one landlord.
+  body:`The Ministry for Life Support has measured the living quarters, or berths,
+on the low band, and a third of them are smaller than the minimum standard
+set in 2072. Most of the shortfall has appeared in the last six years, and
+most of it belongs to one landlord.
 
-Vidyasagar puts the two readings of the same figure. "Either a berth is a home and
-there is a floor under it, or it is a cubic metre with a lock on the door. The
-House has to say which, because the market will not."`,
+Suravaram Vidyasagar, the Minister for Life Support, puts the choice
+plainly. "Either a berth is a home, with a minimum size under it, or it is a
+cubic metre with a lock on the door. Parliament has to decide which, because
+the market will not."`,
   choices:[
-    { posture:"bold", label:"Set the floor, and enforce it",
+    { posture:"bold", label:"Set a minimum berth size, and enforce it",
       note:"A minimum volume in law turns a lease into a home and puts the cost " +
            "of the partition on the landlord. The low band's associations will " +
            "carry it for you; the rentiers will price it into every let they " +
@@ -2272,14 +2276,14 @@ House has to say which, because the market will not."`,
                { move:{ "loyalty.hul": 6 } }, { move:{ "loyalty.des": 4 } },
                { move:{ "public_standing": 4 } },
                { wire:"MINIMUM BERTH STANDARD LAID; LANDLORDS TO RECONFIGURE OR LOSE THE LET" }],
-      result:"The standard is on the book from the next quarter. Half the partitioned berths on the low band are now unlawful and the landlords have six months to say what they will do about it." },
-    { posture:"cautious", label:"Leave it to the lease. A tenant can read a plan",
+      result:"The standard takes effect next quarter. Half the subdivided berths on the low band are now unlawful, and landlords have six months to fix them. Rents rise, and the fork-rentiers, who rent out copies of themselves for work and live in the smallest berths, lose out." },
+    { posture:"cautious", label:"Leave it to the lease: a tenant can read a floor plan",
       note:"No new duty and no new cost. Density stays a matter between landlord " +
            "and tenant, and the densest berths stay where the work is.",
       effects:[{ move:{ "price.volume": -6 } }, { move:{ "actor.forkrentiers": 6 } },
                { move:{ "consumables": -4 } }, { move:{ "loyalty.cu": -3 } },
                { wire:"GOVERNMENT DECLINES A MINIMUM BERTH; THE PARTITION STANDS" }],
-      result:"The rentiers write the quarter's lets on the old terms. The low band's associations note who decided, and the deck crews note that the densest berths are the ones the air reaches last." }
+      result:"Landlords let the quarter's berths on the old terms. The low band's residents' associations note who decided, and deck crews note that the most crowded berths are the last the ventilation reaches." }
   ]},
 
 /* THE COURTS (bible 10.8). Emulated judges who personally remember the
@@ -2288,20 +2292,22 @@ House has to say which, because the market will not."`,
 { id:"the_old_judge", chapter:2, weight:71, once:true,
   title:"The judge who remembers",
   speaker:"fenwick",
-  body:`The presiding judge of the Tribunal was emulated in 2060 and has sat
-continuously since. She remembers the founding arguments as arguments, which is
-to say she was in the room for some of them.
+  body:`The Tribunal is the court that hears challenges to the government's orders.
+Its presiding judge is an emulated mind, copied in 2060, who has sat
+continuously since and was present for some of the Charter's founding
+arguments.
 
-She has asked the Minister for Law for a reference on a narrow point: whether
-reclassification, the practice of moving a person between legal categories, is
-a question of fact for the courts or a branch of professional practice for the
-licensing boards.
+She has asked Adaeze Fenwick, the Minister for Law and the Charter, for a
+ruling on a narrow point. Reclassification is the practice of moving a
+person from one legal category to another, such as from instance to person.
+Is it a question of fact for the courts, or a matter of professional
+practice for the licensing boards?
 
 "The boards certify the work," Fenwick says. "She is asking who owns the
-question. If it is the boards, the courts will not see a reclassification case
-again."`,
+question. If it is the boards, the courts will never see a reclassification
+case again."`,
   choices:[
-    { posture:"cautious", label:"Refer it to the boards. They know the practice",
+    { posture:"cautious", label:"Give it to the licensing boards: they know the practice",
       note:"A reference to the boards keeps the question where the expertise is " +
            "and keeps the courts out of a technical argument. It also hands the " +
            "boards the power to decide what a person is.",
@@ -2310,15 +2316,15 @@ again."`,
                { move:{ "loyalty.gb": 6 } }, { move:{ "loyalty.rv": -4 } },
                { move:{ "public_standing": -2 } },
                { wire:"RECLASSIFICATION REFERRED TO THE LICENSING BOARDS" }],
-      result:"The reference goes to the boards, which will report in their own time. The judge notes the answer and does not comment on it." },
-    { posture:"bold", label:"It is a question of fact, and the courts will hear it",
+      result:"The question goes to the boards, which will report in their own time. The Alliance of Business and Government approves; the lawyers' licensing board and the Congregational Democratic Alliance do not. The judge notes the answer without comment." },
+    { posture:"bold", label:"It is a question of fact: the courts will hear it",
       note:"The courts keep the question. The boards lose it, and the Guild will " +
            "read the reference as the government saying so.",
       effects:[{ flag:"reclassification_to_courts" },
                { move:{ "actor.lb_legal": 7 } }, { move:{ "rel.gb_chair": -5 } },
                { move:{ "loyalty.rv": 5 } }, { move:{ "loyalty.gb": -5 } },
                { wire:"RECLASSIFICATION IS A QUESTION OF FACT FOR THE COURTS" }],
-      result:"The judge has her jurisdiction and the boards have a grievance. The first reclassification case is listed for next session." }
+      result:"The courts keep the question and the boards have a grievance. The first reclassification case is listed for next session, and Kazuya Tanako of the Life Support panel takes it as a slight." }
   ]},
 
 /* CONSUMABLES (bible 10.1). The agricultural decks, "the emotional centre of
@@ -2327,30 +2333,30 @@ again."`,
 { id:"the_agricultural_deck", chapter:2, weight:66, once:true,
   title:"The deck at Harvest",
   speaker:null,
-  body:`The number one agricultural deck at Harvest has a root-rot in the protein
-vats that the station has been treating for a month without saying so. The
-treatment is holding. The replacement is a keel-level refit that takes the deck
-out of production for thirteen weeks.
+  body:`The main agricultural deck at Harvest, a station of 70,000 people in the
+middle band, has root rot in its protein vats, and the station has been
+treating it for a month without saying so. The treatment is holding.
 
-Harvest grows for the stations around it as well as for itself, and every
-station in the middle band is watching what the Commonwealth does about a deck
-they all eat from.`,
+A permanent fix means rebuilding the deck to its foundations and taking it
+out of production for thirteen weeks. Harvest grows food for the stations
+around it as well as for itself, so every station in the middle band is
+watching what the government does.`,
   choices:[
-    { posture:"bold", label:"Fund the refit and carry the station's shortfall",
+    { posture:"bold", label:"Fund the rebuild, and cover the station's food shortfall meanwhile",
       note:`Thirteen weeks of buying in what the deck cannot grow, paid out of the same vote that funds everything else. The middle band will read it as the Commonwealth being willing to carry a deck.`,
       effects:[{ move:{ "solvency": -7000 } }, { move:{ "consumables": 6 } },
                { station:{ wickstead:{ closure: 0.05 } } },
                { move:{ "public_standing": 5 } },
                { wire:"COMMONWEALTH FUNDS HARVEST DECK REFIT; SHORTFALL CARRIED" }],
-      result:`The refit is funded and the deck comes back in three months better than it went in. The station's ratio rises with it, and the other stations of the middle band read the figure.` },
-    { posture:"cautious", label:"Treat it where it stands and say nothing",
+      result:`The rebuild costs seven billion dollars, and the deck returns in three months better than before. Harvest now grows more of its own food, and the rest of the middle band notices.` },
+    { posture:"cautious", label:"Keep treating it, and say nothing",
       note:"A holding treatment and a quiet quarter. Cheaper now, and the deck " +
            "is one bad month from the same emergency with a larger bill.",
       effects:[{ move:{ "consumables": -5 } }, { move:{ "solvency": 2000 } },
                { move:{ "loyalty.hul": -4 } },
                { queue:[{ event:"the_deck_again", after:5 }] },
                { wire:"HARVEST DECK HELD WITH TREATMENT; NO REFIT FUNDED" }],
-      result:"The treatment holds for the quarter. The station's engineers file a second estimate and file it quietly." }
+      result:"The treatment holds for the quarter and saves two billion dollars. The station's engineers quietly file a second, larger estimate." }
   ]},
 
 /* REACH: queued by the_agricultural_deck's 'treat it where it stands' choice. */
@@ -2387,18 +2393,20 @@ always going to fail.`,
   speaker:"marin",
   body:`The Congregational Democratic Alliance does not meet in a cathedral. It
 meets in fourteen rented halls across the low and middle bands, and its
-congregations are not one confession. They are the people who do not recognise
-a reclassification, in the way that a pacifist does not recognise a war.
+congregations are not one faith. What they share is that they do not accept
+reclassification, the moving of a person from one legal category to another,
+much as a pacifist does not accept a war.
 
-They have sent Marin with one question, in writing. Whether the Commonwealth
-intends to require an attestation of the register for a marriage, a burial or a
-school place.
+They have sent Florence Marin, the Minister for Persons, Health and
+Continuity and a member of the Alliance, with one question in writing: will
+the Commonwealth require proof that a person is on the attested register
+before a marriage, a burial or a school place?
 
-"It is not a franchise question to them," she says. "It is a question about
-what a body is, and they will lose an election before they will answer it your
-way."`,
+"To them this is not a question about voting," Marin says. "It is a question
+about what a body is, and they will lose an election before they answer it
+your way."`,
   choices:[
-    { posture:"bold", label:"Say no. The register is not required for any of the three",
+    { posture:"bold", label:"Say no: the register will not be required for any of the three",
       note:"A written answer that costs nothing and buys the congregations " +
            "without touching the bill. It commits the government on a point the " +
            "Registry has not conceded.",
@@ -2406,15 +2414,15 @@ way."`,
                { move:{ "loyalty.rv": 9 } }, { move:{ "actor.lb_legal": -3 } },
                { move:{ "public_standing": 3 } },
                { wire:"REGISTER NOT REQUIRED FOR MARRIAGE, BURIAL OR SCHOOLING" }],
-      result:"Marin takes the answer to the fourteen halls. The Registry notes, without objecting, that the question is not the law's to settle for long." },
-    { posture:"cautious", label:"Leave it to the register. Attestation is attestation",
+      result:"Marin takes the answer to the fourteen halls, and the Alliance's members are grateful. The Registry notes, without objecting, that the law will not leave the question alone for long." },
+    { posture:"cautious", label:"Leave it to the register: the rules apply to everyone",
       note:"The Registry's position, said out loud. The congregations lose the " +
            "answer and gain a grievance they are extremely good at keeping.",
       effects:[{ flag:"congregations_refused" },
                { move:{ "loyalty.rv": -12 } }, { move:{ "loyalty.psa": 4 } },
                { move:{ "actor.lb_legal": 4 } }, { move:{ "public_standing": -4 } },
                { wire:"GOVERNMENT LEAVES THE SACRAMENTS TO THE REGISTER" }],
-      result:"The congregations are told that the register applies. Fourteen halls hear it on the same evening, and the CDA's conference has a reason to meet early." }
+      result:"The congregations are told the register applies. All fourteen halls hear it the same evening, and the Congregational Democratic Alliance calls an early conference." }
   ]},
 
 /* ===========================================================
@@ -2433,14 +2441,16 @@ way."`,
   when:{ flagsAbsent:["pair_offered"] },
   title:`A pair, for the member for Cable End`,
   speaker:"okarie",
-  body:`One of the Liberals is going under for a reabsorption on Thursday, and
-the division is set for the same afternoon. The member cannot attend, and the Liberal whip has come to Devi about it,
+  body:`A Liberal member, the member for Cable End on Meridian Spindle, is to be
+reabsorbed on Thursday: an instance of the member will be merged back into
+its original. The division is set for the same afternoon, so the member
+cannot attend, and the Liberal whip has come to Anil Devi, the Chief Whip,
 which no Liberal whip has done in two years.
 
-"A pair sends one of ours home with one of theirs," Devi says. "It costs us a
-vote and it costs them one, and the bar does not move for either. It is not a
-favour. It is a kindness, and it is the kind of thing that is remembered when
-we want something that is not arithmetic."`,
+"A pair means one of ours stays away to match one of theirs," Devi says. "It
+costs us a vote and them a vote, and the result does not move. It is not a
+favour. It is a courtesy, and courtesies are remembered when we want
+something that is not arithmetic."`,
   choices:[
     { posture:"cautious", label:"Grant the courtesy.",
       note:"The control is in the whip panel on the Chamber tab, under the " +
@@ -2450,12 +2460,12 @@ we want something that is not arithmetic."`,
       effects:[{ flag:"pair_offered" }, { move:{ "rel.okarie":4 } },
                { move:{ "loyalty.cu_loyalists":2 } },
                { wire:"GOVERNMENT WHIPS AGREE TO A COURTESY PAIR FOR THURSDAY'S DIVISION" }],
-      result:`Devi passes it to the other side without comment, which is how a thing like this is done.` },
+      result:`Devi tells the other side without comment, which is how these things are done. The Soft Left approves.` },
     { posture:"bold", label:"No. Every vote counts and their side knows it.",
       effects:[{ move:{ "rel.okarie":-5 } }, { move:{ "loyalty.cl":-5 } },
                { move:{ "public_standing":-3 } },
                { wire:"GOVERNMENT REFUSES A COURTESY PAIR; THE BENCHES NOTE IT" }],
-      result:`The refusal is within the rules, and the other side's whips now know where the government stands on a small thing.` }
+      result:`The refusal is within the rules. The Liberal whips now know how the government treats a small courtesy, and the country hears about it.` }
   ]},
 
 /* REACH: the flag is set by the pairing control in the whip panel (a UI action), not by content. */
@@ -2466,21 +2476,19 @@ we want something that is not arithmetic."`,
   when:{ pairsKeptAtLeast:1 },
   title:"The kindness, remembered",
   speaker:null,
-  body:`The member came back from the reabsorption on the Tuesday, and the
-division that had gone to a pair passed without him on either side of it. The
-whips on the other side have not mentioned it.
-
-They have mentioned it to their benches, which is where a kindness actually
-gets banked.`,
+  body:`The Liberal member was reabsorbed and came back on Tuesday, and the division
+went ahead without either paired member voting. The Liberal whips have not
+mentioned it to the government. They have mentioned it to their own members,
+which is where a courtesy is remembered.`,
   choices:[
-    { posture:"cautious", label:"Leave it. A courtesy is not an invoice.",
+    { posture:"cautious", label:"Leave it: a courtesy is not an invoice.",
       effects:[{ move:{ "loyalty.cl":4 } }, { move:{ "public_standing":3 } },
                { wire:"THE COURTESY PAIR IS BANKED AND NOT MENTIONED" }],
-      result:"Nothing is asked for and something is owed. It sits where such things sit." },
+      result:"Nothing is asked for, and the Liberals feel they owe the government something. The country thinks better of both." },
     { posture:"bold", label:"Ask for their benches on the next division.",
       effects:[{ move:{ "loyalty.cl":-5 } }, { move:{ "public_standing":-2 } },
                { wire:"GOVERNMENT CALLS IN THE PAIR; THE OTHER SIDE PRICES IT" }],
-      result:"The favour is spent, and the other side now knows the government's kindnesses have a price. That makes them cheaper to refuse next time." }
+      result:"The favour is spent, and the Liberals now know the government's courtesies have a price, which makes them easier to refuse next time." }
   ]},
 
 /* ===========================================================
@@ -2500,17 +2508,20 @@ gets banked.`,
   when:{ flags:["reclassification_to_courts"], flagsAbsent:["tr_referenced"] },
   title:"The reference",
   speaker:"fenwick",
-  body:`The Tribunal has the reclassification jurisdiction the government gave it, and the
-first case is listed. Before it hears it, the bench has put a reference in
-writing, which it has done twice since the Charter: by what test a court should
-decide whether a person was lawfully moved between legal categories, the entry
-in the register or the continuity of the person. The bench will proceed on
-whichever answer the government gives, and until it is given the bench will
-proceed on its own.
+  body:`The Tribunal, the court that hears challenges to the government's orders,
+now has the reclassification cases the government gave it, and the first is
+listed. Before hearing it, the judges have put a question to the government
+in writing, as they have done only twice since the Charter.
 
-"It is four paragraphs," Fenwick says. "Answering it takes a day and binds every
-case after this one. Not answering it takes no time at all, and the bench writes
-the test itself."`,
+They ask by what test a court should decide whether a person was lawfully
+moved from one legal category to another: by the entry in the register, or
+by whether the person is continuously the same person. The judges will
+follow the government's answer. Until one comes, they will decide for
+themselves.
+
+"It is four paragraphs," says Adaeze Fenwick, the Minister for Law and the
+Charter. "Answering takes a day and binds every case after this one. Not
+answering takes no time at all, and the judges write the test themselves."`,
   choices:[
     { posture:"bold", label:"Answer it, in full, on the record.",
       cost:{ slot:1 },
@@ -2520,12 +2531,12 @@ the test itself."`,
       effects:[{ flag:"tr_referenced" }, { flag:"reference_answered" },
                { move:{ "actor.tribunal":10 } }, { move:{ "legitimacy":4 } },
                { wire:"GOVERNMENT ANSWERS THE TRIBUNAL'S REFERENCE IN FULL" }],
-      result:"The answer is four paragraphs, it is on the record, and it is now the government's position whether the government likes it or not." },
+      result:"The answer runs to four paragraphs and goes on the record. It is now the government's position, whether it likes it later or not, and the Tribunal thinks better of the government for giving it." },
     { posture:"cautious", label:"Let it lie. The bench can proceed on its own.",
       effects:[{ flag:"tr_referenced" }, { flag:"reference_ignored" },
                { move:{ "actor.tribunal":-12 } }, { move:{ "legitimacy":-3 } },
                { wire:"GOVERNMENT DECLINES TO ANSWER THE TRIBUNAL'S REFERENCE" }],
-      result:`Nothing is answered. The bench notes the date it asked and the date nothing came back. Both dates stay on the file.` }
+      result:`Nothing is answered. The judges record the date they asked and that no answer came, and both stay on the file.` }
   ]},
 
 /* THE CHALLENGE. The opposition does not need a majority to hurt an order, it
@@ -2535,17 +2546,16 @@ the test itself."`,
   when:{ siInForce:["si_2080_44"], flagsAbsent:["tr_challenged"] },
   title:"The order is challenged",
   speaker:"fenwick",
-  body:`The Liberals have taken the licensing order to the Tribunal. The
-argument is narrow and it is not about licensure: it is that the order was made
-under a power the statute reserves to the boards, and that a minister may
-not exercise a board's jurisdiction by order.
+  body:`The Liberal Party has challenged the Life Support Engineering (Licensing)
+Order at the Tribunal. The argument is narrow and not about licensing
+itself: that the order was made under a power the law gives to the licensing
+boards, and that a minister may not use a board's power by order.
 
-"The bench will hear it in four sittings," Fenwick says. "We can brief counsel
-or we can let it run. If we brief it, we are in a courtroom arguing with the
-government's own name on it. If we do not, the order will be read by people who
-heard one side."`,
+"The Tribunal will hear it in four sittings," says Adaeze Fenwick, the
+Minister for Law and the Charter. "If we send lawyers, the government is in
+court defending its own order. If we do not, the judges hear only one side."`,
   choices:[
-    { posture:"bold", label:"Brief counsel. The order is worth defending.",
+    { posture:"bold", label:"Send lawyers to defend the order.",
       note:"A proper defence costs attention and it is heard. A court is not a " +
            "lobby: the numbers in the House do not reach it, and the only thing " +
            "that moves the bench is whether the government turned up.",
@@ -2554,8 +2564,8 @@ heard one side."`,
                { queue:[{ event:"tr_ruling", after:4,
                           label:"The Tribunal rules on the licensing order" }] },
                { wire:"COMMONWEALTH BRIEFS COUNSEL AGAINST THE CHALLENGE TO THE LICENSING ORDER" }],
-      result:"Counsel is briefed and the case is listed for the fourth sitting. The order stands until the bench says otherwise." },
-    { posture:"cautious", label:"Let it run. The order was lawfully made.",
+      result:"The government's lawyers are instructed and the case is listed for the fourth sitting. The order stands until the Tribunal rules." },
+    { posture:"cautious", label:"Let it run: the order was lawfully made.",
       note:"No defence, and no cost. The bench will hear the challenge alone, " +
            "which is a thing a bench notices about a government that is certain " +
            "and uninterested.",
@@ -2564,7 +2574,7 @@ heard one side."`,
                { queue:[{ event:"tr_ruling", after:4,
                           label:"The Tribunal rules on the licensing order" }] },
                { wire:"GOVERNMENT DECLINES TO DEFEND THE LICENSING ORDER; CASE HEARD ONE SIDE" }],
-      result:"The case is listed and nobody appears for the government. The bench hears it in an hour." }
+      result:"The case is listed and nobody appears for the government. The Tribunal hears it in an hour, and notes the absence." }
   ]},
 
 /* THE RULING. Three doors, disjoint, and every one of them openable: an order
@@ -2634,19 +2644,19 @@ every licensing board in the Commonwealth.`,
   when:{ loyaltyBelow:{cu_halloran:26}, flagsAbsent:["paper_opened"] },
   title:"The paper",
   speaker:"halloran",
-  body:`Czarnecki has a sheet of paper and four names on it, and he has stopped
-pretending it is not a sheet of paper. He puts it on the desk between you and
-says the only thing he has come to say.
+  body:`Dan Czarnecki, leader of your party's Hard Left, has a sheet of paper with
+four names on it, and he has stopped pretending it is anything else. Twelve
+signatures force a ballot on your leadership.
 
-"Every name on this is a member who has decided the party would be better run
-by somebody else, and every one of them has a reason you gave them. You can go
-and ask them. Some will sign to your face because they are brave, or because
-they are finished with you, or because they want you to know."
+"Every name on this belongs to a member who thinks the party would be better
+led by someone else," he says, "and every one of them has a reason you gave
+them. You can go and ask them. Some will sign to your face: because they are
+brave, or because they are finished with you, or because they want you to
+know.
 
-"Twelve and there is a ballot," he says. "Eleven and I am a
-man with a list."`,
+"Twelve and there is a ballot. Eleven and I am a man with a list."`,
   choices:[
-    { posture:"bold", label:"Open the paper. Let them come and say it.",
+    { posture:"bold", label:"Open the paper: let them come and sign it openly.",
       note:"Members are asked one at a time on the Party tab, under the " +
            "leadership. A member who is willing signs, and every signature " +
            "is a member you have lost. A member who is not refuses, comes off " +
@@ -2655,12 +2665,12 @@ man with a list."`,
       effects:[{ flag:"paper_opened" }, { move:{ "rel.halloran":3 } },
                { move:{ "loyalty.cu_loyalists":-3 } },
                { wire:"CZARNECKI'S PAPER IS ON THE DESK; MEMBERS SAY WHETHER THEY WILL SIGN" }],
-      result:"He leaves the sheet. The first name is on it before the afternoon, and it is not a name you would have guessed." },
-    { posture:"cautious", label:"Refuse to dignify it. He has four names.",
+      result:"He leaves the sheet with the whips. The first new name is on it before the afternoon, and it is not one you would have guessed." },
+    { posture:"cautious", label:"Ignore it: he has four names.",
       effects:[{ move:{ "rel.halloran":-6 } }, { move:{ "loyalty.cu_halloran":-4 } },
                { move:{ "loyalty.cu_maintenance":-3 } },
                { wire:"PM DECLINES TO DISCUSS CZARNECKI'S LIST" }],
-      result:"Nothing is opened and nothing is answered. The sheet stays in his pocket, which is where a list of four names ought to be, and he collects the rest in his own time." }
+      result:"The paper stays in his pocket, and he collects the rest of the names in his own time. The Hard Left and your maintenance members resent being brushed off." }
   ]},
 
 /* THE OPPOSITION DECIDES (design/33 §1).
@@ -2805,18 +2815,20 @@ it out last week.`,
     "Commonwealth's history. The PM has to decide whether to claim it.",
   title:"The figure nobody argued for",
   speaker:"herrera",
-  body:`The Census Bureau's quarterly return reaches Jason Herrera at eight, and the
-minister brings it across in person. The share of adults in paid work has risen further in
-one quarter than in any year since the Charter, and the Bureau's note gives the
-reason in its second line: the threshold. Copies that became persons draw wages
-now, and the work they did as instances is paid work in the return.
+  body:`The Census Bureau's quarterly figures show that the share of adults in paid
+work has risen more in one quarter than in any year since the Charter. Jason
+Herrera, the Minister for Labour and Participation, brings them in person.
 
-"We argued it for a month as a question about what a person is," Herrera says.
-"It was also the largest change in who holds a paid job this Commonwealth has
-made. No party campaigned for this number. The question is whether the
-government stands beside it."`,
+The Bureau gives the reason in its second line: the lower divergence
+threshold. Copies that became persons now draw wages, so work they did
+unpaid as instances now counts as paid work.
+
+"We argued it for a month as a question about what a person is," Herrera
+says. "It was also the largest change in who holds a paid job this
+Commonwealth has ever made. No party campaigned for this number. The
+question is whether the government stands beside it."`,
   choices:[
-    { posture:"bold", label:"Claim it. Say plainly what the threshold did.",
+    { posture:"bold", label:"Claim it, and say plainly what the threshold did.",
       brief:"Taking credit for a consequence the government did not "+
         "predict. Reads as competence to the country and as an admission "+
         "to the benches who were told it was a personhood bill.",
@@ -2824,13 +2836,13 @@ government stands beside it."`,
                { move:{ "loyalty.cu_maintenance":-5 } },
                { move:{ legitimacy:3 } },
                { wire:"TREASURER CREDITS THRESHOLD FOR RISE IN PAID WORK" }],
-      result:`The Spindle leads on the number the next morning, with the threshold in its second paragraph. The Trades Left reads the same paragraph as the government saying the bill was about jobs all along.` },
+      result:`The Spindle leads on the figure the next morning, with the threshold in its second paragraph. The Trades Left reads it as the government admitting the bill was about jobs all along.` },
     { posture:"cautious", label:"Let the figure speak and say nothing.",
       brief:"The cautious answer. Costs nothing and concedes the framing to "+
         "whoever explains it first, which will be the Opposition.",
       effects:[{ move:{ "rel.watkins":-2 } },
                { move:{ "trend.public_standing":-1 } }],
-      result:`The return is published at noon without a minister beside it. By the evening Watkins has explained it on the wire, in his own words.` }
+      result:`The figures are published at noon with no minister to explain them. By evening Darren Watkins Jr., the Leader of the Opposition, has explained them in his own words.` }
   ]},
 
 { id:"ec_participation_stalls", chapter:2, weight:62, maxFires:2,
@@ -2843,15 +2855,16 @@ government stands beside it."`,
   title:"The work that is not wages",
   speaker:"herrera",
   body:`The share of adults in paid work has fallen below thirty-seven per cent, the
-lowest return since the Charter, and Jason Herrera has come to say that the
-economy has not shrunk.
+lowest since the Charter. Jason Herrera, the Minister for Labour and
+Participation, says the economy has not shrunk.
 
-"The work is being done," Herrera says. "The berths are cleaned, the ledgers are
-kept, the racks are watched. Instances are doing it, at the hours their roots
-sell them for, and an instance's hours are a wage in no column the Bureau keeps.
-Participation counts who is paid. It has stopped counting who works."`,
+"The work is being done," Herrera says. "The berths are cleaned, the
+accounts are kept, the computer racks are watched. Instances are doing it,
+copies whose originals sell their hours, and an instance's hours are a wage
+in no column the Census Bureau keeps. The figure counts who is paid. It has
+stopped counting who works."`,
   choices:[
-    { posture:"bold", label:"Shorten the threshold and count the hours.",
+    { posture:"bold", label:"Lower the divergence threshold, so the hours are counted.",
       brief:"The interventionist answer: the same lever as the divergence "+
         "bill, used deliberately this time. Expensive with the employers.",
       effects:[{ law:{ divergence_threshold_hours:96 } },
@@ -2859,20 +2872,20 @@ Participation counts who is paid. It has stopped counting who works."`,
                { move:{ "loyalty.fh":-8 } },
                { move:{ "actor.metanationals":-6 } },
                { wire:"THRESHOLD CUT TO NINETY-SIX HOURS" }],
-      result:`The threshold falls to ninety-six hours. Copies separated for four days are persons from the next quarter, and the employers who ran them for a working week are in the lobby by the afternoon.` },
+      result:`The threshold falls to ninety-six hours. Copies that have run separately for four days become persons next quarter, and the employers who ran them for a working week are lobbying by the afternoon.` },
     { posture:"measured", label:"Fund a public works programme instead.",
       brief:"Buying participation with the reserve rather than with the "+
         "law. Works, costs money, and leaves the underlying question open.",
       effects:[{ move:{ solvency:-9000 } },
                { economy:{ participation:2 } },
                { move:{ public_standing:4 } }],
-      result:`Nine billion dollars of works go to the yards and the decks, and the next return shows two points of it. The instances' hours are still in Herrera's file.` },
+      result:`Nine billion dollars of public works go to the shipyards and the farm decks, and the next figures rise two points. The instances' unpaid hours are still uncounted.` },
     { posture:"cautious", label:"Accept it. The economy is what it is.",
       brief:"The answer that costs nothing today. The trend continues and "+
         "the benches that depend on waged work notice.",
       effects:[{ move:{ "loyalty.cu_maintenance":-6 } },
                { move:{ "trend.legitimacy":-1 } }],
-      result:`The return is published again next quarter, lower. The maintenance benches read it as a count of the members they have lost to copies.` }
+      result:`Next quarter's figure is lower again. Your maintenance members read it as a count of the jobs their trades have lost to copies.` }
   ]},
 
 { id:"ec_trade_surplus", chapter:2, weight:55, maxFires:2,
@@ -2883,15 +2896,15 @@ Participation counts who is paid. It has stopped counting who works."`,
     "figure too, and so can every bench that wants the money spent.",
   title:"What the surplus buys",
   speaker:"landry",
-  body:`The trade account is in surplus for the third quarter running, and nearly all
-of the surplus is compute: mind-hours run in the Commonwealth's racks and sold
-to Earth's firms, which cannot reject the heat of running them as cheaply as a
-radiator in orbit can.
+  body:`The Commonwealth has sold more than it bought for the third quarter running,
+and nearly all of the surplus is computing: mind-hours run on the
+Commonwealth's racks and sold to Earth's firms, which cannot shed the heat
+of running them as cheaply as a radiator in orbit can.
 
-Jean Landry has been asked about the figure twice this morning, once by the
-Kenyan legation and once by a Home Rule member. "The Earth states read this
-number as leverage," Landry says. "The benches read it as money. It can be
-spent once."`,
+Jean Landry, the Minister for External Relations, has been asked about the
+figure twice this morning, once by Kenya's embassy and once by a Home Rule
+member. "Earth's governments see this number as leverage," Landry says. "Our
+members see it as money. It can only be spent once."`,
   choices:[
     { posture:"bold", label:"Spend it on the stations that are short.",
       brief:"Redistribution inside the union. Popular where it lands and "+
@@ -2900,7 +2913,7 @@ spent once."`,
                { move:{ "standing.low":5 } },
                { move:{ "standing.ring":-3 } },
                { move:{ consumables:3 } }],
-      result:`Part of the surplus goes into the reserve and the rest goes out to the low band's consumables lift. The ring's members ask at questions whose surplus it was.` },
+      result:`Seven billion dollars go into the reserve and the rest pays for the low band's supply runs. Members for the ring band ask at Question Time whose surplus it was.` },
     { posture:"cautious", label:"Hold it against the anchor negotiations.",
       brief:"Treating the surplus as a diplomatic reserve. Nothing visible "+
         "happens at home, which is the cost.",
@@ -2908,7 +2921,7 @@ spent once."`,
                { move:{ "actor.earth_host":4 } },
                { move:{ "trend.public_standing":-1 } },
                { flag:"ec_surplus_held" }],
-      result:`The surplus stays in the reserve, and Landry takes the figure into the next round with Kenya over the International's terms. The benches that wanted it spent say so at questions.` }
+      result:`The surplus stays in the reserve, and Landry takes the figure into the next talks with Kenya over the International Earth-Orbit Elevator. Members who wanted it spent say so at Question Time.` }
   ]},
 
 { id:"ec_trade_deficit", chapter:2, weight:74, maxFires:2,
@@ -2920,16 +2933,16 @@ spent once."`,
     "radiators.",
   title:"Buying more than it sells",
   speaker:"hatt",
-  body:`The trade account has been in deficit for two quarters, and the gap is met from
-the reserve: dollars the Treasury holds against the radiators' quota are paying
-for imports.
+  body:`The Commonwealth has bought more than it sold for two quarters, and the gap
+is being paid from the reserve.
 
-Edward Hatt has asked for ten minutes and uses four. "The Commonwealth is buying
-more than it sells," he says. "My members sell compute and buy everything else,
-so we see it before the Bureau does. You can sell more, which costs you the
-corridor, or buy less, which costs the stations that cannot feed themselves."`,
+Edward Hatt, leader of the Alliance of Business and Government, asked for
+ten minutes and uses four. "My members sell computing and buy everything
+else, so we see it before the Census Bureau does," he says. "You can sell
+more, which means subsidising freight on the transit corridor to Earth, or
+buy less, which hurts the stations that cannot feed themselves."`,
   choices:[
-    { posture:"measured", label:"Cut transit costs and sell more compute.",
+    { posture:"measured", label:"Subsidise freight costs and sell more computing.",
       brief:"The orthodox answer: subsidise the corridor, export the one "+
         "thing the Commonwealth makds that Earth will buy. Costs money now "+
         "for a balance later.",
@@ -2937,7 +2950,7 @@ corridor, or buy less, which costs the stations that cannot feed themselves."`,
                { move:{ solvency:-6000 } },
                { move:{ "price.transit":-10 } },
                { economy:{ trade:4 } }],
-      result:`The corridor subsidy is laid and the first six billion dollars leave the reserve. The freight lines cut their tariff on racked compute the same week.` },
+      result:`The freight subsidy is laid, and the first six billion dollars leave the reserve. The freight lines cut their charge for shipping computing the same week.` },
     { posture:"bold", label:"Close the gap by importing less.",
       brief:"Autarky as a choice rather than a condition. Resilient and "+
         "poorer, and the stations that cannot feed themselves pay for it.",
@@ -2945,7 +2958,7 @@ corridor, or buy less, which costs the stations that cannot feed themselves."`,
                { move:{ consumables:-5 } },
                { move:{ "standing.low":-5 } },
                { flag:"ec_import_squeeze" }],
-      result:`Import licences are cut and the account comes back toward balance. The consumables lift to the low band is the first line the cut reaches.` }
+      result:`Import licences are cut and trade moves back toward balance. The low band's supply runs are the first thing the cut reaches.` }
   ]},
 
 { id:"ec_privatisation_offer", chapter:2, weight:64, once:true,
@@ -2957,15 +2970,17 @@ corridor, or buy less, which costs the stations that cannot feed themselves."`,
     "government needs the money this quarter.",
   title:"An offer for the substrate works",
   speaker:"hatt",
-  body:`A consortium of the Alliance's member firms has offered twenty-two billion
-dollars for the Commonwealth's stake in the public substrate works. The Treasury's
-own valuation is within a billion of it. The price is fair, and it is fair
-because the buyer can read the reserve.
+  body:`A consortium of the Alliance of Business and Government's member firms has
+offered twenty-two billion dollars for the Commonwealth's stake in the
+public substrate works, the state-owned computing plant. The Treasury's own
+valuation is within a billion of it. The price is fair, and it is fair
+because the buyers can see how low the reserve is.
 
-Edward Hatt brings the offer himself. "The money is in the account by the end of
-the week," he says. "My members will run the works as well as the Ministry does
-and pay the levy on every hour. The sale cannot be undone, and I would not
-pretend otherwise. Neither can a reserve that runs out."`,
+Edward Hatt, the Alliance's leader, brings the offer himself. "The money is
+in the account by the end of the week," he says. "My members will run the
+works as well as the Ministry does, and pay the levy on every hour. The sale
+cannot be undone, and I would not pretend otherwise. Neither can a reserve
+that runs out."`,
   choices:[
     { posture:"bold", label:"Sell. Take the money.",
       brief:"A one-off payment against a permanent loss of control. The "+
@@ -2978,7 +2993,7 @@ pretend otherwise. Neither can a reserve that runs out."`,
                { move:{ "capital.gb":6 } },
                { flag:"ec_sold_a_utility" },
                { wire:"GOVERNMENT SELLS PUBLIC STAKE IN SUBSTRATE WORKS" }],
-      result:`The stake passes to the consortium and twenty-two billion dollars reach the reserve. The Trades Left and the Station Left record the quarter it happened in.` },
+      result:`The stake passes to the consortium and twenty-two billion dollars reach the reserve. The Trades Left and the Station Left, who believe the works should be public, will not forget it.` },
     { posture:"cautious", label:"Refuse, and say why in the House.",
       brief:"Refusing on principle while the reserve is visibly short. "+
         "Buys the party and buys nothing else.",
@@ -2987,7 +3002,7 @@ pretend otherwise. Neither can a reserve that runs out."`,
                { move:{ "capital.gb":-4 } },
                { move:{ "trend.solvency":-400 } },
                { flag:"ec_refused_sale" }],
-      result:`The offer is declined on the floor of the House. The left benches cheer, and the reserve goes on falling at the rate it was falling before.` }
+      result:`The offer is declined in Parliament. Your party's left cheers, and the reserve keeps falling at the rate it was falling before.` }
   ]},
 
 /* CLOSING THE CHAIN ON THE SUBSIDY. tools/lint.js flagged
@@ -3009,17 +3024,18 @@ pretend otherwise. Neither can a reserve that runs out."`,
     "habitats that needed it. A redistribution running backwards.",
   title:"Who the subsidy reaches",
   speaker:"gb_chair",
-  body:`The corridor subsidy is paid by the tonne, and the Life Support panel has done
-the arithmetic the Treasury did not publish. Kazuya Tanako sends it over as a
-single table. The five stations that collect most are the ring's yards and
-exchanges, because they ship most. The low band, which the subsidy was argued
-for, is at the bottom of the list.
+  body:`The freight subsidy is paid by the tonne, and the Life Support panel has
+done the arithmetic the Treasury did not publish. Kazuya Tanako, the panel's
+chair, sends it as a single table.
 
-"It was laid to help the stations at the end of the schedule," she writes. "It
-is paying the ones at the start of it. I assumed the government would want to
-know before the Opposition does."`,
+The five stations that collect the most are the ring band's shipyards and
+trading stations, because they ship the most. The low band, which the
+subsidy was meant to help, is at the bottom. "It was meant for the stations
+at the end of the delivery schedule," she writes. "It is paying the ones at
+the start. I assumed the government would want to know before the opposition
+does."`,
   choices:[
-    { posture:"measured", label:"Cap it per station and take the saving.",
+    { posture:"measured", label:"Cap it per station, and return the saving to the reserve.",
       brief:"Fixing the incidence. Cheap, correct, and it makes an enemy of "+
         "every habitat that was collecting.",
       effects:[{ move:{ solvency:4000 } },
@@ -3027,14 +3043,14 @@ know before the Opposition does."`,
                { move:{ "standing.low":4 } },
                { move:{ "rel.gb_chair":5 } },
                { wire:"TRANSIT SUBSIDY CAPPED PER STATION" }],
-      result:`A cap per station is laid and the saving goes back to the reserve. The ring's exchanges lose most of their share in the same quarter, and say so.` },
-    { posture:"cautious", label:"Leave it. The corridor matters more than the incidence.",
+      result:`A cap per station is laid and four billion dollars go back to the reserve. The ring band's trading stations lose most of their share, and say so; the low band gains.` },
+    { posture:"cautious", label:"Leave it: the freight route matters more than who benefits.",
       brief:"Defending the subsidy on trade grounds while conceding the "+
         "distribution point. Honest and unpopular in the low band.",
       effects:[{ economy:{ trade:2 } },
                { move:{ "standing.low":-3 } },
                { move:{ "rel.gb_chair":-4 } }],
-      result:`The subsidy stands as laid, and Tanako's table is in the Spindle by the weekend.` },
+      result:`The subsidy stands, and Tanako's table is in The Spindle by the weekend.` },
     { posture:"bold", label:"Withdraw it entirely.",
       brief:"Undoing the government's own instrument two sittings after "+
         "laying it. Saves the money and costs the argument.",
@@ -3044,7 +3060,7 @@ know before the Opposition does."`,
                { economy:{ trade:-3 } },
                { move:{ legitimacy:-4 } },
                { wire:"GOVERNMENT WITHDRAWS TRANSIT SUBSIDY" }],
-      result:`The subsidy is withdrawn and the corridor price returns to where it stood before. The Opposition asks what the government laid it for.` }
+      result:`The subsidy is withdrawn, six billion dollars are saved, and freight prices return to where they were. The opposition asks what the government introduced it for.` }
   ]},
 
 /* AND THE SALE HAS A SEQUEL, because `private` is authored and never
