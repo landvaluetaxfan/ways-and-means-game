@@ -115,31 +115,40 @@ const EVENTS = [
      Why You? \u00b7 The Winter Garden.) */
   title:"Adriana Eireann Flash \u2014 The Edge of History",
   speaker:"tenaya",
-  body:`The capital was put in the Winter Garden because the Winter Garden is
-nobody's constituency. It belongs to all thirty stations and returns one
-member who cannot vote. A river
-runs from the cold end to the warm. The congress hall where the Charter was
-signed stands on the hill at the middle of it. The Earth legations are sealed
-along the water in pieces of their own worlds, and the walk from the lift to
-this room passes six climates in a mile.
+  body:`The President receives a new Prime Minister in the Winter Garden, the
+Commonwealth's capital. It was built as a station of its own so that no
+other station's voters would own the seat of government, and its 80,000
+residents return one member to the House who may speak but not vote. The
+walk from the lift passes the Earth legations, each in a garden kept at its
+own country's climate: six climates in a mile. The congress hall where the
+Perigee Charter was signed in 2064 stands at the centre of the station.
 
-Jaco van Ryneveld was elected by seven million and eighty-six thousand people
-across thirty habitats that share no air, no soil and no horizon. It is the
-only office every voter in the Commonwealth votes for. He took it as an
-independent, with 51.4 per cent, and he owes you nothing at all.
+Jaco van Ryneveld was elected President in 2077 by a direct vote of the
+whole Commonwealth, on the Liberal Party's ticket, with 51.4 per cent. The
+Liberals lead the opposition in the House, and relations between his office
+and your party are cold.
 
-The commission is on the desk in front of him. He has not moved it.
+This morning his task is narrow. The Charter obliges him to appoint as Prime
+Minister whoever can command a majority of the House, and to sign the
+commission, the document that makes the appointment, once he is satisfied
+that they can. He also holds the Charter's reserve powers: he may dissolve
+the House, refer a bill to the Tribunal for constitutional review, and
+refuse an appointment.
 
-"Two hundred and eighty seats," he says. "You can show me a hundred and
-forty-seven. That is six more than you need, and six of the hundred and
-forty-seven are independents who have undertaken to keep you alive and nothing
-beyond it. If they go, you have the House exactly and not one member over.
+The commission is on the desk in front of him. He has not signed it.
 
-"I am obliged to send for whoever can hold the House. I am not obliged to
-expect it to hold. Tell me what you mean to do with it, and I will put the
-date on this."`,
+"The House has 280 seats, and a government needs 141 of them to survive a
+vote of confidence," he says. "You can show me 147. Your party has 85, the
+New Progressive Party 36 and the Congregational Democratic Alliance 20. The
+other six are independents, who have agreed to vote for you on confidence
+and on the budget and on nothing else. If they walk out, you have 141
+exactly.
+
+"I am obliged to appoint whoever can hold the House. I am not obliged to
+believe that it will hold. Tell me what you mean to do with it, and I will
+date this."`,
   choices:[
-    { posture:"bold", label:"The personhood bill. It is why there is a government at all.",
+    { posture:"bold", label:"The Divergence Threshold Bill. It is why there is a government at all.",
       act:"Tell him",
       note:"The honest answer, and the one your largest partner joined for. " +
            "The maintenance benches hear their wages named second.",
@@ -148,9 +157,9 @@ date on this."`,
                { move:{ "loyalty.psa":8 } },
                { move:{ "loyalty.cu_maintenance":-5 } },
                { wire:"PM TELLS PRESIDENT THE DIVERGENCE BILL COMES FIRST" }],
-      result:"He writes the date and signs under it. Your largest partner has what it joined for, in the President's minute, before the House has sat once." },
+      result:"He dates the commission and signs it. The New Progressive Party joined your government for that bill, and the President's own note of the meeting now records your commitment to it before the House has sat once." },
 
-    { posture:"measured", label:"The stations. Three of them are under reserve this morning.",
+    { posture:"measured", label:"The stations. Three of them are short of cooling this morning.",
       act:"Tell him",
       note:"He is the office the small habitats elected to be heard by. " +
            "Your partner joined this government for the bill, and is listening.",
@@ -160,9 +169,9 @@ date on this."`,
                { move:{ "loyalty.psa":-6 } },
                { move:{ public_standing:3 } },
                { wire:"PM PUTS LIFE SUPPORT AHEAD OF THE BILL IN FIRST MEETING" }],
-      result:"He signs it without reading it again. Thirty stations elected him and four of them have been below reserve in his term; he has wanted a Prime Minister to say that first for three years." },
+      result:"He signs it without reading it again. Four stations have run short of cooling during his term, and for three years he has waited for a Prime Minister to raise it before he did." },
 
-    { posture:"cautious", label:"I intend to last. You will hear what I am doing when I do it.",
+    { posture:"cautious", label:"I intend to last. You will hear what I do when I do it.",
       act:"Tell him",
       note:"Nobody's creature, and nothing conceded in the first hour. " +
            "He keeps dissolution, referral and every appointment.",
@@ -171,7 +180,7 @@ date on this."`,
                { move:{ "loyalty.cu_loyalists":7 } },
                { move:{ public_standing:-2 } },
                { wire:"PRESIDENT AND PRIME MINISTER MEET; NEITHER OFFICE COMMENTS" }],
-      result:"He puts the date on it and says nothing else. He keeps dissolution, bill referral and the refusal of an appointment, and he now knows he will be told about each of them afterwards." }
+      result:"He dates it and says nothing more. He still holds the powers to dissolve the House, refer bills to the Tribunal and refuse appointments, and he now expects to learn of your decisions after you have made them." }
   ]},
 
 { id:"the_account", prologue:2, once:true,
@@ -191,21 +200,25 @@ date on this."`,
      are engineering. Three flags, and later content may gate a line on
      `led_on_competence` / `led_on_continuity` / `led_on_break` — never a
      branch, only a line. Nothing here forks the prose. */
-  body:`Thirty stations carry it live. On the ring it is the middle of a working
-shift; on the outer habitats they have held the change over to watch it. This
-is the first thing most of the Commonwealth will ever hear you say, and the
-lobby has given the first question to The Spindle.
+  body:`Your first press conference as Prime Minister is carried live to all thirty
+stations. On Anselm Ring and the other stations of the ring band it falls in
+the middle of a working shift. On the outer habitats, supervisors have held
+back the shift change so that their crews can watch.
 
-Ivor Ceyhan does not look at his notes.
+The press gallery has given the first question to Ivor Ceyhan, political
+editor of The Spindle, the Commonwealth's newspaper of record. He asks it
+without notes.
 
-"Prime Minister. You inherit a majority that is six independents deep, a bill
-you did not write, and a party that has spent every one of the Commonwealth's
-sixteen years arguing with itself about what it is for. Before anything else:
-why you?"
+"Prime Minister. Your majority is six seats, and all six belong to
+independents. You have inherited a bill you did not write: the Divergence
+Threshold Bill, which your predecessor promised the New Progressive Party.
+And you lead a party of four currents that have never agreed what it is for:
+the maintenance unions of the Trades Left, the leadership's Soft Left, the
+deck co-operatives of the Station Left and Dan Czarnecki's Hard Left. Before
+anything else: why you?"
 
-It is the only question of the morning you get to answer twice: once now, and
-once for the rest of it. The record is the record. What is not yet settled is
-which part of it you intend to be known for.`,
+Your answer will be quoted for the rest of your term, and it will decide
+which part of your record you are known for.`,
   choices:[
     { posture:"measured", label:"Because the last government could not run it, and I can",
       act:"Say it",
@@ -217,7 +230,7 @@ which part of it you intend to be known for.`,
                {move:{"loyalty.cu_maintenance":-6}},
                {move:{"rel.gb_chair":6}},
                {wire:"NEW PM PITCHES COMPETENCE; SAYS GOVERNMENT WILL BE 'RUN, NOT ARGUED WITH'"}],
-      result:`He writes it down without expression. The engineers will like it. The Trades Left has spent its members' careers being told they are the problem, and have just been told again.` },
+      result:`He writes it down. The engineers' benches like the answer. The Trades Left, whose maintenance crews the last government blamed for the stations' breakdowns, hears itself blamed again.` },
 
     { posture:"cautious", label:"Because I am what this party has always been",
       act:"Say it",
@@ -230,7 +243,7 @@ which part of it you intend to be known for.`,
                {move:{public_standing:-4}},
                {move:{"loyalty.psa":-5}},
                {wire:"PM CLAIMS THE MOVEMENT'S INHERITANCE; PARTNERS SEEK CLARIFICATION"}],
-      result:`The New Progressive Party asks for the sentence in writing before the week is out, and reads it at its next meeting as a statement about the bill you inherited, which is about wages whichever way anyone looks at it.` },
+      result:`The New Progressive Party asks for the sentence in writing. At its next meeting it asks whether what this party has always been includes the Divergence Threshold Bill, which would make copies working more than forty hours into employees who must be paid.` },
 
     { posture:"bold", label:"Because the party had to change and I changed it",
       act:"Say it",
@@ -243,33 +256,37 @@ which part of it you intend to be known for.`,
                {move:{"loyalty.cu_maintenance":-10}},
                {move:{"loyalty.cu_halloran":-6}},
                {wire:"PM: 'THE PARTY HAD TO CHANGE.' CZARNECKI GROUP DECLINES TO COMMENT"}],
-      result:`The Spindle prints the sentence in full on its front page. The Czarnecki group declines to comment, and sits through the afternoon's business in silence.` }
+      result:`The Spindle prints the sentence on its front page. Dan Czarnecki's Hard Left declines to comment, and its members sit through the afternoon's business without speaking.` }
   ]},
 
 { id:"briefing_divergence", prologue:3, once:true,
   title:"The bill you inherited",
   speaker:"ceyhan",
-  body:`Your predecessor promised it and did not have to carry it. You do.
+  body:`Your predecessor promised the Divergence Threshold (Amendment) Bill and left
+office before it came to a vote. It is now yours to carry.
 
-The law says a copy of a person stops being that person after a hundred and
-sixty-eight hours of separate life. Under the line, a copy is an instance: the
-same legal person, reabsorbable, with no separate wage and no separate vote.
-Over it, the copy is a stranger with rights.
+The law decides when a copy of a person becomes a separate person. At
+present the line is 168 hours, one week, of separate running. A copy younger
+than that is an instance: legally the same person as its original, able to
+be merged back into it, with no wage and no vote of its own. A copy older
+than that is a separate citizen with every right its original has.
 
-The bill cuts the line to forty. A working week. Nearly two million copies
-become citizens overnight, six districts have to be redrawn, and every employer
-who has been spinning staff copies for a week at a time is suddenly employing
-people rather than using them.
+The bill lowers the line to 40 hours, a working week. Officials estimate
+that 1.9 million copies would become citizens on the day it takes effect,
+and that six districts would have to be redrawn for the new voters.
+Employers who now run copies of their staff for a week at a time, and merge
+them back unpaid, would have to employ and pay them.
 
-The New Progressive Party made it the price of joining your government.
-Your own maintenance members, who have watched copies undercut their wages
-since before the Charter, would rather you had paid a different price.`,
+The New Progressive Party made the bill its price for joining your
+government. The Trades Left, your party's maintenance workers, is divided on
+it. A copy that must be paid no longer undercuts their wages, but a copy
+that is a citizen can hold a maintenance licence and compete for their jobs.`,
   choices:[
     { posture:"cautious", label:"Read the whips' count before deciding anything",
       note:"Reading costs nothing and commits you to nothing. It tells you where the " +
            "measure dies before you have said a word about it in public.",
       effects:[{flag:"read_the_count"},],
-      result:"It carries among elected members and dies among the functional ones. You will need to know why." },
+      result:"The count says the bill would carry among the 240 elected members and fail among the 40 functional members, who must also pass it because it touches life-support licensing." },
     { posture:"bold", label:"Say publicly that the government stands behind it",
       act:"Say it",
       cost:{ slot:1 },
@@ -277,7 +294,7 @@ since before the Charter, would rather you had paid a different price.`,
       effects:[{flag:"read_the_count"},{move:{"public_standing":3}},
                {move:{"loyalty.psa":8}},{move:{"loyalty.cu_maintenance":-9}},
                {wire:"PM COMMITS GOVERNMENT TO FORTY-HOUR THRESHOLD"}],
-      result:`The New Progressive Party is delighted. The Trades Left was not consulted.` }
+      result:`The New Progressive Party welcomes the statement. The Trades Left learns of it from the wire, having not been consulted.` }
   ]},
 
 { id:"gb_approach", prologue:8, once:true,
@@ -289,19 +306,24 @@ since before the Charter, would rather you had paid a different price.`,
      governed. A prologue is an authored sequence (design/21 §3): the gate
      is the flag the sequence itself sets, nothing the world can falsify. */
   when:{ flagsAbsent:["gb_approached"] },
-  title:"The Guild Bench will see you",
+  title:"The Life Support panel will see you",
   speaker:"gb_chair",
-  body:`She has agreed to half past ten and to nothing else. The panel chair is a
-licensed integrity engineer of forty years' standing, the first half of them on
-Earth, and has never been recorded as voting against the settled position of her sector.
+  body:`Kazuya Tanako chairs the Life Support panel, the six functional members
+elected by licensed life-support engineers, and sits for the Alliance of
+Business and Government, the professional party everyone calls the Guild
+Bench. She has agreed to a meeting at half past ten and to nothing else. She
+is a licensed integrity engineer of forty years' standing, the first twenty
+of them on Earth, and she has never voted against the position her
+profession has settled on.
 
-"You want the forty hours," she says, before you have sat down. "You will not get
-them from us. Not because of the number. Because of what comes after the number.
-Once a fork of eight days is a person, a fork of eight days can hold a licence,
-and then the panel that certifies life support is a panel my members do not
-recognise. You are not reforming personhood. You are reforming us."`,
+"You want the forty hours," she says, before you have sat down. "You will
+not get them from us. Our objection is not to the number. It is to what
+follows. The panel's seats are elected by licensed engineers. Once a copy
+two days old is a person, a copy two days old can hold a licence, and then
+it can vote for this panel. You are not only reforming personhood. You are
+changing who elects us."`,
   choices:[
-    { posture:"measured", label:"Offer a licensure carve-out: the threshold moves, licensure does not",
+    { posture:"measured", label:"Offer an exemption: the threshold moves, but the licensing rules do not",
       act:"Offer it",
       note:`The threshold moves and licensure does not. That is what the panel asked for. It buys the chair's goodwill and the New Progressive Party's fury, and it puts a promise on the order paper with a date.`,
       /* MECHANICAL PLACEHOLDER, opencode's to reword: the undertaking's
@@ -316,8 +338,8 @@ recognise. You are not reforming personhood. You are reforming us."`,
                              onBreach:"gb_carveout_broken" }},
                {wire:"GOVERNMENT SIGNALS LICENSURE CARVE-OUT; SUBSTRATE LEFT FURIOUS"},
                {flag:"licensure_carveout_offered"}],
-      result:"She does not say yes. She says she will take it to the panel, which from her is a great deal." },
-    { posture:"bold", label:"Remind her the sunset clause has been extended four times and will not be a fifth",
+      result:"She does not agree. She says she will put it to the panel, which from her is a considerable concession." },
+    { posture:"bold", label:"Remind her that the functional seats' sunset clause has been extended four times, and will not be a fifth",
       note:"A threat made to the one person in the room who can count. It plays well " +
            "outside the panel and costs you the panel.",
       effects:[{flag:"gb_approached"},{chapter:2},{move:{"rel.gb_chair":-15}},{move:{"loyalty.gb":-8}},
@@ -328,37 +350,45 @@ recognise. You are not reforming personhood. You are reforming us."`,
       note:"You leave with no commitment and one fact worth having: the panel meets " +
            "on Thursday morning, four hours before the division.",
       effects:[{flag:"gb_approached"},{chapter:2},{move:{"rel.gb_chair":4}},],
-      result:`She talks for twenty minutes about the certifying grades and does not mention the division once. Her secretary books the panel's room for Thursday at ten.` }
+      result:`She talks for twenty minutes about the grades of engineering certificate and never mentions the vote. Afterwards her secretary books the panel's room for Thursday at ten.` }
   ]},
 
 { id:"halloran_signatures", prologue:5,
   when:{ loyaltyBelow:{cu_halloran:20}, flagsAbsent:["halloran_confronted"] },
   title:"Twelve signatures",
   speaker:"halloran",
-  body:`The number is not a secret. Everyone in the tea room can count, and the
-count that matters is twelve: the names it takes to force a ballot. Czarnecki has
-spent three weeks not getting them, which means either he cannot or he is waiting.
+  body:`Dan Czarnecki leads the Hard Left of your party and sits for Tier Four.
+Twelve of your party's members must sign a paper to force a ballot on your
+leadership. If a ballot is held and you lose it, you lose the leadership of
+the party and with it the premiership.
 
-He catches you in the division lobby, which is deliberate, because it is the one
-place the two of you cannot be photographed apart.
+Every member in the tea room knows how many names he has, and he has been
+short of twelve for three weeks. Either he cannot find them, or he is
+waiting for a better moment.
 
-"Eleven thousand four hundred of my constituents are fourth on a list that decides
-who wakes up," he says. "And the bill you are whipping me on is about how many
-hours make a stranger. Give me the shed order. Give me anything on the shed order."`,
+He stops you in the division lobby, where the press gallery can see the two
+of you together.
+
+"Eleven thousand four hundred of my constituents are registered in tier four
+of the shed order," he says. "That is the list that decides who is switched
+off first when a station runs short of power, and switched back on last. The
+bill you are whipping me to vote for decides how many hours it takes a copy
+to become a person. Give me the shed order. Give me anything on the shed
+order."`,
   choices:[
-    { posture:"measured", label:"Commit to bringing the Shed Order Bill back this session",
+    { posture:"measured", label:"Promise to bring back the Shed Order (Civilian Oversight) Bill this session",
       note:`A promise made in a lobby with forty witnesses. It buys Czarnecki's group and Czarnecki's loyalty, and it puts a bill second on the book that your partners will vote against.`,
       effects:[{move:{"loyalty.cu_halloran":22}},{move:{"loyalty.cu_maintenance":9}},{move:{"party_loyalty":7}},
                {flag:"halloran_confronted"},{flag:"shed_order_promised"},
                {bill:{shedorder:{stage:"second_reading"}}}],
-      result:`He writes nothing down. By the evening the promise is in the Spindle's lobby note, attributed to three of the witnesses.` },
-    { posture:"cautious", label:"Offer him a junior ministry and the silence that comes with it",
+      result:`The bill would put the shed order under civilian review. He writes nothing down. By evening the promise is in The Spindle's parliamentary column, sourced to three members who overheard it.` },
+    { posture:"cautious", label:"Offer him a junior ministry, which would bind him to vote with the government",
       note:"An office buys the leader and not the group. The members who followed him " +
            "are left with a grievance and nobody to carry it into the chamber.",
       effects:[{move:{"loyalty.cu_halloran":14}},{move:{"party_loyalty":4}},{move:{"public_standing":-3}},
                {flag:"halloran_confronted"},{flag:"halloran_bought"},
                {wire:`CZARNECKI TIPPED FOR OFFICE; HOMESTEAD DELEGATION SEEKS ASSURANCES`}],
-      result:"He takes it. His group does not all follow him, and the ones who don't now have a grievance and no leader." },
+      result:"He accepts. Not all of the Hard Left follows him into line, and the members who do not now have a grievance and no leader." },
     { posture:"bold", label:"Refuse. He does not have twelve and you both know it.",
       note:"You keep the office and the money. He goes looking for the names, and " +
            "gives himself four sittings to find them.",
@@ -401,31 +431,36 @@ The ballot is called for the week after next.`,
 
 { id:"vantage_radiator", prologue:6,
   when:{ scalarBelow:{thermal_margin:22}, flagsAbsent:["vantage_handled"] },
-  title:"Ember Ridge, third day below reserve",
+  title:"Ember Ridge, third day short of cooling",
   speaker:null,
   image:{ src:"vantage_radiator.png", palette:"broadcast",
           caption:"Radiator array 4, Ember Ridge", credit:"Ring Network" },
-  body:`The fault is in a radiator array, the array is twenty-two years old, and
-the replacement is in a procurement queue behind a loop upgrade nobody has ever
-been able to explain. Under the Allocation Act the engineering authority may
-suspend the tier-four register on that station without notice and without a
-minister being told first.
+  body:`Ember Ridge, a station of 213,000 people in the middle band, has been unable
+to shed all of its heat for three days. One of its radiator arrays has
+failed. The array is twenty-two years old, and its replacement is in the
+procurement queue behind a coolant-loop upgrade that the ministry has never
+managed to justify.
 
-There are four thousand two hundred suspended persons on Ember Ridge.`,
+The Allocation Act, the law that governs a shortage, now lets the
+engineering authority, the body that runs life support, switch off the
+station's tier-four register without notice and without telling a minister
+first. Tier four is the bottom band of the shed order, the list of who stops
+running first. Another 2,600 of Ember Ridge's people are already held in
+suspension, their minds kept intact but not running.`,
   choices:[
-    { posture:"bold", label:"Authorise emergency thermal transfer from Anselm Ring",
+    { posture:"bold", label:"Divert cooling capacity from Anselm Ring",
       note:"The margin recovers today. The quota comes out of your own constituency, " +
            "which is where your majority lives.",
       effects:[{move:{"thermal_margin":11}},{move:{"solvency": -9000}},{move:{"public_standing":-4}},
                {station:{vantage:{closure:0.03}}},{flag:"vantage_handled"},
                {wire:`ANSELM RING QUOTA DIVERTED TO EMBER RIDGE; RING MEMBERS OBJECT`}],
-      result:"Your own constituency pays for it, which your own constituency will notice." },
+      result:"Anselm Ring gives up part of its spare cooling. Your own seat, First Spin, is on Anselm Ring, and its voters notice." },
     { posture:"cautious", label:"Let the authority act under the Act and say so publicly",
       note:`The margin recovers by half and the Association of Engineers and Systems stays with you. The New Progressive Party and the maintenance benches hear a government that will not use the power it holds.`,
       effects:[{move:{"thermal_margin":5}},{move:{"public_standing":-11}},{move:{"loyalty.hul":8}},{move:{"loyalty.psa":-9}},{move:{"loyalty.cu_halloran":-9}},
                {flag:"vantage_handled"},{flag:"deferred_to_authority"},
                {wire:"GOVERNMENT DECLINES TO INTERVENE; ENGINEERING AUTHORITY TO EXERCISE S.12 POWERS"}],
-      result:"You have conceded, in public, that the authority's word is final on the one question the charter left open." },
+      result:"You have said in public that the authority's decision on who is switched off is final, a question the Charter never settled." },
     { posture:"cautious", label:"Do nothing yet. The fault may clear.",
       note:"Waiting keeps your hands clean and your options open. It also leaves four " +
            "thousand two hundred people under a register the authority can shed " +
@@ -443,7 +478,7 @@ There are four thousand two hundred suspended persons on Ember Ridge.`,
            "station to draw down non-essential load, and Ember Ridge gets the headroom. " +
            "The rest of the ladder is on the Government tab, each rung dearer than the last.",
       effects:[{si:"rung1_conservation"},{flag:"vantage_handled"}],
-      result:"The appeal goes out under the Minister's name. The margin improves a little, Ember Ridge holds, and the next order on the ladder is one the House will argue about." }
+      result:"The appeal goes out under the Minister's name, asking every station to cut its power use. The margin improves a little and Ember Ridge holds. If more is needed, the next step is an emergency order the House must approve." }
   ]},
 
 { id:"vantage_cascade", queuedOnly:true, once:true,
@@ -527,27 +562,27 @@ consensus. It is not clear that either is illegal.`,
   when:{ flagsAbsent:["taught_the_day"] },
   title:"The order of the day",
   speaker:"okarie",
-  body:`The Chief Whip has the day's paper on the desk before you sit down, and
-he reads it the way he reads a division list: slowly, and out loud.
+  body:`The Chief Whip, Anil Devi, puts the day's order paper on your desk before
+you sit down. It lists every measure waiting on the House and what each one
+needs next. He reads it aloud, slowly, the way he reads a division list.
 
-"Everything the House is asking of you is on this sheet," he says. "A sitting
-period gives us six slots of order-paper time and a slot moves a measure one
-stage, so the question is never only whether you have the votes. It is whether
-you have the time. The slots come back at every recess, and when the House
-rises they are gone for good.
-
-"Answer the sheet or do not. It will not ask twice."`,
+"The House gives the government six slots of order-paper time in each
+sitting period," he says. "One slot moves one measure one stage, such as
+from first reading to committee. So the question is never only whether you
+have the votes. It is whether you have the time. The slots are restored at
+every recess. When the House rises at the end of the session, any bill that
+has not passed falls."`,
   choices:[
     { posture:"cautious", label:"Walk the paper with him. Ask what each item wants.",
       note:`The Chief Whip explains the day once, in the hour before it begins. It costs you nothing and buys his confidence for the session.`,
       effects:[{ flag:"taught_the_day" }, { move:{ "rel.okarie":6 } }, { move:{ "loyalty.cu_loyalists":3 } }],
-      result:`He names the mover of each item and what each mover wants back. It is the same list every sitting. He will not walk it with you again.` },
+      result:`He names who moved each item and what they want in return for their votes. From tomorrow you read the paper yourself; he will not take you through it again.` },
     { posture:"bold", label:"Read it alone and send him back to the lobbies.",
       note:"You keep the hour and you read your own brief. The whips note that you did " +
            "not ask, and the country hears that the paper is read before the lobbies " +
            "are worked.",
       effects:[{ flag:"taught_the_day" }, { move:{ "rel.okarie":-4 } }, { move:{ "public_standing":2 } }],
-      result:"You will read the sheet alone every sitting. He says nothing about it, which is how he says everything." }
+      result:"He goes back to the lobbies to count votes. From now on you read the order paper alone each sitting, and he does not offer to help again." }
   ]},
 
 /* THE RULES OF THE HOUSE (the tutorial the author deferred until chapter one of
@@ -563,26 +598,29 @@ rises they are gone for good.
   when:{ flagsAbsent:["taught_the_house"] },
   title:"The three ways a government loses a vote",
   speaker:"okarie",
-  body:`He does not sit down. He has been running whips since before you were first
-returned and he has come to explain his own chamber, which means he has decided
-you do not know it.
+  body:`The Chief Whip, Anil Devi, does not sit down. He has run the whips' office
+since before you were first elected, and he has come to explain how the
+House decides things, which means he has concluded that you do not yet know.
 
-"Three ways a measure fails, and they are not the same way twice. First, the
-House. Two hundred and forty elected members and a hundred and twenty-one is a
-majority. Nothing else matters to that number. Not the partners, not the polls,
-not the argument. Count.
+"A measure can fail three ways," he says.
 
-"Second, the bench. Forty members sit for trades and professions and not for
-places, and a measure that touches what they do has to carry among them as well.
-That is the dual test. Their benches are smaller than some parties and they are
-the reason a bill can win the chamber and die on the same afternoon.
+"First, the elected members. The House has 280 seats. To pass a bill you
+need a majority of the 240 members elected by districts and party lists,
+which is 121. The 141 you need to survive a vote of confidence is a majority
+of all 280, and it is a different count.
 
-"Third, the objection. A bench that owns the subject of a bill can refuse it.
-Not defeat it. Refuse it. That is why the bill you inherited dies among the
-professions and carries among the districts, and why I have been telling you
-about the licensing boards since Tuesday.
+"Second, the functional members. Forty members are elected by professions
+and industries rather than by places. A bill that touches life-support
+integrity, or amends the Charter, must also carry among them: 21 of the 40.
+That is the dual majority, and it is why a bill can win the House and fail
+on the same afternoon. The government holds twelve of the forty.
 
-"Everything else in this building is arithmetic and who owes whom."`,
+"Third, the objection. If most of the functional members whose trade a bill
+touches vote against it, the bill fails unless three-fifths of the elected
+members voting override them. That is why the bill you inherited would carry
+among the districts and fail among the professions. It is also why I keep
+telling you about the licensing boards, which decide who is licensed in a
+trade and so who votes for its functional seats."`,
   choices:[
     { posture:"cautious", label:"Ask him which of the three is the problem for the bill you inherited.",
       note:"The Chief Whip has run the benches for years and has watched " +
@@ -592,42 +630,43 @@ about the licensing boards since Tuesday.
       effects:[{ flag:"taught_the_house" }, { move:{ "rel.okarie":5 } },
                { move:{ "loyalty.cu_loyalists":2 } },
                { flag:"knows_the_tests" }],
-      result:"\"The second and the third,\" he says. \"You can carry the country on Tuesday and lose the bench on Thursday, and the bench is where it will happen.\"" },
+      result:"\"The second and the third,\" he says. \"We can carry the elected members on Tuesday and lose the functional members on Thursday, and the functional members are where it will be decided.\"" },
     { posture:"bold", label:"Thank him. You have read the standing orders.",
       note:"You keep the hour and he keeps his opinion, which is how the " +
            "whips' office works and always has.",
       effects:[{ flag:"taught_the_house" }, { move:{ "rel.okarie":-3 } },
                { move:{ "public_standing":1 } }],
-      result:"He accepts it the way he accepts everything, which is to say he goes back to the lobbies and works the benches himself." }
+      result:"He nods and goes back to the lobbies to count the functional members himself." }
   ]},
 
 { id:"the_whip_list", prologue:7,
   when:{ flagsAbsent:["whip_briefed"] },
   title:"The list",
   speaker:"okarie",
-  body:`The bill will be called before the House rises, and the Chief Whip has come
-with one sheet. It has the members who are with the government, the members who
-are not, and the members who have not decided. He reads the third column.
+  body:`The Divergence Threshold Bill will be called to a vote before the House
+rises. The Chief Whip, Anil Devi, brings one sheet with three columns: the
+members who will vote with the government, the members who will vote against
+it, and the members who have not decided. He reads out the third column.
 
-"Two ways to move a vote," he says. "You can spend the party's goodwill on the
-benches that already sit behind you, and what you spend of it does not come
-back on its own. Or you can go outside the coalition and ask a body for a favour. A favour
-is not money and it is not loyalty. A favour is a promise, and a promise has a
-date on it."
+"There are two ways to move a vote," he says. "The first is to whip our own
+benches: tell our members how to vote, and make them. It costs the party's
+goodwill, and goodwill once spent does not come back on its own.
 
-He leaves the sheet on the desk and does not pick it up again.`,
+"The second is to ask another party for its votes. It will want a promise in
+return, such as time on the order paper for one of its bills, and the
+promise will carry a date by which we must keep it."`,
   choices:[
     { posture:"cautious", label:"Hold what we have. Spend nothing yet.",
       note:"The whips hold the benches already with the government and spend none of " +
            "the party's patience. The decision stays where it is, and there is still " +
            "goodwill in hand for a harder day.",
       effects:[{ flag:"whip_briefed" }, { move:{ "loyalty.cu":5 } }, { move:{ "public_standing":-2 } }],
-      result:"The whips will hold the benches they have and wait. It is the cheaper order, and it leaves the decision where it was." },
+      result:"The whips hold the members they already have and wait. It costs nothing, and the undecided members stay undecided." },
     { posture:"bold", label:"Whip the party hard and take the measure now.",
       note:"Whipping your own side spends its goodwill to buy the measure today. " +
            "Members who were asked twice remember the asking.",
       effects:[{ flag:"whip_briefed" }, { move:{ "loyalty.cu":-6 } }, { move:{ "public_standing":3 } }, { flag:"whipped_own_side" }],
-      result:`The whips work the tea room until the bells. The members they reach twice vote as asked, and the Spindle prints a count of the ones they reached.` }
+      result:`The whips work the tea room until the division bells. The members they reach twice vote as asked, and The Spindle prints how many members they had to lean on.` }
   ]},
 
 /* ---------- CHAPTER TWO — the division and its consequences ----------

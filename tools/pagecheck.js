@@ -44,6 +44,7 @@ const INTRODUCE = [
   ["(?:Bellamy )?Almanac Works|the Works", /refiner|foundry|platform|station|orbit/i],
   ["Alphabet-JPMorgan Omni", /\bbank/i],
   ["Underwriters", /insur|syndicat|mutual|lend/i],
+  ["Guild Bench", /Alliance of Business and Government|functional|profession/i],
   ["Alliance of Business and Government", /\bpart(y|ies)\b|\bbench|\bmembers\b|\bleader/i],
   ["The Spindle|the Spindle", /newspaper|paper of record/i],
   ["Ring Network", /broadcast/i],

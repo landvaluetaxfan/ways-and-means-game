@@ -2143,7 +2143,7 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
 - **Rt. Hon. Adriana Flash MP** — Prime Minister. Party of Socialists and Democrats. Member for Anselm Ring.
 - **Mandelina Trottier MP** — Deputy Prime Minister; Leader, New Progressive
   Party. The junior coalition partner's price.
-- **President Jaco van Ryneveld** — independent. Elected 2077, direct, 51.4%. Relations with the government: cold. Has privately indicated a threshold bill carried on a contested dual majority would be referred for constitutional review.
+- **President Jaco van Ryneveld** — Liberal (`content/characters.js`; this line said independent until 27 Sep 2026, and the prologue followed it). Elected 2077, direct, 51.4%. Relations with the government: cold. Has privately indicated a threshold bill carried on a contested dual majority would be referred for constitutional review.
 - **Dan Czarnecki MP** — Ashfield. Party of Socialists and Democrats. Leads the Hard Left, eleven members, loyalty 12. A ballot needs twelve signatures.
 - **Suravaram Vidyasagar MP** — Minister for Life Support. Party of Socialists and Democrats, member for
   Fore River Yards. Career maintenance union. The only member of Cabinet the Guild
