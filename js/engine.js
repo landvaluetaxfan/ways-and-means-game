@@ -246,7 +246,8 @@ const Engine = (function () {
     });
     C.currents.forEach(c => st.currents[c.id] = { id: c.id, loyalty: c.loyalty, members: c.members });
     C.stations.forEach(s => st.stations[s.id] = JSON.parse(JSON.stringify(s)));
-    C.characters.forEach(c => st.characters[c.id] = { id: c.id, relationship: c.relationship == null ? 50 : c.relationship, alive: true });
+    C.characters.forEach(c => st.characters[c.id] = Object.assign({ id: c.id,
+      relationship: c.relationship == null ? 50 : c.relationship, alive: true }, characterIdentity(C, c)));
     C.bills.forEach(b => st.bills[b.id] = { id: b.id, stage: b.stage, dead: false, amendments: [] });
     (C.cabinet || []).forEach(p => st.cabinet[p.id] = {
       id: p.id, holder: p.holder || null, party: p.party || null });
@@ -758,9 +759,11 @@ const Engine = (function () {
     });
     st.characters = st.characters || {};
     (C.characters || []).forEach(ch0 => {
-      if (st.characters[ch0.id]) return;
-      st.characters[ch0.id] = { id: ch0.id,
-        relationship: ch0.relationship == null ? 50 : ch0.relationship, alive: true };
+      /* a person's seat and party are content's, and move with it */
+      if (st.characters[ch0.id]) return Object.assign(st.characters[ch0.id], characterIdentity(C, ch0));
+      st.characters[ch0.id] = Object.assign({ id: ch0.id,
+        relationship: ch0.relationship == null ? 50 : ch0.relationship, alive: true },
+        characterIdentity(C, ch0));
       notes.charactersAdded.push(ch0.id);
     });
 
@@ -4272,8 +4275,66 @@ const Engine = (function () {
     breached:       (st, v) => [].concat(v).every(id =>
                       (st.undertakings || []).some(u => u.id === id && u.state === "broken")),
     /* How many divisions have run with a pair in force. See divide(). */
-    pairsKeptAtLeast: (st, v) => (st.pairsKept || 0) >= v
+    pairsKeptAtLeast: (st, v) => (st.pairsKept || 0) >= v,
+
+    /* WHO, AND NOT ONLY HOW MANY (design/46). An event could move a person:
+       appoint them, vacate their seat, warm or cool their relations with
+       `rel.<id>`. No condition could ask about one, so a story about people
+       had to carry every such fact in a flag it set itself, and the
+       relations content moved were read by nothing at all. These read what
+       the state already keeps. A list means every one of them.
+
+       `holds` is {post: person}, or a list of people any of whom will do.
+       `inCabinet`/`outOfCabinet` ask whether a person holds any post at
+       all. `signed`/`notSigned`/`refused` read the leadership paper.
+       `seated`/`unseated` ask whether a member still sits for their party
+       (see isSeated). `relationshipAbove`/`Below` read what `rel.` moves:
+       0 to 100, 50 neither, keyed by a person or "president". */
+    holds:          (st, v) => Object.keys(v).every(post =>
+                      [].concat(v[post]).indexOf(((st.cabinet || {})[post] || {}).holder) >= 0),
+    inCabinet:      (st, v) => [].concat(v).every(id => holdsAnyPost(st, id)),
+    outOfCabinet:   (st, v) => [].concat(v).every(id => !holdsAnyPost(st, id)),
+    signed:         (st, v) => [].concat(v).every(id => (st.signedBy || []).indexOf(id) >= 0),
+    notSigned:      (st, v) => [].concat(v).every(id => (st.signedBy || []).indexOf(id) < 0),
+    refused:        (st, v) => [].concat(v).every(id => (st.refusedBy || []).indexOf(id) >= 0),
+    seated:         (st, v) => [].concat(v).every(id => isSeated(st, id)),
+    unseated:       (st, v) => [].concat(v).every(id => !isSeated(st, id)),
+    relationshipAbove: (st, v) => Object.keys(v).every(id => {
+                      const r = relationshipOf(st, id); return r != null && r > v[id]; }),
+    relationshipBelow: (st, v) => Object.keys(v).every(id => {
+                      const r = relationshipOf(st, id); return r != null && r < v[id]; })
   };
+
+  function holdsAnyPost(st, id) {
+    return Object.keys(st.cabinet || {}).some(k => st.cabinet[k] && st.cabinet[k].holder === id);
+  }
+  /* A MEMBER SITS WHILE THEIR PARTY HOLDS A SEAT IN THEIR CONSTITUENCY and
+     they have not left it. The roll counts seats by party, not by person,
+     so in a seat of several members "still sits" means the party kept at
+     least one of them there: a party that loses one of three at the count
+     is taken to lose the member ranked below. A vacancy that names the
+     member (`vacate_seat` with `member`, or any vacancy in a seat of one)
+     marks them as gone, so a by-election won back by their party returns
+     somebody else and not them. `seat` and `party` are content's, carried
+     onto st.characters by newGame() and reconcile() for the same reason as
+     an actor's lag: conditions are called as (st, value). */
+  function isSeated(st, id) {
+    const c = (st.characters || {})[id];
+    if (!c || !c.seat || c.left) return false;
+    const r = (st.roll || {})[c.seat];
+    return !!r && (r.held[c.party] || 0) > 0;
+  }
+  function relationshipOf(st, id) {
+    if (id === "president") return st.president ? st.president.relationship : null;
+    const c = (st.characters || {})[id];
+    return c && c.relationship != null ? c.relationship : null;
+  }
+  /* What content says each person is and where they sit, carried onto the
+     state for the conditions above; identity, so refreshed on every load. */
+  function characterIdentity(C, ch) {
+    const k = ch.seat ? (C.constituencies || []).find(x => x.name === ch.seat || x.id === ch.seat) : null;
+    return { seat: k ? k.id : null, party: ch.party || null };
+  }
 
   /* ---------------------------------------------------------
      STATION GOVERNMENT IS NOT ONE THING (design/27 B)
@@ -4731,7 +4792,15 @@ const Engine = (function () {
     /* A by-election is what a vacancy CAUSES, so it is an option on the
        vacancy rather than a verb of its own: {then:"byelection"}. */
     vacate_seat: (st, C, v) => [].concat(v).forEach(x => {
-      vacateSeat(st, C, x.constituency, x.party, x.why);
+      const done = vacateSeat(st, C, x.constituency, x.party, x.why);
+      /* WHO LEFT. `member` names them; in a seat of one it can only be the
+         member content seats there for that party. Marked, a by-election
+         their party wins returns somebody else (isSeated). */
+      const k = C.constituencyById[x.constituency];
+      const who = x.member || (done.ok && k && k.magnitude === 1 &&
+        ((C.characters || []).find(c => c.party === x.party &&
+          characterIdentity(C, c).seat === x.constituency) || {}).id);
+      if (done.ok && who && st.characters[who]) st.characters[who].left = st.sitting;
       if (x.then === "byelection") byElection(st, C, x.constituency);
     }),
     election: (st, C, v) => { if (v) generalElection(st, C); },

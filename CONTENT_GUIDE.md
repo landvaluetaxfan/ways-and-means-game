@@ -277,16 +277,30 @@ because content had a habit of writing the good answer first.
 | `scalarAbove` / `scalarBelow` | `scalarBelow:{thermal_margin:20}` |
 | `lawIs` / `lawAbove` / `lawBelow` | `lawBelow:{divergence_threshold_hours:100}` |
 | `loyaltyAbove` / `loyaltyBelow` | `loyaltyBelow:{cu_halloran:20}` — works on parties or currents |
-| `stationBelow` | `stationBelow:{ashfield:{closure:0.35}}` |
+| `stationBelow` | `stationBelow:{anselm:{closure:0.35}}` |
 | `billStage` | `billStage:{divergence:"committee"}` |
 | `inGovernment` | `inGovernment:false` |
+| `seen` | `seen:["f1_stranded"]` — events already met; how a sequence chains |
+| `settled` / `resolved` | `resolved:true`, or an ending's id |
+| `owes` / `breached` | `breached:"carry_threshold"` — a promise still open, or broken |
 
-All conditions in a `when` must hold. Omit `when` for always-eligible, and
-read "Where it goes" above before you do: an always-eligible event competes
-with the whole pool. The engine knows fifty conditions; `js/schema.js` lists
-them, among them `priceAbove`, `economyAbove`, `actorBelow`, `seen` (an event
-already met), `settled` and `resolved` (the endings), `postVacant`,
-`owes`/`breached` (promises) and `resolutionIs` (a forum's business).
+**Who** (design/46). An event can move a person, so a story can ask about one:
+
+| key | example | true when |
+|---|---|---|
+| `holds` | `holds:{treasury:"skye"}` | that person holds the post; a list means any of them |
+| `inCabinet` / `outOfCabinet` | `outOfCabinet:["ceyhan"]` | they hold some post, or none |
+| `signed` / `notSigned` / `refused` | `signed:["piastri"]` | where they stand on the leadership paper |
+| `seated` / `unseated` | `unseated:"watkins"` | whether they still sit for their party (a vacancy that names them, or their party losing the seat at the count, unseats them; a by-election their party wins back returns somebody else) |
+| `relationshipAbove` / `Below` | `relationshipBelow:{ceyhan:30}` | what `rel.<person>` moves, 0 to 100; `president` too |
+
+All conditions in a `when` must hold, and a list inside one means every
+item. Omit `when` for always-eligible, and read "Where it goes" above before
+you do: an always-eligible event competes with the whole pool. `js/schema.js`
+describes every condition the engine knows, which is what the editor offers
+(`test.js` fails the day one is added to the engine and not to the schema):
+among the rest are `priceAbove`, `economyAbove`, `actorBelow`, `postVacant`,
+`risesWithin`, `dissolved` and `resolutionIs` (a forum's business).
 
 ### Effects
 
@@ -302,7 +316,9 @@ already met), `settled` and `resolved` (the endings), `postVacant`,
 | `cabinet` | `{cabinet:{treasury:{holder:"skye", party:"cu"}}}` | `null` leaves the post vacant |
 | `si` | `{si:"si_2080_44"}` | lays an instrument |
 | `slots` | `{slots:{reserve:{annexation:5}}}` | order-paper time; `total` for the general pool |
-| `undertake` | `{undertake:{id:"carry_threshold", …}}` | a promise, with its discharge and breach |
+| `undertake` | `{undertake:{id:"carry_threshold", …}}` | a promise, with its discharge and breach; the editor starts one from a template |
+| `discharge` | `{discharge:"carry_threshold"}` | counts an open promise kept, when events overtake it |
+| `vacate_seat` | `{vacate_seat:{constituency:"anselm_proper", party:"cl", why:"resigned", member:"watkins", then:"byelection"}}` | `member` says who left, which `unseated` reads |
 | `resolution` | `{resolution:{un_icj_salvage:"table"}}` | a forum's business (design/43) |
 | `wire` | `{wire:"HEADLINE IN CAPS"}` | appears in the wire panel |
 | `queue` | `{queue:[{event:"followup", after:4}]}` | fires in N sittings |
@@ -316,8 +332,9 @@ only by `cross` and `vacate_seat`; `court`, `motion`, `election`,
 describes every verb, and **`scalar`, `loyalty`, `relationship`, `price`,
 `capital` and `unflag` are retired**: lint fails content that uses them.
 
-To add a new verb, add it to `EFFECTS` in `engine.js`. Keep the list short —
-if the vocabulary grows past twenty, content is leaking into the engine.
+To add a new verb, add it to `EFFECTS` in `engine.js` and describe it in
+`js/schema.js`, or `test.js` fails. Keep the list short — if the vocabulary
+grows past twenty, content is leaking into the engine.
 
 ---
 

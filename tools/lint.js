@@ -875,6 +875,12 @@ try {
         case "suspendedAbove": case "suspendedBelow": Object.keys(v).forEach(x => { if (x !== "federal" && !ST.has(x)) bad("names no station '" + x + "'"); }); break;
         case "postVacant": list(CAB, "cabinet post"); break;
         case "resolutionIs": keys(RES, "resolution"); Object.values(v).forEach(x => [].concat(x).forEach(y => { if (!RES_STATUS.has(y)) bad("names no status '" + y + "'"); })); break;
+        /* the people conditions (design/46) */
+        case "holds": keys(CAB, "cabinet post"); Object.values(v).forEach(x => [].concat(x).forEach(y => { if (!CH.has(y)) bad("names no person '" + y + "'"); })); break;
+        case "inCabinet": case "outOfCabinet": case "signed": case "notSigned": case "refused":
+        case "seated": case "unseated": list(CH, "person"); break;
+        case "relationshipAbove": case "relationshipBelow": Object.keys(v).forEach(x => { if (x !== "president" && !CH.has(x)) bad("names no person '" + x + "'"); }); break;
+        case "campaign": { const CA = new Set((typeof ADMINISTRATIONS !== "undefined" ? ADMINISTRATIONS : []).map(a => (typeof a.campaign === "string" && a.campaign) || a.id)); if (CA.size) list(CA, "campaign"); break; }
       }
     });
   };
@@ -892,6 +898,12 @@ try {
     if (e.queue) [].concat(e.queue).forEach(q => {
       if (q.effects && !q.event) { [].concat(q.effects).forEach(x => checkEff(x, tag + " (queued)")); return; }
       if (!EV.has(q.event)) refBad.push(tag + ": queues '" + q.event + "', which is no event"); });
+    if (e.cabinet) Object.keys(e.cabinet).forEach(p => {
+      if (!CAB.has(p)) refBad.push(tag + ": cabinet names no post '" + p + "'");
+      const h = e.cabinet[p] && e.cabinet[p].holder;
+      if (h && !CH.has(h)) refBad.push(tag + ": cabinet " + p + " names no person '" + h + "'"); });
+    if (e.vacate_seat) [].concat(e.vacate_seat).forEach(x => {
+      if (x && x.member && !CH.has(x.member)) refBad.push(tag + ": vacate_seat names no person '" + x.member + "'"); });
     if (e.slots && e.slots.reserve) Object.keys(e.slots.reserve).forEach(x => { if (!BI.has(x)) refBad.push(tag + ": reserves time for '" + x + "', which is no bill"); });
     if (e.coalition) ["add", "remove"].forEach(k => [].concat(e.coalition[k] || []).forEach(p => { if (!PA.has(p)) refBad.push(tag + ": coalition names no party '" + p + "'"); }));
     if (e.undertake) [].concat(e.undertake).forEach(u => {

@@ -182,6 +182,48 @@ try {
   }
 } catch (e) { ok("effect pairs survive the form", false, e.message); }
 
+/* EVERY VERB THE ENGINE KNOWS HAS A FORM, AND THE FORM SAYS WHAT IT READ
+   (design/46). Twenty-two conditions and six effects had no schema entry,
+   so the editor never offered them; `cross` and `vacate_seat` had one and
+   no encoding, so choosing either wrote nothing. Content does not use most
+   of them yet, which is why the sweep above cannot see them: these probes
+   put each shape through the form and require it back exactly, drawn as a
+   form and not as raw JSON where a form exists. */
+console.log("\nTHE NEW SHAPES AND FORMS");
+try {
+  const ed = w.eval("Editor.__test");
+  const bill = w.eval("CONTENT.bills[0].id"), post = w.eval("CONTENT.cabinet[0].id");
+  const person = w.eval("CONTENT.characters[0].id"), cons = w.eval("CONTENT.constituencies[0].id");
+  const si = w.eval("CONTENT.instruments[0].id"), stn = w.eval("CONTENT.stations[0].id");
+  const effs = [
+    { cabinet: { [post]: { holder: person, party: "cu" } } }, { cabinet: { [post]: null } },
+    { signatures: -2 }, { si: si }, { slots: { total: -1 } }, { slots: { refill: true } },
+    { slots: { reserve: { [bill]: 5 } } }, { discharge: "some_promise" },
+    { cross: { constituency: cons, from: "cu", to: "cl" } },
+    { cross: [{ constituency: cons, from: "cu", to: "cl", seats: 2 }] },
+    { vacate_seat: { constituency: cons, party: "cu", why: "resigned", member: person, then: "byelection" } }];
+  const bad = effs.filter(x => { const r = ed.effToRow(x);
+    return r.raw || JSON.stringify(ed.rowToEff(r)) !== JSON.stringify(x); });
+  ok("each new effect shape is drawn as a form and read back exactly", bad.length === 0,
+     bad.map(x => JSON.stringify(x) + " -> " + JSON.stringify(ed.rowToEff(ed.effToRow(x)))).join(" // "));
+  const prom = { undertake: { id: "p", text: "t", by: null } };
+  const fresh = ed.rowToEff({ verb: "undertake", raw: false, value: "" });
+  ok("a promise is kept as JSON, and a new one starts from the template",
+     JSON.stringify(ed.rowToEff(ed.effToRow(prom))) === JSON.stringify(prom) &&
+     !!(fresh && fresh.undertake && fresh.undertake.id), JSON.stringify(fresh));
+  const when = { seen: ["a_event", "b_event"], signed: person, holds: { [post]: person },
+    settled: true, resolved: "some_ending", resolvedIs: "x_ending", dissolved: false, risesWithin: 3,
+    stationBelow: { [stn]: { closure: 40 } }, relationshipAbove: { president: 30 },
+    suspendedAbove: { federal: 1000 }, actorBelow: { earth_bloc: 40 } };
+  const box = w.document.createElement("div");
+  box.innerHTML = ed.condRows(when);
+  const back = ed.readConds(box);
+  const raws = [...box.querySelectorAll(".ed-cond[data-raw]")].map(n => n.dataset.c);
+  ok("each new condition form is drawn as a form and read back exactly",
+     JSON.stringify(back) === JSON.stringify(when) && raws.length === 0,
+     (raws.length ? "raw: " + raws.join(", ") + " // " : "") + JSON.stringify(back));
+} catch (e) { ok("the new shapes and forms", false, e.message); }
+
 /* OPENING AN ENTRY CHANGES NOTHING (design/34). The editor commits the form
    whenever the author clicks away, and it rebuilt each entry from the fields
    it draws -- so browsing the events list deleted `at`, `maxFires`, briefs,

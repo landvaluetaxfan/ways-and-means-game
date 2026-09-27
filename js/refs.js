@@ -276,6 +276,25 @@ const Refs = (function () {
         const t = eff.cabinet[post];
         if (t && t.holder === id) H(`${where} · cabinet ${post}`, to => t.holder = to);
       });
+      [].concat(eff.vacate_seat || []).forEach(x => {
+        if (x && x.member === id) H(`${where} · vacate_seat member`, to => x.member = to); });
+    });
+    /* THE CONDITIONS THAT ASK ABOUT A PERSON (design/46): a post's holder,
+       a list of people, or relations keyed by the person */
+    eachCondition(M, (w, where) => {
+      if (w.holds) Object.keys(w.holds).forEach(post => {
+        const v = w.holds[post];
+        if (v === id) H(`${where} · holds ${post}`, to => w.holds[post] = to);
+        else if (Array.isArray(v)) v.forEach((x, i) => {
+          if (x === id) H(`${where} · holds ${post}`, to => v[i] = to); });
+      });
+      ["inCabinet", "outOfCabinet", "signed", "notSigned", "refused", "seated", "unseated"].forEach(k => {
+        if (w[k] === id) H(`${where} · ${k}`, to => w[k] = to);
+        else if (Array.isArray(w[k])) w[k].forEach((x, i) => {
+          if (x === id) H(`${where} · ${k}`, to => w[k][i] = to); });
+      });
+      ["relationshipAbove", "relationshipBelow"].forEach(k => {
+        if (w[k] && w[k][id] !== undefined) H(`${where} · ${k}`, to => renameKey(w[k], id, to)); });
     });
     prose(M, "person_" + id, hits, "person_");
     return hits;

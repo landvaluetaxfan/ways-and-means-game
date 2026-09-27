@@ -66,7 +66,8 @@ const Editor = (function () {
 
   /* every enumeration the forms draw from, computed live off the model */
   function vocab(src) {
-    if (Array.isArray(src)) return src.map(v => [v, v]);
+    /* a list of words, or of [value, label] pairs a form built itself */
+    if (Array.isArray(src)) return src.map(v => Array.isArray(v) ? v : [v, v]);
     const V = SCHEMA.vocab;
     switch (src) {
       case "scalars": return V.scalars.map(v => [v, v.replace(/_/g, " ")]);
@@ -141,8 +142,40 @@ const Editor = (function () {
            has none toward itself */
         .concat([].concat(...(M.forums || []).map(f => (f.members || []).filter(m => !m.self)
           .map(m => ["member." + m.id, "member · " + m.name]))));
+      /* WHAT THE VERBS design/46 ADDED READ: the executive and what it makes,
+         the seats and who sits in them, the actors, and the promises content
+         has written. Each is built from the model, so a new entry is
+         offerable the moment it exists. "constituencies" was named by two
+         effects from the start and listed nowhere, so both drew empty. */
+      case "posts": return (M.cabinet || []).map(p => [p.id, p.name || p.id]);
+      case "holderOrVacant": return [["", "\u2014 vacate the post \u2014"]].concat(M.characters.map(c => [c.id, c.name]));
+      case "partiesOrNone": return [["", "\u2014"]].concat(M.parties.map(p => [p.id, p.name]));
+      case "charactersOrNone": return [["", "\u2014"]].concat(M.characters.map(c => [c.id, c.name]));
+      case "instruments": return (M.instruments || []).map(i => [i.id, i.title || i.id]);
+      case "billsOrNone": return [["", "\u2014"]].concat(M.bills.map(b => [b.id, b.title]));
+      case "constituencies": return (M.constituencies || []).map(k => [k.id, k.name]);
+      case "vacancyThen": return [["", "nothing more"], ["byelection", "a by-election"]];
+      case "actors": return (typeof ACTORS !== "undefined" ? ACTORS : []).map(a => [a.id, a.name]);
+      case "stationsFederal": return [["federal", "the whole Commonwealth"]].concat(M.stations.map(s => [s.id, s.name]));
+      case "campaignIds": return campaignIds().map(c => [c, c]);
+      case "undertakings": return undertakingIds().map(u => [u, u]);
       default: return [];
     }
+  }
+
+  /* EVERY PROMISE CONTENT MAKES, wherever an `undertake` sits: an event's
+     choice, an initiative, an order, a campaign's opening. */
+  function undertakingIds() {
+    const out = new Set();
+    const walk = x => {
+      if (!x || typeof x !== "object") return;
+      if (Array.isArray(x)) return x.forEach(walk);
+      if (x.undertake) [].concat(x.undertake).forEach(u => { if (u && u.id) out.add(u.id); });
+      Object.keys(x).forEach(k => walk(x[k]));
+    };
+    ["events", "initiatives", "instruments", "settlements", "administrations", "resolutions"]
+      .forEach(k => walk(M[k]));
+    return [...out].sort();
   }
 
   /* THE CAMPAIGNS THERE ARE: every administration's, from the model, so a
@@ -278,6 +311,41 @@ const Editor = (function () {
     if (d.shape === "queue" && ([].concat(v).length !== 1 || [].concat(v)[0].effects ||
         ![].concat(v)[0].event))
       return { verb, key: "", field: "", value: JSON.stringify(v), delta: "", raw: true };
+    /* THE SHAPES design/46 ADDED, for the six verbs the editor could not
+       offer. Each draws one entry; anything more is kept as JSON, as above. */
+    const raw = () => ({ verb, key: "", field: "", value: JSON.stringify(v), delta: "", raw: true });
+    if (d.shape === "json") return raw();
+    /* a list of several ids (`si`, `discharge`) is one row per id nowhere */
+    if (d.shape === "scalarVal" && Array.isArray(v)) return raw();
+    /* `cross` and `vacate_seat` had shape "list" and no case in either
+       direction, so choosing one wrote nothing at all */
+    if (d.shape === "list") {
+      const e = [].concat(v);
+      if (e.length !== 1 || !e[0] || typeof e[0] !== "object" ||
+          Object.keys(e[0]).some(k => !d.args.some(a => a.k === k))) return raw();
+      const r = { verb, arr: Array.isArray(v) ? "1" : "" };
+      d.args.forEach(a => { r[a.k] = e[0][a.k] == null ? "" : e[0][a.k]; });
+      return r;
+    }
+    if (d.shape === "appoint") {
+      const posts = Object.keys(v || {}), t = posts.length === 1 ? v[posts[0]] : undefined;
+      if (posts.length !== 1 || (t !== null && (!t || typeof t !== "object" ||
+          Object.keys(t).some(k => k !== "holder" && k !== "party")))) return raw();
+      return { verb, key: posts[0], holder: t ? t.holder || "" : "", party: t ? t.party || "" : "" };
+    }
+    if (d.shape === "slots") {
+      const ks = Object.keys(v || {});
+      if (ks.length === 1 && ks[0] === "total" && typeof v.total === "number")
+        return { verb, field: "total", key: "", delta: v.total };
+      if (ks.length === 1 && ks[0] === "refill" && v.refill === true)
+        return { verb, field: "refill", key: "", delta: "" };
+      if (ks.length === 1 && ks[0] === "reserve" && v.reserve && typeof v.reserve === "object" &&
+          Object.keys(v.reserve).length === 1) {
+        const b = Object.keys(v.reserve)[0];
+        if (typeof v.reserve[b] === "number") return { verb, field: "reserve", key: b, delta: v.reserve[b] };
+      }
+      return raw();
+    }
     /* A SET TO NULL OR TO AN OBJECT. {law:{reserve_direction:null}} is how
        a revoked order clears a direction, and the box drew nothing and read
        back 0 (found 25 Sep, when the editor began writing instruments). A
@@ -336,6 +404,26 @@ const Editor = (function () {
       case "queue":     { const q = { event: r.value, after: +r.delta || 1 };
                           if (r.label) q.label = r.label;
                           return { [r.verb]: [q] }; }
+      case "list": {
+        const e = {};
+        d.args.forEach(a => {
+          const x = r[a.k];
+          if (a.optional && (x === "" || x == null)) return;
+          e[a.k] = a.type === "int" || a.type === "num" ? n(x) : x == null ? "" : x;
+        });
+        return { [r.verb]: r.arr === "1" ? [e] : e };
+      }
+      /* no holder is a vacancy, which the engine writes as null */
+      case "appoint":   return { [r.verb]: { [r.key]: r.holder
+                          ? Object.assign({ holder: r.holder }, r.party ? { party: r.party } : {}) : null } };
+      case "slots":     return { [r.verb]: r.field === "refill" ? { refill: true }
+                          : r.field === "reserve" ? { reserve: { [r.key]: n(r.delta) } }
+                          : { total: n(r.delta) } };
+      /* a verb just chosen from the list starts from its template */
+      case "json": {
+        let x = null; try { x = JSON.parse(r.value); } catch (e) { x = null; }
+        return { [r.verb]: x && typeof x === "object" ? x : JSON.parse(JSON.stringify(d.template || {})) };
+      }
     }
   }
 
@@ -361,7 +449,9 @@ const Editor = (function () {
       if (a.type === "flag") return `<label>${esc(a.label)} ${flag_(a.k, cur)}</label>`;
       return `<label>${esc(a.label)} ${txt_(a.k, cur, a.hint, 220)}</label>`;
     }).join("");
-    return `<div class="ed-eff" data-ci="${ci}" data-ei="${ei}"${r.raw ? ' data-raw="1"' : ""}>${verbSel}${fields}` +
+    /* whether a list verb was written as a list, so it reads back as written */
+    const keep = !r.raw && d.shape === "list" ? `<input type="hidden" class="ed-f" data-f="arr" value="${r.arr || ""}">` : "";
+    return `<div class="ed-eff" data-ci="${ci}" data-ei="${ei}"${r.raw ? ' data-raw="1"' : ""}>${verbSel}${fields}${keep}` +
       `<button class="btn ed-x" data-act="eff-del" data-ci="${ci}" data-ei="${ei}">×</button></div>`;
   }
 
@@ -389,13 +479,50 @@ const Editor = (function () {
     return Object.keys(when).map(k => {
       const d = SCHEMA.conditions[k];
       if (!d) return raw(k, when[k]);
+      const del = `<button class="btn ed-x" data-act="${pre || "cond"}-del" data-c="${k}"${at}>×</button>`;
+      const more = `<button class="btn ed-add" data-act="${pre || "cond"}-pair" data-c="${k}"${at} title="another">+</button>`;
+      /* THE FORMS design/46 ADDED. An id list is one select per id, each of
+         which can be emptied to drop it; a single id written as a word is
+         marked `data-one` so it reads back as a word. */
+      if (d.form === "idList") {
+        const list = [].concat(when[k]);
+        if (!list.length || list.some(x => typeof x !== "string")) return raw(k, when[k]);
+        const opts = [["", "\u2014 remove \u2014"]].concat(vocab(d.src));
+        return `<div class="ed-cond" data-c="${k}"${typeof when[k] === "string" ? ' data-one="1"' : ""}>` +
+          `<b>${esc(d.label)}</b>` + list.map(x => `<span class="ed-pair">${sel_("v", opts, x)}</span>`).join("") +
+          more + del + `</div>`;
+      }
+      /* an ending: any, none yet, or one of them by name */
+      if (d.form === "ending") {
+        const v = when[k];
+        if (typeof v !== "boolean" && typeof v !== "string") return raw(k, v);
+        const opts = [["true", d.of === "crisis" ? "any result" : "any answer"], ["false", "none yet"]]
+          .concat(vocab(d.of === "crisis" ? "crisisEndings" : "answerEndings"));
+        return `<div class="ed-cond" data-c="${k}"><b>${esc(d.label)}</b>${sel_("v", opts, String(v))}${del}</div>`;
+      }
+      if (d.form === "id") {
+        if (typeof when[k] !== "string") return raw(k, when[k]);
+        return `<div class="ed-cond" data-c="${k}"><b>${esc(d.label)}</b>${sel_("v", d.src, when[k])}${del}</div>`;
+      }
+      /* {station: {field: n}}: one triple per pair */
+      if (d.form === "nested") {
+        const v = when[k];
+        const ok = v && typeof v === "object" && !Array.isArray(v) && Object.keys(v).length &&
+          Object.keys(v).every(id => v[id] && typeof v[id] === "object" && Object.keys(v[id]).length &&
+            Object.values(v[id]).every(x => typeof x === "number"));
+        if (!ok) return raw(k, v);
+        return `<div class="ed-cond" data-c="${k}"><b>${esc(d.label)}</b>` +
+          [].concat(...Object.keys(v).map(id => Object.keys(v[id]).map(f =>
+            `<span class="ed-pair">${sel_("k", d.src, id)}${sel_("f", d.fields, f)}${num_("v", v[id][f], 70)}</span>`)))
+            .join("") + more + del + `</div>`;
+      }
       /* A MAP MAY HOLD SEVERAL PAIRS ({scalarAbove:{legitimacy:65,
          friction:65}}), drawn as several key-value pairs in one row. Until
          25 Sep a second pair made the whole row raw JSON, which is how most
          of Flash I's endings were drawn. */
       if (d.form === "map" && (!when[k] || typeof when[k] !== "object" || Array.isArray(when[k]) ||
           !Object.keys(when[k]).length ||
-          (wordsOf(d) ? Object.values(when[k]).some(x => typeof x !== "string")
+          (wordsOf(d) || d.vsrc ? Object.values(when[k]).some(x => typeof x !== "string")
            : d.vtype !== "any" && Object.values(when[k]).some(x => typeof x !== "number"))))
         return raw(k, when[k]);
       if (d.form === "int" && typeof when[k] !== "number") return raw(k, when[k]);
@@ -413,6 +540,7 @@ const Editor = (function () {
           const v = when[k][key];
           return `<span class="ed-pair">` + sel_("k", d.src, key) +
             (wordsOf(d) ? sel_("v", wordsOf(d), v)
+             : d.vsrc ? sel_("v", d.vsrc, v)
              : d.vtype === "any" ? txt_("v", typeof v === "string" ? v : JSON.stringify(v), "value", 90)
              : num_("v", v, 70)) + `</span>`;
         }).join("") +
@@ -433,6 +561,22 @@ const Editor = (function () {
         return;
       }
       if (d.form === "int") when[k] = +g("v").value;
+      else if (d.form === "idList") {
+        const ids = [...n.querySelectorAll('[data-f="v"]')].map(x => x.value).filter(Boolean);
+        if (!ids.length) return;              /* every id removed: the condition goes */
+        when[k] = n.dataset.one && ids.length === 1 ? ids[0] : ids;
+      }
+      else if (d.form === "ending") {
+        const x = g("v").value; when[k] = x === "true" ? true : x === "false" ? false : x;
+      }
+      else if (d.form === "id") when[k] = g("v").value;
+      else if (d.form === "nested") {
+        when[k] = {};
+        n.querySelectorAll(".ed-pair").forEach(pr => {
+          const id = pr.querySelector('[data-f="k"]').value, f = pr.querySelector('[data-f="f"]').value;
+          (when[k][id] || (when[k][id] = {}))[f] = +pr.querySelector('[data-f="v"]').value;
+        });
+      }
       else if (d.form === "bool") when[k] = g("v").value === "true";
       else if (d.form === "flagList")
         when[k] = g("v").value.split(",").map(s => s.trim()).filter(Boolean);
@@ -443,7 +587,7 @@ const Editor = (function () {
         when[k] = {};
         n.querySelectorAll(".ed-pair").forEach(pr => {
           const v = pr.querySelector('[data-f="v"]').value;
-          when[k][pr.querySelector('[data-f="k"]').value] = wordsOf(d) ? v : d.vtype === "any" ? any(v) : +v;
+          when[k][pr.querySelector('[data-f="k"]').value] = wordsOf(d) || d.vsrc ? v : d.vtype === "any" ? any(v) : +v;
         });
       }
     });
@@ -2594,6 +2738,16 @@ const Editor = (function () {
   function addPair(when, k) {
     const d = SCHEMA.conditions[k], m = when && when[k];
     if (!d || !m) return;
+    if (d.form === "idList") {
+      const have = [].concat(m), free = vocab(d.src).map(([v]) => v).find(v => v && have.indexOf(v) < 0);
+      if (free != null) when[k] = have.concat([free]);
+      return;
+    }
+    if (d.form === "nested") {
+      const id = vocab(d.src).map(([v]) => v).find(v => !(v in m));
+      if (id != null) m[id] = { [vocab(d.fields)[0][0]]: 0 };
+      return;
+    }
     const free = vocab(d.src).map(([v]) => v).find(v => !(v in m));
     if (free != null) m[free] = firstWord(d);
   }
@@ -2605,18 +2759,26 @@ const Editor = (function () {
       : d.vtype === "word" ? SCHEMA.vocab[d.words] || [] : null;
   }
   function firstWord(d) {
-    return d.vtype === "stage" ? "committee" : wordsOf(d) ? wordsOf(d)[0] : 0;
+    return d.vtype === "stage" ? "committee" : wordsOf(d) ? wordsOf(d)[0]
+      : d.vsrc ? (vocab(d.vsrc)[0] || [""])[0] : 0;
   }
 
   /* ADD A CONDITION to anything that carries a `when`: an event, an ending,
      an initiative or one of its tempos. */
   function addCondition(target) {
-    Dialog.prompt("Condition:\n\n" + Object.keys(SCHEMA.conditions).join("\n"),
+    /* the key and what it asks, since fifty-odd bare keys say little */
+    Dialog.prompt("Condition:\n\n" + Object.keys(SCHEMA.conditions).map(c =>
+        c + " \u2014 " + SCHEMA.conditions[c].label).join("\n"),
       { title: "Add condition" }, k => {
         if (k && SCHEMA.conditions[k]) {
           target.when ||= {};
           const d = SCHEMA.conditions[k];
+          const first = src => (vocab(src)[0] || [""])[0];
           target.when[k] = d.form === "int" ? 1 : d.form === "bool" ? true : d.form === "flagList" ? []
+                         : d.form === "idList" ? [first(d.src)].filter(Boolean)
+                         : d.form === "ending" ? true
+                         : d.form === "id" ? first(d.src)
+                         : d.form === "nested" ? { [first(d.src)]: { [first(d.fields)]: 0 } }
                          : { [vocab(d.src)[0][0]]: firstWord(d) };
         }
         draw();
@@ -2797,5 +2959,5 @@ const Editor = (function () {
      effect losing every pair after the first — lives in the encoding
      rather than in anything the DOM shows, so a check that drove the
      form would not see it. */
-  return { boot, __test: { explodeEffects, effToRow, rowToEff, campaignFiles } };
+  return { boot, __test: { explodeEffects, effToRow, rowToEff, campaignFiles, condRows, readConds } };
 })();

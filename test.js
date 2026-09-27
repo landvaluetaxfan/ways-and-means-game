@@ -5570,3 +5570,85 @@ console.log("\nTHE PRICE RULES ARE CONTENT'S (design/39 §6):");
 
   if (bad) { console.log("\n" + bad + " FORUM FAILURES"); process.exitCode = 1; }
 })();
+
+console.log("\nTHE EDITOR OFFERS EVERY VERB, AND A STORY CAN ASK ABOUT A PERSON (design/46):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+
+  /* ONE VOCABULARY. js/schema.js is what the editor offers and what the
+     guide describes; the engine is what runs. Twenty-two conditions and
+     six effects were in the second and not the first, so an author in the
+     editor could not reach `seen`, the endings, promises or appointments,
+     and CONTENT_GUIDE.md said the schema listed all fifty. */
+  const SCH = require("./js/schema.js");
+  const V = { conditions: Object.keys(Engine.CONDITIONS), effects: Object.keys(Engine.EFFECTS) };
+  const cm = V.conditions.filter(k => !SCH.conditions[k]), ce = Object.keys(SCH.conditions).filter(k => V.conditions.indexOf(k) < 0);
+  const em = V.effects.filter(k => !SCH.effects[k]), ee = Object.keys(SCH.effects).filter(k => V.effects.indexOf(k) < 0);
+  ok("the schema describes every condition the engine knows, and no other", !cm.length && !ce.length,
+     (cm.length ? "undescribed: " + cm.join(" ") : "") + (ce.length ? " unknown to the engine: " + ce.join(" ") : ""));
+  ok("and every effect", !em.length && !ee.length,
+     (em.length ? "undescribed: " + em.join(" ") : "") + (ee.length ? " unknown to the engine: " + ee.join(" ") : ""));
+
+  /* WHO HOLDS WHAT */
+  const C = CONTENT, s = Engine.newGame(C);
+  const post = Object.keys(s.cabinet).find(k => s.cabinet[k].holder);
+  const holder = s.cabinet[post].holder;
+  const other = C.characters.find(c => c.id !== holder && !Object.values(s.cabinet).some(p => p.holder === c.id)).id;
+  ok("holds reads who holds a post, and takes a list", Engine.matches(s, { holds: { [post]: holder } }) &&
+     Engine.matches(s, { holds: { [post]: [other, holder] } }) && !Engine.matches(s, { holds: { [post]: other } }));
+  ok("inCabinet and outOfCabinet read any post", Engine.matches(s, { inCabinet: holder, outOfCabinet: [other] }) &&
+     !Engine.matches(s, { inCabinet: other }));
+  Engine.apply(s, C, [{ cabinet: { [post]: { holder: other, party: C.characterById[other].party } } }]);
+  ok("and follow an appointment", Engine.matches(s, { holds: { [post]: other }, inCabinet: other }) &&
+     !Engine.matches(s, { holds: { [post]: holder } }));
+
+  /* THE PAPER */
+  s.signedBy = [other]; s.refusedBy = [holder];
+  ok("signed, notSigned and refused read the leadership paper",
+     Engine.matches(s, { signed: other, notSigned: holder, refused: [holder] }) && !Engine.matches(s, { signed: holder }));
+
+  /* THE SEAT */
+  const m = C.characters.find(c => c.seat && (C.constituencies.find(k => k.name === c.seat) || {}).magnitude === 1);
+  const k = C.constituencies.find(x => x.name === m.seat);
+  ok("a member sits for their seat at the opening", Engine.matches(s, { seated: m.id }) && !Engine.matches(s, { unseated: m.id }));
+  Engine.apply(s, C, [{ vacate_seat: { constituency: k.id, party: m.party, why: "probe" } }]);
+  ok("a vacancy in a seat of one unseats its member", Engine.matches(s, { unseated: m.id }), JSON.stringify(s.roll[k.id]));
+  s.roll[k.id] = { held: { [m.party]: 1 }, vacant: 0 };      /* the party wins the by-election */
+  ok("and their party winning it back returns somebody else, not them", Engine.matches(s, { unseated: m.id }));
+  /* Every seat in content returns one member, so the rule for a seat of
+     several is probed on a copy of one made three. */
+  const m2 = C.characters.find(c => c.seat && c.id !== m.id &&
+    (C.constituencies.find(x => x.name === c.seat) || {}).magnitude === 1);
+  const k2 = C.constituencies.find(x => x.name === m2.seat);
+  const C3 = Object.assign({}, C, { constituencyById: Object.assign({}, C.constituencyById,
+    { [k2.id]: Object.assign({}, k2, { magnitude: 3 }) }) });
+  s.roll[k2.id] = { held: { [m2.party]: 3 }, vacant: 0 };
+  Engine.apply(s, C3, [{ vacate_seat: { constituency: k2.id, party: m2.party, why: "probe" } }]);
+  ok("in a seat of several, a vacancy that names nobody leaves the member sitting", Engine.matches(s, { seated: m2.id }));
+  Engine.apply(s, C3, [{ vacate_seat: { constituency: k2.id, party: m2.party, why: "probe", member: m2.id } }]);
+  ok("and one that names them unseats them", Engine.matches(s, { unseated: m2.id }));
+  ok("a person with no seat does not sit", Engine.matches(s, { unseated: C.characters.find(c => !c.seat).id }));
+
+  /* RELATIONS: `rel.` moved them and nothing read them */
+  const r0 = s.characters[other].relationship;
+  Engine.apply(s, C, [{ move: { ["rel." + other]: -30 } }]);
+  ok("relationshipBelow reads what rel. moves", Engine.matches(s, { relationshipBelow: { [other]: r0 } }) &&
+     !Engine.matches(s, { relationshipAbove: { [other]: r0 - 1 } }), r0 + " -> " + s.characters[other].relationship);
+  ok("and the President's", Engine.matches(s, { relationshipAbove: { president: s.president.relationship - 1 } }));
+  ok("a person nobody knows is neither above nor below anything",
+     !Engine.matches(s, { relationshipAbove: { nobody: -1 } }) && !Engine.matches(s, { relationshipBelow: { nobody: 101 } }));
+
+  /* A SAVE KEEPS IT, AND CONTENT OWNS WHERE A PERSON SITS */
+  const back = Engine.load(Engine.save(s));
+  Engine.reconcile(back, C);
+  ok("a save keeps who has left their seat", Engine.matches(back, { unseated: m.id }) &&
+     back.characters[m.id].seat === k.id);
+  const old = JSON.parse(Engine.save(Engine.newGame(C)));
+  Object.values(old.characters).forEach(c => { delete c.seat; delete c.party; });
+  const up = Engine.reconcile(old, C);
+  ok("and a save from before this is given each person's seat on load", Engine.matches(up, { seated: m.id }));
+
+  if (bad) { console.log("\n" + bad + " VOCABULARY FAILURES"); process.exitCode = 1; }
+})();

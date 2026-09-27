@@ -1122,6 +1122,27 @@ version of any of them is in the header of the file it names.
   world. They ask `Engine.seatMember` now, and `uitest` checks every such
   seat.
 
+- **THE EDITOR COULD NOT OFFER HALF THE VOCABULARY, AND NO STORY COULD ASK
+  ABOUT A PERSON** (27 Sep, `design/46`; the author: "I'm not satisfied to go
+  onto working on content").
+  - `js/schema.js` described 28 of the engine's 50 conditions and none of six
+    effects (`cabinet`, `undertake`, `discharge`, `slots`, `si`,
+    `signatures`), so the editor never offered `seen`, the endings, promises
+    or appointments. `cross` and `vacate_seat` had no encoding at all.
+    **`test.js` now fails when the engine and the schema differ**: a new verb
+    goes in both.
+  - Ten conditions read people: `holds`, `inCabinet`/`outOfCabinet`,
+    `signed`/`notSigned`/`refused`, `seated`/`unseated`, and
+    `relationshipAbove`/`Below`, which is the first reader of what `rel.`
+    moves.
+  - `vacate_seat` takes `member`. Each person's `seat` and `party` are
+    carried onto `st.characters` by `newGame()`/`reconcile()`.
+  - Left open: `willOf` reads the authored office, not the live cabinet;
+    `alive` is never set false; and a named member cannot cross the floor.
+
+  **Next, per design/46: a throwaway second campaign as a dry run of the
+  vessel**, logging every point where it forced the writer out of content.
+
 **CSS and layout traps, every one found by measuring rather than reading**
 
 - An id outranks `.screen{display:none}`, so `#s-orb.screen{display:block}` put
