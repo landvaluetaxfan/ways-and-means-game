@@ -166,7 +166,7 @@ The page now gives the cause of each fact:
 - the charter's elected council of delegates is the body that asked for
   help.
 
-**Proposed, for the author to confirm or replace:** the sanctions follow a
+**Confirmed by the author (27 Sep), now bible §11.1:** the sanctions follow a
 United Nations panel's finding that the Gabonese fund paid for weapons used
 by separatists in Cabinda, the oil-producing Angolan exclave. That is the
 "international proxy conflict" of design/35, which canon had never named.

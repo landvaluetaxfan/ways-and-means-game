@@ -118,9 +118,10 @@ const EVENTS = [
   body:`The President receives a new Prime Minister in the Winter Garden, the
 Commonwealth's capital. It was built as a station of its own so that no
 other station's voters would own the seat of government, and its 80,000
-residents return one member to the House who may speak but not vote. The
-walk from the lift passes the Earth legations, each in a garden kept at its
-own country's climate: six climates in a mile. The congress hall where the
+residents return one member to the House of Delegates, the Commonwealth's
+parliament, who can introduce bills and speak but cannot vote. The walk from
+the lift passes Earth's embassies, each in a garden kept at its own
+country's climate: six climates in a mile. The congress hall where the
 Perigee Charter was signed in 2064 stands at the centre of the station.
 
 Jaco van Ryneveld was elected President in 2077 by a direct vote of the

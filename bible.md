@@ -175,46 +175,46 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 
 **Part XI — NAMED CANON** · L2031
 - §11.1 · L2035 — The polity
-- §11.2 · L2141 — Persons
-- §11.3 · L2185 — Stations and constituencies
-- §11.4 · L2262 — The functional roster  *LOCKED*
-- §11.5 · L2284 — The live bill
-- §11.6 · L2293 — Other business on the order paper
+- §11.2 · L2153 — Persons
+- §11.3 · L2197 — Stations and constituencies
+- §11.4 · L2274 — The functional roster  *LOCKED*
+- §11.5 · L2296 — The live bill
+- §11.6 · L2305 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L2311
-- §12.1 · L2313 — The core principle  *LOCKED*
-- §12.2 · L2317 — Split visual language  *LOCKED*
-- §12.3 · L2324 — Chrome direction  *LOCKED*
-- §12.4 · L2330 — Screens  *LOCKED*
-- §12.5 · L2334 — Election night  *LOCKED*
-- §12.6 · L2344 — The orbital map  *LOCKED*
-- §12.7 · L2372 — The parliament diagram  *LOCKED*
-- §12.8 · L2398 — Documents  *LOCKED*
-- §12.9 · L2404 — The feed  *LOCKED*
-- §12.10 · L2408 — Build cost  *LOCKED*
-- §12.11 · L2412 — Images  *LOCKED*
-- §12.12 · L2440 — Existing artifact
-- §12.13 · L2452 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L2323
+- §12.1 · L2325 — The core principle  *LOCKED*
+- §12.2 · L2329 — Split visual language  *LOCKED*
+- §12.3 · L2336 — Chrome direction  *LOCKED*
+- §12.4 · L2342 — Screens  *LOCKED*
+- §12.5 · L2346 — Election night  *LOCKED*
+- §12.6 · L2356 — The orbital map  *LOCKED*
+- §12.7 · L2384 — The parliament diagram  *LOCKED*
+- §12.8 · L2410 — Documents  *LOCKED*
+- §12.9 · L2416 — The feed  *LOCKED*
+- §12.10 · L2420 — Build cost  *LOCKED*
+- §12.11 · L2424 — Images  *LOCKED*
+- §12.12 · L2452 — Existing artifact
+- §12.13 · L2464 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2511
-- §13.1 · L2513 — Scandal taxonomy  *LOCKED*
-- §13.2 · L2526 — The spine  *LOCKED*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2523
+- §13.1 · L2525 — Scandal taxonomy  *LOCKED*
+- §13.2 · L2538 — The spine  *LOCKED*
 
-**Part XIV — PRIOR ART** · L2534
-- §14.1 · L2536 — The gap  *LOCKED*
-- §14.2 · L2540 — Works
-- §14.3 · L2548 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L2546
+- §14.1 · L2548 — The gap  *LOCKED*
+- §14.2 · L2552 — Works
+- §14.3 · L2560 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2561
-- §15.1 · L2563 — Team  *LOCKED*
-- §15.2 · L2569 — Documentation  *LOCKED*
-- §15.3 · L2585 — Where this gets hard  *LOCKED*
-- §15.4 · L2596 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2613 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2573
+- §15.1 · L2575 — Team  *LOCKED*
+- §15.2 · L2581 — Documentation  *LOCKED*
+- §15.3 · L2597 — Where this gets hard  *LOCKED*
+- §15.4 · L2608 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2625 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2643
+**Part XVI — OPEN DECISIONS** · L2655
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2687
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2699
 
 <!-- /TOC -->
 
@@ -2081,6 +2081,18 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
   industrial capacity. The canon had called it an industrial platform and
   never said what it made; the note that introduced it spent its clause on
   why Cordell kept the Bellamy name.
+- **Why the Works was abandoned: the Cabinda war** (decided 27 Sep 2026 by
+  Claude, confirmed by the author; `design/51`). Separatists in Cabinda,
+  the oil-producing Angolan exclave, have fought Angola's government since
+  2079. In March 2080 a United Nations panel found that Gabon's sovereign
+  wealth fund had paid for their weapons, and the European Union froze the
+  fund's assets. European rules freeze any company more than half owned by
+  a sanctioned body, which caught Cordell; the Works' operator banked in
+  Europe, where the platform's bonds were issued, and banks elsewhere would
+  not take its business. This is the "international proxy conflict" of the
+  author's plan (`design/35`). The Union's later sanctions on the Works
+  itself, after the Act, are the same regime extended to the platform's new
+  owner.
 - **Current date in play:** 11 April 2080. Session 4, Week 112.
 - **THE TIMELINE — LOCKED 22 Sep 2026, and it is TWO DECADES and not two
   centuries.** The Commonwealth was drafted as two hundred years old and dated
