@@ -5652,3 +5652,22 @@ console.log("\nTHE EDITOR OFFERS EVERY VERB, AND A STORY CAN ASK ABOUT A PERSON 
 
   if (bad) { console.log("\n" + bad + " VOCABULARY FAILURES"); process.exitCode = 1; }
 })();
+
+console.log("\nDECISION, NOTICE, OUTCOME (design/48):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const K = Engine.eventKind, g = { flags: ["x"] };
+  ok("two open answers make a decision", K({ choices: [{ label: "a" }, { label: "b" }] }) === "decision");
+  ok("one answer is a notice", K({ choices: [{ label: "a" }] }) === "notice" && K({}) === "notice");
+  ok("answers that all carry a condition are an outcome",
+     K({ choices: [{ label: "a", when: g }, { label: "b", when: g }] }) === "outcome");
+  ok("one open answer beside conditional ones is conditional",
+     K({ choices: [{ label: "a" }, { label: "b", when: g }] }) === "conditional");
+  const by = {};
+  ALL.events.forEach(e => { const k = K(e); by[k] = (by[k] || 0) + 1; });
+  ok("every event in content is one of the four", Object.keys(by).every(k =>
+     ["decision", "conditional", "outcome", "notice"].indexOf(k) >= 0), JSON.stringify(by));
+  if (bad) { console.log("\n" + bad + " KIND FAILURES"); process.exitCode = 1; }
+})();

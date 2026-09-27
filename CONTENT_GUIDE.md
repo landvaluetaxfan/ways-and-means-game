@@ -252,6 +252,23 @@ that campaign's story. Nothing else changes.
   `content/archive/cut-events.js` (not loaded), with why; paste one back at
   the end of its list to restore it.
 
+### Four kinds of event
+
+An event is a scene and its answers, and what kind of moment it is follows
+from the answers (`Engine.eventKind`, design/48). Nothing is stored, so the
+kind cannot disagree with the choices:
+
+| kind | its answers | the Sitting screen heads it |
+|---|---|---|
+| **decision** | two or more have no condition | Decision |
+| **conditional** | one has no condition, the others do | Decision when more than one is open, *The one answer open* when not |
+| **outcome** | every one has a condition, so the state picks | *The result* |
+| **notice** | one | *What happens* |
+
+Write a notice when something happens that the government cannot refuse;
+write a decision when it can. The editor's event form says which you have
+written, and the Sandbox tab filters by kind.
+
 ### Posture: cautious, measured, bold
 
 Every choice in an event with two or more ungated choices says how far it

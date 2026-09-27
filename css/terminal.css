@@ -3432,6 +3432,7 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .sbx-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
 .sbx-chips .btn{height:auto;min-height:0;padding:1px 7px;font-size:11px;}
 .sbx-chips .btn.on{font-weight:700;}
+.sbx-sep{flex-basis:100%;height:0;}
 #sbx-events td{vertical-align:top;}
 #sbx-events td i{display:block;font-style:normal;font-size:10px;opacity:.65;}
 #sbx-events td.st{white-space:nowrap;font-size:11px;}

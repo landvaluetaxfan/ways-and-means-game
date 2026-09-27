@@ -6420,7 +6420,16 @@ const UI = (function () {
     const rank = x => RANK[x.choice.posture] == null ? 3 : RANK[x.choice.posture];
     const open = Engine.openChoices(st, C, e).slice()
       .sort((a, b) => rank(a) - rank(b) || a.index - b.index);
-    foot.innerHTML = `<div class="rulehead">Decision</div><div class="choices">` +
+    /* THE HEADING SAYS WHAT KIND OF MOMENT THIS IS (design/48): a decision
+       only when there is more than one answer to take. One button under
+       "Decision" read as a choice with the other options missing. */
+    const kind = Engine.eventKind(e);
+    const head = !open.length ? "No answer is open now"
+      : open.length >= 2 ? "Decision"
+      : kind === "outcome" ? "The result"
+      : kind === "conditional" ? "The one answer open"
+      : "What happens";
+    foot.innerHTML = `<div class="rulehead" id="sit-decide-head" data-kind="${kind}">${head}</div><div class="choices">` +
       open.map(x => choiceRow(e, x.choice, x.index, openRow.i === x.index)).join("") +
       `</div>`;
 
@@ -7721,7 +7730,14 @@ const UI = (function () {
   /* THE STEPS BACK. Each is the save as it was, what was on the Sitting
      screen then, and the event to put up again for "try another choice".
      In memory only: a reload is a fresh bench. */
-  let sbxStack = [], sbxShown = null, sbxChapter = "all";
+  let sbxStack = [], sbxShown = null, sbxChapter = "all", sbxKind = "all";
+  /* the four kinds of event, in words (design/48) */
+  const KIND_SAYS = {
+    decision: "a decision: two or more answers are open whatever the state",
+    conditional: "conditional: one answer is always open, the others only when their conditions hold",
+    outcome: "an outcome: every answer carries a condition, so the state picks the one that applies",
+    notice: "a notice: one answer, nothing to weigh"
+  };
   const SBX_MAX = 30;
   function sbxPush(label, again) {
     sbxStack.push({ label, save: Engine.save(st), was: currentEvent ? currentEvent.id : null,
@@ -7827,9 +7843,152 @@ const UI = (function () {
     return (C.events || []).filter(e => {
       if (sbxChapter === "none" ? e.chapter != null
           : sbxChapter !== "all" && String(e.chapter) !== sbxChapter) return false;
+      if (sbxKind !== "all" && Engine.eventKind(e) !== sbxKind) return false;
       if (!q) return true;
       return (e.id + " " + (e.title || "") + " " + (e.body || "")).toLowerCase().indexOf(q) >= 0;
     });
+  }
+
+  function sbxEventHTML(e) {
+      const spk = e.speaker ? C.characterById[e.speaker] : null;
+      const open = Engine.openChoices(st, C, e).map(x => x.index);
+      let h = `<div class="w-c-h"><b>${esc(e.title || e.id)}</b><span class="w-c-iso">${esc(e.id)}</span></div>` +
+        `<div class="note">${esc(sbxWhen(e))}${spk ? " \u00b7 spoken by " + esc(spk.name) : ""}</div>` +
+        `<div class="note">This is ${esc(KIND_SAYS[Engine.eventKind(e)])}.</div>` +
+        `<div class="btnrow"><button class="btn" data-sbxshow="${esc(e.id)}">Show it on the Sitting screen</button>` +
+        (e.when && !Engine.matches(st, e.when) || (e.chapter != null && e.chapter !== st.chapter)
+          ? `<button class="btn" data-sbxmake="${esc(e.id)}">Make its gate hold, then show it</button>` : "") +
+        `</div>`;
+      h += `<div class="rulehead">Its gate</div>` + (e.when && Object.keys(e.when).length
+        ? `<table class="sbx-gate"><tbody>${sbxGateRows(e.when)}</tbody></table>`
+        : `<div class="note">${e.queuedOnly ? "None of its own: it comes up only when something queues it."
+            : "None: it can come up whenever its chapter allows."}</div>`);
+      /* WHAT LEADS HERE: every event whose arrival or choice queues this
+         one, and every initiative answered by it, each a link */
+      const from = sbxQueuers(e.id);
+      if (from.length) h += `<div class="note">Queued by ` + from.map(x =>
+        `<button class="lnk" data-sbxpick="${esc(x.id)}">${esc(x.title || x.id)}</button>` +
+        (x.choice ? ` (${esc(x.choice)})` : "")).join(", ") + `.</div>`;
+      const asks = (C.initiatives || []).filter(i => i.event === e.id);
+      if (asks.length) h += `<div class="note">The answer to ` + asks.map(i =>
+        `<button class="lnk" data-sbxpick="ini:${esc(i.id)}">${esc(i.title)}</button>`).join(", ") + `.</div>`;
+      if (e.effects) h += `<div class="rulehead">What it does on arrival</div>` +
+        `<div class="sbx-code">${[].concat(e.effects).map(sbxJSON).join("\n")}</div>`;
+      h += `<div class="rulehead">Its choices <em>${(e.choices || []).length}</em></div>` +
+        (e.choices || []).map((c, i) =>
+          `<div class="sbx-choice"><b>${i + 1}. ${esc(c.label || "")}</b>` +
+          (c.posture ? ` <i>${esc(c.posture)}</i>` : "") +
+          (open.indexOf(i) < 0 ? ` <span class="sbx-no">hidden now by its gate</span>` : "") +
+          (c.when ? `<table class="sbx-gate"><tbody>${sbxGateRows(c.when)}</tbody></table>` : "") +
+          `<div class="sbx-code">${[].concat(c.effects || []).map(sbxJSON).join("\n") || "no effects"}</div>` +
+          (c.result ? `<div class="note">${esc(c.result)}</div>` : "") + `</div>`).join("");
+      return h;
+  }
+
+  /* AN INITIATIVE: what it costs, whether it is open now, its gate, what
+     taking it does, each way of doing it, and the event that answers it */
+  function sbxInitiativeHTML(i) {
+    const a = Engine.initiatives(st, C).find(x => x.id === i.id) || {};
+    const cost = i.cost == null ? 1 : i.cost;
+    let h = `<div class="w-c-h"><b>${esc(i.title)}</b><span class="w-c-iso">${esc(i.id)}</span></div>` +
+      `<div class="note">${cost === 0 ? "no order-paper time" : cost + " slot" + (cost === 1 ? "" : "s") + " of order-paper time"}` +
+      ` \u00b7 ${a.ok ? "open to the government now" : esc(a.reason || "")}</div>` +
+      (i.note ? `<div class="note">${esc(i.note)}</div>` : "") +
+      `<div class="btnrow"><button class="btn" data-sbxgo="ini:${esc(i.id)}">Open it on the Government tab</button>` +
+      (a.ok ? "" : `<button class="btn" data-sbxmakego="ini:${esc(i.id)}">Make its gate hold, then open it</button>`) +
+      `</div>`;
+    h += `<div class="rulehead">Its gate</div>` + (i.when && Object.keys(i.when).length
+      ? `<table class="sbx-gate"><tbody>${sbxGateRows(i.when)}</tbody></table>`
+      : `<div class="note">None: it is open whenever there is time for it.</div>`);
+    if (i.effects) h += `<div class="rulehead">What taking it does</div>` +
+      `<div class="sbx-code">${[].concat(i.effects).map(sbxJSON).join("\n")}</div>`;
+    if (i.event) {
+      const ev = C.eventById[i.event];
+      h += `<div class="note">Answered by <button class="lnk" data-sbxpick="${esc(i.event)}">` +
+        `${esc(ev ? ev.title : i.event)}</button>.</div>`;
+    }
+    h += `<div class="rulehead">How it is done <em>${(i.tempo || []).length}</em></div>` +
+      (i.tempo || []).map((t, n) =>
+        `<div class="sbx-choice"><b>${n + 1}. ${esc(t.label || "")}</b>` +
+        ` <i>answers in ${t.after == null ? 3 : t.after} sitting${t.after === 1 ? "" : "s"}` +
+        `${t.cost ? " \u00b7 " + t.cost + " more slot" + (t.cost === 1 ? "" : "s") : ""}</i>` +
+        (t.when ? `<table class="sbx-gate"><tbody>${sbxGateRows(t.when)}</tbody></table>` : "") +
+        `<div class="sbx-code">${[].concat(t.effects || []).map(sbxJSON).join("\n") || "no effects"}</div></div>`).join("");
+    return h;
+  }
+
+  /* AN ORDER: who makes it, how it takes effect, whether it can be made
+     now, its gate, and what making it, revoking it and its politics do */
+  function sbxOrderHTML(si) {
+    const chk = Engine.canMake(st, C, si.id), s = st.instruments[si.id] || {};
+    const post = st.cabinet[si.author] || {}, holder = post.holder ? C.characterById[post.holder] : null;
+    let h = `<div class="w-c-h"><b>${esc(si.title)}</b><span class="w-c-iso">${esc(si.number || si.id)}</span></div>` +
+      `<div class="note">${si.procedure === "affirmative"
+        ? "Affirmative: it does nothing until the House approves it"
+        : "Negative: in force when made, and the House may pray against it for " + (si.prayer_window || 6) + " sittings"}` +
+      ` \u00b7 made by the ${esc((si.author || "").replace(/_/g, " "))} post` +
+      `${holder ? ", held by " + esc(holder.name) : ", which is vacant"}</div>` +
+      `<div class="note">${s.inForce ? "In force now." : s.awaitingApproval ? "Made, and awaiting the House's approval."
+        : chk.ok ? "It can be made now." : "It cannot be made now: " + esc(chk.reason) + "."}</div>` +
+      (si.summary ? `<div class="note">${esc(si.summary)}</div>` : "") +
+      `<div class="btnrow"><button class="btn" data-sbxgo="si:${esc(si.id)}">Open it on the Government tab</button>` +
+      (!chk.ok && si.when && !Engine.matches(st, si.when)
+        ? `<button class="btn" data-sbxmakego="si:${esc(si.id)}">Make its gate hold, then open it</button>` : "") +
+      `</div>`;
+    h += `<div class="rulehead">Its gate</div>` + (si.when && Object.keys(si.when).length
+      ? `<table class="sbx-gate"><tbody>${sbxGateRows(si.when)}</tbody></table>`
+      : `<div class="note">None: it can be made whenever its post is held.</div>`);
+    [["What making it does", si.effects], ["What revoking it does", si.reverse],
+     ["What it costs politically", si.political_cost]].forEach(([l, v]) => {
+      if (v && [].concat(v).length) h += `<div class="rulehead">${l}</div>` +
+        `<div class="sbx-code">${[].concat(v).map(sbxJSON).join("\n")}</div>`;
+    });
+    if (si.effect_note) h += `<div class="note">${esc(si.effect_note)}</div>`;
+    return h;
+  }
+
+  /* WHAT THE LIST HOLDS (design/48). The events the pool can bring, and
+     the decisions the player starts: the initiatives and the orders. Each
+     is read out gate by gate and opened where the player meets it. */
+  let sbxMode = "events";
+  const SBX_MODES = [["events", "Events"], ["initiatives", "Initiatives"], ["orders", "Orders"]];
+  const sbxFind = () => (($("#sbx-find") || {}).value || "").trim().toLowerCase();
+  const sbxHit = (q, ...xs) => !q || xs.join(" ").toLowerCase().indexOf(q) >= 0;
+  /* the row's key: an event's id, or `ini:` and `si:` before the others' */
+  function sbxRows() {
+    const q = sbxFind();
+    if (sbxMode === "initiatives") {
+      const avail = Engine.initiatives(st, C);
+      return (C.initiatives || []).filter(i => sbxHit(q, i.id, i.title, i.note)).map(i => {
+        const a = avail.find(x => x.id === i.id) || {};
+        return { key: "ini:" + i.id, title: i.title, sub: i.id, col: a.cost == null ? "" : a.cost,
+                 status: a.ok ? `<span class="sbx-now">open now</span>` : `<span class="sbx-no">${esc(a.reason || "")}</span>` };
+      });
+    }
+    if (sbxMode === "orders") {
+      return (C.instruments || []).filter(si => sbxHit(q, si.id, si.title, si.number, si.summary)).map(si => {
+        const s = st.instruments[si.id] || {}, chk = Engine.canMake(st, C, si.id);
+        const status = s.inForce ? `<span class="sbx-now">in force</span>`
+          : s.awaitingApproval ? "awaiting approval"
+          : chk.ok ? `<span class="sbx-now">can be made</span>` : `<span class="sbx-no">${esc(chk.reason)}</span>`;
+        return { key: "si:" + si.id, title: si.title.replace(/ Order \d{4}$/, ""), sub: si.number || si.id,
+                 col: si.procedure === "affirmative" ? "aff" : "neg", status };
+      });
+    }
+    let pool = [];
+    try { pool = Engine.eligible(st, C).map(e => e.id); } catch (x) { pool = []; }
+    return sbxEvents().map(e => {
+      let gate; try { gate = Engine.matches(st, e.when); } catch (x) { gate = false; }
+      const status = pool.indexOf(e.id) >= 0 ? `<span class="sbx-now">in the pool</span>`
+        : gate ? "gate holds" : `<span class="sbx-no">gated</span>`;
+      return { key: e.id, title: e.title || e.id, sub: e.id + " \u00b7 " + Engine.eventKind(e),
+               col: e.chapter == null ? "\u2014" : e.chapter,
+               status: status + (st.seen[e.id] ? ` \u00b7 met ${st.seen[e.id]}` : "") };
+    });
+  }
+  function sbxTotal() {
+    return sbxMode === "initiatives" ? (C.initiatives || []).length
+      : sbxMode === "orders" ? (C.instruments || []).length : (C.events || []).length;
   }
 
   function drawSandbox() {
@@ -7841,65 +8000,51 @@ const UI = (function () {
     if (!on) { list.innerHTML = ""; detail.innerHTML = ""; body.innerHTML = ""; return; }
 
     /* THE LIST */
-    let pool = [];
-    try { pool = Engine.eligible(st, C).map(e => e.id); } catch (x) { pool = []; }
-    const shown = sbxEvents();
     const chips = $("#sbx-chips");
     if (chips) {
-      const ch = [...new Set((C.events || []).map(e => e.chapter).filter(x => x != null))].sort();
-      chips.innerHTML = [["all", "All"]].concat(ch.map(c => [String(c), "Chapter " + c]), [["none", "Any chapter"]])
-        .map(([k, l]) => `<button class="btn${sbxChapter === k ? " on" : ""}" data-sbxch="${k}">${l}</button>`).join("");
+      let h = SBX_MODES.map(([k, l]) =>
+        `<button class="btn${sbxMode === k ? " on" : ""}" data-sbxmode="${k}">${l}</button>`).join("");
+      if (sbxMode === "events") {
+        const ch = [...new Set((C.events || []).map(e => e.chapter).filter(x => x != null))].sort();
+        h += `<span class="sbx-sep"></span>` +
+          [["all", "All"]].concat(ch.map(c => [String(c), "Chapter " + c]), [["none", "Any chapter"]])
+          .map(([k, l]) => `<button class="btn${sbxChapter === k ? " on" : ""}" data-sbxch="${k}">${l}</button>`).join("") +
+          `<span class="sbx-sep"></span>` +
+          [["all", "Every kind"], ["decision", "Decisions"], ["conditional", "Conditional"],
+           ["outcome", "Outcomes"], ["notice", "Notices"]]
+            .map(([k, l]) => `<button class="btn${sbxKind === k ? " on" : ""}" data-sbxkind="${k}">${l}</button>`).join("");
+      }
+      chips.innerHTML = h;
     }
+    const rows = sbxRows();
+    const lh = $("#sbx-list-hdr"), dh = $("#sbx-detail-hdr");
+    if (lh) lh.textContent = sbxMode === "events" ? "Every event" : sbxMode === "initiatives" ? "Every initiative" : "Every order";
+    if (dh) dh.textContent = sbxMode === "events" ? "The event" : sbxMode === "initiatives" ? "The initiative" : "The order";
     const count = $("#sbx-count");
-    if (count) count.textContent = shown.length + " of " + (C.events || []).length;
+    if (count) count.textContent = rows.length + " of " + sbxTotal();
     let sel = Focus.selected("sbx-events");
-    if (!sel || !C.eventById[sel]) { sel = (shown[0] || {}).id || null; Focus.seed("sbx-events", sel); }
-    list.innerHTML = `<tbody>` + shown.map(e => {
-      let gate; try { gate = Engine.matches(st, e.when); } catch (x) { gate = false; }
-      const status = pool.indexOf(e.id) >= 0 ? `<span class="sbx-now">in the pool</span>`
-        : gate ? "gate holds" : `<span class="sbx-no">gated</span>`;
-      const met = st.seen[e.id] ? ` · met ${st.seen[e.id]}` : "";
-      return `<tr data-sbxev="${esc(e.id)}"${e.id === sel ? ' class="sel"' : ""}>` +
-        `<td>${esc(e.title || e.id)}<i>${esc(e.id)}</i></td>` +
-        `<td class="n">${e.chapter == null ? "—" : e.chapter}</td>` +
-        `<td class="st">${status}${met}</td></tr>`;
-    }).join("") + `</tbody>`;
+    if (!sel || !rows.some(r => r.key === sel)) {
+      /* a selection filtered out of the list keeps its reading, in its own mode */
+      const keep = sel && (sbxMode === "events" ? !!C.eventById[sel] && sel.indexOf(":") < 0
+        : sel.indexOf(sbxMode === "initiatives" ? "ini:" : "si:") === 0);
+      if (!keep) { sel = (rows[0] || {}).key || null; Focus.seed("sbx-events", sel); }
+    }
+    list.innerHTML = `<tbody>` + rows.map(r =>
+      `<tr data-sbxev="${esc(r.key)}"${r.key === sel ? ' class="sel"' : ""}>` +
+      `<td>${esc(r.title)}<i>${esc(r.sub)}</i></td>` +
+      `<td class="n">${esc(String(r.col))}</td><td class="st">${r.status}</td></tr>`).join("") + `</tbody>`;
 
     /* THE ONE CHOSEN */
-    const e = sel ? C.eventById[sel] : null;
-    if (!e) detail.innerHTML = `<div class="note">No event matches.</div>`;
-    else {
-      const spk = e.speaker ? C.characterById[e.speaker] : null;
-      const open = Engine.openChoices(st, C, e).map(x => x.index);
-      let h = `<div class="w-c-h"><b>${esc(e.title || e.id)}</b><span class="w-c-iso">${esc(e.id)}</span></div>` +
-        `<div class="note">${esc(sbxWhen(e))}${spk ? " · spoken by " + esc(spk.name) : ""}</div>` +
-        `<div class="btnrow"><button class="btn" data-sbxshow="${esc(e.id)}">Show it on the Sitting screen</button>` +
-        (e.when && !Engine.matches(st, e.when) || (e.chapter != null && e.chapter !== st.chapter)
-          ? `<button class="btn" data-sbxmake="${esc(e.id)}">Make its gate hold, then show it</button>` : "") +
-        `</div>`;
-      h += `<div class="rulehead">Its gate</div>` + (e.when && Object.keys(e.when).length
-        ? `<table class="sbx-gate"><tbody>${sbxGateRows(e.when)}</tbody></table>`
-        : `<div class="note">${e.queuedOnly ? "None of its own: it comes up only when something queues it."
-            : "None: it can come up whenever its chapter allows."}</div>`);
-      /* WHAT LEADS HERE: every event whose arrival or choice queues this
-         one, each a link that reads it out instead */
-      const from = sbxQueuers(e.id);
-      if (from.length) h += `<div class="note">Queued by ` + from.map(x =>
-        `<button class="lnk" data-sbxpick="${esc(x.id)}">${esc(x.title || x.id)}</button>` +
-        (x.choice ? ` (${esc(x.choice)})` : "")).join(", ") + `.</div>`;
-      if (e.effects) h += `<div class="rulehead">What it does on arrival</div>` +
-        `<div class="sbx-code">${[].concat(e.effects).map(sbxJSON).join("\n")}</div>`;
-      h += `<div class="rulehead">Its choices <em>${(e.choices || []).length}</em></div>` +
-        (e.choices || []).map((c, i) =>
-          `<div class="sbx-choice"><b>${i + 1}. ${esc(c.label || "")}</b>` +
-          (c.posture ? ` <i>${esc(c.posture)}</i>` : "") +
-          (open.indexOf(i) < 0 ? ` <span class="sbx-no">hidden now by its gate</span>` : "") +
-          (c.when ? `<table class="sbx-gate"><tbody>${sbxGateRows(c.when)}</tbody></table>` : "") +
-          `<div class="sbx-code">${[].concat(c.effects || []).map(sbxJSON).join("\n") || "no effects"}</div>` +
-          (c.result ? `<div class="note">${esc(c.result)}</div>` : "") + `</div>`).join("");
-      detail.innerHTML = h;
+    if (sbxMode === "initiatives") {
+      const i = sel && (C.initiatives || []).find(x => "ini:" + x.id === sel);
+      detail.innerHTML = i ? sbxInitiativeHTML(i) : `<div class="note">No initiative matches.</div>`;
+    } else if (sbxMode === "orders") {
+      const si = sel && (C.instruments || []).find(x => "si:" + x.id === sel);
+      detail.innerHTML = si ? sbxOrderHTML(si) : `<div class="note">No order matches.</div>`;
+    } else {
+      const e = sel ? C.eventById[sel] : null;
+      detail.innerHTML = e ? sbxEventHTML(e) : `<div class="note">No event matches.</div>`;
     }
-
     /* THE STATE, AND THE WAY BACK */
     const top = sbxStack[sbxStack.length - 1];
     const flags = Object.keys(st.flags || {}).filter(f => st.flags[f] && f.charAt(0) !== "_" && f !== "sandbox").sort();
@@ -7931,20 +8076,51 @@ const UI = (function () {
     body.innerHTML = b;
   }
 
+  /* OPEN AN INITIATIVE OR AN ORDER WHERE THE PLAYER TAKES IT: the
+     Government tab, with its row open and in view */
+  function sbxOpenGov(key) {
+    const ini = key.indexOf("ini:") === 0, id = key.replace(/^(ini|si):/, "");
+    if (ini) initOpen = id; else siOpen = id;
+    openTab("gov");
+    drawAll();
+    const el = ini ? document.querySelector("#gov-init .ini.open")
+                   : document.querySelector(`#gov-si tr[data-si="${id}"]`);
+    if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest" });
+    setStatus("Sandbox: opened on the Government tab", "transient");
+  }
+
   /* EVERY SANDBOX CONTROL, delegated once from boot(). Each snapshots
      first, so each can be undone. */
   function sandboxClick(ev) {
     const t = ev.target.closest && ev.target.closest("[data-sbxshow],[data-sbxmake],[data-sbxretry]," +
-      "[data-sbxundo],[data-sbxchapter],[data-sbxunflag],[data-sbxflag],[data-sbxch],[data-sbx],[data-sbxback]," +
+      "[data-sbxundo],[data-sbxchapter],[data-sbxunflag],[data-sbxflag],[data-sbxch],[data-sbxkind],[data-sbx],[data-sbxback]," +
+      "[data-sbxmode],[data-sbxgo],[data-sbxmakego]," +
       "tr[data-sbxev],[data-sbxpick]");
     if (!t || !inSandbox()) return;
     const d = t.dataset;
     /* a row selects, by the same call a keyboard Enter makes */
     if (d.sbxev) { Focus.activate("sbx-events", d.sbxev); return; }
-    /* a link to another event: clear the finder so its row is in the list */
+    /* a link to another entry: its own list, with the finder cleared so
+       its row is in it */
     if (d.sbxpick) {
       const f = $("#sbx-find"); if (f) f.value = "";
-      sbxChapter = "all"; Focus.seed("sbx-events", d.sbxpick); drawSandbox(); return;
+      sbxMode = d.sbxpick.indexOf("ini:") === 0 ? "initiatives" : d.sbxpick.indexOf("si:") === 0 ? "orders" : "events";
+      sbxChapter = "all"; sbxKind = "all"; Focus.seed("sbx-events", d.sbxpick); drawSandbox(); return;
+    }
+    if (d.sbxmode) { sbxMode = d.sbxmode; drawSandbox(); return; }
+    if (d.sbxgo) { sbxOpenGov(d.sbxgo); return; }
+    if (d.sbxmakego) {
+      const ini = d.sbxmakego.indexOf("ini:") === 0, id = d.sbxmakego.replace(/^(ini|si):/, "");
+      const x = ini ? (C.initiatives || []).find(o => o.id === id) : (C.instruments || []).find(o => o.id === id);
+      if (!x) return;
+      sbxPush("before making \u201c" + x.title + "\u201d possible");
+      const r = sbxSatisfy({ when: x.when });
+      /* an initiative already taken is "already in hand" until its flag goes */
+      if (ini && st.flags["init_" + id]) { Engine.apply(st, C, [{ flag: { ["init_" + id]: false } }]); r.done.push("taken before"); }
+      sbxOpenGov(d.sbxmakego);
+      if (r.left.length) setStatus("Sandbox: set " + (r.done.join(", ") || "nothing") +
+        "; left as they are: " + r.left.join(", "), "transient");
+      return;
     }
     const redraw = msg => { if (msg) setStatus("Sandbox: " + msg, "transient"); drawAll(); saved(); };
     if (d.sbxshow) { sandboxShow(d.sbxshow); return; }
@@ -7961,6 +8137,7 @@ const UI = (function () {
     if (d.sbxundo) { const l = (sbxStack[sbxStack.length - 1] || {}).label; sbxRestore(false); redraw("undone, " + l); return; }
     if (d.sbxback) { openTab("sbx"); return; }
     if (d.sbxch) { sbxChapter = d.sbxch; drawSandbox(); return; }
+    if (d.sbxkind) { sbxKind = d.sbxkind; drawSandbox(); return; }
     if (d.sbxchapter) { sbxPush("chapter " + st.chapter + " to " + d.sbxchapter);
       Engine.apply(st, C, [{ chapter: +d.sbxchapter }]); redraw("chapter " + d.sbxchapter); return; }
     if (d.sbxunflag) { sbxPush("clearing " + d.sbxunflag);

@@ -1053,16 +1053,16 @@ try {
 
   /* A CHOICE'S POSTURE (design/40 E7). The Sitting screen orders an
      event's choices by it, so a missing one sends a choice to the bottom
-     of the list and an unknown one is a word the screen cannot rank. An
-     event whose choices are all gated is an outcome, one of which the
-     state picks, and carries none. */
+     of the list and an unknown one is a word the screen cannot rank. Only a
+     decision needs them (Engine.eventKind, design/48): an outcome's answer
+     is picked by the state, and a notice has one. */
+  const EngK = require(path.join(root, "js", "engine.js"));
   const POSTURES = new Set(require(path.join(root, "js", "schema.js")).vocab.postures || []);
   (EVENTS || []).forEach(ev => {
     const cs = ev.choices || [];
     cs.forEach((c, i) => { if (c.posture != null && !POSTURES.has(c.posture))
       refBad.push("event " + ev.id + " choice " + i + ": posture '" + c.posture + "' is not one of " + [...POSTURES].join(", ")); });
-    const free = cs.filter(c => !c.when).length;
-    if (cs.length >= 2 && free >= 2 && cs.some(c => !c.posture))
+    if (EngK.eventKind(ev) === "decision" && cs.some(c => !c.posture))
       refBad.push("event " + ev.id + ": " + cs.filter(c => !c.posture).length + " of " + cs.length +
                   " choices carry no posture, so the Sitting screen cannot order them");
   });

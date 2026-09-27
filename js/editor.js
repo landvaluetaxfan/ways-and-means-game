@@ -201,6 +201,18 @@ const Editor = (function () {
     return url;
   }
 
+  /* WHAT KIND OF EVENT THIS IS (design/48), by the engine's own reading of
+     its choices, so the form and the game cannot disagree */
+  function kindLine(e) {
+    const k = typeof Engine !== "undefined" && Engine.eventKind ? Engine.eventKind(e) : null;
+    return ({
+      decision: "A decision: two or more answers are open whatever the state.",
+      conditional: "Conditional: one answer is always open; the others appear only when their conditions hold.",
+      outcome: "An outcome: every answer has a condition, so the state picks the one the player reads.",
+      notice: "A notice: one answer, nothing to weigh. Add a second answer to make it a decision."
+    })[k] || "";
+  }
+
   function campaignIds() {
     return [...new Set(((M && M.administrations) || []).map(a =>
       (typeof a.campaign === "string" && a.campaign) || a.id))];
@@ -654,6 +666,7 @@ const Editor = (function () {
     <textarea class="ed-f ed-body" data-f="body" rows="12" spellcheck="true">${esc(e.body)}</textarea>
 
     <div class="rulehead">Choices <button class="btn ed-add" data-act="choice-add">+ choice</button></div>
+    <div class="ed-hint" id="ed-kind">${esc(kindLine(e))}</div>
     <div id="ed-choices">${(e.choices || []).map((c, i) => choiceBlock(c, i)).join("")}</div>`;
   }
 

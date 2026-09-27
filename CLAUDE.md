@@ -1163,6 +1163,16 @@ version of any of them is in the header of the file it names.
     and all 640 playtest runs were unchanged.
   - **A tool that sets state can mask a missing setter.** The flag audit
     reads every effect in content, a developer console's included.
+- **AN EVENT IS NOT ALWAYS A DECISION** (27 Sep, `design/48`; the author:
+  "have we been distinguishing between decision vs event?").
+  - `Engine.eventKind(e)` reads four kinds off the choices, with nothing
+    stored: decision (106), notice (13), outcome (7) and conditional (4).
+  - The Sitting screen's heading follows what is open now, instead of
+    "Decision" over a single button.
+  - The sandbox and the editor say the kind, and lint's posture rule uses
+    the same function.
+  - The sandbox also lists the decisions the player starts, initiatives and
+    orders. Each opens where the player takes it, on the Government tab.
 
 **CSS and layout traps, every one found by measuring rather than reading**
 

@@ -1487,6 +1487,8 @@ try {
   ok("Show puts it on the Sitting screen as a player meets it",
      $("#sitting-hdr").textContent === title && !!$("#sit-decide [data-expand]") && $("#s-sit").classList.contains("on"),
      $("#sitting-hdr").textContent);
+  ok("an event with two answers open is headed Decision", $("#sit-decide-head") &&
+     $("#sit-decide-head").textContent === "Decision", $("#sit-decide-head") ? $("#sit-decide-head").textContent : "no head");
   const flag = w.eval(`[].concat(UI.content().eventById["${pick}"].choices[0].effects).find(f => typeof f.flag === "string").flag`);
   $('#sit-decide [data-expand="0"]').click();
   $('#sit-decide .commit[data-i="0"]').click();
@@ -1515,6 +1517,28 @@ try {
   ok("the campaign's own shortcuts are on the tab",
      $("#sbx-body").querySelectorAll("[data-sbx]").length === w.eval("UI.content().sandbox.length") &&
      w.eval("UI.content().sandbox.length") > 0);
+  /* A NOTICE IS NOT A DECISION (design/48): the filter finds the notices,
+     and one put up is headed for what it is */
+  $("#tab-sbx").click();
+  const kindChip = $('#sbx-chips [data-sbxkind="notice"]');
+  if (kindChip) kindChip.click();
+  const noticeRows = [...w.document.querySelectorAll("#sbx-events tr[data-sbxev]")].map(r => r.dataset.sbxev);
+  ok("the kind filter finds the notices and nothing else", noticeRows.length > 0 &&
+     noticeRows.every(id => w.eval(`Engine.eventKind(UI.content().eventById["${id}"])`) === "notice"),
+     noticeRows.length + " notices");
+  const plainNotice = noticeRows.find(id => w.eval(`!(UI.content().eventById["${id}"].choices || [])[0] ||
+    !UI.content().eventById["${id}"].choices[0].when`));
+  if (plainNotice) {
+    $(`#sbx-events tr[data-sbxev="${plainNotice}"]`).dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+    ok("and says in the reading what kind it is", /This is a notice/.test($("#sbx-event").textContent));
+    $(`#sbx-event [data-sbxshow="${plainNotice}"]`).click();
+    ok("a notice on the Sitting screen is headed What happens, not Decision",
+       $("#sit-decide-head") && $("#sit-decide-head").textContent === "What happens",
+       plainNotice + ": " + ($("#sit-decide-head") ? $("#sit-decide-head").textContent : "no head"));
+    $("#tab-sbx").click();
+    $("#sbx-body [data-sbxundo]").click();
+  } else ok("a notice with an open answer exists to put up", false);
+  const every = $('#sbx-chips [data-sbxkind="all"]'); if (every) every.click();
   /* a queued-only event says what queues it, and the link reads that out */
   $("#sbx-find").value = ""; $("#sbx-find").dispatchEvent(new w.Event("input"));
   $('#sbx-events tr[data-sbxev="f1_dilemma"]').dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
@@ -1526,6 +1550,54 @@ try {
     via.click();
     ok("and the link reads that event out", $("#sbx-event .w-c-iso") && $("#sbx-event .w-c-iso").textContent === to);
   }
+  /* THE DECISIONS THE PLAYER STARTS (design/48): initiatives and orders,
+     read out and opened where the player takes them */
+  $("#tab-sbx").click();
+  $('#sbx-chips [data-sbxmode="initiatives"]').click();
+  ok("the Initiatives list holds every initiative",
+     w.document.querySelectorAll("#sbx-events tr[data-sbxev]").length === w.eval("UI.content().initiatives.length"),
+     $("#sbx-count").textContent);
+  const shut = w.eval(`(function () { const s = UI.state(), C = UI.content(), easy = ["flags", "flagsAbsent", "scalarAbove", "scalarBelow"];
+    const i = C.initiatives.find(i => i.when && !Engine.matches(s, i.when) && Object.keys(i.when).every(k => easy.indexOf(k) >= 0));
+    return i ? i.id : null; })()`);
+  if (shut) {
+    $(`#sbx-events tr[data-sbxev="ini:${shut}"]`).dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+    ok("an initiative is read out with its gate", /Its gate/.test($("#sbx-event").textContent) &&
+       /How it is done/.test($("#sbx-event").textContent));
+    $(`#sbx-event [data-sbxmakego="ini:${shut}"]`).click();
+    const title = w.eval(`UI.content().initiatives.find(i => i.id === "${shut}").title`);
+    ok("Make its gate hold opens it, now open, on the Government tab",
+       $("#s-gov").classList.contains("on") && !!$("#gov-init .ini.open") &&
+       $("#gov-init .ini.open").textContent.indexOf(title) >= 0 &&
+       w.eval(`Engine.initiatives(UI.state(), UI.content()).find(i => i.id === "${shut}").ok`) === true, shut);
+    $("#tab-sbx").click();
+    $("#sbx-body [data-sbxundo]").click();
+  } else ok("an initiative with a flag or meter gate exists to open", false);
+  $('#sbx-chips [data-sbxmode="orders"]').click();
+  ok("the Orders list holds every order",
+     w.document.querySelectorAll("#sbx-events tr[data-sbxev]").length === w.eval("UI.content().instruments.length"));
+  const rung = w.eval(`(function () { const s = UI.state(), C = UI.content(), easy = ["flags", "flagsAbsent", "siInForce"];
+    const x = C.instruments.find(x => x.when && !Engine.matches(s, x.when) && Object.keys(x.when).every(k => easy.indexOf(k) >= 0 && k !== "siInForce"));
+    return x ? x.id : null; })()`);
+  if (rung) {
+    $(`#sbx-events tr[data-sbxev="si:${rung}"]`).dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+    $(`#sbx-event [data-sbxmakego="si:${rung}"]`).click();
+    ok("an order behind a gate opens, makeable, on the Government tab",
+       $("#s-gov").classList.contains("on") && !!$(`#gov-si tr[data-si="${rung}"].open`) &&
+       w.eval(`Engine.canMake(UI.state(), UI.content(), "${rung}").reason`) !== "not yet available",
+       rung + ": " + w.eval(`Engine.canMake(UI.state(), UI.content(), "${rung}").reason || "ok"`));
+    $("#tab-sbx").click();
+    $("#sbx-body [data-sbxundo]").click();
+  } else ok("an order with a flag gate exists to open", false);
+  /* an initiative's answer is a link to the event */
+  $('#sbx-chips [data-sbxmode="initiatives"]').click();
+  const answered = w.eval("(UI.content().initiatives.find(i => i.event) || {}).id");
+  $(`#sbx-events tr[data-sbxev="ini:${answered}"]`).dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  const ans = $("#sbx-event [data-sbxpick]");
+  if (ans) ans.click();
+  ok("and its answer is a link that reads the event out",
+     !!ans && $('#sbx-chips [data-sbxmode="events"]').classList.contains("on") &&
+     $("#sbx-event .w-c-iso") && $("#sbx-event .w-c-iso").textContent === w.eval(`UI.content().initiatives.find(i => i.id === "${answered}").event`));
   $("#sbx-find").value = "zz_nothing_matches_this";
   $("#sbx-find").dispatchEvent(new w.Event("input"));
   ok("the finder narrows the list", w.document.querySelectorAll("#sbx-events tr[data-sbxev]").length === 0);

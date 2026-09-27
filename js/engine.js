@@ -5622,6 +5622,30 @@ const Engine = (function () {
       .filter(x => choiceOpen(st, C, x.choice));
   }
 
+  /* WHAT KIND OF THING AN EVENT IS (design/48), read off its choices
+     rather than stored beside them, so the two cannot disagree. The author,
+     27 Sep: "have we been distinguishing between decision vs event?" We had
+     not: every event was headed "Decision", including the thirteen with one
+     button and the seven whose answer the state picks.
+
+       decision     two or more answers are open whatever the state
+       conditional  one answer is always open and the others only when
+                    their conditions hold: a decision on some sittings,
+                    one road on others
+       outcome      every answer carries a condition, so the state picks
+                    the one that applies and the player reads it
+       notice       one answer: something happens, and there is nothing
+                    to weigh
+
+     What the player meets on a given sitting is decided by what is open
+     then (openChoices); this is what the author wrote. */
+  function eventKind(e) {
+    const cs = (e && e.choices) || [];
+    if (cs.length <= 1) return "notice";
+    const free = cs.filter(c => !c.when).length;
+    return free >= 2 ? "decision" : free === 1 ? "conditional" : "outcome";
+  }
+
   function choose(st, C, event, choiceIndex) {
     const ch = event.choices[choiceIndex];
     if (!choiceOpen(st, C, ch)) return null;
@@ -8652,7 +8676,7 @@ const Engine = (function () {
     domainTest, functionalByConstituency, lobbiedByConstituency, isSupply,
     lastSession, lastPeriod, sessionEndsAt, recess, dissolve, checkEnd, supplyCarried, supplyPending,
     signableMembers, collectSignature, winBackTerms, winBack,
-    settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
+    settle, outstanding, describe, grave, choiceOpen, openChoices, eventKind, draw,
     undertakingWhere,
     snapshot, changes,
     prorogue, canDivide, candidates, vacancies, fillPost,

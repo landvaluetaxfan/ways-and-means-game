@@ -248,6 +248,9 @@ try {
   ok("and carries the event as the editor holds it, the unsaved edit included",
      !!got && got.id === tagged.id && got.title === "Retitled in the editor" &&
      JSON.stringify(got.choices) === JSON.stringify(tagged.choices), got ? got.title : "no event");
+  ok("the event form says what kind of event it is",
+     /^(A decision|Conditional|An outcome|A notice)/.test((w.document.querySelector("#ed-kind") || {}).textContent || ""),
+     (w.document.querySelector("#ed-kind") || {}).textContent);
   /* put the title back, so the sweeps below read the files' own content */
   const t2 = w.document.querySelector('#ed-form [data-f="title"]');
   if (t2) { t2.value = tagged.title; click([...w.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id !== tagged.id)); }
