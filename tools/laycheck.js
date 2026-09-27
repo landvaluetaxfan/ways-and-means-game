@@ -5,7 +5,7 @@
      node tools/laycheck.js --size 1366x768  one shape
      node tools/laycheck.js --all            every finding, not the worst ten
 
-   CLAUDE.md keeps a list of CSS traps and every one of them ends with the
+   LESSONS.md keeps a list of CSS traps and every one of them ends with the
    same sentence: found by measuring rather than reading. A screen that is
    present in the DOM, correct in the stylesheet and invisible on the glass
    is the defining bug of this interface — the menu ticker pushed one screen
