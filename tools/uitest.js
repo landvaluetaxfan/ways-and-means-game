@@ -1517,27 +1517,63 @@ try {
   ok("the campaign's own shortcuts are on the tab",
      $("#sbx-body").querySelectorAll("[data-sbx]").length === w.eval("UI.content().sandbox.length") &&
      w.eval("UI.content().sandbox.length") > 0);
-  /* A NOTICE IS NOT A DECISION (design/48): the filter finds the notices,
-     and one put up is headed for what it is */
+  /* A DECISION AND AN EVENT (design/49): the filter finds the events; one
+     put up takes the screen as a dated page, is answered, and the sitting's
+     decision comes after it on the same sitting */
   $("#tab-sbx").click();
-  const kindChip = $('#sbx-chips [data-sbxkind="notice"]');
+  const kindChip = $('#sbx-chips [data-sbxkind="event"]');
   if (kindChip) kindChip.click();
-  const noticeRows = [...w.document.querySelectorAll("#sbx-events tr[data-sbxev]")].map(r => r.dataset.sbxev);
-  ok("the kind filter finds the notices and nothing else", noticeRows.length > 0 &&
-     noticeRows.every(id => w.eval(`Engine.eventKind(UI.content().eventById["${id}"])`) === "notice"),
-     noticeRows.length + " notices");
-  const plainNotice = noticeRows.find(id => w.eval(`!(UI.content().eventById["${id}"].choices || [])[0] ||
-    !UI.content().eventById["${id}"].choices[0].when`));
-  if (plainNotice) {
-    $(`#sbx-events tr[data-sbxev="${plainNotice}"]`).dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
-    ok("and says in the reading what kind it is", /This is a notice/.test($("#sbx-event").textContent));
-    $(`#sbx-event [data-sbxshow="${plainNotice}"]`).click();
-    ok("a notice on the Sitting screen is headed What happens, not Decision",
-       $("#sit-decide-head") && $("#sit-decide-head").textContent === "What happens",
-       plainNotice + ": " + ($("#sit-decide-head") ? $("#sit-decide-head").textContent : "no head"));
+  const eventRows = [...w.document.querySelectorAll("#sbx-events tr[data-sbxev]")].map(r => r.dataset.sbxev);
+  ok("the kind filter finds the events and nothing else", eventRows.length > 0 &&
+     eventRows.every(id => w.eval(`Engine.isEvent(UI.content().eventById["${id}"])`)),
+     eventRows.length + " events");
+  const plainEvent = eventRows.find(id => w.eval(`(function () { const e = UI.content().eventById["${id}"];
+    return !e.when && !!(e.choices || [])[0] && !e.choices[0].when; })()`));
+  if (plainEvent) {
+    $(`#sbx-events tr[data-sbxev="${plainEvent}"]`).dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+    ok("and says in the reading that it is an event", /This is an event/.test($("#sbx-event").textContent) &&
+       $("#sbx-detail-hdr").textContent === "The event", $("#sbx-detail-hdr").textContent);
+    const at = w.eval("UI.state().sitting");
+    $(`#sbx-event [data-sbxshow="${plainEvent}"]`).click();
+    ok("an event takes the screen as a page, dated, with its answer under it",
+       $("#s-sit").classList.contains("setpiece") && !!$("#sitting-body .sp-page") &&
+       /^Sitting \d+/.test(($("#sitting-body .sp-kicker") || {}).textContent || "") &&
+       $("#sit-decide-head") && $("#sit-decide-head").textContent === "Your answer",
+       plainEvent + ": " + ($("#sit-decide-head") ? $("#sit-decide-head").textContent : "no head"));
+    $('#sit-decide [data-expand="0"]').click();
+    $('#sit-decide .commit[data-i="0"]').click();
+    const cont = $("#btn-continue");
+    ok("answered, it continues to the sitting's business rather than rising", !!cont && !$("#btn-advance"),
+       $("#sit-decide .btnrow") ? $("#sit-decide .btnrow").textContent : "no buttons");
+    if (cont) cont.click();
+    ok("and the decision comes after it, on the same sitting, in the ordinary panel",
+       w.eval("UI.state().sitting") === at && !$("#s-sit").classList.contains("setpiece") &&
+       $("#sit-decide-head") && $("#sit-decide-head").textContent === "Decision",
+       "sitting " + w.eval("UI.state().sitting") + ": " + $("#sitting-hdr").textContent);
     $("#tab-sbx").click();
     $("#sbx-body [data-sbxundo]").click();
-  } else ok("a notice with an open answer exists to put up", false);
+  } else ok("an event with an open answer exists to put up", false);
+  /* AN EVENT WITH EVERY ANSWER SHUT had a heading and nothing under it, and
+     no way on: it is passed over for the sitting, and the sitting goes on */
+  /* content's own gates cover every case, so the probe is one of ours,
+     added to the view for this check and taken out after it */
+  {
+    const at2 = w.eval("UI.state().sitting");
+    w.eval(`(function () { const C = UI.content();
+      const e = { id: "ux_shut", title: "Every answer shut", body: "x", setpiece: true,
+                  choices: [{ label: "no", when: { flags: ["ux_never_set"] }, result: "r" }] };
+      C.events.push(e); C.eventById.ux_shut = e; UI.sandboxShow("ux_shut"); })()`);
+    const pass = $("#btn-pass");
+    ok("an event with every answer shut still has a way on", !!pass && $("#sitting-hdr").textContent === "Every answer shut");
+    if (pass) pass.click();
+    ok("which passes it over and goes on to the decision, the same sitting",
+       w.eval("UI.state().sitting") === at2 && $("#sitting-hdr").textContent !== "Every answer shut" &&
+       !$("#s-sit").classList.contains("setpiece"), $("#sitting-hdr").textContent);
+    w.eval(`(function () { const C = UI.content(); C.events = C.events.filter(e => e.id !== "ux_shut");
+      delete C.eventById.ux_shut; })()`);
+    $("#tab-sbx").click();
+    $("#sbx-body [data-sbxundo]").click();
+  }
   const every = $('#sbx-chips [data-sbxkind="all"]'); if (every) every.click();
   /* a queued-only event says what queues it, and the link reads that out */
   $("#sbx-find").value = ""; $("#sbx-find").dispatchEvent(new w.Event("input"));

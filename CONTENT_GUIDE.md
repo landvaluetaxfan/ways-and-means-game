@@ -133,9 +133,10 @@ own setup on top. Administrations are not tagged, because their `campaign`
 field means the campaign they play.
 
 **See it in the game.** The main menu's **Sandbox** opens any campaign on
-the author's bench: its tab lists every event, reads each one's gate
-condition by condition, and puts any event on the Sitting screen as a player
-meets it. Choose, look at what moved, then **try another choice** or
+the author's bench: its tab lists every decision and event, reads each
+one's gate condition by condition, and puts any of them on the Sitting
+screen as a player meets it (an event as its page, then the sitting's
+decision after it). Choose, look at what moved, then **try another choice** or
 **Undo**. The editor's **Play in the game** button on an event opens the same
 bench with that event, as the form holds it, unsaved edits included. The
 sandbox keeps its own save and records no ending and no award. A campaign
@@ -252,31 +253,58 @@ that campaign's story. Nothing else changes.
   `content/archive/cut-events.js` (not loaded), with why; paste one back at
   the end of its list to restore it.
 
-### Four kinds of event
+### A decision or an event
 
-An event is a scene and its answers, and what kind of moment it is follows
-from the answers (`Engine.eventKind`, design/48). Nothing is stored, so the
-kind cannot disagree with the choices:
+The author's two words (design/49):
 
-| kind | its answers | the Sitting screen heads it |
-|---|---|---|
-| **decision** | two or more have no condition | Decision |
-| **conditional** | one has no condition, the others do | Decision when more than one is open, *The one answer open* when not |
-| **outcome** | every one has a condition, so the state picks | *The result* |
-| **notice** | one | *What happens* |
+- **A decision** is the sitting's business: what the player does at a
+  sitting. It is drawn in the ordinary Sitting panel, one a sitting.
+- **An event** is something that happened. It is a page that takes the
+  screen before the sitting's decision, without taking its place.
 
-Write a notice when something happens that the government cannot refuse;
-write a decision when it can. The editor's event form says which you have
-written, and the Sandbox tab filters by kind.
+An entry is an event when it carries `setpiece`:
+
+```js
+setpiece: true                       // its body is the page
+setpiece: { mood: "threat",          // the score's cue when it arrives
+            art: "almanac_dark",     // an artifact slot, optional
+            sections: [              // a page of its own
+              { kind: "lede", body: "..." },
+              { kind: "body", head: "What is being asked", body: "..." },
+              { kind: "voices", head: "What is being said",
+                body: [{ said: "...", who: "The Spindle" }] } ] }
+```
+
+- **The picture** is the art slot if there is one, otherwise the entry's
+  `image`, otherwise the speaker's portrait.
+- **The dateline and the speaker's byline** come from the sitting and
+  `speaker`.
+- **Section kinds** are `epigraph`, `lede`, `body`, `voices`, `document` and
+  `signature`. A kind is how the passage reads, not what it means.
+- **A mood** is one of `SCHEMA.vocab.moods`. Each already means a moment in
+  the score, so name one only where the event is that kind of moment.
+
+**How an event arrives** is how any entry arrives, with one difference: an
+event whose gate holds comes before every decision, whatever the weights.
+
+| to make it arrive | write |
+|---|---|
+| as the outcome of something | `queuedOnly: true`, and queue it from the choice, initiative or resolution |
+| by chance | `chance: 0.3`, rolled once when it first becomes eligible |
+| when a threshold is crossed | a `when`; it comes at the first sitting its gate holds |
+
+Answered, an event continues to the sitting's business. The editor's event
+form has a **Kind** field (Decision or Event), and the page's mood, art and
+sections under the body. The Sandbox tab filters by kind.
 
 ### Posture: cautious, measured, bold
 
-Every choice in an event with two or more ungated choices says how far it
+Every choice in an entry with two or more ungated choices says how far it
 goes (`design/40` E7). The Sitting screen lists the cautious answer first,
 then the measured one, then the bold one, and marks each; the engine keeps
 the order you wrote, so reordering a posture never changes a run. `npm run
-lint` fails an event that leaves one out. An event whose choices are all
-gated, so the state picks one, is an outcome and carries none.
+lint` fails an entry that leaves one out. An entry whose choices are all
+gated, so the state picks one, or that has one answer, carries none.
 
 Posture is the ACTION, not the size of its consequences. Doing nothing can
 be expensive and still be the cautious answer; a big public stand can cost

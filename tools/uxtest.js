@@ -2019,6 +2019,28 @@ try {
     w.eval("Engine.nextEvent = window.__next; UI.boot(UI.state(), CONTENT)");
   }
 
+  /* SIT UNTIL THERE IS BUSINESS SHOWS WHAT IT FOUND (design/49). The loop
+     asked nextEvent, threw the answer away, and asked again when it drew the
+     sitting; a queued item is taken off the queue by the first asking, so an
+     answer that arrived this way was lost. The stub gives each state its item
+     once, as the queue does, three sittings on. */
+  {
+    w.eval(`window.__keep = Engine.save(UI.state()); window.__next = Engine.nextEvent;
+      (function () { const given = new WeakSet(), at = UI.state().sitting + 3;
+        const probe = { id: "ux_arrives", title: "The answer arrives", body: "x",
+                        choices: [{ label: "Noted." }] };
+        Engine.nextEvent = function (s) {
+          if (s.sitting >= at && !given.has(s)) { given.add(s); return probe; } return null; };
+      })(); UI.boot(UI.state(), CONTENT)`);
+    const until = w.document.getElementById("btn-until");
+    ok("a quiet sitting offers to sit until there is business", !!until);
+    if (until) until.click();
+    const hdr = w.document.getElementById("sitting-hdr");
+    ok("and shows what it found, which the queue gives only once",
+       !!hdr && hdr.textContent === "The answer arrives", hdr ? hdr.textContent : "no header");
+    w.eval("Engine.nextEvent = window.__next; UI.boot(Engine.load(window.__keep, CONTENT), CONTENT)");
+  }
+
   /* ONE PIP PER THING. A single corner flag lost the count, and lost the
      colour where two kinds fell on one day. The card names each kind in
      words, one sentence to a line, so the count of lines is the count of

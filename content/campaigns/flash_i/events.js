@@ -245,6 +245,7 @@ The rate is printed. The term is printed. The condition is one line.`,
    lets the quarrel run past 78 while the margin, the reserve and its
    standing give way together falls. A loss, not a settlement (design/34 D4). */
 { id:"f1_meltdown", chapter:2, weight:98, once:true,
+  setpiece:true,
   /* the last floor: it needs the two before it (the tier fall, below
      shed_order_published) and cannot come while the emergency order stands */
   when:{ flags:["f1_frozen", "f1_second_floor"], flagsAbsent:["f1_emergency"],
@@ -363,6 +364,7 @@ the government that will be read in both.`,
 
 /* the canon election: the pyrrhic tier leads to the campaign's victory */
 { id:"f1_pyrrhic_election", chapter:3, prologue:7, once:true,
+  setpiece:true,
   when:{ resolvedIs:"f1_pyrrhic" },
   title:"The mandate",
   speaker:null,
@@ -385,6 +387,7 @@ The victory is real and it is expensive. No cheaper one was on offer.`,
    the whole line. */
 /* REACH: queued by the take_indemnity initiative. */
 { id:"indemnity_settles", queuedOnly:true, once:true,
+  setpiece:true,
   title:"The indemnity comes to term",
   speaker:"hatt",
   body:`The Underwriters do not argue and they do not negotiate. They send a
@@ -426,6 +429,7 @@ it that way because they could read the numbers and we could not."`,
    `below X + 0.1` and `above X` do the same. */
 /* REACH: queued by the assume_substrate_debt initiative. */
 { id:"substrate_debt_settles", queuedOnly:true, once:true,
+  setpiece:true,
   title:"The substrate debt comes to term",
   speaker:"ceyhan",
   body:`The Commonwealth took the debt onto its books or it cancelled it, and
@@ -486,6 +490,7 @@ Hatt offers to keep the line open as a standing facility on the same terms, draw
 /* THE FACILITY, CALLED. Queued by the breach of `f1_debt` when the House
    rises with the facility unpaid. The default margin is the agreement's. */
 { id:"f1_debt_called", queuedOnly:true, once:true,
+  setpiece:{ mood:"threat" },
   title:"The facility is called",
   speaker:"hatt",
   body:`The emergency facility was still owed when the House rose, and the Alliance of Business and Government has called it. The sum due is twenty-one billion six hundred million dollars: the principal, the printed rate, and the default margin of ten per cent the agreement sets.
@@ -565,6 +570,7 @@ One floor is left under the government. The Cabinet Office has drafted the order
 
 /* the Meltdown's pivot, answered */
 { id:"f1_emergency_declared", queuedOnly:true, once:true,
+  setpiece:{ mood:"order" },
   title:"The emergency order",
   speaker:null,
   body:`The order is signed. Assembly on the ring is restricted, movement between stations needs a permit, and the House may not remove the government while the order stands.
@@ -592,6 +598,7 @@ The Commonwealth has not done this before, and everyone in the chamber knows it.
 
 /* the Pyrrhic tier's pivot, answered */
 { id:"f1_leases_sold", queuedOnly:true, once:true,
+  setpiece:true,
   title:"The leases are sold",
   speaker:null,
   body:`The Cordell mining leases have a buyer, and the proceeds go to the reserve. Earth's banks price the Commonwealth's risk a little lower the day the sale is announced.`,
@@ -603,6 +610,7 @@ The Commonwealth has not done this before, and everyone in the chamber knows it.
 
 /* the Joint Mandate's pivot, answered */
 { id:"f1_zone_leased", queuedOnly:true, once:true,
+  setpiece:true,
   title:"The first fees are paid",
   speaker:"landry",
   body:`The free zone under the joint mandate is charging for its berths. The first carriers have paid, and the Commonwealth has an income from a platform it does not own.`,
@@ -614,6 +622,7 @@ The Commonwealth has not done this before, and everyone in the chamber knows it.
 
 /* the Capitulation's pivot, answered */
 { id:"f1_minister_resigns", queuedOnly:true, once:true,
+  setpiece:true,
   title:"A resignation",
   speaker:null,
   body:`The Minister for External Relations resigns. The statement is four sentences long and takes responsibility for the platform in the second.`,
@@ -632,6 +641,7 @@ The Commonwealth has not done this before, and everyone in the chamber knows it.
    too; below 50 Earth waits, and the tethers carry less. One door is open
    in every state. */
 { id:"f1_earth_answers", queuedOnly:true, maxFires:2,
+  setpiece:true,
   title:"Earth's answer on the relays",
   speaker:"landry",
   body:`The European Union has answered the order holding back the relays. Its members have set the time their grids can run short of orbital power against the time the Commonwealth's stores of nitrogen and water can last on a reduced supply from the tethers.`,
@@ -660,6 +670,7 @@ The Commonwealth has not done this before, and everyone in the chamber knows it.
 
 /* the relays switched back on by the government, before Earth moved */
 { id:"f1_relays_restored", queuedOnly:true, maxFires:2,
+  setpiece:true,
   title:"The relays are back on",
   speaker:"landry",
   body:`The power relays and the maintenance crews are working normally again. The European Union has welcomed the decision and has not changed its own measures.`,
@@ -796,6 +807,7 @@ written to be voted for by delegates who have not read it."`,
    way it goes is the state's: the Court reads a Commonwealth the world
    believes. */
 { id:"f1_icj_opinion", queuedOnly:true, once:true,
+  setpiece:{ mood:"tension" },
   title:"The Court's opinion",
   speaker:"fenwick",
   body:`The International Court of Justice has given its advisory opinion on the
@@ -816,6 +828,7 @@ Fenwick has read the last four first.`,
 
 /* THE MISSION REPORTS, the answer to working the floor. */
 { id:"un_floor_report", queuedOnly:true,
+  setpiece:true,
   title:"The mission reports",
   speaker:"landry",
   effects:[{ flag:{ un_floor_working:false } }],

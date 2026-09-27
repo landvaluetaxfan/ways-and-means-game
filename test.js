@@ -195,10 +195,9 @@ console.log("\nTHE PRODUCTIVE ECONOMY:");
 console.log("\nFIRST FIVE SITTINGS (deterministic):");
 let s = Engine.newGame(CONTENT);
 for (let i=0;i<5;i++){
-  const e = Engine.nextEvent(s, CONTENT);
-  if(!e){ console.log("  sitting "+s.sitting+": (no eligible event)"); Engine.advance(s); continue; }
-  console.log("  sitting "+s.sitting+": "+e.title+"  ["+e.choices.length+" choices]");
-  Engine.choose(s, CONTENT, e, 0);
+  const met = Engine.playSitting(s, CONTENT, () => 0);
+  if(!met.length){ console.log("  sitting "+s.sitting+": (no eligible event)"); Engine.advance(s); continue; }
+  met.forEach(m => console.log("  sitting "+s.sitting+": "+m.event.title+"  ["+m.event.choices.length+" choices]"));
   Engine.advance(s);
 }
 console.log("\nloss check:", JSON.stringify(Engine.checkLoss(s, CONTENT)));
@@ -210,8 +209,7 @@ let z = Engine.newGame(CONTENT), fired = 0, k = 0, ended = null;
 for (let i = 0; i < 40; i++) {
   const loss = Engine.checkLoss(z, CONTENT);
   if (loss.lost) { ended = "sitting " + z.sitting + ": " + loss.reason; break; }
-  const e = Engine.nextEvent(z, CONTENT);
-  if (e) { Engine.choose(z, CONTENT, e, (k++) % e.choices.length); fired++; }
+  fired += Engine.playSitting(z, CONTENT, e => (k++) % e.choices.length).length;
   Engine.advance(z);
 }
 console.log("  events fired:", fired, "| wire items:", z.wire.length, "| queued:", z.queue.length);
@@ -4935,8 +4933,7 @@ console.log("\nA CAMPAIGN IS A UNIT (design/36 §3):");
     const p2 = Engine.newGame(K);
     for (let i = 0; i < 30; i++) {
       if (Engine.checkLoss(p2, K).lost) break;
-      const e = Engine.nextEvent(p2, K);
-      if (e) { Engine.choose(p2, K, e, i % e.choices.length); played++; }
+      played += Engine.playSitting(p2, K, e => i % e.choices.length).length;
       Engine.advance(p2, K);
     }
   } catch (e) { threw = e.message; }
@@ -5653,21 +5650,92 @@ console.log("\nTHE EDITOR OFFERS EVERY VERB, AND A STORY CAN ASK ABOUT A PERSON 
   if (bad) { console.log("\n" + bad + " VOCABULARY FAILURES"); process.exitCode = 1; }
 })();
 
-console.log("\nDECISION, NOTICE, OUTCOME (design/48):");
+console.log("\nDECISION AND EVENT (design/49):");
 (function () {
   let bad = 0;
   const ok = (l, c, extra) => { if (!c) bad++;
     console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
-  const K = Engine.eventKind, g = { flags: ["x"] };
-  ok("two open answers make a decision", K({ choices: [{ label: "a" }, { label: "b" }] }) === "decision");
-  ok("one answer is a notice", K({ choices: [{ label: "a" }] }) === "notice" && K({}) === "notice");
-  ok("answers that all carry a condition are an outcome",
-     K({ choices: [{ label: "a", when: g }, { label: "b", when: g }] }) === "outcome");
-  ok("one open answer beside conditional ones is conditional",
-     K({ choices: [{ label: "a" }, { label: "b", when: g }] }) === "conditional");
-  const by = {};
-  ALL.events.forEach(e => { const k = K(e); by[k] = (by[k] || 0) + 1; });
-  ok("every event in content is one of the four", Object.keys(by).every(k =>
-     ["decision", "conditional", "outcome", "notice"].indexOf(k) >= 0), JSON.stringify(by));
-  if (bad) { console.log("\n" + bad + " KIND FAILURES"); process.exitCode = 1; }
+  const K = Engine.eventKind;
+  ok("an entry with a page is an event", K({ setpiece: true }) === "event" &&
+     K({ setpiece: { mood: "threat" } }) === "event" && Engine.isEvent({ setpiece: true }));
+  ok("and one without is a decision, whatever its answers",
+     K({ choices: [{ label: "a" }] }) === "decision" && K({}) === "decision" &&
+     K({ choices: [{ label: "a" }, { label: "b" }] }) === "decision");
+
+  /* A throwaway sitting: two decisions heavier than any event, an event
+     behind a flag, and one that is neither once nor capped. */
+  const dec = (id, w) => ({ id, weight: w, title: id, body: "x", choices: [{ label: "a" }, { label: "b" }] });
+  const evt = (id, when, extra) => Object.assign({ id, weight: 1, when, setpiece: true, title: id, body: "x",
+    choices: [{ label: "ok" }] }, extra || {});
+  const E = [dec("t_dec_heavy", 99), dec("t_dec_light", 50),
+             evt("t_evt", { flags: ["t_x"] }, { once: true }),
+             evt("t_evt_again", { flags: ["t_y"] }),
+             Object.assign(dec("t_dec_q", 1), { queuedOnly: true }),
+             evt("t_evt_q", undefined, { queuedOnly: true, once: true })];
+  const C2 = Object.assign({}, CONTENT, { events: E });
+  C2.eventById = E.reduce((m, e) => (m[e.id] = e, m), {});
+  const fresh = () => { const g = Engine.newGame(C2); g.queue = []; return g; };
+
+  const a = fresh();
+  Engine.apply(a, C2, [{ flag: "t_x" }]);
+  const first = Engine.nextEvent(a, C2);
+  ok("an event whose gate holds outranks every decision, whatever they weigh",
+     first && first.id === "t_evt", first && first.id);
+  Engine.choose(a, C2, first, 0);
+  const second = Engine.nextEvent(a, C2);
+  ok("and does not take the sitting: the decision comes after it, the same sitting",
+     second && second.id === "t_dec_heavy" && a.sitting === 1, (second && second.id) + " at " + a.sitting);
+
+  const b = fresh();
+  Engine.apply(b, C2, [{ flag: "t_x" }]);
+  const met = Engine.playSitting(b, C2, () => 0).map(m => m.event.id);
+  ok("playSitting meets the events, then one decision, and stops",
+     met.join(",") === "t_evt,t_dec_heavy", met.join(","));
+
+  const c = fresh();
+  Engine.apply(c, C2, [{ flag: "t_y" }]);
+  const m1 = Engine.playSitting(c, C2, () => 0).map(m => m.event.id);
+  Engine.advance(c, C2);
+  const m2 = Engine.playSitting(c, C2, () => 0).map(m => m.event.id);
+  ok("an event that may recur comes once a sitting, not over and over",
+     m1.join(",") === "t_evt_again,t_dec_heavy" && m2[0] === "t_evt_again" &&
+     m2.filter(x => x === "t_evt_again").length === 1, m1.join(",") + " | " + m2.join(","));
+
+  const q = fresh();
+  Engine.apply(q, C2, [{ queue: { event: "t_dec_q", after: 0 } }, { queue: { event: "t_evt_q", after: 0 } }]);
+  const q1 = Engine.nextEvent(q, C2);
+  ok("a queued event comes before a decision queued ahead of it",
+     q1 && q1.id === "t_evt_q", q1 && q1.id);
+
+  /* AN EVENT WHOSE EVERY ANSWER IS SHUT is passed over, and the sitting
+     goes on to its decision; and an open answer with no `result` line is
+     one answer, not a refusal that tries the next */
+  const shut = evt("t_evt_shut", { flags: ["t_z"] }, { choices: [{ label: "no", when: { flags: ["t_never"] } }] });
+  const bare = Object.assign(dec("t_dec_bare", 200), { when: { flags: ["t_w"] },
+    choices: [{ label: "a", effects: [{ flag: "t_took_a" }] }, { label: "b", effects: [{ flag: "t_took_b" }] }] });
+  const E3 = E.concat([shut, bare]), C3 = Object.assign({}, CONTENT, { events: E3 });
+  C3.eventById = E3.reduce((m, e) => (m[e.id] = e, m), {});
+  const d = Engine.newGame(C3); d.queue = [];
+  Engine.apply(d, C3, [{ flag: ["t_z", "t_w"] }]);
+  const md = Engine.playSitting(d, C3, () => 0);
+  ok("an event with no answer open is passed over, and the decision still comes",
+     md.map(m => m.event.id + ":" + m.choice).join(",") === "t_evt_shut:null,t_dec_bare:0",
+     md.map(m => m.event.id + ":" + m.choice).join(","));
+  ok("and an answer with no result line is taken once, not twice",
+     !!d.flags.t_took_a && !d.flags.t_took_b, JSON.stringify({ a: !!d.flags.t_took_a, b: !!d.flags.t_took_b }));
+
+  /* THE TWO READINGS AGREE: the engine's, which decides when a page comes,
+     and the page's own, which decides that it takes the screen */
+  const SP = require("./js/setpiece.js");
+  const off = ALL.events.filter(e => Engine.isEvent(e) !== SP.is(e)).map(e => e.id);
+  ok("the engine and the page agree on every entry in content", !off.length, off.join(", "));
+  const evs = ALL.events.filter(Engine.isEvent);
+  ok("content has events, and every one has a page to draw", evs.length > 0 &&
+     evs.every(e => SP.sectionsOf(e).length > 0), evs.length + " events of " + ALL.events.length);
+
+  /* A MOOD IS ONE THE SCORE KNOWS: the schema's list is the music's */
+  const Music = require("./js/music.js"), S = require("./js/schema.js");
+  ok("the schema's moods are the music's", JSON.stringify(S.vocab.moods) ===
+     JSON.stringify(Music.__form.MOODS), JSON.stringify(S.vocab.moods));
+  if (bad) { console.log("\n" + bad + " DECISION AND EVENT FAILURES"); process.exitCode = 1; }
 })();

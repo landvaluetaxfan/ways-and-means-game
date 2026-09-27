@@ -4915,6 +4915,7 @@ const Engine = (function () {
      next one is due. */
   function dueThisSitting(st, e) {
     if (e.at == null) return false;
+    if ((st.lastFired || {})[e.id] === st.sitting) return false;
     if (e.every == null) return e.at <= st.sitting;
     if (st.sitting < e.at) return false;
     if ((st.sitting - e.at) % e.every !== 0) return false;
@@ -4946,6 +4947,7 @@ const Engine = (function () {
       .sort((a, b) => a.prologue - b.prologue);
     for (const e of pro) {
       if (st.seen[e.id]) continue;
+      if ((st.lastFired || {})[e.id] === st.sitting) continue;   /* passed over today */
       if (!matches(st, e.when)) continue;
       return e;
     }
@@ -4985,9 +4987,12 @@ const Engine = (function () {
   function nextEvent(st, C) {    /* Only entries that ARE an event. A pure-effects entry has already
        been resolved by resolveDue() in advance(); it is not a story and
        must not be mistaken for one. */
+    /* AN EVENT BEFORE THE DECISION (design/49). A sitting opens with the
+       pages that have arrived and then puts its business, so a due event is
+       taken off the queue ahead of a due decision queued before it. */
     const due = st.queue.filter(q => q.dueSitting <= st.sitting && q.eventId);
     if (due.length) {
-      const q = due[0];
+      const q = due.find(x => isEvent(C.eventById[x.eventId])) || due[0];
       st.queue = st.queue.filter(x => x !== q);
       return C.eventById[q.eventId];
     }
@@ -4995,8 +5000,18 @@ const Engine = (function () {
     if (pro) return pro;
     const sch = nextScheduled(st, C);
     if (sch) return sch;
-    let pool = eligible(st, C);
+    /* NOTHING TWICE IN ONE SITTING. An event leaves the sitting's decision
+       to come, so the same sitting asks again, and an entry that is neither
+       `once` nor capped would otherwise answer itself for ever. */
+    const today = st.lastFired || {};
+    let pool = eligible(st, C).filter(e => today[e.id] !== st.sitting);
     if (!pool.length) return null;
+    /* AND AN EVENT OUTRANKS EVERY DECISION: an event whose gate holds comes
+       up at the next sitting, whatever the pool of business weighs. That is
+       what "when a threshold is reached" means. Among events the weight
+       orders them, and `chance` is the dice. */
+    const evs = pool.filter(isEvent);
+    if (evs.length) pool = evs;
 
     /* `chance` is tested ONCE, when an event first becomes eligible, and
        the answer is remembered. Re-rolling every sitting would turn a
@@ -5622,28 +5637,62 @@ const Engine = (function () {
       .filter(x => choiceOpen(st, C, x.choice));
   }
 
-  /* WHAT KIND OF THING AN EVENT IS (design/48), read off its choices
-     rather than stored beside them, so the two cannot disagree. The author,
-     27 Sep: "have we been distinguishing between decision vs event?" We had
-     not: every event was headed "Decision", including the thirteen with one
-     button and the seven whose answer the state picks.
+  /* DECISION OR EVENT (design/49; the author, 27 Sep: "For decisions I meant
+     only 1, what the player does on sitting. For 'event' I mean popups that
+     occur, either as a special outcome, from weighted RNG, or when a
+     threshold is reached, that is purposefully visually special to indicate
+     importance and detailed. Think the intro screen").
 
-       decision     two or more answers are open whatever the state
-       conditional  one answer is always open and the others only when
-                    their conditions hold: a decision on some sittings,
-                    one road on others
-       outcome      every answer carries a condition, so the state picks
-                    the one that applies and the player reads it
-       notice       one answer: something happens, and there is nothing
-                    to weigh
+       decision   the sitting's business: what the player does at a sitting.
+                  One a sitting.
+       event      a page that arrives: something happened. It carries a
+                  `setpiece`, which is the page, and it comes before the
+                  sitting's decision without taking its place.
 
-     What the player meets on a given sitting is decided by what is open
-     then (openChoices); this is what the author wrote. */
-  function eventKind(e) {
-    const cs = (e && e.choices) || [];
-    if (cs.length <= 1) return "notice";
-    const free = cs.filter(c => !c.when).length;
-    return free >= 2 ? "decision" : free === 1 ? "conditional" : "outcome";
+     AUTHORED, NOT DERIVED. design/48 read four kinds off the choices, which
+     answered a different question (how many answers are open) and made a
+     one-button entry a "notice" whether or not anything had happened. What
+     makes an entry an event is that the author gave it a page. */
+  function isEvent(e) { return !!(e && e.setpiece); }
+  function eventKind(e) { return isEvent(e) ? "event" : "decision"; }
+
+  /* A SITTING'S BUSINESS, IN THE ORDER A PLAYER MEETS IT: every event due,
+     then the decision. `pick(e)` answers each and returns a choice's index;
+     a choice its gate has closed is passed over for the next open one, so
+     a caller is never stuck. The interface does the same by hand, one page
+     at a time; the tools call this so they play what a player plays.
+     Returns what was met, in order. The cap is a guard, not a rule: nextEvent
+     never offers one entry twice in a sitting. */
+  function playSitting(st, C, pick) {
+    const met = [];
+    for (let n = 0; n < 16; n++) {
+      const e = nextEvent(st, C);
+      if (!e) break;
+      const cs = e.choices || [];
+      const want = pick ? pick(e, st) : 0;
+      const order = [want].concat(cs.map((_, k) => k));
+      let took = null, result = null;
+      /* OPEN, NOT "RETURNED A RESULT": choose() answers null for a closed
+         choice and also for an open one with no `result` line, and reading
+         the second as a refusal would apply the next choice as well */
+      for (const k of order) {
+        if (k == null || k < 0 || k >= cs.length || !choiceOpen(st, C, cs[k])) continue;
+        result = choose(st, C, e, k); took = k; break;
+      }
+      if (took === null) passOver(st, e);
+      met.push({ event: e, choice: took, result });
+      if (!isEvent(e)) break;
+    }
+    return met;
+  }
+
+  /* NO ANSWER OPEN. An entry whose every answer is shut by its gate is
+     passed over for the rest of the sitting, so the sitting can go on: it
+     is not answered, not counted as met, and may come again another day.
+     Without this the Sitting screen offered no button at all, and an event
+     would be asked for again straight away. */
+  function passOver(st, e) {
+    if (e) (st.lastFired || (st.lastFired = {}))[e.id] = st.sitting;
   }
 
   function choose(st, C, event, choiceIndex) {
@@ -8676,7 +8725,7 @@ const Engine = (function () {
     domainTest, functionalByConstituency, lobbiedByConstituency, isSupply,
     lastSession, lastPeriod, sessionEndsAt, recess, dissolve, checkEnd, supplyCarried, supplyPending,
     signableMembers, collectSignature, winBackTerms, winBack,
-    settle, outstanding, describe, grave, choiceOpen, openChoices, eventKind, draw,
+    settle, outstanding, describe, grave, choiceOpen, openChoices, eventKind, isEvent, playSitting, passOver, draw,
     undertakingWhere,
     snapshot, changes,
     prorogue, canDivide, candidates, vacancies, fillPost,

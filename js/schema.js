@@ -251,6 +251,12 @@ const SCHEMA = {
        screen is the careful one and not the one content happened to write
        first. The engine keeps the authored order; only the display sorts. */
     postures: ["cautious","measured","bold"],
+    /* AN EVENT'S MOOD (design/31, design/49): the bed js/music.js plays when
+       the page arrives. Each already means one moment in the score (a
+       division called, a bill lost, the session's end), so a mood is named
+       only where the event is that kind of moment. test.js holds this list
+       to Music.MOODS. */
+    moods: ["tension","moment","defeat","rise","sombre","undertake","order","revoke","threat","prorogue"],
     /* what kind of award an achievement is, which decides where the
        awards screen lists it */
     awardTiers: ["ending","settlement","action","canon"],

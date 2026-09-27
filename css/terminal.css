@@ -3460,7 +3460,15 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
    it takes the whole sitting screen and the columns either side go away
    while it is up. The rule from CLAUDE.md still holds: the PAGE never
    scrolls, the thing inside it does. */
-#s-sit.setpiece .grid{display:block;}
+/* ONE COLUMN THAT STILL HAS A HEIGHT. This was `display:block`, which hid
+   the columns either side and also took the page's column out of the
+   grid's height, so a long page grew the panel past the window and the
+   whole screen scrolled, status bar and all, instead of #sitting-body
+   scrolling inside its panel. A short set piece hid it; an event page with
+   a portrait and four paragraphs did not, in a 768 laptop's browser window
+   (design/49). */
+#s-sit.setpiece .grid{display:flex;flex-direction:column;}
+#s-sit.setpiece .stackmain{flex:1 1 auto;min-height:0;}
 #s-sit.setpiece .stack:not(.stackmain){display:none;}
 #s-sit.setpiece .stackmain > .panel{flex:1 1 auto;min-height:0;}
 #s-sit.setpiece .stackmain > .panel > .pbody{display:flex;flex-direction:column;min-height:0;overflow:hidden;}
@@ -3468,6 +3476,14 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .sp-page{max-width:60ch;margin:0 auto;padding:18px 10px 8px;}
 .sp-title{font-family:var(--f-disp);font-size:21px;letter-spacing:.02em;
   margin:0 0 14px;font-weight:400;text-align:center;}
+/* The dateline and the speaker (design/49): an event is news, dated above
+   its title, and a page has no portrait column, so who is speaking is a
+   byline under it. Both in the interface's own face, small and spaced, so
+   the title stays the one large thing. */
+.sp-kicker{font-family:var(--f-ui);font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-soft);text-align:center;margin:0 0 6px;}
+.sp-who-line{font-family:var(--f-ui);font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-soft);text-align:center;margin:-8px 0 14px;}
 /* THE SLOT IS ABSOLUTE BY DESIGN — that is what makes filling one shift
    nothing — so it needs a box with a declared shape to be absolute inside.
    Without one the picture rendered at zero width: `width:100%` of an inline
@@ -3494,8 +3510,19 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
    size, or the longer lines undo the gain. */
 #s-sit:not(.setpiece) .sp-page{max-width:72ch;}
 #s-sit:not(.setpiece) .sp-title{font-size:18px;letter-spacing:0;}
-#s-sit:not(.setpiece) .sp-sec p{font-size:14.5px;line-height:1.62;}
-#s-sit:not(.setpiece) .sp-sec.sp-lede p{font-size:16px;line-height:1.66;}
+/* AND AN EVENT READS AT THE SAME SIZE (design/49; the author: "think the
+   intro screen"). The page that takes the screen was set smaller than the
+   introduction, which made the one surface meant to stop the player the
+   one they had to lean in to read. */
+#s-sit .sp-sec p{font-size:14.5px;line-height:1.62;}
+#s-sit .sp-sec.sp-lede p{font-size:16px;line-height:1.66;}
+#s-sit.setpiece .sp-page{max-width:66ch;}
+/* The picture on an event's page: its plate, or the speaker's portrait,
+   centred under the title and larger than the reading block's thumbnail. */
+.sp-figure{display:flex;justify-content:center;margin:0 0 16px;}
+.sp-figure .portrait{float:none;margin:0;width:132px;}
+.sp-figure .portrait img{max-height:none;}
+.sp-figure .plate-img{margin:0;}
 
 /* An epigraph is centred and carries its source, because one without a
    source is a slogan. */

@@ -1,5 +1,12 @@
 # 48 — Decision and event
 
+> **Superseded by design/49** (27 Sep). The author's answer: a *decision* is
+> the sitting's business, and an *event* is a page that arrives (a special
+> outcome, a roll of the dice, a threshold) and is visually special. The four
+> kinds below answered a different question and are gone; `Engine.eventKind`
+> returns `event` or `decision`. The sandbox's player-started decisions, below,
+> stand.
+
 **27 September 2026.** The author: "have we been distinguishing between
 decision vs event?" We had not.
 

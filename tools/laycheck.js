@@ -304,6 +304,18 @@ ${HELPERS}
       found = found.concat(measure("sbx"));
       var show = document.querySelector("#sbx-event [data-sbxshow]");
       if (show) { show.click(); found = found.concat(measure("sit")); }
+      /* AND AN EVENT'S PAGE (design/49), which takes the screen: one with
+         written sections, and one drawn from its body under a speaker's
+         byline, each with its dateline */
+      var C0 = UI.content(), pages = (C0.events || []).filter(function (e) { return Engine.isEvent(e); });
+      var written = pages.filter(function (e) { return e.setpiece.sections; })[0];
+      var spoken = pages.filter(function (e) { return e.setpiece === true && e.speaker; })[0];
+      [written, spoken].forEach(function (e) {
+        if (!e) return;
+        UI.sandboxShow(e.id);
+        drawn.push("sit: event " + e.id + (document.querySelector("#s-sit.setpiece .sp-page") ? "" : " (NOT DRAWN)"));
+        found = found.concat(measure("sit"));
+      });
     } else drawn.push("sbx (NOT DRAWN)");
   } catch (e) { drawn.push("sbx (NOT DRAWN: " + (e && e.message) + ")"); }
 

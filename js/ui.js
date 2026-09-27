@@ -858,6 +858,16 @@ const UI = (function () {
     } catch (e) { return "\u2014"; }
   }
 
+  /* AN EVENT IS DATED (design/49). A page that arrives says when it
+     arrived, because it is news and the decision under it is the sitting's
+     business: "Sitting 14 \u00b7 Monday 6 May 2080". */
+  function eventDateline() {
+    const d = dateLine();
+    const y = /^\d{4}-/.test(d) ? d.slice(0, 4) : "";
+    const day = y ? dayLabel(d) + " " + y : d;
+    return "Sitting " + st.sitting + (day && day !== "\u2014" ? " \u00b7 " + day : "");
+  }
+
   function transcript() {
     const L = [];
     const rule = (s) => { L.push(""); L.push(s); L.push("-".repeat(s.length)); };
@@ -6322,13 +6332,18 @@ const UI = (function () {
         /* Capped, and it stops the moment anything arrives. The cap is
            the same number lookAhead scans, so the button never promises
            a distance it will not go. */
-        for (let i = 0; i < LOOKAHEAD && !Engine.nextEvent(st, C); i++) Engine.advance(st, C);
-        currentEvent = null; lastResult = null;
+        /* WHAT IT FINDS IS WHAT IS SHOWN. This read nextEvent and threw the
+           answer away, then drew the sitting and asked again, and a queued
+           item is taken off the queue by the first asking: an answer that
+           arrived this way was lost (found 27 Sep, design/49). */
+        let found = null;
+        for (let i = 0; i < LOOKAHEAD && !(found = Engine.nextEvent(st, C)); i++) Engine.advance(st, C);
+        currentEvent = found; lastResult = null;
         cue("stamp");
         if (typeof Wait !== "undefined") Wait.brief(520);
         setStatus("The House sat " + (st.sitting - from) + " times without a division · sitting " +
                   st.sitting, "transient");
-        drawAll(); saved(); afterAction(); reveal();
+        drawAll(); saved(); afterAction(); arrive(); reveal();
       });
       return;
     }
@@ -6352,8 +6367,11 @@ const UI = (function () {
        choice does is not rebuilt anywhere. The mood is NOT cued here —
        drawing makes no sound; the handler that opened the sitting does it. */
     if (typeof SetPiece !== "undefined" && SetPiece.is(e)) {
-      box.innerHTML = SetPiece.html(e, {}).html +
-        `<div class="sit-decide" id="sit-decide"></div>`;
+      box.innerHTML = SetPiece.html(e, {
+        kicker: eventDateline(),
+        who: spk ? spk.name + " \u2014 " + spk.role : null,
+        figure: e.image && e.image.src ? plate(e.image) : spk ? portrait(spk) : null
+      }).html + `<div class="sit-decide" id="sit-decide"></div>`;
       drawDecision();
       return;
     }
@@ -6400,13 +6418,20 @@ const UI = (function () {
                     <td class="n d">${m.delta > 0 ? "+" : ""}${m.delta}</td></tr>`
                ).join("")}</tbody></table></div>`
           : `<div class="note">Nothing on the board moved.</div>`) +
-        `<div class="btnrow"><button class="btn" id="btn-advance">Rise until the next sitting</button>` +
+        `<div class="btnrow">` +
+        /* AN EVENT DOES NOT END THE SITTING (design/49): what it opened on
+           is still to come, so the way on is the next page or the decision,
+           and Rise only when nothing else is before the House today. */
+        (Engine.isEvent(e) && followsNow()
+          ? `<button class="btn" id="btn-continue">Continue to the sitting's business</button>`
+          : `<button class="btn" id="btn-advance">Rise until the next sitting</button>`) +
         /* the sandbox's way back to the same event, under its outcome */
         (inSandbox() && sbxStack.length && sbxStack[sbxStack.length - 1].again === e.id
           ? `<button class="btn" data-sbxretry="1">Sandbox: try another choice</button>` +
             `<button class="btn" data-sbxback="1">Back to the events</button>` : "") +
         `</div>`;
-      $("#btn-advance").addEventListener("click", rise);
+      const adv = $("#btn-advance"); if (adv) adv.addEventListener("click", rise);
+      const cont = $("#btn-continue"); if (cont) cont.addEventListener("click", carryOn);
       return;
     }
 
@@ -6420,18 +6445,25 @@ const UI = (function () {
     const rank = x => RANK[x.choice.posture] == null ? 3 : RANK[x.choice.posture];
     const open = Engine.openChoices(st, C, e).slice()
       .sort((a, b) => rank(a) - rank(b) || a.index - b.index);
-    /* THE HEADING SAYS WHAT KIND OF MOMENT THIS IS (design/48): a decision
-       only when there is more than one answer to take. One button under
-       "Decision" read as a choice with the other options missing. */
+    /* THE HEADING SAYS WHICH OF THE TWO THIS IS (design/49): the sitting's
+       decision, or the government's answer to an event that has arrived. */
     const kind = Engine.eventKind(e);
     const head = !open.length ? "No answer is open now"
-      : open.length >= 2 ? "Decision"
-      : kind === "outcome" ? "The result"
-      : kind === "conditional" ? "The one answer open"
-      : "What happens";
+      : kind === "event" ? "Your answer" : "Decision";
     foot.innerHTML = `<div class="rulehead" id="sit-decide-head" data-kind="${kind}">${head}</div><div class="choices">` +
       open.map(x => choiceRow(e, x.choice, x.index, openRow.i === x.index)).join("") +
-      `</div>`;
+      `</div>` +
+      /* NO ANSWER OPEN: every one is shut by its gate. This drew a heading
+         and nothing under it, and the Sitting screen offered no way on. It is
+         passed over for the sitting (Engine.passOver) and the sitting goes on. */
+      (open.length ? "" : `<div class="note">Every answer here is shut by its conditions today.</div>` +
+        `<div class="btnrow"><button class="btn" id="btn-pass">${kind === "event"
+          ? "Continue to the sitting's business" : "Rise until the next sitting"}</button></div>`);
+    const pass = $("#btn-pass");
+    if (pass) pass.addEventListener("click", () => {
+      Engine.passOver(st, e);
+      if (kind === "event") carryOn(); else rise();
+    });
 
     /* Expanding is a user action, so it may cue. Drawing is not. */
     foot.querySelectorAll("[data-expand]").forEach(b => b.addEventListener("click", () => {
@@ -6489,7 +6521,36 @@ const UI = (function () {
     openRow = { event: null, i: -1 };
     setStatus("The House rises · sitting " + st.sitting, "transient");
     if (typeof Wait !== "undefined") Wait.brief(200);
-    drawAll(); saved(); afterAction(); reveal();
+    drawAll(); saved(); afterAction(); arrive(); reveal();
+  }
+
+  /* IS ANYTHING ELSE BEFORE THE HOUSE TODAY? Asked of a copy, because
+     nextEvent takes a due item off the queue as it reads it. */
+  function followsNow() {
+    try { return !!Engine.nextEvent(Engine.load(Engine.save(st), C), C); }
+    catch (x) { return true; }
+  }
+
+  /* ON FROM AN EVENT TO WHATEVER IS NEXT THE SAME SITTING: another page,
+     or the decision. The sitting does not advance. */
+  function carryOn() {
+    currentEvent = null; lastResult = null; lastChanges = null;
+    openRow = { event: null, i: -1 };
+    cue("click");
+    drawAll(); saved(); afterAction(); arrive(); reveal();
+  }
+
+  /* A PAGE THAT ARRIVES NAMES A MOOD, AND THE ACTION THAT BROUGHT IT CUES
+     IT (design/31): never the draw, which is why this is called from rise()
+     and carryOn() after they have drawn, and from nowhere reachable from
+     drawAll(). Once per page per session, like the reveal. */
+  const arrived = Object.create(null);
+  function arrive() {
+    const e = currentEvent;
+    if (!e || !Engine.isEvent(e) || arrived[e.id]) return;
+    arrived[e.id] = true;
+    const mood = e.setpiece && typeof e.setpiece === "object" ? e.setpiece.mood : null;
+    if (mood) score(mood);
   }
 
   /* ---------- chamber ---------- */
@@ -7731,12 +7792,11 @@ const UI = (function () {
      screen then, and the event to put up again for "try another choice".
      In memory only: a reload is a fresh bench. */
   let sbxStack = [], sbxShown = null, sbxChapter = "all", sbxKind = "all";
-  /* the four kinds of event, in words (design/48) */
+  /* the two kinds, in words (design/49) */
   const KIND_SAYS = {
-    decision: "a decision: two or more answers are open whatever the state",
-    conditional: "conditional: one answer is always open, the others only when their conditions hold",
-    outcome: "an outcome: every answer carries a condition, so the state picks the one that applies",
-    notice: "a notice: one answer, nothing to weigh"
+    decision: "a decision: the sitting's business, one a sitting, drawn in the Sitting panel",
+    event: "an event: a page that arrives before the sitting's decision, takes the screen, " +
+           "and leaves the decision still to come"
   };
   const SBX_MAX = 30;
   function sbxPush(label, again) {
@@ -7772,6 +7832,8 @@ const UI = (function () {
     openTab("sit");
     setStatus("Sandbox: showing “" + e.title + "”", "transient");
     drawAll();
+    /* the author asked to see it, so it arrives as it would: with its mood */
+    delete arrived[e.id]; arrive();
     return true;
   }
 
@@ -7951,7 +8013,10 @@ const UI = (function () {
      the decisions the player starts: the initiatives and the orders. Each
      is read out gate by gate and opened where the player meets it. */
   let sbxMode = "events";
-  const SBX_MODES = [["events", "Events"], ["initiatives", "Initiatives"], ["orders", "Orders"]];
+  /* The first list is the content kind `events`, which holds both of the
+     author's two things: the sitting's decisions and the events that arrive
+     before them (design/49). */
+  const SBX_MODES = [["events", "Decisions and events"], ["initiatives", "Initiatives"], ["orders", "Orders"]];
   const sbxFind = () => (($("#sbx-find") || {}).value || "").trim().toLowerCase();
   const sbxHit = (q, ...xs) => !q || xs.join(" ").toLowerCase().indexOf(q) >= 0;
   /* the row's key: an event's id, or `ini:` and `si:` before the others' */
@@ -8010,16 +8075,15 @@ const UI = (function () {
           [["all", "All"]].concat(ch.map(c => [String(c), "Chapter " + c]), [["none", "Any chapter"]])
           .map(([k, l]) => `<button class="btn${sbxChapter === k ? " on" : ""}" data-sbxch="${k}">${l}</button>`).join("") +
           `<span class="sbx-sep"></span>` +
-          [["all", "Every kind"], ["decision", "Decisions"], ["conditional", "Conditional"],
-           ["outcome", "Outcomes"], ["notice", "Notices"]]
+          [["all", "Both"], ["decision", "Decisions"], ["event", "Events"]]
             .map(([k, l]) => `<button class="btn${sbxKind === k ? " on" : ""}" data-sbxkind="${k}">${l}</button>`).join("");
       }
       chips.innerHTML = h;
     }
     const rows = sbxRows();
     const lh = $("#sbx-list-hdr"), dh = $("#sbx-detail-hdr");
-    if (lh) lh.textContent = sbxMode === "events" ? "Every event" : sbxMode === "initiatives" ? "Every initiative" : "Every order";
-    if (dh) dh.textContent = sbxMode === "events" ? "The event" : sbxMode === "initiatives" ? "The initiative" : "The order";
+    if (lh) lh.textContent = sbxMode === "events" ? "Every decision and event"
+      : sbxMode === "initiatives" ? "Every initiative" : "Every order";
     const count = $("#sbx-count");
     if (count) count.textContent = rows.length + " of " + sbxTotal();
     let sel = Focus.selected("sbx-events");
@@ -8029,6 +8093,10 @@ const UI = (function () {
         : sel.indexOf(sbxMode === "initiatives" ? "ini:" : "si:") === 0);
       if (!keep) { sel = (rows[0] || {}).key || null; Focus.seed("sbx-events", sel); }
     }
+    const picked = sbxMode === "events" && sel ? C.eventById[sel] : null;
+    if (dh) dh.textContent = sbxMode === "events"
+      ? (picked && Engine.isEvent(picked) ? "The event" : "The decision")
+      : sbxMode === "initiatives" ? "The initiative" : "The order";
     list.innerHTML = `<tbody>` + rows.map(r =>
       `<tr data-sbxev="${esc(r.key)}"${r.key === sel ? ' class="sel"' : ""}>` +
       `<td>${esc(r.title)}<i>${esc(r.sub)}</i></td>` +
@@ -8043,7 +8111,7 @@ const UI = (function () {
       detail.innerHTML = si ? sbxOrderHTML(si) : `<div class="note">No order matches.</div>`;
     } else {
       const e = sel ? C.eventById[sel] : null;
-      detail.innerHTML = e ? sbxEventHTML(e) : `<div class="note">No event matches.</div>`;
+      detail.innerHTML = e ? sbxEventHTML(e) : `<div class="note">Nothing matches.</div>`;
     }
     /* THE STATE, AND THE WAY BACK */
     const top = sbxStack[sbxStack.length - 1];

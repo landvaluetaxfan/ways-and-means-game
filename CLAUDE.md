@@ -227,7 +227,7 @@ list over any older sentence here that implies a different one:
 
 | | |
 |---|---|
-| **Sitting** | the event, the docket (the polls, once the writs are out: design/38), the calendar, and the one indicator panel |
+| **Sitting** | the sitting's decision (after any event, which takes the screen as a page: design/49), the docket (the polls, once the writs are out: design/38), the calendar, and the one indicator panel |
 | **Government** | instruments · the document · what it can do · the ledger and cabinet, with the Tribunal and the Presidency folded at the edge |
 | **Chamber** | order-paper time, the order paper, the House, the whip, and who is counted |
 | **Economy** | *Rebuilt for the dollar 25 Sep 2026 (design/39): six panels.* Top: **the account** (a year's budget in dollars: held, receipts, spending, the balance, each lender in its own money, the debt against output), **what everything is priced in**, and **the Reserve Bank and the dollar** (inflation, the cash rate with what its rule asks and when it meets, the dollar, growth against capacity, credibility). Band: **what the Underwriters say**, the chart, and **what is made and who makes it**. *What follows is the 21 Sep refresh, still true of the bases panel:* Four panels on four subjects and a band: **the account** (a stock and its flows), **what everything is priced in**, **what is made and who makes it**, and — in the bottom band beside the chart — **what the Underwriters say**. The middle panel is three former ones, because `TAX_BASES` and `PRICE_META` in the engine are the SAME FOUR THINGS (volume, thermal, substrate, transit): Scarcity, What sets the prices and Ways and means were three facts about one set of four rows, in two different columns, with a third panel between two steps of one sum — `receipts()` computes each yield AS `rate × price/100 × weight`, and §7.9 says outright that the four prices are the appropriation's. One row each now: price, trend, the clause that sets it, the rate, the yield. `inflation` is that table's footing, not the account's, being a reading of those four and nothing else. §7.10's three readings and `content/labour.js` are one panel for the same reason — `st.economy.participation` and `LABOUR.totals.participation` are one fact — with the eighteen categories folded, since they are reference and not a working readout. The chart takes two columns **at either of two timescales** — the engine's per-sitting curve, or `setup.history`'s annual record 2073–2080, whose last point IS the opening value so the two join. The live window is about fifteen weeks (four sitting days a week), which is the right resolution for a price and far too short to show anything structural; that is what the record is for. **Nothing on the tab scrolls at any of the seven measured shapes** — see the layout note below. |
@@ -235,7 +235,7 @@ list over any older sentence here that implies a different one:
 | **Relations** | *interparty affairs and nothing else (the author, 23 Sep: it "was built on false assumptions that it was supposed to be for all parties"); what the Party tab was until 24 Sep, with every id renamed `rel-` so none outlives its tab.* Three columns: **the arrangement** (every other party grouped by relation — in government, confidence and supply, outside — with seats, loyalty, the ledger and whether the government survives their going; your own party is on the roster for the arithmetic, and its "yours" mark opens the Party tab), **one relationship** (the terms, their leader and where you stand with them, what they want from you — their own bills, each opening where time is given to it — what you have promised their members, and where they part from you, measure by measure), and **who they vote with**. Who a party IS went to its Concordance article: members (a wikitable, `section.table`), organisation and branches (`CONTENT.partyOrg`), currents. The currents are counted on the Chamber's composition table. |
 | **Foreign Affairs** | *World until 26 Sep (design/43); the tab's id is still `world`.* The globe keeps the full left column; beside it **what is selected** (a country, an anchor, a foreign body, or since design/43 a resolution's count member by member, with each member's seats, standing and vote) and **relevant actors**; and under those two a band, **the forums**: each resolution the Commonwealth has an interest in, its count drawn as the House's two lobbies (the forecast while it waits, the record once decided), and the government's controls — Table it, Withdraw, or the Commonwealth's vote. A draft whose gate does not hold is not listed. The controls sit UNDER their row, not in it, because the row is a focus region's row and the region takes Enter to select it. The calendar marks a forum's sitting as **Abroad** in `--abroad` blue. |
 | **Orbit**, **Record** | unchanged |
-| **Sandbox** | *shown only on the author's bench (design/47), opened from the main menu's Sandbox.* Every event with a finder, the one chosen read out gate by gate, and the state with Undo, Try again, flags, chapter and the campaign's shortcuts. |
+| **Sandbox** | *shown only on the author's bench (design/47), opened from the main menu's Sandbox.* Every decision and event with a finder (and the initiatives and orders), the one chosen read out gate by gate, and the state with Undo, Try again, flags, chapter and the campaign's shortcuts. |
 | **Concordance** | *the reference work, and it can only know what the world knows.* Articles are generated from content, which is authored for the WHOLE campaign — so anything staged for later showed up at sitting one. The four bills that open in `drafting` (the Almanac Works (Annexation) Bill among them, which is the act the campaign is about) each had a full page with a division forecast for a measure nobody had laid before the House, and the page contradicted itself saying so: "A measure before the House of Delegates. Stage: drafting." `drafting` is the engine's own word for not introduced, so it is the line: `build()` skips those and the page appears the moment the bill is set down. **The gate belongs on the surface, not in the content** — the content is right, the bill SHOULD be sitting in `drafting` waiting for `f1_dilemma`. Worth re-checking whenever a new reference surface reads a content list whole. |
 
 **THE CONCORDANCE WAS REFRESHED 22 Sep 2026 — the register, and liveness.**
@@ -687,22 +687,24 @@ version of any of them is in the header of the file it names.
   ending; the next leader's campaign assumes the canon one, so a narrative
   runs across parliaments. **Flash I's canon is the debt trap, decided 23
   Sep: "a middle ground between perfect and failure".** It returns the PSD to
-  government with austerity to come. Since design/44 (26 Sep) the canon
-  reaches the count on 15 August, sitting 57, at standing 42: the PSD holds
-  87 of 280 and the government's side 149, a narrow majority. The crisis is
-  financed and now felt: it owes CW$52.6bn in Treasury bills (seven eighths
-  of the authority, CW$7.4bn of room left), with the dollar near 0.79 and
-  headline inflation 5.4% against 2.9% underlying, which the vote reads. The Union's
-  measures are adopted at the General Assembly on 11 June and cost it three
-  points of legitimacy. The canon
+  government with austerity to come. Since design/49 (27 Sep: an event no
+  longer takes the sitting's decision) the canon reaches the count on 13
+  August, sitting 55, at standing 56: the PSD holds 107 of 280 and the
+  government's side 171, a working majority. The crisis is financed and
+  felt: it owes CW$33.6bn in Treasury bills (CW$26.4bn of room left under
+  the authority), with the dollar near 0.78 and headline inflation 5.9%
+  against 3.0% underlying, which the vote reads. The Union's measures are
+  adopted at the General Assembly on 11 June. The canon
   government climbs the emergency ladder, keeps its last order-paper time to
   approve the emergency appropriation before the House rises (see
   `approvalFloor` below), asks Earth's banks for terms once the result is in,
   lays no order it cannot pay for, and reaches the count with the thermal
-  margin at 17 and its payments current. The guard prints the margin, the
+  margin at 6 and its payments current. The guard prints the margin, the
   side, the epilogue and the account. (25 Sep: it had been CW$16.8bn in
   arrears through the campaign, which cost nothing until that day; see
-  ARREARS below.) (Before design/44: sitting 56, margin 9, CW$44.8bn, 5.7%.
+  ARREARS below.) (Before design/49: sitting 57, margin 17, 87 seats, 149
+  of 280 at standing 42, CW$52.6bn, 5.4%, a narrow majority.
+  Before design/44: sitting 56, margin 9, CW$44.8bn, 5.7%.
   Before design/43: sitting 57, margin 8, CW$44.9bn, 5.8%.
   Before design/40: 103 seats, 165 of 280 at standing 58, margin about
   five.) Flash I's guards
@@ -1163,16 +1165,42 @@ version of any of them is in the header of the file it names.
     and all 640 playtest runs were unchanged.
   - **A tool that sets state can mask a missing setter.** The flag audit
     reads every effect in content, a developer console's included.
-- **AN EVENT IS NOT ALWAYS A DECISION** (27 Sep, `design/48`; the author:
-  "have we been distinguishing between decision vs event?").
-  - `Engine.eventKind(e)` reads four kinds off the choices, with nothing
-    stored: decision (106), notice (13), outcome (7) and conditional (4).
-  - The Sitting screen's heading follows what is open now, instead of
-    "Decision" over a single button.
-  - The sandbox and the editor say the kind, and lint's posture rule uses
-    the same function.
-  - The sandbox also lists the decisions the player starts, initiatives and
-    orders. Each opens where the player takes it, on the Government tab.
+- **A DECISION IS THE SITTING'S; AN EVENT ARRIVES** (27 Sep, `design/49`,
+  superseding design/48's four kinds; the author: "For 'event' I mean
+  popups that occur, either as a special outcome, from weighted RNG, or when
+  a threshold is reached, that is purposefully visually special ... Think
+  the intro screen").
+  - **An entry with `setpiece` is an event**; `setpiece: true` draws its
+    body as the page. `Engine.isEvent` and `SetPiece.is` read the one field.
+    The content kind is still called `events` internally; the words the
+    author sees are *decision* and *event*.
+  - **An event does not take the sitting.** `nextEvent` puts a due event
+    ahead of a due decision, lets an eligible event outrank every decision
+    in the pool, and never offers an entry twice in one sitting.
+  - **Play a sitting with `Engine.playSitting(st, C, pick)`**, which meets
+    the events and then one decision. The playtest, the canon run, the
+    chain probes, the round trip and the rename test all use it. A loop
+    that calls `nextEvent` once a sitting skips the decision after an event
+    and measures a different game.
+  - **The page reads like the introduction**: a dateline, a byline, a
+    picture (art, plate or the speaker's portrait) and the introduction's
+    type. Answered, it continues to the sitting's business.
+  - **22 entries were marked** (the old notices and outcomes, and two
+    consequences with a choice in them), plus f1_stranded.
+  - **It made Flash I more forgiving**: the crisis strategies lose 6 to 59
+    runs in eighty where they lost 35 to 77, because every sitting now also
+    has a decision. That balance is the author's to judge.
+  - Found on the way:
+    - the set-piece screen had no height (`display:block`), so a long page
+      scrolled the whole window;
+    - Sit until there is business threw away a queued answer it had found;
+    - an entry with every answer shut left no way on (`Engine.passOver`
+      now), and a loop that tested `choose()` for a result read an answer
+      with no `result` line as a refusal;
+    - the editor read a page section's `body` as the event's own.
+- **AND THE SANDBOX LISTS THE PLAYER'S OWN DECISIONS** (design/48, which
+  stands on this point): initiatives and orders, each opened where the
+  player takes it, on the Government tab.
 
 **CSS and layout traps, every one found by measuring rather than reading**
 

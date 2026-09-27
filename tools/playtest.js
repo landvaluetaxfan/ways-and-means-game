@@ -275,9 +275,13 @@ function play(strategy, sittings) {
   const note = (text) => marks.push({ at: st.sitting, text });
 
   for (let i = 0; i < sittings; i++) {
-    /* the event, if the House has one for us */
+    /* THE SITTING'S BUSINESS: every event that has arrived, then the
+       decision (design/49). An event does not take the decision's place, so
+       one sitting can put several things in front of the government. */
+    for (let k = 0; k < 16; k++) {
     const e = Engine.nextEvent(st, CONTENT);
-    if (e) {
+    if (!e) break;
+    {
       seen.add(e.id);
       const n = e.choices.length;
       let took = null;
@@ -285,11 +289,14 @@ function play(strategy, sittings) {
       /* A choice can be closed by a condition. Try the wanted one, then
          every other, so a strategy is never silently stuck. */
       const order = [want].concat(Array.from({ length: n }, (_, k) => k));
+      /* OPEN, not "returned a result": choose() answers null for an open
+         choice with no `result` line too, and that read as a refusal */
       for (const k of order) {
-        if (k < 0 || k >= n) continue;
-        if (Engine.choose(st, CONTENT, e, k) !== null) { took = k; break; }
+        if (k < 0 || k >= n || !Engine.choiceOpen(st, CONTENT, e.choices[k])) continue;
+        Engine.choose(st, CONTENT, e, k); took = k; break;
       }
-      if (took === null) refused++;
+      /* nothing open: passed over for the sitting, as the Sitting screen does */
+      if (took === null) { refused++; Engine.passOver(st, e); }
       /* `label`, which is the field the game draws. This read `.text`, so
          every choice in every transcript printed as "#1" or "#2" -- the one
          line meant to say what the government decided said nothing. Same
@@ -297,6 +304,8 @@ function play(strategy, sittings) {
          data does not use, falling back to a placeholder without a word. */
       else { picks++; const c = e.choices[took];
              note(e.title + " — " + (c.label || c.text || "#" + took)); }
+    }
+    if (!Engine.isEvent(e)) break;
     }
 
     /* AND THEN IT GOVERNS. */
@@ -350,11 +359,17 @@ if (SEEDS > 0) {
   const tally = {}, eligible = {}, eligibleRuns = {}, pool = {};
   const next = Engine.nextEvent;
   let runSeen = null;
+  /* once a sitting: a sitting that opens with an event asks again for its
+     decision, and counting both would weigh those sittings twice */
+  let countedAt = null;
   Engine.nextEvent = function (st, C) {
-    const p = Engine.eligible(st, C);
-    (pool[st.chapter] = pool[st.chapter] || []).push(p.length);
-    p.forEach(e => { eligible[e.id] = (eligible[e.id] || 0) + 1;
-      if (!runSeen.has(e.id)) { runSeen.add(e.id); eligibleRuns[e.id] = (eligibleRuns[e.id] || 0) + 1; } });
+    if (countedAt !== st.sitting) {
+      countedAt = st.sitting;
+      const p = Engine.eligible(st, C);
+      (pool[st.chapter] = pool[st.chapter] || []).push(p.length);
+      p.forEach(e => { eligible[e.id] = (eligible[e.id] || 0) + 1;
+        if (!runSeen.has(e.id)) { runSeen.add(e.id); eligibleRuns[e.id] = (eligibleRuns[e.id] || 0) + 1; } });
+    }
     return next.apply(this, arguments);
   };
   const out = {};
@@ -362,7 +377,7 @@ if (SEEDS > 0) {
   for (let k = 0; k < SEEDS; k++) {
     SEED = k === 0 ? undefined : 7919 * k + 13;
     STRATEGIES.forEach(sg => {
-      runSeen = new Set(); n++;
+      runSeen = new Set(); n++; countedAt = null;
       const r = play(sg, SITTINGS);
       r.seen.forEach(id => tally[id] = (tally[id] || 0) + 1);
       const o = (r.resolved ? r.resolved.replace(/^f1_/, "") : "-") + " / " + r.ended.replace(/: .*/, "");

@@ -87,6 +87,7 @@ const Editor = (function () {
       case "campaigns": return [["", "every campaign (the world's)"]].concat(campaignIds().map(c => [c, c]));
       case "playable": return [["", "its own"]].concat(campaignIds().map(c => [c, c]));
       case "introKinds": return ["epigraph", "lede", "body", "voices", "document", "signature"].map(v => [v, v]);
+      case "moods": return (V.moods || []).map(v => [v, v]);
       case "parties": return M.parties.map(p => [p.id, p.name]);
       case "stations": return M.stations.map(s => [s.id, s.name]);
       case "bands": return SCHEMA.vocab.bands.map(v => [v, v]);
@@ -201,16 +202,16 @@ const Editor = (function () {
     return url;
   }
 
-  /* WHAT KIND OF EVENT THIS IS (design/48), by the engine's own reading of
-     its choices, so the form and the game cannot disagree */
+  /* DECISION OR EVENT (design/49), as the engine reads it, so the form and
+     the game cannot disagree */
   function kindLine(e) {
-    const k = typeof Engine !== "undefined" && Engine.eventKind ? Engine.eventKind(e) : null;
-    return ({
-      decision: "A decision: two or more answers are open whatever the state.",
-      conditional: "Conditional: one answer is always open; the others appear only when their conditions hold.",
-      outcome: "An outcome: every answer has a condition, so the state picks the one the player reads.",
-      notice: "A notice: one answer, nothing to weigh. Add a second answer to make it a decision."
-    })[k] || "";
+    const ev = typeof Engine !== "undefined" && Engine.isEvent ? Engine.isEvent(e) : !!(e && e.setpiece);
+    const n = ((e && e.choices) || []).length;
+    return ev
+      ? "An event: a page that arrives before the sitting's decision and takes the screen. " +
+        (n > 1 ? "Its answers are the government's response." : "One answer: the way on.")
+      : "A decision: the sitting's business, one a sitting." +
+        (n <= 1 ? " It has one answer; a second makes it a choice." : "");
   }
 
   function campaignIds() {
@@ -631,6 +632,10 @@ const Editor = (function () {
      EVENT FORM
      ========================================================= */
 
+  /* an event's page as an object: `setpiece: true` is a page with nothing
+     written on it but the body */
+  const spOf = e => e && e.setpiece && typeof e.setpiece === "object" ? e.setpiece : {};
+
   function eventForm(e) {
     const speakers = [["", "— none —"]].concat(vocab("characters"));
     return `
@@ -651,6 +656,17 @@ const Editor = (function () {
       <label class="ed-chk"><input type="checkbox" class="ed-f" data-f="queuedOnly" ${e.queuedOnly ? "checked" : ""}> queued only</label>
     </div>
 
+    <div class="rulehead">Decision or event</div>
+    <div class="ed-grid">
+      <label class="ed-w">Kind <select class="ed-f ed-st" data-f="ev_kind">${[
+        ["decision", "Decision: the sitting's business"],
+        ["event", "Event: a page that arrives before the decision"]].map(([v, l]) =>
+        `<option value="${v}"${(v === "event") === !!e.setpiece ? " selected" : ""}>${l}</option>`).join("")}</select></label>
+      ${e.setpiece ? `<label>Mood ${opt_("sp_mood", vocab("moods"), spOf(e).mood, "(none)")}
+        <span class="ed-hint">the music when it arrives</span></label>
+      <label>Art ${txt_("sp_art", spOf(e).art || "", "artifact slot", 110)}</label>` : ""}
+    </div>
+
     <div class="rulehead">Conditions <button class="btn ed-add" data-act="cond-add">+ condition</button></div>
     <div id="ed-conds">${condRows(e.when)}</div>
 
@@ -663,7 +679,12 @@ const Editor = (function () {
     </div>
 
     <div class="rulehead">Body</div>
-    <textarea class="ed-f ed-body" data-f="body" rows="12" spellcheck="true">${esc(e.body)}</textarea>
+    <textarea class="ed-f ed-body" id="ed-evbody" data-f="body" rows="12" spellcheck="true">${esc(e.body)}</textarea>
+    ${e.setpiece ? `<div class="rulehead">Its page <button class="btn ed-add" data-act="psec-add">+ section</button>
+      <span class="ed-hint">${(spOf(e).sections || []).length
+        ? "the sections are the page, and the body above is kept for the record and the log"
+        : "no sections: the body above is the page, its first paragraph the lede"}</span></div>
+    <div id="ed-psecs">${(spOf(e).sections || []).map((sec, i) => introSection(sec, i, "psec")).join("")}</div>` : ""}
 
     <div class="rulehead">Choices <button class="btn ed-add" data-act="choice-add">+ choice</button></div>
     <div class="ed-hint" id="ed-kind">${esc(kindLine(e))}</div>
@@ -702,7 +723,8 @@ const Editor = (function () {
     const e = clone(orig || {});
     e.id = g("id").value.trim();
     e.title = g("title").value;
-    e.body = g("body").value;
+    /* by id: a page's sections carry `body` fields of their own */
+    e.body = document.getElementById("ed-evbody").value;
     const setOr = (k, v, keep) => { if (keep) e[k] = v; else delete e[k]; };
     const ch = g("chapter").value;
     setOr("chapter", +ch, ch !== "");
@@ -718,6 +740,24 @@ const Editor = (function () {
     else if (e.speaker != null) delete e.speaker;
     const when = readConds(document.getElementById("ed-conds"));
     setOr("when", when, !!when);
+    /* DECISION OR EVENT (design/49). An event with nothing on its page but
+       the body is `setpiece: true`; a mood, art or a section makes it an
+       object, kept in the order it was written. Turning an event back into
+       a decision drops the page. */
+    const kindF = g("ev_kind");
+    if (kindF && kindF.value === "event") {
+      const was = orig && orig.setpiece;
+      const sp = was && typeof was === "object" ? clone(was) : {};
+      const mood = g("sp_mood"), art = g("sp_art");
+      if (mood) { if (mood.value) sp.mood = mood.value; else delete sp.mood; }
+      if (art) putText(sp, "art", art.value.trim());
+      if (sp.art === "") delete sp.art;
+      if (document.getElementById("ed-psecs")) {
+        const secs = readSections("#ed-psecs .ed-psec", sp.sections);
+        if (secs.length) sp.sections = secs; else delete sp.sections;
+      }
+      e.setpiece = Object.keys(sp).length ? sp : true;
+    } else if (kindF) delete e.setpiece;
     if (g("img_src").value.trim()) e.image = Object.assign({}, e.image || {}, {
       src: g("img_src").value.trim(), palette: g("img_palette").value,
       caption: g("img_caption").value, credit: g("img_credit").value
@@ -1355,14 +1395,17 @@ const Editor = (function () {
       <pre class="ed-tags">${files.map(f => esc('<script src="' + f.path + '"></script>')).join("\n")}</pre>
       <button class="btn" data-act="camp-export">Export this campaign (${files.length} file${files.length === 1 ? "" : "s"})</button></div>`;
   }
-  function introSection(sec, i) {
+  /* A PAGE'S SECTION, for a campaign's introduction ("isec") or an event's
+     page ("psec"): one row shape, two lists. */
+  function introSection(sec, i, pre) {
+    pre = pre || "isec";
     const plain = sec.body == null || typeof sec.body === "string";
-    return `<div class="ed-choice ed-isec" data-si="${i}">
+    return `<div class="ed-choice ed-${pre}" data-si="${i}">
       <div class="ed-choicehd">
         <span class="ed-cnum">${i + 1}</span>
         ${sel_("kind", "introKinds", sec.kind || "body")}
         <input class="ed-f ed-label" data-f="head" type="text" value="${esc(sec.head || "")}" placeholder="Heading (blank for none)">
-        <button class="btn ed-x" data-act="isec-del" data-si="${i}">&times;</button>
+        <button class="btn ed-x" data-act="${pre}-del" data-si="${i}">&times;</button>
       </div>
       <textarea class="ed-f ed-body" data-f="body"${plain ? "" : ' data-json="1"'} rows="${plain ? 6 : 4}"
         style="border:none">${esc(plain ? (sec.body || "") : JSON.stringify(sec.body, null, 2))}</textarea>
@@ -1427,19 +1470,23 @@ const Editor = (function () {
       [["in_title", "title"], ["in_art", "art"], ["in_mood", "mood"], ["in_anthem", "anthem"]].forEach(([f, k]) => {
         const n = g_(f); if (n) putText(I, k, n.value);
       });
-      const before = I.sections || [];
-      I.sections = [...document.querySelectorAll("#ed-isecs .ed-isec")].map(n => {
-        const sec = clone(before[+n.dataset.si] || {});
-        sec.kind = n.querySelector('[data-f="kind"]').value;
-        putText(sec, "head", n.querySelector('[data-f="head"]').value);
-        const b = n.querySelector('[data-f="body"]');
-        if (b.dataset.json) { try { sec.body = JSON.parse(b.value); } catch (e) {} }
-        else putText(sec, "body", b.value);
-        putText(sec, "source", n.querySelector('[data-f="source"]').value);
-        return sec;
-      });
+      I.sections = readSections("#ed-isecs .ed-isec", I.sections);
     }
     return a;
+  }
+  /* the rows of a page, read back over what they were drawn from */
+  function readSections(q, before) {
+    before = before || [];
+    return [...document.querySelectorAll(q)].map(n => {
+      const sec = clone(before[+n.dataset.si] || {});
+      sec.kind = n.querySelector('[data-f="kind"]').value;
+      putText(sec, "head", n.querySelector('[data-f="head"]').value);
+      const b = n.querySelector('[data-f="body"]');
+      if (b.dataset.json) { try { sec.body = JSON.parse(b.value); } catch (e) {} }
+      else putText(sec, "body", b.value);
+      putText(sec, "source", n.querySelector('[data-f="source"]').value);
+      return sec;
+    });
   }
 
   /* =========================================================
@@ -2898,6 +2945,15 @@ const Editor = (function () {
       if (act === "intro-del") delete cur.intro;
       if (act === "isec-add") ((cur.intro ||= {}).sections ||= []).push({ kind: "body", body: "" });
       if (act === "isec-del") cur.intro.sections.splice(+b.dataset.si, 1);
+      if (act === "psec-add") {
+        if (!cur.setpiece || typeof cur.setpiece !== "object") cur.setpiece = {};
+        (cur.setpiece.sections ||= []).push({ kind: cur.setpiece.sections && cur.setpiece.sections.length ? "body" : "lede", body: "" });
+      }
+      if (act === "psec-del") {
+        cur.setpiece.sections.splice(+b.dataset.si, 1);
+        if (!cur.setpiece.sections.length) delete cur.setpiece.sections;
+        if (!Object.keys(cur.setpiece).length) cur.setpiece = true;
+      }
       if (act === "camp-export") {
         const home = (typeof cur.campaign === "string" && cur.campaign) || cur.id;
         campaignFiles(home).forEach((f, i) => setTimeout(() => download(downloadName(f.path), f.text), i * 120));
@@ -2990,10 +3046,12 @@ const Editor = (function () {
     draw();
   }
 
-  /* __test exposes the effect encoder to tools/edtest.js and nothing
-     else. It is here because the bug worth guarding — a multi-key
-     effect losing every pair after the first — lives in the encoding
-     rather than in anything the DOM shows, so a check that drove the
-     form would not see it. */
-  return { boot, __test: { explodeEffects, effToRow, rowToEff, campaignFiles, condRows, readConds, playURL } };
+  /* __test exposes the effect encoder to tools/edtest.js. It is here
+     because the bug worth guarding — a multi-key effect losing every pair
+     after the first — lives in the encoding rather than in anything the DOM
+     shows, so a check that drove the form would not see it. `entry` reads
+     one entry of the model as the form last committed it, a copy, so a
+     check can see what a field wrote without exporting a whole file. */
+  const entry = (tab, id) => { const o = arrOf(tab).find(x => idOf(tab, x) === id); return o ? clone(o) : null; };
+  return { boot, __test: { explodeEffects, effToRow, rowToEff, campaignFiles, condRows, readConds, playURL, entry } };
 })();

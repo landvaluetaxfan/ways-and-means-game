@@ -21,9 +21,9 @@ function mkContent(o){
 function play(C,n){
   let s=Engine.newGame(C), out=[], k=0;
   for(let i=0;i<n;i++){
-    const e=Engine.nextEvent(s,C);
-    if(e){ out.push(s.sitting+":"+e.id); Engine.choose(s,C,e,(k++)%e.choices.length); }
-    else out.push(s.sitting+":-");
+    /* a sitting's events, then its decision (design/49) */
+    const met=Engine.playSitting(s,C,e=>(k++)%e.choices.length);
+    out.push(s.sitting+":"+(met.length?met.map(m=>m.event.id).join("+"):"-"));
     Engine.advance(s);
   }
   return {trace:out.join("|"), scalars:JSON.stringify(s.scalars),

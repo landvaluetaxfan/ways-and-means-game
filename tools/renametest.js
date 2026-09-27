@@ -43,9 +43,9 @@ function play(M,n){
      its renamed forum, sponsor and stances and lands its consequences. */
   Engine.apply(s,C,(M.resolutions||[]).map(r=>({resolution:{[r.id]:"table"}})));
   for(let i=0;i<n;i++){
-    const e=Engine.nextEvent(s,C);
-    if(e){ out.push(s.sitting+":"+(M.__map&&M.__map[e.id]||e.id)); Engine.choose(s,C,e,(k++)%e.choices.length); }
-    else out.push(s.sitting+":-");
+    /* a sitting's events, then its decision (design/49) */
+    const met=Engine.playSitting(s,C,e=>(k++)%e.choices.length);
+    out.push(s.sitting+":"+(met.length?met.map(m=>M.__map&&M.__map[m.event.id]||m.event.id).join("+"):"-"));
     Engine.advance(s,C);
   }
   const caps=Object.keys(s.capital).sort().map(k2=>(M.__cap&&M.__cap[k2]||k2)+"="+s.capital[k2]).join(",");

@@ -51,6 +51,13 @@ that is an ordinary event with a good body.
 Budget: **one per chapter**, and chapter one's is the opening. Four in a run.
 `tools/lint.js` should count them and complain past that.
 
+> **Retired by design/49** (27 Sep). The author defined an *event* as a page
+> that arrives (a special outcome, a roll of the dice, a threshold) and is
+> meant to look special, "think the intro screen". A set piece is now what
+> makes an entry an event, `setpiece: true` draws the body as the page, and
+> an event arrives before the sitting's decision instead of taking it.
+> Rarity is what content marks, not a quota.
+
 ### The shape
 
 It replaces the sitting screen's content until the player chooses. The side
@@ -144,6 +151,8 @@ it is the first thing a player sees.
   selected by the same pool. Everything in `js/engine.js` stays ignorant of it;
   this is entirely a rendering decision, which is why the engine gets no new
   verb and the vocabulary stays at twenty.
+  *(design/49: still one list and one pool, and still no verb, but the engine
+  now reads the field, because an event does not take the sitting's decision.)*
 - **Not a place to put prose that has nowhere else to go.** If a section is
   there because the author had a paragraph, it is not a section.
 - **Not an image requirement.** Every slot renders empty. A set piece with no

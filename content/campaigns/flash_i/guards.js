@@ -448,15 +448,12 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
        is content's: a flat 45 silently became 44 of play when the prologue
        grew by one, and a flat anything is wrong the day the length moves. */
     for (let s = 0; s < RUN_BOUND + PROLOGUE1; s++) {
-      const e = Engine.nextEvent(st, CONTENT);
-      if (e) {
+      /* the sitting's events, then its decision (design/49) */
+      Engine.playSitting(st, CONTENT, e => {
         const n = (e.choices || []).length || 1;
         const p0 = typeof pick[e.id] === "function" ? pick[e.id](st) : pick[e.id];
-        const want = p0 == null ? 0 : Math.min(p0, n - 1);
-        let done = false;
-        for (let i = want; i < n; i++) if (Engine.choose(st, CONTENT, e, i) !== null) { done = true; break; }
-        if (!done) for (let i = 0; i < n; i++) if (Engine.choose(st, CONTENT, e, i) !== null) { done = true; break; }
-      }
+        return p0 == null ? 0 : Math.min(p0, n - 1);
+      });
       govern(st);
       Engine.advance(st, CONTENT);
       const en = Engine.checkEnd(st, CONTENT);
@@ -612,13 +609,12 @@ guard("THE CHAIN RUNS ON A CLOCK (dated for three sessions, 22 Sep)", ok => {
   const when = {};
   const riseAt = {};
   for (let i = 0; i < 40; i++) {
-    const e = Engine.nextEvent(chain, CONTENT);
-    if (e) {
+    Engine.playSitting(chain, CONTENT, e => {
       if (when[e.id] == null && /^f1_/.test(e.id)) {
         when[e.id] = chain.sitting; riseAt[e.id] = chain.risesAt;
       }
-      Engine.choose(chain, CONTENT, e, 0);
-    }
+      return 0;
+    });
     Engine.advance(chain, CONTENT);
   }
   const a = when.f1_stranded, b = when.f1_referendum, c = when.f1_dilemma;
@@ -657,14 +653,8 @@ guard("THE ANNEXATION LINE STAYS GOVERNABLE (trends decay)", ok => {
   const pick = { f1_stranded: 0, f1_referendum: 0, f1_dilemma: 0, f1_loan: 1 };
   let peak = 0;
   for (let i = 0; i < 40; i++) {
-    const e = Engine.nextEvent(g, CONTENT);
-    if (e) {
-      const n = e.choices.length;
-      const w = pick[e.id] == null ? 0 : Math.min(pick[e.id], n - 1);
-      let done = false;
-      for (let k = w; k < n; k++) if (Engine.choose(g, CONTENT, e, k) !== null) { done = true; break; }
-      if (!done) for (let k = 0; k < n; k++) if (Engine.choose(g, CONTENT, e, k) !== null) break;
-    }
+    Engine.playSitting(g, CONTENT, e =>
+      pick[e.id] == null ? 0 : Math.min(pick[e.id], e.choices.length - 1));
     Engine.advance(g, CONTENT);
     if (g.scalars.friction > peak) peak = g.scalars.friction;
     const en = Engine.checkEnd(g, CONTENT);
@@ -706,8 +696,7 @@ guard("THE TIER FALL AND THE PIVOTS (design/35)", ok => {
   const pin = g => Object.assign(g.scalars, { friction: 80, thermal_margin: 15, solvency: 15000, legitimacy: 25 });
   for (let i = 0; i < 12 && !when.f1_meltdown; i++) {
     pin(b);
-    const e = Engine.nextEvent(b, CONTENT);
-    if (e) { if (when[e.id] == null) when[e.id] = b.sitting; Engine.choose(b, CONTENT, e, 0); }
+    Engine.playSitting(b, CONTENT, e => { if (when[e.id] == null) when[e.id] = b.sitting; return 0; });
     Engine.advance(b, CONTENT);
   }
   ok("the floors give one a sitting, in order, before the meltdown",
@@ -823,9 +812,7 @@ guard("THE GENERAL ASSEMBLY (design/43)", ok => {
   let dilemma = null;
   const c = Engine.newGame(CONTENT);
   for (let i = 0; i < 40 && dilemma == null; i++) {
-    const e = Engine.nextEvent(c, CONTENT);
-    if (e && e.id === "f1_dilemma") dilemma = c.sitting;
-    if (e) Engine.choose(c, CONTENT, e, 0);
+    Engine.playSitting(c, CONTENT, e => { if (e.id === "f1_dilemma") dilemma = c.sitting; return 0; });
     Engine.advance(c, CONTENT);
   }
   ok("the Assembly first sits after the dilemma", dilemma != null && firstSitting > dilemma,
@@ -875,10 +862,17 @@ guard("THE GENERAL ASSEMBLY (design/43)", ok => {
   const tabled = Engine.table(p, CONTENT, "un_icj_salvage");
   ok("with the Act law the government tables the Court's question", tabled.ok, tabled.reason);
   let opinion = null;
+  /* by hand rather than playSitting, because the opinion is kept to be
+     answered below, under a legitimacy the probe sets */
   for (let i = 0; i < 40 && !opinion; i++) {
-    const e = Engine.nextEvent(p, CONTENT);
-    if (e && e.id === "f1_icj_opinion") { opinion = e; break; }
-    if (e) Engine.choose(p, CONTENT, e, 0);
+    for (let k = 0; k < 16; k++) {
+      const e = Engine.nextEvent(p, CONTENT);
+      if (!e) break;
+      if (e.id === "f1_icj_opinion") { opinion = e; break; }
+      Engine.choose(p, CONTENT, e, 0);
+      if (!Engine.isEvent(e)) break;
+    }
+    if (opinion) break;
     p.scalars.friction = 35;
     Engine.advance(p, CONTENT);
   }

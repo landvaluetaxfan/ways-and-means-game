@@ -248,12 +248,39 @@ try {
   ok("and carries the event as the editor holds it, the unsaved edit included",
      !!got && got.id === tagged.id && got.title === "Retitled in the editor" &&
      JSON.stringify(got.choices) === JSON.stringify(tagged.choices), got ? got.title : "no event");
-  ok("the event form says what kind of event it is",
-     /^(A decision|Conditional|An outcome|A notice)/.test((w.document.querySelector("#ed-kind") || {}).textContent || ""),
-     (w.document.querySelector("#ed-kind") || {}).textContent);
+  const kindText = (w.document.querySelector("#ed-kind") || {}).textContent || "";
+  ok("the event form says whether it is a decision or an event, as the engine reads it",
+     (tagged.setpiece ? /^An event/ : /^A decision/).test(kindText), kindText);
   /* put the title back, so the sweeps below read the files' own content */
   const t2 = w.document.querySelector('#ed-form [data-f="title"]');
   if (t2) { t2.value = tagged.title; click([...w.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id !== tagged.id)); }
+
+  /* DECISION OR EVENT (design/49): the Kind field makes a decision an event
+     and back, and an event's page takes a mood and sections of its own */
+  const dec = JSON.parse(w.eval("JSON.stringify(EVENTS.filter(function (e) { return e.campaign === 'flash_i' && !e.setpiece; })[0])"));
+  const itemOf = id => [...w.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id === id);
+  const read = () => JSON.parse(w.eval(`JSON.stringify(Editor.__test.entry("events", "${dec.id}"))`));
+  const away = () => click([...w.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id !== dec.id));
+  const setKind = v => { const k = w.document.querySelector('#ed-form [data-f="ev_kind"]');
+    if (k) { k.value = v; k.dispatchEvent(new w.Event("change", { bubbles: true })); } return !!k; };
+  click(itemOf(dec.id));
+  const hadKind = setKind("event");
+  ok("the Kind field makes a decision an event, with its body as the page",
+     hadKind && read().setpiece === true && !!w.document.getElementById("ed-psecs"), JSON.stringify(read().setpiece));
+  click(w.document.querySelector('#ed-form [data-act="psec-add"]'));
+  const secBody = w.document.querySelector('#ed-psecs [data-f="body"]');
+  const mood = w.document.querySelector('#ed-form [data-f="sp_mood"]');
+  if (secBody) secBody.value = "A page of its own.";
+  if (mood) mood.value = "threat";
+  away(); click(itemOf(dec.id));
+  const sp = read().setpiece || {};
+  ok("and a mood and a section make it a page of its own, the body untouched",
+     sp.mood === "threat" && sp.sections && sp.sections.length === 1 && sp.sections[0].kind === "lede" &&
+     sp.sections[0].body === "A page of its own." && read().body === dec.body, JSON.stringify(sp));
+  setKind("decision");
+  ok("and turning it back into a decision drops the page", read().setpiece === undefined &&
+     !w.document.getElementById("ed-psecs"), JSON.stringify(read().setpiece));
+  away();
 } catch (e) { ok("play in the game", false, e.message); }
 
 /* OPENING AN ENTRY CHANGES NOTHING (design/34). The editor commits the form

@@ -1366,6 +1366,7 @@ budget."`,
 
 /* the campaign: parliament is dissolved, the country is asked */
 { id:"ch3_dissolution", chapter:2, weight:96, once:true,
+  setpiece:true,
   when:{ dissolved:true },
   title:"The writs",
   speaker:null,
@@ -1602,6 +1603,7 @@ The count is a week away, and the polls say where it will be decided.`,
   ]},
 
 { id:"ch3_the_count", chapter:3, prologue:9, once:true,
+  setpiece:true,
   title:"The count",
   speaker:null,
   body:`The returns come in by station, west to east, the way they always
@@ -1621,6 +1623,7 @@ is now the country's to carry.`,
 
 /* the settlement: the argument was closed, and the Commonwealth after */
 { id:"ch4_settled", chapter:2, weight:97, once:true,
+  setpiece:true,
   /* THE RESULT, NOT THE ANSWER, AND IT OPENS NO CHAPTER. This fired on
      `settled` (the personhood question) and moved the run into chapter
      four, which then ended at the dissolution without a campaign; a run
@@ -1644,6 +1647,7 @@ which is how a settlement works. What follows is the Commonwealth after it.`,
   ]},
 
   { id:"ch4_after", chapter:2, weight:96, once:true,
+  setpiece:true,
   when:{ seen:["ch4_settled"], dissolved:false },
   title:"After",
   speaker:null,
@@ -1990,6 +1994,7 @@ and the schedule is a list of who is carried and who is not."`,
    between is the risk the government took. */
 /* REACH: queued by the quota_forward initiative. */
 { id:"quota_forward_settles", queuedOnly:true, once:true,
+  setpiece:true,
   title:"The quota forward comes due",
   speaker:"hatt",
   body:`The consortiums have come for the capacity. Whatever the margin has
@@ -2036,6 +2041,7 @@ of the trade.`,
    an empty Decision. */
 /* REACH: queued by the charter_volume initiative. */
 { id:"volume_charter_settles", queuedOnly:true, once:true,
+  setpiece:true,
   title:"The volume lease comes to term",
   speaker:"vellan",
   body:`Homestead has held the volume for the whole term and the surveyors
@@ -2405,6 +2411,7 @@ heard one side."`,
    all session by whether it answered, briefed, complied and revoked. */
 /* REACH: queued by either choice of tr_challenge_lodged. */
 { id:"tr_ruling", queuedOnly:true, once:true,
+  setpiece:{ mood:"tension" },
   title:"The ruling",
   speaker:null,
   body:`The Tribunal hands down its judgment at the start of the sitting, and the
@@ -2485,6 +2492,7 @@ man with a list."`,
    date is set, and the sittings between now and then are the whole of the
    government's answer. */
 { id:"no_confidence_tabled", once:true,
+  setpiece:{ mood:"threat" },
   weight:6,
   /* GATED ON WEAKNESS, in the closed vocabulary (there is no anyOf, and
      inventing one would be content leaking into the engine): the Leader of
@@ -3361,6 +3369,7 @@ She will not move the cash rate for a government. She will say, at her next meet
   ]},
 
 { id:"dollar_line_tested", queuedOnly:true,
+  setpiece:{ mood:"tension" },
   title:"The line is tested",
   speaker:null,
   body:`The market has spent a week finding out whether the Treasury meant it. The Bank has spent its reserves answering, and the dealers on the Bourse have been counting what is left.`,

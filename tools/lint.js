@@ -1052,19 +1052,37 @@ try {
   });
 
   /* A CHOICE'S POSTURE (design/40 E7). The Sitting screen orders an
-     event's choices by it, so a missing one sends a choice to the bottom
-     of the list and an unknown one is a word the screen cannot rank. Only a
-     decision needs them (Engine.eventKind, design/48): an outcome's answer
-     is picked by the state, and a notice has one. */
-  const EngK = require(path.join(root, "js", "engine.js"));
-  const POSTURES = new Set(require(path.join(root, "js", "schema.js")).vocab.postures || []);
+     entry's choices by it, so a missing one sends a choice to the bottom
+     of the list and an unknown one is a word the screen cannot rank. It is
+     asked of any entry, decision or event (design/49), whose answers
+     compete: two or more open whatever the state. An answer the state
+     picks, or a lone one, has nothing to be ranked against. */
+  const VOCAB = require(path.join(root, "js", "schema.js")).vocab;
+  const POSTURES = new Set(VOCAB.postures || []);
   (EVENTS || []).forEach(ev => {
     const cs = ev.choices || [];
     cs.forEach((c, i) => { if (c.posture != null && !POSTURES.has(c.posture))
       refBad.push("event " + ev.id + " choice " + i + ": posture '" + c.posture + "' is not one of " + [...POSTURES].join(", ")); });
-    if (EngK.eventKind(ev) === "decision" && cs.some(c => !c.posture))
+    if (cs.filter(c => !c.when).length >= 2 && cs.some(c => !c.posture))
       refBad.push("event " + ev.id + ": " + cs.filter(c => !c.posture).length + " of " + cs.length +
                   " choices carry no posture, so the Sitting screen cannot order them");
+  });
+
+  /* AN EVENT'S PAGE (design/49): a mood the score knows, and sections of
+     a kind the page draws. An unknown mood is silence where the author
+     asked for music; an unknown kind falls back to plain body. */
+  const MOODS = new Set(VOCAB.moods || []);
+  const PAGE_KINDS = new Set(require(path.join(root, "js", "setpiece.js")).KINDS || []);
+  (EVENTS || []).forEach(ev => {
+    const sp = ev.setpiece;
+    if (sp == null) return;
+    if (sp !== true && (typeof sp !== "object" || Array.isArray(sp)))
+      { refBad.push("event " + ev.id + ": setpiece is true or a page, not " + JSON.stringify(sp)); return; }
+    if (sp === true) return;
+    if (sp.mood != null && !MOODS.has(sp.mood))
+      refBad.push("event " + ev.id + ": mood '" + sp.mood + "' is not one of " + [...MOODS].join(", "));
+    (sp.sections || []).forEach((sec, i) => { if (!PAGE_KINDS.has(sec.kind))
+      refBad.push("event " + ev.id + " section " + i + ": kind '" + sec.kind + "' is not one of " + [...PAGE_KINDS].join(", ")); });
   });
 
   /* AND THE AWARDS, which have a matcher of their own in js/shell.js. Its

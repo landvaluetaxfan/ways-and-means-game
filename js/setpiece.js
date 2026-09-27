@@ -128,13 +128,32 @@ const SetPiece = (function () {
       .map(p => `<p>${esc(p.trim())}</p>`).filter(p => p !== "<p></p>").join("");
   }
 
-  /* Does this event want the whole screen? */
-  function is(ev) { return !!(ev && ev.setpiece && (ev.setpiece.sections || []).length); }
+  /* IS THIS AN EVENT? (design/49.) The author's word for a page that
+     arrives, as against the sitting's decision, and the engine's
+     Engine.isEvent reads the same field, so the two cannot disagree about
+     which entries take the screen. `setpiece: true` is an event whose page
+     is its body; an object carries a mood, art and written sections. */
+  function is(ev) { return !!(ev && ev.setpiece); }
+
+  /* THE PAGE, WHERE NOBODY HAS WRITTEN ONE. An event marked with no
+     sections is drawn from its body: the first paragraph is the lede, the
+     rest the body. The prose is the author's either way; sections are how
+     an author makes a page more than its paragraphs, and nothing here
+     writes one for them. */
+  function sectionsOf(ev) {
+    const sp = ev && typeof ev.setpiece === "object" ? ev.setpiece : {};
+    if ((sp.sections || []).length) return sp.sections;
+    const paras = String((ev && ev.body) || "").split(/\n\s*\n/)
+      .map(p => p.replace(/\s*\n\s*/g, " ").trim()).filter(Boolean);
+    if (!paras.length) return [];
+    return [{ kind: "lede", body: paras[0] }].concat(paras.length > 1
+      ? [{ kind: "body", body: paras.slice(1).join("\n\n") }] : []);
+  }
 
   /* Returns the page and the mood it wants. The CALLER cues the mood, on the
      action that opened the page — see the note at the top. */
   function html(ev, opts) {
-    const sp = (ev && ev.setpiece) || {};
+    const sp = ev && typeof ev.setpiece === "object" && ev.setpiece ? ev.setpiece : {};
     const o = opts || {};
 
     /* THE ART SLOT RENDERS EMPTY AND THAT IS DELIBERATE. content/artifacts.js
@@ -149,10 +168,21 @@ const SetPiece = (function () {
     const title = sp.title || ev.title || "";
     const body =
       `<div class="sp-page">` +
+        /* the dateline, where the caller has one: an event is news */
+        (o.kicker ? `<div class="sp-kicker">${esc(o.kicker)}</div>` : "") +
         (title ? `<h2 class="sp-title">${esc(title)}</h2>` : "") +
+        /* who is speaking, where the event has somebody: a byline under the
+           title, since a page has no portrait column */
+        (o.who ? `<div class="sp-who-line">${esc(o.who)}</div>` : "") +
         art +
+        /* A PICTURE WHERE THE PAGE HAS NO ART OF ITS OWN (design/49): the
+           caller's figure, already drawn (the event's plate, or the speaker's
+           portrait), because the introduction is a picture and a page and an
+           event is meant to read like one. The art slot wins where there is
+           one; the figure is the caller's markup and is not escaped. */
+        (!art && o.figure ? `<div class="sp-figure">${o.figure}</div>` : "") +
         `<div class="sp-sections">` +
-          (sp.sections || []).map(section).join("") +
+          sectionsOf(ev).map(section).join("") +
         `</div>` +
       `</div>`;
 
@@ -227,7 +257,7 @@ const SetPiece = (function () {
     return true;
   }
 
-  return { is, html, KINDS, sign, arm, write, WRITE_MS };
+  return { is, html, sectionsOf, KINDS, sign, arm, write, WRITE_MS };
 })();
 
 if (typeof module !== "undefined") module.exports = SetPiece;
