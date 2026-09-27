@@ -333,7 +333,7 @@ print.
 
 ---
 
-## Built (26–27 Sep), and what is left
+## Built (26–27 Sep)
 
 The author approved every proposal above ("do whatever is best ... and so
 on and so forth for everything else"). In the order built, each commit
@@ -357,15 +357,13 @@ on `claude/affectionate-cerf-htlo8t`:
    (`bio`, `descriptor`, `article`, `handle`), so the prose export carries
    them and the scanner reads them. `npm run register` stands at zero
    faults.
-
-**What is left is what only reading finds.** The scanner is at zero and
-the surfaces below still carry pointing, thin or epigrammatic passages
-that no pattern matches. Each was seen in the 57-passage sample or the
-full reads above. Method, per surface: print it (`node tools/register.js
-<prefix> --notes`, or the prose export), read each passage against the six
-rules, check every claim against the content or the engine before
-writing it, rewrite, then `npm run prose`, `npm run check`, `npm run
-guards`, commit.
+6. **The surfaces only reading finds** (`690d018`). The scanner was at
+   zero and these still carried pointing, thin or epigrammatic passages
+   that no pattern matches. Each was printed, read against the six rules,
+   checked against the content or the engine, and rewritten. Checking
+   found claims that were wrong as well as badly put: the prices note said
+   no price reads a market, and the thermal price reads the margin and the
+   reserve. The table is kept as the record of what was fixed and where.
 
 | surface | what to fix | examples |
 |---|---|---|
@@ -380,5 +378,16 @@ guards`, commit.
 | `encyclopedia` (hand-written) | pointing | reserve_bank "raised the target above two per cent" (to what?); biological_majority "because the body is equipment" |
 | `js/ui.js` literals on the Economy tab | two notes in the old style | the prices note "None of these four is a market..." (it also overclaims: the prices read the margin and the reserve), and the productive-economy note "Participation answers to..." |
 
-Then, per the author, **the general descriptions for every clickable
-country**, written in this register, modelled on the anchor-host notes.
+7. **Every country on the globe** (`72a8c01`), as the author asked: 166
+   atlas entries in `content/world.js` beside the twelve hosts', each
+   naming where the state is, its capital and what it is known for, and
+   the General Assembly member it votes through (`ga`), which the country
+   panel prints with that member's live standing. The notes read at 16.2
+   checkable facts per hundred words, level with the Foreign Affairs
+   prose this note took as the model. Lint fails on a `ga` naming no
+   member; `uitest` reads a non-host's page and a host's own seat.
+
+**Nothing on this note's list is left.** `npm run register` stands at zero
+faults, and the density report is the place to look first when a surface
+reads thin. What comes next is the author's: the Concordance do-over this
+diagnosis was written to go before.

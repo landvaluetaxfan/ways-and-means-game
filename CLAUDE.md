@@ -1110,12 +1110,13 @@ version of any of them is in the header of the file it names.
   words, against 3–6 on the surfaces never rewritten. The Underwriters'
   outlook cannot say a number at all, because it is fixed sentences chosen
   by thresholds. **Read design/45 before writing Reference or Interface
-  prose.** The author approved all of it (26 Sep) and most is built:
-  the rules, the briefing with the engine's figures, the generated
-  articles, the actors, stations and the Works (commits `b2993e1` to
-  `ef6dd41`). **What is left is design/45's closing table**, the surfaces
-  only reading finds, by address and with the method; then the country
-  descriptions the author asked for.
+  prose.** The author approved all of it (26 Sep) and all of it is built
+  (commits `b2993e1` to `72a8c01`): the rules, the briefing with the
+  engine's figures, the generated articles, the actors, stations and the
+  Works, every surface in design/45's closing table, and a description of
+  every country the globe can select, with the General Assembly member it
+  votes through (`states[].ga` in `content/world.js`, which lint checks
+  against the forums). Next, per the author: the Concordance do-over.
   The same pass found the Concordance's constituency articles reading the
   roll's stale `member`, so thirty-seven named a member who is not in the
   world. They ask `Engine.seatMember` now, and `uitest` checks every such
