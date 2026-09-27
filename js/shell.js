@@ -210,6 +210,7 @@ const Shell = (function () {
     : view === "credits" ? credits()
     : view === "awards"  ? awards()
     : view === "options" ? menuOptions()
+    : view === "sandbox" ? sandboxMenu()
     : root());
     paintMenu();
     wireMenu(m, view);
@@ -412,6 +413,67 @@ const Shell = (function () {
       <div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
   }
 
+  /* THE SANDBOX (design/47): every campaign, opened on the author's bench.
+     It plays the campaign as a player would, in a slot of its own that the
+     Load screen and Continue never show, and records no ending and awards
+     nothing (js/ui.js). */
+  const SANDBOX_SLOT = 0;
+  function sandboxMenu() {
+    const list = (C && C.administrations) || [];
+    const was = slot(SANDBOX_SLOT);
+    return `<div class="menu-sub">Sandbox</div>
+      <div class="menu-text"><p>Open a campaign with every event in reach. The Sandbox tab
+        lists them all; pick one and it is put on the Sitting screen as a player meets it.
+        Choose, look at what moved, then step back and choose again.</p>
+        <p>The sandbox keeps its own save. It never touches your games or your achievements.</p></div>
+      <div class="menu-btns">` +
+      (was ? `<button class="mbtn cont" data-sbx-cont="1">Continue the sandbox
+          <i>${esc(was.name)} &middot; sitting ${was.sitting}</i></button>` : "") +
+      list.map(a => `<button class="mbtn adm" data-sbx-admin="${esc(a.id)}">` + admFace(a) +
+        `<span class="adm-t">${esc(adminLabel(a))}<i>a fresh bench, every event in reach</i></span></button>`).join("") +
+      `</div><div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
+  }
+
+  /* OPEN A CAMPAIGN IN THE SANDBOX, optionally straight onto one event, and
+     optionally with that event as the editor has it now (`preview`, an event
+     object carried in the address from editor.html). */
+  function sandbox(adminId, o) {
+    o = o || {};
+    const list = (C && C.administrations) || [];
+    let admin = list.find(a => a.id === adminId) || null;
+    /* an address that names only an event opens the campaign that has it */
+    if (!admin && o.event) admin = list.find(a => { const K = contentFor(a);
+      return K.eventById && K.eventById[o.event]; }) || null;
+    if (!admin) admin = list[0] || null;
+    start(SANDBOX_SLOT, "Sandbox \u00b7 " + adminLabel(admin), null, admin,
+          { sandbox: true, event: o.event || null, preview: o.preview || null });
+  }
+  /* The editor's copy of an event goes over the file's, or beside it if it
+     is new. A copy of the view, so the files' content is never edited. */
+  function withPreview(K, ev) {
+    if (!ev || typeof ev !== "object" || !ev.id) return K;
+    const K2 = Object.assign({}, K);
+    const i = (K.events || []).findIndex(e => e.id === ev.id);
+    K2.events = i >= 0 ? K.events.map((e, j) => j === i ? ev : e) : (K.events || []).concat([ev]);
+    K2.eventById = Object.assign({}, K.eventById, { [ev.id]: ev });
+    return K2;
+  }
+  /* WHAT THE ADDRESS ASKS FOR: `?sandbox=<campaign>`, `event=<id>` (in the
+     query or the hash; prose.html links `index.html?event=<id>`), and
+     `#preview=<the event as JSON>` from the editor. Read once, at boot. */
+  function addressAsks() {
+    try {
+      const q = String(location.search || ""), h = String(location.hash || "");
+      const ev = /[?&#]event=([A-Za-z0-9_]+)/.exec(q + "&" + h);
+      const sb = /[?&]sandbox=([A-Za-z0-9_]+)/.exec(q);
+      const pv = /[#&]preview=([^&]+)/.exec(h);
+      if (!ev && !sb) return null;
+      let preview = null;
+      if (pv) { try { preview = JSON.parse(decodeURIComponent(pv[1])); } catch (e) { preview = null; } }
+      return { admin: sb ? sb[1] : null, event: ev ? ev[1] : null, preview: preview };
+    } catch (e) { return null; }
+  }
+
   function root() {
     const last = latest();
     const any = !!last;
@@ -422,6 +484,8 @@ const Shell = (function () {
             last.date ? " &middot; " + esc(last.date) : ""}</i></button>` : ""}
       <button class="mbtn" data-go="new">New Government</button>
       <button class="mbtn${any ? "" : " off"}" data-go="load"${any ? "" : " disabled"}>Load</button>
+      <button class="mbtn" data-go="sandbox">Sandbox
+        <i>any event, as a player meets it</i></button>
       <button class="mbtn" data-go="awards">Achievements
         <i>${sc.have} of ${sc.of}${sc.canon ? " &middot; Ways and Means" : ""}</i></button>
       <button class="mbtn" data-go="options">Options</button>
@@ -543,6 +607,13 @@ const Shell = (function () {
     const first = m.querySelector("[data-cont]") || m.querySelector(".menu-btns .mbtn:not([disabled])");
     if (first && first.focus) first.focus({ preventScroll: true });
 
+    m.querySelectorAll("[data-sbx-admin]").forEach(b => b.addEventListener("click", () =>
+      sandbox(b.dataset.sbxAdmin)));
+    m.querySelectorAll("[data-sbx-cont]").forEach(b => b.addEventListener("click", () => {
+      const sv = slot(SANDBOX_SLOT);
+      if (sv) start(SANDBOX_SLOT, sv.name, sv.state);
+    }));
+
     m.querySelectorAll("[data-admin]").forEach(b => b.addEventListener("click", () => {
       chosenAdmin = (C.administrations || []).find(a => a.id === b.dataset.admin) || null;
       showMenu("slots");
@@ -600,16 +671,6 @@ const Shell = (function () {
   }
 
   /* ---------- starting and saving ---------- */
-  /* ?event=<id> on the address, if there is one. Read once and never
-     written; a game started this way is an ordinary sandbox game. */
-  function previewEvent() {
-    try {
-      const m = /[?&]event=([A-Za-z0-9_]+)/.exec(String(location.search || "") +
-                                                String(location.hash || ""));
-      return m ? m[1] : null;
-    } catch (e) { return null; }
-  }
-
   /* WHICH ADMINISTRATION A SAVE BELONGS TO, read off the save itself. A
      loaded game gets no `admin` argument -- the menu only has one when a
      government is being chosen -- so without this every reload of Flash I
@@ -621,7 +682,8 @@ const Shell = (function () {
     } catch (e) { return null; }
   }
 
-  function start(n, name, stateStr, admin) {
+  function start(n, name, stateStr, admin, how) {
+    how = how || {};
     let state;
     /* THE MERGED CONTENT IS THE SESSION'S CONTENT, not one call's.
        `contentFor(admin)` was handed to `newGame` and then thrown away, so
@@ -647,7 +709,8 @@ const Shell = (function () {
        -- and use that one object everywhere below. `contentFor` returns a
        shallow copy, so every other table (`eventById`, `administrations`)
        is still the same object by reference. */
-    const K = contentFor(admin || (stateStr ? adminOf(stateStr) : null));
+    let K = contentFor(admin || (stateStr ? adminOf(stateStr) : null));
+    if (how.preview) K = withPreview(K, how.preview);
     /* A SEED PER GOVERNMENT (design/37 D10). Every game was seeded 20287, so
        the same choices met the same events in the same order for every
        player. The seed is drawn once here and kept in the save, so a run is
@@ -659,30 +722,17 @@ const Shell = (function () {
     catch (e) { Dialog.alert("That save could not be read: " + e.message,
                              { title: "Could not load" }); return; }
     /* THE SANDBOX IS A STATE, NOT A SETUP FIELD. newGame starts flags empty,
-       so the Sandbox tab's gate is marked here, once, when the government is
-       chosen. A loaded save carries whatever flag it was made with. */
-    if (!stateStr && admin && admin.id === "sandbox") state.flags.sandbox = true;
+       so the Sandbox tab's gate is marked here, once, when the bench is
+       opened; a saved bench carries it. The introduction stands between the
+       government and the first sitting, so it is marked read: somebody who
+       came to see events should not have to take office first. */
+    if (!stateStr && how.sandbox) { state.flags.sandbox = true; state.flags._introRead = true; }
     /* WHOSE GOVERNMENT THIS IS, so the sitting screen can introduce it. Set
        here rather than in newGame for the same reason the sandbox flag is:
        the administration is a menu choice and the engine has no opinion
        about it. A save written before this has no `admin` and shows no
        introduction, which is correct — it has already begun. */
     if (!stateStr && admin) state.admin = admin.id;
-
-    /* SHOW ME THIS EVENT. prose.html links here as index.html?event=<id> so
-       an author can read a passage and then see it happen, in the real
-       chrome, with the real choices under it. It is the sandbox government
-       and a queued event — no new path into the engine, no preview mode, and
-       nothing a player can reach by accident.
-
-       The introduction stands between the government and the first sitting,
-       so it is marked read: somebody who asked to see one event should not
-       have to take office first. */
-    const jump = previewEvent();
-    if (!stateStr && jump && K.eventById && K.eventById[jump]) {
-      state.flags._introRead = true;
-      Engine.apply(state, K, [{ queue: [{ event: jump, after: 0 }] }]);
-    }
 
     /* THE BED OPENS WITH THE GOVERNMENT. A mood is a function name in
        js/music.js, not an argument, and `state`/`init`/`available` are not
@@ -727,6 +777,12 @@ const Shell = (function () {
       if (typeof Focus !== "undefined") Focus.reset();
       if (typeof Papers !== "undefined") Papers.reset();
       UI.boot(state, K);
+      /* SHOW ME THIS EVENT (design/47): an address that names one, from the
+         editor or prose.html, opens the bench with it on the Sitting screen. */
+      if (how.sandbox && how.event && K.eventById && K.eventById[how.event] && UI.sandboxShow) {
+        UI.sandboxShow(how.event);
+        return;
+      }
       /* AND IT OPENS ON THE SITTING. The tab is in the DOM and in UI’s own
          `screen`, and neither is in the save, so both survived the menu:
          a government formed while the last one was standing on Papers
@@ -745,13 +801,14 @@ const Shell = (function () {
 
   function stampSlot() {
     const t = document.getElementById("tb-slot");
-    if (t) t.textContent = current ? `${current.name} — slot ${current.n}` : "";
+    if (t) t.textContent = current
+      ? current.n === SANDBOX_SLOT ? current.name : `${current.name} — slot ${current.n}` : "";
   }
 
   function saveNow(quiet) {
     if (!current) return;
     writeSlot(current.n, current.name, Engine.save(UI.state()));
-    if (!quiet) flash("Saved to slot " + current.n);
+    if (!quiet) flash(current.n === SANDBOX_SLOT ? "Saved the sandbox" : "Saved to slot " + current.n);
   }
 
   /* Called by the UI after anything that advances the game. */
@@ -942,7 +999,9 @@ const Shell = (function () {
       r.readAsText(f);
       e.target.value = "";
     });
-    showMenu(null);
+    const ask = addressAsks();
+    if (ask) sandbox(ask.admin, ask);
+    else showMenu(null);
   }
 
   return { boot: boot, autosave: autosave, save: saveNow, options: opts,
@@ -955,6 +1014,8 @@ const Shell = (function () {
               that is hard to reach gets reimplemented, and two places that
               compute one thing is how apportionment_ratio drifted. */
            contentFor: contentFor,
+           /* open a campaign on the author's bench (design/47) */
+           sandbox: sandbox, withPreview: withPreview,
            opt: opt, setOpt: setOpt, flash: flash,
            /* the session log: written when a government ends, read by the
               board. Outside every save on purpose. */

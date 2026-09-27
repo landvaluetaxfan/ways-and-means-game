@@ -26,8 +26,9 @@ const CONTENT = (function () {
        coordinates live so nothing in js/ names a country. */
     world: typeof WORLD !== "undefined" ? WORLD : null,
     achievements: typeof ACHIEVEMENTS !== "undefined" ? ACHIEVEMENTS : [],
-    /* THE SANDBOX CONTROLS (T26): the one list the Sandbox tab and the queued
-       test_console event both press. Owned by content/events.js. */
+    /* A CAMPAIGN'S SANDBOX SHORTCUTS (design/47): states the Sandbox tab can
+       jump to, tagged by campaign like any entry. Flash I's are in
+       content/events.js. */
     sandbox: typeof SANDBOX !== "undefined" ? SANDBOX : [],
     /* THE GOODS THIS POLITY PRICES (bible §7.3), a literal in js/engine.js
        until it was declared here. There was an `axes` list beside it naming
@@ -89,7 +90,7 @@ const CONTENT = (function () {
        - `campaign`, the id the `campaign` condition compares against.
 
      An administration may play ANOTHER's campaign (`campaign: "flash_i"`
-     on the sandbox): it gets that campaign's content, setup and opening,
+     on a variant of it): it gets that campaign's content, setup and opening,
      and then its own setup on top. Nothing is copied into the content
      files; a view is built on demand and the world is never edited. */
   const plain = v => v && typeof v === "object" && !Array.isArray(v);

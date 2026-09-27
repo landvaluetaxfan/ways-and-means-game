@@ -438,6 +438,12 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #s-rel.screen.on{height:100%;min-height:0;}
 .g-rel > .stack{min-height:0;}
 .g-rel .panel{min-height:0;}
+/* THE SANDBOX (design/47): every event on the left, the one chosen in the
+   middle with what it needs and offers, and the state on the right. */
+.g-sbx{grid-template-columns:minmax(300px,420px) minmax(0,1fr) minmax(260px,340px);
+  grid-template-rows:minmax(0,1fr);height:100%;min-height:0;}
+#s-sbx.screen.on{height:100%;min-height:0;}
+.g-sbx .panel{min-height:0;}
 .pdot{display:inline-block;width:9px;height:9px;border:1px solid var(--rule);}
 /* the playtest transcript: a box the tester can select out of */
 .g-log{grid-template-columns:minmax(0,1fr) minmax(320px,460px);
@@ -1348,7 +1354,7 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 }
 @media (max-width:1080px){
   .g-gov,.g-cham,.g-orb,.g-disp,.g-elec,.g-sit,.g-world,.g-party,.g-rel,.g-econ,
-  .g-log{grid-template-columns:minmax(0,1fr);}
+  .g-log,.g-sbx{grid-template-columns:minmax(0,1fr);}
 
   /* ONE COLUMN MEANS THE PAGE SCROLLS, and it did not. Every screen is
      height:100% with grid-template-rows:minmax(0,1fr) — ONE row, sized to
@@ -1366,8 +1372,8 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
      of slots. */
   #s-sit.screen.on,#s-gov.screen.on,#s-cham.screen.on,
   #s-orb.screen.on,#s-world.screen.on,#s-party.screen.on,#s-rel.screen.on,
-  #s-econ.screen.on{height:auto;min-height:0;}
-  .g-sit,.g-gov,.g-cham,.g-orb,.g-world,.g-party,.g-rel,.g-econ{
+  #s-econ.screen.on,#s-sbx.screen.on{height:auto;min-height:0;}
+  .g-sit,.g-gov,.g-cham,.g-orb,.g-world,.g-party,.g-rel,.g-econ,.g-sbx{
     grid-template-rows:none;height:auto;min-height:0;}
   /* AND A PLACED PANEL IS UNPLACED. The Economy's panels are put in named
      cells by id, and an id outranks the one-column rule, so below the
@@ -3420,6 +3426,27 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
    The controls are full-width rows, the way a choice row is; the readout
    underneath is the ordinary .kv grid. No .g-* grid is introduced, so the
    one-column breakpoint has nothing new to collapse. */
+/* the Sandbox's own parts (design/47); its grid is with the other tabs' */
+.sbx-find{padding:6px 8px 4px;border-bottom:1px solid var(--rule);}
+.sbx-find input{width:100%;box-sizing:border-box;font-family:var(--f-ui);font-size:12px;padding:3px 6px;}
+.sbx-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
+.sbx-chips .btn{height:auto;min-height:0;padding:1px 7px;font-size:11px;}
+.sbx-chips .btn.on{font-weight:700;}
+#sbx-events td{vertical-align:top;}
+#sbx-events td i{display:block;font-style:normal;font-size:10px;opacity:.65;}
+#sbx-events td.st{white-space:nowrap;font-size:11px;}
+.sbx-now{color:var(--ok);}
+.sbx-no{color:var(--alert);}
+.sbx-gate{width:100%;border-collapse:collapse;margin:2px 0 8px;}
+.sbx-gate td{padding:2px 4px;vertical-align:top;border-bottom:1px dotted rgba(0,0,0,.15);}
+.sbx-gate td.m{width:1.2em;text-align:center;font-weight:700;}
+.sbx-code{font-family:Consolas,"Liberation Mono",monospace;font-size:11px;white-space:pre-wrap;word-break:break-word;
+  margin:2px 0 6px;opacity:.85;}
+.sbx-choice{margin:4px 0 8px;padding-left:6px;border-left:2px solid rgba(0,0,0,.18);}
+.sbx-flagrow{display:flex;gap:4px;margin:4px 0 8px;}
+.sbx-flagrow input{flex:1 1 auto;min-width:0;font-family:var(--f-ui);font-size:12px;padding:2px 5px;}
+.sbxflags .flag button{border:0;background:none;padding:0 0 0 4px;cursor:pointer;font:inherit;}
+.sbx-line{margin-top:8px;}
 .sbxbtns{display:flex;flex-direction:column;gap:4px;margin:6px 0 10px;}
 .sbxbtn{text-align:left;height:auto;min-height:0;padding:5px 8px;display:block;width:100%;}
 .sbxbtn b{display:block;font-weight:600;}

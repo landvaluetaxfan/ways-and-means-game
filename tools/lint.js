@@ -1062,10 +1062,7 @@ try {
     cs.forEach((c, i) => { if (c.posture != null && !POSTURES.has(c.posture))
       refBad.push("event " + ev.id + " choice " + i + ": posture '" + c.posture + "' is not one of " + [...POSTURES].join(", ")); });
     const free = cs.filter(c => !c.when).length;
-    /* the sandbox's own console is a list of developer controls, not a
-       decision, and is gated on the sandbox's flag */
-    const console_ = [].concat((ev.when || {}).flags || []).indexOf("test_mode") >= 0;
-    if (!console_ && cs.length >= 2 && free >= 2 && cs.some(c => !c.posture))
+    if (cs.length >= 2 && free >= 2 && cs.some(c => !c.posture))
       refBad.push("event " + ev.id + ": " + cs.filter(c => !c.posture).length + " of " + cs.length +
                   " choices carry no posture, so the Sitting screen cannot order them");
   });

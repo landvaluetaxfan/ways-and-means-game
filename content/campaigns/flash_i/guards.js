@@ -757,11 +757,16 @@ guard("FLASH I IS A CAMPAIGN (design/36 §3)", ok => {
   ok("and its own setup is merged over the world's, one level deep",
      !!CONTENT.setup.lenders.alliance && !!CONTENT.setup.lenders.earth &&
      !ALL.setup.lenders.alliance, Object.keys(CONTENT.setup.lenders).join(", "));
-  const S = ALL.forCampaign("sandbox");
-  ok("the sandbox plays Flash I, its setup on top",
-     S.campaign === "flash_i" && !!S.billById.annexation && !!S.setup.lenders.alliance &&
-     S.setup.startDate === CONTENT.setup.startDate && S.setup.scalars.solvency === 999999,
-     S.campaign + " from " + S.admin);
+  /* ITS SANDBOX SHORTCUTS (design/47) are Flash I's, and each one applies
+     to a fresh Flash I game without throwing. */
+  const bad = [];
+  (CONTENT.sandbox || []).forEach(c => {
+    try { Engine.apply(Engine.newGame(CONTENT), CONTENT, c.effects || []); }
+    catch (e) { bad.push(c.id + ": " + e.message); }
+  });
+  ok("its sandbox shortcuts are its own, and each applies to a fresh game",
+     (CONTENT.sandbox || []).length > 0 && CONTENT.sandbox.every(mine) && !bad.length,
+     bad.join("; ") || (CONTENT.sandbox || []).length + " shortcuts");
   const old = Engine.newGame(CONTENT);
   old.version = 29; delete old.campaign;
   const up = Engine.load(Engine.save(old), CONTENT);

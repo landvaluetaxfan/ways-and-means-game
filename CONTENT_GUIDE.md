@@ -49,7 +49,7 @@ Flash I's folder, which is the one to copy:
 ```
 content/campaigns/flash_i/
   campaign.js       the administration the menu offers, its setup, its
-                    introduction; and the sandbox, which plays it
+                    introduction
   events.js         the crisis, the panic buttons' answers, the canon election
   bills.js          the Annexation Act
   settlements.js    the five outcome tiers
@@ -127,10 +127,21 @@ branch on which one is running with the `campaign` condition:
    its blocks to say what YOUR story promises; `npm run guards -- <id>` runs
    them.
 
-An administration can also play **another's** campaign. The sandbox is
-`campaign:"flash_i"`: Flash I's content, setup and opening, with its own
-setup on top. Administrations are not tagged, because their `campaign`
+An administration can also play **another's** campaign: a variant with
+`campaign:"flash_i"` gets Flash I's content, setup and opening, with its
+own setup on top. Administrations are not tagged, because their `campaign`
 field means the campaign they play.
+
+**See it in the game.** The main menu's **Sandbox** opens any campaign on
+the author's bench: its tab lists every event, reads each one's gate
+condition by condition, and puts any event on the Sitting screen as a player
+meets it. Choose, look at what moved, then **try another choice** or
+**Undo**. The editor's **Play in the game** button on an event opens the same
+bench with that event, as the form holds it, unsaved edits included. The
+sandbox keeps its own save and records no ending and no award. A campaign
+may give the tab **shortcuts** to a state: a `sandbox` list of
+`{id, label, note, effects}` tagged with the campaign (Flash I's are in
+`content/events.js`).
 
 **Append, do not insert.** The pool's seeded lean is keyed on an event's
 position in the list a campaign plays, which is the world's events followed

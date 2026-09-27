@@ -180,6 +180,27 @@ const Editor = (function () {
 
   /* THE CAMPAIGNS THERE ARE: every administration's, from the model, so a
      campaign made here is offered the moment it exists */
+  /* PLAY IT IN THE GAME (design/47). Opens index.html in the sandbox with
+     this event on the Sitting screen. The event travels in the address as
+     the editor holds it now, so an edit is seen before it is exported; the
+     game puts it over the file's copy for that session only. The campaign
+     is the event's own, or the first there is for an event of the world's.
+     The address is returned so the checks can read it. */
+  function playURL(e) {
+    const camps = (M.administrations || []);
+    const own = typeof e.campaign === "string" ? e.campaign : Array.isArray(e.campaign) ? e.campaign[0] : null;
+    const admin = (own && camps.find(a => ((typeof a.campaign === "string" && a.campaign) || a.id) === own)) ||
+                  camps[0] || null;
+    return "index.html?" + (admin ? "sandbox=" + encodeURIComponent(admin.id) + "&" : "") +
+      "event=" + encodeURIComponent(e.id) + "#preview=" + encodeURIComponent(JSON.stringify(e));
+  }
+  function playInGame(e) {
+    if (!e || !e.id) return null;
+    const url = playURL(e);
+    try { window.open(url, "_blank"); } catch (x) { /* jsdom has no window.open */ }
+    return url;
+  }
+
   function campaignIds() {
     return [...new Set(((M && M.administrations) || []).map(a =>
       (typeof a.campaign === "string" && a.campaign) || a.id))];
@@ -602,7 +623,8 @@ const Editor = (function () {
     const speakers = [["", "— none —"]].concat(vocab("characters"));
     return `
     <div class="ed-grid">
-      <label class="ed-w">Id ${txt_("id", e.id, "unique_id", 200)}<button class="btn ed-add" data-act="rename">rename…</button></label>
+      <label class="ed-w">Id ${txt_("id", e.id, "unique_id", 200)}<button class="btn ed-add" data-act="rename">rename…</button>
+        <button class="btn ed-add" data-act="play" title="Open the game's sandbox with this event on the Sitting screen, as it is here now, unsaved changes included">Play in the game</button></label>
       <label class="ed-w">Title ${txt_("title", e.title, "", 340)}</label>
       <label>Speaker <select class="ed-f" data-f="speaker">${speakers.map(([v, l]) =>
         `<option value="${esc(v)}"${v === (e.speaker || "") ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
@@ -1266,7 +1288,7 @@ const Editor = (function () {
       <label>Id <input class="ed-f" data-f="id" type="text" value="${esc(a.id)}" disabled style="width:130px">
         <span class="ed-hint">the campaign's name, on every entry and save: not renamed here</span></label>
       <label>Plays ${sel_("plays", "playable", typeof a.campaign === "string" ? a.campaign : "")}
-        <span class="ed-hint">another campaign's story, for a sandbox</span></label>
+        <span class="ed-hint">another campaign's story, for a variant of it</span></label>
     </div>
     <div class="ed-grid">
       <label>Party ${sel_("party", "parties", a.party)}</label>
@@ -2901,6 +2923,7 @@ const Editor = (function () {
       if (act === "see-del") cur.see.splice(+b.dataset.si, 1);
       if (act === "logo-make") makeLogo(cur);
       if (act === "rename") doRename(cur);
+      if (act === "play") playInGame(cur);
       if (act === "roll-name") rollName(cur);
       if (act === "arch-roll" || act === "arch-reroll") {
         const a = document.querySelector('#ed-form [data-f="archetype"]').value;
@@ -2959,5 +2982,5 @@ const Editor = (function () {
      effect losing every pair after the first — lives in the encoding
      rather than in anything the DOM shows, so a check that drove the
      form would not see it. */
-  return { boot, __test: { explodeEffects, effToRow, rowToEff, campaignFiles, condRows, readConds } };
+  return { boot, __test: { explodeEffects, effToRow, rowToEff, campaignFiles, condRows, readConds, playURL } };
 })();

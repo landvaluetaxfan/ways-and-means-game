@@ -500,11 +500,21 @@
 
     <section class="screen" id="s-sbx">
       <div class="grid g-sbx">
-        <div class="stack scrolls">
-          <div class="panel">
-            <h2><span data-tip="state">Sandbox</span> <em>testing controls &middot; not part of the story</em></h2>
-            <div class="pbody scrolls" id="sbx-body"></div>
+        <div class="panel" id="p-sbx-events">
+          <h2>Every event <em id="sbx-count"></em></h2>
+          <div class="sbx-find">
+            <input type="search" id="sbx-find" placeholder="Find by title, id or words in it" aria-label="Find an event">
+            <div class="sbx-chips" id="sbx-chips"></div>
           </div>
+          <div class="pbody flush scrolls"><table id="sbx-events"></table></div>
+        </div>
+        <div class="panel" id="p-sbx-event">
+          <h2>The event <em>what it needs and what it offers</em></h2>
+          <div class="pbody scrolls" id="sbx-event"></div>
+        </div>
+        <div class="panel" id="p-sbx-state">
+          <h2>Where the game stands <em><span data-tip="sandbox">sandbox only</span></em></h2>
+          <div class="pbody scrolls" id="sbx-body"></div>
         </div>
       </div>
     </section>

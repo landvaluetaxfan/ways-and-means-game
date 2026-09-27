@@ -9,7 +9,7 @@
    the world's entries and this folder's, never another campaign's.
 
      campaign.js      who opens it: the government, its setup, its
-                      introduction; and the sandbox, which plays it
+                      introduction
      events.js        the crisis, its foreign layer, the panic buttons'
                       answers, the tier fall and the canon election
      bills.js         the Annexation Act
@@ -95,37 +95,5 @@ The PSD are in power because of labour and trade unions. Expanding personhood is
 She has one session. The one that opens on the eleventh of April is the parliament's fourth and its last, and the House is already sitting.` },
 
         { kind:"signature", head:"Adriana Eireann Flash \u00b7 Prime Minister" }
-      ] } },
-
-  /* THE SANDBOX. A second government that exists only to be played with, so a
-     tester can reach a branch without playing the session that would have
-     reached it. Its overrides are all setup fields the engine already reads:
-     no pool jitter, a settlement may land as soon as its `when` holds, the
-     idleness drag is off, order-paper time and divisions are effectively
-     unlimited, and the meters open high enough not to lose by accident.
-
-     Its opening SOLVENCY is the tell. It is set far above anything the real
-     campaign can earn, and the test-console events in events.js beside this
-     file are gated on `scalarAbove:{solvency:900000}`, which is how the
-     console knows it is in the sandbox and stays out of Flash I proper.
-     `contentFor()` in js/shell.js builds Flash I's view and merges this
-     setup over it. A new campaign that wants a sandbox copies this entry
-     and names itself in `campaign`. */
-  { id:"sandbox", party:"cu", leader:"flash", ordinal:"(sandbox)",
-    from:2080, to:2084, session:4,
-    /* Flash I with the brakes off: it plays Flash I's campaign (content,
-       setup and opening) and then its own setup on top. */
-    campaign:"flash_i",
-    setup:{
-      weightJitter: 0,
-      settlementFloorSittings: 1,
-      slotsPerSession: 99,
-      divisionsPerSitting: 99,
-      grantsPerSitting: 99,
-      idleness: { fromChapter: 99, after: 3, drag: { legitimacy: -1 },
-                  mark: "Sandbox: the idleness pressure is off" },
-      scalars: { public_standing: 70, consumables: 80,
-                 thermal_margin: 60, solvency: 999999,
-                 legitimacy: 70, friction: 10 } }
-  }
+      ] } }
 ] });

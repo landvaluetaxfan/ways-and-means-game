@@ -1078,7 +1078,7 @@ const SETUP = {
      session  which session of the term a campaign opens at
      setup    overrides merged over SETUP when a campaign starts from here
 
-     campaign which campaign it plays, when not its own (the sandbox)
+     campaign which campaign it plays, when not its own (a variant)
      opening  effects applied at the first sitting, over the world as it is
      intro    the introduction, drawn by js/setpiece.js
 
@@ -1109,8 +1109,8 @@ const ADMINISTRATIONS = [];
    entry tagged in a world file is just as much the campaign's.
 
    Administrations are added but NOT tagged, because an administration's
-   `campaign` field means the campaign it plays (the sandbox plays Flash I),
-   not the one it belongs to.
+   `campaign` field means the campaign it plays (a variant of Flash I would
+   say "flash_i"), not the one it belongs to.
 
    A kind this does not know is an error, and so is one whose world file
    has not loaded yet. Both fail loudly on purpose: `event:` for `events:`

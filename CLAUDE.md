@@ -235,6 +235,7 @@ list over any older sentence here that implies a different one:
 | **Relations** | *interparty affairs and nothing else (the author, 23 Sep: it "was built on false assumptions that it was supposed to be for all parties"); what the Party tab was until 24 Sep, with every id renamed `rel-` so none outlives its tab.* Three columns: **the arrangement** (every other party grouped by relation — in government, confidence and supply, outside — with seats, loyalty, the ledger and whether the government survives their going; your own party is on the roster for the arithmetic, and its "yours" mark opens the Party tab), **one relationship** (the terms, their leader and where you stand with them, what they want from you — their own bills, each opening where time is given to it — what you have promised their members, and where they part from you, measure by measure), and **who they vote with**. Who a party IS went to its Concordance article: members (a wikitable, `section.table`), organisation and branches (`CONTENT.partyOrg`), currents. The currents are counted on the Chamber's composition table. |
 | **Foreign Affairs** | *World until 26 Sep (design/43); the tab's id is still `world`.* The globe keeps the full left column; beside it **what is selected** (a country, an anchor, a foreign body, or since design/43 a resolution's count member by member, with each member's seats, standing and vote) and **relevant actors**; and under those two a band, **the forums**: each resolution the Commonwealth has an interest in, its count drawn as the House's two lobbies (the forecast while it waits, the record once decided), and the government's controls — Table it, Withdraw, or the Commonwealth's vote. A draft whose gate does not hold is not listed. The controls sit UNDER their row, not in it, because the row is a focus region's row and the region takes Enter to select it. The calendar marks a forum's sitting as **Abroad** in `--abroad` blue. |
 | **Orbit**, **Record** | unchanged |
+| **Sandbox** | *shown only on the author's bench (design/47), opened from the main menu's Sandbox.* Every event with a finder, the one chosen read out gate by gate, and the state with Undo, Try again, flags, chapter and the campaign's shortcuts. |
 | **Concordance** | *the reference work, and it can only know what the world knows.* Articles are generated from content, which is authored for the WHOLE campaign — so anything staged for later showed up at sitting one. The four bills that open in `drafting` (the Almanac Works (Annexation) Bill among them, which is the act the campaign is about) each had a full page with a division forecast for a measure nobody had laid before the House, and the page contradicted itself saying so: "A measure before the House of Delegates. Stage: drafting." `drafting` is the engine's own word for not introduced, so it is the line: `build()` skips those and the page appears the moment the bill is set down. **The gate belongs on the surface, not in the content** — the content is right, the bill SHOULD be sitting in `drafting` waiting for `f1_dilemma`. Worth re-checking whenever a new reference surface reads a content list whole. |
 
 **THE CONCORDANCE WAS REFRESHED 22 Sep 2026 — the register, and liveness.**
@@ -1140,8 +1141,28 @@ version of any of them is in the header of the file it names.
   - Left open: `willOf` reads the authored office, not the live cabinet;
     `alive` is never set false; and a named member cannot cross the floor.
 
-  **Next, per design/46: a throwaway second campaign as a dry run of the
-  vessel**, logging every point where it forced the writer out of content.
+  A dry run of the vessel (a throwaway second campaign, logging every point
+  where it forced the writer out of content) is still available when wanted.
+- **THE SANDBOX IS THE AUTHOR'S BENCH, AND RETIRING THE OLD ONE FOUND A FLAG
+  NOTHING SET** (27 Sep, `design/47`; the author: "I haven't even been able
+  to see how an event actually looks in-game yet").
+  - The main menu's **Sandbox** opens any campaign in slot 0 (never listed by
+    Load or Continue). It records no ending and earns no award.
+  - Its tab lists every event, reads each one's gate condition by condition,
+    and puts any event on the Sitting screen (`UI.sandboxShow`). Every change
+    from the tab is snapshotted first, for Undo and Try again.
+  - The editor's **Play in the game** opens
+    `index.html?sandbox=<id>&event=<id>#preview=<event JSON>`, and
+    `Shell.withPreview` puts the unsaved copy over the file's.
+  - The old sandbox government and Flash I's queued test console are gone.
+    Its shortcuts are now a campaign-tagged `sandbox` list shown on the tab.
+  - **`station_issue` was set by nothing in real play.** Only the console's
+    shortcuts set it, and lint counted the console. So the powers never
+    arrived on Foreign Affairs, and design/32's "set it in `f1_stranded`"
+    had never been built. It is now `f1_stranded`'s own effect. The canon
+    and all 640 playtest runs were unchanged.
+  - **A tool that sets state can mask a missing setter.** The flag audit
+    reads every effect in content, a developer console's included.
 
 **CSS and layout traps, every one found by measuring rather than reading**
 

@@ -224,6 +224,35 @@ try {
      (raws.length ? "raw: " + raws.join(", ") + " // " : "") + JSON.stringify(back));
 } catch (e) { ok("the new shapes and forms", false, e.message); }
 
+/* PLAY IN THE GAME (design/47). The author had never seen an event as a
+   player meets it. The event form opens the game's sandbox with the event
+   on the Sitting screen, carried in the address as the editor holds it, so
+   an edit is seen before anything is exported. */
+console.log("\nPLAY IN THE GAME");
+try {
+  const click = n => n && n.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  click(w.document.querySelector('.tab[data-t="events"]'));
+  const tagged = JSON.parse(w.eval("JSON.stringify(EVENTS.filter(function (e) { return e.campaign === 'flash_i'; })[0])"));
+  const item = id => [...w.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id === id);
+  click(item(tagged.id));
+  const t = w.document.querySelector('#ed-form [data-f="title"]');
+  t.value = "Retitled in the editor";
+  let opened = null;
+  w.open = u => { opened = u; return null; };
+  click(w.document.querySelector('#ed-form [data-act="play"]'));
+  const sb = /[?&]sandbox=([^&#]+)/.exec(opened || ""), ev = /[?&]event=([^&#]+)/.exec(opened || "");
+  const pv = /#preview=(.+)$/.exec(opened || "");
+  let got = null; try { got = JSON.parse(decodeURIComponent(pv[1])); } catch (e) { got = null; }
+  ok("Play in the game opens the sandbox on the event's own campaign",
+     !!sb && sb[1] === "flash_i" && !!ev && ev[1] === tagged.id, (opened || "nothing opened").slice(0, 90));
+  ok("and carries the event as the editor holds it, the unsaved edit included",
+     !!got && got.id === tagged.id && got.title === "Retitled in the editor" &&
+     JSON.stringify(got.choices) === JSON.stringify(tagged.choices), got ? got.title : "no event");
+  /* put the title back, so the sweeps below read the files' own content */
+  const t2 = w.document.querySelector('#ed-form [data-f="title"]');
+  if (t2) { t2.value = tagged.title; click([...w.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id !== tagged.id)); }
+} catch (e) { ok("play in the game", false, e.message); }
+
 /* OPENING AN ENTRY CHANGES NOTHING (design/34). The editor commits the form
    whenever the author clicks away, and it rebuilt each entry from the fields
    it draws -- so browsing the events list deleted `at`, `maxFires`, briefs,

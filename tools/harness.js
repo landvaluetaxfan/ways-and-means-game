@@ -118,8 +118,8 @@ function newGame() {
   const adm = w.document.querySelector("[data-admin]");
   if (adm) adm.click();
   /* An administration with an introduction shows it before the slots, so
-     the walk has to read it the way a player does. Conditional, because the
-     sandbox has no introduction and goes straight through. */
+     the walk has to read it the way a player does. Conditional, because a
+     campaign may have no introduction and go straight through. */
   $('[data-new="1"]').click();
   /* THE INTRODUCTION IS THE GAME'S FIRST BEAT, in the sitting panel with the
      rest of the terminal around it — not a menu screen. Recorded here

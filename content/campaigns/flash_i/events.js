@@ -48,6 +48,13 @@ campaign("flash_i", { events: [
    Act. The stranded have two months of air: stranded in early May, the Act
    is carried in June. */
 { id:"f1_stranded", chapter:2, at:14, once:true,
+  /* THE STATION QUESTION IS BEFORE THE GOVERNMENT from the moment the
+     platform is stranded, whichever answer is given: design/32 decided it
+     ("set `station_issue` in `f1_stranded`") and it was never built. The
+     old sandbox console set the flag, and lint counted the console as its
+     setter, so in real play the powers never arrived on the Foreign Affairs
+     tab and the Assembly floor never opened (found 27 Sep, design/47). */
+  effects:[{ flag:"station_issue" }],
   /* THE ONE SET PIECE IN CHAPTER TWO (design/31). A turn the world takes,
      not a decision the player makes — which is the test for whether an
      event earns the whole screen. The sections are the frame's, the prose
@@ -456,57 +463,6 @@ way."`,
       effects:[{ wire:"THE SUBSTRATE DEBT TERM ENDS" }],
       result:"The debt comes to term with nothing done about it." }
   ]},
-
-/* ============================================================
-   THE SANDBOX TEST CONSOLE (T26)
-
-   Not a scene. The Sandbox government in content/setup.js opens with a
-   solvency no real campaign can earn; these two events read that value to
-   know they are in the sandbox, then live on the QUEUE so a tester can
-   stack controls without the weighted pool ever interfering.
-
-   `test_console_open` fires once and opens the list. `test_console` is the
-   list: every control sets state directly and re-queues the list, so a
-   station question, an annexation, a carried or defeated threshold bill, a
-   tribunal, a federal schedule, a sanction, a drained reserve or a forced
-   fall can each be reached without playing the session that would have
-   reached it. The last control closes the list.
-
-   NOTHING HERE IS REACHABLE IN FLASH I. The opening gate is
-   `solvency > 900000`, which no real opening or earning reaches;
-   `test_mode` is only ever set by the opener. ============================================================ */
-{ id:"test_console_open", weight:500, once:true,
-  when:{ scalarAbove:{ solvency:900000 }, flagsAbsent:["test_mode"] },
-  title:"Test console",
-  speaker:null,
-  body:`SANDBOX ONLY. This is the testing console, not a scene. The choices
-opened from it set state directly, so a branch can be tried without playing the
-session that would have reached it.
-
-It is gated on an opening solvency the real campaign cannot earn, so it never
-appears in Flash I.`,
-  choices:[
-    { label:"Open the test console.",
-      effects:[{ flag:"test_mode" },
-               { queue:[{ event:"test_console", after:1, label:"Test console" }] }],
-      result:"The console is open. Its controls are the next thing on the order of the day." }
-  ]},
-
-{ id:"test_console", queuedOnly:true,
-  when:{ flags:["test_mode"] },
-  title:"Test console",
-  speaker:null,
-  body:`SANDBOX ONLY. Choose a control. The list is the same one the Sandbox tab
-shows; every control but the last re-opens it on the next sitting, so they can
-be stacked, and closing it hands the sitting back to the pool.`,
-  choices: SANDBOX.map(c => ({
-    label: c.label,
-    note: c.note,
-    effects: (c.effects || []).concat(c.close
-      ? []
-      : [{ queue:[{ event:"test_console", after:1, label:"Test console" }] }]),
-    result: c.result
-  }))},
 
 /* THE FACILITY, REPAID. The answer to the `repay_facility` initiative. The
    Alliance offers to keep the line open, which is a standing call on the

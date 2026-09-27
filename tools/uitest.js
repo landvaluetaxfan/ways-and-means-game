@@ -1450,4 +1450,118 @@ try {
   w.eval("Shell.options.sessions = []; Shell.save && 0;");
 } catch (e) { ok("the session log", false, e.message); }
 
+/* THE SANDBOX (design/47). The author could not see how an event looks in
+   the game without playing to it. The bench opens any campaign from the
+   main menu, lists every event, puts any one on the Sitting screen as a
+   player meets it, and steps back to try another choice. It saves only to
+   its own slot and records no ending. */
+console.log("\nTHE SANDBOX");
+try {
+  w.eval("Shell.boot(CONTENT)");
+  const slotsBefore = [1, 2, 3, 4].map(i => w.localStorage.getItem("wm.slot." + i));
+  const sessionsBefore = w.eval("Shell.sessions().length");
+  const sb = $('[data-go="sandbox"]');
+  ok("the main menu offers the sandbox", !!sb);
+  sb.click();
+  const adm = w.document.querySelector("[data-sbx-admin]");
+  ok("and lists the campaigns to open in it", !!adm,
+     w.document.querySelectorAll("[data-sbx-admin]").length + " campaigns");
+  adm.click();
+  ok("it opens on the bench, with its tab shown",
+     w.eval("UI.state().flags.sandbox") === true && !$("#tab-sbx").hidden);
+  $("#tab-sbx").click();
+  const rows = w.document.querySelectorAll("#sbx-events tr[data-sbxev]").length;
+  const n = w.eval("UI.content().events.length");
+  ok("the tab lists every event in the campaign", rows === n, rows + " of " + n);
+  const pick = w.eval(`(function () { const C = UI.content(), s = UI.state();
+    const e = C.events.find(e => e.when && !Engine.matches(s, e.when) && (e.choices || []).length > 1 &&
+      !e.choices[0].when && [].concat(e.choices[0].effects || []).some(f => typeof f.flag === "string"));
+    return e ? e.id : null; })()`);
+  ok("an event whose gate does not hold is there to show", !!pick, pick);
+  const title = w.eval(`UI.content().eventById["${pick}"].title`);
+  $(`#sbx-events tr[data-sbxev="${pick}"]`).dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  ok("selecting it reads its gate, condition by condition, with what fails now",
+     /Its gate/.test($("#sbx-event").textContent) && !!$("#sbx-event .sbx-gate .sbx-no"),
+     $("#sbx-event .w-c-h") ? $("#sbx-event .w-c-h").textContent : "no detail");
+  $(`#sbx-event [data-sbxshow="${pick}"]`).click();
+  ok("Show puts it on the Sitting screen as a player meets it",
+     $("#sitting-hdr").textContent === title && !!$("#sit-decide [data-expand]") && $("#s-sit").classList.contains("on"),
+     $("#sitting-hdr").textContent);
+  const flag = w.eval(`[].concat(UI.content().eventById["${pick}"].choices[0].effects).find(f => typeof f.flag === "string").flag`);
+  $('#sit-decide [data-expand="0"]').click();
+  $('#sit-decide .commit[data-i="0"]').click();
+  ok("its choice lands, and the outcome is shown", w.eval(`!!UI.state().flags["${flag}"]`) && !!$("#sitting-outcome"), flag);
+  const retry = $("#sit-decide [data-sbxretry]");
+  ok("the outcome offers another try", !!retry);
+  retry.click();
+  ok("which puts the same event back, before its choice",
+     $("#sitting-hdr").textContent === title && !w.eval(`!!UI.state().flags["${flag}"]`) && !!$("#sit-decide [data-expand]"));
+  $("#tab-sbx").click();
+  $("#sbx-body [data-sbxundo]").click();
+  ok("and Undo takes it off the screen again", w.eval("UI.state().sitting") === 1 &&
+     !(w.document.querySelectorAll("#sbx-body [data-sbxundo]").length));
+  $("#sbx-flag").value = "probe_flag"; $("#sbx-body [data-sbxflag]").click();
+  ok("a flag can be set from the tab", w.eval("!!UI.state().flags.probe_flag"));
+  $('#sbx-body [data-sbxunflag="probe_flag"]').click();
+  ok("and cleared", !w.eval("!!UI.state().flags.probe_flag"));
+  $(`#sbx-events tr[data-sbxev="${pick}"]`).dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  const make = $(`#sbx-event [data-sbxmake="${pick}"]`);
+  if (make) make.click();
+  ok("Make its gate hold sets what it can, then shows the event",
+     !!make && $("#sitting-hdr").textContent === title &&
+     w.eval(`(function () { const e = UI.content().eventById["${pick}"], s = UI.state(), w0 = e.when || {};
+       return ["flags", "flagsAbsent", "seen"].every(k => !w0[k] || Engine.matches(s, { [k]: w0[k] })); })()`));
+  $("#tab-sbx").click();
+  ok("the campaign's own shortcuts are on the tab",
+     $("#sbx-body").querySelectorAll("[data-sbx]").length === w.eval("UI.content().sandbox.length") &&
+     w.eval("UI.content().sandbox.length") > 0);
+  /* a queued-only event says what queues it, and the link reads that out */
+  $("#sbx-find").value = ""; $("#sbx-find").dispatchEvent(new w.Event("input"));
+  $('#sbx-events tr[data-sbxev="f1_dilemma"]').dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  const via = $("#sbx-event [data-sbxpick]");
+  ok("a queued-only event says what queues it", !!via && /Queued by/.test($("#sbx-event").textContent),
+     via ? via.dataset.sbxpick : "no link");
+  if (via) {
+    const to = via.dataset.sbxpick;
+    via.click();
+    ok("and the link reads that event out", $("#sbx-event .w-c-iso") && $("#sbx-event .w-c-iso").textContent === to);
+  }
+  $("#sbx-find").value = "zz_nothing_matches_this";
+  $("#sbx-find").dispatchEvent(new w.Event("input"));
+  ok("the finder narrows the list", w.document.querySelectorAll("#sbx-events tr[data-sbxev]").length === 0);
+  $("#sbx-find").value = ""; $("#sbx-find").dispatchEvent(new w.Event("input"));
+  /* an ending on the bench is not a finished government */
+  /* Flash I's own shortcut, pressed from the tab: the party's loyalty to
+     the floor, so the loss check that follows every act finds a fall */
+  $("#tab-sbx").click();
+  const collapse = $('#sbx-body [data-sbx="collapse"]');
+  if (collapse) collapse.click();
+  ok("an ending on the bench is not recorded in the session log",
+     w.eval("Engine.checkLoss(UI.state(), UI.content()).lost") === true &&
+     w.eval("Shell.sessions().length") === sessionsBefore,
+     w.eval("Engine.checkLoss(UI.state(), UI.content()).reason") + ", " + w.eval("Shell.sessions().length") + " sessions");
+  ok("the bench saves to its own slot and never to a game's",
+     [1, 2, 3, 4].every((i, j) => w.localStorage.getItem("wm.slot." + i) === slotsBefore[j]) &&
+     !!w.localStorage.getItem("wm.slot.0"));
+  /* the editor's preview and an address that names an event */
+  ok("an editor's copy of an event goes beside the files' events without touching them",
+     w.eval(`(function () { const K0 = UI.content(), K = Shell.withPreview(K0, { id: "probe_preview", title: "A preview",
+       body: "Text.", choices: [{ label: "Fine." }] });
+       return !!K.eventById.probe_preview && !K0.eventById.probe_preview && K.events.length === K0.events.length + 1; })()`));
+  w.eval(`Shell.sandbox(null, { event: "${pick}" })`);
+  ok("an address naming only an event opens the bench on it", $("#sitting-hdr").textContent === title &&
+     w.eval("UI.state().flags.sandbox") === true);
+  w.eval(`Shell.sandbox(null, { event: "${pick}", preview: Object.assign({}, CONTENT.eventById["${pick}"],
+    { title: "Edited in the editor" }) })`);
+  ok("and the editor's unsaved copy is the one shown", $("#sitting-hdr").textContent === "Edited in the editor",
+     $("#sitting-hdr").textContent);
+  w.eval("Shell.boot(CONTENT)");
+  $('[data-go="load"]') && $('[data-go="load"]').click();
+  ok("the Load screen does not list the bench", !w.document.querySelector('[data-load="0"]'));
+  w.eval("Shell.boot(CONTENT)");
+  $('[data-go="new"]').click();
+  ok("and there is no sandbox government among the campaigns", !w.document.querySelector('[data-admin="sandbox"]'));
+  w.eval("Shell.boot(CONTENT)");
+} catch (e) { ok("the sandbox", false, e.message + " " + (e.stack || "").split("\n")[1]); }
+
 H.finish("shell and game are healthy");

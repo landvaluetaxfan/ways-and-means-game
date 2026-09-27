@@ -206,8 +206,14 @@ const UI = (function () {
        a cadence for a session the player never sat through, or swallow
        the knell for a government that has already fallen. */
     lastSession = null; fallen = false; lastSigBand = null; ended = null;
+    /* a different game is a fresh bench */
+    sbxStack = []; sbxShown = null;
     if (wired) { drawAll(); reveal(); return; }   /* Shell re-boots on every load */
     wired = true;
+    /* THE SANDBOX'S CONTROLS AND ITS FINDER, delegated once (design/47) */
+    document.addEventListener("click", sandboxClick);
+    const find = document.getElementById("sbx-find");
+    if (find) find.addEventListener("input", () => drawSandbox());
     document.querySelectorAll(".tab").forEach(t =>
       t.addEventListener("click", () => openTab(t.dataset.t)));
 
@@ -305,6 +311,14 @@ const UI = (function () {
       key: el => el.dataset.res,
       fallback: () => null,
       activate: () => { drawAssembly(); drawWorldSide(); }
+    });
+    /* THE SANDBOX'S EVENT LIST: a row selects, and the panel beside it
+       reads that event (design/47) */
+    Focus.region("sbx-events", {
+      rows: "tr[data-sbxev]",
+      key: tr => tr.dataset.sbxev,
+      fallback: () => null,
+      activate: () => drawSandbox()
     });
     Focus.region("func-table", {
       rows: "tr[data-func]",
@@ -646,7 +660,7 @@ const UI = (function () {
     pap:  "Instruments in force, and the register of what has been done",
     cx:   "Public reference \u00b7 attestation is a political act",
     log:  "Every decision this government has taken",
-    sbx:  "Testing controls \u00b7 sandbox only"
+    sbx:  "Every event, and the way back \u00b7 sandbox only"
   };
 
   function ambient() {
@@ -699,6 +713,10 @@ const UI = (function () {
     if (lastSession === null) lastSession = turn;
     else if (turn !== lastSession) { lastSession = turn; score("prorogue"); }
 
+    /* THE SANDBOX RECORDS NOTHING: a government that falls or goes to the
+       country on the author's bench is not a finished government, and an
+       award earned by jumping to the ending is not earned (design/47). */
+    const bench = inSandbox();
     const loss = Engine.checkLoss(st, C);
     if (loss.lost && !fallen) {
       fallen = true;
@@ -708,7 +726,7 @@ const UI = (function () {
       /* The session log outlives every save, so a government is recorded
          as it ends rather than when the player next reaches the menu.
          Shell owns the storage; this file owns knowing that it ended. */
-      if (typeof Shell !== "undefined" && Shell.record) {
+      if (!bench && typeof Shell !== "undefined" && Shell.record) {
         Shell.record({ sitting: st.sitting, chapter: st.chapter,
                        date: st.date, end: loss.reason });
       }
@@ -746,7 +764,7 @@ const UI = (function () {
         setStatus("Settled: " + end.settlement.name, "transient");
       } else if (end.kind === "election" && end.over) {
         setStatus("The Commonwealth has voted. The campaign is over.", "transient");
-        if (typeof Shell !== "undefined" && Shell.record)
+        if (!bench && typeof Shell !== "undefined" && Shell.record)
           Shell.record({ sitting: st.sitting, chapter: st.chapter,
                          date: st.date, end: "election" });
       }
@@ -755,7 +773,7 @@ const UI = (function () {
          the arithmetic is part of the fact, which is why the state goes across
          and not a sentence. The board is on the menu; this only says, once,
          what was earned. */
-      earnedNow = awardNow(end);
+      earnedNow = bench ? [] : awardNow(end);
       if (earnedNow.length) {
         const names = earnedNow.map(a => a.name).join(" \u00b7 ");
         setStatus((earnedNow.some(a => a.tier === "canon") ? "WAYS AND MEANS \u00b7 " : "") +
@@ -6230,8 +6248,11 @@ const UI = (function () {
       }
     }
 
+    /* AN EVENT THE SANDBOX PUT UP IS SHOWN whatever the run's state: the
+       author asked to see it, and the fall or the count is on the tab. */
+    const forced = inSandbox() && currentEvent && currentEvent === sbxShown;
     const loss = Engine.checkLoss(st, C);
-    if (loss.lost) {
+    if (loss.lost && !forced) {
       box.innerHTML = `<div class="waiting"><b>The government has fallen.</b><br>` +
         `Reason: ${loss.reason}. Sitting ${st.sitting}.</div>`;
       return;
@@ -6241,7 +6262,7 @@ const UI = (function () {
        sittings with the Rise button still live. The board comes BEFORE the
        event draw: a run that has ended has no business offering a decision. */
     const ending = Engine.checkEnd(st, C);
-    if (ending.over) {
+    if (ending.over && !forced) {
       /* THE FRAME, WHERE THERE IS ONE. SetPiece is optional everywhere else
          it is used and is optional here too: a build without it still gets
          the board, which is the same facts in a panel. */
@@ -6379,7 +6400,12 @@ const UI = (function () {
                     <td class="n d">${m.delta > 0 ? "+" : ""}${m.delta}</td></tr>`
                ).join("")}</tbody></table></div>`
           : `<div class="note">Nothing on the board moved.</div>`) +
-        `<div class="btnrow"><button class="btn" id="btn-advance">Rise until the next sitting</button></div>`;
+        `<div class="btnrow"><button class="btn" id="btn-advance">Rise until the next sitting</button>` +
+        /* the sandbox's way back to the same event, under its outcome */
+        (inSandbox() && sbxStack.length && sbxStack[sbxStack.length - 1].again === e.id
+          ? `<button class="btn" data-sbxretry="1">Sandbox: try another choice</button>` +
+            `<button class="btn" data-sbxback="1">Back to the events</button>` : "") +
+        `</div>`;
       $("#btn-advance").addEventListener("click", rise);
       return;
     }
@@ -7671,54 +7697,286 @@ const UI = (function () {
       : "<tbody><tr><td>No decisions recorded.</td></tr></tbody>";
   }
 
-  /* ---------- the Sandbox tab (T26) ----------
-     Shown only under the Sandbox government (js/shell.js sets
-     `st.flags.sandbox`) or once the test console has opened
-     (`test_mode`), or on the opening solvency only the sandbox has. The
-     controls are `CONTENT.sandbox`, the same list the queued test_console
-     event presses, so a control added to content appears here with no js
-     change. Nothing on this screen carries a `data-tip`: it lives in a
-     hidden .screen on every other government, and an annotated node in a
-     hidden screen is exactly the leak tools/uxtest.js checks for. */
-  function inSandbox() {
-    if (st.flags && (st.flags.sandbox || st.flags.test_mode)) return true;
-    return !!(st.scalars && st.scalars.solvency > 900000);
+  /* ---------- the Sandbox (design/47) ----------
+
+     THE AUTHOR'S BENCH, NOT A SCENE. The author, 27 Sep: "I wanted to be
+     able to jump to any event or decision ... I haven't even been able to
+     see how an event actually looks in-game yet." The old tab was a list of
+     Flash I shortcuts and a queued console event, reachable only through a
+     second government on the menu that nobody used.
+
+     Now: every event in the campaign's view, findable by title, id or
+     words; the one chosen, with each condition of its gate and whether it
+     holds now, and every choice with its own gate and effects; and a
+     button that puts it on the Sitting screen exactly as a player meets it.
+     Every change made from here is snapshotted first, so a choice can be
+     taken, looked at, and taken back to try another.
+
+     Shown only when the state carries `flags.sandbox`, which only
+     Shell.sandbox() sets. Nothing on this screen carries a `data-tip`: it
+     lives in a hidden .screen on every other government, and an annotated
+     node in a hidden screen is the leak tools/uxtest.js checks for. */
+  function inSandbox() { return !!(st && st.flags && st.flags.sandbox); }
+
+  /* THE STEPS BACK. Each is the save as it was, what was on the Sitting
+     screen then, and the event to put up again for "try another choice".
+     In memory only: a reload is a fresh bench. */
+  let sbxStack = [], sbxShown = null, sbxChapter = "all";
+  const SBX_MAX = 30;
+  function sbxPush(label, again) {
+    sbxStack.push({ label, save: Engine.save(st), was: currentEvent ? currentEvent.id : null,
+                    again: again || null });
+    if (sbxStack.length > SBX_MAX) sbxStack.shift();
+  }
+  /* Put a snapshot back. `retry` keeps it on the stack and shows its event
+     again; otherwise it is spent and the screen shows what it showed then. */
+  function sbxRestore(retry) {
+    const top = sbxStack[sbxStack.length - 1];
+    if (!top) return;
+    st = Engine.load(top.save, C);
+    const id = retry ? top.again : top.was;
+    currentEvent = id ? C.eventById[id] || null : null;
+    sbxShown = retry ? currentEvent : null;
+    if (!retry) sbxStack.pop();
+    lastResult = null; lastChanges = null; openRow = { event: null, i: -1 };
+    /* the same edges boot() clears, since this is a different state */
+    fallen = false; ended = null;
+  }
+
+  /* SHOW IT NOW. The event goes up on the Sitting screen whatever its gate
+     says; the gate is read out on this tab instead. */
+  function sandboxShow(id) {
+    const e = C.eventById[id];
+    if (!e || !inSandbox()) return false;
+    sbxPush("before “" + e.title + "”", id);
+    st.flags._introRead = true;
+    currentEvent = e; sbxShown = e;
+    lastResult = null; lastChanges = null; openRow = { event: e.id, i: -1 };
+    if (typeof Focus !== "undefined") Focus.seed("sbx-events", id);
+    openTab("sit");
+    setStatus("Sandbox: showing “" + e.title + "”", "transient");
+    drawAll();
+    return true;
+  }
+
+  /* MAKE ITS GATE HOLD, where a gate can be made to hold by setting state
+     directly: flags, what has been seen, the chapter, and a meter nudged
+     one past its line. Anything else (a sitting number, a bill's stage) is
+     named and left alone, because faking it would leave the rest of the
+     state disagreeing with it. */
+  function sbxSatisfy(e) {
+    const w = e.when || {}, done = [], left = [];
+    if (e.chapter != null && st.chapter !== e.chapter) { Engine.apply(st, C, [{ chapter: e.chapter }]); done.push("chapter"); }
+    Object.keys(w).forEach(k => {
+      const v = w[k];
+      if (Engine.matches(st, { [k]: v })) return;
+      if (k === "flags") { Engine.apply(st, C, [{ flag: [].concat(v) }]); done.push(k); }
+      else if (k === "flagsAbsent") {
+        Engine.apply(st, C, [{ flag: [].concat(v).reduce((m, f) => (m[f] = false, m), {}) }]); done.push(k); }
+      else if (k === "seen") { [].concat(v).forEach(x => { st.seen[x] = Math.max(1, st.seen[x] || 0); }); done.push(k); }
+      else if (k === "chapterIs" || k === "chapterAtLeast") { Engine.apply(st, C, [{ chapter: v }]); done.push(k); }
+      else if (k === "scalarAbove" || k === "scalarBelow") {
+        Object.keys(v).forEach(m => {
+          const want = k === "scalarAbove" ? v[m] + 1 : v[m] - 1;
+          Engine.apply(st, C, [{ move: { [m]: want - (st.scalars[m] || 0) } }]);
+        });
+        done.push(k);
+      } else left.push(k);
+    });
+    return { done, left };
+  }
+
+  /* where an event comes from and when it can come up, in words */
+  function sbxWhen(e) {
+    const bits = [];
+    bits.push(e.campaign ? "campaign " + [].concat(e.campaign).join(", ") : "the world's");
+    bits.push(e.chapter != null ? "chapter " + e.chapter : "any chapter");
+    if (e.prologue != null) bits.push("prologue beat " + e.prologue);
+    if (e.at != null) bits.push("at sitting " + e.at);
+    if (e.queuedOnly) bits.push("only when queued");
+    if (e.weight != null) bits.push("weight " + e.weight);
+    if (e.once) bits.push("once");
+    if (e.maxFires != null) bits.push("at most " + e.maxFires + " times");
+    if (e.chance != null) bits.push("chance " + e.chance);
+    return bits.join(" · ");
+  }
+  function sbxJSON(v) { return esc(JSON.stringify(v)); }
+  function sbxGateRows(w) {
+    return Object.keys(w || {}).map(k => {
+      const d = (typeof SCHEMA !== "undefined" && SCHEMA.conditions && SCHEMA.conditions[k]) || {};
+      let ok; try { ok = Engine.matches(st, { [k]: w[k] }); } catch (x) { ok = false; }
+      return `<tr><td class="m ${ok ? "sbx-now" : "sbx-no"}">${ok ? "✓" : "✗"}</td>` +
+        `<td>${esc(d.label || k)}<div class="sbx-code">${esc(k)}: ${sbxJSON(w[k])}</div></td></tr>`;
+    }).join("");
+  }
+
+  function sbxQueuers(id) {
+    const out = [];
+    const names = effs => [].concat(effs || []).some(f => f && f.queue &&
+      [].concat(f.queue).some(q => q && q.event === id));
+    (C.events || []).forEach(ev => {
+      if (names(ev.effects)) out.push({ id: ev.id, title: ev.title, choice: "on arrival" });
+      (ev.choices || []).forEach((c, i) => { if (names(c.effects))
+        out.push({ id: ev.id, title: ev.title, choice: "choice " + (i + 1) }); });
+    });
+    return out;
+  }
+
+  function sbxEvents() {
+    const q = (($("#sbx-find") || {}).value || "").trim().toLowerCase();
+    return (C.events || []).filter(e => {
+      if (sbxChapter === "none" ? e.chapter != null
+          : sbxChapter !== "all" && String(e.chapter) !== sbxChapter) return false;
+      if (!q) return true;
+      return (e.id + " " + (e.title || "") + " " + (e.body || "")).toLowerCase().indexOf(q) >= 0;
+    });
   }
 
   function drawSandbox() {
     const tab = document.getElementById("tab-sbx");
-    const body = $("#sbx-body");
+    const list = $("#sbx-events"), detail = $("#sbx-event"), body = $("#sbx-body");
     const on = inSandbox();
     if (tab) tab.hidden = !on;
-    if (!body) return;
-    if (!on) { body.innerHTML = ""; return; }
-    const controls = (C.sandbox || []).filter(c => !c.close);
+    if (!list || !detail || !body) return;
+    if (!on) { list.innerHTML = ""; detail.innerHTML = ""; body.innerHTML = ""; return; }
+
+    /* THE LIST */
+    let pool = [];
+    try { pool = Engine.eligible(st, C).map(e => e.id); } catch (x) { pool = []; }
+    const shown = sbxEvents();
+    const chips = $("#sbx-chips");
+    if (chips) {
+      const ch = [...new Set((C.events || []).map(e => e.chapter).filter(x => x != null))].sort();
+      chips.innerHTML = [["all", "All"]].concat(ch.map(c => [String(c), "Chapter " + c]), [["none", "Any chapter"]])
+        .map(([k, l]) => `<button class="btn${sbxChapter === k ? " on" : ""}" data-sbxch="${k}">${l}</button>`).join("");
+    }
+    const count = $("#sbx-count");
+    if (count) count.textContent = shown.length + " of " + (C.events || []).length;
+    let sel = Focus.selected("sbx-events");
+    if (!sel || !C.eventById[sel]) { sel = (shown[0] || {}).id || null; Focus.seed("sbx-events", sel); }
+    list.innerHTML = `<tbody>` + shown.map(e => {
+      let gate; try { gate = Engine.matches(st, e.when); } catch (x) { gate = false; }
+      const status = pool.indexOf(e.id) >= 0 ? `<span class="sbx-now">in the pool</span>`
+        : gate ? "gate holds" : `<span class="sbx-no">gated</span>`;
+      const met = st.seen[e.id] ? ` · met ${st.seen[e.id]}` : "";
+      return `<tr data-sbxev="${esc(e.id)}"${e.id === sel ? ' class="sel"' : ""}>` +
+        `<td>${esc(e.title || e.id)}<i>${esc(e.id)}</i></td>` +
+        `<td class="n">${e.chapter == null ? "—" : e.chapter}</td>` +
+        `<td class="st">${status}${met}</td></tr>`;
+    }).join("") + `</tbody>`;
+
+    /* THE ONE CHOSEN */
+    const e = sel ? C.eventById[sel] : null;
+    if (!e) detail.innerHTML = `<div class="note">No event matches.</div>`;
+    else {
+      const spk = e.speaker ? C.characterById[e.speaker] : null;
+      const open = Engine.openChoices(st, C, e).map(x => x.index);
+      let h = `<div class="w-c-h"><b>${esc(e.title || e.id)}</b><span class="w-c-iso">${esc(e.id)}</span></div>` +
+        `<div class="note">${esc(sbxWhen(e))}${spk ? " · spoken by " + esc(spk.name) : ""}</div>` +
+        `<div class="btnrow"><button class="btn" data-sbxshow="${esc(e.id)}">Show it on the Sitting screen</button>` +
+        (e.when && !Engine.matches(st, e.when) || (e.chapter != null && e.chapter !== st.chapter)
+          ? `<button class="btn" data-sbxmake="${esc(e.id)}">Make its gate hold, then show it</button>` : "") +
+        `</div>`;
+      h += `<div class="rulehead">Its gate</div>` + (e.when && Object.keys(e.when).length
+        ? `<table class="sbx-gate"><tbody>${sbxGateRows(e.when)}</tbody></table>`
+        : `<div class="note">${e.queuedOnly ? "None of its own: it comes up only when something queues it."
+            : "None: it can come up whenever its chapter allows."}</div>`);
+      /* WHAT LEADS HERE: every event whose arrival or choice queues this
+         one, each a link that reads it out instead */
+      const from = sbxQueuers(e.id);
+      if (from.length) h += `<div class="note">Queued by ` + from.map(x =>
+        `<button class="lnk" data-sbxpick="${esc(x.id)}">${esc(x.title || x.id)}</button>` +
+        (x.choice ? ` (${esc(x.choice)})` : "")).join(", ") + `.</div>`;
+      if (e.effects) h += `<div class="rulehead">What it does on arrival</div>` +
+        `<div class="sbx-code">${[].concat(e.effects).map(sbxJSON).join("\n")}</div>`;
+      h += `<div class="rulehead">Its choices <em>${(e.choices || []).length}</em></div>` +
+        (e.choices || []).map((c, i) =>
+          `<div class="sbx-choice"><b>${i + 1}. ${esc(c.label || "")}</b>` +
+          (c.posture ? ` <i>${esc(c.posture)}</i>` : "") +
+          (open.indexOf(i) < 0 ? ` <span class="sbx-no">hidden now by its gate</span>` : "") +
+          (c.when ? `<table class="sbx-gate"><tbody>${sbxGateRows(c.when)}</tbody></table>` : "") +
+          `<div class="sbx-code">${[].concat(c.effects || []).map(sbxJSON).join("\n") || "no effects"}</div>` +
+          (c.result ? `<div class="note">${esc(c.result)}</div>` : "") + `</div>`).join("");
+      detail.innerHTML = h;
+    }
+
+    /* THE STATE, AND THE WAY BACK */
+    const top = sbxStack[sbxStack.length - 1];
+    const flags = Object.keys(st.flags || {}).filter(f => st.flags[f] && f.charAt(0) !== "_" && f !== "sandbox").sort();
     const meters = ["party_loyalty", "public_standing", "consumables",
                     "thermal_margin", "solvency", "legitimacy", "friction"];
-    const flags = Object.keys(st.flags || {}).filter(f => st.flags[f]).sort();
-    let h = `<div class="note">These controls set state directly. They are not a ` +
-      `scene and they never appear outside the Sandbox government. Each button ` +
-      `applies at once, and every tab redraws after it.</div>`;
-    h += `<div class="sbxbtns">` + controls.map(c =>
+    let b = `<div class="note">Campaign ${esc(C.campaign || "the world")} · chapter ${st.chapter} · ` +
+      `sitting ${st.sitting} · ${esc(st.date || "")}</div>` +
+      `<div class="note">On the Sitting screen: ${currentEvent ? "“" + esc(currentEvent.title) + "”" : "whatever the pool gives next"}.</div>`;
+    b += `<div class="btnrow">` +
+      (top && top.again ? `<button class="btn" data-sbxretry="1">Try “${esc((C.eventById[top.again] || {}).title || top.again)}” again</button>` : "") +
+      (top ? `<button class="btn" data-sbxundo="1">Undo: ${esc(top.label)}</button>` : "") +
+      `</div>` + (top ? "" : `<div class="note">Nothing to undo yet.</div>`);
+    b += `<h3>Chapter</h3><div class="sbx-chips">` + [1, 2, 3].map(n =>
+      `<button class="btn${st.chapter === n ? " on" : ""}" data-sbxchapter="${n}">${n}</button>`).join("") + `</div>`;
+    b += `<h3>Flags set</h3>` + (flags.length
+      ? `<div class="sbxflags">` + flags.map(f => `<span class="flag">${esc(f)}<button data-sbxunflag="${esc(f)}" ` +
+          `aria-label="Clear ${esc(f)}">×</button></span>`).join("") + `</div>`
+      : `<div class="note">None.</div>`) +
+      `<div class="sbx-flagrow"><input id="sbx-flag" type="text" placeholder="flag_to_set" aria-label="Flag to set">` +
+      `<button class="btn" data-sbxflag="1">Set</button></div>`;
+    b += `<h3>Indicators</h3><div class="kv">` + meters.map(k =>
+      `<b>${esc(k.replace(/_/g, " "))}</b><span>${esc(String(st.scalars[k]))}</span>`).join("") + `</div>`;
+    /* A campaign's own shortcuts to a state (content's `sandbox` list,
+       filtered to this view like every other list) */
+    const short = C.sandbox || [];
+    if (short.length) b += `<h3>Shortcuts <em>this campaign's</em></h3><div class="sbxbtns">` + short.map(c =>
       `<button class="btn sbxbtn" data-sbx="${esc(c.id)}"><b>${esc(c.label)}</b>` +
       (c.note ? `<i>${esc(c.note)}</i>` : "") + `</button>`).join("") + `</div>`;
-    h += `<h3>Indicators</h3><div class="kv">` + meters.map(k =>
-      `<b>${esc(k.replace(/_/g, " "))}</b><span>${esc(String(st.scalars[k]))}</span>`).join("") + `</div>`;
-    h += `<h3>Flags set</h3>` + (flags.length
-      ? `<div class="sbxflags">` + flags.map(f => `<span class="flag">${esc(f)}</span>`).join("") + `</div>`
-      : `<div class="note">None.</div>`);
-    h += `<div class="note">Chapter ${st.chapter} \u00b7 sitting ${st.sitting} \u00b7 ` +
-      `${st.slots.total - st.slots.used} of ${st.slots.total} order-paper slots left.</div>`;
-    body.innerHTML = h;
-    body.querySelectorAll("[data-sbx]").forEach(b =>
-      b.addEventListener("click", () => {
-        const c = (C.sandbox || []).find(x => x.id === b.dataset.sbx);
-        if (!c) return;
-        acted(() => Engine.apply(st, C, c.effects));
-        cue("stamp");
-        setStatus("Sandbox: " + c.label, "transient");
-        drawAll(); saved(); afterAction();
-      }));
+    body.innerHTML = b;
+  }
+
+  /* EVERY SANDBOX CONTROL, delegated once from boot(). Each snapshots
+     first, so each can be undone. */
+  function sandboxClick(ev) {
+    const t = ev.target.closest && ev.target.closest("[data-sbxshow],[data-sbxmake],[data-sbxretry]," +
+      "[data-sbxundo],[data-sbxchapter],[data-sbxunflag],[data-sbxflag],[data-sbxch],[data-sbx],[data-sbxback]," +
+      "tr[data-sbxev],[data-sbxpick]");
+    if (!t || !inSandbox()) return;
+    const d = t.dataset;
+    /* a row selects, by the same call a keyboard Enter makes */
+    if (d.sbxev) { Focus.activate("sbx-events", d.sbxev); return; }
+    /* a link to another event: clear the finder so its row is in the list */
+    if (d.sbxpick) {
+      const f = $("#sbx-find"); if (f) f.value = "";
+      sbxChapter = "all"; Focus.seed("sbx-events", d.sbxpick); drawSandbox(); return;
+    }
+    const redraw = msg => { if (msg) setStatus("Sandbox: " + msg, "transient"); drawAll(); saved(); };
+    if (d.sbxshow) { sandboxShow(d.sbxshow); return; }
+    if (d.sbxmake) {
+      const e = C.eventById[d.sbxmake]; if (!e) return;
+      sbxPush("before making “" + e.title + "” possible");
+      const r = sbxSatisfy(e);
+      sandboxShow(e.id);
+      if (r.left.length) setStatus("Sandbox: set " + (r.done.join(", ") || "nothing") +
+        "; left as they are: " + r.left.join(", "), "transient");
+      return;
+    }
+    if (d.sbxretry) { sbxRestore(true); openTab("sit"); redraw("the same event, before its choice"); return; }
+    if (d.sbxundo) { const l = (sbxStack[sbxStack.length - 1] || {}).label; sbxRestore(false); redraw("undone, " + l); return; }
+    if (d.sbxback) { openTab("sbx"); return; }
+    if (d.sbxch) { sbxChapter = d.sbxch; drawSandbox(); return; }
+    if (d.sbxchapter) { sbxPush("chapter " + st.chapter + " to " + d.sbxchapter);
+      Engine.apply(st, C, [{ chapter: +d.sbxchapter }]); redraw("chapter " + d.sbxchapter); return; }
+    if (d.sbxunflag) { sbxPush("clearing " + d.sbxunflag);
+      Engine.apply(st, C, [{ flag: { [d.sbxunflag]: false } }]); redraw("cleared " + d.sbxunflag); return; }
+    if (d.sbxflag) {
+      const f = (($("#sbx-flag") || {}).value || "").trim();
+      if (!/^[A-Za-z0-9_]+$/.test(f)) return;
+      sbxPush("setting " + f); Engine.apply(st, C, [{ flag: f }]); redraw("set " + f); return;
+    }
+    if (d.sbx) {
+      const c = (C.sandbox || []).find(x => x.id === d.sbx); if (!c) return;
+      sbxPush(c.label);
+      acted(() => Engine.apply(st, C, c.effects));
+      cue("stamp");
+      redraw(c.label); afterAction();
+    }
   }
 
   /* setStatus is exported so that Shell and, later, the induction pack can
@@ -7735,6 +7993,9 @@ const UI = (function () {
               asserts they agree now, which it could not do before this. */
            content: () => C,
            annotate, setStatus, redraw: drawAll,
+           /* put an event on the Sitting screen in the sandbox (design/47);
+              the shell calls it for an address that names one */
+           sandboxShow,
            __test: { cabinetView, structure, reportMoves, rollChips, rollPlan } };
 })();
 

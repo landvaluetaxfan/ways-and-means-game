@@ -234,7 +234,7 @@ campaign(${str(id)}, { ${kind}: [
   /* THE CAMPAIGN RECORD: every administration, in the folder of the
      campaign it plays (content/campaigns/<id>/campaign.js). Not `files()`:
      an administration's `campaign` field says which campaign it PLAYS, not
-     whose it is (the sandbox plays Flash I and is kept with it), so it is
+     whose it is (a variant plays its host and is kept with it), so it is
      never untagged, and one with no `campaign` is kept in a folder of its
      own name. */
   function administrationsFiles(arr) {
@@ -252,7 +252,7 @@ campaign(${str(id)}, { ${kind}: [
      party, leader      the governing party and the Prime Minister
      ordinal, from, to  which term, and its years, for the label
      session            which session of the term the campaign opens at
-     campaign           the campaign it plays, when not its own (a sandbox)
+     campaign           the campaign it plays, when not its own (a variant)
      setup              merged ONE LEVEL deep over the world's setup
      opening            effects applied at the first sitting
      intro              the introduction, drawn by js/setpiece.js

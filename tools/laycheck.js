@@ -292,6 +292,21 @@ ${HELPERS}
     found = found.concat(measure(tabs[t]));
   }
 
+  /* AND THE SANDBOX (design/47), which only a bench draws: open one on the
+     same campaign, measure its tab with the first event read out, then the
+     Sitting screen with that event put up the way the tab puts it up. */
+  try {
+    Shell.sandbox(null);
+    var sbx = document.querySelector('.tab[data-t="sbx"]');
+    if (sbx && !sbx.hidden) {
+      sbx.click();
+      drawn.push("sbx" + (document.querySelector("#s-sbx.on") ? "" : " (NOT DRAWN)"));
+      found = found.concat(measure("sbx"));
+      var show = document.querySelector("#sbx-event [data-sbxshow]");
+      if (show) { show.click(); found = found.concat(measure("sit")); }
+    } else drawn.push("sbx (NOT DRAWN)");
+  } catch (e) { drawn.push("sbx (NOT DRAWN: " + (e && e.message) + ")"); }
+
   /* The page itself must not scroll sideways. */
   var de = document.documentElement;
   var pageX = de.scrollWidth - de.clientWidth;

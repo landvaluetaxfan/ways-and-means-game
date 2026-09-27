@@ -51,6 +51,12 @@ const Tips = (function () {
     /* ---- the status bar, left to right ---- */
     state: { title: "Government status",
       body: `READY while you are in office. You lose office if the House carries a motion of no confidence, if your party removes you at a leadership ballot, if the House rises without supply, or if the thermal margin reaches zero. There is no undo.` },
+    /* the author's bench (design/47), anchored on its own screen */
+    sandbox: { title: "The sandbox",
+      body: "A campaign opened for the author. Pick any event and it is put on " +
+            "the Sitting screen as a player meets it, whatever its gate says. Every " +
+            "change made from this tab is saved first, so Undo and Try again step " +
+            "back. The sandbox keeps its own save, records no ending and earns no award." },
     chapter: { title: "Chapter",
       body: "The act of the story you are in. Chapters control which events can " +
             "fire. They do not advance on a timer." },
