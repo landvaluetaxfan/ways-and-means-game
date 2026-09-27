@@ -41,7 +41,9 @@ the end says which).
   introduced where it first appears. Add a new company, institution or setting
   term to `INTRODUCE` the day a page names it. Read design/45 and design/51
   before writing any player-facing prose, and run `npm run prose` after a hand
-  edit to content, or the next write-back reverts it.
+  edit to content, or the next write-back reverts it. Prose calls the chamber
+  **Parliament**, or the House for short, not the House of Delegates (the
+  author, 27 Sep).
 - **State.** Bump `STATE_VERSION` when the state shape changes, with migration
   guards ASCENDING, one block per bump. Content owns identity, the save owns
   simulation, and `Engine.reconcile()` runs on every load. Player preferences

@@ -299,7 +299,9 @@ An entry is an event when it carries `setpiece`:
     their office, the speaker included;
   - sentences of **40 words at most**, averaging 24 or fewer;
   - the **third person**: "you" only inside a quotation, and no interface
-    words.
+    words;
+  - the chamber is **Parliament** (or the House), not the House of
+    Delegates.
 
   A new company, institution or setting term goes into `INTRODUCE` in
   `tools/pagecheck.js`, with the words that explain it, the day a page first

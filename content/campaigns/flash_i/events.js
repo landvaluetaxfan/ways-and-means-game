@@ -888,10 +888,10 @@ spend. The thermal margin, the spare heat capacity of the Commonwealth's
 radiators, is under 25, inside the range where the authority cuts power
 without being asked.
 
-One floor is left under the government, and it is the House of Delegates.
-The quarrel with Earth has never been worse, members on every bench can read
-the figures, and a motion of no confidence needs only somebody willing to
-move it.
+One floor is left under the government, and it is Parliament. The quarrel
+with Earth has never been worse, members on every bench can read the
+figures, and a motion of no confidence needs only somebody willing to move
+it.
 
 The Cabinet Office has drafted an emergency order to hold the government up.
 It would restrict public gatherings on the ring, the band of stations where

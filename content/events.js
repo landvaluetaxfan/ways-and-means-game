@@ -118,11 +118,11 @@ const EVENTS = [
   body:`The President receives a new Prime Minister in the Winter Garden, the
 Commonwealth's capital. It was built as a station of its own so that no
 other station's voters would own the seat of government, and its 80,000
-residents return one member to the House of Delegates, the Commonwealth's
-parliament, who can introduce bills and speak but cannot vote. The walk from
-the lift passes Earth's embassies, each in a garden kept at its own
-country's climate: six climates in a mile. The congress hall where the
-Perigee Charter was signed in 2064 stands at the centre of the station.
+residents return one member to Parliament, who can introduce bills and speak
+but cannot vote. The walk from the lift passes Earth's embassies, each in a
+garden kept at its own country's climate: six climates in a mile. The
+congress hall where the Perigee Charter was signed in 2064 stands at the
+centre of the station.
 
 Jaco van Ryneveld was elected President in 2077 by a direct vote of the
 whole Commonwealth, on the Liberal Party's ticket, with 51.4 per cent. The
@@ -401,12 +401,16 @@ order."`,
 { id:"halloran_finds_nine", queuedOnly:true, once:true,
   title:"He found them",
   speaker:"halloran",
-  body:`Four of his names are revenants: members returned on the list after losing
-a district, who owe their seats entirely to the party and were therefore supposed
-to be unbuyable. They have worked out that a leadership change reorders the list,
-and that a list can be reordered upward as easily as down.
+  body:`Dan Czarnecki, leader of your party's Hard Left, has the twelve signatures
+he needs, and a ballot on your leadership is called for the week after next.
+If you lose it, you lose the leadership of the party and the premiership
+with it.
 
-The ballot is called for the week after next.`,
+Four of the names are revenants: members who lost their district seats and
+were returned on the party list. The whips had counted them as safe, because
+they owe their seats entirely to the party. They have worked out that a new
+leader would redraw the party's list for the next election, and that a
+redrawn list can move them up as easily as down.`,
   choices:[
     /* THE BALLOT IS CALLED, AND NOW IT IS HELD (design/38 §3). This set
        `leadership_ballot_called`, which nothing read, so the week after next
@@ -421,13 +425,13 @@ The ballot is called for the week after next.`,
                {queue:[{ effects:[{ signatures:12 }], after:8,
                          label:"Czarnecki's names are on the paper, and the caucus will divide." }]},
                {wire:"LEADERSHIP BALLOT CALLED; CABINET DECLARES FOR FLASH"}],
-      result:"It becomes a public argument about whether your party believes what it says it believes." },
-    { posture:"cautious", label:"Concede the shed order and the personhood line in one go",
+      result:"Ministers go on Ring Network one after another to defend you. The ballot becomes a public argument about what the party stands for, and both the party and the country think less of the government for it." },
+    { posture:"cautious", label:"Concede: promise the shed order reform and withdraw the Divergence Threshold Bill",
       effects:[{move:{"loyalty.cu_halloran":30}},{move:{"loyalty.cu_maintenance":12}},{move:{"loyalty.psa":-20}},
                {move:{"party_loyalty":12}},
                {bill:{divergence:{stage:"withdrawn",dead:true}}},
-               {wire:"THRESHOLD BILL WITHDRAWN; SUBSTRATE LEFT REVIEWS COALITION"}],
-      result:"You keep the leadership. The New Progressive Party meets tonight without you." }
+               {wire:"THRESHOLD BILL WITHDRAWN; NEW PROGRESSIVE PARTY REVIEWS ITS PLACE IN THE COALITION"}],
+      result:"You keep the leadership. The New Progressive Party, which joined the government for the bill you have just withdrawn, meets tonight without you." }
   ]},
 
 { id:"vantage_radiator", prologue:6,
@@ -485,22 +489,25 @@ suspension, their minds kept intact but not running.`,
 { id:"vantage_cascade", queuedOnly:true, once:true,
   title:"Tier four, Ember Ridge",
   speaker:null,
-  body:`The authority shed the register at 04:12 without notifying the Ministry.
-Four thousand two hundred people stopped running. Under the Act this was lawful.
-Under the Act you were not required to be told.
+  body:`At 04:12 the engineering authority, the body that runs life support,
+switched off Ember Ridge's tier-four register without telling the Ministry.
+The 4,200 people on it, the lowest band of the shed order, stopped running
+and are now held in suspension.
 
-The Spindle has the timestamp.`,
+Under the Allocation Act, the law that governs a shortage, this was lawful,
+and nothing required a minister to be told. The Spindle, the Commonwealth's
+newspaper of record, has the timestamp and will print it tomorrow.`,
   choices:[
-    { posture:"cautious", label:"Announce a statutory review of the shed order authority",
+    { posture:"cautious", label:"Announce a review, in law, of the authority's power to switch people off",
       effects:[{move:{"public_standing":-8}},{move:{"thermal_margin":4}},{move:{"loyalty.psa":6}},{move:{"loyalty.hul":-14}},
                {bill:{shedorder:{stage:"second_reading"}}},
                {wire:`PM ANNOUNCES REVIEW OF SHEDDING POWERS AFTER EMBER RIDGE`}],
-      result:`The review will report after the election, and the Spindle says so in its first line.` },
-    { posture:"bold", label:"Defend the authority. It acted within the law and the law is the law.",
+      result:`The review will report after the election, and The Spindle says so in its first line. The Association of Engineers and Systems, the engineers' party, calls it an attack on the authority.` },
+    { posture:"bold", label:"Defend the authority: it acted within the law.",
       effects:[{move:{"public_standing":-14}},{move:{"party_loyalty":-9}},{move:{"loyalty.hul":12}},{move:{"loyalty.psa":-16}},{move:{"loyalty.cu_maintenance":-11}},
                {flag:"defended_authority"},
                {wire:"PM DEFENDS SHEDDING DECISION; SUBSTRATE LEFT SUMMONS COALITION MEETING"}],
-      result:"You have said out loud the thing the Association of Engineers and Systems says, in your own voice, on the record." }
+      result:"You have said on the record what the Association of Engineers and Systems says: that the authority's judgement comes first. The engineers' party is pleased. The country, the New Progressive Party and your own maintenance members are not." }
   ]},
 
 { id:"cluster_flag", weight:60,
@@ -509,46 +516,50 @@ The Spindle has the timestamp.`,
   speaker:"ceyhan",
   image:{ src:"cluster_feed.png", palette:"newsprint",
           caption:"Registry advisory, 11 April", credit:"The Spindle" },
-  body:`Two hundred and forty unattested accounts posted an identical string within
-a four-minute window. The Registry flagged the cluster and took no further action. Flagging is the entire power the statute gives it.
+  body:`Two hundred and forty unattested accounts, ones never proved to belong to a
+single unique person, posted the same message within four minutes. The
+Registry that attests accounts flagged the cluster and did nothing more,
+because flagging is the only power the law gives it.
 
-Ceyhan wants to know whether you intend to ask for more power, and he wants to
-know it on the record, because the answer is a story either way.`,
+Ivor Ceyhan, political editor of The Spindle, the Commonwealth's newspaper
+of record, wants to know on the record whether the government will ask for
+stronger powers. Either answer is a story.`,
   choices:[
     { posture:"bold", label:"Announce an attestation enforcement bill",
       effects:[{move:{"public_standing":5}},{move:{"loyalty.psa":-8}},{move:{"loyalty.cl":-6}},{move:{"loyalty.gb":5}},
                {flag:"cluster_investigated"},{flag:"attestation_bill_trailed"},
                {wire:"GOVERNMENT TO SEEK REGISTRY ENFORCEMENT POWERS"}],
-      result:"The Unattested will read this as what it is." },
+      result:"People who have never been attested, most for lack of documents rather than by choice, read the bill as aimed at them. The New Progressive Party and the Liberals object; the Alliance of Business and Government approves." },
     { posture:"cautious", label:"Say the registry has the powers it should have and the cluster is not illegal",
       effects:[{move:{"public_standing":-4}},{move:{"loyalty.psa":7}},{move:{"loyalty.cl":4}},
                {flag:"cluster_investigated"},{move:{"rel.ceyhan":5}}],
-      result:"Correct, unpopular, and quotable in exactly the wrong order." },
-    { posture:"measured", label:"Ask who paid for the substrate",
+      result:"It is true, and it is unpopular: The Spindle puts 'not illegal' in its headline. The New Progressive Party and the Liberals approve." },
+    { posture:"measured", label:"Ask who paid for the computing time behind the accounts",
       effects:[{flag:"cluster_investigated"},{flag:"cluster_traced"},{move:{"rel.ceyhan":9}},
                {queue:[{event:"cluster_source",after:5}]}],
-      result:"Ceyhan writes it down properly, which means he thinks it will go somewhere." }
+      result:"Ceyhan writes the question down carefully, which means he expects it to lead somewhere." }
   ]},
 
 { id:"cluster_source", queuedOnly:true, once:true,
   title:"Who paid for the substrate",
   speaker:"ceyhan",
-  body:`The cycles were billed to a holding entity, the holding entity is one of
-six incorporated in the same week, and all six are registered voters in the
-Substrate and Hosting functional constituency. The electorate of that seat is
-four hundred and eleven.
+  body:`The computing time behind the 240 accounts was billed to a holding company.
+It is one of six companies incorporated in the same week, and all six are
+registered voters in the Substrate and Hosting functional constituency, a
+seat whose entire electorate is 411 voters, because companies vote there.
 
-Somebody manufactured six voters and used the spare capacity to manufacture a
-consensus. It is not clear that either is illegal.`,
+Whoever set up the six has bought six votes in a seat decided by a few
+hundred, and used spare computing capacity to fake a public consensus. It is
+not clear that either act breaks any law.`,
   choices:[
     { posture:"bold", label:"Refer it to the Law Officer and let it run",
       effects:[{move:{"public_standing":7}},{move:{"loyalty.cl":-11}},{move:{"loyalty.gb":-7}},
                {flag:"shells_referred"},
                {wire:"LAW OFFICER TO EXAMINE SHELL REGISTRATIONS IN SUBSTRATE PROVIDERS SEAT"}],
-      result:"You have opened a fight about corporate voting eight weeks before you need the functional benches." },
-    { posture:"cautious", label:"Hold it. A seat you may need later is worth more than a story now.",
+      result:"The Law Officer examines the six companies. You have opened a fight over companies voting in functional seats weeks before you need the functional members' votes, and the Liberals and the Alliance of Business and Government are furious." },
+    { posture:"cautious", label:"Hold it back: the seat's vote may matter more later than the story does now.",
       effects:[{flag:"shells_held"},{move:{"rel.ceyhan":-8}}],
-      result:"Ceyhan runs it anyway, without you, and with a paragraph about what the government knew." }
+      result:"Ceyhan runs the story without you, with a paragraph on what the government knew and when." }
   ]}
 ,
 
@@ -1076,79 +1087,94 @@ order until somebody is appointed to it.`,
 { id:"guild_answers", queuedOnly:true, once:true,
   title:"The panel's answer",
   speaker:"gb_chair",
-  body:`The panel met on Thursday, which is when it always meets, and the answer it agreed is the one the sector has given every government since 2072.
+  body:`The Life Support panel met on Thursday, as it always does, and agreed the
+answer its members have given every government since 2072.
 
-"Nine seats," the chair says, "and not one of them moves for a government that has moved the roll. Count it again if you like. The count will not change."
+"The Alliance has nine seats," says Kazuya Tanako, who chairs the panel,
+"and not one of them will vote with a government that has changed, by
+licensing order, who may vote for our seats. Count again if you like. The
+count will not change."
 
-She is not angry about it. Anger would have been something to work with. She has been doing this longer than the government has existed, and she is telling you what her members will do, not what she thinks of you.`,
+She is not angry, which would at least have given you something to work
+with. She has done this job longer than the Commonwealth has existed, and
+she is telling you what her members will do, not what she thinks of you.`,
   choices:[
     { posture:"cautious", label:"Take the answer. Stop asking.",
       effects:[{flag:"guild_met"},{move:{"rel.gb_chair":5}},{move:{"loyalty.gb":5}}],
-      result:"The panel has said no. A government that hears no and moves on keeps something the next approach will need." },
+      result:"You accept the panel's refusal. A government that takes no for an answer keeps her respect, which the next approach will need." },
     { posture:"measured", label:"Ask what it would take, and make her name it.",
       effects:[{flag:"guild_met"},{flag:"guild_price_asked"},
                {move:{"rel.gb_chair":-6}},{move:{"loyalty.gb":-4}}],
-      result:"She names it, and it is the thing you already knew: leave the roll alone. Naming it in a room is not the same as knowing it." },
-    { posture:"bold", label:"Remind her the sunset clause has been extended four times.",
+      result:"She names it, and it is what you already knew: leave the roll alone. Making her say it in the room costs you her goodwill." },
+    { posture:"bold", label:"Remind her that the functional seats' sunset clause has been extended four times.",
       when:{ flagsAbsent:["threatened_guild_bench"] },
       effects:[{flag:"guild_met"},{flag:"threatened_guild_bench"},
                {move:{"rel.gb_chair":-12}},{move:{public_standing:2}}],
-      result:"\"Extend it a fifth time,\" she says. \"You will need us for that too.\"" }
+      result:"\"Extend it a fifth time,\" she says. \"You will need us for that too.\" Changing the clause is a Charter amendment, and a Charter amendment needs the functional members' votes." }
   ]},
 
 /* REACH: queued by the commission_review initiative. */
 { id:"review_reports", queuedOnly:true, once:true,
   title:"What the standing orders have shed",
   speaker:null,
-  body:`Somebody has finally counted. The register of people suspended under the standing shed orders stands at twenty-nine thousand, and no House has ever been told the number aloud, because nothing required it to be.
+  body:`The review the government commissioned has finally counted the people
+suspended under standing shed orders: orders already in force that let the
+engineering authority switch people off in a shortage without a new decision
+each time. The total is twenty-nine thousand.
 
-Every suspension in it was lawful and minuted, made under an order already in
-force. The number grew a quarter at a time, at a rate the standing orders
-permit, and it will be quoted against the government by the afternoon.`,
+No House has been told the number before, because nothing required it. Every
+suspension was lawful and recorded, and the total grew a quarter at a time,
+at a rate the orders allow. The opposition will quote it against the
+government by the afternoon.`,
   choices:[
     { posture:"bold", label:"Read the number into the record yourself.",
       when:{ flags:["review_full"] },
       effects:[{flag:"shed_number_published"},{move:{public_standing:8}},
                {move:{"loyalty.cu_maintenance":10}},{move:{"loyalty.hul":9}},
                {wire:`PM READS SHED ORDER TOTAL INTO THE HOUSE: TWENTY-NINE THOUSAND`}],
-      result:"A figure an inquiry produced carries the inquiry's weight. That is what paying for the inquiry bought." },
+      result:"You read the figure to the House yourself. Because an independent review produced it, it carries weight, and the government gets credit for publishing it. The Trades Left and the engineers' party both approve." },
     { posture:"cautious", label:"Take the number and sit on it.",
       when:{ flags:["review_thin"] },
       effects:[{flag:"shed_number_held"},{move:{public_standing:-3}}],
-      result:"A departmental note is easy to keep. It is also easy to leak, and it now sits in the department." },
+      result:"The figure stays in a departmental note. A note is easy to keep, and just as easy to leak." },
     { posture:"measured", label:"Announce a standing register, published quarterly.",
       effects:[{flag:"shed_register_promised"},{move:{public_standing:5}},
                {move:{"loyalty.psa":6}},{move:{"loyalty.gb":-5}},
                {wire:"GOVERNMENT TO PUBLISH SHED ORDER REGISTER QUARTERLY"}],
-      result:"The number becomes furniture. That is either the point of publishing it or the way to stop it mattering, depending on who is asked." },
+      result:"The number will be published every quarter. Supporters say that makes it public for good; critics say routine publication will stop it mattering. The New Progressive Party approves and the Alliance of Business and Government does not." },
     { posture:"cautious", label:"Do nothing with it. It was a review, not a policy.",
       effects:[{flag:"review_filed"},{move:{"loyalty.cu_maintenance":-6}}],
-      result:"The file joins the others. Someone on the maintenance benches will ask for it by name within the month." }
+      result:"The review is filed. Within a month a Trades Left member will ask for it by name in the House." }
   ]},
 
 /* REACH: queued by the state_the_position initiative. */
 { id:"position_lands", queuedOnly:true, once:true,
   title:"What saying it did",
   speaker:"ceyhan",
-  body:`The government's position on the threshold is on the record now, and a position on the record cannot be walked back. What matters is who has written down that the government said it.
+  body:`The government's position on the divergence threshold, the number of hours
+after which a copy of a person becomes a separate person, is now on the
+record, and it cannot be taken back.
 
-Ceyhan has, in tomorrow's column. The Chief Whip has too, in a different column: the list of members who will hold the government to it.`,
+Ivor Ceyhan will quote it in tomorrow's column in The Spindle, the
+Commonwealth's newspaper of record. Anil Devi, the Chief Whip, has written
+it down too, beside the names of the members who will hold the government to
+it.`,
   choices:[
     { posture:"cautious", label:"Leave it where it is. It was said and it stands.",
       effects:[{flag:"position_public"},{move:{"loyalty.cu_maintenance":4}},
                {move:{"rel.ceyhan":5}}],
-      result:`Nothing more is said. The sentence stays on the record, where it cannot be amended.` },
+      result:`Nothing more is said. The statement stays on the record as it was made.` },
     { posture:"bold", label:"Repeat it, and make the government's case for it.",
       effects:[{flag:"position_public"},{flag:"position_campaigned"},
                {move:{public_standing:5}},{move:{"loyalty.cu_maintenance":-8}},
                {move:{"loyalty.psa":6}},
                {wire:"PM CAMPAIGNS ON THRESHOLD POSITION; MAINTENANCE BENCHES OBJECT"}],
-      result:"The position becomes the government's, for good. That is a stronger thing to hold and a heavier one to put down." },
+      result:"The position becomes the government's for good. The New Progressive Party is pleased and the Trades Left is not, and dropping the position later will now cost more." },
     { posture:"measured", label:"Soften it. Say it was a preference, not a commitment.",
       when:{ flags:["position_offhand"] },
       effects:[{flag:"position_softened"},{move:{"rel.ceyhan":-8}},
                {move:{"loyalty.psa":-7}},{move:{"loyalty.cu_maintenance":5}}],
-      result:"An answer at questions is easy to call a preference. It is also the second time the same audience has watched you do it." }
+      result:"Calling an answer at Question Time a preference is easy. It is also the second time the same audience has watched the government retreat, and the New Progressive Party and Ceyhan both notice." }
   ]},
 
 /* ============================================================
@@ -1410,9 +1436,8 @@ budget."`,
   when:{ dissolved:true },
   title:"The writs",
   speaker:null,
-  body:`The House of Delegates has been dissolved, and the Commonwealth has three
-weeks until a general election. Every one of the chamber's 280 seats will be
-filled again.
+  body:`Parliament has been dissolved, and the Commonwealth has three weeks until a
+general election. Every one of the chamber's 280 seats will be filled again.
 
 The writs, the formal orders for the election, go to the returning officers
 of 140 districts. The 100 list seats are shared out afterwards on the
@@ -1660,8 +1685,7 @@ where the government holds seats it cannot afford to lose.`,
   title:"The count",
   speaker:null,
   body:`The votes in the general election were counted overnight, station by
-station, and by midnight the shape of the next House of Delegates was
-settled.
+station, and by midnight the shape of the next Parliament was settled.
 
 The 140 district seats were declared first, each by a returning officer in
 its own hall. Ring Network, the Commonwealth's broadcaster, carried every
@@ -1692,9 +1716,9 @@ country's to carry.`,
   when:{ resolved:true, dissolved:false },
   title:"The question, closed",
   speaker:null,
-  body:`The question that has occupied the House of Delegates all session has been
-settled. It was not paused or passed to the next House. It was closed, in
-the form the record will keep for a generation.
+  body:`The question that has occupied Parliament all session has been settled. It
+was not paused or passed to the next House. It was closed, in the form the
+record will keep for a generation.
 
 Settling it took a decision the government cannot take back. The decision is
 in the journal of the House with its date. It is on the front page of The
@@ -1714,8 +1738,8 @@ which is how a settlement works.`,
   when:{ seen:["ch4_settled"], dissolved:false },
   title:"After",
   speaker:null,
-  body:`The House of Delegates has returned to its ordinary business. Bills move or
-fall, ministers answer questions, and the register fills with the routine of
+  body:`Parliament has returned to its ordinary business. Bills move or fall,
+ministers answer questions, and the register fills with the routine of
 government.
 
 The settlement will cost what it costs from here. Its costs will arrive the
@@ -1977,21 +2001,24 @@ relationship. We can be fast or we can be right."`,
 { id:"fa_mars_reply", queuedOnly:true, once:true,
   title:"The reply",
   speaker:null,
-  body:`The dispatch has been answered. The Republic's note is four paragraphs long
-and the first three concern a metanational matter the Commonwealth's courts
-settled a month ago, which is what eleven sittings of lag looks like: a careful
-answer to a question that has moved.
+  body:`The Nili Republic, one of the two governments on Mars, has answered the
+Commonwealth's dispatch. Its note runs to four paragraphs.
 
-The fourth paragraph is the one the Foreign Minister reads twice.`,
+The first three concern a dispute over an Earth company's claims that the
+Commonwealth's courts settled a month ago. The Republic's government takes
+about eleven sittings to agree a reply, so its answers arrive after the
+question has moved on. Only the fourth paragraph addresses where things
+stand now, and Jean Landry, the Minister for External Relations, reads it
+twice.`,
   choices:[
     { posture:"bold", label:"Publish it, with the dates attached.",
       effects:[{ move:{ "actor.mars":6 } }, { move:{ "public_standing":2 } },
                { wire:"THE COMMONWEALTH PUBLISHES THE MARTIAN REPLY IN FULL, WITH DATES" }],
-      result:"The note goes out stamped with the day it was written. A foreign fact is never current, and the government has now said so on the record." },
+      result:"The note is published with the date it was written, which shows how far behind events it is. Relations with Mars improve, and the government has shown on the record how slowly Mars answers." },
     { posture:"cautious", label:"Answer it as though it were current.",
       effects:[{ move:{ "actor.mars":2 } }, { move:{ "friction":-2 } },
                { wire:`PM ANSWERS MARS; THE CORRESPONDENCE CONTINUES AT ONE EXCHANGE EVERY THREE WEEKS` }],
-      result:`The exchange settles at a note every three weeks in each direction, which is how long the Republic takes to agree with itself.` }
+      result:`The correspondence settles into one note every three weeks each way, the time the Republic needs to agree a reply. The quarrel with Earth eases slightly.` }
   ]},
 
 /* THE CONCESSION CAN BE WITHDRAWN (design/17 §4.3). `fa_anchor_terms` is the
@@ -2289,24 +2316,25 @@ they all eat from.`,
 { id:"the_deck_again", queuedOnly:true, once:true,
   title:"The deck again",
   speaker:null,
-  body:`The protein vats at Harvest have failed. The station is buying in the
-whole of its protein from the low band, and the low band has noticed what its
-own prices are doing.
+  body:`The protein vats at Harvest, a station of 70,000 people in the middle band,
+have failed. The station now buys all of its protein from the low band's
+farms, and low-band prices are rising as a result.
 
-The second estimate is larger than the first by the cost of the quarter spent
-treating vats that were going to fail.`,
+The ministry's second estimate for refitting the vats is higher than its
+first by the cost of the three months it spent repairing vats that were
+always going to fail.`,
   choices:[
     { posture:"bold", label:"Fund the refit now, at the second estimate",
       effects:[{ move:{ "solvency": -11000 } }, { move:{ "consumables": 5 } },
                { station:{ wickstead:{ closure: 0.04 } } },
                { move:{ "public_standing": 2 } },
                { wire:"HARVEST REFIT FUNDED AT THE SECOND ESTIMATE" }],
-      result:"The deck comes back. Nothing about the bill is read as a triumph, which the station expected." },
+      result:"The refit costs eleven billion dollars, and Harvest's protein deck returns to production. Nobody calls the bill a success, and the station did not expect them to." },
     { posture:"cautious", label:"Carry the shortfall and defer the refit again",
       effects:[{ move:{ "consumables": -8 } }, { station:{ wickstead:{ suspended: 900 } } },
                { move:{ "public_standing": -6 } }, { move:{ "loyalty.hul": -8 } },
                { wire:"HARVEST BUYS IN ALL PROTEIN; DECK REFIT DEFERRED" }],
-      result:"Nine hundred of the station's residents come off the deck's payroll and onto the register. The middle band draws its conclusion." }
+      result:"Nine hundred of Harvest's residents lose their jobs on the deck and are held in suspension to save the cost of keeping them. The rest of the middle band concludes that the government will switch people off to save money." }
   ]},
 
 /* CONGREGATIONS (bible 10.9, LOCKED and thin: the section that named the
@@ -2620,9 +2648,9 @@ man with a list."`,
   when:{ minSitting:6, scalarBelow:{ public_standing:40, party_loyalty:46 } },
   title:"The Leader of the Opposition rises",
   speaker:"watkins",
-  body:`Darren Watkins Jr., the Leader of the Opposition, gave notice in the House
-of Delegates that he will move a motion of no confidence in the government
-in three sitting days.
+  body:`Darren Watkins Jr., the Leader of the Opposition, gave notice in Parliament
+that he will move a motion of no confidence in the government in three
+sitting days.
 
 "Madam Speaker, I give notice that I shall move, three sitting days from
 today, that this House has no confidence in the government," he said. The
@@ -2670,15 +2698,16 @@ The government has until the division to change the count.`,
 { id:"question_time", at:4, every:8,
   title:"Questions to the Prime Minister",
   speaker:"watkins",
-  body:`The Leader of the Opposition has the first three and has clearly had
-them written for a week.
+  body:`At Question Time, Darren Watkins Jr., the Leader of the Opposition, has the
+first three questions, and he has plainly had them prepared for a week.
 
-"The Prime Minister told this House the reserve was sound. Will she tell us
-today what it stands at, or will she tell us again that the figure is a matter
-for the Treasurer, who is also not answering?"
+"The Prime Minister told this House the reserve was sound," he says. "Will
+she tell us today what it stands at, or will she tell us again that the
+figure is a matter for the Treasurer, who is also not answering?"
 
-The benches behind you do the arithmetic before you do. The ones in front of
-you already have.`,
+The reserve is the Treasury's cash in hand. Your own members are already
+working out what the figure means for their seats, and the opposition worked
+it out last week.`,
   choices:[
     { posture:"measured", label:"Answer it. Take the afternoon and answer all of it.",
       cost:{ slot:1 },
@@ -2687,7 +2716,7 @@ you already have.`,
         { move:{ public_standing:4, party_loyalty:3 } },
         { wire:"PRIME MINISTER TAKES QUESTIONS FOR NINETY MINUTES; NO FIGURE WITHHELD" }
       ],
-      result:`You answered the three, and the fourteen behind them. The House went home late and nobody said the government was hiding.` },
+      result:`You answer the three questions and the fourteen that follow. The House sits late, and nobody can say the government is hiding the figure.` },
     { posture:"cautious", label:"Refer him to the Treasurer and move to the next question.",
       note:"Costs nothing today.",
       effects:[
@@ -2699,7 +2728,7 @@ you already have.`,
         { move:{ "standing.low":-3 } },
         { wire:"PRIME MINISTER REFERS RESERVE QUESTION TO THE TREASURY AGAIN" }
       ],
-      result:`It cost nothing today. The gallery counts the referrals, and so does the Spindle.` },
+      result:`It costs nothing today. But the press gallery counts each question you pass to someone else, and so does The Spindle, and low-band voters notice most.` },
     { posture:"bold", label:"Ask him what he would have done, and keep asking.",
       note:"The benches will like it. The gallery has heard it.",
       effects:[
@@ -2707,7 +2736,7 @@ you already have.`,
         { move:{ "rel.watkins":-6 } },
         { wire:"NOISY EXCHANGES AT QUESTIONS; NEITHER LEADER ANSWERS THE OTHER" }
       ],
-      result:"Your own side enjoyed it enormously. Nobody outside the chamber could say afterwards what the reserve stands at." }
+      result:"Your own side enjoys it enormously. Nobody outside the chamber can say afterwards what the reserve stands at." }
   ] },
 
 /* =============================================================
@@ -3340,9 +3369,17 @@ Opposition. "The government did. We only put it in order."`,
 { id:"partner_walks", queuedOnly:true,
   title:"A partner walks out",
   speaker:"okarie",
-  body:`The Chief Whip has the letter before the Spindle does, which is the last courtesy a partner extends. The terms of the agreement are withdrawn, their members will sit where they please, and the arithmetic the government has governed on since the formation no longer holds.
+  body:`One of the government's coalition partners has written to Anil Devi, the
+Chief Whip, shortly before The Spindle gets the letter, the last courtesy a
+departing partner extends. The party has withdrawn from the coalition
+agreement, and its members will vote as they choose.
 
-"They have not joined the other side," he says. "They have left ours. The difference is worth one conversation, and it had better be this week."`,
+Without them the government no longer has the majority it has relied on
+since it was formed. If it cannot find one, it will face a vote of
+confidence within a few sittings.
+
+"They have not joined the opposition," Devi says. "They have left us. That
+difference is worth one conversation, and it had better be this week."`,
   choices:[
     { posture:"measured", label:"Send for their leader and offer terms.",
       cost:{ slot:1 },
@@ -3350,16 +3387,16 @@ Opposition. "The government did. We only put it in order."`,
            "is back to where they would sit with you, they return before the House divides.",
       effects:[{ court:16 }, { move:{ public_standing:-2 } },
                { wire:"PRIME MINISTER OFFERS TERMS TO THE PARTY THAT WALKED OUT" }],
-      result:"The terms are on the table, and the other side of it is deciding whether a government that let it come to this is worth sitting with." },
+      result:"Your terms are with their leader, who is deciding whether a government that let things come to this is worth rejoining." },
     { posture:"cautious", label:"Let the whips work the lobbies.",
       note:"Cheaper, quieter and slower. The whips spend their own credit with the benches doing it.",
       effects:[{ court:6 }, { move:{ party_loyalty:-2 } }],
-      result:"The whips go to work in the tea room, and the answer comes back one member at a time." },
+      result:"The whips work the tea room, winning the partner's members back one at a time." },
     { posture:"bold", label:"Let them go, and face the House on the numbers.",
       note:"If the numbers are short, the House decides the government's future on the day the motion is set down.",
       effects:[{ move:{ public_standing:2 } }, { move:{ legitimacy:1 } },
                { wire:"GOVERNMENT WILL FACE THE HOUSE WITHOUT ITS PARTNER" }],
-      result:"The government says it will meet the House, and the House will count." }
+      result:"The government says it will face the House without them and let the vote decide. The country respects the candour." }
   ]},
 
 /* =============================================================
@@ -3479,19 +3516,25 @@ The bills tendered on Friday will cost a quarter of a point more. So will every 
 { id:"governor_answers", queuedOnly:true,
   title:"The Governor's answer",
   speaker:"castellane",
-  body:`Castellane's reply is in her own hand, which at the Bank means it is not for the file.
+  body:`Maren Castellane, the Governor of the Reserve Bank, has replied in her own
+handwriting, which at the Bank means the letter is not for the file.
 
-She will not move the cash rate for a government. She will say, at her next meeting, that the Bank expects the price of heat to fall back, and that it can wait to see whether it does. That is worth a quarter of a point, and she would like it understood that it was her decision.`,
+She will not move the cash rate, the interest rate the Bank sets, because a
+government asks her to. But at the Bank's next meeting she will say that it
+expects the price of heat, the thermal quota price that has pushed inflation
+up, to fall back, and that it can wait to see whether it does. That
+statement is worth a quarter of a point off the rate, and she wants it
+understood that the decision is hers.`,
   choices:[
     { posture:"measured", label:"Take what she offers.",
       effects:[{ economy:{ rate:-0.25, credibility:-0.02 } }, { move:{ "rel.castellane":3 } }],
-      result:"The Bank cuts a quarter and says the heat price is temporary. If it is, nobody will remember the cut." },
-    { posture:"bold", label:"Remind her the House can direct her.",
+      result:"The Bank cuts the rate by a quarter of a point and calls the rise in the heat price temporary. If the price falls, nobody will remember the cut. If it does not, markets will trust the Bank a little less." },
+    { posture:"bold", label:"Remind her that the House can direct the Bank by order.",
       effects:[{ economy:{ credibility:-0.05 } }, { move:{ "rel.castellane":-12 } }, { flag:"direction_threatened" }],
-      result:"The Governor does not reply. The next meeting's statement is two sentences longer, and both are about the Act." },
+      result:"The Governor does not reply. The Bank's next statement is two sentences longer, and both defend its independence under the law that created it." },
     { posture:"cautious", label:"Let it go.",
       effects:[{ move:{ "rel.castellane":4 } }],
-      result:"The Bank decides by its rule, and the rule is printed beside the decision." }
+      result:"The Bank sets the rate by its published rule, and prints the rule beside its decision." }
   ]},
 
 { id:"dollar_line_tested", queuedOnly:true,
@@ -3592,24 +3635,30 @@ The shortfall is a season. The price will be on every bill before the House rise
 { id:"partner_stands_aside", queuedOnly:true,
   title:"A partner stands aside",
   speaker:"okarie",
-  body:`The letter is short. The party has left the coalition agreement, its ministers are "considering their positions", and it will vote on each measure as the measure deserves. It will not bring the government down. The letter says that twice, which the Chief Whip reads as a price rather than a promise.
+  body:`A coalition partner has written to say it is leaving the coalition
+agreement. Its ministers are "considering their positions", and it will vote
+on each measure on its merits.
 
-"They are still ours on confidence," he says. "They are nobody's on anything else, and a party that has left once finds the second time easier."`,
+It will not bring the government down. The letter says so twice, which Anil
+Devi, the Chief Whip, reads as a price being set rather than a promise.
+"They will still support us on confidence," he says. "On everything else
+they are nobody's, and a party that has left once finds it easier the second
+time."`,
   choices:[
     { posture:"cautious", label:"Take them at their word, and govern.",
       note:"Nothing is offered. They keep the government alive and vote as they please on everything else, and the whips count every division twice.",
       effects:[{ move:{ party_loyalty:1 } }],
-      result:"The government carries on without the agreement, and the division lists get longer to read." },
+      result:"The government carries on without the agreement. Every vote now has to be counted afresh, measure by measure." },
     { posture:"measured", label:"Let the whips take them to lunch.",
       note:"The whips spend their own credit on the partner's benches. Slower, and it asks nothing of you in public.",
       effects:[{ court:7 }, { move:{ party_loyalty:-1 } }],
-      result:"The whips report back that the partner's members like being asked." },
+      result:"The whips report back that the partner's members like being asked, and some are warming again." },
     { posture:"bold", label:"Put a new agreement on the table this week.",
       cost:{ slot:1 },
       note:"A day of the order paper and a concession made in public. If it is enough, they come back into the agreement before the next division.",
       effects:[{ court:15 }, { move:{ public_standing:-2 } },
                { wire:"PRIME MINISTER OFFERS A NEW COALITION AGREEMENT" }],
-      result:"The new terms are on the table, and the partner's executive meets to decide what they are worth." }
+      result:"The new terms are with the partner, and its executive meets to decide whether they are enough." }
   ]}
 
 ];
