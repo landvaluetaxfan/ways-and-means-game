@@ -56,14 +56,14 @@
                 price of a lobbied bench is never money: it is a
                 promise, and a promise has a deadline.
 
-   PROSE, T16 — four kinds of power, four registers. A board is the
-   state's own creature until it is not, and speaks like an institution
-   that has outlived every government it has certified. A consortium owns
-   the thing everyone needs and is patient about it, and speaks like old
-   infrastructure: unhurried, commercial, long-horizon. A bloc cannot
-   vote and is therefore active by other means, and speaks like a crowd.
-   A union is the strike weapon and the party's own base, and speaks like
-   a shop floor. None of them sound alike, on purpose.
+   PROSE (design/45, superseding T16). T16 gave each kind a register of
+   its own: a board "speaks like an institution that has outlived every
+   government it has certified", a consortium "unhurried, commercial". In
+   a note that became a temperament where the facts belonged ("It does not
+   hurry, because it cannot lose"), and the author asked what a player gets
+   from it. A note is Reference: what the body is, what it controls, how it
+   reaches the House, what it wants. The voices belong to the events in
+   which these bodies speak.
 
    FLASH I adds a fifth kind, and it is a fifth register:
 
@@ -83,42 +83,42 @@ const ACTORS = [
     reach: { fc_lifesupport: 4 },
     wants: { divergence_threshold_hours: 1, licensure_scope: 1, integrity_standards: 1 },
     asks: "hold the certification schedule for a full session",
-    note: "The board that certifies who may work on a life-support system. It is appointed by the government and independent of it in every way that matters, and it has never needed to say which it is acting as." },
+    note: "The Life Support Licensing Board certifies who may work on life-support systems, and so decides who votes in the Life Support functional constituency. The government appoints its members, and it can move votes on that constituency's bench." },
 
   { id: "lb_substrate", name: "Substrate Operations Licensing Board", kind: "board",
     standing: 38, patience: 55,
     reach: { fc_substrate: 5 },
     wants: { divergence_threshold_hours: -1, substrate_ownership: 1, thermal_quota: 1 },
     asks: "a public stake in substrate provision, this session",
-    note: "The board that decides who is a substrate engineer, in the sector where that is the contested question. Its appointments run for life, and it remembers every government that has tried to shorten one." },
+    note: "The Substrate Operations Licensing Board decides who is licensed as a substrate engineer, which sets the electorate of the Substrate and Hosting functional constituency. Its members are appointed for life, and it can move votes on that bench." },
 
   { id: "forkrentiers", name: "The Fork-Rentiers", kind: "bloc",
     standing: 22, patience: 30,
     reach: { fc_attestation: 3, fc_substrate: 2 },
     wants: { divergence_threshold_hours: -1, attestation_enforcement: -1, registry_powers: -1 },
     asks: "no new attestation requirement before the House rises",
-    note: "Two hundred and ten thousand people who rent out their own instances, cannot vote, and have no organisation. They act on the chamber through their numbers alone." },
+    note: "The fork-rentiers are about 210,000 people who rent out instances of themselves for work. They cannot vote and have no organisation, and their weight in the House comes through the Attestation and Registry and the Substrate and Hosting benches, where they can move votes." },
 
   { id: "maintenance_union", name: "Combined Maintenance Trades", kind: "union",
     standing: 61, patience: 45,
     reach: { fc_maintenance: 4 },
     wants: { divergence_threshold_hours: 1, essential_services_law: 1, shed_order_priority: 1 },
     asks: "no reduction in the embodied labour floor",
-    note: `The strike weapon, and the base of the Party of Socialists and Democrats. It is blunt, it is patient, and it has never forgotten that the party came out of the same sheds it did.` },
+    note: "The Combined Maintenance Trades is the union of the workers who maintain the stations' systems, and its members can strike. It is affiliated to the Party of Socialists and Democrats and votes as a block at its conference, and its executive casts the votes of the Maintenance and Trades functional constituency on its members' behalf." },
 
   { id: "anselm_elevator", name: "Anselm Elevator", kind: "consortium",
     standing: 44, patience: 80,
     reach: { fc_elevator: 3, fc_transit: 2 },
     wants: { divergence_threshold_hours: 1, anchor_concession: 1, transit_windows: 1 },
     asks: "the anchorage concession ratified before the House rises",
-    note: "Owns the tether everything arrives on, and has owned it long enough to speak of it the way other people speak of the weather. It does not hurry, because it cannot lose, and it does not threaten, because it does not have to." },
+    note: "Anselm Elevator is the consortium that owns and operates the Beanstalk, the tether at Macapá on which Anselm Ring's traffic from Earth arrives. Its concession on the anchorage awaits ratification by the House, and it can move votes on the Tether and Anchorage and the Transit benches." },
 
   { id: "standard_substrate", name: "Standard Substrate", kind: "consortium",
     standing: 35, patience: 65,
     reach: { fc_substrate: 3 },
     wants: { divergence_threshold_hours: -1, substrate_ownership: -1, risk_pricing: 1 },
     asks: "leave the public substrate share where it is",
-    note: "Sells the substrate a person runs on, and its position is that more people should need it. Its patience is the market's patience, and it prices accordingly." },
+    note: "Standard Substrate is a private provider of substrate, the hardware emulated persons run on, and charges by the hour of computation. It opposes a larger public share of substrate provision, and can move votes on the Substrate and Hosting bench." },
 
   /* THREE BODIES ADDED FOR A STRUCTURAL REASON, not a narrative one.
 
@@ -142,34 +142,34 @@ const ACTORS = [
     reach: { fc_legal: 3 },
     wants: { divergence_threshold_hours: -1, reclassification_practice: 1, charter_interpretation: 1 },
     asks: "no ministerial direction over reclassification practice",
-    note: `Licenses the practitioners who argue what a person is, and is appointed by the government whose law they argue about. It has outlasted every Minister for Attestation since the Charter.` },
+    note: "The Board of Legal Practice licenses the Commonwealth's lawyers, among them the practitioners who argue reclassification cases, on whether a person is a person in law. The government appoints its members, and it can move votes on the Legal bench." },
 
   { id: "college_medicine", name: "College of Medicine and Embodiment", kind: "board",
     standing: 57, patience: 50,
     reach: { fc_medicine: 3 },
     wants: { divergence_threshold_hours: 1, embodiment_access: 1, bone_density_standards: 1 },
     asks: "hold the embodiment access standard for a full session",
-    note: `Decides who may practise on a body, in a Commonwealth arguing about whether one is required. It admits by election of its own fellows, and its minutes are published two years late.` },
+    note: "The College of Medicine and Embodiment licenses those who practise medicine on a body. It admits new fellows by election of its existing fellows, publishes its minutes two years after each meeting, and can move votes on the Medicine and Embodiment bench." },
 
   { id: "underwriters", name: "Circumterrestrial Underwriters", kind: "consortium",
     standing: 41, patience: 85,
     reach: { fc_underwriting: 3, fc_residual: 1 },
     wants: { divergence_threshold_hours: 1, risk_pricing: 1, substrate_insurance: 1 },
     asks: "no statutory cap on substrate risk pricing",
-    note: "Prices the risk that a person stops running, and holds the only complete numbers in the Commonwealth. It does not campaign, because the numbers do." },
+    note: "The Circumterrestrial Underwriters is the Commonwealth's insurance market: the syndicates and mutuals on the Bourse that insure habitats, stations and substrate against failure. Because it insures against a person ceasing to run, it holds the most complete figures on margins, suspensions and default of any body in the Commonwealth. Seven of its members have committed CW$36bn to the Treasury through the Commonwealth Reserve Notes, and it can move votes on the Insurance and Underwriting bench." },
 
   { id: "bellweather", name: "Bellweather Consumables", kind: "consortium",
     standing: 49, patience: 60,
     reach: { fc_consumables: 3 },
     wants: { consumables_floor: 1, consumables_subsidy: 1, substrate_insurance: 1 },
     asks: "no consumables price intervention this session",
-    note: "Sells the food, air and water, and can stop a station by not loading a ship. Its politics is a schedule and a cold chain." },
+    note: "Bellweather Consumables supplies food, air and water to the stations and ships them on its own schedule, so a station it stops loading for runs short. It can move votes on the Consumables and Agriculture bench." },
 
   { id: "tribunal", name: "The Tribunal", kind: "court",
     standing: 55, patience: 90,
     reach: {}, wants: {},
     asks: "that every reference it hears is answered",
-    note: "The bench that hears what the orders do. Its standing is its disposition toward the government and not its quality: a bench at seventy reads an order generously, and a bench at thirty has been given reasons to read it narrowly. It cannot be whipped, it is not elected, and it remembers." },
+    note: "The Tribunal is the court that hears challenges to the government's statutory instruments. It can strike an order, read it narrowly or uphold it, and a case before it is heard on a named sitting. Its disposition toward the government, out of 100, decides how generously it reads an order, and rises when the government answers its references, defends its cases and complies with its rulings." },
 
   /* EARTH (Flash I). Two governments the crisis runs through: the bloc
      that can sanction the Commonwealth, and the host state the abandoned
@@ -188,25 +188,25 @@ const ACTORS = [
     standing: 50, patience: 60,
     reach: {}, wants: {},
     asks: "the platform's corporate debt is honoured before any annexation",
-    note: "The treaty union that sanctioned the Commonwealth, and the only power in the dispute that is also a landlord: it holds Tether 4 at Kourou on its own territory. Its grievance is that the orbital franchises undercut European labour and personhood law, and that European courts cannot reach them. Two sittings between a decision in Brussels and the Commonwealth hearing of it." },
+    note: "The European Union is the treaty union that has sanctioned the Commonwealth. It is the one party to the dispute with an anchor on its own territory: Tether 4, at Kourou. Its complaint is that the orbital franchises undercut European labour and personhood law beyond the reach of European courts. Its decisions reach the Commonwealth two sittings after they are taken in Brussels." },
 
   { id: "earth_host", name: "Kenya", kind: "state", foreign: true, lag: 1,
     standing: 55, patience: 40,
     reach: {}, wants: {},
     asks: "a repatriation corridor for its citizens, however long the process takes",
-    note: "The state whose soil the International Earth-Orbit Elevator stands on, and whose procurement law makes a two-year rescue the fast one. A middle power with a real bureaucracy and a serious space programme, doing what a state does: it will not carry the cost of a corporation's wind-up, and it will not let a foreign government annex the platform at the foot of its own tether. Its business reaches the Commonwealth inside a sitting." },
+    note: "Kenya is the state on whose soil the International Earth-Orbit Elevator stands. It is a middle power with a large public administration and an established space programme, and its procurement law makes a repatriation of the platform's workers take two years. It will not pay for the wind-up of a foreign corporation, and it opposes any annexation of the platform at the foot of its tether. Its decisions reach the Commonwealth within a sitting." },
 
   { id: "mars", name: "Chryse Basin and Nili Republic", kind: "state", foreign: true, lag: 11,
     standing: 44, patience: 80,
     reach: {}, wants: {},
     asks: "a public statement of the Commonwealth's position on the metanationals",
-    note: `Eleven sittings away, and permanently divided at home: the Chryse Basin wants to dig, and Nili, where Mars' strongest evidence of ancient life sits, will not let it. It buys from the same extraction companies that abandoned the platform, and it has been watching. A dispatch reaches it in minutes, and its answer comes when both halves have agreed, about three weeks later.` },
+    note: "Mars is divided between the Chryse Basin, which wants to mine, and the Nili Republic, where Mars' strongest evidence of ancient life lies and which will not allow it. It buys from the same extraction companies that abandoned the platform. A dispatch reaches it in minutes, and its answer comes when both halves have agreed, eleven sittings later." },
 
   { id: "metanationals", name: "Cordell", kind: "metanational", foreign: true, lag: 3,
     standing: 47, patience: 70,
     reach: {}, wants: {},
     asks: "the anchor concessions renewed without ratification, on their terms",
-    note: "Quasi-sovereign, and the one foreign actor that is also a domestic lobbyist: the corporation that abandoned the Almanac Works through a ring-fenced subsidiary, holds two anchor concessions, and buys functional seats at home through the Anchor Party. It cannot be whipped and it does not need to be. Its position is that it acted within its rights." }
+    note: "Cordell is an extraction company chartered by the Gabonese Assembly in 2044 and majority-owned by Gabon's sovereign fund. It abandoned the Almanac Works through a ring-fenced subsidiary. It holds two anchor concessions, at Port-Gentil and on Chimborazo, and the Port-Gentil line serves Rookworks—Anselm, so it has interests inside the Commonwealth as well as outside it. Its position is that it acted within its rights." }
 ];
 
 if (typeof module !== "undefined") module.exports = ACTORS;

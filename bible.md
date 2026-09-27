@@ -175,46 +175,46 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 
 **Part XI — NAMED CANON** · L2031
 - §11.1 · L2035 — The polity
-- §11.2 · L2134 — Persons
-- §11.3 · L2178 — Stations and constituencies
-- §11.4 · L2255 — The functional roster  *LOCKED*
-- §11.5 · L2277 — The live bill
-- §11.6 · L2286 — Other business on the order paper
+- §11.2 · L2141 — Persons
+- §11.3 · L2185 — Stations and constituencies
+- §11.4 · L2262 — The functional roster  *LOCKED*
+- §11.5 · L2284 — The live bill
+- §11.6 · L2293 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L2304
-- §12.1 · L2306 — The core principle  *LOCKED*
-- §12.2 · L2310 — Split visual language  *LOCKED*
-- §12.3 · L2317 — Chrome direction  *LOCKED*
-- §12.4 · L2323 — Screens  *LOCKED*
-- §12.5 · L2327 — Election night  *LOCKED*
-- §12.6 · L2337 — The orbital map  *LOCKED*
-- §12.7 · L2365 — The parliament diagram  *LOCKED*
-- §12.8 · L2391 — Documents  *LOCKED*
-- §12.9 · L2397 — The feed  *LOCKED*
-- §12.10 · L2401 — Build cost  *LOCKED*
-- §12.11 · L2405 — Images  *LOCKED*
-- §12.12 · L2433 — Existing artifact
-- §12.13 · L2445 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L2311
+- §12.1 · L2313 — The core principle  *LOCKED*
+- §12.2 · L2317 — Split visual language  *LOCKED*
+- §12.3 · L2324 — Chrome direction  *LOCKED*
+- §12.4 · L2330 — Screens  *LOCKED*
+- §12.5 · L2334 — Election night  *LOCKED*
+- §12.6 · L2344 — The orbital map  *LOCKED*
+- §12.7 · L2372 — The parliament diagram  *LOCKED*
+- §12.8 · L2398 — Documents  *LOCKED*
+- §12.9 · L2404 — The feed  *LOCKED*
+- §12.10 · L2408 — Build cost  *LOCKED*
+- §12.11 · L2412 — Images  *LOCKED*
+- §12.12 · L2440 — Existing artifact
+- §12.13 · L2452 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2504
-- §13.1 · L2506 — Scandal taxonomy  *LOCKED*
-- §13.2 · L2519 — The spine  *LOCKED*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2511
+- §13.1 · L2513 — Scandal taxonomy  *LOCKED*
+- §13.2 · L2526 — The spine  *LOCKED*
 
-**Part XIV — PRIOR ART** · L2527
-- §14.1 · L2529 — The gap  *LOCKED*
-- §14.2 · L2533 — Works
-- §14.3 · L2541 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L2534
+- §14.1 · L2536 — The gap  *LOCKED*
+- §14.2 · L2540 — Works
+- §14.3 · L2548 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2554
-- §15.1 · L2556 — Team  *LOCKED*
-- §15.2 · L2562 — Documentation  *LOCKED*
-- §15.3 · L2578 — Where this gets hard  *LOCKED*
-- §15.4 · L2589 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2606 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2561
+- §15.1 · L2563 — Team  *LOCKED*
+- §15.2 · L2569 — Documentation  *LOCKED*
+- §15.3 · L2585 — Where this gets hard  *LOCKED*
+- §15.4 · L2596 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2613 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2636
+**Part XVI — OPEN DECISIONS** · L2643
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2680
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2687
 
 <!-- /TOC -->
 
@@ -2074,6 +2074,13 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
   by two thirds. The Council is a Concordance article
   (`un_security_council`) and not a forum in play; a forum with a veto rule
   is the next step if a campaign needs a Council vote.
+- **The Bellamy Almanac Works is a refinery and foundry** (decided 27 Sep
+  2026 by Claude, at the author's request; `design/45`). It smelts the ore
+  Cordell's extraction platforms bring in and rolls it into structural metal
+  and hull plate, which is why absorbing it expands the Commonwealth's
+  industrial capacity. The canon had called it an industrial platform and
+  never said what it made; the note that introduced it spent its clause on
+  why Cordell kept the Bellamy name.
 - **Current date in play:** 11 April 2080. Session 4, Week 112.
 - **THE TIMELINE — LOCKED 22 Sep 2026, and it is TWO DECADES and not two
   centuries.** The Commonwealth was drafted as two hundred years old and dated
