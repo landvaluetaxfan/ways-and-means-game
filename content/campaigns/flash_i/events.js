@@ -215,17 +215,30 @@ the same wire."`,
 { id:"f1_dilemma", chapter:2, queuedOnly:true, once:true,
   title:"The dilemma",
   speaker:"fenwick",
-  body:`The Minister for Law and the Charter sets out the two futures in
-the plainest terms. Absorb the Works and take its industrial capacity,
-its life-support bill, and the embargo risk over the defaulted debt. Or
-decline, keep the short term, and explain the strikes.
+  body:`Adaeze Fenwick, the Minister for Law and the Charter, sets out the
+government's two choices on the Bellamy Almanac Works, the orbital refinery
+whose residents have voted to join the Commonwealth.
 
-Cordell did not break the law. It wound up the subsidiary that employed them,
-kept the leases, and left the parent's exposure at nothing. Every step of it was lawful.
+The first is to annex it: to pass a law making the platform and its 184,000
+people part of the Commonwealth. The Commonwealth would gain the refinery
+and its foundry, and it would take on the cost of keeping the residents
+alive. It would also take on the platform's unpaid bonds, which European
+banks hold, and the European Union has said it will treat whoever takes the
+platform as answerable for them. The Treasury puts the first cost at six
+billion dollars.
 
-Neither future is a vote the government can lose quietly.`,
+The second is to decline. Kenya's two-year rescue would stand, and the
+residents would wait for it with two months of air. The outer habitats,
+which have supplied the Works since the wind-up, have said their members
+will strike if the government declines.
+
+Fenwick is clear that Cordell, the Gabonese mining company that owned the
+Works, broke no law. It shut down the subsidiary that employed the
+residents, and the subsidiary's debts ended with it. The mining leases that
+fed the refinery belong to the platform and would come with it. Whichever
+choice the government makes will be the one it is judged on at the election.`,
   choices:[
-    { posture:"bold", label:"Move to annex.",
+    { posture:"bold", label:"Move to annex the Works.",
       /* AND THE BILL IS ACTUALLY SET DOWN. The result line has always said
          it was; until now nothing was, and the annexation settlements gated
          on the flag this choice sets rather than on any Act. Moving it out
@@ -271,11 +284,11 @@ Neither future is a vote the government can lose quietly.`,
                   when the House rises. */
                { slots:{ reserve:{ annexation:5 } } },
                { wire:"GOVERNMENT MOVES TO ANNEX THE WORKS" }],
-      result:"The annexation bill is set down. Acting is popular at home; Earth notices, a little more, every sitting." },
-    { posture:"cautious", label:"Hold the line.",
+      result:"The Almanac Works (Annexation) Bill is set down for first reading. Acting is popular at home. On Earth, the governments and banks that hold the platform's bonds take note, and their patience shortens with every sitting." },
+    { posture:"cautious", label:"Decline, and leave the Works to Kenya's rescue.",
       effects:[{ move:{ "trend.legitimacy":-3 } }, { move:{ "friction":-4 } }, { flag:"f1_held_the_line" },
                { queue:[{ event:"un_joint_offer", after:1 }] }],
-      result:"The outer habitats have heard the answer, and they will repeat it back every sitting." }
+      result:"The outer habitats have heard the answer. Their members will raise it at every sitting, and the country trusts the government a little less each time." }
   ]},
 
 /* one drift micro-decision: nothing crashes today; the margin leans */
@@ -292,20 +305,28 @@ Neither future is a vote the government can lose quietly.`,
     "an event today — the drift is the point.",
   title:"The recycling line",
   speaker:"vellan",
-  body:`The Minister for Life Support has brought the Works' water-recycling estimate.
-The line was built for a company that meant to leave, and it runs at the edge of
-its certified rate. Funded in full, it holds for the quarter. Trimmed, it holds
-for a month, and then the margin goes a point at a time.
+  body:`Suravaram Vidyasagar, the Minister for Life Support, has brought the
+estimate for the Works' water-recycling plant. Cordell built it to last only
+as long as the company meant to stay, and it is running at the top of its
+certified rate.
 
-"Neither answer shows today," Vidyasagar says. "One of them shows in a month."`,
+Since the Act was set down, the Works' heat counts against the
+Commonwealth's thermal margin, the spare capacity of its radiators, and a
+recycling plant at its limit wastes power as heat. Funded in full, at three
+billion dollars, the plant holds for the quarter and the margin recovers a
+little each sitting. Trimmed, the Treasury keeps two billion, the plant
+holds for a month, and then the margin falls by about two points a sitting.
+
+"Neither answer shows today," Vidyasagar says. "One of them shows in a
+month."`,
   choices:[
     { posture:"bold", label:"Fund it in full.",
       effects:[{ move:{ "solvency":-3000 } }, { move:{ "trend.thermal_margin":1 } },
                { move:{ "legitimacy":4 } }],
-      result:"The margin improves, a point at a time, and the country sees a government paying for the platform it claimed." },
+      result:"The plant is refitted. The thermal margin recovers a point at a time, and the country sees a government paying for the platform it took." },
     { posture:"cautious", label:"Trim it and take the margin.",
       effects:[{ move:{ "solvency":2000 } }, { move:{ "trend.thermal_margin":-2 } }],
-      result:`Nothing happens today. The recycling margin slips a point at a time from here, and the next estimate will say so.` }
+      result:`Nothing changes today. From next month the thermal margin falls about two points a sitting, and the next estimate will say so.` }
   ]},
 
 /* a panic button: visible, expensive, and the way back from the cascade */
@@ -313,11 +334,18 @@ for a month, and then the margin goes a point at a time.
   when:{ scalarBelow:{ solvency:30000 } },
   title:"The emergency loan",
   speaker:"hatt",
-  body:`The Alliance of Business and Government will carry the
-Commonwealth's short position, at a rate, for a term, on a condition.
-The condition is Cordell's mining leases.
+  body:`Edward Hatt, leader of the Alliance of Business and Government, offers to
+lend the Commonwealth the money it is short. The Treasury's cash reserve is
+below thirty billion dollars and falling.
 
-The rate is printed. The term is printed. The condition is one line.`,
+The loan is eighteen billion dollars, repayable at nineteen billion eight
+hundred million before the House rises at the end of the session, a rate of
+ten per cent. Its security is the Cordell leases: the rights to the ore that
+feeds the Works, which came to the Commonwealth with the platform. If the
+loan is not repaid on time, the Alliance may take the leases.
+
+The rate, the term and the security are printed on a single page, and Hatt
+has signed it already.`,
   choices:[
     /* REPAYABLE (the author, 23 Sep). The promise had no discharge, so it
        always broke, and its breach named an event nobody had written, so the
@@ -333,10 +361,10 @@ The rate is printed. The term is printed. The condition is one line.`,
                              owed_to:"hatt", post:"treasury", by:null,
                              discharge:{ repaid:"alliance" },
                              onBreach:"f1_debt_called" } }],
-      result:"Eighteen billion dollars reach the reserve. The facility is repayable at nineteen billion eight hundred million before the House rises, and the Cordell leases stand as its security until then." },
-    { posture:"cautious", label:"Refuse the rate.",
+      result:"Eighteen billion dollars reach the reserve. The loan must be repaid, at nineteen billion eight hundred million, before the House rises, and the Cordell leases are its security until then." },
+    { posture:"cautious", label:"Refuse the loan.",
       effects:[{ move:{ "legitimacy":3 } }, { move:{ "trend.solvency":-1000 } }],
-      result:"A solvent government could have refused it. This one is not solvent, and refusing costs a little, every sitting." }
+      result:"A government with money in hand could have refused it. This one is short, and the shortfall now costs the reserve about a billion dollars a sitting." }
   ]},
 
 /* the meltdown: a LOSS through the loyalty floor, not a settlement */
@@ -473,26 +501,31 @@ of one, and it is being charged to us by the hour."`,
   when:{ scalarAbove:{ friction:45 } },
   title:"What Earth would take to stand down",
   speaker:"landry",
-  body:`The Foreign Minister has a list from Earth's banks. Honour the
-corporate bonds the platform defaulted on. Accept an inspection of the
-salvage claim. Suspend the annexation question for a quarter. Do those
-three and the measures are lifted, for a quarter, and reviewed.
+  body:`Jean Landry, the Minister for External Relations, has a list of terms from
+the European banks that hold the Works' bonds.
 
-It is not a bargain an ordinary year would take. This is not one.`,
+The Commonwealth would pay the bondholders the seven billion dollars the
+platform defaulted on, and accept an inspection of its claim to have
+salvaged the platform. In return the European Union would lift its sanctions
+for three months and then review them.
+
+The terms are harsh, and a government would refuse them in a normal year.
+The sanctions are also costing the Treasury money every sitting they stay in
+place.`,
   choices:[
-    { posture:"cautious", label:"Pay the bond and take the suspension.",
+    { posture:"cautious", label:"Pay the bondholders and accept the inspection.",
       /* paying the bond also cures the Standby Facility's default, if the
          agent has declared one (f1_standby_notice) */
       effects:[{ move:{ "friction":-9 } }, { move:{ "solvency":-7000 } },
                { move:{ "legitimacy":-3 } },
                { flag:{ works_bond_paid:true, standby_default:false } },
                { wire:"COMMONWEALTH PAYS THE BOND; EARTH SUSPENDS THE MEASURES FOR A QUARTER" }],
-      result:"The measures lift and the reserve pays for a suspension that lasts a quarter." },
-    { posture:"bold", label:"Refuse, and wear the measures.",
+      result:"The reserve pays seven billion dollars to the bondholders. The European Union lifts its sanctions for three months, and the quarrel with Earth cools." },
+    { posture:"bold", label:"Refuse, and live with the sanctions.",
       effects:[{ move:{ "friction":2 } }, { move:{ "legitimacy":5 } },
                { move:{ "loyalty.cu_maintenance":4 } },
                { wire:"PM REFUSES EARTH'S TERMS: 'THE COMMONWEALTH DOES NOT PAY RANSOM' (as of 6 days ago)" }],
-      result:"The line is popular at home and the sanctions price it in, every sitting." }
+      result:"The refusal is popular at home, and with the Trades Left in particular. The sanctions stay, and cost more every sitting." }
   ]},
 
 /* REACH: no gate; always eligible in ch2 and loses on weight. */
@@ -502,24 +535,24 @@ It is not a bargain an ordinary year would take. This is not one.`,
   when:{ seen:["f1_stranded"] },
   title:"Two audiences, one sentence",
   speaker:"ceyhan",
-  body:`The Spindle leads with the platform's scrubbers and the government
-that looked away. The Earth-side services lead with a tragic industrial
-accident being politicised by opportunistic habitats, and quote a minister
-who has not been a minister for nine years.
+  body:`The Spindle, the Commonwealth's newspaper of record, leads with the Works'
+failing air scrubbers and the governments on Earth that let Cordell walk
+away. Earth's news services report a tragic industrial accident that orbital
+politicians are exploiting, and quote as an expert a former minister who
+left office nine years ago.
 
-It is the same week in two places, and there is one sentence available to
-the government that will be read in both.`,
+The government can make one statement, and both audiences will read it.`,
   choices:[
-    { posture:"bold", label:"Say it for the Commonwealth: competence, not sentiment.",
+    { posture:"bold", label:"Speak to the Commonwealth: stress competence, not sympathy.",
       effects:[{ move:{ "legitimacy":6 } }, { move:{ "actor.earth_bloc":-5 } },
                { move:{ "friction":3 } },
                { wire:"PM SPEAKS TO THE HABITATS; EARTH SERVICES CALL THE TONE 'MANAGERIAL'" }],
-      result:"The Commonwealth hears a government in command. Earth hears a government that has stopped being polite." },
-    { posture:"cautious", label:"Say it for both: the accident, and the rescue.",
+      result:"At home the statement reads as a government in control of the crisis. Earth's services quote it as proof that the Commonwealth has stopped trying to be diplomatic." },
+    { posture:"cautious", label:"Speak to both: call it an accident, and the Commonwealth's response a rescue.",
       effects:[{ move:{ "actor.earth_bloc":6 } }, { move:{ "actor.earth_host":4 } },
                { move:{ "legitimacy":-3 } }, { move:{ "friction":-2 } },
                { wire:"PM ADDRESSES BOTH AUDIENCES ON THE PLATFORM (Earth services carry it in full)" }],
-      result:"Earth carries the sentence and the outer habitats notice that the government answered the people who do not vote for it." }
+      result:"Earth's services carry the statement in full. On the outer habitats, members ask why the government is explaining itself to people who do not vote for it." }
   ]},
 
 /* the canon election: the pyrrhic tier leads to the campaign's victory */
@@ -1200,33 +1233,38 @@ banks can decline to lend while the argument runs.`,
 { id:"un_the_mission", chapter:2, queuedOnly:true, once:true,
   title:"One vote in a hundred and ninety-four",
   speaker:"landry",
-  body:`The Commonwealth's mission in New York has sent its first cable since the
-referendum, and Jean Landry reads it aloud.
+  body:`The Commonwealth's mission to the United Nations in New York has sent its
+first cable since the Works' referendum, and Jean Landry, the Minister for
+External Relations, reads it aloud.
 
-The General Assembly sits every three weeks through the summer. A resolution
-tabled before a sitting is voted at it: a majority of the states present and
-voting carries it, and abstentions count for nothing. The Commonwealth has one
-vote. The European Union's twenty-seven vote on a line their ministers agree in
-Brussels, and most of them keep to it. The rest of the world votes by region,
-and each region by what it thinks of the Commonwealth.
+The General Assembly, where every member state has one vote, sits every
+three weeks through the summer. A resolution tabled before a sitting is
+voted on at it. A majority of the states present and voting carries it, and
+abstentions do not count.
+
+The Commonwealth has one vote. The European Union's twenty-seven members
+vote on a line their ministers agree in Brussels, and most keep to it. The
+rest of the world votes by region, and each region according to what it
+thinks of the Commonwealth. The mission keeps a count of how each state is
+likely to vote, and the count moves with everything the government does
+before the sitting.
 
 "The mission can table a resolution affirming the Works' right to decide its
-own future," Landry says. "The count is on the Foreign Affairs tab. It moves
-with everything this government does between now and the sitting."`,
+own future," Landry says.`,
   choices:[
     { posture:"cautious", label:"Wait. The referendum can speak for itself.",
-      result:`The draft stays in the mission's safe. It can be tabled from the Foreign Affairs tab before any sitting.` },
+      result:`The draft stays in the mission's safe. The government can table it from the Foreign Affairs tab before any sitting, where the mission's count is kept.` },
     { posture:"bold", label:"Table it now.",
       effects:[{ resolution:{ un_works_selfdet:"table" } },
                { wire:"COMMONWEALTH TABLES A RESOLUTION ON THE WORKS AT THE UNITED NATIONS" }],
       result:`The resolution is tabled for the Assembly's next sitting. The Union's mission asks for a copy within the hour.` },
-    { posture:"measured", label:"Table it, and write to the anchor states first.",
+    { posture:"measured", label:"Table it, and first write to six of the states that host the elevators' anchors.",
       effects:[{ resolution:{ un_works_selfdet:"table" } },
                { move:{ solvency:-1500 } },
                { move:{ "member.sao_tome":6, "member.kiribati":6, "member.brazil":6,
                         "member.maldives":6, "member.somalia":6, "member.uganda":6 } },
                { wire:"COMMONWEALTH TABLES A RESOLUTION ON THE WORKS AND REMITS ANCHOR FEES" }],
-      result:`Six capitals receive a letter and a quarter's anchor fees back, and the resolution is tabled for the next sitting.` }
+      result:`São Tomé and Príncipe, Kiribati, Brazil, the Maldives, Somalia and Uganda each receive a letter and a refund of three months' anchor fees, one and a half billion dollars in all. The resolution is tabled for the next sitting.` }
   ]},
 
 /* THE UNION TABLES ITS OWN once the government moves to annex (the
@@ -1341,17 +1379,19 @@ the Assembly, delegation by delegation, has the rest.`,
 { id:"un_joint_offer", chapter:2, queuedOnly:true, once:true,
   title:"Kenya's proposal",
   speaker:"landry",
-  body:`Kenya's foreign ministry has proposed a middle course by cable. The Works
-would be administered jointly by the United Nations and the Commonwealth as a
-free trade zone, its residents would keep their Earth passports and gain
-Commonwealth protection, and nobody would own the platform until they decide
-who should.
+  body:`Kenya's foreign ministry has cabled a compromise. The Works would be
+administered jointly by the United Nations and the Commonwealth as a free
+trade zone. Its residents would keep their Earth passports and gain the
+Commonwealth's protection, and nobody would own the platform until the
+residents decide who should.
 
-"It needs two thirds of the Assembly," Landry says. "Kenya will vote for it.
-Whether anybody else does depends on what we are seen to want."`,
+"Placing a territory under United Nations administration needs two thirds of
+the General Assembly," says Jean Landry, the Minister for External
+Relations. "Kenya will vote for it. Whether anybody else does depends on
+what we are seen to want."`,
   choices:[
     { posture:"cautious", label:"Thank Kenya and keep the proposal in the drawer.",
-      result:`The proposal is acknowledged and not tabled. It can be tabled from the Foreign Affairs tab before any sitting.` },
+      result:`The proposal is acknowledged and not tabled. The government can table it from the Foreign Affairs tab before any sitting.` },
     { posture:"bold", label:"Table it as the Commonwealth's own.",
       effects:[{ resolution:{ un_works_administration:"table" } }, { move:{ "actor.earth_host":4 } },
                { wire:"COMMONWEALTH TABLES A JOINT ADMINISTRATION OF THE WORKS AT THE UNITED NATIONS" }],
