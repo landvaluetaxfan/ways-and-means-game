@@ -135,19 +135,23 @@ const SetPiece = (function () {
      is its body; an object carries a mood, art and written sections. */
   function is(ev) { return !!(ev && ev.setpiece); }
 
-  /* THE PAGE, WHERE NOBODY HAS WRITTEN ONE. An event marked with no
-     sections is drawn from its body: the first paragraph is the lede, the
-     rest the body. The prose is the author's either way; sections are how
-     an author makes a page more than its paragraphs, and nothing here
-     writes one for them. */
+  /* THE PAGE IS THE BODY, THEN WHAT IS WRITTEN FOR THE PAGE (design/50).
+     An event's story is its body, as any entry's is: the first paragraph
+     is the lede and the rest follow. Its sections add what a body cannot:
+     what is being said, a document, a headed passage. An epigraph goes
+     first, because that is where an epigraph stands. A page with no body
+     (the introduction, the last board) is its sections alone. Nothing here
+     writes prose; the page is only ever the author's. */
   function sectionsOf(ev) {
-    const sp = ev && typeof ev.setpiece === "object" ? ev.setpiece : {};
-    if ((sp.sections || []).length) return sp.sections;
+    const sp = ev && typeof ev.setpiece === "object" && ev.setpiece ? ev.setpiece : {};
+    const written = sp.sections || [];
     const paras = String((ev && ev.body) || "").split(/\n\s*\n/)
       .map(p => p.replace(/\s*\n\s*/g, " ").trim()).filter(Boolean);
-    if (!paras.length) return [];
-    return [{ kind: "lede", body: paras[0] }].concat(paras.length > 1
+    if (!paras.length) return written;
+    const told = [{ kind: "lede", body: paras[0] }].concat(paras.length > 1
       ? [{ kind: "body", body: paras.slice(1).join("\n\n") }] : []);
+    return written.filter(x => x.kind === "epigraph").concat(told,
+      written.filter(x => x.kind !== "epigraph"));
   }
 
   /* Returns the page and the mood it wants. The CALLER cues the mood, on the

@@ -1068,10 +1068,12 @@ try {
                   " choices carry no posture, so the Sitting screen cannot order them");
   });
 
-  /* AN EVENT'S PAGE (design/49): a mood the score knows, and sections of
-     a kind the page draws. An unknown mood is silence where the author
-     asked for music; an unknown kind falls back to plain body. */
-  const MOODS = new Set(VOCAB.moods || []);
+  /* AN EVENT'S PAGE (design/49): a mood an event may name (one that plays
+     and resolves on its own, SCHEMA.vocab.eventMoods), and sections of a
+     kind the page draws. An unknown mood is silence where the author asked
+     for music, `tension` is drums until the next division, and an unknown
+     kind falls back to plain body. */
+  const MOODS = new Set(VOCAB.eventMoods || []);
   const PAGE_KINDS = new Set(require(path.join(root, "js", "setpiece.js")).KINDS || []);
   (EVENTS || []).forEach(ev => {
     const sp = ev.setpiece;

@@ -257,6 +257,12 @@ const SCHEMA = {
        only where the event is that kind of moment. test.js holds this list
        to Music.MOODS. */
     moods: ["tension","moment","defeat","rise","sombre","undertake","order","revoke","threat","prorogue"],
+    /* AND THE ONES AN EVENT MAY NAME: those that play and resolve on their
+       own. `tension` brings the drums in until a division's result takes
+       them out, so on a page they would play until the next division;
+       `prorogue` is the score's one full stop and keeps that meaning; and
+       `undertake` is a promise's cue. */
+    eventMoods: ["threat","moment","defeat","rise","sombre","order","revoke"],
     /* what kind of award an achievement is, which decides where the
        awards screen lists it */
     awardTiers: ["ending","settlement","action","canon"],

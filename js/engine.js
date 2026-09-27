@@ -5006,12 +5006,6 @@ const Engine = (function () {
     const today = st.lastFired || {};
     let pool = eligible(st, C).filter(e => today[e.id] !== st.sitting);
     if (!pool.length) return null;
-    /* AND AN EVENT OUTRANKS EVERY DECISION: an event whose gate holds comes
-       up at the next sitting, whatever the pool of business weighs. That is
-       what "when a threshold is reached" means. Among events the weight
-       orders them, and `chance` is the dice. */
-    const evs = pool.filter(isEvent);
-    if (evs.length) pool = evs;
 
     /* `chance` is tested ONCE, when an event first becomes eligible, and
        the answer is remembered. Re-rolling every sitting would turn a
@@ -5023,7 +5017,44 @@ const Engine = (function () {
       if (st.rolled[e.id] == null) st.rolled[e.id] = draw(st) < e.chance;
       return st.rolled[e.id];
     });
+    /* `perSitting` IS A RANDOM EVENT'S CLOCK (design/50). `chance` decides
+       once whether a thing ever happens; this decides when. Every sitting
+       its gate holds, the entry is rolled once, from the government's seed,
+       and comes up if the roll falls under it: 0.1 is a one-in-ten chance a
+       sitting, so it arrives after ten on average and never on a day anyone
+       could name. Rolled once a sitting, not once an asking, because a
+       sitting that opens with an event asks again for its decision. */
+    pool = pool.filter(e => {
+      if (e.perSitting == null) return true;
+      if (!st.rolledToday || st.rolledToday.sitting !== st.sitting)
+        st.rolledToday = { sitting: st.sitting, ids: {} };
+      const R = st.rolledToday.ids;
+      if (R[e.id] == null) R[e.id] = draw(st) < e.perSitting;
+      return R[e.id];
+    });
     if (!pool.length) return null;
+    /* AFTER THE DICE, AN EVENT OUTRANKS EVERY DECISION: an event whose gate
+       holds comes up at the next sitting, whatever the pool of business
+       weighs, which is what "when a threshold is reached" means. Among
+       events the weight orders them. The dice come first because narrowing
+       to the events and then rolling one that failed left the sitting with
+       no decision at all (found by test.js, design/50).
+
+       ONE FROM THE POOL A SITTING. Threshold events chain: the first floor's
+       flag opens the second floor's gate, and the second's opens the
+       meltdown's. With nothing holding them apart all three landed on one
+       sitting, where the author's plan wants "one tier per turn" so a
+       government has time to pull back. So once an event from the pool has
+       been answered this sitting, the rest of the pool's events wait for the
+       next; an outcome event (queued), a dated one or a prologue beat is not
+       held, because it was due. */
+    const pooled = e => !e.queuedOnly && e.prologue == null && e.at == null;
+    const poolEventToday = (C.events || []).some(e =>
+      isEvent(e) && pooled(e) && today[e.id] === st.sitting);
+    if (poolEventToday) pool = pool.filter(e => !isEvent(e));
+    if (!pool.length) return null;
+    const evs = pool.filter(isEvent);
+    if (evs.length) pool = evs;
 
     /* A SEEDED LEAN, SO THE POOL IS NOT ORDERED BY WEIGHT ALONE.
 
@@ -5655,6 +5686,25 @@ const Engine = (function () {
      makes an entry an event is that the author gave it a page. */
   function isEvent(e) { return !!(e && e.setpiece); }
   function eventKind(e) { return isEvent(e) ? "event" : "decision"; }
+
+  /* WHAT BRINGS AN EVENT (the author, 27 Sep: "we can separate into outcome
+     events, random events, and threshold events"). Read off the fields that
+     already say it, so nothing is stored twice:
+
+       outcome     `queuedOnly`: it comes only when something the player
+                   did queues it (a decision's answer, a lever, a vote)
+       random      `perSitting` or `chance`: the dice decide whether, or
+                   when, it comes
+       threshold   anything else: it comes the first sitting its gate holds
+                   (a meter crossed, a flag set, a date, a chapter reached)
+
+     null for a decision. */
+  function eventTrigger(e) {
+    if (!isEvent(e)) return null;
+    if (e.queuedOnly) return "outcome";
+    if (e.perSitting != null || e.chance != null) return "random";
+    return "threshold";
+  }
 
   /* A SITTING'S BUSINESS, IN THE ORDER A PLAYER MEETS IT: every event due,
      then the decision. `pick(e)` answers each and returns a choice's index;
@@ -8725,7 +8775,7 @@ const Engine = (function () {
     domainTest, functionalByConstituency, lobbiedByConstituency, isSupply,
     lastSession, lastPeriod, sessionEndsAt, recess, dissolve, checkEnd, supplyCarried, supplyPending,
     signableMembers, collectSignature, winBackTerms, winBack,
-    settle, outstanding, describe, grave, choiceOpen, openChoices, eventKind, isEvent, playSitting, passOver, draw,
+    settle, outstanding, describe, grave, choiceOpen, openChoices, eventKind, eventTrigger, isEvent, playSitting, passOver, draw,
     undertakingWhere,
     snapshot, changes,
     prorogue, canDivide, candidates, vacancies, fillPost,

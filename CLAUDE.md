@@ -235,7 +235,7 @@ list over any older sentence here that implies a different one:
 | **Relations** | *interparty affairs and nothing else (the author, 23 Sep: it "was built on false assumptions that it was supposed to be for all parties"); what the Party tab was until 24 Sep, with every id renamed `rel-` so none outlives its tab.* Three columns: **the arrangement** (every other party grouped by relation — in government, confidence and supply, outside — with seats, loyalty, the ledger and whether the government survives their going; your own party is on the roster for the arithmetic, and its "yours" mark opens the Party tab), **one relationship** (the terms, their leader and where you stand with them, what they want from you — their own bills, each opening where time is given to it — what you have promised their members, and where they part from you, measure by measure), and **who they vote with**. Who a party IS went to its Concordance article: members (a wikitable, `section.table`), organisation and branches (`CONTENT.partyOrg`), currents. The currents are counted on the Chamber's composition table. |
 | **Foreign Affairs** | *World until 26 Sep (design/43); the tab's id is still `world`.* The globe keeps the full left column; beside it **what is selected** (a country, an anchor, a foreign body, or since design/43 a resolution's count member by member, with each member's seats, standing and vote) and **relevant actors**; and under those two a band, **the forums**: each resolution the Commonwealth has an interest in, its count drawn as the House's two lobbies (the forecast while it waits, the record once decided), and the government's controls — Table it, Withdraw, or the Commonwealth's vote. A draft whose gate does not hold is not listed. The controls sit UNDER their row, not in it, because the row is a focus region's row and the region takes Enter to select it. The calendar marks a forum's sitting as **Abroad** in `--abroad` blue. |
 | **Orbit**, **Record** | unchanged |
-| **Sandbox** | *shown only on the author's bench (design/47), opened from the main menu's Sandbox.* Every decision and event with a finder (and the initiatives and orders), the one chosen read out gate by gate, and the state with Undo, Try again, flags, chapter and the campaign's shortcuts. |
+| **Sandbox** | *shown only on the author's bench (design/47), opened from the main menu's Sandbox.* Every decision and event with a finder, filtered by kind (and the levers: initiatives and orders), the one chosen read out gate by gate, and the state with Undo, Try again, flags, chapter and the campaign's shortcuts. |
 | **Concordance** | *the reference work, and it can only know what the world knows.* Articles are generated from content, which is authored for the WHOLE campaign — so anything staged for later showed up at sitting one. The four bills that open in `drafting` (the Almanac Works (Annexation) Bill among them, which is the act the campaign is about) each had a full page with a division forecast for a measure nobody had laid before the House, and the page contradicted itself saying so: "A measure before the House of Delegates. Stage: drafting." `drafting` is the engine's own word for not introduced, so it is the line: `build()` skips those and the page appears the moment the bill is set down. **The gate belongs on the surface, not in the content** — the content is right, the bill SHOULD be sitting in `drafting` waiting for `f1_dilemma`. Worth re-checking whenever a new reference surface reads a content list whole. |
 
 **THE CONCORDANCE WAS REFRESHED 22 Sep 2026 — the register, and liveness.**
@@ -687,22 +687,22 @@ version of any of them is in the header of the file it names.
   ending; the next leader's campaign assumes the canon one, so a narrative
   runs across parliaments. **Flash I's canon is the debt trap, decided 23
   Sep: "a middle ground between perfect and failure".** It returns the PSD to
-  government with austerity to come. Since design/49 (27 Sep: an event no
-  longer takes the sitting's decision) the canon reaches the count on 13
-  August, sitting 55, at standing 56: the PSD holds 107 of 280 and the
+  government with austerity to come. Since design/50 (27 Sep: events of
+  three kinds, one from the pool a sitting) the canon reaches the count on
+  13 August, sitting 55, at standing 55: the PSD holds 107 of 280 and the
   government's side 171, a working majority. The crisis is financed and
-  felt: it owes CW$33.6bn in Treasury bills (CW$26.4bn of room left under
-  the authority), with the dollar near 0.78 and headline inflation 5.9%
-  against 3.0% underlying, which the vote reads. The Union's measures are
-  adopted at the General Assembly on 11 June. The canon
+  felt: it owes CW$24.4bn in Treasury bills (CW$35.6bn of room left under
+  the authority), with headline inflation 6.8% against 3.0% underlying,
+  which the vote reads. The canon
   government climbs the emergency ladder, keeps its last order-paper time to
   approve the emergency appropriation before the House rises (see
   `approvalFloor` below), asks Earth's banks for terms once the result is in,
   lays no order it cannot pay for, and reaches the count with the thermal
-  margin at 6 and its payments current. The guard prints the margin, the
+  margin at 3, the thinnest it has been, and its payments current. The guard prints the margin, the
   side, the epilogue and the account. (25 Sep: it had been CW$16.8bn in
   arrears through the campaign, which cost nothing until that day; see
-  ARREARS below.) (Before design/49: sitting 57, margin 17, 87 seats, 149
+  ARREARS below.) (Design/49: sitting 55, margin 6, 171 of 280 at standing
+  56, CW$33.6bn, 5.9%. Before design/49: sitting 57, margin 17, 87 seats, 149
   of 280 at standing 42, CW$52.6bn, 5.4%, a narrow majority.
   Before design/44: sitting 56, margin 9, CW$44.8bn, 5.7%.
   Before design/43: sitting 57, margin 8, CW$44.9bn, 5.8%.
@@ -1198,6 +1198,42 @@ version of any of them is in the header of the file it names.
       now), and a loop that tested `choose()` for a result read an answer
       with no `result` line as a refusal;
     - the editor read a page section's `body` as the event's own.
+- **THREE KINDS OF EVENT, AND LEVERS** (27 Sep, `design/50`; the author:
+  "when Bellamy is abandoned, that is an event that warrants a handful of
+  paragraphs that elicit reading"). What the player starts is a **lever**
+  (initiatives, orders, bills, the whip, the paper); the sandbox groups them
+  under the word.
+  - **`Engine.eventTrigger(e)`** reads the three kinds off the fields:
+    outcome (`queuedOnly`), random (`perSitting` or `chance`), threshold
+    (the rest).
+  - **`perSitting`** is new: a seeded roll each sitting the gate holds, kept
+    in `st.rolledToday`, so a random event's timing is random and the same
+    seed repeats it.
+  - **One event from the pool a sitting.** Chained threshold events (the
+    floors, then the meltdown) landed on one sitting until then, against the
+    author's "one tier per turn". Outcome, dated and prologue events are
+    never held.
+  - **The dice come before the pool is narrowed to events.** A failed
+    roll used to leave the sitting with no decision.
+  - **A page is its body, then its sections** (an epigraph first). The
+    story goes in `body`, where lint reads it; sections add voices and
+    documents. Glossary terms are footnoted on the page.
+  - **Thirty-one pages written**, the eight extra beats included: the
+    vote, the freeze, both floors, the agent's notice, the Union's
+    resolution, the order lapsing and the facility closed. Events are now
+    19 outcome and 12 threshold.
+  - **Event moods are `SCHEMA.vocab.eventMoods`**, the ones that resolve on
+    their own: `tension` plays drums until the next division.
+  - **Fixed in passing:**
+    - "The mandate" announced the returns two beats before the count;
+    - "The writs" said a fortnight where the campaign runs three weeks;
+    - the no-confidence notice named Thursday for a motion three sittings
+      away.
+  - **Still open:** the dilemma says Cordell kept the leases, while the
+    initiatives say they came with the platform.
+  - **The campaign is now forgiving:** 4, 28, 0 and 5 losses in eighty
+    for the four crisis strategies, and the canon's thermal margin at the
+    count is 3. design/50 lists the levers that would tighten it.
 - **AND THE SANDBOX LISTS THE PLAYER'S OWN DECISIONS** (design/48, which
   stands on this point): initiatives and orders, each opened where the
   player takes it, on the Government tab.

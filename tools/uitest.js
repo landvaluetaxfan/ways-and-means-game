@@ -1517,22 +1517,30 @@ try {
   ok("the campaign's own shortcuts are on the tab",
      $("#sbx-body").querySelectorAll("[data-sbx]").length === w.eval("UI.content().sandbox.length") &&
      w.eval("UI.content().sandbox.length") > 0);
-  /* A DECISION AND AN EVENT (design/49): the filter finds the events; one
+  /* A DECISION AND THREE KINDS OF EVENT (design/49, design/50): each kind's
+     filter finds only its kind and between them they find every event; one
      put up takes the screen as a dated page, is answered, and the sitting's
      decision comes after it on the same sitting */
   $("#tab-sbx").click();
-  const kindChip = $('#sbx-chips [data-sbxkind="event"]');
-  if (kindChip) kindChip.click();
-  const eventRows = [...w.document.querySelectorAll("#sbx-events tr[data-sbxev]")].map(r => r.dataset.sbxev);
-  ok("the kind filter finds the events and nothing else", eventRows.length > 0 &&
-     eventRows.every(id => w.eval(`Engine.isEvent(UI.content().eventById["${id}"])`)),
-     eventRows.length + " events");
+  const rowsOf = k => { const c = $(`#sbx-chips [data-sbxkind="${k}"]`); if (c) c.click();
+    return [...w.document.querySelectorAll("#sbx-events tr[data-sbxev]")].map(r => r.dataset.sbxev); };
+  const byKind = {};
+  ["outcome", "random", "threshold"].forEach(k => { byKind[k] = rowsOf(k); });
+  const allEvents = w.eval("UI.content().events.filter(Engine.isEvent).length");
+  ok("each kind's filter finds that kind of event and nothing else",
+     ["outcome", "random", "threshold"].every(k => byKind[k].every(id =>
+       w.eval(`Engine.eventTrigger(UI.content().eventById["${id}"])`) === k)),
+     JSON.stringify({ outcome: byKind.outcome.length, random: byKind.random.length, threshold: byKind.threshold.length }));
+  ok("and between them they find every event",
+     byKind.outcome.length + byKind.random.length + byKind.threshold.length === allEvents && allEvents > 0,
+     allEvents + " events");
+  const eventRows = rowsOf("outcome");
   const plainEvent = eventRows.find(id => w.eval(`(function () { const e = UI.content().eventById["${id}"];
     return !e.when && !!(e.choices || [])[0] && !e.choices[0].when; })()`));
   if (plainEvent) {
     $(`#sbx-events tr[data-sbxev="${plainEvent}"]`).dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
-    ok("and says in the reading that it is an event", /This is an event/.test($("#sbx-event").textContent) &&
-       $("#sbx-detail-hdr").textContent === "The event", $("#sbx-detail-hdr").textContent);
+    ok("and says in the reading which kind it is", /This is an outcome event/.test($("#sbx-event").textContent) &&
+       $("#sbx-detail-hdr").textContent === "The outcome event", $("#sbx-detail-hdr").textContent);
     const at = w.eval("UI.state().sitting");
     $(`#sbx-event [data-sbxshow="${plainEvent}"]`).click();
     ok("an event takes the screen as a page, dated, with its answer under it",

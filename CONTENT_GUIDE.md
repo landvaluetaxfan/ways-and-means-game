@@ -253,49 +253,65 @@ that campaign's story. Nothing else changes.
   `content/archive/cut-events.js` (not loaded), with why; paste one back at
   the end of its list to restore it.
 
-### A decision or an event
+### Decisions, events and levers
 
-The author's two words (design/49):
+Three words for the three things a campaign is made of (design/49,
+design/50):
 
-- **A decision** is the sitting's business: what the player does at a
-  sitting. It is drawn in the ordinary Sitting panel, one a sitting.
-- **An event** is something that happened. It is a page that takes the
-  screen before the sitting's decision, without taking its place.
+- **A decision** is what the sitting asks: the sitting's business, drawn in
+  the ordinary Sitting panel, one a sitting.
+- **An event** is something that happened: a page that takes the screen
+  before the sitting's decision, without taking its place.
+- **A lever** is what the player starts: an initiative, an order, a bill set
+  down or given time, the whip, the paper. Levers live in their own files
+  and on their own tabs; an initiative's answer is usually an outcome event.
 
 An entry is an event when it carries `setpiece`:
 
 ```js
-setpiece: true                       // its body is the page
-setpiece: { mood: "threat",          // the score's cue when it arrives
-            art: "almanac_dark",     // an artifact slot, optional
-            sections: [              // a page of its own
-              { kind: "lede", body: "..." },
-              { kind: "body", head: "What is being asked", body: "..." },
-              { kind: "voices", head: "What is being said",
-                body: [{ said: "...", who: "The Spindle" }] } ] }
+{ id:"f1_stranded", chapter:2, at:14, once:true,
+  setpiece:{ mood:"threat", sections:[
+    { kind:"voices", head:"What is being said", body:[
+      { said:"They filed a return in the spring and nothing since.", who:"The Spindle" } ] },
+    { kind:"document", head:"The notice of wind-up", body:"...", source:"..." } ] },
+  title:"A hundred and eighty-four thousand",
+  body:`The story, a handful of paragraphs. The first is the lede.`,
+  choices:[ ... ] }
 ```
 
-- **The picture** is the art slot if there is one, otherwise the entry's
-  `image`, otherwise the speaker's portrait.
-- **The dateline and the speaker's byline** come from the sitting and
-  `speaker`.
-- **Section kinds** are `epigraph`, `lede`, `body`, `voices`, `document` and
-  `signature`. A kind is how the passage reads, not what it means.
-- **A mood** is one of `SCHEMA.vocab.moods`. Each already means a moment in
-  the score, so name one only where the event is that kind of moment.
+- **The page is the body, then the sections.** Write the event's story in
+  `body`, as for any entry: three to six paragraphs, enough to be read. The
+  first is set as the lede. `sections` add what a body cannot: *What is
+  being said* (`voices`), an in-world paper (`document`, with a `source`),
+  a headed passage (`body` with a `head`). An `epigraph` goes first.
+  `setpiece: true` is an event whose page is its body alone.
+- **The picture** is the art slot (`setpiece.art`) if there is one,
+  otherwise the entry's `image`, otherwise the speaker's portrait. The
+  dateline and the speaker's byline come from the sitting and `speaker`.
+- **A mood** is one of `SCHEMA.vocab.eventMoods`, the ones that play and
+  resolve on their own. Each already means a moment in the score, so name
+  one only where the event is that kind of moment.
 
-**How an event arrives** is how any entry arrives, with one difference: an
-event whose gate holds comes before every decision, whatever the weights.
+**Three kinds of event**, read off the fields, so there is nothing extra to
+keep in step:
 
-| to make it arrive | write |
-|---|---|
-| as the outcome of something | `queuedOnly: true`, and queue it from the choice, initiative or resolution |
-| by chance | `chance: 0.3`, rolled once when it first becomes eligible |
-| when a threshold is crossed | a `when`; it comes at the first sitting its gate holds |
+| kind | write | it comes |
+|---|---|---|
+| **outcome event** | `queuedOnly: true`, queued by a choice, an initiative (its `event`) or a resolution | when the thing the player did comes due |
+| **random event** | `perSitting: 0.1`, with or without a `when` | each sitting its gate holds, a seeded roll at those odds; 0.1 is ten sittings on average |
+| **threshold event** | a `when`, an `at` or a `prologue` | the first sitting its gate holds |
 
-Answered, an event continues to the sitting's business. The editor's event
-form has a **Kind** field (Decision or Event), and the page's mood, art and
-sections under the body. The Sandbox tab filters by kind.
+An event whose gate holds comes before every decision, whatever the
+weights, and **one event from the pool comes a sitting**: a chain of
+threshold events (a first floor, a second, a collapse) falls one a sitting,
+so a government has time to answer each. Outcome, dated and prologue events
+are never held back. Answered, an event continues to the sitting's
+business.
+
+The editor's event form has a **Kind** field (Decision, or an outcome,
+random or threshold event), and changing it writes the fields that kind
+needs. The Sandbox tab filters by all four, and groups initiatives and
+orders under **Levers**.
 
 ### Posture: cautious, measured, bold
 

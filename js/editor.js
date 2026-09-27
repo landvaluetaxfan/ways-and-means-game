@@ -87,7 +87,7 @@ const Editor = (function () {
       case "campaigns": return [["", "every campaign (the world's)"]].concat(campaignIds().map(c => [c, c]));
       case "playable": return [["", "its own"]].concat(campaignIds().map(c => [c, c]));
       case "introKinds": return ["epigraph", "lede", "body", "voices", "document", "signature"].map(v => [v, v]);
-      case "moods": return (V.moods || []).map(v => [v, v]);
+      case "moods": return (V.eventMoods || V.moods || []).map(v => [v, v]);
       case "parties": return M.parties.map(p => [p.id, p.name]);
       case "stations": return M.stations.map(s => [s.id, s.name]);
       case "bands": return SCHEMA.vocab.bands.map(v => [v, v]);
@@ -205,10 +205,12 @@ const Editor = (function () {
   /* DECISION OR EVENT (design/49), as the engine reads it, so the form and
      the game cannot disagree */
   function kindLine(e) {
-    const ev = typeof Engine !== "undefined" && Engine.isEvent ? Engine.isEvent(e) : !!(e && e.setpiece);
-    const n = ((e && e.choices) || []).length;
-    return ev
-      ? "An event: a page that arrives before the sitting's decision and takes the screen. " +
+    const k = kindOfEntry(e), n = ((e && e.choices) || []).length;
+    const how = { outcome: "It comes when something the player did queues it.",
+                  random: "The dice bring it, rolled each sitting its gate holds.",
+                  threshold: "It comes the first sitting its gate holds." }[k];
+    return k !== "decision"
+      ? "An event: a page that arrives before the sitting's decision and takes the screen. " + how + " " +
         (n > 1 ? "Its answers are the government's response." : "One answer: the way on.")
       : "A decision: the sitting's business, one a sitting." +
         (n <= 1 ? " It has one answer; a second makes it a choice." : "");
@@ -632,6 +634,15 @@ const Editor = (function () {
      EVENT FORM
      ========================================================= */
 
+  /* DECISION, OR ONE OF THE THREE KINDS OF EVENT (design/50), read off the
+     fields as Engine.eventTrigger reads them, so the form and the game agree */
+  const EV_KINDS = [
+    ["decision", "Decision: the sitting's business"],
+    ["outcome", "Outcome event: comes when something the player did queues it"],
+    ["random", "Random event: the dice bring it, at odds a sitting"],
+    ["threshold", "Threshold event: comes the first sitting its gate holds"]];
+  const kindOfEntry = e => (typeof Engine !== "undefined" && Engine.eventTrigger
+    ? Engine.eventTrigger(e) : null) || "decision";
   /* an event's page as an object: `setpiece: true` is a page with nothing
      written on it but the body */
   const spOf = e => e && e.setpiece && typeof e.setpiece === "object" ? e.setpiece : {};
@@ -658,10 +669,11 @@ const Editor = (function () {
 
     <div class="rulehead">Decision or event</div>
     <div class="ed-grid">
-      <label class="ed-w">Kind <select class="ed-f ed-st" data-f="ev_kind">${[
-        ["decision", "Decision: the sitting's business"],
-        ["event", "Event: a page that arrives before the decision"]].map(([v, l]) =>
-        `<option value="${v}"${(v === "event") === !!e.setpiece ? " selected" : ""}>${l}</option>`).join("")}</select></label>
+      <label class="ed-w">Kind <select class="ed-f ed-st" data-f="ev_kind">${EV_KINDS.map(([v, l]) =>
+        `<option value="${v}"${v === kindOfEntry(e) ? " selected" : ""}>${l}</option>`).join("")}</select></label>
+      ${kindOfEntry(e) === "random" ? `<label>Odds a sitting <input class="ed-f ed-num" data-f="perSitting"
+        type="number" step="0.01" min="0" max="1" value="${e.perSitting == null ? "" : e.perSitting}" style="width:70px">
+        <span class="ed-hint">0.1 is one sitting in ten, on average</span></label>` : ""}
       ${e.setpiece ? `<label>Mood ${opt_("sp_mood", vocab("moods"), spOf(e).mood, "(none)")}
         <span class="ed-hint">the music when it arrives</span></label>
       <label>Art ${txt_("sp_art", spOf(e).art || "", "artifact slot", 110)}</label>` : ""}
@@ -745,7 +757,22 @@ const Editor = (function () {
        object, kept in the order it was written. Turning an event back into
        a decision drops the page. */
     const kindF = g("ev_kind");
-    if (kindF && kindF.value === "event") {
+    /* A CHANGE OF KIND WRITES WHAT THE KIND NEEDS: an outcome event is
+       queued only, a random one has odds a sitting, a threshold one has
+       neither. An unchanged kind leaves those fields to their own inputs. */
+    if (kindF) {
+      const was = kindOfEntry(orig || {}), now = kindF.value;
+      if (now !== was) {
+        if (now === "outcome") e.queuedOnly = true;
+        else delete e.queuedOnly;
+        if (now === "random") { if (e.perSitting == null && e.chance == null) e.perSitting = 0.1; }
+        else { delete e.perSitting; if (now !== "decision") delete e.chance; }
+      } else {
+        const ps = g("perSitting");
+        if (ps) { if (ps.value !== "") e.perSitting = +ps.value; else delete e.perSitting; }
+      }
+    }
+    if (kindF && kindF.value !== "decision") {
       const was = orig && orig.setpiece;
       const sp = was && typeof was === "object" ? clone(was) : {};
       const mood = g("sp_mood"), art = g("sp_art");

@@ -1,5 +1,12 @@
 # 49 — A decision is the sitting's; an event arrives
 
+> **Extended by design/50** (27 Sep): events are of three kinds (outcome,
+> random, threshold), a page is its body followed by its sections, one event
+> from the pool comes a sitting, `perSitting` makes a random event's timing
+> random, and the player's own actions are called **levers**. Thirty-one
+> pages are written. The measurements below are design/49's; design/50 has
+> the later ones.
+
 **27 September 2026.** The author, answering the question design/48 asked:
 
 > For decisions I meant only 1, what the player does on sitting. For

@@ -257,16 +257,17 @@ try {
 
   /* DECISION OR EVENT (design/49): the Kind field makes a decision an event
      and back, and an event's page takes a mood and sections of its own */
-  const dec = JSON.parse(w.eval("JSON.stringify(EVENTS.filter(function (e) { return e.campaign === 'flash_i' && !e.setpiece; })[0])"));
+  const dec = JSON.parse(w.eval("JSON.stringify(EVENTS.filter(function (e) { return e.campaign === 'flash_i' && !e.setpiece && !e.queuedOnly; })[0])"));
   const itemOf = id => [...w.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id === id);
   const read = () => JSON.parse(w.eval(`JSON.stringify(Editor.__test.entry("events", "${dec.id}"))`));
   const away = () => click([...w.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id !== dec.id));
   const setKind = v => { const k = w.document.querySelector('#ed-form [data-f="ev_kind"]');
     if (k) { k.value = v; k.dispatchEvent(new w.Event("change", { bubbles: true })); } return !!k; };
   click(itemOf(dec.id));
-  const hadKind = setKind("event");
-  ok("the Kind field makes a decision an event, with its body as the page",
-     hadKind && read().setpiece === true && !!w.document.getElementById("ed-psecs"), JSON.stringify(read().setpiece));
+  const hadKind = setKind("threshold");
+  ok("the Kind field makes a decision a threshold event, with its body as the page",
+     hadKind && read().setpiece === true && !!w.document.getElementById("ed-psecs") && !read().queuedOnly,
+     JSON.stringify(read().setpiece));
   click(w.document.querySelector('#ed-form [data-act="psec-add"]'));
   const secBody = w.document.querySelector('#ed-psecs [data-f="body"]');
   const mood = w.document.querySelector('#ed-form [data-f="sp_mood"]');
@@ -277,6 +278,16 @@ try {
   ok("and a mood and a section make it a page of its own, the body untouched",
      sp.mood === "threat" && sp.sections && sp.sections.length === 1 && sp.sections[0].kind === "lede" &&
      sp.sections[0].body === "A page of its own." && read().body === dec.body, JSON.stringify(sp));
+  setKind("outcome");
+  ok("an outcome event is queued only", read().queuedOnly === true && !!read().setpiece);
+  setKind("random");
+  const odds = w.document.querySelector('#ed-form [data-f="perSitting"]');
+  ok("a random event has odds a sitting, and the form draws them", read().perSitting === 0.1 &&
+     !read().queuedOnly && !!odds, JSON.stringify({ p: read().perSitting, q: read().queuedOnly }));
+  if (odds) { odds.value = "0.25"; away(); click(itemOf(dec.id)); }
+  ok("and the odds are read back", read().perSitting === 0.25, String(read().perSitting));
+  setKind("threshold");
+  ok("a threshold event has neither", read().perSitting === undefined && !read().queuedOnly && !!read().setpiece);
   setKind("decision");
   ok("and turning it back into a decision drops the page", read().setpiece === undefined &&
      !w.document.getElementById("ed-psecs"), JSON.stringify(read().setpiece));

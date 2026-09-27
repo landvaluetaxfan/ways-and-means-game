@@ -5724,6 +5724,54 @@ console.log("\nDECISION AND EVENT (design/49):");
   ok("and an answer with no result line is taken once, not twice",
      !!d.flags.t_took_a && !d.flags.t_took_b, JSON.stringify({ a: !!d.flags.t_took_a, b: !!d.flags.t_took_b }));
 
+  /* ONE EVENT FROM THE POOL A SITTING: a chain of threshold events, each
+     opening the next one's gate, falls one a sitting (the author's "one
+     tier per turn"); an outcome event is not held back by it */
+  const f1 = evt("t_floor_1", { flags: ["t_f"] }, { once: true, effects: [{ flag: "t_f1" }] });
+  const f2 = evt("t_floor_2", { flags: ["t_f1"] }, { once: true });
+  const oq = evt("t_out", undefined, { queuedOnly: true, once: true });
+  const E4 = [dec("t_dec_heavy", 99), f1, f2, oq], C4 = Object.assign({}, CONTENT, { events: E4 });
+  C4.eventById = E4.reduce((m, e) => (m[e.id] = e, m), {});
+  const g4 = Engine.newGame(C4); g4.queue = [];
+  Engine.apply(g4, C4, [{ flag: "t_f" }]);
+  const s1 = Engine.playSitting(g4, C4, () => 0).map(m => m.event.id);
+  Engine.advance(g4, C4);
+  Engine.apply(g4, C4, [{ queue: { event: "t_out", after: 0 } }]);
+  const s2 = Engine.playSitting(g4, C4, () => 0).map(m => m.event.id);
+  ok("a chain of threshold events falls one a sitting",
+     s1.join(",") === "t_floor_1,t_dec_heavy" && s2.indexOf("t_floor_2") >= 0, s1.join(",") + " | " + s2.join(","));
+  ok("and an outcome event due the same sitting still comes",
+     s2.join(",") === "t_out,t_floor_2,t_dec_heavy", s2.join(","));
+
+  /* A RANDOM EVENT'S CLOCK (design/50): `perSitting` is rolled once a
+     sitting from the government's seed, so when it comes varies from game
+     to game, averages one over the odds, and is the same for the same seed */
+  const rnd = evt("t_random", {}, { once: true, perSitting: 0.25 });
+  const E5 = [dec("t_dec_heavy", 99), rnd], C5 = Object.assign({}, CONTENT, { events: E5 });
+  C5.eventById = E5.reduce((m, e) => (m[e.id] = e, m), {});
+  const arrives = seed => { const g = Engine.newGame(C5, seed); g.queue = [];
+    for (let i = 0; i < 80; i++) {
+      if (Engine.playSitting(g, C5, () => 0).some(m => m.event.id === "t_random")) return i + 1;
+      Engine.advance(g, C5);
+    }
+    return null; };
+  const when = Array.from({ length: 300 }, (_, k) => arrives(1000 + k * 7919));
+  const mean = when.reduce((a, b) => a + b, 0) / when.length;
+  ok("a random event's sitting varies from game to game, about one over its odds on average",
+     when.every(x => x != null) && new Set(when).size > 5 && mean > 3 && mean < 5.2, "mean " + mean.toFixed(2));
+  ok("and the same seed brings it on the same sitting", arrives(4242) === arrives(4242));
+  const h = Engine.newGame(C5, 31); h.queue = [];
+  let asked = null;
+  for (let i = 0; i < 40 && asked == null; i++) {
+    const a = Engine.nextEvent(h, C5), b = Engine.nextEvent(h, C5);
+    if (a && a.id === "t_dec_heavy") asked = b && b.id === "t_dec_heavy";
+    else Engine.advance(h, C5);
+  }
+  ok("and a sitting that asks twice rolls once, and keeps its decision when the roll fails", asked === true);
+  ok("the three kinds are read off the fields", Engine.eventTrigger(rnd) === "random" &&
+     Engine.eventTrigger(oq) === "outcome" && Engine.eventTrigger(f1) === "threshold" &&
+     Engine.eventTrigger(dec("x", 1)) === null);
+
   /* THE TWO READINGS AGREE: the engine's, which decides when a page comes,
      and the page's own, which decides that it takes the screen */
   const SP = require("./js/setpiece.js");
@@ -5737,5 +5785,8 @@ console.log("\nDECISION AND EVENT (design/49):");
   const Music = require("./js/music.js"), S = require("./js/schema.js");
   ok("the schema's moods are the music's", JSON.stringify(S.vocab.moods) ===
      JSON.stringify(Music.__form.MOODS), JSON.stringify(S.vocab.moods));
+  ok("and an event's moods are among them, without the ones that wait for a division",
+     S.vocab.eventMoods.every(m => S.vocab.moods.indexOf(m) >= 0) &&
+     S.vocab.eventMoods.indexOf("tension") < 0, JSON.stringify(S.vocab.eventMoods));
   if (bad) { console.log("\n" + bad + " DECISION AND EVENT FAILURES"); process.exitCode = 1; }
 })();

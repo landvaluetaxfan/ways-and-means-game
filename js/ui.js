@@ -6367,11 +6367,14 @@ const UI = (function () {
        choice does is not rebuilt anywhere. The mood is NOT cued here —
        drawing makes no sound; the handler that opened the sitting does it. */
     if (typeof SetPiece !== "undefined" && SetPiece.is(e)) {
-      box.innerHTML = SetPiece.html(e, {
+      /* annotated like a decision's prose: a term the glossary teaches is
+         footnoted on its first use here too, since an event is where the
+         world is most often explained */
+      box.innerHTML = annotate(SetPiece.html(e, {
         kicker: eventDateline(),
         who: spk ? spk.name + " \u2014 " + spk.role : null,
         figure: e.image && e.image.src ? plate(e.image) : spk ? portrait(spk) : null
-      }).html + `<div class="sit-decide" id="sit-decide"></div>`;
+      }).html) + `<div class="sit-decide" id="sit-decide"></div>`;
       drawDecision();
       return;
     }
@@ -7792,12 +7795,16 @@ const UI = (function () {
      screen then, and the event to put up again for "try another choice".
      In memory only: a reload is a fresh bench. */
   let sbxStack = [], sbxShown = null, sbxChapter = "all", sbxKind = "all";
-  /* the two kinds, in words (design/49) */
+  /* decisions, and the three kinds of event, in words (design/49, design/50) */
   const KIND_SAYS = {
     decision: "a decision: the sitting's business, one a sitting, drawn in the Sitting panel",
-    event: "an event: a page that arrives before the sitting's decision, takes the screen, " +
-           "and leaves the decision still to come"
+    outcome: "an outcome event: a page that arrives because something the player did queued it",
+    random: "a random event: a page the dice bring, rolled from the government's seed",
+    threshold: "a threshold event: a page that arrives the first sitting its gate holds"
   };
+  const kindOf = e => Engine.eventTrigger(e) || "decision";
+  const KIND_WORD = { decision: "decision", outcome: "outcome event", random: "random event",
+                      threshold: "threshold event" };
   const SBX_MAX = 30;
   function sbxPush(label, again) {
     sbxStack.push({ label, save: Engine.save(st), was: currentEvent ? currentEvent.id : null,
@@ -7905,7 +7912,7 @@ const UI = (function () {
     return (C.events || []).filter(e => {
       if (sbxChapter === "none" ? e.chapter != null
           : sbxChapter !== "all" && String(e.chapter) !== sbxChapter) return false;
-      if (sbxKind !== "all" && Engine.eventKind(e) !== sbxKind) return false;
+      if (sbxKind !== "all" && kindOf(e) !== sbxKind) return false;
       if (!q) return true;
       return (e.id + " " + (e.title || "") + " " + (e.body || "")).toLowerCase().indexOf(q) >= 0;
     });
@@ -7916,7 +7923,8 @@ const UI = (function () {
       const open = Engine.openChoices(st, C, e).map(x => x.index);
       let h = `<div class="w-c-h"><b>${esc(e.title || e.id)}</b><span class="w-c-iso">${esc(e.id)}</span></div>` +
         `<div class="note">${esc(sbxWhen(e))}${spk ? " \u00b7 spoken by " + esc(spk.name) : ""}</div>` +
-        `<div class="note">This is ${esc(KIND_SAYS[Engine.eventKind(e)])}.</div>` +
+        `<div class="note">This is ${esc(KIND_SAYS[kindOf(e)])}` +
+          (e.perSitting != null ? `, at odds of ${esc(String(e.perSitting))} a sitting` : "") + `.</div>` +
         `<div class="btnrow"><button class="btn" data-sbxshow="${esc(e.id)}">Show it on the Sitting screen</button>` +
         (e.when && !Engine.matches(st, e.when) || (e.chapter != null && e.chapter !== st.chapter)
           ? `<button class="btn" data-sbxmake="${esc(e.id)}">Make its gate hold, then show it</button>` : "") +
@@ -8015,8 +8023,12 @@ const UI = (function () {
   let sbxMode = "events";
   /* The first list is the content kind `events`, which holds both of the
      author's two things: the sitting's decisions and the events that arrive
-     before them (design/49). */
-  const SBX_MODES = [["events", "Decisions and events"], ["initiatives", "Initiatives"], ["orders", "Orders"]];
+     before them (design/49). The other two are LEVERS (design/50): what the
+     player starts, where a decision is what the sitting asks and an event is
+     what happens. Bills, the whip and the paper are levers too, and are
+     tried on their own tabs. */
+  const SBX_MODES = [["events", "Decisions and events"], ["initiatives", "Levers: initiatives"],
+                     ["orders", "Levers: orders"]];
   const sbxFind = () => (($("#sbx-find") || {}).value || "").trim().toLowerCase();
   const sbxHit = (q, ...xs) => !q || xs.join(" ").toLowerCase().indexOf(q) >= 0;
   /* the row's key: an event's id, or `ini:` and `si:` before the others' */
@@ -8046,7 +8058,7 @@ const UI = (function () {
       let gate; try { gate = Engine.matches(st, e.when); } catch (x) { gate = false; }
       const status = pool.indexOf(e.id) >= 0 ? `<span class="sbx-now">in the pool</span>`
         : gate ? "gate holds" : `<span class="sbx-no">gated</span>`;
-      return { key: e.id, title: e.title || e.id, sub: e.id + " \u00b7 " + Engine.eventKind(e),
+      return { key: e.id, title: e.title || e.id, sub: e.id + " \u00b7 " + KIND_WORD[kindOf(e)],
                col: e.chapter == null ? "\u2014" : e.chapter,
                status: status + (st.seen[e.id] ? ` \u00b7 met ${st.seen[e.id]}` : "") };
     });
@@ -8075,7 +8087,8 @@ const UI = (function () {
           [["all", "All"]].concat(ch.map(c => [String(c), "Chapter " + c]), [["none", "Any chapter"]])
           .map(([k, l]) => `<button class="btn${sbxChapter === k ? " on" : ""}" data-sbxch="${k}">${l}</button>`).join("") +
           `<span class="sbx-sep"></span>` +
-          [["all", "Both"], ["decision", "Decisions"], ["event", "Events"]]
+          [["all", "All"], ["decision", "Decisions"], ["outcome", "Outcome events"],
+           ["random", "Random events"], ["threshold", "Threshold events"]]
             .map(([k, l]) => `<button class="btn${sbxKind === k ? " on" : ""}" data-sbxkind="${k}">${l}</button>`).join("");
       }
       chips.innerHTML = h;
@@ -8095,7 +8108,7 @@ const UI = (function () {
     }
     const picked = sbxMode === "events" && sel ? C.eventById[sel] : null;
     if (dh) dh.textContent = sbxMode === "events"
-      ? (picked && Engine.isEvent(picked) ? "The event" : "The decision")
+      ? (picked ? "The " + KIND_WORD[kindOf(picked)] : "The decision")
       : sbxMode === "initiatives" ? "The initiative" : "The order";
     list.innerHTML = `<tbody>` + rows.map(r =>
       `<tr data-sbxev="${esc(r.key)}"${r.key === sel ? ' class="sel"' : ""}>` +
