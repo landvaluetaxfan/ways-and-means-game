@@ -30,8 +30,7 @@ const INITIATIVES = [
      whole question: go round him, or go through the person he will see. */
   { id: "approach_guild",
     title: "Approach the Guild Bench",
-    note: "Nine functional seats that decide every dual majority, and a chair " +
-          "who will not take a meeting with the Prime Minister.",
+    note: "The Guild Bench holds nine functional seats, enough to decide any dual majority, and its chair has declined to meet the Prime Minister.",
     cost: 1,
     when: { flagsAbsent: ["guild_met"] },
     event: "guild_answers",
@@ -46,8 +45,7 @@ const INITIATIVES = [
      difference is whether the answer is worth quoting in the House. */
   { id: "commission_review",
     title: "Commission a review of the shed orders",
-    note: "Nobody has counted how many people the standing shed orders have " +
-          "suspended. Whoever produces the number will have to live with it.",
+    note: "No official count exists of how many people the standing shed orders have suspended. A review would produce one, and the government that commissions it will be held to the figure.",
     cost: 1,
     /* `review_ordered` is what makes this once-only, and nothing set it — so
        the review could be commissioned again every sitting, and a second
@@ -98,10 +96,7 @@ const INITIATIVES = [
      `flag` and the ordinary queued answer carry the whole instrument. */
   { id: "quota_forward",
     title: "Sell quota forward",
-    note: "The Commonwealth's quota sold forward to the consortiums: cash now, " +
-          "delivery at the term. The price is fixed today and the capacity leaves " +
-          "the margin later, which is either a hedge or a hole depending on what " +
-          "the session does next.",
+    note: "The Commonwealth's quota sold forward to the consortiums: cash now, delivery at the term. The price is fixed today and the capacity leaves the margin at the term. If the margin falls before then, the Commonwealth will have sold capacity it needs.",
     cost: 1,
     when: { flagsAbsent: ["quota_forward_sold"] },
     event: "quota_forward_settles",
@@ -146,9 +141,7 @@ const INITIATIVES = [
      Treasury's to defend with the Bank's reserves, which run out. */
   { id: "lean_on_governor",
     title: "Lean on the Governor",
-    note: "The Reserve Bank sets the cash rate and the government does not. " +
-          "It can still say what it would like, and the Governor can still " +
-          "decide what she heard.",
+    note: "The Reserve Bank sets the cash rate and the government does not. It can say what it would like, and the Governor decides what weight to give it.",
     cost: 1,
     when: { flagsAbsent: ["governor_leaned"], dissolved: false },
     event: "governor_answers",

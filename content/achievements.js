@@ -72,20 +72,16 @@ const ACHIEVEMENTS = [
     when:{ settled:"substrate_neutrality" } },
 
   { id:"set_graduated", name:"A Line, Moved", tier:"settlement",
-    note:"No threshold was set in law. A tribunal decides personhood case by " +
-         "case and files its findings in the register without a division. The " +
-         "House stopped arguing; the argument moved somewhere no one watches.",
+    note:"No threshold was set in law. A tribunal decides personhood case by case and files its findings in the register without a division. The House no longer divides on it, and the tribunal's findings are filed without debate.",
     when:{ settled:"graduated_personhood" } },
 
   { id:"set_federal", name:"The Federal Fudge", tier:"settlement",
-    note:`Each station sets its own threshold and the Commonwealth has agreed not to ask. There is no national answer any more, and a copy can be a person on one side of a line and an instance on the other. The people who cross pay for that.`,
+    note:`Each station sets its own threshold and the Commonwealth has agreed not to ask. There is no national answer any more, and a copy can be a person on one side of a line and an instance on the other. A copy that moves between stations can gain or lose personhood by moving.`,
     when:{ settled:"federal_fudge" } },
 
   /* ---------- unique actions ---------- */
   { id:"act_carveout_kept", name:"The Order Was Laid", tier:"action",
-    note:"You promised the Guild Bench a licensure carve-out and laid SI " +
-         "2080/44 inside the four sittings you named. The promise was kept, " +
-         "and the panel records which governments keep them.",
+    note:"You promised the Guild Bench a licensure carve-out and laid SI 2080/44 inside the four sittings you named. The promise was kept on time.",
     when:{ kept:["licensure_carveout"] } },
 
   { id:"act_carveout_broken", name:"The Order That Was Never Laid", tier:"action",
@@ -95,9 +91,7 @@ const ACHIEVEMENTS = [
     when:{ breached:["licensure_carveout"] } },
 
   { id:"act_tribunal", name:"The Tribunal Sits", tier:"action",
-    note:"Your licensing order was challenged at the tribunal and you let it " +
-         "be heard. A court is not a lobby: the numbers in the House do not " +
-         "reach it, and the bench reads only whether the government turned up.",
+    note:"Your licensing order was challenged at the tribunal and you let it be heard. The tribunal's disposition rises when the government answers its references and defends its cases, whatever the numbers in the House.",
     when:{ flags:["tr_challenged"] } },
 
   { id:"act_struck", name:"The Order Was Struck", tier:"action",
@@ -107,7 +101,7 @@ const ACHIEVEMENTS = [
     when:{ flags:["tr_struck"] } },
 
   { id:"act_paired", name:"A Courtesy", tier:"action",
-    note:`You granted a courtesy pair — one member from each side stayed away — and did not call the favour in. A pair costs the government an aye and buys nothing in arithmetic. The other side now owes you one.`,
+    note:`You granted a courtesy pair — one member from each side stayed away — and did not call the favour in. A pair removes one vote from each side and leaves the margin unchanged, and the other side now owes the government a pair.`,
     when:{ flags:["paired","pair_offered"] } },
 
   { id:"act_forward", name:"Sold Forward", tier:"action",

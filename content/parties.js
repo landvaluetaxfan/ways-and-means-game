@@ -292,15 +292,15 @@ const PARTY_ORG = {
   cu: {
     officers: [
       { role:"Chair", name:"Ilma Ruthven",
-        note:"Elected by conference and not by the leader, which is the arrangement every PSD leader inherits and none has repealed." },
+        note:"Elected by the party conference; the leader does not appoint to the post, and no leader has changed that rule." },
       { role:"General Secretary", name:"Bevan Osei",
-        note:"Runs the card vote. Knows what the maintenance trades will wear before they do." },
+        note:"Runs the card vote at conference, where the maintenance union votes as a block." },
       { role:"Chief Agent", name:"Tovah Sandquist",
         note:`A canvass return for every district seat the party holds.` }
     ],
     bodies: [
       { name:"Combined Maintenance Trades", kind:"union",
-        note:"Affiliated, and votes as a block at conference. The strike weapon is theirs and not the party's, which the party is careful never to say aloud." },
+        note:"Affiliated, and votes as a block at conference. The decision to strike is the union's own, and the party has no say in it." },
       { name:"The Sunman Institute", kind:"institute",
         note:"Policy, founded in a low-band station and still headquartered there. Produces the costings the Treasury disputes." }
     ],
@@ -313,20 +313,20 @@ const PARTY_ORG = {
   cl: {
     officers: [
       { role:"Chair", name:"Portia Vane",
-        note:"Chairs a party whose money arrives without being asked for and expects to be heard." },
+        note:"Chairs a party funded mainly by large donors, who expect to be consulted." },
       { role:"Treasurer", name:"Cesar Aldana",
-        note:"The Liberals have a Treasurer where other parties have a General Secretary. That is the party, stated as an organogram." },
+        note:"The Liberals' senior officer is a Treasurer, where other parties have a General Secretary, since raising money is the party's central task." },
       { role:"Chief Agent", name:"Noor Halvorsen",
-        note:"Runs the ring-band districts, where the vote is thin and the donations are not." }
+        note:"Runs the ring-band districts, which return few votes and most of the party's donations." }
     ],
     bodies: [
       { name:"The Anchorage Club", kind:"club",
-        note:"Subscription by invitation. Not a party body in law and the only room where the party's line is actually settled." },
+        note:"Membership by invitation. It has no standing in the party's constitution, and it is where the party's line is settled." },
       { name:"Institute for Open Transit", kind:"institute",
-        note:"Argues for the tether concession against whoever holds it. Currently that is not the Liberals, so it argues loudly." }
+        note:"Argues for the tether concessions against whichever party governs, and argues hardest while the Liberals are in opposition." }
     ],
     branches: [
-      { station:"bourse", note:"Shipping and underwriting. The branch that pays for the others." },
+      { station:"bourse", note:"Shipping and underwriting, and the branch whose subscriptions fund most of the others." },
       { station:"kepler", note:"An anchor branch, and the party's only serious presence in the low band." }
     ]
   },
@@ -336,13 +336,13 @@ const PARTY_ORG = {
       { role:"Chair", name:"Rune Adeyemi",
         note:"Chairs the list order, which in a party with six districts and twenty-eight list seats is the only selection that matters." },
       { role:"National Organiser", name:"Delphine Okonkwo",
-        note:"No agent, because there are barely any districts to agent. Organises the federation instead." }
+        note:"The party holds few districts and has no election agent, so this officer organises the federation of branches instead." }
     ],
     bodies: [
       { name:"The Substrate Assembly", kind:"assembly",
         note:"A standing congress of members that ratifies the list. It has rejected the leadership's order twice and both times the leadership complied." },
       { name:"The Hosting Review", kind:"journal",
-        note:"Quarterly, unreadable, and the origin of most of the party's policy." }
+        note:"A quarterly journal, dense and little read, in which most of the party's policy first appears." }
     ],
     branches: [
       { station:"meridian", note:"Substrate hosting, and the densest concentration of emulated members anywhere." },
@@ -353,28 +353,28 @@ const PARTY_ORG = {
   sc: {
     officers: [
       { role:"Convenor", name:"Gudrun Saelid",
-        note:"Convenor and not Chair, and the distinction is the party's whole argument: she calls the meeting and cannot bind it." }
+        note:"Her title is Convenor: she calls the Convention's meetings and cannot bind it, as the party's principle of station self-government requires." }
     ],
     bodies: [
       { name:"The Stations' Convention", kind:"assembly",
-        note:"Station delegations, one vote each regardless of population. The parliamentary party answers to it and not the reverse, which is why Home Rule cannot whip." }
+        note:"Station delegations, one vote each regardless of population. The parliamentary party answers to it, and so Home Rule cannot whip its members." }
     ],
     branches: [
-      { station:"hollows", note:"Three habitats on one branch, and they do not agree either." },
-      { station:"tsiolkovsky", note:"Farstead, where the Convention meets when it meets at all." }
+      { station:"hollows", note:"Three habitats share the branch, and they often disagree." },
+      { station:"tsiolkovsky", note:"Farstead, where the Convention meets." }
     ]
   },
 
   hul: {
     officers: [
       { role:"President", name:"Aurelio Banse",
-        note:"President of an association that became a party by accident and has never amended its constitution to admit it." },
+        note:"President of a professional association that began contesting elections without amending its constitution to become a party." },
       { role:"Registrar", name:"Kit Mbatha",
         note:"Keeps the roll of licensed members. Since licensure carries the functional franchise, the Registrar decides who votes in the association's own seats." }
     ],
     bodies: [
       { name:"Institute of Habitat Engineers", kind:"licensing",
-        note:"Sets the examinations. A government that wanted the association's seats would start here and would be noticed." }
+        note:"Sets the examinations for licensure, and so controls entry to the association's functional seats." }
     ],
     branches: [
       { station:"perigee", note:"The yards, and the branch that supplies most of the association's officers." },
@@ -385,7 +385,7 @@ const PARTY_ORG = {
   rv: {
     officers: [
       { role:"Moderator", name:"Esme Thorbjørn",
-        note:"Elected for one year and by custom never for two. The office is meant to be inconvenient." },
+        note:"Elected for one year and by custom never re-elected, so that no one holds the office long." },
       { role:"Clerk", name:"Amos Ferrier",
         note:"Keeps the minute, which in a congregational party is the constitution." }
     ],
@@ -393,7 +393,7 @@ const PARTY_ORG = {
       { name:"The Continuity Congregations", kind:"church",
         note:"Federated, and they select the candidates. A CDA member of Parliament is answerable to a congregation before a whip." },
       { name:"The Vigil", kind:"society",
-        note:"Lay society. Sits with the suspended, in shifts, for as long as the suspension lasts. It has never taken a political position and is the reason the party is trusted by people who disagree with it." }
+        note:"Lay society. Sits with the suspended, in shifts, for as long as the suspension lasts. It has never taken a political position, and its work earns the party trust among people who disagree with its politics." }
     ],
     branches: [
       { station:"oberth", note:"Bethesda. The largest congregation, and the one the Moderator comes from." },
@@ -404,24 +404,24 @@ const PARTY_ORG = {
   fh: {
     officers: [
       { role:"Chair", name:"Randall Voight",
-        note:"Holds four leases himself and has never seen the difficulty in that." },
+        note:"Holds four leases himself." },
       { role:"Chief Agent", name:"Perpetua Lund",
-        note:"Works the lease registers, on the reasoning that they are the electoral roll with different columns." }
+        note:"Works the lease registers, which list the party's likeliest voters." }
     ],
     bodies: [
       { name:"The Leaseholders' League", kind:"lobby",
-        note:"Older than the party and will outlast it. Publishes the valuation tables everyone argues from, including the Georgists." }
+        note:"Older than the party. It publishes the valuation tables every side of the volume debate argues from, the Single Tax Party included." }
     ],
     branches: [
-      { station:"belvedere", note:"Where the long leases are, and where they have been since the first of them was written." },
-      { station:"tallow", note:"Pavilion. A low-band branch of small holders, which the League finds embarrassing and cannot do without." }
+      { station:"belvedere", note:"The branch where most of the long leases are held." },
+      { station:"tallow", note:"Pavilion. A low-band branch of small holders, on whose members the party relies." }
     ]
   },
 
   gb: {
     officers: [
       { role:"Convenor", name:"Hiroko Delacroix",
-        note:"Convenes the member firms. Is not a member of anything herself and has never stood for election, because there is no election to stand in." }
+        note:"Convenes the member firms. Holds no membership herself and has never stood for election, since the post is not elected." }
     ],
     bodies: [
       { name:"The Consortium Table", kind:"assembly",
@@ -441,18 +441,18 @@ const PARTY_ORG = {
     ],
     branches: [
       { station:"dredge", note:"John Henry. Where the refusals are, and where the Register started." },
-      { station:"cinder", note:"Lantern. Second oldest, and angrier." }
+      { station:"cinder", note:"Lantern, the second-oldest branch." }
     ]
   },
 
   geo: {
     officers: [
       { role:"Secretary", name:"Lucien Abara",
-        note:"The party's only officer, and does the agent's work as well. Four seats do not need an organogram." }
+        note:"The party's only officer, and its election agent as well." }
     ],
     bodies: [
       { name:"The Ground Rent Society", kind:"society",
-        note:"Older than the party — it was a mutual before there was a Commonwealth to register it in — and regards the party as a recent and probably temporary vehicle. Meets fortnightly and has read everything." }
+        note:"Older than the party — it was a mutual before there was a Commonwealth to register it in — and regards the party as a recent and probably temporary vehicle. It meets fortnightly." }
     ],
     branches: [
       { station:"quarry", note:"Stanbridge. One branch, forty members, and the highest turnout in the Commonwealth." }
@@ -462,11 +462,11 @@ const PARTY_ORG = {
   upl: {
     officers: [
       { role:"Chair", name:"Nkemdi Ravn",
-        note:"Two seats and a permanent seat at every negotiation, which she treats as the job itself." }
+        note:"Represents the party in every coalition negotiation, and the party's support is agreed through this office." }
     ],
     bodies: [
       { name:"The Uplift Compact", kind:"society",
-        note:`The charter that fixes the price of the party's support, in writing, in advance. It has never been renegotiated, and no partner has tried.` }
+        note:`The written charter that sets in advance what the party asks in return for its support. It has never been renegotiated.` }
     ],
     branches: [
       { station:"drift", note:"The Verge. The whole party, more or less, in one habitat." }

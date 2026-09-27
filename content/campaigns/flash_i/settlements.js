@@ -82,7 +82,7 @@ campaign("flash_i", { settlements: [
             scalarBelow: { solvency: 35000 } } },
   { id: "f1_joint", rank: 3, crisis: true,
     name: "UN/Orbital Joint Mandate",
-    summary: "A co-administered international free trade zone. No embargo, no territory, mild voter apathy.",
+    summary: "The Works becomes a co-administered international free trade zone, with no embargo and no Commonwealth territory.",
     closing: "The platform is a co-administered free trade zone under a joint mandate. " +
              "No embargo, no territory, and a country that shrugs.",
     /* THE LINE HELD AFTER THE REFERENDUM, AND THE MIDDLE BANDS (design/40

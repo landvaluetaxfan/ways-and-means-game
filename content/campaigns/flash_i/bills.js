@@ -51,14 +51,7 @@ campaign("flash_i", { bills: [
             "next redistribution.",
     effectNote:"+184,000 residents. Reapportionment at the next redistribution. "+
             "The charter is bought out of the same vote that pays the consumables floor.",
-    contested:"The Works is the largest employer outside the Commonwealth's "+
-            "jurisdiction and its constitution is a contract between a company and "+
-            "the people who live in it. Bringing it in makes 184,000 people citizens "+
-            "and makes their consumables the federal vote's problem; leaving it out "+
-            "leaves them under a charter nobody in the House has read. The benches "+
-            "that build and maintain say the same thing they said about divergence: "+
-            "97,000 workers entering the market at once will be undercut by whoever "+
-            "is cheapest, and that will not be them for long.",
+    contested:"The Works is the largest employer outside the Commonwealth's jurisdiction, and its constitution is a contract between a company and the people who live in it. Bringing it in makes 184,000 people citizens and makes their consumables the federal budget's responsibility; leaving it out leaves them under the company's charter. The maintenance and construction benches object as they did to the divergence bill: 97,000 workers entering the Commonwealth's labour market at once would push down wages for their members.",
     axes:{economic:-0.7, authority:0.5, personhood:0.6, sovereignty:0.85, trade:-0.4},
     stances:{
       /* Forecast counts as the whips gave them. Popular 129 of 240, needs 121. */

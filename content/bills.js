@@ -36,12 +36,7 @@ const BILLS = [
             "An instance separated for longer than the threshold becomes a person in law: "+
             "own rights, own substrate bill, own vote.",
     effectNote:"+1.9M legal persons estimated. Redistribution in six districts.",
-    contested:"Two million copies who can be switched off today would become people: their "+
-            "own wage, their own substrate bill, their own vote. The consortiums that run them "+
-            "say a working week is a contract and not a life, and that the cost lands on the "+
-            "people least able to carry it. The maintenance benches say the opposite for the "+
-            "same reason — a mind that can be run at any speed will always undercut a body "+
-            "that cannot, and the first people undercut will be the ones who voted for it.",
+    contested:"About two million copies that can be switched off today would become persons, with their own wages, substrate bills and votes. The consortiums that run them say a working week of separate experience is a term of employment, and that the cost falls on those least able to carry it. The maintenance benches, whose members are embodied, argue that a mind which can run at any speed will always work more cheaply than a body, and that embodied workers would lose work first.",
     dualMajority:true,
     axes:{economic:-0.3, authority:-0.3, personhood:0.9, sovereignty:0.5, trade:0.2},
     stances:{
@@ -66,12 +61,12 @@ const BILLS = [
        stops wanting it, so every price is written next to the thing it buys. */
     amendments:[
       { id:"div_delay", label:"Commence at the next session",
-        note:`The threshold moves to forty hours and takes effect when the next parliament first sits, which gives every employer until then to come into line and every maintenance bench that long before it is undercut. The New Progressive Party made the bill the price of the coalition and will read the delay as a payment on account.`,
+        note:"The threshold moves to forty hours and takes effect when the next parliament first sits, which gives every employer and every maintenance bench until then to adjust. The New Progressive Party made the bill a condition of the coalition, and treats the delay as part-payment of that condition.",
         effects:[ { flag:{ divergence_delayed:true } },
                   { move:{ "loyalty.cu_maintenance":7 } },
                   { move:{ "loyalty.psa":-7 } }, { move:{ "capital.psa":-2 } } ] },
       { id:"div_boards", label:"Carve the licensing boards out",
-        note:`The Guild's own ask, moved as an amendment: the threshold binds the boards' members and leaves their licensure untouched. It buys the functional bench, and the New Progressive Party reads it as the government selling the bill behind them.`,
+        note:"The Guild Bench's own request, moved as an amendment: the threshold applies to the licensing boards' members and leaves their licensure unchanged. It wins the functional bench's votes, and the New Progressive Party regards it as a concession made behind its back.",
         effects:[ { flag:{ divergence_boards:true } },
                   { move:{ "loyalty.gb":7 } }, { move:{ "rel.gb_chair":5 } },
                   { move:{ "loyalty.psa":-6 } } ] }
@@ -112,29 +107,19 @@ const BILLS = [
   { id:"appropriation", ref:"HC 4/140", stage:"first_reading", owner:"cu",
     test:"supply", priority:true,
     title:"Appropriation (Session 4) Bill",
-    summary:"The estimates for the session, and the quota released against them. "+
-            "A money bill: the elected benches vote money, and the functional forty "+
-            "divide and are recorded.",
+    summary:"The estimates for the session, clause by clause, and the thermal quota released against them. It is a money bill: the 240 elected members decide it, and the 40 functional members vote and have their votes recorded.",
     effectNote:"Sets the thermal quota, the consumables floor, substrate insurance, "+
             "capital works and the transit subsidy. Whatever it appropriates, the "+
             "benches that divide on it are the benches that have to deliver it.",
-    contested:"Every party wants the floor raised and the quota released and neither "+
-            "paid for. The government's difficulty is that the two sides of that "+
-            "sentence are the same money. The forty cannot stop the bill and they can "+
-            "hold it: a functional bench that votes the appropriation down delays the "+
-            "whole of it by three sittings, and the same benches are the ones who have "+
-            "to deliver what was just voted. A budget carried against a hostile "+
-            "functional bench is a government in trouble having won.",
+    contested:"Every party wants the consumables floor raised and more quota released, and none wants to pay for either, though both come out of the same appropriation. A functional majority against the bill delays the whole of it by three sittings, and the same functional benches run the services it pays for, so a government that carries its budget against them still depends on them to deliver it.",
     touches:[],
     clauses:[
       { id:"thermal", name:"Thermal quota released", default:"steady",
-        note:"The thermal quota released this session. The figure sets the price "+
-             "at which the right to keep running is bought and sold, and that "+
-             "price is paid on every line of this bill.",
+        note:"The thermal quota released this session. How much is released sets the thermal price: the less quota, the higher the price every station pays to keep running.",
         levels:[
           { id:"tight",  label:"Held tight", cost:0,  note:"Released against last session's figure, and no more. The price rises to clear, and it lands on the stations with the thinnest margins.",
             effects:[{ move:{ "price.thermal": 14, public_standing:-4 } }, { law:{ thermal_release:"tight" } }] },
-          { id:"steady", label:"As last session", cost:14000, note:"Released at last session's figure. The price holds where the market has held it, and nobody can point to the vote.",
+          { id:"steady", label:"As last session", cost:14000, note:"Released at last session's figure. The price holds where the market has held it.",
             effects:[{ law:{ thermal_release:"steady" } }] },
           { id:"open",   label:"Released", cost:34000, note:"Released in full. The price falls to the cost of rejecting the heat, and the radiators become the limit on how many minds the Commonwealth can carry.",
             effects:[{ move:{ "price.thermal": -16, thermal_margin:-5, public_standing:5 } }, { law:{ thermal_release:"open" } }] }
@@ -150,31 +135,25 @@ const BILLS = [
             effects:[{ move:{ consumables:9, public_standing:4, solvency:-4000 } }] }
         ] },
       { id:"insurance", name:"Substrate insurance", default:"hold",
-        note:"Cover for the residents who cannot pay for substrate. A reduction "+
-             "does not lower anybody's income; it moves people off the register "+
-             "of the insured and onto the register of the suspended.",
+        note:"Cover for the residents who cannot pay for substrate. A reduction moves people from the register of the insured to the register of the suspended.",
         levels:[
-          { id:"cut",  label:"Reduced", cost:0, note:"The appropriation is reduced and the means test stands. The people who fail the test stop running, and the saving is real.",
+          { id:"cut",  label:"Reduced", cost:0, note:"The appropriation is reduced and the means test stands. People who fail the test and cannot pay are suspended, and the reserve saves the cost of their cover.",
             effects:[{ move:{ public_standing:-11, "loyalty.cu":-6 } }] },
           { id:"hold", label:"Held", cost:18000, note:"The appropriation is held. No resident is suspended this session for a debt they cannot pay.", effects:[] },
-          { id:"wide", label:"Widened", cost:32000, note:"The appropriation is widened and the means test set aside. Cover reaches the unattested, and the consortiums price the guarantee into every rent it touches.",
+          { id:"wide", label:"Widened", cost:32000, note:"The appropriation is widened and the means test set aside. Cover extends to people without attestation, and the substrate providers are expected to raise rents to take account of the guarantee.",
             effects:[{ move:{ public_standing:6, "loyalty.psa":7, "loyalty.fh":-5 } }] }
         ] },
       { id:"works", name:"Capital works", default:"none",
-        note:"The works funded this session. This is the only clause that helps "+
-             "in ten years, and it decides who can leave: raising a station's "+
-             "closure is the same act as funding its secession.",
+        note:"The works funded this session, and the one clause whose effect is long-term. Works raise a station's closure, and a station with higher closure is more able to leave the Commonwealth.",
         levels:[
-          { id:"none", label:"Deferred", cost:0, note:"No works this session. The stations with the lowest closure are not carried further, and the deferral is the position.", effects:[{ law:{ capital_works:"none" } }] },
+          { id:"none", label:"Deferred", cost:0, note:"No works this session. Closure rises nowhere.", effects:[{ law:{ capital_works:"none" } }] },
           { id:"some", label:"The ring band", cost:20000, note:"Funded in the ring band, where the volume pressure is worst. Closure holds in the middle of the Commonwealth and the outer stations wait.",
             effects:[{ move:{ "price.volume": -9, public_standing:3 } }, { law:{ capital_works:"ring" } }] },
-          { id:"outer", label:"The outer stations", cost:30000, note:"Funded at the outer stations, where closure is lowest. Their closure rises, and so does the price at which they could one day leave.",
+          { id:"outer", label:"The outer stations", cost:30000, note:"Funded at the outer stations, where closure is lowest. Their closure rises, and with it their capacity to leave the Commonwealth.",
             effects:[{ move:{ "price.volume": -5 } }, { station:{ ashfield:{ closure:0.04 } } }, { law:{ capital_works:"outer" } }] }
         ] },
       { id:"transit", name:"Transit subsidy", default:"none",
-        note:"The fare the stations pay for a launch window, carried against the "+
-             "schedule. The anchor states and the outer stations are the ones "+
-             "whose schedules are other people's schedules.",
+        note:"The subsidy on the fare the stations pay for a launch window. The stations farthest from a tether pay the highest fares, and the subsidy decides how much of that difference the Commonwealth carries.",
         levels:[
           { id:"none",    label:"Unsubsidised", cost:0,  note:"With no subsidy the fare is set by the carriers, and the outer stations pay the carriers' published schedule.", effects:[{ law:{ transit_subsidy:"none" } }] },
           { id:"anchors", label:"The anchor states", cost:10000, note:"The differential is carried for the anchor states, where the tether is the only way in.", effects:[{ law:{ transit_subsidy:"anchors" } }, { move:{ "public_standing":3 } }] },
@@ -196,31 +175,31 @@ const BILLS = [
          design/33). The mechanism and the levels are settled; the notes are
          serviceable and no more. */
       { id:"rate_volume", name:"Ways and Means: volume", default:"standard",
-        note:"The levy on habitable volume, charged on the lease and not on what is done inside it. What it falls on is position inside a habitat, which nobody made. It is the largest base the Commonwealth has, about CW$88bn a year at the opening, and a tenth of it is one of the largest single measures a budget can carry.",
+        note:"The levy on habitable volume, charged on the lease and not on what is done inside it. It falls on location inside a habitat, which the holder did not create, so it cannot be passed on in a price. It is the largest base the Commonwealth has, about CW$88bn a year at the opening, and a tenth of it is one of the largest single measures a budget can carry.",
         levels:[
-          { id:"relief", label:"Cut by a fifth", cost:0, note:"About CW$17bn a year handed back, and nearly all of it to the holders of the long leases on the ring. Nobody else holds enough volume to notice.", effects:[{ law:{ rate_volume:"relief" } }, { move:{ "standing.ring":4, "public_standing":1 } }] },
-          { id:"low", label:"Cut by a tenth", cost:0, note:"About CW$9bn a year back to the lease holders. The ring hears it as a promise kept.", effects:[{ law:{ rate_volume:"low" } }, { move:{ "standing.ring":2 } }] },
+          { id:"relief", label:"Cut by a fifth", cost:0, note:"About CW$17bn a year handed back, nearly all of it to the holders of the long leases on the ring band, who hold most of the Commonwealth's volume.", effects:[{ law:{ rate_volume:"relief" } }, { move:{ "standing.ring":4, "public_standing":1 } }] },
+          { id:"low", label:"Cut by a tenth", cost:0, note:"About CW$9bn a year back to the lease holders, most of them on the ring band.", effects:[{ law:{ rate_volume:"low" } }, { move:{ "standing.ring":2 } }] },
           { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_volume:"standard" } }] },
-          { id:"high", label:"Raised by a tenth", cost:0, note:"About CW$9bn a year more, from the holders of the long leases. The lease is dearer to hold and no dearer to live in. That is the government's argument, and the ring band does not accept it.", effects:[{ law:{ rate_volume:"high" } }, { move:{ "standing.ring":-3 } }] },
-          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$17bn a year more, and the ring will call it confiscation in every paper it owns. It falls on position, so nobody's rent rises, which the government will say until it is hoarse.", effects:[{ law:{ rate_volume:"surcharge" } }, { move:{ "standing.ring":-5, "public_standing":-1 } }] }
+          { id:"high", label:"Raised by a tenth", cost:0, note:"About CW$9bn a year more, from the holders of the long leases. The government's case is that it raises the cost of holding a lease and raises no rent; the ring band disputes it.", effects:[{ law:{ rate_volume:"high" } }, { move:{ "standing.ring":-3 } }] },
+          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$17bn a year more. It falls on location, so it raises no rent, and the ring band calls it confiscation.", effects:[{ law:{ rate_volume:"surcharge" } }, { move:{ "standing.ring":-5, "public_standing":-1 } }] }
         ] },
       { id:"rate_thermal", name:"Ways and Means: thermal quota", default:"standard",
         note:"The levy on quota rejected, about CW$55bn a year at the opening. It is charged on the right to run, so it is paid by everything that runs, and a quarter of any change reaches the price of heat within the session.",
         levels:[
           { id:"relief", label:"Cut by a fifth", cost:0, note:"About CW$11bn a year forgone, and the price of heat falls with it. Every household on every deck feels it, and the reserve pays for it.", effects:[{ law:{ rate_thermal:"relief" } }, { move:{ "public_standing":3, "standing.low":1 } }] },
-          { id:"low", label:"Cut by a tenth", cost:0, note:"About CW$5.5bn a year forgone. Heat is a little cheaper, and it is the one price nobody can do without.", effects:[{ law:{ rate_thermal:"low" } }, { move:{ "public_standing":1 } }] },
+          { id:"low", label:"Cut by a tenth", cost:0, note:"About CW$5.5bn a year forgone, and heat is a little cheaper for every household.", effects:[{ law:{ rate_thermal:"low" } }, { move:{ "public_standing":1 } }] },
           { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_thermal:"standard" } }] },
           { id:"high", label:"Raised by a tenth", cost:0, note:"About CW$5.5bn a year more, passed on within the session to everyone buying the right to keep running, and hardest on the low band, which runs closest to its quota.", effects:[{ law:{ rate_thermal:"high" } }, { move:{ "public_standing":-2, "standing.low":-2 } }] },
-          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$11bn a year more, and a rise in the price of heat that every station will see on the next bill. Governments have fallen for less.", effects:[{ law:{ rate_thermal:"surcharge" } }, { move:{ "public_standing":-4, "standing.low":-3 } }] }
+          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$11bn a year more, and a rise in the price of heat that every station sees on its next bill.", effects:[{ law:{ rate_thermal:"surcharge" } }, { move:{ "public_standing":-4, "standing.low":-3 } }] }
         ] },
       { id:"rate_substrate", name:"Ways and Means: substrate-hours", default:"standard",
-        note:"The levy on mind-hours run, about CW$51bn a year at the opening. It is charged on the hour, so it is charged hardest on those who exist only as hours.",
+        note:"The levy on mind-hours run, about CW$51bn a year at the opening. It is charged by the hour of computation, so it falls hardest on emulated persons, whose whole existence is computation.",
         levels:[
-          { id:"relief", label:"Cut by a fifth", cost:0, note:"About CW$10bn a year forgone. The rent on continuing to be a person falls, and the people who pay nothing else notice first.", effects:[{ law:{ rate_substrate:"relief" } }, { move:{ "public_standing":2, "legitimacy":1 } }] },
+          { id:"relief", label:"Cut by a fifth", cost:0, note:"About CW$10bn a year forgone. Substrate rent falls, which matters most to emulated persons, for whom it is the largest cost of living.", effects:[{ law:{ rate_substrate:"relief" } }, { move:{ "public_standing":2, "legitimacy":1 } }] },
           { id:"low", label:"Cut by a tenth", cost:0, note:"About CW$5bn a year forgone.", effects:[{ law:{ rate_substrate:"low" } }, { move:{ "public_standing":1 } }] },
           { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_substrate:"standard" } }] },
-          { id:"high", label:"Raised by a tenth", cost:0, note:"About CW$5bn a year more. The rent on continuing to be a person goes up, and it goes up for the people with the least of anything else.", effects:[{ law:{ rate_substrate:"high" } }, { move:{ "public_standing":-2, "legitimacy":-1 } }] },
-          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$10bn a year more, raised from people who are only hours. The personhood benches will read it as a tax on existing, and they will not be wrong.", effects:[{ law:{ rate_substrate:"surcharge" } }, { move:{ "public_standing":-3, "legitimacy":-3 } }] }
+          { id:"high", label:"Raised by a tenth", cost:0, note:"About CW$5bn a year more. Substrate rent rises, and emulated persons pay most of it.", effects:[{ law:{ rate_substrate:"high" } }, { move:{ "public_standing":-2, "legitimacy":-1 } }] },
+          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$10bn a year more, nearly all of it from emulated persons. The parties that speak for them call it a tax on existing.", effects:[{ law:{ rate_substrate:"surcharge" } }, { move:{ "public_standing":-3, "legitimacy":-3 } }] }
         ] },
       { id:"rate_transit", name:"Ways and Means: mass to orbit", default:"standard",
         note:"The levy on mass lifted and moved, about CW$26bn a year at the opening. Charged at the tether and carried into the price of everything the outer stations cannot make.",
@@ -229,7 +208,7 @@ const BILLS = [
           { id:"low", label:"Cut by a tenth", cost:0, note:"About CW$2.6bn a year forgone, and all of it lands at the end of the schedule.", effects:[{ law:{ rate_transit:"low" } }, { move:{ "standing.far":2, "standing.external":1 } }] },
           { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_transit:"standard" } }] },
           { id:"high", label:"Raised by a tenth", cost:0, note:"About CW$2.6bn a year more. It reaches the stations at the end of the schedule first and hardest.", effects:[{ law:{ rate_transit:"high" } }, { move:{ "standing.far":-2, "standing.external":-2 } }] },
-          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$5bn a year more, charged on everything the outer stations import. Home Rule will campaign on nothing else.", effects:[{ law:{ rate_transit:"surcharge" } }, { move:{ "standing.far":-4, "standing.external":-4, "public_standing":-1 } }] }
+          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$5bn a year more, charged on everything the outer stations import. Home Rule, which speaks for them, opposes it.", effects:[{ law:{ rate_transit:"surcharge" } }, { move:{ "standing.far":-4, "standing.external":-4, "public_standing":-1 } }] }
         ] } ],
     stances:{ cu:"for", psa:"for", rv:"for", upl:{forPct:0.5}, geo:{forPct:0.5},
               cl:"against", sc:{forPct:0.3}, hul:{forPct:0.4}, fh:"against",
@@ -242,16 +221,13 @@ const BILLS = [
     title:"Thermal Quota Allocation (No. 2) Bill",
     summary:"Reallocates radiator capacity toward the middle band. Ember Ridge has been "+
             "below statutory reserve since the radiator fault of 6 April.",
-    contested:`The middle band gets the quota and the ring gives it up, which is what the Allocation Act is for and the first time in nine years anyone has used it. Ember Ridge is two hundred and thirteen thousand people three days from a shed order. Anselm Ring paid for the last diversion and remembers the invoice, and the objection is not that the middle band does not need the heat — it is that a quota moved to answer one fault becomes the ordinary way heat is allocated, and the ring will be paying for the next fault before anyone has found it.`,
+    contested:"The bill moves quota from the ring band to the middle band, which the Allocation Act allows and which has not been done for nine years. Ember Ridge is 213,000 people three days from a shed order. Anselm Ring paid for the last diversion, and its objection is that a quota moved to answer one fault becomes the ordinary way heat is allocated, so the ring would pay for the next fault too.",
     dualMajority:false,
     axes:{economic:-0.6, authority:0.2, personhood:0, sovereignty:0.7, trade:0.4},
     stances:{ cu:"for", psa:"for", rv:"for", upl:"for", geo:"for", sc:{forPct:0.4}, cl:{forPct:0.3} },
     amendments:[
       { id:"th2_ring", label:"Release to the ring band first",
-        note:"The quota is reallocated to the ring first and the outer stations "+
-             "take what is left. The ring's benches have asked for it since the "+
-             "diversion, and the outer stations will read the order of release "+
-             "as the government's real schedule.",
+        note:"The quota is reallocated to the ring first and the outer stations take what is left. The ring's benches have asked for it since the diversion; the outer stations would receive their quota last.",
         effects:[ { flag:{ thermal2_ring_first:true } },
                   { move:{ "loyalty.cl":4 } }, { move:{ "loyalty.hul":5 } },
                   { move:{ "loyalty.sc":-5 } },
@@ -268,13 +244,7 @@ const BILLS = [
     title:"Shed Order (Civilian Oversight) Bill",
     summary:"Places the published shedding priority under civilian review. Touches "+
             "life-support integrity, so the dual test applies.",
-    contested:"Everyone agrees the shed order should be answerable to somebody and nobody "+
-            "agrees to whom. The engineering authority says the ninety seconds after a seal "+
-            "fails are exactly the ninety seconds a committee cannot be convened in, and it "+
-            "has the incident record to prove it. The benches asking for review answer that "+
-            "a schedule deciding who stops running has never once been read aloud in the "+
-            "House, and that an authority which cannot be argued with is an authority which "+
-            "cannot be wrong.",
+    contested:"Every party wants the shed order answerable to someone, and they disagree about whom. The engineering authority says the ninety seconds after a seal fails are too short to convene a committee, and it has the incident record to show it. The benches asking for review answer that the schedule deciding who stops running has never been read aloud in the House, and that an authority no one can question cannot be held to account.",
     dualMajority:true,
     axes:{economic:-0.7, authority:-0.9, personhood:0.5, sovereignty:0.6, trade:0.1},
     stances:{ cu:"for", psa:"for", rv:{for:11}, upl:"for", geo:"for",
@@ -293,7 +263,7 @@ const BILLS = [
     author:"estevez",
     title:"Anchor Concession (Anchorage) Ratification Bill",
     summary:`Ratifies renewed terms for the International Earth-Orbit Elevator, whose anchor stands at Malindi, on Kenyan territory.`,
-    contested:`The anchor stands on soil the Commonwealth does not own, so the choice is not between good terms and better ones. Ratifying keeps the International running and puts eight billion dollars into the year; refusing is a statement of sovereignty that a station of two hundred and thirty-one thousand people cannot eat. The honest objection is that a lease renewed is still a lease, and the price is paid again at the next renewal with less left to trade.`,
+    contested:"The anchor stands on Kenyan soil, so the Commonwealth negotiates as a tenant. Ratifying keeps the International running and puts eight billion dollars into the year. Refusing asserts sovereignty at the cost of Anchorage, a station of 231,000 people that depends on the tether. The objection is that a renewed lease is still a lease, and the price is paid again at the next renewal with less left to trade.",
     dualMajority:false,
     axes:{economic:0.6, authority:0.1, personhood:0, sovereignty:0.5, trade:0.95},
     stances:{ cl:"for", cu:{forPct:0.7}, psa:{forPct:0.5}, sc:"against", hul:"against" },
@@ -304,15 +274,9 @@ const BILLS = [
     touches:["substrate_insurance","risk_pricing"],
     author:"girard",
     title:"Substrate Insurance (Uprating) Bill",
-    summary:"Raises the statutory floor on substrate insurance and removes the means test. "+
-            "Failing the current test does not reduce a person's income; it suspends them.",
+    summary:"Raises the statutory floor on substrate insurance and removes the means test. Under the current test, a person who fails it and cannot pay is suspended.",
     effectNote:"Estimated 34,000 fewer default suspensions a year. Cost falls on thermal appropriations.",
-    contested:"The means test decides whether a person who cannot pay for substrate is "+
-            "insured or suspended, and the bill says that is not a line a decent polity "+
-            "draws. It costs the reserve eleven billion dollars and takes thirty-four thousand people a "+
-            "year off the default register. The objection is not to the people: it is that "+
-            "a floor with no test under it is a floor nobody can leave, and the consortiums "+
-            "will price the guarantee into the rent of every person it covers.",
+    contested:"The means test decides whether a person who cannot pay for substrate is insured or suspended, and the bill's supporters say no one should be suspended for poverty. It costs the reserve eleven billion dollars and takes thirty-four thousand people a year off the default register. The objection is that cover without a means test would never be withdrawn once given, and that the substrate providers would raise every covered person's rent to match the guarantee.",
     dualMajority:false,
     axes:{economic:-0.85, authority:-0.2, personhood:0.6, sovereignty:0.6, trade:0.2},
     stances:{ psa:"for", cu:{forPct:0.8}, upl:"for", geo:"for", rv:{forPct:0.6},
@@ -330,12 +294,7 @@ const BILLS = [
             "reabsorbed, and gives the instance a right to be heard. The Congregational Democratic Alliance has asked for it "+
             "at every coalition meeting since formation.",
     effectNote:"Adds a procedural step to every reabsorption. Fork-labour costs rise.",
-    contested:"A procedure before a life ends is not much to ask, and the CDA has asked for "+
-            "it at every coalition meeting since this government formed. It requires a "+
-            "register, a hearing, and a decision that can be pointed at afterwards. The "+
-            "objection is that the register is a list, that a list of persons who may be "+
-            "reabsorbed is a list which will eventually be put to another use, and that a "+
-            "right to be heard is not a right to be kept — the reabsorption still happens.",
+    contested:"The Congregational Democratic Alliance has asked at every coalition meeting since this government formed for a procedure before an instance is reabsorbed: a register, a hearing, and a recorded decision. The objection is that a register of persons who may be reabsorbed could later be put to other uses, and that a hearing does not stop the reabsorption.",
     dualMajority:false,
     axes:{economic:-0.2, authority:-0.1, personhood:-0.85, sovereignty:0.4, trade:-0.1},
     stances:{ rv:"for", cu:{forPct:0.65}, des:"for", hul:{forPct:0.7}, gb:{forPct:0.5},
@@ -356,18 +315,10 @@ const BILLS = [
     touches:["substrate_ownership"],
     author:"ivarsen",
     title:"Substrate (Public Stake) Bill",
-    summary:"Takes a controlling public stake in the three largest substrate providers. "+
-            "Air, water, thermal and computation are natural monopolies with captive customers "+
-            "and a lethal failure mode; the argument is that one of them is not like the others.",
+    summary:"Takes a controlling public stake in the three largest substrate providers. Air, water, thermal and computation are natural monopolies with captive customers and a lethal failure mode, and the bill treats substrate as one of them.",
     effectNote:"Public share of substrate rises from 35 to 60 per cent. Substrate rents fall. "+
                "Four functional seats change hands as corporate voters are extinguished.",
-    contested:"Air, water, thermal and computation are the four things a habitat cannot do "+
-            "without, and the three companies selling them have captive customers and no "+
-            "competitor to lose them to. A controlling stake is the only lever short of a "+
-            "charter amendment, and it takes four functional seats out of corporate hands "+
-            "on the way through. The objection is not the price: it is that a government "+
-            "which sets the standard for substrate will also be the party selling it, and "+
-            "nobody audits the landlord's own meter.",
+    contested:"Air, water, thermal and computation are the four things a habitat cannot do without, and the three companies selling computation have captive customers and no competitor to lose them to. A controlling stake is the only lever short of a charter amendment, and it takes four functional seats out of corporate hands on the way through. The objection is that the government would then both set the standard for substrate and sell it, with no independent check on its own pricing.",
     dualMajority:false,
     axes:{economic:-0.95, authority:0.1, personhood:0.4, sovereignty:0.7, trade:0},
     stances:{ psa:"for", cu:{forPct:0.85}, upl:"for", geo:{forPct:0.6}, rv:{forPct:0.4},
@@ -392,12 +343,7 @@ const BILLS = [
     summary:"Sets a minimum clock rate of real time for every enfranchised mind, publicly "+
             "subsidised, so that an emulation running slow for want of substrate follows a "+
             "campaign at the same pace as the electorate around it.",
-    contested:"At 0.3x a four-year parliament is fourteen subjective months, and 560,000 "+
-            "people vote on a campaign they could not follow at the speed it was fought. The "+
-            "case for the minimum is that a vote cast without the argument is a vote in name. "+
-            "The case against is who pays: seventy billion dollars a year from the reserve, "+
-            "and the heat of running half a million minds faster through radiators that are "+
-            "already the binding constraint. The PSD's embodied base pays for it, and knows it.",
+    contested:"At 0.3x a four-year parliament is fourteen subjective months, and 560,000 people vote on a campaign they could not follow at the speed it was fought. The case for the minimum is that a vote cast without the argument is a vote in name only. The case against is the cost: seventy billion dollars a year from the reserve, and the heat of running half a million minds faster through radiators that are already the binding constraint. Most of that cost falls on the PSD's embodied voters.",
     dualMajority:false,
     axes:{economic:-0.8, authority:-0.3, personhood:0.85, sovereignty:0.4, trade:0},
     stances:{ psa:"for", upl:"for", cu:{forPct:0.6}, rv:"against", fh:"against", gb:"against" },
@@ -412,12 +358,7 @@ const BILLS = [
     title:"Suspended Persons (Debt Moratorium) Bill",
     summary:"Stops substrate debt accruing while a person is suspended, so that a mind "+
             "restored from suspension owes what it owed on the day it went cold.",
-    contested:"With the debt accruing, a person suspended for default runs up cost for every "+
-            "sitting they cannot earn, and the arithmetic says most of them never come back. "+
-            "The Underwriters' answer is the other half of the same arithmetic: pause the debt "+
-            "and going cold becomes the cheapest way to wait out a bad quarter, suspension "+
-            "rises, and the providers carry the frozen balances. Both are true, and the bill "+
-            "decides which cost the Commonwealth would rather see.",
+    contested:"With the debt accruing, a person suspended for default runs up cost for every sitting they cannot earn, and most of them never come back. The Underwriters answer that if the debt pauses, going cold becomes the cheapest way to wait out a bad quarter, suspensions rise, and the providers carry the frozen balances. The bill decides which of the two costs the Commonwealth bears.",
     dualMajority:false,
     axes:{economic:-0.6, authority:-0.5, personhood:0.7, sovereignty:0.2, trade:0},
     stances:{ psa:"for", upl:"for", gb:"against", fh:"against", cl:"against" },

@@ -39,7 +39,7 @@ const SETTLEMENTS = [
      so cannot be inherited; this one needed saying out loud. */
   { id: "restriction", rank: 1,
     name: "The Restriction Settlement",
-    summary: "The threshold stands where it stood, and the schedule is not reopened.",
+    summary: "The divergence threshold stays at 168 hours, and the schedule of persons is not reopened.",
     closing: `The threshold stands at one hundred and sixty-eight hours, where the founders put it, and the bill that would have moved it is dead. The franchise stays what it always was: a copy separated from its source remains an instance in law, with no separate wage, no separate vote, and no separate life the registry has to notice. Nearly two million copies stay exactly as they are.
 
 The government that put the question has answered it, and the answer is that the question will not be asked again in this parliament. The maintenance benches call it stability and mean it. The partner that made the bill the price of the coalition now sits in a government whose answer to the price was no, and the argument between them is quieter than it was and worse than it was.
@@ -54,7 +54,7 @@ Nothing more needs to be done. That is what a settlement is. The question goes t
      done without moving benches outside the coalition. */
   { id: "substrate_neutrality", rank: 1,
     name: "Substrate Neutrality",
-    summary: "The schedule stops asking what a person is made of.",
+    summary: "The threshold falls to forty hours, and the schedule of persons no longer asks whether a person runs on a body or on substrate.",
     /* A SETTLEMENT IS CARRIED, NOT REACHED. The first draft asked only that
        the number be below 49, and the number is movable by an event effect:
        driving the engine headless through four play policies found this
@@ -83,7 +83,7 @@ The argument is closed by winning it. What is made of a person stops being a leg
      quietly horrifying of the four. */
   { id: "graduated_personhood", rank: 0,
     name: "Graduated Personhood",
-    summary: "A tribunal decides, case by case, and the number stops being law.",
+    summary: "No threshold is set in law, and a tribunal decides personhood case by case.",
     closing: "The threshold is no longer a number in a statute. It is a finding, made by a " +
              "tribunal, one case at a time. The law does not say what a person is. It says " +
              "who decides, and the people who decide sit in a room with a schedule and a " +
@@ -102,7 +102,7 @@ The argument is closed by winning it. What is made of a person stops being a leg
      the chamber does not. */
   { id: "federal_fudge", rank: 2,
     name: "The Federal Settlement",
-    summary: "Each station answers for itself, and the Commonwealth does not ask.",
+    summary: "Each station sets its own threshold, and the Commonwealth sets none.",
     closing: "There is no national threshold any more. Each station sets its own schedule, " +
              "and the Commonwealth has agreed not to ask what any of them are. The union " +
              "is preserved by declining the question.\n\n" +

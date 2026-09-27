@@ -79,8 +79,8 @@ const ENCYCLOPEDIA = {
         "long-lived is forbidden by the Charter." },
       { h:"Descent", body:
         "Bone density constrains only the biological. An emulation with enough money can rent "+
-        "a body certified for one gravity and descend, because the body is equipment. An "+
-        "orbital-born biological cannot descend at any price. The class defined by bone density "+
+        "a body certified for one gravity and descend to a planet. An "+
+        "orbital-born biological person, whose bones grew in low gravity, cannot descend at any price. The class defined by bone density "+
         "is a biological class." },
       { h:"Uploading under economic pressure", body:
         "Emulation is cheaper on volume and dearer on thermal. A household driven to upload is "+
@@ -446,7 +446,7 @@ This produces a recurring constitutional argument. Federal development spending 
       { h:"A dual mandate", when:{ lawIs:{ bank_mandate:"dual" } }, body:
         "In 2080 the Treasurer's remit gave the Bank full participation as a second object "+"beside the target, and the rule weighs the output gap in full." },
       { h:"A higher target", when:{ lawAbove:{ inflation_target:2 } }, body:
-        "In 2080 the Treasurer's remit raised the target above two per cent for the first "+"time since the float." },
+        "In 2080 the Treasurer's remit raised the inflation target from two per cent to three, "+"the first change since the float. Under the Bank's rule a higher target means a lower "+"cash rate for the same inflation." },
       { h:"Direction", body:
         "The Act keeps two powers for Parliament. A [[reserve_direction|reserve direction]] tells the Bank what "+"to do with the rate at every meeting while it stands, and a Ways and Means order lets "+"the Treasury overdraw its account at the Bank, which is to say lets the Bank create "+"the money the Treasury spends. Both are affirmative orders, which the House must "+"approve before they take effect, and neither had been made by April 2080." },
       { h:"Under direction", when:{ flags:["bank_directed"] }, body:

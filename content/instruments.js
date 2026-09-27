@@ -36,8 +36,7 @@ const INSTRUMENTS = [
     summary:"Widens the Life Support Engineering licence to admit integrity technicians "+
             "certified before 2067, adding roughly 900 electors to a constituency of 4,100. "+
             "The new electors are disproportionately maintenance-union members.",
-    effect_note:"Moves functional seats over 2–4 sittings. The Guild Bench will not divide "+
-                "with a government that has done this.",
+    effect_note:"The new electors move two Life Support seats from the Alliance of Business and Government to the Party of Socialists and Democrats over the following sittings. The Alliance's bench, the Guild Bench, stops voting with the government, its chair Kazuya Tanako breaks with it, and two more members sign the paper for a leadership ballot.",
     effects:[ { functional:{ fc_lifesupport:{ cu:2, gb:-2 } } },
               { flag:"board_packed" },
               {move:{"loyalty.gb":-30}},
@@ -58,7 +57,7 @@ const INSTRUMENTS = [
     summary:"Diverts thermal quota from Anselm Ring to Ember Ridge for the duration of the "+
             "radiator fault. Touches life-support integrity, so the affirmative procedure "+
             "applies and the House must approve it before it takes effect.",
-    effect_note:"Anselm Ring pays for it, and Anselm Ring notices.",
+    effect_note:"The quota comes out of Anselm Ring's allocation for as long as the fault lasts. The thermal price falls, and people suspended at Ember Ridge for want of heat are restored.",
     effects:[ {move:{"thermal_margin":7}}, {move:{"price.thermal":-9}},
               { station:{ vantage:{ suspended:-900 } } },
               { flag:"vantage_diverted" },
@@ -96,11 +95,8 @@ const INSTRUMENTS = [
     procedure:"negative",
     prayer_window:6,
     revocable:true,
-    summary:"Admits reclassification practitioners to the Legal roll without the full "+
-            "instrument-of-call, adding some 1,600 electors to a constituency of 5,200. "+
-            "Reclassification practice is young, emulation-heavy, and votes accordingly.",
-    effect_note:"Two more functional seats, and a second permanent enemy. Packing one board "+
-                "is a manoeuvre; packing two is a policy, and the chamber will call it one.",
+    summary:"Admits reclassification practitioners to the Legal roll without the full instrument-of-call, adding some 1,600 electors to a constituency of 5,200. Most reclassification practitioners are recently qualified emulations, and vote for the New Progressive Party.",
+    effect_note:"Two Legal seats move to the New Progressive Party, one each from the Alliance of Business and Government and the Association of Engineers and Systems. Both lose loyalty to the government, the New Progressive Party gains it, and three more members sign the paper for a leadership ballot. It is the second licensing order, and the opposition calls it a pattern.",
     effects:[ { functional:{ fc_legal:{ psa:2, gb:-1, hul:-1 } } },
               { flag:"legal_board_packed" },
               {move:{"loyalty.gb":-20}},{move:{"loyalty.hul":-18}},{move:{"loyalty.psa":10}},
@@ -128,9 +124,8 @@ const INSTRUMENTS = [
   { id:"rung1_conservation",
     title:"Voluntary Conservation (Appeal) Order 2080", number:"SI 2080/61",
     author:"substrate_thermal", procedure:"negative", prayer_window:6, revocable:true,
-    summary:"Asks the stations to draw down non-essential load ahead of the winter margin. "+
-            "It asks; it does not compel. The margin improves a little and the appeal is forgotten in a week.",
-    effect_note:"The cheapest rung, and the one that buys the least: a first move, made before the dearer ones.",
+    summary:"Asks the stations to cut non-essential load ahead of the winter margin. Compliance is voluntary, so the margin improves only a little, and only while the appeal is observed.",
+    effect_note:"The first rung of the emergency ladder: it costs nothing politically and raises the margin least of any order.",
     effects:[ {move:{"thermal_margin":3}}, { flag:"rung1_tried" },
               { wire:"CONSERVATION APPEAL ISSUED TO STATION AUTHORITIES" } ],
     reverse:[ {move:{"thermal_margin":-3}}, { flag:{ rung1_tried:false } } ],
@@ -140,11 +135,8 @@ const INSTRUMENTS = [
     title:"Clock-Rate (Reduction) Order 2080", number:"SI 2080/62",
     author:"persons_continuity", procedure:"negative", prayer_window:6, revocable:true,
     when:{ flags:["rung1_tried"] },
-    summary:"Slows the emulated blocs' clock rate by four per cent for the duration of the "+
-            "margin. To an emulated person it is a long weekend. In fact it is a wage cut for "+
-            "everyone who runs faster than a body does.",
-    effect_note:"Buys margin out of the emulated population's patience, which is the one "+
-                "resource the New Progressive Party exists to protect.",
+    summary:"Slows the clock rate of the emulated population by four per cent until the margin recovers, which cuts the heat their computation makes. Every emulated person has four per cent less working time each day, and those paid by the hour earn four per cent less.",
+    effect_note:"The New Progressive Party, which speaks for the emulated population, loses loyalty to the government.",
     effects:[ {move:{"thermal_margin":4}}, {move:{"loyalty.psa":-8}}, { flag:"rung2_tried" },
               { wire:"CLOCK RATES CUT FOUR PER CENT; SUBSTRATE LEFT PROTESTS" } ],
     reverse:[ {move:{"thermal_margin":-4}}, {move:{"loyalty.psa":8}}, { flag:{ rung2_tried:false } } ],
@@ -154,10 +146,8 @@ const INSTRUMENTS = [
     title:"Deferred-Computation (Scheduling) Order 2080", number:"SI 2080/63",
     author:"substrate_thermal", procedure:"negative", prayer_window:6, revocable:true,
     when:{ flags:["rung2_tried"] },
-    summary:"Moves non-critical substrate computation to the cold hours. The racks still run; "+
-            "they run when the station can afford to reject the heat. The guilds lose the "+
-            "night shift and the overtime that came with it.",
-    effect_note:"Margin out of the consumables cycle, and the engineers' goodwill with it.",
+    summary:"Moves non-critical substrate computation to the cold hours, when the stations can reject heat most easily. The engineering guilds lose the night shift and its overtime.",
+    effect_note:"The substrate price falls. The Association of Engineers and Systems and the Alliance of Business and Government lose loyalty to the government.",
     effects:[ {move:{"thermal_margin":5}}, {move:{"price.substrate":-4}},
               {move:{"loyalty.gb":-6}}, {move:{"loyalty.hul":-6}}, { flag:"rung3_tried" },
               { wire:"DEFERRED-COMPUTATION SCHEDULE IMPOSED; GUILD BENCH OBJECTS" } ],
@@ -169,8 +159,7 @@ const INSTRUMENTS = [
     title:"Emergency Thermal (Appropriation) Order 2080", number:"SI 2080/64",
     author:"treasury", procedure:"affirmative", approvalFloor:0.9, revocable:true,
     when:{ flags:["rung3_tried"] },
-    summary:"Appropriates directly against the reserve to buy thermal capacity at whatever the "+
-            "market asks. The reserve was built for exactly this and has never been spent on it.",
+    summary:"Spends from the reserve to buy thermal capacity at the market price. It is the first time the reserve has been drawn for a thermal emergency.",
     effect_note:"The first rung that spends real money, and the first that needs the House to "+
                 "approve it before it takes effect.",
     effects:[ {move:{"thermal_margin":7}}, {move:{"solvency": -12000}}, { flag:"rung4_tried" },
@@ -182,9 +171,8 @@ const INSTRUMENTS = [
     title:"Thermal Quota (Market Purchase) Order 2080", number:"SI 2080/65",
     author:"treasury", procedure:"negative", prayer_window:6, revocable:true,
     when:{ flags:["rung4_tried"] },
-    summary:"Buys quota on the open exchange and holds it off the market. It works, it works at "+
-            "once, and it is the rung the engineers have been asking for since the fault.",
-    effect_note:"A hard spend for a real result. The reserve does not come back.",
+    summary:"Buys thermal quota on the open exchange and holds it off the market, which raises the margin at once and brings the thermal price down. The engineers have asked for it since the fault.",
+    effect_note:"It is paid from the reserve, and the money is not recovered when the emergency ends.",
     effects:[ {move:{"thermal_margin":9}}, {move:{"price.thermal":-14}}, {move:{"solvency": -18000}},
               { flag:"rung5_tried" },
               { wire:"GOVERNMENT BUYS THERMAL QUOTA AT MARKET; PRICE FALLS" } ],
@@ -196,11 +184,8 @@ const INSTRUMENTS = [
     title:"Substrate Insurance (Drawdown) Order 2080", number:"SI 2080/66",
     author:"treasury", procedure:"negative", prayer_window:6, revocable:true,
     when:{ flags:["rung5_tried"] },
-    summary:"Draws down the substrate insurance fund ahead of the quarter it was written for. "+
-            "The fund exists so that nobody is suspended for a price they did not set. Spending "+
-            "it on the price uses up the protection it was meant to give.",
-    effect_note:"Relief now, and an empty fund the next time the margin thins. The third rail "+
-                "is not the drawdown; it is what the drawdown leaves behind.",
+    summary:"Draws on the substrate insurance fund before the quarter it was set aside for, to bring the substrate price down. The fund insures people who cannot pay their substrate rent against suspension, so what is spent now is not there to cover them later.",
+    effect_note:"Public standing falls, and so does the New Progressive Party's loyalty. Ministers cannot say when the fund will be refilled.",
     effects:[ {move:{"thermal_margin":11}}, {move:{"price.substrate":-10}},
               {move:{"public_standing":-12}}, {move:{"loyalty.psa":-10}}, { flag:"rung6_tried" },
               { wire:"INSURANCE FUND DRAWN DOWN; MINISTERS DECLINE TO SAY WHEN IT REFILLS" } ],
@@ -230,9 +215,8 @@ const INSTRUMENTS = [
     title:"Emergency Powers (Allocation) Order 2080", number:"SI 2080/68",
     author:"law_charter", procedure:"affirmative", revocable:true,
     when:{ flags:["rung7_tried"] },
-    summary:`Assumes the Allocation Act's emergency powers over the tier registers and the shed order. It suspends nobody. It takes the power to suspend.`,
-    effect_note:"The declaration is not the fight. The fight is the termination, and by then "+
-                "the power is the ordinary way the margin is managed.",
+    summary:"Assumes the Allocation Act's emergency powers over the tier registers and the shed order, so the government can order suspensions without further approval. The order suspends nobody itself.",
+    effect_note:"Public standing falls sharply, and the Trades Left and the New Progressive Party lose loyalty. Ending the powers later is contested in the House.",
     effects:[ {move:{"thermal_margin":15}}, {move:{"public_standing":-18}},
               {move:{"loyalty.cu_maintenance":-14}}, {move:{"loyalty.psa":-14}}, { flag:"rung8_tried" },
               { wire:"EMERGENCY POWERS ASSUMED OVER THE TIER REGISTERS" } ],
@@ -244,10 +228,8 @@ const INSTRUMENTS = [
     title:"Involuntary Suspension (Federal) Order 2080", number:"SI 2080/69",
     author:"contingencies", procedure:"affirmative", revocable:true,
     when:{ flags:["rung8_tried"] },
-    summary:"Suspends the tier-four register across the exposed stations without notice and "+
-            "without a minister being told first. The margin improves at once. The order is "+
-            "lawful, the schedule is published, and the people on it stop running.",
-    effect_note:`The most margin of any order, at the worst price of any order. It is always available, and it is never the cheap answer.`,
+    summary:"Suspends everyone on the tier-four register across the exposed stations, without notice and without a minister being told first. The margin improves at once, and the schedule of those suspended is published.",
+    effect_note:"It raises the margin more than any other order, and costs more standing and loyalty than any: the Trades Left, the Hard Left and the New Progressive Party all turn against the government.",
     effects:[ {move:{"thermal_margin":18}}, {move:{"public_standing":-30}},
               {move:{"loyalty.cu_maintenance":-22}}, {move:{"loyalty.psa":-20}},
               {move:{"loyalty.cu_halloran":-20}}, { flag:"rung9_tried" },
@@ -272,9 +254,7 @@ const INSTRUMENTS = [
     summary:"Directs the Reserve Bank to hold the cash rate at its present level " +
             "at every meeting while the order stands. The Governor sets the rate " +
             "under the Reserve Bank Act 2071; this is the power the Act kept back.",
-    effect_note:"The rate stops rising, and the market prices a Bank that can be told. " +
-                "Credibility falls at every meeting the order stands, and expected " +
-                "inflation follows it.",
+    effect_note:"The rate stops rising. The dollar falls, the Bank's credibility falls at every meeting the order stands, and expected inflation rises with it.",
     effects:[ { law:{ reserve_direction:"hold" } }, { flag:"bank_directed" },
               { economy:{ credibility:-0.06, fx:-1.5 } },
               { wire:"TREASURY DIRECTS RESERVE BANK TO HOLD THE CASH RATE" } ],
@@ -288,8 +268,7 @@ const INSTRUMENTS = [
     when:{ flagsAbsent:["bank_directed"] },
     summary:"Directs the Reserve Bank to lower the cash rate by half a point at " +
             "every meeting while the order stands, whatever its own rule asks.",
-    effect_note:"Money is cheaper within the week. The dollar falls on the day, and " +
-                "the Bank's credibility pays for every meeting of it.",
+    effect_note:"The rate falls half a point at each meeting. The dollar falls when the order is laid, expected inflation rises, and the Bank's credibility falls at every meeting it stands.",
     effects:[ { law:{ reserve_direction:"ease" } }, { flag:"bank_directed" },
               { economy:{ credibility:-0.1, fx:-3, expected:0.3 } },
               { wire:"TREASURY DIRECTS RESERVE BANK TO CUT" } ],
@@ -301,12 +280,8 @@ const INSTRUMENTS = [
     title:"Treasury (Ways and Means Advances) Order 2080", number:"SI 2080/73",
     author:"treasury", procedure:"affirmative", revocable:false,
     when:{ flagsAbsent:["ways_and_means_opened"] },
-    summary:"Opens the Treasury's overdraft at the Reserve Bank and draws CW$20 " +
-            "billion on it. The Bank credits the Treasury's account; nobody lends " +
-            "the money, because the Bank creates it.",
-    effect_note:"The reserve is paid on the day. Expected inflation rises and the " +
-                "Bank's credibility falls, and the Underwriters mark the Commonwealth " +
-                "down as a borrower that has printed once.",
+    summary:"Opens the Treasury's overdraft at the Reserve Bank and draws CW$20 billion on it. The Bank creates the money and credits it to the Treasury's account.",
+    effect_note:"The reserve receives the money on the day. Expected inflation rises, the dollar falls, and the Bank's credibility falls further than under any direction.",
     effects:[ { move:{ "loan.reserve_bank":20000 } }, { flag:"ways_and_means_opened" },
               { economy:{ credibility:-0.2, expected:0.8, fx:-4 } },
               { wire:"RESERVE BANK TO FINANCE THE TREASURY DIRECTLY" } ],
@@ -319,9 +294,7 @@ const INSTRUMENTS = [
     author:"treasury", procedure:"negative", prayer_window:6, revocable:true,
     summary:"Requires a Treasury licence for any payment of more than CW$1 million " +
             "to a person outside the Commonwealth, except for trade in goods.",
-    effect_note:"The dollar steadies, because money cannot leave in a hurry. Earth " +
-                "reads it as a wall, the consortiums as a confiscation in waiting, and " +
-                "trade in compute pays the licence fee.",
+    effect_note:"The dollar steadies, since money cannot leave quickly. Friction with Earth rises and trade falls, compute exports first: every payment for them now needs a licence.",
     effects:[ { law:{ capital_controls:true } }, { flag:"exchange_controls" },
               { move:{ friction:6 } }, { economy:{ trade:-4, fx:2 } },
               { wire:"EXCHANGE CONTROLS IMPOSED; PAYMENTS TO EARTH NEED A LICENCE" } ],

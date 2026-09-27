@@ -40,7 +40,7 @@ campaign("flash_i", { initiatives: [
   { id: "seek_terms",
     title: "Ask Earth's banks for terms",
     note: "What Earth's banks would take to lift their measures against the " +
-          "Commonwealth. The answer comes as a list, and the list has a price.",
+          "Commonwealth. They answer with a list of conditions, each with a cost.",
     cost: 1,
     when: { scalarAbove: { friction: 45 } },
     event: "fa_conciliate",
@@ -139,8 +139,7 @@ campaign("flash_i", { initiatives: [
      lending and the couplings drain the reserve above 65. */
   { id: "sell_the_leases",
     title: "Sell the Cordell mining leases",
-    note: "The leases came with the platform. Sold, they pay down what the " +
-          "quarrel is costing, and they do not come back.",
+    note: "The leases came with the platform. Selling them raises money against the cost of the quarrel with Earth, and the sale is final.",
     cost: 0,
     when: { resolvedIs: "f1_pyrrhic",
             flagsAbsent: ["cordell_leases_ceded", "cordell_leases_pledged"] },
@@ -160,9 +159,7 @@ campaign("flash_i", { initiatives: [
      monetize the buffer zone." */
   { id: "lease_the_zone",
     title: "Charge for access to the free zone",
-    note: "The joint mandate made the platform a free trade zone the " +
-          "Commonwealth administers and does not own. The cargo that passes " +
-          "through it can be charged for.",
+    note: "The joint mandate made the platform a free trade zone under Commonwealth administration, and the Commonwealth can charge for the cargo that passes through it.",
     cost: 1,
     when: { resolvedIs: "f1_joint" },
     event: "f1_zone_leased",
@@ -178,9 +175,7 @@ campaign("flash_i", { initiatives: [
      vacancy is filled the usual way. */
   { id: "sacrifice_the_minister",
     title: "Let the Minister for External Relations take the blame",
-    note: "The referendum was declined and the platform cleared. Somebody " +
-          "resigns for it, and the country is told who. It restores a little " +
-          "of the trust the capitulation cost.",
+    note: "The referendum was declined and the platform cleared. A minister resigns for it, publicly. It restores a little of the trust the capitulation cost.",
     cost: 0,
     when: { resolvedIs: "f1_capitulation" },
     event: "f1_minister_resigns",
@@ -239,7 +234,7 @@ campaign("flash_i", { initiatives: [
      mission's report ends it. */
   { id: "work_the_floor",
     title: "Work the floor at the General Assembly",
-    note: "The mission in New York can move votes before a sitting, and every way of doing it costs the Commonwealth something it has.",
+    note: "The mission in New York can move votes before a sitting, and each way of doing it has a price.",
     cost: 0,
     when: { flags: ["station_issue"], flagsAbsent: ["un_floor_working"] },
     event: "un_floor_report",

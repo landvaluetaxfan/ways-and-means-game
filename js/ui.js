@@ -1253,10 +1253,9 @@ const UI = (function () {
         `<i class="${infl > 5 ? "up" : infl < -5 ? "down" : ""}">` +
         `${infl >= 0 ? "+" : ""}${infl.toFixed(1)}%</i></div>` +
       `<div class="note" style="padding:4px 6px 6px">Index, 100 at the opening of ` +
-      `the series. None of these four is a market: every one is a line of the ` +
-      `appropriation, which is why a price here can be argued with — and each ` +
-      `yield is that price times the rate the clause sets, on an economy the ` +
-      `size it is now.</div>`;
+      `the series. Each price is set by a clause of the appropriation and the tax ` +
+      `rate on its base, and moves with the thermal margin and the reserve. Each ` +
+      `yield is the price times the rate, on an economy the size it is now.</div>`;
   }
 
   /* THE RESERVE BANK AND THE DOLLAR (design/39 option C). Six readings,
@@ -2264,9 +2263,9 @@ const UI = (function () {
           trSay(E.trade) + trend("trade"), true) +
       row("private", "In private hands", "%", Math.round(E.private * 100),
           prSay(E.private), false) +
-      `<div class="note">Participation answers to the divergence threshold: a ` +
-      `shorter one turns instance-hours into counted jobs. The four prices are the ` +
-      `cost of existing; these are what the Commonwealth makes and sells.</div>` +
+      `<div class="note">Participation rises when the divergence threshold falls, ` +
+      `since instances that become persons count as workers in their own right. ` +
+      `These are what the Commonwealth makes and sells.</div>` +
       labourHTML();
 
     /* THE FOLD'S STATE OUTLIVES THE RE-RENDER. Every renderer here replaces

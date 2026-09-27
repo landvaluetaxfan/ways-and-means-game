@@ -74,7 +74,7 @@ const Tips = (function () {
             "clicking a country on the globe shows what the Commonwealth depends " +
             "on it for — anchors, standing, and what it sells." },
     tribunal: { title: "The Tribunal",
-      body: "The bench that hears what the orders do. It is not elected and " +
+      body: "The court that hears challenges to the government's orders. It is not elected and " +
             "cannot be whipped, so the numbers in the House do not reach it. Its " +
             "disposition is how generously it reads the government's orders, and " +
             "that moves on whether a reference is answered, a case is defended " +
@@ -321,8 +321,9 @@ const Tips = (function () {
             "averaged by how many members each has. Whipping your own members " +
             "is paid for from it, and the cost falls on every current." },
     public_standing: { title: "Public standing",
-      body: "How the government is seen outside the chamber. It does not vote. " +
-            "It decides what the wire prints." },
+      body: "How the government is seen outside the House, out of 100. It moves the vote at " +
+            "the general election and shapes what the press prints, and it drifts back toward " +
+            "the middle unless the government keeps it up." },
     consumables: { title: "Consumables",
       body: "Food, water and everything else a habitat consumes. When it is " +
             "low, stations go short." },

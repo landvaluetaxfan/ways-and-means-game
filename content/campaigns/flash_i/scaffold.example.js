@@ -126,7 +126,7 @@ const FLASH_I_TIERS = [
   { id: "f1_joint", rank: 2,
     name: "UN/Orbital Joint Mandate",
     terminal: true,
-    summary: "A co-administered international free trade zone. No embargo, no territory, mild voter apathy.",
+    summary: "The Works becomes a co-administered international free trade zone, with no embargo and no Commonwealth territory.",
     when: { scalarAbove: { legitimacy: 40, solvency: 40000, friction: 40 },
             scalarBelow: { legitimacy: 60, solvency: 60000, friction: 60 } } },
 
