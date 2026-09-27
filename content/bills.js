@@ -176,7 +176,7 @@ const BILLS = [
              "schedule. The anchor states and the outer stations are the ones "+
              "whose schedules are other people's schedules.",
         levels:[
-          { id:"none",    label:"Unsubsidised", cost:0,  note:"The fare is the market's. The outer stations pay what the schedule says, and the schedule is not the Commonwealth's.", effects:[{ law:{ transit_subsidy:"none" } }] },
+          { id:"none",    label:"Unsubsidised", cost:0,  note:"With no subsidy the fare is set by the carriers, and the outer stations pay the carriers' published schedule.", effects:[{ law:{ transit_subsidy:"none" } }] },
           { id:"anchors", label:"The anchor states", cost:10000, note:"The differential is carried for the anchor states, where the tether is the only way in.", effects:[{ law:{ transit_subsidy:"anchors" } }, { move:{ "public_standing":3 } }] },
           { id:"all",     label:"Every station", cost:22000, note:"The differential is carried for every station, and the reserve pays for the ones the traffic does not reach.", effects:[{ law:{ transit_subsidy:"all" } }, { move:{ "public_standing":5, solvency:-4000 } }] }
         ] },

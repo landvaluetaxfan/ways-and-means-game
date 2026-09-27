@@ -31,6 +31,9 @@ function registerOf(addr) {
   /* a lender's terms are an article's prose (Reference); what the account
      says about a drawing and why it is refused is Interface */
   if (coll === "setup" && /\/lenders\/[^/]+\/(drawNote|limits|rate)\b/.test(addr)) return "interface";
+  /* a glossary handle is an analogy, figurative by design: the glossary's
+     own header calls it the teaching device (design/45) */
+  if (coll === "glossary" && /\/handle$/.test(addr)) return "voice";
   /* the Underwriters' outlook is a briefing, and a briefing is Interface
      (design/45): it was Voice until 26 Sep, which excused a wry insider
      with no figures */

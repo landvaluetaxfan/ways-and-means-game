@@ -19,7 +19,10 @@ var ProseMap = (function () {
   var PROSE = ["body", "title", "label", "text", "note", "result", "summary",
     "closing", "contested", "description", "tendency", "gloss", "grievance",
     "effect_note", "wire", "note_franchise", "head", "source", "said", "hint",
-    "lede", "epigraph", "caption", "blurb", "why", "asks", "answer", "question"];
+    "lede", "epigraph", "caption", "blurb", "why", "asks", "answer", "question",
+    /* design/45: a person's Career and descriptor, a term's definition, and
+       the analogy a glossary tooltip now shows (it was never shown before) */
+    "bio", "descriptor", "article", "handle"];
 
   /* Keys whose value is a name or an id and never prose, even where the key
      is on the list above (a party's `label` is "PSD"). */

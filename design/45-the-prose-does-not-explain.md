@@ -330,3 +330,55 @@ and links the member to their own article. `tools/uitest.js` checks every
 such seat. Reverting the fix makes it fail, naming three of them. The
 roll's stale `member` stays: lint reads it as the list of names nobody may
 print.
+
+---
+
+## Built (26–27 Sep), and what is left
+
+The author approved every proposal above ("do whatever is best ... and so
+on and so forth for everything else"). In the order built, each commit
+on `claude/affectionate-cerf-htlo8t`:
+
+1. **The rules** (`b2993e1`). PROSE_REGISTER.md, *What a passage owes the
+   reader*; the outlook reclassified as a briefing; bible §2.6's reversal;
+   `npm run register` reports `epigram` and a short `because`, and
+   `--density` prints facts per hundred words by surface.
+2. **The briefing** (`5b87158`). `Engine.briefing` fills the figures and
+   `Engine.outlook` the words; one paragraph a topic; every claim checked
+   against the rule it describes. Lint fails on an unknown figure.
+3. **The generated articles** (`3f774ac`). People (`bio`, `pronouns`,
+   `descriptor`), parties (policy wording from the schema's `says`,
+   loyalty with its scale via `Engine.holdsOnWhip`, the twelve notes as
+   sentences), terms (`article`). A glossary tooltip links its article
+   and shows its analogy; both were silently dropped before.
+4. **Actors, stations and the Works** (`14c9592`), and the Works' product
+   into bible §11.1.
+5. **The last scanner faults**, and the prose map learned the new fields
+   (`bio`, `descriptor`, `article`, `handle`), so the prose export carries
+   them and the scanner reads them. `npm run register` stands at zero
+   faults.
+
+**What is left is what only reading finds.** The scanner is at zero and
+the surfaces below still carry pointing, thin or epigrammatic passages
+that no pattern matches. Each was seen in the 57-passage sample or the
+full reads above. Method, per surface: print it (`node tools/register.js
+<prefix> --notes`, or the prose export), read each passage against the six
+rules, check every claim against the content or the engine before
+writing it, rewrite, then `npm run prose`, `npm run check`, `npm run
+guards`, commit.
+
+| surface | what to fix | examples |
+|---|---|---|
+| `instruments` (the ladder) | epigram and contrast in summaries and effect notes | rung 2 "a long weekend. In fact it is a wage cut"; rung 4 "built for exactly this and has never been spent on it"; rung 6 "The third rail is not the drawdown"; rung 8 "It suspends nobody. It takes the power to suspend"; si_2080_47 "Packing one board is a manoeuvre"; si_2080_51 "Anselm Ring notices" |
+| `bills` notes and `contested` | the case against as rhetoric; clause notes that point | thermal2 "remembers the invoice"; continuity "a right to be heard is not a right to be kept"; the insurance levels |
+| `functional` | notes that insinuate | fc_substrate "Six of them were incorporated in the same week"; fc_transit "Takes Kessler risk more seriously than the chamber does"; fc_consumables "Neither can leave and neither can win outright" |
+| `partyOrg` | officers and bodies by quip | "That is the party, stated as an organogram"; "Four seats do not need an organogram"; "Meets fortnightly and has read everything" |
+| `initiatives`, `achievements` | closing twists | commission_review "Whoever produces the number will have to live with it"; act_indemnity "worth what it is worth" |
+| `settlements` summaries | pointing and fragments | restriction "The threshold stands where it stood"; f1_joint "mild voter apathy" |
+| `cabinet` candidates (printed in the vacancy panel) | quips | "Inside the tent, he cannot count them"; "Knows the file, and is owed nothing" |
+| `tips` | the few flagged in the sample | public_standing "It does not vote. It decides what the wire prints"; tribunal "hears what the orders do" |
+| `encyclopedia` (hand-written) | pointing | reserve_bank "raised the target above two per cent" (to what?); biological_majority "because the body is equipment" |
+| `js/ui.js` literals on the Economy tab | two notes in the old style | the prices note "None of these four is a market..." (it also overclaims: the prices read the margin and the reserve), and the productive-economy note "Participation answers to..." |
+
+Then, per the author, **the general descriptions for every clickable
+country**, written in this register, modelled on the anchor-host notes.

@@ -213,10 +213,12 @@ const INSTRUMENTS = [
     author:"life_support", procedure:"affirmative", approvalFloor:0.9, revocable:true,
     when:{ flags:["rung6_tried"] },
     summary:"Lowers the certified performance standard on radiator and seal integrity by one "+
-            "grade. The margin improves because the standard was the margin. The boards that "+
-            "certify the standard are the boards whose authority is the certification.",
-    effect_note:"The engineering authority is asked to certify its own reduction. It will, "+
-                "because the alternative is worse, and it will not forgive it.",
+            "grade. Equipment that failed the old grade may run again, and the capacity it adds "+
+            "raises the thermal margin. The licensing boards that set the standard have to "+
+            "certify the lower grade themselves.",
+    effect_note:"The boards comply under protest. The Association of Engineers and Systems, the "+
+                "Alliance of Business and Government and the New Progressive Party all lose "+
+                "loyalty to the government for it.",
     effects:[ {move:{"thermal_margin":13}}, {move:{"loyalty.gb":-16}}, {move:{"loyalty.hul":-16}},
               {move:{"loyalty.psa":-12}}, { flag:"rung7_tried" },
               { wire:"PERFORMANCE STANDARDS LOWERED A GRADE; BOARDS COMPLY UNDER PROTEST" } ],
