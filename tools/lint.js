@@ -1315,16 +1315,20 @@ n += section("A COUNTRY THAT VOTES THROUGH NO MEMBER", gaBad, x => x);
    name introduced where it first appears. tools/pagecheck.js holds the
    rules. A decision is counted and not failed: it sits inside the
    interface that explains it, and its prose is the next pass. */
-const newsBad = [], decBad = [];
+const newsBad = [], decBad = [], chBad = [];
 try {
   const PC = require("./pagecheck.js");
   (EVENTS || []).forEach(ev => {
     if (ev.setpiece) PC.checkPage(ev, CHARACTERS).forEach(x => newsBad.push(ev.id + ": " + x));
     else PC.checkDecision(ev, CHARACTERS, GLOSSARY).forEach(x => decBad.push(ev.id + ": " + x));
+    if (!ev.setpiece) PC.checkChoices(ev, CHARACTERS, GLOSSARY).forEach(x => chBad.push(ev.id + ": " + x));
   });
 } catch (e) { newsBad.push("could not read the event pages: " + e.message); }
 n += section("EVENT PAGES THAT DO NOT EXPLAIN", newsBad, x => x);
 n += section("DECISIONS THAT DO NOT EXPLAIN", decBad, x => x);
+/* COUNTED, NOT YET FAILED: the choices pass is under way (27 Sep), and this
+   joins the exit condition the day it reaches zero, as the decisions did. */
+section("CHOICES THAT DO NOT EXPLAIN (counted; the pass is under way)", chBad, x => x);
 
 /* THE EDITOR LOADS WHAT THE GAME LOADS. Two pages each name the content
    files, and the editor had fallen three behind: it could not see an
@@ -1358,6 +1362,7 @@ if (briefBad.length) R.push(`${briefBad.length} BRIEFING FIGURES THE ENGINE DOES
 if (gaBad.length) R.push(`${gaBad.length} COUNTRIES THAT VOTE THROUGH NO MEMBER`);
 if (newsBad.length) R.push(`${newsBad.length} FAULTS IN EVENT PAGES THAT DO NOT EXPLAIN`);
 if (decBad.length) R.push(`${decBad.length} FAULTS IN DECISIONS THAT DO NOT EXPLAIN`);
+if (chBad.length) console.log(`  (${chBad.length} faults in choices that do not explain, counted while the pass runs)`);
 if (popBad.length) R.push("THE POPULATION IS STORED TWICE AND HAS DRIFTED (advisory)");
 console.log(R.join("\n"));
 /* HARD FAILURES: everything except popBad. The chain is one of them now —

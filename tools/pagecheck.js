@@ -195,5 +195,29 @@ function checkDecision(ev, characters, glossary) {
   });
 }
 
-const api = { checkPage, checkDecision, pageParts, INTRODUCE };
+/* THE CHOICES ARE HELD TO IT TOO (the author, 27 Sep: "the decisions are
+   not descriptive at all and fall into the same traps. they should be
+   detailed too"). A decision is read top to bottom, its body and then each
+   choice's label, note and result, so a name glossed once in that reading
+   is glossed; the faults reported here are the ones the choices add. And a
+   choice says why: every one carries a note of NOTE_MIN words or more,
+   because a label alone is a slogan the player has to decode. */
+const NOTE_MIN = 25;
+function checkChoices(ev, characters, glossary) {
+  const cs = (ev && ev.choices) || [];
+  if (!cs.length) return [];
+  const faults = [];
+  cs.forEach((c, i) => {
+    if (!c.note) faults.push("choice " + (i + 1) + " has no note saying what it does and why");
+    else if (words(c.note) < NOTE_MIN)
+      faults.push("choice " + (i + 1) + "'s note is " + words(c.note) + " words; " + NOTE_MIN + " at least");
+  });
+  const base = new Set(checkDecision(ev, characters, glossary));
+  const text = cs.map(c => [c.label, c.note, c.result].filter(Boolean).join("\n\n")).join("\n\n");
+  const whole = Object.assign({}, ev, { body: String(ev.body || "") + "\n\n" + text });
+  checkDecision(whole, characters, glossary).forEach(f => { if (!base.has(f)) faults.push("in a choice: " + f); });
+  return faults;
+}
+
+const api = { checkPage, checkDecision, checkChoices, pageParts, INTRODUCE, NOTE_MIN };
 if (typeof module !== "undefined") module.exports = api;
