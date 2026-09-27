@@ -149,7 +149,7 @@ exactly.
 believe that it will hold. Tell me what you mean to do with it, and I will
 date this."`,
   choices:[
-    { posture:"bold", label:"The Divergence Threshold Bill. It is why there is a government at all.",
+    { posture:"bold", label:"The bill to make copies persons at forty hours. It is why there is a government at all.",
       act:"Tell him",
       note:"The honest answer, and the one your largest partner joined for. " +
            "The maintenance benches hear their wages named second.",
@@ -211,12 +211,12 @@ editor of The Spindle, the Commonwealth's newspaper of record. He asks it
 without notes.
 
 "Prime Minister. Your majority is six seats, and all six belong to
-independents. You have inherited a bill you did not write: the Divergence
-Threshold Bill, which your predecessor promised the New Progressive Party.
-And you lead a party of four currents that have never agreed what it is for:
-the maintenance unions of the Trades Left, the leadership's Soft Left, the
-deck co-operatives of the Station Left and Dan Czarnecki's Hard Left. Before
-anything else: why you?"
+independents. You have inherited a bill you did not write, to make copies of
+people into persons after forty hours, which your predecessor promised the
+New Progressive Party. And you lead a party of four currents that have never
+agreed what it is for: the maintenance unions of the Trades Left, the
+leadership's Soft Left, the deck co-operatives of the Station Left and Dan
+Czarnecki's Hard Left. Before anything else: why you?"
 
 Your answer will be quoted for the rest of your term, and it will decide
 which part of your record you are known for.`,
@@ -244,7 +244,7 @@ which part of your record you are known for.`,
                {move:{public_standing:-4}},
                {move:{"loyalty.psa":-5}},
                {wire:"PM CLAIMS THE MOVEMENT'S INHERITANCE; PARTNERS SEEK CLARIFICATION"}],
-      result:`The New Progressive Party asks for the sentence in writing. At its next meeting it asks whether what this party has always been includes the Divergence Threshold Bill, which would make copies working more than forty hours into employees who must be paid.` },
+      result:`The New Progressive Party asks for the sentence in writing. At its next meeting it asks whether what this party has always been includes the forty-hour bill, which would make copies into employees who must be paid.` },
 
     { posture:"bold", label:"Because the party had to change and I changed it",
       act:"Say it",
@@ -689,10 +689,11 @@ promise will carry a date by which we must keep it."`,
 { id:"ch2_open", chapter:2, prologue:2, once:true,
   title:"Thursday",
   speaker:null,
-  body:`The Divergence Threshold Bill is called to a vote at two this afternoon. The
-Life Support panel, the six functional members elected by life-support
-engineers, met at nine, and nobody has told you what it decided. The whips
-have stopped pretending they can count the functional vote.
+  body:`The bill to make copies of people into persons after forty hours is called
+to a vote at two this afternoon. The Life Support panel, the six functional
+members elected by life-support engineers, met at nine, and nobody has told
+you what it decided. The whips have stopped pretending they can count the
+functional vote.
 
 The bill must carry among the functional members as well as the elected
 ones. You have the morning.`,
@@ -753,8 +754,8 @@ Parliament to review whether the party should stay in the coalition. The
 motion is not binding; conference motions never are.
 
 Most of the six hundred delegates are emulated minds, and the party pays for
-them to run faster than real time, so a debate that took them four hours of
-their own time was over in far less on the clock.`,
+them to run at a high clock rate, faster than real time, so a debate that
+took them four hours of their own time was over in far less on the clock.`,
   choices:[
     { posture:"bold", label:"Go and speak to them yourself",
       effects:[{move:{"loyalty.psa":12}},{move:{"public_standing":-4}}],
@@ -891,7 +892,7 @@ came, in the end, from the government's appropriation.`,
            "almost nothing, and it is the first of nine.",
       effects:[{si:"rung1_conservation"},{flag:"thermal_squeeze_seen"}],
       result:"The appeal goes out, the stations cut the load they can spare, and there is a little less heat for the exchange to price." },
-    { posture:"bold", label:"Slow the clock rate of emulated minds for the duration",
+    { posture:"bold", label:"Run emulated minds more slowly for the duration",
       when:{ flags:["rung1_tried"], siNotMade:"rung2_clockrate" },
       note:"SI 2080/62, the second emergency order. It slows the emulated blocs by four " +
            "per cent, which buys margin out of the patience of the people who run fastest.",
@@ -1286,22 +1287,24 @@ become.`,
   when:{ capitalBelow:{ rv:-2 } },
   title:"The ledger, read aloud",
   speaker:"park",
-  body:`The Congregational Democratic Alliance's account with the government is
-negative, and it has been negative since the coalition formed. The party has
-supported three measures it did not write and holds no brief that pays for a
-fourth.
+  body:`Ryan Jung-Hee Park, leader of the Congregational Democratic Alliance, the
+smallest party in your coalition, has come about the ledger: the whips'
+running account of what each partner has done for the government and
+received in return.
 
-"You are a partner who is owed," Park says, "not a partner who is owed to. The
-difference is the next bill."`,
+By that account the government owes the Alliance. It has voted for three
+government measures it did not write, and it holds no ministry that would
+repay it with a fourth. "We are a partner who is owed," Park says, "not one
+who owes. The difference is the next bill."`,
   choices:[
-    { posture:"cautious", label:"Give her party's bill the next slot on the order paper.",
+    { posture:"cautious", label:"Give the Alliance's bill the next slot on the order paper.",
       effects:[{ move:{ "capital.rv":3 } }, { move:{ "loyalty.rv":9 } },
                { move:{ "public_standing":-2 } }],
-      result:"The ledger moves toward zero and a slot of the session is gone. Both of those facts are the transaction." },
-    { posture:"bold", label:"Tell her the account is the account.",
+      result:"The ledger moves toward even, and the government gives up one of its slots of order-paper time to do it. The Alliance's members are pleased." },
+    { posture:"bold", label:"Tell Park the account stands as it is.",
       effects:[{ move:{ "capital.rv":-1 } }, { move:{ "loyalty.rv":-8 } },
                { move:{ "party_loyalty":4 } }],
-      result:`Your own benches like it. Hers begin counting what they are owed, and they will present the figure.` }
+      result:`Your own party likes the firmness. The Alliance's members begin totting up what they are owed, and they will present the figure.` }
   ]},
 
 /* REACH: SI 2080/44 in force; the carve-out undertaking discharges it. */
@@ -1309,22 +1312,24 @@ difference is the next bill."`,
   when:{ siInForce:["si_2080_44"] },
   title:"What the order did to the panel",
   speaker:"gb_chair",
-  body:`The panel has met and the sector has an answer to the licensing order.
-Widening the licence added electors to a constituency the panel used to decide,
-so the panel does not decide it any more.
+  body:`The Life Support Engineering (Licensing) Order has widened who counts as a
+licensed life-support engineer, and so who votes for the six Life Support
+seats. The new electors will move two of those seats from the Alliance of
+Business and Government to your party. The Life Support panel, whose members
+used to decide those seats, no longer does.
 
-"I have certified life support for forty years," the chair says. "The order is
-lawful. The minister had the power and used it. The members I represent will
-remember which government did."`,
+"I have certified life support for forty years," says Kazuya Tanako, the
+panel's chair. "The order is lawful. The minister had the power and used it.
+The members I represent will remember which government did."`,
   choices:[
-    { posture:"cautious", label:"Offer the panel the standards brief as compensation.",
+    { posture:"cautious", label:"Offer the panel the job of writing life-support standards, as compensation.",
       effects:[{ move:{ "rel.gb_chair":10 } }, { move:{ "loyalty.gb":6 } },
                { move:{ "public_standing":-3 } },
                { wire:"STANDARDS BRIEF OFFERED TO THE LICENSING PANEL" }],
-      result:"It is real work and a real brief, and it does not give the panel its electorate back." },
-    { posture:"bold", label:"Tell her the order stands.",
+      result:"It is real work and real influence, and Tanako accepts it coolly. It does not give the panel back its electorate." },
+    { posture:"bold", label:"Tell Tanako the order stands.",
       effects:[{ move:{ "rel.gb_chair":-8 } }, { move:{ "loyalty.hul":4 } }],
-      result:`She expected nothing else. She came in person so the refusal would have a witness.` }
+      result:`She expected nothing else, and came in person so that the refusal would have a witness. The engineers' party approves of the firmness.` }
   ]},
 
 /* THE TWO FLAG-ENDINGS' ROUTES (T6). Half the settlements hung on flags no
@@ -1339,57 +1344,57 @@ remember which government did."`,
          flagsAbsent:["tribunal_established","federal_schedule","tribunal_refused"] },
   title:"The third way",
   speaker:"fenwick",
-  body:`The Minister for Law and the Charter comes with a suggestion that
-is not her own, which she is careful to say. The President's office has
-asked, privately, whether the government would consider taking the
-threshold out of the House altogether.
+  body:`Adaeze Fenwick, the Minister for Law and the Charter, brings a suggestion
+and says at once that it is not hers. The President's office has asked,
+privately, whether the government would take the divergence threshold out of
+Parliament's hands altogether.
 
-A tribunal. Not forty hours, not a hundred and sixty-eight. A panel that
-decides, case by case, what a person is, and publishes no schedule at all.
-She sets the shape of it on the desk.
+Instead of a line in law, whether forty hours or 168, a standing panel would
+decide case by case whether a particular copy is a person, and publish no
+rule at all.
 
-"The House can fight this bill for a year," she says. "Or the question can
-be settled in rooms, one case at a time, forever."`,
+"Parliament can fight over this bill for a year," Fenwick says. "Or the
+question can be settled in private rooms, one case at a time, forever."`,
   choices:[
-    { posture:"bold", label:"Establish the tribunal.",
+    { posture:"bold", label:"Set up the panel.",
       effects:[{ flag:"tribunal_established" },
                { move:{ "public_standing":-6 } }, { move:{ "loyalty.psa":-12 } },
                { move:{ "loyalty.gb":5 } },
                { wire:"TRIBUNAL ESTABLISHED ON THE DIVERGENCE QUESTION" }],
-      result:"The question is administrative now. The partner that made the bill will not forgive the government that set it aside." },
-    { posture:"cautious", label:"Leave the question to the House.",
+      result:"The question becomes an administrative one. The New Progressive Party, which made the bill its price for joining the government, will not forgive the government that set it aside." },
+    { posture:"cautious", label:"Leave the question to Parliament.",
       effects:[{ flag:"tribunal_refused" }, { move:{ "loyalty.cu_maintenance":5 } },
                { move:{ "public_standing":2 } }],
-      result:"The suggestion is declined. It is declined in writing, which is the only way to decline the President's office." }
+      result:"The suggestion is declined in writing, the only way to decline the President's office. Your maintenance members approve." }
   ]},
 
   /* REACH: three signatures; reachable once the paper is opened. */
   { id:"the_federal_option", chapter:2, weight:72, once:true,
   when:{ signaturesAtLeast:3,
          flagsAbsent:["tribunal_established","federal_schedule","federal_refused"] },
-  title:"Thirty-four thresholds",
+  title:"Thirty thresholds",
   speaker:"laughon",
-  body:`The Leader of Home Rule asks for the meeting and does not waste it.
-The government is being asked to answer the threshold question, and every
-answer it can give has a price attached. He is here to offer the one with
-no price in the chamber.
+  body:`Nick Laughon, leader of Home Rule, the party of self-government for the
+stations, asks for a meeting and does not waste it. Every answer the
+government can give on the divergence threshold has a price in Parliament.
+He has come to offer one that costs nothing there.
 
-"A schedule for each station," he says. "Let Anselm Ring set its own line
-and Homestead set its own, and let the Commonwealth say only that it is not
-the Commonwealth's business. The union survives by not asking the question
-nationally. That is all my party has ever asked for, and the price is paid
-by nobody in this room."`,
+"A threshold for each station," he says. "Let Anselm Ring set its own line
+and Homestead its own, and let the Commonwealth say only that it is not the
+Commonwealth's business. The union survives by not asking the question
+nationally. That is all my party has ever asked for, and nobody in this room
+pays for it."`,
   choices:[
-    { posture:"bold", label:"Take the schedule. Let every station answer for itself.",
+    { posture:"bold", label:"Accept: let every station set its own threshold.",
       effects:[{ flag:"federal_schedule" },
                { move:{ "loyalty.sc":8 } }, { move:{ "loyalty.cu_maintenance":-6 } },
                { move:{ "public_standing":-4 } },
                { wire:"FEDERAL SCHEDULE: EACH STATION TO SET ITS OWN THRESHOLD" }],
-      result:"There is no national question any more. The maintenance benches know exactly what was traded and exactly who was not asked." },
+      result:"There is no national question any more, and Home Rule is delighted. Your maintenance members know what was traded, and that they were not asked." },
     { posture:"cautious", label:"Refuse. One Commonwealth, one law.",
       effects:[{ flag:"federal_refused" }, { move:{ "loyalty.sc":-8 } },
                { move:{ "public_standing":3 } }],
-      result:"Home Rule heard the answer it expected. It will ask again in the next parliament, whichever government is in it." }
+      result:"Home Rule hears the answer it expected, and will ask again in the next Parliament, whoever governs." }
   ]},
 
 /* PEOPLE, AND THE PRESS (T9). Fifty-four characters existed and ten had
@@ -1401,20 +1406,21 @@ by nobody in this room."`,
   when:{ loyaltyBelow:{ psa:38 } },
   title:"A word from the Deputy",
   speaker:"trottier",
-  body:`The Deputy Prime Minister does not bring a complaint. She brings a
-count, and the count says her party's benches have stopped believing the
-government will ever pay the price they joined it for.
+  body:`Mandelina Trottier, the Deputy Prime Minister and leader of the New
+Progressive Party, does not bring a complaint. She brings a count: her
+party's members have stopped believing the government will ever deliver the
+Divergence Threshold Bill, the price they joined it for.
 
-"We have carried the government," she says. "Ask the conference what we
-have been carried in return."`,
+"We have carried this government," she says. "Ask our conference what we
+have been given in return."`,
   choices:[
-    { posture:"cautious", label:"Promise her party the next slot on the order paper.",
+    { posture:"cautious", label:"Promise the New Progressive Party the next slot on the order paper.",
       effects:[{ move:{ "capital.psa":2 } }, { move:{ "loyalty.psa":8 } },
                { move:{ "public_standing":-2 } }],
-      result:`The promise is made and written down, and a written promise can be produced later.` },
+      result:`The promise is made and written down, and her members are reassured. A written promise can be produced later.` },
     { posture:"bold", label:"Tell her the coalition is not for sale.",
       effects:[{ move:{ "loyalty.psa":-6 } }, { move:{ "party_loyalty":3 } }],
-      result:"It was the answer her conference predicted, and the count on her benches will show it." }
+      result:"It is the answer her conference predicted, and her members' loyalty falls. Your own party likes the firmness." }
   ]},
 
   /* REACH: des loyalty above 15; it starts there. */
@@ -1422,21 +1428,22 @@ have been carried in return."`,
   when:{ loyaltyAbove:{ des:15 } },
   title:"The waiting list",
   speaker:"edelstein_powell",
-  body:`The Leader of One-G speaks for the people the party exists for, and
-she brings their number with her: eleven thousand residents waiting for
-embodiment fitting, and the list growing by four hundred a month.
+  body:`Rachel Edelstein-Powell, leader of One-G, the party of people whose health
+suffers in orbit, brings the number her party exists for: eleven thousand
+residents are waiting to be fitted with a body, and the list grows by four
+hundred a month.
 
 "Every one of them would vote for the party that shortened the list," she
 says, "and every one of them knows it is the most expensive line in the
 budget."`,
   choices:[
-    { posture:"measured", label:"Promise the list a line in the next estimates.",
+    { posture:"measured", label:"Promise the waiting list money in the next budget.",
       effects:[{ move:{ "loyalty.des":7 } }, { move:{ "public_standing":3 } },
                { move:{ "solvency": -3000 } }],
-      result:`The promise costs three billion dollars now and is remembered when the estimates are drawn.` },
+      result:`The promise costs three billion dollars now, and One-G will remember it when the budget is drawn up.` },
     { posture:"cautious", label:"Say the list is not this session's business.",
       effects:[{ move:{ "loyalty.des":-6 } }, { move:{ "loyalty.hul":3 } }],
-      result:"One-G heard the answer it is used to hearing. The waiting list is used to it too." }
+      result:"One-G hears the answer it is used to hearing, and so does the waiting list. The engineers' party approves of the restraint." }
   ]},
 
 /* ============================================================
@@ -1786,83 +1793,87 @@ answer, and then it stops noticing there was ever a question at all.`,
   when:{ seen:["ch4_after"], dissolved:false },
   title:"The answer",
   speaker:null,
-  body:`The country has an answer now, and the ordinary business is done in its
-shadow. That is what makes it an answer: not that it is right, but that the
-argument about it is over and the government has to administer it.
+  body:`The question that divided the session has been settled, and Parliament's
+ordinary business now goes on in its shadow. What makes it settled is not
+that the answer is right, but that the argument is over and the government
+must now carry the answer out.
 
-Ministers answer questions about everything else, and when the question comes
-back, they say what the government decided, in the past tense.`,
+Ministers answer questions on everything else. When the question comes back,
+they say what the government decided, in the past tense.`,
   choices:[
     { posture:"bold", label:"Defend the answer in public.",
       effects:[{ move:{ "public_standing":4 } }, { move:{ "loyalty.psa":3 } },
                { wire:"PM DEFENDS THE SETTLEMENT IN PUBLIC" }],
-      result:"It is the government's answer and it is defended as one. The people who lost hear a government that has stopped pretending to listen." },
+      result:"The answer is defended as the government's own, and the New Progressive Party approves. Those who lost hear a government that has stopped listening." },
     { posture:"cautious", label:"Let the answer speak for itself.",
       effects:[{ move:{ "loyalty.cu_maintenance":4 } }, { move:{ "public_standing":-2 } },
                { wire:"PM LETS THE SETTLEMENT STAND WITHOUT A CAMPAIGN" }],
-      result:`A settled question does not need a press tour. It needs a government that will not reopen it. This one will not.` }
+      result:`The government makes no campaign for the answer, and will not reopen it. Your maintenance members approve; the public sees little being done.` }
   ]},
 
 { id:"ch4_the_losers", chapter:2, weight:94, once:true,
   when:{ seen:["ch4_the_answer"], dissolved:false },
   title:"The people who lost",
   speaker:"watkins",
-  body:`The benches that argued the other way have not changed their minds. They have changed their subject. Nothing stops them changing it back.
+  body:`The parties that argued the other way have not changed their minds. They
+have changed the subject, and nothing stops them changing it back.
 
-Watkins says it plainly: the answer is the government's until the country
-decides to give it to somebody else, and that decision is years away.`,
+Darren Watkins Jr., the Leader of the Opposition, puts it plainly: the
+answer belongs to the government until the country gives it to someone else,
+and that is years away.`,
   choices:[
-    { posture:"cautious", label:"Give them a share of the administration.",
+    { posture:"cautious", label:"Give the opposition a share in carrying out the settlement.",
       effects:[{ move:{ "loyalty.cl":6 } }, { move:{ "loyalty.cu_loyalists":-3 } },
                { wire:"GOVERNMENT SHARES THE SETTLEMENT'S ADMINISTRATION WITH THE LOSERS" }],
-      result:"They take the work and keep their argument. A losing side that administers the answer is a losing side that cannot campaign against it." },
-    { posture:"bold", label:"Press the advantage while it is warm.",
+      result:"The Liberals take the work and keep their objections. A side that helps carry out an answer cannot easily campaign against it. The Soft Left dislikes sharing." },
+    { posture:"bold", label:"Press the advantage now.",
       effects:[{ move:{ "party_loyalty":4 } }, { move:{ "loyalty.cl":-4 } },
                { move:{ "public_standing":3 } },
                { wire:"GOVERNMENT PRESSES ITS ADVANTAGE AFTER THE SETTLEMENT" }],
-      result:"The benches behind the government want it, and the benches against it will remember. Both of those are the normal politics of an answer." }
+      result:"Your own party wants it, the public approves, and the opposition will remember it. That is the normal politics of a settled question." }
   ]},
 
 { id:"ch4_the_ledger", chapter:2, weight:93, once:true,
   when:{ seen:["ch4_the_losers"], dissolved:false, scalarBelow:{ solvency:45000 } },
   title:"The bill for the answer",
   speaker:"hatt",
-  body:`Every settlement has a cost, and the cost does not arrive with the
-argument. It arrives at the estimates, and the estimates are drawn now.
+  body:`Every settlement has a cost, and the cost arrives with the budget, not with
+the argument. The budget is being drawn up now.
 
-"The answer is paid for in the ordinary way," Hatt says. "By people who are
-not in this room."`,
+"The answer is paid for in the ordinary way," says Edward Hatt, leader of
+the Alliance of Business and Government. "By people who are not in this
+room."`,
   choices:[
     { posture:"bold", label:"Pay it now, and say so.",
       effects:[{ move:{ "public_standing":3 } }, { move:{ "legitimacy":3 } },
                { move:{ "solvency":-6000 } },
                { wire:"GOVERNMENT PAYS THE SETTLEMENT'S BILL AT THE ESTIMATES" }],
-      result:"The bill is paid in the open. It is not popular and it is honest, which the benches can live with." },
+      result:"The six-billion-dollar cost is paid openly. It is not popular, but it is honest, and the country trusts the government a little more." },
     { posture:"cautious", label:"Spread the cost across the next session.",
       effects:[{ move:{ "loyalty.cu_maintenance":-5 } }, { move:{ "public_standing":-3 } },
                { wire:"SETTLEMENT COSTS DEFERRED TO THE NEXT SESSION" }],
-      result:"The current position looks better and the next one looks worse. That is what a schedule is for." }
+      result:"This session's accounts look better and the next session's look worse. Your maintenance members, who will feel the cost, are unhappy." }
   ]},
 
 { id:"ch4_the_next", chapter:2, weight:92, once:true,
   when:{ seen:["ch4_the_losers"], dissolved:false },
   title:"The next question",
   speaker:"ansar",
-  body:`A settled question makes room for the next one. The ninth deck has one,
-and so does every delegation that spent the session waiting for this one to be
-over.
+  body:`A settled question makes room for the next one. Deck 9 has one, and so does
+every group that spent the session waiting for this one to be over.
 
-"It is not that the answer is wrong," Ansar writes. "It is that the answer is
-finished, and things that are finished are what a government moves on from."`,
+"It is not that the answer is wrong," writes Sevi Ansar, a resident of Deck
+9 on Homestead. "It is that the answer is finished, and a government moves
+on from what is finished."`,
   choices:[
     { posture:"bold", label:"Take up the next question now.",
       effects:[{ move:{ "loyalty.psa":4 } }, { move:{ "public_standing":-2 } },
                { wire:"GOVERNMENT OPENS THE NEXT QUESTION AFTER THE SETTLEMENT" }],
-      result:"A government that is always arguing is a government that is alive. It is also a government that never gets to rest on an answer." },
+      result:"The government opens a new argument, and the New Progressive Party welcomes it. The public, tired of argument, is less keen." },
     { posture:"cautious", label:"Govern quietly. The session has earned it.",
       effects:[{ move:{ "loyalty.cu_maintenance":5 } }, { move:{ "party_loyalty":3 } },
                { wire:"GOVERNMENT CHOOSES A QUIET SESSION AFTER THE SETTLEMENT" }],
-      result:`The House does its ordinary business and the country stops watching.` }
+      result:`Parliament does its ordinary business and the country stops watching. Your party welcomes the rest.` }
   ]},
 
 /* ch4_the_record was dropped on 22 Sep 2026 (design/32): it set
@@ -1878,25 +1889,25 @@ finished, and things that are finished are what a government moves on from."`,
   when:{ breached:["licensure_carveout"] },
   title:"The order that was never laid",
   speaker:"gb_chair",
-  body:`The panel waited the four sittings and the licensing order was not
-laid. The chair does not call it a breach. She calls it a schedule, which
-is what the panel calls everything, and says the sector will treat the
-question as settled.
+  body:`You promised the Life Support panel a licensing order within four sittings.
+The four sittings have passed, and the order has not been laid.
 
-"You asked us for a carve-out," she says. "We did not ask you for
-anything. That is the difference between us that your government has now
-discovered."`,
+Kazuya Tanako, the panel's chair, does not call it a breach. She calls it a
+schedule, as the panel calls everything, and says her members will now treat
+the question as closed. "You asked us for an exemption," she says. "We did
+not ask you for anything. That is the difference between us that your
+government has now discovered."`,
   choices:[
     { posture:"measured", label:"Lay the order next sitting and say the delay was yours.",
       effects:[{ move:{ "rel.gb_chair":4 } }, { move:{ "legitimacy":-4 } },
                { si:"si_2080_44" },
                { wire:"PM CONCEDES THE LICENSING DELAY AND LAYS THE ORDER" }],
-      result:`The order is laid late and the government takes the blame publicly. The panel accepts an apology in no other form.` },
-    { posture:"cautious", label:"Let it stand. A promise missed is a promise missed.",
+      result:`The order is laid late, and the government takes the blame in public. It is the only form of apology the panel accepts.` },
+    { posture:"cautious", label:"Let the promise lapse.",
       effects:[{ move:{ "rel.gb_chair":-8 } }, { move:{ "loyalty.gb":-8 } },
                { move:{ "legitimacy":-6 } },
                { wire:"GOVERNMENT ABANDONS THE CARVE-OUT; GUILD BENCH DISENGAGES" }],
-      result:"The panel treats the sector as a bench that answers no government, which costs the next dual majority more." }
+      result:"The panel's members will now vote with no government, which makes every future dual majority harder to win. The country notes the broken promise." }
   ]},
 
 /* ============================================================
@@ -1914,72 +1925,77 @@ discovered."`,
 { id:"fa_window_closes", chapter:2, weight:58, maxFires:2,
   title:"The window closes",
   speaker:null,
-  body:`The Earth-side launch authority has moved the departure window for
-tether traffic, and the Commonwealth was told by wire. The transit index
-takes the news the way the index takes everything: immediately, and as
-somebody else's decision.
+  body:`Cargo leaves the tops of the space elevators for the Commonwealth's stations
+in scheduled transfer windows, and an authority on Earth sets the schedule.
+It has moved the windows, and the Commonwealth was told by wire.
 
-The anchor states and the outer stations feel it first, because they are
-the ones whose schedules are other people's schedules.`,
+The transit index, the price of moving goods between Earth and the stations,
+rose the moment the news came out. The stations that depend most on imports
+feel it first, because their deliveries run to someone else's timetable.`,
   choices:[
-    { posture:"measured", label:"Buy back the window with the reserve.",
+    { posture:"measured", label:"Pay from the reserve to keep the old windows.",
       effects:[{ move:{ "price.transit":4 } }, { move:{ "solvency":-8000 } },
                { move:{ "loyalty.cl":5 } },
                { wire:"COMMONWEALTH PAYS TO KEEP THE EARTH-SIDE WINDOW OPEN (as of 9 days ago)" }],
-      result:`The window reopens and the reserve pays for a decision taken nine days ago by somebody else.` },
-    { posture:"bold", label:"Chart the Commonwealth's own windows and stop asking.",
+      result:`The windows reopen. The reserve pays eight billion dollars for a decision someone else took nine days ago, and the Liberals approve.` },
+    { posture:"bold", label:"Set the Commonwealth's own transfer schedule.",
       effects:[{ move:{ "price.transit":9 } }, { move:{ "public_standing":4 } },
                { move:{ "loyalty.hul":6 } },
                { wire:"PM: THE COMMONWEALTH WILL SCHEDULE ITS OWN TRANSIT (as of 9 days ago)" }],
-      result:"The line is popular and the price rises, because independence from another state's windows is a thing you pay for in delta-v." }
+      result:"The decision is popular and the engineers' party approves. The transit price rises, because the Commonwealth's own schedule means less efficient routes that burn more fuel." }
   ]},
 
 { id:"fa_freight_reacts", chapter:2, weight:56, maxFires:2,
   when:{ priceAbove:{ transit:105 } },   /* the eye on the foreign price */
   title:"The freight lines pass it on",
   speaker:"hatt",
-  body:`The transit price has been above a hundred and five for a week, and
-the lines that move consumables have started pricing the difference into
-every station's quarterly. The Association's position is that this is not
-its decision and that it is not its fault, both of which are true.`,
+  body:`The transit price has been above 105 for a week, and the freight lines that
+carry consumables have begun adding the difference to every station's
+quarterly bill.
+
+Edward Hatt, whose Alliance of Business and Government speaks for the
+freight lines in Parliament, says the rise is not their decision and not
+their fault. Both are true.`,
   choices:[
-    { posture:"bold", label:"Subsidise the consumables run out of the reserve.",
+    { posture:"bold", label:"Subsidise the freight of consumables from the reserve.",
       effects:[{ move:{ "consumables":4 } }, { move:{ "solvency":-10000 } },
                { move:{ "loyalty.psa":5 } },
                { wire:"TRANSIT DIFFERENTIAL SUBSIDISED FOR CONSUMABLES RUNS" }],
-      result:"The stations do not notice a price that was somebody else's decision." },
-    { posture:"cautious", label:"Let the price be the price.",
+      result:"The reserve pays ten billion dollars, and the stations never see the rise. The New Progressive Party approves." },
+    { posture:"cautious", label:"Let the price stand.",
       effects:[{ move:{ "public_standing":-5 } }, { move:{ "loyalty.cu_maintenance":-6 } },
                { station:{ perigee:{ closure:-0.02 }, sinter:{ closure:-0.02 } } },
                { wire:"PM DECLINES TRANSIT SUBSIDY; OUTER STATIONS WARN ON CLOSURE" }],
-      result:`Two stations' closure figures take the strain. The government does not set the index and cannot argue with it.` }
+      result:`Fore River Yards and Colonnade take the strain: each now meets less of its own needs without imports. The government does not set the index and cannot argue with it.` }
   ]},
 
 { id:"fa_anchor_terms", chapter:2, weight:76, once:true,
   when:{ billStage:{ anchor_kepler:"assent" } },
   title:"The anchor states its terms",
   speaker:"landry",
-  body:`The host state has offered to renew the International's anchor concession
-without the Assembly's ratification, at a price. The price is eight points
-on transit and a review clause the Commonwealth does not get to see until
-it is invoked.
+  body:`Kenya, which hosts the anchor of the International Earth-Orbit Elevator at
+Malindi, has offered to renew the Commonwealth's concession on it without
+Parliament having to ratify the terms. The price is eight points on the
+transit index, and a review clause the Commonwealth will not see until Kenya
+invokes it.
 
-"Ratify it and the price is as the bill says," the Foreign Minister tells
-you. "Decline, and the price is theirs. Their lawyers drafted the clause
-a fortnight before we were told it existed."`,
+"If Parliament ratifies a concession, the price is what the bill says," says
+Jean Landry, the Minister for External Relations. "If we take this offer,
+the price is whatever they decide. Their lawyers drafted the clause a
+fortnight before we were told it existed."`,
   choices:[
-    { posture:"cautious", label:"Take the terms. An anchor is not a negotiation between equals.",
+    { posture:"cautious", label:"Accept Kenya's terms: a tenant cannot negotiate as an equal.",
       effects:[{ move:{ "price.transit":12 } }, { move:{ "solvency":-6000 } },
                { move:{ "rel.landry":6 } },
                { wire:"ANCHOR RENEWED ON THE HOST STATE'S TERMS; TRANSIT PRICE RISES" }],
-      result:"The International keeps running and the Commonwealth pays the rate for a lease it does not own." },
-    { posture:"bold", label:"Refuse, and send the bill to the House instead.",
+      result:"The elevator keeps running. The Commonwealth pays six billion dollars and a higher transit rate for a lease it does not own." },
+    { posture:"bold", label:"Refuse, and put the Anchor Concession (Anchorage) Ratification Bill to Parliament.",
       effects:[{ move:{ "price.transit":20 } }, { move:{ "public_standing":5 } },
                { move:{ "loyalty.cu_maintenance":6 } },
                { flag:"anchor_refused" },
                { bill:{ anchor_kepler:{ stage:"second_reading", dead:false } } },
                { wire:"PM REFERS THE ANCHOR CONCESSION TO THE HOUSE; HOST STATE PROTESTS" }],
-      result:"The question goes where the constitution says it belongs and the transit market reads the wire first." }
+      result:"The question goes to Parliament, where the Charter says it belongs, and your maintenance members approve. The transit market reads the news first, and prices rise while Parliament debates." }
   ]},
 
 /* LIGHT-LAG, DEMONSTRATED (design/11 §1). A dispatch to Mars takes eleven
@@ -1993,14 +2009,17 @@ a fortnight before we were told it existed."`,
   when:{ actorBelow:{ mars:60 }, flagsAbsent:["mars_asked"] },
   title:"Eleven sittings away",
   speaker:"landry",
-  body:`The Chryse Basin and Nili Republic has not been told what the Commonwealth thinks of the
-metanationals, and it has asked twice. The Foreign Minister has a draft and no
-strong view about it.
+  body:`Mars has two governments: the Chryse Basin, which wants to mine the planet,
+and the Nili Republic, which will not allow it, because the strongest
+evidence of ancient life on Mars lies in its territory. Together they have
+asked twice what the Commonwealth thinks of the metanationals, the
+companies, like Cordell, that operate on Earth, in orbit and on Mars at
+once.
 
-"Whatever we send," Landry says, "they will have it in twenty minutes and answer
-it in three weeks, when the basin and Nili have agreed what they think, and they
-will answer from wherever they have got to by then. That is the whole
-relationship. We can be fast or we can be right."`,
+Jean Landry, the Minister for External Relations, has a draft and no strong
+view about it. "Whatever we send, they will have in twenty minutes and
+answer in three weeks, once the Basin and the Republic have agreed what they
+think," Landry says. "We can be quick or we can be right."`,
   choices:[
     { posture:"bold", label:"Send it now, and send it plainly.",
       note:`The dispatch leaves tonight and the answer arrives in eleven sittings, which is eleven sittings of events the Republic will not have heard about. Doing nothing also sends a message, and it travels at exactly the same speed.`,
@@ -2008,26 +2027,27 @@ relationship. We can be fast or we can be right."`,
                { queue:[{ event:"fa_mars_reply", after:11,
                           label:`A dispatch to the Chryse Basin and Nili Republic` }] },
                { wire:"COMMONWEALTH DISPATCHES ITS POSITION ON THE METANATIONALS TO MARS" }],
-      result:`The dispatch reaches Mars before the House rises tonight. The answer will be written by a Republic that has had eleven sittings to change its mind.` },
+      result:`The dispatch reaches Mars before Parliament rises tonight. The reply will come in about eleven sittings, from two governments that have had that long to change their minds.` },
     { posture:"cautious", label:"Send nothing until the position is settled at home.",
       note:"The Commonwealth says nothing, and the silence travels.",
       effects:[{ flag:"mars_asked" }, { move:{ "actor.mars":-4 } },
                { move:{ "public_standing":2 } },
                { wire:"NO DISPATCH TO MARS; THE POSITION IS NOT YET SETTLED" }],
-      result:`Nothing goes. The Republic notes the silence, which arrives anyway and always has.` }
+      result:`Nothing is sent. Mars notes the silence, and relations cool a little.` }
   ]},
 
 /* REACH: queued by fa_dispatch_mars (send it now), +11 sittings. */
 { id:"fa_mars_reply", queuedOnly:true, once:true,
   title:"The reply",
   speaker:null,
-  body:`The Nili Republic, one of the two governments on Mars, has answered the
-Commonwealth's dispatch. Its note runs to four paragraphs.
+  body:`Mars has answered the Commonwealth's dispatch. The planet has two
+governments, the Chryse Basin and the Nili Republic, and their joint note
+runs to four paragraphs.
 
 The first three concern a dispute over an Earth company's claims that the
-Commonwealth's courts settled a month ago. The Republic's government takes
-about eleven sittings to agree a reply, so its answers arrive after the
-question has moved on. Only the fourth paragraph addresses where things
+Commonwealth's courts settled a month ago. The two governments take about
+eleven sittings to agree a reply between them, so their answers arrive after
+the question has moved on. Only the fourth paragraph addresses where things
 stand now, and Jean Landry, the Minister for External Relations, reads it
 twice.`,
   choices:[
@@ -2038,7 +2058,7 @@ twice.`,
     { posture:"cautious", label:"Answer it as though it were current.",
       effects:[{ move:{ "actor.mars":2 } }, { move:{ "friction":-2 } },
                { wire:`PM ANSWERS MARS; THE CORRESPONDENCE CONTINUES AT ONE EXCHANGE EVERY THREE WEEKS` }],
-      result:`The correspondence settles into one note every three weeks each way, the time the Republic needs to agree a reply. The quarrel with Earth eases slightly.` }
+      result:`The correspondence settles into one note every three weeks each way, the time the two governments need to agree a reply. The quarrel with Earth eases slightly.` }
   ]},
 
 /* THE CONCESSION CAN BE WITHDRAWN (design/17 §4.3). `fa_anchor_terms` is the
@@ -2049,12 +2069,13 @@ twice.`,
   when:{ flags:["anchor_refused"], flagsAbsent:["anchor_gone"] },
   title:"The concession lapses",
   speaker:"landry",
-  body:`The host state has let the International concession lapse rather than renew it
-on the Commonwealth's terms, and the decision was taken nine days ago. The
-traffic that uses the anchor is now traffic the Commonwealth cannot schedule.
+  body:`Kenya has let the Commonwealth's concession on the International Earth-Orbit
+Elevator lapse rather than renew it on the Commonwealth's terms. The
+decision was taken nine days ago and reached the government by wire.
 
-The stations that live off it are the ones whose schedules were already other
-people's schedules.`,
+Traffic on the elevator is now traffic the Commonwealth cannot schedule, and
+the stations that depend on it were already at the mercy of other people's
+timetables.`,
   choices:[
     { posture:"cautious", label:"Buy the concession back at whatever the rate is.",
       note:"The anchor runs again and the Commonwealth learns what its access " +
@@ -2062,8 +2083,8 @@ people's schedules.`,
       effects:[{ flag:"anchor_gone" }, { move:{ "price.transit":14 } },
                { move:{ "solvency":-14000 } }, { move:{ "actor.earth_host":8 } },
                { wire:"COMMONWEALTH BUYS BACK THE INTERNATIONAL CONCESSION AT KENYA'S RATE" }],
-      result:"The anchor is running again before the quarter is out and the rate is on the record." },
-    { posture:"bold", label:"Let it go, and build the Commonwealth's own windows.",
+      result:"The elevator is running again for the Commonwealth before the quarter ends. It costs fourteen billion dollars, and the rate is on the record." },
+    { posture:"bold", label:"Let it go, and schedule the Commonwealth's own traffic.",
       note:"The strongest line available and the most expensive one: two yards " +
            "carry the schedule while the Commonwealth learns to hold its own.",
       effects:[{ flag:"anchor_gone" }, { flag:"anchor_independent" },
@@ -2071,7 +2092,7 @@ people's schedules.`,
                { move:{ "loyalty.hul":7 } },
                { station:{ perigee:{ closure:-0.03 }, nasmyth:{ closure:-0.03 } } },
                { wire:"PM: THE COMMONWEALTH WILL NOT RENT ITS LIFELINE (as of nine days ago)" }],
-      result:"It is the best sentence the government has said all session, and two yards' closure figures pay for it." }
+      result:"It is the most popular thing the government has said all session. Two shipyard stations, Fore River Yards and Hammerstead, pay for it: each now meets less of its needs without imports, and transit prices rise sharply." }
   ]},
 
 /* AND THE FLOOR PRESSES. Consumables was moved by the closure tick and by

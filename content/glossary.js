@@ -61,7 +61,7 @@ const GLOSSARY = [
 
   { term:"dual majority", cluster:"functional", gloss:"Some bills must carry separately among functional and elected members.",
     handle:"A second chamber that sits inside the first one.",
-    introduced:"gb_approach" },
+    introduced:"the_rules_of_the_house" },
 
   { term:"licensure", cluster:"functional", gloss:"Professional certification. It decides who votes in a functional seat.",
     handle:"A medical licence that also comes with a ballot.",
