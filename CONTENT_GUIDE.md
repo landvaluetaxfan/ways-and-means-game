@@ -270,9 +270,11 @@ An entry is an event when it carries `setpiece`:
 
 ```js
 { id:"f1_stranded", chapter:2, at:14, once:true,
-  setpiece:{ mood:"threat", sections:[
+  setpiece:{ title:"Mining company abandons orbital refinery, leaving 184,000 people with two months of air",
+    mood:"threat", sections:[
     { kind:"voices", head:"What is being said", body:[
-      { said:"They filed a return in the spring and nothing since.", who:"The Spindle" } ] },
+      { said:"They filed a return in the spring and nothing since.",
+        who:"Ivor Ceyhan, political editor of The Spindle, the Commonwealth's newspaper of record" } ] },
     { kind:"document", head:"The notice of wind-up", body:"...", source:"..." } ] },
   title:"A hundred and eighty-four thousand",
   body:`The story, a handful of paragraphs. The first is the lede.`,
@@ -285,9 +287,26 @@ An entry is an event when it carries `setpiece`:
   being said* (`voices`), an in-world paper (`document`, with a `source`),
   a headed passage (`body` with a `head`). An `epigraph` goes first.
   `setpiece: true` is an event whose page is its body alone.
+- **The page is a news report** (design/51), written for a reader who has
+  not followed the story, and `npm run lint` fails one that is not
+  (`tools/pagecheck.js`):
+  - a **headline**, `setpiece.title`, saying what happened in 14 words or
+    fewer (the entry's own `title` stays as its slug);
+  - a **lede** of 12 to 45 words: who did what, to whom, and why it
+    matters; then why the Commonwealth should care;
+  - **every name introduced** where it first appears, in the same sentence
+    or the next: "Cordell, the Gabonese mining company"; a person with
+    their office, the speaker included;
+  - sentences of **40 words at most**, averaging 24 or fewer;
+  - the **third person**: "you" only inside a quotation, and no interface
+    words.
+
+  A new company, institution or setting term goes into `INTRODUCE` in
+  `tools/pagecheck.js`, with the words that explain it, the day a page first
+  names it.
 - **The picture** is the art slot (`setpiece.art`) if there is one,
-  otherwise the entry's `image`, otherwise the speaker's portrait. The
-  dateline and the speaker's byline come from the sitting and `speaker`.
+  otherwise the entry's `image`, otherwise the speaker's portrait, captioned
+  with their name and office. The dateline comes from the sitting.
 - **A mood** is one of `SCHEMA.vocab.eventMoods`, the ones that play and
   resolve on their own. Each already means a moment in the score, so name
   one only where the event is that kind of moment.

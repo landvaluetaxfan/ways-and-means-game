@@ -3520,7 +3520,8 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 /* The picture on an event's page: its plate, or the speaker's portrait,
    centred under the title and larger than the reading block's thumbnail. */
 .sp-figure{display:flex;justify-content:center;margin:0 0 16px;}
-.sp-figure .portrait{float:none;margin:0;width:132px;}
+.sp-figure .portrait{float:none;margin:0;width:150px;}
+.sp-figure .portrait .cap{font-family:var(--f-ui);font-size:10px;line-height:1.3;padding:4px 2px 1px;}
 .sp-figure .portrait img{max-height:none;}
 .sp-figure .plate-img{margin:0;}
 

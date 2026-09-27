@@ -272,11 +272,13 @@ try {
   const secBody = w.document.querySelector('#ed-psecs [data-f="body"]');
   const mood = w.document.querySelector('#ed-form [data-f="sp_mood"]');
   if (secBody) secBody.value = "A page of its own.";
+  const head = w.document.querySelector('#ed-form [data-f="sp_title"]');
   if (mood) mood.value = "threat";
+  if (head) head.value = "A page of its own is written";
   away(); click(itemOf(dec.id));
   const sp = read().setpiece || {};
-  ok("and a mood and a section make it a page of its own, the body untouched",
-     sp.mood === "threat" && sp.sections && sp.sections.length === 1 && sp.sections[0].kind === "lede" &&
+  ok("and a headline, a mood and a section make it a page of its own, the body untouched",
+     sp.title === "A page of its own is written" && sp.mood === "threat" && sp.sections && sp.sections.length === 1 && sp.sections[0].kind === "lede" &&
      sp.sections[0].body === "A page of its own." && read().body === dec.body, JSON.stringify(sp));
   setKind("outcome");
   ok("an outcome event is queued only", read().queuedOnly === true && !!read().setpiece);

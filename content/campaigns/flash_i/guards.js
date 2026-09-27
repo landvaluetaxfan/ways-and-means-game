@@ -351,12 +351,6 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
       const cools = CONTENT.instruments.filter(si => [].concat(si.effects || [])
         .some(f => f.move && f.move.thermal_margin > 0)).map(si => si.id);
       const awaiting = () => cools.filter(id => s.instruments[id].awaitingApproval);
-      /* the last days before the House RISES: once it is dissolved the
-         rise is behind it, and this read true for the whole campaign, so
-         the canon climbed a rung after the dissolution that it could not
-         pay for (25 Sep) */
-      const lastDays = !s.dissolved && s.risesAt != null && s.sitting > 40 &&
-                       s.risesAt - s.sitting <= 5;
       /* AND IT LAYS NO ORDER IT CANNOT PAY FOR, short of an emergency: what
          an order costs the reserve, against the reserve and the room left
          under the bill authority. Past that the Treasury is in arrears. */
@@ -367,7 +361,10 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
       };
       const affords = id => cost(id) <= s.scalars.solvency +
         (s.macro && s.macro.headroom != null ? s.macro.headroom : Infinity);
-      if (s.scalars.thermal_margin <= 10 || (lastDays && s.scalars.thermal_margin <= 16)) {
+      /* it climbs at sixteen, not ten (design/51): with the sanctions
+         pricing Earth's risk at three points a sitting, a government that
+         waits for ten reaches the count on two */
+      if (s.scalars.thermal_margin <= 16) {
         const waiting = awaiting().find(id => Engine.canApprove(s, CONTENT, id).ok);
         if (waiting) Engine.approveInstrument(s, CONTENT, waiting);
         else {

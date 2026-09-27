@@ -1309,6 +1309,25 @@ try {
 } catch (e) { gaBad.push("could not read the world's states: " + e.message); }
 n += section("A COUNTRY THAT VOTES THROUGH NO MEMBER", gaBad, x => x);
 
+/* AN EVENT PAGE MUST EXPLAIN (design/51). An event is read by a player who
+   does not know the story yet, so it is written as a newspaper writes one:
+   a headline, a lede that says what happened, short sentences, and every
+   name introduced where it first appears. tools/pagecheck.js holds the
+   rules. A decision is counted and not failed: it sits inside the
+   interface that explains it, and its prose is the next pass. */
+const newsBad = [];
+let newsAdv = 0;
+try {
+  const PC = require("./pagecheck.js");
+  (EVENTS || []).forEach(ev => {
+    const f = PC.checkPage(ev, CHARACTERS);
+    if (ev.setpiece) f.forEach(x => newsBad.push(ev.id + ": " + x));
+    else if (f.some(x => !/headline/.test(x))) newsAdv++;
+  });
+} catch (e) { newsBad.push("could not read the event pages: " + e.message); }
+n += section("EVENT PAGES THAT DO NOT EXPLAIN", newsBad, x => x);
+if (newsAdv) R.push(newsAdv + " decisions would fail the same rules, headline aside (advisory)");
+
 /* THE EDITOR LOADS WHAT THE GAME LOADS. Two pages each name the content
    files, and the editor had fallen three behind: it could not see an
    initiative, a minute or an award, so its rename dialog could not warn
@@ -1339,6 +1358,7 @@ if (retiredBad.length) R.push(`${retiredBad.length} RETIRED NAMES IN THE PROSE`)
 if (seatBad.length) R.push(`${seatBad.length} CONSTITUENCY PROSE FAULTS`);
 if (briefBad.length) R.push(`${briefBad.length} BRIEFING FIGURES THE ENGINE DOES NOT FILL`);
 if (gaBad.length) R.push(`${gaBad.length} COUNTRIES THAT VOTE THROUGH NO MEMBER`);
+if (newsBad.length) R.push(`${newsBad.length} FAULTS IN EVENT PAGES THAT DO NOT EXPLAIN`);
 if (popBad.length) R.push("THE POPULATION IS STORED TWICE AND HAS DRIFTED (advisory)");
 console.log(R.join("\n"));
 /* HARD FAILURES: everything except popBad. The chain is one of them now —
@@ -1352,4 +1372,4 @@ if (artBad.length || chainBad.length || cssBad.length || verbBad.length ||
     parseBad.length || initBad.length || gridBad.length || targetBad.length ||
     labelBad.length || gateBad.length || refBad.length || campBad.length ||
     pageBad.length || retiredBad.length || seatBad.length || briefBad.length ||
-    gaBad.length) process.exit(1);
+    gaBad.length || newsBad.length) process.exit(1);

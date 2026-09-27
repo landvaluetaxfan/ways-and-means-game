@@ -1021,7 +1021,10 @@ const SETUP = {
   couplings: [
     { meter: "friction", above: 40, drag: { thermal_margin: -1 },
       mark: "Imports are dearer under the sanctions regime" },
-    { meter: "friction", above: 65, drag: { thermal_margin: -2, solvency: -1000 },
+    /* three, not two (design/51): with an event and a decision every
+       sitting, the government has more answers than it did, and at two the
+       ladder-climbing strategies all but never cascaded (0 to 5 in 80) */
+    { meter: "friction", above: 65, drag: { thermal_margin: -3, solvency: -1000 },
       mark: "Earth's banks are pricing the Commonwealth's risk" },
     { meter: "friction", above: 85, drag: { thermal_margin: -3, legitimacy: -1 },
       mark: "The blockade is beginning to bite" },

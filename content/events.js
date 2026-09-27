@@ -1366,28 +1366,27 @@ budget."`,
 
 /* the campaign: parliament is dissolved, the country is asked */
 { id:"ch3_dissolution", chapter:2, weight:96, once:true,
-  setpiece:true,
+  setpiece:{ title:"The House is dissolved, and the Commonwealth goes to the polls" },
   when:{ dissolved:true },
   title:"The writs",
   speaker:null,
-  body:`The proclamation is read and the House stands. The seats empty, the clerks
-cover the benches, and the building does the only thing it knows how to do:
-it hands the question to the country.
+  body:`The House of Delegates has been dissolved, and the Commonwealth has three
+weeks until a general election. Every one of the chamber's 280 seats will be
+filled again.
 
-The campaign runs three weeks, and the Commonwealth is now in it. Every
-member goes home to their station and their roll, and the government goes
-home to the record of what it did, which is what the electorate is about to
-be asked about.
+The writs, the formal orders for the election, go to the returning officers
+of 140 districts. The 100 list seats are shared out afterwards on the
+national vote. The 40 functional members are elected by the members of their
+professions and industries.
 
-The writs go to the returning officers of a hundred and forty districts. The
-hundred list seats are shared out on the national vote once the districts
-are in, and the forty functional members are returned by their own
-electorates.
+The government stays in office through the campaign, because the
+Commonwealth is never without one. Everything it does in the next three
+weeks will be done with the country watching, and the House will not sit
+again until the votes are counted.
 
-The House does not sit again until the count is in. The government stays in
-office through the campaign, because the Commonwealth is never without one,
-and everything it does in the next three weeks is done with the country
-watching.`,
+Every member goes home to a station and a roll of voters. The government
+goes home to its record, which is what the voters are about to be asked
+about.`,
   choices:[
     { label:"To the country.",
       effects:[{ chapter:3 }],
@@ -1613,22 +1612,22 @@ The count is a week away, and the polls say where it will be decided.`,
   ]},
 
 { id:"ch3_the_count", chapter:3, prologue:9, once:true,
-  setpiece:true,
+  setpiece:{ title:"The Commonwealth has voted, and the next House is decided" },
   title:"The count",
   speaker:null,
-  body:`The returns come in by station, west to east, the way they always have. The
-stations that carried the government return it, and the stations that did
-not do not, and the arithmetic of the chamber is decided by midnight.
+  body:`The votes in the general election were counted overnight, station by
+station, and by midnight the shape of the next House of Delegates was
+settled.
 
-The district seats come first, a hundred and forty counts in a hundred and
-forty halls, each declared by a returning officer to whoever has stayed up,
-and Ring Network carries every declaration live. The list seats follow on
-the national vote, and the functional members are declared last, because
-their electorates count by board and by licence.
+The 140 district seats were declared first, each by a returning officer in
+its own hall. Ring Network, the Commonwealth's broadcaster, carried every
+declaration live. The 100 list seats followed on the national vote, and the
+40 functional members were declared last, because their professions and
+industries count by board and by licence.
 
-The House that rises in the morning will be somebody else's arithmetic. This
-one is finished, and what it settled stands, and what it did not settle is
-now the country's to carry.`,
+The House that meets next will be somebody else's arithmetic. This one is
+finished. What it settled stands, and what it left unsettled is now the
+country's to carry.`,
   choices:[
     { label:"Read the final numbers.",
       effects:[{ flag:"campaign_done" },
@@ -1638,7 +1637,7 @@ now the country's to carry.`,
 
 /* the settlement: the argument was closed, and the Commonwealth after */
 { id:"ch4_settled", chapter:2, weight:97, once:true,
-  setpiece:true,
+  setpiece:{ title:"The question that divided the House is settled" },
   /* THE RESULT, NOT THE ANSWER, AND IT OPENS NO CHAPTER. This fired on
      `settled` (the personhood question) and moved the run into chapter
      four, which then ended at the dissolution without a campaign; a run
@@ -1649,16 +1648,17 @@ now the country's to carry.`,
   when:{ resolved:true, dissolved:false },
   title:"The question, closed",
   speaker:null,
-  body:`The argument the whole session has been about is closed. Not paused, not
-deferred, not carried over: closed, in the form the record will show for a
-generation.
+  body:`The question that has occupied the House of Delegates all session has been
+settled. It was not paused or passed to the next House. It was closed, in
+the form the record will keep for a generation.
 
-Closing it took a decision the government cannot take back. It is in the
-journal of the House with the date, it is on the front of The Spindle, and
-every member who spoke on it will be asked at the election what they said.
+Settling it took a decision the government cannot take back. The decision is
+in the journal of the House with its date. It is on the front page of The
+Spindle, the Commonwealth's newspaper of record.
 
+Every member who spoke on it will be asked at the election what they said.
 The House will do the rest of its business in the shadow of the answer,
-which is how a settlement works. What follows is the Commonwealth after it.`,
+which is how a settlement works.`,
   choices:[
     { label:"See it.",
       effects:[],
@@ -1666,19 +1666,20 @@ which is how a settlement works. What follows is the Commonwealth after it.`,
   ]},
 
   { id:"ch4_after", chapter:2, weight:96, once:true,
-  setpiece:true,
+  setpiece:{ title:"The session goes on, and the settlement's costs begin to arrive" },
   when:{ seen:["ch4_settled"], dissolved:false },
   title:"After",
   speaker:null,
-  body:`The session runs on. Bills move or fall, ministers answer questions, and the
-register fills with the ordinary business of the House.
+  body:`The House of Delegates has returned to its ordinary business. Bills move or
+fall, ministers answer questions, and the register fills with the routine of
+government.
 
-The settlement costs what it costs from here, and the costs arrive the way
-costs do: in the estimates, in the prices, and in questions at Question
-Time, weeks after anyone remembers the vote that incurred them.
+The settlement will cost what it costs from here. Its costs will arrive the
+way costs do: in the budget, in prices, and in questions to ministers weeks
+after anyone remembers the vote that incurred them.
 
-The question that was settled stays settled, and the country gets used to
-the answer, and then it stops noticing there was ever a question at all.`,
+The question that was settled stays settled. The country gets used to the
+answer, and then it stops noticing there was ever a question at all.`,
   choices:[
     { label:"Close the chapter.",
       effects:[],
@@ -2018,24 +2019,27 @@ and the schedule is a list of who is carried and who is not."`,
    between is the risk the government took. */
 /* REACH: queued by the quota_forward initiative. */
 { id:"quota_forward_settles", queuedOnly:true, once:true,
-  setpiece:true,
+  setpiece:{ title:"Buyers collect the cooling capacity the Commonwealth sold in advance" },
   title:"The quota forward comes due",
   speaker:"hatt",
-  body:`The consortiums have come for the capacity. Whatever the margin has done
-since the forward was sold, the price was fixed then and the quota leaves
-now: a slice of it, or the whole of it, as the government agreed.
+  body:`The consortiums that bought cooling capacity from the Commonwealth in
+advance have come to collect it. The capacity leaves the Commonwealth today,
+at the price fixed on the day the deal was signed.
 
-A quota forward is thermal capacity promised at a date and sold for cash on
-the day it was signed. The Commonwealth took the cash and spent it. The
-consortiums took the risk that the capacity would be worth more at the term
-than they paid, and the Commonwealth took the risk that it would need the
-capacity back.
+The deal was a quota forward: a promise to deliver a share of the
+Commonwealth's heat-shedding capacity on a set date, sold for cash on the
+day it was signed. The Commonwealth took the cash and spent it. The
+consortiums bet that the capacity would be worth more on delivery than they
+paid. The Commonwealth bet that it would not need it back.
 
-Delivery is not negotiable. The capacity leaves the margin today, and if the
-government wants it back it buys it at today's price.
+Delivery is not negotiable. Whatever the thermal margin, the spare capacity
+of the radiators, has done since the sale, the capacity leaves today: a
+slice of it or the whole of it, as the government agreed. If the government
+wants it back, it must buy it at today's price.
 
-"Fixed is fixed," Hatt says, in the tone of a man who was on the other side
-of the trade.`,
+"Fixed is fixed," said Edward Hatt, leader of the Alliance of Business and
+Government, the business party in the House, in the tone of a man who has
+been on the other side of the trade.`,
   choices:[
     { label:"Hand over the slice.",
       when:{ flags:["quota_forward_small"] },
@@ -2074,24 +2078,27 @@ of the trade.`,
    an empty Decision. */
 /* REACH: queued by the charter_volume initiative. */
 { id:"volume_charter_settles", queuedOnly:true, once:true,
-  setpiece:true,
+  setpiece:{ title:"Homestead's lease of Commonwealth living space comes to term" },
   title:"The volume lease comes to term",
   speaker:"vellan",
-  body:`Homestead has held the volume for the whole term and the surveyors have
-filed. The file is short. The station kept its side or it did not, and the
-price of volume has moved since the lease was written.
+  body:`Homestead, the low-band station of 880,000 people that rented living space
+from the Commonwealth under a volume lease, has reached the end of its term.
+The surveyors have filed their report.
 
-Volume is room: pressurised, shielded space inside a hull, the one thing no
-factory in orbit makes quickly. The Commonwealth holds volume on every band,
-and it let a share to Homestead for a term, for cash or against work on the
-station's own material cycle, which is what Homestead wanted.
+Volume is room: pressurised, shielded space inside a hull, and the one thing
+no factory in orbit makes quickly. The Commonwealth holds volume in every
+band of stations. It let a share to Homestead for a term, in return for cash
+or for work that makes the station less dependent on imports, which is what
+Homestead wanted.
 
-The price on the day decides what each side got. Volume that has risen in
-price was let for less than it is worth now; volume that has not has paid
-the rent it promised.
+The report says whether Homestead kept its side of the lease. The price of
+volume on the day decides who got the better deal. If volume has risen in
+price, it was let for less than it is worth now. If it has not, the lease
+paid what it promised.
 
-"The lease says what follows either way," Vidyasagar says. "It was written
-by people who expected the price to move."`,
+"The lease says what follows either way," said Suravaram Vidyasagar, the
+Minister for Life Support. "It was written by people who expected the price
+to move."`,
   choices:[
     { label:"The lease is renewed. The price ran against it.",
       when:{ flags:["charter_cash"], priceAbove:{ volume:108 } },
@@ -2453,26 +2460,31 @@ heard one side."`,
    all session by whether it answered, briefed, complied and revoked. */
 /* REACH: queued by either choice of tr_challenge_lodged. */
 { id:"tr_ruling", queuedOnly:true, once:true,
-  setpiece:true,
+  setpiece:{ title:"The Tribunal rules on the government's life-support licensing order" },
   title:"The ruling",
   speaker:null,
-  body:`The Tribunal hands down its judgment at the start of the sitting, and the
-court's own record runs to thirty-two pages. The last page is the order.
+  body:`The Tribunal, the Commonwealth's constitutional court, has given its
+judgment on the Life Support Engineering (Licensing) Order. The judgment
+runs to 32 pages, and the ruling itself is on the last.
 
-The challenge was narrow. The Liberals argued that the Life Support
-Engineering (Licensing) Order was made under a power the statute reserves to
-the licensing boards, and that a minister may not exercise a board's
-jurisdiction by order. The government's answer was whatever it chose to put
-before the bench, or nothing.
+The Liberal Party, the opposition, brought the challenge, and it was a
+narrow one. The Liberals argued that the government made the order under a
+power the law gives to the licensing boards, which license the engineers who
+run life support. A minister, they said, may not take over a board's powers
+by order.
 
-The Tribunal's presiding judge was emulated in 2060 and was in the room when
-the Charter's clauses were argued. The bench reads a government's orders in
-the light of how the government has treated the bench, and it has had a
-session to form its view.
+The government chose what, if anything, to argue in reply.
 
-The order moved two Life Support seats and broke the Alliance's bench from
-the government. Whatever the judgment says about it, it says to every board
-in the Commonwealth.`,
+The Tribunal's presiding judge is an emulated mind, copied in 2060, who was
+in the room when the clauses of the Charter, the Commonwealth's
+constitution, were argued. The bench reads a government's orders in the
+light of how that government has treated the bench, and it has had a session
+to form its view.
+
+The order changed two of the House's Life Support seats, and it drove the
+Alliance of Business and Government, the business party in the House, away
+from the government. Whatever the judgment says about the order, it says to
+every licensing board in the Commonwealth.`,
   choices:[
     { label:"The order is struck.",
       when:{ actorBelow:{ tribunal:46 } },
@@ -2549,10 +2561,11 @@ man with a list."`,
    date is set, and the sittings between now and then are the whole of the
    government's answer. */
 { id:"no_confidence_tabled", once:true,
-  setpiece:{ mood:"threat", sections:[
+  setpiece:{ title:"Opposition leader gives notice of a motion of no confidence", mood:"threat",
+    sections:[
     { kind:"voices", head:"What is being said", body:[
       { said:"Ask me the day before.",
-        who:"Anil Devi MP, Chief Whip" } ] }
+        who:"Anil Devi MP, the government's Chief Whip" } ] }
   ] },
   weight:6,
   /* GATED ON WEAKNESS, in the closed vocabulary (there is no anyOf, and
@@ -2563,22 +2576,24 @@ man with a list."`,
   when:{ minSitting:6, scalarBelow:{ public_standing:40, party_loyalty:46 } },
   title:"The Leader of the Opposition rises",
   speaker:"watkins",
-  body:`He does not have a question this time.
+  body:`Darren Watkins Jr., the Leader of the Opposition, gave notice in the House
+of Delegates that he will move a motion of no confidence in the government
+in three sitting days.
 
-"Madam Speaker. I give notice that I shall move, three sitting days from
-today, that this House has no confidence in the government."
+"Madam Speaker, I give notice that I shall move, three sitting days from
+today, that this House has no confidence in the government," he said. The
+noise took a while to settle, and it did not come from his side of the
+chamber.
 
-The noise takes a while to settle, and it does not come from his side. He
-has been counting for weeks and has evidently arrived at a number he likes.
+The motion needs a majority of the House, 141 votes of 280, to carry. If it
+carries, the government falls.
 
-The motion carries on a majority of the House, a hundred and forty-one
-votes. The government's standing in the country is under forty and its own
-benches are restless, and those are the two figures Watkins has been
-counting: members who fear for their seats, and members who have stopped
+Watkins has been counting for weeks. The government's standing in the
+country is below 40, and its own benches are restless. Those are his two
+figures: members who fear for their seats, and members who have stopped
 fearing the whips.
 
-You have until then. Everything you do between now and the division is the
-answer.`,
+The government has until the division to change the count.`,
   choices:[
     { label:"Note the motion, and go and count.",
       effects:[
@@ -3436,22 +3451,25 @@ She will not move the cash rate for a government. She will say, at her next meet
   ]},
 
 { id:"dollar_line_tested", queuedOnly:true,
-  setpiece:true,
+  setpiece:{ title:"Dealers test whether the Commonwealth will defend its dollar" },
   title:"The line is tested",
   speaker:null,
-  body:`The market has spent a week finding out whether the Treasury meant it. The
-Bank has spent its reserves answering, and the dealers on the Bourse have
-been counting what is left.
+  body:`Currency dealers have spent a week testing whether the Treasury will defend
+the Commonwealth dollar. The Reserve Bank has been selling its holdings of
+Earth's currencies to buy dollars, and the dealers have been counting what
+is left.
 
-The Commonwealth dollar has floated since 2073. The Bank holds the reserves
-of Earth's money, and the Treasury decides whether to sell them to buy the
-dollar back. A dollar bought back is a cheaper import bill and a lighter
-debt to Earth's banks, for as long as the reserves last.
+The dollar has floated freely since 2073. The Reserve Bank holds reserves of
+Earth's money, and the Treasury decides whether to spend them buying the
+dollar back. A stronger dollar makes imports cheaper and the debt owed to
+Earth's banks lighter, for as long as the reserves last.
 
-The dealers know how much the reserves hold, because the Bank publishes it,
-and they have spent the week finding out how much of it the Treasury will
-spend. Castellane has sent the Treasury the figure left this morning, with
-no comment attached.`,
+The dealers on the Bourse, the Commonwealth's trading station, know how much
+the Bank holds, because the Bank publishes it. What they have spent the week
+finding out is how much of it the Treasury will spend.
+
+Maren Castellane, the Governor of the Reserve Bank, sent the Treasury this
+morning's figure without comment.`,
   choices:[
     { posture:"bold", label:"Spend what it takes.",
       when:{ economyAbove:{ reserves:15000 } },

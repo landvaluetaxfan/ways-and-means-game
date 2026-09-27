@@ -687,21 +687,23 @@ version of any of them is in the header of the file it names.
   ending; the next leader's campaign assumes the canon one, so a narrative
   runs across parliaments. **Flash I's canon is the debt trap, decided 23
   Sep: "a middle ground between perfect and failure".** It returns the PSD to
-  government with austerity to come. Since design/50 (27 Sep: events of
-  three kinds, one from the pool a sitting) the canon reaches the count on
-  13 August, sitting 55, at standing 55: the PSD holds 107 of 280 and the
-  government's side 171, a working majority. The crisis is financed and
-  felt: it owes CW$24.4bn in Treasury bills (CW$35.6bn of room left under
-  the authority), with headline inflation 6.8% against 3.0% underlying,
+  government with austerity to come. Since design/51 (27 Sep: the
+  sanctions drain three points a sitting above friction 65, and the canon
+  climbs at a margin of 16) the canon reaches the count on 13 August,
+  sitting 55, at standing 52: the PSD holds 103 of 280 and the
+  government's side 167, a working majority. The crisis is financed and
+  felt: it owes CW$29.6bn in Treasury bills (CW$30.4bn of room left under
+  the authority), with headline inflation 6.5% against 2.9% underlying,
   which the vote reads. The canon
   government climbs the emergency ladder, keeps its last order-paper time to
   approve the emergency appropriation before the House rises (see
   `approvalFloor` below), asks Earth's banks for terms once the result is in,
   lays no order it cannot pay for, and reaches the count with the thermal
-  margin at 3, the thinnest it has been, and its payments current. The guard prints the margin, the
+  margin at 5 and its payments current. The guard prints the margin, the
   side, the epilogue and the account. (25 Sep: it had been CW$16.8bn in
   arrears through the campaign, which cost nothing until that day; see
-  ARREARS below.) (Design/49: sitting 55, margin 6, 171 of 280 at standing
+  ARREARS below.) (Design/50: margin 3, 171 of 280 at standing 55,
+  CW$24.4bn, 6.8%.) (Design/49: sitting 55, margin 6, 171 of 280 at standing
   56, CW$33.6bn, 5.9%. Before design/49: sitting 57, margin 17, 87 seats, 149
   of 280 at standing 42, CW$52.6bn, 5.4%, a narrow majority.
   Before design/44: sitting 56, margin 9, CW$44.8bn, 5.7%.
@@ -1231,9 +1233,31 @@ version of any of them is in the header of the file it names.
       away.
   - **Still open:** the dilemma says Cordell kept the leases, while the
     initiatives say they came with the platform.
-  - **The campaign is now forgiving:** 4, 28, 0 and 5 losses in eighty
-    for the four crisis strategies, and the canon's thermal margin at the
-    count is 3. design/50 lists the levers that would tighten it.
+  - **The campaign was left forgiving:** 4, 28, 0 and 5 losses in eighty
+    for the four crisis strategies. design/51 tightened it.
+- **AN EVENT PAGE IS A NEWS REPORT, AND LINT FAILS ONE THAT DOES NOT
+  EXPLAIN** (27 Sep, `design/51`; the author: "The player doesn't know what
+  Cordell is ... think New York Times reporting on this").
+  - `tools/pagecheck.js` holds the rules and lint runs them on every event:
+    a headline (`setpiece.title`), a 12-45-word lede, no sentence over 40
+    words, "you" only in quotations, and every name in `INTRODUCE` glossed
+    in the sentence that first uses it or the next. A person's first
+    mention carries their office, the speaker's too. **Add a new company,
+    institution or setting term to `INTRODUCE` the day a page names it.**
+  - Decisions are an advisory count (74 of 99 would fail); their prose is
+    the next pass.
+  - All 31 pages were rewritten to it. On the first run every one failed,
+    and the check was proved by breaking the Bellamy page six ways.
+  - **The speaker is the portrait's caption**, not a byline. **A new page
+    opens at its headline**: the sitting panel carries `data-page`, and
+    `js/focus.js` restores a scroll only on the same page.
+  - **The balance was tightened**: the sanctions' middle line drains the
+    thermal margin 3 a sitting, not 2 (`setup.couplings`). The crisis
+    strategies now lose 33, 51, 32 and 35 in eighty, and the canon climbs at
+    16, reaching the count on a margin of 5 where it had 3.
+  - **Left for the author:** whose sanctions froze Cordell's subsidiary. The
+    pages say "international sanctions arising from a conflict on Earth",
+    after design/35.
 - **AND THE SANDBOX LISTS THE PLAYER'S OWN DECISIONS** (design/48, which
   stands on this point): initiatives and orders, each opened where the
   player takes it, on the Government tab.

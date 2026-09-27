@@ -674,7 +674,9 @@ const Editor = (function () {
       ${kindOfEntry(e) === "random" ? `<label>Odds a sitting <input class="ed-f ed-num" data-f="perSitting"
         type="number" step="0.01" min="0" max="1" value="${e.perSitting == null ? "" : e.perSitting}" style="width:70px">
         <span class="ed-hint">0.1 is one sitting in ten, on average</span></label>` : ""}
-      ${e.setpiece ? `<label>Mood ${opt_("sp_mood", vocab("moods"), spOf(e).mood, "(none)")}
+      ${e.setpiece ? `<label>Headline ${txt_("sp_title", spOf(e).title || "", "what happened, as a newspaper would put it", 380)}
+        <span class="ed-hint">lint fails a page without one (design/51)</span></label>
+      <label>Mood ${opt_("sp_mood", vocab("moods"), spOf(e).mood, "(none)")}
         <span class="ed-hint">the music when it arrives</span></label>
       <label>Art ${txt_("sp_art", spOf(e).art || "", "artifact slot", 110)}</label>` : ""}
     </div>
@@ -775,7 +777,9 @@ const Editor = (function () {
     if (kindF && kindF.value !== "decision") {
       const was = orig && orig.setpiece;
       const sp = was && typeof was === "object" ? clone(was) : {};
-      const mood = g("sp_mood"), art = g("sp_art");
+      const title = g("sp_title"), mood = g("sp_mood"), art = g("sp_art");
+      if (title) putText(sp, "title", title.value.trim());
+      if (sp.title === "") delete sp.title;
       if (mood) { if (mood.value) sp.mood = mood.value; else delete sp.mood; }
       if (art) putText(sp, "art", art.value.trim());
       if (sp.art === "") delete sp.art;

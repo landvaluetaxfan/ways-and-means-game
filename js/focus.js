@@ -130,7 +130,7 @@ const Focus = (function () {
 
   function scrolls() {
     return [].slice.call(document.querySelectorAll(SCROLLERS))
-      .map(n => [n, n.scrollTop, n.scrollLeft]);
+      .map(n => [n, n.scrollTop, n.scrollLeft, n.dataset.page]);
   }
 
   /* ---------- restore ---------- */
@@ -165,8 +165,13 @@ const Focus = (function () {
   }
 
   function unscroll(list) {
-    list.forEach(([n, t, l]) => {
+    list.forEach(([n, t, l, page]) => {
       if (!n.isConnected) return;
+      /* A box that now shows a different page (`data-page`, set by the
+         renderer) starts at the top: its old position belonged to text
+         that is gone. Measured: the second event of a sitting opened 700px
+         down, halfway through its own story. */
+      if (n.dataset.page !== page) { n.scrollTop = 0; n.scrollLeft = 0; return; }
       if (n.scrollTop !== t) n.scrollTop = t;
       if (n.scrollLeft !== l) n.scrollLeft = l;
     });

@@ -4487,12 +4487,12 @@ const UI = (function () {
   const BLANK = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
   const NOIMG = `onerror="this.onerror=null;this.src='${BLANK}'"`;
 
-  function portrait(ch) {
+  function portrait(ch, caption) {
     const src = ch && ch.portrait ? `img/portraits/${ch.portrait}` : "";
     return `<div class="portrait">` +
       `<img class="dith" src="${src || BLANK}" alt="${ch ? esc(ch.name) : "No registry photograph"}" ` +
       NOIMG + `>` +
-      `<div class="cap">REGISTRY</div></div>`;
+      `<div class="cap">${caption ? esc(caption) : "REGISTRY"}</div></div>`;
   }
 
   function plate(img) {
@@ -6349,6 +6349,10 @@ const UI = (function () {
     }
     const e = currentEvent;
     if (openRow.event !== e.id) openRow = { event: e.id, i: -1 };
+    /* which page the panel shows: js/focus.js puts the scroll back only on
+       the same page, so the next event opens at its headline and not where
+       the reader left the last one */
+    box.dataset.page = e.id + "@" + st.sitting;
     const spk = e.speaker ? C.characterById[e.speaker] : null;
     $("#sitting-hdr").textContent = e.title;
 
@@ -6370,10 +6374,12 @@ const UI = (function () {
       /* annotated like a decision's prose: a term the glossary teaches is
          footnoted on its first use here too, since an event is where the
          world is most often explained */
+      /* the speaker is in the picture's caption, as a newspaper captions a
+         photograph; under the headline the name read as the byline */
       box.innerHTML = annotate(SetPiece.html(e, {
         kicker: eventDateline(),
-        who: spk ? spk.name + " \u2014 " + spk.role : null,
-        figure: e.image && e.image.src ? plate(e.image) : spk ? portrait(spk) : null
+        figure: e.image && e.image.src ? plate(e.image)
+          : spk ? portrait(spk, spk.name + " \u2014 " + spk.role) : null
       }).html) + `<div class="sit-decide" id="sit-decide"></div>`;
       drawDecision();
       return;
