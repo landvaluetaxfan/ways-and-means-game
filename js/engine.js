@@ -7559,6 +7559,10 @@ const Engine = (function () {
       if (st.seen[e.id]) return;
       if (e.chapter != null && e.chapter !== st.chapter) return;
       if (e.at < st.sitting) return;
+      /* AND ONLY WHILE IT IS STILL COMING (28 Sep). A dated event whose
+         condition fails today will not fire today, so the calendar does not
+         promise it: a deadline the government has already met comes off. */
+      if (!matches(st, e.when)) return;
       add(e.at, "expected", e.foreseen);
     });
     /* THE RESERVE BANK MEETS ON ITS OWN DATES (design/39 §5; design/40).

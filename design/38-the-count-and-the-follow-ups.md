@@ -1,7 +1,11 @@
 # 38 — THE COUNT, AND THE FOLLOW-UPS TO THE AUDIT
 
 **Status: BUILT, 25 Sep 2026**, except §6 and §7, which are proposals, and
-the economy, which is `design/39`. This records what was built from the
+the economy, which is `design/39`. §7 was built as the docket's alerts. Of
+§6, the scrubbers failing on schedule were built on 28 Sep 2026 as
+`f1_air_fails`, dated 17 July, with `pay_works_air` as the act that stops
+it; the flags, Kenya's evacuation, the chapter-three beat and the epilogue
+are still proposals. This records what was built from the
 author's answers to design/37, what each change measured, and what is still
 the author's to decide.
 

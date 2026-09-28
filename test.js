@@ -4721,6 +4721,15 @@ console.log("\nTHE ECONOMY:");
   ok("a foreseeable dated event is on the calendar",
      marks.some(m => m.label === "The commission reports" || m.text === "The commission reports"),
      marks.length + " marks");
+  /* and comes off it once its condition fails, since it will not fire */
+  dated.when = { flags: ["t_dated_coming"] };
+  const s4 = Engine.newGame(C2);
+  const off = (Engine.deadlines(s4, C2) || []).some(m => m.text === "The commission reports");
+  s4.flags.t_dated_coming = true;
+  const on = (Engine.deadlines(s4, C2) || []).some(m => m.text === "The commission reports");
+  delete dated.when;
+  ok("a dated event whose condition fails is off the calendar, and back when it holds",
+     !off && on, "off " + off + ", on " + on);
 
   /* AND A DEADLINE KNOWS WHERE IT IS KEPT. The calendar showed five kinds of
      mark and could act on none of them, because only undertakings carried a

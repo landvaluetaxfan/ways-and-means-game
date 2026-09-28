@@ -256,4 +256,31 @@ campaign("flash_i", { initiatives: [
                              "member.western_group": 4, "member.eu_caucus": 3 } } ] }
     ] },
 
+
+  /* BELLAMY'S FIRST WEEK: THE ACT (28 Sep 2026). The one thing a government
+     can do on the sitting the Works is stranded, whatever it thinks of the
+     platform's future: keep its air plant supplied. It stops the clock
+     (`f1_air_fails`, dated 17 July), and it settles nothing else. An
+     executive act paid from the reserve, so it takes no House time. Paid
+     to Kenya's suppliers, it costs dollars and pleases Kenya; made in the
+     Commonwealth to the survey's drawings, it costs less money and some
+     heat, and it needs the survey first. */
+  { id: "pay_works_air",
+    title: "Supply the Almanac Works' air plant",
+    note: "The Works' air plant needs new filters and catalyst every month, and nobody has paid for them since March. " +
+          "The Commonwealth can supply three months, which keeps 184,000 people breathing until their future is settled. " +
+          "It does not decide that future.",
+    cost: 0,
+    when: { flags: ["station_issue"], flagsAbsent: ["works_air_paid", "almanac_annexed", "f1_air_failed"], resolved: false },
+    event: "f1_air_paid",
+    tempo: [
+      { label: "Pay the Kenyan suppliers the arrears and three months ahead", after: 1,
+        effects: [ { flag: "works_air_paid" }, { move: { solvency: -1600, legitimacy: 3, "actor.earth_host": 4 } },
+                   { wire: "COMMONWEALTH PAYS FOR THE WORKS' AIR" } ] },
+      { label: "Make three months of filters and catalyst in the Commonwealth", after: 3,
+        when: { flags: ["f1_surveyed"] },
+        effects: [ { flag: "works_air_paid" }, { move: { solvency: -600, legitimacy: 3, thermal_margin: -1 } },
+                   { wire: "COMMONWEALTH FABRICATORS MAKE THE WORKS' FILTERS" } ] }
+    ] },
+
 ] });

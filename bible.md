@@ -148,44 +148,44 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 
 **Part XI — NAMED CANON** · L2005
 - §11.1 · L2009 — The polity
-- §11.2 · L2128 — Persons
-- §11.3 · L2172 — Stations and constituencies
-- §11.4 · L2249 — The functional roster  *LOCKED*
-- §11.5 · L2271 — The live bill
-- §11.6 · L2280 — Other business on the order paper
+- §11.2 · L2143 — Persons
+- §11.3 · L2187 — Stations and constituencies
+- §11.4 · L2264 — The functional roster  *LOCKED*
+- §11.5 · L2286 — The live bill
+- §11.6 · L2295 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L2298
-- §12.1 · L2300 — The core principle  *LOCKED*
-- §12.2 · L2304 — Split visual language  *LOCKED*
-- §12.3 · L2311 — Chrome direction  *LOCKED*
-- §12.4 · L2317 — Screens  *LOCKED*
-- §12.5 · L2321 — Election night  *LOCKED*
-- §12.6 · L2331 — The orbital map  *LOCKED*
-- §12.7 · L2359 — The parliament diagram  *LOCKED*
-- §12.8 · L2385 — Documents  *LOCKED*
-- §12.9 · L2391 — The feed  *LOCKED*
-- §12.10 · L2395 — Build cost  *LOCKED*
-- §12.11 · L2399 — Images  *LOCKED*
-- §12.12 · L2427 — Existing artifact
-- §12.13 · L2439 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L2313
+- §12.1 · L2315 — The core principle  *LOCKED*
+- §12.2 · L2319 — Split visual language  *LOCKED*
+- §12.3 · L2326 — Chrome direction  *LOCKED*
+- §12.4 · L2332 — Screens  *LOCKED*
+- §12.5 · L2336 — Election night  *LOCKED*
+- §12.6 · L2346 — The orbital map  *LOCKED*
+- §12.7 · L2374 — The parliament diagram  *LOCKED*
+- §12.8 · L2400 — Documents  *LOCKED*
+- §12.9 · L2406 — The feed  *LOCKED*
+- §12.10 · L2410 — Build cost  *LOCKED*
+- §12.11 · L2414 — Images  *LOCKED*
+- §12.12 · L2442 — Existing artifact
+- §12.13 · L2454 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2498
-- §13.1 · L2500 — Scandal taxonomy  *LOCKED*
-- §13.2 · L2513 — The spine  *LOCKED*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2513
+- §13.1 · L2515 — Scandal taxonomy  *LOCKED*
+- §13.2 · L2528 — The spine  *LOCKED*
 
-**Part XIV — PRIOR ART** · L2521
-- §14.1 · L2523 — The gap  *LOCKED*
-- §14.2 · L2527 — Works
-- §14.3 · L2535 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L2536
+- §14.1 · L2538 — The gap  *LOCKED*
+- §14.2 · L2542 — Works
+- §14.3 · L2550 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2548
-- §15.1 · L2550 — Team  *LOCKED*
-- §15.2 · L2559 — Documentation  *LOCKED*
-- §15.3 · L2569 — Where this gets hard  *LOCKED*
-- §15.4 · L2580 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2597 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2563
+- §15.1 · L2565 — Team  *LOCKED*
+- §15.2 · L2574 — Documentation  *LOCKED*
+- §15.3 · L2584 — Where this gets hard  *LOCKED*
+- §15.4 · L2595 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2612 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2609
+**Part XVI — OPEN DECISIONS** · L2624
 
 <!-- /TOC -->
 
@@ -2055,6 +2055,21 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
   industrial capacity. The canon had called it an industrial platform and
   never said what it made; the note that introduced it spent its clause on
   why Cordell kept the Bellamy name.
+- **The Works' air runs out on 17 July 2080** (decided 28 Sep 2026 by
+  Claude, for the author's approval). The air plant uses up its filters and
+  catalyst every month, and nobody has paid for them since March. The
+  stranding (6 May) says about two months, and the survey (27 May) says 51
+  days on its own spares. Unless the Commonwealth supplies the plant, or
+  carries the Act, or the crisis is otherwise answered, the plant fails on
+  that day and residents die. The date is on the calendar from the
+  stranding (`f1_air_fails`, `pay_works_air`).
+- **The Works' representatives** (NEW CANON, 28 Sep 2026, for the author's
+  approval; §2.7's rule on names): Achieng Odera, chair of the council of
+  delegates, a Kenyan crane driver who organised the vote; Marcel Obame,
+  steward of the furnace crews' union, a Gabonese furnace hand who wants
+  the furnaces kept lit; and Maricel Dizon, the chief medical officer,
+  trained in Manila, who keeps the register of who could survive Earth's
+  gravity. They are in `content/characters.js`.
 - **Why the Works was abandoned: the Cabinda war** (decided 27 Sep 2026 by
   Claude, confirmed by the author; `design/51`). Separatists in Cabinda,
   the oil-producing Angolan exclave, have fought Angola's government since

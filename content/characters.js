@@ -272,6 +272,27 @@ const CHARACTERS = [
     party:null, category:"uplift", relationship:55,
     note:"Elected by the residents of Deck 9 on Homestead to speak for them to the station and the government. Recast from an ordinary resident on 28 Sep 2026: the author's rule is that a Prime Minister deals with representatives, not with private residents (bible §2.7)." },
 
+  /* ---- the Almanac Works' representatives (NEW CANON, 28 Sep 2026) ----
+     A DELIBERATE ADDITION TO THE ROSTER (§2.7) for Flash I, on the author's
+     rule that a station's recurring voices are an assortment of people who
+     differ from one another. Once the Works is the government's question,
+     these are the three people it deals with aboard: the elected council
+     that organised the vote, the union that runs the furnaces, and the
+     doctor who decides who can go down to Earth. They want different
+     things. The author's to rename or recast. */
+  { id:"odera", pronouns:"she", descriptor:"the chair of the Almanac Works' council of delegates", name:"Achieng Odera", role:"Chair, Council of Delegates, Almanac Works",
+    party:null, category:"biological", relationship:50,
+    bio:"Achieng Odera drove an overhead crane in the rolling mill of the Bellamy Almanac Works, the orbital refinery, for eleven years. The workforce elected her chair of its council of delegates in 2078. She was born in Kisumu, on Lake Victoria, and went up Tether 2, the space elevator from the Kenyan coast, at twenty-six. She organised the vote to ask to join the Commonwealth.",
+    note:"Chair of the council the Works' charter gave the workforce for bargaining with Cordell. With the company gone it is the only elected body aboard, and she speaks for it to the government. She wants the residents counted somewhere, and she will take the Commonwealth's terms to get it." },
+  { id:"obame", pronouns:"he", descriptor:"the steward of the furnace crews' union on the Almanac Works", name:"Marcel Obame", role:"Steward, Furnace Crews' Union, Almanac Works",
+    party:null, category:"biological", relationship:40,
+    bio:"Marcel Obame is the elected steward of the furnace crews' union on the Bellamy Almanac Works, the orbital refinery. He was born in Libreville and joined Cordell, the Gabonese mining company that owned the Works, at nineteen. He has run a furnace shift on the Works for nine years.",
+    note:"His members smelt the ore and want the furnaces kept lit and the wages paid. A furnace is heat, and heat is what the Commonwealth rations, so he trusts an annexation less than Odera does. He is Gabonese, and the sovereign fund that ordered Cordell to abandon his members belongs to his own government." },
+  { id:"dizon", pronouns:"she", descriptor:"the chief medical officer of the Almanac Works", name:"Maricel Dizon", role:"Chief Medical Officer, Almanac Works",
+    party:null, category:"biological", relationship:50,
+    bio:"Maricel Dizon is the chief medical officer of the Bellamy Almanac Works, the orbital refinery, and runs its hospital of 420 beds. She trained in Manila and came to the Works from a hospital ship. She keeps the register of which residents could survive Earth's gravity and which could not.",
+    note:"She answers to no party and to no creditor. She reports the air and the bones in numbers, and she has told every government that asked that some of the children born aboard could never go down." },
+
   /* ---- the Reserve Bank (design/39 option C, 25 Sep 2026) ----
      A DELIBERATE ADDITION TO THE ROSTER (§2.7), the one person the dollar
      needs: somebody the Treasurer writes the remit to and the government

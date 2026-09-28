@@ -131,24 +131,28 @@ shipment was never paid for. The stock aboard lasts about two months.
 
 Few residents have asked to go. Many have lived for years in the platform's
 partial gravity, in which bones thin and muscles waste. Returning to Earth's
-full gravity means months of supervised rehabilitation, and doctors say some
-residents born aboard may never manage it.
+full gravity means months of supervised rehabilitation. Maricel Dizon, the
+Works' chief medical officer, says some residents born aboard may never
+manage it.
 
 The charter gave the workforce an elected council of delegates to bargain
 with the company, and with the company gone it is the only elected body
-aboard. It has called a vote on asking to join the Commonwealth. On Monday
-it asked the government to send engineers to inspect the air plant before
-the vote.
+aboard. Its chair, Achieng Odera, drove a crane in the rolling mill until
+the workforce elected her. The council has called a vote on asking to join
+the Commonwealth. On Monday it asked the government to send engineers to
+inspect the air plant before the vote.
 
 The Ministry for Life Support says it could have a survey team aboard within
 a day and a report back within a week.`,
   choices:[
     { posture:"bold", label:"Send the survey team.",
+      note:"Engineers from the Ministry for Life Support go aboard within a day to inspect the air plant, as the council asked, and report within a week. The council holds its vote on joining the Commonwealth with their findings in hand. It costs nothing. Paying for the air plant's filters and catalyst is a separate act.",
       effects:[{ flag:"f1_surveyed" }, { wire:"FEDERATION SURVEYS THE ABANDONED PLATFORM" },
                { queue:[{ event:"f1_referendum", after:4,
                           label:"The survey team reports from the Almanac" }] }],
       result:"The survey's first return is the scrubber schedule. The second is the debt." },
     { posture:"cautious", label:"Wait for Earth's process.",
+      note:"The government leaves the platform to Kenya's two-year rescue and to the courts, since no treaty obliges it to act. Voters' trust in the government falls. The outer habitats, which supply the Works, read the delay as a refusal. The air still runs out in two months.",
       effects:[{ move:{ "legitimacy":-5 } }, { wire:"PM: THE REPATRIATION PLAN IS EARTH'S TO RUN" }],
       result:"The outer stations read the delay as an answer, and it is not the one they wanted." }
   ]},
@@ -158,7 +162,9 @@ a day and a report back within a week.`,
     sections:[
     { kind:"voices", head:"What is being said", body:[
       { said:"We have voted to be counted somewhere.",
-        who:"A delegate of the Works' workforce, on Ring Network, the Commonwealth's broadcaster" },
+        who:"Achieng Odera, chair of the Works' council of delegates, on Ring Network, the Commonwealth's broadcaster" },
+      { said:"The furnace crews voted yes to be paid and to keep the furnaces lit. We will hold whoever takes us to both.",
+        who:"Marcel Obame, steward of the furnace crews' union on the Works" },
       { said:"A vote taken on an insolvent platform, under a foreign government's survey, binds nobody. It does not discharge a single bond.",
         who:"The European Union's mission to the United Nations" },
       { said:"Seventy-nine per cent is more than anyone in this chamber was elected on.",
@@ -198,6 +204,7 @@ frozen overnight by governments they never elected.
 the same wire."`,
   choices:[
     { posture:"bold", label:"Recognise the referendum.",
+      note:"Recognition says the residents have a say in the platform's future, and the Works stays outside the Commonwealth. Voters approve. The European banks that hold the platform's bonds read it as a claim, so the quarrel with Earth grows, and in three sittings the Minister for Law and the Charter reports on annexation.",
       effects:[{ flag:"f1_referendum_carried" }, { move:{ "friction":10 } },
                { move:{ "legitimacy":8 } },
                { wire:"FEDERATION RECOGNISES THE PLATFORM REFERENDUM" },
@@ -208,6 +215,7 @@ the same wire."`,
                { queue:[{ event:"un_the_mission", after:2 }] }],
       result:"The Works is the Commonwealth's question now, and Earth's banks are reading the same wire." },
     { posture:"cautious", label:"Decline to recognise it.",
+      note:"The platform is left to Kenya's rescue and to its creditors, and the quarrel with Earth eases a little. Voters' trust in the government falls sharply. The outer habitats have sent the Works their spare scrubber cartridges since the wind-up, and their members have said they will strike.",
       effects:[{ move:{ "legitimacy":-8 } }, { move:{ "friction":-3 } }, { flag:"f1_referendum_declined" }],
       result:"The strikes start on the outer habitats before the sitting ends." }
   ]},
@@ -231,6 +239,11 @@ The second is to decline. Kenya's two-year rescue would stand, and the
 residents would wait for it with two months of air. The outer habitats,
 which have supplied the Works since the wind-up, have said their members
 will strike if the government declines.
+
+Achieng Odera, chair of the Works' council of delegates, has asked for
+annexation on whatever terms the House sets. Marcel Obame, steward of the
+furnace crews' union, has asked first whether the furnaces would stay lit,
+because a foundry's heat counts against the Commonwealth's thermal margin.
 
 Fenwick is clear that Cordell, the Gabonese mining company that owned the
 Works, broke no law. It shut down the subsidiary that employed the
@@ -1422,6 +1435,107 @@ what we are seen to want."`,
       effects:[{ resolution:{ un_works_administration:"table" } }, { move:{ "actor.earth_host":4 } },
                { wire:"COMMONWEALTH TABLES A JOINT ADMINISTRATION OF THE WORKS AT THE UNITED NATIONS" }],
       result:`The resolution is tabled for the Assembly's next sitting, with Kenya's name beside the Commonwealth's.` }
+  ]},
+
+/* =============================================================
+   BELLAMY'S FIRST WEEK (28 Sep 2026): THE CLOCK AND THE ACT.
+   The stranding said two months of air and the survey said 51 days, and
+   nothing in the game kept either count: a government that waited, or
+   declined, heard no more of the Works' air (design/38 §6, "the Works
+   does not wait"). The air is now a date. The survey's 51 days from 27 May
+   run out on 17 July, sitting 40, and the calendar shows the date from the
+   stranding until the air is paid for, the Act is carried or the crisis is
+   answered some other way. The act that stops it is the initiative
+   `pay_works_air`, open from the sitting the Works is stranded, and
+   f1_air_paid is its answer. Dated and queued, so the pool's lean is
+   untouched; appended here all the same.
+   ============================================================= */
+{ id:"f1_air_paid", queuedOnly:true, once:true,
+  setpiece:{ title:"Commonwealth supplies the abandoned refinery's air plant for three months",
+    sections:[
+    { kind:"voices", head:"What is being said", body:[
+      { said:"We had begun a list of who would get clean air first. I have torn it up.",
+        who:"Maricel Dizon, chief medical officer of the Almanac Works, on Ring Network, the Commonwealth's broadcaster" },
+      { said:"The air is paid for. The furnace crews have had no wages since March.",
+        who:"Marcel Obame, steward of the furnace crews' union on the Works" },
+      { said:"The Commonwealth is buying goodwill on a platform it does not own.",
+        who:"Earth-side wire copy, carried in Brussels" } ] }
+  ] },
+  title:"The air is paid for",
+  speaker:null,
+  body:`The Commonwealth has supplied three months of filters and catalyst to the
+air plant of the Bellamy Almanac Works, the orbital refinery abandoned by
+its owner in May. The plant will run on them until the platform's future is
+settled.
+
+The air plant takes the carbon dioxide out of the air that the platform's
+184,000 residents breathe. It uses up its filters and catalyst every month,
+and the Works' operator could not pay for the April shipment once its bank
+accounts were frozen. The outer habitats had kept the plant running since
+then with their own spare cartridges.
+
+Achieng Odera, chair of the Works' council of delegates, thanked the
+government from the council's chamber. She said the council's question to
+the Commonwealth stands. The residents are still stateless, unpaid, and
+waiting for Kenya's rescue or the Commonwealth's answer.`,
+  choices:[
+    { label:"Say the supply will continue while the question is open.",
+      note:"The Ministry for Life Support says it will keep supplying the air plant until the platform's future is settled. It commits the Commonwealth to nothing further, and it answers none of the council's questions about wages, passports or the platform's debts.",
+      effects:[{ move:{ public_standing:1 } }],
+      result:"The Ministry for Life Support says the supply will continue. The council's question is still on the Prime Minister's desk." }
+  ]},
+
+{ id:"f1_air_fails", at:40, once:true,
+  foreseen:"The Almanac Works' air runs out, unless the Commonwealth pays for its filters",
+  /* while nobody has paid, the Act is not carried and the crisis has no
+     answer: a platform the Commonwealth owns, or the United Nations
+     administers, or corporate security has cleared, has its air seen to */
+  when:{ flags:["station_issue"], flagsAbsent:["works_air_paid", "almanac_annexed"], resolved:false },
+  setpiece:{ title:"Abandoned refinery's air plant fails as its last filters run out", mood:"threat",
+    sections:[
+    { kind:"voices", head:"What is being said", body:[
+      { said:"Most of the dead were over seventy. Two were children with asthma. Clean air would have kept every one of them alive.",
+        who:"Maricel Dizon, chief medical officer of the Almanac Works" },
+      { said:"We asked the Commonwealth to inspect the air plant in May. It has known the date ever since.",
+        who:"Achieng Odera, chair of the Works' council of delegates, on Ring Network, the Commonwealth's broadcaster" },
+      { said:"The furnace decks are sealed and my members are sleeping in the school.",
+        who:"Marcel Obame, steward of the furnace crews' union on the Works" } ] }
+  ] },
+  title:"The air runs out",
+  speaker:null,
+  body:`The air plant of the Bellamy Almanac Works, the orbital refinery abandoned
+by its owner in May, ran out of filters and catalyst this week. Its council
+has sealed the foundry decks and crowded 70,000 residents into the cleaner
+air of the housing ring.
+
+The air plant takes the carbon dioxide out of the air that the platform's
+184,000 residents breathe. It uses up its filters and catalyst every month,
+and nobody has paid for a shipment since March. The outer habitats sent
+their own spare cartridges until they had none left to send.
+
+Maricel Dizon, the Works' chief medical officer, said eleven residents had
+died in the first two days, most of them old or with heart and lung disease. The
+platform's hospital has 420 beds, and every one is taken.
+
+Kenya's treasury says its procurement law forbids it to pay a private
+company's suppliers before the tender for its rescue closes. The Kenyan
+suppliers who send the filters up Tether 2, the space elevator from the
+Kenyan coast, will ship as soon as they are paid.`,
+  effects:[{ flag:"f1_air_failed" }],
+  choices:[
+    { posture:"bold", label:"Pay the Kenyan suppliers now, at the price they ask.",
+      note:"The Ministry for Life Support pays the April arrears and three months ahead, CW$2.4bn with the premium the suppliers now charge for shipping at once. The air plant runs again within the week. The deaths stay on the government's record, and voters' trust falls.",
+      effects:[{ flag:"works_air_paid" }, { move:{ "solvency":-2400 } },
+               { move:{ "legitimacy":-4 } }, { move:{ "public_standing":-3 } },
+               { move:{ "actor.earth_host":2 } },
+               { wire:"COMMONWEALTH PAYS FOR THE WORKS' AIR AFTER ELEVEN DIE" }],
+      result:"The first shipment goes up Tether 2 the next morning. Nobody in the House mentions the price." },
+    { posture:"cautious", label:"Hold that the Works is Kenya's responsibility.",
+      note:"The government holds that the platform is outside the Commonwealth and that its residents are Kenya's to rescue. It costs nothing in dollars. The residents ration air until Kenya's tender closes, and more of them will die. Voters' trust falls sharply and goes on falling, and the outer habitats' members have said they will strike.",
+      effects:[{ move:{ "legitimacy":-12 } }, { move:{ "trend.legitimacy":-2 } },
+               { move:{ "public_standing":-8 } },
+               { wire:"PM: THE WORKS IS KENYA'S TO RESCUE" }],
+      result:"The strikes on the outer habitats begin at the next change of shift." }
   ]},
 
 ] });

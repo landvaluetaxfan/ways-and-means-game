@@ -921,5 +921,48 @@ guard("THE OPENING'S CALLBACKS (the author, 28 Sep)", ok => {
   });
 });
 
+/* THE WORKS DOES NOT WAIT (28 Sep; design/38 §6). The air is a date, 17
+   July, on the calendar from the stranding. A government that supplies the
+   air plant takes it off the calendar and never meets it; one that has not
+   meets it on the day. Played to the stranding with the first answer (a
+   government that only ever gives the first answer loses supply at 17, so
+   the day itself is asked of a state at that sitting, as nextEvent asks). */
+guard("THE WORKS' AIR: THE CLOCK AND THE ACT (28 Sep)", ok => {
+  const air = CONTENT.eventById.f1_air_fails;
+  const onCal = st => (Engine.deadlines(st, CONTENT) || []).some(m => m.text === air.foreseen);
+  const run = pay => {
+    const st = Engine.newGame(CONTENT);
+    const out = { cal: null, paid: false, calAfter: null };
+    for (let i = 0; i < 20 && !st.seen.f1_stranded; i++) {
+      Engine.playSitting(st, CONTENT, () => 0);
+      if (!st.seen.f1_stranded) Engine.advance(st, CONTENT);
+    }
+    out.cal = onCal(st);
+    if (pay) { out.paid = Engine.take(st, CONTENT, "pay_works_air", 0).ok; out.calAfter = onCal(st); }
+    return out;
+  };
+  const w = run(false), p = run(true);
+  ok("before the stranding the air is on nobody's calendar", !onCal(Engine.newGame(CONTENT)));
+  ok("from the stranding the air's date is on the calendar", w.cal === true);
+  ok("supplying the air plant takes the date off the calendar",
+     p.paid && p.calAfter === false, "paid " + p.paid + ", on the calendar after " + p.calAfter);
+  /* the day: every other dated or prologue page already seen, so the date
+     is the question */
+  const onTheDay = flags => {
+    const st = Engine.newGame(CONTENT);
+    CONTENT.events.forEach(e => { if ((e.at != null || e.prologue) && e.id !== air.id) st.seen[e.id] = 1; });
+    st.queue = [];
+    flags.forEach(f => { st.flags[f] = true; });
+    st.sitting = air.at;
+    const e = Engine.nextEvent(st, CONTENT);
+    return e ? e.id : null;
+  };
+  ok("a government that has not supplied it meets the air running out on the day",
+     onTheDay(["station_issue"]) === air.id, onTheDay(["station_issue"]));
+  ok("and one that has, or that carried the Act, does not",
+     onTheDay(["station_issue", "works_air_paid"]) !== air.id &&
+     onTheDay(["station_issue", "almanac_annexed"]) !== air.id);
+});
+
 console.log("");
 console.log(T.failed() ? T.failed() + " FLASH I GUARD FAILURES" : "Flash I keeps its promises");
