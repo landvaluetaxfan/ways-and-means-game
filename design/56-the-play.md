@@ -43,9 +43,11 @@ is undecided.
 
 ## Flash I
 
-- **The play's name is a placeholder:** *The Sea Is Not Full*, from the
-  introduction's epigraph, Ecclesiastes 1:7. Its mark is a ring with water
-  standing below the middle: a vessel never filled.
+- **The play is *After the Springtime*** (the author, 28 Sep). The title
+  comes from the introduction: Flash came up in 2070, "in the
+  Commonwealth's springtime", and the play is set ten years after it. Its
+  mark is a sprig past its bloom inside the ring of an orbit, with one
+  petal falling.
 - **The acts:**
   - I, *The House Is Sitting* (As You Like It);
   - II, *Ways and Means* (Henry George, on the right to breathe the air);

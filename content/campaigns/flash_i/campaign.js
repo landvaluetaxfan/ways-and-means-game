@@ -112,12 +112,13 @@ Ideal performer for this role is a woman in her early fifties in the alto range.
 
     /* THE PLAY (design/56): the campaign's frame, outside the world. Its
        name and mark recur on the programme, each act's card, the intervals
-       and the curtain call. The title is from the introduction's epigraph,
-       Ecclesiastes 1:7, and is the author's to change. `acts` are keyed by
+       and the curtain call. The title is the author's (28 Sep), from the
+       introduction: Flash came up in 2070, "in the Commonwealth's
+       springtime", and the play is set ten years after. `acts` are keyed by
        chapter, `intervals` by the sitting period the House has just
        finished; the cast is the programme's and the curtain call's. */
     play:{
-      title:"The Sea Is Not Full",
+      title:"After the Springtime",
       mark:"img/plays/flash_i.svg",
       cast:[
         { id:"flash", name:"Adriana Eireann Flash", role:"Prime Minister, and leader of the Party of Socialists and Democrats" },
