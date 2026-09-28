@@ -1326,9 +1326,9 @@ try {
 } catch (e) { newsBad.push("could not read the event pages: " + e.message); }
 n += section("EVENT PAGES THAT DO NOT EXPLAIN", newsBad, x => x);
 n += section("DECISIONS THAT DO NOT EXPLAIN", decBad, x => x);
-/* COUNTED, NOT YET FAILED: the choices pass is under way (27 Sep), and this
-   joins the exit condition the day it reaches zero, as the decisions did. */
-section("CHOICES THAT DO NOT EXPLAIN (counted; the pass is under way)", chBad, x => x);
+/* Every choice passed on 28 Sep, so a choice that does not explain now fails
+   lint, as the pages and the decisions do. */
+n += section("CHOICES THAT DO NOT EXPLAIN", chBad, x => x);
 
 /* THE EDITOR LOADS WHAT THE GAME LOADS. Two pages each name the content
    files, and the editor had fallen three behind: it could not see an
@@ -1362,7 +1362,7 @@ if (briefBad.length) R.push(`${briefBad.length} BRIEFING FIGURES THE ENGINE DOES
 if (gaBad.length) R.push(`${gaBad.length} COUNTRIES THAT VOTE THROUGH NO MEMBER`);
 if (newsBad.length) R.push(`${newsBad.length} FAULTS IN EVENT PAGES THAT DO NOT EXPLAIN`);
 if (decBad.length) R.push(`${decBad.length} FAULTS IN DECISIONS THAT DO NOT EXPLAIN`);
-if (chBad.length) console.log(`  (${chBad.length} faults in choices that do not explain, counted while the pass runs)`);
+if (chBad.length) R.push(`${chBad.length} FAULTS IN CHOICES THAT DO NOT EXPLAIN`);
 if (popBad.length) R.push("THE POPULATION IS STORED TWICE AND HAS DRIFTED (advisory)");
 console.log(R.join("\n"));
 /* HARD FAILURES: everything except popBad. The chain is one of them now —
@@ -1376,4 +1376,4 @@ if (artBad.length || chainBad.length || cssBad.length || verbBad.length ||
     parseBad.length || initBad.length || gridBad.length || targetBad.length ||
     labelBad.length || gateBad.length || refBad.length || campBad.length ||
     pageBad.length || retiredBad.length || seatBad.length || briefBad.length ||
-    gaBad.length || newsBad.length || decBad.length) process.exit(1);
+    gaBad.length || newsBad.length || decBad.length || chBad.length) process.exit(1);

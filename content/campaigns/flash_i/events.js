@@ -238,7 +238,8 @@ residents, and the subsidiary's debts ended with it. The mining leases that
 fed the refinery belong to the platform and would come with it. Whichever
 choice the government makes will be the one it is judged on at the election.`,
   choices:[
-    { posture:"bold", label:"Move to annex the Works.",
+    { posture:"bold", label:`Move to annex the Works: introduce the Almanac Works (Annexation) Bill.`,
+      note:`The bill makes the platform and its 184,000 people part of the Commonwealth, and voters welcome a government that acts. It costs CW$6bn at once and sets aside five slots of order-paper time for the bill. The European Union holds whoever takes the platform answerable for its bonds, so the quarrel with Earth grows sharply and keeps growing, and the Union will put measures against the Commonwealth to the United Nations General Assembly.`,
       /* AND THE BILL IS ACTUALLY SET DOWN. The result line has always said
          it was; until now nothing was, and the annexation settlements gated
          on the flag this choice sets rather than on any Act. Moving it out
@@ -285,7 +286,8 @@ choice the government makes will be the one it is judged on at the election.`,
                { slots:{ reserve:{ annexation:5 } } },
                { wire:"GOVERNMENT MOVES TO ANNEX THE WORKS" }],
       result:"The Almanac Works (Annexation) Bill is set down for first reading. Acting is popular at home. On Earth, the governments and banks that hold the platform's bonds take note, and their patience shortens with every sitting." },
-    { posture:"cautious", label:"Decline, and leave the Works to Kenya's rescue.",
+    { posture:"cautious", label:`Decline, and leave the Works to Kenya's two-year rescue.`,
+      note:`It avoids the cost, the bonds and the quarrel with Earth, which eases. The residents would wait two years with two months of air, the outer habitats have said their members will strike, and voters' trust in the government will fall a little every sitting the question stays open.`,
       effects:[{ move:{ "trend.legitimacy":-3 } }, { move:{ "friction":-4 } }, { flag:"f1_held_the_line" },
                { queue:[{ event:"un_joint_offer", after:1 }] }],
       result:"The outer habitats have heard the answer. Their members will raise it at every sitting, and the country trusts the government a little less each time." }
@@ -552,12 +554,14 @@ years ago.
 
 The government can make one statement, and both audiences will read it.`,
   choices:[
-    { posture:"bold", label:"Speak to the Commonwealth: stress competence, not sympathy.",
+    { posture:"bold", label:`Address the Commonwealth: stress the government's handling of the crisis, and leave sympathy out.`,
+      note:`At home the statement reads as a government in control, and voters' belief in it rises. Earth's services will quote it as proof that the Commonwealth has stopped being diplomatic, so relations with Earth's governments worsen and the quarrel with Earth grows.`,
       effects:[{ move:{ "legitimacy":6 } }, { move:{ "actor.earth_bloc":-5 } },
                { move:{ "friction":3 } },
                { wire:"PM SPEAKS TO THE HABITATS; EARTH SERVICES CALL THE TONE 'MANAGERIAL'" }],
       result:"At home the statement reads as a government in control of the crisis. Earth's services quote it as proof that the Commonwealth has stopped trying to be diplomatic." },
-    { posture:"cautious", label:"Speak to both: call it an accident, and the Commonwealth's response a rescue.",
+    { posture:"cautious", label:`Address both audiences: call the failure an accident, and the Commonwealth's response a rescue.`,
+      note:`Earth's services will carry the statement in full, relations with Earth's governments and with Kenya improve, and the quarrel with Earth eases. Members for the outer habitats will ask why the government is explaining itself to people who do not vote for it, and belief at home falls.`,
       effects:[{ move:{ "actor.earth_bloc":6 } }, { move:{ "actor.earth_host":4 } },
                { move:{ "legitimacy":-3 } }, { move:{ "friction":-2 } },
                { wire:"PM ADDRESSES BOTH AUDIENCES ON THE PLATFORM (Earth services carry it in full)" }],
@@ -1262,13 +1266,16 @@ before the sitting.
 "The mission can table a resolution affirming the Works' right to decide its
 own future," Landry says.`,
   choices:[
-    { posture:"cautious", label:"Wait. The referendum can speak for itself.",
-      result:`The draft stays in the mission's safe. The government can table it from the Foreign Affairs tab before any sitting, where the mission's count is kept.` },
-    { posture:"bold", label:"Table it now.",
+    { posture:"cautious", label:`Wait, and let the referendum speak for itself.`,
+      note:`Nothing is tabled, and the government keeps the choice of when. The mission's count of how each state will vote keeps moving with everything the government does, and the draft can be tabled before any later sitting.`,
+      result:`The draft stays in the mission's safe. The government can table it before any sitting from the Foreign Affairs screen, where the mission's count is kept.` },
+    { posture:"bold", label:`Table the resolution affirming the Works' right to decide its own future, for the Assembly's next sitting.`,
+      note:`The Assembly votes on it at its next sitting, and a majority of the states present and voting carries it. The vote will be taken on the mission's count as it stands then, and the European Union's members will vote as their ministers agree.`,
       effects:[{ resolution:{ un_works_selfdet:"table" } },
                { wire:"COMMONWEALTH TABLES A RESOLUTION ON THE WORKS AT THE UNITED NATIONS" }],
       result:`The resolution is tabled for the Assembly's next sitting. The Union's mission asks for a copy within the hour.` },
-    { posture:"measured", label:"Table it, and first write to six of the states that host the elevators' anchors.",
+    { posture:"measured", label:`Table it, and first write to six states that host the elevators' anchors, refunding three months of their anchor fees.`,
+      note:`The refund costs CW$1.5bn from the reserve, the Treasury's cash, and makes São Tomé and Príncipe, Kiribati, Brazil, the Maldives, Somalia and Uganda more likely to vote for the resolution. It goes to the next sitting with a better count.`,
       effects:[{ resolution:{ un_works_selfdet:"table" } },
                { move:{ solvency:-1500 } },
                { move:{ "member.sao_tome":6, "member.kiribati":6, "member.brazil":6,
@@ -1400,9 +1407,11 @@ the General Assembly," says Jean Landry, the Minister for External
 Relations. "Kenya will vote for it. Whether anybody else does depends on
 what we are seen to want."`,
   choices:[
-    { posture:"cautious", label:"Thank Kenya and keep the proposal in the drawer.",
-      result:`The proposal is acknowledged and not tabled. The government can table it from the Foreign Affairs tab before any sitting.` },
-    { posture:"bold", label:"Table it as the Commonwealth's own.",
+    { posture:"cautious", label:`Thank Kenya, and keep the proposal for later.`,
+      note:`Nothing is tabled, and the government keeps the choice. Joint administration needs two thirds of the General Assembly, so the proposal can wait until the mission's count shows that it could pass.`,
+      result:`The proposal is acknowledged and not tabled. The government can table it before any sitting, from the Foreign Affairs screen.` },
+    { posture:"bold", label:`Table Kenya's proposal for joint administration as the Commonwealth's own resolution.`,
+      note:`Kenya's name goes beside the Commonwealth's, and relations with Kenya improve. The Assembly votes at its next sitting, and placing a territory under United Nations administration needs two thirds of the states present and voting.`,
       effects:[{ resolution:{ un_works_administration:"table" } }, { move:{ "actor.earth_host":4 } },
                { wire:"COMMONWEALTH TABLES A JOINT ADMINISTRATION OF THE WORKS AT THE UNITED NATIONS" }],
       result:`The resolution is tabled for the Assembly's next sitting, with Kenya's name beside the Commonwealth's.` }
