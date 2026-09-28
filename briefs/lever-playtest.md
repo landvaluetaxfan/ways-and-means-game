@@ -36,4 +36,4 @@ events go at the end.
 
 **Write the classification into `design/52-the-lever-arcs.md`**, with the
 before and after numbers. Record any change to the four crisis strategies'
-losses (33, 54, 21, 25 of 80) in `CLAUDE.md`'s canon section.
+losses (33, 54, 21, 25 of 80) in `AGENTS.md`'s canon section.

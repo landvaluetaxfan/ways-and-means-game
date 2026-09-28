@@ -1,7 +1,7 @@
 **Lane: Codex.** Written 28 Sep 2026 by Claude Code. Three engine gaps about
 people, from `design/46` "What is left". Do them in order; each is its own
-commit. Read `CLAUDE.md` "Standing rules" (State, One writer) and
-`LESSONS.md` "Content and state" first.
+commit. Read `AGENTS.md` "Standing rules" (State, One writer) and
+`LESSONS.md` "Engine and state" first.
 
 ## 1. Willingness reads the live cabinet, not the authored office
 

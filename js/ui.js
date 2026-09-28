@@ -367,7 +367,7 @@ const UI = (function () {
        article, which is what the attribute has always promised.
 
        Scoped OUT of #cx-body and #cx-nav so it cannot double-fire with
-       them: two listeners for one action is the trap CLAUDE.md records
+       them: two listeners for one action is the trap LESSONS.md records
        from the last time [data-go] was bound twice. */
     /* ASK THE CONCORDANCE, DO NOT KEEP A LIST. This whitelisted parties,
        stations and hand-written articles, so a cross-reference to anything the
@@ -1580,7 +1580,7 @@ const UI = (function () {
   }
   const signedIds = () => st.signedBy || [];
   /* WHICH WAY A CURRENT LEANS FROM ITS PARTY, in plain words (the register's
-     table, PROSE_REGISTER.md): the axis names and their poles are the
+     table, PROSE.md): the axis names and their poles are the
      engine's shorthand and not prose. [below the party, above it]. */
   const AXIS_DRIFT = {
     economic:    ["wants more public ownership", "wants more private ownership"],
@@ -2958,7 +2958,7 @@ const UI = (function () {
      letters of whatever dimensions the party and the bill both declare,
      so adding one to content reaches this drawing with no edit. The pole
      NAMES come from SCHEMA, which index.html now loads — one copy of
-     "public/private", in the file CLAUDE.md calls the content vocabulary. */
+     "public/private", in the file AGENTS.md calls the content vocabulary. */
   const axisCode = a => a.slice(0, 3);
   const axisPoles = a => {
     const v = (typeof SCHEMA !== "undefined" && SCHEMA.vocab && SCHEMA.vocab.axes)
@@ -3688,7 +3688,7 @@ const UI = (function () {
      lives on a tab that draws more than the bill detail. */
   /* Which folded sections the player left open. A preference for the
      session and not world state, so it lives here and not in the save
-     (CLAUDE.md: player preferences are not somebody else's save). */
+     (AGENTS.md: player preferences are not somebody else's save). */
   const whipOpen = { pair: false, lobby: false };
 
   function wireWhipbars(root, billId, after) {

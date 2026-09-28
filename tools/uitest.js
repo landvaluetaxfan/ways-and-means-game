@@ -968,7 +968,7 @@ try {
 
   /* A POSITION AS POLICY (design/45), from js/schema.js's `says`: "strongly
      supports public ownership of essential systems", never the pole word
-     ("closurist" is the shorthand PROSE_REGISTER.md says is not prose) and
+     ("closurist" is the shorthand PROSE.md says is not prose) and
      never a co-ordinate. Every axis the party has a position on is said,
      read from the data: the old check counted "the four axes" in a
      sentence written when there were four. */

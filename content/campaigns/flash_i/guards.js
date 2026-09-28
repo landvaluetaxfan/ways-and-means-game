@@ -467,7 +467,7 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
              ", supply " + (st.bills.appropriation || {}).stage +
              /* the canon's two figures, printed so a change to the run can be
                 read against them: the thermal margin at the count is the
-                tightest number in the game (CLAUDE.md), and the seats are
+                tightest number in the game (AGENTS.md), and the seats are
                 the government the next campaign opens on */
              "; thermal margin " + st.scalars.thermal_margin +
              ", PSD " + Engine.partyTotal(st, "cu") + " seats" +

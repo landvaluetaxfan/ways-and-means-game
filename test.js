@@ -256,7 +256,7 @@ console.log("\nTIER RECONCILIATION:");
   if (bad) { console.log("\n"+bad+" TIER FAILURES"); process.exitCode = 1; }
 })();
 
-/* Acceptance tests from sweep-brief.md Part F. */
+/* Acceptance tests from the sweep brief, Part F (design/archive/sweep-brief.md). */
 console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
 (function(){
   let bad = 0;
@@ -2928,7 +2928,7 @@ console.log("\nTHE MIGRATION GUARD IS ASCENDING:");
   const ok = (l, c, extra) => { if (!c) bad++;
     console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
 
-  /* CLAUDE.md records this happening once: a descending guard let a v1 save
+  /* LESSONS.md records this happening once: a descending guard let a v1 save
      match `< 4`, get stamped 4, and skip every earlier block. It then
      happened a second time, on 20 September 2026, when the v21 block was
      inserted above v20 instead of below it \u2014 a v19 save would have matched
@@ -5310,7 +5310,7 @@ console.log("\nTHE LADDER IS ON THE DOCKET (design/38 §7):");
   calm.scalars.thermal_margin = line;
   ok("no alert while the margin is at the line", !alertOf(calm));
   /* and it would not have been true at the opening: a gate that holds from
-     the first sitting is the trap CLAUDE.md records */
+     the first sitting is the trap LESSONS.md records */
   ok("nor at the opening", !alertOf(Engine.newGame(CONTENT)),
      "margin opens at " + Engine.newGame(CONTENT).scalars.thermal_margin);
 

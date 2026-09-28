@@ -786,7 +786,7 @@ const Engine = (function () {
      Every district seat lives here, in one place, and every district
      total in the game is DERIVED from it. Storing a party's district
      count alongside the roll is the apportionment_ratio mistake in
-     CLAUDE.md: two numbers for one fact, drifting quietly apart. The
+     LESSONS.md: two numbers for one fact, drifting quietly apart. The
      count on st.parties[id].seats.district is a projection refreshed
      by syncRoll() after every change, and test.js asserts the two
      agree in both directions.

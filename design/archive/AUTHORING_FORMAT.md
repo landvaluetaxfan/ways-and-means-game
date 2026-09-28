@@ -3,7 +3,7 @@
 > **Landed from `opencode/party-rename-and-economy` on 21 September 2026.**
 > Written before `npm run prose` existed, which now round-trips every
 > player-facing passage in the game to one text file and back
-> (`PROSE_REGISTER.md`, `prose.html`). For editing prose that is already in
+> (`PROSE.md`, `prose.html`). For editing prose that is already in
 > content, use that. This format is for writing content that does not exist
 > yet, which the prose tool cannot do.
 >

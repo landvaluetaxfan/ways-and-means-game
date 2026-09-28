@@ -573,7 +573,7 @@ const SETUP = {
      word is here, and in the prose file, and can be rewritten without
      touching a line of code.
 
-     A BRIEFING, NOT A VOICE (design/45; PROSE_REGISTER.md, Briefings).
+     A BRIEFING, NOT A VOICE (design/45; PROSE.md, Briefings).
      Until 26 Sep these were fixed sentences in the voice of a wry insider,
      so "Outgoings exceed receipts" was printed for a gap of forty million
      and of forty billion alike, and the author asked what a player gets

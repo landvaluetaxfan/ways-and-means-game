@@ -104,7 +104,7 @@ The writer has the fact in mind and writes a sentence that refers to it.
   the screen").
 - The party article's position: "economic: strongly public · authority:
   liberal · personhood: restrictionist · sovereignty: federal · trade:
-  closurist" is the axis shorthand PROSE_REGISTER.md says is not prose.
+  closurist" is the axis shorthand PROSE.md says is not prose.
 
 ### 4. The stub
 
@@ -175,7 +175,7 @@ settlement summaries were never rewritten.
    short and link to them. Written under the same economy, they compress,
    and compressed prose alludes.
 2. **The outlook is filed as Voice.** `tools/register.js` and
-   PROSE_REGISTER.md class it with events, as "the world speaking". Its
+   PROSE.md class it with events, as "the world speaking". Its
    comment in `content/setup.js` asks for "the register of somebody who
    prices risk for a living", so it was written as a wry insider. Its job
    is to explain the economy to the player, which is analysis.
@@ -272,7 +272,7 @@ And a generated figure:
 
 Proposed, for the author to take, change or refuse:
 
-1. **Positive rules in PROSE_REGISTER.md**, for Reference and Interface:
+1. **Positive rules in PROSE.md**, for Reference and Interface:
    - **State what you refer to.** A sentence that mentions a name, a figure,
      a date or a law says it.
    - **One antecedent per pronoun.**
@@ -339,7 +339,7 @@ The author approved every proposal above ("do whatever is best ... and so
 on and so forth for everything else"). In the order built, each commit
 on `claude/affectionate-cerf-htlo8t`:
 
-1. **The rules** (`b2993e1`). PROSE_REGISTER.md, *What a passage owes the
+1. **The rules** (`b2993e1`). PROSE.md, *What a passage owes the
    reader*; the outlook reclassified as a briefing; bible §2.6's reversal;
    `npm run register` reports `epigram` and a short `because`, and
    `--density` prints facts per hundred words by surface.

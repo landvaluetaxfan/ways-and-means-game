@@ -60,7 +60,7 @@ const Concordance = (function () {
      2. A VOLATILE FIGURE CARRIES ITS DATE. "Party discipline is recorded at
         62" is a fact about one sitting printed as though it were permanent.
      3. A VALUE IS RENDERED IN WORDS. js/schema.js holds the poles for
-        exactly this reason and CLAUDE.md says so: "strongly public"
+        exactly this reason and LESSONS.md says so: "strongly public"
         and not "-0.75".
      4. AN ARTICLE ENDS IN ITS CATEGORIES, because a reference work says
         what kind of thing it has just described.
@@ -88,7 +88,7 @@ const Concordance = (function () {
         ones moved the data and left the prose. A sentence that states its
         own arity is a sentence that goes stale. */
   /* 3a. A POSITION AS POLICY (design/45). This printed the pole's own
-     word, "closurist", which PROSE_REGISTER.md calls the shorthand leaking
+     word, "closurist", which PROSE.md calls the shorthand leaking
      out; it says what the party supports and opposes now, in SCHEMA's
      `says`, grouped by how strongly. `null` is no position and is left out;
      a position near zero is the centre, and is said as such. */

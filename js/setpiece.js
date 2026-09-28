@@ -27,7 +27,7 @@
    THIS MODULE MAKES NO SOUND. The mood is RETURNED, never cued, because sound
    comes from user actions and engine effects only — never from a draw. The
    caller cues it on the action that opened the page. That rule is in
-   CLAUDE.md and tools/uxtest.js asserts it.
+   LESSONS.md and tools/uxtest.js asserts it.
    ============================================================= */
 const SetPiece = (function () {
   "use strict";
@@ -195,7 +195,7 @@ const SetPiece = (function () {
        the derived reading of what a choice does, the undertaking it would
        create and the cabinet's reaction, and rebuilding any of that here
        would be a second way to commit an act. Two listeners for one action
-       is the trap CLAUDE.md records from [data-go].
+       is the trap LESSONS.md records from [data-go].
 
        `opts.go` is for the two uses that have no engine choices behind them
        — the introduction and the last board — where one button is the whole

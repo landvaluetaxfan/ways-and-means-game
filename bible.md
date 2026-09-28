@@ -1,36 +1,10 @@
 # THE ORBITAL POLITICAL THRILLER — PROJECT BIBLE
 
-**Version 5 · 22 September 2026**
-Supersedes v3. `vault.md` retained separately as raw append-only source material.
-Companion: `textbook.md`, an in-world socioeconomic primer — canon, but written
-in-fiction and not a spec.
-
-**What changed in v3:** the polity has a settled name and no demonym (§11.1);
-the naming scheme is locked (§3.9); coalition capital became a per-partner ledger
-rather than a scalar (§7.6); order-paper time is the currency that generates it
-(§7.7); whipping and party discipline exist (§7.8); scarcity prices exist and
-carry the consequence chain (§7.9); chapters exist (§1.7); the economy is
-specified (Part VII); labour and non-participation are quantified (§10.3, §10.4);
-fork-rentiers are a new bloc (§10.5); the tooling section is rewritten (§15.5).
-
-**What changed in v4:** the file lives in the repository and is edited in place
-rather than re-uploaded (§0.3); cabinet-as-data is built and has left the open
-list (§16); §12.12 notes that `terminal.html` is not in the repository; the
-parliament diagram becomes Westminster and seats the functional tier as its own
-body (§12.7).
-
-**What changed in v5:** an audit against the built game and the author's later
-decisions, section by section. The run's shape follows the author (§1.7: the
-election ends it; §3.5.1: a settlement records and ends nothing, and Flash I's
-spine is the annexation). Supply joins the loss conditions (§3.5). Retired as
-superseded: the constituency schema (§5.3), the district cap (§5.4), the
-six-screen list (§12.4), fourteen stations (§12.6), the six-check list (§15.5),
-"not yet built" for lobbying (§7.8), and uploading to project knowledge (§0.1,
-§15.2). Party names follow the renames (§8.3–§8.5 and wherever an old name
-survived), the axes are five (§6.2, §7.5, §7.8, §8.2), and the named canon is
-reconciled with content: the capital (§11.1, §11.3), three offices (§11.2), the
-ballot threshold (§9.5, §11.2), the order paper (§11.6) and §16's closed items.
-
+**Version 5 · 22 September 2026.** Canon, out-of-world: the rules, the world
+and the decisions that are settled. Companion: `textbook.md`, an in-world
+socioeconomic primer, canon but written in-fiction and not a spec. Agents'
+instructions are in `AGENTS.md`; the reasoning behind decisions is in
+`design/`; git history is the changelog.
 
 ---
 
@@ -42,179 +16,176 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 
 **THE ORBITAL POLITICAL THRILLER — PROJECT BIBLE** · L1
 
-**PART 0 — HOW TO USE THIS FILE** · L221
-- §0.1 · L223 — What this file is
-- §0.2 · L229 — Briefing protocol — instructions to Claude
-- §0.3 · L247 — Maintaining this file
-- §0.4 · L264 — Status legend
+**PART 0 — HOW TO USE THIS FILE** · L192
+- §0.1 · L194 — What this file is
+- §0.2 · L200 — Maintaining this file
+- §0.3 · L209 — Status legend
 
-**Part I — PROJECT FRAME** · L273
-- §1.1 · L275 — What the game is  *LOCKED*
-- §1.2 · L281 — Audience  *LOCKED*
-- §1.3 · L287 — The tonal target  *LOCKED*
-- §1.4 · L291 — Implementation method  *LOCKED*
-- §1.5 · L295 — Engine constraints  *LOCKED*
-- §1.6 · L301 — A second, parallel design thread  *OPEN*
-- §1.7 · L307 — Chapters  *LOCKED*
-- §1.8 · L355 — Campaigns and the canon  *LOCKED*
+**Part I — PROJECT FRAME** · L218
+- §1.1 · L220 — What the game is  *LOCKED*
+- §1.2 · L226 — Audience  *LOCKED*
+- §1.3 · L232 — The tonal target  *LOCKED*
+- §1.4 · L236 — Implementation method  *LOCKED*
+- §1.5 · L240 — Engine constraints  *LOCKED*
+- §1.6 · L246 — A second, parallel design thread  *OPEN*
+- §1.7 · L252 — Chapters  *LOCKED*
+- §1.8 · L300 — Campaigns and the canon  *LOCKED*
 
-**Part II — DESIGN PRINCIPLES** · L443
-- §2.1 · L445 — Date your novelties  *LOCKED*
-- §2.2 · L455 — Light-lag discipline  *LOCKED*
-- §2.3 · L461 — Physical parameters are legislative outputs  *LOCKED*
-- §2.4 · L467 — Founding ambiguity is a feature  *LOCKED*
-- §2.5 · L471 — Keep the constitutional question open  *LOCKED*
-- §2.6 · L475 — Explanation cost is the real budget  *LOCKED*
-- §2.7 · L481 — Generation drift is the main production risk  *LOCKED*
+**Part II — DESIGN PRINCIPLES** · L388
+- §2.1 · L390 — Date your novelties  *LOCKED*
+- §2.2 · L400 — Light-lag discipline  *LOCKED*
+- §2.3 · L406 — Physical parameters are legislative outputs  *LOCKED*
+- §2.4 · L412 — Founding ambiguity is a feature  *LOCKED*
+- §2.5 · L416 — Keep the constitutional question open  *LOCKED*
+- §2.6 · L420 — Explanation cost is the real budget  *LOCKED*
+- §2.7 · L426 — Generation drift is the main production risk  *LOCKED*
 
-**Part III — CONSTITUTIONAL ORDER** · L491
-- §3.1 · L493 — Form of government  *LOCKED*
-- §3.2 · L506 — The legislature  *LOCKED*
-- §3.3 · L531 — The presidency  *LOCKED*
-- §3.4 · L549 — The player character  *LOCKED*
-- §3.5 · L557 — Loss conditions  *LOCKED*
-- §3.5.1 · L586 — Win conditions — the settlements  *LOCKED*
-- §3.6 · L638 — Opposition versus government  *LEANING*
-- §3.7 · L646 — The central constitutional question  *LOCKED*
-- §3.8 · L652 — Constitutional oddities  *LOCKED as available material*
-- §3.9 · L666 — Naming scheme  *LOCKED*
+**Part III — CONSTITUTIONAL ORDER** · L436
+- §3.1 · L438 — Form of government  *LOCKED*
+- §3.2 · L451 — The legislature  *LOCKED*
+- §3.3 · L476 — The presidency  *LOCKED*
+- §3.4 · L494 — The player character  *LOCKED*
+- §3.5 · L502 — Loss conditions  *LOCKED*
+- §3.5.1 · L531 — Win conditions — the settlements  *LOCKED*
+- §3.6 · L583 — Opposition versus government  *LEANING*
+- §3.7 · L591 — The central constitutional question  *LOCKED*
+- §3.8 · L597 — Constitutional oddities  *LOCKED as available material*
+- §3.9 · L611 — Naming scheme  *LOCKED*
 
-**Part IV — THE ELECTORAL SYSTEM** · L734
-- §4.1 · L736 — Parallel voting  *LOCKED*
-- §4.2 · L740 — The tier split as a tonal structure  *LOCKED*
-- §4.3 · L749 — Consequences of parallel specifically  *LOCKED*
-- §4.4 · L756 — The tier ratio is amendable  *LOCKED*
-- §4.5 · L760 — Dual candidacy and revenants  *LOCKED*
-- §4.6 · L766 — Functional constituencies  *LOCKED*
-- §4.6.1 · L776 — Dual majority  *LOCKED*
-- §4.6.2 · L782 — Corporate voting  *LOCKED*
-- §4.6.3 · L788 — Electorate sizes  *LOCKED*
-- §4.6.4 · L792 — The licensing board  *LOCKED*
-- §4.6.5 · L800 — The residual constituency (the "super-seat")  *LOCKED*
-- §4.6.6 · L806 — Abolition  *LOCKED as permanent open question*
-- §4.6.7 · L810 — Costs, acknowledged
-- §4.7 · L815 — Apportionment population ≠ voting population  *LOCKED*
-- §4.8 · L821 — Thresholds  *LOCKED*
-- §4.9 · L827 — External constituencies  *LOCKED*
-- §4.10 · L833 — Apportionment method as plot  *LOCKED*
-- §4.11 · L837 — Campaign finance in substrate-hours  *LOCKED*
-- §4.12 · L841 — Attestation as voter ID  *LOCKED*
-- §4.13 · L845 — Franchise weighting  *OPEN*
-- §4.14 · L849 — Compulsory voting variant  *OPEN*
-- §4.15 · L853 — Redistricting  *OPEN*
-- §4.16 · L857 — The count  *LEANING*
+**Part IV — THE ELECTORAL SYSTEM** · L679
+- §4.1 · L681 — Parallel voting  *LOCKED*
+- §4.2 · L685 — The tier split as a tonal structure  *LOCKED*
+- §4.3 · L694 — Consequences of parallel specifically  *LOCKED*
+- §4.4 · L701 — The tier ratio is amendable  *LOCKED*
+- §4.5 · L705 — Dual candidacy and revenants  *LOCKED*
+- §4.6 · L711 — Functional constituencies  *LOCKED*
+- §4.6.1 · L721 — Dual majority  *LOCKED*
+- §4.6.2 · L727 — Corporate voting  *LOCKED*
+- §4.6.3 · L733 — Electorate sizes  *LOCKED*
+- §4.6.4 · L737 — The licensing board  *LOCKED*
+- §4.6.5 · L745 — The residual constituency (the "super-seat")  *LOCKED*
+- §4.6.6 · L751 — Abolition  *LOCKED as permanent open question*
+- §4.6.7 · L755 — Costs, acknowledged
+- §4.7 · L760 — Apportionment population ≠ voting population  *LOCKED*
+- §4.8 · L766 — Thresholds  *LOCKED*
+- §4.9 · L772 — External constituencies  *LOCKED*
+- §4.10 · L778 — Apportionment method as plot  *LOCKED*
+- §4.11 · L782 — Campaign finance in substrate-hours  *LOCKED*
+- §4.12 · L786 — Attestation as voter ID  *LOCKED*
+- §4.13 · L790 — Franchise weighting  *OPEN*
+- §4.14 · L794 — Compulsory voting variant  *OPEN*
+- §4.15 · L798 — Redistricting  *OPEN*
+- §4.16 · L802 — The count  *LEANING*
 
-**Part V — CONSTITUENCIES** · L883
-- §5.1 · L885 — The district list is the setting bible  *LOCKED*
-- §5.2 · L889 — Constituency type is a real variable  *LOCKED*
-- §5.3 · L897 — Schema  *LOCKED*
-- §5.4 · L922 — Roster discipline  *LOCKED*
+**Part V — CONSTITUENCIES** · L828
+- §5.1 · L830 — The district list is the setting bible  *LOCKED*
+- §5.2 · L834 — Constituency type is a real variable  *LOCKED*
+- §5.3 · L842 — Schema  *LOCKED*
+- §5.4 · L867 — Roster discipline  *LOCKED*
 
-**Part VI — TRANSHUMANIST MECHANICS** · L928
-- §6.1 · L930 — Legal categories  *LOCKED*
-- §6.2 · L964 — Substrate  *LOCKED*
-- §6.3 · L972 — Clock speed  *LOCKED*
-- §6.4 · L980 — Forking and the divergence threshold  *LOCKED*
-- §6.5 · L998 — Census law  *LOCKED*
-- §6.6 · L1004 — Suspension  *LOCKED*
-- §6.7 · L1020 — Backups  *LOCKED*
-- §6.8 · L1026 — Embodiment  *LOCKED*
-- §6.9 · L1032 — State object variables  *LOCKED*
-- §6.10 · L1063 — The biological position  *LOCKED*
-- §6.10.1 · L1104 — The real class axis is exposure, not substrate  *LOCKED*
-- §6.10.2 · L1125 — Two emulated populations with nothing in common  *LOCKED*
-- §6.10.3 · L1139 — Uploading as an economic decision  *LOCKED*
-- §6.11 · L1170 — Physiological class  *LOCKED*
+**Part VI — TRANSHUMANIST MECHANICS** · L873
+- §6.1 · L875 — Legal categories  *LOCKED*
+- §6.2 · L909 — Substrate  *LOCKED*
+- §6.3 · L917 — Clock speed  *LOCKED*
+- §6.4 · L925 — Forking and the divergence threshold  *LOCKED*
+- §6.5 · L943 — Census law  *LOCKED*
+- §6.6 · L949 — Suspension  *LOCKED*
+- §6.7 · L965 — Backups  *LOCKED*
+- §6.8 · L971 — Embodiment  *LOCKED*
+- §6.9 · L977 — State object variables  *LOCKED*
+- §6.10 · L1008 — The biological position  *LOCKED*
+- §6.10.1 · L1049 — The real class axis is exposure, not substrate  *LOCKED*
+- §6.10.2 · L1070 — Two emulated populations with nothing in common  *LOCKED*
+- §6.10.3 · L1084 — Uploading as an economic decision  *LOCKED*
+- §6.11 · L1115 — Physiological class  *LOCKED*
 
-**Part VII — ECONOMY AND SCARCITY** · L1185
-- §7.1 · L1187 — What got cheap, what stayed scarce  *LOCKED*
-- §7.2 · L1210 — Closure as the sovereignty number  *LOCKED*
-- §7.3 · L1218 — Taxation  *LOCKED*
-- §7.4 · L1238 — Welfare  *LOCKED*
-- §7.5 · L1244 — The shape of the economy  *LOCKED*
-- §7.5.1 · L1257 — Why nothing floats  *LOCKED*
-- §7.5.2 · L1271 — The financial sector  *LOCKED*
-- §7.5.3 · L1307 — Money  *LOCKED*
-- §7.5.4 · L1343 — The Reserve Bank  *LOCKED*
-- §7.6 · L1385 — Model depth, and the state object  *LOCKED*
-- §7.7 · L1440 — Order-paper time  *LOCKED*
-- §7.8 · L1476 — Discipline and the whip  *LOCKED*
-- §7.9 · L1506 — Scarcity prices  *LOCKED*
-- §7.10 · L1554 — The productive economy  *LOCKED*
+**Part VII — ECONOMY AND SCARCITY** · L1130
+- §7.1 · L1132 — What got cheap, what stayed scarce  *LOCKED*
+- §7.2 · L1155 — Closure as the sovereignty number  *LOCKED*
+- §7.3 · L1163 — Taxation  *LOCKED*
+- §7.4 · L1183 — Welfare  *LOCKED*
+- §7.5 · L1189 — The shape of the economy  *LOCKED*
+- §7.5.1 · L1202 — Why nothing floats  *LOCKED*
+- §7.5.2 · L1216 — The financial sector  *LOCKED*
+- §7.5.3 · L1252 — Money  *LOCKED*
+- §7.5.4 · L1288 — The Reserve Bank  *LOCKED*
+- §7.6 · L1330 — Model depth, and the state object  *LOCKED*
+- §7.7 · L1385 — Order-paper time  *LOCKED*
+- §7.8 · L1421 — Discipline and the whip  *LOCKED*
+- §7.9 · L1451 — Scarcity prices  *LOCKED*
+- §7.10 · L1499 — The productive economy  *LOCKED*
 
-**Part VIII — AXES AND PARTIES** · L1601
-- §8.1 · L1603 — The five signed axes  *LOCKED*
-- §8.2 · L1661 — Depth budget  *LOCKED*
-- §8.3 · L1670 — Naming register  *LOCKED*
-- §8.4 · L1695 — The seated parties  *LOCKED (280 seats*
-- §8.5 · L1736 — Party notes
-- §8.6 · L1760 — Parties available but not currently seated  *LOCKED as reserve material*
-- §8.7 · L1796 — Extraparliamentary  *LOCKED*
-- §8.8 · L1802 — Historical and defunct  *LOCKED*
-- §8.9 · L1808 — Ideologies as doctrines  *LOCKED*
+**Part VIII — AXES AND PARTIES** · L1546
+- §8.1 · L1548 — The five signed axes  *LOCKED*
+- §8.2 · L1606 — Depth budget  *LOCKED*
+- §8.3 · L1615 — Naming register  *LOCKED*
+- §8.4 · L1640 — The seated parties  *LOCKED (280 seats*
+- §8.5 · L1681 — Party notes
+- §8.6 · L1705 — Parties available but not currently seated  *LOCKED as reserve material*
+- §8.7 · L1741 — Extraparliamentary  *LOCKED*
+- §8.8 · L1747 — Historical and defunct  *LOCKED*
+- §8.9 · L1753 — Ideologies as doctrines  *LOCKED*
 
-**Part IX — THE PLAYER'S PARTY** · L1820
-- §9.1 · L1822 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
-- §9.2 · L1839 — Inherited platform  *LOCKED*
-- §9.3 · L1843 — Two alliance structures  *LOCKED*
-- §9.4 · L1852 — Refraction  *LOCKED as a writing principle*
-- §9.5 · L1856 — Current caucus (Party of Socialists and Democrats, 85)  *LOCKED*
+**Part IX — THE PLAYER'S PARTY** · L1765
+- §9.1 · L1767 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
+- §9.2 · L1784 — Inherited platform  *LOCKED*
+- §9.3 · L1788 — Two alliance structures  *LOCKED*
+- §9.4 · L1797 — Refraction  *LOCKED as a writing principle*
+- §9.5 · L1801 — Current caucus (Party of Socialists and Democrats, 85)  *LOCKED*
 
-**Part X — SOCIETY, CULTURE, LAW** · L1873
-- §10.1 · L1875 — Aesthetic register — orbital warmth  *LOCKED*
-- §10.2 · L1887 — Nativism, inverted  *LOCKED*
-- §10.3 · L1893 — Labour  *LOCKED*
-- §10.3.1 · L1917 — Four overlays that matter more than the sectors  *LOCKED*
-- §10.4 · L1946 — Who is not in paid work  *LOCKED*
-- §10.5 · L1984 — Fork-rentiers  *LOCKED*
-- §10.6 · L1999 — Labour conflict  *LOCKED*
-- §10.7 · L2007 — Media and information  *LOCKED*
-- §10.8 · L2013 — Courts and law  *LOCKED*
-- §10.9 · L2019 — Religion  *LOCKED*
-- §10.10 · L2023 — External pressures  *LOCKED*
+**Part X — SOCIETY, CULTURE, LAW** · L1818
+- §10.1 · L1820 — Aesthetic register — orbital warmth  *LOCKED*
+- §10.2 · L1832 — Nativism, inverted  *LOCKED*
+- §10.3 · L1838 — Labour  *LOCKED*
+- §10.3.1 · L1862 — Four overlays that matter more than the sectors  *LOCKED*
+- §10.4 · L1891 — Who is not in paid work  *LOCKED*
+- §10.5 · L1929 — Fork-rentiers  *LOCKED*
+- §10.6 · L1944 — Labour conflict  *LOCKED*
+- §10.7 · L1952 — Media and information  *LOCKED*
+- §10.8 · L1958 — Courts and law  *LOCKED*
+- §10.9 · L1964 — Religion  *LOCKED*
+- §10.10 · L1968 — External pressures  *LOCKED*
 
-**Part XI — NAMED CANON** · L2031
-- §11.1 · L2035 — The polity
-- §11.2 · L2153 — Persons
-- §11.3 · L2197 — Stations and constituencies
-- §11.4 · L2274 — The functional roster  *LOCKED*
-- §11.5 · L2296 — The live bill
-- §11.6 · L2305 — Other business on the order paper
+**Part XI — NAMED CANON** · L1976
+- §11.1 · L1980 — The polity
+- §11.2 · L2098 — Persons
+- §11.3 · L2142 — Stations and constituencies
+- §11.4 · L2219 — The functional roster  *LOCKED*
+- §11.5 · L2241 — The live bill
+- §11.6 · L2250 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L2323
-- §12.1 · L2325 — The core principle  *LOCKED*
-- §12.2 · L2329 — Split visual language  *LOCKED*
-- §12.3 · L2336 — Chrome direction  *LOCKED*
-- §12.4 · L2342 — Screens  *LOCKED*
-- §12.5 · L2346 — Election night  *LOCKED*
-- §12.6 · L2356 — The orbital map  *LOCKED*
-- §12.7 · L2384 — The parliament diagram  *LOCKED*
-- §12.8 · L2410 — Documents  *LOCKED*
-- §12.9 · L2416 — The feed  *LOCKED*
-- §12.10 · L2420 — Build cost  *LOCKED*
-- §12.11 · L2424 — Images  *LOCKED*
-- §12.12 · L2452 — Existing artifact
-- §12.13 · L2464 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L2268
+- §12.1 · L2270 — The core principle  *LOCKED*
+- §12.2 · L2274 — Split visual language  *LOCKED*
+- §12.3 · L2281 — Chrome direction  *LOCKED*
+- §12.4 · L2287 — Screens  *LOCKED*
+- §12.5 · L2291 — Election night  *LOCKED*
+- §12.6 · L2301 — The orbital map  *LOCKED*
+- §12.7 · L2329 — The parliament diagram  *LOCKED*
+- §12.8 · L2355 — Documents  *LOCKED*
+- §12.9 · L2361 — The feed  *LOCKED*
+- §12.10 · L2365 — Build cost  *LOCKED*
+- §12.11 · L2369 — Images  *LOCKED*
+- §12.12 · L2397 — Existing artifact
+- §12.13 · L2409 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2523
-- §13.1 · L2525 — Scandal taxonomy  *LOCKED*
-- §13.2 · L2538 — The spine  *LOCKED*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2468
+- §13.1 · L2470 — Scandal taxonomy  *LOCKED*
+- §13.2 · L2483 — The spine  *LOCKED*
 
-**Part XIV — PRIOR ART** · L2546
-- §14.1 · L2548 — The gap  *LOCKED*
-- §14.2 · L2552 — Works
-- §14.3 · L2560 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L2491
+- §14.1 · L2493 — The gap  *LOCKED*
+- §14.2 · L2497 — Works
+- §14.3 · L2505 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2573
-- §15.1 · L2575 — Team  *LOCKED*
-- §15.2 · L2581 — Documentation  *LOCKED*
-- §15.3 · L2597 — Where this gets hard  *LOCKED*
-- §15.4 · L2608 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2625 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2518
+- §15.1 · L2520 — Team  *LOCKED*
+- §15.2 · L2529 — Documentation  *LOCKED*
+- §15.3 · L2539 — Where this gets hard  *LOCKED*
+- §15.4 · L2550 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2567 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2655
-
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L2699
+**Part XVI — OPEN DECISIONS** · L2579
 
 <!-- /TOC -->
 
@@ -224,44 +195,18 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 
 The canonical reference for a text-based narrative political thriller set in a federated republic of orbital habitats. It contains the design frame, the constitutional and electoral machinery, the worldbuilding, the party system, and the production plan.
 
-It lives in the repository and is edited in place (§0.3), so any session working on the project reads the current version rather than an uploaded copy.
+It lives in the repository and is edited in place (§0.2), so any session working on the project reads the current version rather than an uploaded copy.
 
-## 0.2 Briefing protocol — instructions to Claude
+## 0.2 Maintaining this file
 
-When Harper opens a chat to work on a **specific mechanic, system, or content area**, do the following *before* diving into the new work:
+Edit it in place, in the same commit as the change it describes: canon and
+code move together or canon rots. When a decision is built or settled, move
+it out of §16 in that commit. Two failure modes have both been seen: a
+decision gets built and the bible keeps calling it OPEN; and the bible
+acquires material the code has no counterpart for (§15.3.6, the named risk).
+Where the bible restates a roster or a count, the content file owns it.
 
-1. **Brief back everything in this file relevant to that area**, across all three registers, because the point is to surface things Harper has forgotten:
-   - **Political-system material** — how the mechanic works in-world, its legal and constitutional detail.
-   - **Game-mechanical material** — how it touches the state object, the loop, the loss conditions, the UI.
-   - **Flavour and worldbuilding material** — the texture, the names, the scandals, the aesthetic notes.
-2. **Flag anything in the file that is marked OPEN** and bears on the current topic.
-3. **Say what is thin.** If a section relevant to the topic is underdeveloped, name it rather than papering over it.
-
-Keep the briefing tight and scannable. It is a pre-flight check, not an essay.
-
-**Amended in v5:** this list asked every pass to add two or three things not
-yet in the file. That pulled against §2.7 and against the named risk of the
-bible outrunning the game (§15.3), and the author retired it. New material
-comes in when a decision is taken, not as a quota.
-
-## 0.3 Maintaining this file
-
-This file lives in the repository and is edited in place, in the same commit as
-the change it describes. Increment the version at the top and add a line to the
-"what changed" block when a decision moves.
-
-The older convention — Claude outputs a revised full file for Harper to
-re-upload to project knowledge — is retired. It was a workaround for an agent
-that could not write to the repo, and it is how §16 came to list cabinet-as-data
-as an open question for a phase that had already built it. **Canon and code move
-together or canon rots.**
-
-Two failure modes to watch, both seen: a decision gets built and the bible keeps
-calling it OPEN; and the bible acquires material the code has no counterpart for
-(§15.3.6, the named risk). When you close a decision, move it out of §16 in the
-same commit.
-
-## 0.4 Status legend
+## 0.3 Status legend
 
 - **LOCKED** — decided; do not relitigate without an explicit request.
 - **LEANING** — provisional decision; may still move.
@@ -476,7 +421,7 @@ From Dorsa Brevia: the pre-independence congress produced a declaration that wor
 
 In a text game the economy is prose: how many words to establish a faction or a place before the player can decide about it. "The owl senator" costs three words; "the Anchorage-cluster delegate, a third-generation fork on leased substrate" costs a paragraph and a glossary lookup. The orbital setting pays this cost hundreds of times, so glossary discipline and register discipline matter more here than they would elsewhere.
 
-**The budget is an event's, and the reference surfaces are where it is paid** (the author, 26 Sep 2026; design/45). An event keeps its explanation short because the player is deciding, and it can do so because the Concordance, the tooltips and the Economy tab's briefing explain the world at length when the player asks. Written under the same economy, those surfaces compressed until they alluded instead of explaining: an institution given a temperament where its powers belonged, a figure pointed at and never stated. There the rule is reversed: say what the thing is, give the figure, and say what it changes (PROSE_REGISTER.md, *What a passage owes the reader*).
+**The budget is an event's, and the reference surfaces are where it is paid** (the author, 26 Sep 2026; design/45). An event keeps its explanation short because the player is deciding, and it can do so because the Concordance, the tooltips and the Economy tab's briefing explain the world at length when the player asks. Written under the same economy, those surfaces compressed until they alluded instead of explaining: an institution given a temperament where its powers belonged, a figure pointed at and never stated. There the rule is reversed: say what the thing is, give the figure, and say what it changes (PROSE.md, *What a passage owes the reader*).
 
 ## 2.7 Generation drift is the main production risk — LOCKED
 
@@ -2341,7 +2286,7 @@ Implemented palette: institutional gray-green (`#c8c9c0` chrome, `#f2f2ec` field
 
 ## 12.4 Screens — LOCKED
 
-Ten, as built: **Sitting** · **Government** · **Chamber** · **Economy** · **Party** · **Relations** · **Orbit** · **World** · **Concordance** · **Record**. `CLAUDE.md` says what each holds and moves with the interface. **Party** is the Prime Minister's own party and **Relations** the other parties (split 24 Sep 2026). This section listed six until v5, including *Dispatch* and *Papers*, neither of which survives as a tab (Papers folded into Government), and *Election Night*, which is not built (§12.5).
+Ten, as built: **Sitting** · **Government** · **Chamber** · **Economy** · **Party** · **Relations** · **Orbit** · **Foreign Affairs** · **Concordance** · **Record**, and **Sandbox** for the author. `AGENTS.md` says what each holds and moves with the interface. **Party** is the Prime Minister's own party and **Relations** the other parties (split 24 Sep 2026). This section listed six until v5, including *Dispatch* and *Papers*, neither of which survives as a tab (Papers folded into Government), and *Election Night*, which is not built (§12.5).
 
 ## 12.5 Election night — LOCKED, not yet built
 
@@ -2500,7 +2445,7 @@ easing curves that decelerate, nothing bouncing.
 ### Four terminal states, and a struck thing stays on the paper
 
 A row's state is carried in **form as well as hue**, per the note in
-`CLAUDE.md` that `.sel` earned:
+`LESSONS.md` that `.sel` earned:
 
 | state | | drawn as |
 |---|---|---|
@@ -2574,25 +2519,22 @@ Each half exists; the combination does not, for structural reasons. Prose fictio
 
 ## 15.1 Team — LOCKED
 
-Harper: graphic design, worldbuilding, political system design, direction. Claude: programming, and co-design.
+Harper: graphic design, worldbuilding, political system design, direction.
+Claude, Codex and opencode: programming and co-design, in the lanes
+`AGENTS.md` sets out.
 
-Not currently sought: a programmer, a game designer. See §15.3 for where that assumption breaks.
+Not currently sought: a programmer, a game designer. See §15.3 for where that
+assumption breaks.
 
 ## 15.2 Documentation — LOCKED
 
-- **`vault.md`** — raw, append-only, never edited down.
-- **`bible.md`** (this file) — canon, structured, in the repository and edited in place (§0.3).
-  Out-of-world: it may discuss mechanics, the player, and the build.
-- **`textbook.md`** — *The Circumterrestrial Economy*, Ondine Charnock, 4th ed.,
-  Perigee Review Press, 2079. **Canon, and entirely in-world.** It knows nothing
-  of the player or the game and must never mention them. It carries the economic
-  and demographic detail in a voice, which makes it both a reference and a
-  register guide for content passes. Where it disagrees with this file on a
-  number, this file wins; where it disagrees on *tone*, it wins.
-- **`orbital.bundle.md`** — generated snapshot of all content, for a session
-  that cannot read the repository. Regenerate with `node tools/bundle.js`.
-
-Later, canon may split into generator-facing files: `glossary.md`, `legal_persons.md`, `stations.md`, `parties.md`, `axes.md`, `institutions.md`, `history.md`, `open_questions.md`, `register.md`, `characters.md`. Not yet necessary.
+`AGENTS.md` maps where each kind of document lives. Two are canon: this file,
+and `textbook.md`, *The Circumterrestrial Economy* by Ondine Charnock (4th
+ed., Perigee Review Press, 2079), which is entirely in-world, knows nothing
+of the player or the game, and must never mention them. Where the textbook
+disagrees with this file on a number, this file wins; on tone, the textbook
+wins. `vault.md`, the author's raw and append-only source material, is kept
+outside the repository.
 
 ## 15.3 Where this gets hard — LOCKED
 
@@ -2624,37 +2566,19 @@ Honest assessment of failure modes:
 
 ## 15.5 The build — LOCKED
 
-Engine and content are strictly separated: `js/engine.js` names no event, party or
-station. Content is plain `.js` (not `.json`) so everything opens from `file://`
-without a server.
-
-**`npm run check` runs every check, and all of them must pass.** `CLAUDE.md`
-lists them and says what each one is for; this section listed six until v5,
-and a second list is how the first went stale. `npm run layout` needs a real
-browser and runs separately.
-
-**The editor** (`editor.html`) reads and writes the same content files the game
-reads — one source of truth. Effects and conditions are pickable from a schema
-rather than typed. It carries: safe rename with reference tracking, undo, filter,
-station archetypes that roll correlated numbers together, a browser image
-processor, name rolling, a branch graph, and a coverage panel that computes what
-to do next.
-
-**Handoff.** `node tools/bundle.js` writes `orbital.bundle.md` — a digest plus
-every content file verbatim — for a session that cannot read the repository, so
-it reads the actual current content rather than anyone's memory of it.
-
-**The coverage panel exists to catch one failure in particular:** content
+Engine and content are strictly separated, the checks gate every push, and
+`AGENTS.md` holds the rules and the list of checks. The editor
+(`editor.html`) reads and writes the same content files the game reads. Its
+coverage panel exists to catch one failure in particular: content
 clustering on crisis. If every event fires when an indicator is low and none
-fires when it is high, the player who manages well finds the game goes quiet, and
-reads that as a bug.
-
+fires when it is high, the player who manages well finds the game goes
+quiet, and reads that as a bug.
 
 ---
 
 # PART XVI — OPEN DECISIONS
 
-- ~~**Setting**~~ — **CLOSED, orbital** (v5). Appendix A stays as preserved material.
+- ~~**Setting**~~ — **CLOSED, orbital** (v5). The anthro alternative is kept in `design/archive/anthro-setting.md`.
 - ~~**Player's party**~~ — **CLOSED, per campaign** (§1.8, §9.1): Flash I is the PSD.
 - **Redistricting** — live bill or fixed for v1.
 - **Where emulations vote** — hosted location (makes hosting vote-farming and gives substrate providers territorial power) / last embodiment (an electorate mapped onto bodies that no longer exist) / dedicated non-territorial seats (precedent: Māori electorates, UK university constituencies).
@@ -2691,37 +2615,4 @@ reads that as a bug.
 - ~~**Cabinet as data**~~ — **CLOSED, built.** The Ministries are in the state
   object as of `STATE_VERSION` 4; a post with no holder cannot make a statutory
   instrument, which is what the President's appointment-refusal power now bites
-  on. See the sweep brief, Part C, and the `cabinet is data` assertion in
-  `test.js`.
-
----
-
-# APPENDIX A — THE ANTHRO SETTING (PRESERVED)
-
-Retained in case of reversal. Late-1900s technology plus magic coexisting as another field of science. Storybook sapient anthropomorphic animals, modern socioeconomic complexity and modern electoral politics. Inspired by MTG's Bloomburrow.
-
-**Hibernation and election timing** — the best single mechanic in either setting. If a meaningful share of species hibernate three to four months a year, the parliamentary calendar becomes a weapon. Legislation passed during winter recess deliberately. Proxy voting for absent members as a constitutional fight. A coalition skewing toward hibernators is structurally weak in one season and strong in another. And since a PM contests dissolution timing, **calling a winter election is straightforwardly a way to suppress entire species from the electorate.** No real-world equivalent, trivial to implement as a seasonal modifier, both funny and sinister. *(Ported to orbital as suspension-timed elections, §6.6.)*
-
-Migratory species give the same thing on a different axis: physically elsewhere for part of the year, dual residency, "where do you actually live" litigation.
-
-**Lifespan stratifies the institutions, not just the people.** Mice live fifteen years, tortoises two hundred. Short-lived species dominate elected office because they have urgency; long-lived species dominate the judiciary, the civil service, and the central bank because those reward tenure. **The technocracy-versus-democracy conflict built into biology.** *(Ported as emulation gerontocracy.)*
-
-**Reproductive rate as demographic politics.** Fast breeders gain apportionment share every cycle; slow breeders decline. Demographic anxiety with actual grounding — and it explains why the long-lived, slow-breeding species entrenched themselves in the unelected institutions.
-
-**Size as distributive politics.** A public building usable by both a shrew and a bear costs far more than one built for either. Universal design versus separate provision as a budget line — and an argument in which the segregationist position presents itself as fiscal prudence. *(Ported as physiological class and construction standards.)*
-
-**Predator legacy, handled carefully.** Predation outlawed generations ago, legally settled, socially live. What remains: involuntary physiological fear, still-segregated neighbourhoods, predator overrepresentation in policing inherited from when they were the enforcement caste. The question a human setting cannot ask: **when a prey legislator's fear response to a predator colleague is measurable and involuntary, is that prejudice or biology, and what does the law do about it?** Safety valve: make the predator species a declining former ruling class rather than a marginalised minority.
-
-**Magic as a regulated utility.** Licensing boards, thaumic pollution standards, ley infrastructure public or private, a magic workers' union, environmental review. Sharpest version: **speech magic as election law** — is a glamoured broadcast fraud? What is the standard for compulsion-adjacent persuasion? Truth-magic in committee, and a minister who refuses to submit.
-
-**Biomes as economic and magical regimes.** Magic works unevenly, so some districts are magically poor the way some regions are resource-poor. Ley wells give boom-bust extraction and resource-curse politics. *(Ported as closure profiles.)*
-
-**Weaknesses:** tonal knife-edge between twee and edgelord. Risk of the animals being decoration. The allegory trap — if species map cleanly onto parties it becomes a fable about real groups; the defence is making species cross-cut party lines heavily and visibly.
-
-**Note:** "late 1900s" is pre-internet, and much of what modern politics *feels* like is algorithmic media fragmentation. Would need a magical substitute — a scrying network behaving like broadcast television sliding into something worse.
-
-**Strengths easy to undervalue:** low explanation cost, memorable district names, warmth on demand, a store page nobody scrolls past.
-
----
-
-*End of bible v5. Edit in place, in the same commit as the change it describes (§0.3).*
+  on. See the `cabinet is data` assertion in `test.js`.

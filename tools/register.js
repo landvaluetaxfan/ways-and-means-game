@@ -1,7 +1,7 @@
 /* npm run register — the prose register scanner.
  *
  * Reports player-facing passages carrying one of the seven mechanical habits
- * in PROSE_REGISTER.md. It REPORTS and never rewrites: a rewrite is a
+ * in PROSE.md. It REPORTS and never rewrites: a rewrite is a
  * decision, and the decision is the author's.
  *
  * Deliberately not in `npm run check`. A style check that fails a build turns
@@ -17,7 +17,7 @@ const path = require("path");
 const ROOT = path.join(__dirname, "..");
 
 /* ---- the registers ----------------------------------------------------- */
-/* PER REGISTER, NOT ONE RULEBOOK (PROSE_REGISTER.md, revised 24 Sep). A
+/* PER REGISTER, NOT ONE RULEBOOK (PROSE.md, revised 24 Sep). A
    country note, a tooltip and a character's line are three kinds of
    writing: a contrast is a fault in the first two and a voice in the third.
    The register is read off the address, so a new surface is one line here. */
@@ -99,7 +99,7 @@ const HABITS = [
     re: /\bthe\s+(?:least|most|strongest|weakest|keenest|firmest)\b[^.]{0,45}\b(?:of\s+the\s+(?:two|three|four|five|six|seven|eight|nine|ten|others?|rest|\w+s)|in\s+the\s+party)\b/gi },
 
   /* THE AXES' SHORTHAND IN PROSE. The five axes are the engine's; their
-     pole names are not policy. PROSE_REGISTER.md has the plain words. */
+     pole names are not policy. PROSE.md has the plain words. */
   { id: "jargon", sev: { reference: "fault", interface: "fault" }, name: "axis shorthand",
     why: "write the policy (limits on trade with Earth), not the axis pole",
     re: /\b(?:closed|open)\s+trade\b(?!\s+with)|\bwidening\s+personhood\b|\bcaution\s+on\s+personhood\b|\bfor\s+a\s+federal\s+Commonwealth\b|\bthe\s+station\s+against\s+the\s+federation\b/gi },

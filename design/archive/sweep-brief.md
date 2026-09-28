@@ -24,7 +24,7 @@
 > **11 April 2080** with a **two-decade** history, which `bible.md` §11.1
 > holds and which is LOCKED — read it before dating anything. Prose is
 > through a register pass: `npm run register` reports zero mechanical habits
-> and six adjudicated judgement calls recorded in `PROSE_REGISTER.md`.
+> and six adjudicated judgement calls recorded in `PROSE.md`.
 >
 > **What is next is CONTENT**, which is where the remaining weight is. The
 > engine's vocabulary is closed and sufficient; the checks are the only

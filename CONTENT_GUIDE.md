@@ -6,11 +6,9 @@ entry in `/content`.
 
 ## Running it
 
-Open `index.html` in a browser. No server needed. Content files are plain `.js`,
-not `.json`, precisely so this works from disk — `fetch()` on a `file://` URL is
-blocked by the browser, `<script src>` is not.
-
-Run `node test.js` to check the arithmetic and smoke-test 40 sittings.
+Open `index.html` in a browser. No server is needed: content files are plain
+`.js`, because a browser blocks `fetch()` on a `file://` URL and allows
+`<script src>`. Run `npm run check` after any content change.
 
 ## The files
 
@@ -287,25 +285,9 @@ An entry is an event when it carries `setpiece`:
   being said* (`voices`), an in-world paper (`document`, with a `source`),
   a headed passage (`body` with a `head`). An `epigraph` goes first.
   `setpiece: true` is an event whose page is its body alone.
-- **The page is a news report** (design/51), written for a reader who has
-  not followed the story, and `npm run lint` fails one that is not
-  (`tools/pagecheck.js`):
-  - a **headline**, `setpiece.title`, saying what happened in 14 words or
-    fewer (the entry's own `title` stays as its slug);
-  - a **lede** of 12 to 45 words: who did what, to whom, and why it
-    matters; then why the Commonwealth should care;
-  - **every name introduced** where it first appears, in the same sentence
-    or the next: "Cordell, the Gabonese mining company"; a person with
-    their office, the speaker included;
-  - sentences of **40 words at most**, averaging 24 or fewer;
-  - the **third person**: "you" only inside a quotation, and no interface
-    words;
-  - the chamber is **Parliament** (or the House), not the House of
-    Delegates.
-
-  A new company, institution or setting term goes into `INTRODUCE` in
-  `tools/pagecheck.js`, with the words that explain it, the day a page first
-  names it.
+- **The page is a news report**, and `npm run lint` fails one that is not:
+  headline, lede, short sentences, the third person, every name introduced.
+  The rules are in `PROSE.md`, "News".
 - **The picture** is the art slot (`setpiece.art`) if there is one,
   otherwise the entry's `image`, otherwise the speaker's portrait, captioned
   with their name and office. The dateline comes from the sitting.
@@ -514,152 +496,14 @@ a content pass does.
 
 ---
 
-## The register
+## Prose
 
-**`PROSE_REGISTER.md` is the rulebook**, and `npm run register` checks it.
-Three registers, each tied to the surfaces that use it:
+Every sentence a player reads follows `PROSE.md`: the author's standard, the
+register for each surface, what lint fails, the Underwriters' briefing
+figures and the constituency placeholders. Read it before writing any.
 
-- **Reference**, for what a thing is: the Concordance, country notes,
-  currents, parties, stations, constituencies, cabinet posts, actors, bills'
-  summaries, the glossary. An encyclopedia's or an atlas's register: the
-  first sentence defines the subject, then facts in the order a reader
-  needs them, one per sentence.
-- **Interface**, for what a control or a number does: tooltips, refusals,
-  initiatives, awards, and the Underwriters' outlook, which is a briefing
-  (below). What is this, what changes it, what can you do about it, and stop.
-- **Voice**, for the world speaking: events, minutes, the introduction. The
-  author's; a character may sound like themselves.
-
-In Reference and Interface: no contrast framing (`not X but Y`, `X rather
-than Y`, `X, not Y`), no ranking against a set the reader cannot see, no
-closing aphorism, and plain policy words for the five axes ("limits on trade
-with Earth", not "closed trade"). The detail is below and in the rulebook.
-
-**And what a passage owes the reader** (design/45): state what you refer
-to; one antecedent per pronoun; a figure carries its scale and a judgement
-its figure; say the mechanism; describe an institution by what it has and
-does, never by its temperament; write for a reader who arrived from a
-link. A passage can obey every prohibition above and still tell the reader
-nothing, which is what the author found on 26 Sep. Explaining is not
-padding: a tooltip is still two or three sentences.
-
-### The Underwriters' briefing
-
-`setup.outlook` in `content/setup.js`. The engine decides which readings
-apply (`Engine.outlook`) and fills their figures (`Engine.briefing`); every
-word is content's. Each reading has a `topic` (`account`, `borrowing`,
-`prices`, `bank`, in the order `setup.outlookTopics` gives), and the Economy
-tab draws one paragraph a topic, led by its name. Lead with the figure, say
-what it means for the government, and where the player holds the lever say
-what would change it. Two or three sentences: the panel is 328px by 312px at
-1366x768, and the opening briefing fills it.
-
-| figure | becomes |
-|---|---|
-| `{receipts}` `{spending}` `{outgoings}` | a year's receipts; spending; spending with interest, as "CW$224.0bn" |
-| `{standing}` `{voted}` | spending outside the appropriation, and what it votes |
-| `{balance}` `{balancePct}` | the deficit or surplus, unsigned, and its share of output |
-| `{reserve}` `{runway}` | the reserve, and how long it lasts at the present deficit ("about thirteen years") |
-| `{output}` `{debt}` `{debtPct}` `{service}` | output; the debt, its share of output, and a year's interest |
-| `{facilities}` | what can be drawn today, each in its own money ("US$60.0bn from Earth's banks and ...") |
-| `{bills}` `{headroom}` `{arrears}` | Treasury bills out, the room under their authority, payments missed |
-| `{earthLender}` `{earthRate}` `{earthBase}` `{earthWhy}` | the dearest off-world lender, its rate, its base, and each margin in force with its condition |
-| `{pricesVs}` `{thermal}` `{substrate}` `{volume}` `{transit}` | the four prices against the opening ("16.8% above where they opened"), and each index |
-| `{volumeYield}` `{volumeForgone}` | the volume levy's yield, and what the standard rate would add |
-| `{inflation}` `{core}` `{expected}` `{target}` | headline, underlying, expected, and the remit |
-| `{rate}` `{ruleRate}` `{bankMove}` `{meeting}` | the cash rate, what the rule asks, the move to expect ("a quarter-point rise"), and the meeting's date |
-| `{directed}` `{credibility}` | a direction in force, and the Bank's credibility ("80 of 100") |
-| `{fx}` `{fxOpen}` `{fxChange}` `{fxFirst}` `{fxFirstYear}` | the dollar, where it opened, the change since, and the record's first year |
-| `{gap}` `{gapWords}` `{growth}` | output against capacity ("1.0% above its capacity"), and growth |
-
-A reading about one lender, `owed_<id>`, may also name `{lender}`,
-`{lenderOwed}`, `{lenderRate}`, `{lenderBase}` and `{lenderWhy}`. Never
-restate a threshold a lender's terms own ("friction 40, 65 and 85"):
-`{lenderWhy}` and `{earthWhy}` read them. `npm run lint` fails on a figure the
-engine does not fill and on a reading with no topic.
-
-### Constituency descriptions
-
-The register the author asked for in the prose pass of 26 Sep 2026: an encyclopedia's, with an
-election desk's read of the seat. Two fields per seat.
-
-- `description` — what the place is, then what it hosts. "The centre of the
-  Rookworks district, and a commercial hub. Rookworks Centre hosts the berth
-  offices that work the Anselm locks." On a station with many seats this is
-  where the district's own character lives; on a one-seat station it says the
-  seat is elected at large and what the station lives by. A detail of the
-  place (a monument, a custom, what the district's lights are for) is welcome;
-  a new station, character or setting term is not (bible §2.7).
-- `tendency` — who lives there, what they vote on, the figures, then the
-  seat's history and its member. "Educated and commercial: berth brokers, and
-  enterprises across a range of sizes and interests. Its voters generally put
-  tether traffic and open trade with Earth first. There are {electorate}
-  voters, which gives an apportionment ratio of {ratio}: {represented}. It has
-  been a Liberal stronghold since the Charter. {member} is popular and
-  economically liberal, and challengers here have to be as well to compete."
-
-**The figures and the member are placeholders**, filled by
-`Engine.seatText` wherever the text is drawn (the Orbit tab's expanded row
-and the seat's Concordance article):
-
-| placeholder | becomes |
-|---|---|
-| `{electorate}` | the roll, as "26,685" |
-| `{ratio}` | the apportionment ratio, as "1.11" |
-| `{represented}` | "heavily / moderately over-represented", "close to parity", "moderately / heavily under-represented", or "over-/under-represented" |
-| `{member}` | the sitting member: the roster character who sits for the seat, or the seat's `member` |
-
-The ratio is seats per elector against the average, so **above 1 is
-over-represented** (a small roll) and below 1 under-represented. Writing the
-roll or the member's name out is what `npm run lint` fails: every tendency
-used to carry its figures as literals, and thirty-six named a backbencher a
-roster character had displaced. There have been four general elections, in
-2064, 2068, 2072 and 2076, so "since the Charter" and "at all four elections"
-are the same claim; five seats changed hands in 2076 (bible §8.4). Avoid
-pronouns for members whose pronouns content has not set: use the name.
-
-### Station descriptions
-
-The place, at the scale of the station: what it is, how it lives, what it is
-for. A working station gets the plain kind; the capital gets the fantastical
-kind. `description` on a station, shown in the station dossier on the Orbit tab.
-
-### The Concordance
-
-Written like Wikipedia in its furniture, because that is what it is pretending
-to be: a lead that defines the subject in its first sentence, sentence-case
-headings, an infobox on the right, a See-also list at the foot, third person, no
-address to the reader. But the prose is **plain**: short declaratives, no em
-dashes, no "not X but Y", no rhetorical closers. The maintenance banners are the
-refraction (see the Concordance section below). Do not put the election-desk
-register or the event register into the Concordance.
-
-### Tooltips and interface prose
-
-Every tooltip (`js/tips.js`), every menu line, every log line. These address the
-player as **you** and say what the thing does. The test: if a sentence states a
-thesis, cut it and keep the fact.
-
-- "No minister holds this post, so it cannot make instruments. Appoint one to
-  change that." Not "The President's power to refuse an appointment and the
-  fight over the licensing boards are therefore the same fight."
-- Short is fine. A fragment is fine. An aphorism is not.
-
----
-
-## Rules that keep this working
-
-1. The engine names nothing. No event id, party id, or station id appears in
-   `js/engine.js`.
-2. Event selection is deterministic — same state, same event, always. That is
-   what makes balance testable. Do not add randomness.
-3. `queuedOnly:true` on every follow-up event, or it will fire before the thing
-   it follows.
-4. Version the state object before changing its shape. `migrate()` in
-   `engine.js` has the slot for it. Schema changes that break old saves are the
-   thing that kills projects like this.
-5. Run `node test.js` after content edits. It asserts the chamber arithmetic
-   against the bible and plays 40 sittings looking for crashes.
+The rules that keep content working (the engine names nothing, determinism,
+state versions, the checks) are in `AGENTS.md`.
 
 ---
 

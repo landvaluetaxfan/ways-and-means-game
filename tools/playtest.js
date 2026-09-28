@@ -86,7 +86,7 @@ let SEED;                                   /* undefined: the engine's default *
    Everything here goes through the engine's own verbs (grantSlot, divide),
    never by writing state. payWhips clears the plan, so a caller that divided
    afterwards charged for nothing: Engine.divide() is the only way in, which
-   CLAUDE.md records and this obeys. */
+   AGENTS.md records and this obeys. */
 function govern(st, strategy) {
   const acts = [];
   /* IT HOLDS THE COUNTRY BY READING THE DOCKET (design/38 §7). Three

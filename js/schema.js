@@ -295,7 +295,7 @@ const SCHEMA = {
        wants nobody to. */
     /* `low`/`high` are the engine's pole names, for the editor and the
        tooltips. `says` is the same position AS POLICY, which is what prose
-       uses (PROSE_REGISTER.md: "closed trade" is the shorthand leaking out):
+       uses (PROSE.md: "closed trade" is the shorthand leaking out):
        a party at the low end of `trade` supports limits on trade with Earth.
        `topic` is what the axis is about, for a party that holds the centre.
        A pole whose `verb` is "opposes" is stated as opposition to the other

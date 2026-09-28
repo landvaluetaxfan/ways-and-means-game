@@ -630,7 +630,7 @@ section("ARTIFACT IMAGES OF THE WRONG SHAPE", artBad, x => x);
    6,863,000" and content/stations.js carries a population per habitat.
    Nothing had ever compared them. They are 223,000 apart.
 
-   CLAUDE.md's handoff recorded the gap as 143,000. It is 223,000 because
+   A handoff of 11 Sep recorded the gap as 143,000. It is 223,000 because
    the capital was added afterwards at 80,000 and the stored total did not
    move — which is the whole argument for the rule this repo already has:
    "apportionment_ratio was stored beside seats and population and the
