@@ -94,6 +94,70 @@ The PSD are in power because of labour and trade unions. Expanding personhood is
 
 She has one session. The one that opens on the eleventh of April is the parliament's fourth and its last, and the House is already sitting.` },
 
-        { kind:"signature", head:"Adriana Eireann Flash \u00b7 Prime Minister" }
-      ] } }
+        { kind:"signature", head:"Adriana Eireann Flash \u00b7 Prime Minister" },
+
+        /* THE PROGRAMME (design/56), after the signature and set apart from
+           the introduction by its own paper, rule and face: a note for the
+           performer who plays the role, and the cast (from `play` below).
+           The author's model is the casting notes of the Campaign Trail
+           mod Things That Never Were. It spoils nothing the first act has
+           not shown. */
+        { kind:"programme", head:"The role", body:
+`Adriana Eireann Flash is the Prime Minister and a mass of contradictions. She is a banker at the head of a labour party. She holds the first elected office of her life, a seat won at a by-election after her party had already made her its leader. She built the Reserve Bank's independence, and she is now the one person in the Commonwealth with a reason to break it. She leads the party of the maintenance trades, whose unions did not choose her and do not trust her. She is admired for her composure and resented for it. She has no great legislative record and no faction of her own, and yet she is, for now, the only leader the whole coalition will follow.
+
+The performer playing this role should be able to capture Flash's composure, and the discipline of someone who has spent a career saying less than she knows. She believes a country can be run the way she ran its currency: by setting clear rules, publishing them, and keeping to them when it hurts. She must hold together a coalition that agrees on the economy and on almost nothing else, a party that chose her to stay in government, and a Parliament in its final session, whose members are already thinking about the election. Beneath the composure is someone who has never been elected to lead anything, and who privately doubts she has the right to. Her most essential characteristic is solitude: she has no old allies in politics, and the one colleague who understood her work, she left behind at the Bank.
+
+Ideal performer for this role is a woman in her early fifties in the alto range.` }
+      ] },
+
+    /* THE PLAY (design/56): the campaign's frame, outside the world. Its
+       name and mark recur on the programme, each act's card, the intervals
+       and the curtain call. The title is from the introduction's epigraph,
+       Ecclesiastes 1:7, and is the author's to change. `acts` are keyed by
+       chapter, `intervals` by the sitting period the House has just
+       finished; the cast is the programme's and the curtain call's. */
+    play:{
+      title:"The Sea Is Not Full",
+      mark:"img/plays/flash_i.svg",
+      cast:[
+        { id:"flash", name:"Adriana Eireann Flash", role:"Prime Minister, and leader of the Party of Socialists and Democrats" },
+        { id:"whitlam", name:"Imre Whitlam", role:"Leader of the House, who decides what Parliament debates and when" },
+        { id:"trottier", name:"Mandelina Trottier", role:"Deputy Prime Minister, and leader of the New Progressive Party, the coalition's junior partner" },
+        { id:"halloran", name:"Dan Czarnecki", role:"Leader of the Hard Left of the Prime Minister's own party" },
+        { id:"watkins", name:"Darren Watkins Jr.", role:"Leader of the Opposition, and leader of the Liberal Party" },
+        { id:"hatt", name:"Edward Hatt", role:"Leader of the Alliance of Business and Government, elected by no district" },
+        { id:"gb_chair", name:"Kazuya Tanako", role:"Chair of the Life Support panel, whose position has not changed since 2072" },
+        { id:"castellane", name:"Maren Castellane", role:"Governor of the Reserve Bank, and once Flash's deputy" },
+        { id:"tenaya", name:"Jaco van Ryneveld", role:"President of the Commonwealth" },
+        { id:"ceyhan", name:"Ivor Ceyhan", role:"Political editor of The Spindle" }
+      ],
+      ensemble:"Members of Parliament, the residents of thirty stations, the wire services, and Earth's governments and banks.",
+      acts:[
+        { chapter:1, head:"Act I", title:"The House Is Sitting",
+          epigraph:{ body:"All the world's a stage, / And all the men and women merely players.",
+                     source:"William Shakespeare, As You Like It" },
+          direction:
+`The chamber of Parliament, at the Winter Garden, the capital. Morning, 11 April 2080. Two hundred and eighty seats, most of them filled. The coolant pumps run under the floor, and a member who stands to speak learns to pitch a voice over them.
+
+ADRIANA EIREANN FLASH takes the Prime Minister's place on the front bench, in the fourth and last session of this Parliament.` },
+        { chapter:2, head:"Act II", title:"Ways and Means",
+          epigraph:{ body:"The equal right of all men to the use of land is as clear as their equal right to breathe the air \u2014 it is a right proclaimed by the fact of their existence.",
+                     source:"Henry George, Progress and Poverty" },
+          direction:
+`The same chamber, some weeks on. The order paper is longer than the time left to debate it. In the galleries sit the stations' delegations, and in the lobbies the whips count heads. At the Treasury bench sits a Prime Minister with more to decide than she has votes to carry.` },
+        { chapter:3, head:"Act III", title:"The Count",
+          epigraph:{ body:"To every thing there is a season, and a time to every purpose under the heaven.",
+                     source:"Ecclesiastes 3:1" },
+          direction:
+`Parliament is dissolved and the chamber is empty. The play moves out to the stations: the concourses, the broadcasts, the queues at the polling stations. Two hundred and eighty seats are to be filled again, and a woman who has never fought a general election is fighting one.` }
+      ],
+      intervals:[
+        { after:1, direction:
+`The House rises for the recess. The chamber empties from the back benches forward, and the clerks stay behind to count what is left on the order paper. Members go home to thirty stations on a transit schedule that runs late. The Prime Minister's office stays lit.` },
+        { after:2, direction:
+`The House rises again. It will sit once more before the session ends, and every member knows it. On the concourse outside the chamber the talk is of seats: who will hold theirs, and who is already drafting a farewell.` }
+      ],
+      curtain:{ epigraph:{ body:"Our revels now are ended. These our actors, / As I foretold you, were all spirits and / Are melted into air, into thin air.",
+                           source:"William Shakespeare, The Tempest" } }
+    } }
 ] });

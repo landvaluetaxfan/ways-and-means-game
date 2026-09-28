@@ -212,6 +212,17 @@ date and meters and the opening economy (inflation, cash rate, dollar, the
 Bank's credibility, the four tax rates) have fields, and anything else
 (lenders, thresholds) goes in its "Other setup" JSON.
 
+## The campaign as a play (design/56)
+
+A campaign's administration may carry `play`: a title and mark, a cast, one
+act per chapter (a title, an epigraph and a stage direction), an interval for
+each recess, and an epigraph for the curtain call. Its introduction ends with
+a `programme` section, the note for the performer, which is drawn apart from
+the introduction's prose. The frame stays at the edges: acts, intervals and
+the curtain call are shown by the interface, never inside an event. On an
+event page a `margin` section is the Prime Minister's own note on the
+document above it, initialled.
+
 ## Adding an event
 
 Copy an entry in `content/events.js`, or in a campaign's `events.js` for

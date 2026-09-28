@@ -270,7 +270,10 @@ const Refs = (function () {
     });
     (M.parties || []).forEach(p => { if (p.leader === id) H(`party ${p.id} · leader`, to => p.leader = to); });
     (M.administrations || []).forEach(a => {
-      if (a.leader === id) H(`administration ${a.id} · leader`, to => a.leader = to); });
+      if (a.leader === id) H(`administration ${a.id} · leader`, to => a.leader = to);
+      /* the play's cast names its players (design/56) */
+      ((a.play || {}).cast || []).forEach((c, i) => {
+        if (c.id === id) H(`administration ${a.id} · play cast ${i + 1}`, to => c.id = to); }); });
     (M.bills || []).forEach(b => {
       if (b.author === id) H(`bill ${b.id} · author`, to => b.author = to);
       (b.cosponsors || []).forEach((c, i) => {

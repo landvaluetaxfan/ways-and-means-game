@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- The Sea Is Not Full: a vessel never filled. A ring, and water standing below its middle. -->
+  <defs><clipPath id="c"><circle cx="24" cy="24" r="19"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <path d="M2 29 q5.5 -3 11 0 t11 0 t11 0 t11 0 V48 H2 Z" fill="#c9a227" opacity=".55"/>
+    <path d="M2 29 q5.5 -3 11 0 t11 0 t11 0 t11 0" fill="none" stroke="#3b342a" stroke-width="1.2"/>
+  </g>
+  <circle cx="24" cy="24" r="19" fill="none" stroke="#3b342a" stroke-width="2"/>
+  <circle cx="24" cy="5" r="2.2" fill="#3b342a"/>
+</svg>

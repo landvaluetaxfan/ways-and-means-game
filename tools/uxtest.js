@@ -24,6 +24,13 @@ H.ok("and the introduction opens on its epigraph",
      H.seen.epigraph, H.seen.epigraph ? "rendered" : "no .sp-epigraph in the sitting");
 H.ok("and it is surrounded by the terminal, not taking the screen",
      H.seen.chromed, H.seen.chromed ? "the columns stayed" : "#s-sit went full-bleed");
+/* THE CAMPAIGN AS A PLAY (design/56): the programme follows the signed
+   introduction as its own block, and the first act's card follows the
+   introduction before the first sitting's business. */
+H.ok("and the programme follows the signature, set apart, with the cast",
+     H.seen.programme, H.seen.programme ? "after the signature" : "no programme block after the signature");
+H.ok("and the first act's card comes before the first sitting's business",
+     H.seen.act, H.seen.act ? "Act I" : "no act card after the introduction");
 
 
 /* =============================================================

@@ -22,7 +22,9 @@ var ProseMap = (function () {
     "lede", "epigraph", "caption", "blurb", "why", "asks", "answer", "question",
     /* design/45: a person's Career and descriptor, a term's definition, and
        the analogy a glossary tooltip now shows (it was never shown before) */
-    "bio", "descriptor", "article", "handle"];
+    "bio", "descriptor", "article", "handle",
+    /* design/56: the play's stage directions, its cast's parts and ensemble */
+    "direction", "role", "ensemble"];
 
   /* Keys whose value is a name or an id and never prose, even where the key
      is on the list above (a party's `label` is "PSD"). */

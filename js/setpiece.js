@@ -40,7 +40,25 @@ const SetPiece = (function () {
      means. Keeping it closed is what stops it going the way `.sel` went, when
      one class came to mean four things — so a kind nobody recognises falls
      back to plain body rather than inventing a style. */
-  const KINDS = ["epigraph", "lede", "body", "voices", "document", "signature"];
+  /* AND THE THEATRE (design/56): the campaign as a play. `programme` is the
+     insert after an introduction (the performer's note and the cast),
+     `act` an act's card, `direction` a stage direction, `cast` a list of
+     roles (the curtain call), and `margin` the Prime Minister's own hand on
+     a page. The frame is outside the world, so each is set in a face and a
+     ground the world's pages never use. */
+  const KINDS = ["epigraph", "lede", "body", "voices", "document", "signature",
+                 "programme", "act", "direction", "cast", "margin"];
+  /* the campaign's play (its title, mark and cast), for the frame's kinds;
+     set by html() from its options, so a page with no play draws none */
+  let PLAY = null;
+  function mark() {
+    return PLAY && PLAY.mark ? `<img class="sp-mark" src="${esc(PLAY.mark)}" alt="">` : "";
+  }
+  function castList(rows) {
+    return `<ul class="sp-castlist">` + (rows || []).map(r =>
+      `<li><span class="sp-castname">${esc(r.name)}</span>` +
+      (r.role ? `<span class="sp-castrole">${esc(r.role)}</span>` : "") + `</li>`).join("") + `</ul>`;
+  }
 
   /* HOW LONG THE REVEAL TAKES, in milliseconds.
 
@@ -68,9 +86,52 @@ const SetPiece = (function () {
       /* Centred, and the attribution is part of it: an epigraph without a
          source is a slogan. */
       return `<blockquote class="sp-sec sp-epigraph">` +
-        `<p>${esc(sec.body)}</p>` +
+        /* verse keeps its lines: " / " in content is a line break */
+        `<p>${esc(sec.body).replace(/ \/ /g, "<br>")}</p>` +
         (sec.source ? `<cite>${esc(sec.source)}</cite>` : "") +
         `</blockquote>`;
+    }
+
+    if (kind === "programme") {
+      /* A FORM BREAK, ON PURPOSE (the author, 28 Sep): the programme is not
+         the introduction's prose, and it must look like a different object
+         so nobody reads the casting note as part of the government's
+         record. An ornament, a double rule, the programme's own paper and
+         face, and the play's name and mark at its head. */
+      return `<div class="sp-sec sp-programme">` +
+        `<div class="sp-ornament" aria-hidden="true">\u2766</div>` +
+        `<div class="sp-proglabel">${esc(sec.label || "From the programme")}</div>` +
+        mark() +
+        (PLAY && PLAY.title ? `<div class="sp-playtitle">${esc(PLAY.title)}</div>` : "") +
+        (sec.body ? `<h3 class="sp-proghead">${esc(sec.head || "The role")}</h3>${para(sec.body)}` : "") +
+        (PLAY && PLAY.cast ? `<h3 class="sp-proghead">Dramatis personae</h3>${castList(PLAY.cast)}` +
+          (PLAY.ensemble ? `<p class="sp-ensemble">${esc(PLAY.ensemble)}</p>` : "") : "") +
+        `</div>`;
+    }
+
+    if (kind === "act") {
+      /* An act's card: the play's mark, the act, and its name. */
+      return `<div class="sp-sec sp-act">${mark()}` +
+        (PLAY && PLAY.title ? `<div class="sp-proglabel">${esc(PLAY.title)}</div>` : "") +
+        `<div class="sp-actnum">${esc(sec.head || "")}</div>` +
+        (sec.body ? `<div class="sp-acttitle">${esc(sec.body)}</div>` : "") + `</div>`;
+    }
+
+    if (kind === "direction") {
+      /* A stage direction: italic, as a script sets it, and nothing else. */
+      return `<div class="sp-sec sp-direction">${para(sec.body)}</div>`;
+    }
+
+    if (kind === "cast") {
+      /* The cast and what became of each of them (the curtain call). */
+      return `<div class="sp-sec sp-programme sp-curtain">${head}${castList(sec.body)}</div>`;
+    }
+
+    if (kind === "margin") {
+      /* THE PRIME MINISTER'S HAND, in the margin of the page before it:
+         a note in ink, initialled. The one voice the pages never quote. */
+      return `<div class="sp-sec sp-margin">${para(sec.body)}` +
+        (sec.source ? `<span class="sp-initials">${esc(sec.source)}</span>` : "") + `</div>`;
     }
 
     if (kind === "document") {
@@ -159,6 +220,7 @@ const SetPiece = (function () {
   function html(ev, opts) {
     const sp = ev && typeof ev.setpiece === "object" && ev.setpiece ? ev.setpiece : {};
     const o = opts || {};
+    PLAY = o.play || null;
 
     /* THE ART SLOT RENDERS EMPTY AND THAT IS DELIBERATE. content/artifacts.js
        reserves the box either way, so a set piece ships before its picture

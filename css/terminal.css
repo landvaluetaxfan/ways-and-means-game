@@ -3561,6 +3561,38 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .sp-source{font-family:var(--f-ui);font-size:10px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--ink-soft);margin-top:6px;}
 
+/* THE THEATRE (design/56). The frame is outside the world, so it wears
+   what the world's pages never do: the programme's cream paper, a double
+   rule, a serif display face and an ornament. The break from the prose
+   above is the point (the author: the player must not wonder why a casting
+   note is in the government's introduction). */
+.sp-programme{margin:38px 0 10px;padding:16px 18px 14px;background:#f3eddd;color:#231f18;
+  border-top:4px double #3b342a;border-bottom:4px double #3b342a;text-align:center;}
+.sp-programme .sp-ornament{font-size:20px;line-height:1;color:#8a6d1a;margin:-2px 0 6px;}
+.sp-proglabel{font-family:var(--f-ui);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#6b5f4c;}
+.sp-playtitle{font-family:var(--f-disp);font-size:24px;font-style:italic;margin:4px 0 10px;}
+.sp-mark{display:block;width:46px;height:46px;margin:8px auto 4px;}
+.sp-proghead{font-family:var(--f-ui);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+  font-weight:400;color:#6b5f4c;margin:14px 0 6px;border-top:1px solid #cfc4ab;padding-top:10px;}
+.sp-programme p{font-family:var(--f-doc);text-align:left;}
+#s-sit .sp-programme p{font-size:14px;line-height:1.6;}
+.sp-castlist{list-style:none;margin:0;padding:0;text-align:left;font-family:var(--f-doc);}
+.sp-castlist li{padding:3px 0;border-bottom:1px dotted #cfc4ab;font-size:13.5px;line-height:1.45;}
+.sp-castname{font-variant:small-caps;letter-spacing:.04em;font-weight:bold;margin-right:.6ch;}
+.sp-castrole{font-style:italic;}
+.sp-ensemble{font-style:italic;text-align:center !important;margin-top:8px;}
+.sp-act{text-align:center;margin:18px 0 22px;}
+.sp-actnum{font-family:var(--f-ui);font-size:12px;letter-spacing:.3em;text-transform:uppercase;margin-top:10px;}
+.sp-acttitle{font-family:var(--f-disp);font-size:28px;font-style:italic;margin-top:2px;}
+.sp-direction{padding:0 3ch;}
+.sp-direction p{font-family:var(--f-doc);font-style:italic;color:#4a4438;}
+/* the Prime Minister's hand: ink, a slight slope, initialled */
+.sp-margin{margin:-6px 0 16px auto;max-width:34ch;padding:6px 10px;border-left:2px solid #2b4a7a;
+  transform:rotate(-1deg);color:#1f3b6b;}
+.sp-margin p{font-family:"Segoe Print","Bradley Hand","Comic Neue",var(--f-doc);font-style:italic;font-size:14px;line-height:1.45;margin:0 0 3px;}
+.sp-initials{display:block;text-align:right;font-family:var(--f-doc);font-style:italic;font-size:12px;}
+@media (prefers-reduced-motion:reduce){.sp-margin{transform:none;}}
+
 .sp-signature{display:flex;justify-content:center;margin-top:22px;}
 /* THE HAND IS AN IMAGE AND THE REVEAL IS A CLIP. The wrapper is the
    clipper: it is the size of the drawing, and clip-path opens from its

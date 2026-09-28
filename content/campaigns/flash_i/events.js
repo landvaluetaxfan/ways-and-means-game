@@ -61,7 +61,8 @@ campaign("flash_i", { events: [
         who:"A foundry shift supervisor, on Ring Network, the Commonwealth's broadcaster" } ] },
     { kind:"document", head:"The notice of wind-up",
       body:"The Company's operating subsidiary for the Bellamy Almanac Works is wound up with effect from midnight. Its obligations under the charter of the Works terminate with it, and the Company accepts no successor liability. Enquiries concerning the platform should be addressed to the authorities of the host state.",
-      source:"Filed by Cordell with the registrar of companies, Port-Gentil, Gabon" }
+      source:"Filed by Cordell with the registrar of companies, Port-Gentil, Gabon" },
+    { kind:"margin", body:"Who holds the bonds? Find me the prospectus before the survey team leaves.", source:"A.E.F." }
   ] },
   /* THE STATION QUESTION IS BEFORE THE GOVERNMENT from the moment the
      platform is stranded, whichever answer is given: design/32 decided it
@@ -849,7 +850,8 @@ has the money.`,
     sections:[
     { kind:"document", head:"The power the authority holds",
       body:"Where the thermal margin of a band falls below the level prescribed by the Minister, the engineering authority may suspend the register of tier four in that band without notice.",
-      source:"The Allocation Act" }
+      source:"The Allocation Act" },
+    { kind:"margin", body:"Before any register is suspended, I want the names. Not the count: the names.", source:"A.E.F." }
   ] },
   when:{ flags:["f1_frozen"], scalarAbove:{ friction:70 }, scalarBelow:{ thermal_margin:30 } },
   title:"The first floor gives",
@@ -898,7 +900,8 @@ authority will choose for us, and it will choose by the list."`,
     sections:[
     { kind:"document", head:"The draft",
       body:"1. No assembly of more than fifty persons shall take place in a public space of a ring station.\n\n2. Movement between stations shall require a permit issued under this Order.\n\n3. For so long as this Order is in force, no motion of no confidence in the Government shall be moved in the House.",
-      source:"The Emergency Powers (Circumterrestrial Commonwealth) Order 2080, as drafted by the Cabinet Office. Unsigned." }
+      source:"The Emergency Powers (Circumterrestrial Commonwealth) Order 2080, as drafted by the Cabinet Office. Unsigned." },
+    { kind:"margin", body:"Who asked for this to be drafted? It does not leave this room.", source:"A.E.F." }
   ] },
   when:{ flags:["f1_first_floor"], scalarAbove:{ friction:75 },
          scalarBelow:{ thermal_margin:25, solvency:30000 } },
@@ -1069,7 +1072,8 @@ receipts to the House.`,
     sections:[
     { kind:"document", head:"The statement",
       body:"I have today tendered my resignation as Minister for External Relations. The decision not to recognise the vote on the Bellamy Almanac Works was one I advised and defended, and its consequences are mine to answer for. I thank the Prime Minister for the trust placed in me. I will continue to serve my constituents from the back benches.",
-      source:"Issued by the minister's office" }
+      source:"Issued by the minister's office" },
+    { kind:"margin", body:"I will answer this one by hand. Jean has earned that.", source:"A.E.F." }
   ] },
   title:"A resignation",
   speaker:null,
@@ -1189,7 +1193,8 @@ Works, the orbital refinery at the centre of the quarrel, stay as they were.`,
     sections:[
     { kind:"document", head:"The clause",
       body:"An Event of Default occurs if the Borrower, or any authority acting for it, expropriates, nationalises or otherwise takes without adequate compensation any property of a company incorporated in the jurisdiction of a Lender.",
-      source:"The Standby Facility Agreement, 2078" }
+      source:"The Standby Facility Agreement, 2078" },
+    { kind:"margin", body:"I read this clause in 2078, and signed the facility anyway. Ask the agent what a waiver costs.", source:"A.E.F." }
   ] },
   when:{ flags:["almanac_annexed"], flagsAbsent:["works_bond_paid"] },
   title:"A notice from the agent",
@@ -1493,6 +1498,7 @@ waiting for Kenya's rescue or the Commonwealth's answer.`,
   when:{ flags:["station_issue"], flagsAbsent:["works_air_paid", "almanac_annexed"], resolved:false },
   setpiece:{ title:"Abandoned refinery's air plant fails as its last filters run out", mood:"threat",
     sections:[
+    { kind:"epigraph", body:"In the midst of life we are in death.", source:"The Book of Common Prayer, the Burial of the Dead" },
     { kind:"voices", head:"What is being said", body:[
       { said:"Most of the dead were over seventy. Two were children with asthma. Clean air would have kept every one of them alive.",
         who:"Maricel Dizon, chief medical officer of the Almanac Works" },

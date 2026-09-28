@@ -130,8 +130,19 @@ function newGame() {
   seen.intro = !!intro;
   seen.epigraph = !!(intro && intro.querySelector(".sp-epigraph"));
   seen.chromed = !!(intro && !w.document.querySelector("#s-sit.setpiece"));
+  /* THE PROGRAMME, set apart from the introduction (design/56): its own
+     block, after the signature, carrying the play's name and the cast */
+  const prog = intro && intro.querySelector(".sp-programme");
+  seen.programme = !!(prog && prog.querySelector(".sp-castlist li") &&
+    [...intro.querySelectorAll(".sp-sec")].indexOf(prog) > [...intro.querySelectorAll(".sp-sec")].indexOf(intro.querySelector(".sp-signature")));
   const go = w.document.querySelector("#sitting-body [data-sp-go]");
   if (go) go.click();
+  /* and the first act's card, which follows the introduction where the
+     campaign is a play (design/56) */
+  seen.act = !!w.document.querySelector("#sitting-body .sp-act");
+  const act = w.document.querySelector("#sitting-body .sp-act") &&
+              w.document.querySelector("#sitting-body [data-sp-go]");
+  if (act) act.click();
 }
 
 /* `const CONTENT` inside a script is a lexical global, not a window

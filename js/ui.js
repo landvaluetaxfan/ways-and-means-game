@@ -5210,6 +5210,51 @@ const UI = (function () {
   const SITDAYS = "four";
   let calMonth = 0;                    /* months from the current sitting */
 
+  /* THE CAMPAIGN AS A PLAY (design/56): its title, mark, cast, acts and
+     intervals, from the administration being played. */
+  function currentPlay() {
+    const adm = (C.administrations || []).find(a => a.id === st.admin);
+    return adm && adm.play && typeof SetPiece !== "undefined" ? adm.play : null;
+  }
+  function framePage() {
+    const play = currentPlay();
+    if (!play || !(st.flags || {})._introRead) return null;
+    const act = (play.acts || []).find(a => a.chapter === st.chapter);
+    if (act && !st.flags["_act" + act.chapter]) return { play, flag: "_act" + act.chapter, go: "Begin",
+      page: { sections: [{ kind: "act", head: act.head, body: act.title }]
+        .concat(act.epigraph ? [{ kind: "epigraph", body: act.epigraph.body, source: act.epigraph.source }] : [])
+        .concat(act.direction ? [{ kind: "direction", body: act.direction }] : []) } };
+    const iv = (play.intervals || []).find(x => x.after === (st.period || 1) - 1);
+    if (iv && !st.flags["_interval" + iv.after]) return { play, flag: "_interval" + iv.after, go: "Resume",
+      page: { sections: [{ kind: "act", head: "Interval", body: "" },
+                         { kind: "direction", body: iv.direction +
+                           (st.date ? "\n\nThe House sits again on " + dayLabel(st.date) + "." : "") }] } };
+    return null;
+  }
+  /* THE CURTAIN CALL (design/56): the cast, and what became of each of
+     them, from the save. The Prime Minister's line is the verdict of the
+     last page; everyone else's is the latest thing the chronicle records of
+     them, or the part they began with. */
+  function curtainCall(ending) {
+    const play = currentPlay();
+    if (!play || !play.cast) return [];
+    const said = id => (st.log || []).filter(e => e.cx && (e.about || []).indexOf(id) >= 0)[0];
+    const pmLine = ending.kind === "election" && ending.result ? governmentReturn(ending.result).line
+      : ending.kind === "settlement" ? "saw the session through"
+      : "lost the House";
+    const rows = play.cast.map((c, i) => {
+      const e = i === 0 ? null : said(c.id);
+      const fate = i === 0 ? pmLine
+        : e ? "on " + dayLabel(Engine.dateOfSitting(C, e.sitting)) + ", " + e.cx.replace(/^(\S+ ){0,6}?(was|were|resigned|withdrew|left|returned|crossed|held|won)/, "$2")
+        : c.role;
+      return { name: c.name, role: fate.charAt(0).toUpperCase() + fate.slice(1) + (/[.!?]$/.test(fate) ? "" : ".") };
+    });
+    return [{ kind: "act", head: "Curtain call", body: "" }]
+      .concat(play.curtain && play.curtain.epigraph ? [{ kind: "epigraph", body: play.curtain.epigraph.body,
+                                                        source: play.curtain.epigraph.source }] : [])
+      .concat([{ kind: "cast", body: rows }]);
+  }
+
   /* "Thursday 14 April" — the card names the day, because a player
      reading a date wants the weekday as much as the number. */
   function dayLabel(iso) {
@@ -6105,6 +6150,9 @@ const UI = (function () {
               " to licensing boards, changing who was entitled to vote in " +
               "the constituencies concerned." });
 
+    /* and the players take their bow (design/56) */
+    curtainCall(end).forEach(x => secs.push(x));
+
     secs.push({ kind: "body", head: "The record",
       body: st.log.length + " entries, sitting " + st.sitting + ", session " + st.session +
             ", seed " + st.seed + ". Every decision is on the Record tab, where it can be read and taken " +
@@ -6215,7 +6263,7 @@ const UI = (function () {
       const adm = (C.administrations || []).find(a => a.id === st.admin);
       if (adm && adm.intro && typeof SetPiece !== "undefined") {
         box.innerHTML = SetPiece.html({ setpiece: adm.intro },
-                                      { go: "Take office" }).html;
+                                      { go: "Take office", play: adm.play || null }).html;
         /* ARMED WITH THE PAGE, WRITTEN ON THE CLICK. `armed` is false where
            the path cannot be measured (jsdom, a browser without
            getTotalLength); then there is no stroke to wait for, so the click
@@ -6278,12 +6326,26 @@ const UI = (function () {
          the board, which is the same facts in a panel. */
       const sitEnd = $("#s-sit");
       if (typeof SetPiece !== "undefined" && SetPiece.html) {
-        box.innerHTML = SetPiece.html({ setpiece: endPiece(ending) }).html;
+        box.innerHTML = SetPiece.html({ setpiece: endPiece(ending) }, { play: currentPlay() }).html;
         if (sitEnd) sitEnd.classList.add("setpiece", "fullpage");
       } else {
         box.innerHTML = endBoardHTML(ending);
         if (sitEnd) sitEnd.classList.remove("setpiece", "fullpage");
       }
+      return;
+    }
+    /* THE THEATRE BETWEEN SCENES (design/56): an act's card when a chapter
+       opens, and the interval when the House comes back from a recess. Once
+       each, before the sitting's business, from the campaign's own `play`;
+       a campaign without one has neither. */
+    /* not on the author's bench: the Sandbox jumps between scenes */
+    const frame = !forced && !inSandbox() && framePage();
+    if (frame) {
+      const sitF = $("#s-sit");
+      box.innerHTML = SetPiece.html({ setpiece: frame.page }, { go: frame.go, play: frame.play }).html;
+      if (sitF) { sitF.classList.add("setpiece"); sitF.classList.remove("fullpage"); }
+      const goF = box.querySelector("[data-sp-go]");
+      if (goF) goF.addEventListener("click", () => { st.flags[frame.flag] = true; saved(); drawAll(); });
       return;
     }
     if (!currentEvent) currentEvent = Engine.nextEvent(st, C);

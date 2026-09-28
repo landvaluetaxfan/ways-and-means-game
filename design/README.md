@@ -66,6 +66,7 @@ decision needs its reasoning kept; the current work itself goes in
 | [51](51-the-page-is-a-news-report.md) | An event page is a news report, and lint enforces it | 2026-09-27 |
 | [54](54-the-founding-allocation.md) | The founding allocation: option C, public freehold leased | 2026-09-28 |
 | [55](55-the-concordance-over-time.md) | The Concordance over time: standing, history and state | 2026-09-28 |
+| [56](56-the-play.md) | The campaign as a play: programme, acts, intervals, curtain call, marginalia | 2026-09-28 |
 
 ## Archive
 
