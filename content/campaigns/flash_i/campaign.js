@@ -110,12 +110,12 @@ Ideal performer for this role is a woman in her early fifties in the alto range.
       ] },
 
     /* THE PLAY (design/56): the campaign's frame, outside the world. Its
-       name and mark recur on the programme, each act's card, the intervals
+       name and mark recur on each act's card, the intervals
        and the curtain call. The title is the author's (28 Sep), from the
        introduction: Flash came up in 2070, "in the Commonwealth's
        springtime", and the play is set ten years after. `acts` are keyed by
        chapter, `intervals` by the sitting period the House has just
-       finished; the cast is the programme's and the curtain call's. */
+       finished; the cast is the introduction's and the curtain call's. */
     play:{
       title:"After the Springtime",
       mark:"img/plays/flash_i.svg",
@@ -157,7 +157,7 @@ ADRIANA EIREANN FLASH takes the Prime Minister's place on the front bench, in th
         { after:2, direction:
 `The House rises again. It will sit once more before the session ends, and every member knows it. On the concourse outside the chamber the talk is of seats: who will hold theirs, and who is already drafting a farewell.` }
       ],
-      curtain:{ epigraph:{ body:"Our revels now are ended. These our actors, / As I foretold you, were all spirits and / Are melted into air, into thin air.",
-                           source:"William Shakespeare, The Tempest" } }
+      curtain:{ epigraph:{ body:"As the ends of such a partnership cannot be obtained in many generations, it becomes a partnership not only between those who are living, but between those who are living, those who are dead, and those who are to be born.",
+                           source:"Edmund Burke, Reflections on the Revolution in France" } }
     } }
 ] });

@@ -330,12 +330,7 @@ company meant to stay, and it is running at the top of its certified rate.
 Since the Act was set down, the Works' heat counts against the
 Commonwealth's thermal margin, the spare capacity of its radiators, and a
 recycling plant at its limit wastes power as heat. Funded in full, at three
-billion dollars, the plant holds for the quarter and the margin recovers a
-little each sitting. Trimmed, the Treasury keeps two billion, the plant
-holds for a month, and then the margin falls by about two points a sitting.
-
-"Neither answer shows today," Vidyasagar says. "One of them shows in a
-month."`,
+billion dollars, the plant holds for the quarter and the margin recovers a little each week. Trimmed, the Treasury keeps two billion, the plant holds for a month, and then the margin falls by about two percentage points every few days. "You won't see the difference this week," Vidyasagar says. "You'll see it in a month."`,
   choices:[
     { posture:"bold", label:`Fund the water-recycling plant's refit in full, for CW$3bn.`,
       note:`The plant holds for the quarter and wastes less power as heat, so the thermal margin recovers about a point a sitting. Voters see a government paying for the platform it took, and their belief in its account of the Works rises.`,
@@ -469,7 +464,7 @@ the water. Nobody on the government benches asked for time to answer it.`,
         who:"The European Union's statement on the sanctions" },
       { said:"Three of our suppliers rang before breakfast to ask whether they would be breaking the law by selling us water.",
         who:"The Works' chief engineer, on Ring Network, the Commonwealth's broadcaster" },
-      { said:"The platform has been paid for twice already: once by the people who built it, and once by the people who kept it breathing.",
+      { said:`The residents kept this platform running after its owners walked away. The European banks now want to be paid before they are.`,
         who:"The Spindle, the Commonwealth's newspaper of record, in its leading article" } ] }
   ] },
   when:{ resolved:"f1_pyrrhic", scalarAbove:{ friction:60 } },
@@ -496,8 +491,7 @@ them.
 The Union's sanctions work by naming accounts. The water suppliers at the
 Malindi anchor, the fuel brokers in Mombasa and the bank that runs the
 platform's payroll all now hold Commonwealth money they are forbidden to
-move. Three of them rang the platform before breakfast to ask whether
-selling it water would break the law.
+move.
 
 The Union holds most of the platform's bonds, through its banks and pension
 funds. It says the sanctions will stand until the bondholders are paid.
@@ -507,9 +501,7 @@ at ten billion dollars on present terms. No bank on Earth will say how long
 the present terms will last. The alternative is to leave the suppliers to
 carry the risk, which they will do by charging for it or by stopping.
 
-"It is not an embargo yet," said Edward Hatt, leader of the Alliance of
-Business and Government, the business party in the House. "It is the price
-of one, and it is being charged to us by the hour."`,
+"It isn't an embargo yet," said Edward Hatt, leader of the Alliance of Business and Government, the business party in the House. "But the suppliers are already charging us as if it were, and the cost goes up every week it lasts."`,
   choices:[
     { posture:"bold", label:"Pay for the platform out of the reserve.",
       effects:[{ move:{ "solvency":-10000 } }, { move:{ "legitimacy":6 } },
@@ -552,7 +544,7 @@ place.`,
                { wire:"COMMONWEALTH PAYS THE BOND; EARTH SUSPENDS THE MEASURES FOR A QUARTER" }],
       result:"The reserve pays seven billion dollars to the bondholders. The European Union lifts its sanctions for three months, and the quarrel with Earth cools." },
     { posture:"bold", label:`Refuse Earth's terms, and live with the sanctions.`,
-      note:`The refusal is popular at home, with the Trades Left, the current of your party that speaks for the maintenance unions, in particular, and voters credit a government that will not be pressed. The sanctions stay and cost more every sitting, and the quarrel with Earth grows.`,
+      note:`The refusal is popular at home, especially with the Trades Left, your party's union wing. Voters credit a government that will not be pushed around. The sanctions stay and cost more every sitting, and the quarrel with Earth grows.`,
       effects:[{ move:{ "friction":2 } }, { move:{ "legitimacy":5 } },
                { move:{ "loyalty.cu_maintenance":4 } },
                { wire:"PM REFUSES EARTH'S TERMS: 'THE COMMONWEALTH DOES NOT PAY RANSOM' (as of 6 days ago)" }],
@@ -647,14 +639,7 @@ Commonwealth insures with and borrows from at home. They have sent the
 Treasury a single page, with the premium paid at the top and one line at the
 foot saying what was covered.
 
-A policy that pays leaves the Underwriters poorer and more careful with the
-next one. A policy that expires unused leaves them the premium, and leaves
-the Treasury explaining what it bought.
-
-"Frozen or not frozen," said Edward Hatt, leader of the Alliance of Business
-and Government, the business party in the House. "That was the whole policy.
-They wrote it that way because they could read the numbers and we could
-not."`,
+If the policy pays, the Underwriters lose money on it and will charge more for the next one. If it expires unused, they keep the premium, and the Treasury will be asked what it paid for. "The policy turned on one question, whether the accounts were frozen," said Edward Hatt, leader of the Alliance of Business and Government, the business party in the House. "The Underwriters priced it on better figures than the Treasury had."`,
   choices:[
     { label:"The accounts froze. The cover answers the suppliers.",
       when:{ flags:["indemnity_suppliers","f1_frozen"] },
@@ -691,26 +676,13 @@ not."`,
   setpiece:{ title:"The debt on the Works' mind hardware comes to term" },
   title:"The substrate debt comes to term",
   speaker:"ceyhan",
-  body:`The loan that paid for the substrate of the Bellamy Almanac Works, the
-computers its emulated residents run on, has come to term. The Commonwealth
-took the debt on when it took over the orbital refinery, or wrote it off.
+  body:`The loan that paid for the substrate of the Bellamy Almanac Works, the orbital refinery the Commonwealth took over, has come to term. Substrate is the computing hardware the platform's emulated residents run on.
 
-When the loan was made, the lender's security was the people running on the
-hardware. The debt is therefore a claim on the residents' continued
-existence as much as on the machines.
+When the loan was made, the lender took the people running on the hardware as its security, so the debt is a claim on the residents as well as on the machines. When the Commonwealth took over the platform, it either took the debt on or wrote it off, and the settlement depends on which.
 
-Two figures decide how it settles. If the Commonwealth took the debt on, the
-question is whether fewer people are held in suspension now than when it
-did. A suspended mind is kept intact but not running.
+If the Commonwealth took the debt on, the question is whether fewer people are held in suspension now than when it did. A suspended mind is kept intact but not running. If it wrote the debt off, the question is whether substrate has risen in price since, which would make the cancelled debt worth more than the Commonwealth allowed for.
 
-If the Commonwealth wrote the debt off, the question is whether substrate
-has risen in price since. A rising price makes the cancelled debt worth more
-than the Commonwealth allowed for.
-
-"There are two ways to answer a debt secured on people," wrote Ivor Ceyhan,
-political editor of The Spindle, the Commonwealth's newspaper of record.
-"You can pay it, or you can say it was never owed. The platform has been
-counting either way."`,
+Ivor Ceyhan, political editor of The Spindle, the Commonwealth's newspaper of record, reported that the platform's residents had followed both figures closely since the Commonwealth took over the platform.`,
   choices:[
     { label:"The platform kept running. The assumption held.",
       when:{ flags:["debt_assumed"], suspendedBelow:{ federal:72001 } },
@@ -779,7 +751,7 @@ as the line was open.`,
   setpiece:{ title:"Alliance calls in its emergency loan: 21.6 billion dollars or the mining rights", mood:"threat",
     sections:[
     { kind:"voices", head:"What is being said", body:[
-      { said:"The facility was printed, the rate was printed and the margin was printed. Nobody can say they were not told.",
+      { said:`The facility's terms were published in 2078, the rate and the margin included. Nobody can say they weren't told.`,
         who:"Edward Hatt MP, Leader, Alliance of Business and Government" },
       { said:"A party in the House is about to own the ore the Works runs on.",
         who:"The Spindle, the Commonwealth's newspaper of record" } ] }
@@ -983,7 +955,7 @@ now.`,
   setpiece:{ title:"The emergency order runs out at midnight unless it is renewed",
     sections:[
     { kind:"voices", head:"What is being said", body:[
-      { said:"An emergency is a thing that ends.",
+      { said:`Parliament set a date for the emergency powers to end. It should keep to it.`,
         who:"The Spindle, the Commonwealth's newspaper of record, in its leading article" },
       { said:"Renew it once and there will always be a reason to renew it again.",
         who:"A member on the government's own benches" } ] }
@@ -1301,7 +1273,7 @@ own future," Landry says.`,
                { wire:"COMMONWEALTH TABLES A RESOLUTION ON THE WORKS AT THE UNITED NATIONS" }],
       result:`The resolution is tabled for the Assembly's next sitting. The Union's mission asks for a copy within the hour.` },
     { posture:"measured", label:`Table it, and first write to six states that host the elevators' anchors, refunding three months of their anchor fees.`,
-      note:`The refund costs CW$1.5bn from the reserve, the Treasury's cash, and makes São Tomé and Príncipe, Kiribati, Brazil, the Maldives, Somalia and Uganda more likely to vote for the resolution. It goes to the next sitting with a better count.`,
+      note:`The refund costs CW$1.5bn from the reserve, the Treasury's cash. It makes six states more likely to vote for the resolution: São Tomé and Príncipe, Kiribati, Brazil, the Maldives, Somalia and Uganda. The resolution goes to the next sitting with a better count.`,
       effects:[{ resolution:{ un_works_selfdet:"table" } },
                { move:{ solvency:-1500 } },
                { move:{ "member.sao_tome":6, "member.kiribati":6, "member.brazil":6,
@@ -1334,9 +1306,7 @@ An Assembly resolution binds nobody. But it tells every capital that keeping
 its sanctions is what the world has asked of it, and it gives the banks that
 hold the bonds a sentence to quote.
 
-"It says 'compensation' four times and 'residents' once," said Jean Landry,
-the Minister for External Relations. "It is written to be voted for by
-delegates who have not read it."`,
+"It mentions compensation four times and the residents once," said Jean Landry, the Minister for External Relations. "Most delegates will vote on the summary, and the summary is about the bondholders."`,
   choices:[
     { posture:"cautious", label:"Vote against it and leave the floor to the Union.",
       result:`The Commonwealth's vote is recorded against. The rest of the count is the Assembly's.` },
@@ -1373,13 +1343,7 @@ The opinion runs to sixty pages. Adaeze Fenwick, the Minister for Law and
 the Charter, read the last four first.
 
 The fifteen judges come from fifteen states, one of them in the European
-Union, whose banks hold the platform's bonds. A court with no law to apply
-reads the parties instead. A claimant the world believes is heard
-differently from one it does not, and the Commonwealth has had a session to
-decide which it would be.
-
-"It turns on paragraph 206," Fenwick said, "and paragraph 206 turns on
-whether they believed us."`,
+Union, whose banks hold the platform's bonds. With no treaty to apply, the court weighed how each party had behaved, and the Commonwealth's conduct over the session is part of the record. "It comes down to paragraph 206," Fenwick said, "which asks whether the court believed our reasons for taking the platform."`,
   choices:[
     { label:"The Court finds the salvage lawful.",
       when:{ scalarAbove:{ legitimacy:49 } },

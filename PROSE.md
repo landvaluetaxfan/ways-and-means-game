@@ -58,7 +58,10 @@ slate of examples, and apply everywhere.
   and what it does not change. Don't stack glosses in the middle of a
   sentence ("the Trades Left, the current of your party that speaks for the
   maintenance unions, and Czarnecki's Hard Left notice"). Gloss by a short
-  clause, or where the term first appears on the page.
+  clause, or where the term first appears on the page. Lint counts a gloss
+  once for the whole decision (body, then each choice), so gloss once, in
+  the shortest form that says what the thing is: "the Trades Left, your
+  party's union wing".
 - **People talk like politicians and officials.** They are plain, practical
   and sometimes blunt. They give numbers and names, hedge, and use
   contractions where a speaker would. They don't speak in epigrams,
