@@ -3138,6 +3138,10 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
 }
 .prose p{margin:0 0 .85em;}
 .prose p:last-child{margin-bottom:0;}
+/* THE DECISION'S BODY USES THE COLUMN (the author, 28 Sep: "paragraph text
+   is narrow, when there's a lot of screen space"). The 66ch measure above
+   left two thirds of a wide sitting panel empty beside the text. */
+#sitting-prose, #sitting-prose p{max-width:100ch;}
 
 /* the speaker gets a byline rather than a label: this is the one screen
    where somebody is talking to you, and a slightly larger portrait with
