@@ -356,7 +356,8 @@ has signed it already.`,
        rises the Alliance calls it. The sum owed is on the account as a
        named creditor, principal and printed rate together, and the promise
        is kept when that balance is nothing, however it got there. */
-    { posture:"bold", label:"Take the loan.",
+    { posture:"bold", label:`Take Hatt's loan of CW$18bn, repayable at CW$19.8bn before the House rises, secured on the Cordell leases.`,
+      note:`The reserve gets the money it is short, and the government must repay it before the session ends or the Alliance takes the leases. Borrowing from a party in the House on these terms looks like a favour bought, and voters' belief in the government's claims falls.`,
       effects:[{ move:{ "solvency":18000 } }, { move:{ "debt.alliance":19800 } },
                { move:{ "legitimacy":-10 } }, { flag:"cordell_leases_pledged" },
                { undertake:{ id:"f1_debt", text:"Repay the emergency facility",
@@ -365,6 +366,7 @@ has signed it already.`,
                              onBreach:"f1_debt_called" } }],
       result:"Eighteen billion dollars reach the reserve. The loan must be repaid, at nineteen billion eight hundred million, before the House rises, and the Cordell leases are its security until then." },
     { posture:"cautious", label:"Refuse the loan.",
+      note:`Refusing keeps the government free of the Alliance and its hold on the leases, and voters credit it. The reserve stays short, and the shortfall costs it about CW$1bn a sitting until the government finds money elsewhere.`,
       effects:[{ move:{ "legitimacy":3 } }, { move:{ "trend.solvency":-1000 } }],
       result:"A government with money in hand could have refused it. This one is short, and the shortfall now costs the reserve about a billion dollars a sitting." }
   ]},
