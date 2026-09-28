@@ -449,7 +449,7 @@ suspension, their minds kept intact but not running.`,
                {flag:"vantage_handled"},{flag:"deferred_to_authority"},
                {wire:"GOVERNMENT DECLINES TO INTERVENE; ENGINEERING AUTHORITY TO EXERCISE S.12 POWERS"}],
       result:`You have said in public that the authority's decision on who is switched off is final. The Charter, the Commonwealth's constitution, has never settled that question.` },
-    { posture:"cautious", label:`Do nothing for now, in case the engineers repair the array and the fault clears.`,
+    { when:{ flagsAbsent:["commission_stations"] }, posture:"cautious", label:`Do nothing for now, in case the engineers repair the array and the fault clears.`,
       note:`Waiting commits the government to nothing. It also leaves the 4,200 people on Ember Ridge's tier-four register exposed, since the engineering authority can switch them off without telling a minister first, and the thermal margin keeps falling while the array is down.`,
       effects:[{move:{"thermal_margin":-6}},{queue:[{event:"vantage_cascade",after:3}]}],
       result:`The fault does not clear, and the array stays down.` },
@@ -462,7 +462,14 @@ suspension, their minds kept intact but not running.`,
       when:{ siNotMade:"rung1_conservation" },
       note:`The Voluntary Conservation (Appeal) Order is the first and cheapest of the government's emergency orders. Compliance is voluntary, so it frees only a little capacity, but Ember Ridge gets that headroom and nobody is switched off. If more is needed, the next orders are listed with the government's other instruments, each costlier than the last.`,
       effects:[{si:"rung1_conservation"},{flag:"vantage_handled"}],
-      result:`The appeal goes out under the minister's name, and Ember Ridge holds. The thermal margin improves a little. If more is needed, the next step is an emergency order that the House must approve.` }
+      result:`The appeal goes out under the minister's name, and Ember Ridge holds. The thermal margin improves a little. If more is needed, the next step is an emergency order that the House must approve.` },
+    /* A CALLBACK: the same answer, with the opening commitment quoted back
+       (the author, 28 Sep). Shown only when commission_stations is set. */
+    { when:{ flags:["commission_stations"] }, posture:"cautious", label:`Do nothing for now, in case the engineers repair the array and the fault clears.`,
+      note:`You told the President on your first morning that the stations came first, and his office has the note. Waiting leaves the 4,200 people on Ember Ridge's tier-four register exposed while the thermal margin falls, and the President's office will set that beside your words.`,
+      effects:[{move:{"thermal_margin":-6}},{queue:[{event:"vantage_cascade",after:3}]},
+               {move:{"rel.president":-6}}, {move:{"public_standing":-3}}],
+      result:`The fault does not clear, and the array stays down. The President's office asks, in writing, whether the stations still come first.` }
   ]},
 
 { id:"vantage_cascade", queuedOnly:true, once:true,
@@ -686,12 +693,21 @@ ones. You have the morning.`,
       effects:[{move:{"loyalty.fh":5}},{move:{"loyalty.hul":3}},{move:{"solvency": -6000}},
                {flag:"lobbied_functional"}],
       result:`The offer is six billion dollars of measures their members want. Two members of the Freehold Party agree to consider the bill. The functional count needs nine.` },
-    { posture:"cautious", label:`Let the vote go ahead as scheduled, and let the bill fall if the functional members vote it down.`,
+    { when:{ flagsAbsent:["commission_bill"] }, posture:"cautious", label:`Let the vote go ahead as scheduled, and let the bill fall if the functional members vote it down.`,
       note:`Voters will see a government that brought its bill to a vote and accepted the result. The New Progressive Party, which joined the government to pass this bill, will see a government that stopped fighting for it on the last morning.`,
       effects:[{move:{"public_standing":4}},{move:{"loyalty.psa":-10}},
                {flag:"let_it_fall"},
                {wire:"GOVERNMENT SIGNALS IT WILL NOT DELAY THE THRESHOLD DIVISION"}],
-      result:`The country sees a government that tried. The New Progressive Party, which joined the government for this bill, sees one that gave up.` }
+      result:`The country sees a government that tried. The New Progressive Party, which joined the government for this bill, sees one that gave up.` },
+    /* A CALLBACK: the same answer, with the opening commitment quoted back
+       (the author, 28 Sep). Shown only when commission_bill is set. */
+    { when:{ flags:["commission_bill"] }, posture:"cautious", label:`Let the vote go ahead as scheduled, and let the bill fall if the functional members vote it down.`,
+      note:`You told the President on your first morning that this bill was the government's first business, and his office's note of the meeting records it. Letting it fall now will be read against that note. The New Progressive Party, which joined the government to pass the bill, will see a government that stopped fighting for it on the last morning.`,
+      effects:[{move:{"public_standing":4}},{move:{"loyalty.psa":-10}},
+               {flag:"let_it_fall"},
+               {wire:"GOVERNMENT SIGNALS IT WILL NOT DELAY THE THRESHOLD DIVISION"},
+               {move:{"rel.president":-5}}, {move:{"legitimacy":-2}}],
+      result:`The country sees a government that tried, and the New Progressive Party sees one that gave up. The President's office tells The Spindle, the Commonwealth's newspaper of record, that the Prime Minister named this bill as her first business.` }
   ]},
 
 /* REACH: gb_approach's licensure carve-out choice sets licensure_carveout_offered. */
@@ -2716,12 +2732,21 @@ know.
                { move:{ "loyalty.cu_loyalists":-3 } },
                { wire:"CZARNECKI'S PAPER IS ON THE DESK; MEMBERS SAY WHETHER THEY WILL SIGN" }],
       result:"He leaves the sheet with the whips. The first new name is on it before the afternoon, and it is not one you would have guessed." },
-    { posture:"cautious", label:`Ignore the paper, since Czarnecki has only four names.`,
+    { when:{ flagsAbsent:["led_on_break"] }, posture:"cautious", label:`Ignore the paper, since Czarnecki has only four names.`,
       note:`It denies him the attention he wants and costs nothing today. He will collect the rest of the names in his own time, and the Hard Left and the Trades Left, the current of your party that speaks for the maintenance unions, resent being brushed off.`,
       effects:[{ move:{ "rel.halloran":-6 } }, { move:{ "loyalty.cu_halloran":-4 } },
                { move:{ "loyalty.cu_maintenance":-3 } },
                { wire:"PM DECLINES TO DISCUSS CZARNECKI'S LIST" }],
-      result:`The paper stays in his pocket, and he collects the rest of the names in his own time. The Hard Left and the Trades Left resent being brushed off.` }
+      result:`The paper stays in his pocket, and he collects the rest of the names in his own time. The Hard Left and the Trades Left resent being brushed off.` },
+    /* A CALLBACK: the same answer, with the opening commitment quoted back
+       (the author, 28 Sep). Shown only when led_on_break is set. */
+    { when:{ flags:["led_on_break"] }, posture:"cautious", label:`Ignore the paper, since Czarnecki has only four names.`,
+      note:`You told the country on your first day that the party had to change and that you changed it. Czarnecki's members say they are what you changed it without, and ignoring the paper proves their point. The Hard Left and the Trades Left, the current of your party that speaks for the maintenance unions, resent being brushed off.`,
+      effects:[{ move:{ "rel.halloran":-6 } }, { move:{ "loyalty.cu_halloran":-4 } },
+               { move:{ "loyalty.cu_maintenance":-3 } },
+               { wire:"PM DECLINES TO DISCUSS CZARNECKI'S LIST" },
+               { move:{ "loyalty.cu_halloran":-4 } }, { move:{ "party_loyalty":-2 } }],
+      result:`The paper stays in his pocket. By the afternoon he is quoting your first press conference to the members he has not yet asked.` }
   ]},
 
 /* THE OPPOSITION DECIDES (design/33 §1).
@@ -3046,7 +3071,7 @@ works as well as the Ministry does, and pay the levy on every hour. The sale
 cannot be undone, and I would not pretend otherwise. Neither can a reserve
 that runs out."`,
   choices:[
-    { posture:"bold", label:`Sell the Commonwealth's stake in the public substrate works to the consortium for CW$22bn.`,
+    { when:{ flagsAbsent:["led_on_continuity"] }, posture:"bold", label:`Sell the Commonwealth's stake in the public substrate works to the consortium for CW$22bn.`,
       note:`The money reaches the reserve within the week, and the Freehold Party, which speaks for leaseholders, approves, as does the Alliance. The Trades Left, the current of your party that speaks for the maintenance unions, and the Station Left, the current of the deck co-operatives, believe the works should be public and will not forget it. The sale cannot be undone.`,
       brief:"A one-off payment against a permanent loss of control. The "+
         "left of the party will not forget which quarter this happened in.",
@@ -3068,7 +3093,21 @@ that runs out."`,
                { move:{ "capital.gb":-4 } },
                { move:{ "trend.solvency":-400 } },
                { flag:"ec_refused_sale" }],
-      result:`The offer is declined in Parliament. The Trades Left and the Station Left cheer, and the reserve keeps falling at the rate it was falling before.` }
+      result:`The offer is declined in Parliament. The Trades Left and the Station Left cheer, and the reserve keeps falling at the rate it was falling before.` },
+    /* A CALLBACK: the same answer, with the opening commitment quoted back
+       (the author, 28 Sep). Shown only when led_on_continuity is set. */
+    { when:{ flags:["led_on_continuity"] }, posture:"bold", label:`Sell the Commonwealth's stake in the public substrate works to the consortium for CW$22bn.`,
+      note:`You told the press on your first day that you stand for what the party has always stood for: public ownership. Selling the public substrate works contradicts that in plain terms. The reserve gets CW$22bn within the week, and the Freehold Party and the Alliance approve. The Trades Left, the current of your party that speaks for the maintenance unions, and the Station Left, the current of the deck co-operatives, will quote your words back at every party meeting, and the sale cannot be undone.`,
+      effects:[{ move:{ solvency:22000 } },
+               { economy:{ private:0.06 } },
+               { move:{ "loyalty.cu_maintenance":-12 } },
+               { move:{ "loyalty.cu_deck":-9 } },
+               { move:{ "loyalty.fh":8 } },
+               { move:{ "capital.gb":6 } },
+               { flag:"ec_sold_a_utility" },
+               { wire:"GOVERNMENT SELLS PUBLIC STAKE IN SUBSTRATE WORKS" },
+               { move:{ "loyalty.cu_maintenance":-6 } }, { move:{ "loyalty.cu_loyalists":-4 } }, { move:{ "public_standing":-2 } }],
+      result:`The stake passes to the consortium and twenty-two billion dollars reach the reserve. By evening the Trades Left has printed your first press conference beside the sale.` }
   ]},
 
 /* CLOSING THE CHAIN ON THE SUBSIDY. tools/lint.js flagged

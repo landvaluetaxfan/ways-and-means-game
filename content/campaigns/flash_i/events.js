@@ -328,10 +328,17 @@ month."`,
       effects:[{ move:{ "solvency":-3000 } }, { move:{ "trend.thermal_margin":1 } },
                { move:{ "legitimacy":4 } }],
       result:"The plant is refitted. The thermal margin recovers a point at a time, and the country sees a government paying for the platform it took." },
-    { posture:"cautious", label:`Trim the refit, and keep CW$2bn in the Treasury.`,
+    { when:{ flagsAbsent:["led_on_competence"] }, posture:"cautious", label:`Trim the refit, and keep CW$2bn in the Treasury.`,
       note:`Nothing changes for a month, and the Treasury keeps the money. From then on the plant runs past its limit, and the thermal margin falls by about two points a sitting until the plant is fixed.`,
       effects:[{ move:{ "solvency":2000 } }, { move:{ "trend.thermal_margin":-2 } }],
-      result:`Nothing changes today. From next month the thermal margin falls about two points a sitting, and the next estimate will say so.` }
+      result:`Nothing changes today. From next month the thermal margin falls about two points a sitting, and the next estimate will say so.` },
+    /* A CALLBACK: the same answer, with the opening commitment quoted back
+       (the author, 28 Sep). Shown only when led_on_competence is set. */
+    { when:{ flags:["led_on_competence"] }, posture:"cautious", label:`Trim the refit, and keep CW$2bn in the Treasury.`,
+      note:`You told the press on your first day that the last government could not run the Commonwealth and that you can. Trimming the refit keeps CW$2bn now, and from next month the thermal margin falls about two points a sitting. The Spindle, the Commonwealth's newspaper of record, has kept the quote and will print it beside the plant's failure.`,
+      effects:[{ move:{ "solvency":2000 } }, { move:{ "trend.thermal_margin":-2 } },
+               {move:{"public_standing":-3}}, {move:{"rel.ceyhan":-4}}],
+      result:`Nothing changes today. From next month the thermal margin falls about two points a sitting, and Ivor Ceyhan, The Spindle's political editor, files the estimate beside your first press conference.` }
   ]},
 
 /* a panic button: visible, expensive, and the way back from the cascade */

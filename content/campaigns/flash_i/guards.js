@@ -895,5 +895,31 @@ guard("THE GENERAL ASSEMBLY (design/43)", ok => {
   }
 });
 
+/* THE OPENING IS REMEMBERED (28 Sep). What Flash tells the President and the
+   press on her first day sets a flag, and five later answers are quoted back
+   to her by it: the same choice, with the commitment in its note and a cost
+   of its own. Each callback shows only with its flag, and the plain answer
+   only without it, so the player never sees both. */
+guard("THE OPENING'S CALLBACKS (the author, 28 Sep)", ok => {
+  const pairs = [["ch2_open", "commission_bill"], ["vantage_radiator", "commission_stations"],
+                 ["f1_water", "led_on_competence"], ["ec_privatisation_offer", "led_on_continuity"],
+                 ["the_paper", "led_on_break"]];
+  pairs.forEach(([id, flag]) => {
+    const e = CONTENT.events.find(x => x.id === id);
+    const st = Engine.newGame(CONTENT);
+    const open = () => Engine.openChoices(st, CONTENT, e).map(x => x.choice);
+    const cb = e.choices.find(c => c.when && (c.when.flags || []).indexOf(flag) >= 0);
+    const plain = cb && e.choices.find(c => c !== cb && c.label === cb.label);
+    const without = open();
+    st.flags[flag] = true;
+    const withFlag = open();
+    ok(id + " quotes " + flag + " back, in place of the plain answer",
+       !!cb && !!plain && without.indexOf(plain) >= 0 && without.indexOf(cb) < 0 &&
+       withFlag.indexOf(cb) >= 0 && withFlag.indexOf(plain) < 0 &&
+       /on your first (morning|day)/.test(cb.note) && !/on your first (morning|day)/.test(plain.note),
+       without.length + " open without, " + withFlag.length + " with");
+  });
+});
+
 console.log("");
 console.log(T.failed() ? T.failed() + " FLASH I GUARD FAILURES" : "Flash I keeps its promises");
