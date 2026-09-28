@@ -5216,20 +5216,43 @@ const UI = (function () {
     const adm = (C.administrations || []).find(a => a.id === st.admin);
     return adm && adm.play && typeof SetPiece !== "undefined" ? adm.play : null;
   }
+  function actPage(act) {
+    return { sections: [{ kind: "act", head: act.head, body: act.title }]
+      .concat(act.epigraph ? [{ kind: "epigraph", body: act.epigraph.body, source: act.epigraph.source }] : [])
+      .concat(act.direction ? [{ kind: "direction", body: act.direction }] : []) };
+  }
+  function intervalPage(iv) {
+    return { sections: [{ kind: "act", head: "Interval", body: "" },
+                        { kind: "direction", body: iv.direction +
+                          (st.date ? "\n\nThe House sits again on " + dayLabel(st.date) + "." : "") }] };
+  }
   function framePage() {
     const play = currentPlay();
     if (!play || !(st.flags || {})._introRead) return null;
     const act = (play.acts || []).find(a => a.chapter === st.chapter);
-    if (act && !st.flags["_act" + act.chapter]) return { play, flag: "_act" + act.chapter, go: "Begin",
-      page: { sections: [{ kind: "act", head: act.head, body: act.title }]
-        .concat(act.epigraph ? [{ kind: "epigraph", body: act.epigraph.body, source: act.epigraph.source }] : [])
-        .concat(act.direction ? [{ kind: "direction", body: act.direction }] : []) } };
+    if (act && !st.flags["_act" + act.chapter])
+      return { play, flag: "_act" + act.chapter, go: "Begin", page: actPage(act) };
     const iv = (play.intervals || []).find(x => x.after === (st.period || 1) - 1);
-    if (iv && !st.flags["_interval" + iv.after]) return { play, flag: "_interval" + iv.after, go: "Resume",
-      page: { sections: [{ kind: "act", head: "Interval", body: "" },
-                         { kind: "direction", body: iv.direction +
-                           (st.date ? "\n\nThe House sits again on " + dayLabel(st.date) + "." : "") }] } };
+    if (iv && !st.flags["_interval" + iv.after])
+      return { play, flag: "_interval" + iv.after, go: "Resume", page: intervalPage(iv) };
     return null;
+  }
+  /* EVERY PAGE OF THE FRAME, for the author's bench: the Sandbox lists
+     them and puts any of them up on the Sitting screen (the author: "I want
+     to be able to see the stuff in the sandbox, obviously"). */
+  function playPages() {
+    const play = currentPlay();
+    if (!play) return [];
+    const adm = (C.administrations || []).find(a => a.id === st.admin) || {};
+    return [].concat(
+      adm.intro ? [{ key: "programme", title: "The programme", sub: "the introduction, and the programme after it",
+                     page: adm.intro }] : [],
+      (play.acts || []).map(a => ({ key: "act" + a.chapter, title: a.head + ": " + a.title,
+                                    sub: "when chapter " + a.chapter + " opens", page: actPage(a) })),
+      (play.intervals || []).map(iv => ({ key: "interval" + iv.after, title: "Interval " + iv.after,
+                                          sub: "when the House returns from recess " + iv.after, page: intervalPage(iv) })),
+      [{ key: "curtain", title: "Curtain call", sub: "the close of the last page, from the save as it stands",
+         page: { sections: curtainCall({ kind: "preview" }) } }]);
   }
   /* THE CURTAIN CALL (design/56): the cast, and what became of each of
      them, from the save. The Prime Minister's line is the verdict of the
@@ -5240,6 +5263,7 @@ const UI = (function () {
     if (!play || !play.cast) return [];
     const said = id => (st.log || []).filter(e => e.cx && (e.about || []).indexOf(id) >= 0)[0];
     const pmLine = ending.kind === "election" && ending.result ? governmentReturn(ending.result).line
+      : ending.kind === "preview" ? play.cast[0].role
       : ending.kind === "settlement" ? "saw the session through"
       : "lost the House";
     const rows = play.cast.map((c, i) => {
@@ -6309,6 +6333,16 @@ const UI = (function () {
     /* AN EVENT THE SANDBOX PUT UP IS SHOWN whatever the run's state: the
        author asked to see it, and the fall or the count is on the tab. */
     const forced = inSandbox() && currentEvent && currentEvent === sbxShown;
+    /* A PAGE OF THE PLAY, PUT UP FROM THE SANDBOX (design/56) */
+    const preview = inSandbox() && sbxFrame && playPages().find(x => x.key === sbxFrame);
+    if (preview) {
+      const sitP = $("#s-sit");
+      box.innerHTML = SetPiece.html({ setpiece: preview.page }, { go: "Back to the Sandbox", play: currentPlay() }).html;
+      if (sitP) { sitP.classList.add("setpiece"); sitP.classList.remove("fullpage"); }
+      const goP = box.querySelector("[data-sp-go]");
+      if (goP) goP.addEventListener("click", () => { sbxFrame = null; openTab("sbx"); drawAll(); });
+      return;
+    }
     const loss = Engine.checkLoss(st, C);
     if (loss.lost && !forced) {
       box.innerHTML = `<div class="waiting"><b>The government has fallen.</b><br>` +
@@ -7864,7 +7898,7 @@ const UI = (function () {
   /* THE STEPS BACK. Each is the save as it was, what was on the Sitting
      screen then, and the event to put up again for "try another choice".
      In memory only: a reload is a fresh bench. */
-  let sbxStack = [], sbxShown = null, sbxChapter = "all", sbxKind = "all";
+  let sbxStack = [], sbxShown = null, sbxChapter = "all", sbxKind = "all", sbxFrame = null;
   /* decisions, and the three kinds of event, in words (design/49, design/50) */
   const KIND_SAYS = {
     decision: "a decision: the sitting's business, one a sitting, drawn in the Sitting panel",
@@ -7903,7 +7937,7 @@ const UI = (function () {
     if (!e || !inSandbox()) return false;
     sbxPush("before “" + e.title + "”", id);
     st.flags._introRead = true;
-    currentEvent = e; sbxShown = e;
+    currentEvent = e; sbxShown = e; sbxFrame = null;
     lastResult = null; lastChanges = null; openRow = { event: e.id, i: -1 };
     if (typeof Focus !== "undefined") Focus.seed("sbx-events", id);
     openTab("sit");
@@ -8098,12 +8132,14 @@ const UI = (function () {
      what happens. Bills, the whip and the paper are levers too, and are
      tried on their own tabs. */
   const SBX_MODES = [["events", "Decisions and events"], ["initiatives", "Levers: initiatives"],
-                     ["orders", "Levers: orders"]];
+                     ["orders", "Levers: orders"], ["play", "The play"]];
   const sbxFind = () => (($("#sbx-find") || {}).value || "").trim().toLowerCase();
   const sbxHit = (q, ...xs) => !q || xs.join(" ").toLowerCase().indexOf(q) >= 0;
   /* the row's key: an event's id, or `ini:` and `si:` before the others' */
   function sbxRows() {
     const q = sbxFind();
+    if (sbxMode === "play") return playPages().filter(x => sbxHit(q, x.key, x.title, x.sub))
+      .map(x => ({ key: "play:" + x.key, title: x.title, sub: x.sub, col: "", status: "" }));
     if (sbxMode === "initiatives") {
       const avail = Engine.initiatives(st, C);
       return (C.initiatives || []).filter(i => sbxHit(q, i.id, i.title, i.note)).map(i => {
@@ -8134,6 +8170,7 @@ const UI = (function () {
     });
   }
   function sbxTotal() {
+    if (sbxMode === "play") return playPages().length;
     return sbxMode === "initiatives" ? (C.initiatives || []).length
       : sbxMode === "orders" ? (C.instruments || []).length : (C.events || []).length;
   }
@@ -8165,7 +8202,7 @@ const UI = (function () {
     }
     const rows = sbxRows();
     const lh = $("#sbx-list-hdr"), dh = $("#sbx-detail-hdr");
-    if (lh) lh.textContent = sbxMode === "events" ? "Every decision and event"
+    if (lh) lh.textContent = sbxMode === "play" ? "The play: its frame" : sbxMode === "events" ? "Every decision and event"
       : sbxMode === "initiatives" ? "Every initiative" : "Every order";
     const count = $("#sbx-count");
     if (count) count.textContent = rows.length + " of " + sbxTotal();
@@ -8173,11 +8210,11 @@ const UI = (function () {
     if (!sel || !rows.some(r => r.key === sel)) {
       /* a selection filtered out of the list keeps its reading, in its own mode */
       const keep = sel && (sbxMode === "events" ? !!C.eventById[sel] && sel.indexOf(":") < 0
-        : sel.indexOf(sbxMode === "initiatives" ? "ini:" : "si:") === 0);
+        : sel.indexOf(sbxMode === "initiatives" ? "ini:" : sbxMode === "play" ? "play:" : "si:") === 0);
       if (!keep) { sel = (rows[0] || {}).key || null; Focus.seed("sbx-events", sel); }
     }
     const picked = sbxMode === "events" && sel ? C.eventById[sel] : null;
-    if (dh) dh.textContent = sbxMode === "events"
+    if (dh) dh.textContent = sbxMode === "play" ? "The page" : sbxMode === "events"
       ? (picked ? "The " + KIND_WORD[kindOf(picked)] : "The decision")
       : sbxMode === "initiatives" ? "The initiative" : "The order";
     list.innerHTML = `<tbody>` + rows.map(r =>
@@ -8186,7 +8223,14 @@ const UI = (function () {
       `<td class="n">${esc(String(r.col))}</td><td class="st">${r.status}</td></tr>`).join("") + `</tbody>`;
 
     /* THE ONE CHOSEN */
-    if (sbxMode === "initiatives") {
+    if (sbxMode === "play") {
+      const x = sel && playPages().find(p0 => "play:" + p0.key === sel);
+      detail.innerHTML = x
+        ? `<h3>${esc(x.title)}</h3><div class="note">Shown ${esc(x.sub)}. The frame is theatre, outside the world, ` +
+          `and is shown once in play; here it can be seen any number of times.</div>` +
+          `<div class="btnrow"><button class="btn" data-sbxplay="${esc(x.key)}">Show it on the Sitting screen</button></div>`
+        : `<div class="note">This campaign has no play.</div>`;
+    } else if (sbxMode === "initiatives") {
       const i = sel && (C.initiatives || []).find(x => "ini:" + x.id === sel);
       detail.innerHTML = i ? sbxInitiativeHTML(i) : `<div class="note">No initiative matches.</div>`;
     } else if (sbxMode === "orders") {
@@ -8243,7 +8287,7 @@ const UI = (function () {
   /* EVERY SANDBOX CONTROL, delegated once from boot(). Each snapshots
      first, so each can be undone. */
   function sandboxClick(ev) {
-    const t = ev.target.closest && ev.target.closest("[data-sbxshow],[data-sbxmake],[data-sbxretry]," +
+    const t = ev.target.closest && ev.target.closest("[data-sbxshow],[data-sbxmake],[data-sbxretry],[data-sbxplay]," +
       "[data-sbxundo],[data-sbxchapter],[data-sbxunflag],[data-sbxflag],[data-sbxch],[data-sbxkind],[data-sbx],[data-sbxback]," +
       "[data-sbxmode],[data-sbxgo],[data-sbxmakego]," +
       "tr[data-sbxev],[data-sbxpick]");
@@ -8259,6 +8303,8 @@ const UI = (function () {
       sbxChapter = "all"; sbxKind = "all"; Focus.seed("sbx-events", d.sbxpick); drawSandbox(); return;
     }
     if (d.sbxmode) { sbxMode = d.sbxmode; drawSandbox(); return; }
+    if (d.sbxplay) { sbxFrame = d.sbxplay; openTab("sit"); drawAll();
+                     setStatus("Sandbox: showing the play's page", "transient"); return; }
     if (d.sbxgo) { sbxOpenGov(d.sbxgo); return; }
     if (d.sbxmakego) {
       const ini = d.sbxmakego.indexOf("ini:") === 0, id = d.sbxmakego.replace(/^(ini|si):/, "");

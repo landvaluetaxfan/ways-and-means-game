@@ -1628,6 +1628,24 @@ try {
     via.click();
     ok("and the link reads that event out", $("#sbx-event .w-c-iso") && $("#sbx-event .w-c-iso").textContent === to);
   }
+  /* THE PLAY IS ON THE BENCH (design/56; the author: "I want to be able to
+     see the stuff in the sandbox, obviously"): its frame is listed, and any
+     page of it goes up on the Sitting screen and comes back */
+  {
+    const mode = $('[data-sbxmode="play"]');
+    if (mode) mode.click();
+    const n = w.document.querySelectorAll("#sbx-events tr").length;
+    w.eval("Focus").activate("sbx-events", "play:act2");
+    const show = $("[data-sbxplay]");
+    if (show) show.click();
+    const act = $("#sitting-body .sp-act");
+    ok("the Sandbox lists the play's pages and puts one up on the Sitting screen",
+       n >= 4 && !!act && /Act II/.test(act.textContent), n + " pages, " + (act ? act.textContent : "no act card"));
+    const back = $("#sitting-body [data-sp-go]");
+    if (back) back.click();
+    ok("and comes back to the Sandbox", !!back && !$("#sitting-body .sp-act"));
+    const ev = $('[data-sbxmode="events"]'); if (ev) ev.click();
+  }
   /* THE DECISIONS THE PLAYER STARTS (design/48): initiatives and orders,
      read out and opened where the player takes them */
   $("#tab-sbx").click();
