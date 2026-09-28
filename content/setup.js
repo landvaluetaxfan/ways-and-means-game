@@ -613,7 +613,8 @@ const SETUP = {
     volume_forgone: { topic: "account", text:
       "The volume levy is set below standard and raises {volumeYield} a year; at " +
       "standard it would raise {volumeForgone} more. It is the one levy of the four " +
-      "that raises no price, since a charge on occupied space cannot be passed on." },
+      "that raises no price: it falls on the leaseholder, because the rent of a fixed " +
+      "position the Commonwealth owns cannot be passed on to the resident." },
 
     debt_none: { topic: "borrowing", text:
       "The Commonwealth owes nothing. If the reserve runs low it can draw on " +

@@ -782,8 +782,8 @@ off first. On Homestead, the low-band station of 880,000 people, the
 register has grown by several thousand without any announcement, because
 none was needed: the price rose and people stopped running.
 
-Sevi Ansar, a resident of Homestead's Deck 9, has written to every member
-who sits for a low-band seat, eleven of them from your party. "You did not
+Sevi Ansar, the elected chair of the Deck 9 residents' association on
+Homestead, has written to every member who sits for a low-band seat, eleven of them from your party. "You did not
 vote for this," the letter says. "That is the part I would like explained."`,
   choices:[
     { posture:"measured", label:`Pay an emergency substrate subsidy of CW$14bn from the reserve, the Treasury's cash.`,
@@ -1927,8 +1927,8 @@ room."`,
   body:`A settled question makes room for the next one. Deck 9 has one, and so does
 every group that spent the session waiting for this one to be over.
 
-"It is not that the answer is wrong," writes Sevi Ansar, a resident of Deck
-9 on Homestead, the low-band station. "It is that the answer is finished,
+"It is not that the answer is wrong," writes Sevi Ansar, who chairs the residents'
+association of Deck 9 on Homestead, the low-band station. "It is that the answer is finished,
 and a government moves on from what is finished."`,
   choices:[
     { posture:"bold", label:`Take up the next question now, while the government has the momentum.`,
@@ -2183,8 +2183,8 @@ timetables.`,
 from Earth, has fallen far enough that the quarterly supply run is being cut
 on the stations that depend on it most.
 
-Sevi Ansar, a resident of Deck 9 on Homestead, the low-band station, has
-circulated the new delivery schedule. "It is not the number," Ansar writes.
+Sevi Ansar, who chairs the residents' association of Deck 9 on Homestead,
+the low-band station, has circulated the new delivery schedule. "It is not the number," Ansar writes.
 "It is that the number is a schedule, and the schedule is a list of who is
 carried and who is not."`,
   choices:[

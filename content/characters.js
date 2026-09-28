@@ -268,9 +268,9 @@ const CHARACTERS = [
   { id:"ceyhan", pronouns:"he", descriptor:"the political editor of The Spindle, the Commonwealth's newspaper of record", portrait:"ceyhan.png",   name:"Ivor Ceyhan", role:"Political editor, The Spindle",
     party:null, category:"synthetic", relationship:44,
     note:"Will print what he is given and what he is not." },
-  { id:"ansar", descriptor:"a resident of Deck 9", portrait:"ansar.png",    name:"Sevi Ansar", role:"Deck 9",
+  { id:"ansar", descriptor:"the elected chair of the Deck 9 residents' association on Homestead", portrait:"ansar.png",    name:"Sevi Ansar", role:"Chair, Deck 9 Residents' Association",
     party:null, category:"uplift", relationship:55,
-    note:"A civilian voice. Used for warmth. Not a lobbyist." },
+    note:"Elected by the residents of Deck 9 on Homestead to speak for them to the station and the government. Recast from an ordinary resident on 28 Sep 2026: the author's rule is that a Prime Minister deals with representatives, not with private residents (bible §2.7)." },
 
   /* ---- the Reserve Bank (design/39 option C, 25 Sep 2026) ----
      A DELIBERATE ADDITION TO THE ROSTER (§2.7), the one person the dollar

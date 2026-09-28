@@ -103,89 +103,89 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 - §7.1 · L1141 — What got cheap, what stayed scarce  *LOCKED*
 - §7.2 · L1164 — Closure as the sovereignty number  *LOCKED*
 - §7.3 · L1172 — Taxation  *LOCKED*
-- §7.4 · L1192 — Welfare  *LOCKED*
-- §7.5 · L1198 — The shape of the economy  *LOCKED*
-- §7.5.1 · L1211 — Why nothing floats  *LOCKED*
-- §7.5.2 · L1225 — The financial sector  *LOCKED*
-- §7.5.3 · L1261 — Money  *LOCKED*
-- §7.5.4 · L1297 — The Reserve Bank  *LOCKED*
-- §7.6 · L1339 — Model depth, and the state object  *LOCKED*
-- §7.7 · L1394 — Order-paper time  *LOCKED*
-- §7.8 · L1430 — Discipline and the whip  *LOCKED*
-- §7.9 · L1460 — Scarcity prices  *LOCKED*
-- §7.10 · L1508 — The productive economy  *LOCKED*
+- §7.4 · L1199 — Welfare  *LOCKED*
+- §7.5 · L1205 — The shape of the economy  *LOCKED*
+- §7.5.1 · L1218 — Why nothing floats  *LOCKED*
+- §7.5.2 · L1232 — The financial sector  *LOCKED*
+- §7.5.3 · L1281 — Money  *LOCKED*
+- §7.5.4 · L1317 — The Reserve Bank  *LOCKED*
+- §7.6 · L1359 — Model depth, and the state object  *LOCKED*
+- §7.7 · L1414 — Order-paper time  *LOCKED*
+- §7.8 · L1450 — Discipline and the whip  *LOCKED*
+- §7.9 · L1480 — Scarcity prices  *LOCKED*
+- §7.10 · L1528 — The productive economy  *LOCKED*
 
-**Part VIII — AXES AND PARTIES** · L1555
-- §8.1 · L1557 — The five signed axes  *LOCKED*
-- §8.2 · L1615 — Depth budget  *LOCKED*
-- §8.3 · L1624 — Naming register  *LOCKED*
-- §8.4 · L1649 — The seated parties  *LOCKED (280 seats*
-- §8.5 · L1690 — Party notes
-- §8.6 · L1714 — Parties available but not currently seated  *LOCKED as reserve material*
-- §8.7 · L1750 — Extraparliamentary  *LOCKED*
-- §8.8 · L1756 — Historical and defunct  *LOCKED*
-- §8.9 · L1762 — Ideologies as doctrines  *LOCKED*
+**Part VIII — AXES AND PARTIES** · L1575
+- §8.1 · L1577 — The five signed axes  *LOCKED*
+- §8.2 · L1635 — Depth budget  *LOCKED*
+- §8.3 · L1644 — Naming register  *LOCKED*
+- §8.4 · L1669 — The seated parties  *LOCKED (280 seats*
+- §8.5 · L1710 — Party notes
+- §8.6 · L1734 — Parties available but not currently seated  *LOCKED as reserve material*
+- §8.7 · L1770 — Extraparliamentary  *LOCKED*
+- §8.8 · L1776 — Historical and defunct  *LOCKED*
+- §8.9 · L1782 — Ideologies as doctrines  *LOCKED*
 
-**Part IX — THE PLAYER'S PARTY** · L1774
-- §9.1 · L1776 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
-- §9.2 · L1793 — Inherited platform  *LOCKED*
-- §9.3 · L1797 — Two alliance structures  *LOCKED*
-- §9.4 · L1806 — Refraction  *LOCKED as a writing principle*
-- §9.5 · L1810 — Current caucus (Party of Socialists and Democrats, 85)  *LOCKED*
+**Part IX — THE PLAYER'S PARTY** · L1794
+- §9.1 · L1796 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
+- §9.2 · L1813 — Inherited platform  *LOCKED*
+- §9.3 · L1817 — Two alliance structures  *LOCKED*
+- §9.4 · L1826 — Refraction  *LOCKED as a writing principle*
+- §9.5 · L1830 — Current caucus (Party of Socialists and Democrats, 85)  *LOCKED*
 
-**Part X — SOCIETY, CULTURE, LAW** · L1827
-- §10.1 · L1829 — Aesthetic register — orbital warmth  *LOCKED*
-- §10.2 · L1841 — Nativism, inverted  *LOCKED*
-- §10.3 · L1847 — Labour  *LOCKED*
-- §10.3.1 · L1871 — Four overlays that matter more than the sectors  *LOCKED*
-- §10.4 · L1900 — Who is not in paid work  *LOCKED*
-- §10.5 · L1938 — Fork-rentiers  *LOCKED*
-- §10.6 · L1953 — Labour conflict  *LOCKED*
-- §10.7 · L1961 — Media and information  *LOCKED*
-- §10.8 · L1967 — Courts and law  *LOCKED*
-- §10.9 · L1973 — Religion  *LOCKED*
-- §10.10 · L1977 — External pressures  *LOCKED*
+**Part X — SOCIETY, CULTURE, LAW** · L1847
+- §10.1 · L1849 — Aesthetic register — orbital warmth  *LOCKED*
+- §10.2 · L1861 — Nativism, inverted  *LOCKED*
+- §10.3 · L1867 — Labour  *LOCKED*
+- §10.3.1 · L1891 — Four overlays that matter more than the sectors  *LOCKED*
+- §10.4 · L1920 — Who is not in paid work  *LOCKED*
+- §10.5 · L1958 — Fork-rentiers  *LOCKED*
+- §10.6 · L1973 — Labour conflict  *LOCKED*
+- §10.7 · L1981 — Media and information  *LOCKED*
+- §10.8 · L1987 — Courts and law  *LOCKED*
+- §10.9 · L1993 — Religion  *LOCKED*
+- §10.10 · L1997 — External pressures  *LOCKED*
 
-**Part XI — NAMED CANON** · L1985
-- §11.1 · L1989 — The polity
-- §11.2 · L2107 — Persons
-- §11.3 · L2151 — Stations and constituencies
-- §11.4 · L2228 — The functional roster  *LOCKED*
-- §11.5 · L2250 — The live bill
-- §11.6 · L2259 — Other business on the order paper
+**Part XI — NAMED CANON** · L2005
+- §11.1 · L2009 — The polity
+- §11.2 · L2128 — Persons
+- §11.3 · L2172 — Stations and constituencies
+- §11.4 · L2249 — The functional roster  *LOCKED*
+- §11.5 · L2271 — The live bill
+- §11.6 · L2280 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L2277
-- §12.1 · L2279 — The core principle  *LOCKED*
-- §12.2 · L2283 — Split visual language  *LOCKED*
-- §12.3 · L2290 — Chrome direction  *LOCKED*
-- §12.4 · L2296 — Screens  *LOCKED*
-- §12.5 · L2300 — Election night  *LOCKED*
-- §12.6 · L2310 — The orbital map  *LOCKED*
-- §12.7 · L2338 — The parliament diagram  *LOCKED*
-- §12.8 · L2364 — Documents  *LOCKED*
-- §12.9 · L2370 — The feed  *LOCKED*
-- §12.10 · L2374 — Build cost  *LOCKED*
-- §12.11 · L2378 — Images  *LOCKED*
-- §12.12 · L2406 — Existing artifact
-- §12.13 · L2418 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L2298
+- §12.1 · L2300 — The core principle  *LOCKED*
+- §12.2 · L2304 — Split visual language  *LOCKED*
+- §12.3 · L2311 — Chrome direction  *LOCKED*
+- §12.4 · L2317 — Screens  *LOCKED*
+- §12.5 · L2321 — Election night  *LOCKED*
+- §12.6 · L2331 — The orbital map  *LOCKED*
+- §12.7 · L2359 — The parliament diagram  *LOCKED*
+- §12.8 · L2385 — Documents  *LOCKED*
+- §12.9 · L2391 — The feed  *LOCKED*
+- §12.10 · L2395 — Build cost  *LOCKED*
+- §12.11 · L2399 — Images  *LOCKED*
+- §12.12 · L2427 — Existing artifact
+- §12.13 · L2439 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2477
-- §13.1 · L2479 — Scandal taxonomy  *LOCKED*
-- §13.2 · L2492 — The spine  *LOCKED*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2498
+- §13.1 · L2500 — Scandal taxonomy  *LOCKED*
+- §13.2 · L2513 — The spine  *LOCKED*
 
-**Part XIV — PRIOR ART** · L2500
-- §14.1 · L2502 — The gap  *LOCKED*
-- §14.2 · L2506 — Works
-- §14.3 · L2514 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L2521
+- §14.1 · L2523 — The gap  *LOCKED*
+- §14.2 · L2527 — Works
+- §14.3 · L2535 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2527
-- §15.1 · L2529 — Team  *LOCKED*
-- §15.2 · L2538 — Documentation  *LOCKED*
-- §15.3 · L2548 — Where this gets hard  *LOCKED*
-- §15.4 · L2559 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2576 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2548
+- §15.1 · L2550 — Team  *LOCKED*
+- §15.2 · L2559 — Documentation  *LOCKED*
+- §15.3 · L2569 — Where this gets hard  *LOCKED*
+- §15.4 · L2580 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2597 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2588
+**Part XVI — OPEN DECISIONS** · L2609
 
 <!-- /TOC -->
 
@@ -1184,7 +1184,14 @@ real budget measure gets. Each step names who pays it and moves standing in
 the bands that do (the ring for volume, the low band for thermal, the far and
 external bands for transit), the clause prints the Treasury's costing against
 the rate in force, and the rest follows through the model: the stance moves
-demand, the levy passes into the price of what it taxes, and the Bank answers.
+demand, the levies reach their prices, and the Bank answers.
+
+**Who bears a levy** (the author, 28 Sep 2026, option C of `design/54`). The
+thermal, substrate and transit levies pass partly into their prices, by each
+base's `passthrough` in `setup.fiscal`. The volume levy passes into none of
+the volume price: a lease's value is the rent of a fixed position that the
+Commonwealth owns (§7.5.2), so a levy on it falls on the leaseholder, not the
+resident. It is the one levy of the four that is a true land-value tax.
 Raising all four a tenth turns a 0.7% deficit into a 3.3% surplus and costs
 about a point and a half of output; raising all four a fifth is an austerity
 budget.
@@ -1235,6 +1242,19 @@ rather than shareholder-owned.
   the nearest thing to real estate. Their value derives from position inside a
   habitat, which is unearned in exactly Henry George's sense. The Georgists are
   correct, and are punished for it electorally.
+  **The tenure** (the author, 28 Sep 2026, option C of `design/54`). The
+  Perigee Charter vests all volume in the Commonwealth, which leases it for
+  fixed terms. To pay for construction, the first leases were sold cheaply at
+  the founding auctions of 2064 to 2070, on terms of up to ninety-nine years;
+  leases sold since have cost far more. Whoever bought at the auctions,
+  consortiums and early families alike, is the landlord class the Freehold
+  Party speaks for. The Commonwealth may decline to renew a lease at expiry
+  and compensates only for improvements, so the terms of renewal are the
+  Single Tax Party's great cause, and the first large block of founding leases
+  falling due is a crisis with a date.
+- **Thermal quota is never owned.** The Commonwealth issues it each year by
+  appropriation, and it can be traded within the year. The fight over heat is
+  annual and budgetary; the fight over volume goes back to 2064.
 - **Substrate futures** are forward contracts on mind-hours — a traded market in
   whether particular people keep running.
 - **Substrate debt** is credit secured against your own continuation. Time-
@@ -2064,7 +2084,8 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
   | 2060 | The Tribunal's presiding judge is emulated — before the founding, which is why she was in the room for its arguments. |
   | 2061 | *The Spindle* founded. The stations begin acting together as a treaty organisation, whose head is styled **Secretary-General**. |
   | 2063 | The rising against the provisional administration, suppressed in five weeks. Its survivors are alive and in their fifties now. |
-  | 2064 | **The Perigee Charter.** The treaty organisation becomes a state and the Secretary-General title goes vestigial — no holder addressed by it since. The consumables floor is in it from the start. |
+  | 2064 | **The Perigee Charter.** The treaty organisation becomes a state and the Secretary-General title goes vestigial — no holder addressed by it since. The consumables floor is in it from the start. The Charter vests all volume in the Commonwealth (§7.5.2). |
+  | 2064–2070 | **The founding auctions.** The first volume leases, of up to ninety-nine years, are sold cheaply to pay for the stations' construction. Their holders are today's landlord class. |
   | 2065 | The Anselm anchor granted to Brazil on a ninety-nine-year term, running to 2164. |
   | 2066 | **Admitted to the United Nations**, its 194th member, the Union abstaining in the Council. *(Added 26 Sep 2026: the year chosen by Claude at the author's request.)* |
   | 2068 | The Indonesian anchor granted during a currency crisis. |

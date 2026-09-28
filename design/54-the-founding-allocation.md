@@ -1,6 +1,8 @@
 # 54 — The founding allocation: three options
 
-**28 September 2026. For the author to decide.** GPT's review asked who
+**Decided 28 September 2026: option C** (the author: "take option C"). It is written into bible §7.3, §7.5.2 and §11.1. The engine already had the volume levy's pass-through at 0 (`setup.fiscal`), so the only change was the bible's claim that every levy passes into its price.
+
+**Written 28 September 2026, for the author to decide.** GPT's review asked who
 received the Commonwealth's scarce rights in 2064, and on what terms the
 public can take them back. The bible settles a great deal around the
 question and not the question itself:
