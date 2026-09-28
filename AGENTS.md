@@ -10,17 +10,32 @@ get the non-negotiables. If the two ever disagree, `CLAUDE.md` wins.
 
 ## Division of labour
 
-This repo is worked by two agents with different remits. Stay in your lane; it is
-the whole reason the engine/content split is enforceable.
+Three agents work this repo (the author, 28 Sep 2026). Stay in your lane.
 
 | | |
 |---|---|
-| **Claude Code** | `js/*`, `tools/*`, `test.js`, schema and vocabulary changes, structural/UI work, anything touching `js/engine.js` |
-| **opencode** | `content/*.js` — events, bills, characters, stations, encyclopedia, glossary. Prose. |
+| **Claude Code** | player-facing prose in the author's register (event pages, decisions, choices), canon and design judgement, architecture, and the briefs |
+| **Codex** | engine, tools, tests and interface work, from a brief |
+| **opencode** | mechanical execution from a brief: applying an edited `prose.txt`, renames, small content edits, running the checks |
 
-If a content change seems to need an engine change, stop and leave it for the
-engine pass. If an engine change seems to need new prose, leave a TODO in the
-brief rather than writing placeholder narrative.
+If a code task seems to need new canon or new player-facing prose, write it
+plainly, name it in the commit message, and leave the register to Claude.
+`npm run lint` holds every page, decision and choice to `design/51`'s rules
+whoever wrote it.
+
+## The author's standing rules
+
+- **Push to `main` when `npm run check` passes.** A push to `main` deploys
+  the live game, and the author wants every finished batch live (28 Sep:
+  "push to main and live, do that for everything in the future too").
+- Prose calls the chamber **Parliament**, or the House, never the House of
+  Delegates. Player-facing prose is an in-world news report: say the cause
+  of every fact, name every conflict and who did what, list concrete things,
+  and no paired negations or epigrams. Read `design/51` before writing any.
+- **Read economically.** The author pays for every token. Use the section
+  index at the top of `bible.md` and `sed -n` the range; grep before
+  opening a file; never read `bible.md`, `textbook.md`, `LESSONS.md` or
+  `js/engine.js` whole. Keep command output short (`| tail`, `| head`).
 
 ## The non-negotiables
 
@@ -41,13 +56,13 @@ brief rather than writing placeholder narrative.
 
 ## Is there a work order waiting?
 
-`opencode-brief.md` in the repository root, when it exists, is a task written
-for you by Claude Code and committed rather than spoken — the author is often
-away from the machine that runs you and this is the only channel between the
-two agents. **Read it before starting anything.** Check the git log first: if
-the work is already in, the file is stale and should be deleted.
+`briefs/` holds one task per file, written so that any agent can pick it up
+cold, with its lane on the first line. **Read `briefs/README.md` and your
+brief before starting anything.** Check the git log first: if the work is
+already in, the brief is stale and should be deleted. Delete a brief in the
+same commit as the work it asked for.
 
-A live instruction from the author always beats it.
+A live instruction from the author always beats a brief.
 
 ## The prose file
 
@@ -82,10 +97,10 @@ it was.
 
 ```
 npm install      # once, for jsdom
-npm run check    # all ten, about three seconds
+npm run check    # all thirteen, about two minutes
 ```
 
-All ten must pass. They are the only playtester this project has.
+All thirteen must pass. They are the only playtester this project has.
 
 ## Windows: never read or write source through the shell
 

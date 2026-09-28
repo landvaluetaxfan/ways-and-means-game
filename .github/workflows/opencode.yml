@@ -79,7 +79,7 @@ jobs:
           fi
           # An empty instruction means "do the work order that is waiting".
           if [ -z "$(echo "$BODY" | tr -d '[:space:]')" ]; then
-            BODY="Read opencode-brief.md in the repository root and do the work it describes."
+            BODY="Read briefs/README.md, then do the oldest brief in briefs/ whose first line names the opencode lane."
           fi
           { echo "prompt<<__EOF__"; echo "$BODY"; echo "__EOF__"; } >> "$GITHUB_OUTPUT"
 

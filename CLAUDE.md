@@ -12,6 +12,15 @@ the end says which).
 
 ## Standing rules
 
+- **Push every finished batch to `main`**, once `npm run check` passes: that
+  deploys the live game (the author, 28 Sep: "push to main and live, do that
+  for everything in the future too"). Develop on the session's branch, then
+  fast-forward `main`.
+- **Three agents, three lanes** (`AGENTS.md`, `briefs/README.md`): Claude
+  writes the prose, the canon, the architecture and the briefs; Codex builds
+  from a brief; opencode executes mechanical briefs. Hand engine work that
+  can be specified to a brief in `briefs/` rather than spending the
+  author's Claude usage on it.
 - **Do not commit** the untracked root duplicates (`events.js`, `glossary.js`,
   `lint.js`, `encyclopedia_content.js`, `encyclopedia_renderer.js`,
   `js/codex.js`) or the `tools/dither.sh` mode change.
