@@ -6478,21 +6478,49 @@ const UI = (function () {
         kicker: eventDateline(),
         figure: e.image && e.image.src ? plate(e.image)
           : spk ? portrait(spk, spk.name + " \u2014 " + spk.role) : null
-      }).html) + `<div class="sit-decide" id="sit-decide"></div>`;
+      /* the answers take the page's own measure, under it (briefs/decision-layout.md) */
+      }).html) + `<div class="sp-page sit-answers"><div class="sit-decide" id="sit-decide"></div></div>`;
       drawDecision();
+      placeJump();
       return;
     }
+    /* ONE READING COLUMN (briefs/decision-layout.md; the author, 28 Sep:
+       "decisions still awkwardly pushed to the bottom"). The prose and the
+       decision share one width and one left edge, centred in the panel, so
+       the choices are the end of the page rather than a strip at the foot
+       of the screen. The width is the prose's own, in its characters. */
     box.innerHTML =
-      `<div class="sit-read">` +
-        plate(e.image) +
-        portrait(spk) +
-        (spk ? `<div class="rulehead">${spk.name} &mdash; ${spk.role}</div>` : "") +
-        `<div class="prose" id="sitting-prose">${annotate(e.body.split(/\n\n/).map(p => `<p>${p.replace(/\n/g, " ")}</p>`).join(""))}</div>` +
-        `<div style="clear:both"></div>` +
-      `</div>` +
-      `<div class="sit-decide" id="sit-decide"></div>`;
+      `<div class="sit-col">` +
+        `<button class="sit-jump" type="button" hidden>Decision \u2193</button>` +
+        `<div class="sit-read">` +
+          plate(e.image) +
+          portrait(spk) +
+          (spk ? `<div class="rulehead">${spk.name} &mdash; ${spk.role}</div>` : "") +
+          `<div class="prose" id="sitting-prose">${annotate(e.body.split(/\n\n/).map(p => `<p>${p.replace(/\n/g, " ")}</p>`).join(""))}</div>` +
+          `<div style="clear:both"></div>` +
+        `</div>` +
+        `<div class="sit-decide" id="sit-decide"></div>` +
+      `</div>`;
 
     drawDecision();
+    placeJump();
+  }
+
+  /* A WAY DOWN FROM A LONG PAGE: where the choices start below what the
+     panel shows, a link at the head of the column says so and goes there.
+     Measured after the draw; a page whose choices are in view has none. */
+  function placeJump() {
+    const body = $("#sitting-body"), foot = $("#sit-decide"), jump = body && body.querySelector(".sit-jump");
+    if (!body || !foot || !jump || !foot.getBoundingClientRect) return;
+    const below = foot.getBoundingClientRect().top > body.getBoundingClientRect().bottom - 24;
+    jump.hidden = !below;
+    if (below && !jump.dataset.bound) {
+      jump.dataset.bound = "1";
+      jump.addEventListener("click", () => {
+        if (foot.scrollIntoView) foot.scrollIntoView({ block: "start", behavior: "smooth" });
+        jump.hidden = true;
+      });
+    }
   }
 
   /* THE DECISION BLOCK, DRAWN ON ITS OWN.

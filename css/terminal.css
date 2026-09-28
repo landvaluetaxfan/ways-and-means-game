@@ -2554,7 +2554,7 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
    meaning, everywhere. */
 .ch-head{
   display:flex;align-items:baseline;gap:7px;width:100%;text-align:left;
-  background:none;border:0;padding:6px 8px;font:inherit;color:var(--ink);cursor:pointer;
+  background:none;border:0;padding:5px 8px;font:inherit;color:var(--ink);cursor:pointer;
 }
 .ch-head:hover{background:var(--chrome-dk);}
 .ch.open .ch-head{
@@ -3150,6 +3150,20 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
    is narrow, when there's a lot of screen space"). The 66ch measure above
    left two thirds of a wide sitting panel empty beside the text. */
 #sitting-prose, #sitting-prose p{max-width:100ch;}
+/* ONE READING COLUMN (briefs/decision-layout.md). The prose and the
+   decision share it: the width the author approved for the prose, in the
+   prose's own characters, centred in the panel; the prose fills it and the
+   choices end where the text does. The decision keeps the interface face. */
+.sit-col{font-family:var(--f-read);font-size:14px;width:100%;max-width:100ch;margin:0 auto;position:relative;}
+.sit-col #sitting-prose, .sit-col #sitting-prose p{max-width:none;}
+.sit-col > .sit-decide{font-family:var(--f-ui);font-size:12.5px;}
+/* an event page's answers take the page's own measure, under it */
+#sitting-body .sp-page.sit-answers{padding-top:0;padding-bottom:4px;}
+.sit-jump{position:sticky;top:0;float:right;z-index:3;margin:0 0 4px 8px;
+  font-family:var(--f-ui);font-size:11px;letter-spacing:.06em;cursor:pointer;padding:2px 8px;
+  color:var(--ink);background:var(--gold-lt);border:1px solid var(--gold-dk);}
+.sit-jump:hover{background:var(--gold-dk);}
+.sit-jump[hidden]{display:none;}
 
 /* the speaker gets a byline rather than a label: this is the one screen
    where somebody is talking to you, and a slightly larger portrait with
