@@ -188,25 +188,41 @@ const ACTORS = [
     standing: 50, patience: 60,
     reach: {}, wants: {},
     asks: "the platform's corporate debt is honoured before any annexation",
-    note: "The European Union is the treaty union that has sanctioned the Commonwealth. It is the one party to the dispute with an anchor on its own territory: Tether 4, at Kourou. Its complaint is that the orbital franchises undercut European labour and personhood law beyond the reach of European courts. Its decisions reach the Commonwealth two sittings after they are taken in Brussels." },
+    note: "The European Union is the treaty union of Europe's states, and it holds a permanent seat on the United Nations Security Council in place of its members'. Tether 4, the space elevator at Kourou in French Guiana, is anchored on its territory. It holds that the orbital franchises undercut European labour and personhood law beyond the reach of European courts. In March 2080 it froze the assets of Gabon's sovereign wealth fund, after a United Nations panel found that the fund had paid for weapons used by separatists in Cabinda.",
+    /* THE CONCORDANCE OVER TIME (design/55): history and state after the
+       opening, in the grammar the hand-written articles use */
+    cx: [
+      { h: "The Almanac Works", since: { flags: ["station_issue"] }, body:
+        "The freeze caught Cordell, which the fund owns, and Cordell abandoned the Bellamy Almanac Works in May 2080. The platform's bonds were issued in Europe, and the Union holds that whoever takes the platform takes its debts: they must be honoured before any annexation." },
+      { h: "Sanctions against the Commonwealth", while: { scalarAbove: { friction: 40 } }, body:
+        "The Union's sanctions against the Commonwealth are in force. Imports from the Union cost more, and European banks may not fund the Commonwealth's borrowing." }
+    ] },
 
   { id: "earth_host", name: "Kenya", kind: "state", foreign: true, lag: 1,
     standing: 55, patience: 40,
     reach: {}, wants: {},
     asks: "a repatriation corridor for its citizens, however long the process takes",
-    note: "Kenya is the state on whose soil the International Earth-Orbit Elevator stands. It is a middle power with a large public administration and an established space programme, and its procurement law makes a repatriation of the platform's workers take two years. It will not pay for the wind-up of a foreign corporation, and it opposes any annexation of the platform at the foot of its tether. Its decisions reach the Commonwealth within a sitting." },
+    note: "Kenya is the East African state on whose coast the International Earth-Orbit Elevator, Tether 2, stands, at Malindi. It is a middle power with a large public administration and an established space programme. Its law requires an open tender for every public contract.",
+    cx: [
+      { h: "The Almanac Works", since: { flags: ["station_issue"] }, body:
+        "In May 2080 Kenya approved a fully funded plan to bring down the residents of the Bellamy Almanac Works, the refinery its elevator serves, who wish to come. Its tender law, the platform's safety inspection and the budget cycle put the last descents in 2082. It will not pay for the wind-up of a foreign company, and it opposes an annexation of the platform." }
+    ] },
 
   { id: "mars", name: "Chryse Basin and Nili Republic", kind: "state", foreign: true, lag: 11,
     standing: 44, patience: 80,
     reach: {}, wants: {},
     asks: "a public statement of the Commonwealth's position on the metanationals",
-    note: "Mars is divided between the Chryse Basin, which wants to mine, and the Nili Republic, where Mars' strongest evidence of ancient life lies and which will not allow it. It buys from the same extraction companies that abandoned the platform. A dispatch reaches it in minutes, and its answer comes when both halves have agreed, eleven sittings later." },
+    note: "Mars is divided between the Chryse Basin, which wants to mine, and the Nili Republic, where Mars' strongest evidence of ancient life lies and which will not allow it. It buys from the same extraction companies that supply the Commonwealth. A message reaches Mars in minutes, and an answer comes only when both halves have agreed on it." },
 
   { id: "metanationals", name: "Cordell", kind: "metanational", foreign: true, lag: 3,
     standing: 47, patience: 70,
     reach: {}, wants: {},
     asks: "the anchor concessions renewed without ratification, on their terms",
-    note: "Cordell is an extraction company chartered by the Gabonese Assembly in 2044 and majority-owned by Gabon's sovereign fund. It abandoned the Almanac Works through a ring-fenced subsidiary. It holds two anchor concessions, at Port-Gentil and on Chimborazo, and the Port-Gentil line serves Rookworks—Anselm, so it has interests inside the Commonwealth as well as outside it. Its position is that it acted within its rights." }
+    note: "Cordell is an extraction company chartered by the Gabonese Assembly in 2044 and majority-owned by Gabon's sovereign wealth fund. It holds two anchor concessions, at Port-Gentil and on Chimborazo, and the Port-Gentil line serves Rookworks—Anselm, so it has interests inside the Commonwealth as well as outside it. It owns the Bellamy Almanac Works, a refinery and foundry on Tether 2, through an operating subsidiary. Its assets were frozen with the fund's in March 2080.",
+    cx: [
+      { h: "The Almanac Works", since: { flags: ["station_issue"] }, body:
+        "On {date} the Commonwealth learned that Cordell had wound up the subsidiary that operated the Bellamy Almanac Works, leaving 184,000 residents with no employer, no wages and no contracts for their air, water or fuel. Because the subsidiary was a separate company, its debts, including the platform's bonds, ended with it. Cordell's position is that it acted within its rights." }
+    ] }
 ];
 
 if (typeof module !== "undefined") module.exports = ACTORS;

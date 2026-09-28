@@ -64,6 +64,8 @@ decision needs its reasoning kept; the current work itself goes in
 | [49](49-decision-and-event.md) | A decision is the sitting's; an event arrives | 2026-09-27 |
 | [50](50-three-kinds-of-event.md) | Three kinds of event, levers, and pages worth reading | 2026-09-27 |
 | [51](51-the-page-is-a-news-report.md) | An event page is a news report, and lint enforces it | 2026-09-27 |
+| [54](54-the-founding-allocation.md) | The founding allocation: option C, public freehold leased | 2026-09-28 |
+| [55](55-the-concordance-over-time.md) | The Concordance over time: standing, history and state | 2026-09-28 |
 
 ## Archive
 

@@ -31,6 +31,8 @@ const Refs = (function () {
   /* `opening`: an administration's effects at the first sitting, since the
      editor writes the campaign record (25 Sep) */
   /* `onTable`: a forum resolution's, beside its onPass and onFail (design/43) */
+  /* a condition is `when`, or the Concordance's `since` and `while` (design/55) */
+  const COND_KEYS = ["when", "since", "while"];
   const EFFECT_KEYS = ["effects", "onPass", "onFail", "onTable", "reverse", "political_cost", "onSign", "close", "opening"];
   const COLLECTIONS = [["events", "event"], ["bills", "bill"], ["instruments", "instrument"],
     ["initiatives", "initiative"], ["minutes", "minute"], ["cabinet", "cabinet"],
@@ -43,7 +45,7 @@ const Refs = (function () {
       if (Array.isArray(o)) return o.forEach(x => go(x, where));
       visit(o, where);
       Object.keys(o).forEach(k => {
-        if (EFFECT_KEYS.includes(k) || k === "when" || !o[k] || typeof o[k] !== "object") return;
+        if (EFFECT_KEYS.includes(k) || COND_KEYS.includes(k) || !o[k] || typeof o[k] !== "object") return;
         if (k === "choices" && Array.isArray(o[k]))
           o[k].forEach((c, ci) => go(c, where + " · choice " + (ci + 1)));
         else go(o[k], where);
@@ -58,12 +60,17 @@ const Refs = (function () {
     }));
   }
   function eachCondition(M, fn) {
-    walkModel(M, (o, where) => {
-      if (o.when && typeof o.when === "object" && !Array.isArray(o.when)) fn(o.when, where + " · condition");
+    const conds = (o, where) => COND_KEYS.forEach(k => {
+      if (o && o[k] && typeof o[k] === "object" && !Array.isArray(o[k])) fn(o[k], where + " · condition");
     });
-    (((M.encyclopedia || {}).articles) || []).forEach(a => (a.sections || []).forEach((sec, i) => {
-      if (sec.when) fn(sec.when, `article ${a.id} · section ${i + 1} · condition`);
-    }));
+    walkModel(M, conds);
+    /* the Concordance's standing, history and state (design/55): an
+       article, its sections and its banners each may carry one */
+    (((M.encyclopedia || {}).articles) || []).forEach(a => {
+      conds(a, `article ${a.id}`);
+      (a.sections || []).forEach((sec, i) => conds(sec, `article ${a.id} · section ${i + 1}`));
+      (a.banners || []).forEach((b, i) => typeof b === "object" && conds(b, `article ${a.id} · banner ${i + 1}`));
+    });
   }
 
   const renameKey = (obj, from, to) => {

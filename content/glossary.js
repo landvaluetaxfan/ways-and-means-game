@@ -97,11 +97,6 @@ const GLOSSARY = [
     handle:"Working eight-hour days while your rivals work sixty-four.",
     introduced:"ch2_psa_conference" },
 
-  { term:"House of Delegates", cluster:"functional", gloss:"The elected chamber of Parliament. 280 seats, majority 141.",
-    article:"The **House of Delegates** is the elected chamber of [[parliament|Parliament]]: 280 seats, of which 141 make a majority. 140 members are elected for districts, 100 from party lists, and 40 by the [[functional_constituency|functional constituencies]]. Some bills must also carry a [[dual_majority|dual majority]].",
-    handle:"The Commons, with a different name and a third tier.",
-    introduced:"gb_approach" },
-
   /* THE FOUR MARKET INSTRUMENTS (design/28 §3). Each is a position the
      government can take, and each is taught by its own settle event — the
      first sitting where the player meets what the position actually was.

@@ -411,6 +411,9 @@ const SETUP = {
         signed: "14 March 2078", maturity: "14 March 2083",
         reference: "3.25 per cent, the lending banks' overnight reference rate",
         margin: "1.75 per cent",
+        grid: "Under the agreement's grid the margin rises while a lender's government " +
+              "has sanctions in force against the Commonwealth, while the reserve is under " +
+              "the covenant, and while an event of default is declared.",
         summary: "It was signed in March 2078, after five years in which the " +
           "Commonwealth met its deficits from the reserve, as a backstop the " +
           "Treasury did not intend to draw.",
@@ -432,9 +435,13 @@ const SETUP = {
             "an event of default." },
           { h: "Sanctions", body:
             "A lender is not obliged to fund a drawing that its own government's " +
-            "sanctions forbid. The European lenders' commitments, US$20 billion " +
-            "between them, are suspended while the European Union's " +
-            "measures against the Commonwealth are in force." },
+            "sanctions forbid, and its commitment is suspended for as long as " +
+            "they are in force." },
+          /* state, not history: it lifts with the sanctions (design/55) */
+          { h: "Suspended commitments", while: { scalarAbove: { friction: 40 } }, body:
+            "The European lenders' commitments, US$20 billion between them, are " +
+            "suspended under the sanctions clause while the European Union's " +
+            "sanctions against the Commonwealth are in force." },
           /* live: these appear when a campaign declares a default or buys a
              waiver, and say nothing about which campaign it was */
           { h: "Event of default", when: { flags: ["standby_default"] }, body:

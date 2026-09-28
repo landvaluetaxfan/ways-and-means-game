@@ -53,9 +53,21 @@ const WORLD = {
       population:184000, workforce:97000,
       closure:0.44, suspended:7100, attested:0.66,
       composition:{ biological:0.74, emulation:0.2, uplift:0.04, synthetic:0.02 },
-      charter:"A private charter held by the operator and not granted by any Commonwealth.",
-      note:"The Bellamy Almanac Works is an industrial platform of 184,000 people, 97,000 of them employed, on Tether 2, whose anchor stands at Malindi in Kenya. It is a refinery and foundry: it smelts the ore Cordell's extraction platforms bring in and rolls it into structural metal and hull plate. It was built by the Bellamy concern, which Cordell later bought, keeping the Bellamy name on the station. It is the largest single employer outside the Commonwealth's jurisdiction, and it is outside the apportionment: it returns no members, pays no federal consumables levy, and is governed by a charter that is a contract between the company and its workforce. Whether it should join the Commonwealth, on what terms, and who pays for the charter to be surrendered, is the question before the House this session. These are the last figures Cordell filed before it abandoned the station.",
-      grievance:"That the House is deciding its future without reference to its charter, the contract between Cordell and its workforce.",
+      charter:"Its charter was issued by the operator, and gives the workforce an elected council of delegates to bargain with it.",
+      note:"The Bellamy Almanac Works is an industrial platform of 184,000 people, 97,000 of them employed, on Tether 2, whose anchor stands at Malindi in Kenya. It is a refinery and foundry: it smelts the ore Cordell's extraction platforms bring in and rolls it into structural metal and hull plate. It was built by the Bellamy concern, which Cordell later bought, keeping the Bellamy name on the station. It is the largest single employer outside the Commonwealth's jurisdiction, and it is governed by a charter that is a contract between the company and its workforce.",
+      grievance:"That its charter is a contract with a company registered on Earth, which no court in orbit can enforce.",
+      /* THE CONCORDANCE OVER TIME (design/55). The note above is true on
+         11 April; what happens to the Works is dated history. Flash I's
+         flags: in another campaign none of these is ever drawn. */
+      abandoned:{ flags:["station_issue"] },
+      banners:[{ id:"contested", since:{ flags:["station_issue"] } }],
+      cx:[
+        { h:"Abandonment", since:{ flags:["station_issue"] }, body:"On {date} the Commonwealth learned that Cordell had wound up the Works' operator. The European Union had frozen the assets of Gabon's sovereign wealth fund, Cordell's majority owner, in March, and the operator could no longer pay for the platform's air, water or fuel. Its engineers said the air would last about two months. Kenya approved a plan to bring the residents down that would take two years." },
+        { h:"Referendum", since:{ seen:"f1_referendum" }, body:"The residents voted on asking to join the Commonwealth, in a vote their elected council of delegates called. The result was published on {date}: of the 88 per cent of adults who voted, 79 per cent said yes." },
+        { h:"Air supply", since:{ flags:["works_air_paid"] }, body:"On {date} the Commonwealth undertook to supply the air plant with filters and catalyst until the platform's future was settled." },
+        { h:"Air plant failure", since:{ flags:["f1_air_failed"] }, body:"The air plant ran out of filters and catalyst on {date}. The council sealed the foundry decks and moved 70,000 residents into the housing ring, and eleven residents died in the first two days." },
+        { h:"Accession", since:{ flags:["almanac_annexed"] }, body:"On {date} Parliament carried the Almanac Works (Annexation) Act, and the Works became part of the Commonwealth. See [[commonwealth|Circumterrestrial Commonwealth]]." }
+      ],
       interests:["shed_order_priority", "essential_services_law", "consumables_subsidy"] }
   ],
   /* tether: the name the Commonwealth uses; formal: the instrument's name. */

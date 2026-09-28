@@ -37,7 +37,8 @@ ENCYCLOPEDIA.articles.forEach(a=>{
      class stopped at the hyphen and reported the first half as broken */
   [...text.matchAll(/\[\[([a-z0-9_-]+)/gi)].forEach(m=>{ if(!ids.has(m[1])) bad.push(a.id+" → [["+m[1]+"]]"); });
   (a.see||[]).forEach(s=>{ if(!ids.has(s)) bad.push(a.id+" → see:"+s); });
-  (a.banners||[]).forEach(b=>{ if(!ENCYCLOPEDIA.banners[b]) bad.push(a.id+" → banner:"+b); });
+  /* a banner is an id, or {id, since|while} (design/55) */
+  (a.banners||[]).forEach(b=>{ const id=typeof b==="string"?b:(b&&b.id); if(!ENCYCLOPEDIA.banners[id]) bad.push(a.id+" → banner:"+id); });
 });
 
 /* =============================================================
@@ -107,7 +108,7 @@ console.log("  hand-written by category:");
 Object.keys(cats).sort().forEach(k=>console.log("    "+k.padEnd(24)+cats[k]));
 console.log("");
 const banners={};
-ENCYCLOPEDIA.articles.forEach(a=>(a.banners||[]).forEach(b=>banners[b]=(banners[b]||0)+1));
+ENCYCLOPEDIA.articles.forEach(a=>(a.banners||[]).forEach(b=>{ const id=typeof b==="string"?b:b.id; banners[id]=(banners[id]||0)+1; }));
 console.log("  maintenance banners in use:");
 Object.keys(banners).sort().forEach(k=>console.log("    "+k.padEnd(24)+banners[k]));
 console.log("");

@@ -76,8 +76,12 @@ const Concordance = (function () {
   /* 2. AS OF WHEN. Everything the engine can move gets this, and nothing
      that content froze does: a station's form is not "as of" anything. */
   function asOf(sentence) {
-    return `As of sitting ${st.sitting}, ${sentence}`;
+    return `As of ${today()}, ${sentence}`;
   }
+  /* THE CONCORDANCE COUNTS IN DATES (design/55). A reader in 2080 has a
+     calendar, not a sitting number. */
+  function dayOf(sitting) { return longDate(Engine.dateOfSitting(C, sitting)); }
+  function today() { return dayOf(st.sitting); }
 
   /* 3. A POSITION IN WORDS. Shared, because the party article had the only
         copy and the bill article printed raw numbers.
@@ -145,11 +149,47 @@ const Concordance = (function () {
      that condition holds -- the same condition vocabulary events are gated
      on, evaluated by the same `Engine.matches`, so content authors one
      grammar and not two. */
+  /* HISTORY AND STATE (design/55). `since` is history: drawn from the day
+     its condition first held and ever after, dated by the engine's record,
+     and `{date}` in its prose is that day. `while` (or the older `when`) is
+     state: drawn only while its condition holds. Neither is standing text,
+     which is true on the opening day and needs no mark. */
+  function sinceOf(cond) { return cond && Engine.since ? Engine.since(st, C, cond) : null; }
+  function holds(cond) {
+    if (!cond) return true;
+    try { return Engine.matches(st, cond); } catch (e) { return false; }
+  }
   function liveSections(sections) {
-    return (sections || []).filter(sec => {
-      if (!sec.when) return true;
-      try { return Engine.matches(st, sec.when); } catch (e) { return false; }
+    return (sections || []).filter(Boolean).filter(sec =>
+      sec.since ? sinceOf(sec.since) != null : holds(sec.while || sec.when)
+    ).map(sec => {
+      if (!sec.since) return sec;
+      const dated = sinceOf(sec.since);
+      return Object.assign({}, sec, { dated: dated,
+        body: String(sec.body || "").replace(/\{date\}/g, dayOf(dated)) });
     });
+  }
+  /* a banner is an id, or {id, since} or {id, while}: an article is marked
+     contested once there is a dispute, not from the opening */
+  function liveBanners(banners) {
+    return (banners || []).filter(b => typeof b === "string" ||
+      (b && (b.since ? sinceOf(b.since) != null : holds(b.while || b.when))))
+      .map(b => typeof b === "string" ? b : b.id);
+  }
+  /* WHAT CHANGED, AND WHEN: the article's revision record. The day the
+     article appeared, if it did not exist at the opening, and each history
+     section, in order. The opening's own text is not a revision. */
+  const OPENING = 1;
+  function revisionsOf(a) {
+    const revs = [];
+    if (a.appeared > OPENING) revs.push({ sitting: a.appeared, what: "article created" });
+    liveSections(a.sections).forEach(s0 => {
+      if (s0.dated > OPENING) revs.push({ sitting: s0.dated, what: s0.h || "the lead" });
+    });
+    return revs.sort((x, y) => x.sitting - y.sitting);
+  }
+  function unread(a) {
+    return a.revised > OPENING && a.revised > ((st.cxRead || {})[a.id] || 0);
   }
 
   /* ---------- offices, read from the content the game runs on ----------
@@ -296,8 +336,8 @@ const Concordance = (function () {
                   m.seat || "\u2014", TIER[m.tier] || m.tier || "", off ? off.label : ""];
         });
       sections.push({ h: "Members", body:
-        asOf(`the party has ${all.length} member${all.length === 1 ? "" : "s"} in the ` +
-             `House of Delegates.`),
+        asOf(`the party has ${all.length} member${all.length === 1 ? "" : "s"} in ` +
+             `[[parliament|Parliament]].`),
         table: { head: ["Member", "Seat", "Tier", "Office"], rows: rows } });
     }
 
@@ -308,7 +348,7 @@ const Concordance = (function () {
       /* A LEDE, NOT A CAPTION. This read "A party of the House of Delegates
          holding 82 of 280 seats" -- a sentence with no subject in it. */
       summary: lede(p.name,
-        `is a political party of the [[parliament|House of Delegates]]. ` +
+        `is a political party of the [[parliament|Parliament]]. ` +
         /* the party's own note says what it is and who it speaks for */
         (p.note ? p.note + " " : "") +
         (p.aliases ? `It is known in the press as the ${p.aliases[0]}. ` : "") +
@@ -362,8 +402,8 @@ const Concordance = (function () {
       summary: lede(s.name,
         `is an orbital habitat of the ${s.band} band of the Circumterrestrial ` +
         `Commonwealth. It has a population of ${s.population.toLocaleString()} and ` +
-        `returns ${s.seats} member${s.seats === 1 ? "" : "s"} to the ` +
-        `[[parliament|House of Delegates]].`),
+        `returns ${s.seats} member${s.seats === 1 ? "" : "s"} to ` +
+        `[[parliament|Parliament]].`),
       sections,
       infobox: { title: s.name, rows: [
         ["Band", s.band], ["Population", s.population.toLocaleString()],
@@ -415,8 +455,8 @@ const Concordance = (function () {
       banners: [], edited: { by: "Census Bureau returns", attested: true, note: k.parent || "" },
       summary: lede(k.name,
         `is an electoral district of ${s0 ? `[[${s0.id}|${s0.name}]]` : "the Commonwealth"}. ` +
-        `It returns ${k.magnitude} member${k.magnitude === 1 ? "" : "s"} to the ` +
-        `[[parliament|House of Delegates]]` +
+        `It returns ${k.magnitude} member${k.magnitude === 1 ? "" : "s"} to ` +
+        `[[parliament|Parliament]]` +
         `${member ? `, and is held by ${holder ? `[[person_${holder.id}|${member}]]` : member}` : ""}.`),
       sections,
       infobox: { title: k.name, rows: [
@@ -514,8 +554,12 @@ const Concordance = (function () {
                       `cash rate, and each step below adds to it while its condition holds.`
                     : `The rate is ${pc(r.base == null ? 4 : r.base)} per cent at its lowest, and each ` +
                       `step below adds to it while its condition holds.`),
-          table: { head: ["When", "Added"],
-                   rows: (r.steps || []).map(x => [x.label ? x.label.charAt(0).toUpperCase() + x.label.slice(1) : "", "+" + pc(x.add || 0)]) } };
+          /* THE STEPS IN FORCE, not the whole grid (design/55): a step
+             that has not happened is the future, and the agreement's own
+             description of its grid is `terms.grid` */
+          table: { head: ["In force", "Added"],
+                   rows: (r.steps || []).filter(x => holds(x.when)).map(x => [x.label ? x.label.charAt(0).toUpperCase() + x.label.slice(1) : "", "+" + pc(x.add || 0)]) } };
+    if (T.grid) pricing.body += " " + T.grid;
     return {
       id: "lender_" + id, title: title, category: "Economy", generated: true,
       banners: [], edited: { by: "the Treasury", attested: true, note: "" },
@@ -550,54 +594,72 @@ const Concordance = (function () {
     const op = (C.actors || []).find(x => x.name === b.operator || x.id === b.operator);
     const opLink = op ? `[[actor_${op.id}|${b.operator}]]` : b.operator;
     const anc = ((C.world || {}).anchors || []).find(x => x.id === b.anchor);
+    /* AN OPERATOR CAN LEAVE (design/55): `abandoned` is the condition under
+       which it has, and the infobox stops naming it from that day */
+    const gone = b.abandoned ? sinceOf(b.abandoned) : null;
+    const n = x => (x || 0).toLocaleString();
     return {
       id: "body_" + b.id, title: b.name, category: "The Earth", generated: true,
-      banners: ["contested"], edited: { by: "multiple", attested: true, note: "the charter is not public" },
-      summary: lede(b.name,
-        `is a body outside the jurisdiction of the Circumterrestrial ` +
-        `Commonwealth.`) + (b.note ? " " + b.note : ""),
+      banners: b.banners || [], edited: { by: "multiple", attested: true, note: "the charter is not public" },
+      summary: boldLead(b.name, b.note, "is a body outside the jurisdiction of the Circumterrestrial Commonwealth."),
       sections: [
-        { h: "The charter", body: b.charter || "" },
-        { h: "The operator", body: `Operated by ${opLink}.` +
+        { h: "Charter and operator", body: (b.charter ? b.charter + " " : "") +
+          (gone != null ? `It was operated by ${opLink} until ${dayOf(gone)}.` : `It is operated by ${opLink}.`) +
           (anc ? ` It is served by [[anchor_${anc.id}|${anc.tether}]], whose base is at ${anc.site}.` : "") },
-        b.grievance ? { h: "Grievance", body: b.grievance } : null,
-        { h: "The numbers", body: `Population ${(b.population || 0).toLocaleString()}, ` +
-          `workforce ${(b.workforce || 0).toLocaleString()}, closure ${(b.closure || 0).toFixed(2)}, ` +
-          `${(b.suspended || 0).toLocaleString()} suspended. It returns no members and is not in the ` +
-          `apportionment, because it is not a station of the Commonwealth.` }
-      ].filter(Boolean),
+        { h: "Population", body: `It has ${n(b.population)} residents, ${n(b.workforce)} of them employed` +
+          (b.suspended ? `, and ${n(b.suspended)} emulated minds held in suspension in its data store` : "") +
+          `. It returns no members to [[parliament|Parliament]], because it is not a station of the Commonwealth.` }
+      ].concat(liveSections(b.cx)),
       infobox: { title: b.short || b.name, rows: [
-        ["Population", (b.population || 0).toLocaleString()],
-        ["Workforce", (b.workforce || 0).toLocaleString()],
-        ["Closure", (b.closure || 0).toFixed(2)],
-        ["Suspended", (b.suspended || 0).toLocaleString()],
-        ["Operator", b.operator]
+        ["Residents", n(b.population)],
+        ["Employed", n(b.workforce)],
+        ["In suspension", n(b.suspended)],
+        ["Operator", gone != null ? `None since ${dayOf(gone)}` : b.operator]
       ].concat(b.site ? [["Site", b.site]] : [])},
       see: (op ? ["actor_" + op.id] : []).concat(anc ? ["anchor_" + anc.id] : [], b.interests || [])
     };
   }
 
-  /* A POWER OUTSIDE THE COMMONWEALTH. It is an actor in the engine, so its
-     standing and appetite are live; the article is generated from them. */
+  /* A LEAD FROM CONTENT'S OWN SENTENCE. Content writes a foreign entry's
+     `note` as the article's lead, beginning with the subject; the name is
+     set in bold there rather than stated twice. */
+  function boldLead(name, note, fallback) {
+    const t = String(note || "");
+    /* the full name, or its first part: "The Bellamy Almanac Works, Brant &
+       Vane" is "The Bellamy Almanac Works" in its own lead */
+    const bare = String(name).replace(/^the /i, "");
+    for (const n of [bare, bare.split(",")[0]]) {
+      const m = t.match(new RegExp("^(The )?" + n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+      if (m) return `**${m[0]}**` + t.slice(m[0].length);
+    }
+    return lede(name, fallback) + (t ? " " + t : "");
+  }
+
+  /* HOW LONG ITS NEWS TAKES, in days (design/55). The engine counts a
+     foreign power's lag in sittings; a reader counts days, from the
+     calendar the House sits on. */
+  function daysOfLag(lag) {
+    const a = Engine.dateOfSitting(C, st.sitting), b = Engine.dateOfSitting(C, st.sitting + lag);
+    if (!a || !b) return null;
+    return Math.max(1, Math.round((Date.parse(b) - Date.parse(a)) / 86400000));
+  }
+
+  /* A POWER OUTSIDE THE COMMONWEALTH. Its lead is content's `note`, true on
+     the opening day; what happens to it later is content's `cx` sections,
+     history and state (design/55). */
   function foreignActorArticle(a) {
+    const days = a.lag ? daysOfLag(a.lag) : null;
+    const news = days == null ? "Its decisions are known in the Commonwealth within a day."
+      : `Its decisions are generally known in the Commonwealth about ${days} day${days === 1 ? "" : "s"} ` +
+        `after they are taken.`;
+    const kind = { state: "State", metanational: "Company" }[a.kind] || a.kind;
     return {
       id: "actor_" + a.id, title: a.name, category: "The Earth", generated: true,
-      banners: [], edited: { by: "Foreign Office", attested: true, note: "as of the last dispatch" },
-      summary: lede(a.name,
-        `is a power outside the Circumterrestrial Commonwealth` +
-        (a.lag ? `, whose business reaches the chamber ${a.lag} sitting` +
-                 `${a.lag === 1 ? "" : "s"} after it is sent` : "") + `.`) +
-        (a.note ? " " + a.note : ""),
-      sections: [
-        a.asks ? { h: "What it wants", body: a.asks } : null,
-        { h: "Delay", body: a.lag
-          ? `Eleven sittings of lag would be extreme and this is ${a.lag}. Everything the ` +
-            `Commonwealth hears from it is ${a.lag} sitting${a.lag === 1 ? "" : "s"} old, which is ` +
-            `the organising fact of the relationship.`
-          : `Its news is nearly current.` }
-      ].filter(Boolean),
+      banners: a.banners || [], edited: { by: "the Foreign Office", attested: true, note: "from the last dispatch" },
+      summary: boldLead(a.name, a.note, "is a power outside the Circumterrestrial Commonwealth."),
+      sections: liveSections(a.cx).concat([{ h: "News", body: news }]),
       infobox: { title: a.name, rows: [
-        ["Kind", a.kind], ["Delay", (a.lag || 0) + " sittings"]
+        ["Kind", kind], ["News arrives", days == null ? "within a day" : `after about ${days} day${days === 1 ? "" : "s"}`]
       ]},
       see: ["commonwealth"]
     };
@@ -613,14 +675,14 @@ const Concordance = (function () {
         ? `Among functional members, ${d.functional.aye} of ${d.functional.total} against a ` +
           `requirement of ${d.functional.need}. The measure is subject to the ` +
           `[[dual_majority|dual test]] and must carry separately on both benches.`
-        : "The measure requires a simple majority of the House of Delegates.") +
+        : "The measure requires a simple majority of Parliament.") +
       `\n\nOn present numbers the bill ${d.carries ? "carries" : "fails"}.` });
     return {
       id: "bill_" + b.id, title: b.title, category: "Legislation", generated: true,
       banners: bs.dead ? [] : ["contested"],
       edited: { by: "Order paper", attested: true, note: b.ref },
       summary: lede(b.title,
-        `is a bill before the [[parliament|House of Delegates]]` +
+        `is a bill before the [[parliament|Parliament]]` +
         (b.owner && C.partyById[b.owner] ? `, brought by the ` +
           `[[${b.owner}|${C.partyById[b.owner].name}]]` : "") + `. ` +
         asOf(`it stands at ${String(bs.stage).replace(/_/g, " ")}` +
@@ -863,7 +925,9 @@ const Concordance = (function () {
 
   function build() {
     roll = null;
-    const hand = ENCYCLOPEDIA.articles.map(a => Object.assign({ generated: false }, a));
+    /* an article, or a person, the world does not know of yet is not there */
+    const hand = ENCYCLOPEDIA.articles.filter(a => !a.since || sinceOf(a.since) != null)
+      .map(a => Object.assign({ generated: false, appeared: sinceOf(a.since) }, a));
     const handIds = new Set(hand.map(a => a.id));
     const gen = [];
     C.parties.forEach(p => { if (!handIds.has(p.id)) gen.push(partyArticle(p)); });
@@ -898,7 +962,11 @@ const Concordance = (function () {
       if (!bs || bs.stage === "drafting") return;
       if (!handIds.has("bill_" + b.id)) gen.push(billArticle(b));
     });
-    C.characters.forEach(c => { if (!handIds.has("person_" + c.id)) gen.push(personArticle(c)); });
+    C.characters.forEach(c => {
+      if (c.since && sinceOf(c.since) == null) return;
+      if (!handIds.has("person_" + c.id))
+        gen.push(Object.assign(personArticle(c), { appeared: sinceOf(c.since) }));
+    });
     const LEND = (C.setup && C.setup.lenders) || {};
     Object.keys(LEND).filter(k => LEND[k].terms).forEach(k => {
       if (!handIds.has("lender_" + k)) gen.push(lenderArticle(k, LEND[k]));
@@ -935,6 +1003,10 @@ const Concordance = (function () {
       });
     });
     all = hand.concat(gen);
+    all.forEach(a => {
+      a.revisions = revisionsOf(a);
+      a.revised = a.revisions.length ? a.revisions[a.revisions.length - 1].sitting : OPENING;
+    });
     byId = all.reduce((m, a) => (m[a.id] = a, m), {});
     /* alias hand-written ids that generated ones also answer to */
     all.forEach(a => { if (a.id.startsWith("term_")) byId[a.id.slice(5)] = byId[a.id.slice(5)] || a; });
@@ -1012,17 +1084,20 @@ const Concordance = (function () {
 
     document.getElementById("cx-nav").innerHTML = keys.map(k => {
       const open = openCats.has(k), n = cats[k].length;
-      return `<div class="cx-navcat${open ? " open" : ""}" tabindex="0" data-cxcat="${k.replace(/"/g, "&quot;")}">` +
+      /* REVISED SINCE YOU LAST READ IT (design/55), on the article and on
+         its category, since most categories start closed */
+      const fresh = cats[k].some(unread);
+      return `<div class="cx-navcat${open ? " open" : ""}${fresh ? " cx-unread" : ""}" tabindex="0" data-cxcat="${k.replace(/"/g, "&quot;")}">` +
         `<span class="cx-cat-car" aria-hidden="true">${open ? "\u2212" : "+"}</span>` +
         `${k}<span class="cx-cat-n">${n}</span></div>` +
         (open ? cats[k].sort((p, q) => p.title.localeCompare(q.title)).map(a =>
-          `<a class="cx-navlink${a.id === current.id ? " on" : ""}" tabindex="0" data-go="${a.id}">${a.title}` +
+          `<a class="cx-navlink${a.id === current.id ? " on" : ""}${unread(a) ? " cx-unread" : ""}" tabindex="0" data-go="${a.id}">${a.title}` +
           (a.generated ? "" : " <em>&sect;</em>") + `</a>`).join("") : "");
     }).join("");
   }
 
   function drawArticle(a) {
-    const banners = (a.banners || []).map(b => {
+    const banners = liveBanners(a.banners).map(b => {
       const def = ENCYCLOPEDIA.banners[b]; if (!def) return "";
       return `<div class="cx-banner cx-${def.cls}">${def.text}</div>`;
     }).join("");
@@ -1057,9 +1132,13 @@ const Concordance = (function () {
       ? `<table class="cx-wikitable"><thead><tr>${(t.head || []).map(h => `<th>${h}</th>`).join("")}` +
         `</tr></thead><tbody>${t.rows.map(r => `<tr>${r.map(c => `<td>${links(String(c))}</td>`).join("")}</tr>`).join("")}` +
         `</tbody></table>` : "";
+    /* a section revised since the reader last opened the article arrives
+       highlighted, once (design/55) */
+    const lastRead = (st.cxRead || {})[a.id] || 0;
     const body = secs.map((s, i) =>
+      `<section class="cx-sec${s.dated > OPENING && s.dated > lastRead ? " cx-new" : ""}">` +
       (s.h ? `<h3 id="cx-s${i}">${s.h}</h3>` : "") + (s.body ? paras(s.body) : "") +
-      table(s.table)).join("");
+      table(s.table) + `</section>`).join("");
 
     const see = (a.see || []).filter(id => byId[id]);
     const seeAlso = see.length
@@ -1071,7 +1150,10 @@ const Concordance = (function () {
       `Last edited by <b>${ed.by || "unattributed"}</b> ` +
       `<span class="cx-att ${ed.attested === false ? "n" : "y"}">${ed.attested === false ? "UNATTESTED" : "ATTESTED"}</span>` +
       (ed.note ? ` &middot; ${ed.note}` : "") +
-      `<br>${a.generated ? "This article is maintained automatically from Bureau returns." : "This article is maintained by contributors."}</div>` +
+      `<br>${a.generated ? "This article is maintained automatically from Bureau returns." : "This article is maintained by contributors."}` +
+      ((a.revisions || []).length
+        ? `<br>Revised ${a.revisions.map(r => `${dayOf(r.sitting)}: ${esc0(r.what)}`).join("; ")}.` : "") +
+      `</div>` +
       /* CATEGORIES. Wikipedia closes every article with what kind of thing
          it has just described, and the Concordance closed with nothing.
          Derived from what the article already knows, so nothing is typed
@@ -1086,6 +1168,9 @@ const Concordance = (function () {
       `<div class="cx-lede">${paras(a.summary)}</div>` +
       toc + body + seeAlso + `<div style="clear:both"></div>` + foot;
 
+    /* read now: the marks come off at the next draw of the navigation */
+    if (!st.cxRead) st.cxRead = {};
+    st.cxRead[a.id] = st.sitting;
     bind();
   }
 

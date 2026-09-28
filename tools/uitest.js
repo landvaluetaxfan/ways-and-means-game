@@ -784,6 +784,35 @@ try {
        cuC.map(c => c.name).join(", "));
   }
 
+  /* THE CONCORDANCE KNOWS ONLY WHAT THE WORLD KNOWS, AND SAYS IT IN 2080
+     (design/55). At the opening: no sitting numbers and no old name for the
+     chamber in the articles that were generated from game units, no article
+     for a person the world has not met, and no dispute banner before the
+     dispute. Each kind of generated article is read once. */
+  {
+    const gen = w.eval(`(function () { var C = UI.content(), L = (C.setup && C.setup.lenders) || {}, x = ["cu"];
+      C.actors.filter(function (a) { return a.foreign; }).forEach(function (a) { x.push("actor_" + a.id); });
+      ((C.world || {}).foreign || []).forEach(function (b) { x.push("body_" + b.id); });
+      Object.keys(L).filter(function (k) { return L[k].terms; }).forEach(function (k) { x.push("lender_" + k); });
+      x.push("person_" + C.characters.find(function (c) { return c.party; }).id);
+      x.push((C.constituencies[0] || {}).id); x.push(C.stations[0].id);
+      return x; })()`);
+    const st0 = w.eval("UI.state()"), C0 = w.eval("UI.content()"), Cx = w.eval("Concordance");
+    const text = id => { Cx.render(st0, C0, id); return (w.document.querySelector("#cx-article") || {}).textContent || ""; };
+    /* a sitting as a unit ("sitting 1", "2 sittings"); a member "sitting
+       for" a seat is English */
+    const units = gen.filter(id => /\bsitting \d|\d+ sittings?\b|House of Delegates/.test(text(id)));
+    ok("the generated articles count in dates and name Parliament, with no sitting numbers",
+       gen.length > 8 && !units.length, units.join(", ") || gen.length + " read");
+    const later = w.eval("CONTENT.characters.filter(function (c) { return c.since; }).map(function (c) { return 'person_' + c.id; })");
+    ok("a person the world has not met has no article yet",
+       later.length > 0 && later.every(id => !Cx.knows(id)), later.join(", "));
+    const body = gen.find(id => /^body_/.test(id));
+    text(body);
+    ok("and a platform is not marked as disputed before the dispute",
+       !w.document.querySelector("#cx-article .cx-banner"), body);
+  }
+
   w.document.querySelector('.tab[data-t="cham"]').click();
   /* EVERY PARTY OPENS, by its triangle (the author, 24 Sep). */
   const comp = [...w.document.querySelectorAll("#comp-table tr[data-comp]")]
@@ -963,8 +992,9 @@ try {
   /* A VOLATILE FIGURE CARRIES ITS DATE. "Party discipline is recorded at 62"
      is a fact about one sitting printed as though it were permanent. */
   ok("and dates the figures the engine can move",
-     /As of sitting \d+/.test(open("cu").textContent),
-     (open("cu").textContent.match(/As of sitting \d+[^.]*\./) || [""])[0].slice(0, 70));
+     /* in the calendar's words since design/55: "As of 11 April 2080" */
+     /As of \d{1,2} [A-Z][a-z]+ \d{4}/.test(open("cu").textContent),
+     (open("cu").textContent.match(/As of \d{1,2} [A-Z][a-z]+ \d{4}[^.]*\./) || [""])[0].slice(0, 70));
 
   /* A POSITION AS POLICY (design/45), from js/schema.js's `says`: "strongly
      supports public ownership of essential systems", never the pole word

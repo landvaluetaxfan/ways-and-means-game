@@ -870,6 +870,36 @@ glossary terms `term_<slug>` or the bare slug.
 
 Run `node tools/cxcheck.js` to confirm every link, see-also and banner resolves.
 
+### Over time: standing, history and state (design/55)
+
+An article is written on a date by someone in 2080, and it knows only what
+the world knows that day. Standing text is true on the campaign's opening
+day and needs no mark. Anything later carries a condition, in the grammar
+events use:
+
+```js
+sections:[
+  { h:"The charter", body:"…" },                                   // standing
+  { h:"Accession", since:{ flags:["almanac_annexed"] },              // history
+    body:"On {date} Parliament carried the Act…" },
+  { h:"Sanctions", while:{ scalarAbove:{ friction:40 } }, body:"…" } // state
+]
+```
+
+- `since` is history. It appears from the day its condition first holds and
+  stays afterwards, dated by the engine; `{date}` in its body is that day.
+  Write it in the past tense.
+- `while` (or the older `when`) is state. It shows only while the condition
+  holds, and is the way a scalar reaches the prose. Write it in the present
+  tense.
+- An article, a character (`since` on the entry) and a banner
+  (`{ id:"contested", since:… }`) take the same marks. A foreign power's
+  or a foreign platform's dated sections go in a `cx` list on its entry,
+  and a lender's in its `terms.sections`.
+- No game units in the prose: no sittings, meters or scores. A history
+  section is listed in the article's revision record, and the navigation
+  marks it until it is read.
+
 ### The Concordance
 
 An in-world reference work, so it keeps Wikipedia's **furniture**: a lead that

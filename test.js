@@ -4749,6 +4749,23 @@ console.log("\nTHE ECONOMY:");
   ok("the rise is a statement, not an instruction",
      kindOf("rises").every(m => !m.tab), "no destination");
 
+  /* HISTORY STAYS (design/55). A `since` condition is dated the sitting it
+     first holds, and the date stands after the condition lapses: what has
+     happened has happened. Until it is recorded, a condition that holds
+     reads as today, and one that does not has no date. */
+  const cond = { flags: ["t_since_flag"] };
+  const Cs = Object.assign({}, CONTENT, { sinceConds: [cond] });
+  const h = Engine.newGame(Cs);
+  const before = Engine.since(h, Cs, cond);
+  h.flags.t_since_flag = true;
+  const today = Engine.since(h, Cs, cond);
+  Engine.advance(h, Cs);
+  delete h.flags.t_since_flag;
+  Engine.advance(h, Cs);
+  ok("a history is dated the sitting it first held, and keeps its date after it lapses",
+     before == null && today === 1 && Engine.since(h, Cs, cond) === 1,
+     "before " + before + ", then " + today + ", later " + Engine.since(h, Cs, cond));
+
   if (bad) { console.log("\n" + bad + " CLOCK FAILURES"); process.exitCode = 1; }
 })();
 

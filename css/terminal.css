@@ -1521,6 +1521,14 @@ img.dith{display:block;}
 .cx-navlink:hover{text-decoration:underline;background:#e8e9e2;}
 .cx-navlink.on{background:#e0e4d6;color:#1b1d19;font-weight:bold;}
 .cx-navlink em{font-style:normal;color:#9a9c92;}
+/* REVISED SINCE LAST READ (design/55): a gold dot on the article and its
+   category, and the new section fades in from gold once, on opening */
+.cx-navlink.cx-unread::after,.cx-navcat.cx-unread .cx-cat-n::before{
+  content:"\25CF";color:var(--gold);font-size:8px;margin:0 4px;vertical-align:1px;}
+.cx-sec.cx-new{animation:cx-new 2.6s ease-out 1;}
+@keyframes cx-new{from{background:rgba(201,162,39,.28);box-shadow:-6px 0 0 rgba(201,162,39,.28);}
+  to{background:transparent;box-shadow:none;}}
+@media (prefers-reduced-motion:reduce){.cx-sec.cx-new{animation:none;border-left:3px solid var(--gold);padding-left:6px;}}
 /* THE SEARCH LIST. Every match, ranked, with its category beside it. */
 .cx-hits{list-style:none;margin:8px 0 0;padding:0;max-width:64ch;}
 .cx-hits li{display:flex;align-items:baseline;gap:8px;padding:3px 0;

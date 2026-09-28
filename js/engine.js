@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 33;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar, 32 core inflation and the quarter, 33 the forums
+  const STATE_VERSION = 34;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar, 32 core inflation and the quarter, 33 the forums, 34 the Concordance's dates
 
   /* ---------------------------------------------------------
      1. STATE
@@ -24,6 +24,11 @@ const Engine = (function () {
       version: STATE_VERSION,
       sitting: 1,
       chapter: 1,
+      /* THE CONCORDANCE'S DATES (design/55): the sitting each `since`
+         condition content declares first held, and the sitting each
+         article was last read on */
+      since: {},
+      cxRead: {},
       /* The session is content's number (bible §11.1: Session 4), and a
          session is sat in PERIODS with a recess between them (§1.8). */
       session: C.setup.session || 1,
@@ -535,6 +540,13 @@ const Engine = (function () {
       st.forums = st.forums || {};
       st.resolutions = st.resolutions || {};
       st.version = 33;
+    }
+    if (st.version < 34) {                    // the Concordance's dates
+      /* design/55. A condition that already holds on load is dated to the
+         sitting the save stood at: the save kept no earlier record. */
+      st.since = st.since || {};
+      st.cxRead = st.cxRead || {};
+      st.version = 34;
     }
     return st;
   }
@@ -8502,8 +8514,31 @@ const Engine = (function () {
     return m;
   }
 
+  /* WHEN A THING FIRST HELD (design/55). Content marks history with `since`
+     (a Concordance section, an article, a character), and the date the
+     history carries is the sitting its condition first held. Recorded at
+     the end of each sitting, before the next begins; a condition that has
+     just come true and is not yet recorded reads as today. Keyed by the
+     condition itself, so the engine names nothing it records. */
+  function sinceKey(cond) { return JSON.stringify(cond); }
+  function noteSince(st, C) {
+    if (!st.since) st.since = {};
+    ((C && C.sinceConds) || []).forEach(cond => {
+      const k = sinceKey(cond);
+      if (st.since[k] != null) return;
+      try { if (matches(st, cond)) st.since[k] = st.sitting; } catch (e) { /* an unknown condition dates nothing */ }
+    });
+  }
+  function since(st, C, cond) {
+    if (!cond) return null;
+    const k = sinceKey(cond);
+    if (st.since && st.since[k] != null) return st.since[k];
+    try { return matches(st, cond) ? st.sitting : null; } catch (e) { return null; }
+  }
+
   function advance(st, C) {
     settleWaits(st);
+    if (C) noteSince(st, C);
     st.sitting += 1;
     if (st.motion && !st.motion.resolved) resolveMotion(st, C);
     if (C) sampleForeign(st, C);
@@ -8745,7 +8780,7 @@ const Engine = (function () {
   }
 
   return {
-    STATE_VERSION, newGame, migrate, save, load, chapters, reportedActor, receipts, believed,
+    STATE_VERSION, newGame, migrate, save, load, noteSince, since, chapters, reportedActor, receipts, believed,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal, currentSeats,
     division, reported, ballot, benchRoll, resolveDue, pairable, setPairs, clearPairs, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss, checkSettlement,

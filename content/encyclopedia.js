@@ -139,8 +139,8 @@ Asked what they are, residents name a station. The union is held together by sha
       /* Drawn only once the House has carried the annexation. Before that
          the article does not mention the Works at all, because before that
          the Works is not part of the Commonwealth. */
-      { h:"Accession of the Almanac Works", when:{ flags:["almanac_annexed"] }, body:
-        `The Bellamy Almanac Works, Brant & Vane was brought within the Commonwealth by Act, its private charter surrendered and its 184,000 residents admitted as Commonwealth persons. It is the first accession since the founding and the first addition to the roll that was not a station built inside it.
+      { h:"Accession of the Almanac Works", since:{ flags:["almanac_annexed"] }, body:
+        `On {date} Parliament carried the Almanac Works (Annexation) Act, which brought the Bellamy Almanac Works, Brant & Vane within the Commonwealth, surrendered its private charter and admitted its 184,000 residents as Commonwealth persons. It is the first accession since the founding and the first addition to the roll that was not a station built inside it.
 
 The Works enters the apportionment at the next redistribution, which is the part the chamber argued about: a works station of that size is worth seats, and the seats have to come from somewhere.` },
       { h:"What holds it together", body:
@@ -153,11 +153,11 @@ This produces a recurring constitutional argument. Federal development spending 
   { id:"parliament", title:"Parliament", category:"Institutions",
     banners:[],
     edited:{ by:"Concordance institutions group", attested:true, note:"seat figures from Bureau returns" },
-    summary:"**Parliament** is the legislature of the Commonwealth. It comprises the elected "+
-      "House of Delegates, whose members are styled MP.",
+    summary:"**Parliament** is the legislature of the Commonwealth: a single chamber of 280 "+
+      "members, styled MP, known for short as the House.",
     sections:[
-      { h:"The House of Delegates", body:
-        "The House has 280 seats, elected by three methods that operate independently: 140 from "+
+      { h:"Composition", body:
+        "Parliament has 280 seats, elected by three methods that operate independently: 140 from "+
         "geographic districts, 100 from national party lists, and 40 from "+
         "[[functional_constituency|functional constituencies]] representing professions and "+
         "industries. A majority is 141." },
@@ -176,7 +176,7 @@ This produces a recurring constitutional argument. Federal development spending 
     edited:{ by:"multiple", attested:true, note:"" },
     summary:"The **Prime Minister** is the head of government of the Commonwealth. The office is "+
       "held by whoever can command a majority in the "+
-      "[[parliament|House of Delegates]].",
+      "[[parliament|Parliament]].",
     sections:[
       { h:"Tenure", body:
         "There is no fixed term. A Prime Minister stays in office until losing a confidence "+
@@ -289,7 +289,7 @@ This produces a recurring constitutional argument. Federal development spending 
   { id:"functional_constituency", title:"Functional constituency", category:"Elections",
     banners:["contested"],
     edited:{ by:"Apportionment Reform Society", attested:true, note:"" },
-    summary:"A **functional constituency** is a seat in the House of Delegates elected by a "+
+    summary:"A **functional constituency** is a seat in [[parliament|Parliament]] elected by a "+
             "profession or industry. Forty of the 280 seats are functional.",
     sections:[
       { h:"Origin", body:
@@ -318,7 +318,7 @@ This produces a recurring constitutional argument. Federal development spending 
   { id:"dual_majority", title:"Dual majority", category:"Elections",
     edited:{ by:"Chartist Study Group", attested:true, note:"" },
     summary:"A **dual majority** is the requirement that certain measures carry separately "+
-            "among functional and elected members of the House of Delegates.",
+            "among functional and elected members of Parliament.",
     sections:[
       { h:"Scope", body:
         "The requirement applies to Charter amendments and to bills affecting life-support "+
@@ -417,16 +417,16 @@ This produces a recurring constitutional argument. Federal development spending 
     see:["volume_lease","closure","ashfield","substrate"] },
 
   { id:"substrate_futures", title:"Substrate futures and debt", category:"Economy",
-    banners:["contested"],
-    edited:{ by:"multiple", attested:true, note:"the platform section reflects an active dispute" },
+    banners:[{ id:"contested", since:{ seen:"f1_referendum" } }],
+    edited:{ by:"multiple", attested:true, note:"" },
     summary:"**Substrate futures** are forward contracts on mind-hours, and the debt written "+"against them is secured by the continuation of the persons who run. Where a "+"platform is abandoned, its debt survives its residents, and the choice between "+"assuming that debt and writing it off is a choice about who is owed.",
     sections:[
       { h:"The contract", body:
         "A substrate future fixes a price now for computation delivered later. Because "+"clock rates differ twentyfold between persons, the contract is written on "+"objective hours and settled in dollars." },
       { h:"The debt", body:
         "**Credit secured against one's own continuation** is the ordinary financing of a "+"habitat. A station borrows against the productive capacity of its residents, who "+"are the collateral. When the station fails, the lenders' claim runs against the "+"people." },
-      { h:"The platform", body:
-        "The Bellamy Almanac Works and its 184,000 residents are the present "+"case. The debt has not failed with the platform; it has been assigned. A "+"government that assumes it pays for people it does not own. A government that "+"[[write-off|writes it off]] has told the lenders what its word is worth." }
+      { h:"The Almanac Works", since:{ seen:"f1_referendum" }, body:
+        "The Ministry for Life Support's survey of the Bellamy Almanac Works, reported on {date}, "+"found that the platform's substrate debt had not failed with its operator: it had been "+"assigned, and it runs against the 184,000 residents. A government that assumes it pays "+"for people it does not own. A government that [[write-off|writes it off]] tells the "+"lenders what its word is worth." }
     ],
     see:["write-off","substrate","suspension","commonwealth"] },
 

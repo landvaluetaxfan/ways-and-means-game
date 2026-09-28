@@ -68,6 +68,24 @@ const CONTENT = (function () {
     K.forumById = idx(K.forums);
     K.resolutionById = idx(K.resolutions);
     K.glossaryByTerm = (K.glossary || []).reduce((m, g) => (m[g.term.toLowerCase()] = g, m), {});
+    /* THE CONCORDANCE'S HISTORY (design/55): every `since` the reference
+       surfaces declare, on an entry, its sections (`sections`, `cx`) or its
+       banners, so the engine can date the day each first held
+       (Engine.noteSince) without knowing where they came from. */
+    const conds = new Map();
+    const take = o => { if (o && o.since) conds.set(JSON.stringify(o.since), o.since); };
+    const entry = e => {
+      if (!e) return;
+      take(e);
+      [].concat(e.sections || [], e.cx || [], e.banners || []).forEach(x => typeof x === "object" && take(x));
+    };
+    ((K.encyclopedia || {}).articles || []).forEach(entry);
+    (K.characters || []).forEach(entry);
+    (K.actors || []).forEach(entry);
+    ((K.world || {}).foreign || []).forEach(entry);
+    const L = (K.setup || {}).lenders || {};
+    Object.keys(L).forEach(k => entry(L[k].terms));
+    K.sinceConds = [...conds.values()];
     return K;
   }
   index(C);
