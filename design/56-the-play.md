@@ -3,13 +3,13 @@
 **Built 28 September 2026**, at the author's direction. The model is the
 casting notes in the introductions of *Things That Never Were*, a community
 mod for The Campaign Trail. The author approved these motifs: a performer's
-note, dramatis personae, acts with stage directions, intervals, a curtain
+note, a cast of characters, acts with stage directions, intervals, a curtain
 call, marginalia and epigraphs. A chaplaincy (prayers and intercessions)
 is undecided.
 
 ## Two layers
 
-- **The frame is theatre, outside the world.** The programme, the act
+- **The frame is theatre, outside the world.** The act
   cards, the intervals and the curtain call appear only at the edges: after
   the introduction, when a chapter opens, when the House returns from a
   recess, and on the last page. They wear what the world's pages never do:
@@ -28,10 +28,12 @@ is undecided.
   `chapter`, each with `head`, `title`, `epigraph`, `direction`),
   `intervals` (keyed `after` the sitting period just finished), and
   `curtain.epigraph`.
-- The introduction ends with a `programme` section. It is a separate block
-  after the signature, so the performer's note never reads as part of the
-  government's introduction (the author, 28 Sep).
-- The page kinds are `programme`, `act`, `direction`, `cast` and `margin`
+- The introduction's last sections before the signature are "The role", a
+  body section with the note for the performer, and "Cast of characters", a
+  `cast` section that lists `play.cast`. A separate programme block after
+  the signature was built first and removed the same day: it displaced the
+  signature, and the author did not like how it looked.
+- The page kinds are `act`, `direction`, `cast` and `margin`
   (js/setpiece.js). In an epigraph, " / " is a verse line break.
 - The act and interval cards are shown once each, before the sitting's
   business. They are marked read by `_act<n>` and `_interval<n>`, flags

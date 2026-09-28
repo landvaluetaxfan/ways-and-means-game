@@ -3575,26 +3575,16 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 .sp-source{font-family:var(--f-ui);font-size:10px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--ink-soft);margin-top:6px;}
 
-/* THE THEATRE (design/56). The frame is outside the world, so it wears
-   what the world's pages never do: the programme's cream paper, a double
-   rule, a serif display face and an ornament. The break from the prose
-   above is the point (the author: the player must not wonder why a casting
-   note is in the government's introduction). */
-.sp-programme{margin:38px 0 10px;padding:16px 18px 14px;background:#f3eddd;color:#231f18;
-  border-top:4px double #3b342a;border-bottom:4px double #3b342a;text-align:center;}
-.sp-programme .sp-ornament{font-size:20px;line-height:1;color:#8a6d1a;margin:-2px 0 6px;}
-.sp-proglabel{font-family:var(--f-ui);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#6b5f4c;}
-.sp-playtitle{font-family:var(--f-disp);font-size:24px;font-style:italic;margin:4px 0 10px;}
+/* THE THEATRE (design/56): the act cards and intervals wear the play's
+   name and mark; the cast of characters sits in the introduction in its
+   own style, before the signature. */
+.sp-proglabel{font-family:var(--f-ui);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-soft);}
 .sp-mark{display:block;width:46px;height:46px;margin:8px auto 4px;}
-.sp-proghead{font-family:var(--f-ui);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
-  font-weight:400;color:#6b5f4c;margin:14px 0 6px;border-top:1px solid #cfc4ab;padding-top:10px;}
-.sp-programme p{font-family:var(--f-doc);text-align:left;}
-#s-sit .sp-programme p{font-size:14px;line-height:1.6;}
-.sp-castlist{list-style:none;margin:0;padding:0;text-align:left;font-family:var(--f-doc);}
-.sp-castlist li{padding:3px 0;border-bottom:1px dotted #cfc4ab;font-size:13.5px;line-height:1.45;}
+.sp-castlist{list-style:none;margin:0;padding:0;text-align:left;}
+.sp-castlist li{padding:3px 0;border-bottom:1px dotted var(--chrome-dk);line-height:1.45;}
 .sp-castname{font-variant:small-caps;letter-spacing:.04em;font-weight:bold;margin-right:.6ch;}
 .sp-castrole{font-style:italic;}
-.sp-ensemble{font-style:italic;text-align:center !important;margin-top:8px;}
+.sp-ensemble{font-style:italic;margin-top:8px;}
 .sp-act{text-align:center;margin:18px 0 22px;}
 .sp-actnum{font-family:var(--f-ui);font-size:12px;letter-spacing:.3em;text-transform:uppercase;margin-top:10px;}
 .sp-acttitle{font-family:var(--f-disp);font-size:28px;font-style:italic;margin-top:2px;}

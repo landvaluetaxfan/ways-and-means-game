@@ -138,20 +138,19 @@ review, and refuse an appointment.
 
 The commission is on the desk in front of him. He has not signed it.
 
-"The House has 280 seats, and a government needs 141 of them to survive a
-vote of confidence," he says. "You can show me 147. Your party has 85, the
-New Progressive Party 36 and the Congregational Democratic Alliance 20. The
-other six are independents, who have agreed to vote for you on confidence
-and on the budget and on nothing else. If they walk out, you have 141
-exactly.
+"You have 147 votes on confidence," he says. "Eighty-five of your own,
+thirty-six New Progressives, twenty from the Congregational Democrats, and
+six independents who have promised you confidence and the budget and
+nothing else. If the independents go, you have 141, which is a majority of
+one."
 
-"I am obliged to appoint whoever can hold the House. I am not obliged to
-believe that it will hold. Tell me what you mean to do with it, and I will
-date this."`,
+He turns the commission round to face you. "The Charter says I appoint
+whoever can command the House, and on those numbers that is you. Before I
+sign it, I would like to hear what the government means to do first."`,
   choices:[
     { posture:"bold", label:`The bill that would make a copy of a person a citizen after 40 hours of separate running, instead of the 168 the law now requires. It is the bill this coalition was formed to pass.`,
       act:"Tell him",
-      note:`The New Progressive Party, with 36 seats the second-largest party in the government, made this bill its price for joining the coalition, and its members will be glad to hear it named first. The Trades Left, the largest of your party's four currents with 31 of its 85 members, speaks for the maintenance unions. It opposes the bill, because a copy that becomes a citizen can hold a maintenance licence and compete for its members' jobs.`,
+      note:`You name the personhood bill as the government's first business. The New Progressive Party, the second-largest party in the government, made this bill its price for joining the coalition and will be glad to hear it named first. The Trades Left, the largest current in your own party, opposes it: its members fear that a copy made a citizen could hold a maintenance licence and take their jobs.`,
       effects:[{ flag:"commission_bill" },
                { move:{ "rel.president":4 } },
                { move:{ "loyalty.psa":8 } },
@@ -161,7 +160,7 @@ date this."`,
 
     { posture:"measured", label:`The stations. The Commonwealth's radiators have little spare capacity, and a station that cannot get rid of its heat must switch off some of the minds it runs.`,
       act:"Tell him",
-      note:`The President is the only official the whole Commonwealth elects, and presidents have spoken for the small stations, which run short of cooling first. Four stations have run short during his term. The Trades Left, the largest current in your party, draws its members from the trades that maintain the stations, and will welcome a Prime Minister who puts them first. The New Progressive Party joined the government to pass a bill on copies, and will notice that it was not mentioned.`,
+      note:`You tell him the stations come first. Four stations have run short of cooling during his term, and the President, the only official the whole Commonwealth elects, has taken the small stations' side. The Trades Left, whose members maintain the stations, will welcome it. The New Progressive Party will notice that you did not mention its bill.`,
       effects:[{ flag:"commission_stations" },
                { move:{ "rel.president":8 } },
                { move:{ "loyalty.cu_maintenance":6 } },
@@ -172,7 +171,7 @@ date this."`,
 
     { posture:"cautious", label:`Nothing specific. Tell him the government intends to last its full term, and that he will learn of its decisions when they are announced.`,
       act:"Tell him",
-      note:`It commits the government to nothing in its first hour. The Soft Left, the current of your party's leadership, will approve of a Prime Minister who concedes nothing to a Liberal President. The President keeps his powers to dissolve the House, refer bills to the Tribunal and refuse appointments, and he will remember that he was told nothing. A first meeting that ends with no statement from either side is usually reported as a quarrel.`,
+      note:`You tell him nothing. The Soft Left, the current that runs your party, will approve of a Prime Minister who gives a Liberal President nothing. He keeps his powers to dissolve the House, refer bills to the Tribunal and refuse appointments, and he will remember being told nothing. The press usually reports a first meeting that ends without a statement as a quarrel.`,
       effects:[{ flag:"commission_none" },
                { move:{ "rel.president":-6 } },
                { move:{ "loyalty.cu_loyalists":7 } },
@@ -207,20 +206,21 @@ The press gallery has given the first question to Ivor Ceyhan, political
 editor of The Spindle, the Commonwealth's newspaper of record. He asks it
 without notes.
 
-"Prime Minister. Your majority is six seats, and all six belong to
-independents. You have inherited a bill you did not write, to make copies of
-people into persons after forty hours, which your predecessor promised the
-New Progressive Party. And you lead a party of four currents that have never
-agreed what it is for: the maintenance unions of the Trades Left, the
-leadership's Soft Left, the deck co-operatives of the Station Left and Dan
-Czarnecki's Hard Left. Before anything else: why you?"
+"Prime Minister, your majority is six, and all six are independents. You've
+inherited a bill you didn't write, making copies into persons after forty
+hours, which your predecessor promised the New Progressives. And your own
+party can't agree what it's for. So, before anything else: why you?"
+
+He means the four currents of the Party of Socialists and Democrats: the
+maintenance unions of the Trades Left, the leadership's Soft Left, the deck
+co-operatives of the Station Left and Dan Czarnecki's Hard Left.
 
 Your answer will be quoted for the rest of your term, and it will decide
 which part of your record you are known for.`,
   choices:[
     { posture:"measured", label:`Because the last government could not run the Commonwealth, and I can.`,
       act:"Say it",
-      note:`It stakes your reputation on competence: on the promise that the stations will be well run, which most voters want to hear. Kazuya Tanako, who chairs the six members elected by licensed life-support engineers, hears a government that respects expertise. The Trades Left hears an old charge. The last government blamed the stations' breakdowns on the maintenance crews, and this answer repeats it.`,
+      note:`You stake your reputation on competence: the promise that the stations will be run well, which most voters want to hear. Kazuya Tanako, who chairs the members elected by life-support engineers, hears a government that respects expertise. The Trades Left hears an old charge, because the last government blamed the stations' breakdowns on its maintenance crews.`,
       effects:[{flag:"led_on_competence"},
                {move:{public_standing:5}},
                {move:{"loyalty.cu_maintenance":-6}},
@@ -230,7 +230,7 @@ which part of your record you are known for.`,
 
     { posture:"cautious", label:`Because I stand for what this party has always stood for: public ownership, and the workers who keep the stations running.`,
       act:"Say it",
-      note:`It claims the party's traditions. The Trades Left, the current that speaks for the maintenance unions, will quote the answer at every meeting for a year, and the Soft Left, the leadership's current, is reassured. Voters who wanted a new start hear the old party. The New Progressive Party, which joined the government to pass the bill on copies, will ask whether those traditions include it.`,
+      note:`You claim the party's traditions. The Trades Left will quote you at every meeting for a year, and the Soft Left is reassured. Voters who wanted a fresh start hear the old party, and the New Progressive Party, which joined the government to pass the bill on copies, will ask whether those traditions include its bill.`,
       effects:[{flag:"led_on_continuity"},
                {move:{"loyalty.cu_maintenance":11}},
                {move:{"loyalty.cu_loyalists":4}},
@@ -241,7 +241,7 @@ which part of your record you are known for.`,
 
     { posture:"bold", label:`Because the party had to change, and I changed it.`,
       act:"Say it",
-      note:`It claims credit for modernising the party, which most voters and the New Progressive Party want to hear. The Trades Left and Dan Czarnecki's Hard Left opposed that modernisation, and they will read the answer as a statement that the leadership no longer needs them. Your own members will quote it back to you the first time you ask them to vote for something they dislike.`,
+      note:`You take credit for modernising the party, which most voters and the New Progressive Party want to hear. The Trades Left and Dan Czarnecki's Hard Left fought that modernisation, and they will hear that the leadership no longer needs them. Your own members will quote it back at you the first time you ask them for a hard vote.`,
       effects:[{flag:"led_on_break"},
                {move:{public_standing:7}},
                {move:{"loyalty.psa":9}},
@@ -276,13 +276,13 @@ undercuts their wages, but a copy that is a citizen can hold a maintenance
 licence and compete for their jobs.`,
   choices:[
     { posture:"cautious", label:`Read the whips' count of how every member is expected to vote, before saying anything about the bill in public.`,
-      note:`It costs nothing and commits the government to nothing. The count shows where the bill has the votes and where it does not, so that anything you say about it afterwards is said with the numbers in hand. The New Progressive Party will wait for a statement, and for now it has no cause to worry.`,
+      note:`You read the whips' count first. It costs nothing and commits you to nothing, and whatever you say about the bill afterwards, you will say it knowing the numbers. The New Progressive Party will wait for a statement, and has no reason to worry yet.`,
       effects:[{flag:"read_the_count"},],
       result:"The count says the bill would carry among the 240 elected members and fail among the 40 functional members, who must also pass it because it touches life-support licensing." },
     { posture:"bold", label:`Tell the press that the government stands behind the bill and will carry it through the House.`,
       act:"Say it",
       cost:{ slot:1 },
-      note:`A public commitment pleases the New Progressive Party, which made the bill its price for joining the government, and the voters who favour the bill. It also commits the government before the Trades Left has been consulted. That current is the largest in your party and is divided on the bill, and its members will learn of the commitment from the news. Once made in public, the commitment is hard to withdraw.`,
+      note:`You commit the government to the bill in public. The New Progressive Party and the voters who favour the bill are pleased. The Trades Left, the largest current in your party and divided on the bill, was not consulted and will learn of it from the news. A public commitment is hard to take back.`,
       effects:[{flag:"read_the_count"},{move:{"public_standing":3}},
                {move:{"loyalty.psa":8}},{move:{"loyalty.cu_maintenance":-9}},
                {wire:"PM COMMITS GOVERNMENT TO FORTY-HOUR THRESHOLD"}],
@@ -308,12 +308,11 @@ is a licensed integrity engineer of forty years' standing, the first twenty
 of them on Earth, and she has never voted against the position her
 profession has settled on.
 
-"You want the forty hours," she says, before you have sat down. "You will
-not get them from us. Our objection is not to the number. It is to what
-follows. The panel's seats are elected by licensed engineers. Once a copy
-two days old is a person, a copy two days old can hold a licence, and then
-it can vote for this panel. You are not only reforming personhood. You are
-changing who elects us."`,
+"I'll be straight with you," she says, before you have sat down. "The
+panel won't support forty hours. We have no view on the number itself. Our
+problem is the licence. The panel is elected by licensed engineers, and if a
+two-day-old copy is a person, it can apply for a licence and get on our
+roll. For us this isn't a personhood bill. It changes who elects the panel."`,
   choices:[
     { posture:"measured", label:`Offer an exemption: the threshold falls to forty hours, but a copy made a person under it cannot hold a life-support licence.`,
       act:"Offer it",
@@ -332,7 +331,7 @@ changing who elects us."`,
       effects:[{flag:"gb_approached"},{chapter:2},{move:{"rel.gb_chair":-15}},{move:{"loyalty.gb":-8}},
                {move:{"public_standing":3}},{flag:"threatened_guild_bench"},
                {wire:"PM RAISES FUNCTIONAL SUNSET IN PRIVATE MEETING, SOURCES SAY"}],
-      result:"\"Extend it a fifth time,\" she says, \"or don't. Either way I have the votes and you do not.\"" },
+      result:"\"Do what you like with the sunset clause,\" she says. \"It won't change how the panel votes this week.\"" },
     { posture:"cautious", label:`Commit to nothing. Listen, and say nothing that could be repeated.`,
       note:`You leave having committed the government to nothing, and Tanako thinks slightly better of a Prime Minister who listened. You also learn when the panel meets to decide its vote.`,
       effects:[{flag:"gb_approached"},{chapter:2},{move:{"rel.gb_chair":4}},],
@@ -355,27 +354,28 @@ waiting for a better moment.
 He stops you in the division lobby, where the press gallery can see the two
 of you together.
 
-"Eleven thousand four hundred of my constituents are registered in tier four
-of the shed order," he says. "That is the list that decides who is switched
-off first when a station runs short of power, and switched back on last. The
-bill you are whipping me to vote for decides how many hours it takes a copy
-to become a person. Give me the shed order. Give me anything on the shed
-order."`,
+"I've got eleven thousand four hundred constituents in tier four," he says.
+"First off when the power runs short, last back on. And you want me in the
+lobby for a bill about how many hours it takes a copy to become a person.
+Give me something on the shed order. Anything."
+
+The shed order is the published list of who is switched off first when a
+station runs short of power, and tier four is its lowest band.`,
   choices:[
     { posture:"measured", label:`Promise to bring back the Shed Order (Civilian Oversight) Bill this session, which would put the shed order under civilian review.`,
-      note:`Czarnecki wrote the bill, and it is the one thing he has asked for. The promise wins the Hard Left. It also pleases the Trades Left, the current that speaks for the maintenance unions, which wants the shed order answerable to Parliament. The bill touches life support, so it needs a majority of the functional members as well, and your coalition partners expect to vote against it. The promise is made in the division lobby in front of the press gallery, and it will be reported.`,
+      note:`Czarnecki wrote this bill, and it is all he has asked for. The promise wins the Hard Left, and the Trades Left, whose unions want the shed order answerable to Parliament, is pleased too. Because the bill touches life support it also needs a majority of the functional members, and your coalition partners expect to vote against it. You make the promise in front of the press gallery, so it will be reported.`,
       effects:[{move:{"loyalty.cu_halloran":22}},{move:{"loyalty.cu_maintenance":9}},{move:{"party_loyalty":7}},
                {flag:"halloran_confronted"},{flag:"shed_order_promised"},
                {bill:{shedorder:{stage:"second_reading"}}}],
       result:`He writes nothing down. By evening the promise is in the parliamentary column of The Spindle, the Commonwealth's newspaper of record, sourced to three members who overheard it. The bill is back on the order paper at its second reading.` },
     { posture:"cautious", label:`Offer him a junior ministry. As a minister he would be bound to vote with the government.`,
-      note:`A minister must vote with the government or resign, so the offer binds Czarnecki. It does not bind the eleven members of the Hard Left, who followed him because of the shed order and would be left with their grievance and without their leader. The appointment will be reported as a Prime Minister buying off a rival, and voters will think less of it.`,
+      note:`As a minister, Czarnecki must vote with the government or resign, so the offer ties his hands. It does not tie the eleven members of the Hard Left, who followed him over the shed order and would be left with their grievance and without their leader. The press will report it as a Prime Minister buying off a rival, and voters will think less of you for it.`,
       effects:[{move:{"loyalty.cu_halloran":14}},{move:{"party_loyalty":4}},{move:{"public_standing":-3}},
                {flag:"halloran_confronted"},{flag:"halloran_bought"},
                {wire:`CZARNECKI TIPPED FOR OFFICE; HOMESTEAD DELEGATION SEEKS ASSURANCES`}],
       result:`He accepts. Some of the Hard Left follow him into line, and those who do not now have a grievance and no leader.` },
     { posture:"bold", label:`Refuse. He has fewer than twelve signatures, and you both know it.`,
-      note:`It costs the government nothing today. The Hard Left and the Trades Left will hear a Prime Minister who will not discuss the shed order, and Czarnecki will go looking for the missing names. If he finds them, twelve members can force a ballot on your leadership.`,
+      note:`It costs nothing today. The Hard Left and the Trades Left hear a Prime Minister who will not discuss the shed order, and Czarnecki goes looking for his missing names. If twelve members sign, they can force a ballot on your leadership.`,
       effects:[{move:{"loyalty.cu_halloran":-11}},{move:{"loyalty.cu_maintenance":-4}},{move:{"party_loyalty":-3}},
                {flag:"halloran_confronted"},{queue:[{event:"halloran_finds_nine",after:4}]}],
       result:`"No," he agrees. "Not today." He leaves the lobby and spends the next four sittings asking members to sign.` }
@@ -571,19 +571,18 @@ not clear that either act breaks any law.`,
 you sit down. It lists every measure waiting on the House and what each one
 needs next. He reads it aloud, slowly, the way he reads a division list.
 
-"The House gives the government six slots of order-paper time in each
-sitting period," he says. "One slot moves one measure one stage, such as
-from first reading to committee. So the question is never only whether you
-have the votes. It is whether you have the time. The slots are restored at
-every recess. When the House rises at the end of the session, any bill that
-has not passed falls."`,
+"You get six slots of order-paper time each sitting period," he says. "A
+slot moves one measure one stage, from first reading to committee, say. So
+it's not just whether you have the votes, it's whether you have the time.
+The slots come back after every recess. And when the House rises at the end
+of the session, any bill that hasn't passed falls."`,
   choices:[
     { posture:"cautious", label:`Go through the order paper with him item by item, and ask what each measure needs and who wants it.`,
-      note:`Devi knows who moved each measure and what they will want for their votes. An hour with him now teaches the order paper to the Prime Minister who must spend its time, and it wins his confidence and that of the Soft Left, the leadership's current.`,
+      note:`Devi knows who moved each measure and what they want for their votes. An hour with him teaches you the order paper you will be spending, and earns his trust and that of the Soft Left, the current that runs your party.`,
       effects:[{ flag:"taught_the_day" }, { move:{ "rel.okarie":6 } }, { move:{ "loyalty.cu_loyalists":3 } }],
       result:`He names who moved each item and what they want in return for their votes. From tomorrow you read the paper yourself; he will not take you through it again.` },
     { posture:"bold", label:`Read the order paper alone, and send him back to the lobbies to count votes.`,
-      note:`It keeps the Chief Whip counting votes, which is where the government needs him, and you learn the order paper on your own. Devi will take it as a sign that you do not want his advice. The press gallery will report a Prime Minister who does her own reading.`,
+      note:`You keep the Chief Whip in the lobbies counting votes, where the government needs him, and learn the order paper yourself. Devi will take it as a sign that you do not want his advice. The press gallery will report a Prime Minister who does her own reading.`,
       effects:[{ flag:"taught_the_day" }, { move:{ "rel.okarie":-4 } }, { move:{ "public_standing":2 } }],
       result:"He goes back to the lobbies to count votes. From now on you read the order paper alone each sitting, and he does not offer to help again." }
   ]},
@@ -684,7 +683,7 @@ The bill must carry among the functional members as well as the elected
 ones. You have the morning.`,
   choices:[
     { posture:"measured", label:`Spend the morning with your own party's members who mean to abstain, and ask each of them for their vote.`,
-      note:`A Prime Minister asking in person turns five abstentions into votes, and the Trades Left, the current of your party that speaks for the maintenance unions, and Czarnecki's Hard Left notice the attention. All five are elected members, so the functional count, where the bill is short, does not move.`,
+      note:`By asking in person, you can bring five of your own members who meant to abstain round to voting for the bill. The Trades Left and the Hard Left, the currents they belong to, will notice that you are paying attention to them. All five hold district or list seats, so this does not touch the functional vote, which is the one the bill is short of.`,
       effects:[{move:{"loyalty.cu_maintenance":6}},{move:{"loyalty.cu_halloran":4}},
                {flag:"whipped_own_side"}],
       result:"Five of your members who meant to abstain will now vote for the bill. None of them is a functional member, so the functional count does not change." },
@@ -2787,10 +2786,10 @@ chamber.
 The motion needs a majority of the House, 141 votes of 280, to carry. If it
 carries, the government falls.
 
-Watkins has been counting for weeks. The government's standing in the
-country is below 40, and its own benches are restless. Those are his two
-figures: members who fear for their seats, and members who have stopped
-fearing the whips.
+Watkins has been counting for weeks. The government is polling below 40 per
+cent, and more of its own members are voting against the whips. He needs
+both kinds of vote: members who expect to lose their seats at the election,
+and members the whips can no longer bring into line.
 
 The government has until the division to change the count.`,
   choices:[

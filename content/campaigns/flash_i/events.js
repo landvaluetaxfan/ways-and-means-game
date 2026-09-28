@@ -854,43 +854,44 @@ has the money.`,
     { kind:"margin", body:"Before any register is suspended, I want the names. Not the count: the names.", source:"A.E.F." }
   ] },
   when:{ flags:["f1_frozen"], scalarAbove:{ friction:70 }, scalarBelow:{ thermal_margin:30 } },
-  title:"The first floor gives",
+  title:"The margin gives way",
   speaker:"girard",
   effects:[{ flag:"f1_first_floor" }],
   body:`The Commonwealth's thermal margin, the spare capacity its radiators have to
-shed heat, has fallen below 30 and is dropping faster than the Treasury
-forecast. The coolant the habitats need is bought on Earth, through banks
+shed heat, has fallen below 30 per cent and is dropping faster than the
+Treasury forecast. The coolant the habitats need is bought on Earth, through banks
 now under the European Union's sanctions.
 
-Every tanker of coolant is now paid for twice: once in money and once in
-delay. The margin matters because the Commonwealth's people, bodies and
-minds alike, produce heat, and a habitat that cannot shed it cannot keep
-them all running.
+The sanctions have made coolant slower and dearer to buy. Each payment must
+now go through a bank outside the Union's reach, and shipments that took a
+week now take three. The margin matters because everything the
+Commonwealth runs gives off heat, from its factories and data halls to its
+residents, bodies and minds alike. When the radiators cannot shed it all,
+something has to be switched off.
 
-Below 30, the engineering authority, the body that runs life support, may
+Below 30 per cent, the engineering authority, the body that runs life support, may
 begin cutting power on its own schedule, without asking a minister. It
 follows the shed order, the published list of who stops running first in a
 shortage. A person shed is held in suspension: their mind is kept intact but
 stops running until the power returns.
 
-Vesna Girard, the Minister for Substrate and Thermal, counts three floors
-under the government: the margin, the Treasury's cash that pays for it, and
-the House. The first is giving way.
-
-Her ministry can ration power on the ring, the band of eight stations where
+Vesna Girard, the Minister for Substrate and Thermal, can ration power on
+the ring, the band of eight stations where
 half the Commonwealth lives, before the authority does. That would mean a
 cooler ring and louder complaints, and it would win back a sitting or two on
 the margin. Or the government can hold, say nothing, and let the authority's
 cuts come when they come.
 
 The Allocation Act, the law that governs a shortage, gives the authority
-that power. "We can choose what gets switched off," Girard said. "Or the
-authority will choose for us, and it will choose by the list."`,
+that power. "Either we decide what gets switched off," Girard said, "or the
+authority does, and it goes by the list."`,
   choices:[
     { posture:"bold", label:"Ration the ring ahead of the shed order.",
+      note:"Girard's ministry cuts power on the eight ring stations on a published schedule, before the authority can suspend anyone. The margin recovers enough to hold for a sitting or two, and the ring's residents, half the country, feel the cold and blame the government.",
       effects:[{ move:{ thermal_margin:3, public_standing:-3 } }],
       result:"The ring runs cooler and louder. The margin buys a sitting or two." },
     { posture:"cautious", label:"Hold the line and say nothing.",
+      note:"Nothing is cut today. If the margin keeps falling, the engineering authority will start suspending people by the shed order on its own schedule, and the government will be seen to have let it happen.",
       effects:[{ move:{ legitimacy:-2 } }],
       result:"Nothing changes today, which is the point and the danger." }
   ]},

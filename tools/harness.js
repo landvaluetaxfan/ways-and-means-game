@@ -130,11 +130,13 @@ function newGame() {
   seen.intro = !!intro;
   seen.epigraph = !!(intro && intro.querySelector(".sp-epigraph"));
   seen.chromed = !!(intro && !w.document.querySelector("#s-sit.setpiece"));
-  /* THE PROGRAMME, set apart from the introduction (design/56): its own
-     block, after the signature, carrying the play's name and the cast */
-  const prog = intro && intro.querySelector(".sp-programme");
-  seen.programme = !!(prog && prog.querySelector(".sp-castlist li") &&
-    [...intro.querySelectorAll(".sp-sec")].indexOf(prog) > [...intro.querySelectorAll(".sp-sec")].indexOf(intro.querySelector(".sp-signature")));
+  /* THE ROLE AND THE CAST OF CHARACTERS (design/56), part of the
+     introduction and before its signature, which closes it */
+  const secs = intro ? [...intro.querySelectorAll(".sp-sec")] : [];
+  const cast = intro && intro.querySelector(".sp-cast");
+  seen.cast = !!(cast && cast.querySelector(".sp-castlist li") &&
+    secs.indexOf(cast) >= 0 && secs.indexOf(cast) < secs.indexOf(intro.querySelector(".sp-signature")) &&
+    secs[secs.length - 1] === intro.querySelector(".sp-signature"));
   const go = w.document.querySelector("#sitting-body [data-sp-go]");
   if (go) go.click();
   /* and the first act's card, which follows the introduction where the

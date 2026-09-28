@@ -40,6 +40,37 @@ passages.
 - **Use only pronouns the content has established** for a person. Otherwise
   use the name.
 
+**The author's second round (28 Sep 2026).** These came from reading a
+slate of examples, and apply everywhere.
+
+- **No game numbers in the fiction.** A meter's value never appears in
+  in-world prose: not "standing below 40", not "loyalty 48". Say what it is
+  in the world: "polling below 40 per cent", "more of its own members are
+  voting against the whips". A quantity the world measures is fine with its
+  unit: the thermal margin "below 30 per cent".
+- **Explain as a reporter would.** Give the mechanism in plain steps. Don't
+  compress it into a paradox ("paid for twice: once in money and once in
+  delay") or a figure ("three floors under the government"). Such lines
+  sound simple and leave the reader to decode them.
+- **A choice's note speaks to the player, subject first.** Write "By asking
+  in person, you can bring five members round", not "A Prime Minister asking
+  in person turns five abstentions into votes". Say what you do, who notices,
+  and what it does not change. Don't stack glosses in the middle of a
+  sentence ("the Trades Left, the current of your party that speaks for the
+  maintenance unions, and Czarnecki's Hard Left notice"). Gloss by a short
+  clause, or where the term first appears on the page.
+- **People talk like politicians and officials.** They are plain, practical
+  and sometimes blunt. They give numbers and names, hedge, and use
+  contractions where a speaker would. They don't speak in epigrams,
+  antitheses ("I am obliged to appoint... I am not obliged to believe") or
+  closing lines. Save a dramatic line for the moment that earns it: at most
+  one a chapter.
+- **A speaker never explains what the listener already knows.** A member
+  does not define the shed order to the Prime Minister. The narration
+  explains, next to the line.
+- **Epigraphs speak to the story or the politics.** An epigraph chosen for
+  the theatre motif alone ("All the world's a stage") says nothing.
+
 ## Registers
 
 | register | what it is for | where it is used |

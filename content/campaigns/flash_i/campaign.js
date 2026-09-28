@@ -94,20 +94,19 @@ The PSD are in power because of labour and trade unions. Expanding personhood is
 
 She has one session. The one that opens on the eleventh of April is the parliament's fourth and its last, and the House is already sitting.` },
 
-        { kind:"signature", head:"Adriana Eireann Flash \u00b7 Prime Minister" },
+        /* THE ROLE AND THE CAST (design/56), part of the introduction and in
+           its style, before the signature, which closes it (the author, 28
+           Sep: the programme as a separate block displaced the signature,
+           and was scrapped). A note for the performer who plays the role, on
+           the model of Things That Never Were's casting notes, and the cast
+           from `play` below. */
+        { kind:"body", head:"The role", body:
+`The performer playing this role should be able to capture Flash's composure, and the discipline of someone who has spent a career saying less than she knows. She believes a country can be run the way she ran its currency: by setting clear rules, publishing them, and keeping to them when it hurts. She must hold together a coalition that agrees on the economy and on almost nothing else, a party that chose her to stay in government, and a Parliament in its final session, whose members are already thinking about the election. Beneath the composure is someone who has never been elected to lead anything, and who privately doubts she has the right to. Her most essential characteristic is solitude: she has no old allies in politics, and the one colleague who understood her work, she left behind at the Bank.
 
-        /* THE PROGRAMME (design/56), after the signature and set apart from
-           the introduction by its own paper, rule and face: a note for the
-           performer who plays the role, and the cast (from `play` below).
-           The author's model is the casting notes of the Campaign Trail
-           mod Things That Never Were. It spoils nothing the first act has
-           not shown. */
-        { kind:"programme", head:"The role", body:
-`Adriana Eireann Flash is the Prime Minister and a mass of contradictions. She is a banker at the head of a labour party. She holds the first elected office of her life, a seat won at a by-election after her party had already made her its leader. She built the Reserve Bank's independence, and she is now the one person in the Commonwealth with a reason to break it. She leads the party of the maintenance trades, whose unions did not choose her and do not trust her. She is admired for her composure and resented for it. She has no great legislative record and no faction of her own, and yet she is, for now, the only leader the whole coalition will follow.
+Ideal performer for this role is a woman in her early fifties in the alto range.` },
+        { kind:"cast", head:"Cast of characters" },
 
-The performer playing this role should be able to capture Flash's composure, and the discipline of someone who has spent a career saying less than she knows. She believes a country can be run the way she ran its currency: by setting clear rules, publishing them, and keeping to them when it hurts. She must hold together a coalition that agrees on the economy and on almost nothing else, a party that chose her to stay in government, and a Parliament in its final session, whose members are already thinking about the election. Beneath the composure is someone who has never been elected to lead anything, and who privately doubts she has the right to. Her most essential characteristic is solitude: she has no old allies in politics, and the one colleague who understood her work, she left behind at the Bank.
-
-Ideal performer for this role is a woman in her early fifties in the alto range.` }
+        { kind:"signature", head:"Adriana Eireann Flash \u00b7 Prime Minister" }
       ] },
 
     /* THE PLAY (design/56): the campaign's frame, outside the world. Its
@@ -135,8 +134,8 @@ Ideal performer for this role is a woman in her early fifties in the alto range.
       ensemble:"Members of Parliament, the residents of thirty stations, the wire services, and Earth's governments and banks.",
       acts:[
         { chapter:1, head:"Act I", title:"The House Is Sitting",
-          epigraph:{ body:"All the world's a stage, / And all the men and women merely players.",
-                     source:"William Shakespeare, As You Like It" },
+          epigraph:{ body:"There is nothing more difficult to take in hand, more perilous to conduct, or more uncertain in its success, than to take the lead in the introduction of a new order of things.",
+                     source:"Niccol\u00f2 Machiavelli, The Prince (tr. W. K. Marriott)" },
           direction:
 `The chamber of Parliament, at the Winter Garden, the capital. Morning, 11 April 2080. Two hundred and eighty seats, most of them filled. The coolant pumps run under the floor, and a member who stands to speak learns to pitch a voice over them.
 
