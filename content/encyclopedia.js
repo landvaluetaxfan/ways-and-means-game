@@ -65,14 +65,14 @@ const ENCYCLOPEDIA = {
       { h:"Exposure", body:
         "What orders the population is whether a person can be switched off. A biological person "+
         "on the consumables floor is poor. An emulated resident on the same floor is poor and is "+
-        "on the shed order register. Their incomes may be identical; their exposure is not "+
-        "comparable.\n\n"+
+        "on the shed order register. The two may have the same income, and only the emulated "+
+        "resident can be switched off to meet a shortfall.\n\n"+
         "Wealth at the moment of uploading sets substrate tier, and tier decides whether a "+
         "person accumulates for a century or is shed at the next shortfall. There is no single "+
         "emulated interest." },
       { h:"Mortality and the franchise", body:
-        "Biological persons die; emulated ones do not. Biological political generations turn "+
-        "over at the customary rate. Emulated ones do not turn over at all. A biological voter "+
+        "Biological persons die, and emulated persons can run indefinitely. Biological political "+
+        "generations turn over at the customary rate, and emulated voters stay on the roll. A biological voter "+
         "of thirty is outvoted by an electorate that will still be voting in ninety years, and "+
         "that has voted for the settlement which serves it.\n\n"+
         "No remedy has survived a first reading. Any remedy that disenfranchises the "+
@@ -130,8 +130,9 @@ const ENCYCLOPEDIA = {
         "The far-band delegations objected at the founding that the word described an orbit and "+
         "named no nation. The founders adopted it for the same reason." },
       { h:"The demonym", body:
-        `The Commonwealth has no demonym in use. *Circumterrestrials* is the Charter's form: it appears in four founding documents and has not been said aloud by anyone not paid to. Proposals for a spoken word have failed at every attempt.
-Asked what they are, residents name a station. The union is held together by shared metabolism, the stations' dependence on one another for air, heat and transit, and a dependence nobody chose has not produced a name anybody uses.` },
+        `The Commonwealth has no demonym in use. *Circumterrestrials* is the Charter's form: it appears in four founding documents and in no common speech. Every proposal for a spoken word has failed.
+
+Asked what they are, residents name a station. The union is held together by shared metabolism: the stations depend on one another for air, heat and transit. None of the names proposed for their residents as a whole has come into use.` },
       { h:"Composition", body:
         "The Commonwealth has thirty stations across four altitude bands, and five external "+
         "constituencies. Anselm Ring holds more residents than the seven smallest stations "+
@@ -167,7 +168,7 @@ This produces a recurring constitutional argument. Federal development spending 
         "members. A government may hold a working majority of the House and still be unable to "+
         "legislate. See [[dual_majority]]." },
       { h:"Time", body:
-        `Each sitting period gives the government a fixed allotment of order-paper time, refilled at every recess. The Prime Minister decides which measures receive it. In practice, it is traded for coalition support.` }
+        `Under the standing orders the government has a fixed allotment of time on the order paper in each sitting period, renewed after every recess. The Prime Minister decides which measures receive it, and in practice much of it is traded for coalition support.` }
     ],
     see:["dual_majority","functional_constituency","prime_minister","cabinet"] },
 
@@ -175,7 +176,7 @@ This produces a recurring constitutional argument. Federal development spending 
     banners:[],
     edited:{ by:"multiple", attested:true, note:"" },
     summary:"The **Prime Minister** is the head of government of the Commonwealth. The office is "+
-      "held by whoever can command a majority in the "+
+      "held by whoever can command a majority in "+
       "[[parliament|Parliament]].",
     sections:[
       { h:"Tenure", body:
@@ -186,8 +187,7 @@ This produces a recurring constitutional argument. Federal development spending 
         `The Prime Minister nominates ministers, chairs [[cabinet|Cabinet]], controls the order paper, and can request a dissolution, which the [[person_tenaya|President]] can refuse. Control of the order paper matters most in practice, because each sitting period gives the government a fixed allotment of time.` },
       { h:"Style", body:
         "The office is styled *the Right Honourable*, and is *Prime Minister* on every "+
-        "instrument of appointment. The honorific is spoken in the House; the office does the "+
-        "work in writing." }
+        "instrument of appointment. Members use the honorific in debate." }
     ],
     see:["cabinet","parliament","person_tenaya"] },
 
@@ -214,13 +214,12 @@ This produces a recurring constitutional argument. Federal development spending 
         "Prime Minister. The President can decline a nomination. The power is used rarely." },
       { h:"Collective responsibility", body:
         "A minister who cannot support a decision is expected to resign before opposing it. In "+
-        "practice the convention is observed by absence more often than by resignation. Two "+
-        "Congregational Democratic Alliance ministers who opposed the threshold were absent from "+
-        "its division." },
+        "practice a minister who disagrees is more often absent from the division than out of "+
+        "office." },
       { h:"The Treasury", body:
         "The Treasury sits apart from the ministries and reports directly to the Prime Minister. "+
-        "It answers for the appropriation, and a post left vacant is a budget argued by "+
-        "officials and signed by nobody." }
+        "It answers for the appropriation. While the post is vacant, officials prepare the "+
+        "budget and no minister signs it." }
     ],
     see:["prime_minister","parliament","perigee_charter","person_tenaya"] },
 
@@ -228,8 +227,8 @@ This produces a recurring constitutional argument. Federal development spending 
     banners:["protected"],
     edited:{ by:"Registry Archivist", attested:true, note:"protected since 2074" },
     summary:"The **Perigee Charter** is the founding document of the "+
-            "[[commonwealth|Circumterrestrial Commonwealth]]. It was adopted at the end of the "+
-            "independence congress. It is short, and deliberately silent on several contested "+
+            "[[commonwealth|Circumterrestrial Commonwealth]]. It was adopted in 2064, at the end of "+
+            "the independence congress. It is short, and deliberately silent on several contested "+
             "questions.",
     sections:[
       { h:"Drafting", body:
@@ -262,7 +261,7 @@ This produces a recurring constitutional argument. Federal development spending 
         "Critics argue that emergency authorities always find emergencies. They cite the "+
         "Allocation Act, which allows a tier-four register to be shed without notice to a "+
         "minister, and which has been used in circumstances that were not immediate crises. "+
-        "Declaration is straightforward; ending an emergency is contested." },
+        "The Charter names who may declare an emergency and is silent on who may end one." },
       { h:"Status", body:
         "Unresolved. Both major parties have governed without settling it. Both have found the "+
         "ambiguity convenient in office and difficult in opposition." }
@@ -332,8 +331,8 @@ This produces a recurring constitutional argument. Federal development spending 
   { id:"suspension", title:"Suspension", category:"Personhood",
     banners:["contested"],
     edited:{ by:"multiple", attested:true, note:"" },
-    summary:"**Suspension** is the condition of a mind held intact and not running. It is not "+
-      "death, and in law it does not interrupt legal personality.",
+    summary:"**Suspension** is the condition of a mind held intact and not running. In law "+
+      "a suspended person keeps their legal personality throughout.",
     sections:[
       { h:"Routes", body:
         "Suspension has four routes. Voluntary: a person elects to wait out a debt, a body "+
@@ -347,8 +346,8 @@ This produces a recurring constitutional argument. Federal development spending 
       { h:"Apportionment", body:
         "Suspended persons are counted for the apportionment of seats and cannot vote. A "+
         "station with a large suspended population therefore returns members elected by a "+
-        "small active electorate. Homestead has 11,400 suspended residents against a "+
-        "population of 880,000." }
+        "small active electorate. In April 2080 Homestead had 11,400 suspended residents "+
+        "against a population of 880,000." }
     ],
     see:["shed_order","substrate","ashfield"] },
 
@@ -377,7 +376,7 @@ This produces a recurring constitutional argument. Federal development spending 
         "Rejection capacity is the limiting resource of the orbital economy. Energy is "+"trivial to gather and hard to discard, so the right to dump waste heat binds "+"before any other. From the Charter until 2073 the Commonwealth kept its accounts "+"in the MW-year rejected, and its currency board issued a dollar only against a "+"millionth of one. Since the float the dollar has been a currency like any other, "+"and quota a commodity priced in it.\n\n"+
         "The consequence survived the float. The radiators are the ceiling of the "+"economy's output, so the franchise and the budget are still one question: to "+"hold quota is to hold a claim on how many minds a station may run." },
       { h:"Forwarding", body:
-        "A **[[quota_forward|quota forward]]** fixes a price now for capacity delivered at a "+"named sitting. The seller takes the money today and hands over the margin later. "+"Into a tight release the sale is a hedge; into a loose one it is a hole, and the "+"consortiums price the difference because they hold the only complete numbers." },
+        "A **[[quota_forward|quota forward]]** fixes a price now for capacity delivered on a "+"named date. The seller takes the money today and hands over the margin later. "+"If the year's release is tight, the sale protects the seller; if it is loose, the "+"seller has sold capacity it will not need, and the consortiums price that risk because "+"they hold the only complete figures." },
       { h:"Fraud", body:
         "The market has been traded, hedged, forwarded and defrauded since the Charter, "+"and the Commonwealth has legislated against the fourth of those four times. The "+"offence is the sale of the "+"same capacity twice, which the Registry can detect and the courts cannot." },
       { h:"The Commonwealth's position", body:
@@ -405,10 +404,12 @@ This produces a recurring constitutional argument. Federal development spending 
   { id:"volume_leases", title:"Volume leases", category:"Economy",
     banners:["cleanup"],
     edited:{ by:"multiple", attested:true, note:"inheritance law is unsettled" },
-    summary:"A **volume lease** is a long-dated right to occupy pressurised volume, let by "+"the Commonwealth to a station or a body for a term. It is the principal store of "+"household wealth in the outer bands and the instrument by which stations buy the "+"time to close their own cycles.",
+    summary:"A **volume lease** is a long-dated right to occupy pressurised volume, let by "+"the Commonwealth to a station, a household or a body for a term. It is the principal store of "+"household wealth in the outer bands and the instrument by which stations buy the "+"time to close their own cycles.",
     sections:[
       { h:"Volume", body:
         `Volume is positional. Ring-band volume is dear because demand for it is highest, and low-band volume is nearly free because demand for it is lowest. A lease converts that difference into a term of years.` },
+      { h:"Tenure", body:
+        "The [[perigee_charter|Charter]] vests all volume in the Commonwealth, which lets it "+"for fixed terms. To pay for construction, the first leases were sold cheaply at the "+"founding auctions of 2064 to 2070, on terms of up to 99 years, and leases sold since "+"have cost more. The Commonwealth may decline to renew a lease when it expires, and "+"then compensates the holder only for improvements. The volume levy is charged on a "+"lease's rental value and falls on the leaseholder." },
       { h:"The lease", body:
         "The rent is paid in one of two currencies: cash, or work on the station's own "+"material cycle. The second is worth more and is not guaranteed, which is what "+"makes a lease a political instrument. A station that "+"raises its closure under a lease needs less of the federal lift, and is closer to "+"feeding itself in the event of a separation." },
       { h:"Inheritance", body:

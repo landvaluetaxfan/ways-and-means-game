@@ -127,6 +127,24 @@ const Concordance = (function () {
   /* 3b. WHAT A LOYALTY MEANS. A figure carries its scale (design/45): out of
      100, and the share of a bench that votes with the party on a whipped
      vote, from the engine's one formula. */
+  /* READ AS 2080 WOULD (design/55): small counts in words, a party with its
+     article, and a current's loyalty as the press would describe it rather
+     than as a meter out of 100. */
+  const NUM = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+               "ten", "eleven", "twelve"];
+  function count(n, one, many) {
+    return (n <= 12 ? NUM[n] : n.toLocaleString()) + " " + (n === 1 ? one : (many || one + "s"));
+  }
+  /* "The Liberal Party", "Home Rule": a name built on a common noun takes
+     the article, a name that is itself a slogan does not */
+  function theName(name) {
+    return /^The /.test(name) || !/\b(Party|Alliance|Association|Independents|Union|League|Front|Movement)\b/.test(name)
+      ? name : "The " + name;
+  }
+  function currentMood(l) {
+    return l >= 70 ? "loyal to the leadership" : l >= 50 ? "mostly loyal to the leadership"
+         : l >= 30 ? "restive" : "openly at odds with the leadership";
+  }
   function loyaltyText(l) {
     const holds = Engine.holdsOnWhip ? Math.round(Engine.holdsOnWhip(l) * 100) : null;
     return `${l} of 100` + (holds != null ? `: on a whipped vote about ${holds} of every 100 of its members vote with the party` : "");
@@ -188,6 +206,16 @@ const Concordance = (function () {
     });
     return revs.sort((x, y) => x.sitting - y.sitting);
   }
+  /* WHAT HAPPENED TO IT IN THIS PARLIAMENT (design/55): the engine's
+     chronicle, the log entries `about` this party or person, oldest first,
+     each dated. History, so it counts as a revision on the day of the
+     latest entry. */
+  function chronicleOf(id) {
+    const es = (st.log || []).filter(e => e.cx && (e.about || []).indexOf(id) >= 0).reverse();
+    if (!es.length) return null;
+    return { h: "In this Parliament", dated: es[es.length - 1].sitting,
+             body: es.map(e => `On ${dayOf(e.sitting)} ${e.cx}.`).join(" ") };
+  }
   function unread(a) {
     return a.revised > OPENING && a.revised > ((st.cxRead || {})[a.id] || 0);
   }
@@ -207,7 +235,11 @@ const Concordance = (function () {
     };
     if (ch.id === st.pm) add("Government", "Prime Minister");
     (C.cabinet || []).forEach(p => {
-      if (p.holder === ch.id) add("Ministry", p.name, p.title || "Minister for " + p.name);
+      /* who holds it NOW: the save's cabinet, since a minister can be
+         dismissed or resign; content's holder is only who held it at the
+         opening */
+      const live = st.cabinet && st.cabinet[p.id] ? st.cabinet[p.id].holder : p.holder;
+      if (live === ch.id) add("Ministry", p.name, p.title || "Minister for " + p.name);
     });
     if (ch.office === "opposition") add("House", "Leader of the Opposition");
     if (ch.office === "whip") add("House", "Chief Whip");
@@ -262,7 +294,11 @@ const Concordance = (function () {
       { h: "Position", body:
         (pol.count ? pol.text : "The party has no recorded position on the questions that divide the House.") },
       { h: "Representation", body:
-        `The party holds ${total} seats: ${seats.district} district, ${seats.list} list and ${seats.functional} functional. ` +
+        (() => {
+          const kinds = [["district", seats.district], ["list", seats.list], ["functional", seats.functional]]
+            .filter(x => x[1] > 0).map(x => `${x[1]} ${x[0]}`);
+          return total ? `It holds ${count(total, "seat")}: ${andList(kinds)}. ` : "It holds no seats. ";
+        })() +
         (seats.district === 0 && seats.list > 0
           ? "The party holds no geographic constituency at all, a fact its opponents raise and it does not much dispute."
           : seats.functional > seats.district
@@ -275,27 +311,26 @@ const Concordance = (function () {
     /* LOYALTY, WITH ITS SCALE AND WHAT IT DOES (design/45). This said "its
        discipline is recorded at 48": a figure with no scale, under a second
        name for what every screen calls loyalty. */
-    const loyal = `Its members' loyalty to the party leadership stands at ` +
-      loyaltyText(st.parties[p.id].loyalty) + ".";
+    /* and since design/55 without the meter: what it does on a whipped vote */
+    const holds = Engine.holdsOnWhip ? Math.round(Engine.holdsOnWhip(st.parties[p.id].loyalty) * 100) : null;
+    const loyal = holds != null ? `On a whipped vote about ${holds} of every 100 of its members vote with the party.` : "";
     if (inGov) sections.push({ h: "In government", body:
-      asOf(`the party sits in the governing coalition. `) + loyal });
+      `The party is a member of the governing coalition and holds office in the Cabinet. ` + loyal });
     else if (cs) sections.push({ h: "Confidence and supply", body:
-      asOf(`the party sustains the government on votes of confidence and on the budget, ` +
-           `without holding office. `) + loyal });
-    else sections.push({ h: "In opposition", body: asOf(`the party sits in opposition. `) + loyal });
+      `The party sustains the government on votes of confidence and on the budget, ` +
+      `without holding office. ` + loyal });
+    else sections.push({ h: "In opposition", body: `The party sits in opposition. ` + loyal });
     /* A current's name is a position ("Hard Left") or a seat ("Homestead
        A"), neither of which takes a verb as a subject, so each paragraph
        leads with the name and its figures and then says what it is. A
        current has no article of its own (the author, 23 Sep); this is
        where it is described, in content's own words. */
     if (currents.length) sections.push({ h: "Currents", body:
-      `The party recognises ${currents.length} internal current` +
-      (currents.length === 1 ? "" : "s") + ", each with its own loyalty to the leadership, out of " +
-      `100. On a whipped vote three-quarters of a current votes with the party even at a loyalty ` +
-      `of 0, and all of it at 100. ` + asOf("they stand as follows.") + "\n\n" +
+      `The party recognises ${count(currents.length, "internal current")}. ` +
+      asOf("they stand as follows.") + "\n\n" +
       (Engine.currentSeats(st, C, p.id) || []).map(c => {
         const d = (currents.find(x => x.id === c.id) || {}).description;
-        return `**${c.name}**: ${c.seats} member${c.seats === 1 ? "" : "s"}, loyalty ${c.loyalty}.` +
+        return `**${c.name}** (${count(c.seats, "member")}, ${currentMood(c.loyalty)}).` +
                (d ? " " + d : "");
       }).join("\n\n") });
 
@@ -340,6 +375,8 @@ const Concordance = (function () {
              `[[parliament|Parliament]].`),
         table: { head: ["Member", "Seat", "Tier", "Office"], rows: rows } });
     }
+    const hist = chronicleOf(p.id);
+    if (hist) sections.push(hist);
 
     return {
       id: p.id, title: p.name, category: "Parties", generated: true,
@@ -347,8 +384,8 @@ const Concordance = (function () {
       edited: { by: "Concordance seat index", attested: true, note: "updated each division" },
       /* A LEDE, NOT A CAPTION. This read "A party of the House of Delegates
          holding 82 of 280 seats" -- a sentence with no subject in it. */
-      summary: lede(p.name,
-        `is a political party of the [[parliament|Parliament]]. ` +
+      summary: lede(theName(p.name),
+        `is a political party in [[parliament|Parliament]]. ` +
         /* the party's own note says what it is and who it speaks for */
         (p.note ? p.note + " " : "") +
         (p.aliases ? `It is known in the press as the ${p.aliases[0]}. ` : "") +
@@ -372,46 +409,44 @@ const Concordance = (function () {
 
   function stationArticle(s0) {
     const s = st.stations[s0.id];
+    const nDistricts = (C.constituencies || []).filter(k => k.station === s.id).length;
+    /* in the Bureau's own words: a closure ratio is a fact a reader of 2080
+       knows how to read (the Commonwealth article defines it) */
     const sections = [
-      { h: "Representation", body:
-        `Returns ${s.seats} members across ${(C.constituencies||[]).filter(k=>k.station===s.id).length} ` +
-        `constituencies. ` +
-        (s.type === "bundled"
-          ? `The seat bundles ${s.settlements} settlements, which share a delegation and very little else.`
-          : s.type === "external"
-          ? "An external constituency. Returns late, and knows it."
-          : "") },
-      { h: "Closure", body:
-        `Closure ratio ${s.closure.toFixed(2)}. ` +
+      { h: "Self-sufficiency", body:
+        `Its [[closure|closure ratio]] is ${s.closure.toFixed(2)}: it can sustain ` +
+        `${Math.round(s.closure * 100)} per cent of its material cycle without imports. ` +
         (s.closure < 0.4
-          ? "Below the threshold at which a station can survive an interruption of federal consumables for a season."
+          ? "That is below the level at which a station can survive a season without federal consumables."
           : s.closure > 0.8
-          ? "High enough that the station's obligations to the union are a matter of choice rather than necessity."
-          : "Within the band where the union holds.") +
-        `\n\n${s.dependency}` },
-      { h: "Grievance", body: s.grievance },
+          ? "That is high enough to make its membership of the union a matter of choice."
+          : "That is within the range in which membership of the union is a necessity.") },
+      { h: "Profile", body:
+        (s.dependency ? `**Principal dependency.** ${s.dependency}` : "") +
+        (s.grievance ? `\n\n**Principal grievance.** ${s.grievance}` : "") },
       { h: "Suspended population", body:
-        `${s.suspended.toLocaleString()} residents are held in [[suspension]], counted for ` +
-        `[[apportionment|apportionment]] and unable to vote. Attestation stands at ` +
-        `${(s.attested * 100).toFixed(1)} per cent of the adult roll.` }
+        `${s.suspended.toLocaleString()} residents are held in [[suspension|suspension]], counted for ` +
+        `[[apportionment|apportionment]] and unable to vote. ` +
+        `${Math.round(s.attested * 100)} per cent of its adults are attested.` }
     ];
     return {
       id: s.id, title: s.name, category: "Stations", generated: true,
       banners: s.closure < 0.35 ? ["contested"] : [],
       edited: { by: "Census Bureau returns", attested: true, note: "" },
       summary: lede(s.name,
-        `is an orbital habitat of the ${s.band} band of the Circumterrestrial ` +
-        `Commonwealth. It has a population of ${s.population.toLocaleString()} and ` +
-        `returns ${s.seats} member${s.seats === 1 ? "" : "s"} to ` +
-        `[[parliament|Parliament]].`),
+        `is an orbital habitat of the Circumterrestrial Commonwealth, in its ${s.band} band, ` +
+        `with ${s.population.toLocaleString()} residents. It returns ` +
+        `${count(s.seats, "member")} to [[parliament|Parliament]]` +
+        (s.type === "external" ? " as an external constituency" : nDistricts > 1 ? ` from ${count(nDistricts, "district")}` : "") +
+        "." + (s.type === "bundled" ? ` Its seat joins ${count(s.settlements || 0, "settlement")}, which share a delegation and little else.` : "")),
       sections,
       infobox: { title: s.name, rows: [
-        ["Band", s.band], ["Population", s.population.toLocaleString()],
-        ["Seats", String(s.seats)],
-        ["Constituencies", String((C.constituencies||[]).filter(k=>k.station===s.id).length)],
-        ["Closure", s.closure.toFixed(2)],
-        ["Suspended", s.suspended.toLocaleString()],
-        ["Attested", (s.attested * 100).toFixed(1) + "%"]
+        ["Altitude band", s.band], ["Population", s.population.toLocaleString()],
+        ["Members", String(s.seats)],
+        ["Districts", String(nDistricts)],
+        ["Closure ratio", s.closure.toFixed(2)],
+        ["In suspension", s.suspended.toLocaleString()],
+        ["Attested", Math.round(s.attested * 100) + "%"]
       ]},
       see: ["suspension"]
     };
@@ -435,12 +470,10 @@ const Concordance = (function () {
     const sections = [];
     if (k.description) sections.push({ h: "The seat", body: Engine.seatText(C, k, k.description) });
     if (k.tendency) sections.push({ h: "How it votes", body: Engine.seatText(C, k, k.tendency) });
-    sections.push({ h: "Returns", body:
-      `Magnitude ${k.magnitude}, on a roll of ${(k.electorate || 0).toLocaleString()}. ` +
-      (k.at_large ? "Elected at large: the whole station is the constituency. " : "") +
-      (party ? `Held by [[${party}|${pName(party)}]]. ` : "") +
-      `The recorded material interests are ${(k.material_interest || [])
-        .map(x => String(x).replace(/_/g, " ")).join(", ") || "none recorded"}.` });
+    /* the roll, the member and the interests are in the lead, the infobox
+       and "How it votes"; a closing line of returns said them a third time */
+    if (k.at_large) sections.push({ h: "Election", body:
+      "The district is elected at large: the whole station is one constituency." });
     /* WHO HOLDS IT is the engine's answer (`seatMember`), the one the seat's
        own prose is filled from. `k.member` is the backbencher the roll was
        drafted with, and where a roster character sits for the seat it names
@@ -452,17 +485,17 @@ const Concordance = (function () {
     return {
       id: k.id, title: k.name + (k.at_large ? " (at large)" : ""),
       category: "Constituencies", generated: true,
-      banners: [], edited: { by: "Census Bureau returns", attested: true, note: k.parent || "" },
+      banners: [], edited: { by: "Census Bureau returns", attested: true, note: "" },
       summary: lede(k.name,
         `is an electoral district of ${s0 ? `[[${s0.id}|${s0.name}]]` : "the Commonwealth"}. ` +
-        `It returns ${k.magnitude} member${k.magnitude === 1 ? "" : "s"} to ` +
+        `It returns ${count(k.magnitude, "member")} to ` +
         `[[parliament|Parliament]]` +
         `${member ? `, and is held by ${holder ? `[[person_${holder.id}|${member}]]` : member}` : ""}.`),
       sections,
       infobox: { title: k.name, rows: [
         ["Station", s0 ? s0.name : k.station],
-        ["Band", k.band || ""],
-        ["Magnitude", String(k.magnitude)],
+        ["Altitude band", k.band || ""],
+        ["Members", String(k.magnitude)],
         ["Electorate", (k.electorate || 0).toLocaleString()],
         ["Member", member || "\u2014"],
         ["Held by", party ? pName(party) : "\u2014"]
@@ -798,6 +831,9 @@ const Concordance = (function () {
       asOf(`the government ${P.sub} lead${P.s} commands ${Engine.confidence(st)} of ` +
            `${Engine.chamberTotal(st)} seats, against a majority of ` +
            `${Engine.majority(st)}.`) });
+
+    const hist = chronicleOf(ch.id);
+    if (hist) sections.push(hist);
 
     const rows = [];
     if (party) rows.push(["Party", party.name]);

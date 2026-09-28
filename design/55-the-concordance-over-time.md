@@ -85,13 +85,32 @@ after the event"), computed from the calendar.
    clause, which was published in 2078. It does not know that the clause
    will be triggered.
 
+## The follow-ups (done the same day)
+
+- **History for parties and persons.** The engine's log entries about a
+  party or a person carry who they are `about` and `cx`, a clause in the
+  Concordance's register: an appointment, a resignation or dismissal, a
+  partner walking out of or returning to the government, a member crossing
+  the floor, the leadership ballot and the general election. Party and
+  person articles gain an "In this Parliament" section of those entries,
+  dated, which counts as a revision. A person's offices are now read from
+  the save's cabinet, so a dismissed minister no longer holds the post in
+  the article.
+- **The generated articles.** Party articles give their seats once, say
+  what a whipped vote does instead of printing loyalty out of 100, and
+  describe each current as loyal, restive or at odds with the leadership.
+  Station articles read closure as a share of the material cycle and set
+  the dependency and grievance as a profile. District articles lost the
+  closing line that repeated the lead and the infobox, and an internal id
+  that the edit note printed. Small counts are in words, and a party's name
+  takes its article ("The Liberal Party", "Home Rule").
+- **The hand-written articles**, read against PROSE.md's Reference rules.
+  Paired contrasts and metaphors were rewritten. The Cabinet article cited a
+  division on the threshold that the player may not have held; the example
+  is gone. Volume leases now state option C's tenure (design/54), and the
+  Perigee Charter is dated 2064.
+
 ## Still to do
 
-- The remaining hand-written articles have been read for leaks, and only
-  `substrate_futures` had one. They have not had a full style pass since
-  design/45.
-- The generated articles for parties, stations and districts still read
-  as returns. They are correct and in-universe, and they are dense.
-- Party and person articles could gain history sections from the record (a
-  minister dismissed, a member who crossed the floor). The mechanism
-  supports it; nothing writes it yet.
+- Other histories the chronicle could carry: bills a member sponsored,
+  a station's shed order or a change to its closure.

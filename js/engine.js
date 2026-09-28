@@ -1151,9 +1151,10 @@ const Engine = (function () {
     r.held[to] = (r.held[to] || 0) + n;
     syncRoll(st, C);
     const k = C.constituencyById[cid];
-    st.log.unshift({ sitting: st.sitting,
-      text: `Crossed the floor: ${n} seat${n === 1 ? "" : "s"} for ` +
-            `${k ? k.name : cid}, ${from} to ${to}` });
+    chronicle(st, `Crossed the floor: ${n} seat${n === 1 ? "" : "s"} for ` +
+            `${k ? k.name : cid}, ${from} to ${to}`, [from, to, cid],
+      `${n === 1 ? "the member" : n + " members"} for ${k ? k.name : cid} crossed the floor from the ` +
+      `${partyName(C, from)} to the ${partyName(C, to)}`);
     return { ok: true, seats: n };
   }
 
@@ -1556,9 +1557,11 @@ const Engine = (function () {
     st.log.unshift({ sitting: st.sitting, text: "GENERAL ELECTION" });
     C.parties.forEach(p => {
       const d = tot(after[p.id]) - tot(before[p.id]);
-      if (d) st.log.unshift({ sitting: st.sitting,
-        text: `  ${(C.partyById[p.id] && C.partyById[p.id].short) || p.id}: ${d > 0 ? "+" : ""}${d} ` +
-              `(${after[p.id].district} district, ${after[p.id].list} list, ${after[p.id].functional} functional)` });
+      if (d) chronicle(st,
+        `  ${(C.partyById[p.id] && C.partyById[p.id].short) || p.id}: ${d > 0 ? "+" : ""}${d} ` +
+        `(${after[p.id].district} district, ${after[p.id].list} list, ${after[p.id].functional} functional)`, p.id,
+        `the ${partyName(C, p.id)} won ${tot(after[p.id])} seats at the general election, ` +
+        `${Math.abs(d)} ${d > 0 ? "more" : "fewer"} than before`);
     });
     return { ok: true, before: before, after: after, national: nat,
              barred: st.lastElection.barred };
@@ -2640,7 +2643,8 @@ const Engine = (function () {
     const p = st.cabinet[postId];
     if (!p) return { ok: false, reason: "no such post" };
     p.holder = holderId; p.party = partyId || null;
-    st.log.unshift({ sitting: st.sitting, text: "Appointment: " + postId.replace(/_/g, " ") });
+    chronicle(st, "Appointment: " + postId.replace(/_/g, " "), [holderId, partyId],
+      personName(C, holderId) + " was appointed " + postName(C, postId));
     return { ok: true };
   }
 
@@ -2690,12 +2694,27 @@ const Engine = (function () {
     return { ok: true, holder: c.holder };
   }
 
+  /* THE CHRONICLE (design/55). A log entry about a party or a person also
+     carries who it is `about` and `cx`, the clause a reference work would
+     write about it ("the Liberal Party withdrew from the government"), so
+     the Concordance can give those articles their history, dated by the
+     entry's sitting. The log's own `text` is unchanged. */
+  function chronicle(st, text, about, cx) {
+    st.log.unshift({ sitting: st.sitting, text: text,
+                     about: [].concat(about || []).filter(Boolean), cx: cx });
+  }
+  const personName = (C, id) => ((C.characterById || {})[id] || {}).name || id;
+  const postName = (C, id) => ((C.cabinetById || {})[id] || {}).name || String(id).replace(/_/g, " ");
+  const partyName = (C, id) => ((C.partyById || {})[id] || {}).name || id;
+
   function vacate(st, C, postId, reason) {
     const p = st.cabinet[postId];
     if (!p || !p.holder) return { ok: false };
+    const was = p.holder;
     p.holder = null;
-    st.log.unshift({ sitting: st.sitting,
-      text: "Ministerial vacancy: " + postId.replace(/_/g, " ") + (reason ? ", " + reason : "") });
+    chronicle(st, "Ministerial vacancy: " + postId.replace(/_/g, " ") + (reason ? ", " + reason : ""),
+      [was, p.party], personName(C, was) + (reason === "resigned" ? " resigned as "
+        : reason === "dismissed" ? " was dismissed as " : " left office as ") + postName(C, postId));
     return { ok: true };
   }
 
@@ -5166,9 +5185,10 @@ const Engine = (function () {
       const aside = st.stoodAside[id];
       st.withdrawn[id] = { from: aside ? "coalition" : side, at: st.sitting };
       delete st.stoodAside[id];
-      st.log.unshift({ sitting: st.sitting, text: nameOf(id) + " withdraws from the " +
-        (side === "coalition" ? "government" : aside ? "government's side and its confidence"
-                                             : "confidence-and-supply agreement") + "." });
+      const from = side === "coalition" ? "government" : aside ? "government's side and its confidence"
+                                                     : "confidence-and-supply agreement";
+      chronicle(st, nameOf(id) + " withdraws from the " + from + ".", id,
+        "the " + nameOf(id) + " withdrew from the " + from);
       st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() +
         (side === "coalition" ? " WALKS OUT OF THE GOVERNMENT" : " WITHDRAWS CONFIDENCE") });
       if (C.setup.onPartnerWithdraws && C.eventById && C.eventById[C.setup.onPartnerWithdraws])
@@ -5180,8 +5200,9 @@ const Engine = (function () {
       st.coalition = st.coalition.filter(x => x !== id);
       if (st.confidenceSupply.indexOf(id) < 0) st.confidenceSupply.push(id);
       st.stoodAside[id] = { at: st.sitting };
-      st.log.unshift({ sitting: st.sitting, text: nameOf(id) + " leaves the coalition agreement and " +
-        "keeps the government on confidence and supply, free on everything else." });
+      chronicle(st, nameOf(id) + " leaves the coalition agreement and " +
+        "keeps the government on confidence and supply, free on everything else.", id,
+        "the " + nameOf(id) + " left the coalition agreement and kept the government on confidence and supply");
       st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() +
         " LEAVES THE COALITION AGREEMENT; WILL NOT BRING THE GOVERNMENT DOWN" });
       if (C.setup.onPartnerStandsAside && C.eventById && C.eventById[C.setup.onPartnerStandsAside])
@@ -5197,7 +5218,8 @@ const Engine = (function () {
         const w = st.withdrawn[id];
         if (st[w.from].indexOf(id) < 0) st[w.from].push(id);
         delete st.withdrawn[id];
-        st.log.unshift({ sitting: st.sitting, text: nameOf(id) + " returns to the government's side." });
+        chronicle(st, nameOf(id) + " returns to the government's side.", id,
+          "the " + nameOf(id) + " returned to the government's side");
         st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() + " BACK ON THE GOVERNMENT BENCHES" });
       });
       Object.keys(st.stoodAside).forEach(id => {
@@ -5205,7 +5227,8 @@ const Engine = (function () {
         st.confidenceSupply = st.confidenceSupply.filter(x => x !== id);
         if (st.coalition.indexOf(id) < 0) st.coalition.push(id);
         delete st.stoodAside[id];
-        st.log.unshift({ sitting: st.sitting, text: nameOf(id) + " returns to the coalition agreement." });
+        chronicle(st, nameOf(id) + " returns to the coalition agreement.", id,
+          "the " + nameOf(id) + " returned to the coalition agreement");
         st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() + " BACK IN THE COALITION" });
       });
     }
@@ -5304,7 +5327,8 @@ const Engine = (function () {
                              undertaking: u.id, sitting: st.sitting };
       st.flags["minister_resigned"] = true;
       const pname = ((C && C.cabinetById && C.cabinetById[u.post]) || {}).name || u.post;
-      st.log.unshift({ sitting: st.sitting, text: "The " + pname + " resigns" });
+      chronicle(st, "The " + pname + " resigns", [holder, post.party],
+        personName(C, holder) + " resigned as " + pname + ", after the government broke an undertaking it had given");
     }
     /* A PROMISE THAT BOUGHT A NAME OFF THE PAPER puts it back when broken
        (winBack). The paper is the engine's own state, so this is the
@@ -7322,10 +7346,14 @@ const Engine = (function () {
       st.ballot = ballot(st, C);
       marks.push("LEADERSHIP BALLOT: " + st.ballot.for + " for, " +
         st.ballot.against + " against, " + st.ballot.need + " needed");
-      st.log.unshift({ sitting: st.sitting, text: "Leadership ballot: " +
+      const pm = ((C.parties || []).find(p0 => p0.id === st.playerParty) || {}).leader;
+      chronicle(st, "Leadership ballot: " +
         st.ballot.for + " for, " + st.ballot.against + " against, " +
         st.ballot.need + " needed \u2014 " +
-        (st.ballot.carries ? "the Prime Minister holds" : "the Prime Minister loses") });
+        (st.ballot.carries ? "the Prime Minister holds" : "the Prime Minister loses"), [st.playerParty, pm],
+        "the " + partyName(C, st.playerParty) + "'s members of Parliament held a ballot on the leadership, and " +
+        personName(C, pm) + (st.ballot.carries ? " kept it by " : " lost it by ") +
+        st.ballot.for + " votes to " + st.ballot.against);
       if (st.ballot.carries) st.signatures = 0;
     }
     return marks;

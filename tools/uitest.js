@@ -1013,9 +1013,12 @@ try {
      said.length === Object.keys(cuAxes).filter(k => cuAxes[k] !== null).length &&
      !/\b(closurist|integrationist|restrictionist|expansionist)\b/.test(pos) && !/economic: -?\d/.test(pos),
      (pos.match(/The party strongly[^.]*\./) || [""])[0].slice(0, 110));
-  ok("and says what its loyalty means, out of 100",
-     /loyalty to the party leadership stands at \d+ of 100: on a whipped vote about \d+ of every 100/.test(pos),
-     (pos.match(/loyalty to the party leadership[^.]*\./) || [""])[0].slice(0, 110));
+  /* WHAT ITS LOYALTY DOES, and since design/55 without the meter: a reader
+     in 2080 knows how a party votes, not a score out of 100 */
+  ok("and says what its discipline means on a whipped vote, without a meter",
+     /On a whipped vote about \d+ of every 100 of its members vote with the party/.test(pos) &&
+     !/\d+ of 100\b/.test(pos),
+     (pos.match(/On a whipped vote[^.]*\./) || [""])[0].slice(0, 110));
 
   /* CATEGORIES, which Wikipedia closes every article with. */
   ok("and closes on its categories", !!open("cu").querySelector(".cx-cats span"),

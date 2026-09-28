@@ -4766,6 +4766,18 @@ console.log("\nTHE ECONOMY:");
      before == null && today === 1 && Engine.since(h, Cs, cond) === 1,
      "before " + before + ", then " + today + ", later " + Engine.since(h, Cs, cond));
 
+  /* AND PEOPLE AND PARTIES HAVE A HISTORY (design/55): an appointment, a
+     dismissal or a walk-out is logged with who it is about and a clause
+     the Concordance dates and prints. */
+  const g = Engine.newGame(CONTENT);
+  const post = Object.keys(g.cabinet).find(k => g.cabinet[k].holder);
+  const holder = g.cabinet[post].holder;
+  Engine.vacate(g, CONTENT, post, "dismissed");
+  const e0 = g.log[0] || {};
+  ok("a dismissal is chronicled about the minister, in words a reference work would use",
+     (e0.about || []).indexOf(holder) >= 0 && /was dismissed as /.test(e0.cx || "") &&
+     /Ministerial vacancy/.test(e0.text), e0.cx);
+
   if (bad) { console.log("\n" + bad + " CLOCK FAILURES"); process.exitCode = 1; }
 })();
 
