@@ -321,11 +321,13 @@ holds for a month, and then the margin falls by about two points a sitting.
 "Neither answer shows today," Vidyasagar says. "One of them shows in a
 month."`,
   choices:[
-    { posture:"bold", label:"Fund it in full.",
+    { posture:"bold", label:`Fund the water-recycling plant's refit in full, for CW$3bn.`,
+      note:`The plant holds for the quarter and wastes less power as heat, so the thermal margin recovers about a point a sitting. Voters see a government paying for the platform it took, and their belief in its account of the Works rises.`,
       effects:[{ move:{ "solvency":-3000 } }, { move:{ "trend.thermal_margin":1 } },
                { move:{ "legitimacy":4 } }],
       result:"The plant is refitted. The thermal margin recovers a point at a time, and the country sees a government paying for the platform it took." },
-    { posture:"cautious", label:"Trim it and take the margin.",
+    { posture:"cautious", label:`Trim the refit, and keep CW$2bn in the Treasury.`,
+      note:`Nothing changes for a month, and the Treasury keeps the money. From then on the plant runs past its limit, and the thermal margin falls by about two points a sitting until the plant is fixed.`,
       effects:[{ move:{ "solvency":2000 } }, { move:{ "trend.thermal_margin":-2 } }],
       result:`Nothing changes today. From next month the thermal margin falls about two points a sitting, and the next estimate will say so.` }
   ]},
@@ -517,7 +519,8 @@ The terms are harsh, and a government would refuse them in a normal year.
 The sanctions are also costing the Treasury money every sitting they stay in
 place.`,
   choices:[
-    { posture:"cautious", label:"Pay the bondholders and accept the inspection.",
+    { posture:"cautious", label:`Pay the bondholders CW$7bn, and accept the inspection of the Commonwealth's salvage claim.`,
+      note:`The European Union lifts its sanctions for three months, which stops them costing the Treasury every sitting, and the quarrel with Earth cools. Paying and accepting an inspection looks like conceding the claim, and voters' belief in the government's account of the salvage falls.`,
       /* paying the bond also cures the Standby Facility's default, if the
          agent has declared one (f1_standby_notice) */
       effects:[{ move:{ "friction":-9 } }, { move:{ "solvency":-7000 } },
@@ -525,7 +528,8 @@ place.`,
                { flag:{ works_bond_paid:true, standby_default:false } },
                { wire:"COMMONWEALTH PAYS THE BOND; EARTH SUSPENDS THE MEASURES FOR A QUARTER" }],
       result:"The reserve pays seven billion dollars to the bondholders. The European Union lifts its sanctions for three months, and the quarrel with Earth cools." },
-    { posture:"bold", label:"Refuse, and live with the sanctions.",
+    { posture:"bold", label:`Refuse Earth's terms, and live with the sanctions.`,
+      note:`The refusal is popular at home, with the Trades Left, the current of your party that speaks for the maintenance unions, in particular, and voters credit a government that will not be pressed. The sanctions stay and cost more every sitting, and the quarrel with Earth grows.`,
       effects:[{ move:{ "friction":2 } }, { move:{ "legitimacy":5 } },
                { move:{ "loyalty.cu_maintenance":4 } },
                { wire:"PM REFUSES EARTH'S TERMS: 'THE COMMONWEALTH DOES NOT PAY RANSOM' (as of 6 days ago)" }],
