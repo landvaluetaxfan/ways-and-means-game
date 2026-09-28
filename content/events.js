@@ -851,32 +851,33 @@ running. Farstead, in the far band, is bidding against it, because its
 substrate farms run hot and have no choice. Both are bidding with money that
 came, in the end, from the government's appropriation.`,
   choices:[
-    { posture:"measured", label:"Buy quota on the open market and hold the price down",
+    { posture:"measured", label:`Have the Treasury buy CW$18bn of thermal quota on the exchange, and hold the price down.`,
+      note:`Buying quota lowers the price for every station and widens the thermal margin, and the Association of Engineers and Systems, the engineers' party, approves. The money comes from the reserve, and the price will rise again if the margin narrows.`,
       effects:[{move:{"price.thermal":-14}},{move:{"solvency": -18000}},{move:{"loyalty.hul":6}},
                {move:{"thermal_margin":5}},{flag:"thermal_squeeze_seen"},
                {wire:"GOVERNMENT BUYS THERMAL QUOTA AT MARKET; PRICE FALLS"}],
       result:"The Treasury buys quota for eighteen billion dollars. The price falls for every station and the margin widens, and the engineers' party approves." },
-    { posture:"bold", label:"Cap the price on the exchange.",
+    { posture:"bold", label:`Cap the price on the thermal exchange.`,
+      note:`The cap lowers the price at once and costs the Treasury nothing, so the public approves. It also removes the profit that pays for new radiators, a shortfall that will show in about four years. The engineers' party and the Liberal Party, the main opposition, object.`,
       effects:[{move:{"price.thermal":-8}},{move:{"loyalty.hul":-12}},{move:{"loyalty.cl":-9}},
                {move:{"public_standing":4}},{flag:"thermal_squeeze_seen"},{flag:"capped_the_exchange"},
                {wire:"GOVERNMENT CAPS THERMAL EXCHANGE; ENGINEERS WARN OF UNDERINVESTMENT"}],
       result:"The cap holds the price down, and the public approves. It also removes the profit that pays for new radiators, and that shortfall will show in about four years. The engineers' party and the Liberals object." },
-    { posture:"cautious", label:"Leave the market alone: scarce things have prices.",
+    { posture:"cautious", label:`Leave the market alone, and let the price ration the heat.`,
+      note:`The engineers' party approves of letting the price work. The stations that cannot pay are the first to cut their use, which narrows the thermal margin, and the public blames the government for the price.`,
       effects:[{move:{"public_standing":-7}},{move:{"loyalty.hul":7}},{move:{"thermal_margin":-4}},
                {flag:"thermal_squeeze_seen"},{flag:"left_thermal_market"},
                {wire:"PM: THERMAL PRICE 'A SIGNAL, NOT A SCANDAL'"}],
       result:`The stations that cannot pay are the first to cut their use, and the margin falls four points.` },
     /* and the next rung, whichever of the first two it is (design/38 §7) */
-    { posture:"measured", label:"Ask the stations to draw down load instead",
+    { posture:"measured", label:`Ask every station to cut its non-essential load (SI 2080/61).`,
       when:{ siNotMade:"rung1_conservation" },
-      note:"SI 2080/61, the first emergency order. It costs almost nothing and buys " +
-           "almost nothing, and it is the first of nine.",
+      note:`The Voluntary Conservation (Appeal) Order is the first and cheapest of the nine emergency orders. Compliance is voluntary, so it frees only a little capacity, and there is a little less heat for the exchange to price.`,
       effects:[{si:"rung1_conservation"},{flag:"thermal_squeeze_seen"}],
       result:"The appeal goes out, the stations cut the load they can spare, and there is a little less heat for the exchange to price." },
-    { posture:"bold", label:"Run emulated minds more slowly for the duration",
+    { posture:"bold", label:`Run emulated minds four per cent more slowly for the duration (SI 2080/62).`,
       when:{ flags:["rung1_tried"], siNotMade:"rung2_clockrate" },
-      note:"SI 2080/62, the second emergency order. It slows the emulated blocs by four " +
-           "per cent, which buys margin out of the patience of the people who run fastest.",
+      note:`The Clock-Rate (Reduction) Order is the second emergency order. Slower minds produce less heat, so the margin widens. Emulated workers are paid for the hours they experience, so it is a pay cut, and the New Progressive Party will call it one.`,
       effects:[{si:"rung2_clockrate"},{flag:"thermal_squeeze_seen"}],
       result:"Emulated minds run slower, produce less heat, and the margin widens. The New Progressive Party calls it a wage cut, and it is one: emulated workers are paid for the hours they experience, and they now experience fewer." }
   ]},
@@ -894,17 +895,20 @@ afterwards.
 The Chief Whip counts the members who will vote with the government even
 against their own party's wishes. The count has been shrinking for a month.`,
   choices:[
-    { posture:"bold", label:"Go to them: put the whole programme before the backbench.",
+    { posture:"bold", label:`Meet the party's backbench members, and put the whole programme and its timetable before them.`,
+      note:`Many of the members drifting away only want to be consulted, so a meeting brings them back, the Trades Left, the current of your party that speaks for the maintenance unions, above all. Voters see a Prime Minister spending her week on her own party, and the government's standing dips.`,
       effects:[{move:{"party_loyalty":14}},{move:{"loyalty.cu_maintenance":6}},
                {move:{"public_standing":-3}},{flag:"party_fracture_seen"},
                {wire:"PM ADDRESSES OWN BACKBENCH AFTER WEEKS OF DRIFT"}],
       result:"You give them the argument and the timetable. Half of them only wanted to be asked, and the party's loyalty recovers." },
-    { posture:"measured", label:"Reshuffle: promote two of them and sack one.",
+    { posture:"measured", label:`Reshuffle the junior posts: promote two of the drifting members and sack one.`,
+      note:`Promotions buy loyalty and a sacking warns the rest, so the party falls back into line, and both will be read that way. The member sacked comes from Czarnecki's Hard Left, which takes it personally, and the Trades Left dislikes the method.`,
       effects:[{move:{"party_loyalty":6}},{move:{"loyalty.cu_halloran":-10}},{move:{"loyalty.cu_maintenance":-4}},
                {flag:"party_fracture_seen"},{flag:"fracture_reshuffle"},
                {wire:"MINI-RESHUFFLE AFTER BACKBENCH UNREST"}],
       result:"The promotions are read as a bribe and the sacking as a warning, and both readings are correct. The Hard Left takes the sacking personally." },
-    { posture:"cautious", label:"Ignore it: a party that argues is a party that is alive.",
+    { posture:"cautious", label:`Ignore the drift, and describe the arguments as a healthy party at work.`,
+      note:`Voters like a leader who does not panic, and the government's standing rises slightly. The members who stopped bringing you their arguments keep making them elsewhere, and the party's loyalty to its leadership keeps falling.`,
       effects:[{move:{"party_loyalty":-8}},{move:{"public_standing":2}},{flag:"party_fracture_seen"},
                {wire:"PM DISMISSES TALK OF PARTY UNREST AS 'A WORKING PARTY WORKING'"}],
       result:"The party goes on arguing without you, and its loyalty to you keeps falling." }
@@ -928,16 +932,19 @@ The other option is to stop paying for something the Commonwealth has
 already promised to pay for.`,
   choices:[
     { posture:"measured", label:"Raise the tariff on cargo carried by the space elevators.",
+      note:`The tariff brings in CW$16bn. Imported hardware costs more, so the substrate price rises and more people in the low band can no longer afford to run. The Liberal Party, which speaks for the shipping consortiums, and the Trades Left, the current of your party that speaks for the maintenance unions, both object.`,
       effects:[{move:{"solvency": 16000}},{move:{"price.substrate":6}},{move:{"loyalty.cl":-10}},
                {move:{"loyalty.cu_maintenance":-5}},{flag:"reserve_low_seen"},{flag:"raised_tariff"},
                {wire:"TETHER TARIFF RAISED TO REFILL RESERVE; SHIPPERS OBJECT"}],
       result:"The tariff brings in sixteen billion dollars. Imported hardware costs more, so the substrate price rises, and the low band pays the difference in people who can no longer afford to run." },
-    { posture:"cautious", label:"Defer the maintenance budget: it is not due this session.",
+    { posture:"cautious", label:`Defer the CW$10bn maintenance budget to the next session.`,
+      note:`It saves CW$10bn and nothing fails this session. The radiators that go unmaintained cost nine points of thermal margin, the Commonwealth's spare cooling capacity, and the Association of Engineers and Systems, the engineers' party, is furious.`,
       effects:[{move:{"solvency": 10000}},{move:{"thermal_margin":-9}},{move:{"loyalty.hul":-11}},
                {flag:"reserve_low_seen"},{flag:"deferred_maintenance"},
                {wire:"MAINTENANCE APPROPRIATION DEFERRED TO NEXT SESSION"}],
       result:"Ten billion dollars are saved and nothing fails this session. The radiators that go unmaintained cost nine points of thermal margin, and the engineers' party is furious." },
-    { posture:"bold", label:"Spend what is left and let the next government find the rest.",
+    { posture:"bold", label:`Spend what is left of the reserve on the current programme.`,
+      note:`It is popular now, and the Trades Left, the current of your party that speaks for the maintenance unions, welcomes spending on its members. It leaves the reserve empty, which is a bet that the bills fall due under the next government.`,
       effects:[{move:{"public_standing":5}},{move:{"loyalty.cu_maintenance":7}},
                {flag:"reserve_low_seen"},{flag:"spent_the_reserve"},
                {wire:"PM COMMITS RESERVE TO CURRENT PROGRAMME"}],
@@ -957,17 +964,20 @@ Ivor Ceyhan, political editor of The Spindle, the Commonwealth's newspaper
 of record, asks the question the numbers are really about. "If you lost
 tomorrow, who would notice? Not who would be pleased. Who would notice."`,
   choices:[
-    { posture:"bold", label:"Answer with something voters will notice: a ten-billion-dollar programme.",
+    { posture:"bold", label:`Announce a CW$10bn relief programme that voters will notice.`,
+      note:`Spending that reaches people lifts the government's standing quickly, and the New Progressive Party, which wants more public provision, approves. The money comes from the reserve, and in a month voters will ask what it bought.`,
       effects:[{move:{"public_standing":12}},{move:{"solvency": -10000}},{move:{"loyalty.psa":5}},
                {flag:"standing_low_seen"},{flag:"bought_attention"},
                {wire:"GOVERNMENT ANNOUNCES RELIEF PACKAGE AS POLLS FLATLINE"}],
       result:"The programme costs ten billion dollars and the government's standing rises. In a month voters will ask what it bought." },
-    { posture:"cautious", label:"Answer honestly: a government is not a popularity contest.",
+    { posture:"cautious", label:`Say that governing is not a popularity contest.`,
+      note:`Ceyhan will quote it and admire it, and the Trades Left, the current of your party that speaks for the maintenance unions, likes a leader who will not chase the polls. Voters will take it as an admission that the government has given up on them, and its standing falls.`,
       effects:[{move:{"public_standing":-5}},{move:{"loyalty.cu_maintenance":6}},{move:{"rel.ceyhan":6}},
                {flag:"standing_low_seen"},{flag:"refused_the_poll"},
                {wire:"PM: 'I DID NOT COME HERE TO BE LIKED'"}],
-      result:"It is the most quotable thing you have said in weeks. Ceyhan likes it, your maintenance members like it, and voters take it as an admission." },
-    { posture:"measured", label:"Change the subject: reshuffle the cabinet.",
+      result:`It is the most quotable thing you have said in weeks. Ceyhan likes it, the Trades Left likes it, and voters take it as an admission.` },
+    { posture:"measured", label:`Reshuffle the cabinet to change the story.`,
+      note:`A reshuffle leads the news and gives voters new faces, so standing recovers. The senior ministers moved out come from the Soft Left, the leadership's own current, and they will brief against you from the backbench.`,
       effects:[{move:{"public_standing":7}},{move:{"party_loyalty":-7}},{move:{"loyalty.cu_loyalists":-8}},
                {flag:"standing_low_seen"},{flag:"reset_the_story"},
                {wire:"CABINET RESHUFFLE ANNOUNCED; SENIOR MINISTERS OUT"}],
@@ -1211,12 +1221,14 @@ Suravaram Vidyasagar, the Minister for Life Support, is not asking for a
 decision. The question is simpler: how thin the government is willing to let
 the margin get.`,
   choices:[
-    { posture:"bold", label:"Buy cooling capacity now, whatever it costs.",
+    { posture:"bold", label:`Buy CW$10bn of cooling capacity now to widen the margin.`,
+      note:`The purchase widens the thermal margin by eight points, back above the level the department will certify as safe, and the Association of Engineers and Systems, the engineers' party, approves. The money comes from the reserve.`,
       effects:[{ move:{ "thermal_margin":8 } }, { move:{ "solvency": -10000 } },
                { move:{ "loyalty.hul":6 } },
                { wire:"EMERGENCY THERMAL PURCHASE TO WIDEN THE MARGIN" }],
       result:`The reserve pays ten billion dollars and the margin widens by eight points. The engineers' party approves.` },
-    { posture:"cautious", label:"Hold, and let the department put its warning on the record.",
+    { posture:"cautious", label:`Buy nothing, and let the department put its warning on the record.`,
+      note:`It saves the money. The department withdraws its certification, the warning and the decision to ignore it both become public, and the margin keeps falling. The engineers' party and voters will hold it against the government.`,
       effects:[{ move:{ "thermal_margin":-2 } }, { move:{ "public_standing":-4 } },
                { move:{ "loyalty.hul":-8 } },
                { wire:"PM DECLINES THERMAL PURCHASE; DEPARTMENT WITHDRAWS CERTIFICATION" }],
@@ -1260,15 +1272,17 @@ Ivor Ceyhan, political editor of The Spindle, the Commonwealth's newspaper
 of record, puts the choice plainly: the government can find out what the six
 want, or wait to see how many they become.`,
   choices:[
-    { posture:"cautious", label:"Meet them, and ask what the letter is really about.",
+    { posture:"cautious", label:`Meet the six signatories, and ask what the letter is really about.`,
+      note:`Some of the six only want to be heard, and a meeting may take their names off the letter. The Trades Left, the current of your party that speaks for the maintenance unions, and Czarnecki's Hard Left welcome a leader who listens. Voters see a Prime Minister negotiating with her own rebels, which costs a little standing.`,
       effects:[{ move:{ "loyalty.cu_maintenance":7 } }, { move:{ "loyalty.cu_halloran":4 } },
                { move:{ "public_standing":-3 } },
                { wire:"PM MEETS SIGNATORIES OF BACKBENCH LETTER" }],
       result:`Half of them only wanted to be asked, and those three take their names off the letter.` },
-    { posture:"bold", label:"Warn them where this ends.",
+    { posture:"bold", label:`Warn the six where a leadership challenge would end.`,
+      note:`A warning rallies the Soft Left, the leadership's own current, behind you. The six close ranks too, and the Trades Left, the current of your party that speaks for the maintenance unions, resents being threatened.`,
       effects:[{ move:{ "loyalty.cu_loyalists":6 } }, { move:{ "loyalty.cu_maintenance":-8 } },
                { wire:"PM WARNS THE BACKBENCH OVER LEADERSHIP LETTER" }],
-      result:"The Soft Left closes ranks behind you. So do the six, and your maintenance members resent the warning." }
+      result:`The Soft Left closes ranks behind you. So do the six, and the Trades Left resents the warning.` }
   ]},
 
 { id:"a_partner_in_debt", chapter:2, weight:70, once:true,
@@ -1285,11 +1299,13 @@ government measures it did not write, and it holds no ministry that would
 repay it with a fourth. "We are a partner who is owed," Park says, "not one
 who owes. The difference is the next bill."`,
   choices:[
-    { posture:"cautious", label:"Give the Alliance's bill the next slot on the order paper.",
+    { posture:"cautious", label:`Give the Congregational Democratic Alliance's bill the next slot on the order paper.`,
+      note:`It repays what the whips' ledger says the government owes, and the Alliance's members are pleased. The government gives up a slot of its own order-paper time, and voters see a small party's bill put ahead of the government's programme.`,
       effects:[{ move:{ "capital.rv":3 } }, { move:{ "loyalty.rv":9 } },
                { move:{ "public_standing":-2 } }],
       result:"The ledger moves toward even, and the government gives up one of its slots of order-paper time to do it. The Alliance's members are pleased." },
     { posture:"bold", label:"Tell Park the account stands as it is.",
+      note:`Your own party likes the firmness. The Alliance's members will count what they are owed and present the figure, and both their loyalty and the government's credit with them fall.`,
       effects:[{ move:{ "capital.rv":-1 } }, { move:{ "loyalty.rv":-8 } },
                { move:{ "party_loyalty":4 } }],
       result:`Your own party likes the firmness. The Alliance's members begin totting up what they are owed, and they will present the figure.` }
@@ -1346,16 +1362,18 @@ rule at all.
 "Parliament can fight over this bill for a year," Fenwick says. "Or the
 question can be settled in private rooms, one case at a time, forever."`,
   choices:[
-    { posture:"bold", label:"Set up the panel.",
+    { posture:"bold", label:`Set up the standing panel, and take the threshold question out of Parliament's hands.`,
+      note:`It ends the fight over the bill, and the Alliance of Business and Government, which feared what the bill would do to licensing, welcomes it. The New Progressive Party made the bill its price for joining the government and will not forgive its being set aside, and voters see a question taken from their representatives.`,
       effects:[{ flag:"tribunal_established" },
                { move:{ "public_standing":-6 } }, { move:{ "loyalty.psa":-12 } },
                { move:{ "loyalty.gb":5 } },
                { wire:"TRIBUNAL ESTABLISHED ON THE DIVERGENCE QUESTION" }],
       result:"The question becomes an administrative one. The New Progressive Party, which made the bill its price for joining the government, will not forgive the government that set it aside." },
-    { posture:"cautious", label:"Leave the question to Parliament.",
+    { posture:"cautious", label:`Decline in writing, and leave the question to Parliament.`,
+      note:`It keeps the question with the voters' representatives and keeps faith with the coalition's bill, and the Trades Left, the current of your party that speaks for the maintenance unions, approves. The President's office asked privately, and a written refusal is the only way to decline it.`,
       effects:[{ flag:"tribunal_refused" }, { move:{ "loyalty.cu_maintenance":5 } },
                { move:{ "public_standing":2 } }],
-      result:"The suggestion is declined in writing, the only way to decline the President's office. Your maintenance members approve." }
+      result:`The suggestion is declined in writing, the only way to decline the President's office. The Trades Left approves.` }
   ]},
 
   /* REACH: three signatures; reachable once the paper is opened. */
@@ -1375,13 +1393,15 @@ that it is not the Commonwealth's business. The union survives by not asking
 the question nationally. That is all my party has ever asked for, and nobody
 in this room pays for it."`,
   choices:[
-    { posture:"bold", label:"Accept: let every station set its own threshold.",
+    { posture:"bold", label:`Accept: let every station set its own divergence threshold.`,
+      note:`It removes the national question and its price in Parliament, and Home Rule is delighted. A copy could then be a person on one station and not on the next. The Trades Left, the current of your party that speaks for the maintenance unions, was not consulted, and voters see the Commonwealth give up a national answer.`,
       effects:[{ flag:"federal_schedule" },
                { move:{ "loyalty.sc":8 } }, { move:{ "loyalty.cu_maintenance":-6 } },
                { move:{ "public_standing":-4 } },
                { wire:"FEDERAL SCHEDULE: EACH STATION TO SET ITS OWN THRESHOLD" }],
-      result:"There is no national question any more, and Home Rule is delighted. Your maintenance members know what was traded, and that they were not asked." },
-    { posture:"cautious", label:"Refuse. One Commonwealth, one law.",
+      result:`There is no national question any more, and Home Rule is delighted. The Trades Left knows what was traded, and that it was not asked.` },
+    { posture:"cautious", label:`Refuse: one Commonwealth, one threshold in law.`,
+      note:`Voters approve of one law for the whole Commonwealth. Home Rule hears the answer it expected, its goodwill toward the government falls, and it will ask again in the next Parliament.`,
       effects:[{ flag:"federal_refused" }, { move:{ "loyalty.sc":-8 } },
                { move:{ "public_standing":3 } }],
       result:"Home Rule hears the answer it expected, and will ask again in the next Parliament, whoever governs." }
@@ -1404,11 +1424,13 @@ Divergence Threshold Bill, the price they joined it for.
 "We have carried this government," she says. "Ask our conference what we
 have been given in return."`,
   choices:[
-    { posture:"cautious", label:"Promise the New Progressive Party the next slot on the order paper.",
+    { posture:"cautious", label:`Promise the New Progressive Party the next slot on the order paper for its bill.`,
+      note:`A written promise reassures Trottier's members that the bill will be called, and it evens the whips' ledger with them. The slot is order-paper time the government cannot spend on its own programme, and voters see a coalition bargaining over time.`,
       effects:[{ move:{ "capital.psa":2 } }, { move:{ "loyalty.psa":8 } },
                { move:{ "public_standing":-2 } }],
       result:`The promise is made and written down, and her members are reassured. A written promise can be produced later.` },
-    { posture:"bold", label:"Tell her the coalition is not for sale.",
+    { posture:"bold", label:`Tell Trottier the coalition is not for sale.`,
+      note:`Your own party likes the firmness. It is the answer the New Progressive Party's conference predicted, so the loyalty of her party's members to the government falls.`,
       effects:[{ move:{ "loyalty.psa":-6 } }, { move:{ "party_loyalty":3 } }],
       result:"It is the answer her conference predicted, and her members' loyalty falls. Your own party likes the firmness." }
   ]},
@@ -1992,18 +2014,20 @@ Jean Landry, the Minister for External Relations. "If we take this offer,
 the price is whatever they decide. Their lawyers drafted the clause a
 fortnight before we were told it existed."`,
   choices:[
-    { posture:"cautious", label:"Accept Kenya's terms: a tenant cannot negotiate as an equal.",
+    { posture:"cautious", label:`Accept Kenya's terms, including the review clause, without asking Parliament.`,
+      note:`The elevator keeps running, and Landry is spared a fight with Kenya. The Commonwealth pays CW$6bn and a higher transit price for the concession, and Kenya can invoke the review clause whenever it chooses.`,
       effects:[{ move:{ "price.transit":12 } }, { move:{ "solvency":-6000 } },
                { move:{ "rel.landry":6 } },
                { wire:"ANCHOR RENEWED ON THE HOST STATE'S TERMS; TRANSIT PRICE RISES" }],
       result:"The elevator keeps running. The Commonwealth pays six billion dollars and a higher transit rate for a lease it does not own." },
     { posture:"bold", label:"Refuse, and put the Anchor Concession (Anchorage) Ratification Bill to Parliament.",
+      note:`Parliament holds the power to ratify concessions under the Charter, the Commonwealth's constitution, and voters and the Trades Left, the current of your party that speaks for the maintenance unions, approve of using it. Transit markets react first: the transit price rises while Parliament debates, and Kenya will protest.`,
       effects:[{ move:{ "price.transit":20 } }, { move:{ "public_standing":5 } },
                { move:{ "loyalty.cu_maintenance":6 } },
                { flag:"anchor_refused" },
                { bill:{ anchor_kepler:{ stage:"second_reading", dead:false } } },
                { wire:"PM REFERS THE ANCHOR CONCESSION TO THE HOUSE; HOST STATE PROTESTS" }],
-      result:"The question goes to Parliament, where the Charter says it belongs, and your maintenance members approve. The transit market reads the news first, and prices rise while Parliament debates." }
+      result:`The question goes to Parliament, where the Charter says it belongs, and the Trades Left approves. The transit market reads the news first, and prices rise while Parliament debates.` }
   ]},
 
 /* LIGHT-LAG, DEMONSTRATED (design/11 §1). A dispatch to Mars takes eleven
@@ -2085,16 +2109,14 @@ Traffic on the elevator is now traffic the Commonwealth cannot schedule, and
 the stations that depend on it were already at the mercy of other people's
 timetables.`,
   choices:[
-    { posture:"cautious", label:"Buy the concession back at whatever the rate is.",
-      note:"The anchor runs again and the Commonwealth learns what its access " +
-           "is worth, which is the number the next negotiation starts from.",
+    { posture:"cautious", label:`Buy the concession back from Kenya at whatever rate Kenya sets.`,
+      note:`The elevator runs again for the Commonwealth before the quarter ends, at a cost of CW$14bn and a higher transit price. Kenya's leverage grows, and the rate paid becomes the figure the next negotiation starts from.`,
       effects:[{ flag:"anchor_gone" }, { move:{ "price.transit":14 } },
                { move:{ "solvency":-14000 } }, { move:{ "actor.earth_host":8 } },
                { wire:"COMMONWEALTH BUYS BACK THE INTERNATIONAL CONCESSION AT KENYA'S RATE" }],
       result:"The elevator is running again for the Commonwealth before the quarter ends. It costs fourteen billion dollars, and the rate is on the record." },
-    { posture:"bold", label:"Let it go, and schedule the Commonwealth's own traffic.",
-      note:"The strongest line available and the most expensive one: two yards " +
-           "carry the schedule while the Commonwealth learns to hold its own.",
+    { posture:"bold", label:`Let the concession go, and have the Commonwealth schedule its own traffic.`,
+      note:`It is popular, and the Association of Engineers and Systems approves of the Commonwealth running its own traffic. Two shipyard stations, Fore River Yards and Hammerstead, carry the schedule, and each will meet less of its own needs without imports. Transit prices rise sharply.`,
       effects:[{ flag:"anchor_gone" }, { flag:"anchor_independent" },
                { move:{ "price.transit":22 } }, { move:{ "public_standing":5 } },
                { move:{ "loyalty.hul":7 } },
@@ -2315,19 +2337,16 @@ practice for the licensing boards?
 question. If it is the boards, the courts will never see a reclassification
 case again."`,
   choices:[
-    { posture:"cautious", label:"Give it to the licensing boards: they know the practice",
-      note:"A reference to the boards keeps the question where the expertise is " +
-           "and keeps the courts out of a technical argument. It also hands the " +
-           "boards the power to decide what a person is.",
+    { posture:"cautious", label:`Refer reclassification to the licensing boards, which certify the work.`,
+      note:`The boards know the practice, and the Alliance of Business and Government, whose members sit on them, approves. It also gives the boards the power to decide what a person is, which the lawyers' licensing board and the Congregational Democratic Alliance, the smallest party in your coalition, oppose. Voters see the question taken out of the courts.`,
       effects:[{ flag:"reclassification_to_boards" },
                { move:{ "actor.lb_legal": -6 } },
                { move:{ "loyalty.gb": 6 } }, { move:{ "loyalty.rv": -4 } },
                { move:{ "public_standing": -2 } },
                { wire:"RECLASSIFICATION REFERRED TO THE LICENSING BOARDS" }],
       result:"The question goes to the boards, which will report in their own time. The Alliance of Business and Government approves; the lawyers' licensing board and the Congregational Democratic Alliance do not. The judge notes the answer without comment." },
-    { posture:"bold", label:"It is a question of fact: the courts will hear it",
-      note:"The courts keep the question. The boards lose it, and the Guild will " +
-           "read the reference as the government saying so.",
+    { posture:"bold", label:`Rule that reclassification is a question of fact, for the courts to hear.`,
+      note:`The courts keep the question, which the lawyers' licensing board and the Congregational Democratic Alliance, the smallest party in your coalition, welcome. The licensing boards lose it, and the Alliance of Business and Government and Kazuya Tanako, who chairs the Life Support panel, will take the ruling as a slight.`,
       effects:[{ flag:"reclassification_to_courts" },
                { move:{ "actor.lb_legal": 7 } }, { move:{ "rel.gb_chair": -5 } },
                { move:{ "loyalty.rv": 5 } }, { move:{ "loyalty.gb": -5 } },
@@ -2666,21 +2685,18 @@ know.
 
 "Twelve and there is a ballot. Eleven and I am a man with a list."`,
   choices:[
-    { posture:"bold", label:"Open the paper: let them come and sign it openly.",
-      note:"Members are asked one at a time on the Party tab, under the " +
-           "leadership. A member who is willing signs, and every signature " +
-           "is a member you have lost. A member who is not refuses, comes off " +
-           "the paper for good, and their current firms behind you. A member " +
-           "who has signed can be won back there, for a promise.",
+    { posture:"bold", label:`Open the paper: let Czarnecki's colleagues say to your face whether they will sign it.`,
+      note:`You then ask members one at a time, on your party's page under the leadership. A willing member signs, and each signature is a member you have lost. An unwilling one refuses, comes off the paper for good, and their current firms behind you. A member who has signed can be won back for a promise.`,
       effects:[{ flag:"paper_opened" }, { move:{ "rel.halloran":3 } },
                { move:{ "loyalty.cu_loyalists":-3 } },
                { wire:"CZARNECKI'S PAPER IS ON THE DESK; MEMBERS SAY WHETHER THEY WILL SIGN" }],
       result:"He leaves the sheet with the whips. The first new name is on it before the afternoon, and it is not one you would have guessed." },
-    { posture:"cautious", label:"Ignore it: he has four names.",
+    { posture:"cautious", label:`Ignore the paper, since Czarnecki has only four names.`,
+      note:`It denies him the attention he wants and costs nothing today. He will collect the rest of the names in his own time, and the Hard Left and the Trades Left, the current of your party that speaks for the maintenance unions, resent being brushed off.`,
       effects:[{ move:{ "rel.halloran":-6 } }, { move:{ "loyalty.cu_halloran":-4 } },
                { move:{ "loyalty.cu_maintenance":-3 } },
                { wire:"PM DECLINES TO DISCUSS CZARNECKI'S LIST" }],
-      result:"The paper stays in his pocket, and he collects the rest of the names in his own time. The Hard Left and your maintenance members resent being brushed off." }
+      result:`The paper stays in his pocket, and he collects the rest of the names in his own time. The Hard Left and the Trades Left resent being brushed off.` }
   ]},
 
 /* THE OPPOSITION DECIDES (design/33 §1).
@@ -2955,7 +2971,8 @@ else, so we see it before the Census Bureau does," he says. "You can sell
 more, which means subsidising freight on the transit corridor to Earth, or
 buy less, which hurts the stations that cannot feed themselves."`,
   choices:[
-    { posture:"measured", label:"Subsidise freight costs and sell more computing.",
+    { posture:"measured", label:`Subsidise freight on the transit corridor to Earth, so that the Commonwealth sells more computing.`,
+      note:`Cheaper freight makes the Commonwealth's computing cheaper to Earth, so exports grow and the transit price falls. The subsidy is a standing cost, and the first CW$6bn leaves the reserve at once.`,
       brief:"The orthodox answer: subsidise the corridor, export the one "+
         "thing the Commonwealth makds that Earth will buy. Costs money now "+
         "for a balance later.",
@@ -2964,7 +2981,8 @@ buy less, which hurts the stations that cannot feed themselves."`,
                { move:{ "price.transit":-10 } },
                { economy:{ trade:4 } }],
       result:`The freight subsidy is laid, and the first six billion dollars leave the reserve. The freight lines cut their charge for shipping computing the same week.` },
-    { posture:"bold", label:"Close the gap by importing less.",
+    { posture:"bold", label:`Cut import licences to close the gap.`,
+      note:`Buying less brings trade back toward balance quickly. The cut reaches the low band's supply runs first, because those stations cannot feed themselves, so their stocks and their opinion of the government both fall.`,
       brief:"Autarky as a choice rather than a condition. Resilient and "+
         "poorer, and the stations that cannot feed themselves pay for it.",
       effects:[{ economy:{ trade:6 } },
@@ -3099,7 +3117,8 @@ consortium. "The whips' ledger shows what that was worth to you. The licence
 settles it. Refuse, and the account stays open, and my members will remember
 it at every division that needs them."`,
   choices:[
-    { posture:"cautious", label:"Grant the licence, and settle the account.",
+    { posture:"cautious", label:`Grant the consortium a licence to run more computing than the Ministry's capacity limit, and settle the account.`,
+      note:`The licence settles what the whips' ledger says the government owes the Alliance of Business and Government, and it lets private substrate grow. The Trades Left, the current of your party that speaks for the maintenance unions, counts the public jobs the extra capacity replaces, and voters think the sale has been sweetened.`,
       brief:"Paying the debt with a regulatory decision. Clears the books "+
         "and establishes what the credit was actually for.",
       effects:[{ move:{ "capital.gb":-6 } },
@@ -3107,14 +3126,15 @@ it at every division that needs them."`,
                { move:{ "loyalty.cu_maintenance":-7 } },
                { move:{ legitimacy:-5 } },
                { flag:"ec_licence_granted" }],
-      result:`The licence is granted and the government's account with the Alliance is settled. Your maintenance members read the new capacity figure and count the jobs in it; the country thinks the sale has been sweetened.` },
-    { posture:"bold", label:"Refuse, and keep owing them.",
+      result:`The licence is granted and the government's account with the Alliance is settled. The Trades Left reads the new capacity figure and counts the jobs in it; the country thinks the sale has been sweetened.` },
+    { posture:"bold", label:`Refuse the licence, and leave the account open.`,
+      note:`The Trades Left, the current of your party that speaks for the maintenance unions, approves. Hatt and the Alliance's members will remember the refusal at every division that needs them, and their loyalty to the government falls.`,
       brief:"Declining while carrying the debt. Nothing is spent and "+
         "nothing is settled, which is a position rather than a decision.",
       effects:[{ move:{ "loyalty.gb":-10 } },
                { move:{ "rel.hatt":-8 } },
                { move:{ "loyalty.cu_maintenance":5 } }],
-      result:`The request is refused in a letter of four lines. Hatt's reply is shorter, and the Alliance's members are harder to find at the next division. Your maintenance members approve.` }
+      result:`The request is refused in a letter of four lines. Hatt's reply is shorter, and the Alliance's members are harder to find at the next division. The Trades Left approves.` }
   ]},
 
 /* THE ECONOMY AS A REASON TO BORROW, gating on both halves of §7.10 at
@@ -3222,7 +3242,8 @@ its answer.
 Spindle, the Commonwealth's newspaper of record. "I would like to know how
 long that is."`,
   choices:[
-    { posture:"cautious", label:"Give the motion no time: the question is closed.",
+    { posture:"cautious", label:`Give the opposition's motion no time on the order paper, because the question is closed.`,
+      note:`It keeps the settlement off the floor, and voters like a government that treats the answer as final. Watkins will raise the unheard motion at every Question Time, and a settlement the government will not defend in debate looks weaker for it.`,
       brief:"Using the government's control of time to deny a hearing. "+
         "Effective, and it concedes that the answer needs protecting.",
       effects:[{ move:{ legitimacy:-5 } },
@@ -3231,7 +3252,8 @@ long that is."`,
                { flag:"ch4_refused_reopening" },
                { wire:"GOVERNMENT DENIES TIME TO REOPENING MOTION" }],
       result:`The Leader of the House finds no time for the motion. It stays on the order paper, never called, and Watkins asks about it at every Question Time until the House rises.` },
-    { posture:"bold", label:"Give it a day and beat it in the open.",
+    { posture:"bold", label:`Give the motion a day of debate, and defeat it in the open.`,
+      note:`The debate costs a slot of order-paper time. Defeating the motion records the answer a second time, with more names behind it, and voters trust it more. The Trades Left, the current of your party that speaks for the maintenance unions, dislikes the day spent defending it.`,
       brief:"Spending order-paper time to win the argument twice. Costs a "+
         "slot and settles the question harder than the settlement did.",
       effects:[{ slots:{ total:-1 } },
@@ -3269,7 +3291,8 @@ answered. The commitment is still on the register, and I would like it to
 say something true. Either we write a second programme, or we close this one
 and govern on what is left."`,
   choices:[
-    { posture:"bold", label:"Write them a second programme.",
+    { posture:"bold", label:`Agree a second coalition programme with the New Progressive Party.`,
+      note:`A new programme gives the New Progressive Party a reason to stay: public substrate provision, a minimum level of suspension insurance and a guaranteed running speed for emulated minds. Drafting it takes a slot of order-paper time, and the Trades Left, the current of your party that speaks for the maintenance unions, will count what the programme costs its members.`,
       brief:"Giving the coalition a new purpose, which costs order-paper "+
         "time it has not got and buys the partner's loyalty.",
       effects:[{ slots:{ total:-1 } },
@@ -3279,7 +3302,8 @@ and govern on what is left."`,
                { flag:"ch4_second_programme" },
                { wire:"COALITION AGREES A SECOND PROGRAMME" }],
       result:`A second programme is drafted in an afternoon and agreed by evening: public substrate provision, a minimum level of suspension insurance, and a guaranteed running speed for emulated minds. It takes a slot of order-paper time. The Trades Left reads the list and counts what it will cost its members.` },
-    { posture:"cautious", label:"Mark the commitment as met, and let the agreement stand as it is.",
+    { posture:"cautious", label:`Mark the coalition's commitment as met, and leave the agreement as it stands.`,
+      note:`Voters credit a government that declares a promise kept. The New Progressive Party stays in government with nothing in writing about why, and its loyalty falls. Your own party's loyalty to its leadership begins to drift down, a little each sitting.`,
       brief:"Closing the promise formally without replacing it. Honest, and "+
         "it leaves a partner in a coalition about nothing.",
       effects:[{ move:{ legitimacy:4 } },
@@ -3528,15 +3552,18 @@ the section of the Act under which Parliament may give her a reserve
 direction, an order telling the Bank what to do with the rate. She wants it
 understood that she has read it.`,
   choices:[
-    { posture:"cautious", label:"Two per cent, as before.",
+    { posture:"cautious", label:`Keep the inflation target at two per cent.`,
+      note:`An unchanged remit tells the markets nothing has changed, so they trust the Bank a little more. Castellane and the Underwriters, the Commonwealth's own insurers and mutual societies that lend to the Treasury, approve.`,
       effects:[{ economy:{ credibility:0.08 } }, { move:{ "rel.castellane":6, "actor.underwriters":2 } }],
       result:"The letter is two lines long. The markets read it in a minute and forget it by the afternoon, which is what a remit is for, and they trust the Bank a little more." },
-    { posture:"bold", label:"Three per cent: growth first.",
+    { posture:"bold", label:`Raise the inflation target to three per cent, putting growth first.`,
+      note:`A higher target lets the Bank keep rates lower for longer, which the unions and your party welcome. The markets expect higher prices at once and trust the Bank less, and the Underwriters, the Commonwealth's own insurers and mutual societies that lend to the Treasury, will charge more.`,
       effects:[{ law:{ inflation_target:3 } }, { economy:{ credibility:-0.08, expected:0.5 } },
                { move:{ "loyalty.cu":4, "actor.underwriters":-3 } },
                { wire:"TREASURY RAISES THE INFLATION TARGET TO THREE PER CENT" }],
       result:"The target moves a point, and so does every interest rate agreed in the Commonwealth that week. The unions call it the first honest remit since the dollar was floated in 2073; the markets expect higher prices." },
-    { posture:"measured", label:"Two per cent, with full employment as an equal goal.",
+    { posture:"measured", label:`Keep two per cent, and add full employment as an equal goal.`,
+      note:`The Bank will weigh people out of work as heavily as prices, so it will cut rates sooner and raise them later, which the Trades Left, the current of your party that speaks for the maintenance unions, welcomes. The markets trust the Bank slightly less, since its remit now has two halves to keep.`,
       effects:[{ law:{ bank_mandate:"dual" } }, { economy:{ credibility:-0.02 } },
                { move:{ "loyalty.cu_maintenance":4 } },
                { wire:"RESERVE BANK GIVEN A DUAL MANDATE" }],
@@ -3555,13 +3582,16 @@ is the rising price of heat, the thermal quota the stations pay for.
 Ivor Ceyhan, The Spindle's political editor, asks the question at the door
 that every paper prints the next morning: whose fault is it?`,
   choices:[
-    { posture:"cautious", label:"Back the Bank: it will bring inflation down.",
+    { posture:"cautious", label:`Back the Reserve Bank, and say it will bring inflation down.`,
+      note:`The markets trust the Bank more when the government stands behind it. Backing a rate rise that has not yet been announced tells every household paying for heat that relief is not coming, and the government's standing falls.`,
       effects:[{ move:{ legitimacy:2, public_standing:-3 } }, { economy:{ credibility:0.05 } }],
       result:"The government backs a rate rise it has not yet seen. Markets trust the Bank more; every household paying for heat trusts the government less." },
-    { posture:"measured", label:"Blame Earth's prices.",
+    { posture:"measured", label:`Blame the rise on Earth's prices.`,
+      note:`It is partly true, and voters like hearing it. Earth's governments will answer with the part that is not true, and the quarrel with Earth grows.`,
       effects:[{ move:{ friction:3, public_standing:2, "actor.earth_bloc":-2 } }],
       result:"It is partly true, and voters like it. By evening Earth's governments have answered with the other part, and the quarrel with Earth grows." },
-    { posture:"bold", label:"Promise relief on the thermal bill.",
+    { posture:"bold", label:`Promise CW$6bn of relief on households' thermal bills.`,
+      note:`Relief is popular, and it comes from the reserve, the Treasury's cash. Households spend it on heat, the very thing the Bank is trying to make dearer, so the markets expect higher prices and trust the Bank's target less.`,
       effects:[{ move:{ solvency:-6000, public_standing:4 } }, { economy:{ expected:0.3, credibility:-0.03 } }],
       result:"The reserve pays six billion dollars of relief, which households spend on heat: the very thing the Bank was trying to make dearer. Markets expect higher prices." }
   ]},
@@ -3601,15 +3631,18 @@ currencies, and to the price of everything the stations import.
 The Reserve Bank holds the Commonwealth's reserves of Earth currencies, and
 the Treasury decides whether to spend them buying dollars.`,
   choices:[
-    { posture:"measured", label:"Sell reserves and hold the line.",
+    { posture:"measured", label:`Have the Reserve Bank sell US dollars from its reserves to hold the exchange rate.`,
+      note:`Selling ten billion US dollars in a morning steadies the dollar and shows the government acting, which the markets credit slightly. It also shows the markets how many such mornings the Bank's reserves can pay for.`,
       when:{ economyAbove:{ reserves:10000 } },
       effects:[{ economy:{ reserves:-10000, fx:4 } }, { move:{ legitimacy:1 } }],
       result:"The Bank sells ten billion of its US dollars in a morning, and the dollar steadies. The markets have also learned how many such mornings the Bank can afford." },
-    { posture:"bold", label:"Ask the Governor for a rise between meetings.",
+    { posture:"bold", label:`Ask the Governor to raise the cash rate between the Bank's scheduled meetings.`,
+      note:`A higher rate draws money into the dollar and cools prices, and Maren Castellane, the Governor of the Reserve Bank, is glad to be asked. A rise between meetings has happened only once before, in 2073, so markets trust the Bank's schedule less, and mortgages on long leases cost more within the week.`,
       effects:[{ economy:{ rate:0.5, fx:3, shock:-0.6, credibility:-0.02 } }, { move:{ "rel.castellane":2, public_standing:-2 } },
                { wire:"RESERVE BANK RAISES HALF A POINT BETWEEN MEETINGS" }],
       result:"The Bank raises its rate half a point between meetings, which it has done only once before, in 2073. Mortgages on long leases cost more by the end of the week." },
-    { posture:"cautious", label:"Let it find its level.",
+    { posture:"cautious", label:`Let the dollar find its own level.`,
+      note:`A cheaper dollar makes the Commonwealth's computing cheaper to Earth, so export orders grow. Everything the stations import costs more, voters notice, and the markets expect prices to rise.`,
       effects:[{ economy:{ trade:3, expected:0.3 } }, { move:{ public_standing:-1 } }],
       result:"The dollar settles lower. The Commonwealth's computing is cheaper to Earth by the same margin, and orders grow, but so does the price of imports." }
   ]},
@@ -3628,13 +3661,16 @@ The Treasury bills sold on Friday will cost a quarter of a point more in
 interest, and so will every issue of the Commonwealth's notes after them.`,
   choices:[
     { posture:"bold", label:"Announce a plan to cut the deficit.",
+      note:`A published plan answers the Underwriters' third point and calms the markets, and voters trust a government that says how it will pay. The plan means cuts, which voters dislike, so the government's standing dips.`,
       effects:[{ flag:"rating_cut" }, { flag:"consolidation_promised" },
                { move:{ public_standing:-3, legitimacy:3 } }, { economy:{ shock:-0.8, credibility:0.03 } }],
       result:"The plan is a page of figures and a promise. The rating stays where it was cut to, but the Underwriters' next note is shorter and the country trusts the government a little more." },
-    { posture:"measured", label:"Dispute the rating.",
+    { posture:"measured", label:`Dispute the rating in a Treasury rebuttal.`,
+      note:`Voters like a government that stands up to its lenders, a little. The Underwriters will take a long rebuttal as proof that their note struck home, relations with them worsen, and the dollar dips.`,
       effects:[{ flag:"rating_cut" }, { move:{ "actor.underwriters":-5, public_standing:1 } }, { economy:{ fx:-1.5 } }],
       result:"The Treasury's rebuttal is longer than the Underwriters' note, and the Underwriters take its length as their answer. The dollar dips." },
-    { posture:"cautious", label:"Say nothing and tender the bills.",
+    { posture:"cautious", label:`Say nothing, and sell the Treasury bills at the higher rate.`,
+      note:`It avoids a public fight and makes no promises. Every issue of bills and notes from now on costs a quarter of a point more in interest, until the Underwriters restore the rating.`,
       effects:[{ flag:"rating_cut" }],
       result:"The bills are sold, at the higher price the rating set." }
   ]},
