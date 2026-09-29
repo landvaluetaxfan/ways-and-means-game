@@ -39,11 +39,11 @@ later, and is listed at the end so you do not build it here.
 
 ## Steps
 
-1. **The tab order.** In `index.html` (about line 34), make it Sitting,
+1. **The tab order.** DONE. In `index.html` (about line 34), make it Sitting,
    Government, Chamber, Party, Relations, Economy, Orbit, Foreign Affairs,
    Concordance. **The Record tab goes** (see step 2).
 
-2. **The Record folds into the Sitting.** `drawLog()` (`js/ui.js` ~7913)
+2. **The Record folds into the Sitting.** DONE. `drawLog()` (`js/ui.js` ~7913)
    renders the record of decisions. The Sitting's left column is the Wire
    (`drawSitting()` ~6271). Make that column "What has happened": the
    Wire's news and the record's decisions, newest first, sitting by
@@ -51,7 +51,7 @@ later, and is listed at the end so you do not build it here.
    Options menu (`js/shell.js`). The Concordance already carries the
    history secondarily, so leave it alone.
 
-3. **Chamber: merge the repeats** (`drawChamber()` ~7054, with
+3. **Chamber: merge the repeats.** DONE. (`drawChamber()` ~7054, with
    `drawOrderPaper`, `drawChamberPicker`, `drawChamberForecast`,
    `drawChamberWhip`, `drawBenchTable` and `drawFunctional`).
    - The **order-paper time** panel lists the same bills as the order paper,

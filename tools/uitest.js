@@ -52,7 +52,14 @@ ok("slot is named in the topbar", /Test ministry/.test($("#tb-slot").textContent
 ok("the tabs group the three prices of a vote",
    [...w.document.querySelectorAll("#tabstrip .tab:not([hidden])")]
      .map(t => t.dataset.t).join(",") ===
-     "sit,gov,cham,party,rel,econ,orb,world,cx");
+      "sit,gov,cham,party,rel,econ,orb,world,cx");
+ok("Chamber has one order paper with grant controls in its bill rows",
+   !$("#gov-slots") && [...w.document.querySelectorAll("#cham-bills tr[data-bill]")].every(tr =>
+     !!tr.querySelector("button[data-slot]")));
+ok("Chamber confidence is in Parliament's heading, not another panel",
+   !$("#gov-margin") && !!w.document.querySelector("#cham-mid .panel h2 #gov-coalition-hdr"));
+ok("Chamber composition contains a closed functional drawer and no repeated legend",
+   !$("#chamber-legend") && !!w.document.querySelector("#comp-table + details:not([open]) #func-table"));
 {
   const logo = $("#sit-play img"), adm = (CONTENT.administrations || [])[0];
   ok("the play's small logo is on the Sitting screen", !!logo && !$("#sit-play").hidden &&
@@ -199,8 +206,8 @@ try {
         const bid = live.dataset.open.slice(6);
         live.click();
         ok("and a live one opens where time is given to it",
-           w.document.querySelector('.tab[data-t="gov"]').getAttribute("aria-selected") === "true" &&
-           !!w.document.querySelector('#gov-slots [data-slot="' + bid + '"]'), bid);
+            w.document.querySelector('.tab[data-t="cham"]').getAttribute("aria-selected") === "true" &&
+            !!w.document.querySelector('#cham-bills [data-slot="' + bid + '"]'), bid);
         w.document.querySelector('.tab[data-t="rel"]').click();
       }
     } else ok("some party has a measure of its own", false);
@@ -392,8 +399,8 @@ try {
     Dialog.alert = function (m, o, cb) { window.__alerts.push((o && o.title) || ""); return a.apply(this, arguments); }; })();
     (function(){ var s = UI.state(); s.sitting = Math.max(s.sitting, 15);
       s.bills.divergence.stage = "defeated"; s.bills.divergence.dead = true; })();`);
-  w.document.querySelector('.tab[data-t="gov"]').click();
-  const slot = w.document.querySelector("#gov-slots .slotbtn");
+  w.document.querySelector('.tab[data-t="cham"]').click();
+  const slot = w.document.querySelector("#cham-bills .slotbtn");
   if (slot) slot.click();
   const st9 = w.eval("UI.state()");
   ok("a settlement landing mid-session is recorded", st9.settledAs === "restriction", st9.settledAs);

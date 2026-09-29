@@ -2072,7 +2072,7 @@ const UI = (function () {
         /* A live measure opens where time is given to it, which is the
            act this row is about; a finished one opens its own page. */
         const done = state === "dead" || state === "passed";
-        return `<button class="dk goto" data-goto="${done ? "cham" : "gov"}"` +
+        return `<button class="dk goto" data-goto="cham"` +
           ` data-open="${done ? "bill" : "grant"}:${esc(b.id)}">` +
           `<b>${esc(b.title)}</b><i>${esc(bs.stage.replace(/_/g, " "))}` +
           `${done ? "" : worth}</i></button>`;
@@ -2395,7 +2395,7 @@ const UI = (function () {
   function drawGovernment() {
     drawInitiatives();
     const conf = Engine.confidence(st), maj = Engine.majority(st);
-    $("#gov-coalition-hdr").textContent = `${conf}/${Engine.chamberTotal(st)}`;
+    const tot = Engine.chamberTotal(st);
 
     /* THE PARTNER ROSTER USED TO BE DRAWN HERE and is not any more. It was
        party/seats/loyalty for the coalition and the confidence-and-supply
@@ -2412,22 +2412,17 @@ const UI = (function () {
        screen for how much trouble they are in had to stop and parse a
        clause. It is the same bar a division uses, with the same threshold
        mark, because it is the same question asked of a different set. */
-    const tot = Engine.chamberTotal(st), over = conf - maj;
-    $("#gov-margin").innerHTML =
-      `<div class="dm"><b>Confidence</b><div class="dmbar"` +
-        tipAttr("The working majority",
-          "Every seat the government can call on against the " + maj + " it needs. " +
-          (over > 0 ? "You can lose " + over + " before the government falls."
-           : over === 0 ? "Confidence carries on the exact number. One defection ends it."
-           : "You are " + (-over) + " short. The government falls at the next test.")) +
-        `><i class="yes" style="width:${Math.min(100, conf / tot * 100)}%;` +
-          `background:${over >= 0 ? "var(--ok)" : "var(--alert)"}"></i>` +
-        `<span class="thr" style="left:${maj / tot * 100}%"></span>` +
-        `<span class="lbl">${conf} / ${tot} &middot; need ${maj}</span></div></div>` +
-      `<div class="note">${over === 0
-        ? "Working majority of nil. Confidence carries on the exact number."
-        : over > 0 ? `Working majority of ${over}.`
-        : `Short by ${-over}. The government does not command the House.`}</div>`;
+    const over = conf - maj;
+    $("#gov-coalition-hdr").innerHTML = `Confidence <span class="dmbar"` +
+      tipAttr("The working majority",
+        "Every seat the government can call on against the " + maj + " it needs. " +
+        (over > 0 ? "You can lose " + over + " before the government falls."
+         : over === 0 ? "Confidence carries on the exact number. One defection ends it."
+         : "You are " + (-over) + " short. The government falls at the next test.")) +
+      `><i class="yes" style="width:${Math.min(100, conf / tot * 100)}%;` +
+      `background:${over >= 0 ? "var(--ok)" : "var(--alert)"}"></i>` +
+      `<span class="thr" style="left:${maj / tot * 100}%"></span>` +
+      `<span class="lbl">${conf}/${tot} · need ${maj}</span></span>`;
 
     /* THE OWN-PARTY CURRENTS PANEL IS GONE, and this is why rather than a
         deletion nobody can explain later.
@@ -2525,48 +2520,6 @@ const UI = (function () {
        something. The note travelled with it. A per-partner credit account is
        interparty affairs; this tab is the executive. */
 
-    const left = st.slots.total - st.slots.used;
-    const gcap = (C.setup && C.setup.grantsPerSitting) || 2;
-    const gtoday = st.grantsToday || 0;
-    /* TWO REFUSALS, BOTH SAID OUT LOUD: no time left this session, and the
-       day's business already done. The order paper hears so many measures a
-       day, exactly as the House divides so many times. */
-    /* Judged PER BILL, because a measure with time of its own can still be
-       moved when the session's is gone. */
-    const grantRefusal = id => left + Engine.reservedFor(st, id) < 1
-      ? "no order-paper time left this sitting period"
-      : gtoday >= gcap ? "the House has taken " + gcap + " measures today" : null;
-    const resTotal = Object.values(st.slots.reserved || {}).reduce((a, n) => a + n, 0);
-    const hdr = $("#gov-slots-hdr");
-    if (hdr) hdr.textContent = left + " of " + st.slots.total + " left this period" +
-      (resTotal ? " + " + resTotal + " reserved" : "") +
-      (gtoday ? " \u00b7 " + gtoday + " of " + gcap + " today" : "");
-    $("#gov-slots").innerHTML =
-      `<div class="slotbar">${Array.from({length: st.slots.total}, (_, i) =>
-        `<i class="${i < st.slots.used ? "spent" : ""}"></i>`).join("")}${
-        Array.from({length: resTotal}, () => `<i class="res"></i>`).join("")}</div>` +
-      `<div class="note" style="margin-top:4px">A slot is order-paper time: spend one and a measure moves one
-       stage closer to its vote. Each sitting period holds ${st.slots.total} and they refill when the House rises; the
-       House takes ${gcap} measure${gcap === 1 ? "" : "s"} a sitting, and no more. Give a slot to a partner's bill
-       and the partner owes you for it. Give it to your own and only your programme advances.</div>` +
-      `<table><tbody>${C.bills.filter(b => !st.bills[b.id].dead).map(b =>
-        `<tr><td>${b.owner ? mark(b.owner)
-            : `<i class="swatch" style="background:var(--chrome-dk)" data-tip-title="No sponsor"` +
-              ` data-tip-body="A measure the government did not bring forward."></i>`}${b.title.replace(/ Bill$/, "")}` +
-        `${b.priority ? " <span class='flag' data-tip='priority'>PRIORITY</span>" : ""}` +
-        `${Engine.reservedFor(st, b.id) ? " <span class='flag' data-tip-title='Time of its own'" +
-          " data-tip-body='Order-paper time granted for this measure alone. Only its stages and" +
-          " its division can spend it, it is spent before the period&#39;s own, and it goes" +
-          " when the House rises.'>" + Engine.reservedFor(st, b.id) + " OWN</span>" : ""}</td>` +
-        `<td class="n">${b.owner && b.owner !== st.playerParty ? "+" + (b.priority ? 3 : 2) : "&mdash;"}</td>` +
-        `<td class="n"><button class="btn slotbtn" data-slot="${b.id}"${grantRefusal(b.id) ? " disabled" : ""}` +
-          priceTip("Give time to " + b.title, { slots: 1,
-            note: b.owner && b.owner !== st.playerParty
-              ? "Moves it a stage and puts " + ps(b.owner) + " +" + (b.priority ? 3 : 2) +
-                " in your debt."
-              : "Moves it a stage. Your own bill buys you no debt." },
-            grantRefusal(b.id)) + `>${grantLabel(b.id)}</button></td></tr>`
-      ).join("")}</tbody></table>`;
     /* THE ORDER PAPER CARRIES UNDERTAKINGS TOO. An order paper lists the
        business, and a promise the government has made is business. This
        is the other end of the docket on the Sitting screen: the item
@@ -2592,17 +2545,6 @@ const UI = (function () {
       : `<div class="note">The government has given no undertakings.</div>`;
     if (ob) ob.querySelectorAll("[data-goto]").forEach(b =>
       b.addEventListener("click", () => openTarget(b)));
-
-    $("#gov-slots").querySelectorAll(".slotbtn").forEach(btn =>
-      btn.addEventListener("click", () => {
-        const b = C.bills.find(x => x.id === btn.dataset.slot);
-        acted(() => Engine.grantSlot(st, C, btn.dataset.slot));
-        cue("stamp");
-        setStatus("Order paper time granted to " + (b ? b.title : btn.dataset.slot) +
-                  " \u00b7 " + (st.slots.total - st.slots.used) + " of " +
-                  st.slots.total + " slots left", "transient");
-        drawAll(); afterAction();
-      }));
 
     /* ---- instruments: the fast, deniable tool ---- */
     $("#gov-si").innerHTML = (C.instruments || []).map(si => {
@@ -3618,7 +3560,9 @@ const UI = (function () {
         /* THE FULL NAME. There is room for it in this column — eleven rows of
            short numbers — and a composition table is the one place the reader
            wants to know which party, not which three letters. */
-        `<td class="pn">${dis}${mark(p.id)}${pname(p.id)}</td>` +
+        `<td class="pn">${dis}${mark(p.id)}${pname(p.id)}` +
+          (st.coalition.includes(p.id) ? ' <i class="ingov">GOV</i>'
+           : st.confidenceSupply.includes(p.id) ? ' <i class="ingov">C&amp;S</i>' : "") + `</td>` +
         `<td class="n">${sq.district}</td><td class="n">${sq.list}</td>` +
         `<td class="n">${sq.functional}</td>` +
         `<td class="n"><b>${Engine.partyTotal(st, p.id)}</b></td>` +
@@ -4660,7 +4604,7 @@ const UI = (function () {
           party = screen === "party", rel = screen === "rel";
     if (before.slots !== after.slots) {
       flash($("#sb-slots"));
-      if (gov) { flash($("#gov-slots .slotbar")); flash($("#gov-slots-hdr")); }
+      if (screen === "cham") { flash($("#cham-time .slotbar")); flash($("#gov-slots-hdr")); }
     }
     /* THE LEDGER AND THE OTHER PARTIES' LOYALTIES ARE ON RELATIONS, and
        your own currents' on the Party tab, so each pulse follows its row.
@@ -5107,9 +5051,8 @@ const UI = (function () {
       /* a partner near its line (design/40 E9): its row on Relations, opened */
       Focus.activate("rel-table", id);
     } else if (kind === "grant") {
-      /* where order-paper time is given: the bill's row in the Government
-         tab's order-paper panel, pulsed, the way an instrument's is */
-      const btn = document.querySelector('#gov-slots [data-slot="' + id + '"]');
+       /* where order-paper time is given: the bill's row in Chamber */
+       const btn = document.querySelector('#cham-bills [data-slot="' + id + '"]');
       const row = btn && btn.closest("tr");
       if (row) {
         if (row.scrollIntoView) row.scrollIntoView({ block: "center" });
@@ -6990,9 +6933,22 @@ const UI = (function () {
        game however many other bills you opened. The renderer asks the
        selection store, and the store asks content for its default. */
     const sel = Focus.selected("cham-bills");
+    const left = st.slots.total - st.slots.used;
+    const gcap = (C.setup && C.setup.grantsPerSitting) || 2;
+    const gtoday = st.grantsToday || 0;
+    const resTotal = Object.values(st.slots.reserved || {}).reduce((a, n) => a + n, 0);
+    const grantRefusal = id => left + Engine.reservedFor(st, id) < 1
+      ? "no order-paper time left this sitting period"
+      : gtoday >= gcap ? "the House has taken " + gcap + " measures today" : null;
+    $("#gov-slots-hdr").textContent = left + " of " + st.slots.total + " left this period" +
+      (resTotal ? " + " + resTotal + " reserved" : "") +
+      (gtoday ? " · " + gtoday + " of " + gcap + " today" : "");
+    $("#cham-time").innerHTML = `<div class="slotbar">${Array.from({length: st.slots.total}, (_, i) =>
+      `<i class="${i < st.slots.used ? "spent" : ""}"></i>`).join("")}${
+      Array.from({length: resTotal}, () => `<i class="res"></i>`).join("")}</div>`;
     let bh = "<thead><tr><th>Bill</th><th data-tip='stage'>Stage</th>" +
       "<th class='n' data-tip='popular'>Pop.</th><th class='n' data-tip='functional'>Func.</th>" +
-      "<th data-tip='dual'>Test</th></tr></thead><tbody>";
+      "<th data-tip='dual'>Test</th><th>Time</th></tr></thead><tbody>";
     C.bills.forEach(b => {
       const bs = bsOf(b.id);
       /* The estimate, like every other forecast the player is shown. This
@@ -7008,7 +6964,13 @@ const UI = (function () {
       const ready = !dead && Engine.canDivide(st, C, b.id).ok;
       bh += `<tr class="${b.id === sel ? "sel" : ""} st-${state}${ready ? " ready" : ""}"` +
         ` data-bill="${b.id}" style="cursor:pointer">` +
-        `<td>${b.title.replace(/ Bill$/, "")}</td>` +
+        `<td>${b.owner ? mark(b.owner) : `<i class="swatch" style="background:var(--chrome-dk)"` +
+          ` data-tip-title="No sponsor" data-tip-body="A measure the government did not bring forward."></i>`}` +
+          `${b.title.replace(/ Bill$/, "")}` +
+          (b.priority ? ` <span class="flag" data-tip="priority">PRIORITY</span>` : "") +
+          (Engine.reservedFor(st, b.id) ? ` <span class="flag" data-tip-title="Time of its own"` +
+            ` data-tip-body="Order-paper time granted for this measure alone.">` +
+            `${Engine.reservedFor(st, b.id)} OWN</span>` : "") + `</td>` +
         `<td class="stage"><span class="stname ${state}">${bs.stage.replace(/_/g, " ")}</span>` +
           (dead ? "" : stageBar(bs, state)) +
           (ready ? ` <span class="rdy" data-tip="stage">ready</span>` : "") + `</td>` +
@@ -7020,7 +6982,13 @@ const UI = (function () {
         `<td class="n">${dead ? "&mdash;" : d.popular.aye}</td>` +
         `<td class="n">${dead || !b.dualMajority ? "&mdash;" : d.functional.aye}</td>` +
         `<td><span class="flag ${b.dualMajority ? "bad" : ""}" data-tip="${b.dualMajority ? "dual" : "simple"}">` +
-        `${b.dualMajority ? "DUAL" : "SIMPLE"}</span></td></tr>`;
+        `${b.dualMajority ? "DUAL" : "SIMPLE"}</span></td>` +
+        `<td>${dead ? "" : `<button class="btn slotbtn" data-slot="${b.id}"${grantRefusal(b.id) ? " disabled" : ""}` +
+          priceTip("Give time to " + b.title, { slots: 1,
+            note: b.owner && b.owner !== st.playerParty
+              ? "Moves it a stage and puts " + ps(b.owner) + " +" + (b.priority ? 3 : 2) + " in your debt."
+              : "Moves it a stage. Your own bill buys you no debt." }, grantRefusal(b.id)) +
+          `>${grantLabel(b.id)}</button>`}</td></tr>`;
     });
     $("#cham-bills").innerHTML = bh + "</tbody>";
     /* ONE activation path. A click and an Enter both land in
@@ -7028,6 +6996,17 @@ const UI = (function () {
        focus on the row it just opened. */
     $("#cham-bills").querySelectorAll("tr[data-bill]").forEach(tr =>
       tr.addEventListener("click", () => Focus.activate("cham-bills", tr.dataset.bill)));
+    $("#cham-bills").querySelectorAll(".slotbtn").forEach(btn =>
+      btn.addEventListener("click", event => {
+        event.stopPropagation();
+        const b = C.bills.find(x => x.id === btn.dataset.slot);
+        acted(() => Engine.grantSlot(st, C, btn.dataset.slot));
+        cue("stamp");
+        setStatus("Order paper time granted to " + (b ? b.title : btn.dataset.slot) +
+                  " · " + (st.slots.total - st.slots.used) + " of " +
+                  st.slots.total + " slots left", "transient");
+        drawAll(); afterAction();
+      }));
 
     drawBill(sel);
   }
@@ -7460,14 +7439,6 @@ const UI = (function () {
     drawChamberForecast();
     drawChamberWhip();
     drawBenchTable();
-    $("#chamber-legend").innerHTML = C.parties.map(p => {
-      const tag = st.coalition.includes(p.id) ? ' <i class="ingov">GOV</i>'
-                : st.confidenceSupply.includes(p.id) ? ' <i class="ingov">C&amp;S</i>' : "";
-      /* The name carries the card too, because a reader reaches for the
-         name and not for a four-pixel square. */
-      return `<span>${mark(p.id)}${pname(p.id, p.name)} ` +
-             `${Engine.partyTotal(st, p.id)}${tag}</span>`;
-    }).join("");
   }
 
   /* ---------- orbit ---------- */

@@ -171,16 +171,9 @@
              a measure here colours the benches for it. There is no separate
              row of buttons any more, because there was never a second list. -->
         <div class="stack" id="cham-biz">
-          <!-- THE CLOCK ABOVE THE BUSINESS IT PAYS FOR. Order-paper time was
-               on the Government tab, two screens from the order paper it is
-               spent on (§7.7). -->
           <div class="panel">
-            <h2>Order paper time <em id="gov-slots-hdr"></em></h2>
-            <div class="pbody scrolls" id="gov-slots"></div>
-          </div>
-          <div class="panel">
-            <h2>Order paper <em>select a measure</em></h2>
-            <div class="pbody flush scrolls"><table id="cham-bills"></table></div>
+            <h2>Order paper <em id="gov-slots-hdr"></em></h2>
+            <div class="pbody flush scrolls"><div id="cham-time"></div><table id="cham-bills"></table></div>
           </div>
           <div class="panel">
             <h2><span id="bill-hdr"></span> <em id="bill-ref"></em></h2>
@@ -191,14 +184,13 @@
         <!-- THE HOUSE, and directly under it the instrument that moves it. -->
         <div class="stack" id="cham-mid">
           <div class="panel">
-            <h2><span data-tip="benches">Parliament</span> <em class="skey">&#9679; district &nbsp;&#9633; list &nbsp;&#9650; functional</em></h2>
+            <h2><span data-tip="benches">Parliament</span> <em id="gov-coalition-hdr"></em> <em class="skey">&#9679; district &nbsp;&#9633; list &nbsp;&#9650; functional</em></h2>
             <div class="pbody scrolls" id="cham-pick"></div>
             <div class="pbody flush scrolls" id="cham-house">
               <svg viewBox="0 0 720 348" role="img" aria-label="Seating plan of Parliament">
                 <g id="chamber"></g>
               </svg>
               <div class="chtally" id="chamber-tally"></div>
-              <div class="legend" id="chamber-legend"></div>
             </div>
             <!-- OUTSIDE THE SCROLLER. The forecast is the readout the whole
                  panel exists to produce, so it must not be the thing that
@@ -217,27 +209,13 @@
              government's own currents were on the Government tab; they are
              vote arithmetic, and this is where votes are counted. -->
         <div class="stack cref scrolls">
-          <!-- THE ROSTER IS GONE FROM HERE, and the margin is the whole panel.
-               This drew party/seats/loyalty for the coalition partners, which
-               the Composition table two panels down already draws for all
-               twelve with the partners marked, and which the Party tab now
-               draws with the ledger beside it. Three copies of one roster; the
-               margin was the only thing on this panel that Chamber uniquely
-               needs, because it is the number the government dies on. -->
-          <div class="panel">
-            <h2>Confidence <em id="gov-coalition-hdr"></em></h2>
-            <div class="pbody scrolls">
-              <div class="note" id="gov-margin"></div>
-            </div>
-          </div>
           <div class="panel">
             <h2>Composition <em id="comp-hdr">by tier</em></h2>
-            <div class="pbody flush scrolls"><table id="comp-table"></table></div>
-          </div>
-          <div class="panel">
-            <h2><span data-tip="functional">Functional constituencies</span> <em data-tip="dual">40 seats, dual majority</em></h2>
-            <div class="pbody flush scrolls"><table id="func-table"></table></div>
-            <div class="pbody scrolls"><div class="note" id="func-note"></div></div>
+            <div class="pbody flush scrolls"><table id="comp-table"></table>
+              <details class="func-drawer"><summary>Functional constituencies <em data-tip="dual">40 seats, dual majority</em></summary>
+                <table id="func-table"></table><div class="note" id="func-note"></div>
+              </details>
+            </div>
           </div>
         </div>
 

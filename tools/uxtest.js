@@ -790,7 +790,7 @@ try {
      already looking at. */
   const ptip = w.eval(`
     (function () {
-      var el = document.querySelector("#chamber-legend .pnm");
+       var el = document.querySelector("#comp-table .pnm");
       if (!el) return "NO NAME ANCHOR";
       var id = null;
       CONTENT.parties.forEach(function (p) {
@@ -2395,8 +2395,8 @@ try {
      native.slice(0, 4).join(" · ") || "none");
 
   /* --- 4. the party marks name their party --- */
-  doc.querySelector('.tab[data-t="gov"]').click();
-  const swatches = [...doc.querySelectorAll("#gov-slots .swatch")];
+  doc.querySelector('.tab[data-t="cham"]').click();
+  const swatches = [...doc.querySelectorAll("#cham-bills .swatch")];
   ok("the order paper's sponsor column is a colour that says whose it is",
      swatches.length > 0 && swatches.every(i => !!i.getAttribute("data-tip-title")),
      swatches.length + " marks");
@@ -2420,7 +2420,7 @@ try {
      !soft.querySelector(".meter>.thr"));
 
   /* --- 6. the margin is a bar with the same threshold mark --- */
-  const marg = doc.querySelector("#gov-margin .dmbar");
+  const marg = doc.querySelector("#gov-coalition-hdr .dmbar");
   ok("the working majority is drawn, not narrated", !!marg);
   ok("against the majority it has to clear", !!marg.querySelector(".thr"));
   ok("and it says what the margin buys you",

@@ -695,7 +695,7 @@ tr.compopen .compdis{border-color:var(--gold-dk);color:var(--ink);background:var
    moment the division list opens — the plan and the forecast bar above
    it were squeezed to make room, and the forecast clipped. The plan is
    the thing the screen is for; it does not give up height to a list. */
-.g-cham > .stack > .panel:first-child{flex:0 0 auto;min-height:0;}
+.g-cham > #cham-mid > .panel:first-child{flex:0 0 auto;min-height:0;}
 /* THE ORDER PAPER IS EXACTLY AS TALL AS THE ORDER PAPER. Three attempts,
    and the third is the one that is actually about the right thing.
 
@@ -709,7 +709,7 @@ tr.compopen .compdis{border-color:var(--gold-dk);color:var(--ink);background:var
    its content, and lets it shrink — and only shrink — when the column runs
    out; the measure detail below it is the one that grows, which is right,
    because prose is the thing there can be more of. */
-#cham-biz > .panel:nth-child(2){flex:0 0 auto;min-height:0;max-height:52%;}
+#cham-biz > .panel:first-child{flex:0 1 auto;min-height:0;max-height:52%;}
 /* AND THE MEASURE BELOW IT GROWS FROM NOTHING. `flex:1 1 auto` gave the
    detail its CONTENT as a basis, so a long measure claimed the column before
    anything was shared out and the order paper — the only item left able to
@@ -717,7 +717,7 @@ tr.compopen .compdis{border-color:var(--gold-dk);color:var(--ink);background:var
    the LEFTOVER, which is what a panel that grows should ask for. The order
    paper is capped at half the column so a long docket cannot do the same
    thing in reverse. */
-#cham-biz > .panel:nth-child(3){flex:1 1 0;min-height:120px;}
+#cham-biz > .panel:nth-child(2){flex:1 1 0;min-height:120px;}
 /* THE WHIP PANEL SIZES TO ITS CONTENT, except while its division list is
    open — then it takes the rest of the column. The list is the one thing in
    the panel that can be 280 names long, and the room it needs is the room
@@ -1179,6 +1179,8 @@ tr.vacant td{background:var(--chrome);color:var(--ink-soft);}
 .dmbar .thr{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--alert);}
 .dmbar .thr::after{content:"";position:absolute;top:-3px;left:-3px;border-left:3px solid transparent;border-right:3px solid transparent;border-top:4px solid var(--alert);}
 .dmbar span.lbl{position:absolute;right:3px;top:1px;font-family:var(--f-data);font-size:10px;color:var(--ink);}
+#gov-coalition-hdr{display:flex;align-items:center;gap:5px;white-space:nowrap;}
+#gov-coalition-hdr .dmbar{display:inline-block;width:150px;flex:0 0 150px;}
 
 /* ---------- chamber ---------- */
 .legend{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:11px;padding:4px 5px;border-top:1px solid var(--chrome-dk);}
@@ -1204,7 +1206,7 @@ tr.vacant td{background:var(--chrome);color:var(--ink-soft);}
 .chtally .gov::before{background:var(--ok);}
 .chtally .opp::before{background:var(--alert);}
 .chtally .cross::before{background:var(--chrome-dkr);}
-.legend .ingov{font-style:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+.ingov{font-style:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--ok);border:1px solid var(--ok);padding:0 3px;margin-left:3px;}
 tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 .legend span{white-space:nowrap;}
@@ -1969,14 +1971,14 @@ body.menu-on{background:#0b1826;}
 .mbtn.danger{color:#e9a08f;border-color:rgba(224,144,127,.6);}
 
 .slots{display:flex;flex-direction:column;gap:7px;max-width:620px;}
-/* ORDER-PAPER TIME IS A LIST OF NINE BILLS AND A BUTTON EACH, so the row is
-   what decides the panel's height, not the panel. Smaller buttons and tighter
-   rows take it down without capping anything or hiding a measure. */
-#gov-slots .slotbtn{font-size:10px;padding:1px 6px;letter-spacing:.04em;}
-#gov-slots table{width:100%;}
-#gov-slots td{padding:1px 4px;font-size:11.5px;}
-#gov-slots .note{font-size:10.5px;line-height:1.35;}
-#gov-slots .slotbar{margin-bottom:2px;}
+/* Time is spent on the order paper itself; keep its controls compact. */
+#cham-bills .slotbtn{font-size:10px;padding:1px 6px;letter-spacing:.04em;white-space:nowrap;}
+#cham-time{padding:3px 6px;}
+#cham-time .slotbar{margin:0;}
+.func-drawer{border-top:1px solid var(--chrome-dk);}
+.func-drawer > summary{cursor:pointer;padding:5px 7px;background:var(--chrome-lt);font-size:11px;font-weight:bold;}
+.func-drawer > summary em{font-style:normal;font-weight:normal;float:right;}
+.func-drawer > .note{padding:5px 7px;}
 .slot{display:flex;align-items:center;gap:12px;background:rgba(20,23,18,.5);
   border:1px solid rgba(233,234,226,.2);padding:9px 12px;
   backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
