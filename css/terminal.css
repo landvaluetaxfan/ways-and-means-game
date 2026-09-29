@@ -3703,9 +3703,10 @@ body.no-motion .sp-signature.sig-draw .sigimg{transition:none;}
 .bill-view.zoom .bill-img{height:auto;width:min(1545px,100%);cursor:zoom-out;}
 .bill-close{position:fixed;top:14px;right:18px;z-index:1;}
 
-/* In play the logo heads the Sitting screen's first column, on the field's
-   paper so its grey reads against the chrome. */
-.play-logo{flex:0 0 auto;background:var(--field);border:1px solid var(--chrome-dk);padding:9px 12px;}
+/* In play the logo heads the Sitting screen's first column, straight on
+   the chrome: the picture carries its own transparency, and a plate under
+   it read as a white box (the author, 29 Sep). */
+.play-logo{flex:0 0 auto;padding:4px 6px 2px;}
 .play-logo img{display:block;width:100%;max-width:360px;height:auto;margin:0 auto;}
 /* and on the act and interval cards and the curtain call it is the title */
 .sp-logo{display:block;width:min(440px,82%);height:auto;margin:6px auto 10px;}
