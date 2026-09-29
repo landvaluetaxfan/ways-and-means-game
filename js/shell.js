@@ -922,6 +922,10 @@ const Shell = (function () {
         </div>
         ${inGame === false ? "" : `<div class="opt-group session">
           <div class="opt-title">Session</div>
+          <details class="opt-transcript"><summary>Playtest transcript</summary>
+            <textarea readonly spellcheck="false">${esc(UI.transcript())}</textarea>
+            <button class="mbtn sm wide" data-act="transcript">Download transcript</button>
+          </details>
           <button class="mbtn sm wide" data-act="export">Export to file</button>
           <button class="mbtn sm wide" data-act="import">Import from file</button>
           <button class="mbtn sm wide danger" data-act="menu">Return to main menu</button>
@@ -943,6 +947,14 @@ const Shell = (function () {
       opts[sl.dataset.lvl] = (+sl.value || 0) / 100; saveOpts(); applyOpts();
     }));
     if (inGame === false) return;
+    p.querySelector('[data-act="transcript"]').addEventListener("click", () => {
+      const value = UI.transcript();
+      const blob = new Blob([value], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "ways-and-means-sitting-" + UI.state().sitting + ".txt";
+      a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    });
     p.querySelector('[data-act="export"]').addEventListener("click", exportFile);
     p.querySelector('[data-act="import"]').addEventListener("click", () =>
       document.getElementById("file-load").click());

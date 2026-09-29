@@ -1888,6 +1888,10 @@ button.pown:hover{background:var(--field);}
 .opt span{display:block;}
 .opt b{display:block;font-weight:600;font-size:12px;}
 .opt i{display:block;font-style:normal;font-family:var(--f-read);font-size:11px;color:var(--ink-soft);line-height:1.35;}
+.opt-transcript{margin-bottom:6px;font-size:11px;}
+.opt-transcript summary{cursor:pointer;padding:3px 0;}
+.opt-transcript textarea{display:block;width:100%;height:150px;box-sizing:border-box;margin:5px 0;
+  resize:vertical;font:10px/1.35 var(--f-data);}
 .opt-sep{height:1px;background:var(--chrome-dk);margin:7px 0;}
 /* The audio readout. Web Audio fails silently by construction, so the
    panel says what the hardware is actually doing. Deliberately plain and

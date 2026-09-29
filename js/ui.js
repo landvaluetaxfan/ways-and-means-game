@@ -449,7 +449,7 @@ const UI = (function () {
       /* A tip is positioned in viewport coordinates against a node that is
          about to be replaced. Take it down first. */
       if (typeof Tips !== "undefined") Tips.hide();
-      drawTitle(); drawEconomy(); drawEconomyReal(); drawParty(); drawRelations(); drawExport(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawSandbox(); drawStatus();
+      drawTitle(); drawEconomy(); drawEconomyReal(); drawParty(); drawRelations(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawSandbox(); drawStatus();
       if (typeof Concordance !== "undefined") Concordance.render(st, C, cxCurrent, false);
       if (typeof Papers !== "undefined") Papers.render(st, C);
       /* The globe only redraws when it is the screen the player is on: it is
@@ -927,36 +927,6 @@ const UI = (function () {
     L.push("   where you stopped reading)");
     L.push("");
     return L.join("\n");
-  }
-
-  function drawExport() {
-    const box = $("#log-export"); if (!box) return;
-    if (box.dataset.built === String(st.sitting) && box.querySelector("textarea")) return;
-    box.dataset.built = String(st.sitting);
-    box.innerHTML =
-      `<div class="note">The run so far, as plain text. Select it and paste it ` +
-      `into your report, or take the file.</div>` +
-      `<div class="expbtns"><button class="btn" id="exp-sel">Select all</button>` +
-      `<button class="btn" id="exp-dl">Download</button></div>` +
-      `<textarea id="exp-text" readonly spellcheck="false"></textarea>`;
-    const ta = $("#exp-text");
-    ta.value = transcript();
-    const sel = $("#exp-sel"), dl = $("#exp-dl");
-    if (sel) sel.addEventListener("click", () => {
-      ta.focus(); ta.select();
-      setStatus("The transcript is selected — copy it", "transient");
-    });
-    if (dl) dl.addEventListener("click", () => {
-      try {
-        const blob = new Blob([ta.value], { type: "text/plain" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "ways-and-means-sitting-" + st.sitting + ".txt";
-        a.click();
-        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-        setStatus("Transcript written", "transient");
-      } catch (e) { setStatus("This browser would not write the file — select and copy instead", "transient"); }
-    });
   }
 
   /* ---------- the economy ----------
@@ -2947,9 +2917,21 @@ const UI = (function () {
 
     /* A VERTICAL FEED HOLDS MORE THAN A STRIP DID, and the column scrolls,
        so the wire shows the session's traffic rather than its tail. */
-    $("#gov-wire").innerHTML = st.wire.length
-      ? st.wire.slice(0, 16).map(w => `<div class="post"><div class="meta">SITTING ${w.sitting}</div><p>${w.text}</p></div>`).join("")
-      : `<div class="pbody"><div class="note">No traffic this session.</div></div>`;
+    const happened = (st.wire || []).map((w, i) => ({ sitting: w.sitting, text: w.text, kind: "Wire", i }))
+      .concat((st.log || []).map((l, i) => ({ sitting: l.sitting, text: l.text, kind: "Decision", i })))
+      .sort((a, b) => (b.sitting || 0) - (a.sitting || 0) || a.kind.localeCompare(b.kind) || a.i - b.i);
+    const sittings = [];
+    happened.forEach(item => {
+      let group = sittings[sittings.length - 1];
+      if (!group || group.sitting !== item.sitting) {
+        group = { sitting: item.sitting, items: [] }; sittings.push(group);
+      }
+      group.items.push(item);
+    });
+    $("#gov-wire").innerHTML = sittings.length
+      ? sittings.map(g => `<div class="post"><div class="meta">SITTING ${g.sitting}</div>` +
+          g.items.map(x => `<p><b${x.kind === "Decision" ? ` data-tip="log"` : ""}>${x.kind}.</b> ${x.text}</p>`).join("") + `</div>`).join("")
+      : `<div class="pbody"><div class="note">Nothing has happened yet.</div></div>`;
   }
 
   /* THE FOUR AXES, and the words for them. A bill and a party are both
@@ -6193,8 +6175,8 @@ const UI = (function () {
 
     secs.push({ kind: "body", head: "The record",
       body: st.log.length + " entries, sitting " + st.sitting + ", session " + st.session +
-            ", seed " + st.seed + ". Every decision is on the Record tab, where it can be read and taken " +
-            "away, and nothing here can be taken back." });
+            ", seed " + st.seed + ". Every decision is under What has happened on the Sitting, " +
+            "and in the playtest transcript in Options. Nothing here can be taken back." });
 
     return { title: title, sections: secs, mood: endMood(end) };
   }
@@ -6265,7 +6247,7 @@ const UI = (function () {
         country.map(r => `${esc(r.k)} ${esc(r.then)} &rarr; ${esc(r.now)}`).join(" &middot; ") + `</div>` : "") +
       `<div class="rulehead">The record</div><div class="note">` +
         `${st.log.length} entries, sitting ${st.sitting}, session ${st.session}, seed ${st.seed}. ` +
-        `Every decision is on the Record tab, and nothing here can be taken back.</div></div>`;
+        `Every decision is under What has happened on the Sitting, and nothing here can be taken back.</div></div>`;
   }
 
   function drawSitting() {
@@ -7909,13 +7891,6 @@ const UI = (function () {
     }
   }
 
-  /* ---------- log ---------- */
-  function drawLog() {
-    $("#log-body").innerHTML = st.log.length
-      ? "<tbody>" + st.log.slice(0, 40).map(l => `<tr><td class="n">${l.sitting}</td><td>${l.text}</td></tr>`).join("") + "</tbody>"
-      : "<tbody><tr><td>No decisions recorded.</td></tr></tbody>";
-  }
-
   /* ---------- the Sandbox (design/47) ----------
 
      THE AUTHOR'S BENCH, NOT A SCENE. The author, 27 Sep: "I wanted to be
@@ -8408,10 +8383,9 @@ const UI = (function () {
               -- with nothing able to see both at once to say so. uitest
               asserts they agree now, which it could not do before this. */
            content: () => C,
-           annotate, setStatus, redraw: drawAll,
+           annotate, setStatus, redraw: drawAll, transcript,
            /* put an event on the Sitting screen in the sandbox (design/47);
               the shell calls it for an address that names one */
            sandboxShow,
            __test: { cabinetView, structure, reportMoves, rollChips, rollPlan } };
 })();
-

@@ -47,6 +47,12 @@ $('[data-new="1"]').click();
 ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.contains("on"));
 ok("slot is named in the topbar", /Test ministry/.test($("#tb-slot").textContent),
    JSON.stringify($("#tb-slot").textContent));
+/* THE HOUSE'S THREE PRICES SIT TOGETHER. The order is part of the design:
+   Chamber carries its time, Party its loyalty, and Relations its bargains. */
+ok("the tabs group the three prices of a vote",
+   [...w.document.querySelectorAll("#tabstrip .tab:not([hidden])")]
+     .map(t => t.dataset.t).join(",") ===
+     "sit,gov,cham,party,rel,econ,orb,world,cx");
 {
   const logo = $("#sit-play img"), adm = (CONTENT.administrations || [])[0];
   ok("the play's small logo is on the Sitting screen", !!logo && !$("#sit-play").hidden &&
@@ -426,7 +432,7 @@ try {
   const text = page ? page.textContent : "";
   ok("it names what happened", /fallen|voted|confidence/i.test(text),
      text.slice(0, 60));
-  ok("and it carries the record", /Record tab/.test(text));
+  ok("and it says where the record is", /What has happened/.test(text));
   /* and the settlement's closing words are on it, which no dialog read out
      earlier: settled here on the page's own state */
   const setl = w.eval("(function(){ var s = UI.state(); s.settledAs = 'restriction'; UI.redraw();" +
@@ -725,10 +731,10 @@ try {
    symptom was the chamber drawing zero seats, three renderers away. A
    renderer that throws is not a local failure. */
 try {
-  w.document.querySelector('.tab[data-t="log"]').click();
-  const ta = w.document.querySelector("#exp-text");
-  ok("the record tab offers a transcript", !!ta);
-  const text = ta ? ta.value : "";
+  const text = w.eval("UI.transcript()");
+  const optTranscript = w.document.querySelector("#tb-optpanel .opt-transcript textarea");
+  ok("Options offers a transcript", !!w.document.querySelector('#tb-optpanel [data-act="transcript"]') &&
+     !!optTranscript && /PLAYTEST TRANSCRIPT/.test(optTranscript.value));
   ok("and it has the run in it", text.length > 300, text.length + " characters");
   for (const want of ["PLAYTEST TRANSCRIPT", "WHERE IT STANDS", "MEASURES",
                       "WHAT WAS DECIDED", "NOTES FROM THE TESTER"])
