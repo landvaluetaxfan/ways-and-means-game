@@ -40,7 +40,7 @@ prologue, which put a second election in the middle of the campaign. The
 author did not want an election early or midway, and found two in one
 campaign confusing.
 
-**Proposed:** each campaign declares four things.
+**Decided (Round H):** each campaign declares four things.
 - **Its aim**, and when it arrives.
 - **Its footing.**
 - **Its major theatres.**
@@ -239,7 +239,7 @@ parliamentary session drags on. We need to strike the correct balance."
 So the brief is as full in the last period as in the first. The player
 does not learn *that* the brief exists; they learn *which advice to take*.
 
-**Proposed: where the balance comes from.** Advice is constant, so the
+**Decided (Round H): where the balance comes from.** Advice is constant, so the
 skill must lie in choosing among it. Three things make that a choice:
 
 1. **More advice than capacity.** Order-paper time and money cannot meet
@@ -342,6 +342,11 @@ day-by-day economy work inside an act as they do now.
 before dissolution carry the campaign through the brief: the record to run
 on, and where to spend. Then comes the count, as a set piece, and a hung
 House is bargained. There is no separate campaign game.
+
+**Decided (Round H): the run-in carries the pre-election business,** such
+as preselection, where the party's currents contest who stands in which
+seat. From dissolution to the count, the Sitting becomes the election
+screen (design/61).
 
 **Decided (Round F): the opposition is a rival who acts.** The Leader of
 the Opposition (Watkins, in Flash I) moves against the government. He uses

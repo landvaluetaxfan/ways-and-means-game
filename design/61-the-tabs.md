@@ -233,3 +233,16 @@ The second round, the same day:
 - **the status bar keeps only the essentials, in words:** confidence, the
   heat, the time to the rise and the paper against the leadership, each
   with its figure on hover.
+
+The third round, the same day:
+- **Badges:** the red number stays for what is owed, as now. A quiet dot
+  marks a tab where a matter in the brief lives.
+- **The election screen:** from dissolution to the count, the Sitting
+  turns into the election map and tracker. It shows a seat map by
+  station, the polls, the seats at risk and the pre-election business
+  (preselection), then the count seat by seat. Before the run-in, Party's
+  "the country" panel carries a compact tracker. This was the author's
+  idea: "Run-in works, especially if pre-election stuff like
+  preselection/primaries happen."
+- **The build order:** Codex does the tabs first (`briefs/tabs-overhaul.md`),
+  then the brief (`briefs/the-brief.md`).
