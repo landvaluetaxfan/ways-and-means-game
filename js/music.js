@@ -678,16 +678,23 @@ const Music = (function () {
         if (my !== anthemToken || !ctx || !out) return;
         try {
           const src = ctx.createBufferSource(), g = ctx.createGain();
-          src.buffer = audio; src.loop = true;
+          const at = t.start || 0, fade = t.fade || 2.0;
+          src.buffer = audio;
+          /* A TRACK WITH AN OPENING POINT DOES NOT LOOP. It is a piece, not
+             a bed, and the author asked for it from part-way in rather than
+             from the top every time it runs out. When it does run out the
+             bed comes back rather than the room going silent. */
+          src.loop = !at;
+          if (!src.loop) src.onended = () => { if (anthemSrc === src) anthemOff(fade); };
           /* IN GENTLY. The recording is a full-scale master and the bed is
              mixed quiet, so it also sits well below the bus. */
           const now = ctx.currentTime, target = t.level || 0.3;
           g.gain.setValueAtTime(0.0001, now);
-          g.gain.linearRampToValueAtTime(target, now + 2.0);
+          g.gain.linearRampToValueAtTime(target, now + fade);
           src.connect(g); g.connect(out);
-          src.start();
+          src.start(now, at);
           anthemSrc = src; anthemGain = g; anthemId = id;
-          bed(0, 2.0);
+          bed(0, fade);
         } catch (e) {}
       };
       try {
