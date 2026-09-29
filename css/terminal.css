@@ -445,11 +445,6 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #s-sbx.screen.on{height:100%;min-height:0;}
 .g-sbx .panel{min-height:0;}
 .pdot{display:inline-block;width:9px;height:9px;border:1px solid var(--rule);}
-/* the playtest transcript: a box the tester can select out of */
-.g-log{grid-template-columns:minmax(0,1fr) minmax(320px,460px);
-  grid-template-rows:minmax(0,1fr);height:100%;min-height:0;}
-#s-log.screen.on{height:100%;min-height:0;}
-.g-log .panel{min-height:0;}
 /* the dismissal: a small, deliberately unglamorous control in the last
    column of the cabinet, because sacking a minister should not look fun */
 .btn.tiny{font-size:9.5px;padding:0 5px;letter-spacing:.06em;}
@@ -502,10 +497,6 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .boardbtns{margin:4px 0 2px;}
 .btn.tiny.board{border-color:rgba(217,192,122,.6);}
 .boardnote{border-left:2px solid var(--alert);padding-left:7px;margin:4px 0 2px;}
-.expbtns{display:flex;gap:6px;margin:5px 0;}
-#exp-text{width:100%;min-height:340px;flex:1 1 auto;resize:vertical;
-  font-family:var(--f-data);font-size:10.5px;line-height:1.45;
-  background:var(--field);color:var(--ink);border:1px solid var(--rule);padding:6px;}
 /* THE DISCLOSURE TRIANGLE, first in every party's row and the only thing
    that opens it: the row no longer lights as a whole, so the name reads as
    the Concordance link it is. */
@@ -1354,7 +1345,7 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 }
 @media (max-width:1080px){
   .g-gov,.g-cham,.g-orb,.g-disp,.g-elec,.g-sit,.g-world,.g-party,.g-rel,.g-econ,
-  .g-log,.g-sbx{grid-template-columns:minmax(0,1fr);}
+  .g-sbx{grid-template-columns:minmax(0,1fr);}
 
   /* ONE COLUMN MEANS THE PAGE SCROLLS, and it did not. Every screen is
      height:100% with grid-template-rows:minmax(0,1fr) — ONE row, sized to

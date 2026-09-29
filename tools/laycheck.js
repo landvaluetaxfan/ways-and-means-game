@@ -102,7 +102,7 @@ const SHAPES =
 : VIEWPORTS;
 
 /* The tabs, in the order the interface presents them. */
-const TABS = ["sit", "gov", "cham", "econ", "party", "rel", "orb", "world", "cx", "log"];
+const TABS = ["sit", "gov", "cham", "party", "rel", "econ", "orb", "world", "cx"];
 
 /* WHAT A FAULT IS, shared by the two probes below: the game's and the
    editor's. Runs inside the page; a template literal, so no back-ticks. */
