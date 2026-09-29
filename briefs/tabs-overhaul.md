@@ -1,6 +1,10 @@
 **Lane: Codex.** Written 29 Sep 2026 by Claude from the author's decisions.
 Do it first, before `the-brief.md`.
 
+**Read `design/62-why-the-overhaul.md` first.** It gives the objectives of
+these changes and the reasons behind every design decision they carry out.
+When this brief does not cover a case, decide it by that record's tests.
+
 The author: "while I like chamber, it definitely still is really packed, and
 other tabs are under-designed." Every decision is in `design/61-the-tabs.md`,
 and the game design it serves is `design/58-the-game-on-one-page.md`. Read
