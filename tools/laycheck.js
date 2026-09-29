@@ -468,8 +468,11 @@ function run(width, height, page) {
     dom = cp.execSync(
       `"${CHROME}" --headless --disable-gpu --no-sandbox --hide-scrollbars ` +
       `--allow-file-access-from-files --virtual-time-budget=20000 ` +
-      `--window-size=${width},${height} --dump-dom "${tmp}" 2>/dev/null`,
-      { maxBuffer: 64 * 1024 * 1024 }).toString();
+      `--window-size=${width},${height} --dump-dom "${tmp}"`,
+      /* Chromium's chatter is discarded through stdio, not through a
+         `2>/dev/null` in the command: that redirection is a shell token, and
+         on Windows cmd reads /dev/null as a path and fails the whole run. */
+      { maxBuffer: 64 * 1024 * 1024, stdio: ["ignore", "pipe", "ignore"] }).toString();
   } finally { try { fs.unlinkSync(tmp); } catch {} }
 
   const m = dom.match(/<pre id="laycheck-out">([\s\S]*?)<\/pre>/);

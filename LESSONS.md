@@ -136,6 +136,13 @@ Sep 2026) and in the design notes cited.
 
 ## Checks and tools
 
+- **A shell redirection inside an `execSync` string is a portability fault.**
+  `tools/laycheck.js` closed Chromium's chatter with `2>/dev/null` in the
+  command, so on Windows cmd read `/dev/null` as a path and the run died with
+  "the system cannot find the path specified" — the check AGENTS.md tells you
+  to run after touching a stylesheet could not run on the author's own box at
+  all. Discard it with `stdio: ["ignore","pipe","ignore"]` instead. A check
+  that only works on one platform reads as coverage where it is missing.
 - **Before trusting a check, break its subject and watch it fail.** These
   all passed faults for weeks:
   - a rename test that asked `refs.js` whether `refs.js` had missed
