@@ -3703,10 +3703,11 @@ body.no-motion .sp-signature.sig-draw .sigimg{transition:none;}
 .bill-view.zoom .bill-img{height:auto;width:min(1545px,100%);cursor:zoom-out;}
 .bill-close{position:fixed;top:14px;right:18px;z-index:1;}
 
-/* In play the logo heads the Sitting screen's first column, straight on
-   the chrome: the picture carries its own transparency, and a plate under
-   it read as a white box (the author, 29 Sep). */
-.play-logo{flex:0 0 auto;padding:4px 6px 2px;}
-.play-logo img{display:block;width:100%;max-width:360px;height:auto;margin:0 auto;}
+/* In play the logo sits small at the foot of the Sitting screen's middle
+   column, straight on the chrome and quiet: the author (29 Sep) found it
+   too large and too prominent heading the first column, and a plate under
+   it read as a white box. */
+.play-logo{flex:0 0 auto;padding:1px 0 0;}
+.play-logo img{display:block;height:26px;width:auto;margin-left:-6px;opacity:.62;}
 /* and on the act and interval cards and the curtain call it is the title */
 .sp-logo{display:block;width:min(440px,82%);height:auto;margin:6px auto 10px;}

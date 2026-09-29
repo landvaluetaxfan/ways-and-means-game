@@ -110,8 +110,8 @@ Ideal performer for this role is a woman in her early fifties in the alto range.
       ] },
 
     /* THE PLAY (design/56): the campaign's frame, outside the world. Its
-       logo recurs on each act's card, the intervals, the curtain call and
-       the Sitting screen, and its playbill is what the menu shows when a
+       logo recurs on each act's card, the intervals and the curtain call,
+       its black logo small on the Sitting screen, and its playbill is what the menu shows when a
        government is chosen; both are the author's (28 Sep). The title is
        the author's too, from the introduction: Flash came up in 2070, "in
        the Commonwealth's springtime", and the play is set ten years after.
@@ -121,6 +121,7 @@ Ideal performer for this role is a woman in her early fifties in the alto range.
     play:{
       title:"After the Springtime",
       logo:"img/plays/flash_i_logo.png",
+      logoSmall:"img/plays/flash_i_logo_black.png",
       playbill:"img/plays/flash_i_playbill.png",
       cast:[
         { id:"flash", name:"Adriana Eireann Flash", role:"Prime Minister, and leader of the Party of Socialists and Democrats" },

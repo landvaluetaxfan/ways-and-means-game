@@ -2931,10 +2931,13 @@ const UI = (function () {
         `<tr><td style="text-transform:capitalize">${p}</td><td class="n"><span class="flag ${st.president.relationship < 35 ? "bad" : ""}" data-tip="live">${st.president.relationship < 35 ? "LIVE" : "DORMANT"}</span></td></tr>`
       ).join("")}</tbody></table>`;
 
-    /* THE PLAY'S LOGO heads the Sitting screen's first column for the whole
-       campaign (design/56), the one place the frame stays in view. Drawn
-       only when it changes, so a render does not reload the picture. */
-    const logoBox = $("#sit-play"), pl = currentPlay(), logo = pl && pl.logo ? pl.logo : "";
+    /* THE PLAY'S LOGO stays on the Sitting screen for the whole campaign
+       (design/56), small, at the foot of the middle column: the flat
+       `logoSmall` where the play has one, since a texture turns to noise at
+       that size. Drawn only when it changes, so a render does not reload
+       the picture. */
+    const logoBox = $("#sit-play"), pl = currentPlay(),
+          logo = pl ? (pl.logoSmall || pl.logo || "") : "";
     if (logoBox && logoBox.dataset.src !== logo) {
       logoBox.dataset.src = logo;
       logoBox.hidden = !logo;

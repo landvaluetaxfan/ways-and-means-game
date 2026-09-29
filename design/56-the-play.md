@@ -49,9 +49,11 @@ is undecided.
   button is the playbill with the play's name and the government's beside
   it, and "Read the playbill" opens it at the screen's height (a click on
   the picture shows it at the page's width, and Close or Escape puts it
-  away). In play, the `logo` heads the Sitting screen's first column for
-  the whole campaign, and replaces the title in type on the act and
-  interval cards and the curtain call. A government with neither keeps its
+  away). In play, the `logo` replaces the title in type on the act and
+  interval cards and the curtain call, and `logoSmall` (the flat black
+  version) sits small and faint at the foot of the Sitting screen's middle
+  column for the whole campaign, falling back to `logo`. It headed the
+  first column at first; the author found it too large and prominent. A government with neither keeps its
   face button and the typed title.
 
 ## Flash I

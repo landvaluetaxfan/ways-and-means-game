@@ -49,8 +49,8 @@ ok("slot is named in the topbar", /Test ministry/.test($("#tb-slot").textContent
    JSON.stringify($("#tb-slot").textContent));
 {
   const logo = $("#sit-play img"), adm = (CONTENT.administrations || [])[0];
-  ok("the play's logo heads the Sitting screen", !!logo && !$("#sit-play").hidden &&
-     logo.getAttribute("src") === adm.play.logo, logo ? logo.getAttribute("src") : "none");
+  ok("the play's small logo is on the Sitting screen", !!logo && !$("#sit-play").hidden &&
+     logo.getAttribute("src") === (adm.play.logoSmall || adm.play.logo), logo ? logo.getAttribute("src") : "none");
 }
 
 /* The chamber drew, and drew all 280. Counted by class rather than by
