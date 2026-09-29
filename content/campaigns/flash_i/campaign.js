@@ -85,16 +85,18 @@ She came up to the Winter Garden in 2070, in the Commonwealth's springtime, when
 That could have been the whole of it. A decade of steady hands and unread minutes, a portrait in a corridor, a pension. Instead, in 2076, the Party of Socialists and Democrats asked her to the Treasury from outside the House, which the Charter has never forbidden, and for four years she ran the Commonwealth's money from the other side of the desk. But it's not like every capable leader was evidently destined to do it beforehand.` },
 
         { kind:"body", head:"How she came to it", body:
-`The Party of Socialists and Democrats did not choose her because she was one of them. It chose her because the party was seemingly in between worlds, in constant melancholic turmoil, unsure of what was to come next. And so, dark horse she was, she hammered her way to the leadership election, and then she won it. She took First Spin at the by-election that followed, which is the first elected office she has ever held.
+`Its leader, Nils Vijlbrief, had taken the party into government in 2076 and brought her to the Treasury. When he wanted the stations' upkeep paid for from an overdraft at the Reserve Bank, she refused him in public, and the markets sided with her. With an election due in August and the polls against them, the party's members of Parliament went looking for someone else.
+
+The Party of Socialists and Democrats did not choose her because she was one of them. It chose her because the party was seemingly in between worlds, in constant melancholic turmoil, unsure of what was to come next. And so, dark horse she was, she hammered her way to the leadership election, and then she won it. She took First Spin at the by-election that followed, which is the first elected office she has ever held.
 
 So she is a banker at the head of the party of maintenance labour, which occasionally mitigates the two facts; occasionally it exemplifies it. The members who put her there did it to keep a government.` },
 
         { kind:"body", head:"What she inherits", body:
-`Her government is a coalition of the Party of Socialists and Democrats, the New Progressive Party, and the Congregational Democratic Alliance; with confidence and supply, they lead a somewhat convincing minority government. Although with that, while the New Progressive Party may align with the PSD on many elements of economic policy, the issue of personhood is one that lies in wait, a test for the shaky alliance which sees a personhood restrictionist PSD and CDA (the CDA also being a semi-awkward fit economically for the governing coalition) pitted against a personhood expansionist NPP.
+`Her government is a coalition of the Party of Socialists and Democrats, the New Progressive Party, and the Congregational Democratic Alliance; with confidence and supply from six independents, they lead a somewhat convincing majority government. Although with that, while the New Progressive Party may align with the PSD on many elements of economic policy, the issue of personhood is one that lies in wait, a test for the shaky alliance which sees a personhood restrictionist PSD and CDA (the CDA also being a semi-awkward fit economically for the governing coalition) pitted against a personhood expansionist NPP.
 
 The PSD are in power because of labour and trade unions. Expanding personhood is a natural threat against that, while the CDA agree from a humanist perspective. The New Progressive Party sees otherwise.
 
-She has one session. The one that opens on the eleventh of April is the parliament's fourth and its last, and the House is already sitting.` },
+She has one session before the country votes. The one that opens on the eleventh of April is the parliament's fourth and its last, and the House is already sitting.` },
 
         /* THE ROLE AND THE CAST (design/56), part of the introduction and in
            its style, before the signature, which closes it (the author, 28

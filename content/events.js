@@ -220,13 +220,13 @@ which part of your record you are known for.`,
   choices:[
     { posture:"measured", label:`Because the last government could not run the Commonwealth, and I can.`,
       act:"Say it",
-      note:`You stake your reputation on competence: the promise that the stations will be run well, which most voters want to hear. Kazuya Tanako, who chairs the members elected by life-support engineers, hears a government that respects expertise. The Trades Left hears an old charge, because the last government blamed the stations' breakdowns on its maintenance crews.`,
+      note:`You stake your reputation on competence: the promise that the stations will be run well, which most voters want to hear. Kazuya Tanako, who chairs the members elected by life-support engineers, hears a government that respects expertise. The Trades Left hears an attack on Nils Vijlbrief, the Prime Minister before you, and remembers that you were the Treasurer who refused him the money for the stations' upkeep.`,
       effects:[{flag:"led_on_competence"},
                {move:{public_standing:5}},
                {move:{"loyalty.cu_maintenance":-6}},
                {move:{"rel.gb_chair":6}},
                {wire:"NEW PM PITCHES COMPETENCE; SAYS GOVERNMENT WILL BE 'RUN, NOT ARGUED WITH'"}],
-      result:`Ceyhan writes it down, and The Spindle leads with it the next morning. The Trades Left, whose maintenance crews the last government blamed for the stations' breakdowns, hears itself blamed again.` },
+      result:`Ceyhan writes it down, and The Spindle leads with it the next morning. The Trades Left hears you blame Vijlbrief's government for breakdowns it wanted the money to prevent.` },
 
     { posture:"cautious", label:`Because I stand for what this party has always stood for: public ownership, and the workers who keep the stations running.`,
       act:"Say it",
@@ -254,8 +254,10 @@ which part of your record you are known for.`,
 { id:"briefing_divergence", prologue:3, once:true,
   title:"The bill you inherited",
   speaker:"ceyhan",
-  body:`Your predecessor promised the Divergence Threshold (Amendment) Bill and left
-office before it came to a vote. It is now yours to carry.
+  body:`Nils Vijlbrief, the Prime Minister before you, promised the Divergence
+Threshold (Amendment) Bill to the New Progressive Party when it joined his
+government, and he was replaced before the bill came to a vote. It is now
+yours to carry.
 
 The law decides when a copy of a person becomes a separate person. At
 present the line is 168 hours, one week, of separate running. A copy younger

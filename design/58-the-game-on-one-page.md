@@ -27,6 +27,13 @@ dictating what a campaign is about. The aim may bend during the campaign.
 on a shaky coalition or an emergency cabinet. Survival can be the aim of
 one campaign and only a means in another.
 
+**Decided (29 Sep): a campaign is one Parliament**, about four years from
+one general election to the next. A premier who takes over in a
+Parliament's last year plays its remainder as the prologue, and the
+campaign runs to the end of the next Parliament. It skips time between its
+acts, and the act and interval text carries what it skips. Only the canon
+ending carries forward. See bible §1.8 and design/60.
+
 **Proposed:** each campaign declares four things.
 - **Its aim**, and when it arrives.
 - **Its footing.**
@@ -161,11 +168,14 @@ brief is advice, and Rise leaves it off the count.
 **Decided (29 Sep):** Flash comes in as a competent manager, and does not
 know the Works will define her term. The Works is stranded at sitting 14,
 and the introduction does not mention it, so the aim arrives with the
-stranding. Act I's aim is
-the inherited one: carry the Divergence Threshold Bill and keep the
-coalition. The stranding then gives her premiership its purpose, and
-from then on the NPP's price competes with the Works. This is "set, then
-bent" happening once, by the author's design.
+stranding. Act I's aim is the inherited one: carry the Divergence Threshold
+Bill and keep the coalition. The stranding then gives her premiership its
+purpose, and from then on the NPP's price competes with the Works. This is
+"set, then bent" happening once, by the author's design.
+
+**Decided:** Flash I is 2080–2084. What is built is its prologue, from her
+commission to the August 2080 election. The body is the 2080 Parliament,
+and it is still to be written (bible §1.8, design/60).
 
 ## What every system must answer
 

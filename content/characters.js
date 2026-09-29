@@ -258,6 +258,16 @@ const CHARACTERS = [
     bio:"Dan Czarnecki leads the Hard Left of the Party of Socialists and Democrats, which the press calls the Czarnecki group. He is collecting the signatures of members who want a ballot on the party's leadership, and a ballot is forced when enough have signed.",
     note:"Short of the twelve names that force a leadership ballot, and looking." },
 
+  /* ---- the former Prime Minister (the author, 29 Sep 2026: "a Corbyn
+     type"; bible §11.1 and design/60). He led the PSD into government in
+     2076 and was replaced by his own Treasurer in the spring of 2080. A
+     member of the party, so he is on the leadership paper, and the first
+     name a deposed leader's current would put there. ---- */
+  { id:"vijlbrief", pronouns:"he", name:"Nils Vijlbrief MP", role:"Former Prime Minister; PSD backbencher",
+    party:"cu", current:"cu_halloran", category:"biological", seat:"Hardie Centre", relationship:15, grievance:true,
+    bio:"Nils Vijlbrief led the Party of Socialists and Democrats into government in 2076, in coalition with the New Progressive Party and the Congregational Democratic Alliance, and was Prime Minister until the spring of 2080. He brought Adriana Flash from the Reserve Bank to the Treasury. When he wanted the stations' upkeep paid for from an overdraft at the Reserve Bank, she refused him in public, and the markets sided with her. With an election due, the party's members of Parliament replaced him with her. He sits on the back benches for Hardie Centre, with the Hard Left.",
+    note:"Prime Minister from 2076 to 2080, replaced by his own Treasurer. Sits with the Hard Left." },
+
   /* ---- the panel chair ---- */
   { id:"gb_chair", portrait:"gb_chair.png", name:"Kazuya Tanako MP", role:"Chair, Life Support panel",
     party:"gb", category:"emulation", status:["disembodied"], functional:"fc_lifesupport", relationship:18,

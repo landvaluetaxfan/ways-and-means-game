@@ -135,6 +135,12 @@ A campaign has one canon ending, and the next campaign opens on it (bible
 §1.8). **Flash I's canon is the debt trap** (the author: "a middle ground
 between perfect and failure").
 
+A campaign is one Parliament. Flash I is 2080–2084. What is built is its
+**prologue**: Vijlbrief's last session and the Works, to the August 2080
+election. Its body, the 2080 Parliament, is still to be written. Until it
+is, the canon ending is read at the 2080 count (bible §1.8 and §11.1,
+design/60).
+
 The canon government reaches the count on 13 August 2080, sitting 55, at
 standing 52:
 

@@ -883,8 +883,9 @@ const SETUP = {
      it — test.js now asserts the chain fits, so raise this when you add to
      chapter three rather than discovering it in play. */
   campaignSittings: 12,
-  /* WHICH SESSION THIS IS. Bible §11.1: the campaign opens in Session 4
-     of a parliament about two years old. It was typed into the engine. */
+  /* WHICH SESSION THIS IS. Bible §11.1: the campaign opens in Session 4,
+     the last of the Parliament elected in 2076, and the election at its end
+     is due. It was typed into the engine. */
   session: 4,
   /* HOW LONG A SITTING PERIOD RUNS, in sittings. The House rises at the end
      of each: order-paper time refills, because it is allotted per period.

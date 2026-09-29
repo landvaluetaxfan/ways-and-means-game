@@ -1164,7 +1164,7 @@ const CONSTITUENCIES = [
 
   { id:"hardie_centre", name:"Hardie Centre", station:"slagworks", band:"low",
     magnitude:1, electorate:33601,
-    member:"Leontine Ossory",
+    member:"Nils Vijlbrief",
     held:{cu:1},
     parent:"slagworks",
     material_interest:["consumables_subsidy", "yard_contracts"],

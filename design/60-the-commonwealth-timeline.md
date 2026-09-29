@@ -1,8 +1,12 @@
 # 60 — The Commonwealth's political timeline
 
-**A working map, 29 September 2026, for the author.** It gathers the
-Commonwealth's political history (elections, governments, premierships)
-into one place. Lines are marked **canon** (already fixed, with the
+**Recorded in canon, 29 September 2026.** The timeline, the cycle and the
+campaign rule are now in bible §1.8, §11.1 and §11.2. Vijlbrief is in
+`content/characters.js` and holds Hardie Centre. The introduction and two
+of the opening's pages now name him. This record keeps how it was reached.
+
+It gathers the Commonwealth's political history (elections, governments,
+premierships) into one place. Lines are marked **canon** (already fixed, with the
 source), **decided** (the author, in this conversation) or **proposed**
 (waiting for the author). Once agreed, this moves into bible §11.1 and
 the drafts are removed.
