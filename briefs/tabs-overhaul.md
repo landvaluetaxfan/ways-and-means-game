@@ -4,6 +4,9 @@ Do it first, before `the-brief.md`.
 **Read `design/62-why-the-overhaul.md` first.** It gives the objectives of
 these changes and the reasons behind every design decision they carry out.
 When this brief does not cover a case, decide it by that record's tests.
+**Codex's questions are answered in `design/64-answers-to-codex.md`,**
+and those answers win over this brief where they differ. In particular,
+the whip's narrowing range is deferred (answer 13): the whip stays as it is.
 
 The author: "while I like chamber, it definitely still is really packed, and
 other tabs are under-designed." Every decision is in `design/61-the-tabs.md`,
