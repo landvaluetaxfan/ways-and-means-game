@@ -254,6 +254,53 @@ their own plain voice ("From the Financial Secretary: …"). Below it, in
 plain lines, come the date, the figures, and each remedy with how long it
 takes.
 
+## What the player sees, and how they learn
+
+**Decided (Round C, 29 Sep):**
+- **Readouts are words, with the figures on hover.** Standing, loyalty and
+  the margin read as words (steady, slipping, critical), with the exact
+  figure on hover. Money, seats and dates stay as numbers.
+- **Vote counts are the whips' range.** It narrows as the division nears.
+  It ends either as a precise estimate, which can still be off by a few, or
+  as a range, where members are genuinely undecided. The Chief Whip is an
+  adviser, so the count is sometimes wrong.
+- **The opening teaches by doing.** The first sittings bring in the brief,
+  the House and one lever at a time, in the fiction, as a new Prime
+  Minister's first week would. There is no separate tutorial.
+
+## How the story moves
+
+**Decided (Round D, 29 Sep): anchors, reactions and forks.** "Same spine,
+new weather" shepherds the player, and a fully branching spine loses the
+play's shape, so the story works between them by three rules:
+1. **Fixed anchors.** The premise (the stranding) and the House's calendar
+   (the sessions, the election) are fixed, and they give the play its
+   acts.
+2. **Every other beat is a reaction.** It happens because of a condition
+   the player created, not because of a date. The referendum happens only
+   if it is let go ahead, and the freeze only if Earth's patience runs
+   out.
+3. **One fork an act.** At one point in each act, the story takes a
+   different road depending on what the player did before: the courts,
+   the UN, a tariff standoff with Earth, a retreat. Flash I's settlement
+   families already imply these roads.
+
+Replays then differ in which beats happen, not only in their texture.
+
+**Decided: intervals are read, then a course is set.** An interval tells
+what happened in the skipped time, then asks one or two choices about the
+next stretch (priorities, the budget line) before the House returns.
+
+**Decided: reshuffles happen at act breaks.** The cabinet, and so the
+advice, can be changed at the intervals, like a Prime Minister's summer
+reshuffle. Forced changes (a resignation, a vacancy) happen whenever they
+happen.
+
+**Decided: competence is shown as a reputation.** Each minister carries a
+word (sound, uneven, green) from what the press says about them. The press
+is itself not always right. The misses kept in the record are the
+player's own evidence.
+
 ## A sitting
 
 **Decided (Stage 0):** a sitting runs in this order:
