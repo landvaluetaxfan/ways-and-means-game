@@ -201,6 +201,16 @@ minor to intermediate roles".
   margin, and the cascade is the loss).
 - **Minor:** positions, appointments, inquiries and deals.
 
+**Decided (Round G): in money, the player makes the big calls.** The
+Treasurer runs the routine, such as rolling bills over and ordinary
+drawing. The player decides the calls that a matter or an interval raises:
+a tax, a loan, a sale, the budget line.
+
+**Decided (Round G): abroad is matters and summits.** The foreign minister
+raises matters, and each answer takes time: Earth answers in days, Mars in
+weeks. The big foreign forks are summits: set pieces played as a run of
+choices.
+
 ## Knowing when to act
 
 **Decided:** not "the player reads the gauges" alone.
@@ -323,6 +333,11 @@ Replays then differ in which beats happen, not only in their texture.
 
 Each act has its fork.
 
+**Decided (Round G): an act is a sitting period.** Each act is a run of
+consecutive sitting days, such as the autumn sittings of 2081, and the
+months between acts are skipped. Deadlines counted in sittings and the
+day-by-day economy work inside an act as they do now.
+
 **Decided (Round F): the finale is a short run-in.** The last few sittings
 before dissolution carry the campaign through the brief: the record to run
 on, and where to spend. Then comes the count, as a set piece, and a hung
@@ -348,6 +363,18 @@ happen.
 word (sound, uneven, green) from what the press says about them. The press
 is itself not always right. The misses kept in the record are the
 player's own evidence.
+
+## The screens
+
+**Decided (Round G): the brief comes first, and only the Record folds.**
+The Sitting screen carries the brief, the page, the decision, the levers
+each matter needs, and Rise. The record of what has happened moves into the
+Sitting too, and the Concordance's history carries it secondarily. The
+other tabs stay as they are: Government, Chamber, Economy, Party,
+Relations, Orbit, Foreign Affairs and the Concordance. Chamber is kept
+whole ("I like how chamber looks currently"), and Party and Relations stay
+apart, as the author asked earlier. Because each matter shows its levers,
+the brief does the finding, and the number of tabs matters less.
 
 ## A sitting
 
