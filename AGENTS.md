@@ -135,8 +135,8 @@ A campaign has one canon ending, and the next campaign opens on it (bible
 §1.8). **Flash I's canon is the debt trap** (the author: "a middle ground
 between perfect and failure").
 
-A campaign is one Parliament, opening after a general election and closing
-on the next. Flash I is the Parliament of 2080, to the election of 2084
+A campaign is one Parliament's worth of government, with one election, at
+its end. Flash I is the Parliament of 2080, to the election of 2084
 (bible §1.8 and §11.1, design/58). What is built still has the older
 arrangement: Vijlbrief's last session and the Works, to a count in August
 2080. Until Stage 4 of design/58 rewrites it, the canon ending is read at

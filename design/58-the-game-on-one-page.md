@@ -32,8 +32,13 @@ one general election to the next. It skips time between its acts, and the
 act and interval text carries what it skips. Only the canon ending carries
 forward. See bible §1.8 and design/60.
 
-**Decided (Round E): a campaign opens after a general election and closes
-on the next one.** So a campaign has one election, at its end, and the
+**Decided (Round E, reworded in Round I): a campaign has one election, at
+its end.** It usually opens after the last election. A successor or
+caretaker campaign may open partway through a Parliament, for instance
+when the last campaign's canon ending was a fall. (Round E's wording was
+"a campaign opens after a general election and closes on the next one".
+Codex pointed out that it would rule out a successor campaign, which the
+chaining of canon endings may need.) So a campaign has one election, at its end, and the
 count is its finale. This replaces the prologue rule of design/60: a
 premier who took over late in a Parliament played its remainder as a
 prologue, which put a second election in the middle of the campaign. The
