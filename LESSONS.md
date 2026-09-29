@@ -182,7 +182,29 @@ Sep 2026) and in the design notes cited.
 - **Two predicates and a legend.** A predicate and its negation are not
   always the only two cases. A hidden legend is not an explained one.
 - **There is no asset loading on `file://`.** Put base64 in a `.js` file.
-- **When a panel is merged or renamed**, grep the stylesheet for its id.
+- **When a panel is merged or renamed**, grep the stylesheet for its id, and
+  the `.md` files for its name.
+- **A merge inherits every source's growth.** "What has happened" folds the
+  wire and the record into one feed, and it renders all of `st.wire` and all
+  of `st.log` (`js/ui.js:2920`) on every `drawAll()`. Neither array is
+  capped in the engine, because every write to either is an unshift, and the
+  two panels it replaced were capped at 16 and 40. A campaign is now a whole
+  Parliament long, so cap the merge or memoise it on a length key.
+- **A flag nothing reads becomes a visible bug.** `chapterMark`
+  (`js/engine.js:4873`) marks a chapter break in `st.log` and has never been
+  read. The Record table swallowed it; the merged feed prints it as
+  `Decision. - Chapter 3 -`, which reads as a decision that happened. Wire it
+  up as a group header, or drop the flag.
+- **A folded tab goes stale in the documents too.** `AGENTS.md` kept saying
+  ten tabs and kept listing Record, in the same commit that folded it, and
+  `bible.md` §12.4 "Screens — LOCKED" still enumerates ten including Record.
+  LOCKED is the author's to reissue; nothing else waits on it.
+- **Moving a panel carries its affordances with it.** The Record panel's
+  playtest transcript had a note saying what the textarea was for, a Select
+  all button, and a `try/catch` on the Blob download. The Options popover
+  kept the textarea and the button and lost the rest. The move was asked for
+  (design/64, answer 15); the guidance was not, and a tester is what it is
+  for.
 
 ## CSS and layout (run `npm run layout`)
 
