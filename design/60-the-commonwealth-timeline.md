@@ -31,9 +31,19 @@ that ends her first full term.
   UK and Australian convention, a new one after each election won. So the
   Concordance can say "the first Flash ministry (April–August 2080)" and
   "the second (from August 2080)", while the campaign stays Flash I.
-- **The general rule** becomes: a campaign is a premier's term, from taking
-  office to the election that ends it. Only the canon ending carries into
-  the next campaign.
+- **The general rule: a campaign is one Parliament**, about four years from
+  one general election to the next. The unit is the Parliament, not the
+  premiership, so a premier who lasts eight or twelve years has two or
+  three campaigns (the author, 29 Sep: "a premier's term" would let one
+  campaign hold four years and another twelve).
+  - **A premier who takes over in the last year of a Parliament** plays
+    its remainder as the prologue, and the campaign runs on through that
+    election to the end of the next Parliament. Flash I is that case: the
+    prologue is April to August 2080, and the body is 2080 to 2084.
+  - **A premier who takes over earlier** plays the rest of that Parliament
+    as the campaign.
+
+  Only the canon ending carries into the next campaign.
 
 **What part two needs**, noted now and built later:
 - **After the count, a government forms and play goes on.** design/37 D4
