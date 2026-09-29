@@ -28,11 +28,17 @@ on a shaky coalition or an emergency cabinet. Survival can be the aim of
 one campaign and only a means in another.
 
 **Decided (29 Sep): a campaign is one Parliament**, about four years from
-one general election to the next. A premier who takes over in a
-Parliament's last year plays its remainder as the prologue, and the
-campaign runs to the end of the next Parliament. It skips time between its
-acts, and the act and interval text carries what it skips. Only the canon
-ending carries forward. See bible §1.8 and design/60.
+one general election to the next. It skips time between its acts, and the
+act and interval text carries what it skips. Only the canon ending carries
+forward. See bible §1.8 and design/60.
+
+**Decided (Round E): a campaign opens after a general election and closes
+on the next one.** So a campaign has one election, at its end, and the
+count is its finale. This replaces the prologue rule of design/60: a
+premier who took over late in a Parliament played its remainder as a
+prologue, which put a second election in the middle of the campaign. The
+author did not want an election early or midway, and found two in one
+campaign confusing.
 
 **Proposed:** each campaign declares four things.
 - **Its aim**, and when it arrives.
@@ -58,6 +64,10 @@ canon ending is one of the middle endings.
 is scored on screen during play. Both are read out at the curtain call.
 The aim's situation still shows in the story and in the brief, because
 that is what gives the player a reason to act. Only the verdict waits.
+
+**Decided (Round E): saves are free.** The player may keep any number of
+slots and go back, as now. The grid of endings rewards a second play
+anyway.
 
 **Decided: what you achieved.** It is measured as:
 - **the core goal**: for Flash I, the Works. Its fate is its people's
@@ -116,7 +126,14 @@ for each cause of a fall:
 - a lost confidence vote: the House turning;
 - the leadership ballot: the party turning;
 - a thermal cascade: people dying;
-- supply refused.
+- supply refused;
+- a lost general election: the country turning.
+
+**Decided (Round E): at a count, a clear defeat is an ending and a hung
+House is played.** If the government's side is beaten outright, the
+campaign ends there, with the fall page and then the grid. If no side
+holds a majority, the player bargains for a government in the core's own
+terms: promises, order-paper time, concessions and posts.
 
 The grid ending is then read from where the government stopped, usually
 "unresolved". So the cause does not multiply the grid.
@@ -130,6 +147,11 @@ means.
 player. That is about 55 sittings at five minutes each, which leaves room
 in every sitting for the page, the decision and something the player
 chooses to do.
+
+**Decided (Round E): the length holds across the four years.** The built
+game (April to August 2080) already fills about 55 sittings. It is
+shortened to the campaign's opening acts, about 20 to 25 sittings, and the
+rest of the Parliament takes about 30, in acts that skip time.
 
 ## What the player does
 
@@ -241,6 +263,12 @@ came in May").
 leaves the brief and keeps its own clock. If nothing is done, it comes
 back as the sitting's decision.
 
+**Decided (Round E): levers are open, matter first.** Each matter in the
+brief shows the levers that answer it, so the player meets a lever where
+it is needed. The full set stays on its tab for a player acting on their
+own reading. Pure gating would shepherd the player, and pure openness is
+the "buttons that do things" this page began from.
+
 **Decided (Stage 0, 29 Sep): the volume.**
 - **Up to four matters open at once.** Four is a ceiling, not a target:
   one or two in a quiet week, more when things press.
@@ -324,9 +352,27 @@ Bill and keep the coalition. The stranding then gives her premiership its
 purpose, and from then on the NPP's price competes with the Works. This is
 "set, then bent" happening once, by the author's design.
 
-**Decided:** Flash I is 2080–2084. What is built is its prologue, from her
-commission to the August 2080 election. The body is the 2080 Parliament,
-and it is still to be written (bible §1.8, design/60).
+**Decided (Round E): Flash I is the Parliament of 2080, and its one
+election is in 2084.** The details below were chosen by Claude and are the
+author's to change:
+- The country voted in March 2080, and no party won a majority. The PSD,
+  under Vijlbrief, came back the largest party with fewer seats. Flash,
+  his Treasurer from outside the House, won First Spin at the same
+  election.
+- The NPP and the CDA would not renew the coalition under the man who had
+  wanted the overdraft. The six independents would give confidence and
+  supply only to a government led by the Treasurer who had refused him.
+  The PSD's members replaced him with Flash to get the deal: "the members
+  who put her there did it to keep a government".
+- She is commissioned on 11 April 2080, the day the new Parliament's first
+  session opens. Her government is born of a bargain, and the NPP's price
+  is still the Divergence bill.
+- The campaign ends at the general election of 2084, and the canon ending
+  is read at that count.
+
+**As built,** the game still has the older arrangement: the last session
+of the 2076 Parliament, a by-election for First Spin, and a count in
+August 2080. Stage 4 rewrites it (bible §1.8).
 
 ## What every system must answer
 
