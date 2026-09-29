@@ -62,8 +62,25 @@ that is what gives the player a reason to act. Only the verdict waits.
 **Decided: what you achieved.** It is measured as:
 - **the core goal**: for Flash I, the Works. Its fate is its people's
   fate, so the two are one measure;
-- **supporting goals**: the Divergence bill, and the other issues around
-  the core.
+- **supporting goals**: the Divergence bill, and any issue that stands
+  apart from the core. The quarrel with Earth and the Commonwealth's books
+  are not separate goals: they are part of the Works. The author: "it
+  shows that everything is sort of intertwined anyways, so it's redundant
+  to note that."
+
+**Decided: story content is chosen by the campaign.** A world event or
+initiative reaches a campaign only if that campaign tags it. Systems
+(parties, stations, the economy) stay shared. In Stage 4, every world
+event gets one test against Flash I's page: keep and tag it, adapt it
+where it carries placeholder wording, or leave it for a later campaign.
+The six initiatives nothing prompted all stay, each tagged to Flash I and
+each a remedy a named minister raises:
+- approach the Life Support panel, formerly the "Guild Bench" (Devi);
+- state the position (Trottier);
+- commission the review (Girard or Vidyasagar);
+- sell the quota forward (Skye);
+- charter volume to Homestead (Skye);
+- lean on the Governor (Skye).
 
 **Decided: how you are remembered.** It is the legacy, all of it combined:
 - the public mind in the Commonwealth;
