@@ -54,8 +54,28 @@ Whether you lasted, and what it cost the country, count only through
 those two. A fall cuts both short, which is why it reads as a loss. The
 canon ending is one of the middle endings.
 
-**Proposed:** both measures stay in view the whole campaign. The aim is
-shown as a standing line of where it stands, and the record accumulates.
+**Decided (Stage 0): the grade is revealed at the end.** Neither measure
+is scored on screen during play. Both are read out at the curtain call.
+The aim's situation still shows in the story and in the brief, because
+that is what gives the player a reason to act. Only the verdict waits.
+
+**Decided: what you achieved.** It is measured as:
+- **the core goal**: for Flash I, the Works. Its fate is its people's
+  fate, so the two are one measure;
+- **supporting goals**: the Divergence bill, and the other issues around
+  the core.
+
+**Decided: how you are remembered.** It is the legacy, all of it combined:
+- the public mind in the Commonwealth;
+- opinion across the world;
+- the encyclopedia's pages;
+- how academics and historians come to assess the government.
+
+At the curtain call it is revealed in-world: the Concordance's article on
+the government, a historian's assessment, and the world's press. It is
+built from the record (promises kept and broken, legitimacy, the
+chronicle), standing over the term, and the world's regard.
+
 The meters (standing, loyalty, the margin) are means, and are drawn as
 means.
 
@@ -151,15 +171,29 @@ skill must lie in choosing among it. Three things make that a choice:
 
    This makes appointments matter without making them a core verb.
 
-**Proposed volume:** at most one or two new matters a sitting, and three
-open at once. A matter stays open until it is dealt with, or until it
-turns into the decision. The numbers are to be tuned by the playtest.
+**Decided (Stage 0, 29 Sep): the volume.**
+- **Up to four matters open at once.** Four is a ceiling, not a target:
+  one or two in a quiet week, more when things press.
+- **At most one new matter a sitting.**
+- **When a fifth wants in, the least urgent waits.** It may reach the
+  player later as the sitting's decision instead, which is the cost of a
+  crowded brief.
+
+**Decided: the voice.** A matter is a short note from the minister, in
+their own plain voice ("From the Financial Secretary: …"). Below it, in
+plain lines, come the date, the figures, and each remedy with how long it
+takes.
 
 ## A sitting
 
-**Proposed:** the brief, then the page and the decision, then what the
-player chooses to do, then Rise. Rise counts only what is owed. The
-brief is advice, and Rise leaves it off the count.
+**Decided (Stage 0):** a sitting runs in this order:
+1. the brief;
+2. the page and the decision;
+3. whatever the player chooses to do;
+4. Rise.
+
+Rise counts only what is owed. The brief is advice, and Rise leaves it off
+the count.
 
 ## Flash I on this page
 
