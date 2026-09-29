@@ -61,10 +61,12 @@ campaign("flash_i", { administrations: [
          `state` is the state readout, so it was never going to play.
          `anthem` names a recorded track in content/anthem.js: while the
          introduction is up it plays and the bed steps aside, and leaving it
-         fades the recording out and the bed back in. `mood` is the fallback
+         fades the recording out and the bed back in. The track carries its
+         own `start` and `fade`, so it opens at the 52nd second and arrives
+         over four seconds rather than from the top. `mood` is the fallback
          for a build where the recording is not encoded yet. */
       mood:"moment",
-      anthem:"la_bionda",
+      anthem:"ready_to_fly",
       title:"Adriana Eireann Flash",
       art:"flash_intro",
       sections:[
