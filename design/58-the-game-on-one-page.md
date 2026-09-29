@@ -93,6 +93,34 @@ the government, a historian's assessment, and the world's press. It is
 built from the record (promises kept and broken, legitimacy, the
 chronicle), standing over the term, and the world's regard.
 
+**Decided (Round A): a grid of endings.** Each pairing of what you
+achieved and how you are remembered has its own written ending.
+
+**Decided (Round B, size chosen by Claude at the author's request): four
+outcomes by three legacies, twelve endings a campaign.** The legacies are
+remembered well, mixed and badly. For Flash I, the six settlement
+families group into four outcomes:
+
+| outcome | settlement families |
+|---|---|
+| saved, on the Commonwealth's terms | full annexation (f1_triumph), the maritime charter (f1_maritime) |
+| saved, at a price | the debt trap (f1_pyrrhic, the canon), the joint mandate (f1_joint) |
+| given up | corporate re-entry (f1_capitulation) |
+| unresolved | unfinished business (f1_open), or a fall before anything was settled |
+
+Four outcomes are what a player recognises, three legacies are what a
+reader can tell apart, and twelve endings can be written well.
+
+**Decided: a fall gets its own page, then the grid.** A page is written
+for each cause of a fall:
+- a lost confidence vote: the House turning;
+- the leadership ballot: the party turning;
+- a thermal cascade: people dying;
+- supply refused.
+
+The grid ending is then read from where the government stopped, usually
+"unresolved". So the cause does not multiply the grid.
+
 The meters (standing, loyalty, the margin) are means, and are drawn as
 means.
 
@@ -114,6 +142,21 @@ the House:
 
 Bargaining is therefore not a separate verb. It is what the House costs,
 and without it House business is only scheduling.
+
+**Decided (Round B): the prices a vote can be bought with.** A mix of
+four:
+- **promises**: undertakings with a date;
+- **order-paper time** for a partner's bill;
+- **concessions** in the bill itself, such as a clause, the sunset or the
+  hours;
+- **posts**, and these are rare. A cabinet seat for a partner also changes
+  who advises the Prime Minister.
+
+**Decided: difficulty.** Most first-time players reach the count, and a
+good ending takes skill or a second play, as in The Campaign Trail. As a
+playtest proxy, a strategy that does what the brief says should reach the
+count in most seeds. Today the strategies that obey the docket lose 21 to
+33 runs of 80, so they are harder than this target.
 
 **Decided: everything else is a theatre, turned up or down by the
 campaign.** The theatres are:
@@ -187,6 +230,16 @@ skill must lie in choosing among it. Three things make that a choice:
    - A capable minister sees trouble sooner.
 
    This makes appointments matter without making them a core verb.
+
+**Decided (Round A): advisers are sometimes wrong.** A forecast can miss,
+and the minister's competence decides how often. Trusting the wrong
+adviser costs the player. This only teaches if a miss can be seen, so
+when a forecast misses, the record says so ("the Treasury said June; it
+came in May").
+
+**Decided: a matter can be set aside, but it runs on.** Marked noted, it
+leaves the brief and keeps its own clock. If nothing is done, it comes
+back as the sitting's decision.
 
 **Decided (Stage 0, 29 Sep): the volume.**
 - **Up to four matters open at once.** Four is a ceiling, not a target:
