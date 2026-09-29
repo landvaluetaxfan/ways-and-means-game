@@ -2043,7 +2043,7 @@ twice.`,
       note:`The correspondence settles into one note every three weeks each way, the time Chryse and Nili need to agree a reply. Relations with Mars improve a little, and a steady exchange eases the quarrel with Earth slightly.`,
       effects:[{ move:{ "actor.mars":2 } }, { move:{ "friction":-2 } },
                { wire:`PM ANSWERS MARS; THE CORRESPONDENCE CONTINUES AT ONE EXCHANGE EVERY THREE WEEKS` }],
-      result:`The correspondence settles into one note every three weeks each way, the time the two governments need to agree a reply. The quarrel with Earth eases slightly.` }
+      result:`The correspondence settles into one note every three weeks each way, the time Chryse and Nili need to agree a reply. The quarrel with Earth eases slightly.` }
   ]},
 
 /* THE CONCESSION CAN BE WITHDRAWN (design/17 §4.3). `fa_anchor_terms` is the
