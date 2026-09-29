@@ -45,6 +45,17 @@ $('[data-admin]').click();
 ok("slot list appears", w.document.querySelectorAll(".slot").length === 4);
 $('[data-new="1"]').click();
 ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.contains("on"));
+ok("Government has a Prime Minister card then one card per cabinet post in content order",
+   [...w.document.querySelectorAll("#gov-cabinet .gov-card")].map(n => n.dataset.post).join(",") ===
+   [""].concat(CONTENT.cabinet.map(p => p.id)).join(","));
+ok("each order appears under its authoring department",
+   CONTENT.instruments.filter(i => {
+     const s = w.eval("UI.state()");
+     return ((s.cabinet[i.author] || {}).holder &&
+       (!i.when || w.eval("Engine.matches(UI.state(), UI.content().instrumentById[" + JSON.stringify(i.id) + "].when)"))) ||
+       (s.instruments[i.id] || {}).made;
+   }).every(i => !!w.document.querySelector(
+     '#gov-cabinet .gov-card[data-post="' + i.author + '"] [data-si="' + i.id + '"]')));
 ok("slot is named in the topbar", /Test ministry/.test($("#tb-slot").textContent),
    JSON.stringify($("#tb-slot").textContent));
 /* THE HOUSE'S THREE PRICES SIT TOGETHER. The order is part of the design:
@@ -759,12 +770,12 @@ try {
    reason on hover. A row with neither is a minister the player can only
    wonder about. */
 try {
-  const rows = [].slice.call(w.document.querySelectorAll("#gov-cabinet tr"))
-    .filter(r => !r.classList.contains("vacant"));
+   const rows = [].slice.call(w.document.querySelectorAll("#gov-cabinet .gov-card"))
+     .filter(r => !r.querySelector('.flag.bad[data-tip="vacant"]'));
   const silent = rows.filter(r => {
     const x = r.querySelector("[data-sack], .flag.nosack");
     return !x || !x.getAttribute("data-tip-body");
-  }).map(r => (r.querySelector("td") || {}).textContent);
+   }).map(r => (r.querySelector("h3") || {}).textContent);
   ok("every minister's row says whether they can be dismissed, and why",
      rows.length > 1 && silent.length === 0, silent.join(", ") || rows.length + " rows");
   const tags = [].slice.call(w.document.querySelectorAll("#gov-cabinet .flag.nosack")).map(n => n.textContent);
@@ -1205,7 +1216,7 @@ try {
   w.eval("UI.boot(UI.state(), CONTENT)");
   w.document.querySelector('.tab[data-t="gov"]').click();
 
-  const rows = [...w.document.querySelectorAll("#pp-list tbody tr")];
+   const rows = [...w.document.querySelectorAll("#pp-list tbody tr")];
   const act = rows.find(r => /Ratification Act/.test(r.textContent));
   ok("the assented act is in the register", !!act, rows.length + " register rows");
   if (act) {
@@ -1233,7 +1244,21 @@ try {
       ok("the terminal state is a branch, marked in force",
          !!term && term.classList.contains("good") && /in force/i.test(term.textContent),
          term ? term.textContent.trim() : "no terminal");
-    }
+   }
+   const order = CONTENT.instruments.find(i => (stt.cabinet[i.author] || {}).holder);
+   if (order) {
+     stt.instruments[order.id].made = true;
+     stt.instruments[order.id].inForce = true;
+     w.eval("UI.boot(UI.state(), CONTENT)");
+     const read = w.document.querySelector('#gov-si [data-read="' + order.id + '"]');
+     if (read) read.click();
+     const overlay = w.document.querySelector("#gov-docs");
+     const opened = !!read && !overlay.hidden &&
+       w.document.querySelector("#pp-doc").textContent.includes(order.number);
+     if (opened) w.document.querySelector("#gov-doc-close").click();
+     ok("an instrument opens its document overlay and Close dismisses it",
+        opened && overlay.hidden);
+   }
   }
   /* the letterhead must not leak an HTML entity as text */
   const doc = w.document.querySelector("#pp-doc, .paper");

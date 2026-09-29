@@ -4344,6 +4344,17 @@ console.log("\nINITIATIVE:");
 
   const st = Engine.newGame(CONTENT);
   const before = st.slots.total - st.slots.used;
+  {
+    const post = CONTENT.cabinet[0].id;
+    const i = Object.assign({}, INI[0], { post, when: null, cost: 0 });
+    const local = Object.assign({}, CONTENT, { initiatives: [i] });
+    const vacant = Engine.newGame(local);
+    vacant.cabinet[post].holder = null;
+    const offer = Engine.initiatives(vacant, local)[0];
+    ok("a vacant department cannot start its initiative",
+       !offer.ok && /vacant/.test(offer.reason || "") &&
+       !Engine.take(vacant, local, i.id, 0).ok);
+  }
 
   /* IT COSTS THE SAME TIME A BILL WANTS. That is what makes it a choice
      rather than a free button, and it is what finally makes 7.7 true. */

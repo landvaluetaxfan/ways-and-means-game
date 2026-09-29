@@ -7943,6 +7943,8 @@ const Engine = (function () {
          time, such as paying a debt. `i.cost || 1` read it as one. */
       const base = i.cost == null ? 1 : i.cost;
       const why = already ? "already in hand"
+        : i.post && (!st.cabinet[i.post] || !st.cabinet[i.post].holder)
+          ? "the post of " + i.post.replace(/_/g, " ") + " is vacant"
         : !matches(st, i.when) ? "not open to you"
         : base > left ? "no order-paper time left this sitting period"
         : null;

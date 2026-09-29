@@ -243,6 +243,9 @@ const SCHEMA = {
      answers for, and it is what decides which minister speaks when a
      choice touches their department — see cabinetView() in js/ui.js. */
   briefSubjects: ["scalars", "laws", "prices", "stationFields"],
+  /* Initiatives may name the cabinet post that can start them. An unassigned
+     one belongs to the Prime Minister until the author assigns it. */
+  initiativePost: { label: "Department", src: "posts", optional: true },
 
   vocab: {
     /* A CHOICE'S POSTURE (design/40 E7): how far it goes, not how much it

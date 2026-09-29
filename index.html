@@ -88,61 +88,22 @@
          having one. -->
     <section class="screen" id="s-gov">
       <div class="grid g-gov">
-
-        <div class="stack scrolls">
-          <div class="panel">
-            <h2><span data-tip="instrument">Instruments</span> <em>signed, not voted</em></h2>
-            <div class="pbody flush scrolls">
-              <table id="gov-si"></table>
-              <div class="pbody scrolls"><div class="note">A bill needs a majority and cannot be undone.
-                An order can be revoked. A negative order is in force the moment it is signed
-                and stands unless the House prays against it inside the window; an affirmative
-                one does nothing until the House approves it.</div></div>
-            </div>
-          </div>
-          <div class="panel">
-            <h2><span data-tip="register">Register</span> <em>acts, orders and minutes</em></h2>
-            <div class="pbody flush scrolls">
-              <table id="pp-list"></table>
-            </div>
+        <div class="stack scrolls" id="gov-main">
+          <div class="panel"><h2>Departments <em id="gov-init-hdr"></em></h2>
+            <div class="pbody scrolls" id="gov-init"><div id="gov-si"><div id="gov-cabinet"></div></div></div>
           </div>
         </div>
 
-        <!-- THE DOCUMENT ITSELF, at the width a document wants. -->
-        <div class="stack" id="gov-docs">
-          <div class="panel">
-            <h2>Document</h2>
-            <div class="pbody flush scrolls" id="pp-doc"></div>
-          </div>
-        </div>
-
-        <div class="stack scrolls">
-          <div class="panel">
-            <h2>What the government can do <em id="gov-init-hdr">order-paper time</em></h2>
-            <div class="pbody scrolls" id="gov-init"></div>
-          </div>
+        <div class="stack scrolls" id="gov-side">
+          <div class="panel"><h2><span data-tip="register">Register</span> <em>acts, orders and minutes</em></h2>
+            <div class="pbody flush scrolls"><table id="pp-list"></table></div></div>
           <div class="panel">
             <h2>Undertakings <em>what the government has said it will do</em></h2>
             <div class="pbody scrolls" id="gov-owed"></div>
           </div>
-        </div>
-
-        <div class="stack scrolls">
-          <!-- THE LEDGER MOVED ONE RIGHT, and the standing indicators left
-               the tab entirely: they are already on the Sitting screen, and
-               the same meters twice is one readout that can disagree with
-               itself. The panel on the sitting page is the one. -->
-          <!-- THE COALITION LEDGER IS GONE FROM HERE. It drew
-               partner/ledger/loyalty, which the Party tab now draws for all
-               twelve parties grouped by their relation to the government, with
-               what each bench can be moved on beside it. A per-partner credit
-               account is interparty affairs, and this tab is the executive:
-               the act, the text, the power and the people. The sign convention
-               it explained moved with it. -->
-          <div class="panel">
-            <h2><span data-tip="vacant">Cabinet</span></h2>
-            <div class="pbody flush scrolls"><div class="pbody scrolls" id="gov-appoint" hidden></div>
-              <table id="gov-cabinet"></table></div>
+          <div class="panel" id="gov-appoint-panel">
+            <h2><span data-tip="vacant">Appointments</span></h2>
+            <div class="pbody scrolls" id="gov-appoint" hidden></div>
           </div>
           <!-- WHO CAN STOP YOU, AND USUALLY DOES NOT. Both of these are
                quiet for most of a run — the Tribunal has nothing before it
@@ -159,6 +120,11 @@
             <summary><span data-tip="live">Presidency</span> <em>assent and refusal</em></summary>
             <div class="pbody scrolls" id="gov-pres"></div>
           </details>
+        </div>
+
+        <div id="gov-docs" class="doc-overlay" role="dialog" aria-modal="true" aria-label="Document" hidden>
+          <div class="panel"><h2>Document <button class="btn" id="gov-doc-close">Close</button></h2>
+            <div class="pbody flush scrolls" id="pp-doc"></div></div>
         </div>
 
       </div>

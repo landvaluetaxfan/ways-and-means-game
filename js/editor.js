@@ -1194,7 +1194,9 @@ const Editor = (function () {
     return `<div class="ed-grid">
       <label>Id ${txt_("id", it.id, "", 170)}<button class="btn ed-add" data-act="rename">rename…</button></label>
       <label class="ed-w">Title ${txt_("title", it.title, "", 320)}</label>
-      <label>Cost ${num_("cost", it.cost == null ? "" : it.cost)} <span class="ed-hint">order-paper slots</span></label>
+       <label>Cost ${num_("cost", it.cost == null ? "" : it.cost)} <span class="ed-hint">order-paper slots</span></label>
+       <label>${SCHEMA.initiativePost.label} ${opt_("post", vocab(SCHEMA.initiativePost.src), it.post,
+         "Prime Minister (unassigned)")}</label>
       ${campField(it)}
       <label class="ed-w">Answered by <select class="ed-f" data-f="event">${
         (known ? "" : `<option value="${esc(it.event)}" selected>${esc(it.event)} (not in this list)</option>`) +
@@ -1229,7 +1231,8 @@ const Editor = (function () {
   function readInitiative(orig) {
     const it = clone(orig || {});
     it.id = g_("id").value.trim(); it.title = g_("title").value;
-    putNum(it, "cost", g_("cost").value);
+     putNum(it, "cost", g_("cost").value);
+     const post = g_("post").value; if (post) it.post = post; else delete it.post;
     readCampaign(it);
     const ev = g_("event").value; if (ev) it.event = ev; else delete it.event;
     putText(it, "note", g_("note").value);
@@ -2576,6 +2579,10 @@ const Editor = (function () {
     });
     (M.instruments || []).forEach(x => {
       if (!POSTS.has(x.author)) P.push(["err", "instrument " + x.id + ": made by no post '" + x.author + "'"]);
+    });
+    (M.initiatives || []).forEach(x => {
+      if (x.post && !POSTS.has(x.post)) P.push(["err", "initiative " + x.id + ": names no post '" + x.post + "'"]);
+      if (!x.post) P.push(["warn", "initiative " + x.id + ": unassigned to a post; shown under the Prime Minister"]);
     });
     const siGates = [];
     [M.events, M.initiatives, M.instruments, M.settlements].forEach(arr => (arr || []).forEach(o => {

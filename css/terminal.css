@@ -199,15 +199,9 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 
 /* ---------- panels ---------- */
 .grid{display:grid;gap:5px;}
-/* The middle was 1.3fr to hold the order paper and the bill open on it.
-   Those are the legislature's and live on the Chamber tab now, so the
-   three columns are even again: the ministry, its business, its state. */
-/* FOUR COLUMNS. The middle column held five panels and ran to twice the width
-   of either side, so the Presidency and the Foreign readouts sat in a band a
-   thousand pixels wide with two words on each line. Splitting it gives the
-   government four columns of roughly equal width at a 1440 window: what it can
-   do, who it is dealing with, what it has promised, and how it stands. */
-.g-gov{grid-template-columns:minmax(300px,380px) minmax(0,1fr) minmax(230px,300px) minmax(260px,320px);}
+/* Departments use the wide working column; the register, undertakings and
+   checks on executive power stay in the narrow reference column. */
+.g-gov{grid-template-columns:minmax(0,1fr) minmax(240px,300px);}
 /* THE SCREEN TAKES THE VIEWPORT, as the Chamber and the orbit do. This came
    over from the Papers tab when Papers was folded in: the register used to
    carry an inline max-height in the markup to stop its column running away,
@@ -220,6 +214,19 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    paper inside it is the scroller. */
 #gov-docs{min-height:0;}
 #gov-docs > .panel{flex:1 1 auto;min-height:0;}
+#gov-cabinet{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
+.gov-card{min-width:0;border:1px solid var(--chrome-dk);background:var(--field);padding:6px;}
+.gov-card h3{margin:-6px -6px 5px;padding:3px 6px;background:var(--bar);color:var(--bar-txt);
+  font-size:11px;letter-spacing:.08em;text-transform:uppercase;}
+.gov-card h4{margin:8px 0 3px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);}
+.gov-card-people{min-height:26px;font-size:11px;}
+.gov-card-people .note{display:inline;}
+.gov-card table{width:100%;}
+.gov-card-future{min-height:8px;}
+.doc-overlay:not([hidden]){position:fixed;z-index:40;inset:6vh 8vw;background:rgba(0,0,0,.65);
+  display:flex;padding:12px;box-shadow:0 0 0 100vmax rgba(0,0,0,.5);}
+.doc-overlay > .panel{width:100%;height:100%;min-height:0;}
+@media(max-width:1100px){#gov-cabinet{grid-template-columns:1fr;}}
 /* THE WORLD. The globe takes what is left; the reference column is a window the
    width of the orbit screen's, because it holds the same sort of thing: who a
    power is, and what it wants.

@@ -31,7 +31,16 @@ const Papers = (function () {
   Focus.region("pp-list", {
     rows: "tr[data-doc]",
     key: tr => tr.dataset.doc,
-    activate: () => render(st, C)
+    activate: () => {
+      render(st, C);
+      const overlay = document.getElementById("gov-docs");
+      if (overlay) {
+        overlay.dataset.returnId = "";
+        overlay.hidden = false;
+        const close = document.getElementById("gov-doc-close");
+        if (close) setTimeout(() => close.focus(), 0);
+      }
+    }
   });
   /* THE BENCH (design/30). An actor, so no new state shape and no new verb:
      its standing is its disposition toward the government, moved by whether
@@ -350,7 +359,11 @@ const Papers = (function () {
       : `<tr><td class="note">The register is empty. Divisions and instruments appear here.</td></tr>`;
 
     document.getElementById("pp-list").querySelectorAll("[data-doc]").forEach(n =>
-      n.addEventListener("click", () => Focus.activate("pp-list", n.dataset.doc)));
+      n.addEventListener("click", () => {
+        Focus.activate("pp-list", n.dataset.doc);
+        const close = document.getElementById("gov-doc-close");
+        if (close) close.focus();
+      }));
 
     /* THE BENCH (design/30). The orders are judged here, so the bench sits
        beside them: its disposition toward the government, the cases before it

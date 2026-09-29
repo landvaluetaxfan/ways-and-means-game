@@ -2393,7 +2393,14 @@ const UI = (function () {
   }
 
   function drawGovernment() {
-    drawInitiatives();
+    const card = (id, name) => `<div class="gov-card" data-post="${id}">` +
+      `<h3>${esc(name)}</h3><div class="gov-card-people"></div>` +
+      `<div class="gov-card-work"><h4>Instruments</h4><table data-si-post="${id}"></table>` +
+      `<h4>Initiatives</h4>` +
+      `<div class="gov-card-ini" data-ini-post="${id}"></div></div>` +
+      `<div class="gov-card-future" aria-hidden="true"></div></div>`;
+    $("#gov-cabinet").innerHTML = card("", "Prime Minister") +
+      (C.cabinet || []).map(p => card(p.id, p.name)).join("");
     const conf = Engine.confidence(st), maj = Engine.majority(st);
     const tot = Engine.chamberTotal(st);
 
@@ -2547,7 +2554,9 @@ const UI = (function () {
       b.addEventListener("click", () => openTarget(b)));
 
     /* ---- instruments: the fast, deniable tool ---- */
-    $("#gov-si").innerHTML = (C.instruments || []).map(si => {
+    const siRows = (C.instruments || []).filter(si =>
+      ((st.cabinet[si.author] || {}).holder && (!si.when || Engine.matches(st, si.when))) ||
+      (st.instruments[si.id] || {}).made).map(si => {
       const s = st.instruments[si.id];
       const chk = Engine.canMake(st, C, si.id);
       const window = s.inForce && s.prayerCloses != null ? (s.prayerCloses - st.sitting) : null;
@@ -2594,15 +2603,16 @@ const UI = (function () {
                        { slots: 1 }, ac.ok ? null : ac.reason) + `>Approve</button>`;
           })() : ""}
           ${s.inForce && window > 0 ? `<button class="btn sibtn" data-pray="${si.id}">Pray</button>` : ""}
-          ${s.inForce && si.revocable ? `<button class="btn sibtn" data-revoke="${si.id}">Revoke</button>` : ""}</td>
+           ${s.inForce && si.revocable ? `<button class="btn sibtn" data-revoke="${si.id}">Revoke</button>` : ""}` +
+           `${s.made ? `<button class="btn sibtn" data-read="${si.id}">Read</button>` : ""}</td>
       </tr>`;
-      if (!open) return row;
+      if (!open) return { post: si.author, html: row };
       /* WHAT THE ORDER DOES, and what it does to the benches. `summary` and
          `effect_note` have been in the data since the ladder was written and
          no surface ever read them — the row carries a title, a number and a
          status and nothing else. This is the surface: the row opens onto its
          own description, the way a seat and a functional constituency do. */
-      return row + `<tr class="si-d"><td colspan="3">
+      return { post: si.author, html: row + `<tr class="si-d"><td colspan="3">
         <p>${esc(si.summary || "")}</p>
         ${si.effect_note ? `<p class="note">${esc(si.effect_note)}</p>` : ""}
         <p class="note">${si.procedure === "affirmative"
@@ -2610,8 +2620,12 @@ const UI = (function () {
           : "Negative: in force on being made, and prayable against for " +
             (si.prayer_window || 6) + " sittings."}${si.revocable
           ? " It may be revoked by a further order." : ""}</p>
-      </td></tr>`;
-    }).join("");
+      </td></tr>` };
+    });
+    siRows.forEach(({ post, html }) => {
+      const table = $("#gov-si").querySelector('[data-si-post="' + post + '"]');
+      if (table) table.insertAdjacentHTML("beforeend", html);
+    });
     /* A row opens onto its own description. The Make and Pray controls live
        inside the row, so a click on one must not also toggle the detail. */
     $("#gov-si").querySelectorAll("tr[data-si]").forEach(tr =>
@@ -2620,6 +2634,23 @@ const UI = (function () {
         siOpen = siOpen === tr.dataset.si ? null : tr.dataset.si;
         drawGovernment();
       }));
+    $("#gov-si").querySelectorAll("[data-read]").forEach(btn =>
+      btn.addEventListener("click", e => {
+        e.stopPropagation();
+        Focus.activate("pp-list", btn.dataset.read);
+        $("#gov-docs").dataset.returnId = btn.dataset.read;
+        $("#gov-docs").hidden = false;
+        $("#gov-doc-close").focus();
+      }));
+    const closeDoc = () => {
+      const id = $("#gov-docs").dataset.returnId;
+      $("#gov-docs").hidden = true;
+      const origin = id ? $("#gov-si").querySelector('[data-read="' + id + '"]')
+                        : $("#pp-list tr.sel");
+      if (origin) origin.focus();
+    };
+    $("#gov-doc-close").onclick = closeDoc;
+    $("#gov-docs").onkeydown = e => { if (e.key === "Escape") { e.preventDefault(); closeDoc(); } };
     $("#gov-si").querySelectorAll("[data-make]").forEach(b => b.addEventListener("click", () => {
       const si = (C.instruments || []).find(x => x.id === b.dataset.make);
       const r = acted(() => Engine.makeInstrument(st, C, b.dataset.make));
@@ -2714,14 +2745,13 @@ const UI = (function () {
        for a reason; the standing ones are a tag now, each with its
        sentence on hover, and only a refusal that passes with the sitting
        period (no time left) is a disabled button. */
-    const pmRow = pmCh ? `<tr class="pmrow"><td>Prime Minister</td>` +
-      `<td>${bare(pmCh.name)}</td>` +
-      `<td class="n">${mark(pmCh.party)}</td>` +
-      `<td class="n"><span class="flag nosack"${tipAttr("The Prime Minister",
-        "Chairs the cabinet and holds no post in it, so there is nothing to dismiss her from. " +
-        "Only her party, by a leadership ballot, or the House, by a vote of no confidence, " +
-        "can remove her.")}>CHAIRS</span></td></tr>` : "";
-    $("#gov-cabinet").innerHTML = pmRow + (C.cabinet || []).map(p => {
+    $("#gov-cabinet .gov-card[data-post=''] .gov-card-people").innerHTML = pmCh
+      ? `<a class="cx-link" tabindex="0" data-go="person_${esc(pmCh.id)}">${esc(bare(pmCh.name))}</a> ${mark(pmCh.party)} ` +
+        `<span class="flag nosack"${tipAttr("The Prime Minister",
+         "Chairs the cabinet and holds no post in it, so there is nothing to dismiss her from. " +
+         "Only her party, by a leadership ballot, or the House, by a vote of no confidence, " +
+         "can remove her.")}>CHAIRS</span>` : "";
+    (C.cabinet || []).forEach(p => {
       const s = st.cabinet[p.id];
       const ch = s.holder ? C.characterById[s.holder] : null;
       /* THE DISMISSAL. A minister the player can move, which is what makes
@@ -2746,13 +2776,22 @@ const UI = (function () {
                 successors + ". " : "") + "They go to the back benches and do not forgive it. " +
               "Their current reads it as an attack on them." },
             gate.ok ? null : gate.reason) + `>Dismiss</button>`;
-      return `<tr class="${s.holder ? "" : "vacant"}">
-        <td>${p.name}${p.senior ? " <span class='flag' data-tip='senior'>SENIOR</span>" : ""}</td>
-        <td>${s.holder ? (ch ? bare(ch.name) : s.holder.replace(/_/g," "))
-                       : "<span class='flag bad' data-tip='vacant'>VACANT</span>"}</td>
-        <td class="n">${s.party ? mark(s.party) : ""}</td>
-        <td class="n">${sack}</td></tr>`;
-    }).join("");
+      const rel = ch && (st.characters[ch.id] || {}).relationship;
+      const stand = rel == null ? "relationship unknown" :
+        rel >= 65 ? "close to the Prime Minister" :
+        rel >= 35 ? "uneasy with the Prime Minister" : "opposed to the Prime Minister";
+      const box = $("#gov-cabinet").querySelector('[data-post="' + p.id + '"] .gov-card-people');
+      box.innerHTML = `${p.senior ? "<span class='flag' data-tip='senior'>SENIOR</span> " : ""}` +
+        (s.holder ? `${ch ? `<a class="cx-link" tabindex="0" data-go="person_${esc(ch.id)}">${esc(bare(ch.name))}</a>` : esc(s.holder.replace(/_/g, " "))}` +
+          ` ${s.party ? mark(s.party) : ""} <span class="note">${stand}</span>` + sack
+          : `<span class="flag bad" data-tip="vacant">VACANT</span>`);
+      if (!s.holder) {
+        const work = box.closest(".gov-card").querySelector(".gov-card-work");
+        work.insertAdjacentHTML("afterbegin",
+          `<div class="note">The department cannot make an order or start an initiative while vacant.</div>`);
+      }
+    });
+    drawInitiatives();
 
     $("#gov-cabinet").querySelectorAll("[data-sack]").forEach(btn =>
       btn.addEventListener("click", () => {
@@ -2784,8 +2823,9 @@ const UI = (function () {
     const vac = Engine.vacancies(st, C);
     const vbox = $("#gov-appoint");
     if (vbox) {
-      if (!vac.length) { vbox.innerHTML = ""; vbox.hidden = true; }
+      if (!vac.length) { vbox.innerHTML = ""; vbox.hidden = true; $("#gov-appoint-panel").hidden = true; }
       else {
+        $("#gov-appoint-panel").hidden = false;
         vbox.hidden = false;
         vbox.innerHTML = vac.map(pid => {
           const post = (C.cabinet || []).find(p => p.id === pid);
@@ -4926,9 +4966,14 @@ const UI = (function () {
     return `<span class="pips">${out}</span>`;
   }
 
-  function initHTML() {
-    const list = Engine.initiatives(st, C);
-    if (!list.length) return `<div class="note">Nothing the government can set in motion.</div>`;
+  function initHTML(postId) {
+    const list = Engine.initiatives(st, C).filter(i => {
+      const authored = (C.initiatives || []).find(x => x.id === i.id);
+      return authored && (authored.post || "") === postId &&
+        !(st.flags || {})["init_" + i.id] && Engine.matches(st, authored.when) &&
+        (!postId || (st.cabinet[postId] || {}).holder);
+    });
+    if (!list.length) return "";
     const left = st.slots.total - st.slots.used;
     return list.map(i => {
       const open = initOpen === i.id;
@@ -4959,7 +5004,7 @@ const UI = (function () {
 
   function drawInitiatives() {
     const el = $("#gov-init"); if (!el) return;
-    el.innerHTML = initHTML();
+    el.querySelectorAll(".gov-card-ini").forEach(n => n.innerHTML = initHTML(n.dataset.iniPost));
     const hdr = $("#gov-init-hdr");
     if (hdr) hdr.textContent = (st.slots.total - st.slots.used) + " of " +
                                st.slots.total + " slots left this period";

@@ -66,7 +66,7 @@ later, and is listed at the end so you do not build it here.
    - The **selected bill** takes the freed room on the left, so that it is
      no longer cut off at 1366 × 768.
 
-4. **Government by department** (`drawGovernment()` ~2425,
+4. **Government by department.** DONE. (`drawGovernment()` ~2425,
    `drawInitiatives()` ~5034).
    - Replace the four columns with **one card per cabinet post**, in the
      order of `content/cabinet.js`. Each card shows:

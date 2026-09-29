@@ -929,7 +929,13 @@ try {
       ["effects", "onPass", "onFail", "onTable", "reverse", "onSign", "close"].forEach(k => [].concat(o[k] || []).forEach(e => checkEff(e, tag)));
     });
   }));
-  (INITIATIVES || []).forEach(i => { if (i.event && !EV.has(i.event)) refBad.push("initiative " + i.id + ": answers with '" + i.event + "', which is no event"); });
+  const unassignedInitiatives = [];
+  (INITIATIVES || []).forEach(i => {
+    if (i.event && !EV.has(i.event)) refBad.push("initiative " + i.id + ": answers with '" + i.event + "', which is no event");
+    if (i.post && !CAB.has(i.post)) refBad.push("initiative " + i.id + ": names no post '" + i.post + "'");
+    if (!i.post) unassignedInitiatives.push(i.id);
+  });
+  if (unassignedInitiatives.length) console.log("  warn initiatives unassigned to a post (Prime Minister): " + unassignedInitiatives.join(", "));
   /* THE FORUMS' OWN WIRING (design/43). A resolution put to no forum is
      never voted; a sponsor or a fixed stance naming no member is a vote
      nobody casts; an axis the forum does not declare is a position every

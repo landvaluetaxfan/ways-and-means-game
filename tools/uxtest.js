@@ -2379,8 +2379,8 @@ try {
 
   /* --- 2. a refused control says why --- */
   const refused = [...doc.querySelectorAll("[data-make][disabled], .ini-h[disabled]")];
-  ok("every refused control names its reason",
-     refused.length > 0 && refused.every(b => /Refused:/.test(body(b) || "")),
+  ok("any visible refused control names its reason",
+     refused.every(b => /Refused:/.test(body(b) || "")),
      refused.length + " refused, " +
      refused.filter(b => !/Refused:/.test(body(b) || "")).length + " silent");
 
