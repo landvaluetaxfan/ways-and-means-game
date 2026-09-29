@@ -5,7 +5,8 @@ casting notes in the introductions of *Things That Never Were*, a community
 mod for The Campaign Trail. The author approved these motifs: a performer's
 note, a cast of characters, acts with stage directions, intervals, a curtain
 call, marginalia and epigraphs. A chaplaincy (prayers and intercessions)
-is undecided.
+is not wanted for now (29 Sep); the author will raise it if that changes,
+so no pass should add one.
 
 ## Two layers
 

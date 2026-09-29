@@ -12,7 +12,9 @@
 >   in the dozen lead somewhere else.
 > - **Mars is the Chryse Basin and Nili Republic**, eleven sittings away and
 >   divided at home between what the basin wants to dig and what Nili will not
->   let it touch.
+>   let it touch. *Renamed 29 Sep 2026 (the author): **the Republic of Chryse
+>   and Nili**, one state of two regions, because the compound name read as
+>   two governments and design/51 took it that way.*
 > - **The corporation is the mechanism below** (the ring-fenced wind-up) under
 >   a working name, **Halcyon Extraction Group**, which the author may change:
 >   a wider slate is in §4.

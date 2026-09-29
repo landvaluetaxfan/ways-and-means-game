@@ -208,11 +208,11 @@ const ACTORS = [
         "In May 2080 Kenya approved a fully funded plan to bring down the residents of the Bellamy Almanac Works, the refinery its elevator serves, who wish to come. Its tender law, the platform's safety inspection and the budget cycle put the last descents in 2082. It will not pay for the wind-up of a foreign company, and it opposes an annexation of the platform." }
     ] },
 
-  { id: "mars", name: "Chryse Basin and Nili Republic", kind: "state", foreign: true, lag: 11,
+  { id: "mars", name: "Republic of Chryse and Nili", kind: "state", foreign: true, lag: 11,
     standing: 44, patience: 80,
     reach: {}, wants: {},
     asks: "a public statement of the Commonwealth's position on the metanationals",
-    note: "Mars is divided between the Chryse Basin, which wants to mine, and the Nili Republic, where Mars' strongest evidence of ancient life lies and which will not allow it. It buys from the same extraction companies that supply the Commonwealth. A message reaches Mars in minutes, and an answer comes only when both halves have agreed on it." },
+    note: "Mars is governed by the Republic of Chryse and Nili, a union of two regions. Chryse, the northern basin, wants to mine. Nili, where Mars' strongest evidence of ancient life lies, will not allow it. The Republic buys from the same extraction companies that supply the Commonwealth. A message reaches Mars in minutes, and an answer comes only when both regions have agreed on it." },
 
   { id: "metanationals", name: "Cordell", kind: "metanational", foreign: true, lag: 3,
     standing: 47, patience: 70,

@@ -1202,8 +1202,12 @@ try {
     Selene:  "the Selene settlements, a place on the Moon (bible §2.2)"
   };
   /* Names retired before an id could carry them: the placeholder Mars polity
-     of design/29 and the Works and its owner before design/29 named them. */
-  const RETIRED = [["Martian Concord", "the Chryse Basin and Nili Republic"],
+     of design/29 and its first compound name (one state, which read as two;
+     the author, 29 Sep), and the Works and its owner before design/29 named
+     them. */
+  const RETIRED = [["Martian Concord", "the Republic of Chryse and Nili"],
+                   ["Chryse Basin and Nili Republic", "the Republic of Chryse and Nili"],
+                   ["Nili Republic", "the Republic of Chryse and Nili"],
                    ["Halcyon", "Cordell"], ["Ashen Reach", "the Almanac Works"]];
   const inUse = new Set([].concat(
     CX.characters.map(c => c.name), CX.stations.map(s => s.name),

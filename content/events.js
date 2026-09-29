@@ -1982,7 +1982,7 @@ fortnight before we were told it existed."`,
 
 /* LIGHT-LAG, DEMONSTRATED (design/11 §1). A dispatch to Mars takes eleven
    sittings to arrive and eleven to be answered, so the reply reads a world
-   that has moved in the meantime: the Concord answers a question the
+   that has moved in the meantime: the Republic answers a question the
    Commonwealth has since settled. `queue` is the whole of the mechanic — no
    new verb — and the label puts the dispatch on the foreign panel as IN
    FLIGHT and on the calendar with a date, which is the anxiety the light-lag
@@ -1991,27 +1991,28 @@ fortnight before we were told it existed."`,
   when:{ actorBelow:{ mars:60 }, flagsAbsent:["mars_asked"] },
   title:"Eleven sittings away",
   speaker:"landry",
-  body:`Mars has two governments: the Chryse Basin, which wants to mine the planet,
-and the Nili Republic, which will not allow it, because the strongest
-evidence of ancient life on Mars lies in its territory. Together they have
-asked twice what the Commonwealth thinks of the metanationals, the
-companies, like Cordell, the Gabonese mining company, that operate on Earth,
-in orbit and on Mars at once.
+  body:`Mars is governed by the Republic of Chryse and Nili, a union of two
+regions that seldom agree. Chryse, the northern basin, wants to mine the
+planet. Nili will not allow it, because the strongest evidence of ancient
+life on Mars lies in its territory. The Republic has asked twice what the
+Commonwealth thinks of the metanationals, the companies, like Cordell, the
+Gabonese mining company, that operate on Earth, in orbit and on Mars at once.
 
 Jean Landry, the Minister for External Relations, has a draft and no strong
-view about it. "Whatever we send, they will have in twenty minutes and
-answer in three weeks, once the Basin and the Republic have agreed what they
-think," Landry says. "We can be quick or we can be right."`,
+view about it. "Whatever we send, they'll have in twenty minutes," Landry
+says. "The answer takes three weeks, because Chryse and Nili both have to
+sign it. We can send it tonight, or wait until we've settled our own
+position."`,
   choices:[
     { posture:"bold", label:`Send the Commonwealth's position on the metanationals to Mars tonight, in plain terms.`,
-      note:`The dispatch reaches Mars in twenty minutes. The reply from the Chryse Basin and the Nili Republic will come in about eleven sittings, once they agree what they think, and nothing that happens here in the meantime will be in it.`,
+      note:`The dispatch reaches Mars in twenty minutes. The Republic's reply will come in about eleven sittings, once Chryse and Nili agree on it, and nothing that happens here in the meantime will be in it.`,
       effects:[{ flag:"mars_asked" },
                { queue:[{ event:"fa_mars_reply", after:11,
-                          label:`A dispatch to the Chryse Basin and Nili Republic` }] },
+                          label:`A dispatch to the Republic of Chryse and Nili` }] },
                { wire:"COMMONWEALTH DISPATCHES ITS POSITION ON THE METANATIONALS TO MARS" }],
-      result:`The dispatch reaches Mars before Parliament rises tonight. The reply will come in about eleven sittings, from two governments that have had that long to change their minds.` },
+      result:`The dispatch reaches Mars before Parliament rises tonight. The reply will come in about eleven sittings, and both regions will have had that long to change their minds.` },
     { posture:"cautious", label:`Send nothing until the government has settled its position at home.`,
-      note:`Voters at home prefer a government that does not commit abroad before it has decided at home. Mars has asked twice, and a silence is an answer too: relations with both Martian governments cool a little.`,
+      note:`Voters at home prefer a government that does not commit abroad before it has decided at home. Mars has asked twice, and silence is an answer too: relations with the Republic cool a little.`,
       effects:[{ flag:"mars_asked" }, { move:{ "actor.mars":-4 } },
                { move:{ "public_standing":2 } },
                { wire:"NO DISPATCH TO MARS; THE POSITION IS NOT YET SETTLED" }],
@@ -2022,12 +2023,12 @@ think," Landry says. "We can be quick or we can be right."`,
 { id:"fa_mars_reply", queuedOnly:true, once:true,
   title:"The reply",
   speaker:null,
-  body:`Mars has answered the Commonwealth's dispatch. The planet has two
-governments, the Chryse Basin and the Nili Republic, and their joint note
-runs to four paragraphs.
+  body:`Mars has answered the Commonwealth's dispatch. The note from the
+Republic of Chryse and Nili runs to four paragraphs, and both regions have
+signed it.
 
 The first three concern a dispute over an Earth company's claims that the
-Commonwealth's courts settled a month ago. The two governments take about
+Commonwealth's courts settled a month ago. Chryse and Nili take about
 eleven sittings to agree a reply between them, so their answers arrive after
 the question has moved on. Only the fourth paragraph addresses where things
 stand now, and Jean Landry, the Minister for External Relations, reads it
@@ -2039,7 +2040,7 @@ twice.`,
                { wire:"THE COMMONWEALTH PUBLISHES THE MARTIAN REPLY IN FULL, WITH DATES" }],
       result:"The note is published with the date it was written, which shows how far behind events it is. Relations with Mars improve, and the government has shown on the record how slowly Mars answers." },
     { posture:"cautious", label:`Answer the reply as though it were current.`,
-      note:`The correspondence settles into one note every three weeks each way, the time the two Martian governments need to agree a reply. Relations with Mars improve a little, and a steady exchange eases the quarrel with Earth slightly.`,
+      note:`The correspondence settles into one note every three weeks each way, the time Chryse and Nili need to agree a reply. Relations with Mars improve a little, and a steady exchange eases the quarrel with Earth slightly.`,
       effects:[{ move:{ "actor.mars":2 } }, { move:{ "friction":-2 } },
                { wire:`PM ANSWERS MARS; THE CORRESPONDENCE CONTINUES AT ONE EXCHANGE EVERY THREE WEEKS` }],
       result:`The correspondence settles into one note every three weeks each way, the time the two governments need to agree a reply. The quarrel with Earth eases slightly.` }

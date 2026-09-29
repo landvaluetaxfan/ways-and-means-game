@@ -5684,7 +5684,7 @@ const UI = (function () {
   /* RELEVANT ACTORS, not "countries".
 
      The author's correction, and it is the right shape: Kenya, the European
-     Union, Cordell and the Chryse Basin and Nili Republic do not MATTER until
+     Union, Cordell and the Republic of Chryse and Nili do not MATTER until
      the campaign's central event — the station question — makes them matter.
      A panel headed "Countries" that opens on four governments with standing
      bars tells the player those four are the game before the game has said so.
