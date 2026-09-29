@@ -85,6 +85,26 @@ interests: the Treasury for money, the grid's minister for the heat, and
 the owner of the air chain for the air. Write each note plainly. **Claude
 writes the register later**, so name the notes in the commit message.
 
+## Advice is contested (design/58, Round I)
+
+**One of the three matters must be contested.** Two credible ministers ask
+for different remedies, and neither is simply wrong. The suggested case is
+**the heat**:
+- the grid's minister would spend now to protect the margin;
+- the Treasury would protect the reserve and accept the risk.
+
+Give the matter shape a `counsel` list for this: `[{ post, remedy, note }]`,
+each a minister's own recommendation. The interface shows both notes side
+by side.
+
+**The playtest must not assume that the first remedy is right.** Add two
+strategies:
+- **"the owner's counsel"**;
+- **"the dissent"**.
+
+Report both. A contested matter is working if neither strategy dominates
+across seeds.
+
 ## Interface
 
 - **The Sitting's right column becomes the brief** (design/61), above the
@@ -107,7 +127,8 @@ the commit message. `AGENTS.md` has today's figures: the four crisis
 strategies lose 33, 54, 21 and 25 of 80, all to a late thermal cascade.
 
 Add a playtest strategy, **"follows the brief"**: each sitting it takes the
-first remedy of the most urgent matter. design/58's target is that it
+owner's remedy for the most urgent matter. For a contested matter, see
+the two strategies above. design/58's target is that it
 reaches the count in most seeds. Report its losses. Do not tune balance to
 hit the target; report it, and Claude and the author decide.
 

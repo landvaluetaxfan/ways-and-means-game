@@ -432,6 +432,50 @@ author's to change:
 of the 2076 Parliament, a by-election for First Spin, and a count in
 August 2080. Stage 4 rewrites it (bible §1.8).
 
+## Round I: from Codex's assessment (29 Sep)
+
+Codex judged this page "a strong constitutional document for the game, not
+a finished design": it defines the loop, but not yet that the choices
+inside it are compelling. The author adopted three points.
+
+**Decided: every price creates leverage.** A promise, a clause, order-paper
+time or a post is given to a named person or faction. They hold it as a
+claim, with a limit to what they will accept, and it comes back later: the
+partner given a clause expects the next one, and the current promised a
+post remembers when it is filled. The question in a sitting is not only
+"which price do I pay?" but "whose future leverage am I creating by getting
+my way today?" That keeps the House political rather than transactional.
+
+**Decided: advice is contested from the start.** Among the first matters,
+at least one has two credible ministers asking for different remedies, and
+neither is simply wrong. Later the player can see why each thought as they
+did. A brief whose first remedy is always right becomes a quest log, and
+teaches obedience rather than judgement.
+
+**Decided: a playable slice before scaling.** After the brief, build about
+ten sittings that prove the loop before Stage 3 and beyond. In them the
+player:
+- pursues the aim;
+- knowingly buys support at a cost;
+- sets aside plausible advice;
+- later meets a consequence they can trace to that choice.
+
+If the slice is not fun, the design changes before four years of content
+are written on it.
+
+**Clarifications, consistent with decisions above:**
+- **An interval must show political time passing:** what endured, what
+  decayed, and who used the absence, before the player sets course.
+- **The legacy comes from evidence the player can recognise in the
+  record:** promises, methods, injuries, alliances, and who carried the
+  cost. The grade stays hidden, and the evidence does not.
+- **The grid of twelve endings is Flash I's size.** Another campaign
+  chooses its own.
+- **The Divergence bill keeps colliding with the rescue** after the
+  stranding. The NPP's price must stay live, or Act I reads as a prologue.
+- **The game says plainly what it is:** the player plays a particular
+  premiership, and does not build a platform from scratch.
+
 ## What every system must answer
 
 Each system:
