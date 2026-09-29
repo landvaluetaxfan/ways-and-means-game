@@ -3673,3 +3673,39 @@ body.no-motion .sp-signature.sig-draw .sigimg{transition:none;}
 #s-sit .stackmain{overflow:hidden;}
 #s-sit .stackmain > .panel{flex:1 1 auto;min-height:0;}
 #s-sit #sitting-body{flex:1 1 auto;min-height:0;overflow:auto;}
+
+/* THE PLAY'S PLAYBILL AND LOGO (design/56).
+
+   On the menu a government with a playbill is chosen from it: the playbill
+   on the left, the play's name and the government's on the right. The
+   playbill's height follows the screen's, because height is the short axis
+   here (see .menu-plate), and "Read the playbill" sits in the card's corner
+   as a sibling of the button, placed by the same height. */
+.adm-card{position:relative;--bill-h:clamp(170px,30vh,340px);}
+.mbtn.adm.bill{width:auto;max-width:min(560px,86vw);align-items:stretch;gap:16px;
+  padding:10px 20px 10px 10px;}
+.adm-bill{display:block;flex:0 0 auto;height:var(--bill-h);width:calc(var(--bill-h) * .7725);
+  background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.5);}
+.mbtn.adm.bill .adm-t{display:flex;flex-direction:column;gap:4px;min-width:210px;
+  padding:4px 0 40px;}
+.mbtn.adm.bill .adm-t b{font-family:Georgia,"Liberation Serif","Times New Roman",serif;font-weight:normal;
+  font-size:clamp(19px,2.8vh,25px);line-height:1.1;color:#fff;margin-bottom:6px;}
+.mbtn.adm.bill .adm-t span{display:block;font-size:clamp(13px,1.8vh,15px);color:#dfe2d6;}
+.bill-read{position:absolute;bottom:12px;left:calc(var(--bill-h) * .7725 + 27px);}
+
+/* the playbill, read: at the screen's height, and at the page's width when
+   the picture is clicked, for the small type */
+.bill-view{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;
+  overflow:auto;padding:2vh 20px;background:rgba(6,9,12,.9);}
+.bill-img{display:block;height:96vh;width:auto;background:#fff;
+  box-shadow:0 8px 40px rgba(0,0,0,.6);cursor:zoom-in;}
+.bill-view.zoom{align-items:flex-start;}
+.bill-view.zoom .bill-img{height:auto;width:min(1545px,100%);cursor:zoom-out;}
+.bill-close{position:fixed;top:14px;right:18px;z-index:1;}
+
+/* In play the logo heads the Sitting screen's first column, on the field's
+   paper so its grey reads against the chrome. */
+.play-logo{flex:0 0 auto;background:var(--field);border:1px solid var(--chrome-dk);padding:9px 12px;}
+.play-logo img{display:block;width:100%;max-width:360px;height:auto;margin:0 auto;}
+/* and on the act and interval cards and the curtain call it is the title */
+.sp-logo{display:block;width:min(440px,82%);height:auto;margin:6px auto 10px;}

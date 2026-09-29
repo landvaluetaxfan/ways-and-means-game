@@ -46,10 +46,14 @@ const SetPiece = (function () {
      the Prime Minister's own hand on a page. */
   const KINDS = ["epigraph", "lede", "body", "voices", "document", "signature",
                  "act", "direction", "cast", "margin"];
-  /* the campaign's play (its title, mark and cast), for the frame's kinds;
-     set by html() from its options, so a page with no play draws none */
+  /* the campaign's play (its title, logo or mark, and cast), for the
+     frame's kinds; set by html() from its options, so a page with no play
+     draws none. A LOGO IS THE TITLE SET AS AN IMAGE, so where there is one
+     the card shows it in place of the title in type; a mark is only an
+     ornament and sits above the title. */
   let PLAY = null;
   function mark() {
+    if (PLAY && PLAY.logo) return `<img class="sp-logo" src="${esc(PLAY.logo)}" alt="${esc(PLAY.title || "")}">`;
     return PLAY && PLAY.mark ? `<img class="sp-mark" src="${esc(PLAY.mark)}" alt="">` : "";
   }
   function castList(rows) {
@@ -91,9 +95,10 @@ const SetPiece = (function () {
     }
 
     if (kind === "act") {
-      /* An act's card: the play's mark, the act, and its name. */
+      /* An act's card: the play's logo (or its mark and title), the act,
+         and its name. */
       return `<div class="sp-sec sp-act">${mark()}` +
-        (PLAY && PLAY.title ? `<div class="sp-proglabel">${esc(PLAY.title)}</div>` : "") +
+        (PLAY && PLAY.title && !PLAY.logo ? `<div class="sp-proglabel">${esc(PLAY.title)}</div>` : "") +
         `<div class="sp-actnum">${esc(sec.head || "")}</div>` +
         (sec.body ? `<div class="sp-acttitle">${esc(sec.body)}</div>` : "") + `</div>`;
     }

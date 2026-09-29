@@ -214,7 +214,9 @@ Bank's credibility, the four tax rates) have fields, and anything else
 
 ## The campaign as a play (design/56)
 
-A campaign's administration may carry `play`: a title and mark, a cast, one
+A campaign's administration may carry `play`: a title, a logo (the title as
+an image; or a `mark`, an ornament), a playbill (the image the menu chooses
+the government from), a cast, one
 act per chapter (a title, an epigraph and a stage direction), an interval for
 each recess, and an epigraph for the curtain call. Its introduction closes, before
 the signature, with the note for the performer ("The role") and a `cast`

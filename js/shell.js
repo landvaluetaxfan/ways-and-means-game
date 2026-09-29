@@ -404,13 +404,65 @@ const Shell = (function () {
         <div class="menu-btns row"><button class="mbtn" data-go="slots">Choose a slot</button></div>
         <div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
     return `<div class="menu-sub">Choose a government</div>
-      <div class="menu-btns">${list.map(a =>
-        `<button class="mbtn adm" data-admin="${esc(a.id)}">` +
-        admFace(a) +
-        `<span class="adm-t">${esc(adminLabel(a))}` +
-        `<i>Session ${a.session != null ? a.session : C.setup.session}</i></span>` +
-        `</button>`).join("")}</div>
+      <div class="menu-btns">${list.map(admChoice).join("")}</div>
       <div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
+  }
+
+  /* A GOVERNMENT IS CHOSEN FROM ITS PLAYBILL (design/56) when its play has
+     one: the button is the playbill with the play's name and the
+     government's beside it. The playbill is a page of small type, so
+     "Read the playbill" opens it at the height of the screen; it is a
+     sibling of the button, not inside it, because a button cannot hold a
+     button. A government with no playbill keeps its face and its line. */
+  function admChoice(a) {
+    const pl = a.play || null;
+    const session = a.session != null ? a.session : C.setup.session;
+    if (!pl || !pl.playbill)
+      return `<button class="mbtn adm" data-admin="${esc(a.id)}">` + admFace(a) +
+        `<span class="adm-t">${esc(adminLabel(a))}<i>Session ${session}</i></span></button>`;
+    const p = (C && C.partyById && C.partyById[a.party]) || {};
+    const rest = adminLabel(a).split(" \u2014 ").slice(1).join(" \u00b7 ");
+    return `<div class="adm-card">` +
+      `<button class="mbtn adm bill" data-admin="${esc(a.id)}">` +
+        `<img class="adm-bill" src="${esc(pl.playbill)}" alt="" onerror="this.remove()">` +
+        `<span class="adm-t"><b>${esc(pl.title || p.name || a.id)}</b>` +
+        `<span>${esc(p.name || a.party)}</span><span>${esc(rest)}</span>` +
+        `<i>Session ${session}</i></span></button>` +
+      `<button class="mbtn sm bill-read" data-bill="${esc(a.id)}">Read the playbill</button>` +
+      `</div>`;
+  }
+
+  /* THE PLAYBILL, READ. Over the menu at the screen's height; the picture
+     itself toggles to the page's full width for the small type, and Close,
+     Escape or a click beside it puts it away and gives focus back to the
+     button that opened it. */
+  function showBill(a, from) {
+    const pl = a && a.play;
+    if (!pl || !pl.playbill) return;
+    const name = pl.title || adminLabel(a);
+    const v = document.createElement("div");
+    v.className = "bill-view";
+    v.setAttribute("role", "dialog");
+    v.setAttribute("aria-modal", "true");
+    v.setAttribute("aria-label", "The playbill for " + name);
+    v.innerHTML = `<button class="mbtn sm bill-close" data-bill-close>Close</button>` +
+      `<img class="bill-img" src="${esc(pl.playbill)}" alt="The playbill for ${esc(name)}">`;
+    const close = () => {
+      document.removeEventListener("keydown", key, true);
+      v.remove();
+      if (from && from.focus) from.focus({ preventScroll: true });
+    };
+    const key = e => {
+      if (e.key !== "Escape") return;
+      e.preventDefault(); e.stopPropagation(); close();
+    };
+    v.addEventListener("click", e => {
+      if (e.target.closest("[data-bill-close]") || e.target === v) close();
+      else if (e.target.classList.contains("bill-img")) v.classList.toggle("zoom");
+    });
+    document.addEventListener("keydown", key, true);
+    document.getElementById("menu").appendChild(v);
+    v.querySelector("[data-bill-close]").focus({ preventScroll: true });
   }
 
   /* THE SANDBOX (design/47): every campaign, opened on the author's bench.
@@ -612,6 +664,9 @@ const Shell = (function () {
       const sv = slot(SANDBOX_SLOT);
       if (sv) start(SANDBOX_SLOT, sv.name, sv.state);
     }));
+
+    m.querySelectorAll("[data-bill]").forEach(b => b.addEventListener("click", () =>
+      showBill((C.administrations || []).find(a => a.id === b.dataset.bill), b)));
 
     m.querySelectorAll("[data-admin]").forEach(b => b.addEventListener("click", () => {
       chosenAdmin = (C.administrations || []).find(a => a.id === b.dataset.admin) || null;

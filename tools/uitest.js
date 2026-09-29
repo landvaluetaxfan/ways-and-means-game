@@ -26,12 +26,32 @@ $('[data-go="new"]').click();
 ok("a new government first offers the governments",
    w.document.querySelectorAll("[data-admin]").length > 0,
    w.document.querySelectorAll("[data-admin]").length + " administrations");
+/* A GOVERNMENT WITH A PLAYBILL IS CHOSEN FROM IT (design/56), and the
+   playbill can be read at the screen's height and put away again. */
+{
+  const withBill = (CONTENT.administrations || []).filter(a => a.play && a.play.playbill);
+  const cards = w.document.querySelectorAll(".adm-card [data-admin] img.adm-bill");
+  ok("every government with a playbill is chosen from it", withBill.length > 0 && cards.length === withBill.length,
+     cards.length + " of " + withBill.length);
+  const read = $("[data-bill]");
+  read.click();
+  const view = $(".bill-view");
+  ok("and Read the playbill opens it, with focus on Close",
+     !!view && !!view.querySelector("img.bill-img") && w.document.activeElement === view.querySelector("[data-bill-close]"));
+  w.document.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  ok("and Escape puts it away and gives focus back", !$(".bill-view") && w.document.activeElement === read);
+}
 $('[data-admin]').click();
 ok("slot list appears", w.document.querySelectorAll(".slot").length === 4);
 $('[data-new="1"]').click();
 ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.contains("on"));
 ok("slot is named in the topbar", /Test ministry/.test($("#tb-slot").textContent),
    JSON.stringify($("#tb-slot").textContent));
+{
+  const logo = $("#sit-play img"), adm = (CONTENT.administrations || [])[0];
+  ok("the play's logo heads the Sitting screen", !!logo && !$("#sit-play").hidden &&
+     logo.getAttribute("src") === adm.play.logo, logo ? logo.getAttribute("src") : "none");
+}
 
 /* The chamber drew, and drew all 280. Counted by class rather than by
    element, so the furniture is excluded and the Speaker - who is lifted out

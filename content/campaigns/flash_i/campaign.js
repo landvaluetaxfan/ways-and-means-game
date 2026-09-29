@@ -110,15 +110,18 @@ Ideal performer for this role is a woman in her early fifties in the alto range.
       ] },
 
     /* THE PLAY (design/56): the campaign's frame, outside the world. Its
-       name and mark recur on each act's card, the intervals
-       and the curtain call. The title is the author's (28 Sep), from the
-       introduction: Flash came up in 2070, "in the Commonwealth's
-       springtime", and the play is set ten years after. `acts` are keyed by
-       chapter, `intervals` by the sitting period the House has just
-       finished; the cast is the introduction's and the curtain call's. */
+       logo recurs on each act's card, the intervals, the curtain call and
+       the Sitting screen, and its playbill is what the menu shows when a
+       government is chosen; both are the author's (28 Sep). The title is
+       the author's too, from the introduction: Flash came up in 2070, "in
+       the Commonwealth's springtime", and the play is set ten years after.
+       `acts` are keyed by chapter, `intervals` by the sitting period the
+       House has just finished; the cast is the introduction's and the
+       curtain call's. */
     play:{
       title:"After the Springtime",
-      mark:"img/plays/flash_i.svg",
+      logo:"img/plays/flash_i_logo.png",
+      playbill:"img/plays/flash_i_playbill.png",
       cast:[
         { id:"flash", name:"Adriana Eireann Flash", role:"Prime Minister, and leader of the Party of Socialists and Democrats" },
         { id:"whitlam", name:"Imre Whitlam", role:"Leader of the House, who decides what Parliament debates and when" },

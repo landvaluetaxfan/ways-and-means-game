@@ -23,8 +23,9 @@ is undecided.
 
 ## Where it lives
 
-- A campaign's administration carries `play`: `title`, `mark` (an image in
-  `img/plays/`), `cast` (`{id, name, role}`), `ensemble`, `acts` (keyed by
+- A campaign's administration carries `play`: `title`, `logo` (the title set
+  as an image, in `img/plays/`) or `mark` (an ornament above the title in
+  type), `playbill` (an image), `cast` (`{id, name, role}`), `ensemble`, `acts` (keyed by
   `chapter`, each with `head`, `title`, `epigraph`, `direction`),
   `intervals` (keyed `after` the sitting period just finished), and
   `curtain.epigraph`.
@@ -42,6 +43,16 @@ is undecided.
   what became of each: the Prime Minister's line is the verdict, and
   everyone else's is the latest chronicle entry about them (design/55), or
   their part.
+
+- **The playbill and the logo (29 Sep, the author's artwork).** On the
+  menu, a government whose play has a `playbill` is chosen from it: the
+  button is the playbill with the play's name and the government's beside
+  it, and "Read the playbill" opens it at the screen's height (a click on
+  the picture shows it at the page's width, and Close or Escape puts it
+  away). In play, the `logo` heads the Sitting screen's first column for
+  the whole campaign, and replaces the title in type on the act and
+  interval cards and the curtain call. A government with neither keeps its
+  face button and the typed title.
 
 ## Flash I
 
