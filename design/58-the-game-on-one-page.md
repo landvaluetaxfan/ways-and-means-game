@@ -315,6 +315,26 @@ play's shape, so the story works between them by three rules:
 
 Replays then differ in which beats happen, not only in their texture.
 
+**Decided (Round F): five acts.**
+1. The opening weeks, played day by day.
+2. Three acts across the Parliament's middle years, each skipping time
+   before it.
+3. The last year, which ends in the run-in and the count.
+
+Each act has its fork.
+
+**Decided (Round F): the finale is a short run-in.** The last few sittings
+before dissolution carry the campaign through the brief: the record to run
+on, and where to spend. Then comes the count, as a set piece, and a hung
+House is bargained. There is no separate campaign game.
+
+**Decided (Round F): the opposition is a rival who acts.** The Leader of
+the Opposition (Watkins, in Flash I) moves against the government. He uses
+motions, questions, deals with the government's partners and the press,
+and he goes for its weak points. He is who the player faces at the count.
+His moves reach the player as matters in the brief, like anything else
+that threatens.
+
 **Decided: intervals are read, then a course is set.** An interval tells
 what happened in the skipped time, then asks one or two choices about the
 next stretch (priorities, the budget line) before the House returns.
@@ -343,6 +363,13 @@ the count.
 ## Flash I on this page
 
 **Decided:** Flash's aim is to save the Works.
+
+**Decided (Round F): the rescue takes weeks, the settlement years.** The
+stranding and the air are the opening act, in weeks, as built. Who owns
+the Works is fought over the rest of the Parliament, with a fork in each
+act. The contenders are annexation, the maritime charter, the joint
+mandate and corporate re-entry. The debt trap's austerity lands along the
+way.
 
 **Decided (29 Sep):** Flash comes in as a competent manager, and does not
 know the Works will define her term. The Works is stranded at sitting 14,
