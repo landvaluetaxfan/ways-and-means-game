@@ -1,6 +1,7 @@
 # 61 — The tabs, overhauled
 
-**29 September 2026. Proposed, for the author's answers.** The author:
+**29 September 2026.** Decided in the first round of answers the same
+day, except for Orbit, which is still open (see below). The author:
 "while I like chamber, it definitely still is really packed, and other tabs
 are under-designed." design/58 keeps every tab but the Record, and puts the
 brief first. This record examines each tab as it stands and proposes what it
@@ -12,8 +13,8 @@ Three rules from design/58 run through every tab:
 - **Levers are open, matter first.** Each matter in the brief shows its own
   levers, so a tab is where the player reads and acts on their own reading,
   not where they hunt.
-- **A lever that is not open is not listed.** It appears when it opens, and
-  the brief says so. (This one is new, proposed here.)
+- **Decided: a lever that is not open is not listed.** It appears when it
+  opens, and the brief says so.
 
 ## Sitting
 
@@ -23,7 +24,7 @@ Three rules from design/58 run through every tab:
 - on the right: Today, the docket, the calendar and the indicators, which
   are bars with figures.
 
-**Proposed:**
+**Decided:**
 - **Left: what has happened.** The Wire and the Record become one column:
   news as it lands and the decisions taken, sitting by sitting. The
   Concordance's history carries the same record secondarily.
@@ -51,7 +52,7 @@ Three rules from design/58 run through every tab:
 It is packed with things the player cannot use yet, and its people are
 buried in the last column.
 
-**Proposed: Government is organised by department.** There is one card for
+**Decided: Government is organised by department.** There is one card for
 each post in the cabinet, in order of seniority. Each card holds:
 - the minister, with their reputation in a word (design/58: sound, uneven,
   green) and how they stand with the Prime Minister;
@@ -91,7 +92,7 @@ overhaul.
 
 Confidence is a single line that the status bar already shows.
 
-**Proposed: the same look, with the duplicates merged.**
+**Decided: the same look, with the duplicates merged.**
 - The Grant button moves into the order paper's own rows, so the two
   panels become one. The time bar sits in its heading.
 - The diagram's legend folds into composition.
@@ -112,7 +113,7 @@ Confidence is a single line that the status bar already shows.
 - the reserve chart;
 - work and trade.
 
-**Proposed: the words come first, and the big calls stand out.**
+**Decided: the words come first, and the big calls stand out.**
 - The Underwriters' briefing, which is already prose, moves to the top as
   the reading of the account.
 - Beside it goes a short list of the calls open to the player now: a tax,
@@ -130,7 +131,7 @@ Confidence is a single line that the status bar already shows.
 - the selected current;
 - the leadership.
 
-**Proposed: each current is treated like a partner, and the party faces
+**Decided: each current is treated like a partner, and the party faces
 the country.**
 - **Each current gets the terms Relations gives a partner:**
   - who leads it;
@@ -156,7 +157,7 @@ the country.**
 
 It is clear, with the lower half empty.
 
-**Proposed: add the Opposition.** This follows from design/58, Round F:
+**Decided: add the Opposition.** This follows from design/58, Round F:
 the Leader of the Opposition is a rival who acts. A panel for Watkins and
 his party:
 - what he is doing: motions, questions, approaches to your partners;
@@ -175,7 +176,9 @@ His moves also reach the brief as matters.
 
 The heat, which is one of Flash I's major theatres, shows only as closure.
 
-**Proposed: Orbit becomes the country, with map modes.** The schematic
+**Open.** The author: "I actually quite like how orbit is currently. We
+can discuss it more." What was proposed: **Orbit becomes the country, with
+map modes.** The schematic
 gets the modes the Parliament diagram already has (by party, by vote).
 Here they would be:
 - **by seat:** who holds it, as now;
@@ -193,7 +196,7 @@ when it is stranded.
 - "What is selected" and "Relevant actors" are empty;
 - the General Assembly has nothing before it.
 
-**Proposed: what is in flight comes first.**
+**Decided: what is in flight comes first.**
 - **Dispatches:** what has been sent, to whom, and when an answer is due.
   Earth answers in days and Mars in weeks.
 - **The actors:** always listed, each with its disposition and its delay,
@@ -206,12 +209,13 @@ when it is stranded.
 
 It stays as it is. It carries the record secondarily.
 
-## Questions for the author
+## Answered
 
-1. Government by department?
-2. The Chamber: merge the duplicates in the same look, or split it into two
-   views?
-3. Party: currents treated as partners, and the country's polls?
-4. Sitting, Economy, Orbit and Foreign Affairs as proposed?
-5. Relations: the Opposition panel?
-6. A lever that is not open is not listed?
+The author, 29 Sep, in the first round:
+- Government by department;
+- Chamber with its repeats merged, keeping its look;
+- Party with currents as partners, and the country;
+- Sitting, Economy and Foreign Affairs as proposed.
+
+The Opposition panel and the rule on levers not yet open went in without
+objection. Orbit is still to be discussed.
