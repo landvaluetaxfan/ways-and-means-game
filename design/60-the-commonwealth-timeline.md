@@ -81,7 +81,8 @@ that ends her first full term.
 | 2073 | Flash floats the dollar | canon |
 | 2076 | **General election.** **Nils Vijlbrief** leads the PSD to government in coalition with the NPP and the CDA. The NPP's price is the Divergence Threshold Bill. He brings Flash from the Bank to the Treasury, from outside the House, to reassure the markets | **decided** (the name, the author); the rest **decided** (delegated) |
 | 2077 | Van Ryneveld is elected President by direct vote, on the Liberal ticket, with 51.4 per cent | canon (see the questions below) |
-| 2076–80 | The Vijlbrief government; why it fell is the author's choice, from a slate | **open** |
+| 2076–80 | The Vijlbrief government. Station breakdowns mount. Vijlbrief wants to pay for the stations' upkeep by opening the Treasury's overdraft at the Reserve Bank. His Treasurer, Flash, refuses in public. The markets side with her, and so, in the end, does the party | **decided** (the author chose reason 4 from the slate, 29 Sep) |
+| early 2080 | With a general election due in August and the polls showing a rout, the party's MPs replace their left-wing leader with his own Treasurer. His promise of the Divergence bill to the NPP, which his union base never forgave, is part of why the caucus turned | **proposed** (reasons 6 and 2 beneath 4) |
 | spring 2080 | Vijlbrief goes. Flash wins the PSD leadership as a dark horse. "The members who put her there did it to keep a government" | canon (the intro) |
 | 11 Apr 2080 | Flash is commissioned. The fourth and last session of the 2076 Parliament opens the same day | canon |
 | mid-Aug 2080 | **General election**, mid-campaign. In canon the PSD holds 103 seats and the government's side 167 | canon |
@@ -100,11 +101,17 @@ that ends her first full term.
   confidence and supply bring it to 147.
 - **"The last government blamed the stations' breakdowns on its
   maintenance crews"** (events.js, the_account). A Corbyn type does not
-  blame the unions, so the line needs to fit whichever reason is chosen.
+  blame the unions. Under reason 4 the old charge is the other way round:
+  the Trades Left remembers that Flash was the Treasurer who refused
+  Vijlbrief the money for the stations' upkeep. Her line "the last
+  government could not run the Commonwealth, and I can" becomes an attack
+  on the man she served.
 
 ## For the author
 
-1. **Why Vijlbrief's government fell**: pick from the slate, or combine.
+1. **Vijlbrief after his fall**: does he stay in the House, on the back
+   benches and in which current, as a former Prime Minister in the chamber?
+   He needs an entry in the character roster either way.
 2. **The President's cycle**: elected in the same year as the general
    election, which moves van Ryneveld's election from 2077 to 2076 and puts
    him up again in August 2080? Or four years from 2077, which keeps canon
