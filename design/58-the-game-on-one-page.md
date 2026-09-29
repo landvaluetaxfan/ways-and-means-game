@@ -61,7 +61,7 @@ chooses to do.
 
 ## What the player does
 
-**Proposed: one constant core, carrying the House.** Every campaign is a
+**Decided (29 Sep): one constant core, carrying the House.** Every campaign is a
 Prime Minister governing through a Parliament. The trade-off is paid in
 the House:
 - **time** is scarce: order-paper slots;
@@ -71,7 +71,7 @@ the House:
 Bargaining is therefore not a separate verb. It is what the House costs,
 and without it House business is only scheduling.
 
-**Proposed: everything else is a theatre, turned up or down by the
+**Decided: everything else is a theatre, turned up or down by the
 campaign.** The theatres are:
 - money: drawing, borrowing, taxing and selling;
 - the country's systems: orders, the ladder, the heat;
@@ -85,7 +85,7 @@ brief and pages in the story. The rest are **minor**: available, quiet,
 and reached mostly through decisions. This is the author's "a range of
 minor to intermediate roles".
 
-**Proposed, Flash I:**
+**Decided, Flash I:**
 - **Major:** foreign affairs (the Works' fate is decided in Nairobi,
   Brussels and New York), money (the Works is paid for, and the canon ends
   in the debt trap) and the heat (the Works' heat counts against the
@@ -96,8 +96,8 @@ minor to intermediate roles".
 
 **Decided:** not "the player reads the gauges" alone.
 
-**Proposed: advisers early, the story late, and early is cheaper.** A
-matter goes through three stages:
+**Decided (29 Sep): advisers early, the story late, and early is
+cheaper.** A matter goes through three stages:
 
 1. **The brief.** A named minister raises the matter while there is still
    time, with what could answer it and how long each answer takes. Acting
@@ -114,6 +114,40 @@ The brief carries the aim as well as the threats, for example what the
 Works needs next. That gives the player something to act *toward*, not
 only against.
 
+**Decided: the advice never tapers.** The author: "in real life, the other
+members of a cabinet don't advise the PM less and less as the
+parliamentary session drags on. We need to strike the correct balance."
+So the brief is as full in the last period as in the first. The player
+does not learn *that* the brief exists; they learn *which advice to take*.
+
+**Proposed: where the balance comes from.** Advice is constant, so the
+skill must lie in choosing among it. Three things make that a choice:
+
+1. **More advice than capacity.** Order-paper time and money cannot meet
+   every matter at once. In a sitting the player can act on one or two, so
+   triage is the skill, not noticing.
+2. **Advisers have interests.** Each minister advises from their
+   department and their politics:
+   - Skye wants the account balanced;
+   - Girard wants the grid kept up;
+   - Landry wants the quarrel with Earth eased;
+   - Devi wants the votes kept.
+
+   Outsiders press too, as Hatt does for his members. The advice is
+   honest but partial, and two voices can want opposite things on one
+   matter.
+3. **The cabinet you keep is the advice you get.**
+   - A vacant post means nobody raises its matters: the Treasury's
+     vacancy leaves money unadvised.
+   - A minister you have crossed advises later, or less.
+   - A capable minister sees trouble sooner.
+
+   This makes appointments matter without making them a core verb.
+
+**Proposed volume:** at most one or two new matters a sitting, and three
+open at once. A matter stays open until it is dealt with, or until it
+turns into the decision. The numbers are to be tuned by the playtest.
+
 ## A sitting
 
 **Proposed:** the brief, then the page and the decision, then what the
@@ -124,8 +158,10 @@ brief is advice, and Rise leaves it off the count.
 
 **Decided:** Flash's aim is to save the Works.
 
-**Proposed:** the Works is stranded at sitting 14, and the introduction
-does not mention it, so the aim arrives with the stranding. Act I's aim is
+**Decided (29 Sep):** Flash comes in as a competent manager, and does not
+know the Works will define her term. The Works is stranded at sitting 14,
+and the introduction does not mention it, so the aim arrives with the
+stranding. Act I's aim is
 the inherited one: carry the Divergence Threshold Bill and keep the
 coalition. The stranding then gives her premiership its purpose, and
 from then on the NPP's price competes with the Works. This is "set, then
