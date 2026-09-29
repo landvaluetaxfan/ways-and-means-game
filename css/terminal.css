@@ -3707,7 +3707,7 @@ body.no-motion .sp-signature.sig-draw .sigimg{transition:none;}
    column, straight on the chrome and quiet: the author (29 Sep) found it
    too large and too prominent heading the first column, and a plate under
    it read as a white box. */
-.play-logo{flex:0 0 auto;padding:1px 0 0;}
-.play-logo img{display:block;height:26px;width:auto;margin-left:-6px;opacity:.62;}
+.play-logo{flex:0 0 auto;padding:6px 0 3px;}
+.play-logo img{display:block;height:13px;width:auto;opacity:.62;}
 /* and on the act and interval cards and the curtain call it is the title */
 .sp-logo{display:block;width:min(440px,82%);height:auto;margin:6px auto 10px;}
