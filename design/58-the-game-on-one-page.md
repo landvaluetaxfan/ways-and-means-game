@@ -355,18 +355,17 @@ purpose, and from then on the NPP's price competes with the Works. This is
 **Decided (Round E): Flash I is the Parliament of 2080, and its one
 election is in 2084.** The details below were chosen by Claude and are the
 author's to change:
-- The country voted in March 2080, and no party won a majority. The PSD,
-  under Vijlbrief, came back the largest party with fewer seats. Flash,
-  his Treasurer from outside the House, won First Spin at the same
-  election.
-- The NPP and the CDA would not renew the coalition under the man who had
-  wanted the overdraft. The six independents would give confidence and
-  supply only to a government led by the Treasurer who had refused him.
-  The PSD's members replaced him with Flash to get the deal: "the members
-  who put her there did it to keep a government".
-- She is commissioned on 11 April 2080, the day the new Parliament's first
-  session opens. Her government is born of a bargain, and the NPP's price
+- In January 2080, with the election due and the polls showing a rout,
+  the PSD's members replaced Vijlbrief with his Treasurer, the one who had
+  refused him the overdraft: "the members who put her there did it to
+  keep a government". He stays on the back benches. (The author: replacing
+  him after the election, even one he lost, read as strange.)
+- Flash led the PSD into the March election and won First Spin. No party
+  won a majority. She bargained for a coalition with the NPP and the CDA,
+  with confidence and supply from six independents, and the NPP's price
   is still the Divergence bill.
+- She is commissioned on 11 April 2080, the day the new Parliament's first
+  session opens. The campaign opens on the deal.
 - The campaign ends at the general election of 2084, and the canon ending
   is read at that count.
 

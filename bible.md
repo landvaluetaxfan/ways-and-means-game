@@ -31,161 +31,161 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 - §1.7 · L252 — Chapters  *LOCKED*
 - §1.8 · L300 — Campaigns and the canon  *LOCKED*
 
-**Part II — DESIGN PRINCIPLES** · L415
-- §2.1 · L417 — Date your novelties  *LOCKED*
-- §2.2 · L427 — Light-lag discipline  *LOCKED*
-- §2.3 · L433 — Physical parameters are legislative outputs  *LOCKED*
-- §2.4 · L439 — Founding ambiguity is a feature  *LOCKED*
-- §2.5 · L443 — Keep the constitutional question open  *LOCKED*
-- §2.6 · L447 — Explanation cost is the real budget  *LOCKED*
-- §2.7 · L453 — Generation drift is the main production risk  *LOCKED*
+**Part II — DESIGN PRINCIPLES** · L413
+- §2.1 · L415 — Date your novelties  *LOCKED*
+- §2.2 · L425 — Light-lag discipline  *LOCKED*
+- §2.3 · L431 — Physical parameters are legislative outputs  *LOCKED*
+- §2.4 · L437 — Founding ambiguity is a feature  *LOCKED*
+- §2.5 · L441 — Keep the constitutional question open  *LOCKED*
+- §2.6 · L445 — Explanation cost is the real budget  *LOCKED*
+- §2.7 · L451 — Generation drift is the main production risk  *LOCKED*
 
-**Part III — CONSTITUTIONAL ORDER** · L472
-- §3.1 · L474 — Form of government  *LOCKED*
-- §3.2 · L487 — The legislature  *LOCKED*
-- §3.3 · L512 — The presidency  *LOCKED*
-- §3.4 · L530 — The player character  *LOCKED*
-- §3.5 · L538 — Loss conditions  *LOCKED*
-- §3.5.1 · L567 — Win conditions — the settlements  *LOCKED*
-- §3.6 · L619 — Opposition versus government  *LEANING*
-- §3.7 · L627 — The central constitutional question  *LOCKED*
-- §3.8 · L633 — Constitutional oddities  *LOCKED as available material*
-- §3.9 · L647 — Naming scheme  *LOCKED*
+**Part III — CONSTITUTIONAL ORDER** · L470
+- §3.1 · L472 — Form of government  *LOCKED*
+- §3.2 · L485 — The legislature  *LOCKED*
+- §3.3 · L510 — The presidency  *LOCKED*
+- §3.4 · L528 — The player character  *LOCKED*
+- §3.5 · L536 — Loss conditions  *LOCKED*
+- §3.5.1 · L565 — Win conditions — the settlements  *LOCKED*
+- §3.6 · L617 — Opposition versus government  *LEANING*
+- §3.7 · L625 — The central constitutional question  *LOCKED*
+- §3.8 · L631 — Constitutional oddities  *LOCKED as available material*
+- §3.9 · L645 — Naming scheme  *LOCKED*
 
-**Part IV — THE ELECTORAL SYSTEM** · L715
-- §4.1 · L717 — Parallel voting  *LOCKED*
-- §4.2 · L721 — The tier split as a tonal structure  *LOCKED*
-- §4.3 · L730 — Consequences of parallel specifically  *LOCKED*
-- §4.4 · L737 — The tier ratio is amendable  *LOCKED*
-- §4.5 · L741 — Dual candidacy and revenants  *LOCKED*
-- §4.6 · L747 — Functional constituencies  *LOCKED*
-- §4.6.1 · L757 — Dual majority  *LOCKED*
-- §4.6.2 · L763 — Corporate voting  *LOCKED*
-- §4.6.3 · L769 — Electorate sizes  *LOCKED*
-- §4.6.4 · L773 — The licensing board  *LOCKED*
-- §4.6.5 · L781 — The residual constituency (the "super-seat")  *LOCKED*
-- §4.6.6 · L787 — Abolition  *LOCKED as permanent open question*
-- §4.6.7 · L791 — Costs, acknowledged
-- §4.7 · L796 — Apportionment population ≠ voting population  *LOCKED*
-- §4.8 · L802 — Thresholds  *LOCKED*
-- §4.9 · L808 — External constituencies  *LOCKED*
-- §4.10 · L814 — Apportionment method as plot  *LOCKED*
-- §4.11 · L818 — Campaign finance in substrate-hours  *LOCKED*
-- §4.12 · L822 — Attestation as voter ID  *LOCKED*
-- §4.13 · L826 — Franchise weighting  *OPEN*
-- §4.14 · L830 — Compulsory voting variant  *OPEN*
-- §4.15 · L834 — Redistricting  *OPEN*
-- §4.16 · L838 — The count  *LEANING*
+**Part IV — THE ELECTORAL SYSTEM** · L713
+- §4.1 · L715 — Parallel voting  *LOCKED*
+- §4.2 · L719 — The tier split as a tonal structure  *LOCKED*
+- §4.3 · L728 — Consequences of parallel specifically  *LOCKED*
+- §4.4 · L735 — The tier ratio is amendable  *LOCKED*
+- §4.5 · L739 — Dual candidacy and revenants  *LOCKED*
+- §4.6 · L745 — Functional constituencies  *LOCKED*
+- §4.6.1 · L755 — Dual majority  *LOCKED*
+- §4.6.2 · L761 — Corporate voting  *LOCKED*
+- §4.6.3 · L767 — Electorate sizes  *LOCKED*
+- §4.6.4 · L771 — The licensing board  *LOCKED*
+- §4.6.5 · L779 — The residual constituency (the "super-seat")  *LOCKED*
+- §4.6.6 · L785 — Abolition  *LOCKED as permanent open question*
+- §4.6.7 · L789 — Costs, acknowledged
+- §4.7 · L794 — Apportionment population ≠ voting population  *LOCKED*
+- §4.8 · L800 — Thresholds  *LOCKED*
+- §4.9 · L806 — External constituencies  *LOCKED*
+- §4.10 · L812 — Apportionment method as plot  *LOCKED*
+- §4.11 · L816 — Campaign finance in substrate-hours  *LOCKED*
+- §4.12 · L820 — Attestation as voter ID  *LOCKED*
+- §4.13 · L824 — Franchise weighting  *OPEN*
+- §4.14 · L828 — Compulsory voting variant  *OPEN*
+- §4.15 · L832 — Redistricting  *OPEN*
+- §4.16 · L836 — The count  *LEANING*
 
-**Part V — CONSTITUENCIES** · L864
-- §5.1 · L866 — The district list is the setting bible  *LOCKED*
-- §5.2 · L870 — Constituency type is a real variable  *LOCKED*
-- §5.3 · L878 — Schema  *LOCKED*
-- §5.4 · L903 — Roster discipline  *LOCKED*
+**Part V — CONSTITUENCIES** · L862
+- §5.1 · L864 — The district list is the setting bible  *LOCKED*
+- §5.2 · L868 — Constituency type is a real variable  *LOCKED*
+- §5.3 · L876 — Schema  *LOCKED*
+- §5.4 · L901 — Roster discipline  *LOCKED*
 
-**Part VI — TRANSHUMANIST MECHANICS** · L909
-- §6.1 · L911 — Legal categories  *LOCKED*
-- §6.2 · L945 — Substrate  *LOCKED*
-- §6.3 · L953 — Clock speed  *LOCKED*
-- §6.4 · L961 — Forking and the divergence threshold  *LOCKED*
-- §6.5 · L979 — Census law  *LOCKED*
-- §6.6 · L985 — Suspension  *LOCKED*
-- §6.7 · L1001 — Backups  *LOCKED*
-- §6.8 · L1007 — Embodiment  *LOCKED*
-- §6.9 · L1013 — State object variables  *LOCKED*
-- §6.10 · L1044 — The biological position  *LOCKED*
-- §6.10.1 · L1085 — The real class axis is exposure, not substrate  *LOCKED*
-- §6.10.2 · L1106 — Two emulated populations with nothing in common  *LOCKED*
-- §6.10.3 · L1120 — Uploading as an economic decision  *LOCKED*
-- §6.11 · L1151 — Physiological class  *LOCKED*
+**Part VI — TRANSHUMANIST MECHANICS** · L907
+- §6.1 · L909 — Legal categories  *LOCKED*
+- §6.2 · L943 — Substrate  *LOCKED*
+- §6.3 · L951 — Clock speed  *LOCKED*
+- §6.4 · L959 — Forking and the divergence threshold  *LOCKED*
+- §6.5 · L977 — Census law  *LOCKED*
+- §6.6 · L983 — Suspension  *LOCKED*
+- §6.7 · L999 — Backups  *LOCKED*
+- §6.8 · L1005 — Embodiment  *LOCKED*
+- §6.9 · L1011 — State object variables  *LOCKED*
+- §6.10 · L1042 — The biological position  *LOCKED*
+- §6.10.1 · L1083 — The real class axis is exposure, not substrate  *LOCKED*
+- §6.10.2 · L1104 — Two emulated populations with nothing in common  *LOCKED*
+- §6.10.3 · L1118 — Uploading as an economic decision  *LOCKED*
+- §6.11 · L1149 — Physiological class  *LOCKED*
 
-**Part VII — ECONOMY AND SCARCITY** · L1166
-- §7.1 · L1168 — What got cheap, what stayed scarce  *LOCKED*
-- §7.2 · L1191 — Closure as the sovereignty number  *LOCKED*
-- §7.3 · L1199 — Taxation  *LOCKED*
-- §7.4 · L1226 — Welfare  *LOCKED*
-- §7.5 · L1232 — The shape of the economy  *LOCKED*
-- §7.5.1 · L1245 — Why nothing floats  *LOCKED*
-- §7.5.2 · L1259 — The financial sector  *LOCKED*
-- §7.5.3 · L1308 — Money  *LOCKED*
-- §7.5.4 · L1344 — The Reserve Bank  *LOCKED*
-- §7.6 · L1386 — Model depth, and the state object  *LOCKED*
-- §7.7 · L1441 — Order-paper time  *LOCKED*
-- §7.8 · L1477 — Discipline and the whip  *LOCKED*
-- §7.9 · L1507 — Scarcity prices  *LOCKED*
-- §7.10 · L1555 — The productive economy  *LOCKED*
+**Part VII — ECONOMY AND SCARCITY** · L1164
+- §7.1 · L1166 — What got cheap, what stayed scarce  *LOCKED*
+- §7.2 · L1189 — Closure as the sovereignty number  *LOCKED*
+- §7.3 · L1197 — Taxation  *LOCKED*
+- §7.4 · L1224 — Welfare  *LOCKED*
+- §7.5 · L1230 — The shape of the economy  *LOCKED*
+- §7.5.1 · L1243 — Why nothing floats  *LOCKED*
+- §7.5.2 · L1257 — The financial sector  *LOCKED*
+- §7.5.3 · L1306 — Money  *LOCKED*
+- §7.5.4 · L1342 — The Reserve Bank  *LOCKED*
+- §7.6 · L1384 — Model depth, and the state object  *LOCKED*
+- §7.7 · L1439 — Order-paper time  *LOCKED*
+- §7.8 · L1475 — Discipline and the whip  *LOCKED*
+- §7.9 · L1505 — Scarcity prices  *LOCKED*
+- §7.10 · L1553 — The productive economy  *LOCKED*
 
-**Part VIII — AXES AND PARTIES** · L1602
-- §8.1 · L1604 — The five signed axes  *LOCKED*
-- §8.2 · L1662 — Depth budget  *LOCKED*
-- §8.3 · L1671 — Naming register  *LOCKED*
-- §8.4 · L1696 — The seated parties  *LOCKED (280 seats*
-- §8.5 · L1737 — Party notes
-- §8.6 · L1761 — Parties available but not currently seated  *LOCKED as reserve material*
-- §8.7 · L1797 — Extraparliamentary  *LOCKED*
-- §8.8 · L1803 — Historical and defunct  *LOCKED*
-- §8.9 · L1809 — Ideologies as doctrines  *LOCKED*
+**Part VIII — AXES AND PARTIES** · L1600
+- §8.1 · L1602 — The five signed axes  *LOCKED*
+- §8.2 · L1660 — Depth budget  *LOCKED*
+- §8.3 · L1669 — Naming register  *LOCKED*
+- §8.4 · L1694 — The seated parties  *LOCKED (280 seats*
+- §8.5 · L1735 — Party notes
+- §8.6 · L1759 — Parties available but not currently seated  *LOCKED as reserve material*
+- §8.7 · L1795 — Extraparliamentary  *LOCKED*
+- §8.8 · L1801 — Historical and defunct  *LOCKED*
+- §8.9 · L1807 — Ideologies as doctrines  *LOCKED*
 
-**Part IX — THE PLAYER'S PARTY** · L1821
-- §9.1 · L1823 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
-- §9.2 · L1840 — Inherited platform  *LOCKED*
-- §9.3 · L1844 — Two alliance structures  *LOCKED*
-- §9.4 · L1853 — Refraction  *LOCKED as a writing principle*
-- §9.5 · L1857 — Current caucus (Party of Socialists and Democrats, 85)  *LOCKED*
+**Part IX — THE PLAYER'S PARTY** · L1819
+- §9.1 · L1821 — Which party  *LOCKED (per campaign; Flash I is the Party of Socialists and Democrats)*
+- §9.2 · L1838 — Inherited platform  *LOCKED*
+- §9.3 · L1842 — Two alliance structures  *LOCKED*
+- §9.4 · L1851 — Refraction  *LOCKED as a writing principle*
+- §9.5 · L1855 — Current caucus (Party of Socialists and Democrats, 85)  *LOCKED*
 
-**Part X — SOCIETY, CULTURE, LAW** · L1874
-- §10.1 · L1876 — Aesthetic register — orbital warmth  *LOCKED*
-- §10.2 · L1888 — Nativism, inverted  *LOCKED*
-- §10.3 · L1894 — Labour  *LOCKED*
-- §10.3.1 · L1918 — Four overlays that matter more than the sectors  *LOCKED*
-- §10.4 · L1947 — Who is not in paid work  *LOCKED*
-- §10.5 · L1985 — Fork-rentiers  *LOCKED*
-- §10.6 · L2000 — Labour conflict  *LOCKED*
-- §10.7 · L2008 — Media and information  *LOCKED*
-- §10.8 · L2014 — Courts and law  *LOCKED*
-- §10.9 · L2020 — Religion  *LOCKED*
-- §10.10 · L2024 — External pressures  *LOCKED*
+**Part X — SOCIETY, CULTURE, LAW** · L1872
+- §10.1 · L1874 — Aesthetic register — orbital warmth  *LOCKED*
+- §10.2 · L1886 — Nativism, inverted  *LOCKED*
+- §10.3 · L1892 — Labour  *LOCKED*
+- §10.3.1 · L1916 — Four overlays that matter more than the sectors  *LOCKED*
+- §10.4 · L1945 — Who is not in paid work  *LOCKED*
+- §10.5 · L1983 — Fork-rentiers  *LOCKED*
+- §10.6 · L1998 — Labour conflict  *LOCKED*
+- §10.7 · L2006 — Media and information  *LOCKED*
+- §10.8 · L2012 — Courts and law  *LOCKED*
+- §10.9 · L2018 — Religion  *LOCKED*
+- §10.10 · L2022 — External pressures  *LOCKED*
 
-**Part XI — NAMED CANON** · L2032
-- §11.1 · L2036 — The polity
-- §11.2 · L2175 — Persons
-- §11.3 · L2220 — Stations and constituencies
-- §11.4 · L2297 — The functional roster  *LOCKED*
-- §11.5 · L2319 — The live bill
-- §11.6 · L2328 — Other business on the order paper
+**Part XI — NAMED CANON** · L2030
+- §11.1 · L2034 — The polity
+- §11.2 · L2173 — Persons
+- §11.3 · L2218 — Stations and constituencies
+- §11.4 · L2295 — The functional roster  *LOCKED*
+- §11.5 · L2317 — The live bill
+- §11.6 · L2326 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L2346
-- §12.1 · L2348 — The core principle  *LOCKED*
-- §12.2 · L2352 — Split visual language  *LOCKED*
-- §12.3 · L2359 — Chrome direction  *LOCKED*
-- §12.4 · L2365 — Screens  *LOCKED*
-- §12.5 · L2369 — Election night  *LOCKED*
-- §12.6 · L2379 — The orbital map  *LOCKED*
-- §12.7 · L2407 — The parliament diagram  *LOCKED*
-- §12.8 · L2433 — Documents  *LOCKED*
-- §12.9 · L2439 — The feed  *LOCKED*
-- §12.10 · L2443 — Build cost  *LOCKED*
-- §12.11 · L2447 — Images  *LOCKED*
-- §12.12 · L2475 — Existing artifact
-- §12.13 · L2487 — How a change announces itself  *LOCKED*
+**Part XII — UI AND PRESENTATION** · L2344
+- §12.1 · L2346 — The core principle  *LOCKED*
+- §12.2 · L2350 — Split visual language  *LOCKED*
+- §12.3 · L2357 — Chrome direction  *LOCKED*
+- §12.4 · L2363 — Screens  *LOCKED*
+- §12.5 · L2367 — Election night  *LOCKED*
+- §12.6 · L2377 — The orbital map  *LOCKED*
+- §12.7 · L2405 — The parliament diagram  *LOCKED*
+- §12.8 · L2431 — Documents  *LOCKED*
+- §12.9 · L2437 — The feed  *LOCKED*
+- §12.10 · L2441 — Build cost  *LOCKED*
+- §12.11 · L2445 — Images  *LOCKED*
+- §12.12 · L2473 — Existing artifact
+- §12.13 · L2485 — How a change announces itself  *LOCKED*
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2546
-- §13.1 · L2548 — Scandal taxonomy  *LOCKED*
-- §13.2 · L2561 — The spine  *LOCKED*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L2544
+- §13.1 · L2546 — Scandal taxonomy  *LOCKED*
+- §13.2 · L2559 — The spine  *LOCKED*
 
-**Part XIV — PRIOR ART** · L2569
-- §14.1 · L2571 — The gap  *LOCKED*
-- §14.2 · L2575 — Works
-- §14.3 · L2583 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L2567
+- §14.1 · L2569 — The gap  *LOCKED*
+- §14.2 · L2573 — Works
+- §14.3 · L2581 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L2596
-- §15.1 · L2598 — Team  *LOCKED*
-- §15.2 · L2607 — Documentation  *LOCKED*
-- §15.3 · L2617 — Where this gets hard  *LOCKED*
-- §15.4 · L2628 — What would justify bringing in a person  *LOCKED*
-- §15.5 · L2645 — The build  *LOCKED*
+**Part XV — PRODUCTION** · L2594
+- §15.1 · L2596 — Team  *LOCKED*
+- §15.2 · L2605 — Documentation  *LOCKED*
+- §15.3 · L2615 — Where this gets hard  *LOCKED*
+- §15.4 · L2626 — What would justify bringing in a person  *LOCKED*
+- §15.5 · L2643 — The build  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L2657
+**Part XVI — OPEN DECISIONS** · L2655
 
 <!-- /TOC -->
 
@@ -361,14 +361,12 @@ to the calendar. It moved when the sitting periods were corrected to sixteen
 each (`design/37`) and again when the recess took days.
 
 **How Flash came to it, decided 29 Sep 2026 and revised the same day
-(`design/58` Round E).** The country voted in March 2080 and no party won a
-majority. The PSD, under Nils Vijlbrief, came back the largest party with
-fewer seats, and Flash, his Treasurer from outside the House, won First
-Spin. The NPP and the CDA would not renew the coalition under the man who
-had wanted the overdraft, and the six independents would give confidence
-and supply only to a government led by the Treasurer who had refused him.
-The PSD's members replaced him with Flash to get the deal (§11.1). She is
-commissioned on 11 April 2080, the day the new Parliament's first session
+(`design/58` Round E).** In January 2080, with a general election due and
+the polls showing a rout, the PSD's members replaced Nils Vijlbrief with
+his own Treasurer, who had refused him the overdraft (§11.1). Flash led
+the party into the March election and won First Spin. No party won a
+majority, and she bargained for a coalition with the NPP and the CDA, with
+confidence and supply from six independents. She is commissioned on 11 April 2080, the day the new Parliament's first session
 opens, and Flash I is that Parliament, to the general election of 2084. It
 is played in acts that skip time, and the debt trap's austerity lands
 inside it.
@@ -2141,7 +2139,7 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
   | 2077 | President van Ryneveld elected, on the Liberal ticket. |
   | 2076–2080 | **The Vijlbrief government.** Station breakdowns mount. Vijlbrief wants the stations' upkeep paid for from an overdraft at the Reserve Bank, and his Treasurer, Flash, refuses him in public. The markets side with her. *(The author chose the cause, 29 Sep 2026.)* |
   | 2079 | Charnock's primer, fourth edition. |
-  | **2080** | **General election, March.** No party wins a majority. The PSD, under Vijlbrief, is the largest party with fewer seats, and Flash wins First Spin. The NPP and the CDA will not serve under Vijlbrief again, and the six independents will support only a government led by the Treasurer who refused him, so the PSD's members replace him with Flash. He stays on the back benches, with the Hard Left. *(Revised 29 Sep 2026, `design/58` Round E: until then the election fell in August, after Flash took over.)* |
+  | **2080** | **January:** with a general election due and the polls against the party, the PSD's members replace Vijlbrief with his own Treasurer. He stays on the back benches, with the Hard Left. **General election, March:** Flash leads the PSD and wins First Spin. No party wins a majority, and she bargains for a coalition with the NPP and the CDA, with confidence and supply from six independents. *(Revised 29 Sep 2026, `design/58` Round E: until then the election fell in August, after Flash took over.)* |
   | **2080–2084** | **Flash I.** Flash is commissioned on 11 April 2080, the day the new Parliament's first session opens. The Commonwealth is sixteen. The Works crisis, and the debt trap's austerity. Only its opening weeks are built. |
   | 2081 | Presidential election; van Ryneveld's term ends. |
   | 2084 | General election; Flash I ends. |
@@ -2157,8 +2155,8 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
   this said "nine years as Governor" while the cabinet had her at the
   Treasury until last week and the introduction said she had never held
   elected office. Governor 2071 to 2076, Treasurer 2076 to 2080 without a
-  seat, member for First Spin at the general election of March 2080 and
-  leader in the spring. Nine years in the Commonwealth's two money offices,
+  seat, leader in January 2080 and member for First Spin at the general
+  election that March. Nine years in the Commonwealth's two money offices,
   and none of them elected.
 
   **And §2.1 gets cleaner, not weaker.** The principle is that whatever is

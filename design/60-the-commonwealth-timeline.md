@@ -2,8 +2,9 @@
 
 **Revised the same day (design/58, Round E):** the prologue rule is
 withdrawn. A campaign opens after a general election and closes on the
-next, so the 2080 election moves to March, before Flash takes over, and
-Flash I has one election, in 2084. Bible §1.8 and §11.1 carry the revision.
+next, so the 2080 election moves to March, before the curtain: Flash
+replaces Vijlbrief in January and leads the PSD into it. Flash I has one
+election, in 2084. Bible §1.8 and §11.1 carry the revision.
 
 **Recorded in canon, 29 September 2026.** The timeline, the cycle and the
 campaign rule are now in bible §1.8, §11.1 and §11.2. Vijlbrief is in
