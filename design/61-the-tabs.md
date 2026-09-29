@@ -176,8 +176,13 @@ His moves also reach the brief as matters.
 
 The heat, which is one of Flash I's major theatres, shows only as closure.
 
-**Open.** The author: "I actually quite like how orbit is currently. We
-can discuss it more." What was proposed: **Orbit becomes the country, with
+**Decided (second round): Orbit keeps its look and adds the stations'
+state.** The author likes it as it is. The selected station's detail panel
+gains its state in words: heat, consumables and standing. The Works appears
+on the schematic when it is stranded. The seat lists stay, as facts about
+each station.
+
+What was first proposed, and set aside: **Orbit becomes the country, with
 map modes.** The schematic
 gets the modes the Parliament diagram already has (by party, by vote).
 Here they would be:
@@ -219,3 +224,12 @@ The author, 29 Sep, in the first round:
 
 The Opposition panel and the rule on levers not yet open went in without
 objection. Orbit is still to be discussed.
+
+The second round, the same day:
+- Orbit keeps its look and adds the stations' state;
+- **the tabs are grouped by the House:** Sitting, Government, Chamber,
+  Party, Relations, Economy, Orbit, Foreign Affairs, Concordance, so the
+  three tabs that price a vote sit together;
+- **the status bar keeps only the essentials, in words:** confidence, the
+  heat, the time to the rise and the paper against the leadership, each
+  with its figure on hover.
