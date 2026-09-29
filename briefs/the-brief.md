@@ -4,6 +4,8 @@ Do it after `tabs-overhaul.md`.
 **Read `design/62-why-the-overhaul.md` first.** It gives the objectives of
 these changes and the reasons behind every design decision they carry out.
 When this brief does not cover a case, decide it by that record's tests.
+**Codex's questions are answered in `design/64-answers-to-codex.md`,**
+and those answers win over this brief where they differ.
 
 The brief is the answer to the author's question that started
 `design/57`: "when will a player know they should do something … by
