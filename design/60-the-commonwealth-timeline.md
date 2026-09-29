@@ -2,25 +2,56 @@
 
 **A working map, 29 September 2026, for the author.** It gathers the
 Commonwealth's political history (elections, governments, premierships)
-into one place. Lines marked **canon** are already fixed, with their
-source. Lines marked **proposed** fill a gap and wait for the author. Once
-agreed, this moves into bible §11.1 and the drafts are removed.
+into one place. Lines are marked **canon** (already fixed, with the
+source), **decided** (the author, in this conversation) or **proposed**
+(waiting for the author). Once agreed, this moves into bible §11.1 and
+the drafts are removed.
 
-## The conventions (proposed)
+## Flash I is 2080 to 2084
+
+**Decided:** the author set Flash I as 2080–2084, a full four-year term,
+and asked for an arrangement that makes sense of it.
+
+**Proposed:** Flash I runs from her commission to the general election
+that ends her first full term.
+
+- **Part one, as built.** She takes over in April 2080, in the last session
+  of Vijlbrief's Parliament, and the Works crisis happens. The August 2080
+  general election is her bid for a mandate of her own, and it falls
+  mid-campaign. The original design had one general election mid-game
+  (bible §1.7's history). A player who loses it ends the campaign there,
+  which is a bad ending: a short premiership.
+- **Part two, to be written.** If she wins, the new Parliament of
+  2080–2084 is played in acts that skip time. The debt trap's austerity
+  lands here, and the campaign ends at the 2084 general election.
+- **Canon** is unchanged up to the 2080 count (the figures in AGENTS.md).
+  The canon ending moves to the 2084 count, when part two is written.
+- **Campaigns are numbered by campaign.** Flash I is her first four years,
+  and a later Flash II would start in 2084. In-world, ministries follow the
+  UK and Australian convention, a new one after each election won. So the
+  Concordance can say "the first Flash ministry (April–August 2080)" and
+  "the second (from August 2080)", while the campaign stays Flash I.
+- **The general rule** becomes: a campaign is a premier's term, from taking
+  office to the election that ends it. Only the canon ending carries into
+  the next campaign.
+
+**What part two needs**, noted now and built later:
+- **After the count, a government forms and play goes on.** design/37 D4
+  found that nothing forms a government after the count.
+- **A time skip between acts must not run the day-by-day simulation**
+  through years. The interval applies an authored summary instead: the
+  act and interval text, which the author wants lengthened, plus its
+  effects.
+- **Content:** the acts of 2080 to 2084.
+
+## The conventions
 
 - **A Parliament runs up to four years.** Sessions are roughly annual, and
-  the first session after an election runs long, as at Westminster.
-- **A ministry is numbered by the elections its Prime Minister wins**, as in
-  the UK and Australia. Flash I runs from her appointment to the 2080
-  count. If she wins that count, the government she forms is Flash II,
-  even with the same parties. (Canada numbers by Prime Minister and New
-  Zealand by the party's era in office. The Commonwealth's procedure is
-  Westminster's, so it follows Westminster.)
-- **A campaign is roughly a ministry**: the time between two general
-  elections, played in acts, with the gaps carried by the act and interval
-  text (design/58). Not every ministry becomes a campaign.
-- **Only the canon ending carries forward.** A player can win as Gore, and
-  2004 is still Bush against Kerry.
+  the first after an election runs long, as at Westminster. *Proposed.*
+- **The President serves four years**, in step with the general elections.
+  *Decided.* Whether in the same year or the year after is open (see the
+  questions below).
+- **Only the canon ending carries forward.** *Decided.*
 
 ## The timeline
 
@@ -29,57 +60,44 @@ agreed, this moves into bible §11.1 and the drafts are removed.
 | early 2050s | The Security Council is reformed | canon, bible §11.1 |
 | ~2058 | Orbital industry at scale; permanent habitation begins | canon |
 | 2061 | *The Spindle* is founded. The stations act together as a treaty organisation under a Secretary-General | canon |
-| 2063 | The rising against the provisional administration, suppressed in five weeks | canon; its cause is OPEN (bible §17) |
-| 2064 | **The Perigee Charter.** The Commonwealth becomes a state | canon |
-| 2064 | **First general election**, won by the Founding Coalition, the Charter's party | **proposed** |
+| 2063 | The rising against the provisional administration, suppressed in five weeks. Its survivors are in their fifties now | canon; its cause is OPEN |
+| 2064 | **The Perigee Charter**, and the first general election. The Founding Coalition, the Charter's party, governs | canon (the Charter); **decided** (the election; the author delegated this) |
 | 2064–70 | The founding auctions: volume leases sold cheaply, which made today's landlord class | canon |
 | 2066 | Admitted to the United Nations | canon |
-| 2068 | **General election.** The Founding Coalition splits over the auctions and the unions, into the PSD and the Liberal Party (bible §8.8 has the split, undated). The Liberals govern | **proposed** |
+| 2068 | **General election.** The Founding Coalition splits over the auctions and the unions, into the PSD and the Liberals (bible §8.8). The Liberals govern | **decided** (delegated) |
 | 2070 | Flash comes up to the Winter Garden | canon |
-| 2071 | A Liberal government appoints Flash Governor of the Reserve Bank | canon (the governorship); **proposed** (by whom) |
-| 2072 | **General election**; the Liberals are returned. The last amendment to the Allocation Act | canon (the Act); **proposed** (the election) |
+| 2071 | A Liberal government appoints Flash Governor of the Reserve Bank | canon (the post); **decided** (by whom) |
+| 2072 | **General election.** The Liberals are returned. The last amendment to the Allocation Act | **decided** (delegated) |
 | 2073 | Flash floats the dollar | canon |
-| 2076 | **General election.** The PSD wins on the maintenance unions' vote and forms a coalition with the NPP and the CDA. The NPP's price is the Divergence Threshold Bill. The new Prime Minister (unnamed) brings Flash from the Bank to the Treasury, from outside the House | canon (Flash to the Treasury, the promise); **proposed** (the election, the coalition's origin) |
-| 2077 | Van Ryneveld is elected President by direct vote, on the Liberal ticket, with 51.4 per cent | canon. His term's length is OPEN |
-| 2077–80 | Station breakdowns. The Prime Minister blames the maintenance crews, the PSD's own base, and the Trades Left never forgives it | canon (the blame, events.js "the_account"); **proposed** (the timing, and that it began the fall) |
-| early 2080 | The party turns. The Hard Left and the Trades Left raise the leadership paper, and the Prime Minister resigns before the ballot, with the Divergence bill still not voted on | **proposed**. It mirrors the game's own leadership paper, so the player has seen how their predecessor fell |
-| spring 2080 | Flash wins the PSD leadership as a dark horse. "The members who put her there did it to keep a government" | canon (intro) |
-| 11 Apr 2080 | Flash is commissioned. The fourth and last session of the 2076 Parliament opens the same day | canon (intro, Act I) |
-| 2080 | Flash takes First Spin at the by-election | canon |
-| 17 Jul 2080 | The Works' air runs out, if nobody pays | canon |
-| 31 Jul 2080 | The House rises for the last time; dissolution | canon (bible §1.8) |
-| mid-Aug 2080 | **General election.** In canon the PSD holds 103 seats and the government's side 167 | canon (AGENTS.md) |
-| 2080–84 | **Flash II**, if it becomes a campaign: the debt trap's austerity | canon (bible §1.8) |
-| 2084 | General election due | follows from the cycle |
+| 2076 | **General election.** **Nils Vijlbrief** leads the PSD to government in coalition with the NPP and the CDA. The NPP's price is the Divergence Threshold Bill. He brings Flash from the Bank to the Treasury, from outside the House, to reassure the markets | **decided** (the name, the author); the rest **decided** (delegated) |
+| 2077 | Van Ryneveld is elected President by direct vote, on the Liberal ticket, with 51.4 per cent | canon (see the questions below) |
+| 2076–80 | The Vijlbrief government; why it fell is the author's choice, from a slate | **open** |
+| spring 2080 | Vijlbrief goes. Flash wins the PSD leadership as a dark horse. "The members who put her there did it to keep a government" | canon (the intro) |
+| 11 Apr 2080 | Flash is commissioned. The fourth and last session of the 2076 Parliament opens the same day | canon |
+| mid-Aug 2080 | **General election**, mid-campaign. In canon the PSD holds 103 seats and the government's side 167 | canon |
+| 2080–84 | Flash I, part two: the debt trap's austerity | **proposed** |
+| 2084 | **General election**; Flash I ends | **proposed** |
 
-## What this corrects
+## What this corrects, once agreed
 
 - **Bible §1.8**: "about two years into a four-year term, so the election
-  that closes Flash I is an early one" is wrong. The introduction, Act I and
-  `session:4` all say it is the last session of the 2076 Parliament, so the
-  2080 election is due, not early.
-- **setup.js**: "Session 4 of a parliament about two years old" is wrong for
-  the same reason.
-- **The campaign record** gives Flash I as `from:2080, to:2084`. Under the
-  ministry convention it is 2080 only, and that is the source of the
-  playbill's "2080–2084".
-- **The introduction** says "they lead a somewhat convincing minority
-  government". The coalition's three parties hold 141 of 280, a majority of
-  one, and the six independents' confidence and supply bring it to 147. So
-  it is a bare majority, not a minority.
+  that closes Flash I is an early one". It is the last session of the 2076
+  Parliament, so the 2080 election is due, and it falls mid-campaign.
+- **setup.js**: "Session 4 of a parliament about two years old", for the
+  same reason.
+- **The introduction**: "a somewhat convincing minority government". The
+  three parties hold 141 of 280, a majority of one, and the independents'
+  confidence and supply bring it to 147.
+- **"The last government blamed the stations' breakdowns on its
+  maintenance crews"** (events.js, the_account). A Corbyn type does not
+  blame the unions, so the line needs to fit whichever reason is chosen.
 
 ## For the author
 
-1. **The predecessor.** They need a name (the rosters are frozen, so they
-   are added deliberately), a current in the PSD, and a fate. After
-   resigning, do they sit on the back benches in 2080? A former Prime
-   Minister in the chamber is a classic figure.
-2. **Why they fell.** The proposal above is blaming the crews, then the
-   paper. Is that the cause?
-3. **The governments of 2064 to 2076.** The proposal above is the Founding
-   Coalition, then the split in 2068, then Liberal governments until 2076.
-   Or something else?
-4. **The President's term.** Five years puts the next presidential
-   election in 2082, inside Flash II. Seven years puts it in 2084.
-5. **The conventions** at the top: ministries numbered by elections won,
-   and a campaign as roughly a ministry.
+1. **Why Vijlbrief's government fell**: pick from the slate, or combine.
+2. **The President's cycle**: elected in the same year as the general
+   election, which moves van Ryneveld's election from 2077 to 2076 and puts
+   him up again in August 2080? Or four years from 2077, which keeps canon
+   and puts the next presidential election in 2081, inside part two, as a
+   midterm verdict on Flash?
+3. **The arrangement above** for Flash I, 2080–2084.
