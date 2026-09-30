@@ -759,10 +759,53 @@ try {
    symptom was the chamber drawing zero seats, three renderers away. A
    renderer that throws is not a local failure. */
 try {
+  const state = w.eval("UI.state()");
+  const log = state.log, wire = state.wire;
+  try {
+    state.log = Array.from({ length: 160 }, (_, i) => ({
+      sitting: 160 - i, text: "History decision [" + (160 - i) + "]"
+    }));
+    state.wire = Array.from({ length: 160 }, (_, i) => ({
+      sitting: 160 - i, text: "History news " + (160 - i)
+    }));
+    state.log[0] = { sitting: 160, text: "— Chapter 3 —", chapterMark: true };
+    w.eval("UI.redraw()");
+    const feed = w.document.querySelector("#gov-wire");
+    ok("the merged feed bounds its rendered history and keeps the latest news",
+       feed.querySelectorAll("p").length <= 56 &&
+       feed.textContent.includes("History news 160") &&
+       !feed.textContent.includes("History decision [1]"));
+    const chapter = feed.querySelector("[data-chapter-mark]");
+    ok("a chapter break is a header, never a decision",
+       !!chapter && chapter.textContent === "— Chapter 3 —" && !chapter.closest("p"));
+    ok("the feed keeps the full run available to the transcript",
+       state.log.length === 160 && state.wire.length === 160 &&
+       w.eval("UI.transcript()").includes("History decision [1]"));
+  } finally {
+    state.log = log; state.wire = wire; w.eval("UI.redraw()");
+  }
+} catch (e) { ok("the merged history", false, e.message); }
+
+try {
   const text = w.eval("UI.transcript()");
   const optTranscript = w.document.querySelector("#tb-optpanel .opt-transcript textarea");
   ok("Options offers a transcript", !!w.document.querySelector('#tb-optpanel [data-act="transcript"]') &&
      !!optTranscript && /PLAYTEST TRANSCRIPT/.test(optTranscript.value));
+  const guidance = optTranscript && w.document.getElementById(optTranscript.getAttribute("aria-describedby"));
+  ok("the transcript explains how to put the run in a playtest report",
+     !!guidance && /report/.test(guidance.textContent));
+  const select = w.document.querySelector('#tb-optpanel [data-act="transcript-select"]');
+  if (select) select.click();
+  ok("Select all focuses and selects the complete transcript",
+     !!select && w.document.activeElement === optTranscript &&
+     optTranscript.selectionStart === 0 && optTranscript.selectionEnd === optTranscript.value.length);
+  const createURL = w.URL.createObjectURL;
+  try {
+    w.URL.createObjectURL = () => { throw new w.Error("download refused"); };
+    w.document.querySelector('#tb-optpanel [data-act="transcript"]').click();
+    ok("a refused transcript download explains how to copy the report",
+       /select and copy/i.test(w.document.querySelector("#sb-msg").textContent));
+  } finally { w.URL.createObjectURL = createURL; }
   ok("and it has the run in it", text.length > 300, text.length + " characters");
   for (const want of ["PLAYTEST TRANSCRIPT", "WHERE IT STANDS", "MEASURES",
                       "WHAT WAS DECIDED", "NOTES FROM THE TESTER"])

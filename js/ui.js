@@ -2935,10 +2935,11 @@ const UI = (function () {
         ? `<img src="${esc(logo)}" alt="${esc(pl.title || "")}" onerror="this.parentNode.hidden=true">` : "";
     }
 
-    /* A VERTICAL FEED HOLDS MORE THAN A STRIP DID, and the column scrolls,
-       so the wire shows the session's traffic rather than its tail. */
-    const happened = (st.wire || []).map((w, i) => ({ sitting: w.sitting, text: w.text, kind: "Wire", i }))
-      .concat((st.log || []).map((l, i) => ({ sitting: l.sitting, text: l.text, kind: "Decision", i })))
+    /* Keep the old panels' bounds on rendered history. The save and the
+       transcript retain every entry; a redraw need only sort this tail. */
+    const happened = (st.wire || []).slice(0, 16).map((w, i) => ({ sitting: w.sitting, text: w.text, kind: "Wire", i }))
+      .concat((st.log || []).slice(0, 40).map((l, i) => ({ sitting: l.sitting, text: l.text,
+        chapterMark: l.chapterMark, kind: "Decision", i })))
       .sort((a, b) => (b.sitting || 0) - (a.sitting || 0) || a.kind.localeCompare(b.kind) || a.i - b.i);
     const sittings = [];
     happened.forEach(item => {
@@ -2950,7 +2951,10 @@ const UI = (function () {
     });
     $("#gov-wire").innerHTML = sittings.length
       ? sittings.map(g => `<div class="post"><div class="meta">SITTING ${g.sitting}</div>` +
-          g.items.map(x => `<p><b${x.kind === "Decision" ? ` data-tip="log"` : ""}>${x.kind}.</b> ${x.text}</p>`).join("") + `</div>`).join("")
+          g.items.map(x => x.chapterMark
+            ? `<div class="rulehead" data-chapter-mark>${esc(x.text)}</div>`
+            : `<p><b${x.kind === "Decision" ? ` data-tip="log"` : ""}>${x.kind}.</b> ${x.text}</p>`).join("") + `</div>`).join("") +
+          `<div class="note">Recent news and decisions. The complete run is in the playtest transcript in Options.</div>`
       : `<div class="pbody"><div class="note">Nothing has happened yet.</div></div>`;
   }
 
@@ -6201,8 +6205,8 @@ const UI = (function () {
 
     secs.push({ kind: "body", head: "The record",
       body: st.log.length + " entries, sitting " + st.sitting + ", session " + st.session +
-            ", seed " + st.seed + ". Every decision is under What has happened on the Sitting, " +
-            "and in the playtest transcript in Options. Nothing here can be taken back." });
+            ", seed " + st.seed + ". Recent decisions are under What has happened on the Sitting. " +
+            "The complete run is in the playtest transcript in Options. Nothing here can be taken back." });
 
     return { title: title, sections: secs, mood: endMood(end) };
   }
@@ -6273,7 +6277,7 @@ const UI = (function () {
         country.map(r => `${esc(r.k)} ${esc(r.then)} &rarr; ${esc(r.now)}`).join(" &middot; ") + `</div>` : "") +
       `<div class="rulehead">The record</div><div class="note">` +
         `${st.log.length} entries, sitting ${st.sitting}, session ${st.session}, seed ${st.seed}. ` +
-        `Every decision is under What has happened on the Sitting, and nothing here can be taken back.</div></div>`;
+        `Recent decisions are under What has happened on the Sitting. The complete run is in the playtest transcript in Options, and nothing here can be taken back.</div></div>`;
   }
 
   function drawSitting() {

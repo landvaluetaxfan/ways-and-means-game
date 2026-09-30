@@ -923,7 +923,9 @@ const Shell = (function () {
         ${inGame === false ? "" : `<div class="opt-group session">
           <div class="opt-title">Session</div>
           <details class="opt-transcript"><summary>Playtest transcript</summary>
-            <textarea readonly spellcheck="false">${esc(UI.transcript())}</textarea>
+            <div class="note" id="opt-transcript-help">The run so far, as plain text. Select it and paste it into your report, or take the file.</div>
+            <textarea readonly spellcheck="false" aria-label="Playtest transcript" aria-describedby="opt-transcript-help">${esc(UI.transcript())}</textarea>
+            <button class="mbtn sm wide" data-act="transcript-select">Select all</button>
             <button class="mbtn sm wide" data-act="transcript">Download transcript</button>
           </details>
           <button class="mbtn sm wide" data-act="export">Export to file</button>
@@ -947,13 +949,23 @@ const Shell = (function () {
       opts[sl.dataset.lvl] = (+sl.value || 0) / 100; saveOpts(); applyOpts();
     }));
     if (inGame === false) return;
+    p.querySelector('[data-act="transcript-select"]').addEventListener("click", () => {
+      const ta = p.querySelector(".opt-transcript textarea");
+      ta.value = UI.transcript();
+      ta.focus({ preventScroll: true }); ta.select();
+      UI.setStatus("The transcript is selected — copy it", "transient");
+    });
     p.querySelector('[data-act="transcript"]').addEventListener("click", () => {
-      const value = UI.transcript();
-      const blob = new Blob([value], { type: "text/plain" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "ways-and-means-sitting-" + UI.state().sitting + ".txt";
-      a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      try {
+        const blob = new Blob([UI.transcript()], { type: "text/plain" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "ways-and-means-sitting-" + UI.state().sitting + ".txt";
+        a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        UI.setStatus("Transcript written", "transient");
+      } catch (e) {
+        UI.setStatus("This browser would not write the file — select and copy instead", "transient");
+      }
     });
     p.querySelector('[data-act="export"]').addEventListener("click", exportFile);
     p.querySelector('[data-act="import"]').addEventListener("click", () =>
