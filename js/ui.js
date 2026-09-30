@@ -496,89 +496,46 @@ const UI = (function () {
     $("#tb-sys").textContent = `SESS ${sess} / SITTING ${String(st.sitting).padStart(3, "0")} / ${st.date}${rise}`;
   }
   function drawStatus() {
-    /* DURING THE CAMPAIGN THE NUMBER IS THE POLL (design/38 §1): there is
-       no House to command, and the count the engine will take at the end
-       is the one worth watching. */
+    /* Four essentials, using the same content-owned bands as the brief.
+       During a campaign there is no House: show the forecast majority. */
     const polling = st.dissolved && !Engine.counted(st);
     const f = polling ? Engine.forecast(st, C) : null;
     const conf = f ? f.side : Engine.confidence(st), maj = f ? f.majority : Engine.majority(st);
-    $("#sb-conf").textContent = `${f ? "POLL" : "CONFIDENCE"} ${conf}/${f ? f.total : Engine.chamberTotal(st)}`;
-    $("#sb-margin").textContent = `MARGIN ${conf - maj >= 0 ? "+" : ""}${conf - maj}`;
-    /* AND THE THERMAL CHIP SAYS WHERE THE ORDERS ARE (design/38 §7). While
-       the docket carries an alert on the margin, the chip is red and its
-       card names the next order, from the same engine reading, so the
-       status bar and the order of the day cannot disagree. Otherwise the
-       chip explains the meter, as every chip does. */
+    const put = (id, reading, figure, label) => {
+      const el = $(id), title = label || reading.label;
+      el.textContent = title + ": " + (reading.text || "No reading");
+      el.setAttribute("data-tip-title", title);
+      el.setAttribute("data-tip-body", figure);
+      return el;
+    };
+    put("#sb-conf", Engine.readout(st, C, "confidence", { value:conf - maj }),
+      conf + " of " + (f ? f.total : Engine.chamberTotal(st)) +
+      " seats; " + maj + " needed. Margin " + (conf - maj) + ".", f ? "Poll" : null);
+    const heat = Engine.readout(st, C, "heat");
+    put("#sb-thermal", heat, "Thermal margin " + heat.value + " per cent across the Commonwealth.");
     const th = $("#sb-thermal");
-    th.textContent = `THERMAL ${st.scalars.thermal_margin}%`;
     const alert = Engine.today(st, C, false).items
       .find(i => i.kind === "alert" && i.raises === "thermal_margin");
     th.style.color = alert ? "var(--alert)" : "";
     if (alert) {
       th.setAttribute("data-tip-title", "Thermal margin: the orders are open");
-      th.setAttribute("data-tip-body", alert.text + ". The next is on the Government tab" +
+      th.setAttribute("data-tip-body", "Thermal margin " + heat.value + " per cent. " +
+        alert.text + ". The next is on the Government tab" +
         (alert.how ? ": " + alert.how + "." : "."));
-    } else {
-      th.removeAttribute("data-tip-title");
-      th.removeAttribute("data-tip-body");
     }
-    $("#sb-chapter").textContent = `CHAPTER ${st.chapter}`;
-    /* THE CLOCK, ON EVERY SCREEN (design/26 #88). The next rise is the
-       deadline that governs everything else on the board — order-paper time
-       refills at every rise, and at the session's last one business not
-       carried falls and every undertaking due "before the House rises"
-       comes due at once — and it was only ever visible on the calendar, on
-       one tab, halfway down a column. It is a chip in the status bar now,
-       and it turns red inside three. */
-    const rise = $("#sb-rise");
-    if (rise) {
-      if (st.dissolved) {
-        rise.textContent = "CAMPAIGN DAY " + (st.sitting - st.dissolved.at + 1);
-        rise.style.color = "";
-      }
-      else if (st.risesAt == null) { rise.textContent = ""; }
-      else {
-        const left = st.risesAt - st.sitting;
-        rise.textContent = left <= 0 ? "RISE TODAY" : `RISE IN ${left}`;
-        rise.style.color = left <= 3 ? "var(--alert)" : "";
-      }
+    const clock = Engine.readout(st, C, "rise");
+    const rise = put("#sb-rise", clock, clock.value == null ? "The House is not sitting."
+      : clock.value + " sittings until the House rises.");
+    if (st.dissolved) {
+      rise.textContent = "House dissolved";
+      rise.setAttribute("data-tip-body", "Campaign day " + (st.sitting - st.dissolved.at + 1) + ".");
     }
-    /* ORDER-PAPER TIME AS MARKS, NOT A FRACTION (design/19 §5.1). "4 of 6" is
-       a number; six marks with two dark is a quantity the eye has before it
-       reads. The tooltip still says what the marks mean. */
-    const sUsed = st.slots.used, sTot = st.slots.total;
-    /* Reserved time (design/32 §E.5) is drawn HOLLOW after the session's own:
-       it is there, and only one measure can spend it. */
-    const sRes = Object.values(st.slots.reserved || {}).reduce((a, n) => a + n, 0);
-    $("#sb-slots").innerHTML = "SLOTS" + Array.from({ length: sTot }, (_, i) =>
-      `<i class="sbpip${i < sUsed ? " spent" : ""}"></i>`).join("") +
-      Array.from({ length: sRes }, () => `<i class="sbpip res"></i>`).join("");
-    $("#sb-slots").classList.toggle("none", sUsed >= sTot && !sRes);
-    /* THE THRESHOLD IS CONTENT'S, and this readout had it wrong. It printed
-       "/9" and reddened at 7 as literals, while `setup.thresholds.ballot` is
-       12 and the paper on the Party tab (`drawLeadership`) reads it properly -- so the
-       status bar told the player a ballot needed nine names when it needs
-       twelve, and went red five short of the number that actually matters.
-       Two places holding one number, which is the apportionment_ratio
-       lesson; the alert follows the threshold now rather than being set
-       beside it. */
-    const sigNeed = (C.setup.thresholds && C.setup.thresholds.ballot) || 12;
+    rise.style.color = clock.value != null && clock.value <= 3 ? "var(--alert)" : "";
+    const sigNeed = C.setup.thresholds.ballot;
     const sigHave = st.signatures || 0;
-    $("#sb-sig").textContent = `SIGNATURES ${sigHave}/${sigNeed}`;
-    $("#sb-sig").style.color = sigHave >= sigNeed - 2 ? "var(--alert)" : "";
-    /* OUTSTANDING UNDERTAKINGS. Absent when there are none, rather than
-       showing a zero: this is the thing that makes rising cost
-       something, and a permanent "OWED 0" is furniture. */
-    const owedN = Engine.outstanding(st);
-    const ow = $("#sb-owed");
-    if (ow) {
-      ow.textContent = owedN.length ? "OWED " + owedN.length : "";
-      ow.style.display = owedN.length ? "" : "none";
-      ow.style.color = owedN.some(u => u.by - st.sitting <= 1) ? "var(--alert)" : "";
-    }
-    const loss = Engine.checkLoss(st, C);
-    $("#sb-state").textContent = loss.lost ? "GOVERNMENT FALLEN: " + loss.reason.toUpperCase() : "READY";
-    $("#sb-state").style.color = loss.lost ? "var(--alert)" : "";
+    const paper = put("#sb-sig", Engine.readout(st, C, "paper", { need:sigNeed }),
+      sigHave + " names; " + sigNeed + " needed to force a leadership ballot.");
+    paper.style.color = sigHave >= sigNeed - 2 ? "var(--alert)" : "";
     setStatus(ambient(), "ambient");
   }
 
@@ -4708,7 +4665,6 @@ const UI = (function () {
     const gov = screen === "gov", sit = screen === "sit",
           party = screen === "party", rel = screen === "rel";
     if (before.slots !== after.slots) {
-      flash($("#sb-slots"));
       if (screen === "cham") { flash($("#cham-time .slotbar")); flash($("#gov-slots-hdr")); }
     }
     /* THE LEDGER AND THE OTHER PARTIES' LOYALTIES ARE ON RELATIONS, and

@@ -8837,7 +8837,8 @@ const Engine = (function () {
       return min != null && value >= min;
     });
     return { label: d.label, value,
-      text: band ? String(band.text).replace(/\{value\}/g, String(value)) : null };
+      text: band ? String(band.text).replace(/\{(\w+)\}/g, (match, k) =>
+        k === "value" ? String(value) : ctx[k] == null ? match : String(ctx[k])) : null };
   }
 
   return {

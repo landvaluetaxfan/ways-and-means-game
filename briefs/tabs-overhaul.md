@@ -123,7 +123,7 @@ later, and is listed at the end so you do not build it here.
    the Works (Flash I) has a stranded flag, mark it on the schematic
    when it is set. Do not add map modes: the author set them aside.
 
-8. **The status bar keeps only the essentials, in words** (`drawStatus()`
+8. **The status bar keeps only the essentials, in words** DONE. (`drawStatus()`
    ~498, `#statusbar` in `index.html` ~525). Keep four items:
    - confidence;
    - the heat (the thermal margin);

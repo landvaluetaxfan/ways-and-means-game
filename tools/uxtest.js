@@ -848,7 +848,7 @@ try {
   /* design/37: the topbar said RISES IN 16 over a status bar saying RISE
      IN 15. One count, printed twice. */
   const twoClocks = w.eval(`[(document.getElementById("tb-sys").textContent.match(/RISES IN (\\d+)/) || [])[1],
-    (document.getElementById("sb-rise").textContent.match(/RISE IN (\\d+)/) || [])[1]]`);
+    (document.getElementById("sb-rise").textContent.match(/rises in (\\d+)/) || [])[1]]`);
   ok("and it is the same count as the status bar's",
      twoClocks[0] != null && twoClocks[0] === twoClocks[1], twoClocks.join(" / "));
 } catch (e) { ok("the division dialog", false, e.message); }
@@ -1267,7 +1267,6 @@ try {
   })()`);
   const dk = w.document.querySelectorAll("#sit-docket .dk.owed");
   ok("an undertaking appears on the docket", dk.length === 1, dk.length + " items");
-  ok("the status bar counts it", /OWED/.test(w.document.querySelector("#sb-owed").textContent));
 
   ok("nothing on the docket is a control",
      w.document.querySelectorAll("#sit-docket button,#sit-docket a,#sit-docket input").length === 0);
@@ -1292,8 +1291,6 @@ try {
   w.eval('Engine.apply(UI.state(), CONTENT, [{flag:"probe_done"}]); Engine.settle(UI.state(), CONTENT); UI.redraw();');
   ok("doing the thing takes it off the docket",
      w.document.querySelectorAll("#sit-docket .dk.owed").length === 0);
-  ok("and the status bar chip goes with it",
-     w.document.querySelector("#sb-owed").textContent === "");
 } catch (e) { ok("undertakings and the docket", false, e.message); }
 
 
@@ -1998,17 +1995,6 @@ try {
        const body = b.getAttribute("data-tip-body") || "";
        return day.length > 0 && day.every(t => t && body.indexOf(t) >= 0);
      }));
-
-  /* ORDER-PAPER TIME IS A QUANTITY, NOT A FRACTION (design/19 §5.1). */
-  {
-    const s1 = JSON.parse(w.eval("Engine.save(UI.state())"));
-    const pips = [...w.document.querySelectorAll("#sb-slots .sbpip")];
-    ok("the status bar draws order-paper time as marks",
-       pips.length === s1.slots.total && pips.length > 0, pips.length + " marks");
-    ok("and darkens exactly the spent ones",
-       pips.filter(p => p.classList.contains("spent")).length === s1.slots.used,
-       s1.slots.used + " of " + s1.slots.total + " spent");
-  }
 
   /* A QUIET SITTING PRINTS AN ORDER PAPER (design/17 §2.2). The state the old
      screen rendered as an empty gap — nothing eligible — should render a page

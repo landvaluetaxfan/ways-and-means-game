@@ -35,6 +35,9 @@ const RUN_BOUND = T.runBound(CONTENT);
     s.scalars.thermal_margin = 20;
     ok("a readout changes bands at the authored boundary", Engine.readout(s, C, "probe").text === "held");
     s.scalars.thermal_margin = 19;
+    ok("readouts substitute contextual figures without owning another threshold",
+       Engine.readout(s, C, { label:"Paper", source:"signatures",
+         bands:[{ min:0, text:"{value} of {need} names" }] }, { value:2, need:17 }).text === "2 of 17 names");
     ok("only campaign markers whose conditions hold are visible",
        Engine.campaignMarkers(s, C).map(m => m.id).join(",") === "always");
     ok("presentation queries do not change the saved simulation", Engine.save(s) === before);

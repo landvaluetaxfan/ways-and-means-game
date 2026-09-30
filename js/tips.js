@@ -49,17 +49,12 @@ const Tips = (function () {
      Entries with no body fall through to the glossary and the Concordance. */
   const TIPS = {
     /* ---- the status bar, left to right ---- */
-    state: { title: "Government status",
-      body: `READY while you are in office. You lose office if the House carries a motion of no confidence, if your party removes you at a leadership ballot, if the House rises without supply, or if the thermal margin reaches zero. There is no undo.` },
     /* the author's bench (design/47), anchored on its own screen */
     sandbox: { title: "The sandbox",
       body: "A campaign opened for the author. Pick any event and it is put on " +
             "the Sitting screen as a player meets it, whatever its gate says. Every " +
             "change made from this tab is saved first, so Undo and Try again step " +
             "back. The sandbox keeps its own save, records no ending and earns no award." },
-    chapter: { title: "Chapter",
-      body: "The act of the story you are in. Chapters control which events can " +
-            "fire. They do not advance on a timer." },
     rise: { title: "The House rises",
       body: "The sittings left before the House rises. A session is sat in " +
             "periods: at a recess order-paper time refills and nothing else ends. " +
@@ -97,9 +92,6 @@ const Tips = (function () {
       body: "Seats held by your coalition, plus any party supplying confidence. " +
             "This is measured against all 280 seats, and it keeps you in office. " +
             "It is not the same as the votes on a particular bill." },
-    margin: { title: "Margin",
-      body: "Confidence minus the majority of 141. At zero, one defection loses " +
-            "you the chamber." },
 
     /* ---- the chamber ---- */
     seats: { title: "Seats",

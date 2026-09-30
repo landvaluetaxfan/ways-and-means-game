@@ -138,7 +138,7 @@
              row of buttons any more, because there was never a second list. -->
         <div class="stack" id="cham-biz">
           <div class="panel">
-            <h2>Order paper <em id="gov-slots-hdr"></em></h2>
+            <h2>Order paper <em id="gov-slots-hdr" data-tip="slots"></em></h2>
             <div class="pbody flush scrolls"><div id="cham-time"></div><table id="cham-bills"></table></div>
           </div>
           <div class="panel">
@@ -457,17 +457,12 @@
   </div>
 
   <div id="statusbar">
-    <span id="sb-state" data-tip="state">READY</span>
-    <span id="sb-chapter" data-tip="chapter"></span>
-    <span id="sb-rise" data-tip="rise"></span>
-    <span id="sb-slots" data-tip="slots"></span>
-    <span id="sb-sig" data-tip="signatures"></span>
-    <span id="sb-owed"></span>
     <span id="sb-conf" data-tip="confidence"></span>
-    <span id="sb-margin" data-tip="margin"></span>
+    <span id="sb-thermal" data-tip="thermal_margin"></span>
+    <span id="sb-rise" data-tip="rise"></span>
+    <span id="sb-sig" data-tip="signatures"></span>
     <!-- written only by UI.setStatus; see js/ui.js for the priority -->
     <span class="grow" id="sb-msg"></span>
-    <span id="sb-thermal" data-tip="thermal_margin"></span>
   </div>
 </div>
 

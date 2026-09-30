@@ -95,7 +95,7 @@ const SETUP = {
       { min:1, text:"rises in {value} sittings" }, { min:null, text:"rises today" }] },
     paper: { label:"The paper", source:"signatures", bands:[
       { min:"setup.thresholds.ballot", text:"a ballot is forced" },
-      { min:1, text:"names" }, { min:null, text:"no paper" }] }
+      { min:1, text:"{value} of {need} names" }, { min:null, text:"no paper" }] }
   },
 
   /* No `party_loyalty`: the meter is the government party's currents,

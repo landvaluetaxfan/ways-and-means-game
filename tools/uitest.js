@@ -324,7 +324,8 @@ try {
        w.document.querySelector("#dk-head").textContent === "The polls" &&
        new RegExp("on " + f.side + " of " + f.total).test(w.document.querySelector("#sit-docket").textContent),
        w.document.querySelector("#sit-docket").textContent.slice(0, 120));
-    ok("and the status bar reads the poll", /^POLL \d+\/\d+$/.test(w.document.querySelector("#sb-conf").textContent),
+    ok("and the status bar reads the poll in words, with seats on hover", /^Poll: /.test(w.document.querySelector("#sb-conf").textContent) &&
+       (w.document.querySelector("#sb-conf").getAttribute("data-tip-body") || "").includes(f.side + " of " + f.total),
        w.document.querySelector("#sb-conf").textContent);
     w.eval("(function(){var s=UI.state(); s.sitting += 40; Engine.count(s, UI.content()); UI.redraw();})()");
     const endText = w.document.querySelector("#sitting-body").textContent;
@@ -708,8 +709,9 @@ try {
        !!w.document.querySelector('#gov-si tr[data-si="' + id + '"]'), id);
   }
   w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapT) + "), UI.content())");
-  ok("and a calm margin leaves the chip plain",
-     !w.document.querySelector("#sb-thermal").getAttribute("data-tip-body"));
+  ok("and a calm margin leaves the chip plain, with its figure on hover",
+     w.document.querySelector("#sb-thermal").style.color === "" &&
+     /per cent/.test(w.document.querySelector("#sb-thermal").getAttribute("data-tip-body") || ""));
 } catch (e) { ok("the thermal alert", false, e.message); }
 
 /* A NUMBER THE INTERFACE PRINTS IS CONTENT'S NUMBER. The status bar had
@@ -720,10 +722,22 @@ try {
    number is the apportionment_ratio lesson, and a hardcoded threshold is
    invisible to every check that does not compare it with its source. */
 try {
-  const need = w.eval("CONTENT.setup.thresholds.ballot");
-  const bar = (w.document.querySelector("#sb-sig") || {}).textContent || "";
-  ok("the status bar's ballot threshold is the one content sets",
-     bar.indexOf("/" + need) >= 0, bar + " against a threshold of " + need);
+  const snap = w.eval("Engine.save(UI.state())");
+  const need = w.eval("UI.content().setup.thresholds.ballot");
+  w.eval("UI.state().signatures = 2; UI.redraw();");
+  const paper = w.document.querySelector("#sb-sig");
+  ok("the paper names progress against content's ballot threshold",
+     paper.textContent.includes("2 of " + need + " names"), paper.textContent);
+  w.eval("UI.state().signatures = " + need + "; UI.redraw();");
+  ok("the paper announces a forced ballot at the content threshold",
+     paper.textContent.includes("a ballot is forced"), paper.textContent);
+  ok("only four essential indicators remain beside the hint",
+     w.document.querySelectorAll("#statusbar > span:not(.grow)").length === 4 &&
+     ["sb-conf", "sb-thermal", "sb-rise", "sb-sig"].every(id => w.document.getElementById(id)));
+  w.eval("UI.content().setup.readouts.heat.bands[0].text = 'probe ample'; UI.state().scalars.thermal_margin = 50; UI.redraw();");
+  ok("status words come from content rather than a second interface mapping",
+     w.document.querySelector("#sb-thermal").textContent === "Heat: probe ample");
+  w.eval("UI.content().setup.readouts.heat.bands[0].text = 'ample'; UI.boot(JSON.parse(" + JSON.stringify(snap) + "), UI.content());");
 } catch (e) { ok("the signatures readout", false, e.message); }
 
 /* THE CALENDAR IS IN THE CAMPAIGN'S OWN YEAR, and this is the assertion the

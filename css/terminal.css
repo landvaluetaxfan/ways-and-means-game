@@ -1694,17 +1694,6 @@ button.lnk:focus-visible{outline:1px dotted currentColor;outline-offset:1px;}
 .slotbar i.spent{background:var(--chrome-dk);}
 /* RESERVED TIME (design/32 §E.5) is hollow: present, and one measure's only. */
 .slotbar i.res{background:transparent;border:1px dashed var(--ok);}
-/* THE SAME MARKS IN THE STATUS BAR, where the currency is read at a glance
-   rather than navigated to. Same colours as the order-paper bar so the two
-   readouts cannot disagree about what a spent slot looks like. */
-.sbpip{
-  display:inline-block;width:7px;height:9px;margin:2px 0 0 2px;vertical-align:-1px;
-  background:var(--ok);border:1px solid var(--chrome-dkr);
-}
-.sbpip.spent{background:var(--chrome-dk);}
-.sbpip.res{background:transparent;border-style:dashed;border-color:var(--ok);}
-#sb-slots.none{color:var(--alert);}
-#sb-slots.none .sbpip{background:var(--chrome-dk);}
 .whiptab td{padding:1px 4px;}
 .whiptab td:first-child{white-space:nowrap;}
 /* The whip is one block per whippable seat. The number of blocks is what
@@ -3094,7 +3083,6 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
   #s-sit #sitting-body,#s-sit .stack>.panel:last-child>.pbody{overflow:visible;}
   #s-sit .stack>.panel:last-child{flex:none;min-height:0;}
 }
-#sb-owed{border-left:3px solid currentColor;padding-left:5px;font-weight:700;}
 /* the second button on a quiet sitting carries its distance */
 #btn-until i{font-style:normal;font-family:var(--f-data);font-size:9.5px;opacity:.72;
   display:block;letter-spacing:0;text-transform:none;}
