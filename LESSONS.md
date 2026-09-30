@@ -212,6 +212,13 @@ Sep 2026) and in the design notes cited.
   kept the textarea and the button and lost the rest. The move was asked for
   (design/64, answer 15); the guidance was not, and a tester is what it is
   for.
+- **A moved child may have a different parent.** Hiding the functional
+  note's parent once hid its own panel body; after the merge it hid the
+  entire constituency drawer. Test the drawer's visibility after a click,
+  not just whether a detail row exists in the DOM.
+- **Every route into a dialog uses one opener.** The Register and an
+  instrument's Read button both open the document reader; both need its
+  keyboard trap and return-focus handling.
 
 ## CSS and layout (run `npm run layout`)
 
@@ -237,6 +244,13 @@ Sep 2026) and in the design notes cited.
 - **A heading that gains a control** needs its own `flex-wrap`.
 - **Bars.** `flex:1 1 0` bars need a `max-width`.
 - **laycheck** confirms a fault against in-flow children only.
+- **Retired grid tracks survive in media queries.** Government's old four
+  columns squeezed its two new panels below 1340px. A single-column
+  collapse must also reset explicit child placements, including Orbit's.
+  The layout check now measures unused and implicit tracks. If a browser
+  cannot return `--dump-dom`, `node tools/laycheck.js --prepare` writes the
+  same probes for a locally served, attached browser; inspect
+  `#laycheck-out` at every viewport, then remove the two generated pages.
 
 ## Text and encoding
 

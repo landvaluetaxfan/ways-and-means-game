@@ -55,7 +55,7 @@ const CHROME = [
   process.env.CHROME
 ].filter(Boolean).find(p => { try { return fs.existsSync(p); } catch { return false; } });
 
-if (!CHROME) {
+if (!CHROME && !process.argv.includes("--prepare")) {
   console.log("SKIP: no Chromium found. Set CHROME=/path/to/chrome to measure layout.");
   process.exit(0);
 }
@@ -213,7 +213,41 @@ const HELPERS = `
     return hits;
   }
 
-  function measure(tab) { return measureIn(document.querySelector(".screen.on"), tab); }
+  /* Grid overflow misses empty tracks and implicit columns: both can fit
+     inside the viewport while leaving the working panels needlessly narrow.
+     Inspect resolved browser tracks and the actual in-flow boxes instead. */
+  function measureGridLayout(tab) {
+    if (tab !== "gov" && tab !== "orb") return [];
+    var grid = document.querySelector("#s-" + tab + ".on > .grid");
+    if (!grid) return [];
+    var cs = getComputedStyle(grid), rect = grid.getBoundingClientRect();
+    var tracks = cs.gridTemplateColumns.match(/[0-9.]+px/g) || [];
+    var children = [].slice.call(grid.children).filter(function (el) {
+      var style = getComputedStyle(el), box = el.getBoundingClientRect();
+      return style.display !== "none" && style.visibility !== "hidden" &&
+        style.position !== "absolute" && style.position !== "fixed" &&
+        box.width > 0 && box.height > 0;
+    });
+    var collapsed = matchMedia("(max-width:1080px)").matches, detail = "";
+    if (tab === "gov" && !collapsed && tracks.length > children.length)
+      detail = tracks.length + " resolved columns for " + children.length +
+        " visible in-flow columns; unused tracks leave the department cards narrow";
+    if (tab === "orb" && collapsed) {
+      var misplaced = children.filter(function (el) {
+        var box = el.getBoundingClientRect();
+        return Math.abs(box.left - rect.left) > TOL || Math.abs(box.width - rect.width) > TOL;
+      });
+      if (tracks.length !== 1 || misplaced.length)
+        detail = tracks.length + " resolved columns after the single-column collapse; " +
+          misplaced.length + " panels do not share the grid's left edge and full width";
+    }
+    return detail ? [{ tab: tab, el: name(grid), kind: "LAYOUT", by: 0,
+      at: where(grid), detail: detail }] : [];
+  }
+
+  function measure(tab) {
+    return measureIn(document.querySelector(".screen.on"), tab).concat(measureGridLayout(tab));
+  }
 `;
 
 /* Runs inside the page. Boots the shell into a running game exactly as
@@ -454,15 +488,30 @@ const EDITOR_PROBE = `
 })();
 `;
 
+function probeHTML(page) {
+  return fs.readFileSync(path.join(root, page), "utf8")
+    .replace(/<script>[\s\S]*?<\/script>\s*<\/body>/,
+      '<pre id="laycheck-out"></pre><script>' +
+      (page === "editor.html" ? EDITOR_PROBE : PROBE) + "</script></body>");
+}
+
+/* The same probe can run in an attached browser when the installed
+   browser does not support --dump-dom. Serve these pages locally, inspect
+   #laycheck-out at each viewport, then remove the two generated files. */
+if (argv.includes("--prepare")) {
+  for (const page of ["index.html", "editor.html"]) {
+    const target = path.join(root, "_laycheck-" + page);
+    fs.writeFileSync(target, probeHTML(page));
+    console.log(target);
+  }
+  process.exit(0);
+}
+
 function run(width, height, page) {
   /* The temp page lives in the repo root so index.html's relative
      <script src> paths resolve exactly as they do for a player. */
-  const editor = page === "editor.html";
   const tmp = path.join(root, "_laycheck." + process.pid + ".html");
-  const html = fs.readFileSync(path.join(root, page || "index.html"), "utf8")
-    .replace(/<script>[\s\S]*?<\/script>\s*<\/body>/,
-             '<pre id="laycheck-out"></pre><script>' + (editor ? EDITOR_PROBE : PROBE) + "</script></body>");
-  fs.writeFileSync(tmp, html);
+  fs.writeFileSync(tmp, probeHTML(page || "index.html"));
   let dom = "";
   try {
     dom = cp.execSync(
@@ -545,6 +594,10 @@ function report(r, what) {
   const show = ALL ? hits : hits.slice(0, 10);
   for (const h of show) {
     const at = h.at || {};
+    if (h.kind === "LAYOUT") {
+      console.log(`    GRID [${h.tab}] ${h.el}\n         ${h.detail}`);
+      continue;
+    }
     console.log(`    ${h.kind === "CLIPPED" ? "CLIP" : "OVER"} [${h.tab}] ${h.el}` +
                 (at.label ? `  "${at.label}"` : "") +
                 `\n         ${h.by}px past a ${h.box}px box on ${h.axis}` +

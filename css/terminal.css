@@ -638,9 +638,6 @@ tr.compopen .compdis{border-color:var(--gold-dk);color:var(--ink);background:var
 .w-allfold>summary span{margin-left:auto;letter-spacing:0;text-transform:none;
   font-family:var(--f-data);}
 .w-allfold>summary:hover{background:var(--field);}
-@media (max-width:1340px){
-  .g-gov{grid-template-columns:minmax(200px,230px) minmax(0,1fr) minmax(0,1fr) minmax(220px,270px);}
-}
 /* The seating plan is drawn at a fixed size and the composition tables were
    cramped into 300px beside it, so the one panel that could not use its
    width had most of it and the two that could had none. Three columns
@@ -1193,6 +1190,7 @@ tr.vacant td{background:var(--chrome);color:var(--ink-soft);}
 .dmbar .thr{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--alert);}
 .dmbar .thr::after{content:"";position:absolute;top:-3px;left:-3px;border-left:3px solid transparent;border-right:3px solid transparent;border-top:4px solid var(--alert);}
 .dmbar span.lbl{position:absolute;right:3px;top:1px;font-family:var(--f-data);font-size:10px;color:var(--ink);}
+#cham-mid > .panel > h2{flex-wrap:wrap;}
 #gov-coalition-hdr{display:flex;align-items:center;gap:5px;white-space:nowrap;}
 #gov-coalition-hdr .dmbar{display:inline-block;width:150px;flex:0 0 150px;}
 
@@ -1389,6 +1387,7 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
      wide. Measured, not read (design/39's layout pass). The selector carries
      the screen's id so it outranks the panels' own. */
   #s-econ .g-econ > .panel{grid-column:auto;grid-row:auto;}
+  #s-orb .g-orb > .panel{grid-column:auto;grid-row:auto;}
   .g-sit > .stack,.g-gov > .stack,.g-cham > .stack,
   .g-orb > .panel,.g-world > .panel{overflow:visible;}
   .grid > .panel,.grid > .stack > .panel{min-height:170px;}

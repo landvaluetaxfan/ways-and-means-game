@@ -35,10 +35,11 @@ const Papers = (function () {
       render(st, C);
       const overlay = document.getElementById("gov-docs");
       if (overlay) {
-        overlay.dataset.returnId = "";
-        overlay.hidden = false;
+        overlay.__openDoc();
         const close = document.getElementById("gov-doc-close");
-        if (close) setTimeout(() => close.focus(), 0);
+        if (close) setTimeout(() => {
+          if (!overlay.hidden) close.focus({ preventScroll:true });
+        }, 0);
       }
     }
   });
@@ -362,7 +363,7 @@ const Papers = (function () {
       n.addEventListener("click", () => {
         Focus.activate("pp-list", n.dataset.doc);
         const close = document.getElementById("gov-doc-close");
-        if (close) close.focus();
+        if (close) close.focus({ preventScroll:true });
       }));
 
     /* THE BENCH (design/30). The orders are judged here, so the bench sits

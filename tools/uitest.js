@@ -1436,6 +1436,42 @@ try {
      }
    }
   }
+  /* Register rows open the same modal as an instrument's Read button.
+     Missing the common keyboard handler let Tab escape to the game and
+     made Escape ineffective on both mouse and keyboard entry. */
+  w.eval('UI.openTab("gov");');
+  for (const route of ["click", "keyboard"]) {
+    const row = w.document.querySelector("#pp-list [data-doc]");
+    const id = row && row.dataset.doc;
+    if (row) {
+      if (route === "click") row.click();
+      else {
+        row.focus({ preventScroll:true });
+        row.dispatchEvent(new w.KeyboardEvent("keydown", { key:"Enter", bubbles:true, cancelable:true }));
+      }
+    }
+    const overlay = w.document.querySelector("#gov-docs");
+    const first = w.document.querySelector("#gov-doc-close");
+    const controls = [...overlay.querySelectorAll('button,input,select,textarea,a[href],[tabindex]')]
+      .filter(n => !n.disabled && n.tabIndex >= 0 && !n.closest("[hidden]"));
+    const last = controls[controls.length - 1];
+    first.focus({ preventScroll:true });
+    const back = new w.KeyboardEvent("keydown", { key:"Tab", shiftKey:true, bubbles:true, cancelable:true });
+    first.dispatchEvent(back);
+    const backward = back.defaultPrevented && w.document.activeElement === last;
+    if (last) last.focus({ preventScroll:true });
+    const forward = new w.KeyboardEvent("keydown", { key:"Tab", bubbles:true, cancelable:true });
+    if (last) last.dispatchEvent(forward);
+    ok("the Register " + route + " route traps both Tab boundaries",
+       !!row && !overlay.hidden && backward && forward.defaultPrevented && w.document.activeElement === first);
+    const escape = new w.KeyboardEvent("keydown", { key:"Escape", bubbles:true, cancelable:true });
+    first.dispatchEvent(escape);
+    ok("Escape closes a Register document opened by " + route + " and restores its row",
+       overlay.hidden && escape.defaultPrevented && w.document.activeElement ===
+       w.document.querySelector('#pp-list [data-doc="' + id + '"]'));
+    if (!overlay.hidden) first.click();
+  }
+  w.eval('UI.openTab("sit");');
   /* the letterhead must not leak an HTML entity as text */
   const doc = w.document.querySelector("#pp-doc, .paper");
   ok("no raw entities in the letterhead",

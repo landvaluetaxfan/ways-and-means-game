@@ -2,6 +2,14 @@
 .ed-wrap{display:grid;grid-template-columns:210px minmax(0,1fr) 236px 236px;gap:5px;height:calc(100vh - 96px);min-height:520px;}
 .ed-col{display:flex;flex-direction:column;min-width:0;min-height:0;}
 .ed-scroll{overflow:auto;min-height:0;flex:1;}
+/* Keep the form usable before the fixed side columns consume its width. */
+@media(max-width:1100px){
+  .ed-wrap{grid-template-columns:210px minmax(0,1fr);height:auto;}
+  .ed-wrap > .ed-col{height:calc(100vh - 110px);min-height:320px;}
+}
+@media(max-width:640px){
+  .ed-wrap{grid-template-columns:minmax(0,1fr);}
+}
 
 #ed-list{overflow:auto;flex:1;min-height:0;}
 /* The filter and the buttons are as tall as they are. A .pbody grows in a

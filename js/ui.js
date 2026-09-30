@@ -2658,14 +2658,17 @@ const UI = (function () {
       btn.addEventListener("click", e => {
         e.stopPropagation();
         Focus.activate("pp-list", btn.dataset.read);
-        $("#gov-docs").dataset.returnId = btn.dataset.read;
-        $("#gov-docs").hidden = false;
-        const doc = $("#gov-docs");
-        if (doc.__docKey) document.removeEventListener("keydown", doc.__docKey, true);
-        doc.__docKey = onDocKey;
-        document.addEventListener("keydown", onDocKey, true);
-        $("#gov-doc-close").focus({ preventScroll:true });
+        openDoc(btn.dataset.read);
       }));
+    function openDoc(returnId) {
+      const doc = $("#gov-docs");
+      doc.dataset.returnId = returnId || "";
+      doc.hidden = false;
+      if (doc.__docKey) document.removeEventListener("keydown", doc.__docKey, true);
+      doc.__docKey = onDocKey;
+      document.addEventListener("keydown", onDocKey, true);
+      $("#gov-doc-close").focus({ preventScroll:true });
+    }
     const closeDoc = () => {
       const doc = $("#gov-docs"), id = doc.dataset.returnId;
       if (doc.__docKey) document.removeEventListener("keydown", doc.__docKey, true);
@@ -2691,6 +2694,7 @@ const UI = (function () {
         e.preventDefault(); (e.shiftKey ? last : first).focus({ preventScroll:true });
       }
     }
+    $("#gov-docs").__openDoc = openDoc;
     $("#gov-docs").__closeDoc = closeDoc;
     $("#gov-doc-close").onclick = closeDoc;
     $("#gov-docs").onclick = e => {
@@ -7981,7 +7985,6 @@ const UI = (function () {
         `${F.filter(f => f.franchise === "residual").reduce((n, f) => n + f.seats, 0)}. ` +
         `A measure touching life-support integrity or the Charter must carry here separately.`;
       fn.hidden = !!open;
-      if (fn.parentNode) fn.parentNode.hidden = !!open;   /* the pbody holding it */
     }
   }
 

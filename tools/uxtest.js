@@ -230,13 +230,19 @@ try {
   ok("and no functional row carries a hover card any more",
      rows.length > 0 && rows.every(r => !r.getAttribute("data-tip-body")));
   if (rows.length > 1) {
+    const drawer = $(".func-drawer");
+    drawer.querySelector("summary").click();
     rows[0].click();
     ok("clicking one opens its detail under it",
        w.document.querySelectorAll("#func-table tr.funcdet").length === 1);
+    ok("opening a constituency keeps its drawer visible and open",
+       !drawer.hidden && drawer.open);
     rows[1].click();
     const open = [...w.document.querySelectorAll("#func-table tr.funcdet")];
     ok("and opening another closes the first, leaving exactly one open",
        open.length === 1 && !!open[0].querySelector(".ostats"));
+    ok("switching constituencies keeps its drawer visible and open",
+       !drawer.hidden && drawer.open);
   }
 } catch (e) { ok("functional list", false, e.message); }
 
