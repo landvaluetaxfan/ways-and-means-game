@@ -87,16 +87,26 @@
          subject, and a tab that held four panels was a tab for the sake of
          having one. -->
     <section class="screen" id="s-gov">
-      <div class="grid g-gov">
+      <div id="gov-init"><div class="grid g-gov pbody scrolls" id="gov-si">
         <div class="stack scrolls" id="gov-main">
-          <div class="panel"><h2 id="gov-departments-hdr" tabindex="-1">Departments <em id="gov-init-hdr"></em></h2>
-            <div class="pbody scrolls" id="gov-init"><div id="gov-si"><div id="gov-cabinet"></div></div></div>
+          <div class="panel"><h2>Government business <em id="gov-init-hdr" data-tip="slots"></em></h2>
+            <div class="pbody scrolls" id="gov-business">
+              <section id="gov-vacancies"></section>
+              <section><h3 class="rulehead" id="gov-pending-hdr" tabindex="-1">Under way</h3><div id="gov-pending"></div></section>
+              <section><h3 class="rulehead" id="gov-available-hdr" tabindex="-1">Available powers</h3><div id="gov-available"></div></section>
+            </div>
           </div>
         </div>
-
         <div class="stack scrolls" id="gov-side">
-          <div class="panel"><h2><span data-tip="register">Register</span> <em>acts, orders and minutes</em></h2>
-            <div class="pbody flush scrolls"><table id="pp-list"></table></div></div>
+          <div class="panel"><h2 id="gov-departments-hdr" tabindex="-1">Cabinet</h2>
+            <div class="pbody scrolls" id="gov-cabinet"></div>
+          </div>
+        </div>
+        <div class="stack scrolls" id="gov-records">
+          <details class="panel pfold" id="gov-register">
+            <summary><span data-tip="register">Register</span> <em>acts, orders and minutes</em></summary>
+            <div class="pbody flush scrolls"><table id="pp-list"></table></div>
+          </details>
           <details class="panel pfold" id="gov-undertakings">
             <summary>Undertakings <em>what the government has said it will do</em></summary>
             <div class="pbody scrolls" id="gov-owed"></div>
@@ -108,11 +118,11 @@
                panel that is empty most of the time is a frame around a hole
                if it is always open, so they fold, and they sit at the edge
                rather than in the column the player works in. -->
-          <details class="panel pfold">
+          <details class="panel pfold" id="gov-tribunal">
             <summary><span data-tip="tribunal">The Tribunal</span> <em>review, not the House</em></summary>
             <div class="pbody scrolls" id="pp-tribunal"></div>
           </details>
-          <details class="panel pfold">
+          <details class="panel pfold" id="gov-presidency">
             <summary><span data-tip="live">Presidency</span> <em>assent and refusal</em></summary>
             <div class="pbody scrolls" id="gov-pres"></div>
           </details>
@@ -123,7 +133,7 @@
             <div class="pbody flush scrolls" id="pp-doc"></div></div>
         </div>
 
-      </div>
+      </div></div>
     </section>
 
     <section class="screen" id="s-cham">

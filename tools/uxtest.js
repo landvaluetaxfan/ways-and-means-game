@@ -12,6 +12,90 @@ H.banner("INTERFACE AND INTERACTION");
 H.boot();
 H.newGame();
 
+/* Two views of the same lever must not share focus identity or multiply
+   execution. Removing view-local keys, bypassing confirmation, or wiring a
+   second execution listener breaks these user-visible behaviors. */
+{
+  const original = w.eval('Engine.save(UI.state())');
+  w.eval('UI.openTab("gov");');
+  const doc = w.document;
+  const business = () => doc.querySelector('#gov-business');
+  let route = business() && business().querySelector('[data-open^="post:"]');
+  const post = route && route.dataset.open.slice(5);
+  const folded = post && doc.querySelector('#gov-cabinet [data-post="' + post + '"]');
+  if (folded) folded.open = false;
+  w.eval('UI.redraw();');
+  route = business() && business().querySelector('[data-open="post:' + post + '"]');
+  const beforeRoute = w.eval('Engine.save(UI.state())');
+  if (route) route.click();
+  const department = post && doc.querySelector('#gov-cabinet [data-post="' + post + '"]');
+  ok('overview vacancy navigation reveals its department without changing simulation',
+    !!route && !!department && department.open && beforeRoute === w.eval('Engine.save(UI.state())'));
+  const inspect = business() && business().querySelector('[data-inspect]');
+  if (inspect) inspect.click();
+  ok('an order has a keyboard control that opens its authored explanation without making it',
+    !!inspect && inspect.tagName === 'BUTTON' && !!business().querySelector('.si-d') &&
+    !w.eval('UI.state().instruments[' + JSON.stringify(inspect && inspect.dataset.inspect) + '].made'));
+  const make = business() && business().querySelector('[data-make]:not(:disabled)');
+  const savedConfirm = w.eval('Dialog.confirm'); w.__businessConfirm = savedConfirm;
+  const beforeMake = w.eval('Engine.save(UI.state())');
+  w.eval('Dialog.confirm = function(m,o,cb) { cb(false); };');
+  if (make) make.click();
+  ok('canceling an overview order leaves the entire simulation unchanged',
+    !!make && beforeMake === w.eval('Engine.save(UI.state())'));
+  w.eval('Dialog.confirm = window.__businessConfirm;');
+  const head = business() && [...business().querySelectorAll('[data-ini]')].find(b => !b.disabled);
+  if (head) { head.click(); const current = doc.getElementById(head.id); if (current) current.focus(); }
+  w.eval('UI.redraw(); UI.redraw();');
+  ok('overview initiative focus stays in the overview across repeated redraws',
+    !!head && doc.activeElement.id === head.id && !!doc.activeElement.closest('#gov-business'));
+  const cabinetHead = head && doc.querySelector('#gov-cabinet [data-ini="' + head.dataset.ini + '"]');
+  if (cabinetHead) cabinetHead.focus();
+  w.eval('UI.redraw();');
+  ok('the same initiative in Cabinet keeps its own keyboard focus rather than jumping to the overview',
+    !!cabinetHead && doc.activeElement.id === cabinetHead.id && !!doc.activeElement.closest('#gov-cabinet'));
+  const take = business() && business().querySelector('[data-take]:not(:disabled)');
+  const confirm = w.eval('Dialog.confirm'); w.__businessConfirm = confirm;
+  const before = w.eval('Engine.save(UI.state())');
+  w.eval('Dialog.confirm = function(m,o,cb) { cb(false); };');
+  if (take) take.click();
+  ok('canceling an overview initiative preserves the entire simulation',
+    !!take && before === w.eval('Engine.save(UI.state())'));
+  w.eval('Dialog.confirm = window.__businessConfirm;');
+  const id = take && take.dataset.take;
+  const state = w.eval('UI.state()'), Cg = w.eval('UI.content()');
+  const entry = (Cg.initiatives || []).find(i => i.id === id);
+  const queues = entry && state.queue.filter(q => q.eventId === entry.event).length;
+  const slots = state.slots.used;
+  w.__businessConfirmCount = 0;
+  w.eval('Dialog.confirm = function(m,o,cb) { window.__businessConfirmCount++; window.__businessConfirm(m,o,cb); };');
+  if (take) take.click();
+  ok('an overview initiative spends once, queues once, moves to pending and returns focus to business',
+    !!entry && w.__businessConfirmCount === 1 && state.slots.used === slots + (entry.cost == null ? 1 : entry.cost) + (entry.tempo[+take.dataset.tempo].cost || 0) &&
+    state.queue.filter(q => q.eventId === entry.event).length === queues + 1 &&
+    business().querySelectorAll('[data-running="' + id + '"]').length === 1 &&
+    !business().querySelector('[data-ini="' + id + '"]') && doc.activeElement.id === 'gov-pending-hdr');
+  w.eval('Dialog.confirm = window.__businessConfirm;');
+  const queued = JSON.parse(JSON.stringify(state.queue));
+  const running = business() && business().querySelector('[data-running="' + id + '"]');
+  if (running) running.focus();
+  state.queue = state.queue.filter(q => q.eventId !== entry.event);
+  w.eval('UI.redraw();');
+  ok('an answered overview initiative returns keyboard focus to the pending heading',
+    !!running && doc.activeElement.id === 'gov-pending-hdr');
+  state.queue = queued; w.eval('UI.redraw();');
+  const owner = entry.post || '';
+  const card = doc.querySelector('#gov-cabinet [data-post="' + owner + '"]');
+  if (!card.open) card.querySelector('summary').click();
+  const cabinetRunning = card.querySelector('[data-running="' + id + '"]');
+  if (cabinetRunning) cabinetRunning.focus();
+  state.queue = state.queue.filter(q => q.eventId !== entry.event);
+  w.eval('UI.redraw();');
+  ok('answered department work returns keyboard focus to its surviving owner summary',
+    !!cabinetRunning && doc.activeElement.dataset.govSummary === owner && doc.activeElement.tagName === 'SUMMARY');
+  w.eval('UI.boot(Engine.load(' + JSON.stringify(original) + ', CONTENT), CONTENT); UI.openTab("sit");');
+}
+
 /* GOVERNMENT CONTROLS retain native disclosure and focus identity. */
 {
   const original = w.eval('Engine.save(UI.state())');
@@ -28,7 +112,8 @@ H.newGame();
   const pm = w.document.querySelector('#gov-cabinet [data-post=""]');
   if (!pm.open) pm.querySelector('summary').click();
   const ini = pm.querySelector('[data-ini]'); ini.click();
-  ok('an initiative control does not toggle its containing department', pm.open && !!pm.querySelector('.ini.open, [data-take]'));
+  const currentPM = w.document.querySelector('#gov-cabinet [data-post=""]');
+  ok('an initiative control does not toggle its containing department', currentPM.open && !!currentPM.querySelector('.ini.open, [data-take]'));
   const vacancy = w.document.querySelector('#gov-cabinet [data-appoint]');
   vacancy.focus(); const key = vacancy.dataset.appointKey;
   w.eval('UI.redraw(); UI.redraw();');
@@ -2403,7 +2488,7 @@ try {
      /no order-paper time/.test(body(make) || ""), body(make));
 
   /* --- 2. a refused control says why --- */
-  const refused = [...doc.querySelectorAll("[data-make][disabled], .ini-h[disabled]")];
+  const refused = [...doc.querySelectorAll("[data-make][disabled], .ini-h.refused")];
   ok("any visible refused control names its reason",
      refused.every(b => /Refused:/.test(body(b) || "")),
      refused.length + " refused, " +

@@ -72,6 +72,9 @@ ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.
 ok("Government has a Prime Minister card then one card per cabinet post in content order",
    [...w.document.querySelectorAll("#gov-cabinet .gov-card")].map(n => n.dataset.post).join(",") ===
    [""].concat(CONTENT.cabinet.map(p => p.id)).join(","));
+ok('the initial cabinet is a compact directory, with vacancies exposed by the business overview',
+   [...w.document.querySelectorAll('#gov-cabinet details.gov-card')].every(n => !n.open) &&
+   !!w.document.querySelector('#gov-vacancies [data-open^="post:"]'));
 ok("each order appears under its authoring department",
    CONTENT.instruments.filter(i => {
      const s = w.eval("UI.state()");
@@ -80,6 +83,89 @@ ok("each order appears under its authoring department",
        (s.instruments[i.id] || {}).made;
    }).every(i => !!w.document.querySelector(
      '#gov-cabinet .gov-card[data-post="' + i.author + '"] [data-si="' + i.id + '"]')));
+/* Removing overview derivation, party labels, or truthful pending filters
+   must break these checks. This fixture deliberately separates gates,
+   affordability, a queue-backed initiative and a stale started flag. */
+{
+  const original = w.eval('Engine.save(UI.state())'), Cg = w.eval('UI.content()');
+  const state = JSON.parse(original), post = Cg.cabinet[0].id;
+  const order = Object.assign({}, Cg.instruments[0], { id:'test_business_order', author:post, when:{} });
+  const fixture = Object.assign({}, Cg, {
+    initiatives:[
+      { id:'test_business_open', title:'Available fixture', cost:state.slots.total + 1, when:{}, note:'A plain explanation.', tempo:[{ label:'Briefing', after:2 }] },
+      { id:'test_business_gated', title:'Gated fixture', cost:1, when:{ flags:['business_missing_gate'] }, tempo:[] },
+      { id:'test_business_pending', title:'Pending fixture', post, cost:1, when:{}, event:'business_answer', tempo:[] },
+      { id:'test_business_stale', title:'Answered fixture', post, cost:1, when:{}, event:'stale_answer', tempo:[] }
+    ], instruments:[order], instrumentById:{ test_business_order:order }
+  });
+  state.flags.init_test_business_pending = true;
+  state.flags.init_test_business_stale = true;
+  state.queue.push({ eventId:'business_answer', dueSitting:state.sitting+3 });
+  state.instruments.test_business_order = Object.assign({}, state.instruments[Cg.instruments[0].id],
+    { made:true, inForce:false, awaitingApproval:true });
+  state.cabinet[post].holder = null;
+  w.__businessFixture = fixture; w.__businessState = state;
+  w.eval('UI.boot(window.__businessState, window.__businessFixture);');
+  const overview = () => w.document.querySelector('#gov-business');
+  ok('business overview exposes every vacancy, including posts without candidates',
+    !!overview() && [post, 'treasury'].every(id => !!overview().querySelector('[data-open="post:' + id + '"]')));
+  const available = () => w.document.querySelector('#gov-available');
+  ok('available powers retain a temporary refusal and omit closed story gates',
+    !!available() && !!available().querySelector('[data-ini="test_business_open"]') &&
+    /order-paper time/.test(available().textContent) && !available().querySelector('[data-ini="test_business_gated"]'));
+  const blocked = available() && available().querySelector('[data-ini="test_business_open"]');
+  if (blocked) blocked.click();
+  const inspected = available() && available().querySelector('.ini.open');
+  ok('temporarily blocked work remains readable while every unaffordable execution stays disabled',
+    !!blocked && !blocked.disabled && !!inspected && /A plain explanation/.test(inspected.textContent) &&
+    !!inspected.querySelector('[data-take]:disabled') && !inspected.querySelector('[data-take]:not(:disabled)'));
+  const pending = () => w.document.querySelector('#gov-pending');
+  ok('under way shows one queue-backed answer with its sitting despite a vacant owner',
+    !!pending() && pending().querySelectorAll('[data-running="test_business_pending"]').length === 1 &&
+    pending().textContent.includes('sitting ' + (state.sitting+3)) && !pending().querySelector('[data-running="test_business_stale"]'));
+  ok('awaiting approval belongs to pending business, never available powers',
+    !!pending() && !!available() && !!pending().querySelector('[data-si="test_business_order"]') &&
+    !available().querySelector('[data-si="test_business_order"]'));
+  ok('Cabinet groups an awaiting order with the department\'s pending work',
+    !!w.document.querySelector('#gov-cabinet [data-gov-section="running"] [data-si="test_business_order"]'));
+  state.queue = state.queue.filter(q => q.eventId !== 'business_answer');
+  state.instruments.test_business_order.awaitingApproval = false;
+  state.instruments.test_business_order.inForce = true;
+  w.eval('UI.redraw();');
+  ok('settled work leaves the pending overview while the instrument remains inspectable in Cabinet',
+    !!pending() && !pending().querySelector('[data-running], [data-si]') &&
+    !!w.document.querySelector('#gov-cabinet [data-si="test_business_order"]'));
+  ok('Cabinet moves an in-force instrument into the department record',
+    !!w.document.querySelector('#gov-cabinet [data-gov-section="records"] [data-si="test_business_order"]'));
+  const occupied = w.document.querySelector('#gov-cabinet [data-post="' + Cg.cabinet[3].id + '"] summary');
+  ok('directory summaries identify parties by colour and abbreviation without repeating ordinary relationships',
+    !!occupied && !!occupied.querySelector('.swatch') && !!occupied.querySelector('.gov-party') &&
+    !/uneasy with the Prime Minister/.test(occupied.textContent));
+  w.__businessFixture = Cg;
+  w.eval('UI.boot(Engine.load(' + JSON.stringify(original) + ', CONTENT), window.__businessFixture);');
+}
+{
+  const original = w.eval('Engine.save(UI.state())'), Cg = w.eval('UI.content()');
+  const state = JSON.parse(original); state.signedMinutes = {};
+  const minutes = Cg.minutes.slice(0,2).map(m => Object.assign({}, m, { when:{} }));
+  const fixture = Object.assign({}, Cg, { minutes });
+  w.__recordFixture = fixture; w.__recordState = state;
+  w.eval('UI.boot(window.__recordState, window.__recordFixture);');
+  const fold = () => w.document.querySelector('#gov-register');
+  const pending = () => fold().querySelector('.gov-record-count').textContent;
+  ok('visible unsigned minutes open the Register with an actionable pending count',
+    minutes.length === 2 && fold().open && /2 pending/.test(pending()));
+  if (fold().open) fold().querySelector('summary').click();
+  w.eval('UI.redraw();');
+  ok('an explicit Register fold survives while its pending indication remains visible',
+    !fold().open && /2 pending/.test(pending()));
+  minutes.forEach(m => state.signedMinutes[m.id] = state.sitting);
+  w.eval('UI.redraw();');
+  ok('signing minutes clears pending activity without counting historical documents',
+    !pending() && w.document.querySelectorAll('#pp-list [data-doc]').length >= 2);
+  w.__recordFixture = Cg;
+  w.eval('UI.boot(Engine.load(' + JSON.stringify(original) + ', CONTENT), window.__recordFixture);');
+}
 /* OPPOSITION DEPARTMENTS come from structured content, even when the prose
    describing a person's role changes. */
 /* GOVERNMENT FOLDS keep a survey of the cabinet without empty panels.
@@ -89,12 +175,13 @@ ok("each order appears under its authoring department",
   const cards = () => [...w.document.querySelectorAll('#gov-cabinet details.gov-card')];
   const pm = () => cards().find(n => n.dataset.post === "");
   const vacancy = cards().find(n => !((state.cabinet[n.dataset.post] || {}).holder) && n.dataset.post);
-  ok("Government defaults to the Prime Minister and vacancies open, others closed",
-     cards().length === Cg.cabinet.length + 1 && !!pm() && pm().open && !!vacancy && vacancy.open &&
+  ok("Government defaults to a closed cabinet directory, including Prime Minister and vacancies",
+     cards().length === Cg.cabinet.length + 1 && !!pm() && !pm().open && !!vacancy && !vacancy.open &&
      cards().filter(n => n.dataset.post && (state.cabinet[n.dataset.post] || {}).holder).every(n => !n.open));
   ok("idle departments do not print empty work headings",
      cards().length > 0 && cards().every(n => [...n.querySelectorAll('.gov-section')]
        .every(s => s.hidden || !!s.querySelector('[data-si], [data-ini], [data-running]'))));
+  if (pm() && !pm().open) pm().querySelector('summary').click();
   if (pm()) pm().querySelector('summary').click();
   w.eval('UI.boot(UI.state(), UI.content());');
   ok("closing a department survives a full redraw", !!pm() && !pm().open);
@@ -105,7 +192,7 @@ ok("each order appears under its authoring department",
   ok("department preferences survive a save reload", !!pm() && !pm().open);
   const other = JSON.parse(clone); other.admin = "test_other_administration";
   w.eval('UI.boot(' + JSON.stringify(other) + ', UI.content());');
-  ok("another administration has its own department defaults", !!pm() && pm().open);
+  ok("another administration has its own department defaults", !!pm() && !pm().open);
   w.eval('UI.boot(' + clone + ', UI.content());');
   ok("returning to an administration restores its closed department", !!pm() && !pm().open);
   const post = Cg.cabinet[0].id, fixture = Object.assign({}, Cg);
@@ -134,7 +221,7 @@ ok("each order appears under its authoring department",
   w.__govFixture = Cg;
   w.eval('Shell.setOpt("govDepartments", {[' + JSON.stringify(state.admin) + ']: "malformed"});');
   w.eval('UI.boot(' + clone + ', window.__govFixture);');
-  ok("malformed department preferences fall back to a usable default", !!pm() && pm().open);
+  ok("malformed department preferences fall back to a usable default", !!pm() && !pm().open);
 }
 /* GOVERNMENT DESTINATIONS use the same live docket route as normal play. */
 {
@@ -187,8 +274,8 @@ ok("each order appears under its authoring department",
   const used = state.slots.used;
   state.slots.used = state.slots.total;
   w.eval('UI.redraw();'); route('initiative:test_destination');
-  ok('a disabled initiative destination retains focus inside its own expanded entry',
-    card(si.author).querySelector('[data-ini="test_destination"]').disabled &&
+  ok('an unaffordable initiative destination remains readable inside its own expanded entry',
+    !card(si.author).querySelector('[data-ini="test_destination"]').disabled &&
     !!w.document.activeElement.closest('.ini.open') &&
     card(si.author).contains(w.document.activeElement));
   state.slots.used = used;

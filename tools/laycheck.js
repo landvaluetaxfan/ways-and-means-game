@@ -337,6 +337,34 @@ ${HELPERS}
       UI.redraw();
       found = found.concat(measure("gov-expanded"));
       UI.state().undertakings.pop();
+      /* Work and people grow independently. Queue actual initiative
+         answers, then vacate their owners; stretch authored labels and
+         explanations without adding invented progress or engine rules. */
+      var govSave = Engine.save(UI.state()), govContent = UI.content();
+      var savedTitles = [], savedNames = [];
+      (govContent.initiatives || []).slice(0, 3).forEach(function(i) {
+        savedTitles.push([i, i.title, i.note]);
+        i.title += " — a long departmental commission with several competing instructions";
+        i.note = (i.note + " ").repeat(4);
+        UI.state().flags["init_" + i.id] = true;
+        if (i.event) UI.state().queue.push({ eventId:i.event, dueSitting:UI.state().sitting + 3 });
+      });
+      (govContent.cabinet || []).slice(0, 2).forEach(function(p) {
+        savedNames.push([p, p.name]);
+        p.name += " and the administration of long departmental responsibilities";
+        UI.state().cabinet[p.id].holder = null;
+      });
+      var awaiting = (govContent.instruments || []).filter(function(i) { return i.procedure === "affirmative"; })[0];
+      if (awaiting) Object.assign(UI.state().instruments[awaiting.id], { made:true, inForce:false, awaitingApproval:true });
+      UI.redraw();
+      document.querySelectorAll("#gov-records details").forEach(function(fold) {
+        if (!fold.open) fold.querySelector("summary").click();
+      });
+      UI.redraw();
+      found = found.concat(measure("gov-business-stress"));
+      savedTitles.forEach(function(x) { x[0].title=x[1]; x[0].note=x[2]; });
+      savedNames.forEach(function(x) { x[0].name=x[1]; });
+      UI.boot(Engine.load(govSave, govContent), govContent);
     }
   }
 
