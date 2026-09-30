@@ -89,7 +89,7 @@ const OrbitChart = (function () {
      station name stays readable, and text layout — wrapping, ellipsis,
      a row that reflows when the panel narrows — is what HTML is for.
      Laying it out by hand in SVG is how the labels got unreadable. */
-  function render(st, C, selectedId) {
+  function render(st, C, selectedId, markers) {
     const lead = {};
     C.stations.forEach(s => {
       const l = s.party_leans || {};
@@ -129,6 +129,11 @@ const OrbitChart = (function () {
     return `<div class="obands">
       <div class="oaxis"><span>more dependent</span><i></i><span>more self-sufficient</span></div>
       ${rows}
+      ${(markers || []).filter(m => m.place === "belowBands").map(m =>
+        `<div class="omarker" data-campaign-marker="${esc(m.id)}">` +
+        (m.article ? `<a class="cx-link" tabindex="0" data-go="${esc(m.article)}">${esc(m.label)}</a>`
+          : `<b>${esc(m.label)}</b>`) +
+        (m.note ? `<div class="note">${esc(m.note)}</div>` : "") + `</div>`).join("")}
       <div class="oearth">EARTH — ANCHOR TERRITORY, FOREIGN SOVEREIGNTY</div>
     </div>`;
   }

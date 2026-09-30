@@ -116,7 +116,7 @@ later, and is listed at the end so you do not build it here.
    and the party's seats. His **moves** come later with the brief. Leave a
    "what he is doing" list, empty with the line "Nothing yet."
 
-7. **Orbit keeps its look and adds the stations' state** (`drawStation()`
+7. **Orbit keeps its look and adds the stations' state** DONE. (`drawStation()`
    ~7573). The selected station's detail panel gains a "State" section in
    words: its heat, its consumables and its standing, with figures on
    hover. Use the engine's per-station values; grep before adding any. If

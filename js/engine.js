@@ -8809,8 +8809,40 @@ const Engine = (function () {
     return [...s].sort((a, b) => a - b);
   }
 
+  /* Presentation reads existing state; it never creates local capacity or
+     new seats. A marker belongs to a campaign's merged setup. */
+  function campaignMarkers(st, C) {
+    return ((C.setup || {}).campaignMarkers || []).filter(m => !m.when || matches(st, m.when));
+  }
+
+  function readout(st, C, key, context) {
+    const d = typeof key === "string" ? ((C.setup || {}).readouts || {})[key] : key;
+    if (!d) return { label: "", value: null, text: null };
+    const ctx = context || {};
+    const path = p => {
+      p = String(p).replace(/\{(\w+)\}/g, (_, k) => ctx[k] == null ? "" : String(ctx[k]));
+      if (p === "confidence_margin") return confidence(st) - majority(st);
+      if (p === "rises_in") return st.dissolved ? null : st.risesAt - st.sitting;
+      if (p.startsWith("economy.")) return economyReading(st, p.slice(8));
+      if (p.startsWith("standing.")) return standingIn(st, p.slice(9));
+      const bits = p.split(".");
+      let o = st;
+      if (bits[0] === "setup") { bits.shift(); o = C.setup; }
+      return bits.reduce((a, k) => a == null ? null : a[k], o);
+    };
+    const value = Object.prototype.hasOwnProperty.call(ctx, "value") ? ctx.value : path(d.source);
+    if (value == null || !Number.isFinite(value)) return { label: d.label, value: null, text: null };
+    const band = (d.bands || []).find(b => {
+      const min = b.min == null ? -Infinity : typeof b.min === "string" ? path(b.min) : b.min;
+      return min != null && value >= min;
+    });
+    return { label: d.label, value,
+      text: band ? String(band.text).replace(/\{value\}/g, String(value)) : null };
+  }
+
   return {
     STATE_VERSION, newGame, migrate, save, load, noteSince, since, chapters, reportedActor, receipts, believed,
+    readout, campaignMarkers,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal, currentSeats,
     division, reported, ballot, benchRoll, resolveDue, pairable, setPairs, clearPairs, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss, checkSettlement,

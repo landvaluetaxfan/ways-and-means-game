@@ -86,6 +86,36 @@ try {
 } catch (e) { ok("the Opposition panel", false, e.message); }
 /* END OPPOSITION DEPARTMENTS */
 
+/* ORBIT READINGS keep national capacity apart from a station's exposure. */
+try {
+  const state = w.eval("UI.state()"), C = w.eval("UI.content()");
+  const detail = w.document.querySelector("#station-detail");
+  ok("Orbit describes national heat and consumables beside the station's band standing",
+     !!detail.querySelector('[data-station-reading="heat"]') &&
+     !!detail.querySelector('[data-station-reading="consumables"]') &&
+     !!detail.querySelector('[data-station-reading="standing"]') &&
+     /Commonwealth/.test(detail.querySelector('[data-station-reading="heat"]').textContent));
+  const markers = C.setup.campaignMarkers || [];
+  const gated = markers.find(m => m.when && m.when.flags && m.when.flags.length === 1);
+  ok("the campaign supplies a gated schematic marker outside the station roster", !!gated &&
+     !w.document.querySelector("#orbit-chart [data-campaign-marker]"));
+  if (gated) {
+    const flag = gated.when.flags[0], before = state.flags[flag];
+    const n = C.stations.length;
+    try {
+      state.flags[flag] = true; w.eval("UI.redraw()");
+      const marker = w.document.querySelector('#orbit-chart [data-campaign-marker="' + gated.id + '"]');
+      ok("the stranded marker appears without inventing a station or seats",
+         !!marker && marker.textContent.includes(gated.label) && !marker.hasAttribute("data-station") &&
+         C.stations.length === n && Object.keys(state.stations).length === n);
+    } finally {
+      if (before === undefined) delete state.flags[flag]; else state.flags[flag] = before;
+      w.eval("UI.redraw()");
+    }
+  }
+} catch (e) { ok("Orbit readings and markers", false, e.message); }
+/* END ORBIT READINGS */
+
 ok("slot is named in the topbar", /Test ministry/.test($("#tb-slot").textContent),
    JSON.stringify($("#tb-slot").textContent));
 /* THE HOUSE'S THREE PRICES SIT TOGETHER. The order is part of the design:

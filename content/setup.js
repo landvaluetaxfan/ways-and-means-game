@@ -75,6 +75,29 @@ const SETUP = {
 
   economy: { participation: 39, trade: 100, private: 0.72 },
 
+  /* Live readouts are presentation policy, separate from simulation.
+     The heat's lower lines are the emergency alert and its urgent line;
+     30 is the ample presentation band. Consumables use the shortage
+     decision's 52 and the meter's soft line of 25. */
+  readouts: {
+    heat: { label:"Heat", source:"scalars.thermal_margin", bands:[
+      { min:30, text:"ample" }, { min:15, text:"adequate" },
+      { min:8, text:"thin" }, { min:null, text:"critical" }] },
+    consumables: { label:"Consumables", source:"scalars.consumables", bands:[
+      { min:52, text:"adequate" }, { min:25, text:"thin" }, { min:null, text:"critical" }] },
+    standing: { label:"Standing", source:"standing.{band}", bands:[
+      { min:51, text:"favourable to the government" }, { min:50, text:"even" },
+      { min:null, text:"unfavourable to the government" }] },
+    confidence: { label:"Confidence", source:"confidence_margin", bands:[
+      { min:10, text:"safe by {value}" }, { min:3, text:"narrow, by {value}" },
+      { min:1, text:"on a knife-edge" }, { min:null, text:"lost" }] },
+    rise: { label:"The rise", source:"rises_in", bands:[
+      { min:1, text:"rises in {value} sittings" }, { min:null, text:"rises today" }] },
+    paper: { label:"The paper", source:"signatures", bands:[
+      { min:"setup.thresholds.ballot", text:"a ballot is forced" },
+      { min:1, text:"names" }, { min:null, text:"no paper" }] }
+  },
+
   /* No `party_loyalty`: the meter is the government party's currents,
      member-weighted (content/parties.js), which open at 48. It was set here
      to 38 beside them and the two never met. */

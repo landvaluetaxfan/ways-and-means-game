@@ -33,6 +33,9 @@ campaign("flash_i", { administrations: [
        placeholder older than the term, and this dates the campaign to the
        term's own first year. */
     setup:{ startDate:"2080-04-11",
+      campaignMarkers:[{ id:"works", label:"Bellamy Almanac Works", place:"belowBands",
+        article:"body_almanac_works", when:{ flags:["station_issue"] },
+        note:"The refinery and foundry whose operator has abandoned its residents." }],
       lenders: {
         /* The Alliance is a party of the House, so its facility is a debt at
            home: `home` keeps it out of the Underwriters' reading of the

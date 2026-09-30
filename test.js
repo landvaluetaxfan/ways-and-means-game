@@ -13,6 +13,38 @@ const Engine = require("./js/engine.js");
 const PROLOGUE1 = T.prologue1(CONTENT);
 const RUN_BOUND = T.runBound(CONTENT);
 
+/* Content owns presentation bands and campaign overlays; querying either
+   must leave the simulation unchanged. */
+(function () {
+  let bad = 0;
+  const ok = (label, yes) => { console.log((yes ? "  ok   " : "  FAIL ") + label); if (!yes) bad++; };
+  try {
+    const C = Object.assign({}, CONTENT, { setup: Object.assign({}, CONTENT.setup, {
+      readouts: { probe: { label: "Capacity", source: "scalars.thermal_margin",
+        bands: [{ min: 20, text: "held" }, { min: 0, text: "thin" }] } },
+      campaignMarkers: [
+        { id: "gated", label: "A platform", place: "belowBands", when: { flags: ["marker_gate"] } },
+        { id: "always", label: "Another platform", place: "belowBands" }
+      ]
+    }) });
+    const s = Engine.newGame(C); s.scalars.thermal_margin = 19;
+    const before = Engine.save(s);
+    const reading = Engine.readout(s, C, "probe");
+    ok("readout words and figures come from its source and authored bands",
+       reading.value === 19 && reading.text === "thin" && reading.label === "Capacity");
+    s.scalars.thermal_margin = 20;
+    ok("a readout changes bands at the authored boundary", Engine.readout(s, C, "probe").text === "held");
+    s.scalars.thermal_margin = 19;
+    ok("only campaign markers whose conditions hold are visible",
+       Engine.campaignMarkers(s, C).map(m => m.id).join(",") === "always");
+    ok("presentation queries do not change the saved simulation", Engine.save(s) === before);
+    s.flags.marker_gate = true;
+    ok("a marker appears when its condition starts holding",
+       Engine.campaignMarkers(s, C).map(m => m.id).join(",") === "gated,always");
+  } catch (e) { ok("content readouts and campaign markers", false); console.log("    " + e.message); }
+  if (bad) process.exitCode = 1;
+})();
+
 const st = Engine.newGame(CONTENT);
 console.log("chamber", Engine.chamberTotal(st), "| popular", Engine.popularTotal(st),
             "| functional", Engine.functionalTotal(st));

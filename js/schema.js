@@ -251,6 +251,13 @@ const SCHEMA = {
     asks: { label: "Asks", type: "text", optional: true }
   },
   characterShadow: { label: "Shadow department", src: "posts", optional: true },
+  /* Sources are state paths, economy.<reading>, standing.<band>, or the
+     derived confidence_margin and rises_in. A {band} in the source is
+     supplied by the reader. Bands are ordered, first matching min wins;
+     min:null is the fallback and setup.<path> reads a live threshold. */
+  readout: { fields: ["label", "source", "bands"], bandFields: ["min", "text"] },
+  campaignMarker: { fields: ["id", "label", "place", "when", "article", "note"],
+    places: ["belowBands"] },
 
   vocab: {
     /* A CHOICE'S POSTURE (design/40 E7): how far it goes, not how much it

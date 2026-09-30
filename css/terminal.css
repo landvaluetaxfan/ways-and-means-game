@@ -448,6 +448,10 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .g-rel .panel{min-height:0;}
 #rel-opposition-panel{flex:0 0 auto;max-height:65%;}
 #rel-opposition .prow{grid-template-columns:minmax(0,1fr) auto;}
+.omarker{border:1px dashed var(--ink-soft);padding:8px;margin:6px 0;}
+.omarker .note{margin:4px 0 0;}
+#station-detail [data-station-reading]{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+#station-detail [data-station-reading] .pval{white-space:normal;}
 /* THE SANDBOX (design/47): every event on the left, the one chosen in the
    middle with what it needs and offers, and the state on the right. */
 .g-sbx{grid-template-columns:minmax(300px,420px) minmax(0,1fr) minmax(260px,340px);

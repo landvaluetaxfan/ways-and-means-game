@@ -7564,7 +7564,7 @@ const UI = (function () {
     /* No hardcoded content id here: the engine names no station and neither
        should the renderer. */
     const selId = Focus.selected("orbit-table");
-    $("#orbit-chart").innerHTML = OrbitChart.render(st, C, selId);
+    $("#orbit-chart").innerHTML = OrbitChart.render(st, C, selId, Engine.campaignMarkers(st, C));
     $("#orbit-key").innerHTML = OrbitChart.key();
     /* The schematic's chips select a station without stealing focus: the
        player clicked a chip, not a row, and dragging their place into a
@@ -7645,12 +7645,23 @@ const UI = (function () {
       ` \u00b7 <span data-tip="form">${esc(s.form)}</span>` +
       ` \u00b7 <span data-tip="band">${esc(s.band)} band</span>`;
     const r = stationRatio(s.id);
+    const readings = ["heat", "consumables", "standing"].map(key => {
+      const reading = Engine.readout(st, C, key, { band: s.band });
+      const scope = key === "standing" ? bandName(s.band) + " band" : "Commonwealth";
+      const figure = key === "standing" ? "Standing " + reading.value + " out of 100 in this electoral band."
+        : key === "heat" ? "Thermal margin " + reading.value + " per cent across the Commonwealth."
+        : "Consumables " + reading.value + " out of 100 across the Commonwealth.";
+      return `<div class="prow" data-station-reading="${key}"${tipAttr(reading.label, figure)}>` +
+        `<div class="plab">${esc(reading.label)}<em>${esc(scope)}</em></div>` +
+        `<div class="pval">${esc(reading.text || "No reading")}</div></div>`;
+    }).join("");
     /* A stat strip rather than eight rows of label over value. The same
        figures, a quarter of the height, and the ones that carry an argument
        (closure, apportionment) get the emphasis. */
     d.innerHTML =
       (s.description ? `<div class="rulehead">Description</div>` +
         `<div class="note">${esc(s.description)}</div>` : "") +
+      `<div class="rulehead">State</div>` + readings +
       `<div class="ostats">
         <span><b>${s.population.toLocaleString()}</b><i>population</i></span>
         <span><b>${s.seats}</b><i>seats</i></span>

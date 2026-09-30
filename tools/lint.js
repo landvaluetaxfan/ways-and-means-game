@@ -1003,6 +1003,28 @@ try {
      (`economy.arrears`): a meter that names nothing reads nought and never
      drags, and an alert whose condition names nothing never shows. */
   [["the world", SETUP]].concat((ADMINISTRATIONS || []).map(a => [a.id, a.setup || {}])).forEach(([who, S]) => {
+    (S.campaignMarkers || []).forEach(m => {
+      const tag = "campaign marker " + (m.id || "?") + " (" + who + ")";
+      if (!m.id || !m.label || !require(path.join(root, "js", "schema.js")).campaignMarker.places.includes(m.place))
+        refBad.push(tag + ": needs an id, label and declared place");
+      checkWhen(m.when, tag);
+    });
+    Object.entries(S.readouts || {}).forEach(([id, r]) => {
+      const tag = "readout " + id + " (" + who + ")";
+      const source = String(r.source || "");
+      const valid = source.startsWith("scalars.") ? SC.has(source.slice(8))
+        : source.startsWith("economy.") ? ECK.has(source.slice(8))
+        : source.startsWith("standing.") ? source === "standing.{band}" || require(path.join(root, "js", "schema.js")).vocab.bands.includes(source.slice(9))
+        : ["confidence_margin", "rises_in", "signatures"].includes(source);
+      if (!r.label || !valid || !Array.isArray(r.bands) || !r.bands.length)
+        refBad.push(tag + ": needs a label, valid source and bands");
+      (r.bands || []).forEach(b => {
+        if (typeof b.text !== "string" || (b.min != null && typeof b.min !== "number" &&
+            !(typeof b.min === "string" && b.min.startsWith("setup.") &&
+              b.min.slice(6).split(".").reduce((o, k) => o && o[k], Object.assign({}, SETUP, S)) != null)))
+          refBad.push(tag + ": a band needs text and a numeric or setup threshold");
+      });
+    });
     (S.couplings || []).forEach((cp, i) => {
       const tag = "coupling " + (cp.group || cp.meter) + " " + cp.above + " (" + who + ")";
       const m = String(cp.meter || "");

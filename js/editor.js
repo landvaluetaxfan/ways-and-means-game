@@ -1411,7 +1411,7 @@ const Editor = (function () {
     <label class="ed-res">Other setup <textarea class="ed-f ed-noteta" data-f="setup_rest" rows="${
       Math.min(14, Math.max(2, restText.split("\n").length))}"
       spellcheck="false" placeholder="{}">${esc(restText)}</textarea></label>
-    <div class="ed-hint" style="padding:0 5px 4px">JSON: lenders, thresholds, and any other key of content/setup.js this campaign changes.</div>
+    <div class="ed-hint" style="padding:0 5px 4px">JSON: lenders, thresholds, readouts, campaignMarkers, and any other key of content/setup.js this campaign changes. Marker fields and readout bands are defined in js/schema.js.</div>
     <div class="rulehead">Opening effects <button class="btn ed-add" data-act="eff-add" data-ci="0">+ effect</button>
       <span class="ed-hint">applied at the first sitting: how the last campaign's canon ending becomes this one's start</span></div>
     <div class="ed-effs" id="ed-opening">${explodeEffects(a.opening).map((eff, ei) => effRow(eff, 0, ei)).join("")}</div>
