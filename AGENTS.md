@@ -158,20 +158,25 @@ author rewrites it, and update these figures when they move.
 
 ## The interface
 
-Ten tabs in play, and an eleventh, Sandbox, in the author's sandbox:
+Nine tabs in play, and a tenth, Sandbox, in the author's sandbox. The order
+is the one in `index.html`, and the record of decisions is no longer a tab:
 
 | | |
 |---|---|
-| **Sitting** | the event page, then the decision; the docket, the calendar, the indicators |
+| **Sitting** | the event page, then the decision; what has happened, the docket, the calendar, the indicators |
 | **Government** | instruments, the register, undertakings, cabinet, the Tribunal and the Presidency |
 | **Chamber** | order-paper time, the order paper, the House, the whip, confidence, composition |
-| **Economy** | the account, the four prices, the Reserve Bank and the dollar, the Underwriters, the chart |
 | **Party** | the player's own party: its currents, the leadership, the paper |
 | **Relations** | every other party, and who votes with whom; the coalition roster |
+| **Economy** | the account, the four prices, the Reserve Bank and the dollar, the Underwriters, the chart |
+| **Orbit** | the stations; the schematic, and one station's detail |
 | **Foreign Affairs** | the globe, actors and the forums (tab id `world`) |
-| **Orbit**, **Record** | the stations; the record |
-| **Sandbox** | the author's bench (from the main menu): every decision, event and lever |
 | **Concordance** | the reference work. It knows only what the world knows |
+| **Sandbox** | the author's bench (from the main menu): every decision, event and lever |
+
+**What has happened** is the Sitting's left column: the wire's news and the
+record's decisions, grouped by sitting, newest first (29 Sep). The playtest
+transcript lives only in the in-game Options popover (design/64, answer 15).
 
 **Party ids** are the initials of old names, and a poor guide to the names:
 
