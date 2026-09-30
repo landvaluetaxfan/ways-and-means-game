@@ -214,19 +214,24 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    paper inside it is the scroller. */
 #gov-docs{min-height:0;}
 #gov-docs > .panel{flex:1 1 auto;min-height:0;}
-#gov-cabinet{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
-.gov-card{min-width:0;border:1px solid var(--chrome-dk);background:var(--field);padding:6px;}
-.gov-card h3{margin:-6px -6px 5px;padding:3px 6px;background:var(--bar);color:var(--bar-txt);
-  font-size:11px;letter-spacing:.08em;text-transform:uppercase;}
+#gov-cabinet{display:flex;flex-direction:column;gap:6px;}
+.gov-card{min-width:0;flex:0 0 auto;border:1px solid var(--chrome-dk);background:var(--field);}
+.gov-card > summary{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;
+  padding:5px 6px;cursor:pointer;background:var(--chrome);list-style:none;font-size:11px;}
+.gov-card > summary::-webkit-details-marker{display:none;}
+.gov-card > summary::before{content:"\25B8";}
+.gov-card[open] > summary::before{content:"\25BE";}
+.gov-card > summary strong{font-size:11px;letter-spacing:.08em;text-transform:uppercase;}
+.gov-summary-counts{margin-left:auto;font-family:var(--f-data);font-size:10px;}
+.gov-card-body{padding:6px;border-top:1px solid var(--chrome-dk);}
 .gov-card h4{margin:8px 0 3px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);}
 .gov-card-people{min-height:26px;font-size:11px;}
 .gov-card-people .note{display:inline;}
 .gov-card table{width:100%;}
-.gov-card-future{min-height:8px;}
+.gov-running{padding:4px 0;border-bottom:1px solid var(--rule);}
 .doc-overlay:not([hidden]){position:fixed;z-index:40;inset:0;background:rgba(0,0,0,.5);
   display:flex;padding:calc(6vh + 12px) calc(8vw + 12px);}
 .doc-overlay > .panel{width:100%;height:100%;min-height:0;}
-@media(max-width:1100px){#gov-cabinet{grid-template-columns:1fr;}}
 /* THE WORLD. The globe takes what is left; the reference column is a window the
    width of the orbit screen's, because it holds the same sort of thing: who a
    power is, and what it wants.

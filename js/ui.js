@@ -2412,13 +2412,55 @@ const UI = (function () {
       `Commonwealth's.</div>`;
   }
 
+  function govPreferences(admin) {
+    const all = typeof Shell !== "undefined" && Shell.options.govDepartments;
+    const valid = x => x && typeof x === "object" && !Array.isArray(x);
+    const own = (x, k) => valid(x) && Object.prototype.hasOwnProperty.call(x, k) ? x[k] : null;
+    const value = own(all, admin);
+    return { pm: own(value, "pm"), posts: valid(own(value, "posts")) ? value.posts : {} };
+  }
+  function govIsOpen(id) {
+    const p = govPreferences(st.admin), saved = id ? p.posts[id] : p.pm;
+    return typeof saved === "boolean" ? saved : !id || !(st.cabinet[id] || {}).holder;
+  }
+  function rememberGovCard(card) {
+    if (!card.isConnected || card.dataset.admin !== st.admin || card.open === card.__govOpen) return;
+    card.__govOpen = card.open;
+    const old = Shell.options.govDepartments;
+    const all = old && typeof old === "object" && !Array.isArray(old) ? Object.assign({}, old) : {};
+    const prefs = govPreferences(st.admin), posts = {};
+    (C.cabinet || []).forEach(p => {
+      if (typeof prefs.posts[p.id] === "boolean") posts[p.id] = prefs.posts[p.id];
+    });
+    const id = card.dataset.post;
+    if (id) posts[id] = card.open; else prefs.pm = card.open;
+    all[st.admin] = { pm: prefs.pm, posts };
+    Shell.setOpt("govDepartments", all);
+  }
+  function updateGovSections() {
+    document.querySelectorAll("#gov-cabinet .gov-card").forEach(card => {
+      const counts = [];
+      [["instruments", "[data-si]", "instrument"], ["initiatives", "[data-ini]", "initiative"],
+       ["running", "[data-running]", "under way"]].forEach(([kind, selector, label]) => {
+        const section = card.querySelector('[data-gov-section="' + kind + '"]');
+        const count = section.querySelectorAll(selector).length;
+        section.hidden = !count;
+        if (count) counts.push(count + " " + label + (kind === "running" || count === 1 ? "" : "s"));
+      });
+      card.querySelector(".gov-summary-counts").textContent = counts.join(" · ");
+    });
+  }
   function drawGovernment() {
-    const card = (id, name) => `<div class="gov-card" data-post="${id}">` +
-      `<h3>${esc(name)}</h3><div class="gov-card-people"></div>` +
-      `<div class="gov-card-work"><h4>Instruments</h4><table data-si-post="${id}"></table>` +
-      `<h4>Initiatives</h4>` +
-      `<div class="gov-card-ini" data-ini-post="${id}"></div></div>` +
-      `<div class="gov-card-future" aria-hidden="true"></div></div>`;
+    document.querySelectorAll("#gov-cabinet details.gov-card").forEach(rememberGovCard);
+    const card = (id, name) => `<details class="gov-card" data-post="${esc(id)}" data-admin="${esc(st.admin)}"${govIsOpen(id) ? " open" : ""}>` +
+      `<summary data-gov-summary="${esc(id)}"><strong>${esc(name)}</strong>` +
+      `<span class="gov-summary-people"></span><span class="gov-summary-counts"></span></summary>` +
+      `<div class="gov-card-body"><div class="gov-card-people"></div>` +
+      `<div class="gov-card-work"><section class="gov-section" data-gov-section="instruments"><h4>Instruments</h4><table data-si-post="${esc(id)}"></table></section>` +
+      `<section class="gov-section" data-gov-section="initiatives"><h4>Initiatives</h4>` +
+      `<div class="gov-card-ini" data-ini-post="${esc(id)}"></div></section>` +
+      `<section class="gov-section" data-gov-section="running"><h4>Under way</h4>` +
+      `<div class="gov-card-running" data-running-post="${esc(id)}"></div></section></div></div></details>`;
     $("#gov-cabinet").innerHTML = card("", "Prime Minister") +
       (C.cabinet || []).map(p => card(p.id, p.name)).join("");
     const conf = Engine.confidence(st), maj = Engine.majority(st);
@@ -2842,6 +2884,14 @@ const UI = (function () {
       }
     });
     drawInitiatives();
+    document.querySelectorAll("#gov-cabinet details.gov-card").forEach(card => {
+      const people = card.querySelector(".gov-card-people").cloneNode(true);
+      people.querySelectorAll("button,.flag:not(.bad)").forEach(n => n.remove());
+      people.querySelectorAll("a").forEach(n => n.replaceWith(document.createTextNode(n.textContent)));
+      card.querySelector(".gov-summary-people").innerHTML = people.innerHTML;
+      card.__govOpen = card.open;
+      card.addEventListener("toggle", () => rememberGovCard(card));
+    });
 
     $("#gov-cabinet").querySelectorAll("[data-sack]").forEach(btn =>
       btn.addEventListener("click", () => {
@@ -5058,6 +5108,16 @@ const UI = (function () {
   function drawInitiatives() {
     const el = $("#gov-init"); if (!el) return;
     el.querySelectorAll(".gov-card-ini").forEach(n => n.innerHTML = initHTML(n.dataset.iniPost));
+    el.querySelectorAll(".gov-card-running").forEach(n => {
+      n.innerHTML = (C.initiatives || []).filter(i => (i.post || "") === n.dataset.runningPost &&
+        (st.flags || {})["init_" + i.id] && (st.queue || []).some(q => q.eventId === i.event && i.event))
+        .map(i => {
+          const due = Math.min(...st.queue.filter(q => q.eventId === i.event).map(q => q.dueSitting));
+          return `<div class="gov-running" data-running="${esc(i.id)}"><b>${esc(i.title)}</b>` +
+            ` <span class="note">answers at sitting ${due}</span></div>`;
+        }).join("");
+    });
+    updateGovSections();
     const hdr = $("#gov-init-hdr");
     if (hdr) hdr.textContent = (st.slots.total - st.slots.used) + " of " +
                                st.slots.total + " slots left this period";

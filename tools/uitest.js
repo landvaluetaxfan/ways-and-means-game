@@ -82,6 +82,60 @@ ok("each order appears under its authoring department",
      '#gov-cabinet .gov-card[data-post="' + i.author + '"] [data-si="' + i.id + '"]')));
 /* OPPOSITION DEPARTMENTS come from structured content, even when the prose
    describing a person's role changes. */
+/* GOVERNMENT FOLDS keep a survey of the cabinet without empty panels.
+   These catch missing disclosure defaults, lost choices, and empty sections. */
+{
+  const state = w.eval("UI.state()"), Cg = w.eval("UI.content()");
+  const cards = () => [...w.document.querySelectorAll('#gov-cabinet details.gov-card')];
+  const pm = () => cards().find(n => n.dataset.post === "");
+  const vacancy = cards().find(n => !((state.cabinet[n.dataset.post] || {}).holder) && n.dataset.post);
+  ok("Government defaults to the Prime Minister and vacancies open, others closed",
+     cards().length === Cg.cabinet.length + 1 && !!pm() && pm().open && !!vacancy && vacancy.open &&
+     cards().filter(n => n.dataset.post && (state.cabinet[n.dataset.post] || {}).holder).every(n => !n.open));
+  ok("idle departments do not print empty work headings",
+     cards().length > 0 && cards().every(n => [...n.querySelectorAll('.gov-section')]
+       .every(s => s.hidden || !!s.querySelector('[data-si], [data-ini], [data-running]'))));
+  if (pm()) pm().querySelector('summary').click();
+  w.eval('UI.boot(UI.state(), UI.content());');
+  ok("closing a department survives a full redraw", !!pm() && !pm().open);
+  w.eval('UI.openTab("gov"); UI.openTab("sit"); UI.boot(UI.state(), UI.content());');
+  ok("department preferences survive switching tabs", !!pm() && !pm().open);
+  const clone = JSON.stringify(state);
+  w.eval('UI.boot(' + clone + ', UI.content());');
+  ok("department preferences survive a save reload", !!pm() && !pm().open);
+  const other = JSON.parse(clone); other.admin = "test_other_administration";
+  w.eval('UI.boot(' + JSON.stringify(other) + ', UI.content());');
+  ok("another administration has its own department defaults", !!pm() && pm().open);
+  w.eval('UI.boot(' + clone + ', UI.content());');
+  ok("returning to an administration restores its closed department", !!pm() && !pm().open);
+  const post = Cg.cabinet[0].id, fixture = Object.assign({}, Cg);
+  fixture.initiatives = [{ id:"test_running", title:"Running fixture", post,
+    cost:1, when:{}, event:"test_answer", tempo:[{ after:3 }] }];
+  const order = Object.assign({}, Cg.instruments[0], { id:"test_inforce", author:post, when:{} });
+  fixture.instruments = [order]; fixture.instrumentById = { test_inforce:order };
+  const pending = JSON.parse(clone); pending.flags.init_test_running = true;
+  pending.queue.push({ eventId:"test_answer", dueSitting:pending.sitting + 3 });
+  pending.instruments.test_inforce = Object.assign({}, pending.instruments[Cg.instruments[0].id],
+    { made:true, inForce:true });
+  pending.cabinet[post].holder = null;
+  w.__govFixture = fixture; w.__govState = pending;
+  w.eval('UI.boot(window.__govState, window.__govFixture);');
+  const running = w.document.querySelector('[data-post="' + post + '"]');
+  ok("a vacant department retains its running initiative and instrument in force",
+     !!running.querySelector('[data-running="test_running"]') && !!running.querySelector('[data-si="test_inforce"]'));
+  ok("running work is counted once and cannot be started again while vacant",
+     !running.querySelector('[data-ini="test_running"]') &&
+     /1 under way/.test(running.querySelector('.gov-summary-counts').textContent));
+  pending.queue = [];
+  w.eval('UI.boot(window.__govState, window.__govFixture);');
+  ok("an answered initiative disappears from Under way and its summary count",
+     !w.document.querySelector('[data-running="test_running"]') &&
+     !/under way/.test(w.document.querySelector('[data-post="' + post + '"] .gov-summary-counts').textContent));
+  w.__govFixture = Cg;
+  w.eval('Shell.setOpt("govDepartments", {[' + JSON.stringify(state.admin) + ']: "malformed"});');
+  w.eval('UI.boot(' + clone + ', window.__govFixture);');
+  ok("malformed department preferences fall back to a usable default", !!pm() && pm().open);
+}
 try {
   const C = w.eval("UI.content()"), state = w.eval("UI.state()");
   const leader = C.characters.find(c => c.office === "opposition" &&
