@@ -109,7 +109,7 @@ later, and is listed at the end so you do not build it here.
      writing one.
    - `briefs/psd-currents.md` is related. Read it, and fold in what fits.
 
-6. **Relations: the Opposition panel** (`drawRelations()`). Add a panel for
+6. **Relations: the Opposition panel** DONE. (`drawRelations()`). Add a panel for
    the Leader of the Opposition (in Flash I, Watkins: `content/characters.js`,
    role "Leader of the Opposition") and his party: the leader, his shadow
    cabinet (members with a "Shadow" office in `content/constituencies.js`)

@@ -446,6 +446,8 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #s-rel.screen.on{height:100%;min-height:0;}
 .g-rel > .stack{min-height:0;}
 .g-rel .panel{min-height:0;}
+#rel-opposition-panel{flex:0 0 auto;max-height:65%;}
+#rel-opposition .prow{grid-template-columns:minmax(0,1fr) auto;}
 /* THE SANDBOX (design/47): every event on the left, the one chosen in the
    middle with what it needs and offers, and the state on the right. */
 .g-sbx{grid-template-columns:minmax(300px,420px) minmax(0,1fr) minmax(260px,340px);

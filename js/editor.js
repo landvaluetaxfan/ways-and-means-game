@@ -918,6 +918,7 @@ const Editor = (function () {
       <label>Id ${txt_("id", c.id, "", 110)}<button class="btn ed-add" data-act="rename">rename…</button></label>
       <label class="ed-w">Name ${txt_("name", c.name, "", 300)}<button class="btn ed-add" data-act="roll-name">roll</button></label>
       <label class="ed-w">Role ${txt_("role", c.role, "", 240)}</label>
+      <label>${SCHEMA.characterShadow.label} ${opt_("shadow", vocab("posts"), c.shadow, "— none —")}</label>
       <label>Office <select class="ed-f" data-f="office"><option value="">— none —</option>${
         [...new Set(["pm","deputy","minister","opposition","shadow","leader","whip"]
           .concat(c.office ? [c.office] : []))].map(o =>
@@ -2011,6 +2012,7 @@ const Editor = (function () {
       c.party = g("party").value || null; c.relationship = +g("relationship").value;
       const po = g("portrait").value.trim(); if (po) c.portrait = po; else delete c.portrait;
       const of = g("office").value; if (of) c.office = of; else delete c.office;
+      const shadow = g("shadow").value; if (shadow) c.shadow = shadow; else delete c.shadow;
       const fn = g("functional").value; if (fn) c.functional = fn; else delete c.functional;
       /* design/45: printed prose, and the pronoun the articles use */
       ["pronouns", "descriptor", "bio"].forEach(k => {
@@ -2597,6 +2599,10 @@ const Editor = (function () {
         P.push(["err", "current " + c.id + ": leader is not one of its named members"]);
       if (c.asks != null && typeof c.asks !== "string")
         P.push(["err", "current " + c.id + ": asks must be text"]);
+    });
+    M.characters.forEach(c => {
+      if (c.shadow && !POSTS.has(c.shadow))
+        P.push(["err", "character " + c.id + ": shadow department does not exist '" + c.shadow + "'"]);
     });
     (M.instruments || []).forEach(x => {
       if (!POSTS.has(x.author)) P.push(["err", "instrument " + x.id + ": made by no post '" + x.author + "'"]);

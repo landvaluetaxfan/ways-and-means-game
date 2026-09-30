@@ -846,6 +846,10 @@ try {
     if (c.asks != null && typeof c.asks !== "string")
       refBad.push("current " + c.id + ": asks must be text");
   });
+  (CHARACTERS || []).forEach(c => {
+    if (c.shadow && !CAB.has(c.shadow))
+      refBad.push("character " + c.id + ": shadow department '" + c.shadow + "' does not exist");
+  });
   const walk = (o, f) => { if (!o || typeof o !== "object") return;
     if (Array.isArray(o)) return o.forEach(x => walk(x, f));
     f(o); Object.keys(o).forEach(k => walk(o[k], f)); };

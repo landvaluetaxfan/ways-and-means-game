@@ -250,6 +250,7 @@ const SCHEMA = {
     leader: { label: "Leader", src: "characters", optional: true },
     asks: { label: "Asks", type: "text", optional: true }
   },
+  characterShadow: { label: "Shadow department", src: "posts", optional: true },
 
   vocab: {
     /* A CHOICE'S POSTURE (design/40 E7): how far it goes, not how much it

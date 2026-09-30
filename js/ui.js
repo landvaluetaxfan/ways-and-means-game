@@ -1956,6 +1956,7 @@ const UI = (function () {
 
   function drawRelations() {
     const tbl = $("#rel-table"); if (!tbl) return;
+    drawOpposition();
     const list = C.parties || [];
     const sel = relSel();
     const count = $("#rel-count");
@@ -2230,6 +2231,28 @@ const UI = (function () {
           Focus.seed("rel-table", tr.dataset.party); cue("click"); drawRelations();
         }));
     }
+  }
+
+  function drawOpposition() {
+    const el = $("#rel-opposition"); if (!el) return;
+    const alive = ch => (st.characters[ch.id] || {}).alive !== false;
+    const leader = (C.characters || []).find(ch => ch.office === "opposition" &&
+      alive(ch) && relOf(ch.party) === "opp");
+    if (!leader) {
+      el.innerHTML = `<div class="note">No Opposition leader is named.</div>`; return;
+    }
+    const party = C.partyById[leader.party] || {};
+    const person = ch => `<a class="cx-link" tabindex="0" data-go="person_${esc(ch.id)}">${esc(bare(ch.name))}</a>`;
+    const shadows = (C.characters || []).filter(ch => ch.party === leader.party && ch.shadow && alive(ch));
+    el.innerHTML = `<div class="prow"><div class="plab">${person(leader)}` +
+      `<em>${esc(party.name || party.short || leader.party)}</em></div>` +
+      `<div class="pval"><span data-opposition-seats>${Engine.partyTotal(st, leader.party)}</span> seats</div></div>` +
+      `<div class="rulehead">Shadow cabinet</div>` + shadows.map(ch => {
+        const post = (C.cabinet || []).find(p => p.id === ch.shadow);
+        return `<div class="prow" data-person="${esc(ch.id)}" data-shadow="${esc(ch.shadow)}">` +
+          `<div class="plab">${person(ch)}<em>${esc(post ? post.name : ch.shadow)}</em></div></div>`;
+      }).join("") + `<div class="rulehead">What the Opposition is doing</div>` +
+      `<div class="note" data-opposition-moves>Nothing yet.</div>`;
   }
 
   /* The bands' own words. Content names them; this only capitalises. */

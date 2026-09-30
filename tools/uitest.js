@@ -56,6 +56,36 @@ ok("each order appears under its authoring department",
        (s.instruments[i.id] || {}).made;
    }).every(i => !!w.document.querySelector(
      '#gov-cabinet .gov-card[data-post="' + i.author + '"] [data-si="' + i.id + '"]')));
+/* OPPOSITION DEPARTMENTS come from structured content, even when the prose
+   describing a person's role changes. */
+try {
+  const C = w.eval("UI.content()"), state = w.eval("UI.state()");
+  const leader = C.characters.find(c => c.office === "opposition" &&
+    (state.characters[c.id] || {}).alive !== false);
+  const panel = w.document.querySelector("#rel-opposition");
+  ok("Relations names the Opposition leader and the party's live seat total",
+     !!leader && !!panel && !!panel.querySelector('[data-go="person_' + leader.id + '"]') &&
+     panel.querySelector("[data-opposition-seats]").textContent ===
+       String(w.eval("Engine.partyTotal(UI.state(), " + JSON.stringify(leader.party) + ")")));
+  const shadow = C.characters.filter(c => c.party === leader.party && c.shadow);
+  const rows = panel ? [...panel.querySelectorAll("[data-shadow]")] : [];
+  ok("the Opposition shows every authored shadow department and an empty moves list",
+     shadow.length > 0 && rows.length === shadow.length &&
+     rows.every(r => shadow.some(c => c.id === r.dataset.person && c.shadow === r.dataset.shadow)) &&
+     panel.querySelector("[data-opposition-moves]").textContent.trim() === "Nothing yet.");
+  const roles = shadow.map(c => c.role);
+  try {
+    shadow.forEach(c => c.role = "Reworded role"); w.eval("UI.redraw()");
+    const current = [...w.document.querySelectorAll("#rel-opposition [data-shadow]")];
+    ok("shadow department membership survives changes to role wording",
+       shadow.length > 0 && current.length === shadow.length &&
+       current.every(r => shadow.some(c => c.id === r.dataset.person && c.shadow === r.dataset.shadow)));
+  } finally {
+    shadow.forEach((c, i) => c.role = roles[i]); w.eval("UI.redraw()");
+  }
+} catch (e) { ok("the Opposition panel", false, e.message); }
+/* END OPPOSITION DEPARTMENTS */
+
 ok("slot is named in the topbar", /Test ministry/.test($("#tb-slot").textContent),
    JSON.stringify($("#tb-slot").textContent));
 /* THE HOUSE'S THREE PRICES SIT TOGETHER. The order is part of the design:
