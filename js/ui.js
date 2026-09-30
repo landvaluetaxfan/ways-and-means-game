@@ -5194,7 +5194,8 @@ const UI = (function () {
     if (governmentTarget) {
       const entry = kind === "post" ? (C.cabinet || []).find(x => x.id === id)
         : (kind === "initiative" ? C.initiatives || [] : C.instruments || []).find(x => x.id === id);
-      if (entry) owner = kind === "post" ? id : (kind === "initiative" ? entry.post : entry.author) || "";
+      if (kind === "post" && !id) owner = "";
+      else if (entry) owner = kind === "post" ? id : (kind === "initiative" ? entry.post : entry.author) || "";
       if (owner !== null && owner && !(C.cabinet || []).some(p => p.id === owner)) owner = null;
       if (owner !== null) setGovOpen(owner, true);
     }
@@ -5245,7 +5246,8 @@ const UI = (function () {
       const row = card && ((kind === "si" || kind === "order")
         ? card.querySelector('[data-si="' + id + '"]')
         : kind === "initiative" ? card.querySelector('[data-ini="' + id + '"], [data-running="' + id + '"]') : null);
-      const target = row ? row.querySelector('button:not(:disabled)') || row
+      const target = row ? row.querySelector('button:not(:disabled)') ||
+        (row.disabled ? row.closest('.ini') : row)
         : card ? (kind === "post" && card.querySelector('[data-appoint]')) || card.querySelector('summary')
         : $("#gov-departments-hdr");
       if (!target.matches('button, summary, [tabindex]')) target.tabIndex = -1;

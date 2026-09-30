@@ -184,6 +184,17 @@ ok("each order appears under its authoring department",
   route('initiative:test_destination');
   ok('an initiative destination opens its owning card and focuses that initiative',
     card(si.author).open && w.document.activeElement.dataset.ini === 'test_destination');
+  const used = state.slots.used;
+  state.slots.used = state.slots.total;
+  w.eval('UI.redraw();'); route('initiative:test_destination');
+  ok('a disabled initiative destination retains focus inside its own expanded entry',
+    card(si.author).querySelector('[data-ini="test_destination"]').disabled &&
+    !!w.document.activeElement.closest('.ini.open') &&
+    card(si.author).contains(w.document.activeElement));
+  state.slots.used = used;
+  route('post:');
+  ok('the Prime Minister is a department destination without an authored post id',
+    card('').open && w.document.activeElement === card('').querySelector('summary'));
   fixture.initiatives[0].when = { flags:['test_not_available'] };
   w.eval('UI.redraw();'); route('initiative:test_destination');
   ok('a surviving owner supplies the fallback when its initiative is unavailable',

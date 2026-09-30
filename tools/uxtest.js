@@ -12,6 +12,39 @@ H.banner("INTERFACE AND INTERACTION");
 H.boot();
 H.newGame();
 
+/* GOVERNMENT CONTROLS retain native disclosure and focus identity. */
+{
+  const original = w.eval('Engine.save(UI.state())');
+  w.eval('UI.openTab("gov");');
+  const summaries = [...w.document.querySelectorAll('#gov-cabinet summary')];
+  ok('department summaries are native disclosures with no nested controls',
+    summaries.length > 0 && summaries.every(s => s.parentNode.tagName === 'DETAILS' &&
+      !s.querySelector('button, a, input, select')));
+  const quiet = summaries.find(s => !s.parentNode.open);
+  quiet.focus(); const id = quiet.dataset.govSummary;
+  w.eval('UI.redraw();');
+  ok('a department summary keeps keyboard focus through a redraw',
+    w.document.activeElement.dataset.govSummary === id);
+  const pm = w.document.querySelector('#gov-cabinet [data-post=""]');
+  if (!pm.open) pm.querySelector('summary').click();
+  const ini = pm.querySelector('[data-ini]'); ini.click();
+  ok('an initiative control does not toggle its containing department', pm.open && !!pm.querySelector('.ini.open, [data-take]'));
+  const vacancy = w.document.querySelector('#gov-cabinet [data-appoint]');
+  vacancy.focus(); const key = vacancy.dataset.appointKey;
+  w.eval('UI.redraw(); UI.redraw();');
+  ok('an appointment control retains its exact identity across repeated redraws',
+    !!key && w.document.activeElement.dataset.appointKey === key);
+  const post = vacancy.dataset.appoint;
+  const before = w.eval('UI.state().log.filter(x => / appointed$/.test(x.text)).length');
+  w.document.activeElement.click();
+  ok('a repeated redraw still executes an appointment exactly once',
+    w.eval('UI.state().log.filter(x => / appointed$/.test(x.text)).length') === before + 1 &&
+    !w.document.querySelector('[data-appoint="' + post + '"]'));
+  const openInitiative = w.document.querySelector('.ini.open [data-ini]');
+  if (openInitiative) openInitiative.click();
+  w.eval('UI.boot(Engine.load(' + JSON.stringify(original) + ', CONTENT), CONTENT); UI.openTab("sit"); UI.setStatus("", "transient");');
+}
+
 /* THE GOVERNMENT YOU ARE ABOUT TO BE (design/31 §5). The administration was a
    button with a label; it is now an introduction — an epigraph, the character,
    the situation, and her signature. Asserted because the boot walk would pass

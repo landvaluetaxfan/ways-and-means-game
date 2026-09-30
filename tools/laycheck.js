@@ -254,6 +254,7 @@ const HELPERS = `
    tools/harness.js does, then measures each tab in turn. */
 const PROBE = `
 (function () {
+  ${argv.includes("--wrapped") ? 'var layoutSupports=CSS.supports.bind(CSS);CSS.supports=function(q){return q==="selector(::-webkit-scrollbar)"?false:layoutSupports.apply(CSS,arguments);};' : ''}
   var out = document.getElementById("laycheck-out");
   function done(o) { out.textContent = JSON.stringify(o); }
 
@@ -274,6 +275,7 @@ const PROBE = `
   var menu = null;
   try {
     Shell.boot(CONTENT);
+    Shell.setOpt("govDepartments", {});
     menu = (function () {
       var out = [];
       var band = document.querySelector(".menu-footer");
@@ -324,6 +326,18 @@ ${HELPERS}
     var on = document.querySelector(".screen.on");
     drawn.push(tabs[t] + (on ? "" : " (NOT DRAWN)"));
     found = found.concat(measure(tabs[t]));
+    if (tabs[t] === "gov") {
+      /* Stress the same register, not a special rendering: all cards open
+         and a real outstanding undertaking in the save's existing shape. */
+      document.querySelectorAll("#gov-cabinet details.gov-card").forEach(function(card) {
+        if (!card.open) card.querySelector("summary").click();
+      });
+      UI.state().undertakings.push({ id:"layout_undertaking", state:"open",
+        text:"Layout fixture undertaking", by:UI.state().sitting + 2, discharge:{} });
+      UI.redraw();
+      found = found.concat(measure("gov-expanded"));
+      UI.state().undertakings.pop();
+    }
   }
 
   /* AND THE SANDBOX (design/47), which only a bench draws: open one on the
