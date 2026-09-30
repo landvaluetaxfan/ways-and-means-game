@@ -164,12 +164,12 @@ is the one in `index.html`, and the record of decisions is no longer a tab:
 | | |
 |---|---|
 | **Sitting** | the event page, then the decision; what has happened, the docket, the calendar, the indicators |
-| **Government** | instruments, the register, undertakings, cabinet, the Tribunal and the Presidency |
+| **Government** | department cards, their instruments and open initiatives, undertakings, the Tribunal and the Presidency |
 | **Chamber** | order-paper time, the order paper, the House, the whip, confidence, composition |
-| **Party** | the player's own party: its currents, the leadership, the paper |
-| **Relations** | every other party, and who votes with whom; the coalition roster |
+| **Party** | the player's own party: its currents as partners, the country forecast, the leadership, the paper |
+| **Relations** | every other party, and who votes with whom; the coalition roster and the Opposition's shadow departments |
 | **Economy** | the account, the four prices, the Reserve Bank and the dollar, the Underwriters, the chart |
-| **Orbit** | the stations; the schematic, and one station's detail |
+| **Orbit** | the stations; the schematic with campaign markers, and one station's detail with explicitly national capacity readings |
 | **Foreign Affairs** | the globe, actors and the forums (tab id `world`) |
 | **Concordance** | the reference work. It knows only what the world knows |
 | **Sandbox** | the author's bench (from the main menu): every decision, event and lever |
@@ -177,6 +177,10 @@ is the one in `index.html`, and the record of decisions is no longer a tab:
 **What has happened** is the Sitting's left column: the wire's news and the
 record's decisions, grouped by sitting, newest first (29 Sep). The playtest
 transcript lives only in the in-game Options popover (design/64, answer 15).
+
+The status bar keeps confidence, heat, the rise and the leadership paper in
+words, with figures on hover, alongside the hint. Red tab counts remain
+obligations; the quiet advice-dot hook awaits the brief engine.
 
 **Party ids** are the initials of old names, and a poor guide to the names:
 

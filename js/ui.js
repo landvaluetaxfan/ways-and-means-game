@@ -5146,7 +5146,25 @@ const UI = (function () {
     }).join("");
   }
 
+  /* Advice owns its own mark. It never reads or removes red obligations. */
+  function drawMatterDots(tabIds) {
+    const wanted = new Set(tabIds || []);
+    document.querySelectorAll(".tab").forEach(tab => {
+      const old = tab.querySelector(".tab-dot");
+      if (!wanted.has(tab.dataset.t)) { if (old) old.remove(); return; }
+      if (old) return;
+      const dot = document.createElement("span");
+      dot.className = "tab-dot";
+      dot.setAttribute("role", "img");
+      dot.setAttribute("aria-label", "Advice in the brief");
+      dot.setAttribute("data-tip-title", "Advice in the brief");
+      dot.setAttribute("data-tip-body", "An open matter has a remedy on this tab. Advice does not count as something owed.");
+      tab.appendChild(dot);
+    });
+  }
+
   function drawToday() {
+    drawMatterDots([]);             /* the brief engine supplies tabs later */
     const el = $("#sit-today"); if (!el) return;
     const t = Engine.today(st, C, !!currentEvent || !!Engine.nextEvent(
       JSON.parse(Engine.save(st)), C));
@@ -8431,7 +8449,7 @@ const UI = (function () {
               -- with nothing able to see both at once to say so. uitest
               asserts they agree now, which it could not do before this. */
            content: () => C,
-           annotate, setStatus, redraw: drawAll, transcript,
+           annotate, setStatus, drawMatterDots, redraw: drawAll, transcript,
            /* put an event on the Sitting screen in the sandbox (design/47);
               the shell calls it for an address that names one */
            sandboxShow,

@@ -45,6 +45,30 @@ $('[data-admin]').click();
 ok("slot list appears", w.document.querySelectorAll(".slot").length === 4);
 $('[data-new="1"]').click();
 ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.contains("on"));
+/* MATTER DOTS are advice, not the red obligations count. */
+{
+  const dots = () => [...w.document.querySelectorAll(".tab-dot")];
+  const counts = () => [...w.document.querySelectorAll(".tab-n")]
+    .map(n => n.closest(".tab").dataset.t + ":" + n.textContent).join(",");
+  const before = counts();
+  const invoke = ids => {
+    if (w.eval("typeof UI.drawMatterDots") === "function")
+      w.eval("UI.drawMatterDots(" + JSON.stringify(ids) + ")");
+  };
+  invoke(["gov", "party", "gov", "unknown"]);
+  ok("advice dots mark only the tabs supplied, once each",
+     dots().map(n => n.closest(".tab").dataset.t).sort().join(",") === "gov,party");
+  ok("advice dots explain that they are not obligations",
+     dots().length === 2 && dots().every(n =>
+       n.getAttribute("aria-label") && /not.*owed/.test(n.getAttribute("data-tip-body") || "")));
+  invoke(["rel"]);
+  ok("updating advice moves its dots instead of accumulating stale ones",
+     dots().length === 1 && dots()[0].closest(".tab").dataset.t === "rel");
+  ok("updating advice leaves the real obligation badges unchanged",
+     before.length > 0 && counts() === before);
+  invoke([]);
+  ok("an empty brief clears every advice dot", dots().length === 0);
+}
 ok("Government has a Prime Minister card then one card per cabinet post in content order",
    [...w.document.querySelectorAll("#gov-cabinet .gov-card")].map(n => n.dataset.post).join(",") ===
    [""].concat(CONTENT.cabinet.map(p => p.id)).join(","));
