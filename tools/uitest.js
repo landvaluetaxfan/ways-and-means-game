@@ -294,8 +294,18 @@ try {
   const mine = CONTENT.currents.filter(c => c.party === me);
   const crow = [...w.document.querySelectorAll("#party-currents tr[data-current]")];
   ok("the Party tab lists your own currents and no one else's",
-     crow.length === mine.length && crow.every(r => mine.some(c => c.id === r.dataset.current)),
-     crow.length + " rows for " + mine.length + " currents");
+      crow.length === mine.length && crow.every(r => mine.some(c => c.id === r.dataset.current)),
+      crow.length + " rows for " + mine.length + " currents");
+  ok("a current has a leader, wants, promises, differences and votes in one reading",
+     ["current-leader", "current-wants", "current-promises", "current-parts", "current-votes"]
+       .every(id => !!w.document.getElementById(id)));
+  {
+    const f = w.eval("Engine.forecast(UI.state(), UI.content())");
+    const tracker = w.document.querySelector("#party-country");
+    ok("the country tracker uses the engine count and the poll bands",
+       !!tracker && tracker.textContent.includes(String(f.mine)) &&
+       tracker.querySelectorAll("[data-poll-band]").length === Object.keys(f.bands).length);
+  }
   const foot = w.document.querySelector("#party-currents tfoot td:nth-child(3)");
   ok("and the party's loyalty is their footing, as the meter reads it",
      foot && foot.textContent.trim() === String(w.eval("UI.state().scalars.party_loyalty")),
@@ -309,7 +319,7 @@ try {
        h0 + " -> " + w.document.querySelector("#party-cur-hdr").textContent);
     const cid = crow[1].dataset.current;
     const named = CONTENT.characters.filter(ch => ch.party === me && ch.current === cid);
-    const links = w.document.querySelectorAll("#party-current a[data-go]");
+    const links = w.document.querySelectorAll("#party-current .current-members a[data-go]");
     const deadL = [...links].filter(a => !w.eval('Concordance.knows(' + JSON.stringify(a.dataset.go) + ')'));
     ok("and names its members, each linked to their Concordance article",
        links.length === named.length && !deadL.length,

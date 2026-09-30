@@ -269,6 +269,7 @@ const Refs = (function () {
         if (c.holder === id) H(`cabinet ${p.id} · candidate`, to => c.holder = to); });
     });
     (M.parties || []).forEach(p => { if (p.leader === id) H(`party ${p.id} · leader`, to => p.leader = to); });
+    (M.currents || []).forEach(c => { if (c.leader === id) H(`current ${c.id} · leader`, to => c.leader = to); });
     (M.administrations || []).forEach(a => {
       if (a.leader === id) H(`administration ${a.id} · leader`, to => a.leader = to);
       /* the play's cast names its players (design/56) */

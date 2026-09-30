@@ -1640,6 +1640,22 @@ const UI = (function () {
 
     drawPartyCurrent(sel, seatsOf);
     drawLeadership();
+    drawPartyCountry();
+  }
+
+  function drawPartyCountry() {
+    const el = $("#party-country"); if (!el) return;
+    const f = Engine.forecast(st, C);
+    const held = Engine.partyTotal(st, st.playerParty);
+    const change = f.mine - held;
+    el.innerHTML = `<div class="prow"><div class="plab">Your party if counted today` +
+      `<em>${held} seats now</em></div><div class="pval${change < 0 ? " warn" : ""}">` +
+      `${f.mine} · ${change > 0 ? "would gain " + change : change < 0 ? "would lose " + (-change) : "no change"}</div></div>` +
+      `<div class="rulehead">Standing by band</div>` +
+      Engine.bandsOf(C).filter(b => f.bands[b]).map(b =>
+        `<div class="prow" data-poll-band="${esc(b)}"><div class="plab">${esc(bandName(b))}` +
+        `<em>${f.bands[b].gov} of ${f.bands[b].seats} seats for the government's side</em></div>` +
+        `<div class="pval">${f.bands[b].standing}</div></div>`).join("");
   }
 
   function drawPartyCurrent(sel, seatsOf) {
@@ -1667,7 +1683,7 @@ const UI = (function () {
        line, by the engine's cosine, so the words cannot disagree with how
        it votes. */
     const l = Engine.loyaltyOf(st, sel.id);
-    let stands = `<div class="rulehead">Where it stands</div>` +
+    let stands = `<div id="current-parts"><div class="rulehead">Where it parts from you</div>` +
       prow("Loyalty to the leadership", "", l == null ? "—" : l + (l < 35 ? " · thin" : ""),
            l != null && l < 35 ? "warn" : "");
     if (Object.keys(sel.axes || {}).length && Object.keys(own.axes || {}).length) {
@@ -1689,7 +1705,7 @@ const UI = (function () {
        seats are members the cast does not name. */
     const named = namedIn(sel.id);
     const rest = Math.max(0, (seats || 0) - named.length);
-    const members = `<div class="rulehead">Its members <em>${named.length} named` +
+    const members = `<div class="current-members"><div class="rulehead">Its members <em>${named.length} named` +
       (rest ? " · " + rest + " more" : "") + `</em></div>` +
       (named.length ? named.map(ch => {
         const rel = (st.characters[ch.id] || {}).relationship;
@@ -1702,12 +1718,12 @@ const UI = (function () {
           tipAttr("Relationship", "Where " + bare(ch.name) + " stands with you, from 0 to 100.") +
           `>${ch.id === st.pm ? "you" : rel == null ? "—" : rel}</div></div>`;
       }).join("")
-      : `<div class="note">The cast names no member of the ${esc(sel.name)}.</div>`);
+       : `<div class="note">The cast names no member of the ${esc(sel.name)}.</div>`) + `</div>`;
 
     /* 4. ON THE ORDER PAPER: how many of its members the House would count
        with the party on each live measure, before the whip. */
     const votes = currentOnMeasures(sel.id);
-    const onPaper = `<div class="rulehead">On the order paper <em>before the whip</em></div>` +
+    const onPaper = `<div id="current-votes"><div class="rulehead">On the order paper <em>before the whip</em></div>` +
       (votes.length ? votes.map(v => {
         const val = v.seats == null
           ? (v.line === "against" ? "the party votes against it" : v.line === "abstain"
@@ -1718,9 +1734,31 @@ const UI = (function () {
           (v.seats != null && v.aye < v.seats ? " · " + (v.seats - v.aye) + " will not vote with the party" : "") +
           `</i></button>`;
       }).join("")
-      : `<div class="note">Nothing is before the House.</div>`);
+       : `<div class="note">Nothing is before the House.</div>`) + `</div>`;
 
-    det.innerHTML = lead + stands + members + onPaper;
+    /* The named leader is authored when the current has one. Until then,
+       a member holding an office speaks for it; otherwise its first named
+       member does. The editor can author a leader without changing the vote. */
+    const leader = (sel.leader && named.find(ch => ch.id === sel.leader)) ||
+      named.find(ch => liveOffice(ch.id)) || named[0];
+    const who = `<div id="current-leader"><div class="rulehead">Who leads it</div>` +
+      (leader ? prow(sel.leader ? "Leader" : "Senior member", esc(liveOffice(leader.id) || "backbench"),
+        `<a class="cx-link" tabindex="0" data-go="person_${esc(leader.id)}">${esc(bare(leader.name))}</a>`)
+        : `<div class="note">No member of this current is named in the cast.</div>`) + `</div>`;
+    const favours = votes.filter(v => v.seats != null
+      ? v.aye > v.seats / 2
+      : v.b.axes && Engine.axisAgreement(sel.axes || {}, v.b.axes) > 0);
+    const wants = `<div id="current-wants"><div class="rulehead">What it wants</div>` +
+      (sel.asks ? `<div class="note">${esc(sel.asks)}</div>` : "") +
+      (favours.length ? favours.map(v => `<button class="dk goto" data-goto="cham"` +
+        ` data-open="bill:${esc(v.b.id)}"><b>${esc(v.b.title)}</b>` +
+        `<i>its members would carry this measure</i></button>`).join("")
+        : `<div class="note">No measure before the House has its support.</div>`) + `</div>`;
+    /* Undertakings name people, not currents; the schema offers no direct
+       attribution. This stays empty until an author can name the current. */
+    const promises = `<div id="current-promises"><div class="rulehead">What you have promised</div></div>`;
+    stands += `</div>`;
+    det.innerHTML = lead + who + wants + promises + stands + onPaper + members;
     det.querySelectorAll("[data-goto]").forEach(b0 =>
       b0.addEventListener("click", () => openTarget(b0)));
   }

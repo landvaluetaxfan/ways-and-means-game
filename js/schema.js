@@ -246,6 +246,10 @@ const SCHEMA = {
   /* Initiatives may name the cabinet post that can start them. An unassigned
      one belongs to the Prime Minister until the author assigns it. */
   initiativePost: { label: "Department", src: "posts", optional: true },
+  currentFields: {
+    leader: { label: "Leader", src: "characters", optional: true },
+    asks: { label: "Asks", type: "text", optional: true }
+  },
 
   vocab: {
     /* A CHOICE'S POSTURE (design/40 E7): how far it goes, not how much it

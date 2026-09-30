@@ -431,13 +431,14 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
   font-family:var(--f-data);font-size:11px;color:var(--ink-soft);}
 .labtot b{color:var(--ink);font-weight:400;}
 
-/* THE PARTY TAB: your own benches on the left, one current in the middle
-   where the prose is, and the leadership on the right. */
+/* THE PARTY TAB: benches, one current's terms, then leadership and country. */
 .g-party{grid-template-columns:minmax(300px,400px) minmax(0,1fr) minmax(280px,380px);
   grid-template-rows:minmax(0,1fr);height:100%;min-height:0;}
 #s-party.screen.on{height:100%;min-height:0;}
 .g-party > .stack{min-height:0;}
 .g-party .panel{min-height:0;}
+#party-country-panel{flex:0 0 auto;max-height:45%;}
+#party-country .prow{grid-template-columns:minmax(0,1fr) auto;}
 /* RELATIONS: the arrangement on the left, one relationship in the middle,
    and whom that party would rather be with on the right. */
 .g-rel{grid-template-columns:minmax(300px,420px) minmax(0,1fr) minmax(260px,360px);

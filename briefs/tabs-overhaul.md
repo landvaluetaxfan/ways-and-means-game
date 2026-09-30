@@ -91,7 +91,7 @@ later, and is listed at the end so you do not build it here.
      matters the minister has raised, and their forecasts with whether
      each came true. An empty placeholder is fine. Do not invent data.
 
-5. **Party: each current is treated like a partner** (`drawParty()` ~1622,
+5. **Party: each current is treated like a partner** DONE. (`drawParty()` ~1622,
    `drawPartyCurrent()` ~1675, `drawLeadership()` ~1762).
    - Give the selected current the same terms `drawRelations()` (~1949)
      gives a partner:

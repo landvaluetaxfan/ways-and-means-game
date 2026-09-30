@@ -840,6 +840,12 @@ try {
   /* Every stage a bill can be in, from the schema, which test.js holds to
      the engine's ladder. */
   const STAGES = new Set(require(path.join(root, "js", "schema.js")).vocab.billStages);
+  (CURRENTS || []).forEach(c => {
+    if (c.leader && (!CH.has(c.leader) || !(CHARACTERS || []).some(ch => ch.id === c.leader && ch.current === c.id)))
+      refBad.push("current " + c.id + ": leader '" + c.leader + "' is not one of its members");
+    if (c.asks != null && typeof c.asks !== "string")
+      refBad.push("current " + c.id + ": asks must be text");
+  });
   const walk = (o, f) => { if (!o || typeof o !== "object") return;
     if (Array.isArray(o)) return o.forEach(x => walk(x, f));
     f(o); Object.keys(o).forEach(k => walk(o[k], f)); };

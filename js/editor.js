@@ -868,7 +868,14 @@ const Editor = (function () {
         `<span class="ed-axpole">${A[k].high}</span></label>`;
     }).join("")}</div>
     <div class="rulehead">Note</div>
-    <textarea class="ed-f ed-body" data-f="note" rows="3">${esc(p.note || "")}</textarea>`;
+    <textarea class="ed-f ed-body" data-f="note" rows="3">${esc(p.note || "")}</textarea>
+    <div class="rulehead">Currents</div>${M.currents.filter(c => c.party === p.id).map(c =>
+      `<div class="ed-current" data-current-fields="${esc(c.id)}"><b>${esc(c.name)}</b>` +
+      `<label>${SCHEMA.currentFields.leader.label} ${opt_("current-leader",
+        M.characters.filter(ch => ch.current === c.id).map(ch => [ch.id, ch.name]),
+        c.leader, "— senior named member —")}</label>` +
+      `<label>${SCHEMA.currentFields.asks.label} <textarea class="ed-f" data-f="current-asks"` +
+        ` rows="2">${esc(c.asks || "")}</textarea></label></div>`).join("")}`;
   }
 
   function stationForm(s) {
@@ -1976,6 +1983,14 @@ const Editor = (function () {
         const n = Number(raw);
         p.axes[k] = isNaN(n) ? null : Math.max(-1, Math.min(1, n));
       });
+      document.querySelectorAll("[data-current-fields]").forEach(n => {
+        const c = M.currents.find(x => x.id === n.dataset.currentFields);
+        if (!c) return;
+        const leader = n.querySelector('[data-f="current-leader"]').value;
+        if (leader) c.leader = leader; else delete c.leader;
+        const asks = n.querySelector('[data-f="current-asks"]').value.trim();
+        if (asks) c.asks = asks; else delete c.asks;
+      });
       sel.id = p.id;
     }
     else if (sel.tab === "stations") {
@@ -2576,6 +2591,12 @@ const Editor = (function () {
     });
     M.parties.forEach(p => {
       if (p.leader && !PEOPLE.has(p.leader)) P.push(["err", "party " + p.id + ": led by nobody '" + p.leader + "'"]);
+    });
+    M.currents.forEach(c => {
+      if (c.leader && !M.characters.some(ch => ch.id === c.leader && ch.current === c.id))
+        P.push(["err", "current " + c.id + ": leader is not one of its named members"]);
+      if (c.asks != null && typeof c.asks !== "string")
+        P.push(["err", "current " + c.id + ": asks must be text"]);
     });
     (M.instruments || []).forEach(x => {
       if (!POSTS.has(x.author)) P.push(["err", "instrument " + x.id + ": made by no post '" + x.author + "'"]);
