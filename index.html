@@ -89,7 +89,7 @@
     <section class="screen" id="s-gov">
       <div class="grid g-gov">
         <div class="stack scrolls" id="gov-main">
-          <div class="panel"><h2>Departments <em id="gov-init-hdr"></em></h2>
+          <div class="panel"><h2 id="gov-departments-hdr" tabindex="-1">Departments <em id="gov-init-hdr"></em></h2>
             <div class="pbody scrolls" id="gov-init"><div id="gov-si"><div id="gov-cabinet"></div></div></div>
           </div>
         </div>
@@ -97,14 +97,10 @@
         <div class="stack scrolls" id="gov-side">
           <div class="panel"><h2><span data-tip="register">Register</span> <em>acts, orders and minutes</em></h2>
             <div class="pbody flush scrolls"><table id="pp-list"></table></div></div>
-          <div class="panel">
-            <h2>Undertakings <em>what the government has said it will do</em></h2>
+          <details class="panel pfold" id="gov-undertakings">
+            <summary>Undertakings <em>what the government has said it will do</em></summary>
             <div class="pbody scrolls" id="gov-owed"></div>
-          </div>
-          <div class="panel" id="gov-appoint-panel">
-            <h2><span data-tip="vacant">Appointments</span></h2>
-            <div class="pbody scrolls" id="gov-appoint" hidden></div>
-          </div>
+          </details>
           <!-- WHO CAN STOP YOU, AND USUALLY DOES NOT. Both of these are
                quiet for most of a run — the Tribunal has nothing before it
                until something is referred, and the Presidency has nothing to

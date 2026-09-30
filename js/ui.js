@@ -200,6 +200,7 @@ const UI = (function () {
 
   function boot(state, content) {
     st = state; C = content;
+    govOwedOpen = null;
     currentEvent = null; lastResult = null;
     /* Shell re-boots on every load, and both of these are EDGE triggers
        against the previous state. Carrying them across a load would fire
@@ -2426,16 +2427,25 @@ const UI = (function () {
   function rememberGovCard(card) {
     if (!card.isConnected || card.dataset.admin !== st.admin || card.open === card.__govOpen) return;
     card.__govOpen = card.open;
+    setGovOpen(card.dataset.post, card.open);
+  }
+  function setGovOpen(id, open) {
     const old = Shell.options.govDepartments;
     const all = old && typeof old === "object" && !Array.isArray(old) ? Object.assign({}, old) : {};
     const prefs = govPreferences(st.admin), posts = {};
     (C.cabinet || []).forEach(p => {
       if (typeof prefs.posts[p.id] === "boolean") posts[p.id] = prefs.posts[p.id];
     });
-    const id = card.dataset.post;
-    if (id) posts[id] = card.open; else prefs.pm = card.open;
+    if (id) posts[id] = open; else prefs.pm = open;
     all[st.admin] = { pm: prefs.pm, posts };
     Shell.setOpt("govDepartments", all);
+  }
+  let govOwedOpen = null;
+  function rememberGovOwed() {
+    const fold = $("#gov-undertakings");
+    if (fold && typeof fold.__govOpen === "boolean" && fold.open !== fold.__govOpen) {
+      govOwedOpen = fold.open; fold.__govOpen = fold.open;
+    }
   }
   function updateGovSections() {
     document.querySelectorAll("#gov-cabinet .gov-card").forEach(card => {
@@ -2460,7 +2470,8 @@ const UI = (function () {
       `<section class="gov-section" data-gov-section="initiatives"><h4>Initiatives</h4>` +
       `<div class="gov-card-ini" data-ini-post="${esc(id)}"></div></section>` +
       `<section class="gov-section" data-gov-section="running"><h4>Under way</h4>` +
-      `<div class="gov-card-running" data-running-post="${esc(id)}"></div></section></div></div></details>`;
+      `<div class="gov-card-running" data-running-post="${esc(id)}"></div></section></div>` +
+      `<div class="gov-appointments" data-appoint-post="${esc(id)}"></div></div></details>`;
     $("#gov-cabinet").innerHTML = card("", "Prime Minister") +
       (C.cabinet || []).map(p => card(p.id, p.name)).join("");
     const conf = Engine.confidence(st), maj = Engine.majority(st);
@@ -2597,6 +2608,11 @@ const UI = (function () {
        already exists. There is deliberately no control here that marks
        one done. */
     const owed = Engine.outstanding(st);
+    rememberGovOwed();
+    const owedFold = $("#gov-undertakings");
+    owedFold.open = govOwedOpen === null ? !!owed.length : govOwedOpen;
+    owedFold.__govOpen = owedFold.open;
+    owedFold.ontoggle = rememberGovOwed;
     const ob = $("#gov-owed");
     if (ob) ob.innerHTML = owed.length
       ? owed.map(u => {
@@ -2921,15 +2937,10 @@ const UI = (function () {
        moment it is made. Leaving it empty is also a decision — a post
        with no holder cannot make a statutory instrument. */
     const vac = Engine.vacancies(st, C);
-    const vbox = $("#gov-appoint");
-    if (vbox) {
-      if (!vac.length) { vbox.innerHTML = ""; vbox.hidden = true; $("#gov-appoint-panel").hidden = true; }
-      else {
-        $("#gov-appoint-panel").hidden = false;
-        vbox.hidden = false;
-        vbox.innerHTML = vac.map(pid => {
+    vac.forEach(pid => {
+        const vbox = $("#gov-cabinet").querySelector('[data-appoint-post="' + pid + '"]');
           const post = (C.cabinet || []).find(p => p.id === pid);
-          return `<div class="rulehead">${esc(post.title || post.name)} &mdash; vacant</div>` +
+          vbox.innerHTML =
             (post.vacatedBy === C.setup.pm
               ? `<div class="note">The post you held until last week. Your first
                    appointment is your own replacement, and it cannot be taken back.</div>`
@@ -2944,13 +2955,13 @@ const UI = (function () {
                 <ul class="ch-eff">${cl.map(x =>
                   `<li class="t-${x.tone}"><i>${x.tone === "good" ? "+" : x.tone === "bad" ? "\u2212" : "\u00b7"}</i>${esc(x.text)}</li>`
                 ).join("")}</ul>
-                <button class="btn commit grave" data-appoint="${esc(pid)}"
+                <button class="btn commit grave" data-appoint-key="${esc(pid)}:${c.index}" data-appoint="${esc(pid)}"
                   data-cand="${c.index}">Appoint ${esc(ch ? bare(ch.name) : c.holder)}</button>
               </div>`;
             }).join("");
-        }).join("");
+        });
 
-        vbox.querySelectorAll("[data-appoint]").forEach(b => b.addEventListener("click", () => {
+        $("#gov-cabinet").querySelectorAll("[data-appoint]").forEach(b => b.addEventListener("click", () => {
           const pid = b.dataset.appoint, ci = +b.dataset.cand;
           const c = Engine.candidates(st, C, pid)[ci];
           const ch = c && C.characterById[c.holder];
@@ -2969,11 +2980,10 @@ const UI = (function () {
               setStatus("Appointed " + (ch ? ch.name : r.holder) +
                         (moved.length ? " \u00b7 " + moved.length + " indicator" +
                          (moved.length === 1 ? "" : "s") + " moved" : ""), "transient");
-              saved(); drawAll(); afterAction();
+              setGovOpen(pid, true);
+              saved(); Focus.around(() => drawAll(), { sel:'summary[data-gov-summary="' + pid + '"]' }); afterAction();
             });
         }));
-      }
-    }
 
     $("#gov-pres").innerHTML =
       `<div class="kv"><dt>Incumbent</dt><dd>${C.characterById.tenaya.name.replace("President ", "")}</dd>` +
@@ -5179,6 +5189,15 @@ const UI = (function () {
     if (!spec) return;
     const c = spec.indexOf(":");
     const kind = spec.slice(0, c), id = spec.slice(c + 1);
+    const governmentTarget = kind === "si" || kind === "order" || kind === "initiative" || kind === "post";
+    let owner = null;
+    if (governmentTarget) {
+      const entry = kind === "post" ? (C.cabinet || []).find(x => x.id === id)
+        : (kind === "initiative" ? C.initiatives || [] : C.instruments || []).find(x => x.id === id);
+      if (entry) owner = kind === "post" ? id : (kind === "initiative" ? entry.post : entry.author) || "";
+      if (owner !== null && owner && !(C.cabinet || []).some(p => p.id === owner)) owner = null;
+      if (owner !== null) setGovOpen(owner, true);
+    }
     if (kind === "si" || kind === "order") {
       siOpen = id;
       drawAll();
@@ -5203,6 +5222,9 @@ const UI = (function () {
           setStatus((si.number || si.id) + " is laid and waiting. Press Approve to put it to the House.",
                     "transient");
       }
+    } else if (kind === "initiative") {
+      initOpen = id;
+      drawAll();
     } else if (kind === "bill" && typeof Focus !== "undefined") {
       Focus.activate("cham-bills", id);
     } else if (kind === "party" && typeof Focus !== "undefined") {
@@ -5216,6 +5238,19 @@ const UI = (function () {
         if (row.scrollIntoView) row.scrollIntoView({ block: "center" });
         flash(row);
       }
+    }
+    if (governmentTarget) {
+      if (kind === "post") drawAll();
+      const card = owner === null ? null : $("#gov-cabinet").querySelector('[data-post="' + owner + '"]');
+      const row = card && ((kind === "si" || kind === "order")
+        ? card.querySelector('[data-si="' + id + '"]')
+        : kind === "initiative" ? card.querySelector('[data-ini="' + id + '"], [data-running="' + id + '"]') : null);
+      const target = row ? row.querySelector('button:not(:disabled)') || row
+        : card ? (kind === "post" && card.querySelector('[data-appoint]')) || card.querySelector('summary')
+        : $("#gov-departments-hdr");
+      if (!target.matches('button, summary, [tabindex]')) target.tabIndex = -1;
+      target.focus({ preventScroll:true });
+      if (target.scrollIntoView) target.scrollIntoView({ block:"nearest" });
     }
   }
 
@@ -5623,7 +5658,7 @@ const UI = (function () {
          made; a vacancy is a hole in it. They look alike and they are not
          the same business, and sharing the class made the docket's own
          check count one as the other. */
-      rows.push(`<div class="dk post goto" data-goto="gov"><b>${esc(post ? post.title || post.name : pid)}
+      rows.push(`<div class="dk post goto" data-goto="gov" data-open="post:${esc(pid)}"><b>${esc(post ? post.title || post.name : pid)}
         stands vacant</b><i>no holder · the department cannot make an order · Government</i></div>`);
     });
 

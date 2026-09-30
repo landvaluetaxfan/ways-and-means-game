@@ -3185,15 +3185,15 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
    A vacancy with names against it. Each candidate is a small dossier
    rather than a menu row, because the whole point is that appointing
    one costs something and the cost is legible before you commit. */
-#gov-appoint .cand{
+.gov-appointments .cand{
   border-top:1px solid var(--rule);padding:6px 0 8px;
 }
-#gov-appoint .cand:first-of-type{border-top:0;}
-#gov-appoint .cand-h{display:flex;align-items:baseline;gap:6px;}
-#gov-appoint .cand-h b{font-size:12.5px;}
-#gov-appoint .cand .note{margin:1px 0 3px;}
-#gov-appoint .cand .ch-eff{margin-bottom:5px;}
-#gov-appoint .cand .commit{width:100%;}
+.gov-appointments .cand:first-of-type{border-top:0;}
+.gov-appointments .cand-h{display:flex;align-items:baseline;gap:6px;}
+.gov-appointments .cand-h b{font-size:12.5px;}
+.gov-appointments .cand .note{margin:1px 0 3px;}
+.gov-appointments .cand .ch-eff{margin-bottom:5px;}
+.gov-appointments .cand .commit{width:100%;}
 /* a hole in the government, which is not the same thing as a promise */
 #sit-docket .dk.post{border-left:3px dashed var(--alert);padding-left:6px;}
 #sit-docket .dk.post b{font-weight:700;}

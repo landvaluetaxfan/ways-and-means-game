@@ -1699,7 +1699,7 @@ try {
   /* and the control exists, is a real button, and confirms */
   w.eval('UI.boot(UI.state(), CONTENT);');
   w.document.querySelector('.tab[data-t="gov"]').click();
-  const btns = w.document.querySelectorAll("#gov-appoint [data-appoint]");
+  const btns = w.document.querySelectorAll("#gov-cabinet [data-appoint]");
   ok("the Government screen offers the appointment", btns.length >= 2,
      btns.length + " buttons");
   ok("each is a real button", [].slice.call(btns).every(b => b.tagName === "BUTTON"));

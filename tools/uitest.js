@@ -136,6 +136,82 @@ ok("each order appears under its authoring department",
   w.eval('UI.boot(' + clone + ', window.__govFixture);');
   ok("malformed department preferences fall back to a usable default", !!pm() && pm().open);
 }
+/* GOVERNMENT DESTINATIONS use the same live docket route as normal play. */
+{
+  const state = JSON.parse(w.eval('Engine.save(UI.state())')), Cg = w.eval('UI.content()');
+  const original = JSON.stringify(state);
+  const vacancy = Cg.cabinet.find(p => (p.candidates || []).length && !state.cabinet[p.id].holder);
+  const second = Cg.cabinet.find(p => p.id !== vacancy.id);
+  const fixture = Object.assign({}, Cg, { cabinet:Cg.cabinet.map(p =>
+    p.id === second.id ? Object.assign({}, p, { candidates:vacancy.candidates }) : p) });
+  state.cabinet[second.id].holder = null;
+  w.__govFixture = fixture; w.__govState = state;
+  w.eval('UI.boot(window.__govState, window.__govFixture); UI.openTab("gov");');
+  const card = id => w.document.querySelector('#gov-cabinet [data-post="' + id + '"]');
+  ok('two vacancies place each candidate list only inside its own department',
+    [vacancy, second].every(p => card(p.id).querySelectorAll('[data-appoint="' + p.id + '"]').length === vacancy.candidates.length) &&
+    !w.document.querySelector('#gov-appoint-panel'));
+  const route = spec => {
+    const link = w.document.querySelector('.dk.post[data-goto="gov"]');
+    link.dataset.open = spec; link.click();
+  };
+  card(vacancy.id).open = false; w.eval('UI.redraw();');
+  const docket = w.document.querySelector('.dk.post[data-open="post:' + vacancy.id + '"]');
+  ok('the vacancy docket names its department target', !!docket);
+  route('post:' + vacancy.id);
+  ok('a vacancy destination opens its own card and focuses its first appointment',
+    card(vacancy.id).open && w.document.activeElement === card(vacancy.id).querySelector('[data-appoint]'));
+  const originalConfirm = w.eval('Dialog.confirm');
+  w.__govConfirm = originalConfirm;
+  w.eval('Dialog.confirm = function(m,o,cb) { cb(false); };');
+  const appointment = card(vacancy.id).querySelector('[data-appoint]');
+  if (appointment) appointment.click();
+  ok('canceling an appointment preserves its vacancy and open card', !state.cabinet[vacancy.id].holder && card(vacancy.id).open);
+  w.eval('Dialog.confirm = window.__govConfirm;');
+  if (appointment) appointment.click();
+  ok('appointing removes candidates once and leaves focus on the surviving department summary',
+    state.cabinet[vacancy.id].holder === vacancy.candidates[0].holder &&
+    !card(vacancy.id).querySelector('[data-appoint]') && card(vacancy.id).open &&
+    w.document.activeElement === card(vacancy.id).querySelector('summary'));
+  const si = fixture.instruments.find(i => i.author && state.cabinet[i.author].holder && (!i.when || w.eval('Engine.matches(UI.state(), ' + JSON.stringify(i.when) + ')')));
+  card(si.author).open = false; card('').open = false; w.eval('UI.redraw();');
+  route('order:' + si.id);
+  ok('an order destination reveals its owner and focuses the expanded instrument',
+    card(si.author).open && !card('').open && !!card(si.author).querySelector('.si-d') &&
+    card(si.author).contains(w.document.activeElement) && w.document.activeElement !== card(si.author).querySelector('summary'));
+  fixture.initiatives = [{ id:'test_destination', post:si.author, title:'Destination fixture', cost:1, when:{}, tempo:[{ after:2 }] }];
+  w.eval('UI.redraw();'); card(si.author).open = false; w.eval('UI.redraw();');
+  route('initiative:test_destination');
+  ok('an initiative destination opens its owning card and focuses that initiative',
+    card(si.author).open && w.document.activeElement.dataset.ini === 'test_destination');
+  fixture.initiatives[0].when = { flags:['test_not_available'] };
+  w.eval('UI.redraw();'); route('initiative:test_destination');
+  ok('a surviving owner supplies the fallback when its initiative is unavailable',
+    card(si.author).open && w.document.activeElement === card(si.author).querySelector('summary'));
+  fixture.cabinet = fixture.cabinet.map(p => p.id === second.id ? Object.assign({}, p, { candidates:[] }) : p);
+  state.cabinet[vacancy.id].holder = null;
+  w.eval('UI.redraw();');
+  const noCandidates = card(second.id);
+  route('post:' + second.id);
+  ok('a vacancy without candidates retains its restriction and focuses its summary',
+    /cannot make an order/.test(noCandidates.textContent) && !noCandidates.querySelector('[data-appoint]') &&
+    w.document.activeElement === card(second.id).querySelector('summary'));
+  fixture.cabinet = Cg.cabinet.map(p => p.id === second.id ? Object.assign({}, p, { candidates:vacancy.candidates }) : p);
+  state.cabinet[vacancy.id].holder = vacancy.candidates[0].holder;
+  w.eval('UI.redraw();');
+  route('order:missing_test_order');
+  ok('an unknown Government destination falls back to the Departments heading',
+    w.document.activeElement.id === 'gov-departments-hdr');
+  const owed = () => w.document.querySelector('#gov-undertakings');
+  ok('empty Undertakings start folded', !!owed() && !owed().open);
+  state.undertakings = [{ id:'test_owed', state:'open', text:'Fixture undertaking', by:state.sitting+2, keep:{ flag:'fixture_kept' } }];
+  w.eval('UI.redraw();');
+  ok('populated Undertakings open before any explicit fold choice', !!owed() && owed().open);
+  if (owed()) owed().querySelector('summary').click(); w.eval('UI.redraw();');
+  ok('an explicit Undertakings fold survives rendering', !!owed() && !owed().open);
+  w.__govFixture = Cg;
+  w.eval('UI.boot(' + original + ', window.__govFixture);');
+}
 try {
   const C = w.eval("UI.content()"), state = w.eval("UI.state()");
   const leader = C.characters.find(c => c.office === "opposition" &&
