@@ -573,6 +573,8 @@ const UI = (function () {
      the ? mode's tab stops, which are marked on the VISIBLE screen only.
      tools/uxtest.js asserts that, and caught exactly this. */
   function openTab(name) {
+    const doc = $("#gov-docs");
+    if (name !== "gov" && doc && !doc.hidden && doc.__closeDoc) doc.__closeDoc();
     document.querySelectorAll(".tab").forEach(o =>
       o.setAttribute("aria-selected", o.dataset.t === name ? "true" : "false"));
     document.querySelectorAll(".screen").forEach(s => s.classList.remove("on"));
@@ -2658,17 +2660,43 @@ const UI = (function () {
         Focus.activate("pp-list", btn.dataset.read);
         $("#gov-docs").dataset.returnId = btn.dataset.read;
         $("#gov-docs").hidden = false;
-        $("#gov-doc-close").focus();
+        const doc = $("#gov-docs");
+        if (doc.__docKey) document.removeEventListener("keydown", doc.__docKey, true);
+        doc.__docKey = onDocKey;
+        document.addEventListener("keydown", onDocKey, true);
+        $("#gov-doc-close").focus({ preventScroll:true });
       }));
     const closeDoc = () => {
-      const id = $("#gov-docs").dataset.returnId;
-      $("#gov-docs").hidden = true;
+      const doc = $("#gov-docs"), id = doc.dataset.returnId;
+      if (doc.__docKey) document.removeEventListener("keydown", doc.__docKey, true);
+      doc.__docKey = null;
+      doc.hidden = true;
       const origin = id ? $("#gov-si").querySelector('[data-read="' + id + '"]')
                         : $("#pp-list tr.sel");
-      if (origin) origin.focus();
+      if (origin) origin.focus({ preventScroll:true });
     };
+    function onDocKey(e) {
+      const doc = $("#gov-docs");
+      if (doc.hidden) return;
+      if (e.key === "Escape") {
+        e.preventDefault(); e.stopPropagation(); closeDoc(); return;
+      }
+      if (e.key !== "Tab") return;
+      e.stopPropagation();
+      const controls = [...doc.querySelectorAll('button,input,select,textarea,a[href],[tabindex]')]
+        .filter(n => !n.disabled && n.tabIndex >= 0 && !n.closest("[hidden]"));
+      const first = controls[0], last = controls[controls.length - 1], active = document.activeElement;
+      if (!first) return;
+      if (!doc.contains(active) || (e.shiftKey ? active === first : active === last)) {
+        e.preventDefault(); (e.shiftKey ? last : first).focus({ preventScroll:true });
+      }
+    }
+    $("#gov-docs").__closeDoc = closeDoc;
     $("#gov-doc-close").onclick = closeDoc;
-    $("#gov-docs").onkeydown = e => { if (e.key === "Escape") { e.preventDefault(); closeDoc(); } };
+    $("#gov-docs").onclick = e => {
+      if (e.target !== $("#gov-docs")) return;
+      e.stopPropagation(); closeDoc();
+    };
     $("#gov-si").querySelectorAll("[data-make]").forEach(b => b.addEventListener("click", () => {
       const si = (C.instruments || []).find(x => x.id === b.dataset.make);
       const r = acted(() => Engine.makeInstrument(st, C, b.dataset.make));

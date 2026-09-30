@@ -1409,6 +1409,31 @@ try {
      if (opened) w.document.querySelector("#gov-doc-close").click();
      ok("an instrument opens its document overlay and Close dismisses it",
         opened && overlay.hidden);
+     if (opened) {
+       read.click();
+       const controls = [...overlay.querySelectorAll('button,a[href],[tabindex="0"]')];
+       const first = controls[0], last = controls[controls.length - 1];
+       first.focus();
+       const back = new w.KeyboardEvent("keydown", { key:"Tab", shiftKey:true, bubbles:true, cancelable:true });
+       first.dispatchEvent(back);
+       const backward = back.defaultPrevented && w.document.activeElement === last;
+       last.focus();
+       const forward = new w.KeyboardEvent("keydown", { key:"Tab", bubbles:true, cancelable:true });
+       last.dispatchEvent(forward);
+       ok("the Document reader contains both keyboard traversal boundaries",
+          backward && forward.defaultPrevented && w.document.activeElement === first);
+       read.focus();
+       const escape = new w.KeyboardEvent("keydown", { key:"Escape", bubbles:true, cancelable:true });
+       read.dispatchEvent(escape);
+       ok("Escape dismisses the reader even if focus strays, and restores its opener",
+          overlay.hidden && escape.defaultPrevented && w.document.activeElement === read);
+       read.click();
+       overlay.dispatchEvent(new w.MouseEvent("click", { bubbles:true }));
+       ok("the Document backdrop dismisses without acting on the underlying screen",
+          overlay.hidden && w.document.activeElement === read);
+       read.click(); w.eval('UI.openTab("sit");');
+       ok("leaving Government dismisses the reader instead of leaving a hidden modal active", overlay.hidden);
+     }
    }
   }
   /* the letterhead must not leak an HTML entity as text */
