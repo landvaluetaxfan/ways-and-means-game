@@ -5,6 +5,14 @@ commit. Read `AGENTS.md` "Standing rules" (State, One writer) and
 
 ## 1. Willingness reads the live cabinet, not the authored office
 
+**Done, 1 October 2026.** A shared payroll-office reader uses live posts,
+while preserving authored offices outside the opening Cabinet. Signing,
+winning a name back, and both House tiers use it. The functional roster
+also matches its named members to characters within their own register.
+The 80-seed before/after sweeps are identical (640 runs); the four crisis
+strategies still lose 10, 26, 7 and 12 runs. Flash I's canon is unchanged.
+Steps 2 and 3 remain open; this batch does not implement them.
+
 `willOf(st, ch)` in `js/engine.js` (about line 3175) counts
 `ch.office ? 12 : 0` as the payroll weight, so a minister sacked by a
 `cabinet` effect still counts as paid, and a backbencher appointed does not.

@@ -48,6 +48,61 @@ const RUN_BOUND = T.runBound(CONTENT);
   if (bad) process.exitCode = 1;
 })();
 
+console.log("\nLIVE CABINET PAYROLL:");
+(function () {
+  let bad = 0;
+  const ok = (label, yes) => { console.log((yes ? "  ok   " : "  FAIL ") + label); if (!yes) bad++; };
+  /* Reverting any caller to authored office, ignoring live posts, or
+     treating every authored minister as dismissed breaks these cases.
+     Loyalty is fixed so the only willingness change is the payroll's 12. */
+  const fresh = () => {
+    const s = Engine.newGame(CONTENT);
+    s.parties.cu.loyalty = 50;
+    Object.values(s.currents).forEach(c => { c.loyalty = 50; });
+    return s;
+  };
+  const will = (s, id) => Engine.signableMembers(s, CONTENT).find(m => m.id === id).will;
+  const bench = (s, id) => {
+    const ch = CONTENT.characterById[id], row = Engine.benchRoll(s, CONTENT)[ch.party];
+    return row.popular.concat(row.functional).find(m => m.name.replace(/\s+MP$/, "") === ch.name.replace(/\s+MP$/, ""));
+  };
+  const s = fresh(), before = will(s, "vellan");
+  Engine.apply(s, CONTENT, [{ cabinet:{ life_support:null } }]);
+  ok("dismissal removes the payroll restraint on signing", will(s, "vellan") === before + 12);
+  ok("a dismissed district minister is no longer a payroll voter", bench(s, "vellan").payroll === false && bench(s, "vellan").office === null);
+  Engine.apply(s, CONTENT, [{ cabinet:{ life_support:{ holder:"vellan", party:"cu" } } }]);
+  ok("reappointment restores the payroll restraint", will(s, "vellan") === 38);
+
+  const backbencher = will(s, "halloran");
+  Engine.apply(s, CONTENT, [{ cabinet:{ treasury:{ holder:"halloran", party:"cu" } } }]);
+  ok("appointment puts a backbencher on the leadership payroll", will(s, "halloran") === backbencher - 12);
+  ok("an appointed district member votes as payroll", bench(s, "halloran").payroll === true && bench(s, "halloran").office === "minister");
+  Engine.apply(s, CONTENT, [{ cabinet:{ education:{ holder:"halloran", party:"cu" }, treasury:null } }]);
+  ok("holding another post keeps the payroll restraint", will(s, "halloran") === 38);
+  Engine.apply(s, CONTENT, [{ cabinet:{ education:null } }]);
+  ok("leaving the last post releases an appointed backbencher", will(s, "halloran") === 50);
+
+  const signed = fresh(); signed.signedBy = ["vellan"]; signed.signatures = 1;
+  const terms = Engine.winBackTerms(signed, CONTENT, "vellan");
+  Engine.apply(signed, CONTENT, [{ cabinet:{ life_support:null } }]);
+  const dismissed = Engine.winBackTerms(signed, CONTENT, "vellan");
+  ok("winning a name back reads the same live payroll restraint", terms.member.will === 38 && dismissed.member.will === 50 && terms.member.office === "minister" && dismissed.member.office === null);
+
+  const opening = fresh();
+  ok("ministers with no authored office still have payroll restraint",
+    will(opening, "piastri") === 38 && will(opening, "dulac") === 38);
+  ok("the junior minister outside Cabinet stays on the payroll",
+    will(opening, "skye") === 38 && bench(opening, "skye").payroll === true);
+  ok("whips and opposition offices retain their authored payroll",
+    will(opening, "okarie") === 38 && bench(opening, "okarie").payroll === true && bench(opening, "watkins").payroll === true);
+  ok("functional ministers are matched to the payroll by their authored name", bench(opening, "ashgrove").payroll === true);
+  Engine.apply(opening, CONTENT, [{ cabinet:{ consumables_agriculture:null } }]);
+  ok("a functional minister leaving office loses payroll status", bench(opening, "ashgrove").payroll === false && bench(opening, "ashgrove").office === null);
+  const loaded = Engine.load(Engine.save(signed), CONTENT);
+  ok("loading a dismissal does not restore the authored payroll", Engine.winBackTerms(loaded, CONTENT, "vellan").member.will === 50 && bench(loaded, "vellan").payroll === false);
+  if (bad) { console.log(bad + " LIVE PAYROLL FAILURES"); process.exitCode = 1; }
+})();
+
 const st = Engine.newGame(CONTENT);
 console.log("chamber", Engine.chamberTotal(st), "| popular", Engine.popularTotal(st),
             "| functional", Engine.functionalTotal(st));

@@ -3196,20 +3196,20 @@ const Engine = (function () {
       if (signed.indexOf(ch.id) >= 0 || refused.indexOf(ch.id) >= 0) return;
       /* a member won back is off the paper while the promise stands */
       if (wonBackBy(st, ch.id)) return;
-      out.push(willOf(st, ch));
+      out.push(willOf(st, C, ch));
     });
     return out.sort((a, b) => b.will - a.will);
   }
   /* WILLINGNESS is low loyalty and a grievance with the leadership, minus
      whatever the government holds over them. One reading, for asking a
      member to sign and for winning one back. */
-  function willOf(st, ch) {
+  function willOf(st, C, ch) {
     const cur = ch.current ? (st.currents[ch.current] || {}) : null;
     const loy = cur && cur.loyalty != null ? cur.loyalty
               : ((st.parties[st.playerParty] || {}).loyalty || 60);
-    const payroll = ch.office ? 12 : 0;
+    const office = payrollOffice(st, C, ch), payroll = office ? 12 : 0;
     return { id: ch.id, name: ch.name, will: 100 - loy - payroll + (ch.grievance ? 10 : 0),
-             loyalty: loy, office: ch.office || null, current: ch.current || null };
+             loyalty: loy, office: office, current: ch.current || null };
   }
   /* The promise that took a member's name off the paper, while it stands. */
   function wonBackBy(st, id) {
@@ -3265,7 +3265,7 @@ const Engine = (function () {
     const ch = (C.characters || []).find(c => c.id === id);
     if (!ch || (st.signedBy || []).indexOf(id) < 0)
       return { ok: false, reason: "that member has not signed the paper" };
-    const m = willOf(st, ch);
+    const m = willOf(st, C, ch);
     if (m.will >= (T.winBackBelow == null ? 75 : T.winBackBelow))
       return { ok: false, member: m, reason: bareName(ch.name) + " is too far gone to be talked round" };
     const axes = ((C.currents || []).find(c => c.id === ch.current) || {}).axes ||
@@ -3910,6 +3910,16 @@ const Engine = (function () {
 
   const PAYROLL = ["pm", "minister", "opposition", "shadow", "leader", "whip"];
 
+  /* Live Cabinet takes precedence over authored office. An opening
+     minister who has left every post no longer holds that office; junior
+     ministers, whips and opposition offices outside Cabinet keep theirs. */
+  function payrollOffice(st, C, ch) {
+    if (!ch) return null;
+    if (holdsAnyPost(st, ch.id)) return "minister";
+    if ((C.cabinet || []).some(p => p.holder === ch.id)) return null;
+    return ch.office || null;
+  }
+
   /* A LIST MEMBER GETS A NAME, AND IT IS A PLACEHOLDER ON PURPOSE.
 
      The first build rendered the hundred list seats as an unnamed mark,
@@ -4003,8 +4013,11 @@ const Engine = (function () {
   function benchAll(st, C, popularCount) {
     /* seat name -> the cast member sitting for it, so a district row can
        be upgraded from a bare name in the roll to a person with an office. */
-    const cast = {};
-    (C.characters || []).forEach(ch => { if (ch.seat) cast[ch.seat] = ch; });
+    const cast = {}, functionalCast = {};
+    (C.characters || []).forEach(ch => {
+      if (ch.seat) cast[ch.seat] = ch;
+      if (ch.functional) functionalCast[ch.functional + ":" + bareName(ch.name)] = ch;
+    });
 
     /* One set for the whole House, so two parties cannot seat the same
        placeholder and no placeholder can be a member who already exists.
@@ -4022,10 +4035,10 @@ const Engine = (function () {
         const held = (st.roll[k.id] || {}).held || {};
         if ((st.roll[k.id] || {}).nonVoting) return;
         for (let i = 0; i < (held[p.id] || 0); i++) {
-          const ch = cast[k.name];
+          const ch = cast[k.name], office = payrollOffice(st, C, ch);
           seats.push({ tier: "district", name: (ch && ch.name) || k.member,
-                       seat: k.name, office: ch ? ch.office : null,
-                       payroll: !!(ch && PAYROLL.indexOf(ch.office) >= 0) });
+                       seat: k.name, office: office,
+                       payroll: PAYROLL.indexOf(office) >= 0 });
         }
       });
 
@@ -4042,10 +4055,10 @@ const Engine = (function () {
       (C.functional || []).forEach(fc => {
         (fc.members || []).forEach(m => {
           if (m.party !== p.id) return;
-          const ch = cast[m.name];
+          const ch = functionalCast[fc.id + ":" + bareName(m.name)], office = payrollOffice(st, C, ch);
           fseats.push({ tier: "functional", name: m.name, ref: m.ref,
-                        seat: fc.name, office: ch ? ch.office : null,
-                        payroll: !!(ch && PAYROLL.indexOf(ch.office) >= 0) });
+                        seat: fc.name, office: office,
+                        payroll: PAYROLL.indexOf(office) >= 0 });
         });
       });
 
