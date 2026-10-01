@@ -153,6 +153,211 @@ const RUN_BOUND = T.runBound(CONTENT);
   if (bad) process.exitCode = 1;
 })();
 
+/* Ministerial advice is saved simulation, not a second event pool. */
+(function () {
+  let bad = 0;
+  const ok = (name, yes) => { console.log((yes ? '  ok   ' : '  FAIL ') + name); if (!yes) bad++; };
+  console.log('\nMATTER LIFECYCLE:');
+  const supported = typeof Engine.matters === 'function' && typeof Engine.noteMatter === 'function' && typeof Engine.acknowledge === 'function';
+  ok('the engine exposes matter advice and choice-free acknowledgement', supported);
+  if (!supported) { process.exitCode = 1; return; }
+  const owner = CONTENT.cabinet[0].id;
+  const late = {id:'matter_last_chance',queuedOnly:true,title:'Last chance',body:'Act before the remedy becomes impossible.',choices:[{label:'Wait',effects:[]}]};
+  const page = {id:'matter_consequence',queuedOnly:true,setpiece:true,title:'The consequence',body:'The remedy did not arrive.',choices:[],effects:[{flag:'matter_fact'}]};
+  const pool = {id:'matter_pool',title:'Other business',weight:90,choices:[{label:'Agree',effects:[]}]};
+  const base = {id:'matter_probe',owner,raise:{flags:['matter_raise']},note:'Act while there is time.',
+    figures:[],remedies:[],due:{after:3},grace:2,late:late.id,page:page.id,settled:{flags:['matter_done']}};
+  const fixture = (rows=[base], events=[late,page,pool], extra={}) => {
+    const C=Object.assign({},CONTENT,extra,{matters:rows,events,eventById:Object.fromEntries(events.map(e=>[e.id,e]))});
+    const s=Engine.newGame(C); s.cabinet[owner].holder=CONTENT.characters[0].id;
+    return {C,s};
+  };
+  const raise = (s,C) => Engine.apply(s,C,[{flag:'matter_raise'}]);
+  const moveTo = (s,C,n) => { s.sitting=n; Engine.apply(s,C,[]); };
+  try {
+    const {s,C}=fixture(); raise(s,C);
+    ok('an eligible matter opens after effects',s.matters.matter_probe.state === 'open');
+    ok('eligibility starts the deadline clock',s.matters.matter_probe.eligibleAt === 1);
+    const saved=Engine.save(s), rows=Engine.matters(s,C);
+    ok('matter queries are pure',Engine.save(s) === saved);
+    ok('advice identifies the live holder',rows[0].holder === s.cabinet[owner].holder);
+    ok('advice projects the deadline',rows[0].remaining === 3);
+    const owed=JSON.stringify(Engine.today(s,C)); Engine.noteMatter(s,C,base.id);
+    ok('noting hides advice without stopping the clock',Engine.matters(s,C).length === 0 && s.matters.matter_probe.eligibleAt === 1);
+    ok('advice does not change the obligations',JSON.stringify(Engine.today(s,C)) === owed);
+    moveTo(s,C,4);
+    ok('a noted matter returns as the late decision',Engine.nextEvent(s,C).id === late.id);
+    const anchor=Object.assign({},pool,{id:'matter_anchor',at:4,once:true}); C.events.push(anchor); C.eventById[anchor.id]=anchor;
+    ok('a dated decision outranks late advice',Engine.nextEvent(s,C).id === anchor.id);
+    Engine.choose(s,C,anchor,0);
+    ok('a sitting offers no second governing decision',Engine.nextEvent(s,C) === null);
+    moveTo(s,C,5); Engine.choose(s,C,Engine.nextEvent(s,C),0);
+    ok('grace starts at the answered late decision',s.matters.matter_probe.lateAt === 5);
+    ok('the calendar follows actual grace instead of the old deadline',Engine.deadlines(s,C).some(d=>d.kind==='matter' && d.sitting===7));
+    moveTo(s,C,7); const p=Engine.nextEvent(s,C);
+    ok('the failure page comes before ordinary business',p.id === page.id);
+    const actedBefore=s.actedThisSitting;
+    Engine.acknowledge(s,C,p);
+    ok('acknowledgement applies the page effects',s.flags.matter_fact === true);
+    ok('acknowledgement records the page once',s.seen[page.id]===1 && s.log.filter(l=>l.text===page.title).length===1);
+    ok('acknowledgement is not a governing action',s.actedThisSitting === actedBefore);
+    const once=Engine.save(s); Engine.acknowledge(s,C,p);
+    ok('acknowledgement cannot repeat',Engine.save(s)===once);
+    ok('a consequence is terminal for its matter',s.matters.matter_probe.state==='failed');
+    const loaded=Engine.reconcile(Engine.load(Engine.save(s)),C);
+    ok('matter saves round-trip unchanged',Engine.save(loaded)===Engine.save(s));
+    const legacy=JSON.parse(Engine.save(s)); legacy.version=34; delete legacy.matters;
+    const migrated=Engine.reconcile(Engine.load(JSON.stringify(legacy)),C);
+    ok('v34 saves gain the v35 matter table',migrated.version===35 && !!migrated.matters.matter_probe);
+    ok('already witnessed legacy failures do not replay',Engine.matters(migrated,C).length===0 && migrated.matters.matter_probe.state==='failed');
+    const updated=Object.assign({},C,{matters:[Object.assign({},base,{id:'replacement'})]});
+    Engine.reconcile(loaded,updated);
+    ok('reconciliation drops removed matter identities',!loaded.matters.matter_probe);
+    ok('reconciliation adds new matter identities',!!loaded.matters.replacement);
+  }catch(e){ok('matter lifecycle fixture',false);console.log('    '+e.message);}
+  try {
+    const rows=Array.from({length:6},(_,i)=>Object.assign({},base,{id:'crowded_'+i,due:{after:i===5?2:6}}));
+    const {s,C}=fixture(rows); raise(s,C);
+    ok('the most urgent waiting matter is admitted first',Engine.matters(s,C)[0].id==='crowded_5');
+    Engine.apply(s,C,[]); ok('repeated updates admit no second matter that sitting',Engine.matters(s,C).length===1);
+    moveTo(s,C,2); ok('the next sitting admits only one more matter',Engine.matters(s,C).length===2);
+    moveTo(s,C,3); moveTo(s,C,4); moveTo(s,C,5);
+    ok('the brief holds four open matters without evicting them',Engine.matters(s,C).length===4 && s.matters.crowded_4.state==='waiting');
+    ok('overflow clocks start on eligibility, not admission',s.matters.crowded_4.eligibleAt===1);
+    moveTo(s,C,6);
+    ok('a fifth matter remains waiting while the four places are occupied',s.matters.crowded_4.state==='waiting' && Engine.matters(s,C).length===4);
+    moveTo(s,C,7);
+    ok('an overdue waiting matter may become a decision',s.matters.crowded_4.state==='late' && s.matters.crowded_4.openedAt===null);
+  }catch(e){ok('crowded matter fixture',false);console.log('    '+e.message);}
+  try {
+    const {s,C}=fixture([Object.assign({},base,{recurs:true})]); s.cabinet[owner].holder=null; raise(s,C);
+    ok('a vacant post raises no new matter',s.matters.matter_probe.eligibleAt===null);
+    s.cabinet[owner].holder=CONTENT.characters[0].id; Engine.apply(s,C,[]); s.cabinet[owner].holder=null;
+    moveTo(s,C,4); ok('vacancy does not stop an existing deadline',s.matters.matter_probe.state==='late');
+    Engine.apply(s,C,[{flag:'matter_done'}]);
+    ok('settlement closes a late matter',s.matters.matter_probe.state==='closed');
+    Engine.apply(s,C,[{flag:{matter_done:false}}]);
+    ok('recurrence does not reopen a continuously true raise',s.matters.matter_probe.state==='closed');
+    Engine.apply(s,C,[{flag:{matter_raise:false}}]); s.cabinet[owner].holder=CONTENT.characters[0].id;
+    moveTo(s,C,5); raise(s,C);
+    ok('recurrence rearms only after false then true',s.matters.matter_probe.state==='open' && s.matters.matter_probe.eligibleAt===5);
+  }catch(e){ok('matter vacancy and recurrence',false);console.log('    '+e.message);}
+  try {
+    const {s,C}=fixture(); raise(s,C); moveTo(s,C,4); Engine.choose(s,C,Engine.nextEvent(s,C),0); moveTo(s,C,6);
+    Engine.apply(s,C,[{flag:'matter_done'}]);
+    ok('settlement cancels a pending consequence',Engine.nextEvent(s,C).id===pool.id && !s.flags.matter_fact);
+    const shut=Object.assign({},page,{id:'gated_page',choices:[{label:'Closed',when:{flags:['never']}}]});
+    C.events.unshift(shut); C.eventById[shut.id]=shut; s.queue.push({eventId:shut.id,dueSitting:s.sitting});
+    s.actedThisSitting=false; const met=Engine.playSitting(s,C);
+    ok('gated choices stay passed over without applying page effects',!s.seen[shut.id] && !s.flags.matter_fact && met.some(x=>x.event.id===shut.id));
+    const fresh=fixture([], [page,pool]); fresh.s.queue.push({eventId:page.id,dueSitting:1});
+    const played=Engine.playSitting(fresh.s,fresh.C);
+    ok('playSitting acknowledges a choice-free page and still answers its decision',fresh.s.flags.matter_fact && played.length===2 && played[1].event.id===pool.id);
+    const alone=fixture([], [page]); Engine.acknowledge(alone.s,alone.C,page);
+    ok('a choice-free acknowledgement leaves governing action untouched',!alone.s.actedThisSitting);
+  }catch(e){ok('matter consequence cancellation and play',false);console.log('    '+e.message);}
+  try {
+    const outcome={id:'matter_work_answer',queuedOnly:true,setpiece:true,title:'The answer',choices:[],effects:[{flag:'matter_done'}]};
+    const initiative={id:'matter_work',post:owner,title:'Commission work',cost:1,event:outcome.id,tempo:[{label:'Carefully',after:2,effects:[]}]};
+    const m=Object.assign({},base,{remedies:[{id:'work',target:{kind:'initiative',id:initiative.id,tempo:0},takes:2,note:'Open the work.'}]});
+    const extra={initiatives:[initiative],initiativeById:{[initiative.id]:initiative}};
+    const {s,C}=fixture([m],[late,page,pool,outcome],extra); raise(s,C);
+    const before=Engine.save(s); const advice=Engine.matters(s,C)[0];
+    ok('derived remedies retain their stable local ids',advice.remedies[0].id==='work');
+    ok('remedy availability is derived without starting work',advice.remedies[0].ok && Engine.save(s)===before);
+    Engine.take(s,C,initiative.id,0);
+    ok('a real accepted initiative start holds the clock',!!s.matters.matter_probe.hold);
+    moveTo(s,C,3);
+    ok('a hold follows the actual pending outcome queue',Engine.matters(s,C)[0].underway.landing===3 && Engine.matters(s,C)[0].remaining===3);
+    Engine.acknowledge(s,C,Engine.nextEvent(s,C));
+    ok('settlement after work lands closes advice',s.matters.matter_probe.state==='closed');
+    const canceled=fixture([m],[late,page,pool,outcome],extra); raise(canceled.s,canceled.C); Engine.take(canceled.s,canceled.C,initiative.id,0);
+    canceled.s.queue=[]; moveTo(canceled.s,canceled.C,2);
+    ok('canceled work resumes an unresolved clock',!canceled.s.matters.matter_probe.hold && Engine.matters(canceled.s,canceled.C)[0].remaining===3);
+    const partial=fixture([m],[late,page,pool,Object.assign({},outcome,{effects:[{move:{thermal_margin:1}}]})],extra);
+    raise(partial.s,partial.C); Engine.take(partial.s,partial.C,initiative.id,0); moveTo(partial.s,partial.C,3);
+    Engine.acknowledge(partial.s,partial.C,Engine.nextEvent(partial.s,partial.C));
+    ok('partial improvement cannot settle a matter',partial.s.matters.matter_probe.state==='open' && !partial.s.matters.matter_probe.hold);
+    const refused=fixture([m],[late,page,pool,outcome],extra); raise(refused.s,refused.C); refused.s.slots.used=refused.s.slots.total;
+    const clock=refused.s.matters.matter_probe.eligibleAt;
+    const answer=Engine.take(refused.s,refused.C,initiative.id,0);
+    ok('a refused lever cannot pause advice',!answer.ok && !refused.s.matters.matter_probe.hold && refused.s.matters.matter_probe.eligibleAt===clock);
+    const vacant=fixture([m],[late,page,pool,outcome],extra); raise(vacant.s,vacant.C); Engine.take(vacant.s,vacant.C,initiative.id,0);
+    vacant.s.cabinet[owner].holder=null; moveTo(vacant.s,vacant.C,2);
+    ok('vacancy leaves already running work underway',!!vacant.s.matters.matter_probe.hold);
+    const lateStart=fixture([m],[late,page,pool,outcome],extra); raise(lateStart.s,lateStart.C); moveTo(lateStart.s,lateStart.C,4); Engine.take(lateStart.s,lateStart.C,initiative.id,0);
+    ok('a start after the deadline cannot hold the brief clock',!lateStart.s.matters.matter_probe.hold);
+  }catch(e){ok('matter work tracking',false);console.log('    '+e.message);}
+  try {
+    const si={id:'matter_order',author:owner,title:'Protect the margin',procedure:'affirmative',effects:[{flag:'matter_done'}]};
+    const m=Object.assign({},base,{remedies:[{id:'order',target:{kind:'instrument',id:si.id},takes:0,note:'Open the order.'}]});
+    const {s,C}=fixture([m],[late,page,pool],{instruments:[si],instrumentById:{[si.id]:si}}); raise(s,C);
+    const made=Engine.makeInstrument(s,C,si.id);
+    ok('an accepted affirmative order holds while approval is pending',made.ok && !!s.matters.matter_probe.hold);
+    s.instruments[si.id].revoked=true; s.instruments[si.id].awaitingApproval=false; moveTo(s,C,2);
+    ok('failed approval resumes rather than settles advice',!s.matters.matter_probe.hold && s.matters.matter_probe.state==='open');
+    const bill=Object.assign({},CONTENT.bills[0],{id:'matter_measure',title:'A remedy bill',stage:'first_reading',onPass:[{flag:'matter_done'}]});
+    const mb=Object.assign({},base,{remedies:[{id:'bill',target:{kind:'bill',id:bill.id},takes:0,note:'Open the measure.'}]});
+    const b=fixture([mb],[late,page,pool],{bills:[bill],billById:{[bill.id]:bill}}); raise(b.s,b.C);
+    b.s.slots.used=b.s.slots.total;
+    ok('bill remedy availability respects the real order-paper budget',!Engine.matters(b.s,b.C)[0].remedies[0].ok);
+    b.s.slots.used=0;
+    const grant=Engine.grantSlot(b.s,b.C,bill.id);
+    ok('a real bill advance holds while the measure is progressing',grant.ok && !!b.s.matters.matter_probe.hold);
+    b.s.bills[bill.id].dead=true; moveTo(b.s,b.C,2);
+    ok('a fallen bill resumes unresolved advice',!b.s.matters.matter_probe.hold && b.s.matters.matter_probe.state==='open');
+    const lender=Object.keys(CONTENT.setup.lenders).find(k=>CONTENT.setup.lenders[k].drawable);
+    const money=Object.assign({},base,{settled:{scalarAbove:{solvency:CONTENT.setup.scalars.solvency}},
+      remedies:[{id:'cash',target:{kind:'money',id:lender,amount:1},takes:0,note:'Open the facility.'}]});
+    const lenders=Object.assign({},CONTENT.setup.lenders);
+    lenders[lender]=Object.assign({},lenders[lender]); delete lenders[lender].onDraw;
+    const cash=fixture([money],[late,page,pool],{setup:Object.assign({},CONTENT.setup,{lenders})});
+    raise(cash.s,cash.C); const loan=Engine.borrow(cash.s,cash.C,1,lender);
+    ok('an immediate money remedy settles against live state',loan.ok && cash.s.matters.matter_probe.state==='closed');
+  }catch(e){ok('matter instrument bill and money tracking',false);console.log('    '+e.message);}
+  try {
+    const second=Object.assign({},pool,{id:'other_matter_business'}), {s,C}=fixture([],[pool,second]);
+    Engine.choose(s,C,pool,0); moveTo(s,C,2);
+    Engine.passOver(s,pool);
+    const next=Engine.nextEvent(s,C);
+    ok('passing over a previously answered decision does not consume this sitting',next && next.id===second.id);
+    const later=Object.assign({},late,{id:'later_post_decision'});
+    const tie=fixture([Object.assign({},base,{id:'later_post',owner:CONTENT.cabinet[1].id,late:later.id}),Object.assign({},base,{id:'earlier_post'})],[late,later,page,pool]);
+    tie.s.cabinet[CONTENT.cabinet[1].id].holder=CONTENT.characters[0].id; raise(tie.s,tie.C);
+    ok('equal deadlines break ties by cabinet order',Engine.matters(tie.s,tie.C)[0].id==='earlier_post');
+    moveTo(tie.s,tie.C,4);
+    ok('late decisions retain the cabinet-order tie break',Engine.nextEvent(tie.s,tie.C).id===late.id);
+  }catch(e){ok('matter ordering and decision bookkeeping',false);console.log('    '+e.message);}
+  try {
+    const {s,C}=fixture(); raise(s,C); Engine.advance(s,C); Engine.advance(s,C); Engine.advance(s,C);
+    ok('sitting boundaries observe advice deadlines',s.matters.matter_probe.state==='late');
+    const saved=Engine.save(s); Engine.matters(s,C); Engine.deadlines(s,C); Engine.calendar(s,C,0);
+    ok('advice and calendar queries leave the save byte-identical',Engine.save(s)===saved);
+  }catch(e){ok('matter boundary and query checks',false);console.log('    '+e.message);}
+  try {
+    const ordinary=Object.assign({},late,{queuedOnly:false,weight:100,when:{flags:['pool_gate_closed']}});
+    const {s,C}=fixture([base],[Object.assign({},ordinary,{when:undefined}),page,pool]); raise(s,C);
+    ok('a matter late decision cannot compete in the ordinary pool',Engine.nextEvent(s,C).id===pool.id);
+    C.events[0]=ordinary; C.eventById[ordinary.id]=ordinary; moveTo(s,C,4);
+    const next=Engine.nextEvent(s,C);
+    ok('the matter deadline owns late selection rather than an unrelated pool gate',next && next.id===ordinary.id);
+  }catch(e){ok('matter pool isolation',false);console.log('    '+e.message);}
+  try {
+    const {s,C}=fixture([Object.assign({},base,{recurs:true})]); raise(s,C); moveTo(s,C,4);
+    Engine.choose(s,C,Engine.nextEvent(s,C),0); moveTo(s,C,6); Engine.acknowledge(s,C,Engine.nextEvent(s,C));
+    Engine.apply(s,C,[{flag:{matter_done:true,matter_raise:false}}]);
+    ok('a failed matter can close after later settlement',s.matters.matter_probe.state==='closed');
+    moveTo(s,C,7); Engine.apply(s,C,[{flag:{matter_done:false,matter_raise:true}}]);
+    ok('a repaired recurring matter can open a new episode',s.matters.matter_probe.state==='open');
+    moveTo(s,C,10); Engine.choose(s,C,Engine.nextEvent(s,C),0); moveTo(s,C,12);
+    Engine.acknowledge(s,C,Engine.nextEvent(s,C));
+    ok('recurring consequences record once per episode',s.seen[page.id]===2 && s.matters.matter_probe.state==='failed');
+    const once=Engine.save(s); Engine.acknowledge(s,C,page);
+    ok('a recurring consequence cannot repeat within its episode',Engine.save(s)===once);
+  }catch(e){ok('matter recovery and recurring consequences',false);console.log('    '+e.message);}
+  if(bad)process.exitCode=1;
+})();
+
 /* Content owns presentation bands and campaign overlays; querying either
    must leave the simulation unchanged. */
 (function () {

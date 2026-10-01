@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 34;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar, 32 core inflation and the quarter, 33 the forums, 34 the Concordance's dates
+  const STATE_VERSION = 35;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar, 32 core inflation and the quarter, 33 the forums, 34 the Concordance's dates, 35 ministerial matters
 
   /* ---------------------------------------------------------
      1. STATE
@@ -29,6 +29,7 @@ const Engine = (function () {
          article was last read on */
       since: {},
       cxRead: {},
+      matters: {},
       /* The session is content's number (bible §11.1: Session 4), and a
          session is sat in PERIODS with a recess between them (§1.8). */
       session: C.setup.session || 1,
@@ -284,6 +285,7 @@ const Engine = (function () {
     /* the party figures and the government's meter are the currents' */
     syncLoyalty(st, C);
     if (st.macro) { st.macro.balancePct = openingBalancePct(C); st.macro.debtPct = 0; }
+    syncMatters(st, C);
     return st;
   }
 
@@ -548,6 +550,10 @@ const Engine = (function () {
       st.cxRead = st.cxRead || {};
       st.version = 34;
     }
+    if (st.version < 35) {
+      st.matters = {};
+      st.version = 35;
+    }
     return st;
   }
 
@@ -789,6 +795,7 @@ const Engine = (function () {
     /* and on every load, so a save written before the loyalties were linked
        reads its meter off its currents like a new game does */
     syncLoyalty(st, C);
+    syncMatters(st, C);
     return st;
   }
 
@@ -2370,10 +2377,10 @@ const Engine = (function () {
     return true;
   }
 
-  function grantSlot(st, C, billId) {
+  function canGrant(st, C, billId) {
     if (slotsFor(st, billId) < 1) return { ok: false, reason: "no order-paper time left this sitting period" };
     const b = C.billById[billId], bs = st.bills[billId];
-    if (!b || bs.dead) return { ok: false, reason: "not before Parliament" };
+    if (!b || !bs || bs.dead) return { ok: false, reason: "not before Parliament" };
     if (bs.stage === DIVIDES_AT) return { ok: false, reason: "awaiting a division" };
     /* AND THE HOUSE HEARS SO MUCH IN A DAY. Six slots spendable on sitting
        one made the session budget a lump sum — the same fault the division
@@ -2391,10 +2398,14 @@ const Engine = (function () {
        the slot in silence — content had a bill sitting at "lords", which is
        not in STAGE_ORDER and is not the name this setting uses either. */
     const i = STAGE_ORDER.indexOf(bs.stage);
-    if (bs.stage === "blocked") { bs.stage = "second_reading"; }
-    else if (i === STAGE_ORDER.length - 1) return { ok: false, reason: "already awaiting assent" };
-    else if (i >= 0) { bs.stage = STAGE_ORDER[i + 1]; }
-    else return { ok: false, reason: 'unknown stage "' + bs.stage + '"' };
+    if (i === STAGE_ORDER.length - 1) return { ok: false, reason: "already awaiting assent" };
+    if (i < 0 && bs.stage !== "blocked") return { ok: false, reason: 'unknown stage "' + bs.stage + '"' };
+    return {ok:true};
+  }
+  function grantSlot(st, C, billId) {
+    const gate = canGrant(st,C,billId); if (!gate.ok) return gate;
+    const b = C.billById[billId], bs = st.bills[billId], i = STAGE_ORDER.indexOf(bs.stage);
+    bs.stage = bs.stage === "blocked" ? "second_reading" : STAGE_ORDER[i + 1];
     billLog(st, billId, "stage", "Advanced to " + String(bs.stage).replace(/_/g, " "));
     spendSlotsFor(st, billId, 1);
     st.grantsToday = (st.grantsToday || 0) + 1;
@@ -2414,6 +2425,7 @@ const Engine = (function () {
     }
     st.log.unshift({ sitting: st.sitting,
       text: "Slot granted: " + b.title + (gained ? " (+" + gained + " with " + owner + ")" : "") });
+    syncMatters(st,C,{target:{kind:"bill",id:billId}});
     settle(st, C);
     return { ok: true, gained: gained, owner: owner, stage: bs.stage };
   }
@@ -2468,6 +2480,7 @@ const Engine = (function () {
     }
     if (si.political_cost) apply(st, C, si.political_cost);
     st.log.unshift({ sitting: st.sitting, text: "Instrument made: " + si.title });
+    syncMatters(st,C,{target:{kind:"instrument",id:siId}});
     settle(st, C);
     return { ok: true, inForce: s.inForce };
   }
@@ -4897,6 +4910,126 @@ const Engine = (function () {
     });
     /* The campaign's last beat ends it, and the count is taken then. */
     if (C && st.dissolved && !counted(st) && st.flags && st.flags.campaign_done) count(st, C);
+    if (C) syncMatters(st, C);
+  }
+
+  /* One writer for advice, including identity reconciliation. The save
+     keeps clocks and work references; authored words remain in content. */
+  function matterClock(st, m, r) {
+    if (!r || r.eligibleAt == null) return {due:null,remaining:null};
+    const due = typeof m.due === "number" ? {after:m.due} : m.due || {};
+    const after = due.after, when = "after" in due || "when" in due ? due.when : due;
+    let at = after == null ? null : r.eligibleAt + after + (r.paused || 0) +
+      (r.hold ? Math.max(0, st.sitting - r.hold.startedAt) : 0);
+    if (when && Object.keys(when).length && matches(st, when) && !r.hold) at = at == null ? st.sitting : Math.min(at, st.sitting);
+    return {due:at,remaining:at == null ? null : at - st.sitting};
+  }
+  function matterWork(st, C, hold) {
+    if (!hold) return null;
+    const t = hold.target;
+    if (t.kind === "initiative") {
+      const i = (C.initiatives || []).find(x => x.id === t.id);
+      const q = i && (st.queue || []).find(q => q.eventId === i.event && q.dueSitting === hold.landing);
+      return q ? {target:t,landing:q.dueSitting} : null;
+    }
+    if (t.kind === "instrument") {
+      const s = (st.instruments || {})[t.id];
+      return s && s.awaitingApproval && !s.revoked ? {target:t,landing:null} : null;
+    }
+    if (t.kind === "bill") {
+      const s = (st.bills || {})[t.id];
+      return s && !s.dead && !["assented","rejected","withdrawn"].includes(s.stage) ? {target:t,landing:s.dividesOn || null} : null;
+    }
+    return null;
+  }
+  function syncMatters(st, C, change) {
+    const defs = C.matters || [], table = st.matters || (st.matters = {});
+    const ids = new Set(defs.map(m => m.id));
+    Object.keys(table).forEach(id => { if (!ids.has(id)) delete table[id]; });
+    defs.forEach(m => {
+      const fresh = !table[m.id];
+      const r = table[m.id] || (table[m.id] = {state:"waiting",eligibleAt:null,openedAt:null,notedAt:null,
+        lateAt:null,pageAt:null,paused:0,hold:null,rearm:false});
+      /* Old saves may have already witnessed a former dated catastrophe. */
+      if (fresh && (st.seen || {})[m.page]) { r.state = "failed"; r.pageAt = (st.lastFired || {})[m.page] || st.sitting; }
+      const raised = matches(st, m.raise);
+      if (r.state === "closed") {
+        if (m.recurs && !raised) r.rearm = true;
+        if (!(m.recurs && r.rearm && raised && !matches(st, m.settled))) return;
+        Object.assign(r, {state:"waiting",eligibleAt:null,notedAt:null,lateAt:null,pageAt:null,paused:0,hold:null,rearm:false});
+      }
+      if (r.state === "failed") {
+        if (matches(st,m.settled)) { r.state = "closed"; r.rearm = !raised; }
+        return;
+      }
+      if (change && change.note === m.id && r.state === "open") { r.state = "noted"; r.notedAt = st.sitting; }
+      if (r.eligibleAt != null && matches(st, m.settled)) { r.state = "closed"; r.hold = null; r.rearm = !raised; return; }
+      if (r.eligibleAt == null && raised && !matches(st, m.settled) && (st.cabinet[m.owner] || {}).holder) r.eligibleAt = st.sitting;
+      if (r.eligibleAt == null) return;
+      if (r.hold && !matterWork(st, C, r.hold)) {
+        r.paused += Math.max(0, st.sitting - r.hold.startedAt); r.hold = null;
+      }
+      if (change && change.target && r.state !== "late" && !r.hold) {
+        const target = change.target;
+        const remedy = (m.remedies || []).find(x => x.target.kind === target.kind && x.target.id === target.id &&
+          (target.kind !== "initiative" || (x.target.tempo || 0) === (target.tempo || 0)));
+        const clock = matterClock(st, m, r);
+        if (remedy && (clock.remaining == null || clock.remaining > 0)) {
+          const hold = {target:Object.assign({},target),startedAt:st.sitting,landing:change.landing};
+          if (matterWork(st, C, hold)) r.hold = hold;
+        }
+      }
+      if (change && change.event === m.late && r.state === "late" && r.lateAt == null) r.lateAt = st.sitting;
+      if (change && change.event === m.page) { r.pageAt = st.sitting; r.state = "failed"; r.hold = null; return; }
+      const clock = matterClock(st, m, r);
+      if (!r.hold && clock.remaining != null && clock.remaining <= 0) r.state = "late";
+    });
+    if (Object.values(table).some(r => r.openedAt === st.sitting)) return;
+    if (Object.values(table).filter(r => r.state === "open").length >= 4) return;
+    const posts = (C.cabinet || []).map(p => p.id);
+    const waiting = defs.filter(m => table[m.id].state === "waiting" && table[m.id].eligibleAt != null)
+      .sort((a,b) => (matterClock(st,a,table[a.id]).remaining ?? Infinity) - (matterClock(st,b,table[b.id]).remaining ?? Infinity) ||
+        posts.indexOf(a.owner) - posts.indexOf(b.owner) || defs.indexOf(a) - defs.indexOf(b));
+    if (waiting.length) { const r = table[waiting[0].id]; r.state = "open"; r.openedAt = st.sitting; }
+  }
+  function matterRemedy(st, C, m, r, remedy) {
+    const t = remedy.target, holder = (st.cabinet[m.owner] || {}).holder;
+    let gate = {ok:false,reason:"no such remedy"}, tab, focus, amount;
+    if (t.kind === "initiative") {
+      const i = (C.initiatives || []).find(i => i.id === t.id), tempo = i && (i.tempo || [])[t.tempo || 0];
+      gate = initiatives(st,C).find(i => i.id === t.id) || gate;
+      if (gate.ok && tempo && tempo.when && !matches(st,tempo.when)) gate = {ok:false,reason:"not open to you"};
+      if (gate.ok && i && (i.cost == null ? 1 : i.cost) + (tempo && tempo.cost || 0) > st.slots.total - st.slots.used)
+        gate = {ok:false,reason:"no order-paper time left this sitting period"};
+      tab = "gov"; focus = "initiative:" + t.id;
+    } else if (t.kind === "instrument") { gate = canMake(st,C,t.id); tab = "gov"; focus = "si:" + t.id; }
+    else if (t.kind === "bill") {
+      const b = (st.bills || {})[t.id]; gate = b && b.stage === DIVIDES_AT ? canDivide(st,C,t.id) : canGrant(st,C,t.id);
+      tab = "cham"; focus = "bill:" + t.id;
+    } else if (t.kind === "money") {
+      const f = facilities(st,C).find(f => f.id === t.id);
+      amount = t.amount === "utilisation" ? f && f.utilisation : t.amount;
+      gate = f ? canBorrow(st,C,amount,t.id) : gate; tab = "econ"; focus = "money:" + t.id;
+    }
+    if (!holder) gate = {ok:false,reason:"the owning post is vacant"};
+    return Object.assign({},remedy,{ok:gate.ok,reason:gate.reason,tab,focus,amount});
+  }
+  function matters(st, C) {
+    const posts = (C.cabinet || []).map(p => p.id), defs = C.matters || [];
+    return defs.filter(m => ((st.matters || {})[m.id] || {}).state === "open").map(m => {
+      const r = st.matters[m.id], live = (st.cabinet || {})[m.owner] || {};
+      return {id:m.id,state:r.state,owner:m.owner,holder:live.holder,note:m.note,
+        figures:(m.figures || []).map(f => readout(st,C,f)),
+        remedies:(m.remedies || []).map(x => matterRemedy(st,C,m,r,x)),
+        counsel:(m.counsel || []).map(c => Object.assign({},c,{holder:((st.cabinet || {})[c.post] || {}).holder})),
+        remaining:matterClock(st,m,r).remaining,underway:matterWork(st,C,r.hold)};
+    }).sort((a,b) => (a.remaining ?? Infinity) - (b.remaining ?? Infinity) || posts.indexOf(a.owner) - posts.indexOf(b.owner) ||
+      defs.findIndex(m=>m.id===a.id) - defs.findIndex(m=>m.id===b.id));
+  }
+  function noteMatter(st, C, id) {
+    const r = (st.matters || {})[id];
+    if (!r || r.state !== "open") return {ok:false,reason:"no open matter"};
+    syncMatters(st,C,{note:id}); return {ok:true};
   }
 
   /* ---------------------------------------------------------
@@ -4909,7 +5042,9 @@ const Engine = (function () {
 
   function eligible(st, C) {
     const out = [];
+    const matterEntries = new Set((C.matters || []).flatMap(m => [m.late,m.page]));
     C.events.forEach(e => {
+      if (matterEntries.has(e.id)) return;
       const fired = st.seen[e.id] || 0;
       if (e.queuedOnly) return;          // reachable only via a queue effect
       if (e.prologue) return;            // handled by the authored opening sequence
@@ -5034,16 +5169,32 @@ const Engine = (function () {
     /* AN EVENT BEFORE THE DECISION (design/49). A sitting opens with the
        pages that have arrived and then puts its business, so a due event is
        taken off the queue ahead of a due decision queued before it. */
-    const due = st.queue.filter(q => q.dueSitting <= st.sitting && q.eventId);
+    syncMatters(st, C);
+    const businessAnswered = (st.log || []).some(l => l.sitting === st.sitting && l.kind === "decision");
+    const consequence = (C.matters || []).find(m => {
+      const r = (st.matters || {})[m.id];
+      return r && r.state === "late" && r.lateAt != null && st.sitting >= r.lateAt + (m.grace == null ? 2 : m.grace) &&
+        (st.lastFired || {})[m.page] !== st.sitting;
+    });
+    if (consequence) return C.eventById[consequence.page];
+    const due = st.queue.filter(q => q.dueSitting <= st.sitting && q.eventId &&
+      (!businessAnswered || isEvent(C.eventById[q.eventId])));
     if (due.length) {
       const q = due.find(x => isEvent(C.eventById[x.eventId])) || due[0];
       st.queue = st.queue.filter(x => x !== q);
       return C.eventById[q.eventId];
     }
+    if (businessAnswered) return null;
     const pro = nextPrologue(st, C);
     if (pro) return pro;
     const sch = nextScheduled(st, C);
     if (sch) return sch;
+    const late = (C.matters || []).filter(m => {
+      const r = (st.matters || {})[m.id], e = C.eventById[m.late];
+      return r && r.state === "late" && r.lateAt == null && e && (st.lastFired || {})[e.id] !== st.sitting;
+    }).sort((a,b) => (matterClock(st,a,st.matters[a.id]).remaining ?? Infinity) - (matterClock(st,b,st.matters[b.id]).remaining ?? Infinity) ||
+      (C.cabinet || []).findIndex(p=>p.id===a.owner) - (C.cabinet || []).findIndex(p=>p.id===b.owner));
+    if (late.length) return C.eventById[late[0].late];
     /* NOTHING TWICE IN ONE SITTING. An event leaves the sitting's decision
        to come, so the same sitting asks again, and an entry that is neither
        `once` nor capped would otherwise answer itself for ever. */
@@ -5768,6 +5919,12 @@ const Engine = (function () {
       const e = nextEvent(st, C);
       if (!e) break;
       const cs = e.choices || [];
+      if (isEvent(e) && !cs.length) {
+        const answer = acknowledge(st,C,e);
+        if (!answer.ok) passOver(st,e);
+        met.push({event:e,choice:null,result:null});
+        continue;
+      }
       const want = pick ? pick(e, st) : 0;
       const order = [want].concat(cs.map((_, k) => k));
       let took = null, result = null;
@@ -5811,11 +5968,27 @@ const Engine = (function () {
        stuck at a division that will not carry and whose only remaining
        move is the decision in front of it. */
     st.actedThisSitting = true;
-    st.seen[event.id] = (st.seen[event.id] || 0) + 1;
-    (st.lastFired || (st.lastFired = {}))[event.id] = st.sitting;
-    st.log.unshift({ sitting: st.sitting, text: event.title + " — " + ch.label });
+    recordEvent(st,C,event,ch.label);
     settle(st, C);
     return ch.result || null;
+  }
+  function recordEvent(st, C, event, label) {
+    st.seen[event.id] = (st.seen[event.id] || 0) + 1;
+    (st.lastFired || (st.lastFired = {}))[event.id] = st.sitting;
+    st.log.unshift({sitting:st.sitting,eventId:event.id,kind:eventKind(event),text:event.title + (label == null ? "" : " — " + label)});
+    syncMatters(st,C,{event:event.id});
+  }
+  function acknowledge(st, C, event) {
+    if (!isEvent(event) || (event.choices || []).length) return {ok:false,reason:"not a choice-free page"};
+    const episode = (C.matters || []).some(m => {
+      const r = (st.matters || {})[m.id];
+      return m.page === event.id && r && r.state === "late" && r.pageAt == null && r.lateAt != null &&
+        st.sitting >= r.lateAt + (m.grace == null ? 2 : m.grace);
+    });
+    if ((st.seen || {})[event.id] && !episode) return {ok:false,reason:"already acknowledged"};
+    apply(st,C,event.effects || []);
+    recordEvent(st,C,event,null); settle(st,C);
+    return {ok:true};
   }
 
   /* ---------------------------------------------------------
@@ -6753,6 +6926,7 @@ const Engine = (function () {
     st.wire.unshift({ sitting: st.sitting, text: L.wire ? fill(L.wire)
       : "COMMONWEALTH BORROWS " + money(C, n, L.currency).toUpperCase() + " FROM " +
         String(L.name || id).toUpperCase() + " AT " + pc + " PER CENT" });
+    syncMatters(st,C,{target:{kind:"money",id}});
     return { ok: true, borrowed: n, received: got, rate: rate };
   }
 
@@ -7534,6 +7708,12 @@ const Engine = (function () {
                                kind: kind, text: text, away: sitting - st.sitting },
                              extra || {}));
     };
+    (C.matters || []).forEach(m => {
+      const r = (st.matters || {})[m.id];
+      if (!r || r.eligibleAt == null || ["closed","failed"].includes(r.state)) return;
+      const at = r.lateAt == null ? matterClock(st,m,r).due : r.lateAt + (m.grace == null ? 2 : m.grace);
+      add(at,"matter",m.note,{advisory:true,tab:"sit",focus:"matter:" + m.id,how:m.note});
+    });
     /* EVERY DEADLINE KNOWS WHERE IT IS KEPT. `undertakingWhere` worked this
        out for one kind of mark and the docket used it; the calendar showed
        all five kinds and could act on none of them, so the one screen that
@@ -7994,6 +8174,7 @@ const Engine = (function () {
 
     st.log.unshift({ sitting: st.sitting,
       text: i.title + (t.label ? " \u2014 " + t.label : "") });
+    syncMatters(st,C,{target:{kind:"initiative",id,tempo:tempoIdx || 0},landing:i.event ? st.sitting + (t.after || 3) : null});
     settle(st, C);
     return { ok: true, cost: cost, after: t.after || 3 };
   }
@@ -8653,6 +8834,7 @@ const Engine = (function () {
     if (C) reviewReturns(st, C);
     if (C) tick(st, C).forEach(m =>
       st.wire.unshift({ sitting: st.sitting, text: m.toUpperCase() }));
+    if (C) syncMatters(st,C);
   }
 
   /* Everything in the queue whose day has come and which carries effects
@@ -8856,7 +9038,7 @@ const Engine = (function () {
 
   return {
     STATE_VERSION, newGame, migrate, save, load, noteSince, since, chapters, reportedActor, receipts, believed,
-    readout, campaignMarkers,
+    readout, campaignMarkers, matters, noteMatter, acknowledge,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal, currentSeats,
     division, reported, ballot, benchRoll, resolveDue, pairable, setPairs, clearPairs, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss, checkSettlement,

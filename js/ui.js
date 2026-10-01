@@ -6913,12 +6913,13 @@ const UI = (function () {
       /* NO ANSWER OPEN: every one is shut by its gate. This drew a heading
          and nothing under it, and the Sitting screen offered no way on. It is
          passed over for the sitting (Engine.passOver) and the sitting goes on. */
-      (open.length ? "" : `<div class="note">Every answer here is shut by its conditions today.</div>` +
+      (open.length ? "" : (kind === "event" && !(e.choices || []).length ? "" : `<div class="note">Every answer here is shut by its conditions today.</div>`) +
         `<div class="btnrow"><button class="btn" id="btn-pass">${kind === "event"
           ? "Continue to the sitting's business" : "Rise until the next sitting"}</button></div>`);
     const pass = $("#btn-pass");
     if (pass) pass.addEventListener("click", () => {
-      Engine.passOver(st, e);
+      if (Engine.isEvent(e) && !(e.choices || []).length) Engine.acknowledge(st,C,e);
+      else Engine.passOver(st, e);
       if (kind === "event") carryOn(); else rise();
     });
 

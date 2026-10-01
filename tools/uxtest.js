@@ -12,6 +12,28 @@ H.banner("INTERFACE AND INTERACTION");
 H.boot();
 H.newGame();
 
+/* Continue must acknowledge a genuinely choice-free page, not merely
+   discard it. Removing that call must fail these rendered-UI checks. */
+{
+  const original=w.eval('UI.state()'), originalC=w.eval('UI.content()');
+  const probe=w.eval(`(function(){
+    const page={id:'ux_matter_page',queuedOnly:true,setpiece:true,title:'A consequence',body:'The pending work did not arrive.',choices:[],effects:[{flag:'ux_page_effect'}]};
+    const decision={id:'ux_matter_decision',title:'The sitting business',body:'The House still has its business to consider.',choices:[{label:'Proceed',effects:[]}]};
+    const C=Object.assign({},UI.content(),{matters:[],events:[page,decision],eventById:{ux_matter_page:page,ux_matter_decision:decision}});
+    const s=Engine.newGame(C);s.queue.push({eventId:page.id,dueSitting:s.sitting});UI.boot(s,C);UI.openTab('sit');
+    return {s,C};
+  })()`);
+  const button=w.document.querySelector('#btn-pass');
+  ok('a choice-free page offers Continue',!!button);
+  if(button)button.click();
+  ok('Continue applies the choice-free page effects',probe.s.flags.ux_page_effect===true);
+  ok('Continue records the page exactly once',probe.s.seen.ux_matter_page===1);
+  ok('Continue records the page in the sitting history',probe.s.log.some(l=>l.text==='A consequence'));
+  ok('Continue leaves the same sitting for its decision',probe.s.sitting===1 && w.document.querySelector('#sitting-hdr').textContent==='The sitting business');
+  ok('Continue does not manufacture governing action',!probe.s.actedThisSitting);
+  w.eval('UI.boot')(original,originalC);
+}
+
 /* Removing description tips, inspector focus, or department routing must
    break these checks of real rendered powers, not a replacement widget. */
 {
