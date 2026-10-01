@@ -13,6 +13,146 @@ const Engine = require("./js/engine.js");
 const PROLOGUE1 = T.prologue1(CONTENT);
 const RUN_BOUND = T.runBound(CONTENT);
 
+/* A missing collection, writer or typed reference used to drop an author's
+   entries silently. These probes exercise content, not a hand-kept registry. */
+(function () {
+  let bad = 0;
+  const ok = (label, yes) => {
+    console.log((yes ? "  ok   " : "  FAIL ") + label);
+    if (!yes) bad++;
+  };
+  console.log("\nMATTER CONTENT AND REFERENCES:");
+  const S = require("./js/schema.js"), Serialise = require("./js/serialise.js");
+  const post = ALL.cabinet[0].id, person = ALL.characters[0].id;
+  const late = { id: "probe_late", queuedOnly: true, title: "Last chance",
+    body: "There is still time to remedy this shortage before the consequence.",
+    choices: [{ label: "Wait", effects: [] }] };
+  const page = { id: "probe_page", queuedOnly: true, title: "The consequence",
+    setpiece: { title: "The consequence" }, choices: [] };
+  const m = { id: "probe_matter", campaign: "matter_probe", owner: post,
+    raise: { holds: { [post]: person }, seen: [ALL.events[0].id] },
+    note: "Act while there is time.",
+    figures: [{ label: "Heat", source: "scalars.thermal_margin",
+      bands: [{ min: 15, text: "adequate" }, { min: null, text: "thin" }] }],
+    remedies: [
+      { id: "cool", target: { kind: "instrument", id: ALL.instruments[0].id }, takes: 0 },
+      { id: "act", target: { kind: "initiative", id: ALL.initiatives[0].id, tempo: 0 },
+        takes: ALL.initiatives[0].tempo[0].after },
+      { id: "draw", target: { kind: "money", id: "earth", amount: "utilisation" }, takes: 0 }
+    ],
+    counsel: [{ post, remedy: "cool", note: "Protect the margin." }],
+    due: { after: 3, when: { flags: ["probe_due"] } }, grace: 2, recurs: true,
+    late: late.id, page: page.id, settled: { scalarAbove: { thermal_margin: 14 } },
+    forecast: { future: ["opaque", { keep: true }] } };
+  ok("the page loads the matter collection", Array.isArray(ALL.matters));
+  try {
+    const source = Object.assign({}, ALL, { matters: [m, Object.assign({}, m,
+      { id: "other_matter", campaign: "another_probe" })] });
+    const C = source.forCampaign({ id: "matter_probe" });
+    ok("campaign filtering keeps only its matter", C.matters.map(x => x.id).join(",") === "probe_matter");
+    ok("campaign indexes are built from filtered matters", C.matterById &&
+      C.matterById.probe_matter === C.matters[0] && !C.matterById.other_matter);
+    ok("the world excludes campaign-owned matters", source.forCampaign({ id: "world" }).matters.length === 0);
+    const files = Serialise.files("matters", [m]);
+    const ctx = { campaign: (id, parts) => parts.matters.forEach(x => {
+      x.campaign = id; ctx.got.push(x);
+    }), got: [] };
+    vm.runInNewContext(files.map(f => f.text).join("\n"), ctx);
+    require("assert").deepStrictEqual(JSON.parse(JSON.stringify(ctx.got)), [m]);
+    ok("matter export reloads all fields including future forecasts", true);
+    ok("matter export keeps campaign entries out of the world file",
+      files[0].path === "content/matters.js" && !files[0].text.includes("probe_matter") &&
+      files[1].path === "content/campaigns/matter_probe/matters.js");
+  } catch (e) { ok("matter collection round-trip", false); console.log("    " + e.message); }
+  try {
+    const ctx = {};
+    vm.runInNewContext(fs.readFileSync("js/refs.js", "utf8") + ";this.R=Refs;", ctx);
+    const M = JSON.parse(JSON.stringify(ALL)); M.matters = [JSON.parse(JSON.stringify(m))];
+    const checks = [
+      ["events", ALL.events[0].id, x => x.raise.seen[0]],
+      ["initiatives", ALL.initiatives[0].id, x => x.remedies[1].target.id],
+      ["instruments", ALL.instruments[0].id, x => x.remedies[0].target.id],
+      ["cabinet", post, x => x.owner]
+    ];
+    checks.forEach(([kind, from, read]) => {
+      ctx.R.rename(M, kind, from, "renamed_probe");
+      ok("matter rename follows " + kind, read(M.matters[0]) === "renamed_probe");
+    });
+    ok("post rename preserves counsel identity", M.matters[0].counsel[0].post === "renamed_probe");
+    ok("post rename follows raise conditions", M.matters[0].raise.holds.renamed_probe === person);
+    ctx.R.rename(M, "events", m.late, "new_late");
+    ctx.R.rename(M, "events", m.page, "new_page");
+    ok("matter rename follows the late decision", M.matters[0].late === "new_late");
+    ok("matter rename follows the consequence page", M.matters[0].page === "new_page");
+    M.matters[0].due = {seen:["new_late"]};
+    ctx.R.rename(M, "events", "new_late", "latest_decision");
+    ok("matter rename follows a bare due condition", M.matters[0].due.seen[0] === "latest_decision");
+    ctx.R.rename(M, "lenders", "earth", "renamed_lender");
+    ok("matter rename follows its lender", M.matters[0].remedies[2].target.id === "renamed_lender");
+  } catch (e) { ok("matter reference tracking", false); console.log("    " + e.message); }
+  const C = Object.assign({}, ALL, { events: ALL.events.concat([late, page]), matters: [m] });
+  const passages = require('./js/prosemap.js').collect({matters:[m]});
+  ok('matter prose includes ministerial notes', passages.some(x => x.addr === 'matters/probe_matter/note'));
+  ok('matter live readout sources are not editable prose', !passages.some(x => x.addr.endsWith('/source')));
+  try {
+    const src = fs.readFileSync('tools/storymap.js', 'utf8').split('/* ---------- the command ---------- */')[0];
+    const ctx = {require:require('module').createRequire(require('path').resolve('tools/storymap.js'))};
+    vm.runInNewContext(src + ';this.map=build;this.draw=page;', ctx);
+    const K = Object.assign({}, C, {campaign:'matter_probe'});
+    const graph = ctx.map(K, 'matter_probe');
+    ok('story map includes the campaign matter', graph.nodes.has('m:probe_matter'));
+    const reaches = to => graph.edges.some(e => e.from === 'm:probe_matter' && e.to === to);
+    ok('story map links the late decision', reaches('e:probe_late'));
+    ok('story map links the failure page', reaches('e:probe_page'));
+    ok('story map links the instrument remedy', reaches('s:' + m.remedies[0].target.id));
+    ok('story map links the initiative remedy', reaches('i:' + m.remedies[1].target.id));
+    ok('story map links the money remedy', reaches('l:earth'));
+    ok('story map draws a matter card', ctx.draw(graph,[{id:'matter_probe',C:K}]).includes('id="m:probe_matter"'));
+    const changed = JSON.parse(JSON.stringify(K)); changed.matters[0].id = 'renamed_matter';
+    const renamed = ctx.map(changed, 'matter_probe');
+    ok('story map rebuilds renamed matter nodes without stale ids',
+      renamed.nodes.has('m:renamed_matter') && !renamed.nodes.has('m:probe_matter') &&
+      !renamed.edges.some(e => e.from === 'm:probe_matter'));
+  } catch(e) { ok('matter story map',false); console.log('    '+e.message); }
+  const hasValidator = typeof S.matterIssues === "function";
+  ok("matter validation is shared by lint and editor", hasValidator);
+  if (hasValidator) {
+    ok("a valid matter passes validation", S.matterIssues(m, C).length === 0);
+    const invalid = [
+      ["unknown owner", x => x.owner = "missing"],
+      ["unknown remedy", x => x.remedies[0].target.id = "missing"],
+      ["duplicate remedy identity", x => x.remedies[1].id = "cool"],
+      ["broken counsel", x => x.counsel[0].remedy = "missing"],
+      ["unknown counsel post", x => x.counsel[0].post = "missing"],
+      ["unknown condition", x => x.raise = { nonexistent: true }],
+      ["empty due", x => x.due = {}],
+      ["negative due", x => x.due.after = -1],
+      ["zero grace", x => x.grace = 0],
+      ["invalid money amount", x => x.remedies[2].target.amount = -10],
+      ["unknown lender", x => x.remedies[2].target.id = "missing"],
+      ["invalid tempo", x => x.remedies[1].target.tempo = 999],
+      ["mismatched remedy duration", x => x.remedies[1].takes = 999],
+      ["page as late", x => x.late = page.id],
+      ["decision as page", x => x.page = late.id]
+    ];
+    invalid.forEach(([name, breakIt]) => {
+      const x = JSON.parse(JSON.stringify(m)); breakIt(x);
+      ok("matter validation rejects " + name, S.matterIssues(x, C).length > 0);
+    });
+    ["remedies", "counsel"].forEach(k => {
+      const x = JSON.parse(JSON.stringify(m)); x[k] = [null];
+      try { ok("matter validation reports a malformed " + k + " row", S.matterIssues(x, C).length > 0); }
+      catch(e) { ok("matter validation reports a malformed " + k + " row", false); }
+    });
+    const badPage = Object.assign({}, page, { choices: [{ label: "Choose" }] });
+    ok("matter validation rejects a page with choices", S.matterIssues(m,
+      Object.assign({}, C, { events: [late, badPage] })).length > 0);
+    ok("matter validation rejects an unqueued page", S.matterIssues(m,
+      Object.assign({}, C, { events: [late, Object.assign({}, page, { queuedOnly: false })] })).length > 0);
+  }
+  if (bad) process.exitCode = 1;
+})();
+
 /* Content owns presentation bands and campaign overlays; querying either
    must leave the simulation unchanged. */
 (function () {

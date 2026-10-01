@@ -27,8 +27,8 @@ const root = path.join(__dirname, "..");
 const LC = require("./loadcontent.js");
 const files = LC.files.map(f => path.join(root, f));
 vm.runInThisContext(LC.source() +
-  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA, ADMINISTRATIONS, FORUMS, RESOLUTIONS};");
-const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA, ADMINISTRATIONS, FORUMS, RESOLUTIONS } = globalThis.__G;
+  "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, MATTERS, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA, ADMINISTRATIONS, FORUMS, RESOLUTIONS};");
+const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, MATTERS, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA, ADMINISTRATIONS, FORUMS, RESOLUTIONS } = globalThis.__G;
 
 const MAX_NEW_CLUSTERS = 1;  // per event. Raise this and you are choosing to confuse people.
 
@@ -507,6 +507,10 @@ try {
     walkEffects(i.effects);
     (i.tempo || []).forEach(t => { walkEffects(t.effects); walkWhen(t.when); });
   });
+  (MATTERS || []).forEach(m => {
+    walkWhen(m.raise); walkWhen(m.settled);
+    if (m.due && typeof m.due === "object") walkWhen("after" in m.due || "when" in m.due ? m.due.when : m.due);
+  });
   /* instruments carry effects too, and an order that moves a price is
      exactly the kind of thing that needs an event watching it */
   try {
@@ -745,7 +749,7 @@ const flagSet = new Set();
       if (n[k] && typeof n[k] === "object") walk(n[k]);
     });
   };
-  [EVENTS, BILLS, INSTRUMENTS, INITIATIVES, SETTLEMENTS, BUSINESS,
+  [EVENTS, BILLS, INSTRUMENTS, INITIATIVES, MATTERS, SETTLEMENTS, BUSINESS,
    ACHIEVEMENTS, MINUTES, RESOLUTIONS].forEach(coll => (coll || []).forEach(walk));
   /* AND THE ENGINE'S OWN. `paired` and `minister_resigned` are set by the
      rules rather than by content, and reading the awards made the first of
@@ -774,6 +778,10 @@ const gateNeeds = {}, gateAbsent = {};
   (INSTRUMENTS || []).forEach(i => cw(i.when, "instrument " + i.id));
   (SETTLEMENTS || []).forEach(x => cw(x.when, "settlement " + x.id));
   (INITIATIVES || []).forEach(x => cw(x.when, "initiative " + x.id));
+  (MATTERS || []).forEach(x => {
+    cw(x.raise, "matter " + x.id); cw(x.settled, "matter " + x.id);
+    if (x.due && typeof x.due === "object") cw("after" in x.due || "when" in x.due ? x.due.when : x.due, "matter " + x.id);
+  });
   (RESOLUTIONS || []).forEach(x => cw(x.when, "resolution " + x.id));
   /* AND THE TWO THAT WERE MISSING. An award waited on `gb_carveout_broken`,
      which nothing sets, and this audit never saw it because it did not read
@@ -855,7 +863,7 @@ try {
     f(o); Object.keys(o).forEach(k => walk(o[k], f)); };
   const COLLS = { event: EVENTS, bill: BILLS, instrument: INSTRUMENTS, initiative: INITIATIVES,
     settlement: SETTLEMENTS, business: BUSINESS, minute: MINUTES, cabinet: CABINET, actor: ACTORS,
-    resolution: RESOLUTIONS };
+    resolution: RESOLUTIONS, matter:MATTERS };
 
   const UND = new Set();
   Object.values(COLLS).forEach(c => walk(c, o => { if (o.undertake) [].concat(o.undertake).forEach(u => UND.add(u.id)); }));
@@ -935,7 +943,7 @@ try {
   Object.entries(COLLS).forEach(([kind, coll]) => (coll || []).forEach(x => {
     const tag = kind + " " + (x.id || "?");
     walk(x, o => {
-      ["when", "gate"].forEach(k => checkWhen(o[k], tag));
+      ["when", "gate", "raise", "settled"].forEach(k => checkWhen(o[k], tag));
       ["effects", "onPass", "onFail", "onTable", "reverse", "onSign", "close"].forEach(k => [].concat(o[k] || []).forEach(e => checkEff(e, tag)));
     });
   }));
@@ -1173,7 +1181,7 @@ try {
   const COLL = { event: EVENTS, bill: BILLS, settlement: SETTLEMENTS, initiative: INITIATIVES,
                  award: ACHIEVEMENTS, instrument: INSTRUMENTS, minute: MINUTES, business: BUSINESS,
                  article: (ENCYCLOPEDIA || {}).articles, character: CHARACTERS, post: CABINET,
-                 party: PARTIES, station: STATIONS, actor: ACTORS };
+                 party: PARTIES, station: STATIONS, actor: ACTORS, matter:MATTERS };
   const entries = [];
   Object.keys(COLL).forEach(kind => (COLL[kind] || []).forEach(x => entries.push({ kind, x })));
   const tagsOf = x => x.campaign == null ? null : [].concat(x.campaign);
@@ -1213,6 +1221,16 @@ try {
     walkVals(host.opening, report("its opening"), null);
   });
 } catch (e) { campBad.push("could not check the campaigns: " + e.message); }
+try {
+  const C = LC.loadContent(), S = require("../js/schema.js");
+  const seen = new Set();
+  (C.matters || []).forEach(m => {
+    if (seen.has(m.id)) campBad.push("duplicate matter id: " + m.id);
+    seen.add(m.id);
+    const tags = m.campaign == null ? ["world"] : [].concat(m.campaign);
+    tags.forEach(id => S.matterIssues(m, C.forCampaign({id})).forEach(t => campBad.push(t)));
+  });
+} catch (e) { campBad.push("could not validate matters: " + e.message); }
 n += section("CAMPAIGNS THAT REACH INTO ANOTHER'S CONTENT", campBad, x => x);
 
 /* RETIRED NAMES IN THE PROSE (26 Sep 2026). A station, a character or a

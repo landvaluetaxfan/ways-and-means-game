@@ -49,7 +49,7 @@ const root = path.join(__dirname, "..");
 const HOME = {
   setup: "content/setup.js", parties: "content/parties.js",
   currents: "content/parties.js", partyOrg: "content/parties.js",
-  administrations: "content/setup.js", initiatives: "content/initiatives.js",
+  administrations: "content/setup.js", initiatives: "content/initiatives.js", matters:"content/matters.js",
   stations: "content/stations.js", constituencies: "content/constituencies.js",
   cabinet: "content/cabinet.js", instruments: "content/instruments.js",
   minutes: "content/minutes.js", characters: "content/characters.js",

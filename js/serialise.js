@@ -182,6 +182,7 @@ const Serialise = (function () {
                    characters:"CHARACTERS", bills:"BILLS", glossary:"GLOSSARY",
                    functional:"FUNCTIONAL", constituencies:"CONSTITUENCIES",
                    settlements:"SETTLEMENTS", initiatives:"INITIATIVES",
+                   matters:"MATTERS",
                    achievements:"ACHIEVEMENTS", cabinet:"CABINET",
                    instruments:"INSTRUMENTS" }[kind];
     return list(name, arr, H[kind]);

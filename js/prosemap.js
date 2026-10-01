@@ -71,6 +71,8 @@ var ProseMap = (function () {
       }
       if (typeof node !== "object") return;
       Object.keys(node).forEach(function (k) {
+        if (addr[0] === "matters" && (k === "forecast" ||
+            (k === "source" && addr.indexOf("figures") >= 0))) return;
         var v = node[k], here = addr.concat(k), a;
         if (typeof v === "string") {
           if (!isProse(k) || !v.trim()) return;

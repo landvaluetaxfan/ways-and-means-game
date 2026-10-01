@@ -19,7 +19,7 @@ const indexSrc=fs.readFileSync(path.join(root,"content","index.js"),"utf8");
 const GLOBALS={setup:"SETUP",parties:"PARTIES",currents:"CURRENTS",stations:"STATIONS",
   constituencies:"CONSTITUENCIES",functional:"FUNCTIONAL",characters:"CHARACTERS",bills:"BILLS",
   glossary:"GLOSSARY",events:"EVENTS",encyclopedia:"ENCYCLOPEDIA",cabinet:"CABINET",
-  instruments:"INSTRUMENTS",initiatives:"INITIATIVES",minutes:"MINUTES",settlements:"SETTLEMENTS",
+  instruments:"INSTRUMENTS",initiatives:"INITIATIVES",matters:"MATTERS",minutes:"MINUTES",settlements:"SETTLEMENTS",
   business:"BUSINESS",actors:"ACTORS",administrations:"ADMINISTRATIONS",achievements:"ACHIEVEMENTS",
   archetypes:"ARCHETYPES",names:"NAMELISTS",forums:"FORUMS",resolutions:"RESOLUTIONS"};
 function loadModel(){
@@ -66,13 +66,13 @@ const A=loadModel(); const before=play(A,40);
 
 /* rename every entity of every kind */
 const B=loadModel();
-const map={party:{},station:{},bill:{},event:{},character:{},current:{},settlement:{},resolution:{},forum:{},member:{}};
+const map={party:{},station:{},bill:{},event:{},character:{},current:{},settlement:{},resolution:{},forum:{},member:{},matter:{}};
 let total=0;
 /* and the endings, which the editor writes since 25 Sep: an award or a gate
    that still names the old id could never be earned or opened */
 const KINDS=[["parties","party"],["stations","station"],["bills","bill"],
  ["events","event"],["characters","character"],["currents","current"],["settlements","settlement"],
- ["resolutions","resolution"],["forums","forum"],["members","member"]];
+ ["resolutions","resolution"],["forums","forum"],["members","member"],["matters","matter"]];
 /* a member lives inside its forum, not in a collection of its own */
 const listOf=(M,kind)=>kind==="members"?[].concat(...(M.forums||[]).map(f=>f.members||[])):M[kind];
 KINDS.forEach(([kind,tag])=>{

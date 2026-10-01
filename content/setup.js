@@ -1158,6 +1158,7 @@ function campaign(id, parts) {
     bills:        typeof BILLS !== "undefined" ? BILLS : null,
     settlements:  typeof SETTLEMENTS !== "undefined" ? SETTLEMENTS : null,
     initiatives:  typeof INITIATIVES !== "undefined" ? INITIATIVES : null,
+    matters:      typeof MATTERS !== "undefined" ? MATTERS : null,
     instruments:  typeof INSTRUMENTS !== "undefined" ? INSTRUMENTS : null,
     achievements: typeof ACHIEVEMENTS !== "undefined" ? ACHIEVEMENTS : null,
     minutes:      typeof MINUTES !== "undefined" ? MINUTES : null,

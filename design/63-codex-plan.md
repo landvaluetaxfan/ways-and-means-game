@@ -517,11 +517,11 @@ Round I, and the air-chain decision approved in the brief on 1 October.
 5. A consequence page with no choices must apply and record its effects once
    in both the browser and `Engine.playSitting()`.
 
-### Task A — Complete collection and editor plumbing
+### Task 1: Complete collection and editor plumbing
 
 **Files:** Create `content/matters.js`; modify `content/index.js`,
 `content/setup.js`, `index.html`, `editor.html`, `js/schema.js`, `js/editor.js`,
-`js/serialise.js`, `js/refs.js`, `tools/lint.js`, `tools/prose.js`,
+`js/serialise.js`, `js/refs.js`, `js/prosemap.js`, `tools/lint.js`, `tools/prose.js`,
 `tools/roundtrip.js`, `tools/renametest.js`, `tools/edtest.js`,
 `tools/storymap.js`, and `test.js`.
 
@@ -572,7 +572,7 @@ const MATTERS = [];
   failure. Run editor, lint, rename, round-trip and encoding checks, then the
   full check and commit the independently usable collection.
 
-### Task B — State, lifecycle and consequence acknowledgement
+### Task 2: State, lifecycle and consequence acknowledgement
 
 **Files:** Modify `js/engine.js`, `test.js`, `tools/uxtest.js` and `js/ui.js`
 only for choice-free acknowledgement. Read LESSONS Interface and the focus
@@ -670,7 +670,7 @@ ok("acknowledgement is once only", Engine.save(st) === once);
 - [ ] Run focused engine/UX tests, mutation probes, all thirteen checks and
   commit the generic foundation without real campaign matters.
 
-### Task C — Three Flash I matters and the approved air conversion
+### Task 3: Three Flash I matters and the approved air conversion
 
 **Files:** Create `content/campaigns/flash_i/matters.js`; modify
 `content/campaigns/flash_i/events.js`, `content/campaigns/flash_i/initiatives.js`,
@@ -721,7 +721,7 @@ and Life Support. Reuse existing order, initiative and lender ids.
   and observe failure, then run all thirteen checks and commit with new notes,
   last-chance wording and consequence-page wording named for Claude.
 
-### Task D — Sitting advice and existing-lever navigation
+### Task 4: Sitting advice and existing-lever navigation
 
 **Files:** Modify `index.html`, `js/ui.js`, `css/terminal.css`, `js/focus.js`
 only if a matter row registration is needed, `tools/uitest.js` and
@@ -759,7 +759,7 @@ const open = target.kind === "instrument" ? "si:" + target.id
   test four open matters and expanded counsel, not only an empty opening.
   Commit the Sitting panel change and plainly identify new interface labels.
 
-### Task E — Economy calls and integration handoff
+### Task 5: Economy calls and integration handoff
 
 **Files:** Modify `js/ui.js`, Economy markup in `index.html`,
 `css/terminal.css` if needed, `tools/uitest.js`, `tools/uxtest.js`, and the

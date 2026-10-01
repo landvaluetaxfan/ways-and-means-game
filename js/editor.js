@@ -50,6 +50,7 @@ const Editor = (function () {
          written here only as far as its events and bills. */
       settlements: clone(typeof SETTLEMENTS !== "undefined" ? SETTLEMENTS : []),
       initiatives: clone(typeof INITIATIVES !== "undefined" ? INITIATIVES : []),
+      matters: clone(typeof MATTERS !== "undefined" ? MATTERS : []),
       achievements: clone(typeof ACHIEVEMENTS !== "undefined" ? ACHIEVEMENTS : []),
       /* and the campaign record itself: who governs, the introduction, the
          setup a campaign changes and the effects it opens with */
@@ -1196,6 +1197,76 @@ const Editor = (function () {
     return x;
   }
 
+  /* Matters use the common condition controls. Structured arrays remain
+     JSON, like campaign settings: preserve unknown fields on every edit. */
+  const matterJsonErrors = {};
+  function matterDue(m) {
+    return typeof m.due === "number" ? {after:m.due} :
+      m.due && ("after" in m.due || "when" in m.due) ? m.due : {when:m.due};
+  }
+  function matterForm(m) {
+    const due = matterDue(m);
+    const conditions = (key, label, value) => `<div class="rulehead">${label}
+      <button class="btn ed-add" data-act="m${key}-add">+ condition</button></div>
+      <div id="ed-m${key}">${condRows(value, "m" + key)}</div>`;
+    const array = (key, hint) => `<div class="rulehead">${key} <span class="ed-hint">${esc(hint)}</span></div>
+      <textarea class="ed-f ed-body" data-f="${key}" rows="5">${esc(JSON.stringify(m[key] || [], null, 2))}</textarea>`;
+    const targets = Object.entries(SCHEMA.matter.targets).map(([kind, coll]) =>
+      kind + ": " + (coll === "lenders" ? Object.keys((M.setup || {}).lenders || {}) :
+        (M[coll] || []).map(x => x.id)).join(", ")).join("; ");
+    return `<div class="ed-grid">
+      <label>Id ${txt_("id", m.id, "", 170)}<button class="btn ed-add" data-act="rename">rename…</button></label>
+      ${campField(m)}<label>Owner ${sel_("owner", "posts", m.owner)}</label>
+      <label>After ${num_("dueAfter", due.after == null ? "" : due.after)}</label>
+      <label>Grace ${num_("grace", m.grace == null ? "" : m.grace)}</label>
+      <label><input class="ed-f" data-f="recurs" type="checkbox"${m.recurs ? " checked" : ""}> May recur</label>
+      <label>Late decision ${opt_("late", vocab("events"), m.late, "none")}</label>
+      <label>Failure page ${opt_("page", vocab("events"), m.page, "none")}</label></div>
+      <div class="rulehead">Note</div><textarea class="ed-f ed-body" data-f="note" rows="3">${esc(m.note || "")}</textarea>
+      ${conditions("raise", "Raised when", m.raise)}
+      ${conditions("due", "Due when (or after, whichever comes first)", due.when)}
+      ${conditions("settled", "Settled when", m.settled)}
+      ${array("figures", "Readout declarations or setup readout keys; live sources and word bands.")}
+      ${array("remedies", "Stable id, typed target, takes and note. " + targets)}
+      ${array("counsel", "Post, local remedy id and note. Posts: " + (M.cabinet || []).map(x => x.id).join(", "))}`;
+  }
+  function readMatter(orig) {
+    const m = clone(orig);
+    m.id = g_("id").value.trim(); m.owner = g_("owner").value;
+    readCampaign(m); putText(m, "note", g_("note").value);
+    ["late", "page"].forEach(k => putText(m, k, g_(k).value));
+    ["raise", "settled"].forEach(k => {
+      const cond = readConds(document.getElementById("ed-m" + k));
+      if (cond) m[k] = cond; else delete m[k];
+    });
+    const when = readConds(document.getElementById("ed-mdue"));
+    const after = g_("dueAfter").value;
+    if (typeof orig.due === "number" && !when) m.due = after === "" ? {} : +after;
+    else if (orig.due && !("after" in Object(orig.due)) && !("when" in Object(orig.due)) && after === "") m.due = when || {};
+    else { m.due = {}; if (after !== "") m.due.after = +after; if (when) m.due.when = when; }
+    putNum(m, "grace", g_("grace").value);
+    if (g_("recurs").checked || "recurs" in orig) m.recurs = g_("recurs").checked;
+    ["figures", "remedies", "counsel"].forEach(k => {
+      const key = m.id + "/" + k;
+      try {
+        const value = JSON.parse(g_(k).value);
+        if (!Array.isArray(value)) throw new Error("expected an array");
+        if (k in orig || value.length) m[k] = value;
+        delete matterJsonErrors[key];
+      } catch (e) { matterJsonErrors[key] = m.id + " " + k + ": " + e.message; }
+    });
+    /* Only a unique rename with the same typed target rewrites counsel.
+       Sorting or deleting remedies must not redirect a recommendation. */
+    const targetKey = r => JSON.stringify(SCHEMA.matter.targetFields.map(k => (r.target || {})[k]));
+    const before = orig.remedies || [], afterRows = m.remedies || [];
+    before.filter(r => r && !afterRows.some(n => n && n.id === r.id)).forEach(r => {
+      const candidates = afterRows.filter(n => n && !before.some(o => o && o.id === n.id) && targetKey(n) === targetKey(r));
+      if (candidates.length !== 1 || before.filter(o => o && targetKey(o) === targetKey(r)).length !== 1) return;
+      (m.counsel || []).forEach(c => { if (c && c.remedy === r.id) c.remedy = candidates[0].id; });
+    });
+    return m;
+  }
+
   function initiativeForm(it) {
     const evs = [["", "— none —"]].concat(vocab("events"));
     const known = !it.event || evs.some(([v]) => v === it.event);
@@ -1332,7 +1403,7 @@ const Editor = (function () {
      ========================================================= */
 
   /* the files a campaign is kept in, in the order the pages load them */
-  const CAMP_KINDS = ["events", "bills", "settlements", "initiatives", "achievements", "resolutions"];
+  const CAMP_KINDS = ["events", "bills", "settlements", "initiatives", "matters", "achievements", "resolutions"];
   function campaignFiles(id) {
     const out = Serialise.administrationsFiles(M.administrations)
       .filter(f => f.path === "content/campaigns/" + id + "/campaign.js");
@@ -1859,6 +1930,10 @@ const Editor = (function () {
               sub: i => (i.cost || 0) + " slot" + (i.cost === 1 ? "" : "s"),
               form: initiativeForm, blank: () => ({ id: "new_initiative", title: "New initiative", note: "",
                 cost: 1, tempo: [{ label: "Quietly", after: 2 }, { label: "In public", after: 4, cost: 1 }] }) },
+    matters: { arr: "matters", label: m => m.note || m.id, sub: m => m.owner || "unassigned",
+              form: matterForm, blank: () => ({id:"new_matter", owner:(M.cabinet[0] || {}).id,
+                note:"", raise:{flags:["new_matter_raised"]}, figures:[], remedies:[],
+                due:{after:3}, settled:{flags:["new_matter_settled"]}}) },
     cabinet: { arr: "cabinet", label: c => c.title || c.name || c.id,
               sub: c => { const h = M.characters.find(x => x.id === c.holder);
                           return h ? h.name.replace(/ MP$/, "").replace(/^Rt\. Hon\. /, "") : "vacant"; },
@@ -1953,6 +2028,7 @@ const Editor = (function () {
     if (sel.tab === "events") { arr[i] = readEvent(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "settlements") { arr[i] = readSettlement(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "initiatives") { arr[i] = readInitiative(arr[i]); sel.id = arr[i].id; }
+    else if (sel.tab === "matters") { arr[i] = readMatter(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "achievements") { arr[i] = readAchievement(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "campaigns") { arr[i] = readAdministration(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "cabinet") { arr[i] = readCabinet(arr[i]); sel.id = arr[i].id; }
@@ -2536,7 +2612,7 @@ const Editor = (function () {
     const ids = M.events.map(e => e.id);
     ids.forEach((id, i) => { if (ids.indexOf(id) !== i) P.push(["dup", "duplicate event id: " + id]); });
     M.events.forEach(e => {
-      if (!e.choices || !e.choices.length) P.push(["err", e.id + ": no choices"]);
+      if ((!e.choices || !e.choices.length) && !e.setpiece) P.push(["err", e.id + ": no choices"]);
       if (!e.body || e.body.length < 40) P.push(["warn", e.id + ": body is very short"]);
       (e.choices || []).forEach((c, i) => {
         [].concat(c.effects || []).forEach(eff => {
@@ -2621,6 +2697,8 @@ const Editor = (function () {
     siGates.forEach(t => P.push(["err", t]));
 
     /* THE CAMPAIGN RECORDS (25 Sep) */
+    (M.matters || []).forEach(m => SCHEMA.matterIssues(m, M).forEach(t => P.push(["err", t])));
+    Object.values(matterJsonErrors).forEach(t => P.push(["err", t]));
     if (setupError) P.push(["err", setupError]);
     const CH = new Set(M.characters.map(c => c.id)), PA = new Set(M.parties.map(p => p.id));
     (M.administrations || []).forEach(a => {
@@ -2636,7 +2714,7 @@ const Editor = (function () {
     /* an entry belongs to a campaign that exists, or it is played by none */
     const known = new Set(campaignIds());
     [["event", M.events], ["bill", M.bills], ["ending", M.settlements], ["initiative", M.initiatives],
-     ["award", M.achievements], ["resolution", M.resolutions],
+     ["award", M.achievements], ["resolution", M.resolutions], ["matter", M.matters],
      ["article", (M.encyclopedia || {}).articles]].forEach(([what, arr]) =>
       (arr || []).forEach(x => [].concat(x.campaign == null ? [] : x.campaign).forEach(c => {
         if (!known.has(c)) P.push(["err", what + " " + (x.id || "?") + ": belongs to '" + c + "', which has no campaign record"]);
@@ -2644,6 +2722,7 @@ const Editor = (function () {
 
     /* THE ENDINGS, WHAT CAN BE STARTED, AND THE AWARDS (25 Sep) */
     dupes(M.settlements || [], "ending"); dupes(M.initiatives || [], "initiative");
+    dupes(M.matters || [], "matter");
     dupes(M.achievements || [], "award");
     const SE = new Set((M.settlements || []).map(x => x.id));
     (M.settlements || []).forEach(x => {
@@ -2830,7 +2909,7 @@ const Editor = (function () {
     document.getElementById("sb-dirty").style.color = "";
     const all = ["events", "parties", "stations", "characters", "bills", "glossary",
                  "concordance", "functional", "constituencies",
-                 "settlements", "initiatives", "achievements", "campaigns", "cabinet", "instruments",
+                 "settlements", "initiatives", "matters", "achievements", "campaigns", "cabinet", "instruments",
                  /* one kind for the pair: forums brings the resolutions with it */
                  "forums"]
       .reduce((a, k) => a.concat(filesOf(k)), []);
@@ -3024,6 +3103,15 @@ const Editor = (function () {
         campaignFiles(home).forEach((f, i) => setTimeout(() => download(downloadName(f.path), f.text), i * 120));
       }
       if (act === "cond-add") addCondition(cur);
+      if (/^m(raise|due|settled)-(add|del|pair)$/.test(act)) {
+        const match = /^m(raise|due|settled)-(add|del|pair)$/.exec(act), key = match[1];
+        if (key === "due") cur.due = matterDue(cur);
+        const holder = key === "due" ? cur.due : {};
+        if (key !== "due") Object.defineProperty(holder, "when", {get:() => cur[key], set:v => {cur[key] = v;}});
+        if (match[2] === "add") addCondition(holder);
+        if (match[2] === "del" && holder.when) delete holder.when[b.dataset.c];
+        if (match[2] === "pair") addPair(holder.when, b.dataset.c);
+      }
       if (act === "cond-del") delete cur.when[b.dataset.c];
       if (act === "cond-pair") addPair(cur.when, b.dataset.c);
       if (act === "tcond-pair") addPair(cur.tempo[+b.dataset.ti].when, b.dataset.c);

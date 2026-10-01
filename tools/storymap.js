@@ -112,6 +112,13 @@ function build(K, id) {
   (K.bills || []).forEach(x => add("b:" + x.id, "bill", x));
   (K.settlements || []).forEach(x => add("t:" + x.id, "settlement", x, { title: x.name || x.id }));
   (K.instruments || []).forEach(x => add("s:" + x.id, "instrument", x));
+  (K.matters || []).forEach(x => add("m:" + x.id, "matter", x, {title:x.note || x.id}));
+  Object.entries((K.setup || {}).lenders || {}).forEach(([id, x]) => add("l:" + id, "money", Object.assign({id}, x)));
+  (K.matters || []).forEach(x => {
+    ["late", "page"].forEach(k => { if (x[k]) edges.push({from:"m:" + x.id,to:"e:" + x[k],kind:k === "page" ? "queue" : "answer",label:k,via:null}); });
+    (x.remedies || []).forEach(r => { const t = r.target || {}, prefix = {initiative:"i:",instrument:"s:",bill:"b:",money:"l:"}[t.kind];
+      if (prefix) edges.push({from:"m:" + x.id,to:prefix + t.id,kind:"answer",label:r.id,via:null}); });
+  });
   if ((K.opening || []).length) nodes.set("o:opening", { key: "o:opening", kind: "opening", id: "opening",
     title: "The campaign's opening", own: true, x: { effects: K.opening } });
 
@@ -169,6 +176,10 @@ function build(K, id) {
   (K.settlements || []).forEach(x => reads("t:" + x.id, x.when, null));
   (K.bills || []).forEach(x => reads("b:" + x.id, x.when, null));
   (K.instruments || []).forEach(x => reads("s:" + x.id, x.when, null));
+  (K.matters || []).forEach(x => {
+    reads("m:" + x.id, x.raise, "raise"); reads("m:" + x.id, x.settled, "settled");
+    const due = x.due; reads("m:" + x.id, typeof due === "object" && due ? ("after" in due || "when" in due ? due.when : due) : null, "due");
+  });
   const awards = (K.achievements || []).map(a => ({ id: a.id, name: a.name, own: mine(a), when: a.when || {} }));
   awards.forEach(a => {
     arr(a.when.flags).concat(arr(a.when.flagsAny)).forEach(f => F(f).need.push({ to: "a:" + a.id, via: null }));
@@ -310,7 +321,7 @@ function order(M, key) {
   return ({ opening: 0, initiative: 3e6, bill: 2.5e6, settlement: 3.5e6, instrument: 2.8e6 }[n.kind] || 4e6);
 }
 const KIND_LABEL = { event: "event", initiative: "initiative", bill: "bill", settlement: "result",
-                     instrument: "order", opening: "opening" };
+                     instrument: "order", opening: "opening", matter:"matter", money:"facility" };
 function svg(M) {
   const G = layout(M);
   if (!G.ks.length) return "<p class=\"quiet\">Nothing to draw.</p>";
@@ -422,7 +433,7 @@ function page(M, all) {
       `<td>${who(g.need)}${g.rules ? (g.need.length ? ", " : "") + "<i>the interface or rules</i>" : ""}</td><td>${who(g.absent)}</td><td>${status}</td></tr>`;
   }).join("");
   const counts = `${events.filter(n => n.own).length} events, ${own.filter(n => n.kind === "initiative").length} initiatives, ` +
-    `${own.filter(n => n.kind === "bill").length} bills and ${own.filter(n => n.kind === "settlement").length} results of its own`;
+    `${own.filter(n => n.kind === "bill").length} bills, ${own.filter(n => n.kind === "matter").length} matters and ${own.filter(n => n.kind === "settlement").length} results of its own`;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Story map: ${esc(name)}</title>
@@ -491,6 +502,8 @@ ${Object.keys(byCh).map(Number).sort((a, b) => a - b).map(c => `<h3 class="${byC
 <h3>Initiatives</h3>${others("initiative").map(n => card(M, n)).join("")}
 <h3>Bills</h3>${others("bill").map(n => card(M, n)).join("")}
 <h3>Results</h3>${others("settlement").map(n => card(M, n)).join("")}
+<h3>Ministerial matters</h3>${others("matter").map(n => card(M, n)).join("")}
+<h3>Facilities</h3>${others("money").map(n => card(M, n)).join("")}
 ${M.nodes.has("o:opening") ? `<h3>Opening</h3>${card(M, M.nodes.get("o:opening"))}` : ""}
 
 <h2 id="flags">Flags</h2>

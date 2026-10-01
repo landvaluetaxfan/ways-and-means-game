@@ -60,6 +60,8 @@ FILES.forEach(f => {
 /* The editor asks through Dialog's callbacks now (js/dialog.js). Answer
    them the moment they open, the way the old window stubs did. */
 w.eval(`
+  EVENTS.push({id:"editor_matter_page",queuedOnly:true,setpiece:true,
+    title:"A consequence",body:"The remedy did not land before the deadline.",choices:[]});
   Dialog.confirm = function (m, o, cb) { (typeof o === "function" ? o : cb)(true); };
   Dialog.prompt  = function (m, o, cb) { (typeof o === "function" ? o : cb)(null); };
   Dialog.alert   = function (m, o, cb) { var f = typeof o === "function" ? o : cb; if (f) f(); };
@@ -73,6 +75,23 @@ const ok = (label, cond, extra) => {
 
 console.log("EDITOR SMOKE TEST");
 console.log("=".repeat(56));
+
+/* Real form round-trip: an omitted reader, a default overwriting a value,
+   or a JSON parse failure must not discard the author's matter. */
+w.eval(`
+  window.__matterProbe = {
+    id:"editor_matter_probe", campaign:"flash_i", owner:CABINET[0].id,
+    note:"The owner has raised a shortage.", raise:{flags:["editor_probe_raise"]},
+    figures:[{label:"Heat",source:"scalars.thermal_margin",bands:[{min:15,text:"adequate"},{min:null,text:"thin"}]}],
+    remedies:[{id:"order",target:{kind:"instrument",id:INSTRUMENTS[0].id},takes:0,note:"Open the order."}],
+    counsel:[{post:CABINET[0].id,remedy:"order",note:"Protect the margin."}],
+    due:{after:3,when:{flags:["editor_probe_due"]}},grace:2,recurs:true,
+    late:EVENTS.find(e=>!e.setpiece && e.choices && e.choices.length).id,
+    page:"editor_matter_page",
+    settled:{flags:["editor_probe_settled"]},forecast:{unknown:{preserve:true}}
+  };
+  if(typeof MATTERS !== "undefined") MATTERS.push(window.__matterProbe);
+`);
 
 /* THE PAGE IS SHOWN AT ALL (25 Sep). css/terminal.css hides #shell until
    it carries `on`; the game adds it and the editor never did, so the editor
@@ -90,6 +109,41 @@ console.log("=".repeat(56));
 
 try { w.eval("Editor.boot()"); ok("boot()", true); }
 catch (e) { ok("boot()", false, e.message); process.exit(1); }
+
+try {
+  const tab = w.document.querySelector('.tab[data-t="matters"]');
+  ok("the editor offers matter authoring", !!tab);
+  if (tab) {
+    tab.click();
+    const item = w.document.querySelector('[data-id="editor_matter_probe"]');
+    ok("the matter is selectable in its own collection", !!item);
+    if (item) {
+      item.click();
+      w.document.querySelector('.tab[data-t="events"]').click();
+      const got = w.eval('Editor.__test.entry("matters","editor_matter_probe")');
+      ok("opening a matter preserves fields and unknown forecasts",
+        JSON.stringify(got) === w.eval('JSON.stringify(window.__matterProbe)'));
+      tab.click(); w.document.querySelector('[data-id="editor_matter_probe"]').click();
+      const note = w.document.querySelector('#ed-form [data-f="note"]');
+      note.value = "A revised ministerial note.";
+      w.document.querySelector('.tab[data-t="events"]').click();
+      ok("the matter form commits authored notes",
+        w.eval('Editor.__test.entry("matters","editor_matter_probe").note') === "A revised ministerial note.");
+      tab.click(); w.document.querySelector('[data-id="editor_matter_probe"]').click();
+      const remedies = w.document.querySelector('#ed-form [data-f="remedies"]');
+      const edited = JSON.parse(remedies.value); edited[0].id = "renamed_order";
+      remedies.value = JSON.stringify(edited);
+      w.document.querySelector('.tab[data-t="events"]').click();
+      ok("a local remedy rename preserves its counsel reference",
+        w.eval('Editor.__test.entry("matters","editor_matter_probe").counsel[0].remedy') === "renamed_order");
+      tab.click(); w.document.querySelector('[data-id="editor_matter_probe"]').click();
+      w.document.querySelector('#ed-form [data-f="remedies"]').value = "[not JSON";
+      w.document.querySelector('.tab[data-t="events"]').click();
+      ok("malformed matter JSON does not discard the last authored remedies",
+        w.eval('Editor.__test.entry("matters","editor_matter_probe").remedies[0].id') === "renamed_order");
+    }
+  }
+} catch (e) { ok("matter editor round-trip", false, e.message); }
 
 const tabs = [...w.document.querySelectorAll(".tab")].map(t => t.dataset.t);
 tabs.forEach(t => {
@@ -353,7 +407,7 @@ try {
   const GLOB = { events: "EVENTS", parties: "PARTIES", stations: "STATIONS", characters: "CHARACTERS",
     bills: "BILLS", glossary: "GLOSSARY", constituencies: "CONSTITUENCIES", functional: "FUNCTIONAL",
     /* a campaign's own kinds, written here since 25 Sep */
-    settlements: "SETTLEMENTS", initiatives: "INITIATIVES", achievements: "ACHIEVEMENTS",
+    settlements: "SETTLEMENTS", initiatives: "INITIATIVES", matters:"MATTERS", achievements: "ACHIEVEMENTS",
     campaigns: "ADMINISTRATIONS", cabinet: "CABINET", instruments: "INSTRUMENTS",
     /* the forums (design/43) */
     resolutions: "RESOLUTIONS", forums: "FORUMS" };

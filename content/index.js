@@ -6,6 +6,7 @@ const CONTENT = (function () {
     partyOrg: typeof PARTY_ORG !== "undefined" ? PARTY_ORG : {},
     administrations: typeof ADMINISTRATIONS !== "undefined" ? ADMINISTRATIONS : [],
     initiatives: typeof INITIATIVES !== "undefined" ? INITIATIVES : [],
+    matters: typeof MATTERS !== "undefined" ? MATTERS : [],
     stations: STATIONS,
     constituencies: typeof CONSTITUENCIES !== "undefined" ? CONSTITUENCIES : [],
     cabinet: typeof CABINET !== "undefined" ? CABINET : [],
@@ -53,6 +54,7 @@ const CONTENT = (function () {
     K.currentById = idx(K.currents);
     K.stationById = idx(K.stations);
     K.instrumentById = idx(K.instruments);
+    K.matterById = idx(K.matters);
     K.cabinetById = idx(K.cabinet);
     K.constituencyById = idx(K.constituencies);
     K.characterById = idx(K.characters);

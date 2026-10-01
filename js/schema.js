@@ -246,6 +246,14 @@ const SCHEMA = {
   /* Initiatives may name the cabinet post that can start them. An unassigned
      one belongs to the Prime Minister until the author assigns it. */
   initiativePost: { label: "Department", src: "posts", optional: true },
+  matter: {
+    fields: ["id", "campaign", "owner", "raise", "note", "figures", "remedies",
+             "counsel", "due", "grace", "recurs", "late", "page", "settled"],
+    targets: { initiative: "initiatives", instrument: "instruments", bill: "bills", money: "lenders" },
+    remedyFields: ["id", "target", "takes", "note"],
+    targetFields: ["kind", "id", "tempo", "amount"],
+    counselFields: ["post", "remedy", "note"]
+  },
   currentFields: {
     leader: { label: "Leader", src: "characters", optional: true },
     asks: { label: "Asks", type: "text", optional: true }
@@ -359,5 +367,72 @@ const SCHEMA = {
    "economic: -0.75" under test and "strongly public" in Chromium. The module
    already made itself reachable to Node; this is the same courtesy to the
    window, and it makes the two environments agree. */
+/* One validation policy, consumed by the lint and editor. It checks authored
+   references against the supplied campaign view or editable model, never
+   against a second list maintained by the interface. */
+SCHEMA.matterIssues = function (m, C) {
+  const out = [], list = k => C[k] || [], has = (k, id) => list(k).some(x => x.id === id);
+  const bad = message => out.push((m.id || "matter") + ": " + message);
+  const object = v => v && typeof v === "object" && !Array.isArray(v);
+  const condition = (v, label, required) => {
+    if (v == null && !required) return;
+    if (!object(v) || !Object.keys(v).length) { bad(label + " needs a condition"); return; }
+    Object.keys(v).forEach(k => { if (!SCHEMA.conditions[k]) bad(label + " names unknown condition " + k); });
+  };
+  if (!m.id) bad("missing id");
+  if (!has("cabinet", m.owner)) bad("unknown owner post " + m.owner);
+  condition(m.raise, "raise", true); condition(m.settled, "settled", true);
+  const due = m.due;
+  if (typeof due === "number") {
+    if (!Number.isInteger(due) || due < 0) bad("due must be a nonnegative number of sittings");
+  } else if (object(due) && ("after" in due || "when" in due)) {
+    if (due.after != null && (!Number.isInteger(due.after) || due.after < 0)) bad("invalid due.after");
+    if (due.after == null && due.when == null) bad("empty due");
+    condition(due.when, "due.when", false);
+  } else condition(due, "due", true);
+  if (m.grace != null && (!Number.isInteger(m.grace) || m.grace < 1)) bad("grace must be positive sittings");
+  if (m.recurs != null && typeof m.recurs !== "boolean") bad("recurs must be boolean");
+  if (!Array.isArray(m.figures)) bad("figures must be a list");
+  else m.figures.forEach(f => {
+    const d = typeof f === "string" ? ((C.setup || {}).readouts || {})[f] : f;
+    if (!object(d) || !d.source || !Array.isArray(d.bands) || !d.bands.length)
+      bad("figure needs a source and word bands");
+    else d.bands.forEach(b => {
+      if (!object(b) || typeof b.text !== "string" ||
+          (b.min != null && typeof b.min !== "number" && !/^setup\./.test(b.min))) bad("invalid figure band");
+    });
+  });
+  const ids = new Set();
+  if (!Array.isArray(m.remedies)) bad("remedies must be a list");
+  (Array.isArray(m.remedies) ? m.remedies : []).forEach(r => {
+    if (!object(r)) { bad("invalid remedy row"); return; }
+    if (!r.id || ids.has(r.id)) bad("missing or duplicate remedy id " + r.id);
+    ids.add(r.id);
+    if (!Number.isInteger(r.takes) || r.takes < 0) bad("invalid remedy duration " + r.id);
+    const t = r.target || {}, kind = SCHEMA.matter.targets[t.kind];
+    if (!kind) { bad("unknown remedy kind " + t.kind); return; }
+    if (t.kind === "money") {
+      if (!((C.setup || {}).lenders || {})[t.id]) bad("unknown lender " + t.id);
+      if (t.amount !== "utilisation" && (!Number.isFinite(t.amount) || t.amount <= 0)) bad("invalid money amount");
+    } else if (!has(kind, t.id)) bad("unknown " + t.kind + " " + t.id);
+    if (t.kind === "initiative") {
+      const i = list("initiatives").find(x => x.id === t.id), tempo = t.tempo == null ? 0 : t.tempo;
+      if (!Number.isInteger(tempo) || tempo < 0 || !i || !(i.tempo || [])[tempo]) bad("invalid initiative tempo");
+      else if (r.takes !== (i.tempo[tempo].after || 3)) bad("remedy duration differs from its initiative tempo");
+    }
+  });
+  if (m.counsel != null && !Array.isArray(m.counsel)) bad("counsel must be a list");
+  (Array.isArray(m.counsel) ? m.counsel : []).forEach(c => {
+    if (!object(c)) { bad("invalid counsel row"); return; }
+    if (!has("cabinet", c.post)) bad("unknown counsel post " + c.post);
+    if (!ids.has(c.remedy)) bad("counsel names missing remedy " + c.remedy);
+  });
+  const late = list("events").find(e => e.id === m.late), page = list("events").find(e => e.id === m.page);
+  if (!late || late.setpiece || !(late.choices || []).length) bad("late must name a plain decision with choices");
+  if (!page || !page.queuedOnly || !page.setpiece || (page.choices || []).length)
+    bad("page must name a queued-only setpiece without choices");
+  return out;
+};
+
 if (typeof module !== "undefined") module.exports = SCHEMA;
 if (typeof window !== "undefined") window.SCHEMA = SCHEMA;

@@ -32,10 +32,11 @@ const Refs = (function () {
      editor writes the campaign record (25 Sep) */
   /* `onTable`: a forum resolution's, beside its onPass and onFail (design/43) */
   /* a condition is `when`, or the Concordance's `since` and `while` (design/55) */
-  const COND_KEYS = ["when", "since", "while"];
+  const COND_KEYS = ["when", "since", "while", "raise", "settled"];
   const EFFECT_KEYS = ["effects", "onPass", "onFail", "onTable", "reverse", "political_cost", "onSign", "close", "opening"];
   const COLLECTIONS = [["events", "event"], ["bills", "bill"], ["instruments", "instrument"],
     ["initiatives", "initiative"], ["minutes", "minute"], ["cabinet", "cabinet"],
+    ["matters", "matter"],
     ["settlements", "settlement"], ["business", "business"], ["actors", "actor"],
     ["achievements", "achievement"], ["administrations", "administration"],
     ["resolutions", "resolution"]];
@@ -64,6 +65,10 @@ const Refs = (function () {
       if (o && o[k] && typeof o[k] === "object" && !Array.isArray(o[k])) fn(o[k], where + " · condition");
     });
     walkModel(M, conds);
+    (M.matters || []).forEach(m => {
+      if (m.due && typeof m.due === "object" && !Array.isArray(m.due) &&
+          !("after" in m.due) && !("when" in m.due)) fn(m.due, "matter " + m.id + " · due");
+    });
     /* the Concordance's standing, history and state (design/55): an
        article, its sections and its banners each may carry one */
     (((M.encyclopedia || {}).articles) || []).forEach(a => {
@@ -418,7 +423,45 @@ const Refs = (function () {
 
   function find(M, kind, id) {
     const f = FINDERS[kind];
-    return f ? f(M, id) : [];
+    const hits = f ? f(M, id) : [];
+    const H = (where, apply) => hits.push({ where, apply });
+    const names = v => [].concat(v || []).includes(id);
+    const replace = (v, from, to) => Array.isArray(v) ? v.map(x => x === from ? to : x) : v === from ? to : v;
+    const targetKind = { initiatives: "initiative", instruments: "instrument", bills: "bill", lenders: "money" }[kind];
+    (M.matters || []).forEach(m => {
+      if (kind === "events") ["late", "page"].forEach(k => {
+        if (m[k] === id) H(`matter ${m.id} · ${k}`, to => m[k] = to);
+      });
+      if (kind === "cabinet") {
+        if (m.owner === id) H(`matter ${m.id} · owner`, to => m.owner = to);
+        (m.counsel || []).forEach(c => {
+          if (c.post === id) H(`matter ${m.id} · counsel`, to => c.post = to);
+        });
+      }
+      (m.remedies || []).forEach(r => {
+        if (r.target && r.target.kind === targetKind && r.target.id === id)
+          H(`matter ${m.id} · remedy ${r.id}`, to => r.target.id = to);
+      });
+    });
+    if (kind === "cabinet") {
+      (M.initiatives || []).forEach(i => { if (i.post === id) H(`initiative ${i.id} · post`, to => i.post = to); });
+      (M.instruments || []).forEach(i => { if (i.author === id) H(`instrument ${i.id} · author`, to => i.author = to); });
+      walkModel(M, (o, where) => { if (o.shadow === id) H(where + " · shadow", to => o.shadow = to); });
+      eachCondition(M, (w, where) => {
+        if (w.holds && w.holds[id] !== undefined) H(where + " · holds", to => renameKey(w.holds, id, to));
+        if (names(w.postVacant)) H(where + " · postVacant", to => w.postVacant = replace(w.postVacant, id, to));
+      });
+      eachEffect(M, (e, where) => {
+        if (e.cabinet && e.cabinet[id] !== undefined) H(where + " · cabinet", to => renameKey(e.cabinet, id, to));
+      });
+    }
+    if (kind === "instruments") {
+      eachCondition(M, (w, where) => ["siInForce", "siNotMade"].forEach(k => {
+        if (names(w[k])) H(where + " · " + k, to => w[k] = replace(w[k], id, to));
+      }));
+      eachEffect(M, (e, where) => { if (names(e.si)) H(where + " · si", to => e.si = replace(e.si, id, to)); });
+    }
+    return hits;
   }
 
   /* Strings elsewhere in the model that merely LOOK like this id — usually a
