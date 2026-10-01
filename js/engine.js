@@ -4201,6 +4201,20 @@ const Engine = (function () {
      --------------------------------------------------------- */
 
   const CONDITIONS = {
+    /* Evaluate every branch so an earlier true branch cannot hide a typo.
+       Keys within a branch, and beside anyOf, retain their ordinary AND. */
+    anyOf:        (st, v) => {
+      const valid = list => Array.isArray(list) && list.length > 0 && list.every(w => {
+        if (!w || typeof w !== "object" || Array.isArray(w) || !Object.keys(w).length) return false;
+        let shaped = true;
+        Object.keys(w).forEach(k => {
+          if (!CONDITIONS[k]) throw new Error("unknown condition: " + k);
+          if (k === "anyOf" && !valid(w[k])) shaped = false;
+        });
+        return shaped;
+      });
+      return valid(v) && v.map(w => matches(st, w)).some(Boolean);
+    },
     minSitting:   (st, v) => st.sitting >= v,
     maxSitting:   (st, v) => st.sitting <= v,
     flags:        (st, v) => v.every(f => !!st.flags[f]),

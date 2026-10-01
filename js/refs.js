@@ -61,13 +61,18 @@ const Refs = (function () {
     }));
   }
   function eachCondition(M, fn) {
+    const branch = (w, where) => {
+      if (!w || typeof w !== "object" || Array.isArray(w)) return;
+      fn(w, where);
+      if (Array.isArray(w.anyOf)) w.anyOf.forEach((b, i) => branch(b, where + " · alternative " + (i + 1)));
+    };
     const conds = (o, where) => COND_KEYS.forEach(k => {
-      if (o && o[k] && typeof o[k] === "object" && !Array.isArray(o[k])) fn(o[k], where + " · condition");
+      if (o && o[k]) branch(o[k], where + " · condition");
     });
     walkModel(M, conds);
     (M.matters || []).forEach(m => {
       if (m.due && typeof m.due === "object" && !Array.isArray(m.due) &&
-          !("after" in m.due) && !("when" in m.due)) fn(m.due, "matter " + m.id + " · due");
+          !("after" in m.due) && !("when" in m.due)) branch(m.due, "matter " + m.id + " · due");
     });
     /* the Concordance's standing, history and state (design/55): an
        article, its sections and its banners each may carry one */

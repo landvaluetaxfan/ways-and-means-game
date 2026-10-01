@@ -483,6 +483,7 @@ try {
     });
   }));
   const walkWhen = w => w && Object.keys(w).forEach(k => {
+    if (k === "anyOf" && Array.isArray(w[k])) w[k].forEach(walkWhen);
     if (k === "priceAbove" || k === "priceBelow")
       Object.keys(w[k]).forEach(x => bump(gated, "price." + x));
     if (k === "scalarAbove" || k === "scalarBelow")
@@ -767,6 +768,7 @@ const gateNeeds = {}, gateAbsent = {};
     (w.flagsAbsent || []).forEach(f => (gateAbsent[f] = gateAbsent[f] || []).push(tag));
     Object.keys(w).forEach(k => {
       if (k === "flags" || k === "flagsAbsent") return;
+      if (k === "anyOf" && Array.isArray(w[k])) w[k].forEach(b => cw(b, tag));
       if (w[k] && typeof w[k] === "object" && !Array.isArray(w[k])) cw(w[k], tag);
     });
   };
@@ -876,6 +878,10 @@ try {
       const keys = (set, what) => Object.keys(v).forEach(x => { if (!set.has(x)) bad("names no " + what + " '" + x + "'"); });
       const list = (set, what) => [].concat(v).forEach(x => { if (!set.has(x)) bad("names no " + what + " '" + x + "'"); });
       switch (k) {
+        case "anyOf":
+          require(path.join(root, "js", "schema.js")).conditionIssues({anyOf:v}, tag).forEach(t => refBad.push(t));
+          if (Array.isArray(v)) v.forEach((b, i) => checkWhen(b, tag + " alternative " + (i + 1)));
+          break;
         case "billStage": keys(BI, "bill"); Object.values(v).forEach(x => { if (!STAGES.has(x)) bad("names no stage '" + x + "'"); }); break;
         case "siInForce": case "siNotMade": list(SI, "instrument"); break;
         case "owes": case "breached": list(UND, "undertaking"); break;

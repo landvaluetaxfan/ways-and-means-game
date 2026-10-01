@@ -149,6 +149,7 @@ const SCHEMA = {
 
   /* ---------- condition keys ---------- */
   conditions: {
+    anyOf:       { label:"Any one condition block holds", form:"alternatives" },
     minSitting:   { label:"Sitting is at least",       form:"int" },
     maxSitting:   { label:"Sitting is at most",        form:"int" },
     flags:        { label:"Flags are set",             form:"flagList" },
@@ -370,6 +371,23 @@ const SCHEMA = {
 /* One validation policy, consumed by the lint and editor. It checks authored
    references against the supplied campaign view or editable model, never
    against a second list maintained by the interface. */
+SCHEMA.conditionIssues = function (w, label = "condition") {
+  const out = [];
+  const go = (v, path, required) => {
+    if (!v || typeof v !== "object" || Array.isArray(v) || (required && !Object.keys(v).length)) {
+      out.push(path + " needs a nonempty condition block"); return;
+    }
+    Object.keys(v).forEach(k => {
+      if (!SCHEMA.conditions[k]) out.push(path + " names unknown condition " + k);
+      if (k !== "anyOf") return;
+      if (!Array.isArray(v[k]) || !v[k].length) out.push(path + ".anyOf needs a nonempty list of condition blocks");
+      else v[k].forEach((branch, i) => go(branch, path + ".anyOf[" + i + "]", true));
+    });
+  };
+  go(w, label, false);
+  return out;
+};
+
 SCHEMA.matterIssues = function (m, C) {
   const out = [], list = k => C[k] || [], has = (k, id) => list(k).some(x => x.id === id);
   const bad = message => out.push((m.id || "matter") + ": " + message);
@@ -377,7 +395,7 @@ SCHEMA.matterIssues = function (m, C) {
   const condition = (v, label, required) => {
     if (v == null && !required) return;
     if (!object(v) || !Object.keys(v).length) { bad(label + " needs a condition"); return; }
-    Object.keys(v).forEach(k => { if (!SCHEMA.conditions[k]) bad(label + " names unknown condition " + k); });
+    SCHEMA.conditionIssues(v, label).forEach(bad);
   };
   if (!m.id) bad("missing id");
   if (!has("cabinet", m.owner)) bad("unknown owner post " + m.owner);

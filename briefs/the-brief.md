@@ -160,6 +160,24 @@ existing early shipment and manufacturing remedies and their costs. Draft new
 decision wording plainly for Claude's later register pass, rather than treating
 the old post-failure wording as a pre-failure decision.
 
+## Approved scope addition — 1 October 2026
+
+Task 3's air settlement needs an OR: `works_air_paid`, `almanac_annexed`,
+or an existing crisis result must each close the matter independently.
+Ordinary engine conditions currently combine keys with AND. `flagsAny`
+exists only in award conditions, and cannot also express a crisis result.
+Using a paid-only settlement would wrongly leave the death page pending
+after annexation or a joint mandate.
+
+The author approved a generic `anyOf: [condition, ...]` condition, with
+engine, schema, editor, reference/rename and validation support and tests,
+before continuing the three-matter content batch. Each branch retains AND
+between its keys, as do sibling keys outside `anyOf`. Empty or malformed
+alternative lists must fail validation. This expresses the existing approved
+settlement alternatives without naming the Works in the engine or adding
+new story outcomes. It expands Task 3's file list; no new canon or economic
+effects are proposed.
+
 ## Later, not here
 
 These are decided in design/58 but belong to later stages:

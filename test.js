@@ -13,6 +13,79 @@ const Engine = require("./js/engine.js");
 const PROLOGUE1 = T.prologue1(CONTENT);
 const RUN_BOUND = T.runBound(CONTENT);
 
+/* Alternatives must retain AND inside each branch and alongside the list.
+   Dropping a branch, hiding a typo behind a true branch, or skipping nested
+   reference walks must fail these real-condition probes. */
+(function () {
+  let bad = 0;
+  const ok = (label, yes) => { console.log((yes ? "  ok   " : "  FAIL ") + label); if (!yes) bad++; };
+  console.log("\nCONDITION ALTERNATIVES:");
+  const S = require("./js/schema.js"), st = Engine.newGame(CONTENT);
+  const gate = { anyOf: [{ flags: ["alternative_a"], minSitting: 2 },
+    { flags: ["alternative_b"] }, { resolved: true }] };
+  const cases = [
+    ["no branch holds", {}, null, 1, false],
+    ["AND still applies inside a branch", { alternative_a:true }, null, 1, false],
+    ["the first branch can hold", { alternative_a:true }, null, 2, true],
+    ["the second branch can hold independently", { alternative_b:true }, null, 1, true],
+    ["a crisis result can hold independently", {}, "probe_result", 1, true]
+  ];
+  cases.forEach(([label, flags, result, sitting, want]) => {
+    st.flags = flags; st.resolvedAs = result; st.sitting = sitting;
+    try { ok(label, Engine.matches(st, gate) === want); } catch (e) { ok(label, false); }
+  });
+  st.flags = { alternative_b:true }; st.resolvedAs = null; st.sitting = 1;
+  try {
+    ok("a sibling condition still requires AND", !Engine.matches(st, { ...gate, minSitting:2 }));
+    ok("nested alternatives are evaluated", Engine.matches(st, { anyOf:[{anyOf:[{flags:["alternative_b"]}]}] }));
+    [[], [{}], [null], "bad"].forEach(v => ok("malformed alternatives fail closed " + JSON.stringify(v),
+      !Engine.matches(st, { anyOf:v })));
+  } catch (e) { ok("alternative shape and nesting", false); }
+  let threw = false;
+  try { Engine.matches(st, {anyOf:[{minSitting:1},{unknown_alternative:true}]}); } catch (e) { threw = /unknown condition/.test(e.message); }
+  ok("a true branch does not hide an unknown condition", threw);
+  threw = false;
+  try { Engine.matches(st, {anyOf:[{minSitting:1},{minSitting:100,anyOf:[{unknown_alternative:true}]}]}); }
+  catch(e) { threw = /unknown condition/.test(e.message); }
+  ok("a false AND prefix does not hide a nested alternative typo", threw);
+  ok("shared validation accepts alternatives", typeof S.conditionIssues === "function" && S.conditionIssues(gate).length === 0);
+  if (S.conditionIssues) {
+    [[], [{}], [null], "bad", [{anyOf:[{unknown_alternative:true}]}]].forEach(v =>
+      ok("shared validation rejects invalid alternatives " + JSON.stringify(v), S.conditionIssues({anyOf:v}).length > 0));
+  }
+  const ctx = {};
+  vm.runInNewContext(fs.readFileSync("js/refs.js", "utf8") + ";this.R=Refs;", ctx);
+  const M = JSON.parse(JSON.stringify(ALL)), ev = ALL.events[0].id, post = ALL.cabinet[0].id;
+  M.matters = [{id:"alternative_probe", raise:gate, due:{anyOf:[{seen:[ev]}]},
+    settled:{anyOf:[{seen:[ev]},{anyOf:[{postVacant:[post]}]}]}}];
+  ctx.R.rename(M,"events",ev,"renamed_alternative_event");
+  ok("rename reaches a nested settlement event", M.matters[0].settled.anyOf[0].seen[0] === "renamed_alternative_event");
+  ok("rename reaches a bare alternative deadline", M.matters[0].due.anyOf[0].seen[0] === "renamed_alternative_event");
+  ctx.R.rename(M,"cabinet",post,"renamed_alternative_post");
+  ok("rename reaches a doubly nested post", M.matters[0].settled.anyOf[1].anyOf[0].postVacant[0] === "renamed_alternative_post");
+  const probe = `const L=require('./tools/loadcontent.js'),original=L.source;
+    L.source=()=>original()+'\\nEVENTS[0].when={anyOf:[{minSitting:1},{seen:["missing_alternative_event"]},{flags:["missing_alternative_flag"]},{anyOf:[{unknown_alternative:true}]}]};';
+    require('./tools/lint.js');`;
+  const lint = require("child_process").spawnSync(process.execPath,["-e",probe],{encoding:"utf8",maxBuffer:4*1024*1024});
+  ok("lint checks references in an alternative", /names no event 'missing_alternative_event'/.test(lint.stdout));
+  ok("lint checks flags in an alternative", /missing_alternative_flag/.test(lint.stdout));
+  ok("lint checks unknown nested conditions", /unknown_alternative/.test(lint.stdout));
+  const mapCtx = {require:require('module').createRequire(require('path').resolve('tools/storymap.js'))};
+  vm.runInNewContext(fs.readFileSync('tools/storymap.js','utf8').split('/* ---------- the command ---------- */')[0] +
+    ';this.map=build;this.words=whenText;',mapCtx);
+  const K = JSON.parse(JSON.stringify(CONTENT));
+  K.events.push({id:"alternative_source",effects:[{flag:"alternative_map_flag"}],choices:[]});
+  K.events.push({id:"alternative_target",when:{anyOf:[{seen:["alternative_source"]},
+    {anyOf:[{flags:["alternative_map_flag"]}]}]},choices:[]});
+  const graph = mapCtx.map(K,"world");
+  ok("story map follows alternative event references", graph.edges.some(e => e.kind === "seen" && e.from === "e:alternative_source" && e.to === "e:alternative_target"));
+  ok("story map follows alternative flag dependencies", graph.flags.alternative_map_flag &&
+    graph.flags.alternative_map_flag.need.some(x => x.to === "e:alternative_target"));
+  ok("story map explains OR alongside AND", / or /.test(mapCtx.words({anyOf:[{minSitting:1},{resolved:true}],maxSitting:5})) &&
+    / and /.test(mapCtx.words({anyOf:[{minSitting:1},{resolved:true}],maxSitting:5})));
+  if (bad) process.exit(1);
+})();
+
 /* A missing collection, writer or typed reference used to drop an author's
    entries silently. These probes exercise content, not a hand-kept registry. */
 (function () {

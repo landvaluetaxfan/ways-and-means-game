@@ -516,6 +516,8 @@ const Editor = (function () {
     return Object.keys(when).map(k => {
       const d = SCHEMA.conditions[k];
       if (!d) return raw(k, when[k]);
+      if (d.form === "alternatives")
+        return raw(k, when[k]).replace(`<b>${esc(k)}</b>`, `<b>${esc(d.label)} (JSON)</b>`);
       const del = `<button class="btn ed-x" data-act="${pre || "cond"}-del" data-c="${k}"${at}>×</button>`;
       const more = `<button class="btn ed-add" data-act="${pre || "cond"}-pair" data-c="${k}"${at} title="another">+</button>`;
       /* THE FORMS design/46 ADDED. An id list is one select per id, each of
@@ -2629,12 +2631,47 @@ const Editor = (function () {
           });
         });
       });
-      Object.keys(e.when || {}).forEach(k => {
-        const knownC = typeof Engine !== "undefined" && Engine.CONDITIONS ? Engine.CONDITIONS[k] : SCHEMA.conditions[k];
-        if (!knownC) P.push(["err", e.id + ": unknown condition " + k]);
+      if (e.when) SCHEMA.conditionIssues(e.when, e.id).forEach(t => P.push(["err", t]));
+      (e.choices || []).forEach((c, i) => {
+        if (c.when) SCHEMA.conditionIssues(c.when, e.id + " choice " + (i + 1)).forEach(t => P.push(["err", t]));
       });
     });
     /* one concept cluster per event */
+    /* Alternatives use JSON authoring, so validate every branch's typed
+       references against the same content vocabulary the ordinary forms use. */
+    const checkAlternatives = (w, tag) => {
+      if (!w || typeof w !== "object" || !("anyOf" in w)) return;
+      SCHEMA.conditionIssues(w, tag).forEach(t => P.push(["err", t]));
+      const refs = (branch, where) => {
+        if (!branch || typeof branch !== "object" || Array.isArray(branch)) return;
+        Object.keys(branch).forEach(k => {
+          const d = SCHEMA.conditions[k], v = branch[k];
+          if (!d) return;
+          const check = (src, ids) => {
+            const known = new Set(vocab(src).map(pair => pair[0]));
+            ids.forEach(id => { if (!known.has(id)) P.push(["err", where + ": " + k + " names missing " + src + " '" + id + "'"]); });
+          };
+          if (d.form === "alternatives") {
+            if (Array.isArray(v)) v.forEach((b, i) => refs(b, where + " alternative " + (i + 1)));
+          } else if (d.form === "idList" || d.form === "id") check(d.src, [].concat(v));
+          else if (d.form === "ending" && typeof v === "string") check(d.of === "crisis" ? "crisisEndings" : "answerEndings", [v]);
+          else if ((d.form === "map" || d.form === "nested") && v && typeof v === "object") {
+            check(d.src, Object.keys(v));
+            if (d.vsrc) check(d.vsrc, Object.values(v).flat());
+          }
+        });
+      };
+      refs(w, tag);
+    };
+    const gates = (o, tag) => {
+      if (!o || typeof o !== "object") return;
+      if (Array.isArray(o)) return o.forEach(x => gates(x, tag));
+      ["when", "gate", "raise", "settled", "urgent"].forEach(k => checkAlternatives(o[k], tag));
+      if (o.due && typeof o.due === "object" && !("after" in o.due) && !("when" in o.due)) checkAlternatives(o.due, tag);
+      Object.keys(o).filter(k => k !== "forecast").forEach(k => { if (o[k] && typeof o[k] === "object") gates(o[k], tag); });
+    };
+    ["events", "bills", "initiatives", "instruments", "matters", "settlements", "cabinet", "business", "resolutions", "minutes"]
+      .forEach(k => (M[k] || []).forEach(o => gates(o, k + " " + o.id)));
     const byEvent = {};
     M.glossary.forEach(g => { if (g.introduced) (byEvent[g.introduced] ||= new Set()).add(g.cluster || g.term); });
     Object.keys(byEvent).forEach(id => {
@@ -3001,6 +3038,7 @@ const Editor = (function () {
           const d = SCHEMA.conditions[k];
           const first = src => (vocab(src)[0] || [""])[0];
           target.when[k] = d.form === "int" ? 1 : d.form === "bool" ? true : d.form === "flagList" ? []
+                         : d.form === "alternatives" ? []
                          : d.form === "idList" ? [first(d.src)].filter(Boolean)
                          : d.form === "ending" ? true
                          : d.form === "id" ? first(d.src)

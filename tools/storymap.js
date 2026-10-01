@@ -44,6 +44,7 @@ function whenText(w) {
     const v = w[k];
     const m = /^(.*?)(Above|Below|AtLeast)$/.exec(k);
     if (k === "flags") out.push(arr(v).map(f => "flag " + f).join(" and "));
+    else if (k === "anyOf") out.push("(" + arr(v).map(branch => "(" + whenText(branch) + ")").join(" or ") + ")");
     else if (k === "flagsAbsent") out.push(arr(v).map(f => "not " + f).join(", "));
     else if (k === "flagsAny") out.push("any of " + arr(v).join(", "));
     else if (k === "minSitting") out.push("sitting \u2265 " + v);
@@ -62,7 +63,7 @@ function whenText(w) {
     else if (m) out.push(m[1] + " " + CMP[m[2]] + " " + num(v));
     else out.push(k + " " + (typeof v === "object" ? JSON.stringify(v) : String(v)));
   });
-  return out.join("; ");
+  return out.join("anyOf" in w ? " and " : "; ");
 }
 
 /* ---------- effects, in words ---------- */
@@ -159,6 +160,7 @@ function build(K, id) {
   /* who READS: every gate */
   const reads = (to, w, via) => {
     if (!w || typeof w !== "object") return;
+    if (Array.isArray(w.anyOf)) w.anyOf.forEach(branch => reads(to, branch, via));
     arr(w.flags).concat(arr(w.flagsAny)).forEach(f => F(f).need.push({ to, via }));
     arr(w.flagsAbsent).forEach(f => F(f).absent.push({ to, via }));
     if (w.seen) arr(w.seen).forEach(s => edges.push({ from: "e:" + s, to, kind: "seen", label: "after", via }));

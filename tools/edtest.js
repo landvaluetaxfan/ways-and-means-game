@@ -85,7 +85,7 @@ w.eval(`
     figures:[{label:"Heat",source:"scalars.thermal_margin",bands:[{min:15,text:"adequate"},{min:null,text:"thin"}]}],
     remedies:[{id:"order",target:{kind:"instrument",id:INSTRUMENTS[0].id},takes:0,note:"Open the order."}],
     counsel:[{post:CABINET[0].id,remedy:"order",note:"Protect the margin."}],
-    due:{after:3,when:{flags:["editor_probe_due"]}},grace:2,recurs:true,
+    due:3,grace:2,recurs:true,
     late:EVENTS.find(e=>!e.setpiece && e.choices && e.choices.length).id,
     page:"editor_matter_page",
     settled:{flags:["editor_probe_settled"]},forecast:{unknown:{preserve:true}}
@@ -136,6 +136,22 @@ try {
       w.document.querySelector('.tab[data-t="events"]').click();
       ok("a local remedy rename preserves its counsel reference",
         w.eval('Editor.__test.entry("matters","editor_matter_probe").counsel[0].remedy') === "renamed_order");
+      tab.click(); w.document.querySelector('[data-id="editor_matter_probe"]').click();
+      w.eval('window.__savedAlternativePrompt = Dialog.prompt; Dialog.prompt = (m,o,cb) => cb("anyOf");');
+      w.document.querySelector('[data-act="msettled-add"]').click();
+      w.eval('Dialog.prompt = window.__savedAlternativePrompt;');
+      const alternative = w.document.querySelector('#m-settled .ed-cond[data-c="anyOf"] [data-f="v"]') ||
+        w.document.querySelector('.ed-cond[data-c="anyOf"] [data-f="v"]');
+      ok("Add condition can create an alternative list", !!alternative);
+      if (alternative) {
+        alternative.value = '[{"anyOf":[{"unknown_alternative":true}]},{"seen":["missing_alternative_event"]}]';
+        w.document.querySelector('.tab[data-t="events"]').click();
+        const errors = [...w.document.querySelectorAll('#ed-status .ed-err')].map(n => n.textContent).join('\n');
+        ok("editor validation sees a condition inside alternatives", /unknown_alternative/.test(errors));
+        ok("editor validation sees a reference inside alternatives", /missing_alternative_event/.test(errors));
+        tab.click(); w.document.querySelector('[data-id="editor_matter_probe"]').click();
+        w.document.querySelector('[data-act="msettled-del"][data-c="anyOf"]').click();
+      }
       tab.click(); w.document.querySelector('[data-id="editor_matter_probe"]').click();
       w.document.querySelector('#ed-form [data-f="remedies"]').value = "[not JSON";
       w.document.querySelector('.tab[data-t="events"]').click();
@@ -244,6 +260,20 @@ try {
    put each shape through the form and require it back exactly, drawn as a
    form and not as raw JSON where a form exists. */
 console.log("\nTHE NEW SHAPES AND FORMS");
+try {
+  const ed = w.eval("Editor.__test"), box = w.document.createElement("div");
+  const when = {anyOf:[{flags:["paid_probe"]},{anyOf:[{resolved:true},{flags:["annexed_probe"]}]}], minSitting:2};
+  box.innerHTML = ed.condRows(when);
+  ok("the alternative condition round-trips through its form", JSON.stringify(ed.readConds(box)) === JSON.stringify(when));
+  const field = box.querySelector('.ed-cond[data-c="anyOf"] [data-f="v"]');
+  ok("the alternative condition offers an editable JSON field", !!field);
+  if (field) {
+    field.value = '[{"flags":["revised_probe"]},{"resolved":true}]';
+    ok("editing an alternative writes its branches", JSON.stringify(ed.readConds(box).anyOf) === field.value);
+    field.value = '[broken';
+    ok("a malformed alternative is retained for validation", ed.readConds(box).anyOf === '[broken');
+  }
+} catch(e) { ok("alternative condition editing",false,e.message); }
 try {
   const ed = w.eval("Editor.__test");
   const bill = w.eval("CONTENT.bills[0].id"), post = w.eval("CONTENT.cabinet[0].id");
