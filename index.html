@@ -88,18 +88,22 @@
          having one. -->
     <section class="screen" id="s-gov">
       <div id="gov-init"><div class="grid g-gov pbody scrolls" id="gov-si">
+        <div class="stack scrolls" id="gov-side">
+          <div class="panel"><h2 id="gov-departments-hdr" tabindex="-1">Cabinet</h2>
+            <div class="pbody scrolls" id="gov-roster"></div>
+          </div>
+        </div>
+        <div class="pbody scrolls" id="gov-work">
         <div class="stack scrolls" id="gov-main">
-          <div class="panel"><h2>Government business <em id="gov-init-hdr" data-tip="slots"></em></h2>
+          <div class="panel"><h2 id="gov-workspace-title" tabindex="-1">Government business</h2>
+            <div id="gov-time"><span>Order-paper time</span><span id="gov-slot-strip"></span><em id="gov-init-hdr" data-tip="slots"></em></div>
             <div class="pbody scrolls" id="gov-business">
               <section id="gov-vacancies"></section>
               <section><h3 class="rulehead" id="gov-pending-hdr" tabindex="-1">Under way</h3><div id="gov-pending"></div></section>
               <section><h3 class="rulehead" id="gov-available-hdr" tabindex="-1">Available powers</h3><div id="gov-available"></div></section>
             </div>
-          </div>
-        </div>
-        <div class="stack scrolls" id="gov-side">
-          <div class="panel"><h2 id="gov-departments-hdr" tabindex="-1">Cabinet</h2>
             <div class="pbody scrolls" id="gov-cabinet"></div>
+            <section class="pbody scrolls" id="gov-inspector" hidden><header><h3 id="gov-file-title">Work file</h3><button class="btn" data-gov-close>Close file</button></header><div id="gov-file-body"></div></section>
           </div>
         </div>
         <div class="stack scrolls" id="gov-records">
@@ -128,6 +132,7 @@
           </details>
         </div>
 
+        </div>
         <div id="gov-docs" class="doc-overlay" role="dialog" aria-modal="true" aria-label="Document" hidden>
           <div class="panel"><h2>Document <button class="btn" id="gov-doc-close">Close</button></h2>
             <div class="pbody flush scrolls" id="pp-doc"></div></div>

@@ -199,9 +199,8 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 
 /* ---------- panels ---------- */
 .grid{display:grid;gap:5px;}
-/* Work and its records share the larger column; people have their own
-   directory. The grid scrolls as one page, retaining DOM and focus order. */
-.g-gov{grid-template-columns:minmax(0,1.8fr) minmax(300px,1fr);}
+/* The cabinet stays navigable while its selected work scrolls separately. */
+.g-gov{grid-template-columns:minmax(220px,280px) minmax(0,1fr);}
 /* THE SCREEN TAKES THE VIEWPORT, as the Chamber and the orbit do. This came
    over from the Papers tab when Papers was folded in: the register used to
    carry an inline max-height in the markup to stop its column running away,
@@ -209,31 +208,56 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    another. The screen takes the viewport and the panels divide it. */
 #s-gov.screen.on{height:100%;min-height:0;}
 #gov-init{height:100%;min-height:0;}
-#s-gov .g-gov{grid-template-rows:max-content max-content;grid-auto-rows:auto;
-  height:100%;min-height:0;align-content:start;padding:0;overflow:auto;}
-#gov-main{grid-column:1;grid-row:1;}
-#gov-side{grid-column:2;grid-row:1 / span 2;}
-#gov-records{grid-column:1;grid-row:2;}
+#s-gov .g-gov{grid-template-rows:minmax(0,1fr);
+  height:100%;min-height:0;padding:0;overflow:hidden;}
+#gov-work{grid-column:2;grid-row:1;padding:0;min-height:0;overflow:auto;}
+#gov-side{grid-column:1;grid-row:1;}
 .g-gov > .stack{min-height:0;overflow:visible;}
 #s-gov .stack > .panel{flex:0 0 auto;min-height:0;}
 #s-gov .stack .pbody{overflow:visible;}
+#s-gov #gov-side > .panel{flex:1 1 auto;min-height:0;}
+#s-gov #gov-roster{overflow:auto;min-height:0;}
 /* The document column does not scroll as a COLUMN: it is one panel, and the
    paper inside it is the scroller. */
 #gov-docs{min-height:0;}
 #gov-docs > .panel{flex:1 1 auto;min-height:0;}
 #gov-cabinet{display:flex;flex-direction:column;gap:6px;}
-.gov-card{min-width:0;flex:0 0 auto;border:1px solid var(--chrome-dk);background:var(--field);}
-.gov-card > summary{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 7px;
-  padding:7px;cursor:pointer;background:var(--chrome);list-style:none;font-size:12px;}
-.gov-card > summary::-webkit-details-marker{display:none;}
-.gov-card > summary::before{content:"\25B8";}
-.gov-card[open] > summary::before{content:"\25BE";}
-.gov-card > summary strong{font-size:11px;letter-spacing:.08em;text-transform:uppercase;}
-.gov-summary-people,.gov-summary-counts{grid-column:2;}
+#s-gov [hidden]{display:none!important;}
+.gov-card{min-width:0;flex:0 0 auto;border:0;background:transparent;}
+.gov-person{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px 16px;padding:10px 0 16px;border-bottom:1px solid var(--rule);}
+.gov-person h3{font-size:12px;font-weight:normal;letter-spacing:.07em;text-transform:uppercase;margin:0 0 6px;}
+.gov-person .gov-card-people > a{font-size:24px;display:block;line-height:1.25;margin:0 0 6px;}
+.gov-person .gov-card-people .note{display:block;margin:5px 0;}
+.gov-remit{grid-column:2;margin:0;max-width:65ch;}
+.gov-person .portrait{float:none;margin:0;width:80px;}
+.gov-person .portrait img{width:100%;height:100px;}
+.gov-person .portrait .cap{font-size:10px;}
+.gov-all{width:100%;text-align:left;margin-bottom:8px;}
+.gov-select{display:grid;grid-template-columns:36px minmax(0,1fr);gap:9px;align-items:center;width:100%;padding:7px;text-align:left;background:transparent;color:var(--ink);border:1px solid transparent;}
+.gov-select:hover,.gov-all:hover{background:var(--field);}
+.gov-select[aria-pressed="true"],.gov-all[aria-pressed="true"]{background:var(--field);border-color:var(--chrome-dk);box-shadow:inset 3px 0 var(--gold);}
+.gov-select strong{display:block;font-size:13px;font-weight:normal;}
+.gov-office{display:block;font-size:11px;color:var(--ink-soft);}
+.gov-select .portrait{float:none;width:34px;margin:0;border:0;}
+.gov-select .portrait img{width:100%;height:42px;}
+.gov-select .portrait .cap{display:none;}
+.gov-select .gov-party{display:block;margin-top:3px;}
+#gov-time{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:8px 10px;background:var(--chrome);border-bottom:1px solid var(--rule);font-size:11px;}
+#gov-time em{font-style:normal;font-family:var(--f-data);}
+#gov-time .pips s{width:15px;height:9px;background:var(--ok);border:0;}
+#gov-time .pips s.spent{background:var(--chrome-dk);}
+#gov-inspector{border-top:3px solid var(--gold);background:var(--chrome);}
+#gov-inspector > header{display:flex;justify-content:space-between;align-items:start;gap:10px;flex-wrap:wrap;}
+#gov-file-title{font-size:18px;font-weight:normal;margin:0;}
+#gov-file-body{max-width:75ch;}
+#gov-file-body .ini-b{border:0;padding:10px 0;}
+#gov-file-body table{width:100%;}
+.gov-file-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+#s-gov .gov-order-title .caret{display:none;}
 .gov-summary-counts{font-family:var(--f-data);font-size:10px;color:var(--ink-soft);}
 .gov-summary-counts:empty{display:none;}
 .gov-party{font-size:10px;white-space:nowrap;}
-.gov-card-body{padding:6px;border-top:1px solid var(--chrome-dk);}
+.gov-card-body{padding:6px 0;}
 .gov-card h4{margin:8px 0 3px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);}
 .gov-card-people{min-height:26px;font-size:13px;line-height:1.5;}
 .gov-card-people .note{display:inline;}
@@ -1421,7 +1445,9 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
   #s-econ .g-econ > .panel{grid-column:auto;grid-row:auto;}
   #s-orb .g-orb > .panel{grid-column:auto;grid-row:auto;}
   #s-gov .g-gov > .stack{grid-column:auto;grid-row:auto;}
-  #s-gov .g-gov,#gov-init{height:auto;}
+  #s-gov .g-gov,#gov-init{height:auto;overflow:visible;}
+  #s-gov #gov-work{grid-column:auto;grid-row:auto;overflow:visible;}
+  #s-gov #gov-roster{max-height:40vh;}
   .g-sit > .stack,.g-gov > .stack,.g-cham > .stack,
   .g-orb > .panel,.g-world > .panel{overflow:visible;}
   .grid > .panel,.grid > .stack > .panel{min-height:170px;}

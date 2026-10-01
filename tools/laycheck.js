@@ -327,16 +327,29 @@ ${HELPERS}
     drawn.push(tabs[t] + (on ? "" : " (NOT DRAWN)"));
     found = found.concat(measure(tabs[t]));
     if (tabs[t] === "gov") {
-      /* Stress the same register, not a special rendering: all cards open
-         and a real outstanding undertaking in the save's existing shape. */
-      document.querySelectorAll("#gov-cabinet details.gov-card").forEach(function(card) {
-        if (!card.open) card.querySelector("summary").click();
-      });
+      /* Inspect real departmental work in the shared workspace. */
+      document.querySelector('[data-select-post=""]').click();
+      var work = document.querySelector('#gov-cabinet [data-post=""] [data-ini]');
+      if (work) work.click();
       UI.state().undertakings.push({ id:"layout_undertaking", state:"open",
         text:"Layout fixture undertaking", by:UI.state().sitting + 2, discharge:{} });
       UI.redraw();
       found = found.concat(measure("gov-expanded"));
+      var offices = Array.from(document.querySelectorAll('#gov-roster [data-select-post]')).map(function(b) { return b.dataset.selectPost; });
+      offices.forEach(function(id) {
+        var selector = document.querySelector('#gov-roster [data-select-post="' + id + '"]');
+        selector.scrollIntoView({block:"nearest"}); selector.click();
+        var heading = document.querySelector('#gov-workspace-title').getBoundingClientRect();
+        if (heading.top < 0 || heading.bottom > innerHeight)
+          found.push({tab:"gov-office:" + (id || "pm"),el:"#gov-workspace-title",kind:"LAYOUT",by:1,
+            detail:"Selecting a minister leaves the workspace heading outside the viewport."});
+        var scope = document.querySelector('#gov-cabinet [data-post="' + id + '"]');
+        var inspect = scope.querySelector('[data-ini], [data-inspect]');
+        if (inspect) inspect.click();
+        found = found.concat(measure("gov-office:" + (id || "pm")));
+      });
       UI.state().undertakings.pop();
+      document.querySelector('[data-gov-all]').click();
       /* Work and people grow independently. Queue actual initiative
          answers, then vacate their owners; stretch authored labels and
          explanations without adding invented progress or engine rules. */

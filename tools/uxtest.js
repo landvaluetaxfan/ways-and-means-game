@@ -22,21 +22,20 @@ H.newGame();
   const business = () => doc.querySelector('#gov-business');
   let route = business() && business().querySelector('[data-open^="post:"]');
   const post = route && route.dataset.open.slice(5);
-  const folded = post && doc.querySelector('#gov-cabinet [data-post="' + post + '"]');
-  if (folded) folded.open = false;
   w.eval('UI.redraw();');
   route = business() && business().querySelector('[data-open="post:' + post + '"]');
   const beforeRoute = w.eval('Engine.save(UI.state())');
   if (route) route.click();
   const department = post && doc.querySelector('#gov-cabinet [data-post="' + post + '"]');
   ok('overview vacancy navigation reveals its department without changing simulation',
-    !!route && !!department && department.open && beforeRoute === w.eval('Engine.save(UI.state())'));
+    !!route && !!department && !department.hidden && beforeRoute === w.eval('Engine.save(UI.state())'));
+  doc.querySelector('[data-gov-all]').click();
   const inspect = business() && business().querySelector('[data-inspect]');
   if (inspect) inspect.click();
   ok('an order has a keyboard control that opens its authored explanation without making it',
-    !!inspect && inspect.tagName === 'BUTTON' && !!business().querySelector('.si-d') &&
+    !!inspect && inspect.tagName === 'BUTTON' && !!doc.querySelector('#gov-inspector .si-d') &&
     !w.eval('UI.state().instruments[' + JSON.stringify(inspect && inspect.dataset.inspect) + '].made'));
-  const make = business() && business().querySelector('[data-make]:not(:disabled)');
+  const make = doc.querySelector('#gov-inspector [data-make]:not(:disabled)');
   const savedConfirm = w.eval('Dialog.confirm'); w.__businessConfirm = savedConfirm;
   const beforeMake = w.eval('Engine.save(UI.state())');
   w.eval('Dialog.confirm = function(m,o,cb) { cb(false); };');
@@ -49,12 +48,16 @@ H.newGame();
   w.eval('UI.redraw(); UI.redraw();');
   ok('overview initiative focus stays in the overview across repeated redraws',
     !!head && doc.activeElement.id === head.id && !!doc.activeElement.closest('#gov-business'));
+  doc.querySelector('[data-select-post=""]').click();
   const cabinetHead = head && doc.querySelector('#gov-cabinet [data-ini="' + head.dataset.ini + '"]');
   if (cabinetHead) cabinetHead.focus();
   w.eval('UI.redraw();');
   ok('the same initiative in Cabinet keeps its own keyboard focus rather than jumping to the overview',
     !!cabinetHead && doc.activeElement.id === cabinetHead.id && !!doc.activeElement.closest('#gov-cabinet'));
-  const take = business() && business().querySelector('[data-take]:not(:disabled)');
+  doc.querySelector('[data-gov-all]').click();
+  const reopened = head && business().querySelector('[data-ini="' + head.dataset.ini + '"]');
+  if (reopened) reopened.click();
+  const take = doc.querySelector('#gov-inspector [data-take]:not(:disabled)');
   const confirm = w.eval('Dialog.confirm'); w.__businessConfirm = confirm;
   const before = w.eval('Engine.save(UI.state())');
   w.eval('Dialog.confirm = function(m,o,cb) { cb(false); };');
@@ -86,36 +89,39 @@ H.newGame();
   state.queue = queued; w.eval('UI.redraw();');
   const owner = entry.post || '';
   const card = doc.querySelector('#gov-cabinet [data-post="' + owner + '"]');
-  if (!card.open) card.querySelector('summary').click();
-  const cabinetRunning = card.querySelector('[data-running="' + id + '"]');
+  doc.querySelector('[data-select-post="' + owner + '"]').click();
+  const cabinetRunning = doc.querySelector('#gov-cabinet [data-post="' + owner + '"] [data-running="' + id + '"]');
   if (cabinetRunning) cabinetRunning.focus();
   state.queue = state.queue.filter(q => q.eventId !== entry.event);
   w.eval('UI.redraw();');
   ok('answered department work returns keyboard focus to its surviving owner summary',
-    !!cabinetRunning && doc.activeElement.dataset.govSummary === owner && doc.activeElement.tagName === 'SUMMARY');
+    !!cabinetRunning && doc.activeElement.dataset.govSummary === owner && doc.activeElement.tagName === 'H3');
   w.eval('UI.boot(Engine.load(' + JSON.stringify(original) + ', CONTENT), CONTENT); UI.openTab("sit");');
 }
 
-/* GOVERNMENT CONTROLS retain native disclosure and focus identity. */
+/* GOVERNMENT CONTROLS retain native buttons and focus identity. */
 {
   const original = w.eval('Engine.save(UI.state())');
   w.eval('UI.openTab("gov");');
-  const summaries = [...w.document.querySelectorAll('#gov-cabinet summary')];
-  ok('department summaries are native disclosures with no nested controls',
-    summaries.length > 0 && summaries.every(s => s.parentNode.tagName === 'DETAILS' &&
+  const summaries = [...w.document.querySelectorAll('#gov-roster [data-select-post]')];
+  ok('department selectors are native buttons with no nested controls',
+    summaries.length > 0 && summaries.every(s => s.tagName === 'BUTTON' &&
       !s.querySelector('button, a, input, select')));
-  const quiet = summaries.find(s => !s.parentNode.open);
-  quiet.focus(); const id = quiet.dataset.govSummary;
+  const quiet = summaries[1];
+  quiet.focus(); const id = quiet.dataset.selectPost;
   w.eval('UI.redraw();');
   ok('a department summary keeps keyboard focus through a redraw',
-    w.document.activeElement.dataset.govSummary === id);
+    w.document.activeElement.dataset.selectPost === id);
+  w.document.querySelector('[data-select-post=""]').click();
   const pm = w.document.querySelector('#gov-cabinet [data-post=""]');
-  if (!pm.open) pm.querySelector('summary').click();
   const ini = pm.querySelector('[data-ini]'); ini.click();
   const currentPM = w.document.querySelector('#gov-cabinet [data-post=""]');
-  ok('an initiative control does not toggle its containing department', currentPM.open && !!currentPM.querySelector('.ini.open, [data-take]'));
+  ok('an initiative control retains its selected department and opens the shared inspector', !currentPM.hidden && !!w.document.querySelector('#gov-inspector [data-take]'));
   const vacancy = w.document.querySelector('#gov-cabinet [data-appoint]');
-  vacancy.focus(); const key = vacancy.dataset.appointKey;
+  const vacancyPost = vacancy.dataset.appoint;
+  w.document.querySelector('[data-select-post="' + vacancyPost + '"]').click();
+  const currentVacancy = w.document.querySelector('[data-appoint="' + vacancyPost + '"]');
+  currentVacancy.focus(); const key = currentVacancy.dataset.appointKey;
   w.eval('UI.redraw(); UI.redraw();');
   ok('an appointment control retains its exact identity across repeated redraws',
     !!key && w.document.activeElement.dataset.appointKey === key);
@@ -2046,7 +2052,8 @@ try {
      something, so the assertions are about whether the trade is visible
      before she commits to it. */
   w.document.querySelector('.tab[data-t="gov"]').click();
-  const inis = w.document.querySelectorAll("#gov-init .ini-h");
+  w.document.querySelector('[data-gov-all]').click();
+  const inis = w.document.querySelectorAll("#gov-business .ini-h");
   ok("the government screen offers things to set in motion", inis.length >= 3,
      inis.length + " initiatives");
   ok("and each shows what it costs in order-paper time",
@@ -2055,7 +2062,7 @@ try {
   /* TEMPO IS THE DECISION, so it must be visible before committing —
      not hidden behind a select the player opens after choosing. */
   inis[0].click();
-  const tempi = w.document.querySelectorAll("#gov-init .ini-t");
+  const tempi = w.document.querySelectorAll("#gov-inspector .ini-t");
   ok("opening one shows the ways it could be done", tempi.length >= 2,
      tempi.length + " tempos");
   ok("and each says when the answer comes and what it costs",
@@ -2069,7 +2076,7 @@ try {
   ok("taking one spends time you can see", pipsAfter > pipsBefore,
      pipsBefore + " spent -> " + pipsAfter);
   ok("and it stops being on offer",
-     [...w.document.querySelectorAll("#gov-init .ini-h")].filter(b => !b.disabled).length
+     [...w.document.querySelectorAll("#gov-business .ini-h")].filter(b => !b.disabled).length
        < inis.length);
   w.document.querySelector('.tab[data-t="sit"]').click();
 
@@ -2476,10 +2483,11 @@ try {
      /order-paper time/.test(body(div) || ""), body(div));
   ok("and how much is left after", /left, \d+ after|not enough/.test(body(div) || ""));
 
-  const ini = [...doc.querySelectorAll("#gov-init .ini-h")].find(b => !b.disabled);
+  doc.querySelector('[data-gov-all]').click();
+  const ini = [...doc.querySelectorAll("#gov-business .ini-h")].find(b => !b.disabled);
   ok("so does an initiative", /slot/.test(body(ini) || ""), body(ini));
   ini.click();
-  const tempo = doc.querySelector("#gov-init .ini-t");
+  const tempo = doc.querySelector("#gov-inspector .ini-t");
   ok("and each way of doing it", /slot/.test(body(tempo) || ""), body(tempo));
 
   doc.querySelector('.tab[data-t="gov"]').click();
