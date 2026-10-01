@@ -1,5 +1,11 @@
 # 63 — Codex plan for the tabs and the brief
 
+> **For agentic workers:** Use superpowers:executing-plans for native execution
+> or superpowers:subagent-driven-development if the author selects delegation.
+> The current steps 2 and 3 implementation plan is section 6; sections 1–5
+> preserve the original review. Section 6 supersedes their stale details for
+> this batch. Review the plan and confirm the execution method before code.
+
 **29 September 2026; revised after design/64.** Understanding and plan only.
 No implementation is in this document. Line numbers describe the tree as read
 for the plan. `design/64-answers-to-codex.md` overrides the two briefs here.
@@ -214,7 +220,8 @@ for the plan. `design/64-answers-to-codex.md` overrides the two briefs here.
      state table, not parallel arrays that can disagree.
    - Proposed state:
      `st.matters[id] = {state:"waiting"|"open"|"noted"|"decision"|"page"|"settled", raisedAt:null|sitting, openedAt:null|sitting, notedAt:null|sitting}`.
-     Derived urgency/due dates stay computed from content plus `openedAt`.
+      Derived urgency/due dates stay computed from content plus `eligibleAt`,
+      the first sitting the raise condition held, never visible admission.
      `reconcile()` adds/removes content identities and evaluates raises after
      cabinet/content repair; old saves start empty, then deterministically raise
      whatever is due, subject to capacity.
@@ -249,9 +256,8 @@ for the plan. `design/64-answers-to-codex.md` overrides the two briefs here.
      `Engine.today()` at `js/engine.js:7817-7865`; reuse the Works chain at
      `content/campaigns/flash_i/initiatives.js:260-290` and
      `content/campaigns/flash_i/events.js:1410-1515`.
-   - Owners: Treasury for reserve; an author decision is needed between Life
-     Support and Substrate and Thermal for the global margin; Life Support is
-     the evident air-chain owner. Reuse existing initiative/order/facility
+   - Owners: Treasury for reserve, Substrate and Thermal for the global margin
+     (design/58's grid interest), and Life Support for air. Reuse existing initiative/order/facility
      actions; do not create a new act merely for the brief.
    - Keep obligations in `setup.alerts`/`Engine.today()` where they are owed;
      remove only the early advisory duplication. Arrears may remain an alert
@@ -443,8 +449,9 @@ matters: {
    `settled`; it does not infer success merely from a click.
 6. Selection precedence is dated/required anchor, then a due late decision,
    then the ordinary pool. If still unsettled `grace` sittings after `late`,
-   queue `page`. Close permanently when `settled` first holds, or reset a
-   `recurs:true` matter to waiting after its episode closes.
+    queue `page`. Close permanently when `settled` first holds. A recurring
+    matter must observe `raise` become false, then true again, before another
+    episode starts; do not reopen it merely because it has closed.
 
 ### Reuse and measurement
 
@@ -463,4 +470,338 @@ matters: {
   the existing engine verb and its authored preset parameters, then performs its normal supply-first governing
   and calls `Engine.playSitting`. It records refusals rather than reaching into
   state. Run the current 80-seed sweep before implementation, the same sweep
-  after it, and report the new strategy's loss count separately without tuning.
+   after it, and report the new strategy's loss count separately without tuning.
+
+## 6. Current implementation plan — 1 October 2026
+
+**Goal:** Build roadmap step 2's campaign-independent matter foundation and
+step 3's three Flash I matters, Sitting advice and Economy remedy navigation.
+
+**Architecture:** Campaigns declare matters and typed remedies. One engine
+lifecycle writer owns their clocks and transitions; read-only queries supply
+the game and tools. Remedies lead to existing powers, rather than executing a
+second version of those powers from the Sitting.
+
+**Tech stack:** Classic JavaScript scripts, no framework or build step,
+existing Node checks and jsdom; real-browser layout measurements.
+
+**Spec:** `briefs/the-brief.md`, `design/64-answers-to-codex.md`, design/58
+Round I, and the air-chain decision approved in the brief on 1 October.
+
+### Global constraints
+
+- Up to four open at once, and at most one new a sitting.
+- Engine code names no concrete event, party, station or matter.
+- A vacant department raises nothing new; running work and existing clocks
+  continue. New levers still use their own vacancy gates.
+- `Engine.today()` remains obligations-only; advice never adds red counts.
+- Due starts when raise first holds, including queued matters. Grace starts
+  when the late decision is actually answered, not when it first became due.
+- Only `settled` closes a matter. Recurrence requires a false-to-true raise.
+- No new money mechanic, roster entry, randomness, module or dependency.
+- Preserve the cabinet-led Government workspace and untracked root duplicates.
+- New prose is plain, exported with `npm run prose`, and named in commits for
+  Claude's register pass. New events are appended, not inserted into the pool.
+- Run all thirteen checks before each finished batch and push to main.
+- Do not delete the brief: step 4's strategy acceptance and ten-sitting slice
+  are not part of this authorization.
+
+### Review focus
+
+1. Loading an old save must initialize matters without replaying events.
+2. Re-rendering or opening a tab must not admit, pause or advance a matter.
+3. A queued late decision displaced by supply must retain its place and gain
+   its full grace period after the player finally answers it.
+4. Starting a refused or unavailable remedy must not pause any clock; acting
+   through the ordinary Government/Economy control must count too.
+5. A consequence page with no choices must apply and record its effects once
+   in both the browser and `Engine.playSitting()`.
+
+### Task A — Complete collection and editor plumbing
+
+**Files:** Create `content/matters.js`; modify `content/index.js`,
+`content/setup.js`, `index.html`, `editor.html`, `js/schema.js`, `js/editor.js`,
+`js/serialise.js`, `js/refs.js`, `tools/lint.js`, `tools/prose.js`,
+`tools/roundtrip.js`, `tools/renametest.js`, `tools/edtest.js`,
+`tools/storymap.js`, and `test.js`.
+
+**Interfaces:** Produce `C.matters`, `C.matterById`, `campaign(id,{matters})`
+and the editor's `matters` collection. A remedy has a stable local `id` so
+counsel references survive display sorting:
+
+```js
+const MATTERS = [];
+// Schema example with every reference namespace explicit:
+{
+  id: "reserve_probe", owner: "treasury",
+  raise: { scalarBelow: { solvency: 5000 } },
+  note: "The reserve needs replenishing before the next payment.",
+  figures: [{ label: "The reserve", source: "scalars.solvency",
+              bands: [{ min: 5000, text: "held" }, { min: null, text: "low" }] }],
+  remedies: [{ id: "facility", target: { kind: "money", id: "earth",
+                  amount: "utilisation" }, takes: 0,
+              note: "Open the existing facility drawing." }],
+  counsel: [{ post: "treasury", remedy: "facility",
+             note: "Borrow while the terms remain available." }],
+  due: { after: 3 }, grace: 2, recurs: true,
+  late: "reserve_probe_late", page: "reserve_probe_page",
+  settled: { scalarAbove: { solvency: 4999 } }
+}
+```
+
+- [ ] Write a synthetic campaign matter round-trip test, assert the world view
+  excludes it, and make the editor open/save preserve all fields and unknown
+  future `forecast` data. Run it red before adding the collection.
+- [ ] Add the world script before campaign scripts on both pages, index the
+  collection and register campaign additions. Derive tool loads from the
+  existing HTML script inventory, not another hand-written file list.
+- [ ] Add condition, readout, typed-target and counsel editing. Target kinds
+  are initiative, instrument, bill and money; order is an existing instrument,
+  not a second namespace. Initiative targets may carry `tempo`; money targets
+  carry lender and numeric amount or `"utilisation"`.
+- [ ] Track raise, due.when and settled as conditions; owner/counsel posts,
+  target ids, and late/page event ids as references. Rename local remedy ids
+  together with their counsel references.
+- [ ] Include matters and their late/page/remedy links in the story map's
+  campaign view; prove an added or renamed matter does not leave a stale node
+  or silently disappear from the author's map.
+- [ ] Reject missing owners/targets, duplicate local remedy ids, broken counsel
+  references, nonpositive grace, malformed due, late setpieces, and pages with
+  choices or without `queuedOnly`. Preserve `forecast` without interpreting it.
+- [ ] Deliberately corrupt each new reference/shape assertion and observe its
+  failure. Run editor, lint, rename, round-trip and encoding checks, then the
+  full check and commit the independently usable collection.
+
+### Task B — State, lifecycle and consequence acknowledgement
+
+**Files:** Modify `js/engine.js`, `test.js`, `tools/uxtest.js` and `js/ui.js`
+only for choice-free acknowledgement. Read LESSONS Interface and the focus
+header before the UI edit.
+
+**Interfaces:** `Engine.matters(st,C)` returns an array of visible matters in
+urgency order; `Engine.noteMatter(st,C,id)` sets one aside and returns
+`{ok,reason?}`. The internal lifecycle
+writer also receives successful lever starts, so it recognizes actions taken
+outside the brief. `Engine.acknowledge(st,C,event)` handles genuinely
+choice-free setpieces, not decisions or entries whose choices are gated shut,
+and returns `{ok,reason?}`.
+
+```js
+// Save simulation, never copies of authored notes or bands.
+st.matters[id] = {
+  state: "waiting", eligibleAt: null, openedAt: null, notedAt: null,
+  lateAt: null, pageAt: null, paused: 0, hold: null,
+  rearm: false
+};
+// Migration adds only the table; reconcile owns content identities.
+if (st.version < 35) { st.matters = {}; st.version = 35; }
+```
+
+Each query row contains `id`, `state`, the live owner/holder, `note`, derived
+`figures`, derived remedy `ok/reason/tab`, `counsel`, `remaining`, and optional
+`underway` target/landing information. Queries leave the save byte-identical.
+
+- [ ] Write engine fixtures using the existing `ok(label,condition)` pattern,
+  world content plus synthetic matters/events, and run them red:
+
+```js
+const owner = CONTENT.cabinet[0].id;
+const late = { id: "probe_late", queuedOnly: true, title: "Last chance",
+  body: "The remedy has not landed.", choices: [{ label: "Wait", effects: [] }] };
+const page = { id: "probe_page", queuedOnly: true,
+  setpiece: { title: "The consequence" }, title: "The consequence",
+  body: "The remedy did not land.", choices: [], effects: [{ flag: "probe_fact" }] };
+const matter = { id: "probe", owner, raise: { flags: ["probe_raise"] },
+  note: "Act before the deadline.", figures: [], remedies: [],
+  due: { after: 3 }, grace: 2, late: late.id, page: page.id,
+  settled: { flags: ["probe_done"] } };
+const C = Object.assign({}, CONTENT, { matters: [matter], events: [late, page],
+  matterById: { probe: matter },
+  eventById: { probe_late: late, probe_page: page } });
+const st = Engine.newGame(C);
+st.cabinet[owner].holder = CONTENT.characters[0].id;
+Engine.apply(st, C, [{ flag: "probe_raise" }]);
+const raisedAt = st.matters.probe.eligibleAt;
+const before = Engine.save(st);
+Engine.matters(st, C);
+ok("matter queries are pure", Engine.save(st) === before);
+Engine.noteMatter(st, C, "probe");
+ok("noting leaves the original clock", st.matters.probe.eligibleAt === raisedAt);
+```
+
+- [ ] Add v35 state initialization and ascending migration. Reconcile adds
+  missing content ids, drops removed ones and preserves simulation fields.
+  Test v34 load, deletion, addition, save/load and synthetic-id renaming.
+- [ ] Observe eligibility after effects and at sitting boundaries. Admit at
+  most once a sitting, order by time to due, then cabinet/content order, and
+  never evict. Noted matters retain their clocks; due queued matters enter the
+  late-decision queue without requiring admission. Test crowded queues,
+  equal deadlines, vacancy after raising and repeated same-sitting updates.
+- [ ] Pause only when an existing lever accepts a timely start. Track its
+  existing pending work, not a `takes` timer: initiative outcome queue,
+  instrument approval, or bill progression. Immediate remedies evaluate
+  settlement immediately. Resume unresolved holds on completion or failure;
+  test actual starts, refusals, cancellation and partial improvement.
+- [ ] Put due pages before decisions; keep dated/required decisions above late
+  matters and late matters above the ordinary pool. Do not place late entries
+  in the ordinary queue ahead of anchors. Test collision, grace, settlement
+  before a queued page, recurrence and one-decision-per-sitting behavior.
+- [ ] Project dated matter stages into `Engine.deadlines` and the existing
+  calendar using the same clock calculations. Keep advisory dates distinct
+  from obligations: a calendar mark must not add to Rise or red tab counts.
+  Test that the air deadline remains visible after removing its old `at` field
+  and moves with a postponed late decision instead of keeping a stale date.
+- [ ] Add acknowledgement for setpieces with an empty choices list. Share the
+  existing event recording/effects path with `choose`; acknowledgement must
+  not count as the sitting's governing decision. Keep `passOver` for gated
+  choices, whose effects must not run:
+
+```js
+Engine.acknowledge(st, C, page);
+const once = Engine.save(st);
+Engine.acknowledge(st, C, page);
+ok("acknowledgement is once only", Engine.save(st) === once);
+```
+
+- [ ] Use acknowledgement in the UI Continue handler and `playSitting` only
+  when `isEvent(e)` and the authored choices list is empty. Assert the page's
+  effects, seen record and log appear once; the same sitting still gets a
+  decision. Mutate acknowledgement separately in engine and UI to prove tests.
+- [ ] Run focused engine/UX tests, mutation probes, all thirteen checks and
+  commit the generic foundation without real campaign matters.
+
+### Task C — Three Flash I matters and the approved air conversion
+
+**Files:** Create `content/campaigns/flash_i/matters.js`; modify
+`content/campaigns/flash_i/events.js`, `content/campaigns/flash_i/initiatives.js`,
+`content/setup.js`, both HTML script
+lists, campaign `guards.js`, `tools/prose.txt` and, only for moved measured
+canon figures, `AGENTS.md`.
+
+**Interfaces:** Supply three campaign entries and their late/page event
+references using Task A's schema. Owners are Substrate and Thermal, Treasury
+and Life Support. Reuse existing order, initiative and lender ids.
+
+- [ ] Capture the pre-change 80-seed results before this content commit. Add
+  campaign guards that require three matters, two genuinely different heat
+  counsel targets, valid late/page shapes and the early air prices unchanged.
+  Run the new guards red.
+- [ ] Convert the early heat alert and bill-authority advice into matters;
+  retain critical heat and arrears as owed alerts. Heat uses the existing
+  15/8 thresholds and reserve uses the existing 5000/30000 readings. Keep
+  settlement/raise thresholds in content, not UI literals.
+- [ ] Grid counsel recommends the existing paid thermal allocation; Treasury
+  counsel recommends the existing smaller conservation appeal to preserve
+  money. Spell out that it buys less margin, not that one minister is wrong.
+  Use existing prices and political costs; do not rebalance them.
+- [ ] Heat/reserve late decisions reuse the existing thermal-squeeze and
+  reserve-low choice economics. Their pages report the unresolved shortage
+  and its existing simulation consequences; invent no extra death count,
+  station failure or financial penalty. Append campaign lifecycle entries and
+  prevent their ordinary-pool duplication. Avoid retuning the world entries.
+- [ ] Make air's late decision a last-chance CW$2400m payment or refusal.
+  Preserve the CW$1600m/one-sitting and CW$600m/three-sitting early remedies.
+  Assign the existing air initiative to Life Support through its existing
+  `post` field, so that its owning department's vacancy gate applies.
+  A timely payment sets the existing paid flag; declining does not settle.
+  Preserve the existing failure event id for the choice-free queued page,
+  remove its fixed `at:40`, and apply death-related losses only on that page:
+  the existing refusal's legitimacy -12, legitimacy trend -2 and standing -8.
+  The pre-death payment has no death-related penalty. Preserve the refusal's
+  political declaration as its wire, but report the deaths only on the page.
+  Start air's numeric due clock on first `station_issue`; use 24 sittings so
+  the normal sitting-14 raise gives sitting-38 last chance and sitting-40
+  consequence, but displaced decisions retain their full two-sitting grace.
+- [ ] Guard paying early, paying late, refusing, competing supply, no duplicate
+  air-failure flags and settlement by annexation/other existing crisis ending.
+  If a legacy save already records `f1_air_fails`, reconciliation must not
+  present those deaths again. Test before/after saves and resumed holds.
+- [ ] Export prose, run 80 seeds again and canon guards; report changes rather
+  than tuning to achieve an arbitrary loss rate. Break each new campaign guard
+  and observe failure, then run all thirteen checks and commit with new notes,
+  last-chance wording and consequence-page wording named for Claude.
+
+### Task D — Sitting advice and existing-lever navigation
+
+**Files:** Modify `index.html`, `js/ui.js`, `css/terminal.css`, `js/focus.js`
+only if a matter row registration is needed, `tools/uitest.js` and
+`tools/uxtest.js`. Read LESSONS Interface/CSS first.
+
+**Interfaces:** Render Task B's query above the calendar; compose it with
+`Engine.today` for a visibly separate owed subsection. Reuse `openTarget` and
+the existing advice-dot hook. Navigation never executes the remedy.
+
+- [ ] Add UI tests with synthetic open/noted/held matters; run red. Assert
+  minister identity, live readout hover figures, two distinct counsel notes,
+  navigation to the exact target and unchanged red counts/Rise advice count.
+- [ ] Draw up to four matter cards with stable `data-matter` identity, note,
+  readouts, independent deadline, remedies and Set aside. Show underway work
+  from the engine. No second full brief inside Government.
+- [ ] Match typed targets to existing inspector keys:
+
+```js
+const target = remedy.target;
+const open = target.kind === "instrument" ? "si:" + target.id
+  : target.kind + ":" + target.id;
+// Initiative/instrument -> Government; bill -> Chamber; money -> Economy.
+```
+
+- [ ] Pass initiative tempo and money presets to the destination without
+  starting anything. Preserve ordinary lever controls and allow their existing
+  adjustments. A disappeared or unavailable target gives its actual reason,
+  never a successful-looking dead link.
+- [ ] Set aside calls `noteMatter` then redraws; restore focus to the nearest
+  surviving matter or panel, never a detached control. Update quiet dots from
+  visible matters only and clear stale ones.
+- [ ] Deliberately break every new UI assertion's subject, including each
+  branch of compound assertions. Run UI/UX/story-map/full checks and real
+  browser layout at the project's seven viewports with intended Windows fonts;
+  test four open matters and expanded counsel, not only an empty opening.
+  Commit the Sitting panel change and plainly identify new interface labels.
+
+### Task E — Economy calls and integration handoff
+
+**Files:** Modify `js/ui.js`, Economy markup in `index.html`,
+`css/terminal.css` if needed, `tools/uitest.js`, `tools/uxtest.js`, and the
+progress note in `briefs/the-brief.md`.
+
+**Interfaces:** An Economy call is an existing `Engine.borrow` action named
+by a matter's typed money target, with the same `canBorrow`, facility terms
+and confirmation. Open matters provide context; they are not permission to
+close the underlying lever when no matter is visible.
+
+- [ ] Run UI tests red for contextual lender/amount selection, adjustable
+  presets, matter backlink, no double borrowing, cancellation and ordinary
+  borrowing with no open matter. Keep existing repayment tests intact.
+- [ ] Move Draw out of the account's balance rows into the calls area. Show
+  matter-linked calls first; retain independent access to existing drawable
+  facilities, as design/58 requires open levers. Do not add tax/sale/budget
+  mechanics or execute from a Sitting remedy click.
+- [ ] Delegate drawing to the existing confirmation callback and engine:
+
+```js
+const gate = Engine.canBorrow(st, C, amount, lender);
+if (!gate.ok) return;
+// The existing confirmation callback alone performs this action:
+const result = Engine.borrow(st, C, amount, lender);
+if (result.ok) drawAll();
+```
+
+- [ ] Mutation-test new assertions; run all thirteen checks, the post-content
+  80-seed sweep and canon guards. Run real-browser layout for Sitting and
+  Economy. Report any browser unavailable, without calling jsdom layout proof.
+- [ ] Obtain one independent whole-branch review, resolve findings, rerun
+  affected checks, and push the finished batch to main after full checks.
+  Mark completed portions in the brief but leave strategy acceptance and the
+  ten-sitting slice pending; do not claim contested-counsel balance proven.
+
+### Plan self-review
+
+The five review-focus cases are covered in Tasks B, C, D and E. Task A covers
+campaign isolation and authoring round-trip; no UI owns clocks or action
+effects. Tasks C/D/E provide the requested three matters and destinations
+without rebuilding Government. The strategy claims from the original brief
+remain explicitly outside this batch, not silently waived. Test examples use
+the repository's existing check style; all proposed public methods are defined
+in Task B. Native execution is recommended because the collection, lifecycle
+and UI contracts are tightly coupled and the author values usage economy.

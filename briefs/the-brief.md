@@ -135,6 +135,31 @@ hit the target; report it, and Claude and the author decide.
 `npm run guards` must still reach the canon. If the canon figures move,
 update them in `AGENTS.md`.
 
+## Approved implementation decision — 1 October 2026
+
+The author has authorized the generic matter foundation and the three-matter
+slice (roadmap steps 2 and 3). The broader playtest-strategy acceptance and
+ten-sitting slice remain a subsequent batch; keep this brief until its remaining
+acceptance work is finished.
+
+**Works' air: the rescue decision moves before the deaths.** The author
+approved the following direction in chat on 1 October.
+`f1_air_fails` currently combines a failure page and a rescue decision at
+sitting 40. Its body already reports eleven deaths; its CW$2.4bn payment and
+political penalties explicitly respond to those deaths. It cannot serve as
+both the pre-failure `late` decision and the choice-free `page` required by
+design/64, answers 3 and 4.
+
+Make a plain last-chance
+decision before failure, retain CW$2.4bn as the late shipment price, and use the
+existing failure narrative as the consequence page if the matter remains
+unsettled two sittings after that decision. Death-related penalties would occur
+only after the deaths. This replaces the fixed sitting-40 failure with the
+matter's grace clock, so a competing dated decision may postpone it. Keep the
+existing early shipment and manufacturing remedies and their costs. Draft new
+decision wording plainly for Claude's later register pass, rather than treating
+the old post-failure wording as a pre-failure decision.
+
 ## Later, not here
 
 These are decided in design/58 but belong to later stages:
