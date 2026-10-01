@@ -321,9 +321,9 @@ roll. For us this isn't a personhood bill. It changes who elects the panel."`,
       effects:[{flag:"gb_approached"},{chapter:2},{move:{"rel.gb_chair":12}},{move:{"loyalty.gb":6}},{move:{"loyalty.psa":-9}},
                {undertake:{ id:"licensure_carveout",
                             text:"Lay the order that keeps copies off the Life Support licence",
-                            owed_to:"gb_chair", by:4,
+                             owed_to:"gb_chair", post:"attestation_registry", by:4,
                              discharge:{ si:"si_2080_45" },
-                             onBreach:"gb_carveout_broken" }},
+                             onBreach:"minister_resignation" }},
                {wire:"GOVERNMENT SIGNALS LICENSURE CARVE-OUT; NPP FURIOUS"},
                {flag:"licensure_carveout_offered"}],
       result:"She does not agree. She says she will put it to the panel, which from her is a considerable concession." },
@@ -1070,36 +1070,36 @@ with it.`,
    post when an undertaking naming it is broken, and sets `minister_resigned`;
    this is the prose for the aftermath. The resignation itself is not the
    player's to choose — that is the point of it. */
-/* REACH: the engine sets minister_resigned when an undertaking naming a post breaks. */
-{ id:"minister_resignation", chapter:2, weight:99, once:true,
-  /* Was `flags:["minister_resigned"]`, which nothing set. The prose already
-     says what the gate should be — "a promise was made in that minister's
-     name and the promise was not kept" — and a broken undertaking is real
-     state the engine keeps. The carve-out is the promise made in the Life
-     Support minister's name, so breaching it is what produces this letter.
-     Still `once`: the gate names one undertaking and an undertaking breaks
-     once, so a second firing was never possible to begin with. */
+/* REACH: the broken Registry undertaking queues this decision. */
+{ id:"minister_resignation", chapter:2, queuedOnly:true, once:true,
+  /* The Registry owns the carve-out. Its breach vacates that post and
+     queues this appointment decision before its answers queue the
+     apology. Pool weights cannot guarantee that sequence. */
   when:{ breached:["licensure_carveout"] },
   title:"A resignation",
   speaker:null,
-  body:`A minister's resignation letter is on your desk before the morning briefing.
-The minister told the newspaper first, the newspaper called your office, and
-the office said nothing.
-
-A promise was made in the minister's name and not kept, and a minister who
-will not resign over that is made to. The post is now vacant, and a
-department with no minister cannot make an order until someone is appointed.`,
+  body:`Luke Preiss, the Minister for Attestation and the Registry, has resigned because the government missed the deadline for the Life Support licensing exemption order. A minister must hold the Registry before the department can make orders.`,
   choices:[
-    { posture:"cautious", label:`Appoint a successor from the Soft Left, the leadership's own current.`,
-      note:`The department can make orders again as soon as a minister holds the post. The appointee owes the job to the leadership, so the party's loyalty rises. Voters see a minister replaced after a broken promise, which costs a little standing.`,
-      effects:[{move:{"party_loyalty":5}},{move:{"public_standing":-2}},
-               {wire:"VACANT POST FILLED AFTER MINISTERIAL RESIGNATION"}],
-      result:"The new minister is grateful, and the party's loyalty rises. Gratitude has to be renewed." },
+    { posture:"cautious", label:`Appoint Anil Devi, the Chief Whip, to Attestation and the Registry.`,
+      when:{postVacant:["attestation_registry"]},
+      note:`Anil Devi belongs to the Soft Left, the current that leads your party. By appointing the Chief Whip, you restore the Registry's power to make orders. The party's loyalty rises, while voters see a minister replaced after a broken promise.`,
+      effects:[{cabinet:{attestation_registry:{holder:"okarie",party:"cu"}}},
+               {move:{"loyalty.cu":5}},{move:{"public_standing":-2}},
+               {wire:"VACANT POST FILLED AFTER MINISTERIAL RESIGNATION"},
+               {queue:[{event:"gb_carveout_broken",after:1}]}],
+      result:"Anil Devi is appointed Minister for Attestation and the Registry and continues as Chief Whip. The department can make orders again." },
     { posture:"bold", label:`Leave the post empty, and run the department from your own office.`,
+      when:{postVacant:["attestation_registry"]},
       note:`The department can make no orders until someone holds the post, and the opposition will point that out. Voters see a government that cannot fill its own cabinet.`,
       effects:[{move:{"public_standing":-4}},{flag:"post_left_vacant"},
-               {wire:"PM LEAVES MINISTERIAL POST VACANT"}],
-      result:"The department can make no orders until someone holds the post, and the opposition knows it." }
+               {wire:"PM LEAVES MINISTERIAL POST VACANT"},
+               {queue:[{event:"gb_carveout_broken",after:1}]}],
+      result:"The department can make no orders until someone holds the post, and the opposition knows it." },
+    { posture:"cautious", label:`Keep the Registry's appointment, and answer the panel.`,
+      when:{holds:{attestation_registry:["preiss","okarie"]}},
+      note:`You have already filled the Registry through Government. Its minister can make orders, and answering this resignation does not charge the appointment's political costs again. The broken licensing promise still needs an answer.`,
+      effects:[{queue:[{event:"gb_carveout_broken",after:1}]}],
+      result:"The Registry's minister stays in office. The panel's broken licensing promise returns next sitting." }
   ]},
 
 /* ============================================================
@@ -1860,11 +1860,9 @@ and that is years away.`,
    campaign, and it said "what follows is somebody else's session" when the
    election follows. The count closes the record now. */
 
-/* WHAT A BROKEN PROMISE LOOKS LIKE. `onBreach` used to point at
-   `gb_approach`, so a missed deadline replayed the meeting that made the
-   promise. The breach is its own scene, and it is gated on the broken
-   undertaking so the link is in the data and not in a comment. */
-{ id:"gb_carveout_broken", chapter:2, weight:88, once:true,
+/* The resignation answers queue the apology. The Registry must have its
+   authored holder or declared successor before it can lay an order. */
+{ id:"gb_carveout_broken", chapter:2, queuedOnly:true, once:true,
   when:{ breached:["licensure_carveout"] },
   title:"The order that was never laid",
   speaker:"gb_chair",
@@ -1875,13 +1873,14 @@ sittings have passed, and the order has not been laid.
 Kazuya Tanako, the panel's chair, has written to you about it. "We voted with you on the understanding that the order would be laid by now," she writes. "It hasn't been. Unless it is, the panel won't consider itself bound by our agreement."`,
   choices:[
     { posture:"measured", label:`Lay the licensing exemption order next sitting, and say publicly that the delay was yours.`,
+      when:{holds:{attestation_registry:["preiss","okarie"]}},
       note:`You keep the promise late, and Tanako will accept a public admission as an apology. Voters see a government admitting it missed its own deadline, and their belief in its claims falls a little.`,
       effects:[{ move:{ "rel.gb_chair":4 } }, { move:{ "legitimacy":-4 } },
                { si:"si_2080_45" },
                { wire:"PM CONCEDES THE LICENSING DELAY AND LAYS THE ORDER" }],
       result:`The order is laid late, and the government takes the blame in public. It is the only form of apology the panel accepts.` },
     { posture:"cautious", label:`Let the promise lapse, and lay no order.`,
-      note:`The panel's six members will stop voting with the government, which makes every later vote needing a functional majority harder to win. Voters and the Alliance of Business and Government, Tanako's party, will note a broken promise.`,
+      note:`If you leave the Registry vacant, it cannot lay the exemption order. The panel's six members will stop voting with the government, which makes every later vote needing a functional majority harder to win. Voters and the Alliance of Business and Government, Tanako's party, will note a broken promise.`,
       effects:[{ move:{ "rel.gb_chair":-8 } }, { move:{ "loyalty.gb":-8 } },
                { move:{ "legitimacy":-6 } },
                { wire:"GOVERNMENT ABANDONS THE CARVE-OUT; GUILD BENCH DISENGAGES" }],

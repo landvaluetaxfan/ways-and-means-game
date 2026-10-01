@@ -152,7 +152,7 @@ standing 52:
 - **Inflation:** 6.5%, or 2.9% core, with its payments current.
 
 `npm run guards` asserts that the canon is reachable by play and prints these
-figures. Across 80 seeds, the four crisis strategies lose 33, 54, 21 and 25
+figures. Across 80 seeds, the four crisis strategies lose 10, 26, 7 and 12
 runs, every loss a late thermal cascade. Keep the canon reachable until the
 author rewrites it, and update these figures when they move.
 

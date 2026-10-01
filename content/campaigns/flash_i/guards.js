@@ -33,6 +33,101 @@ const guard = T.guard;
 console.log("FLASH I: THE CAMPAIGN'S GUARDS");
 console.log("=".repeat(58));
 
+guard("A BROKEN CARVE-OUT VACATES THE REGISTRY BEFORE ITS APOLOGY", ok => {
+  /* Missing post/onBreach, either missing follow-up queue, a cosmetic
+     appointment or an ungated order must each fail a real-play check. */
+  const ev = id => CONTENT.eventById[id];
+  const st = Engine.newGame(CONTENT);
+  Engine.choose(st, CONTENT, ev("gb_approach"), 0);
+  const promise = st.undertakings.find(u => u.id === "licensure_carveout");
+  while (st.sitting <= promise.by) Engine.advance(st, CONTENT);
+  ok("missing the deadline actually vacates Attestation and the Registry",
+     promise.state === "broken" && st.cabinet.attestation_registry.holder === null);
+  ok("the resignation records the minister who answered for the promise",
+     st.lastResignation && st.lastResignation.holder === "preiss" &&
+     st.lastResignation.undertaking === "licensure_carveout");
+  const next = Engine.nextEvent(st, CONTENT);
+  ok("the breach brings the appointment decision before the apology",
+     next && next.id === "minister_resignation");
+  ok("the resignation and apology cannot compete in the weighted pool",
+     !Engine.eligible(st, CONTENT).some(e =>
+       e.id === "minister_resignation" || e.id === "gb_carveout_broken"));
+  const resign = ev("minister_resignation"), apology = ev("gb_carveout_broken");
+  const appointed = Engine.load(Engine.save(st), CONTENT);
+  Engine.choose(appointed, CONTENT, resign, 0);
+  const appointmentCosts = {
+    benchLoyalty:Engine.loyaltyOf(appointed, appointed.playerParty),
+    standing:appointed.scalars.public_standing
+  };
+  ok("the resignation's appointment fills the Registry with Anil Devi",
+     appointed.cabinet.attestation_registry.holder === "okarie" &&
+     appointed.cabinet.attestation_registry.party === "cu");
+  ok("the successor charges the existing five loyalty and two standing",
+     appointmentCosts.benchLoyalty === Engine.loyaltyOf(st, st.playerParty) + 5 &&
+     appointmentCosts.standing === st.scalars.public_standing - 2);
+  Engine.advance(appointed, CONTENT);
+  const afterAppointment = Engine.nextEvent(appointed, CONTENT);
+  ok("accepting the successor queues the apology for the following sitting",
+     afterAppointment && afterAppointment.id === "gb_carveout_broken");
+  Engine.choose(appointed, CONTENT, apology, 0);
+  ok("the filled Registry can actually lay SI 2080/45 as the apology",
+     appointed.instruments.si_2080_45.made && appointed.flags.licensing_exempted);
+  const vacant = Engine.load(Engine.save(st), CONTENT);
+  Engine.choose(vacant, CONTENT, resign, 1);
+  ok("leaving the post empty really keeps the Registry vacant",
+     vacant.cabinet.attestation_registry.holder === null);
+  Engine.advance(vacant, CONTENT);
+  const afterVacancy = Engine.nextEvent(vacant, CONTENT);
+  ok("leaving the post empty still queues the apology decision",
+     afterVacancy && afterVacancy.id === "gb_carveout_broken");
+  const before = Engine.save(vacant);
+  ok("the vacant Registry cannot choose the promise to lay an order",
+     !Engine.choiceOpen(vacant, CONTENT, apology.choices[0]));
+  Engine.choose(vacant, CONTENT, apology, 0);
+  ok("attempting that unavailable apology leaves simulation untouched",
+     Engine.save(vacant) === before);
+  ok("the abandon-promise answer remains available with a vacancy",
+     Engine.choiceOpen(vacant, CONTENT, apology.choices[1]));
+  Engine.choose(vacant, CONTENT, apology, 1);
+  ok("the vacancy fallback never pretends to lay the order",
+     !vacant.instruments.si_2080_45.made);
+  const fromGovernment = Engine.load(Engine.save(st), CONTENT);
+  const candidate = Engine.candidates(fromGovernment, CONTENT, "attestation_registry")
+    .findIndex(c => c.holder === "okarie");
+  const result = Engine.fillPost(fromGovernment, CONTENT, "attestation_registry", candidate);
+  ok("Government offers the same actual Registry successor",
+     result.ok && fromGovernment.cabinet.attestation_registry.holder === "okarie");
+  ok("both appointment routes charge the same loyalty and standing costs",
+      Engine.loyaltyOf(fromGovernment, fromGovernment.playerParty) === appointmentCosts.benchLoyalty &&
+      fromGovernment.scalars.public_standing === appointmentCosts.standing);
+  const beforeAnswer = Engine.save(fromGovernment);
+  ok("an earlier Government appointment closes both vacant-post answers",
+     !Engine.choiceOpen(fromGovernment, CONTENT, resign.choices[0]) &&
+     !Engine.choiceOpen(fromGovernment, CONTENT, resign.choices[1]));
+  Engine.choose(fromGovernment, CONTENT, resign, 0);
+  Engine.choose(fromGovernment, CONTENT, resign, 1);
+  ok("blocked resignation answers cannot charge again or claim a vacancy",
+     Engine.save(fromGovernment) === beforeAnswer);
+  const acknowledged = resign.choices[2];
+  ok("the already-filled Registry has an available acknowledgement",
+     acknowledged && Engine.choiceOpen(fromGovernment, CONTENT, acknowledged));
+  ok("that acknowledgement is unavailable while the Registry is vacant",
+     acknowledged && !Engine.choiceOpen(st, CONTENT, acknowledged));
+  if (acknowledged) Engine.choose(fromGovernment, CONTENT, resign, 2);
+  ok("acknowledging the appointment preserves its holder and political costs",
+     fromGovernment.cabinet.attestation_registry.holder === "okarie" &&
+     !fromGovernment.flags.post_left_vacant &&
+     Engine.loyaltyOf(fromGovernment, fromGovernment.playerParty) === appointmentCosts.benchLoyalty &&
+     fromGovernment.scalars.public_standing === appointmentCosts.standing);
+  Engine.advance(fromGovernment, CONTENT);
+  const afterAcknowledgement = Engine.nextEvent(fromGovernment, CONTENT);
+  ok("the Government-first route still brings the apology next sitting",
+     afterAcknowledgement && afterAcknowledgement.id === "gb_carveout_broken");
+  Engine.choose(fromGovernment, CONTENT, apology, 0);
+  ok("the Government-first successor can actually lay the exemption order",
+     fromGovernment.instruments.si_2080_45.made && fromGovernment.flags.licensing_exempted);
+});
+
 guard("THE FREEZE PAYS THE INDEMNITY (a gate that was dead, 21 Sep)", ok => {
   /* The freeze records itself, which is what re-opens the payout branches. */
   const ev = id => CONTENT.events.find(e => e.id === id);

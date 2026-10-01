@@ -112,6 +112,11 @@ const CABINET = [
   { id:"attestation_registry",    name:"Attestation and the Registry", title:"Minister for Attestation and the Registry",
     holder:"preiss", party:"cu",
     brief:["attested"],
+    candidates:[
+      {holder:"okarie", party:"cu",
+       note:"Anil Devi is the Chief Whip and belongs to the Soft Left, the current that leads your party. Appointing Devi restores the Registry's power to make orders after a vacancy, increases the party's loyalty and costs some public standing.",
+       effects:[{move:{"loyalty.cu":5}},{move:{public_standing:-2}},
+                {wire:"VACANT POST FILLED AFTER MINISTERIAL RESIGNATION"}]} ],
     note:"Appoints the licensing boards. This is the sharpest tool in the game." },
   { id:"closure_development",     name:"Closure and Development",   title:"Minister for Closure and Development",
     holder:"tomasson", party:"rv",
