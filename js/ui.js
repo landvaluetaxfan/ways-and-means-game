@@ -2529,14 +2529,14 @@ const UI = (function () {
     const groups = pending => posts.map(post => {
       const rows = siRows.filter(r => r.post === post && (pending
         ? (st.instruments[r.id] || {}).awaitingApproval : !(st.instruments[r.id] || {}).made));
-      return `<div class="gov-work-group" data-business-post="${esc(post)}"><h4>${esc(govPostName(post))}</h4>` +
+      return `<div class="gov-work-group" data-business-post="${esc(post)}"><h4><button class="lnk gov-department-link" data-goto="gov" data-open="post:${esc(post)}">${esc(govPostName(post))}</button></h4>` +
         (rows.length ? `<table>${rows.map(r => r.html).join("")}</table>` : "") +
         (pending ? `<div class="gov-card-running" data-running-post="${esc(post)}"></div>`
           : `<div class="gov-card-ini" data-ini-post="${esc(post)}"></div>`) + `</div>`;
     }).join("");
     $("#gov-pending").innerHTML = groups(true);
     $("#gov-available").innerHTML = groups(false);
-    vacancies.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => openTarget(b)));
+    $("#gov-business").querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => openTarget(b)));
   }
   function updateGovSections() {
     document.querySelectorAll("#gov-cabinet .gov-card").forEach(card => {
@@ -2550,6 +2550,14 @@ const UI = (function () {
       });
       card.querySelector(".gov-summary-counts").textContent = counts.join(" · ");
     });
+  }
+  /* Only a deliberate inspection navigates to the file. Rendering alone
+     leaves focus and scroll restoration to Focus. */
+  function revealGovFile() {
+    const box = $("#gov-inspector"), title = $("#gov-file-title");
+    if (box.hidden) return;
+    title.focus({preventScroll:true});
+    if (box.scrollIntoView) box.scrollIntoView({block:"start"});
   }
   function drawGovInspector() {
     const box = $("#gov-inspector"), body = $("#gov-file-body");
@@ -2771,7 +2779,7 @@ const UI = (function () {
       const keeps = Engine.outstanding(st).filter(u =>
         (u.discharge || {}).si === si.id);
       const row = `<tr data-si="${si.id}" class="${s.inForce ? "inforce" : ""}${open ? " open" : ""}">
-        <td><button class="lnk gov-order-title" data-inspect="${esc(si.id)}" aria-expanded="${open}"><i class="caret${open ? " open" : ""}"></i>${esc(si.title.replace(/ Order 2080$/, ""))}</button>` +
+        <td><button class="lnk gov-order-title" data-inspect="${esc(si.id)}" aria-expanded="${open}" aria-controls="gov-inspector"${tipAttr(si.title, [si.summary, si.effect_note].filter(Boolean).join(" "))}><i class="caret${open ? " open" : ""}"></i>${esc(si.title.replace(/ Order 2080$/, ""))}</button>` +
           (keeps.length ? ` <span class="flag" data-tip-title="Keeps a promise" ` +
             `data-tip-body="${esc(keeps.map(u => u.text).join("  \u00b7  "))}. ` +
             `Signing it here discharges the undertaking.">PROMISE</span>` : "") +
@@ -2836,11 +2844,13 @@ const UI = (function () {
         siOpen = siOpen === tr.dataset.si ? null : tr.dataset.si;
         initOpen = null;
         Focus.around(() => drawGovernment());
+        revealGovFile();
       }));
     $("#gov-si").querySelectorAll("[data-inspect]").forEach(b => b.addEventListener("click", () => {
       siOpen = siOpen === b.dataset.inspect ? null : b.dataset.inspect;
       initOpen = null;
       Focus.around(() => drawGovernment());
+      revealGovFile();
     }));
     $("#gov-si").querySelectorAll("[data-read]").forEach(btn =>
       btn.addEventListener("click", e => {
@@ -5224,8 +5234,8 @@ const UI = (function () {
     const left = st.slots.total - st.slots.used;
     return list.map(i => {
       const open = initOpen === i.id;
-      const head = `<button class="ini-h${i.ok ? "" : " refused"}" data-ini="${i.id}" aria-expanded="${open}"` +
-        priceTip(i.title, { slots: i.cost }, i.ok ? null : i.reason) + `>
+      const head = `<button class="ini-h${i.ok ? "" : " refused"}" data-ini="${i.id}" aria-expanded="${open}" aria-controls="gov-inspector"` +
+        priceTip(i.title, { slots: i.cost, note:i.note }, i.ok ? null : i.reason) + `>
           <b>${esc(i.title)}</b>
           <span class="gov-work-type">&#9655; Initiative</span>
           <i>${i.cost === 0 ? "no order-paper time"
@@ -5287,6 +5297,7 @@ const UI = (function () {
         initOpen = initOpen === b.dataset.ini ? null : b.dataset.ini;
         siOpen = null;
         Focus.around(() => drawGovernment());
+        revealGovFile();
       }));
     el.querySelectorAll("[data-take]").forEach(b =>
       b.addEventListener("click", () => {
@@ -5411,6 +5422,7 @@ const UI = (function () {
       if (!target.matches('button, [tabindex]')) target.tabIndex = -1;
       target.focus({ preventScroll:true });
       if (target.scrollIntoView) target.scrollIntoView({ block:"nearest" });
+      if (row && kind !== "post") revealGovFile();
     }
   }
 

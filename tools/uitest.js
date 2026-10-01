@@ -299,12 +299,12 @@ ok("each order appears under its authoring department",
   route('order:' + si.id);
   ok('an order destination reveals its owner and focuses the expanded instrument',
     !card(si.author).hidden && card('').hidden && !!w.document.querySelector('#gov-inspector .si-d') &&
-    card(si.author).contains(w.document.activeElement) && w.document.activeElement !== card(si.author).querySelector('[data-gov-summary]'));
+    w.document.activeElement.id === 'gov-file-title' && w.document.activeElement.textContent === si.title);
   fixture.initiatives = [{ id:'test_destination', post:si.author, title:'Destination fixture', cost:1, when:{}, tempo:[{ after:2 }] }];
   w.eval('UI.redraw();');
   route('initiative:test_destination');
   ok('an initiative destination opens its owning card and focuses that initiative',
-    !card(si.author).hidden && w.document.activeElement.dataset.ini === 'test_destination');
+    !card(si.author).hidden && w.document.activeElement.id === 'gov-file-title' && w.document.activeElement.textContent === 'Destination fixture');
   route('order:' + si.id);
   ok('routing from an initiative to an order replaces the shared inspector file',
     !!w.document.querySelector('#gov-inspector .si-d') && !w.document.querySelector('#gov-inspector [data-take]'));
@@ -314,7 +314,7 @@ ok("each order appears under its authoring department",
   ok('an unaffordable initiative destination remains readable inside its own expanded entry',
     !card(si.author).querySelector('[data-ini="test_destination"]').disabled &&
     !!w.document.querySelector('#gov-inspector [data-take]:disabled') &&
-    card(si.author).contains(w.document.activeElement));
+    w.document.activeElement.id === 'gov-file-title' && !w.document.activeElement.closest('[hidden]'));
   state.slots.used = used;
   route('post:');
   ok('the Prime Minister is a department destination without an authored post id',

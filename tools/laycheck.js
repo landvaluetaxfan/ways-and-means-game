@@ -345,10 +345,26 @@ ${HELPERS}
             detail:"Selecting a minister leaves the workspace heading outside the viewport."});
         var scope = document.querySelector('#gov-cabinet [data-post="' + id + '"]');
         var inspect = scope.querySelector('[data-ini], [data-inspect]');
-        if (inspect) inspect.click();
+        if (inspect) {
+          inspect.click();
+          var file = document.querySelector('#gov-inspector');
+          var fileHeading = document.querySelector('#gov-file-title').getBoundingClientRect();
+          if (file.hidden || fileHeading.top < 0 || fileHeading.bottom > innerHeight)
+            found.push({tab:"gov-office:" + (id || "pm"),el:"#gov-file-title",kind:"LAYOUT",by:1,
+              detail:"Opening a power leaves its work file outside the visible viewport."});
+        }
         found = found.concat(measure("gov-office:" + (id || "pm")));
       });
       UI.state().undertakings.pop();
+      document.querySelector('[data-gov-all]').click();
+      var overviewWork = document.querySelector('#gov-business [data-ini]');
+      if (overviewWork) {
+        overviewWork.click();
+        var overviewHeading = document.querySelector('#gov-file-title').getBoundingClientRect();
+        if (document.querySelector('#gov-inspector').hidden || overviewHeading.top < 0 || overviewHeading.bottom > innerHeight)
+          found.push({tab:"gov-overview-file",el:"#gov-file-title",kind:"LAYOUT",by:1,
+            detail:"The overview work file is not visible after its title is clicked."});
+      }
       document.querySelector('[data-gov-all]').click();
       /* Work and people grow independently. Queue actual initiative
          answers, then vacate their owners; stretch authored labels and

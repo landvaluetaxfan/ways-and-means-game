@@ -12,6 +12,43 @@ H.banner("INTERFACE AND INTERACTION");
 H.boot();
 H.newGame();
 
+/* Removing description tips, inspector focus, or department routing must
+   break these checks of real rendered powers, not a replacement widget. */
+{
+  const doc=w.document, Cg=w.eval('UI.content()'), before=w.eval('Engine.save(UI.state())');
+  w.eval('UI.openTab("gov");');
+  const overview=()=>doc.querySelector('#gov-business');
+  const first=overview().querySelector('[data-ini]'), id=first.dataset.ini;
+  const initiative=Cg.initiatives.find(i=>i.id===id);
+  ok('initiative title tips explain the authored work as well as its cost',
+    !!initiative.note && (first.getAttribute('data-tip-body')||'').includes(initiative.note) && /slot/.test(first.getAttribute('data-tip-body')||''));
+  first.click();
+  ok('opening an initiative focuses its visible shared file rather than its source list',
+    doc.activeElement.id==='gov-file-title' && !doc.activeElement.closest('[hidden]'));
+  doc.querySelector('[data-gov-close]').click();
+  ok('closing an inspected initiative returns to its originating overview control',
+    doc.querySelector('#gov-inspector').hidden && doc.activeElement.dataset.ini===id && !!doc.activeElement.closest('#gov-business'));
+  const order=overview().querySelector('[data-inspect]'), sid=order.dataset.inspect;
+  const instrument=Cg.instruments.find(i=>i.id===sid);
+  ok('order title tips explain the existing authored instrument',
+    !!instrument.summary && (order.getAttribute('data-tip-body')||'').includes(instrument.summary));
+  order.click();
+  ok('opening an order focuses its shared file without executing it',
+    doc.activeElement.id==='gov-file-title' && !doc.activeElement.closest('[hidden]') && !w.eval('UI.state().instruments['+JSON.stringify(sid)+'].made'));
+  doc.querySelector('[data-gov-close]').click();
+  const heading=doc.querySelector('#gov-available [data-business-post=""] h4 button');
+  const headingVisible=!!heading && !heading.closest('[hidden]');
+  if(heading)heading.click();
+  ok('overview department headings select the owning workspace without changing simulation',
+    headingVisible && !doc.querySelector('#gov-cabinet [data-post=""]').hidden && overview().hidden && before===w.eval('Engine.save(UI.state())'));
+  doc.querySelector('[data-gov-all]').click();
+  const owned=doc.querySelector('#gov-available [data-business-post="'+instrument.author+'"] h4 button');
+  if(owned)owned.click();
+  ok('an authored department heading selects that department rather than the Prime Minister',
+    !!owned && !doc.querySelector('#gov-cabinet [data-post="'+instrument.author+'"]').hidden && doc.querySelector('#gov-cabinet [data-post=""]').hidden && before===w.eval('Engine.save(UI.state())'));
+  doc.querySelector('[data-gov-all]').click();w.eval('UI.openTab("sit");');
+}
+
 /* Two views of the same lever must not share focus identity or multiply
    execution. Removing view-local keys, bypassing confirmation, or wiring a
    second execution listener breaks these user-visible behaviors. */

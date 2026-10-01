@@ -278,6 +278,10 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #gov-business .ini-h{max-width:70ch;}
 #s-gov .ini-t{max-width:65ch;}
 .gov-order-title{text-align:left;white-space:normal;overflow-wrap:anywhere;}
+.gov-department-link{font:inherit;letter-spacing:inherit;text-transform:inherit;}
+#s-gov .ini-h:hover,#s-gov .gov-order-title:hover,.gov-department-link:hover{background:var(--chrome-lt);}
+#s-gov .ini-h[aria-expanded="true"],#s-gov .gov-order-title[aria-expanded="true"]{background:var(--field);box-shadow:inset 3px 0 var(--gold);}
+#s-gov .ini-h:focus-visible,#s-gov .gov-order-title:focus-visible,#s-gov .gov-department-link:focus-visible{outline:2px dotted var(--gold);outline-offset:1px;}
 #s-gov .ini-h i{flex-wrap:wrap;}
 #s-gov .ini-h.refused > .note{color:var(--ink-soft);}
 .doc-overlay:not([hidden]){position:fixed;z-index:40;inset:0;background:rgba(0,0,0,.5);
