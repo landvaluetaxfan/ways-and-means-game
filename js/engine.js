@@ -4952,6 +4952,14 @@ const Engine = (function () {
     }
     if (t.kind === "bill") {
       const s = (st.bills || {})[t.id];
+      const bill = (C.billById || {})[t.id];
+      // Assent may leave supply inert. Its existing queued commencement,
+      // not the terminal legislative stage, determines whether work remains.
+      const commencement = s && s.stage === "assented" && bill &&
+        (st.queue || []).find(q => q.effects && q.dueSitting === s.delayedUntil &&
+          q.source === "supply delayed by the functional benches" &&
+          q.label === bill.title + " takes effect");
+      if (commencement) return {target:t,landing:commencement.dueSitting};
       return s && !s.dead && !["assented","rejected","withdrawn"].includes(s.stage) ? {target:t,landing:s.dividesOn || null} : null;
     }
     return null;

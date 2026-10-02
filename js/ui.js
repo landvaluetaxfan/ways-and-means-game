@@ -1360,7 +1360,7 @@ const UI = (function () {
         `<div class="note">${esc(f.drawNote || "")}</div>` +
         `<button class="btn" data-draw="${esc(f.id)}"${gate.ok ? "" : " disabled"}` +
           tipAttr("Draw " + cw(amount,f.currency),gate.ok ? f.drawNote : gate.reason) + `>Draw</button>` +
-        (!gate.ok ? `<div class="note">${esc(gate.reason)}</div>` : "") + `</section>`;
+        `<div class="note money-refusal"${gate.ok ? " hidden" : ""}>${esc(gate.reason || "")}</div></section>`;
     }).join("");
     box.querySelectorAll("[data-money-back]").forEach(b => b.addEventListener("click", () => openTarget(b)));
   }
@@ -1446,7 +1446,17 @@ const UI = (function () {
     drawMoneyCalls(calls);
     if (calls) calls.querySelectorAll("[data-money-amount]").forEach(input => input.addEventListener("change", () => {
       moneyCall = {lender:input.dataset.moneyAmount,amount:Number(input.value),matter:input.dataset.moneyMatter};
-      Focus.around(() => drawEconomy(), {sel:"#" + input.id});
+      // Blur fires change between pointer down and click. Keep the pressed
+      // control alive while updating its live gate and explanation in place.
+      const call = input.closest("[data-money-call]");
+      const f = Engine.facilities(st,C).find(f => f.id === input.dataset.moneyAmount);
+      const gate = Engine.canBorrow(st,C,moneyCall.amount,input.dataset.moneyAmount);
+      const draw = call.querySelector("[data-draw]");
+      draw.disabled = !gate.ok;
+      draw.dataset.tipTitle = "Draw " + cw(moneyCall.amount,f && f.currency);
+      draw.dataset.tipBody = gate.ok ? f && f.drawNote || "" : gate.reason;
+      const refusal = call.querySelector(".money-refusal");
+      refusal.hidden = gate.ok; refusal.textContent = gate.reason || "";
     }));
     if (calls) calls.querySelectorAll("[data-draw]").forEach(b =>
       b.addEventListener("click", () => {

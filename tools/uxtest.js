@@ -12,6 +12,24 @@ H.banner("INTERFACE AND INTERACTION");
 H.boot();
 H.newGame();
 
+/* Editing a drawing then clicking once must not replace the pressed
+   button during native blur/change, swallowing that click. */
+{
+  const snap=w.eval('Engine.save(UI.state())'), originalC=w.eval('UI.content()');
+  const confirm=w.eval('Dialog.confirm');
+  w.eval("UI.openTab('econ')");
+  let questions=0;
+  w.eval('Dialog').confirm=() => questions++;
+  const input=$('[data-money-amount="underwriters"]'), draw=$('[data-draw="underwriters"]');
+  input.focus();input.value='2250';input.dispatchEvent(new w.Event('change',{bubbles:true}));
+  // A native pointer release cannot click a button detached by blur/change.
+  if(draw.isConnected) draw.click();
+  ok('editing a drawing preserves the first click on Draw',questions===1);
+  ok('editing then opening confirmation does not borrow',w.eval('Engine.save(UI.state())')===snap);
+  w.eval('Dialog').confirm=confirm;
+  w.eval('UI.boot')(w.eval('Engine.load')(snap),originalC);
+}
+
 /* Live minister identity and stale remedy availability are read again,
    never cached from the card that the player first saw. */
 {

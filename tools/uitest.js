@@ -936,6 +936,7 @@ try {
  let amount=$('[data-money-amount="underwriters"]');
  ok('the contextual amount starts at its authored preset',amount?.value==='3000');
  if(amount){amount.value='2250';amount.dispatchEvent(new w.Event('change',{bubbles:true}));}
+ w.eval('UI.redraw()');
  amount=$('[data-money-amount="underwriters"]');
  ok('the player can adjust the amount',amount?.value==='2250');
  ok('adjusting a call is not borrowing',w.eval('Engine.save(UI.state())')===snap);

@@ -379,6 +379,27 @@ const RUN_BOUND = T.runBound(CONTENT);
     ok('a real bill advance holds while the measure is progressing',grant.ok && !!b.s.matters.matter_probe.hold);
     b.s.bills[bill.id].dead=true; moveTo(b.s,b.C,2);
     ok('a fallen bill resumes unresolved advice',!b.s.matters.matter_probe.hold && b.s.matters.matter_probe.state==='open');
+    const delayedMatter=Object.assign({},mb,{due:{after:1}});
+    const delayed=fixture([delayedMatter],[late,page,pool],{bills:[bill],billById:{[bill.id]:bill}});
+    raise(delayed.s,delayed.C); Engine.grantSlot(delayed.s,delayed.C,bill.id);
+    Engine.assent(delayed.s,delayed.C,bill.id,4); Engine.apply(delayed.s,delayed.C,[]);
+    moveTo(delayed.s,delayed.C,2);
+    ok('a delayed assented bill retains its matter hold until commencement',
+      delayed.s.matters.matter_probe.state==='open' && !!delayed.s.matters.matter_probe.hold &&
+      Engine.matters(delayed.s,delayed.C)[0]?.underway?.landing===5);
+    ok('a delayed remedy does not raise its last chance while effects are pending',
+      Engine.nextEvent(delayed.s,delayed.C)?.id!==late.id);
+    const resumed=Engine.reconcile(Engine.load(Engine.save(delayed.s)),delayed.C);
+    ok('pending commencement retains its matter hold after save and load',
+      !!resumed.matters.matter_probe.hold);
+    const canceledDelay=Engine.load(Engine.save(delayed.s)); canceledDelay.queue=[];
+    moveTo(canceledDelay,delayed.C,3);
+    ok('cancelled commencement releases its hold rather than stopping the clock',
+      !canceledDelay.matters.matter_probe.hold);
+    delayed.s.sitting=4; Engine.advance(delayed.s,delayed.C);
+    ok('actual delayed commencement settles the matter through its queued effects',
+      delayed.s.flags.matter_done && delayed.s.matters.matter_probe.state==='closed' &&
+      !delayed.s.matters.matter_probe.hold);
     const lender=Object.keys(CONTENT.setup.lenders).find(k=>CONTENT.setup.lenders[k].drawable);
     const money=Object.assign({},base,{settled:{scalarAbove:{solvency:CONTENT.setup.scalars.solvency}},
       remedies:[{id:'cash',target:{kind:'money',id:lender,amount:1},takes:0,note:'Open the facility.'}]});
