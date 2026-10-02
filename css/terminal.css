@@ -2930,6 +2930,11 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 s.p-matter{background:var(--chrome-dkr);}
 .money-preset{display:flex;flex-direction:column;font-size:10px;min-width:0;}
 .money-preset input{width:110px;max-width:100%;}
+.money-call{border-top:1px solid var(--rule);padding:8px 0;min-width:0;}
+.money-call h4{margin:0 0 4px;}
+.money-call .money-preset{margin:6px 0;}
+.money-context{margin:4px 0;}
+.money-context .lnk{white-space:normal;}
 
 /* ---------- the parliamentary calendar ----------
    A month you can point at, rather than "four sittings left" in a

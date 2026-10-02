@@ -142,6 +142,13 @@ slice (roadmap steps 2 and 3). The broader playtest-strategy acceptance and
 ten-sitting slice remain a subsequent batch; keep this brief until its remaining
 acceptance work is finished.
 
+Implementation progress, 1 October: the generic matter lifecycle, editor,
+three Flash I matters and Sitting advice cards are implemented. Economy's
+money calls replace the account's Draw controls, keep ordinary borrowing
+available and link contextual calls back to the advice that raised them.
+The remaining work is the follows-the-brief/contested-strategy measurement
+and ten-sitting playable slice; those claims are not yet accepted.
+
 **Works' air: the rescue decision moves before the deaths.** The author
 approved the following direction in chat on 1 October.
 `f1_air_fails` currently combines a failure page and a rescue decision at

@@ -910,6 +910,61 @@ try {
      w.document.querySelectorAll("#sitting-body button[data-choice]").length === 0);
 } catch (e) { ok("the last page", false, e.message); }
 
+/* Calls retain independent borrowing, contextual amounts and exactly one
+   confirmation-owned action. Removing any of those is a behavioral fault. */
+{
+ const original=w.eval('UI.state()'),originalC=w.eval('UI.content()');
+ const probe=w.eval(`(function(){
+  const base=UI.content(),m={id:'ui_money_advice',owner:'life_support',raise:{minSitting:1},due:20,grace:2,
+   settled:{flags:['ui_money_done']},note:'Financing advice',figures:[],counsel:[],
+   remedies:[{id:'draw',target:{kind:'money',id:'underwriters',amount:3000},takes:0,note:'Open the proposed drawing'}],late:'reserve_low',page:'f1_reserve_shortage'};
+  const c={...base,matters:[m],events:[]},s=Engine.newGame(c);s.queue=[];s.flags._introRead=true;s.flags._act1=true;
+  Engine.reconcile(s,c);UI.boot(s,c);UI.openTab('sit');return{s,c};
+ })()`);
+ const snap=w.eval('Engine.save(UI.state())');
+ $('[data-matter="ui_money_advice"] [data-matter-remedy]').click();
+ ok('the account contains no Draw controls',!$('#econ-account [data-draw]'));
+ ok('money calls contain their Draw controls',!!$('#econ-calls [data-draw="underwriters"]'));
+ const calls=()=>[...w.document.querySelectorAll('#econ-calls [data-money-call]')];
+ ok('matter-linked calls lead the calls list',calls()[0]?.dataset.moneyCall==='underwriters');
+ ok('a contextual call links back to its advice',!!$('#econ-calls [data-money-back="ui_money_advice"]'));
+ const backlink=$('#econ-calls [data-money-back="ui_money_advice"]');if(backlink)backlink.click();
+ ok('the call backlink opens Sitting',$('#s-sit').classList.contains('on'));
+ ok('the call backlink focuses its exact matter',w.document.activeElement?.dataset.matter==='ui_money_advice');
+ ok('call navigation does not borrow',w.eval('Engine.save(UI.state())')===snap);
+ w.eval("UI.openTab('econ')");
+ let amount=$('[data-money-amount="underwriters"]');
+ ok('the contextual amount starts at its authored preset',amount?.value==='3000');
+ if(amount){amount.value='2250';amount.dispatchEvent(new w.Event('change',{bubbles:true}));}
+ amount=$('[data-money-amount="underwriters"]');
+ ok('the player can adjust the amount',amount?.value==='2250');
+ ok('adjusting a call is not borrowing',w.eval('Engine.save(UI.state())')===snap);
+ w.eval(`window.__calls=0;Dialog.confirm=function(m,o,cb){window.__calls++;window.__question=m;window.__answer=cb;};`);
+ const draw=()=>$('#econ-calls [data-draw="underwriters"]') || $('#econ-account [data-draw="underwriters"]');
+ if(draw()){draw().focus();draw().click();draw().click();}
+ ok('opening confirmation does not borrow',w.eval('Engine.save(UI.state())')===snap);
+ ok('confirmation names the adjusted amount',w.__question?.includes(w.eval('Engine.money')(probe.c,2250)));
+ ok('a repeated Draw click opens only one confirmation',w.__calls===1);
+ if(w.__answer)w.__answer(false);
+ ok('cancelling the drawing leaves simulation unchanged',w.eval('Engine.save(UI.state())')===snap);
+ ok('cancelling leaves Draw usable',!!draw() && !draw().disabled);
+ ok('cancelling returns focus to the same drawing',w.document.activeElement===draw());
+ const before=w.eval('Engine.debtOf')(probe.s,'underwriters');if(draw())draw().click();
+ const accepted=w.__answer;if(accepted)accepted(true);
+ ok('confirmation draws the adjusted amount through the engine',w.eval('Engine.debtOf')(probe.s,'underwriters')===before+2250);
+ const once=w.eval('Engine.save(UI.state())');if(accepted)accepted(true);
+ ok('a repeated callback cannot draw twice',w.eval('Engine.save(UI.state())')===once);
+ const c={...probe.c,matters:[]},s=w.eval('Engine.newGame')(c);s.queue=[];s.flags._introRead=true;s.flags._act1=true;
+ w.eval('UI.boot')(s,c);w.eval("UI.openTab('econ')");
+ const facilities=w.eval('Engine.facilities')(s,c);
+ ok('ordinary facilities remain accessible with no advice',calls().length===facilities.length);
+ ok('ordinary calls offer their default amounts',facilities.every(f=>$('#econ-calls [data-money-amount="'+f.id+'"]')?.value===String(f.utilisation)));
+ const ordinaryBefore=w.eval('Engine.debtOf')(s,'underwriters');if(draw())draw().click();if(w.__answer)w.__answer(true);
+ ok('an ordinary call can borrow without any matter',w.eval('Engine.debtOf')(s,'underwriters')===ordinaryBefore+facilities.find(f=>f.id==='underwriters').utilisation);
+ w.eval(`Dialog.confirm=function(m,o,cb){(typeof o==='function'?o:cb)(true);};`);
+ w.eval('UI.boot')(original,originalC);
+}
+
 /* THE ECONOMY TAB, which the author has now pushed back on twice. What it
    needed was not more numbers but the things a reader asks of a number:
    where it came from, what it means, and what it has been doing. */
@@ -922,7 +977,7 @@ try {
   const drawable = Object.keys(CONTENT.setup.lenders).filter(k => CONTENT.setup.lenders[k].drawable);
   ok("the account lists each standing lender, drawn or not",
      facRows.length === drawable.length && facRows.every(r => /none/.test(r.textContent)) &&
-     drawable.every(k => !!w.document.querySelector('#econ-account [data-draw="' + k + '"]')),
+     drawable.every(k => !!w.document.querySelector('#econ-calls [data-draw="' + k + '"]')),
      facRows.map(r => r.textContent.slice(0, 40)).join(" | "));
   /* NAMED CREDITORS: each lender its own row, on its own terms, and a Repay
      control only where the lender is paid across the counter. Staged on a
@@ -940,14 +995,15 @@ try {
   /* A DRAWING goes through the engine's own borrow: the lender's size, a
      slot of order-paper time, and the line in the record. */
   const d0 = w.eval("({ owed: Engine.debtOf(UI.state(), 'earth'), used: UI.state().slots.used })");
-  const dbtn = w.document.querySelector('#econ-account [data-draw="earth"]');
+  const dbtn = w.document.querySelector('#econ-calls [data-draw="earth"]');
   if (dbtn) dbtn.click();
   const d1 = w.eval("({ owed: Engine.debtOf(UI.state(), 'earth'), used: UI.state().slots.used, log: UI.state().log[0].text })");
   ok("Draw takes one drawing on the facility, through the engine",
      d1.owed === d0.owed + CONTENT.setup.lenders.earth.utilisation && d1.used === d0.used + 1 &&
      /Standby Facility/.test(d1.log), JSON.stringify(d1));
   ok("and the row says what is drawn, in the lender's money",
-     /US\$8\.0bn/.test((w.document.querySelector('#econ-account [data-draw="earth"]').closest(".prow") || {}).textContent || ""));
+     /US\$8\.0bn/.test([...w.document.querySelectorAll('#econ-account .prow.fac')]
+       .find(r => /Earth's banks/.test(r.textContent))?.textContent || ""));
   w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapC) + "), UI.content())");
   ok("and the net position, not just the two halves", /The balance/.test(tre) && /Spending/.test(tre),
      (tre.match(/The balance[^A-Z]*/) || [""])[0].slice(0, 44));

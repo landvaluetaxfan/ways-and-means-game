@@ -1334,6 +1334,37 @@ const UI = (function () {
   /* THE ACCOUNT. A stock and its flows, a year at a time (design/39: the
      account runs by the calendar), and no per-base breakdown: the
      arithmetic behind Receipts is the panel next to it. */
+  function drawMoneyCalls(box) {
+    if (!box) return;
+    const links = new Map();
+    Engine.matters(st,C).forEach(m => m.remedies.forEach(r => {
+      if (r.target.kind !== "money") return;
+      if (!links.has(r.target.id)) links.set(r.target.id,[]);
+      links.get(r.target.id).push({matter:m,remedy:r});
+    }));
+    const facs = Engine.facilities(st,C);
+    facs.sort((a,b) => Number(links.has(b.id))-Number(links.has(a.id)));
+    box.innerHTML = facs.map(f => {
+      const contexts = links.get(f.id) || [];
+      const selected = moneyCall && moneyCall.lender === f.id;
+      const amount = selected ? moneyCall.amount : contexts.length ? contexts[0].remedy.amount : f.utilisation;
+      const gate = Engine.canBorrow(st,C,amount,f.id);
+      const matter = selected ? moneyCall.matter : contexts.length ? contexts[0].matter.id : "";
+      return `<section class="money-call" data-money-call="${esc(f.id)}"><h4>${esc(cap1(f.name))}</h4>` +
+        `<div class="note">${esc(f.facility)} · ${Number(f.rate).toFixed(2)} per cent</div>` +
+        contexts.map(x => `<div class="money-context">Raised by ${esc(govPostName(x.matter.owner))} · ` +
+          `<button class="lnk" data-money-back="${esc(x.matter.id)}" data-goto="sit" data-open="matter:${esc(x.matter.id)}">Back to advice</button></div>`).join("") +
+        `<label class="money-preset">Amount (millions${f.currency ? " of " + esc(f.currency) : " of Commonwealth dollars"})` +
+          `<input type="number" min="0" step="any" id="money-amount-${esc(f.id)}" data-money-amount="${esc(f.id)}"` +
+          ` data-money-matter="${esc(matter || "")}" value="${esc(amount)}"></label>` +
+        `<div class="note">${esc(f.drawNote || "")}</div>` +
+        `<button class="btn" data-draw="${esc(f.id)}"${gate.ok ? "" : " disabled"}` +
+          tipAttr("Draw " + cw(amount,f.currency),gate.ok ? f.drawNote : gate.reason) + `>Draw</button>` +
+        (!gate.ok ? `<div class="note">${esc(gate.reason)}</div>` : "") + `</section>`;
+    }).join("");
+    box.querySelectorAll("[data-money-back]").forEach(b => b.addEventListener("click", () => openTarget(b)));
+  }
+
   function drawEconomy() {
     const box = $("#econ-account");
     if (box) {
@@ -1373,9 +1404,6 @@ const UI = (function () {
       const facIds = facs.map(f => f.id);
       const facRow = f => {
         const d = owed.find(x => x.id === f.id);
-        const selected = moneyCall && moneyCall.lender === f.id;
-        const amount = selected ? moneyCall.amount : f.utilisation;
-        const gate = selected ? Engine.canBorrow(st,C,amount,f.id) : f;
         const room = Math.max(0, f.cap - f.owed);
         const terms = f.name + ", " + f.facility + ": " + cw(f.commitment, f.currency) +
           ", of which " + cw(f.owed, f.currency) + " is drawn. The rate is " +
@@ -1389,12 +1417,7 @@ const UI = (function () {
         return `<div class="prow fac"><div class="plab"${tipAttr(f.name, terms)}>${esc(cap1(f.name))}` +
           `<em>${pc(f.rate)} per cent · ${cw(room, f.currency)} undrawn</em></div>` +
           `<div class="pval${f.owed ? " up" : ""}">${f.owed ? cw(f.owed, f.currency) : "none"}</div>` +
-          (selected ? `<label class="money-preset">Amount (millions${f.currency ? " of " + esc(f.currency) : " of Commonwealth dollars"})` +
-            `<input type="number" min="0" step="any" id="money-amount-${esc(f.id)}" data-money-amount="${esc(f.id)}" value="${esc(amount)}"></label>` : "") +
-          `<div class="facbtn"><button class="btn tiny" data-draw="${esc(f.id)}"` +
-          (gate.ok ? "" : " disabled") +
-          tipAttr("Draw " + cw(amount, f.currency), gate.ok ? f.drawNote : cap1(gate.reason) + ".") +
-          `>Draw</button>` + (d ? repayBtn(d) : "") + `</div></div>`;
+          (d ? `<div class="facbtn">${repayBtn(d)}</div>` : "") + `</div>`;
       };
       const sign = n => (n >= 0 ? "+" : "\u2212") + cw(Math.abs(n));
       const arrears = (st.macro && st.macro.arrears) || 0;
@@ -1419,17 +1442,22 @@ const UI = (function () {
     }
 
     /* A DRAWING, confirmed with what it costs beyond the money. */
-    if (box) box.querySelectorAll("[data-money-amount]").forEach(input => input.addEventListener("change", () => {
-      moneyCall.amount = Number(input.value);
+    const calls = $("#econ-calls");
+    drawMoneyCalls(calls);
+    if (calls) calls.querySelectorAll("[data-money-amount]").forEach(input => input.addEventListener("change", () => {
+      moneyCall = {lender:input.dataset.moneyAmount,amount:Number(input.value),matter:input.dataset.moneyMatter};
       Focus.around(() => drawEconomy(), {sel:"#" + input.id});
     }));
-    if (box) box.querySelectorAll("[data-draw]").forEach(b =>
+    if (calls) calls.querySelectorAll("[data-draw]").forEach(b =>
       b.addEventListener("click", () => {
         const f = (Engine.facilities(st, C) || []).find(x => x.id === b.dataset.draw);
         if (!f) return;
-        const amount = moneyCall && moneyCall.lender === f.id ? moneyCall.amount : f.utilisation;
+        const input = b.closest("[data-money-call]").querySelector("[data-money-amount]");
+        const amount = Number(input.value);
         const gate = Engine.canBorrow(st,C,amount,f.id);
         if (!gate.ok) { setStatus(gate.reason,"transient"); return; }
+        b.disabled = true;
+        let answered = false;
         Dialog.confirm(
           `Draw ${cw(amount, f.currency)} from ${f.name} ` +
           `(${f.facility}) at ${Number(f.rate).toFixed(2)} per cent?` +
@@ -1439,7 +1467,12 @@ const UI = (function () {
           (f.drawNote ? " " + f.drawNote : ""),
           { title: "Draw on " + f.facility, yes: "Draw" },
           ok => {
-            if (!ok) return;
+            if (answered) return;
+            answered = true;
+            if (!ok) {
+              Focus.around(() => drawEconomy(), {sel:'#econ-calls [data-draw="' + f.id + '"]'});
+              return;
+            }
             const r = acted(() => Engine.borrow(st, C, amount, f.id));
             if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); drawAll(); return; }
             cue("stamp");
@@ -5413,7 +5446,8 @@ const UI = (function () {
       /* a partner near its line (design/40 E9): its row on Relations, opened */
       Focus.activate("rel-table", id);
     } else if (kind === "money") {
-      moneyCall = {lender:id,amount:Number(btn.dataset.amount),matter:btn.dataset.matterId};
+      const f = Engine.facilities(st,C).find(f => f.id === id);
+      moneyCall = {lender:id,amount:btn.dataset.amount == null ? f && f.utilisation : Number(btn.dataset.amount),matter:btn.dataset.matterId};
       drawEconomy();
       const input = document.querySelector('[data-money-amount="' + id + '"]');
       if (input) {
