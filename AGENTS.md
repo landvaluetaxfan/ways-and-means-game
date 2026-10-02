@@ -164,7 +164,7 @@ is the one in `index.html`, and the record of decisions is no longer a tab:
 | | |
 |---|---|
 | **Sitting** | the event page, then the decision; what has happened, the docket, the calendar, the indicators |
-| **Government** | active business and available powers, a permanent cabinet roster selecting one departmental workspace with a shared work inspector, and drawers for the Register, undertakings, Tribunal and Presidency |
+| **Government** | a compact Cabinet rail, scoped business list and right-hand work file; Register, undertakings, Tribunal and Presidency are utilities in the file area; narrow screens use a department selector and Back to business |
 | **Chamber** | order-paper time, the order paper, the House, the whip, confidence, composition |
 | **Party** | the player's own party: its currents as partners, the country forecast, the leadership, the paper |
 | **Relations** | every other party, and who votes with whom; the coalition roster and the Opposition's shadow departments |

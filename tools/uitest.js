@@ -220,6 +220,76 @@ ok("each order appears under its authoring department",
        (s.instruments[i.id] || {}).made;
    }).every(i => !!w.document.querySelector(
      '#gov-cabinet .gov-card[data-post="' + i.author + '"] [data-si="' + i.id + '"]')));
+/* CABINET DESK: inspect real authored work, not a second inventory. */
+{
+  const doc=w.document, Cg=w.eval('UI.content()'), original=w.eval('Engine.save(UI.state())');
+  w.__deskContent=Cg;
+  const $=s=>doc.querySelector(s), file=()=>$('#gov-inspector');
+  $('[data-gov-all]').click();
+  const head=$('#gov-business [data-ini]'), id=head?.dataset.ini;
+  if(head)head.click();
+  ok('the work file is a separate pane, never a detail below business',
+    !!$('#gov-file-pane') && $('#gov-file-pane').contains(file()) && !$('#gov-work').contains(file()));
+  ok('inspecting actual work leaves the simulation untouched',!!head && w.eval('Engine.save(UI.state())')===original);
+  ok('business carries no duplicate executable controls',
+    !$('#gov-main [data-take], #gov-main [data-make], #gov-main [data-approve], #gov-main [data-pray], #gov-main [data-revoke], #gov-main [data-appoint], #gov-main [data-sack]'));
+  const entry=Cg.initiatives.find(i=>i.id===id);
+  ok('the selected initiative keeps every authored tempo only in its file',
+    !!entry && doc.querySelectorAll('#gov-inspector [data-take]').length===entry.tempo.length && !$('#gov-main .ini-b'));
+  ok('the file names its actual responsible minister',!!$('#gov-file-office [data-go="person_'+Cg.setup.pm+'"]'));
+  const title=$('#gov-file-title').textContent;
+  $('#gov-file-scroll').scrollTop=47;
+  for(const record of ['gov-register','gov-undertakings','gov-tribunal','gov-presidency']) {
+    const button=$('[data-gov-record="'+record+'"]'); if(button)button.click();
+    ok(record+' is a native utility exposing just one record in the file',
+      button?.tagName==='BUTTON' && button.getAttribute('aria-pressed')==='true' && file().hidden &&
+      ['gov-register','gov-undertakings','gov-tribunal','gov-presidency'].filter(r=>!$('#'+r).hidden).join()===record);
+  }
+  w.eval('UI.redraw();');
+  $('[data-gov-return]').click();
+  ok('Return to work restores the same file and its reading position after a redraw',
+    !file().hidden && $('#gov-file-title').textContent===title && $('#gov-file-scroll').scrollTop===47);
+  w.eval('UI.openTab("sit"); UI.openTab("gov"); UI.boot(UI.state(), UI.content());');
+  ok('a valid explicit work bookmark survives tab return and reload',
+    !file().hidden && $('#gov-file-title').textContent===title && w.eval('Focus.selected("gov-work")')==='initiative:'+id);
+  $('#gov-work').scrollTop=31;
+  $('[data-gov-back]').click();
+  ok('Back to business retains work, scope and the business reading position',
+    $('#gov-si').classList.contains('gov-mobile-list') && $('#gov-work').scrollTop===31 &&
+    !$('#gov-business').hidden && w.eval('Focus.selected("gov-work")')==='initiative:'+id);
+  $('[data-gov-close]').click(); w.eval('UI.redraw();');
+  ok('Close file stays closed on redraw without choosing another item',file().hidden && !w.eval('Focus.selected("gov-work")'));
+  const vacant=Cg.cabinet.find(p=>!w.eval('UI.state()').cabinet[p.id].holder);
+  if(vacant)$('[data-select-post="'+vacant.id+'"]').click();
+  const office=$('[data-gov-post-file="'+vacant?.id+'"]'); if(office)office.click();
+  ok('the inspected office row exposes the retained work selection',
+    !!office && $('[data-gov-post-file="'+vacant.id+'"]').getAttribute('aria-pressed')==='true' &&
+    w.eval('Focus.selected("gov-work")')==='post:'+vacant.id);
+  ok('vacancy candidates and their consequences exist once, in the file',
+    !!office && doc.querySelectorAll('#gov-inspector [data-appoint]').length===w.eval('Engine.candidates(UI.state(), UI.content(), '+JSON.stringify(vacant?.id)+').length') &&
+    !!$('#gov-inspector .cand .ch-eff') && !$('#gov-main [data-appoint]'));
+  const chosen=Cg.cabinet.find(p=>w.eval('UI.state()').cabinet[p.id].holder);
+  if(chosen)$('[data-select-post="'+chosen.id+'"]').click();
+  $('[data-gov-post-file="'+chosen.id+'"]').click();
+  const holder=w.eval('UI.state()').cabinet[chosen.id].holder;
+  w.eval('UI.state().cabinet['+JSON.stringify(chosen.id)+'].holder=null; UI.redraw();');
+  ok('an open office immediately replaces a removed minister with its vacancy',
+    $('#gov-file-office').textContent.includes('Vacant') && !$('#gov-file-office [data-go="person_'+holder+'"]') &&
+    $('[data-select-post="'+chosen.id+'"]').textContent.includes('Vacant'));
+  ok('the responsive department selector derives every post in content order',
+    [...doc.querySelectorAll('#gov-scope option')].map(n=>n.value).join()===['all',''].concat(Cg.cabinet.map(p=>p.id)).join());
+  ok('the responsive return control is a native button',!!$('button[data-gov-back]'));
+  const quiet=Cg.cabinet.find(p=>!doc.querySelector('#gov-cabinet [data-post="'+p.id+'"] [data-si], #gov-cabinet [data-post="'+p.id+'"] [data-ini], #gov-cabinet [data-post="'+p.id+'"] [data-running]') && w.eval('UI.state()').cabinet[p.id].holder);
+  if(quiet)$('[data-select-post="'+quiet.id+'"]').click();
+  ok('an empty occupied department supplies one visible empty-business note',
+    !!quiet && !!$('#gov-cabinet [data-post="'+quiet.id+'"] .gov-no-business') && !$('#gov-cabinet [data-post="'+quiet.id+'"] .gov-no-business').hidden);
+  $('[data-gov-all]').click();
+  const order=$('#gov-business [data-inspect]');
+  ok('compact order rows retain their visible procedure or status beside the title',
+    !!order && !!order.closest('td').querySelector('.gov-work-state'));
+  w.eval('UI.boot(Engine.load('+JSON.stringify(original)+', window.__deskContent), window.__deskContent);');
+  $('[data-gov-all]').click();
+}
 /* Removing overview derivation, party labels, or truthful pending filters
    must break these checks. This fixture deliberately separates gates,
    affordability, a queue-backed initiative and a stale started flag. */
@@ -291,13 +361,13 @@ ok("each order appears under its authoring department",
   w.__recordFixture = fixture; w.__recordState = state;
   w.eval('UI.boot(window.__recordState, window.__recordFixture);');
   const fold = () => w.document.querySelector('#gov-register');
-  const pending = () => fold().querySelector('.gov-record-count').textContent;
-  ok('visible unsigned minutes open the Register with an actionable pending count',
-    minutes.length === 2 && fold().open && /2 pending/.test(pending()));
-  if (fold().open) fold().querySelector('summary').click();
+  const pending = () => w.document.querySelector('[data-gov-record="gov-register"] .gov-record-count').textContent;
+  ok('unsigned minutes mark the Register utility without choosing it for the player',
+    minutes.length === 2 && fold().hidden && /2 pending/.test(pending()));
+  w.document.querySelector('[data-gov-record="gov-register"]').click();
   w.eval('UI.redraw();');
-  ok('an explicit Register fold survives while its pending indication remains visible',
-    !fold().open && /2 pending/.test(pending()));
+  ok('explicit Register selection survives while its pending indication remains visible',
+    !fold().hidden && /2 pending/.test(pending()));
   minutes.forEach(m => state.signedMinutes[m.id] = state.sitting);
   w.eval('UI.redraw();');
   ok('signing minutes clears pending activity without counting historical documents',
@@ -357,8 +427,8 @@ ok("each order appears under its authoring department",
   w.__govFixture = fixture; w.__govState = state;
   w.eval('UI.boot(window.__govState, window.__govFixture); UI.openTab("gov");');
   const card = id => w.document.querySelector('#gov-cabinet [data-post="' + id + '"]');
-  ok('two vacancies place each candidate list only inside its own department',
-    [vacancy, second].every(p => card(p.id).querySelectorAll('[data-appoint="' + p.id + '"]').length === vacancy.candidates.length) &&
+  ok('two vacancies keep appointment actions out of the business list',
+    [vacancy, second].every(p => !card(p.id).querySelector('[data-appoint]')) &&
     !w.document.querySelector('#gov-appoint-panel'));
   const route = spec => {
     const link = w.document.querySelector('.dk.post[data-goto="gov"]');
@@ -369,19 +439,29 @@ ok("each order appears under its authoring department",
   ok('the vacancy docket names its department target', !!docket);
   route('post:' + vacancy.id);
   ok('a vacancy destination opens its own card and focuses its first appointment',
-    !card(vacancy.id).hidden && w.document.activeElement === card(vacancy.id).querySelector('[data-appoint]'));
+    !card(vacancy.id).hidden && w.document.activeElement === w.document.querySelector('#gov-inspector [data-appoint="' + vacancy.id + '"]'));
+  w.document.querySelector('[data-gov-back]').click(); route('post:'+vacancy.id);
+  ok('direct vacancy navigation reveals the file after returning to narrow business',
+    !w.document.querySelector('#gov-si').classList.contains('gov-mobile-list') &&
+    w.document.activeElement.matches('#gov-inspector [data-appoint]'));
   const originalConfirm = w.eval('Dialog.confirm');
   w.__govConfirm = originalConfirm;
   w.eval('Dialog.confirm = function(m,o,cb) { cb(false); };');
-  const appointment = card(vacancy.id).querySelector('[data-appoint]');
+  const appointment = w.document.querySelector('#gov-inspector [data-appoint="' + vacancy.id + '"]');
   if (appointment) appointment.click();
   ok('canceling an appointment preserves its vacancy and selected department', !state.cabinet[vacancy.id].holder && !card(vacancy.id).hidden);
   w.eval('Dialog.confirm = window.__govConfirm;');
   if (appointment) appointment.click();
-  ok('appointing removes candidates once and leaves focus on the surviving department summary',
+  ok('appointing removes candidates once and leaves focus on its visible work file',
     state.cabinet[vacancy.id].holder === vacancy.candidates[0].holder &&
     !card(vacancy.id).querySelector('[data-appoint]') && !card(vacancy.id).hidden &&
-    w.document.activeElement === card(vacancy.id).querySelector('[data-gov-summary]'));
+    w.document.activeElement.id === 'gov-file-title');
+  const dismiss=w.document.querySelector('#gov-inspector [data-sack="'+vacancy.id+'"]');
+  if(dismiss)dismiss.click();
+  ok('dismissal updates the office file and retains its keyboard focus',
+    !!dismiss && !state.cabinet[vacancy.id].holder &&
+    w.document.activeElement.id==='gov-file-title' &&
+    w.document.querySelector('#gov-file-office').textContent.includes('Vacant'));
   const si = fixture.instruments.find(i => i.author && state.cabinet[i.author].holder && (!i.when || w.eval('Engine.matches(UI.state(), ' + JSON.stringify(i.when) + ')')));
   w.eval('UI.redraw();');
   route('order:' + si.id);
@@ -406,7 +486,8 @@ ok("each order appears under its authoring department",
   state.slots.used = used;
   route('post:');
   ok('the Prime Minister is a department destination without an authored post id',
-    !card('').hidden && w.document.activeElement === card('').querySelector('[data-gov-summary]'));
+    !card('').hidden && w.document.activeElement.id === 'gov-file-title' &&
+    w.document.activeElement.textContent === 'Prime Minister');
   fixture.initiatives[0].when = { flags:['test_not_available'] };
   w.eval('UI.redraw();'); route('initiative:test_destination');
   ok('a surviving owner supplies the fallback when its initiative is unavailable',
@@ -416,22 +497,22 @@ ok("each order appears under its authoring department",
   w.eval('UI.redraw();');
   const noCandidates = card(second.id);
   route('post:' + second.id);
-  ok('a vacancy without candidates retains its restriction and focuses its summary',
+  ok('a vacancy without candidates retains its restriction and focuses its work file',
     /cannot make an order/.test(noCandidates.textContent) && !noCandidates.querySelector('[data-appoint]') &&
-    w.document.activeElement === card(second.id).querySelector('[data-gov-summary]'));
+    w.document.activeElement.id === 'gov-file-title');
   fixture.cabinet = Cg.cabinet.map(p => p.id === second.id ? Object.assign({}, p, { candidates:vacancy.candidates }) : p);
   state.cabinet[vacancy.id].holder = vacancy.candidates[0].holder;
   w.eval('UI.redraw();');
   route('order:missing_test_order');
-  ok('an unknown Government destination falls back to the Departments heading',
-    w.document.activeElement.id === 'gov-departments-hdr');
+  ok('an unknown Government destination falls back to the visible workspace heading',
+    w.document.activeElement.id === 'gov-workspace-title');
   const owed = () => w.document.querySelector('#gov-undertakings');
-  ok('empty Undertakings start folded', !!owed() && !owed().open);
+  ok('empty Undertakings are available without auto-selecting a record', !!owed() && owed().hidden);
   state.undertakings = [{ id:'test_owed', state:'open', text:'Fixture undertaking', by:state.sitting+2, keep:{ flag:'fixture_kept' } }];
   w.eval('UI.redraw();');
-  ok('populated Undertakings open before any explicit fold choice', !!owed() && owed().open);
-  if (owed()) owed().querySelector('summary').click(); w.eval('UI.redraw();');
-  ok('an explicit Undertakings fold survives rendering', !!owed() && !owed().open);
+  ok('populated Undertakings do not displace the player\'s work file', !!owed() && owed().hidden);
+  w.document.querySelector('[data-gov-record="gov-undertakings"]').click(); w.eval('UI.redraw();');
+  ok('an explicit Undertakings selection survives rendering', !!owed() && !owed().hidden);
   w.__govFixture = Cg;
   w.eval('UI.boot(' + original + ', window.__govFixture);');
 }
@@ -1331,15 +1412,18 @@ try {
    reason on hover. A row with neither is a minister the player can only
    wonder about. */
 try {
-   const rows = [].slice.call(w.document.querySelectorAll("#gov-cabinet .gov-card"))
-     .filter(r => !r.querySelector('.flag.bad[data-tip="vacant"]'));
-  const silent = rows.filter(r => {
-    const x = r.querySelector("[data-sack], .flag.nosack");
-    return !x || !x.getAttribute("data-tip-body");
-   }).map(r => (r.querySelector("h3") || {}).textContent);
+  const content=w.eval('UI.content()'), state=w.eval('UI.state()');
+  const rows=[''].concat(content.cabinet.filter(p=>(state.cabinet[p.id]||{}).holder).map(p=>p.id));
+  const silent=[], tags=[];
+  rows.forEach(post=>{
+    w.document.querySelector('[data-select-post="'+post+'"]').click();
+    w.document.querySelector('[data-gov-post-file="'+post+'"]').click();
+    const x=w.document.querySelector('#gov-inspector [data-sack], #gov-inspector .flag.nosack');
+    if(!x || !x.getAttribute('data-tip-body'))silent.push(post || 'Prime Minister');
+    if(x?.classList.contains('nosack'))tags.push(x.textContent);
+  });
   ok("every minister's row says whether they can be dismissed, and why",
      rows.length > 1 && silent.length === 0, silent.join(", ") || rows.length + " rows");
-  const tags = [].slice.call(w.document.querySelectorAll("#gov-cabinet .flag.nosack")).map(n => n.textContent);
   ok("and the standing reasons are told apart",
      tags.indexOf("PARTNER") >= 0 && tags.indexOf("NO SUCCESSOR") >= 0 && tags.indexOf("CHAIRS") >= 0,
      [...new Set(tags)].join(", "));
@@ -1811,6 +1895,8 @@ try {
      stt.instruments[order.id].made = true;
      stt.instruments[order.id].inForce = true;
      w.eval("UI.boot(UI.state(), CONTENT)");
+     w.document.querySelector('[data-select-post="' + order.author + '"]').click();
+     w.document.querySelector('#gov-cabinet [data-inspect="' + order.id + '"]').click();
      const read = w.document.querySelector('#gov-si [data-read="' + order.id + '"]');
      if (read) read.click();
      const overlay = w.document.querySelector("#gov-docs");
@@ -1851,6 +1937,7 @@ try {
      made Escape ineffective on both mouse and keyboard entry. */
   w.eval('UI.openTab("gov");');
   for (const route of ["click", "keyboard"]) {
+    w.document.querySelector('[data-gov-record="gov-register"]').click();
     const row = w.document.querySelector("#pp-list [data-doc]");
     const id = row && row.dataset.doc;
     if (row) {

@@ -331,6 +331,11 @@ ${HELPERS}
       document.querySelector('[data-select-post=""]').click();
       var work = document.querySelector('#gov-cabinet [data-post=""] [data-ini]');
       if (work) work.click();
+      var businessRect = document.querySelector('#gov-main').getBoundingClientRect();
+      var fileRect = document.querySelector('#gov-file-pane').getBoundingClientRect();
+      if (innerWidth > 640 && fileRect.left < businessRect.right - 1)
+        found.push({tab:"gov-desk",el:"#gov-file-pane",kind:"LAYOUT",by:1,
+          detail:"The work file is not beside the business list."});
       UI.state().undertakings.push({ id:"layout_undertaking", state:"open",
         text:"Layout fixture undertaking", by:UI.state().sitting + 2, discharge:{} });
       UI.redraw();
@@ -344,7 +349,7 @@ ${HELPERS}
           found.push({tab:"gov-office:" + (id || "pm"),el:"#gov-workspace-title",kind:"LAYOUT",by:1,
             detail:"Selecting a minister leaves the workspace heading outside the viewport."});
         var scope = document.querySelector('#gov-cabinet [data-post="' + id + '"]');
-        var inspect = scope.querySelector('[data-ini], [data-inspect]');
+        var inspect = scope.querySelector('[data-ini], [data-inspect]') || scope.querySelector('[data-gov-post-file]');
         if (inspect) {
           inspect.click();
           var file = document.querySelector('#gov-inspector');
@@ -386,9 +391,13 @@ ${HELPERS}
       var awaiting = (govContent.instruments || []).filter(function(i) { return i.procedure === "affirmative"; })[0];
       if (awaiting) Object.assign(UI.state().instruments[awaiting.id], { made:true, inForce:false, awaitingApproval:true });
       UI.redraw();
-      document.querySelectorAll("#gov-records details").forEach(function(fold) {
-        if (!fold.open) fold.querySelector("summary").click();
+      document.querySelectorAll("[data-gov-record]").forEach(function(button) {
+        button.click();
+        found = found.concat(measure("gov-record:" + button.dataset.govRecord));
       });
+      document.querySelector('[data-gov-return]').click();
+      var running = document.querySelector('#gov-business [data-running]');
+      if (running) running.click();
       UI.redraw();
       found = found.concat(measure("gov-business-stress"));
       savedTitles.forEach(function(x) { x[0].title=x[1]; x[0].note=x[2]; });

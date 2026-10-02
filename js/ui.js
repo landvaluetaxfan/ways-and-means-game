@@ -21,7 +21,6 @@ const UI = (function () {
      detail rows with no relationship to what is above them. */
   let funcOpen = null;
   /* And an instrument opens in place. One id, for the same reason. */
-  let siOpen = null;
   /* WHILE THE COUNT RUNS, the chamber screen presents the bill AS IT WAS
      when the division was called. The engine resolves the division on the
      click (a division is skippable, so the arithmetic must be final before
@@ -201,7 +200,10 @@ const UI = (function () {
   function boot(state, content) {
     st = state; C = content;
     moneyCall = null;
-    govRecordOpen = {};
+    const govPref = govStoredWorkspace();
+    Focus.seed("gov-work", typeof govPref.work === "string" ? govPref.work : null);
+    Focus.seed("gov-utilities", null);
+    $("#gov-si").classList.remove("gov-mobile-list");
     currentEvent = null; lastResult = null;
     /* Shell re-boots on every load, and both of these are EDGE triggers
        against the previous state. Carrying them across a load would fire
@@ -242,6 +244,44 @@ const UI = (function () {
        does. Focus owns the selection and the keyboard from here; this
        file keeps the knowledge of what a bill or a station is, which is
        the only reason the fallbacks are functions and not strings. */
+    Focus.region("gov-work", {
+      rows:"[data-gov-key]", key:r => r.dataset.govKey,
+      activate:key => {
+        if (key.startsWith("post:")) setGovOpen(key.slice(5), true);
+        setGovWorkKey(key); Focus.seed("gov-utilities", null); drawGovernment();
+        queueMicrotask(revealGovFile);
+      }
+    });
+    Focus.region("gov-utilities", {
+      rows:"[data-gov-record]", key:r => r.dataset.govRecord,
+      activate:() => {
+        if ($("#gov-records").hidden) govReturnScroll = $("#gov-file-scroll").scrollTop;
+        drawGovRecords(); $("#gov-si").classList.remove("gov-mobile-list");
+        $("#gov-file-scroll").scrollTop = 0;
+      }
+    });
+    $("#gov-tools").querySelectorAll("[data-gov-record]").forEach(b => {
+      b.tabIndex = 0;
+      b.onclick = () => {
+        if (!Focus.selected("gov-utilities")) govReturnScroll = $("#gov-file-scroll").scrollTop;
+        Focus.activate("gov-utilities", b.dataset.govRecord);
+        $("#gov-si").classList.remove("gov-mobile-list");
+        const heading = $("#" + b.dataset.govRecord + " .gov-record-title");
+        heading.tabIndex = -1; heading.focus({preventScroll:true});
+        $("#gov-file-scroll").scrollTop = 0;
+      };
+    });
+    $("[data-gov-return]").onclick = () => {
+      Focus.seed("gov-utilities", null); drawGovRecords();
+      $("#gov-file-scroll").scrollTop = govReturnScroll;
+      const target = $("#gov-inspector").hidden ? $("#gov-workspace-title") : $("#gov-file-title");
+      target.focus({preventScroll:true});
+    };
+    $("[data-gov-back]").onclick = () => {
+      $("#gov-si").classList.add("gov-mobile-list");
+      $("#gov-workspace-title").focus({preventScroll:true});
+    };
+    $("#gov-scope").onchange = e => selectGovDepartment(e.target.value === "all" ? null : e.target.value);
     Focus.region("cham-bills", {
       rows: "tr[data-bill]",
       key: tr => tr.dataset.bill,
@@ -454,7 +494,7 @@ const UI = (function () {
       id:active.id,
       fallback:govRegion.id === "gov-inspector" ? "#gov-workspace-title" : govRegion.id === "gov-cabinet"
         ? '[data-gov-summary="' + (ownerBox ? ownerBox.dataset.post : "") + '"]'
-        : active.closest("#gov-pending") ? "#gov-pending-hdr" : "#gov-available-hdr"
+        : "#gov-workspace-title"
     } : null;
     Focus.around(() => {
       /* A tip is positioned in viewport coordinates against a node that is
@@ -2493,17 +2533,45 @@ const UI = (function () {
     const post = value && !Array.isArray(value) && value.post;
     return post === "" || (C.cabinet || []).some(p => p.id === post) ? post : null;
   }
+  function govStoredWorkspace() {
+    const all = Shell.options.govWorkspace, value = all && all[st.admin];
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  }
+  function govWorkId(kind) {
+    const key = Focus.selected("gov-work");
+    return typeof key === "string" && key.startsWith(kind + ":") ? key.slice(kind.length + 1) : null;
+  }
+  function setGovWorkKey(key) {
+    Focus.seed("gov-work", key);
+    const old = Shell.options.govWorkspace;
+    const all = old && typeof old === "object" && !Array.isArray(old) ? Object.assign({}, old) : {};
+    all[st.admin] = Object.assign({}, govStoredWorkspace(), {work:key});
+    Shell.setOpt("govWorkspace", all);
+  }
+  function selectGovDepartment(post) {
+    setGovOpen(post, post !== null); setGovWorkKey(null);
+    Focus.seed("gov-utilities", null);
+    Focus.around(() => drawGovernment(), {sel:"#gov-workspace-title"});
+    $("#gov-work").scrollTop = 0;
+    $("#gov-si").classList.add("gov-mobile-list");
+  }
   function setGovOpen(id, open) {
     const old = Shell.options.govWorkspace;
     const all = old && typeof old === "object" && !Array.isArray(old) ? Object.assign({}, old) : {};
-    all[st.admin] = { post:open ? id : null };
+    all[st.admin] = Object.assign({}, govStoredWorkspace(), { post:open ? id : null });
     Shell.setOpt("govWorkspace", all);
   }
   function drawGovWorkspace() {
     const selected = govPreferences(st.admin);
     $("#gov-business").hidden = selected !== null;
     $("#gov-cabinet").hidden = selected === null;
-    $("#gov-workspace-title").textContent = selected === null ? "Government business" : govPostName(selected);
+    const occupant = selected === null ? null : C.characterById[selected ? (st.cabinet[selected] || {}).holder : C.setup.pm];
+    $("#gov-workspace-title").textContent = selected === null ? "Government business" :
+      govPostName(selected) + " · " + (occupant ? bare(occupant.name) : "Vacant");
+    $("#gov-scope").innerHTML = `<option value="all">All government</option>` +
+      [""].concat((C.cabinet || []).map(p => p.id)).map(id =>
+        `<option value="${esc(id)}">${esc(govPostName(id))}</option>`).join("");
+    $("#gov-scope").value = selected === null ? "all" : selected;
     document.querySelectorAll("#gov-cabinet .gov-card").forEach(card => card.hidden = card.dataset.post !== selected);
     const posts = [""].concat((C.cabinet || []).map(p => p.id));
     $("#gov-roster").innerHTML = `<button class="btn gov-all" id="gov-select-all" data-gov-all aria-pressed="${selected === null}">All government business</button>` + posts.map(id => {
@@ -2512,23 +2580,13 @@ const UI = (function () {
       const p = (C.partyById || {})[party];
       return `<button class="gov-select" id="gov-select-${id ? "post-" + esc(id) : "pm"}" data-select-post="${esc(id)}" aria-pressed="${selected === id}">` +
         portrait(ch) + `<span><strong>${ch ? esc(bare(ch.name)) : "Vacant"}</strong><span class="gov-office">${esc(govPostName(id))}</span>` +
-        `${p ? `<span class="gov-party">${mark(party)} ${esc(p.short || p.name)}</span>` : `<span class="flag bad">VACANT</span>`}</span></button>`;
+        `${p ? `<span class="gov-party">${mark(party)} ${esc(p.short || p.name)}</span>` : `<span class="flag bad" data-tip="vacant">VACANT</span>`}</span></button>`;
     }).join("");
     $("#gov-roster").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
-      setGovOpen(b.dataset.selectPost, b.hasAttribute("data-select-post"));
-      siOpen = null; initOpen = null;
-      Focus.around(() => drawGovernment(), {sel:"#gov-workspace-title"});
-      $("#gov-work").scrollTop = 0;
-      const title = $("#gov-workspace-title");
-      if (title.scrollIntoView) title.scrollIntoView({block:"nearest"});
+      selectGovDepartment(b.hasAttribute("data-select-post") ? b.dataset.selectPost : null);
     }));
   }
-  let govRecordOpen = {};
-  function rememberGovRecord(fold) {
-    if (typeof fold.__govOpen === "boolean" && fold.open !== fold.__govOpen) {
-      govRecordOpen[fold.id] = fold.open; fold.__govOpen = fold.open;
-    }
-  }
+  let govReturnScroll = 0;
   function drawGovRecords() {
     const counts = {
       "gov-register":(C.minutes || []).filter(m => !(st.signedMinutes || {})[m.id] &&
@@ -2538,17 +2596,22 @@ const UI = (function () {
       "gov-presidency":Object.values(st.bills || {}).filter(b => b.stage === "awaiting_assent").length
     };
     Object.keys(counts).forEach(id => {
-      const fold = $("#" + id); rememberGovRecord(fold);
-      fold.open = typeof govRecordOpen[id] === "boolean" ? govRecordOpen[id] : !!counts[id];
-      fold.__govOpen = fold.open;
-      fold.ontoggle = () => rememberGovRecord(fold);
-      let count = fold.querySelector("summary .gov-record-count");
+      const fold = $("#" + id), button = $('[data-gov-record="' + id + '"]');
+      const active = Focus.selected("gov-utilities") === id;
+      fold.hidden = !active;
+      button.setAttribute("aria-pressed", String(active));
+      let count = button.querySelector(".gov-record-count");
       if (!count) {
         count = document.createElement("span"); count.className = "gov-record-count";
-        fold.querySelector("summary").appendChild(count);
+        button.appendChild(count);
       }
       count.textContent = counts[id] ? " · " + counts[id] + " pending" : "";
     });
+    const record = !!Focus.selected("gov-utilities"), work = !!$("#gov-file-title").dataset.work;
+    $("#gov-records").hidden = !record;
+    $("#gov-inspector").hidden = record || !work;
+    $("#gov-empty").hidden = record || work;
+    $("#gov-si").dataset.fileOpen = String(record || work);
   }
   function govOwner(id) {
     return (C.cabinet || []).some(p => p.id === id) ? id : "";
@@ -2564,15 +2627,36 @@ const UI = (function () {
       $("#" + view).querySelectorAll("[data-ini], [data-take], [data-make], [data-approve], [data-pray], [data-revoke], [data-read], [data-inspect], tr[data-si], [data-running]").forEach(n => {
         const key = ["ini", "take", "make", "approve", "pray", "revoke", "read", "inspect", "si", "running"].find(k => n.dataset[k] != null);
         n.id = view + "-" + key + "-" + n.dataset[key] + (key === "take" ? "-" + n.dataset.tempo : "");
+        if (view !== "gov-inspector" && !n.closest('[hidden]') &&
+            ["ini", "inspect", "running"].includes(key) && n.tagName === "BUTTON") {
+          n.dataset.govKey = (key === "ini" ? "initiative" : key === "inspect" ? "si" : "running") + ":" + n.dataset[key];
+          n.tabIndex = 0;
+        }
       });
+    });
+    $("#gov-cabinet").querySelectorAll("[data-gov-post-file]").forEach(b => {
+      if (!b.closest('[hidden]')) b.dataset.govKey = "post:" + b.dataset.govPostFile;
+      b.id = "gov-post-file-" + (b.dataset.govPostFile || "pm");
+    });
+    $("#gov-work").querySelectorAll('[data-goto="gov"][data-open^="post:"]').forEach(b => {
+      if (!b.closest('[hidden]')) {
+        b.dataset.govKey = b.dataset.open;
+        b.id = "gov-post-route-" + (b.dataset.open.slice(5) || "pm") + "-" +
+          (b.closest("#gov-vacancies") ? "vacancy" : b.closest("#gov-pending") ? "pending" : "available");
+        b.tabIndex = 0;
+      }
+    });
+    $("#gov-work").querySelectorAll("[data-gov-key]").forEach(b => {
+      const selected = b.dataset.govKey === Focus.selected("gov-work");
+      b.setAttribute("aria-pressed", String(selected));
     });
   }
   function redrawGovWork(control) {
     const id = control.dataset.make || control.dataset.approve || control.dataset.pray || control.dataset.revoke;
     const si = (C.instruments || []).find(i => i.id === id);
     const owner = govOwner(si && si.author);
-    Focus.around(() => drawAll(), { sel: govPreferences(st.admin) === null ? "#gov-pending-hdr"
-      : '[data-gov-summary="' + owner + '"]' });
+    Focus.around(() => drawAll(), { sel:govWorkId("si") === id ? "#gov-file-title"
+      : govPreferences(st.admin) === null ? "#gov-pending-hdr" : '[data-gov-summary="' + owner + '"]' });
   }
   function drawGovBusiness(siRows) {
     const vac = (C.cabinet || []).filter(p => !(st.cabinet[p.id] || {}).holder);
@@ -2605,6 +2689,10 @@ const UI = (function () {
         if (count) counts.push(count + " " + label + (kind === "running" || count === 1 ? "" : "s"));
       });
       card.querySelector(".gov-summary-counts").textContent = counts.join(" · ");
+      const empty = document.createElement("p"); empty.className = "note gov-no-business";
+      empty.textContent = "No business in this department.";
+      empty.hidden = counts.length > 0 || !!card.querySelector('.flag.bad[data-tip="vacant"]');
+      card.querySelector(".gov-card-work").appendChild(empty);
     });
   }
   /* Only a deliberate inspection navigates to the file. Rendering alone
@@ -2612,48 +2700,81 @@ const UI = (function () {
   function revealGovFile() {
     const box = $("#gov-inspector"), title = $("#gov-file-title");
     if (box.hidden) return;
+    $("#gov-si").classList.remove("gov-mobile-list");
     title.focus({preventScroll:true});
-    if (box.scrollIntoView) box.scrollIntoView({block:"start"});
+    $("#gov-file-scroll").scrollTop = 0;
   }
   function drawGovInspector() {
     const box = $("#gov-inspector"), body = $("#gov-file-body");
     const selected = govPreferences(st.admin);
+    const initOpen = govWorkId("initiative"), siOpen = govWorkId("si"),
+      running = govWorkId("running"), post = govWorkId("post");
     const scope = selected === null ? $("#gov-business") : $("#gov-cabinet").querySelector('[data-post="' + selected + '"]');
     body.innerHTML = "";
-    let title = "", source = null;
+    let title = "", source = null, owner = null;
     if (scope && initOpen) {
       const head = scope.querySelector('[data-ini="' + initOpen + '"]');
       source = head && head.parentElement.querySelector(".ini-b");
       const entry = (C.initiatives || []).find(i => i.id === initOpen);
-      if (source && entry) { title = entry.title; body.appendChild(source); }
-      else initOpen = null;
+      if (source && entry) { title = entry.title; owner = govOwner(entry.post); body.appendChild(source); }
     } else if (scope && siOpen) {
       const row = scope.querySelector('[data-si="' + siOpen + '"]');
       source = row && row.nextElementSibling;
       const entry = (C.instruments || []).find(i => i.id === siOpen);
       if (source && source.classList.contains("si-d") && entry) {
-        title = entry.title;
+        title = entry.title; owner = govOwner(entry.author);
         const table = document.createElement("table"); table.appendChild(source); body.appendChild(table);
         const actions = document.createElement("div"); actions.className = "gov-file-actions";
         const cell = row.lastElementChild;
         while (cell.firstChild) actions.appendChild(cell.firstChild);
         body.appendChild(actions);
-      } else siOpen = null;
+      }
+    } else if (scope && running) {
+      const entry = (C.initiatives || []).find(i => i.id === running);
+      const row = scope.querySelector('[data-running="' + running + '"]');
+      if (entry && row) {
+        title = entry.title; owner = govOwner(entry.post);
+        body.innerHTML = `<p>${esc(entry.note || "")}</p><p class="note">${esc(row.textContent)}</p>`;
+      }
+    } else if (post !== null && (post === "" || (C.cabinet || []).some(p => p.id === post))) {
+      title = govPostName(post); owner = post;
     }
+    // The business lists contain inspection controls only. Keep one set of
+    // executable controls, moved from the selected row into this work file.
+    $("#gov-init").querySelectorAll("#gov-cabinet [data-make], #gov-business [data-make], #gov-cabinet [data-approve], #gov-business [data-approve], #gov-cabinet [data-pray], #gov-business [data-pray], #gov-cabinet [data-revoke], #gov-business [data-revoke], #gov-cabinet [data-read], #gov-business [data-read]").forEach(n => n.remove());
     $("#gov-init").querySelectorAll("#gov-cabinet .ini-b, #gov-business .ini-b, #gov-cabinet .si-d, #gov-business .si-d").forEach(n => n.remove());
+    if (!title) setGovWorkKey(null);
     box.hidden = !title; $("#gov-file-title").textContent = title || "Work file";
+    const holder = owner === null ? null : C.characterById[owner ? (st.cabinet[owner] || {}).holder : C.setup.pm];
+    const party = owner ? (st.cabinet[owner] || {}).party : holder && holder.party;
+    $("#gov-file-office").innerHTML = owner === null ? "" : esc(govPostName(owner)) + " · " +
+      (holder ? `<a class="cx-link" tabindex="0" data-go="person_${esc(holder.id)}">${esc(bare(holder.name))}</a>` : "Vacant") +
+      (holder && party ? " " + mark(party) + " " + esc((C.partyById[party] || {}).short || party) : "");
+    $("#gov-file-title").dataset.work = title ? Focus.selected("gov-work") : "";
     const close = box.querySelector("[data-gov-close]"); close.id = "gov-file-close";
     close.onclick = () => {
       const view = selected === null ? "gov-business" : "gov-cabinet";
-      const origin = initOpen ? view + "-ini-" + initOpen : view + "-inspect-" + siOpen;
-      initOpen = null; siOpen = null;
+      const origin = initOpen ? view + "-ini-" + initOpen : siOpen ? view + "-inspect-" + siOpen
+        : running ? view + "-running-" + running : "gov-post-file-" + (post || "pm");
+      setGovWorkKey(null);
       Focus.around(() => drawGovernment(), { sel:"#" + origin });
     };
+  }
+  function finishGovOfficeFile() {
+    const post = govWorkId("post"), body = $("#gov-file-body");
+    if (post !== null) {
+      const card = $("#gov-cabinet").querySelector('[data-post="' + post + '"]');
+      if (card) card.querySelectorAll(".gov-card-people, .gov-remit, .gov-appointments").forEach(n => body.appendChild(n));
+    }
+    $("#gov-cabinet").querySelectorAll(".gov-appointments").forEach(n => n.replaceChildren());
+    $("#gov-cabinet").querySelectorAll(".gov-card-people").forEach(n => n.replaceChildren());
+    govWorkKeys(); drawGovRecords();
   }
   function drawGovernment() {
     const card = (id, name) => `<section class="gov-card" data-post="${esc(id)}" data-admin="${esc(st.admin)}">` +
       `<header class="gov-person"><div class="gov-person-photo">${portrait(C.characterById[id ? (st.cabinet[id] || {}).holder : C.setup.pm])}</div><div>` +
       `<h3 data-gov-summary="${esc(id)}" tabindex="-1">${esc(name)}</h3><div class="gov-card-people"></div><span class="gov-summary-counts"></span></div></header>` +
+      `<button class="btn gov-post-file" data-gov-post-file="${esc(id)}">Office details${id && !(st.cabinet[id] || {}).holder ? " · appointments" : ""}</button>` +
       `<div class="gov-card-body">` +
       `<div class="gov-card-work"><section class="gov-section" data-gov-section="instruments"><h4>Available powers</h4><table data-si-post="${esc(id)}" data-si-phase="available"></table>` +
       `<div class="gov-card-ini" data-ini-post="${esc(id)}"></div></section>` +
@@ -2828,7 +2949,7 @@ const UI = (function () {
       else if (s.inForce) { status = window > 0 ? "in force · prayable " + window : "in force"; cls = "good"; }
       else if (s.awaitingApproval) { status = "awaiting approval"; }
       else status = si.procedure === "affirmative" ? "affirmative" : "negative";
-      const open = siOpen === si.id;
+      const open = govWorkId("si") === si.id;
       /* AN ORDER THAT KEEPS A PROMISE SAYS SO. The carve-out promise is
          discharged by signing one order, and a player reading a table of
          thirteen orders should not have to know which. */
@@ -2839,7 +2960,8 @@ const UI = (function () {
           (keeps.length ? ` <span class="flag" data-tip-title="Keeps a promise" ` +
             `data-tip-body="${esc(keeps.map(u => u.text).join("  \u00b7  "))}. ` +
             `Signing it here discharges the undertaking.">PROMISE</span>` : "") +
-          `<div class="note"><span class="gov-work-type">&#9633; Order</span> · ${esc(si.number)} · ${esc(govPostName(si.author))}</div></td>
+          `<div class="note"><span class="gov-work-type">&#9633; Order</span> · ${esc(si.number)} · ${esc(govPostName(si.author))}</div>` +
+          `<span class="gov-work-state ${cls}">${esc(status)}</span></td>
         <td class="n"><span class="flag ${cls}" data-tip="${s.inForce ? "prayer" : "instrument"}">${status}</span></td>
         <td class="n">${s.made ? "" :
           `<button class="btn sibtn" data-make="${si.id}"${chk.ok ? "" : " disabled"}` +
@@ -2897,14 +3019,12 @@ const UI = (function () {
     $("#gov-si").querySelectorAll("tr[data-si]").forEach(tr =>
       tr.addEventListener("click", e => {
         if (e.target.closest("button")) return;
-        siOpen = siOpen === tr.dataset.si ? null : tr.dataset.si;
-        initOpen = null;
+        setGovWorkKey("si:" + tr.dataset.si); Focus.seed("gov-utilities", null);
         Focus.around(() => drawGovernment());
         revealGovFile();
       }));
     $("#gov-si").querySelectorAll("[data-inspect]").forEach(b => b.addEventListener("click", () => {
-      siOpen = siOpen === b.dataset.inspect ? null : b.dataset.inspect;
-      initOpen = null;
+      setGovWorkKey("si:" + b.dataset.inspect); Focus.seed("gov-utilities", null);
       Focus.around(() => drawGovernment());
       revealGovFile();
     }));
@@ -3126,7 +3246,7 @@ const UI = (function () {
             cue("stamp");
             setStatus((ch ? bare(ch.name) : "The minister") + " has been dismissed from " +
                       (post.name || pid), "transient");
-            drawAll(); afterAction();
+            Focus.around(() => drawAll(), {sel:"#gov-file-title"}); afterAction();
           });
       }));
 
@@ -3164,7 +3284,8 @@ const UI = (function () {
         $("#gov-cabinet").querySelectorAll("[data-appoint]").forEach(b => b.addEventListener("click", () => {
           const pid = b.dataset.appoint, ci = +b.dataset.cand;
           const c = Engine.candidates(st, C, pid)[ci];
-          const ch = c && C.characterById[c.holder];
+          if (!c) { setStatus("This appointment is no longer available.", "transient"); return; }
+          const ch = C.characterById[c.holder];
           Dialog.confirm(
             (ch ? ch.name : c.holder) + " takes the post. An appointment cannot be undone.",
             { title: "Appoint?", yes: "Appoint", danger: true },
@@ -3181,7 +3302,7 @@ const UI = (function () {
                         (moved.length ? " \u00b7 " + moved.length + " indicator" +
                          (moved.length === 1 ? "" : "s") + " moved" : ""), "transient");
               setGovOpen(pid, true);
-              saved(); Focus.around(() => drawAll(), { sel:'[data-gov-summary="' + pid + '"]' }); afterAction();
+              saved(); Focus.around(() => drawAll(), {sel:"#gov-file-title"}); afterAction();
             });
         }));
 
@@ -3192,6 +3313,7 @@ const UI = (function () {
       `<table><tbody>${st.president.powers.map(p =>
         `<tr><td style="text-transform:capitalize">${p}</td><td class="n"><span class="flag ${st.president.relationship < 35 ? "bad" : ""}" data-tip="live">${st.president.relationship < 35 ? "LIVE" : "DORMANT"}</span></td></tr>`
       ).join("")}</tbody></table>`;
+    finishGovOfficeFile();
 
     /* THE PLAY'S LOGO stays on the Sitting screen for the whole campaign
        (design/56), small, at the foot of the middle column: the flat
@@ -5270,7 +5392,6 @@ const UI = (function () {
      struck through is a quantity. It is the same time a bill wants, so
      the competition is visible in the place the spending happens.
      --------------------------------------------------------------- */
-  let initOpen = null;
   let moneyCall = null;             /* UI-only lender/amount/context preset */
 
   function slotPips(used, total, need) {
@@ -5290,7 +5411,7 @@ const UI = (function () {
     if (!list.length) return "";
     const left = st.slots.total - st.slots.used;
     return list.map(i => {
-      const open = initOpen === i.id;
+      const open = govWorkId("initiative") === i.id;
       const head = `<button class="ini-h${i.ok ? "" : " refused"}" data-ini="${i.id}" aria-expanded="${open}" aria-controls="gov-inspector"` +
         priceTip(i.title, { slots: i.cost, note:i.note }, i.ok ? null : i.reason) + `>
           <b>${esc(i.title)}</b>
@@ -5325,9 +5446,9 @@ const UI = (function () {
         (st.flags || {})["init_" + i.id] && (st.queue || []).some(q => q.eventId === i.event && i.event))
         .map(i => {
           const due = Math.min(...st.queue.filter(q => q.eventId === i.event).map(q => q.dueSitting));
-          return `<div class="gov-running" data-running="${esc(i.id)}" tabindex="-1"><b>${esc(i.title)}</b>` +
+          return `<button class="gov-running" data-running="${esc(i.id)}"><b>${esc(i.title)}</b>` +
             ` <span class="gov-work-type">&#9655; Initiative · under way</span>` +
-            ` <span class="note">answers at sitting ${due}</span></div>`;
+            ` <span class="note">answers at sitting ${due}</span></button>`;
         }).join("");
     });
     updateGovSections();
@@ -5338,9 +5459,7 @@ const UI = (function () {
         group.hidden = !group.querySelector("[data-si], [data-ini], [data-running]");
         if (!group.hidden) any = true;
       });
-      if (!any) box.insertAdjacentHTML("beforeend", `<div class="note">${id === "gov-pending"
-        ? "No initiatives or orders are awaiting an answer."
-        : "No new powers are available to these departments."}</div>`);
+      box.parentElement.hidden = !any;
     });
     drawGovWorkspace();
     drawGovInspector();
@@ -5351,11 +5470,15 @@ const UI = (function () {
     $("#gov-slot-strip").innerHTML = slotPips(st.slots.used, st.slots.total);
     el.querySelectorAll("[data-ini]").forEach(b =>
       b.addEventListener("click", () => {
-        initOpen = initOpen === b.dataset.ini ? null : b.dataset.ini;
-        siOpen = null;
+        setGovWorkKey("initiative:" + b.dataset.ini); Focus.seed("gov-utilities", null);
         Focus.around(() => drawGovernment());
         revealGovFile();
       }));
+    el.querySelectorAll("[data-running], [data-gov-post-file]").forEach(b => b.onclick = () => {
+      setGovWorkKey(b.hasAttribute("data-running") ? "running:" + b.dataset.running : "post:" + b.dataset.govPostFile);
+      Focus.seed("gov-utilities", null);
+      Focus.around(() => drawGovernment()); revealGovFile();
+    });
     el.querySelectorAll("[data-take]").forEach(b =>
       b.addEventListener("click", () => {
         const i = (C.initiatives || []).find(x => x.id === b.dataset.take) || {};
@@ -5369,12 +5492,10 @@ const UI = (function () {
             const r = acted(() => Engine.take(st, C, b.dataset.take, +b.dataset.tempo));
             if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); return; }
             cue("stamp"); score("undertake");
-            initOpen = null;
+            setGovWorkKey("running:" + i.id);
             setStatus(i.title + " \u2014 an answer in " + r.after +
                       " sitting" + (r.after === 1 ? "" : "s"), "transient");
-            const owner = govOwner(i.post), inOverview = govPreferences(st.admin) === null;
-            Focus.around(() => drawAll(), { sel: inOverview ? "#gov-pending-hdr"
-              : '[data-gov-summary="' + owner + '"]' });
+            Focus.around(() => drawAll(), { sel:"#gov-file-title" });
             saved(); afterAction();
           });
       }));
@@ -5415,7 +5536,7 @@ const UI = (function () {
     const governmentTarget = kind === "si" || kind === "order" || kind === "initiative" || kind === "post";
     let owner = null;
     if (governmentTarget) {
-      siOpen = null; initOpen = null;
+      setGovWorkKey(null); Focus.seed("gov-utilities", null);
       const entry = kind === "post" ? (C.cabinet || []).find(x => x.id === id)
         : (kind === "initiative" ? C.initiatives || [] : C.instruments || []).find(x => x.id === id);
       if (kind === "post" && !id) owner = "";
@@ -5424,7 +5545,7 @@ const UI = (function () {
       if (owner !== null) setGovOpen(owner, true);
     }
     if (kind === "si" || kind === "order") {
-      siOpen = id;
+      setGovWorkKey("si:" + id);
       drawAll();
       const row = document.querySelector('#gov-si tr[data-si="' + id + '"]');
       if (row) {
@@ -5448,7 +5569,7 @@ const UI = (function () {
                     "transient");
       }
     } else if (kind === "initiative") {
-      initOpen = id;
+      setGovWorkKey("initiative:" + id);
       drawAll();
     } else if (kind === "bill" && typeof Focus !== "undefined") {
       Focus.activate("cham-bills", id);
@@ -5481,17 +5602,18 @@ const UI = (function () {
       else setStatus("This advice is no longer in the brief. Its deadline remains on the calendar while unresolved.", "transient");
     }
     if (governmentTarget) {
-      if (kind === "post") drawAll();
+      if (kind === "post") { setGovWorkKey("post:" + id); drawAll(); }
       const card = owner === null ? null : $("#gov-cabinet").querySelector('[data-post="' + owner + '"]');
       const row = card && ((kind === "si" || kind === "order")
         ? card.querySelector('[data-si="' + id + '"]')
         : kind === "initiative" ? card.querySelector('[data-ini="' + id + '"], [data-running="' + id + '"]') : null);
       const target = row ? row.querySelector('button:not(:disabled)') ||
         (row.disabled ? row.closest('.ini') : row)
-        : card ? (kind === "post" && card.querySelector('[data-appoint]')) || card.querySelector('[data-gov-summary]')
-        : $("#gov-departments-hdr");
+        : card ? (kind === "post" ? $("#gov-inspector").querySelector('[data-appoint]') || $("#gov-file-title") : card.querySelector('[data-gov-summary]'))
+        : $("#gov-workspace-title");
       if (!row && kind !== "post")
         setStatus("This work is unavailable. The department shows its current powers.", "transient");
+      if (kind === "post" && card) revealGovFile();
       if (!target.matches('button, [tabindex]')) target.tabIndex = -1;
       target.focus({ preventScroll:true });
       if (target.scrollIntoView) target.scrollIntoView({ block:"nearest" });

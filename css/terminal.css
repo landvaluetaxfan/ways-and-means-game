@@ -200,7 +200,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 /* ---------- panels ---------- */
 .grid{display:grid;gap:5px;}
 /* The cabinet stays navigable while its selected work scrolls separately. */
-.g-gov{grid-template-columns:minmax(220px,280px) minmax(0,1fr);}
+.g-gov{grid-template-columns:minmax(210px,240px) minmax(250px,320px) minmax(0,1fr);}
 /* THE SCREEN TAKES THE VIEWPORT, as the Chamber and the orbit do. This came
    over from the Papers tab when Papers was folded in: the register used to
    carry an inline max-height in the markup to stop its column running away,
@@ -208,14 +208,29 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    another. The screen takes the viewport and the panels divide it. */
 #s-gov.screen.on{height:100%;min-height:0;}
 #gov-init{height:100%;min-height:0;}
-#s-gov .g-gov{grid-template-rows:minmax(0,1fr);
+#s-gov .g-gov{grid-template-rows:auto minmax(0,1fr);
   height:100%;min-height:0;padding:0;overflow:hidden;}
-#gov-work{grid-column:2;grid-row:1;padding:0;min-height:0;overflow:auto;}
-#gov-side{grid-column:1;grid-row:1;}
+#gov-work{padding:8px;min-height:0;overflow:auto;}
+#gov-side{grid-column:1;grid-row:2;}
+#gov-main{grid-column:2;grid-row:2;}
+#gov-file-pane{grid-column:3;grid-row:2;min-height:0;}
+#gov-tools{grid-column:1/-1;grid-row:1;display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:5px;background:var(--chrome);border-bottom:1px solid var(--rule);}
+#gov-tools .btn[aria-pressed="true"]{background:var(--field);box-shadow:inset 0 -2px var(--gold);}
+#gov-tools .gov-record-count{font-size:10px;margin-left:4px;}
+#gov-scope-label{display:none;}
+#gov-scope{max-width:100%;}
+#gov-file-pane > h2{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+#gov-file-scroll{overflow:auto;min-height:0;}
+#gov-file-pane [data-gov-back]{display:none;}
 .g-gov > .stack{min-height:0;overflow:visible;}
 #s-gov .stack > .panel{flex:0 0 auto;min-height:0;}
 #s-gov .stack .pbody{overflow:visible;}
 #s-gov #gov-side > .panel{flex:1 1 auto;min-height:0;}
+#s-gov #gov-main > .panel{flex:1 1 auto;min-height:0;}
+#s-gov #gov-work{overflow:auto;}
+#gov-records > .panel{flex:0 0 auto;}
+#gov-utilities{display:flex;gap:6px;flex-wrap:wrap;}
+#gov-main .gov-card-people,#gov-main .gov-appointments,#gov-main .gov-remit{display:none;}
 #s-gov #gov-roster{overflow:auto;min-height:0;}
 /* The document column does not scroll as a COLUMN: it is one panel, and the
    paper inside it is the scroller. */
@@ -224,9 +239,10 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #gov-cabinet{display:flex;flex-direction:column;gap:6px;}
 #s-gov [hidden]{display:none!important;}
 .gov-card{min-width:0;flex:0 0 auto;border:0;background:transparent;}
-.gov-person{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px 16px;padding:10px 0 16px;border-bottom:1px solid var(--rule);}
+.gov-person{display:block;padding:0 0 7px;border-bottom:1px solid var(--rule);}
+.gov-person-photo{display:none;}
 .gov-person h3{font-size:12px;font-weight:normal;letter-spacing:.07em;text-transform:uppercase;margin:0 0 6px;}
-.gov-person .gov-card-people > a{font-size:24px;display:block;line-height:1.25;margin:0 0 6px;}
+.gov-person .gov-card-people > a{font-size:13px;line-height:1.25;}
 .gov-person .gov-card-people .note{display:block;margin:5px 0;}
 .gov-remit{grid-column:2;margin:0;max-width:65ch;}
 .gov-person .portrait{float:none;margin:0;width:80px;}
@@ -246,7 +262,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #gov-time em{font-style:normal;font-family:var(--f-data);}
 #gov-time .pips s{width:15px;height:9px;background:var(--ok);border:0;}
 #gov-time .pips s.spent{background:var(--chrome-dk);}
-#gov-inspector{border-top:3px solid var(--gold);background:var(--chrome);}
+#gov-inspector{border-top:3px solid var(--gold);padding-top:10px;}
 #gov-inspector > header{display:flex;justify-content:space-between;align-items:start;gap:10px;flex-wrap:wrap;}
 #gov-file-title{font-size:18px;font-weight:normal;margin:0;}
 #gov-file-body{max-width:75ch;}
@@ -272,6 +288,15 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #s-gov [data-si] > td{overflow-wrap:anywhere;white-space:normal;}
 #s-gov [data-si] > td:nth-child(2){width:100px;}
 #s-gov [data-si] > td:last-child{width:95px;white-space:normal;}
+#gov-main [data-si] > td:not(:first-child){display:none;}
+#gov-main .gov-work-group{margin:4px 0 9px;padding:0 6px;}
+#gov-main .gov-work-group > h4{margin:0 -6px 3px;padding:4px 6px;}
+#gov-main .ini-h{padding:7px 0;width:100%;}
+#gov-main .ini-h i{font-size:10px;}
+.gov-work-state{display:block;font-size:10px;color:var(--ink-soft);}
+.gov-running{width:100%;text-align:left;background:transparent;color:var(--ink);border:0;}
+.gov-post-file{width:100%;text-align:left;margin:6px 0;}
+#gov-work [data-gov-key][aria-pressed="true"]{background:var(--gold-lt);box-shadow:inset 3px 0 0 var(--gold);}
 #s-gov .si-d p,#s-gov .ini-b p,#s-gov .cand .note{max-width:65ch;font-family:var(--f-sans);font-size:13px;line-height:1.5;}
 .gov-work-type{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);}
 #gov-business > section > .rulehead{margin-top:12px;}
@@ -3799,3 +3824,29 @@ body.no-motion .sp-signature.sig-draw .sigimg{transition:none;}
 .play-logo img{display:block;height:13px;width:auto;opacity:.62;}
 /* and on the act and interval cards and the curtain call it is the title */
 .sp-logo{display:block;width:min(440px,82%);height:auto;margin:6px auto 10px;}
+
+/* Government remains a desk at medium sizes: a department selector frees
+   the rail's width without squeezing the work file into a narrow column. */
+@media (max-width:1080px){
+  #s-gov.screen.on,#gov-init{height:100%;min-height:0;}
+  #s-gov .g-gov{height:100%;min-height:0;overflow:hidden;
+    grid-template-columns:minmax(210px,280px) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);}
+  #s-gov #gov-side{display:none;}
+  #s-gov .g-gov > #gov-main{grid-column:1;grid-row:2;overflow:visible;}
+  #s-gov .g-gov > #gov-file-pane{grid-column:2;grid-row:2;}
+  #s-gov #gov-work{overflow:auto;}
+  #gov-scope-label{display:flex;gap:5px;align-items:center;min-width:0;}
+  #gov-scope{min-width:0;max-width:260px;}
+}
+@media (max-width:640px){
+  #s-gov .g-gov{grid-template-columns:minmax(0,1fr);}
+  #gov-scope-label{flex:0 0 100%;}
+  #gov-scope{flex:1;max-width:none;}
+  #gov-utilities{gap:3px;}
+  #gov-utilities .btn{font-size:11px;}
+  #s-gov .g-gov > #gov-file-pane{grid-column:1;grid-row:2;}
+  #s-gov #gov-si[data-file-open="true"]:not(.gov-mobile-list) #gov-main{display:none;}
+  #s-gov #gov-si[data-file-open="false"] #gov-file-pane,
+  #s-gov #gov-si.gov-mobile-list #gov-file-pane{display:none;}
+  #gov-file-pane [data-gov-back]{display:inline-block;}
+}

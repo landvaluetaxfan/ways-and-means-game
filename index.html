@@ -93,50 +93,64 @@
          having one. -->
     <section class="screen" id="s-gov">
       <div id="gov-init"><div class="grid g-gov pbody scrolls" id="gov-si">
+        <div id="gov-tools" role="group" aria-label="Government records">
+          <label id="gov-scope-label">Department <select id="gov-scope"></select></label>
+          <div id="gov-utilities">
+          <button class="btn" data-gov-record="gov-register" aria-pressed="false">Register</button>
+          <button class="btn" data-gov-record="gov-undertakings" aria-pressed="false">Undertakings</button>
+          <button class="btn" data-gov-record="gov-tribunal" aria-pressed="false">The Tribunal</button>
+          <button class="btn" data-gov-record="gov-presidency" aria-pressed="false">Presidency</button>
+          </div>
+        </div>
         <div class="stack scrolls" id="gov-side">
           <div class="panel"><h2 id="gov-departments-hdr" tabindex="-1">Cabinet</h2>
             <div class="pbody scrolls" id="gov-roster"></div>
           </div>
         </div>
-        <div class="pbody scrolls" id="gov-work">
         <div class="stack scrolls" id="gov-main">
           <div class="panel"><h2 id="gov-workspace-title" tabindex="-1">Government business</h2>
             <div id="gov-time"><span>Order-paper time</span><span id="gov-slot-strip"></span><em id="gov-init-hdr" data-tip="slots"></em></div>
-            <div class="pbody scrolls" id="gov-business">
+            <div class="pbody scrolls" id="gov-work">
+            <div id="gov-business">
               <section id="gov-vacancies"></section>
               <section><h3 class="rulehead" id="gov-pending-hdr" tabindex="-1">Under way</h3><div id="gov-pending"></div></section>
               <section><h3 class="rulehead" id="gov-available-hdr" tabindex="-1">Available powers</h3><div id="gov-available"></div></section>
             </div>
-            <div class="pbody scrolls" id="gov-cabinet"></div>
-            <section class="pbody scrolls" id="gov-inspector" aria-labelledby="gov-file-title" hidden><header><h3 id="gov-file-title" tabindex="-1">Work file</h3><button class="btn" data-gov-close>Close file</button></header><div id="gov-file-body"></div></section>
+            <div id="gov-cabinet"></div>
+            </div>
           </div>
         </div>
-        <div class="stack scrolls" id="gov-records">
-          <details class="panel pfold" id="gov-register">
-            <summary><span data-tip="register">Register</span> <em>acts, orders and minutes</em></summary>
+        <div class="panel" id="gov-file-pane">
+          <h2>Work file <button class="btn" data-gov-back>Back to business</button></h2>
+          <div class="pbody scrolls" id="gov-file-scroll">
+          <p class="note" id="gov-empty">Select business to read its terms and available actions.</p>
+          <section id="gov-inspector" aria-labelledby="gov-file-title" hidden><header><h3 id="gov-file-title" tabindex="-1">Work file</h3><button class="btn" data-gov-close>Close file</button></header><p class="note" id="gov-file-office"></p><div id="gov-file-body"></div></section>
+        <div class="stack scrolls" id="gov-records" hidden>
+          <button class="btn" data-gov-return>Return to work</button>
+          <section class="panel" id="gov-register">
+            <h3 class="rulehead gov-record-title" tabindex="-1"><span data-tip="register">Register</span> <em>acts, orders and minutes</em></h3>
             <div class="pbody flush scrolls"><table id="pp-list"></table></div>
-          </details>
-          <details class="panel pfold" id="gov-undertakings">
-            <summary>Undertakings <em>what the government has said it will do</em></summary>
+          </section>
+          <section class="panel" id="gov-undertakings">
+            <h3 class="rulehead gov-record-title" tabindex="-1">Undertakings <em>what the government has said it will do</em></h3>
             <div class="pbody scrolls" id="gov-owed"></div>
-          </details>
+          </section>
           <!-- WHO CAN STOP YOU, AND USUALLY DOES NOT. Both of these are
                quiet for most of a run — the Tribunal has nothing before it
                until something is referred, and the Presidency has nothing to
                say until an appointment or an assent is in front of it. A
-               panel that is empty most of the time is a frame around a hole
-               if it is always open, so they fold, and they sit at the edge
-               rather than in the column the player works in. -->
-          <details class="panel pfold" id="gov-tribunal">
-            <summary><span data-tip="tribunal">The Tribunal</span> <em>review, not the House</em></summary>
+               utility opens its existing record in the work-file area;
+               neither needs a permanent column or a bottom drawer. -->
+          <section class="panel" id="gov-tribunal">
+            <h3 class="rulehead gov-record-title" tabindex="-1"><span data-tip="tribunal">The Tribunal</span> <em>review, not the House</em></h3>
             <div class="pbody scrolls" id="pp-tribunal"></div>
-          </details>
-          <details class="panel pfold" id="gov-presidency">
-            <summary><span data-tip="live">Presidency</span> <em>assent and refusal</em></summary>
+          </section>
+          <section class="panel" id="gov-presidency">
+            <h3 class="rulehead gov-record-title" tabindex="-1"><span data-tip="live">Presidency</span> <em>assent and refusal</em></h3>
             <div class="pbody scrolls" id="gov-pres"></div>
-          </details>
+          </section>
         </div>
-
+          </div>
         </div>
         <div id="gov-docs" class="doc-overlay" role="dialog" aria-modal="true" aria-label="Document" hidden>
           <div class="panel"><h2>Document <button class="btn" id="gov-doc-close">Close</button></h2>

@@ -181,19 +181,24 @@ H.newGame();
   w.__businessConfirmCount = 0;
   w.eval('Dialog.confirm = function(m,o,cb) { window.__businessConfirmCount++; window.__businessConfirm(m,o,cb); };');
   if (take) take.click();
-  ok('an overview initiative spends once, queues once, moves to pending and returns focus to business',
+  ok('an overview initiative spends once, queues once, moves to pending and focuses its resulting file',
     !!entry && w.__businessConfirmCount === 1 && state.slots.used === slots + (entry.cost == null ? 1 : entry.cost) + (entry.tempo[+take.dataset.tempo].cost || 0) &&
     state.queue.filter(q => q.eventId === entry.event).length === queues + 1 &&
     business().querySelectorAll('[data-running="' + id + '"]').length === 1 &&
-    !business().querySelector('[data-ini="' + id + '"]') && doc.activeElement.id === 'gov-pending-hdr');
+    !business().querySelector('[data-ini="' + id + '"]') && doc.activeElement.id === 'gov-file-title');
+  doc.querySelector('[data-gov-record="gov-register"]').click();
+  doc.querySelector('[data-gov-return]').click();w.eval('UI.redraw();');
+  ok('running work exposes its retained selection through record return and redraw',
+    business().querySelector('[data-running="'+id+'"]').getAttribute('aria-pressed')==='true' &&
+    w.eval('Focus.selected("gov-work")')==='running:'+id);
   w.eval('Dialog.confirm = window.__businessConfirm;');
   const queued = JSON.parse(JSON.stringify(state.queue));
   const running = business() && business().querySelector('[data-running="' + id + '"]');
   if (running) running.focus();
   state.queue = state.queue.filter(q => q.eventId !== entry.event);
   w.eval('UI.redraw();');
-  ok('an answered overview initiative returns keyboard focus to the pending heading',
-    !!running && doc.activeElement.id === 'gov-pending-hdr');
+  ok('an answered overview initiative returns keyboard focus to the visible workspace heading',
+    !!running && doc.activeElement.id === 'gov-workspace-title');
   state.queue = queued; w.eval('UI.redraw();');
   const owner = entry.post || '';
   const card = doc.querySelector('#gov-cabinet [data-post="' + owner + '"]');
@@ -225,15 +230,15 @@ H.newGame();
   const ini = pm.querySelector('[data-ini]'); ini.click();
   const currentPM = w.document.querySelector('#gov-cabinet [data-post=""]');
   ok('an initiative control retains its selected department and opens the shared inspector', !currentPM.hidden && !!w.document.querySelector('#gov-inspector [data-take]'));
-  const vacancy = w.document.querySelector('#gov-cabinet [data-appoint]');
-  const vacancyPost = vacancy.dataset.appoint;
+  const vacancyPost = w.eval('Engine.vacancies(UI.state(), UI.content())[0]');
   w.document.querySelector('[data-select-post="' + vacancyPost + '"]').click();
-  const currentVacancy = w.document.querySelector('[data-appoint="' + vacancyPost + '"]');
+  w.document.querySelector('[data-gov-post-file="' + vacancyPost + '"]').click();
+  const currentVacancy = w.document.querySelector('#gov-inspector [data-appoint="' + vacancyPost + '"]');
   currentVacancy.focus(); const key = currentVacancy.dataset.appointKey;
   w.eval('UI.redraw(); UI.redraw();');
   ok('an appointment control retains its exact identity across repeated redraws',
     !!key && w.document.activeElement.dataset.appointKey === key);
-  const post = vacancy.dataset.appoint;
+  const post = vacancyPost;
   const before = w.eval('UI.state().log.filter(x => / appointed$/.test(x.text)).length');
   w.document.activeElement.click();
   ok('a repeated redraw still executes an appointment exactly once',
@@ -1151,6 +1156,13 @@ try {
    that simply has no explanation yet. Every annotation on the page has to
    resolve, and every article a tip names has to exist. */
 try {
+  /* Office-only explanations are rendered on inspection, not as hidden
+     duplicates in every department. Exercise the actual senior's file. */
+  const senior = w.eval('UI.content().cabinet.find(p => p.senior)');
+  if (senior) {
+    w.document.querySelector('[data-select-post="'+senior.id+'"]').click();
+    w.document.querySelector('[data-gov-post-file="'+senior.id+'"]').click();
+  }
   const anchors = [...w.document.querySelectorAll("#shell [data-tip]")];
   const keys = [...new Set(anchors.map(a => a.getAttribute("data-tip")))];
   ok("the readouts are annotated", anchors.length > 20 && keys.length > 10,
@@ -1701,6 +1713,8 @@ try {
   doc.querySelector('.tab[data-t="gov"]').click();
   const aff = w.eval('CONTENT.instruments.find(function (i) { return i.procedure === "affirmative" && ' +
                      'Engine.canMake(UI.state(), CONTENT, i.id).ok; }).id');
+  doc.querySelector('[data-gov-all]').click();
+  doc.querySelector('#gov-business [data-inspect="' + aff + '"]').click();
   const mk = doc.querySelector('#gov-si [data-make="' + aff + '"]');
   ok("an affirmative order does not promise to be in force at once",
      !!mk && !/in force at once/.test(mk.getAttribute("data-tip-body") || ""),
@@ -1931,7 +1945,10 @@ try {
   /* and the control exists, is a real button, and confirms */
   w.eval('UI.boot(UI.state(), CONTENT);');
   w.document.querySelector('.tab[data-t="gov"]').click();
-  const btns = w.document.querySelectorAll("#gov-cabinet [data-appoint]");
+  const vacantPost = w.eval('Engine.vacancies(UI.state(), UI.content())[0]');
+  w.document.querySelector('[data-select-post="' + vacantPost + '"]').click();
+  w.document.querySelector('[data-gov-post-file="' + vacantPost + '"]').click();
+  const btns = w.document.querySelectorAll("#gov-inspector [data-appoint]");
   ok("the Government screen offers the appointment", btns.length >= 2,
      btns.length + " buttons");
   ok("each is a real button", [].slice.call(btns).every(b => b.tagName === "BUTTON"));
@@ -2599,6 +2616,8 @@ try {
   ok("and each way of doing it", /slot/.test(body(tempo) || ""), body(tempo));
 
   doc.querySelector('.tab[data-t="gov"]').click();
+  doc.querySelector('[data-gov-all]').click();
+  doc.querySelector('#gov-business [data-inspect]').click();
   const make = doc.querySelector("#gov-si [data-make]");
   ok("an order says that it costs no time, which is the point of an order",
      /no order-paper time/.test(body(make) || ""), body(make));
