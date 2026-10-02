@@ -1455,7 +1455,7 @@ waiting for Kenya's rescue or the Commonwealth's answer.`,
       result:"The Ministry for Life Support says the supply will continue. The council's question is still on the Prime Minister's desk." }
   ]},
 
-{ id:"f1_air_fails", at:40, once:true,
+{ id:"f1_air_fails", queuedOnly:true, once:true,
   foreseen:"The Almanac Works' air runs out, unless the Commonwealth pays for its filters",
   /* while nobody has paid, the Act is not carried and the crisis has no
      answer: a platform the Commonwealth owns, or the United Nations
@@ -1492,21 +1492,69 @@ Kenya's treasury says its procurement law forbids it to pay a private
 company's suppliers before the tender for its rescue closes. The Kenyan
 suppliers who send the filters up Tether 2, the space elevator from the
 Kenyan coast, will ship as soon as they are paid.`,
-  effects:[{ flag:"f1_air_failed" }],
+  effects:[{ flag:"f1_air_failed" },
+           { move:{ legitimacy:-12, "trend.legitimacy":-2, public_standing:-8 } }],
+  choices:[]},
+
+/* Lifecycle entries are appended, preserving the existing pool positions. */
+{ id:"f1_air_last_chance", queuedOnly:true, once:true,
+  title:"The Works' last shipment",
+  speaker:null,
+  body:`The Bellamy Almanac Works, the abandoned orbital refinery, is close
+to using up the filters and catalyst that clean its residents' air. Its
+suppliers in Kenya will ship a replacement if the Commonwealth pays now.
+
+The Ministry for Life Support can pay the arrears and three months ahead,
+at CW$2.4bn. The suppliers charge a premium because the shipment must leave
+at once. If the government declines, the residents will have to crowd into
+the parts of the platform where the air is cleaner as the plant fails.`,
   choices:[
-    { posture:"bold", label:"Pay the Kenyan suppliers now, at the price they ask.",
-      note:"The Ministry for Life Support pays the April arrears and three months ahead, CW$2.4bn with the premium the suppliers now charge for shipping at once. The air plant runs again within the week. The deaths stay on the government's record, and voters' trust falls.",
-      effects:[{ flag:"works_air_paid" }, { move:{ "solvency":-2400 } },
-               { move:{ "legitimacy":-4 } }, { move:{ "public_standing":-3 } },
-               { move:{ "actor.earth_host":2 } },
-               { wire:"COMMONWEALTH PAYS FOR THE WORKS' AIR AFTER ELEVEN DIE" }],
-      result:"The first shipment goes up Tether 2 the next morning. Nobody in the House mentions the price." },
-    { posture:"cautious", label:"Hold that the Works is Kenya's responsibility.",
-      note:"The government holds that the platform is outside the Commonwealth and that its residents are Kenya's to rescue. It costs nothing in dollars. The residents ration air until Kenya's tender closes, and more of them will die. Voters' trust falls sharply and goes on falling, and the outer habitats' members have said they will strike.",
-      effects:[{ move:{ "legitimacy":-12 } }, { move:{ "trend.legitimacy":-2 } },
-               { move:{ "public_standing":-8 } },
-               { wire:"PM: THE WORKS IS KENYA'S TO RESCUE" }],
-      result:"The strikes on the outer habitats begin at the next change of shift." }
+    {posture:"bold",label:"Pay CW$2.4bn for the Works' emergency shipment.",
+     note:"You pay the Kenyan suppliers to send filters and catalyst before the Works' air plant runs out. The emergency premium makes this dearer than an early shipment. Kenya's government welcomes the payment, and the residents keep their air supply.",
+     effects:[{flag:"works_air_paid"},{move:{solvency:-2400,"actor.earth_host":2}},
+              {wire:"COMMONWEALTH PAYS FOR THE WORKS' EMERGENCY AIR SHIPMENT"}],
+     result:"The Commonwealth pays the suppliers, and the emergency shipment leaves for the Works before the air plant's stocks run out."},
+    {posture:"cautious",label:"Hold that the Works is Kenya's responsibility.",
+     note:"You decline to pay because the platform is outside the Commonwealth. The government keeps the money, while the residents continue using the last filters. If another arrangement does not supply the plant, its failure will cost lives and public trust.",
+     effects:[{wire:"PM: THE WORKS IS KENYA'S TO RESCUE"}],
+     result:"The government declines the suppliers' request. The Works continues using its remaining filters and catalyst while its council seeks another source of payment."}
   ]},
+
+{ id:"f1_heat_shortage", queuedOnly:true,
+  title:"The margin remains thin",
+  speaker:null,
+  setpiece:{title:"Stations remain short of spare thermal capacity",mood:"threat"},
+  body:`The Commonwealth's stations still have little spare capacity to shed
+heat after the government considered the shortage. Demand leaves a thin
+margin for faults in the radiators.
+
+The thermal margin measures the gap between the heat the stations produce
+and the heat their radiators can shed. A small gap leaves the stations more
+exposed to the next fault or increase in demand. Thermal quota, the right
+to shed a share of that heat, becomes dearer as the margin narrows.
+
+Emergency orders remain available. Their financial and political costs
+come from the same reserve and parliamentary time as the government's
+other business.`,
+  effects:[],choices:[]},
+
+{ id:"f1_reserve_shortage", queuedOnly:true,
+  title:"The Treasury has little room left",
+  speaker:null,
+  setpiece:{title:"Treasury remains short of cash and borrowing room",mood:"threat"},
+  body:`The Treasury still has little cash in its reserve and limited authority
+to issue bills after the government considered the shortage. Its next
+payments must use that remaining room.
+
+Treasury bills cover payments the reserve, the Treasury's cash in hand,
+cannot meet, up to the authority
+Parliament has given. A payment beyond that limit goes unpaid and becomes
+an arrear. Money received afterwards pays those arrears first, before it
+refills the reserve.
+
+Missed payments damage trust in the government for as long as they remain
+unpaid. Drawing on a lender or obtaining the House's approval for a Reserve
+Bank advance can bring in money, with interest or monetary costs.`,
+  effects:[],choices:[]},
 
 ] });

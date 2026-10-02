@@ -5528,7 +5528,7 @@ const UI = (function () {
   const DOW = ["S", "M", "T", "W", "T", "F", "S"];
   const MARKNAME = { division: "Division", owed: "Promised", rises: "The House rises",
                      prayer: "Prayer window closes", expected: "Expected",
-                     bank: "Reserve Bank", forum: "Abroad" };
+                     bank: "Reserve Bank", forum: "Abroad", matter: "Advice" };
   const SITDAYS = "four";
   let calMonth = 0;                    /* months from the current sitting */
 

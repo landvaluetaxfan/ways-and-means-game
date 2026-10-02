@@ -484,10 +484,12 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
       const finance = CONTENT.instruments.filter(si => [].concat(si.effects || [])
         .some(f => f && f.move && Object.keys(f.move).some(k => /^loan\./.test(k) && f.move[k] > 0)))
         .map(si => si.id);
-      /* it reads the docket for the warning, as a player would: content's
-         `bill_authority` and `arrears` alerts (setup.alerts) */
+      /* It reads early reserve advice as well as the owed arrears alert.
+         The same warning moved from the docket into ministerial matters. */
       const owedSoon = Engine.today(s, CONTENT, false).items
-        .some(i => i.kind === "alert" && (i.id === "bill_authority" || i.id === "arrears"));
+        .some(i => i.kind === "alert" && i.id === "arrears") ||
+        Engine.matters(s, CONTENT).some(m => m.remedies.some(r =>
+          r.target.kind === "instrument" && finance.includes(r.target.id)));
       const fWaiting = finance.find(id => Engine.canApprove(s, CONTENT, id).ok);
       if (fWaiting) Engine.approveInstrument(s, CONTENT, fWaiting);
       else if (owedSoon && !s.dissolved && s.slots.total - s.slots.used >= 1) {
@@ -1016,47 +1018,128 @@ guard("THE OPENING'S CALLBACKS (the author, 28 Sep)", ok => {
   });
 });
 
-/* THE WORKS DOES NOT WAIT (28 Sep; design/38 §6). The air is a date, 17
-   July, on the calendar from the stranding. A government that supplies the
-   air plant takes it off the calendar and never meets it; one that has not
-   meets it on the day. Played to the stranding with the first answer (a
-   government that only ever gives the first answer loses supply at 17, so
-   the day itself is asked of a state at that sitting, as nextEvent asks). */
-guard("THE WORKS' AIR: THE CLOCK AND THE ACT (28 Sep)", ok => {
-  const air = CONTENT.eventById.f1_air_fails;
-  const onCal = st => (Engine.deadlines(st, CONTENT) || []).some(m => m.text === air.foreseen);
-  const run = pay => {
-    const st = Engine.newGame(CONTENT);
-    const out = { cal: null, paid: false, calAfter: null };
-    for (let i = 0; i < 20 && !st.seen.f1_stranded; i++) {
-      Engine.playSitting(st, CONTENT, () => 0);
-      if (!st.seen.f1_stranded) Engine.advance(st, CONTENT);
-    }
-    out.cal = onCal(st);
-    if (pay) { out.paid = Engine.take(st, CONTENT, "pay_works_air", 0).ok; out.calAfter = onCal(st); }
-    return out;
+/* Content promises for the approved ministerial slice. An incorrect owner,
+   duplicated owed alert, late rescue penalty or premature death page must
+   fail play, not merely render a plausible card. */
+guard("THREE MINISTERIAL MATTERS, WITH CONTESTED HEAT COUNSEL", ok => {
+  const ms = CONTENT.matters || [], heat = ms.find(m => m.id === "f1_heat");
+  ok("Flash I supplies the three matters", ms.length === 3);
+  ms.forEach(m => {
+    ok(m.id + " validates against campaign content", require("../../../js/schema.js").matterIssues(m, CONTENT).length === 0);
+    ok(m.id + " has a plain late decision", !CONTENT.eventById[m.late].setpiece);
+    const p = CONTENT.eventById[m.page];
+    ok(m.id + " has a choice-free queued consequence", p.queuedOnly && p.setpiece && p.choices.length === 0);
+  });
+  ok("heat belongs to Substrate and Thermal", heat && heat.owner === "substrate_thermal");
+  if (!heat) return;
+  const targets = heat.counsel.map(c => heat.remedies.find(r => r.id === c.remedy)?.target.id);
+  ok("the grid and Treasury offer distinct existing heat remedies",
+    heat.counsel[0].post === "substrate_thermal" && heat.counsel[1].post === "treasury" &&
+    targets[0] === "si_2080_51" && targets[1] === "rung1_conservation");
+  const st = Engine.newGame(CONTENT);
+  st.scalars.thermal_margin = 14; Engine.reconcile(st, CONTENT);
+  ok("thin heat is advice, not an owed alert", Engine.matters(st, CONTENT).some(m => m.id === heat.id) &&
+    !Engine.today(st, CONTENT).items.some(a => a.id === "thermal_orders"));
+  st.scalars.thermal_margin = 7; Engine.reconcile(st, CONTENT);
+  ok("critical heat remains owed", Engine.today(st, CONTENT).items.some(a => a.id === "thermal_orders"));
+  st.scalars.thermal_margin = 15; Engine.reconcile(st, CONTENT);
+  ok("restored heat closes the matter", st.matters[heat.id].state === "closed");
+  ok("early bill-authority advice is not also an owed alert", !CONTENT.setup.alerts.some(a => a.id === "bill_authority"));
+  ok("arrears remain an owed alert", CONTENT.setup.alerts.some(a => a.id === "arrears"));
+  const held = Engine.newGame(CONTENT);
+  held.scalars.thermal_margin = 10; Engine.reconcile(held, CONTENT);
+  const made = Engine.makeInstrument(held, CONTENT, "si_2080_51");
+  ok("timely paid allocation holds the heat matter for approval", made.ok && held.matters[heat.id].hold?.target.id === "si_2080_51");
+  held.sitting += 2; held.scalars.thermal_margin = 7;
+  const resumed = Engine.reconcile(JSON.parse(JSON.stringify(held)), CONTENT);
+  ok("a save preserves the actual allocation under way", Engine.matters(resumed, CONTENT).find(m => m.id === heat.id)?.underway?.target.id === "si_2080_51");
+  ok("pending approval protects against premature escalation", resumed.matters[heat.id].state === "open");
+  const approved = Engine.approveInstrument(resumed, CONTENT, "si_2080_51");
+  Engine.reconcile(resumed, CONTENT);
+  ok("landed work releases the hold", approved.ok && !resumed.matters[heat.id].hold);
+  resumed.scalars.thermal_margin = 7; Engine.reconcile(resumed, CONTENT);
+  ok("an unresolved shortage can escalate after work lands", resumed.matters[heat.id].state === "late");
+});
+
+guard("THE WORKS' AIR: RESCUE BEFORE DEATHS, WITH FULL GRACE", ok => {
+  const m = (CONTENT.matters || []).find(m => m.id === "f1_works_air");
+  ok("Life Support owns the air matter", m && m.owner === "life_support");
+  if (!m) return;
+  const late = CONTENT.eventById[m.late], page = CONTENT.eventById[m.page];
+  const cal = s => Engine.deadlines(s, CONTENT).find(d => d.focus === "matter:" + m.id);
+  const fixture = () => {
+    const s = Engine.newGame(CONTENT);
+    CONTENT.events.forEach(e => { if (e.at != null || e.prologue) s.seen[e.id] = 1; });
+    s.queue = []; s.sitting = 14;
+    Engine.apply(s, CONTENT, [{flag:"station_issue"}]);
+    return s;
   };
-  const w = run(false), p = run(true);
-  ok("before the stranding the air is on nobody's calendar", !onCal(Engine.newGame(CONTENT)));
-  ok("from the stranding the air's date is on the calendar", w.cal === true);
-  ok("supplying the air plant takes the date off the calendar",
-     p.paid && p.calAfter === false, "paid " + p.paid + ", on the calendar after " + p.calAfter);
-  /* the day: every other dated or prologue page already seen, so the date
-     is the question */
-  const onTheDay = flags => {
-    const st = Engine.newGame(CONTENT);
-    CONTENT.events.forEach(e => { if ((e.at != null || e.prologue) && e.id !== air.id) st.seen[e.id] = 1; });
-    st.queue = [];
-    flags.forEach(f => { st.flags[f] = true; });
-    st.sitting = air.at;
-    const e = Engine.nextEvent(st, CONTENT);
-    return e ? e.id : null;
-  };
-  ok("a government that has not supplied it meets the air running out on the day",
-     onTheDay(["station_issue"]) === air.id, onTheDay(["station_issue"]));
-  ok("and one that has, or that carried the Act, does not",
-     onTheDay(["station_issue", "works_air_paid"]) !== air.id &&
-     onTheDay(["station_issue", "almanac_annexed"]) !== air.id);
+  ok("no air deadline before stranding", !cal(Engine.newGame(CONTENT)));
+  const clock = fixture();
+  ok("a sitting-14 stranding puts last chance at sitting 38", cal(clock)?.sitting === 38);
+  ok("the failure page is no longer a fixed-date decision", page.id === "f1_air_fails" && page.at == null && page.choices.length === 0);
+  [0,1].forEach(tempo => {
+    const s = fixture(); s.flags.f1_surveyed = true;
+    const money = s.scalars.solvency;
+    const take = Engine.take(s, CONTENT, "pay_works_air", tempo);
+    ok("early air remedy " + tempo + " retains its price", take.ok && money - s.scalars.solvency === [1600,600][tempo]);
+    ok("early air remedy " + tempo + " retains its duration", s.queue.some(q => q.eventId === "f1_air_paid" && q.dueSitting === [15,17][tempo]));
+    ok("early air remedy " + tempo + " closes the air clock", s.flags.works_air_paid && !cal(s));
+  });
+  const vacant = fixture();
+  vacant.cabinet.life_support.holder = null;
+  ok("a vacant Life Support cannot start the air remedy", !Engine.take(vacant, CONTENT, "pay_works_air", 0).ok);
+  const paid = fixture(); paid.sitting = 38;
+  const cash = paid.scalars.solvency, legitimacy = paid.scalars.legitimacy, standing = paid.scalars.public_standing;
+  Engine.choose(paid, CONTENT, late, 0);
+  ok("last-chance rescue costs CW$2400m", cash - paid.scalars.solvency === 2400 && paid.flags.works_air_paid);
+  ok("rescue before failure carries no death-related losses", paid.scalars.legitimacy === legitimacy && paid.scalars.public_standing === standing);
+  ok("last-chance rescue prevents the death page", !paid.flags.f1_air_failed && !cal(paid));
+  const refused = fixture(); refused.sitting = 38;
+  const before = [refused.scalars.legitimacy,refused.scalars.public_standing,refused.trends.legitimacy || 0];
+  Engine.choose(refused, CONTENT, late, 1);
+  ok("refusal is not yet a death report", !refused.flags.f1_air_failed && refused.scalars.legitimacy === before[0] && refused.scalars.public_standing === before[1]);
+  ok("refusal preserves the political declaration", refused.wire.some(w => w.text === "PM: THE WORKS IS KENYA'S TO RESCUE"));
+  refused.sitting = 39;
+  ok("one sitting of grace does not produce the failure page", Engine.nextEvent(refused, CONTENT)?.id !== page.id);
+  refused.sitting = 40;
+  ok("two sittings after refusal produce the failure page", Engine.nextEvent(refused, CONTENT)?.id === page.id);
+  Engine.acknowledge(refused, CONTENT, page);
+  ok("death-related losses land only with the consequence", refused.flags.f1_air_failed &&
+    refused.scalars.legitimacy === before[0]-12 && refused.scalars.public_standing === before[1]-8 &&
+    refused.trends.legitimacy === before[2]-2);
+  const after = JSON.stringify([refused.scalars,refused.trends,refused.seen,refused.log]);
+  Engine.acknowledge(refused, CONTENT, page);
+  ok("the failure page cannot apply its losses twice", JSON.stringify([refused.scalars,refused.trends,refused.seen,refused.log]) === after);
+  const reload = Engine.reconcile(JSON.parse(JSON.stringify(refused)), CONTENT);
+  ok("a post-failure save does not repeat the deaths", Engine.nextEvent(reload, CONTENT)?.id !== page.id);
+  const legacy = fixture(); legacy.seen[page.id] = 1; delete legacy.matters[m.id];
+  Engine.reconcile(legacy, CONTENT); legacy.sitting = 80;
+  ok("legacy history also prevents a replay", Engine.nextEvent(legacy, CONTENT)?.id !== page.id);
+  ["works_air_paid","almanac_annexed","crisis"].forEach(mode => {
+    const s = fixture(); s.sitting = 38; Engine.choose(s, CONTENT, late, 1);
+    if(mode === "crisis") s.resolvedAs = "f1_joint"; else s.flags[mode] = true;
+    Engine.reconcile(s, CONTENT); s.sitting = 40;
+    ok(mode + " independently prevents the death page", !cal(s) && Engine.nextEvent(s, CONTENT)?.id !== page.id);
+  });
+  const restored = fixture();
+  const load = Engine.reconcile(JSON.parse(JSON.stringify(restored)), CONTENT);
+  ok("a pre-failure save preserves the original deadline", cal(load)?.sitting === 38);
+  /* Move an existing dated question in a test-only content view, exercising
+     the same anchor precedence as supply without adding a campaign event. */
+  const anchor = {...CONTENT.eventById.question_time,at:38,when:{minSitting:1}};
+  const anchored = {...CONTENT,events:CONTENT.events.map(e => e.id === anchor.id ? anchor : e),
+    eventById:{...CONTENT.eventById,[anchor.id]:anchor}};
+  const displaced = fixture(); delete displaced.seen[anchor.id]; displaced.sitting = 38;
+  ok("a dated question takes precedence over the air decision", Engine.nextEvent(displaced, anchored)?.id === anchor.id);
+  Engine.choose(displaced, anchored, anchor, 0);
+  displaced.sitting = 39;
+  ok("the displaced air decision arrives the next sitting", Engine.nextEvent(displaced, anchored)?.id === late.id);
+  Engine.choose(displaced, anchored, late, 1);
+  displaced.sitting = 40;
+  ok("displacement preserves a full first sitting of grace", Engine.nextEvent(displaced, anchored)?.id !== page.id);
+  displaced.sitting = 41;
+  ok("displacement moves the consequence to its second grace sitting", Engine.nextEvent(displaced, anchored)?.id === page.id);
 });
 
 console.log("");

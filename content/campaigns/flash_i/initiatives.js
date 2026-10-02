@@ -266,6 +266,7 @@ campaign("flash_i", { initiatives: [
      Commonwealth to the survey's drawings, it costs less money and some
      heat, and it needs the survey first. */
   { id: "pay_works_air",
+    post: "life_support",
     title: "Supply the Almanac Works' air plant",
     note: "The Works' air plant needs new filters and catalyst every month, and nobody has paid for them since March. " +
           "The Commonwealth can supply three months, which keeps 184,000 people breathing until their future is settled. " +

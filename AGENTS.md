@@ -143,17 +143,17 @@ arrangement: Vijlbrief's last session and the Works, to a count in August
 that count.
 
 The canon government reaches the count on 13 August 2080, sitting 55, at
-standing 52:
+standing 56:
 
-- **Seats:** the PSD holds 103 of 280, and the government's side 167, a
+- **Seats:** the PSD holds 107 of 280, and the government's side 171, a
   working majority.
 - **Thermal margin:** 5.
-- **Debt:** it owes CW$29.6bn in Treasury bills, with CW$30.4bn of room left.
-- **Inflation:** 6.5%, or 2.9% core, with its payments current.
+- **Debt:** it owes CW$46.9bn in Treasury bills, with CW$13.1bn of room left.
+- **Inflation:** 6.1%, or 3.0% core, with its payments current.
 
 `npm run guards` asserts that the canon is reachable by play and prints these
-figures. Across 80 seeds, the four crisis strategies lose 10, 26, 7 and 12
-runs, every loss a late thermal cascade. Keep the canon reachable until the
+figures. Across 80 seeds, the four crisis strategies lose 10, 18, 4 and 10
+runs. Keep the canon reachable until the
 author rewrites it, and update these figures when they move.
 
 ## The interface

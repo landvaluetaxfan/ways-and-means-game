@@ -774,20 +774,12 @@ const SETUP = {
      start to cost output (`macro.heat.line`) as well as people. */
   alerts: [
     { id: "thermal_orders", tab: "gov",
-      when: { scalarBelow: { thermal_margin: 15 } },
+      when: { scalarBelow: { thermal_margin: 8 } },
       urgent: { scalarBelow: { thermal_margin: 8 } },
       raises: "thermal_margin",
-      text: "The thermal margin is under 15, and the emergency orders are open" },
-    /* THE ACCOUNT'S TWO (25 Sep). Before: the reserve is empty and the bill
-       tender is close to its authority, so the next large payment will not
-       be met. After: it was not. `how` is what to do, in words, since what
-       refills the reserve is a drawing as often as an order. `headroom` is
-       the room left under the tender, in dollars. */
-    { id: "bill_authority", tab: "econ",
-      when: { scalarBelow: { solvency: 5000 }, economyBelow: { headroom: 30000, arrears: 1 } },
-      urgent: { economyBelow: { headroom: 10000 } },
-      how: "draw on a facility from the account, or lay the Ways and Means order",
-      text: "The reserve is empty and the Treasury's bills are near their authority" },
+      text: "The thermal margin is critical, and the emergency orders are open" },
+    /* Early reserve advice belongs to campaign matters. Arrears remain
+       owed: these payments have already been missed. */
     { id: "arrears", tab: "econ",
       when: { economyAbove: { arrears: 0 } }, urgent: { economyAbove: { arrears: 0 } },
       how: "draw on a facility from the account, or lay the Ways and Means order",

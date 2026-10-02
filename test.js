@@ -5857,11 +5857,15 @@ console.log("\nTHE LADDER IS ON THE DOCKET (design/38 §7):");
   let bad = 0;
   const ok = (l, c, extra) => { if (!c) bad++;
     console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
-  const alertOf = st => Engine.today(st, CONTENT, false).items.find(i => i.kind === "alert");
   const A = (CONTENT.setup.alerts || []).find(a => a.raises === "thermal_margin");
   ok("content declares a thermal alert", !!A);
   if (!A) { process.exitCode = 1; return; }
   const line = A.when.scalarBelow.thermal_margin;
+  /* Exercise both generic alert severities independently of the campaign's
+     advice policy: Flash I now raises owed heat only at its critical line. */
+  const alertView = {...CONTENT, setup:{...CONTENT.setup, alerts:[{...A,
+    urgent:{scalarBelow:{thermal_margin:line - 4}}}]}};
+  const alertOf = st => Engine.today(st, alertView, false).items.find(i => i.kind === "alert");
 
   const calm = Engine.newGame(CONTENT);
   calm.scalars.thermal_margin = line;

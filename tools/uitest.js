@@ -1997,6 +1997,7 @@ try {
   w.document.querySelector('.tab[data-t="sit"]').click();
   for (let i = 0; i < 2; i++) w.document.querySelector('#sit-cal [data-cal="1"]').click();
   const cal = $("#sit-cal").innerHTML;
+  ok("the calendar names a ministerial deadline as advice", /Advice\./.test(cal));
   ok("the calendar names the Assembly's sitting in words", /Abroad\. The General Assembly sits/.test(cal) &&
      !/undefined\./.test(cal), (cal.match(/[^"]{0,20}General Assembly[^"]{0,40}/) || ["none"])[0]);
   for (let i = 0; i < 2; i++) w.document.querySelector('#sit-cal [data-cal="-1"]').click();
