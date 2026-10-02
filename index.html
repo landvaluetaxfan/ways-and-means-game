@@ -62,10 +62,15 @@
           <div class="play-logo" id="sit-play" hidden></div>
         </div>
         <div class="stack scrolls">
-          <div class="panel"><h2>Today <em><span id="today-sum">the order of the day</span></em></h2>
-            <div class="pbody scrolls" id="sit-today"></div></div>
-          <div class="panel"><h2><span id="dk-head">Before the House</span> <em id="dk-sub">the docket</em></h2>
-            <div class="pbody scrolls" id="sit-docket"></div></div>
+          <div class="panel" id="sit-brief"><h2>The ministerial brief <em>advice and business owed</em></h2>
+            <div class="pbody scrolls">
+              <h3 class="rulehead">Advice <em>while there is time to act</em></h3>
+              <div id="sit-matters" tabindex="-1"></div>
+              <h3 class="rulehead">Owed <em><span id="today-sum">the order of the day</span></em></h3>
+              <div id="sit-today"></div>
+              <h3 class="rulehead"><span id="dk-head">Before the House</span> <em id="dk-sub">the docket</em></h3>
+              <div id="sit-docket"></div>
+            </div></div>
           <div class="panel"><h2>The parliamentary calendar <em>session <span id="cal-sess">4</span></em></h2>
             <div class="pbody scrolls" id="sit-cal"></div></div>
           <!-- THE ONE INDICATOR PANEL. It used to be a MIRROR: the real one

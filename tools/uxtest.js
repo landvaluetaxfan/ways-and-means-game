@@ -12,6 +12,37 @@ H.banner("INTERFACE AND INTERACTION");
 H.boot();
 H.newGame();
 
+/* Live minister identity and stale remedy availability are read again,
+   never cached from the card that the player first saw. */
+{
+  const original=w.eval('UI.state()'), originalC=w.eval('UI.content()');
+  const probe=w.eval(`(function(){
+    const base=UI.content(),si=base.instruments.find(i=>i.id==='si_2080_51');
+    const m={id:'ux_advice',owner:'life_support',raise:{minSitting:1},due:20,grace:2,
+      settled:{flags:['ux_advice_done']},note:'A live ministerial note',figures:[],
+      remedies:[{id:'order',target:{kind:'instrument',id:si.id},takes:0,note:'Open the real order'}],
+      counsel:[{post:'substrate_thermal',remedy:'order',note:'Live counsel'}],late:'thermal_squeeze',page:'f1_heat_shortage'};
+    const c={...base,matters:[m],events:[],instrumentById:{...base.instrumentById}};const s=Engine.newGame(c);
+    s.queue=[];s.flags._introRead=true;s.flags._act1=true;Engine.reconcile(s,c);UI.boot(s,c);UI.openTab('sit');
+    return {s,c,si:si.id};
+  })()`);
+  const replacement=probe.c.characters.find(ch=>ch.id!==probe.s.cabinet.life_support.holder && ch.id!==probe.c.setup.pm);
+  probe.s.cabinet.life_support.holder=replacement.id;w.eval('UI.redraw()');
+  ok('advice redraw identifies the current minister',w.document.querySelector('[data-matter="ux_advice"] .matter-owner')?.textContent.includes(replacement.name));
+  probe.s.cabinet.substrate_thermal.holder=null;w.eval('UI.redraw()');
+  ok('contested counsel shows a current vacancy',w.document.querySelector('[data-counsel="0"] header')?.textContent.includes('Vacant'));
+  const stale=w.document.querySelector('[data-matter="ux_advice"] [data-matter-remedy]');
+  probe.c.instruments=probe.c.instruments.filter(si=>si.id!==probe.si);
+  delete probe.c.instrumentById[probe.si];
+  const snapshot=w.eval('Engine.save(UI.state())');
+  const reason=w.eval('Engine.matters')(probe.s,probe.c)[0].remedies[0].reason;
+  if(stale)stale.click();
+  ok('a disappeared remedy remains on Sitting',w.document.querySelector('#s-sit').classList.contains('on'));
+  ok('a disappeared remedy explains the real reason',w.document.querySelector('#sb-msg').textContent.includes(reason));
+  ok('a disappeared remedy never executes an action',w.eval('Engine.save(UI.state())')===snapshot);
+  w.eval('UI.boot')(original,originalC);
+}
+
 /* Continue must acknowledge a genuinely choice-free page, not merely
    discard it. Removing that call must fail these rendered-UI checks. */
 {

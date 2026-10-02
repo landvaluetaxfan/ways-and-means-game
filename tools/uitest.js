@@ -45,6 +45,94 @@ $('[data-admin]').click();
 ok("slot list appears", w.document.querySelectorAll(".slot").length === 4);
 $('[data-new="1"]').click();
 ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.contains("on"));
+/* Removing cards, typed routing, the tempo preset, or note focus must fail
+   independently. This uses real content targets and real matter queries. */
+{
+ const original=w.eval('UI.state()'), originalC=w.eval('UI.content()');
+ const probe=w.eval(`(function(){
+   const base=UI.content(), si=base.instruments.find(i=>i.id==='si_2080_51');
+   const init=base.initiatives.find(i=>i.id==='pay_works_air');
+   const bill=base.bills.find((b,n)=>n>0&&!b.when);
+   const owners=['life_support',...base.cabinet.filter(p=>p.id!=='life_support').map(p=>p.id)];
+   const defs=Array.from({length:6},(_,n)=>({id:'ui_matter_'+n,owner:owners[n],raise:{minSitting:1},due:10+n,grace:2,
+     settled:{flags:['ui_matter_done']},note:'Minister note '+n,
+     figures:[{label:'Thermal test',source:'scalars.thermal_margin',bands:[{min:null,text:'test margin'}]}],
+     remedies:n===0?[{id:'order',target:{kind:'instrument',id:si.id},takes:0,note:'Order remedy'},
+       {id:'initiative',target:{kind:'initiative',id:init.id,tempo:1},takes:3,note:'Initiative remedy'},
+       {id:'bill',target:{kind:'bill',id:bill.id},takes:1,note:'Bill remedy'},
+       {id:'money',target:{kind:'money',id:'underwriters',amount:3000},takes:0,note:'Money remedy'}]:
+       [{id:'missing',target:{kind:'instrument',id:'missing_order'},takes:0,note:'Unavailable remedy'}],
+     counsel:n===0?[{post:'substrate_thermal',remedy:'order',note:'Paid advice'},
+       {post:'treasury',remedy:'initiative',note:'Other advice'}]:[],late:'thermal_squeeze',page:'f1_heat_shortage'}));
+   const c={...base,matters:defs,events:[]};const s=Engine.newGame(c);
+   s.queue=[];s.flags._introRead=true;s.flags._act1=true;
+   s.flags.station_issue=true;s.flags.f1_surveyed=true;
+   s.cabinet.treasury.holder=base.characters.find(ch=>ch.id!==base.setup.pm).id;
+   s.cabinet[base.cabinet[base.cabinet.length-1].id].holder=null;
+   for(let n=0;n<4;n++){s.sitting=1+n;Engine.reconcile(s,c);}
+   s.matters.ui_matter_4.state='noted';UI.boot(s,c);UI.openTab('sit');
+   return {s,c,si:si.id,init:init.id,bill:bill.id};
+ })()`);
+ const cards=()=>[...w.document.querySelectorAll('#sit-matters [data-matter]')];
+ ok('the brief shows at most four stable matter cards',cards().length===4);
+ ok('noted advice is absent from the brief',!cards().some(n=>n.dataset.matter==='ui_matter_4'));
+ ok('overflow advice is absent from the brief',!cards().some(n=>n.dataset.matter==='ui_matter_5'));
+ const first=()=>w.document.querySelector('[data-matter="ui_matter_0"]');
+ ok('the matter identifies its live owning minister',!!first() && first().textContent.includes(probe.c.characterById[probe.s.cabinet.life_support.holder].name));
+ ok('the matter shows its authored note',!!first() && first().textContent.includes('Minister note 0'));
+ ok('the matter shows a word readout',!!first() && first().textContent.includes('test margin'));
+ ok('the word readout exposes the live figure on hover',!!first()?.querySelector('[data-tip-body="'+probe.s.scalars.thermal_margin+'"]'));
+ const remaining=w.eval('Engine.matters')(probe.s,probe.c)[0].remaining;
+ ok('the matter shows its independent deadline',!!first()?.querySelector('[data-matter-deadline]') && first().querySelector('[data-matter-deadline]').textContent.includes(String(remaining)));
+ ok('contested advice keeps both counsel notes',first()?.querySelectorAll('[data-counsel]').length===2);
+ ok('first counsel keeps its own recommendation',first()?.querySelector('[data-counsel="0"]')?.textContent.includes('Paid advice'));
+ ok('second counsel keeps its different recommendation',first()?.querySelector('[data-counsel="1"]')?.textContent.includes('Other advice'));
+ ok('a counsel recommendation has one lever button',first()?.querySelectorAll('[data-matter-remedy="order"]').length===1);
+ const snapshot=w.eval('Engine.save(UI.state())');
+ const red=()=>[...w.document.querySelectorAll('.tab-n')].map(n=>n.closest('.tab').dataset.t+':'+n.textContent).join(',');
+ const redBefore=red(), riseBefore=$('#btn-advance').textContent;
+ const click=id=>first()?.querySelector('[data-matter-remedy="'+id+'"]')?.click();
+ click('order');
+ ok('an order remedy opens Government', $('#s-gov').classList.contains('on'));
+ ok('an order remedy opens its exact inspector',!$('#gov-inspector').hidden && !!$('#gov-inspector [data-make="'+probe.si+'"]'));
+ ok('opening an order does not execute it',w.eval('Engine.save(UI.state())')===snapshot);
+ w.eval("UI.openTab('sit')");click('initiative');
+ ok('an initiative remedy opens its exact inspector',!$('#gov-inspector').hidden && !!$('#gov-inspector [data-take="'+probe.init+'"]'));
+ ok('an initiative remedy focuses its requested tempo',w.document.activeElement?.dataset.take===probe.init && w.document.activeElement?.dataset.tempo==='1');
+ ok('opening an initiative does not execute it',w.eval('Engine.save(UI.state())')===snapshot);
+ w.eval("UI.openTab('sit')");click('bill');
+ ok('a bill remedy opens Chamber', $('#s-cham').classList.contains('on'));
+ ok('a bill remedy selects the exact bill',w.eval("Focus.selected('cham-bills')")===probe.bill);
+ ok('opening a bill does not execute it',w.eval('Engine.save(UI.state())')===snapshot);
+ w.eval("UI.openTab('sit')");click('money');
+ ok('a money remedy opens Economy',$('#s-econ').classList.contains('on'));
+ const amount=$('[data-money-amount="underwriters"]');
+ ok('a money remedy focuses the exact lender',w.document.activeElement===amount && !!amount);
+ ok('a money remedy forwards the authored amount',amount?.value==='3000');
+ ok('opening a money call does not borrow',w.eval('Engine.save(UI.state())')===snapshot);
+ const unavailable=w.document.querySelector('[data-matter="ui_matter_1"] [data-matter-remedy]');
+ ok('an unavailable target cannot look actionable',!!unavailable && unavailable.disabled);
+ const reason=w.eval('Engine.matters')(probe.s,probe.c).find(m=>m.id==='ui_matter_1').remedies[0].reason;
+ ok('an unavailable target explains the engine reason',!!unavailable && unavailable.getAttribute('data-tip-body').includes(reason));
+ ok('advice navigation leaves red obligations unchanged',red()===redBefore);
+ ok('advice navigation leaves the Rise warning unchanged',$('#btn-advance').textContent===riseBefore);
+ ok('visible Government remedies light a quiet dot',!!w.document.querySelector('.tab[data-t="gov"] .tab-dot'));
+ ok('visible Chamber remedies light a quiet dot',!!w.document.querySelector('.tab[data-t="cham"] .tab-dot'));
+ w.eval("UI.openTab('sit')");const note=first()?.querySelector('[data-note-matter]');if(note){note.focus();note.click();}
+ ok('Set aside records the real matter as noted',probe.s.matters.ui_matter_0.state==='noted');
+ ok('Set aside removes that advice card',!first());
+ ok('Set aside lands focus on the nearest surviving matter',w.document.activeElement?.dataset.matter==='ui_matter_1');
+ ok('Set aside clears a now-stale Chamber advice dot',!w.document.querySelector('.tab[data-t="cham"] .tab-dot'));
+ for(let n=0;n<8;n++){const b=w.document.querySelector('#sit-matters [data-note-matter]');if(!b)break;b.focus();b.click();}
+ ok('an empty brief retains focus on its own panel',w.document.activeElement?.id==='sit-matters');
+ const held=w.eval('Engine.newGame')(probe.c);held.queue=[];held.flags._introRead=true;held.flags._act1=true;
+ w.eval('Engine.reconcile')(held,probe.c);w.eval('Engine.makeInstrument')(held,probe.c,probe.si);
+ w.eval('UI.boot')(held,probe.c);
+ ok('a held matter shows its real work under way',!!w.document.querySelector('[data-matter="ui_matter_0"] [data-matter-underway]'));
+ ok('a held affirmative order explains pending approval',w.document.querySelector('[data-matter="ui_matter_0"] [data-matter-underway]')?.textContent.includes('approval'));
+ w.eval('UI.boot')(original,originalC);
+}
+
 /* MATTER DOTS are advice, not the red obligations count. */
 {
   const dots = () => [...w.document.querySelectorAll(".tab-dot")];

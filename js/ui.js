@@ -200,6 +200,7 @@ const UI = (function () {
 
   function boot(state, content) {
     st = state; C = content;
+    moneyCall = null;
     govRecordOpen = {};
     currentEvent = null; lastResult = null;
     /* Shell re-boots on every load, and both of these are EDGE triggers
@@ -1372,6 +1373,9 @@ const UI = (function () {
       const facIds = facs.map(f => f.id);
       const facRow = f => {
         const d = owed.find(x => x.id === f.id);
+        const selected = moneyCall && moneyCall.lender === f.id;
+        const amount = selected ? moneyCall.amount : f.utilisation;
+        const gate = selected ? Engine.canBorrow(st,C,amount,f.id) : f;
         const room = Math.max(0, f.cap - f.owed);
         const terms = f.name + ", " + f.facility + ": " + cw(f.commitment, f.currency) +
           ", of which " + cw(f.owed, f.currency) + " is drawn. The rate is " +
@@ -1385,9 +1389,11 @@ const UI = (function () {
         return `<div class="prow fac"><div class="plab"${tipAttr(f.name, terms)}>${esc(cap1(f.name))}` +
           `<em>${pc(f.rate)} per cent · ${cw(room, f.currency)} undrawn</em></div>` +
           `<div class="pval${f.owed ? " up" : ""}">${f.owed ? cw(f.owed, f.currency) : "none"}</div>` +
+          (selected ? `<label class="money-preset">Amount (millions${f.currency ? " of " + esc(f.currency) : " of Commonwealth dollars"})` +
+            `<input type="number" min="0" step="any" id="money-amount-${esc(f.id)}" data-money-amount="${esc(f.id)}" value="${esc(amount)}"></label>` : "") +
           `<div class="facbtn"><button class="btn tiny" data-draw="${esc(f.id)}"` +
-          (f.ok ? "" : " disabled") +
-          tipAttr("Draw " + cw(f.utilisation, f.currency), f.ok ? f.drawNote : cap1(f.reason) + ".") +
+          (gate.ok ? "" : " disabled") +
+          tipAttr("Draw " + cw(amount, f.currency), gate.ok ? f.drawNote : cap1(gate.reason) + ".") +
           `>Draw</button>` + (d ? repayBtn(d) : "") + `</div></div>`;
       };
       const sign = n => (n >= 0 ? "+" : "\u2212") + cw(Math.abs(n));
@@ -1413,21 +1419,28 @@ const UI = (function () {
     }
 
     /* A DRAWING, confirmed with what it costs beyond the money. */
+    if (box) box.querySelectorAll("[data-money-amount]").forEach(input => input.addEventListener("change", () => {
+      moneyCall.amount = Number(input.value);
+      Focus.around(() => drawEconomy(), {sel:"#" + input.id});
+    }));
     if (box) box.querySelectorAll("[data-draw]").forEach(b =>
       b.addEventListener("click", () => {
         const f = (Engine.facilities(st, C) || []).find(x => x.id === b.dataset.draw);
         if (!f) return;
+        const amount = moneyCall && moneyCall.lender === f.id ? moneyCall.amount : f.utilisation;
+        const gate = Engine.canBorrow(st,C,amount,f.id);
+        if (!gate.ok) { setStatus(gate.reason,"transient"); return; }
         Dialog.confirm(
-          `Draw ${cw(f.utilisation, f.currency)} from ${f.name} ` +
+          `Draw ${cw(amount, f.currency)} from ${f.name} ` +
           `(${f.facility}) at ${Number(f.rate).toFixed(2)} per cent?` +
-          (f.currency ? ` At today's rate it brings ${cw(f.received)} into the reserve, ` +
+          (f.currency ? ` At today's rate it brings ${cw(f.received * amount / f.utilisation)} into the reserve, ` +
                         `and it is owed in ${f.currency} whatever the dollar does.` : "") +
           (f.slots ? ` It takes ${slotWord(f.slots)} of order-paper time.` : "") +
           (f.drawNote ? " " + f.drawNote : ""),
           { title: "Draw on " + f.facility, yes: "Draw" },
           ok => {
             if (!ok) return;
-            const r = acted(() => Engine.borrow(st, C, f.utilisation, f.id));
+            const r = acted(() => Engine.borrow(st, C, amount, f.id));
             if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); drawAll(); return; }
             cue("stamp");
             setStatus("Drew " + cw(r.borrowed, f.currency) + " on " + f.facility +
@@ -5215,6 +5228,7 @@ const UI = (function () {
      the competition is visible in the place the spending happens.
      --------------------------------------------------------------- */
   let initOpen = null;
+  let moneyCall = null;             /* UI-only lender/amount/context preset */
 
   function slotPips(used, total, need) {
     let out = "";
@@ -5398,6 +5412,14 @@ const UI = (function () {
     } else if (kind === "party" && typeof Focus !== "undefined") {
       /* a partner near its line (design/40 E9): its row on Relations, opened */
       Focus.activate("rel-table", id);
+    } else if (kind === "money") {
+      moneyCall = {lender:id,amount:Number(btn.dataset.amount),matter:btn.dataset.matterId};
+      drawEconomy();
+      const input = document.querySelector('[data-money-amount="' + id + '"]');
+      if (input) {
+        input.focus({preventScroll:true});
+        if (input.scrollIntoView) input.scrollIntoView({block:"nearest"});
+      } else setStatus("This lending facility is no longer available.","transient");
     } else if (kind === "grant") {
        /* where order-paper time is given: the bill's row in Chamber */
        const btn = document.querySelector('#cham-bills [data-slot="' + id + '"]');
@@ -5406,6 +5428,13 @@ const UI = (function () {
         if (row.scrollIntoView) row.scrollIntoView({ block: "center" });
         flash(row);
       }
+    } else if (kind === "matter") {
+      const card = $("#sit-matters").querySelector('[data-matter="' + id + '"]');
+      const target = card || $("#sit-matters");
+      target.focus({preventScroll:true});
+      if (target.scrollIntoView) target.scrollIntoView({block:"nearest"});
+      if (card) flash(card);
+      else setStatus("This advice is no longer in the brief. Its deadline remains on the calendar while unresolved.", "transient");
     }
     if (governmentTarget) {
       if (kind === "post") drawAll();
@@ -5423,6 +5452,13 @@ const UI = (function () {
       target.focus({ preventScroll:true });
       if (target.scrollIntoView) target.scrollIntoView({ block:"nearest" });
       if (row && kind !== "post") revealGovFile();
+      if (kind === "initiative" && btn.dataset.tempo != null) {
+        const tempo = $("#gov-inspector").querySelector('[data-take="' + id + '"][data-tempo="' + btn.dataset.tempo + '"]');
+        if (tempo && !tempo.disabled) {
+          tempo.focus({preventScroll:true});
+          if (tempo.scrollIntoView) tempo.scrollIntoView({block:"nearest"});
+        }
+      }
     }
   }
 
@@ -5462,8 +5498,68 @@ const UI = (function () {
     });
   }
 
+  function matterTargetName(t) {
+    const list = t.kind === "instrument" ? C.instruments : t.kind === "initiative" ? C.initiatives
+      : t.kind === "bill" ? C.bills : Engine.facilities(st,C);
+    const entry = (list || []).find(x => x.id === t.id);
+    return entry ? entry.title || entry.name || t.id : t.id;
+  }
+  function matterRemedyHTML(m, r, suffix) {
+    return `<div class="matter-remedy"><button class="btn" id="matter-${esc(m.id)}-${esc(suffix)}" data-matter-remedy="${esc(r.id)}"` +
+      ` data-matter-id="${esc(m.id)}"${r.ok ? "" : " disabled"}` +
+      tipAttr(matterTargetName(r.target), r.ok ? r.note : r.reason) + `>${esc(matterTargetName(r.target))}</button>` +
+      `<div class="note">${esc(r.note)}${r.ok ? "" : " · " + esc(r.reason)}</div></div>`;
+  }
+  function drawMatters() {
+    const el = $("#sit-matters"); if (!el) return;
+    const list = Engine.matters(st, C);
+    drawMatterDots(list.flatMap(m => m.remedies.map(r => r.tab)));
+    const person = (post, holder) => {
+      const ch = (C.characterById || {})[holder];
+      return `<b>${esc(govPostName(post))}</b><span>${ch ? esc(ch.name) + " " + mark(ch.party) : "Vacant"}</span>`;
+    };
+    el.innerHTML = list.length ? list.map(m => {
+      const ch = (C.characterById || {})[m.holder];
+      const deadline = m.remaining == null ? "No deadline has begun"
+        : m.remaining <= 0 ? "Due now" : m.remaining + " sitting" + (m.remaining === 1 ? "" : "s") + " to act";
+      const work = m.underway;
+      return `<section class="matter-card" id="matter-${esc(m.id)}" data-matter="${esc(m.id)}" tabindex="-1">` +
+        `<header class="matter-owner">${portrait(ch)}<div>${person(m.owner, m.holder)}</div></header>` +
+        `<p>${esc(m.note)}</p><div class="matter-readouts">` +
+        m.figures.map(f => `<span${tipAttr(f.label, f.value == null ? "No reading available" : String(f.value))}>${esc(f.label)}: ${esc(f.text == null ? "not available" : f.text)}</span>`).join("") + `</div>` +
+        `<div class="note" data-matter-deadline>${esc(deadline)}</div>` +
+        (work ? `<div class="matter-underway" data-matter-underway>Under way: ${esc(matterTargetName(work.target))} · ` +
+          `${work.landing == null ? "awaiting approval" : Math.max(0, work.landing - st.sitting) + " sittings"}</div>` : "") +
+        `<div class="matter-remedies">${m.remedies.filter(r => !m.counsel.some(c => c.remedy === r.id)).map(r => matterRemedyHTML(m,r,"remedy-" + r.id)).join("")}</div>` +
+        (m.counsel.length ? `<div class="matter-counsel">${m.counsel.map((c,n) => {
+          const r = m.remedies.find(r => r.id === c.remedy);
+          return `<section data-counsel="${n}"><header>${person(c.post,c.holder)}</header><p>${esc(c.note)}</p>` +
+            (r ? matterRemedyHTML(m,r,"counsel-" + n) : "") + `</section>`;
+        }).join("")}</div>` : "") +
+        `<button class="btn tiny" id="matter-note-${esc(m.id)}" data-note-matter="${esc(m.id)}"` +
+        tipAttr("Set aside", "Remove this advice from the brief without stopping its deadline.") + `>Set aside</button></section>`;
+    }).join("") : `<div class="note">No minister has raised a matter for the brief.</div>`;
+    el.querySelectorAll("[data-matter-remedy]").forEach(b => b.addEventListener("click", () => {
+      const m = Engine.matters(st,C).find(m => m.id === b.dataset.matterId);
+      const r = m && m.remedies.find(r => r.id === b.dataset.matterRemedy);
+      if (!r || !r.ok) { setStatus(r ? r.reason : "This advice is no longer available.", "transient"); drawAll(); return; }
+      b.dataset.goto = r.tab; b.dataset.open = r.focus;
+      if (r.target.kind === "initiative") b.dataset.tempo = r.target.tempo || 0;
+      if (r.target.kind === "money") b.dataset.amount = r.amount;
+      openTarget(b);
+    }));
+    el.querySelectorAll("[data-note-matter]").forEach(b => b.addEventListener("click", () => {
+      const old = list.findIndex(m => m.id === b.dataset.noteMatter);
+      const result = Engine.noteMatter(st,C,b.dataset.noteMatter);
+      if (!result.ok) { setStatus(result.reason,"transient"); return; }
+      const next = Engine.matters(st,C), near = next[Math.min(old,next.length-1)];
+      Focus.around(() => drawAll(), {sel:near ? "#matter-" + near.id : "#sit-matters"});
+      saved();
+    }));
+  }
+
   function drawToday() {
-    drawMatterDots([]);             /* the brief engine supplies tabs later */
+    drawMatters();
     const el = $("#sit-today"); if (!el) return;
     const t = Engine.today(st, C, !!currentEvent || !!Engine.nextEvent(
       JSON.parse(Engine.save(st)), C));
@@ -5721,6 +5817,7 @@ const UI = (function () {
         <span><s class="p-rises"></s>rises</span>
         <span><s class="p-bank"></s>bank</span>
         <span><s class="p-forum"></s>abroad</span>
+        <span><s class="p-matter"></s>advice</span>
       </div>` +
       /* THE NEXT THREE DEADLINES ARE NOW DOORS. They were inert text on the
          one screen that knows when things are due and cannot do any of them —
