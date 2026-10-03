@@ -1978,7 +1978,7 @@ const Editor = (function () {
     return M[KIND[kind].arr];
   }
 
-  function draw() {
+  function draw(opts) {
     document.querySelectorAll(".tab").forEach(t =>
       t.setAttribute("aria-selected", t.dataset.t === sel.tab ? "true" : "false"));
     document.getElementById("ed-graphwrap").style.display = sel.tab === "graph" ? "" : "none";
@@ -2016,7 +2016,7 @@ const Editor = (function () {
     document.getElementById("ed-form").innerHTML = cur ? K.form(cur) : `<div class="note">Nothing selected.</div>`;
     document.getElementById("ed-flags").innerHTML = allFlags().map(f => `<option value="${esc(f)}">`).join("");
     if (sel.tab === "bills") forecast();
-    drawStatus();
+    if (!(opts && opts.keepStatus)) drawStatus();
   }
 
   function commit() {
@@ -3081,7 +3081,23 @@ const Editor = (function () {
     }));
     document.getElementById("ed-list").addEventListener("click", e => {
       const it = e.target.closest(".ed-item"); if (!it) return;
-      commit(); sel.id = it.dataset.id; draw();
+      /* SELECTING AN ENTRY DOES NOT CHANGE THE MODEL, and draw() ended in
+         drawStatus(), which re-runs whole-model coverage and validation —
+         on every click, for every entry, in a list of 141. Profiled: 14 of
+         the editor check's 67 seconds.
+
+         It is skipped only when commit() provably changed nothing: the
+         entry as it stood before is compared with the entry as it stands
+         after, and anything different — an edit, a rename, a vanished
+         entry — still gets the full redraw. commit() itself is untouched,
+         because the cost of getting that wrong is a lost edit. */
+      const arr0 = arrOf(sel.tab), id0 = sel.id;
+      const before = JSON.stringify(arr0.find(o => idOf(sel.tab, o) === id0));
+      commit();
+      const arr1 = arrOf(sel.tab);
+      const after = JSON.stringify(arr1.find(o => idOf(sel.tab, o) === sel.id));
+      const unchanged = sel.id === id0 && before === after;
+      sel.id = it.dataset.id; draw(unchanged ? { keepStatus: true } : undefined);
     });
     document.getElementById("ed-form").addEventListener("click", e => {
       const b = e.target.closest("[data-act]"); if (!b) return;

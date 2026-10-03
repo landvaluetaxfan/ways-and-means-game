@@ -453,7 +453,15 @@ try {
     t.dispatchEvent(new w2.MouseEvent("click", { bubbles: true }));
     const idsOf = () => [...w2.document.querySelectorAll("#ed-list .ed-item[data-id]")].map(n => n.dataset.id);
     idsOf().forEach(id => {
-      const it = [...w2.document.querySelectorAll("#ed-list .ed-item[data-id]")].find(n => n.dataset.id === id);
+      /* A DIRECT LOOKUP, NOT A SCAN. This rebuilt the whole list into an
+         array and searched it linearly for every one of its entries, which
+         is quadratic in the length of the list: it was 45 of the check's 67
+         seconds, because the constituency tab alone has 141 entries and
+         every other tab pays the same toll. Still re-queried per entry,
+         because a click may re-render the list and a held node would go
+         stale. */
+      const it = w2.document.querySelector(
+        '#ed-list .ed-item[data-id="' + String(id).replace(/(["\\])/g, "\\$1") + '"]');
       if (it) it.dispatchEvent(new w2.MouseEvent("click", { bubbles: true }));
     });
     w2.__cap = null; w2.__capF = null; w2.__capR = null;
