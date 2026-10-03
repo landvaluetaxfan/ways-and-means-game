@@ -15,7 +15,7 @@
     "ux": "node tools/uxtest.js",
     "tocheck": "node tools/toc.js --check",
     "enc": "node tools/enccheck.js",
-    "layout": "node tools/laycheck.js",
+    "layout": "node tools/laycheck.js && node tools/laycheck.js --wrapped",
     "playtest": "node tools/playtest.js",
     "prose": "node tools/prose.js",
     "prose:in": "node tools/prose.js --in",

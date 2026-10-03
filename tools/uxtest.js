@@ -615,13 +615,15 @@ try {
      scroller. Marking the column too would nest one scroller inside another,
      which is worse than the thing being guarded against.
 
-     So the rule is stated properly \u2014 a column either scrolls itself, or
+     So the rule is stated properly \u2014 a column either scrolls itself, is
+     inside a scrolling panel body (the records share the work file), or
      everything in it can be reached by a scroller of its own. What must never
      happen is a column that does neither, because that is content the player
      cannot get to, which is the one outcome this construction exists to
      prevent. */
   const govStacks = [...w.document.querySelectorAll("#s-gov .stack")];
   const reachable = e => e.classList.contains("scrolls") ||
+    !!e.parentElement.closest("#s-gov .pbody.scrolls") ||
     [...e.children].every(k => k.querySelector(".pbody.scrolls"));
   ok("and every Government column has a way down through it",
      govStacks.length > 0 && govStacks.every(reachable),

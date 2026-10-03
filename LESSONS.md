@@ -248,6 +248,11 @@ Sep 2026) and in the design notes cited.
 - **A heading that gains a control** needs its own `flex-wrap`.
 - **Bars.** `flex:1 1 0` bars need a `max-width`.
 - **laycheck** confirms a fault against in-flow children only.
+- **A scrollbar wrapper changes layout ancestry.** Mark the content body as
+  `scrolls`, not its structural grid or column. Wrapping Government's grid
+  removed its definite height and let focus scroll the entire desk above the
+  viewport. Test native and drawn scrollbars, including reaching the last row;
+  checking only the initial view misses the lost headings.
 - **Retired grid tracks survive in media queries.** Government's old four
   columns squeezed its two new panels below 1340px. A single-column
   collapse must also reset explicit child placements, including Orbit's.

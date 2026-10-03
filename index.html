@@ -92,7 +92,9 @@
          subject, and a tab that held four panels was a tab for the sake of
          having one. -->
     <section class="screen" id="s-gov">
-      <div id="gov-init"><div class="grid g-gov pbody scrolls" id="gov-si">
+      <!-- Only the three content bodies scroll. Structural grid/stack nodes
+           must not acquire the custom scrollbar's extra flex wrapper. -->
+      <div id="gov-init"><div class="grid g-gov" id="gov-si">
         <div id="gov-tools" role="group" aria-label="Government records">
           <label id="gov-scope-label">Department <select id="gov-scope"></select></label>
           <div id="gov-utilities">
@@ -102,12 +104,12 @@
           <button class="btn" data-gov-record="gov-presidency" aria-pressed="false">Presidency</button>
           </div>
         </div>
-        <div class="stack scrolls" id="gov-side">
+        <div class="stack" id="gov-side">
           <div class="panel"><h2 id="gov-departments-hdr" tabindex="-1">Cabinet</h2>
             <div class="pbody scrolls" id="gov-roster"></div>
           </div>
         </div>
-        <div class="stack scrolls" id="gov-main">
+        <div class="stack" id="gov-main">
           <div class="panel"><h2 id="gov-workspace-title" tabindex="-1">Government business</h2>
             <div id="gov-time"><span>Order-paper time</span><span id="gov-slot-strip"></span><em id="gov-init-hdr" data-tip="slots"></em></div>
             <div class="pbody scrolls" id="gov-work">
@@ -125,7 +127,7 @@
           <div class="pbody scrolls" id="gov-file-scroll">
           <p class="note" id="gov-empty">Select business to read its terms and available actions.</p>
           <section id="gov-inspector" aria-labelledby="gov-file-title" hidden><header><h3 id="gov-file-title" tabindex="-1">Work file</h3><button class="btn" data-gov-close>Close file</button></header><p class="note" id="gov-file-office"></p><div id="gov-file-body"></div></section>
-        <div class="stack scrolls" id="gov-records" hidden>
+        <div class="stack" id="gov-records" hidden>
           <button class="btn" data-gov-return>Return to work</button>
           <section class="panel" id="gov-register">
             <h3 class="rulehead gov-record-title" tabindex="-1"><span data-tip="register">Register</span> <em>acts, orders and minutes</em></h3>

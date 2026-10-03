@@ -327,6 +327,20 @@ ${HELPERS}
     drawn.push(tabs[t] + (on ? "" : " (NOT DRAWN)"));
     found = found.concat(measure(tabs[t]));
     if (tabs[t] === "gov") {
+      /* Reaching the last minister must scroll the roster, never lift the
+         desk's toolbar or headings out of view. Also run with --wrapped:
+         the custom scrollbar changes ancestry, not just its appearance. */
+      var cabinetRows = document.querySelectorAll('#gov-roster [data-select-post]');
+      if (innerWidth > 1080 && cabinetRows.length)
+        cabinetRows[cabinetRows.length - 1].scrollIntoView({block:"nearest"});
+      ['s-gov','gov-si','gov-side','gov-main','gov-file-pane'].forEach(function(id) {
+        var frame = document.getElementById(id);
+        if (frame.scrollTop > 1 || frame.scrollHeight > frame.clientHeight + 2)
+          found.push({tab:"gov-scroll",el:"#" + id,kind:"LAYOUT",by:frame.scrollHeight-frame.clientHeight,
+            detail:"The desk frame scrolls; only its roster, business and file bodies should scroll."});
+        frame.scrollTop = 0;
+      });
+      document.getElementById('gov-roster').scrollTop = 0;
       /* Inspect real departmental work in the shared workspace. */
       document.querySelector('[data-select-post=""]').click();
       var work = document.querySelector('#gov-cabinet [data-post=""] [data-ini]');
