@@ -376,22 +376,6 @@ const UI = (function () {
     if (typeof Tips !== "undefined") Tips.wire();
     decorateScrollers();
 
-    /* THE CABINET ROSTER CARRIES A DRAWN BAR ON EVERY ENGINE. It is the one
-       column here whose overflow the player cannot see: nineteen ministers
-       in a body that shows about ten, and at 1081px and above the Department
-       select that would be the shortcut is deliberately hidden, so the rail
-       is the only way down to the lower half of the cabinet. The bar is
-       drawn rather than left to the engine because the engine's own is
-       suppressed on some machines, and a bar that may be invisible is not an
-       affordance. Scoped to the rail, so no other body changes, and marked
-       forcebar so the drawn bar is the one the player sees. */
-    (function () {
-      const rail = document.getElementById("gov-side"), roster = document.getElementById("gov-roster");
-      if (!rail || !roster || roster.classList.contains("forcebar")) return;
-      roster.classList.add("forcebar");
-      decorateScrollers(rail, true);
-    })();
-
     /* THE CONCORDANCE, in one function instead of four copies of it.
        Every way of getting to an article - a link in the body, a link in
        the nav, the search box, the back button - ends here, and the
