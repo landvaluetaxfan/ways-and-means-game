@@ -237,6 +237,12 @@ ok("each order appears under its authoring department",
   ok('the selected initiative keeps every authored tempo only in its file',
     !!entry && doc.querySelectorAll('#gov-inspector [data-take]').length===entry.tempo.length && !$('#gov-main .ini-b'));
   ok('the file names its actual responsible minister',!!$('#gov-file-office [data-go="person_'+Cg.setup.pm+'"]'));
+  const initiativeSummary=$('#gov-file-summary');
+  ok('the initiative file exposes authored costs and the pace choice before its controls',
+    !!initiativeSummary && !initiativeSummary.hidden &&
+    initiativeSummary.querySelector('[data-gov-fact="procedure"]')?.textContent==='Initiative' &&
+    initiativeSummary.querySelector('[data-gov-fact="time"]')?.textContent.includes(String(entry.cost)) &&
+    /pace/i.test(initiativeSummary.querySelector('[data-gov-fact="next"]')?.textContent));
   const title=$('#gov-file-title').textContent;
   $('#gov-file-scroll').scrollTop=47;
   for(const record of ['gov-register','gov-undertakings','gov-tribunal','gov-presidency']) {
@@ -268,6 +274,8 @@ ok("each order appears under its authoring department",
   ok('vacancy candidates and their consequences exist once, in the file',
     !!office && doc.querySelectorAll('#gov-inspector [data-appoint]').length===w.eval('Engine.candidates(UI.state(), UI.content(), '+JSON.stringify(vacant?.id)+').length') &&
     !!$('#gov-inspector .cand .ch-eff') && !$('#gov-main [data-appoint]'));
+  ok('opening an office removes the preceding power\'s procedure and cost summary',
+    !!$('#gov-file-summary') && $('#gov-file-summary').hidden && !$('#gov-file-summary').textContent.trim());
   const chosen=Cg.cabinet.find(p=>w.eval('UI.state()').cabinet[p.id].holder);
   if(chosen)$('[data-select-post="'+chosen.id+'"]').click();
   $('[data-gov-post-file="'+chosen.id+'"]').click();
@@ -287,6 +295,19 @@ ok("each order appears under its authoring department",
   const order=$('#gov-business [data-inspect]');
   ok('compact order rows retain their visible procedure or status beside the title',
     !!order && !!order.closest('td').querySelector('.gov-work-state'));
+  /* The action report must describe the live instrument, rather than
+     announcing that every state change puts an order into force. */
+  const affirmative=Cg.instruments.find(i=>i.procedure==='affirmative' &&
+    w.eval('Engine.canMake(UI.state(), UI.content(), '+JSON.stringify(i.id)+').ok'));
+  if(affirmative)$('#gov-business [data-inspect="'+affirmative.id+'"]').click();
+  w.__deskNotify=w.eval('Motion.notify'); w.__deskNotices=[];
+  w.eval('Motion.notify=function(n){window.__deskNotices.push(n);return window.__deskNotify(n);};');
+  const make=affirmative && $('#gov-file-body [data-make="'+affirmative.id+'"]');
+  if(make)make.click();
+  w.eval('Motion.notify=window.__deskNotify;');
+  ok('making an affirmative order announces pending approval without claiming it is in force',
+    !!make && w.__deskNotices.some(n=>n.tab==='gov' && /awaiting approval/.test(n.text)) &&
+    !w.__deskNotices.some(n=>n.tab==='gov' && /is in force/.test(n.text)));
   w.eval('UI.boot(Engine.load('+JSON.stringify(original)+', window.__deskContent), window.__deskContent);');
   $('[data-gov-all]').click();
 }
@@ -296,7 +317,7 @@ ok("each order appears under its authoring department",
 {
   const original = w.eval('Engine.save(UI.state())'), Cg = w.eval('UI.content()');
   const state = JSON.parse(original), post = Cg.cabinet[0].id;
-  const order = Object.assign({}, Cg.instruments[0], { id:'test_business_order', author:post, when:{} });
+  const order = Object.assign({}, Cg.instruments[0], { id:'test_business_order', author:post, when:{}, procedure:'affirmative' });
   const fixture = Object.assign({}, Cg, {
     initiatives:[
       { id:'test_business_open', title:'Available fixture', cost:state.slots.total + 1, when:{}, note:'A plain explanation.', tempo:[{ label:'Briefing', after:2 }] },
@@ -335,6 +356,22 @@ ok("each order appears under its authoring department",
     !available().querySelector('[data-si="test_business_order"]'));
   ok('Cabinet groups an awaiting order with the department\'s pending work',
     !!w.document.querySelector('#gov-cabinet [data-gov-section="running"] [data-si="test_business_order"]'));
+  const rail=()=>w.document.querySelector('#gov-roster [data-select-post="'+post+'"]');
+  const initialRailCounts=rail()?.querySelector('[data-gov-awaiting]')?.textContent==='1 awaiting approval' &&
+    rail()?.querySelector('[data-gov-running]')?.textContent==='1 under way';
+  pending().querySelector('[data-inspect="test_business_order"]').click();
+  const orderSummary=w.document.querySelector('#gov-file-summary');
+  ok('an awaiting order names the approval vote and its cost rather than the free making step',
+    !!orderSummary && !orderSummary.hidden && /Affirmative/.test(orderSummary.textContent) &&
+    /1 slot/.test(orderSummary.querySelector('[data-gov-fact="time"]')?.textContent) &&
+    orderSummary.querySelector('[data-gov-fact="next"]')?.textContent==='Approve');
+  const previousUsed=state.slots.used;
+  state.slots.used=state.slots.total; w.eval('UI.redraw();');
+  ok('an unavailable approval remains the next action even when Read is available',
+    !!w.document.querySelector('#gov-file-body [data-approve]:disabled') &&
+    /Approve.*unavailable/.test(w.document.querySelector('[data-gov-fact="next"]')?.textContent) &&
+    /0 left/.test(w.document.querySelector('[data-gov-fact="time"]')?.textContent));
+  state.slots.used=previousUsed;
   state.queue = state.queue.filter(q => q.eventId !== 'business_answer');
   state.instruments.test_business_order.awaitingApproval = false;
   state.instruments.test_business_order.inForce = true;
@@ -344,12 +381,23 @@ ok("each order appears under its authoring department",
     !!w.document.querySelector('#gov-cabinet [data-si="test_business_order"]'));
   ok('Cabinet moves an in-force instrument into the department record',
     !!w.document.querySelector('#gov-cabinet [data-gov-section="records"] [data-si="test_business_order"]'));
+  ok('minister indicators count only live approvals and queue-backed work and clear when settled',
+    initialRailCounts && !rail()?.querySelector('[data-gov-awaiting], [data-gov-running]'));
   const occupied = w.document.querySelector('#gov-roster [data-select-post="' + Cg.cabinet[3].id + '"]');
   const party = Cg.partyById[state.cabinet[Cg.cabinet[3].id].party];
   ok('directory summaries identify parties by colour and abbreviation without repeating ordinary relationships',
     !!occupied && !!occupied.querySelector('.swatch') && !!occupied.querySelector('.gov-party') &&
     !!party && occupied.querySelector('.gov-party').textContent.trim()===(party.short || party.name) &&
     !/uneasy with the Prime Minister/.test(occupied.textContent));
+  const costEntry=fixture.initiatives[0];
+  delete costEntry.cost;
+  costEntry.tempo=[{label:'Standard',after:2},{label:'More effort',after:1,cost:2}];
+  w.eval('UI.redraw();');
+  w.document.querySelector('#gov-business [data-ini="test_business_open"]').click();
+  const defaultCost=w.document.querySelector('[data-gov-fact="time"]')?.textContent.includes('1–3 slots');
+  costEntry.cost=0; w.eval('UI.redraw();');
+  ok('the file follows engine default costs, explicit free costs and authored tempo extras',
+    defaultCost && w.document.querySelector('[data-gov-fact="time"]')?.textContent.includes('0–2 slots'));
   w.__businessFixture = Cg;
   w.eval('UI.boot(Engine.load(' + JSON.stringify(original) + ', CONTENT), window.__businessFixture);');
 }

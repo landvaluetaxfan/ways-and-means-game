@@ -200,7 +200,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 /* ---------- panels ---------- */
 .grid{display:grid;gap:5px;}
 /* The cabinet stays navigable while its selected work scrolls separately. */
-.g-gov{grid-template-columns:minmax(210px,240px) minmax(250px,320px) minmax(0,1fr);}
+.g-gov{grid-template-columns:minmax(210px,240px) clamp(280px,24vw,460px) minmax(0,1fr);}
 /* THE SCREEN TAKES THE VIEWPORT, as the Chamber and the orbit do. This came
    over from the Papers tab when Papers was folded in: the register used to
    carry an inline max-height in the markup to stop its column running away,
@@ -258,13 +258,21 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .gov-select .portrait img{width:100%;height:42px;}
 .gov-select .portrait .cap{display:none;}
 .gov-select .gov-party{display:block;margin-top:3px;}
+.gov-rail-work{display:flex;gap:3px 7px;flex-wrap:wrap;margin-top:4px;font-size:10px;color:var(--ink-soft);}
+.gov-rail-work [data-gov-awaiting]{background:var(--gold-lt);color:var(--ink);padding:1px 4px;}
 #gov-time{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:8px 10px;background:var(--chrome);border-bottom:1px solid var(--rule);font-size:11px;}
 #gov-time em{font-style:normal;font-family:var(--f-data);}
 #gov-time .pips s{width:15px;height:9px;background:var(--ok);border:0;}
 #gov-time .pips s.spent{background:var(--chrome-dk);}
 #gov-inspector{border-top:3px solid var(--gold);padding-top:10px;}
 #gov-inspector > header{display:flex;justify-content:space-between;align-items:start;gap:10px;flex-wrap:wrap;}
-#gov-file-title{font-size:18px;font-weight:normal;margin:0;}
+#gov-inspector > header,#gov-file-office,#gov-file-summary{max-width:75ch;}
+#gov-inspector [data-gov-close]{flex:0 0 auto;}
+#gov-file-title{font-size:18px;font-weight:normal;margin:0;flex:1 1 240px;min-width:0;}
+#gov-file-summary{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 12px;
+  margin:9px 0 14px;padding:10px 12px;border:1px solid var(--rule);background:var(--field);font-size:12px;line-height:1.4;}
+#gov-file-summary dt{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);}
+#gov-file-summary dd{margin:0;overflow-wrap:anywhere;}
 #gov-file-body{max-width:75ch;}
 #gov-file-body .ini-b{border:0;padding:10px 0;}
 #gov-file-body table{width:100%;}

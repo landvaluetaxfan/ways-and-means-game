@@ -345,6 +345,13 @@ ${HELPERS}
       document.querySelector('[data-select-post=""]').click();
       var work = document.querySelector('#gov-cabinet [data-post=""] [data-ini]');
       if (work) work.click();
+      if (work && innerWidth > 640) {
+        var readableFile = document.querySelector('#gov-file-body').getBoundingClientRect();
+        var closeFile = document.querySelector('#gov-inspector [data-gov-close]').getBoundingClientRect();
+        if (closeFile.right > readableFile.right + 2)
+          found.push({tab:"gov-file-controls",el:"[data-gov-close]",kind:"LAYOUT",by:closeFile.right-readableFile.right,
+            detail:"Close file is detached from the readable work file."});
+      }
       var businessRect = document.querySelector('#gov-main').getBoundingClientRect();
       var fileRect = document.querySelector('#gov-file-pane').getBoundingClientRect();
       if (innerWidth > 640 && fileRect.left < businessRect.right - 1)

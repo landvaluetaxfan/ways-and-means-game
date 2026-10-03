@@ -2578,9 +2578,15 @@ const UI = (function () {
       const holder = id ? (st.cabinet[id] || {}).holder : C.setup.pm;
       const ch = C.characterById[holder], party = id ? (st.cabinet[id] || {}).party : ch && ch.party;
       const p = (C.partyById || {})[party];
+      const work = $("#gov-cabinet").querySelector('[data-post="' + id + '"] [data-gov-section="running"]');
+      const awaiting = work ? work.querySelectorAll("[data-si]").length : 0;
+      const running = work ? work.querySelectorAll("[data-running]").length : 0;
+      const counts = (awaiting ? `<span data-gov-awaiting>${awaiting} awaiting approval</span>` : "") +
+        (running ? `<span data-gov-running>${running} under way</span>` : "");
       return `<button class="gov-select" id="gov-select-${id ? "post-" + esc(id) : "pm"}" data-select-post="${esc(id)}" aria-pressed="${selected === id}">` +
         portrait(ch) + `<span><strong>${ch ? esc(bare(ch.name)) : "Vacant"}</strong><span class="gov-office">${esc(govPostName(id))}</span>` +
-        `${p ? `<span class="gov-party">${mark(party)} ${esc(p.short || p.name)}</span>` : `<span class="flag bad" data-tip="vacant">VACANT</span>`}</span></button>`;
+        `${p ? `<span class="gov-party">${mark(party)} ${esc(p.short || p.name)}</span>` : `<span class="flag bad" data-tip="vacant">VACANT</span>`}` +
+        (counts ? `<span class="gov-rail-work">${counts}</span>` : "") + `</span></button>`;
     }).join("");
     $("#gov-roster").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
       selectGovDepartment(b.hasAttribute("data-select-post") ? b.dataset.selectPost : null);
@@ -2711,18 +2717,18 @@ const UI = (function () {
       running = govWorkId("running"), post = govWorkId("post");
     const scope = selected === null ? $("#gov-business") : $("#gov-cabinet").querySelector('[data-post="' + selected + '"]');
     body.innerHTML = "";
-    let title = "", source = null, owner = null;
+    let title = "", source = null, owner = null, kind = null, entry = null;
     if (scope && initOpen) {
       const head = scope.querySelector('[data-ini="' + initOpen + '"]');
       source = head && head.parentElement.querySelector(".ini-b");
-      const entry = (C.initiatives || []).find(i => i.id === initOpen);
-      if (source && entry) { title = entry.title; owner = govOwner(entry.post); body.appendChild(source); }
+      entry = (C.initiatives || []).find(i => i.id === initOpen);
+      if (source && entry) { title = entry.title; owner = govOwner(entry.post); kind = "initiative"; body.appendChild(source); }
     } else if (scope && siOpen) {
       const row = scope.querySelector('[data-si="' + siOpen + '"]');
       source = row && row.nextElementSibling;
-      const entry = (C.instruments || []).find(i => i.id === siOpen);
+      entry = (C.instruments || []).find(i => i.id === siOpen);
       if (source && source.classList.contains("si-d") && entry) {
-        title = entry.title; owner = govOwner(entry.author);
+        title = entry.title; owner = govOwner(entry.author); kind = "si";
         const table = document.createElement("table"); table.appendChild(source); body.appendChild(table);
         const actions = document.createElement("div"); actions.className = "gov-file-actions";
         const cell = row.lastElementChild;
@@ -2730,10 +2736,10 @@ const UI = (function () {
         body.appendChild(actions);
       }
     } else if (scope && running) {
-      const entry = (C.initiatives || []).find(i => i.id === running);
+      entry = (C.initiatives || []).find(i => i.id === running);
       const row = scope.querySelector('[data-running="' + running + '"]');
       if (entry && row) {
-        title = entry.title; owner = govOwner(entry.post);
+        title = entry.title; owner = govOwner(entry.post); kind = "running";
         body.innerHTML = `<p>${esc(entry.note || "")}</p><p class="note">${esc(row.textContent)}</p>`;
       }
     } else if (post !== null && (post === "" || (C.cabinet || []).some(p => p.id === post))) {
@@ -2751,6 +2757,7 @@ const UI = (function () {
       (holder ? `<a class="cx-link" tabindex="0" data-go="person_${esc(holder.id)}">${esc(bare(holder.name))}</a>` : "Vacant") +
       (holder && party ? " " + mark(party) + " " + esc((C.partyById[party] || {}).short || party) : "");
     $("#gov-file-title").dataset.work = title ? Focus.selected("gov-work") : "";
+    drawGovFileSummary(kind, entry);
     const close = box.querySelector("[data-gov-close]"); close.id = "gov-file-close";
     close.onclick = () => {
       const view = selected === null ? "gov-business" : "gov-cabinet";
@@ -2759,6 +2766,42 @@ const UI = (function () {
       setGovWorkKey(null);
       Focus.around(() => drawGovernment(), { sel:"#" + origin });
     };
+  }
+  function drawGovFileSummary(kind, entry) {
+    const summary = $("#gov-file-summary"), body = $("#gov-file-body");
+    summary.replaceChildren(); summary.hidden = !kind || !entry;
+    if (summary.hidden) return;
+    let procedure = "", time = "", next = "";
+    if (kind === "initiative") {
+      procedure = "Initiative";
+      const base = Engine.initiatives(st, C).find(i => i.id === entry.id).cost;
+      const costs = (entry.tempo || []).map(t => base + (t.cost || 0));
+      const low = costs.length ? Math.min(...costs) : base;
+      const high = costs.length ? Math.max(...costs) : low;
+      time = (high === 0 ? "No order-paper time" : low === high ? slotWord(low)
+        : low + "–" + slotWord(high)) + " · " + (st.slots.total - st.slots.used) + " left this period.";
+      next = body.querySelector("[data-take]:not(:disabled)") ? "Choose a pace below."
+        : "No pace available. Read the reason below.";
+    } else if (kind === "si") {
+      procedure = cap1(entry.procedure) + " order";
+      const actions = Array.from(body.querySelectorAll(".gov-file-actions button"));
+      const powers = actions.filter(b => !b.hasAttribute("data-read"));
+      const nextActions = powers.length ? powers : actions;
+      const available = nextActions.filter(b => !b.disabled);
+      /* The existing action tooltip owns its price and refusal. Reusing it
+         keeps free making distinct from the later approval vote. */
+      const priced = actions.find(b => b.dataset.tipBody);
+      time = priced ? priced.dataset.tipBody : "";
+      next = (available.length ? available : nextActions).map(b => b.textContent.trim()).join(" · ") || "No action available.";
+      if (nextActions.length && !available.length) next += " · unavailable";
+    } else {
+      procedure = "Initiative · under way";
+      const due = body.querySelector(".note");
+      next = due ? due.textContent.trim() : "Under way";
+    }
+    summary.innerHTML = [["procedure", "Procedure", procedure], ["time", "Order-paper time", time], ["next", "Next action", next]]
+      .filter(([, , value]) => value).map(([key, label, value]) =>
+        `<dt>${label}</dt><dd data-gov-fact="${key}">${esc(value)}</dd>`).join("");
   }
   function finishGovOfficeFile() {
     const post = govWorkId("post"), body = $("#gov-file-body");
@@ -5154,8 +5197,11 @@ const UI = (function () {
     Object.keys(after.si).forEach(id => {
       if (before.si[id] === after.si[id]) return;
       const i = (C.instruments || []).find(x => x.id === id);
+      const instrument = st.instruments[id] || {};
       notes.push({ tab: "gov", where: "Government",
-                   text: (i ? i.number : id) + " is in force.",
+                   text: (i ? i.number : id) + (instrument.awaitingApproval ? " is awaiting approval."
+                     : instrument.inForce ? " is in force."
+                     : instrument.revoked ? " has been revoked." : " is out of force."),
                    detail: i ? i.title : null });
     });
 
