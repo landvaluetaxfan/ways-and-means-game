@@ -123,8 +123,10 @@ across seeds.
 ## Measure
 
 Run `node tools/playtest.js --seeds 80` before and after, and put both in
-the commit message. `AGENTS.md` has today's figures: the four crisis
-strategies lose 33, 54, 21 and 25 of 80, all to a late thermal cascade.
+the commit message. The original 29 September brief quoted losses of
+33, 54, 21 and 25 of 80; those are historical, not today's AGENTS.md
+figures. The 3 October comparison in design/66 preserves the current four
+crisis-policy losses of 10, 18, 4 and 10.
 
 Add a playtest strategy, **"follows the brief"**: each sitting it takes the
 owner's remedy for the most urgent matter. For a contested matter, see
@@ -146,8 +148,16 @@ Implementation progress, 1 October: the generic matter lifecycle, editor,
 three Flash I matters and Sitting advice cards are implemented. Economy's
 money calls replace the account's Draw controls, keep ordinary borrowing
 available and link contextual calls back to the advice that raised them.
-The remaining work is the follows-the-brief/contested-strategy measurement
-and ten-sitting playable slice; those claims are not yet accepted.
+The remaining work at that date was the follows-the-brief/contested-strategy
+measurement and playable slice.
+
+**Measurement completed, 3 October:** `design/66-advice-measurement.md`
+records the unchanged old-policy baseline and new 80-seed comparisons.
+Follows-the-brief and owner reach the count in 76/80 runs; dissent in 72/80.
+The intended contested-choice trade-off is not yet demonstrated, and no
+contested heat advice appears by sitting 24 on these paths. The playable
+slice remains unfinished; `opening-playable-slice.md` is its planning draft,
+with the boundary/early-advice decision requiring author review.
 
 **Works' air: the rescue decision moves before the deaths.** The author
 approved the following direction in chat on 1 October.

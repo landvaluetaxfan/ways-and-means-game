@@ -13,6 +13,166 @@ const Engine = require("./js/engine.js");
 const PROLOGUE1 = T.prologue1(CONTENT);
 const RUN_BOUND = T.runBound(CONTENT);
 
+/* Driver tests use real engine actions and synthetic world entries. A wrong
+   counsel, missing continuation or repeated charge must change these results. */
+(function () {
+  let bad = 0;
+  const ok = (label, yes) => { console.log((yes ? "  ok   " : "  FAIL ") + label); if (!yes) bad++; };
+  console.log("\nADVICE PLAYTEST DRIVER:");
+  const D = fs.existsSync("tools/adviceplay.js") ? require("./tools/adviceplay.js") : {};
+  ok("advice has an executable tools-only driver", typeof D.actOnAdvice === "function");
+  if (!D.actOnAdvice) { process.exitCode = 1; return; }
+  function fixture(kind = "initiative", suffix = "") {
+    const opening = Engine.newGame(CONTENT, 123);
+    const posts = CONTENT.cabinet.filter(p => opening.cabinet[p.id].holder);
+    const owner = posts[0].id, rival = posts[1].id;
+    const ids = ["advice_a" + suffix, "advice_b" + suffix];
+    const late = {id:"advice_late",title:"Late",choices:[{label:"Wait",effects:[]}]};
+    const page = {id:"advice_page",title:"Failure",queuedOnly:true,setpiece:true,choices:[],effects:[]};
+    const answer = {id:"advice_answer",title:"Answer",queuedOnly:true,choices:[{label:"Accept",effects:[{flag:"advice_done"}]}]};
+    const m = {id:"advice_matter" + suffix,owner,raise:{minSitting:1},due:10,
+      note:"Act",figures:[],settled:{flags:["advice_done"]},late:late.id,page:page.id,
+      remedies:ids.map(id => ({id,target:{kind,id,tempo:0},takes:3})),
+      counsel:[{post:owner,remedy:ids[0]},{post:rival,remedy:ids[1]}]};
+    const C = Object.assign({},CONTENT,{events:[late,page,answer],
+      eventById:Object.fromEntries([late,page,answer].map(e=>[e.id,e])),matters:[m],
+      initiatives:ids.map((id,i)=>({id,title:id,post:owner,cost:1,
+        effects:[{move:{public_standing:i ? 2 : 1}}],tempo:[{after:3}],event:answer.id})),
+      instruments:ids.map((id,i)=>({id,title:id,author:owner,procedure:i ? "negative" : "affirmative",
+        political_cost:[{move:{public_standing:-3}}],effects:[{flag:"advice_done"}],
+        prayer_stances:Object.fromEntries(CONTENT.parties.map(p=>[p.id,"against"]))}))});
+    C.instrumentById=Object.fromEntries(C.instruments.map(i=>[i.id,i]));
+    return {C,s:Engine.newGame(C,123),m,ids,rival};
+  }
+  const run=(f,mode="first",memory={})=>D.actOnAdvice(Engine,f.s,f.C,mode,memory);
+  try {
+    const a=fixture(), b=fixture(); a.m.remedies.reverse(); b.m.remedies.reverse();
+    const x=run(a,"owner"), y=run(b,"dissent");
+    ok("owner counsel follows identity rather than remedy display order",x[0].remedy===a.ids[0] && a.s.flags.init_advice_a);
+    ok("dissent executes the other live minister's remedy",y[0].remedy===b.ids[1] && b.s.flags.init_advice_b);
+    ok("advice records live competing counsel at selection",x[0].contested===true && x[0].continuation===false);
+    const c=fixture(); c.C.initiatives[1].when={minSitting:90};
+    const blocked=run(c,"dissent");
+    ok("blocked dissent logs a refusal without silently taking owner advice",blocked[0].status==="refused" && !c.s.flags.init_advice_a && !c.s.flags.init_advice_b);
+    const v=fixture(); Engine.apply(v.s,v.C,[{cabinet:{[v.rival]:null}}]);
+    const fallback=run(v,"dissent");
+    ok("a vacant adviser falls back explicitly",fallback[0].fallback===true && v.s.flags.init_advice_a);
+    const none=fixture(); none.m.counsel=[];
+    ok("absent counsel falls back explicitly",run(none,"owner")[0].fallback===true);
+    const hold=fixture(), memory={}; const used=hold.s.slots.used;
+    run(hold,"owner",memory); Engine.advance(hold.s,hold.C); const quiet=run(hold,"owner",memory);
+    ok("underway advice produces no spurious refusal",quiet.length===0);
+    ok("delayed work is not charged or started again",hold.s.slots.used===used+1 && Engine.matters(hold.s,hold.C)[0].underway);
+    Engine.advance(hold.s,hold.C); Engine.advance(hold.s,hold.C);
+    const answer=Engine.nextEvent(hold.s,hold.C);
+    if(answer && answer.id==="advice_answer") Engine.choose(hold.s,hold.C,answer,0);
+    ok("a delayed remedy closes only when its queued answer settles it",answer && answer.id==="advice_answer" && Engine.matters(hold.s,hold.C).length===0 && hold.s.flags.advice_done);
+    const order=fixture("instrument"), om={}; const before=order.s.scalars.public_standing;
+    run(order,"owner",om);
+    ok("making an affirmative order is pending rather than settlement",order.s.instruments.advice_a.awaitingApproval && !order.s.flags.advice_done);
+    Engine.advance(order.s,order.C); run(order,"owner",om);
+    ok("pending advice continues through a real approval",order.s.instruments.advice_a.inForce && order.s.slots.used===1);
+    ok("continuation never charges the political make cost twice",order.s.scalars.public_standing===before-3);
+    const later=fixture("instrument"), laterMemory={}, rivalCounsel=later.m.counsel.pop();
+    const started=run(later,"owner",laterMemory);later.m.counsel.push(rivalCounsel);
+    Engine.advance(later.s,later.C);const finished=run(later,"owner",laterMemory);
+    ok("later competing counsel does not recast a pending action as a new choice",
+      started[0].contested===false && finished[0].contested===false && finished[0].continuation===true);
+    const empty=fixture(); empty.C.matters=[];
+    ok("an empty brief performs no action",run(empty).length===0);
+    const shut=fixture(); shut.C.initiatives.forEach(i=>i.when={minSitting:99});
+    ok("no executable remedy is an explicit refusal",run(shut)[0].status==="refused" && shut.s.slots.used===0);
+    const same1=fixture(), same2=fixture();
+    ok("identical runs produce identical driver records",JSON.stringify(run(same1,"owner"))===JSON.stringify(run(same2,"owner")));
+    const renamed=fixture("initiative","_renamed"); run(renamed,"owner");
+    ok("renaming targets preserves the actual action cost",renamed.s.slots.used===1 && renamed.s.flags.init_advice_a_renamed);
+    const unknown=fixture(); unknown.m.remedies[0].target.kind="unrecognised";
+    let throws=false; try {run(unknown,"owner");} catch(e){throws=/target kind/.test(e.message);}
+    ok("an unknown remedy kind fails loudly",throws);
+    const explode=fixture(); let propagated=false;
+    const wrapped=Object.assign({},Engine,{take(){throw new Error("engine exploded");}});
+    try {D.actOnAdvice(wrapped,explode.s,explode.C,"owner",{});}catch(e){propagated=e.message==="engine exploded";}
+    ok("unexpected engine exceptions propagate",propagated);
+    const levers=fixture("instrument"), lm={};
+    levers.C.instruments.forEach(i=>i.procedure="negative");
+    levers.C.instruments[0].effects=[{move:{thermal_margin:1}}];
+    levers.C.setup=Object.assign({},levers.C.setup,{alerts:[{raises:"thermal_margin"}]});
+    const lr=D.pullLevers(Engine,levers.s,levers.C,lm);
+    ok("lever coverage excludes content-declared emergency relief",!levers.s.instruments.advice_a.made && levers.s.instruments.advice_b.made);
+    ok("lever coverage caps orders and initiatives",lr.filter(r=>r.kind==="instrument").length===1 && lr.filter(r=>r.kind==="initiative").length===1);
+    Engine.apply(levers.s,levers.C,[{slots:{total:6}}]);
+    ok("repeating lever coverage in one sitting spends nothing",D.pullLevers(Engine,levers.s,levers.C,lm).length===0);
+    const protectedRun=fixture(), beforeReserve=D.reservedTime(Engine,protectedRun.s,protectedRun.C);
+    run(protectedRun,"owner");
+    ok("supply reservation reads the live stages after advice",beforeReserve===5 && D.reservedTime(Engine,protectedRun.s,protectedRun.C)===5 && protectedRun.s.slots.used===1);
+    const money=fixture("money"), facilities=Engine.facilities(money.s,money.C);
+    const lender=facilities.find(f=>Engine.canBorrow(money.s,money.C,50,f.id).ok);
+    money.m.remedies[0].target={kind:"money",id:lender.id,amount:50};
+    const cash=money.s.scalars.solvency;run(money,"owner");
+    ok("money advice converts the declared drawing into home currency",money.s.scalars.solvency===cash+60);
+    const bill=fixture("bill"), supply=bill.C.bills.find(b=>b.test==="supply"), bm={};
+    const unanimous=Object.assign({},supply,{stances:Object.fromEntries(CONTENT.parties.map(p=>[p.id,"for"]))});
+    bill.C.bills=bill.C.bills.map(b=>b.id===supply.id ? unanimous : b);
+    bill.C.billById=Object.assign({},bill.C.billById,{[supply.id]:unanimous});
+    bill.m.remedies[0].target={kind:"bill",id:supply.id};run(bill,"owner",bm);
+    ok("bill advice advances a stage through the engine",bill.s.bills[supply.id].stage==="second_reading" && bill.s.slots.used===1);
+    for(let i=0;i<3;i++){Engine.advance(bill.s,bill.C);run(bill,"owner",bm);}
+    Engine.advance(bill.s,bill.C); const tooEarly=run(bill,"owner",bm);
+    ok("bill continuation respects the scheduled division day",tooEarly[0] && tooEarly[0].status==="refused" && bill.s.slots.used===4 && !!bm.pending);
+    Engine.advance(bill.s,bill.C); const division=run(bill,"owner",bm);
+    ok("bill advice calls the division rather than granting a fifth stage",division[0] && division[0].status==="acted" && bill.s.bills[supply.id].lastDivision && bill.s.bills[supply.id].lastDivision.carries && bill.s.slots.used===5);
+    const defeated=fixture("instrument"), dm={};
+    defeated.C.instruments[0].prayer_stances=Object.fromEntries(CONTENT.parties.map(p=>[p.id,"for"]));
+    run(defeated,"owner",dm);Engine.advance(defeated.s,defeated.C);const loss=run(defeated,"owner",dm);
+    ok("a real approval defeat is not reported as success",loss[0].status==="defeated" && !defeated.s.instruments.advice_a.inForce);
+    const repeat=fixture("instrument"), rm={};run(repeat,"owner",rm);
+    ok("an advice policy cannot take a second action in one sitting",run(repeat,"owner",rm).length===0);
+    const parked=fixture("instrument"), pm={};run(parked,"owner",pm);Engine.advance(parked.s,parked.C);
+    Engine.apply(parked.s,parked.C,[{slots:{total:-6}}]);
+    const refused=run(parked,"owner",pm);
+    ok("an unavailable pending approval retains its continuation",refused[0].status==="refused" && !!pm.pending && !parked.s.flags.advice_done);
+    const changed=fixture();
+    const raced=Object.assign({},Engine,{take(s,C,id,tempo){
+      Engine.apply(s,C,[{slots:{total:-6}}]);return Engine.take(s,C,id,tempo);
+    }});
+    const rechecked=D.actOnAdvice(raced,changed.s,changed.C,"owner",{});
+    ok("an action-time engine refusal is never reported as success",rechecked[0].status==="refused" && /order-paper/.test(rechecked[0].reason) && !changed.s.flags.init_advice_a);
+    // Execute the actual ordinary-governing phase, not a copy of its rules.
+    const playtest=fs.readFileSync("tools/playtest.js","utf8");
+    const govern=new Function("Engine","CONTENT",playtest.slice(playtest.indexOf("function govern("),
+      playtest.indexOf("/* EVERY SUPPLY-FIRST STRATEGY"))+";return govern;");
+    function approvalFixture(stage) {
+      const f=fixture("instrument"), source=f.C.bills.find(b=>b.test==="supply");
+      const programme=Object.assign({},source,{id:"advice_programme",test:null,stage,
+        stances:Object.fromEntries(CONTENT.parties.map(p=>[p.id,"for"])),onPass:[]});
+      f.C.bills=[programme];f.C.billById={[programme.id]:programme};f.C.matters=[];
+      f.C.initiatives=[];f.C.setup=Object.assign({},f.C.setup,{alerts:[]});
+      f.s=Engine.newGame(f.C,123);
+      Engine.makeInstrument(f.s,f.C,f.ids[0]);Engine.advance(f.s,f.C);
+      Engine.apply(f.s,f.C,[{slots:{total:1-f.s.slots.total}}]);
+      return f;
+    }
+    for(const [stage,label] of [["first_reading","advancement"],[Engine.DIVIDES_AT,"division"]]) {
+      const f=approvalFixture(stage);
+      govern(Engine,f.C)(f.s,{budget:true,climbs:true,levers:true});
+      const approval=D.pullLevers(Engine,f.s,f.C,{});
+      ok("ordinary bill "+label+" preserves the pending lever approval's last slot",
+        f.s.bills.advice_programme.stage===stage && approval[0] && approval[0].action==="approve" &&
+        approval[0].status==="acted" && f.s.instruments.advice_a.inForce && f.s.slots.used===1);
+    }
+    const billLoss=fixture("bill"), failing=billLoss.C.bills.find(b=>b.test==="supply"), flm={};
+    const opposed=Object.assign({},failing,{stances:Object.fromEntries(CONTENT.parties.map(p=>[p.id,"against"]))});
+    billLoss.C.bills=billLoss.C.bills.map(b=>b.id===failing.id ? opposed : b);
+    billLoss.C.billById=Object.assign({},billLoss.C.billById,{[failing.id]:opposed});
+    billLoss.m.remedies[0].target={kind:"bill",id:failing.id};
+    for(let i=0;i<5;i++){run(billLoss,"owner",flm);Engine.advance(billLoss.s,billLoss.C);}
+    const lostBill=run(billLoss,"owner",flm);
+    ok("a real bill division defeat is not reported as success",lostBill[0] && lostBill[0].status==="defeated" &&
+      billLoss.s.bills[failing.id].dead && !billLoss.s.bills[failing.id].lastDivision.carries && !flm.pending);
+  } catch(e) {ok("driver integration",false);console.log("    "+e.stack);}
+  if(bad) process.exitCode=1;
+})();
+
 /* Alternatives must retain AND inside each branch and alongside the list.
    Dropping a branch, hiding a typo behind a true branch, or skipping nested
    reference walks must fail these real-condition probes. */

@@ -6,6 +6,8 @@
      node tools/playtest.js --sittings 60
      node tools/playtest.js --seeds 80   every strategy across 80 seeds:
                                          outcomes, the pool, what never fires
+     node tools/playtest.js --seeds 80 --report results.json
+                                       structured advice and per-seed evidence
 
    design/33 §6. Two problems, one machine.
 
@@ -44,6 +46,7 @@ const CAMPAIGN = (process.argv.indexOf("--campaign") >= 0
   ? process.argv[process.argv.indexOf("--campaign") + 1] : null) || "flash_i";
 const CONTENT = globalThis.__C.forCampaign(CAMPAIGN);
 const Engine = require(path.join(root, "js", "engine.js"));
+const Advice = require("./adviceplay.js");
 
 const argv = process.argv.slice(2);
 const arg = (k, d) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : d; };
@@ -64,6 +67,7 @@ const WANT_LOG = argv.indexOf("--log") >= 0 ? String(argv[argv.indexOf("--log") 
    the cut of nine events changed nothing measurable, which one seed could
    not have shown. `--seeds N` plays every strategy on N seeds. */
 const SEEDS = Number(arg("--seeds", 0));
+const REPORT = arg("--report", null);
 let SEED;                                   /* undefined: the engine's default */
 
 /* ---------- the strategies ----------
@@ -117,7 +121,12 @@ function govern(st, strategy) {
     ? Engine.today(st, CONTENT, false).items.filter(i => i.kind === "ladder")
         .reduce((n, i) => Math.max(n, i.need || 0), 0)
     : 0;
-  const holding = Math.max(alerts.length ? 1 : 0, ladder);
+  // New policies must preserve ordinary approvals too. Leave the eight
+  // historical policies unchanged so their before/after baseline remains valid.
+  const protectsApprovals = !!(strategy.levers || strategy.advice);
+  const pending = protectsApprovals && (CONTENT.instruments || [])
+    .some(i => (st.instruments[i.id] || {}).awaitingApproval);
+  const holding = Math.max(alerts.length ? 1 : 0, ladder, pending ? 1 : 0);
   /* supply first, for a government that wants to survive the rise */
   const order = (CONTENT.bills || []).slice().sort((a, b) => {
     const s = (x) => (x.test === "supply" ? 0 : 1);
@@ -144,6 +153,8 @@ function govern(st, strategy) {
   for (const b of order) {
     const bs = st.bills[b.id];
     if (!bs || bs.dead || bs.stage !== Engine.DIVIDES_AT) continue;
+    if (protectsApprovals && b.test !== "supply" && Engine.reservedFor(st,b.id) < 1 &&
+        st.slots.total-st.slots.used <= (strategy.budget ? supplyNeed(st) : 0)+holding) continue;
     try {
       const r = Engine.divide(st, CONTENT, b.id);
       if (!r) continue;
@@ -261,7 +272,15 @@ const STRATEGIES = [
         if (s > cost) { cost = s; best = i; }
       });
       return best;
-    } }
+    } },
+  ...[
+    ["brief","Follows the brief","first"],
+    ["owner","The owner's counsel","owner"],
+    ["dissent","The dissent","dissent"]
+  ].map(([id,name,advice])=>({id,name,advice,budget:true,climbs:true,pick:()=>0,
+    note:"First-option decisions and supply-first governing; advice policy " + advice + "."})),
+  {id:"levers",name:"Pulls levers",levers:true,budget:true,climbs:true,pick:()=>0,
+    note:"Supply-first governing, plus one non-emergency order and one offered initiative."}
 ];
 
 /* ---------- one run ---------- */
@@ -269,6 +288,26 @@ function play(strategy, sittings) {
   const st = Engine.newGame(CONTENT, SEED);
   const seen = new Set();
   const marks = [];
+  const driverMemory={}, leverMemory={}, adviceRecords=[], transitions=[], exposures=[];
+  const observed={}, exposed=new Map();
+  function observe() {
+    Engine.matters(st,CONTENT).forEach(m=>{
+      const episode=m.id+":"+st.matters[m.id].openedAt;
+      const contested=m.counsel.some(c=>c.holder && c.post===m.owner) && m.counsel.some(c=>c.holder && c.post!==m.owner);
+      if (!exposed.has(episode)) {
+        const entry={sitting:st.sitting,matter:m.id,
+          contested,firstContestedAt:contested ? st.sitting : null,
+          remedies:m.remedies.map(r=>({id:r.id,ok:r.ok,reason:r.reason})),remaining:m.remaining};
+        exposures.push(entry);exposed.set(episode,entry);
+      } else if (contested && !exposed.get(episode).contested) {
+        exposed.get(episode).contested=true;exposed.get(episode).firstContestedAt=st.sitting;
+      }
+    });
+    Object.entries(st.matters || {}).forEach(([id,r])=>{
+      const value=r.state+":"+!!r.hold;
+      if (observed[id]!==value) {observed[id]=value;transitions.push({sitting:st.sitting,matter:id,state:r.state,underway:!!r.hold});}
+    });
+  }
   let picks = 0, refused = 0, ended = null, endedAt = null;
   let settled = null, settledAt = null, resolved = null, resolvedAt = null;
 
@@ -309,7 +348,19 @@ function play(strategy, sittings) {
     }
 
     /* AND THEN IT GOVERNS. */
+    observe();
+    if (strategy.advice) {
+      const records=Advice.actOnAdvice(Engine,st,CONTENT,strategy.advice,driverMemory);
+      adviceRecords.push(...records);
+      records.forEach(r=>note("advice " + r.matter + ": " + (r.remedy || "wait") + " " + r.status + (r.reason ? ": " + r.reason : "")));
+    }
     govern(st, strategy).forEach(a => note(a));
+    if (strategy.levers) {
+      const records=Advice.pullLevers(Engine,st,CONTENT,leverMemory);
+      adviceRecords.push(...records);
+      records.forEach(r=>note("lever " + r.remedy + " " + r.status + (r.reason ? ": " + r.reason : "")));
+    }
+    observe();
 
     /* HAS IT ENDED? Engine.checkEnd is the authority and nothing else is.
        The first version of this loop broke on checkSettlement and reported
@@ -343,6 +394,7 @@ function play(strategy, sittings) {
 
   const total = (CONTENT.events || []).length;
   return { strategy, st, seen, marks, picks, refused, settled, settledAt, resolved, resolvedAt,
+           adviceRecords,transitions,exposures,
            ended: ended || "still governing", endedAt: endedAt || st.sitting,
            reach: total ? Math.round(seen.size / total * 100) : 0, total: total };
 }
@@ -356,6 +408,7 @@ const num = (s, n) => String(s === undefined || s === null ? "" : s).padStart(n)
    event eligible for long stretches and never drawn is losing the pool,
    not waiting for its condition. */
 if (SEEDS > 0) {
+  const reportRuns=[];
   const tally = {}, eligible = {}, eligibleRuns = {}, pool = {};
   const next = Engine.nextEvent;
   let runSeen = null;
@@ -379,6 +432,13 @@ if (SEEDS > 0) {
     STRATEGIES.forEach(sg => {
       runSeen = new Set(); n++; countedAt = null;
       const r = play(sg, SITTINGS);
+      const budget=Engine.budget(r.st,CONTENT);
+      reportRuns.push({seedIndex:k,seed:SEED == null ? "default" : SEED,strategy:sg.id,
+        ended:r.ended,endedAt:r.endedAt,resolved:r.resolved,settled:r.settled,
+        reserve:r.st.scalars.solvency,debt:budget.debt,arrears:(r.st.macro || {}).arrears || 0,
+        heat:r.st.scalars.thermal_margin,standing:r.st.scalars.public_standing,
+        confidence:Engine.confidence(r.st),seen:[...r.seen],
+        advice:r.adviceRecords,transitions:r.transitions,exposures:r.exposures});
       r.seen.forEach(id => tally[id] = (tally[id] || 0) + 1);
       const o = (r.resolved ? r.resolved.replace(/^f1_/, "") : "-") + " / " + r.ended.replace(/: .*/, "");
       const row = out[sg.name] = out[sg.name] || {};
@@ -402,6 +462,16 @@ if (SEEDS > 0) {
   const never = (CONTENT.events || []).filter(e => !tally[e.id]);
   console.log("\n  never met in any run (" + never.length + "): conditions these players never create, or dead");
   console.log("    " + never.map(e => e.id).join(", "));
+  console.log("\n  advice policies: exposed to live contested counsel / reached the count");
+  ["brief","owner","dissent"].forEach(id=>{
+    const rows=reportRuns.filter(r=>r.strategy===id);
+    const exposed=rows.filter(r=>r.exposures.some(e=>e.contested));
+    console.log("    " + id + ": " + exposed.length + "/" + rows.length + " exposed; " +
+      rows.filter(r=>r.ended.startsWith("election")).length + "/" + rows.length + " count; exposed count " +
+      exposed.filter(r=>r.ended.startsWith("election")).length + "/" + exposed.length);
+  });
+  if (REPORT) fs.writeFileSync(REPORT,JSON.stringify({campaign:CAMPAIGN,seeds:SEEDS,sittings:SITTINGS,
+    policies:STRATEGIES.map(s=>({id:s.id,name:s.name,note:s.note})),out,tally,runs:reportRuns},null,2)+"\n");
   process.exit(0);
 }
 

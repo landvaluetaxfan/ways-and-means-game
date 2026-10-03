@@ -20,6 +20,13 @@ one.
 
 ## The work
 
+**Strategy complete, 3 October 2026:** `design/66-advice-measurement.md`
+records Pulls levers and the 80-seed sweep. The scoped three-matter audit
+finds no dead entry; a separate legal-play path reaches the unsampled reserve
+consequence. Per design/64 answer 20, the wider event audit below waits for
+Stage 4. Do not redo the completed strategy or mistake zero coverage for
+an impossible gate.
+
 1. Add a strategy to `STRATEGIES` in `tools/playtest.js`, "Pulls levers".
    Each sitting it makes an order `Engine.canMake` allows (not an emergency
    rung, and at most one a sitting), takes an initiative
