@@ -55,15 +55,77 @@ ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.
  ok('lender rates are kept in the account rather than repeated in calls',
    [...w.document.querySelectorAll('#econ-calls .money-call > .note:first-of-type')].length>0 &&
    [...w.document.querySelectorAll('#econ-calls .money-call > .note:first-of-type')].every(n=>!n.textContent.includes('per cent')));
- const s=w.eval('UI.state()'), saved=s.solvencyHistory;
+ const s=w.eval('UI.state()'), saved=s.solvencyHistory, sitting=s.sitting;
+ s.sitting=61;
  s.solvencyHistory=Array.from({length:61},(_,i)=>i%2 ? 78000 : 52000);
  $('#econ-account [data-chart="solvency"]').click();
  $('#chart-scale [data-cscale="session"]').click();
- ok('chart scale bounds sit beside the plotted values',
-   $('#chart-body .chart-high')?.textContent==='high CW$78.0bn' &&
-   $('#chart-body .chart-low')?.textContent==='low CW$52.0bn');
- ok('sitting chart retains its sixty readings',w.document.querySelectorAll('#chart-body .bar').length===60);
+ const points=()=>($('#chart-body svg polyline')?.getAttribute('points')||'').trim().split(/\s+/).filter(Boolean);
+ ok('session charts draw one line with the last sixty readings',
+   w.document.querySelectorAll('#chart-body svg polyline').length===1 && points().length===60 && !$('#chart-body .bar'));
+ const ticks=()=>[...w.document.querySelectorAll('#chart-body [data-chart-tick]')].map(n=>Number(n.dataset.chartTick));
+ const brackets=(lo,hi)=>{const a=ticks(),step=a[1]-a[0];return a.length>=4 && a.length<=6 && step>0 &&
+   a[0]<=lo && a[a.length-1]>=hi && a.every((v,i)=>!i || Math.abs(v-a[i-1]-step)<step*1e-8);};
+ ok('axis ticks are ascending, evenly spaced and bracket the reserve',brackets(52000,78000));
+ ok('the last-value tag formats the last reserve reading',$('#chart-body .chart-tag')?.textContent==='CW$52.0bn');
+ ok('the reserve change prints the signed difference without an alarm colour',
+   $('#chart-body .chart-change')?.textContent==='▼ −CW$26.0bn' && !$('#chart-body .chart-change.up, #chart-body .chart-change.down'));
+ ok('the reserve has an engine-independent empty reference at zero',
+   $('#chart-body [data-chart-ref="empty"]')?.dataset.chartValue==='0');
+ const plot=$('#chart-body .bigchart');
+ plot.getBoundingClientRect=()=>({left:20,width:600,right:620,top:0,bottom:200,height:200});
+ plot.dispatchEvent(new w.MouseEvent('pointermove',{clientX:320,bubbles:true}));
+ ok('pointer midpoint reads the middle plotted sitting',
+   $('#chart-body .chart-readout')?.textContent==='sitting 32 · CW$78.0bn' && !$('#chart-body .chart-readout').hidden);
+ plot.focus();plot.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true}));
+ ok('a focused plot moves its readout with arrow keys',
+   plot.tabIndex===0 && $('#chart-body .chart-readout')?.textContent==='sitting 31 · CW$52.0bn');
+ s.solvencyHistory=[52000];$('#econ-account [data-chart="solvency"]').click();
+ ok('one reading retains its message and has no change element',
+   $('#chart-sub').textContent.startsWith('one reading so far') && !$('#chart-body .chart-change') && points().length===1);
+ $('#chart-scale [data-cscale="record"]').click();
+ const history=w.eval('UI.content()').setup.history;
+ const years=[...w.document.querySelectorAll('#chart-body .chartaxis [data-chart-year]')].map(n=>Number(n.dataset.chartYear));
+ ok('record view draws one bar per year and labels every year',
+   w.document.querySelectorAll('#chart-body .bar').length===history.solvency.length &&
+   years.length===history.solvency.length && years.every((v,i)=>v===history.to-history.solvency.length+1+i));
+ $('#chart-scale [data-cscale="session"]').click();
+ const mh=s.macro.history, inflation=mh.inflation;
+ mh.inflation=[3.5,3.2,3.6];$('#econ-bank [data-chart="inflation"]').click();
+ const target=w.eval('Engine.macro(UI.state(),UI.content()).target');
+ ok('inflation reference comes from the live Bank target',
+   Number($('#chart-body [data-chart-ref="target"]')?.dataset.chartValue)===target);
+ ok('the upward inflation change retains the series units',$('#chart-body .chart-change')?.textContent==='▲ +0.4%');
+ mh.inflation=[3.5,3.5,3.5];$('#econ-bank [data-chart="inflation"]').click();
+ ok('a flat series retains finite scale and plotted coordinates',brackets(3.5,3.5) &&
+   points().length===3 && points().every(p=>p.split(',').every(n=>Number.isFinite(Number(n)))));
+ mh.inflation=inflation;
+ const rate=mh.rate;mh.rate=[1.55,2.45];$('#econ-bank [data-chart="rate"]').click();
+ ok('awkward ranges still draw a nice four-to-six-tick scale',brackets(1.55,2.45) &&
+   points().length===2 && $('#chart-body .chart-tag')?.textContent==='2.45%');
+ mh.rate=[4.5,4.5];$('#econ-bank [data-chart="rate"]').click();
+ ok('an unchanged reading does not claim a rise or fall',
+   $('#chart-body .chart-change')?.textContent==='+0.00%');
+ mh.rate=rate;
+ const thermal=s.priceHistory.thermal;s.priceHistory.thermal=[100,101];$('#econ-bases [data-chart="thermal"]').click();
+ const tickLabels=[...w.document.querySelectorAll('#chart-body [data-chart-tick]')].map(n=>n.textContent);
+ ok('rounded series keep distinct readable tick labels',brackets(100,101) &&
+   new Set(tickLabels).size===tickLabels.length);
+ s.priceHistory.thermal=thermal;
+ const currentReserve=s.scalars.solvency;s.scalars.solvency=60000;
+ s.solvencyHistory=[];$('#econ-account [data-chart="solvency"]').click();
+ $('#chart-body .bigchart').focus();
+ ok('a migrated empty history reads the current reserve instead of NaN',
+   points().length===1 && $('#chart-sub').textContent.startsWith('one reading so far') &&
+   $('#chart-body .chart-readout')?.textContent==='sitting 61 · CW$60.0bn' && !$('#chart-body .chart-change'));
+ s.scalars.solvency=currentReserve;
+ const balance=mh.balance;mh.balance=[-3,-1,2];$('#econ-account [data-chart="balance"]').click();
+ ok('signed charts include a zero tick and a zero reference',
+   brackets(-3,2) && ticks().includes(0) && ticks().at(-1)-ticks()[0]<=10 &&
+   $('#chart-body [data-chart-ref="zero"]')?.dataset.chartValue==='0');
+ mh.balance=balance;
  s.solvencyHistory=saved;
+ s.sitting=sitting;
  $('#chart-scale [data-cscale="record"]').click();
  w.eval("UI.openTab('sit')");
 }
@@ -1295,7 +1357,7 @@ try {
        w.document.querySelector("#chart-hdr").textContent !== was,
        was + " -> " + w.document.querySelector("#chart-hdr").textContent);
     ok("and the chart draws something",
-       w.document.querySelectorAll("#chart-body .bar").length > 0);
+       w.document.querySelectorAll("#chart-body .bar, #chart-body svg polyline").length > 0);
     ok("and prints the figure, because a bar is not a number",
        /\d/.test((w.document.querySelector("#chart-body .chartnow") || {}).textContent || ""));
   }

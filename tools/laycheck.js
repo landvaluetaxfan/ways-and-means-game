@@ -278,6 +278,14 @@ const HELPERS = `
     var fg = luminance(getComputedStyle(sublabel).color), bg = luminance(getComputedStyle(background).backgroundColor);
     if ((Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05) < 4.5)
       fault(sublabel, "Economy sub-label contrast is below 4.5:1");
+    [].slice.call(scope.querySelectorAll(".chart-tick, .chart-tag")).forEach(function (label) {
+      var surface = label;
+      while (surface.parentElement && getComputedStyle(surface).backgroundColor === "rgba(0, 0, 0, 0)")
+        surface = surface.parentElement;
+      var f = luminance(getComputedStyle(label).color), b = luminance(getComputedStyle(surface).backgroundColor);
+      if ((Math.max(f, b) + 0.05) / (Math.min(f, b) + 0.05) < 4.5)
+        fault(label, "Economy chart label contrast is below 4.5:1");
+    });
     if (innerWidth >= 1900) {
       var label = scope.querySelector(".plab em");
       if (parseFloat(getComputedStyle(label).fontSize) < 11.5)
@@ -298,6 +306,10 @@ const HELPERS = `
       var used = bars[bars.length - 1].getBoundingClientRect().right - bars[0].getBoundingClientRect().left;
       if (used < plot.clientWidth * 0.8) fault(plot, "Economy chart occupies less than 80% of its plot width");
     }
+    var line = plot && plot.querySelector("polyline");
+    if (line && line.getAttribute("points").trim().split(/\\s+/).length >= 8 &&
+        line.getBoundingClientRect().width < plot.clientWidth * 0.8)
+      fault(plot, "Economy session line occupies less than 80% of its plot width");
     return faults;
   }
 
@@ -382,6 +394,19 @@ ${HELPERS}
     var on = document.querySelector(".screen.on");
     drawn.push(tabs[t] + (on ? "" : " (NOT DRAWN)"));
     found = found.concat(measure(tabs[t]));
+    if (tabs[t] === "econ") {
+      /* The opening annual record cannot expose a squeezed session line. */
+      var economyState = UI.state(), oldReserveHistory = economyState.solvencyHistory, oldSitting = economyState.sitting;
+      var reserveBase = oldReserveHistory && oldReserveHistory.length ? oldReserveHistory[0] : economyState.scalars.solvency;
+      economyState.solvencyHistory = Array.from({length:61}, function (_, i) { return reserveBase + (i - 30) * 100; });
+      economyState.sitting = 61;
+      document.querySelector('#econ-account [data-chart="solvency"]').click();
+      document.querySelector('#chart-scale [data-cscale="session"]').click();
+      drawn.push("econ: session");
+      found = found.concat(measure("econ"));
+      economyState.solvencyHistory = oldReserveHistory; economyState.sitting = oldSitting;
+      document.querySelector('#chart-scale [data-cscale="record"]').click();
+    }
     if (tabs[t] === "gov") {
       /* Reaching the last minister must scroll the roster, never lift the
          desk's toolbar or headings out of view. Also run with --wrapped:
