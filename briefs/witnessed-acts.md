@@ -1,8 +1,12 @@
 **Lane: Codex.** Written 4 October 2026 by Claude from the author's decisions
 (`design/71-witnessed-acts.md`, read it first, then `design/62` and bible §1.0).
-Do it **after `opening-playable-slice.md` Batch A**: the playtest depends on
-that, and this is independent of it. Step 0 can be done at any time, by
-opencode if Codex's allowance is short.
+**Reprioritised 4 Oct (evening), by the author:** build this now, in parallel
+with `leverage-claims.md` and `interval-engine.md`; `opening-playable-slice.md`
+Batch A waits. Step 0 has landed. Use `STATE_VERSION` **37** if the state changes
+(36 and 38 are reserved for the other two); keep your number even if theirs lands
+first, and keep the comment line in ascending order on merge. When the claims
+branch is on main, an answer to a witnessed question should create a claim
+(`kind: "promise"`, `holder` the owner's post); until then use plain undertakings.
 
 The author, playing the Economy tab: "I can input 600000 into the Earth banks
 money calls section ... and it gives me a disclaimer popup but nothing like an
