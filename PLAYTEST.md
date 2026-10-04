@@ -82,8 +82,11 @@ Bugs: note them and carry on. Do not fix anything mid-session.
 
 ## Known roughness (do not report)
 
-Placeholder wording in some places; the game running on past the recess to a
-count in August 2080, which is no longer the finale; later events that do not
+Placeholder wording in some places; the introduction saying she has "one session
+before the country votes" and that this is the Parliament's "fourth and last"
+(and the top bar's "SESS 4.1"), which is the older arrangement and no longer
+the canon; the game running on past the recess to a count in August 2080, which
+is no longer the finale; later events that do not
 fit yet; the account of money and the economy, which is dense and not the
 point of this test.
 
