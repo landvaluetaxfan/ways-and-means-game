@@ -93,7 +93,8 @@ const SCHEMA = {
                       ("A dispatch to the Martian Concord"); without the arg
                       the editor's round-trip dropped it, which the encoding
                       check caught. */
-                   {k:"label", type:"text", label:"Label", optional:true}],
+                   {k:"label", type:"text", label:"Label", optional:true},
+                   {k:"date", type:"text", label:"Calendar date (YYYY-MM-DD)", optional:true}],
                    shape:"queue" },
     /* Seats move only by these. A district count is derived from the roll,
        so writing one directly is refused by the engine. */
