@@ -1,0 +1,84 @@
+# The orchestrator's playbook
+
+For whoever is orchestrating (today, a Claude Code session on claude.ai/code),
+and for that session after its context is compacted. The rules are in
+`AGENTS.md`, the work is in `briefs/`, the protocol is in `README.md` here. This
+is the judgment between them. Where it disagrees with those, they win.
+
+## The job
+
+Write briefs, set the order, review what lands, keep the exchange current, and
+spare the author's usage. Do not implement what a lane can. Take the work that
+needs the author's register or design judgment (prose, canon, interface layout),
+because that is the lane where an orchestrator is better than a worker.
+
+## How each lane is started
+
+| lane | how | notes |
+|---|---|---|
+| Claude | this session, or a sibling cloud session (`create_session` with the repo, then `SendMessage`) | spends the author's Claude usage; use for prose, canon, layout, review |
+| Codex | the author starts it on their machine (Agent Orchestrator, **+ Task**, a Codex agent) with a prompt that claims the brief | a cloud session cannot reach it. Its own sandbox cannot push |
+| opencode | `actions_run_trigger` on `opencode.yml` with a `prompt`, or a `/opencode` comment on an issue | runs headless, runs `npm run check`, pushes to main if green. Ask the author before starting one: it spends their API key |
+
+A local Claude Code session shows up in `ListAgents` only if the author runs
+`claude remote-control` in the clone. Otherwise nothing local is reachable from
+here, and the exchange is the channel.
+
+## What to do when work lands
+
+1. `git fetch`, read the lane's `done` message and the commit message, then
+   `git diff --stat`. Did it keep to the files the brief named, and do only what
+   the brief says? Workers drift; the brief is the contract.
+2. `npm install` if needed, then `npm run check` (about ten minutes). Do not edit
+   files while it runs, and do not release a claim mid-run (enccheck reads the
+   tracked file list and crashes on a file that has gone). Then CI on the commit.
+3. Anything on screen: Playwright with Chromium at `/opt/pw-browsers/chromium`
+   (`NODE_PATH=$(npm root -g)`), screenshots at 1920 x 1000 and 1366 x 768 of every
+   touched panel, and `npm run layout` after CSS. Look for clipped text, blank
+   bands, a number shown twice, a label far from its value.
+4. Anything that moves balance: `node tools/playtest.js --seeds 80` before and
+   after, in the commit message, and `npm run guards` for the canon.
+5. Prose: lint, and `PROSE.md`. The register is Claude's; a worker's plain
+   wording is named in its commit message for a pass.
+6. Post a `review` to the lane: what was checked, how, and what is left. Fix a
+   small thing yourself and say so. Anything larger becomes a new brief.
+7. Release the claim if the worker forgot (its brief is deleted), and delete any
+   brief the work has made stale.
+
+## What the author dislikes
+
+Learned from their corrections. Check new screens against these before they ship.
+
+- **A line that restates what the panel already shows.** A count beside the list
+  it counts, a tail that repeats the title, "6 of 6 left" beside a bar of six.
+  Keep a tail only for a unit, a scope, an ordering, a condition or an
+  instruction. In-world characterisation ("the only accurate numbers") stays.
+- **The design's theory on the screen.** "Advice while there is time to act" is
+  how the designer thinks, not what the player needs.
+- **Empty placeholders.** A heading with no body, or an empty state that says
+  nothing about what the panel is for.
+- **White space beside crowded elements.** Size panels to their content.
+- **A number with no meaning.** A bare 64 in a column, "100 idx", an undefined
+  term ("docket", "SESS 4.1"). Say what it is, or cut it.
+- **Buttons that just do things.** An act with nobody reacting (design/71).
+- **A browser's default controls** on a panel that has its own style.
+- **Cost surprises.** The author pays for every token. Read ranges, keep output
+  short, and hand mechanical work to the cheaper lane.
+
+## Deciding and asking
+
+Decide when the answer follows from a standing rule, a locked bible section or a
+recorded decision. Ask the author, with `--to author --kind decision`, when it
+changes canon, what ends a run, or what the player is told in the author's voice
+that no record covers. Give the options, a recommendation and what each costs, and
+carry on with whatever does not depend on the answer. Never wait idle.
+
+## Traps already met
+
+- A cloud sandbox cannot push to GitHub (403). The author runs Codex on their
+  own machine for that reason.
+- Windows PowerShell writes mojibake and a BOM. Read and write source with node or
+  an editor, and trust `npm run enc`.
+- `index.html` and `js/ui.js` are shared by every interface task. Check the
+  claims before touching them, and keep to a different function.
+- Push to main only after `npm run check` passes; the live game deploys from it.

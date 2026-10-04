@@ -53,7 +53,8 @@ Each kind of information has one home. Read only the home you need.
 Pick up work from `briefs/README.md`. **Start every session with
 `node tools/exchange.js inbox --as <your lane>`**: it shows what the other
 agents and the author have left for you and which files they hold. The protocol
-is `exchange/README.md`. If a code task needs new canon or
+is `exchange/README.md`, and an agent that orchestrates the others also reads
+`exchange/PLAYBOOK.md`. If a code task needs new canon or
 player-facing prose, write it plainly, name it in the commit message, and
 leave the register to Claude; lint holds all prose to `PROSE.md` whoever
 wrote it. Hand engine work that can be specified to a brief rather than

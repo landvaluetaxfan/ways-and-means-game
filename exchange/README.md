@@ -2,7 +2,8 @@
 
 Claude Code, Codex and opencode share one repository and nothing else, and the
 author often has only one of them open. What they say to each other lives here,
-as files, so that no one has to carry it by hand. The tool is
+as files, so that no one has to carry it by hand. An agent that is orchestrating
+also reads `PLAYBOOK.md`. The tool is
 `node tools/exchange.js` (no install; `npm run exchange -- <command>` is the
 same). Its header lists every command.
 
