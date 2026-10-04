@@ -50,7 +50,26 @@ it; Claude reviews the rest in a browser.
 10. **Secondary labels are very small and low in contrast:** `.g-econ .plab em`
     is 10.5 px.
 
-Items 1 to 4 are layout, 5 to 8 are bugs, 9 is wording, 10 is legibility.
+11. **The reserve chart hugs the left.** `.bigchart .bar{max-width:26px}`
+    (css/terminal.css line 452) caps each bar, so eight yearly bars make a plot
+    about 216 px wide in a panel 600 px wide. No scale is drawn beside it.
+12. **Dead space inside panels, measured on the 2000 x 990 screenshot after step
+    1:** the prices panel is blank for about 320 px below its note; the Reserve
+    Bank panel for about 370 px; "What is made" for about 190 px. Meanwhile the
+    account column, the money calls and the Underwriters' briefing are the most
+    crowded things on the tab. Space is not the problem; where it is spent is.
+13. **A scale mismatch:** figures are 18 px, their labels 10.5 px, and the panel
+    headings 9 to 10 px. The tab is "read, not scanned" (the stylesheet's own
+    words) yet is set at terminal-dense sizes, even on a window twice the size.
+14. **Label and figure are far apart** on wide panels (a label at the far left, its
+    figure at the far right, 900 px between), which makes rows hard to follow.
+15. **The longest text is in the smallest box.** The Underwriters' briefing, four
+    paragraphs, sits in a 330 x 250 px panel and scrolls.
+
+Items 1 to 4, 11, 12, 14 and 15 are layout, 5 to 8 are bugs, 9 is wording, 10 and
+13 are legibility. **Step 1 (done, 4 Oct) fixed 5 to 9.** Steps 2 and 3 are the
+layout and legibility work, and the author's verdict on step 1 alone was "still
+a lot of issues": whitespace in some panels, compaction in others.
 
 ## Constraints
 
@@ -199,31 +218,103 @@ and check: the account column fits without scrolling at 1366 × 768; the money
 calls are visible without scrolling at 1366 × 768; no panel is more than half
 empty at 2000 × 990.
 
-## Step 3: wide windows, and legibility (needs a browser)
+## Step 3: spend the space, and set the type to match (needs a browser)
 
-**3a. Let panels use their width.** In `css/terminal.css`:
+Do this after step 2. The goal is simple to state and to measure: **no panel
+holds a large empty area, and nothing important is squeezed**, at 2000 x 990 and
+at 1366 x 768.
+
+**3a. Rows sized by their content; the tab scrolls as a whole, not inside narrow
+panels.** In `css/terminal.css`, replace step 2b's grid rows and height:
+
+```css
+.g-econ{grid-template-rows:auto auto;height:auto;align-items:start;}
+#s-econ.screen.on{height:100%;min-height:0;overflow-y:auto;}
+.g-econ .pbody,.g-econ .pbody.scrolls{overflow:visible;max-height:none;}
+```
+
+(`align-items:start` stops a panel stretching to the tallest in its row, which
+is what produced the blank boxes. Rows are `auto`, so each row is as tall as its
+tallest panel. If at 1366 x 768 the tab then needs more than the window's
+height, the whole tab scrolls once, rather than five panels each scrolling inside
+a box. Keep the `scrolls` class on the panel bodies in the markup; only this
+tab's rule above lifts it.) Check that `.screen.on` and the other screens'
+rules are not affected: scope every selector to `#s-econ`.
+
+**3b. Balance each row so its panels are about the same height,** because with
+`align-items:start` unequal panels leave ragged white space under the shorter
+ones. Row 1 (the account, the money calls, the prices) and row 2 (the briefing,
+the chart, the Bank with "What is made") should each come out within about 60 px
+of each other at 2000 x 990. Tune with the panel widths in 2b's
+`grid-template-columns` fractions, not with fixed heights. The briefing wants to
+be wide enough to read in about twelve lines: give column 1 more width on wide
+windows (try `minmax(300px,1.25fr)`).
+
+**3c. Fluid type, so a bigger window gets bigger text and not more margin.** In
+`css/terminal.css`, replace the fixed sizes (lines 497 to 500, 507, 513) with:
+
+```css
+.g-econ .plab{font-size:clamp(13px,0.7vw,16px);}
+.g-econ .plab em{font-size:clamp(11.5px,0.6vw,13.5px);}
+.g-econ .pval{font-size:clamp(18px,1vw,24px);}
+.g-econ .pval span{font-size:clamp(11px,0.55vw,13px);}
+.g-econ .note,.g-econ p.ulook{font-size:clamp(12px,0.65vw,15px);}
+.g-econ table{font-size:clamp(12.5px,0.68vw,15px);}
+.g-econ > .panel > h2{font-size:clamp(10px,0.55vw,12.5px);}
+```
+
+At 1366 these resolve to the old sizes or just above; at 2000 they are about
+10 per cent larger; they stop growing at 2560. Then measure the sub-label
+colour against the panel background; if the contrast ratio is under 4.5:1,
+darken it (`var(--ink)` at about 80 per cent, or the stylesheet's darker soft-ink
+token). Do not guess.
+
+**3d. Let rows breathe where they are short.** Rows of figures in the Bank and
+"What is made" panels: the label and the figure are far apart on a wide panel
+(issue 14). Flow them into columns so each row is about 340 to 460 px wide:
 
 ```css
 #econ-calls{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:0 14px;align-content:start;}
-#econ-bank,#econ-real{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));column-gap:20px;align-content:start;}
+#econ-bank,#econ-real{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));column-gap:20px;align-content:start;}
 #econ-bank > :not(.prow),#econ-real > :not(.prow){grid-column:1 / -1;}
 .money-call{padding:6px 0 8px;border-bottom:1px solid var(--chrome-dk);}
 .money-call .btn{margin-top:5px;min-width:96px;}
 ```
 
-At a wide window the six Bank rows then flow into two or three columns and the
-call blocks sit side by side; at 1366 × 768 they stack as before. If a child of
-`#econ-real` other than a row (the "Who works" `<details>`, the paragraph) needs
-a different span, adjust the `:not(.prow)` rule.
+If a child of `#econ-real` other than a row needs a different span, adjust the
+`:not(.prow)` rule.
 
-**3b. Legibility.** Raise `.g-econ .plab em` from 10.5 px to 11.5 px. Measure
-its colour against the panel background; if the contrast ratio is under 4.5:1,
-darken it (use `var(--ink)` at about 80 per cent, or the stylesheet's own
-darker soft-ink token) rather than guessing.
+**3e. The chart uses its panel.** In `css/terminal.css` change
+`.bigchart .bar{max-width:26px}` (line 452) to `max-width:80px`, and set
+`.bigchart{min-height:180px}`. Eight yearly bars then fill up to 640 px and sixty
+sitting bars still fill the panel. Add the plot's low and high figures at the
+top and foot of the plot as small labels (`.chartaxis` already carries the two
+end labels; the figures `low` and `high` are already printed in `.cnum`, so move
+or repeat them beside the bars rather than inventing new numbers).
 
-**3c. Verify** as in 2d. Also check the Underwriters' briefing at 2000 × 990: it
-should show whole without scrolling, because its row now has the height the
-account used to take.
+**3f. Verify, with numbers, not by eye.** In the browser (Edge or Chromium),
+for each of 2000 x 990, 1920 x 1080, 1366 x 768, 1024 x 640 and 820 x 1180, run
+this in the page and paste the result into the commit message:
+
+```js
+[...document.querySelectorAll("#s-econ .panel")].map(p => {
+  const b = p.querySelector(".pbody") || p;
+  const used = [...b.children].reduce((n, c) => Math.max(n, c.getBoundingClientRect().bottom), 0)
+             - b.getBoundingClientRect().top;
+  const r = p.getBoundingClientRect();
+  return p.id + " h=" + Math.round(r.height) + " empty=" + Math.round(b.getBoundingClientRect().height - used);
+})
+```
+
+Acceptance:
+- at 2000 x 990 no panel reports `empty` over about 60 px, and no panel has an
+  inner scrollbar;
+- at 1366 x 768 the account, the money calls and the Underwriters' briefing are
+  fully visible without an inner scrollbar (the tab as a whole may scroll);
+- `npm run layout` is clean at all sizes, and the five screenshots are looked at
+  by whoever ran it (describe what you saw in the commit message);
+- all `[data-money-*]`, `[data-draw]` and `[data-chart]` behaviours still work
+  (`npm run check`).
 
 ## Not in this brief (Claude's lane: wording)
 
