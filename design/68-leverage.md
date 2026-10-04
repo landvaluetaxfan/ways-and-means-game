@@ -71,7 +71,7 @@ These are proposals from this record's author (Claude), not decisions. They
 follow from the four answers.
 
 **A claim** (in state, content-authored where it begins at a decision):
-- `holder`: a party, a current, a cabinet post, or a lobbying actor (4 Oct: actors are in the roster; record `holderKind`);
+- `holder`: a party, a current, a cabinet post, or a lobbying actor, or (legacy promises owed to a named member) a person (4 Oct: record `holderKind`);
 - `kind`: `promise`, `concession`, `post`;
 - `direction`: owed by the player, or owed to the player;
 - `expects`: what the holder expects, in plain words;

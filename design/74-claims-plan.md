@@ -69,3 +69,26 @@ the interval worker will decide when to invoke this function.
    alter claims and confirm the test fails, then restore it.
 4. Run guards and all of `npm run check`, then rebase on main and rerun the
    necessary checks before landing.
+
+## Built (Claude, 4 Oct evening: Codex's usage ran out after this plan)
+
+Steps 1 and 2 of design/68, as planned, with these decisions:
+- **Fulfilled state stays `kept`**; `called` is added. design/68 now says so.
+- **`holderKind`** is `party`, `current`, `post`, `actor`, or `person`. A legacy
+  promise owed to a named member (`owed_to`) is held by that person; the claim
+  fields are filled from `post` or `owed_to`, and the kind is resolved from content
+  in `reconcile`. Authored claims should name a party, current, post or actor.
+- **Grievances live in `st.grievances`**, not in `st.undertakings` as the plan first
+  proposed: an entry in the promise array would be listed and counted by every
+  reader that walks it (the Undertakings panel, Relations, the docket's owed count).
+  `Engine.claims(st)` returns both. A grievance is `{ direction: "against", state:
+  "held", origin: <the broken promise's id> }`.
+- **`origin` is `null`** until authored; nothing threads a source through `apply()`.
+- **`Engine.fadeLedger(st, C, span)`** thins `capital` by `setup.fade` (default 0.5,
+  per interval) and never touches a claim. It is not yet called by anything: the
+  interval engine calls it.
+- `STATE_VERSION` is 36; the migration fills the fields and grieves for promises
+  already broken. `js/refs.js` renames a `holder`. Verified: the 80-seed playtest is
+  identical to the baseline, `npm run check` passes, and the fade test fails when
+  the fade is made to touch a claim.
+

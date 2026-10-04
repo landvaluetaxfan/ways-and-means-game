@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 35;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar, 32 core inflation and the quarter, 33 the forums, 34 the Concordance's dates, 35 ministerial matters
+  const STATE_VERSION = 36;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar, 32 core inflation and the quarter, 33 the forums, 34 the Concordance's dates, 35 ministerial matters, 36 claims
 
   /* ---------------------------------------------------------
      1. STATE
@@ -218,7 +218,11 @@ const Engine = (function () {
          then carried out on the screen that owns it, and settle() below
          notices. There is deliberately no verb for "mark it done": a
          promise is discharged by keeping it. See design/02. */
-      undertakings: [],   // [{id, text, owed_to, by, discharge, onBreach, state}]
+      undertakings: [],   // [{id, text, owed_to, by, discharge, onBreach, state, + the claim fields, see claimDefaults}]
+      /* GRIEVANCES — a broken promise leaves a claim held AGAINST the
+         government (design/68, design/74). Kept apart from `undertakings`
+         so that nothing which lists or counts promises sees them. */
+      grievances: [],
 
       /* THE SEED. Selection is deterministic GIVEN THE SAVE: the cursor
          lives here and every draw advances it, so a save always replays
@@ -554,6 +558,14 @@ const Engine = (function () {
       st.matters = {};
       st.version = 35;
     }
+    if (st.version < 36) {                    // claims (design/68, design/74)
+      st.grievances = st.grievances || [];
+      (st.undertakings || []).forEach(u => {
+        claimDefaults(u);
+        if (u.state === "broken" && !st.grievances.some(g => g.origin === u.id)) st.grievances.push(grievanceOf(u, u.made));
+      });
+      st.version = 36;
+    }
     return st;
   }
 
@@ -585,6 +597,7 @@ const Engine = (function () {
 
   function reconcile(st, C) {
     if (!C) return st;
+    (st.undertakings || []).forEach(u => claimResolve(C, u));
     const notes = { stationsAdded: [], stationsDropped: [], seatsAdded: [], seatsDropped: [],
                     partiesAdded: [], currentsAdded: [], cabinetAdded: [], cabinetRepaired: [],
                     functionalAdded: [], functionalDropped: [], instrumentsAdded: [],
@@ -4897,8 +4910,17 @@ const Engine = (function () {
         by: (Object.prototype.hasOwnProperty.call(u, "by") && u.by === null)
               ? null : st.sitting + (u.by === undefined ? 3 : u.by),
         discharge: u.discharge || null, onBreach: u.onBreach || null,
-        state: "open", made: st.sitting
+        state: "open", made: st.sitting,
+        /* THE CLAIM FIELDS (design/68). A promise is a claim held by someone:
+           `holder` a party, a current, a cabinet post or a lobbying actor,
+           with `holderKind` saying which. `kind` is promise, concession or
+           post; `direction` is owed (by the government) or due (to it);
+           `expects` is what the holder expects; `limit` is the line past
+           which they act, {when, then}; `origin` is what made it. */
+        kind: u.kind, direction: u.direction, expects: u.expects,
+        limit: u.limit, origin: u.origin, holder: u.holder, holderKind: u.holderKind
       });
+      claimResolve(C, st.undertakings[st.undertakings.length - 1]);
     }),
     /* For content that resolves an undertaking some other way than by
        keeping it — a promise overtaken by events, or released. */
@@ -5472,6 +5494,69 @@ const Engine = (function () {
     return false;
   }
 
+  /* ---------------------------------------------------------
+     A CLAIM, AND THE FADE (design/68, design/74)
+
+     An undertaking is already a named claim with a holder and a date, so
+     claims generalise it and replace nothing. `claimDefaults` fills the
+     fields an older entry lacks; `claimResolve` also says what kind of thing
+     the holder is, which needs content. The numeric ledger (st.capital)
+     thins across an interval; a named claim never does, and breaking one
+     leaves a grievance. fadeLedger is called by the interval, not by the
+     sitting loop.
+     --------------------------------------------------------- */
+  function claimDefaults(u) {
+    if (u.kind == null) u.kind = "promise";
+    if (u.direction == null) u.direction = "owed";
+    if (u.expects == null) u.expects = u.text || u.id;
+    if (u.limit === undefined) u.limit = null;
+    if (u.origin === undefined) u.origin = null;
+    if (u.holder == null) u.holder = u.post || u.owed_to || null;
+    if (u.holderKind === undefined) u.holderKind = (u.post && u.holder === u.post) ? "post" : null;
+    return u;
+  }
+  function holderKindOf(C, id) {
+    if (!id || !C) return null;
+    if ((C.cabinetById || {})[id]) return "post";
+    if ((C.partyById || {})[id]) return "party";
+    if ((C.currentById || {})[id]) return "current";
+    if ((C.actorById || {})[id]) return "actor";
+    if ((C.characterById || {})[id]) return "person";   /* a legacy promise owed to a named member */
+    return null;
+  }
+  function claimResolve(C, u) {
+    claimDefaults(u);
+    if (u.holderKind == null) u.holderKind = holderKindOf(C, u.holder);
+    return u;
+  }
+  function grievanceOf(u, sitting) {
+    return { id: u.id + "_grievance", text: "Broken: " + (u.text || u.id), kind: u.kind || "promise",
+             direction: "against", holder: u.holder == null ? (u.post || u.owed_to || null) : u.holder,
+             holderKind: u.holderKind == null ? null : u.holderKind,
+             expects: u.expects || u.text || u.id, origin: u.id, state: "held", since: sitting };
+  }
+  function claims(st) {
+    return (st.undertakings || []).concat(st.grievances || []);
+  }
+  /* The ledger moves toward zero by content's fraction (`setup.fade`, 0.5
+     by default) and returns what moved. Claims are not touched. `span` is
+     the interval's length, accepted for the report and for a later
+     per-length rate; today the fraction is per interval. */
+  function fadeLedger(st, C, span) {
+    const raw = C && C.setup && typeof C.setup.fade === "number" ? C.setup.fade : 0.5;
+    const f = Math.max(0, Math.min(1, raw));
+    const rows = [];
+    Object.keys(st.capital || {}).forEach(pid => {
+      const before = st.capital[pid] || 0;
+      if (!before) return;
+      const after = (Math.sign(before) * Math.floor(Math.abs(before) * (1 - f))) || 0;
+      if (after === before) return;
+      st.capital[pid] = after;
+      rows.push({ party: pid, before: before, after: after });
+    });
+    return rows;
+  }
+
   function settle(st, C) {
     if (!st.undertakings || !st.undertakings.length) return [];
     const kept = [];
@@ -5503,6 +5588,8 @@ const Engine = (function () {
      --------------------------------------------------------- */
   function breakUndertaking(st, C, u, why) {
     u.state = "broken";
+    claimResolve(C, u);
+    (st.grievances || (st.grievances = [])).push(grievanceOf(u, st.sitting));
     st.log.unshift({ sitting: st.sitting, text: "Undertaking broken" +
       (why ? " at " + why : "") + " \u2014 " + u.text });
     const post = u.post && st.cabinet ? st.cabinet[u.post] : null;
@@ -9098,7 +9185,7 @@ const Engine = (function () {
     domainTest, functionalByConstituency, lobbiedByConstituency, isSupply,
     lastSession, lastPeriod, sessionEndsAt, recess, dissolve, checkEnd, supplyCarried, supplyPending,
     signableMembers, collectSignature, winBackTerms, winBack,
-    settle, outstanding, describe, grave, choiceOpen, openChoices, eventKind, eventTrigger, isEvent, playSitting, passOver, draw,
+    settle, outstanding, claims, fadeLedger, describe, grave, choiceOpen, openChoices, eventKind, eventTrigger, isEvent, playSitting, passOver, draw,
     undertakingWhere,
     snapshot, changes,
     prorogue, canDivide, candidates, vacancies, fillPost,

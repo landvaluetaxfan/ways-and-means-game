@@ -444,7 +444,7 @@ const RUN_BOUND = T.runBound(CONTENT);
     ok('matter saves round-trip unchanged',Engine.save(loaded)===Engine.save(s));
     const legacy=JSON.parse(Engine.save(s)); legacy.version=34; delete legacy.matters;
     const migrated=Engine.reconcile(Engine.load(JSON.stringify(legacy)),C);
-    ok('v34 saves gain the v35 matter table',migrated.version===35 && !!migrated.matters.matter_probe);
+    ok('v34 saves gain the v35 matter table',migrated.version===Engine.STATE_VERSION && !!migrated.matters.matter_probe);
     ok('already witnessed legacy failures do not replay',Engine.matters(migrated,C).length===0 && migrated.matters.matter_probe.state==='failed');
     const updated=Object.assign({},C,{matters:[Object.assign({},base,{id:'replacement'})]});
     Engine.reconcile(loaded,updated);
@@ -6050,6 +6050,74 @@ console.log("\nTHE COMMONWEALTH DOLLAR (design/39 option C):");
   ok("and runs from there", isFinite(up.scalars.solvency) && up.macro.history.inflation.length === 1);
 
   if (bad) { console.log("\n" + bad + " DOLLAR FAILURES"); process.exitCode = 1; }
+})();
+
+console.log("\nCLAIMS AND THE FADE (design/68, design/74):");
+(function () {
+  let bad = 0;
+  const ok = (l, c, extra) => { if (!c) bad++;
+    console.log((c ? "  ok   " : "  FAIL ") + l + (extra ? "  " + extra : "")); };
+  const a = Engine.newGame(CONTENT);
+  const post = Object.keys(a.cabinet).find(k => a.cabinet[k].holder);
+  Engine.apply(a, CONTENT, [{undertake:{ id:"c_old", text:"an old-style promise", owed_to:null, post:post, by:5,
+    discharge:{ flag:"never_c" }}}]);
+  const old = a.undertakings.find(x => x.id === "c_old");
+  ok("an old-style promise is a claim: promise, owed, expects its text",
+     old.kind === "promise" && old.direction === "owed" && old.expects === "an old-style promise" &&
+     old.limit === null && old.origin === null);
+  ok("its holder is its post, and the kind of holder says so",
+     old.holder === post && old.holderKind === "post", old.holder + " / " + old.holderKind);
+  const actor = ((CONTENT.actors || [])[0] || {}).id;
+  if (actor) {
+    Engine.apply(a, CONTENT, [{undertake:{ id:"c_act", text:"owed to an actor", owed_to:actor, by:5, discharge:{ flag:"never_c" }}}]);
+    const ua = a.undertakings.find(x => x.id === "c_act");
+    ok("a promise owed to a lobbying actor is held by that actor", ua.holder === actor && ua.holderKind === "actor",
+       ua.holder + " / " + ua.holderKind);
+  }
+  Engine.apply(a, CONTENT, [{undertake:{ id:"c_new", text:"a concession", holder:Object.keys(CONTENT.partyById)[0],
+    kind:"concession", direction:"owed", expects:"the clause", by:5, discharge:{ flag:"never_c" }}}]);
+  const nu = a.undertakings.find(x => x.id === "c_new");
+  ok("an authored claim keeps what it was given",
+     nu.kind === "concession" && nu.expects === "the clause" && nu.holderKind === "party", nu.holderKind);
+
+  /* A BROKEN PROMISE LEAVES A GRIEVANCE, and the promise reads as before. */
+  const g0 = (a.grievances || []).length;
+  old.by = 0; Engine.advance(a, CONTENT);
+  const gr = (a.grievances || []).find(g => g.origin === "c_old");
+  ok("breaking a promise leaves a grievance held against the government",
+     !!gr && gr.direction === "against" && gr.holder === post && gr.state === "held" && (a.grievances || []).length === g0 + 1);
+  ok("and the promise itself still reads as broken", old.state === "broken");
+  ok("grievances are not promises: nothing outstanding counts them",
+     !Engine.outstanding(a).some(u => u.direction === "against") && Engine.claims(a).includes(gr));
+
+  /* A SAVE FROM BEFORE CLAIMS fills the fields and grieves for what was already broken. */
+  const old35 = Engine.newGame(CONTENT);
+  old35.undertakings = [{ id:"m_open", text:"open", owed_to:null, post:null, by:9, discharge:null, onBreach:null, state:"open", made:1 },
+                        { id:"m_broke", text:"broken", owed_to:null, post:post, by:1, discharge:null, onBreach:null, state:"broken", made:1 }];
+  delete old35.grievances; old35.version = 35;
+  const up = Engine.reconcile(Engine.load(Engine.save(old35), CONTENT), CONTENT);
+  ok("a v35 save loads at the current version with claim fields on every promise",
+     up.version === Engine.STATE_VERSION && up.undertakings.every(u => u.kind === "promise" && u.direction === "owed" && u.expects));
+  ok("and a grievance for the one already broken, none for the open one",
+     (up.grievances || []).length === 1 && up.grievances[0].origin === "m_broke");
+
+  /* THE FADE moves the ledger and never a claim. */
+  const f = Engine.newGame(CONTENT);
+  const other = Object.keys(f.capital)[0];
+  f.capital[other] = 3;
+  Engine.apply(f, CONTENT, [{undertake:{ id:"c_fade", text:"kept across an interval", post:post, by:30, discharge:{ flag:"never_c" }}}]);
+  const snap = JSON.stringify(f.undertakings);
+  const rows = Engine.fadeLedger(f, CONTENT, 100);
+  ok("the fade thins the ledger by content's fraction (default a half)", f.capital[other] === 1 &&
+     rows.some(r => r.party === other && r.before === 3 && r.after === 1), String(f.capital[other]));
+  ok("and a negative ledger thins toward zero too", (function () {
+     const n = Engine.newGame(CONTENT); n.capital[other] = -3; Engine.fadeLedger(n, CONTENT, 1); return n.capital[other] === -1; })());
+  ok("a named claim does not fade", JSON.stringify(f.undertakings) === snap);
+  const cust = JSON.parse(JSON.stringify(CONTENT)); cust.setup.fade = 0;
+  const z = Engine.newGame(CONTENT); z.capital[other] = 2;
+  ok("a fraction of zero leaves the ledger alone", Engine.fadeLedger(z, cust, 1).length === 0 && z.capital[other] === 2);
+
+  if (bad) { console.log("\n" + bad + " CLAIM FAILURES"); process.exitCode = 1; }
 })();
 
 console.log("\nTHE LADDER IS ON THE DOCKET (design/38 §7):");

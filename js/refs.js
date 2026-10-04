@@ -433,6 +433,11 @@ const Refs = (function () {
     const names = v => [].concat(v || []).includes(id);
     const replace = (v, from, to) => Array.isArray(v) ? v.map(x => x === from ? to : x) : v === from ? to : v;
     const targetKind = { initiatives: "initiative", instruments: "instrument", bills: "bill", lenders: "money" }[kind];
+    /* A claim's holder is a party, a current, a cabinet post or an actor
+       (design/68), named in an `undertake` effect. */
+    if (["parties", "currents", "cabinet", "actors"].includes(kind))
+      eachEffect(M, (eff, where) => [].concat(eff.undertake || []).forEach(u => {
+        if (u.holder === id) H(`${where} · undertaking ${u.id} holder`, to => u.holder = to); }));
     (M.matters || []).forEach(m => {
       if (kind === "events") ["late", "page"].forEach(k => {
         if (m[k] === id) H(`matter ${m.id} · ${k}`, to => m[k] = to);

@@ -142,7 +142,12 @@ const SCHEMA = {
                    {k:"value", type:"text", label:"JSON", hint:"the promise"}], shape:"json",
                    template:{ id:"promise_id", text:"What the government has promised",
                               owed_to:null, post:null, by:null,
-                              discharge:{ flag:"kept_flag" }, onBreach:null } },
+                              discharge:{ flag:"kept_flag" }, onBreach:null,
+                              /* a claim held by someone (design/68): holder is a party, a
+                                 current, a cabinet post or a lobbying actor; kind is promise,
+                                 concession or post; direction is owed or due */
+                              holder:null, kind:"promise", direction:"owed",
+                              expects:null, limit:null, origin:null } },
     discharge:   { label:"Release a promise (count it kept)", args:[
                    {k:"value", type:"text", label:"Promise id"}], shape:"scalarVal" }
   },
