@@ -230,11 +230,16 @@ The register of good software help.
 6. **Keep it short**: two or three sentences, under sixty words.
 7. **The world's lore belongs to the Concordance.** A tooltip explains the
    terminal and says where to read more.
-8. **A heading's tail is a fact, an instruction, or nothing.** "6 of 6 left
-   this period", "session 4", "if counted today" and "click the globe" say
-   something the title does not. "Advice while there is time to act" and
-   "four bases, four prices, one row each" restate the title or sell the
-   panel, and are cut. This is the slogan under a label that a model adds
+8. **A heading's tail carries what the panel cannot show, or it is nothing.**
+   "Session 4", "Commonwealth dollars, a year", "if counted today", "ordered by
+   delay" and "click the globe" say something the title and the drawing do
+   not. A tail is cut when it restates the title ("advice and business
+   owed"), sells the panel ("advice while there is time to act", "four bases,
+   four prices, one row each"), or repeats what a bar, a count or a marker on
+   the same panel already shows ("6 of 6 left this period" over a slot bar).
+   In-world voice is not interface and stays (the Concordance's "public
+   reference · attested editing", the Underwriters' "the only accurate
+   numbers"). This is the slogan under a label that a model adds
    by reflex (the author, 4 Oct 2026: "slop flavour text"). If the tail
    could be deleted and the reader would lose nothing, delete it. The design's
    theory ("advice is cheaper early") belongs in the design record, not on the
