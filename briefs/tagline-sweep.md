@@ -1,5 +1,5 @@
 **Lane: Claude Code.** Written 4 October 2026, from the author's note and a
-count of the headings. Do it after Codex's `sitting-polish.md` and
+count of the headings. Do it after Codex's sitting-polish work (landed) and
 `opening-playable-slice.md` batch A land, because they edit the same panels
 (`index.html`, `js/ui.js`) and a sweep now would collide.
 

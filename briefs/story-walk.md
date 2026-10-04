@@ -1,7 +1,7 @@
 **Lane: Claude Code, with the author.** Written 4 October 2026 from the
 author's idea, widened the same day: "doesn't have to be prose, we can rewrite
 large parts of the story like this." This folds in and replaces
-`first-player-walkthrough.md`. Start it after Codex's `sitting-polish.md` and
+`first-player-walkthrough.md`. Start it after Codex's sitting-polish work (landed) and
 `opening-playable-slice.md` Batch A land and before any human tester plays.
 
 # The story walk
