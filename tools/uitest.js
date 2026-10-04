@@ -1208,6 +1208,40 @@ try {
  const facilities=w.eval('Engine.facilities')(s,c);
  ok('ordinary facilities remain accessible with no advice',calls().length===facilities.length);
  ok('ordinary calls offer their default amounts',facilities.every(f=>$('#econ-calls [data-money-amount="'+f.id+'"]')?.value===String(f.utilisation)));
+ const earthInput=$('#econ-calls [data-money-amount="earth"]');
+ const earthCall=earthInput?.closest('[data-money-call]');
+ const earthDraw=earthCall?.querySelector('[data-draw]');
+ const earthRoom=facilities.find(f=>f.id==='earth').cap-facilities.find(f=>f.id==='earth').owed;
+ ok('money calls accept text with a decimal keyboard',earthInput?.type==='text' && earthInput?.inputMode==='decimal');
+ const setEarth=value=>{earthInput.value=value;earthInput.dispatchEvent(new w.Event('input',{bubbles:true}));};
+ setEarth('60,000');
+ ok('a comma-grouped money call parses as millions',!earthDraw.disabled && earthDraw.dataset.tipTitle===
+    'Draw '+w.eval('Engine.money')(c,60000,facilities.find(f=>f.id==='earth').currency));
+ setEarth('60bn');
+ ok('a bn money call parses as billions into millions',!earthDraw.disabled && earthDraw.dataset.tipTitle===
+    'Draw '+w.eval('Engine.money')(c,60000,facilities.find(f=>f.id==='earth').currency));
+ earthDraw.click();
+ ok('the bn amount reaches the Draw confirmation in millions',w.__question?.includes(
+    w.eval('Engine.money')(c,60000,facilities.find(f=>f.id==='earth').currency)));
+ if(w.__answer)w.__answer(false);
+ w.eval('UI.redraw()');
+ const freshEarthInput=$('#econ-calls [data-money-amount="earth"]');
+ const freshEarthCall=freshEarthInput?.closest('[data-money-call]');
+ const freshEarthDraw=freshEarthCall?.querySelector('[data-draw]');
+ const setFreshEarth=value=>{freshEarthInput.value=value;freshEarthInput.dispatchEvent(new w.Event('input',{bubbles:true}));};
+ setFreshEarth('60 000');
+ ok('a space-grouped money call parses as millions',!freshEarthDraw.disabled && freshEarthDraw.dataset.tipTitle===
+    'Draw '+w.eval('Engine.money')(c,60000,facilities.find(f=>f.id==='earth').currency));
+ setFreshEarth('60 bn');
+ ok('a spaced bn suffix parses as billions',!freshEarthDraw.disabled && freshEarthDraw.dataset.tipTitle===
+    'Draw '+w.eval('Engine.money')(c,60000,facilities.find(f=>f.id==='earth').currency));
+ setFreshEarth('6o');
+ ok('an invalid money call shows the refusal',freshEarthDraw.disabled && !freshEarthCall.querySelector('.money-refusal').hidden);
+ setFreshEarth('600000');
+ ok('a call beyond the facility keeps Draw disabled',freshEarthDraw.disabled);
+ const max=freshEarthCall.querySelector('[data-money-max]');
+ if(max)max.click();
+ ok('Max fills the remaining room',max?.classList.contains('btn') && Number(freshEarthInput.value)===earthRoom);
  const ordinaryBefore=w.eval('Engine.debtOf')(s,'underwriters');if(draw())draw().click();if(w.__answer)w.__answer(true);
  ok('an ordinary call can borrow without any matter',w.eval('Engine.debtOf')(s,'underwriters')===ordinaryBefore+facilities.find(f=>f.id==='underwriters').utilisation);
  w.eval(`Dialog.confirm=function(m,o,cb){(typeof o==='function'?o:cb)(true);};`);

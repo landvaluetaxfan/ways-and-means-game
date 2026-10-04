@@ -1460,6 +1460,12 @@ const UI = (function () {
   /* THE ACCOUNT. A stock and its flows, a year at a time (design/39: the
      account runs by the calendar), and no per-base breakdown: the
      arithmetic behind Receipts is the panel next to it. */
+  function parseMoneyAmount(raw) {
+    const value = String(raw).trim();
+    if (!/^(?:\d+(?:\.\d+)?|\d{1,3}(?:,\d{3})+|\d{1,3}(?: \d{3})+)(?:\s*bn)?$/i.test(value)) return NaN;
+    return Number(value.replace(/[ ,]/g, "").replace(/bn$/i, "")) * (/bn$/i.test(value) ? 1000 : 1);
+  }
+
   function drawMoneyCalls(box) {
     if (!box) return;
     const links = new Map();
@@ -1474,15 +1480,19 @@ const UI = (function () {
       const contexts = links.get(f.id) || [];
       const selected = moneyCall && moneyCall.lender === f.id;
       const amount = selected ? moneyCall.amount : contexts.length ? contexts[0].remedy.amount : f.utilisation;
+      const value = selected && moneyCall.text != null ? moneyCall.text : amount;
+      const room = Math.max(0, f.cap - f.owed);
       const gate = Engine.canBorrow(st,C,amount,f.id);
       const matter = selected ? moneyCall.matter : contexts.length ? contexts[0].matter.id : "";
       return `<section class="money-call" data-money-call="${esc(f.id)}"><h4>${esc(cap1(f.name))}</h4>` +
         `<div class="note">${esc(f.facility)}</div>` +
         contexts.map(x => `<div class="money-context">Raised by ${esc(govPostName(x.matter.owner))} · ` +
           `<button class="lnk" data-money-back="${esc(x.matter.id)}" data-goto="sit" data-open="matter:${esc(x.matter.id)}">Back to advice</button></div>`).join("") +
-        `<label class="money-preset">Amount (millions${f.currency ? " of " + esc(f.currency) : " of Commonwealth dollars"})` +
-          `<input type="number" min="0" step="any" id="money-amount-${esc(f.id)}" data-money-amount="${esc(f.id)}"` +
-          ` data-money-matter="${esc(matter || "")}" value="${esc(amount)}"></label>` +
+        `<label class="money-preset" for="money-amount-${esc(f.id)}">Amount (millions${f.currency ? " of " + esc(f.currency) : " of Commonwealth dollars"})</label>` +
+        `<div><input type="text" inputmode="decimal" id="money-amount-${esc(f.id)}" data-money-amount="${esc(f.id)}"` +
+          ` data-money-matter="${esc(matter || "")}" value="${esc(value)}">` +
+          ` <span class="note">up to ${room.toLocaleString("en-US")} left</span>` +
+          ` <button type="button" class="btn" data-money-max="${esc(f.id)}">Max</button></div>` +
         `<div class="note">${esc(f.drawNote || "")}</div>` +
         `<button class="btn" data-draw="${esc(f.id)}"${gate.ok ? "" : " disabled"}` +
           tipAttr("Draw " + cw(amount,f.currency),gate.ok ? f.drawNote : gate.reason) + `>Draw</button>` +
@@ -1570,26 +1580,39 @@ const UI = (function () {
     /* A DRAWING, confirmed with what it costs beyond the money. */
     const calls = $("#econ-calls");
     drawMoneyCalls(calls);
-    if (calls) calls.querySelectorAll("[data-money-amount]").forEach(input => input.addEventListener("change", () => {
-      moneyCall = {lender:input.dataset.moneyAmount,amount:Number(input.value),matter:input.dataset.moneyMatter};
-      // Blur fires change between pointer down and click. Keep the pressed
-      // control alive while updating its live gate and explanation in place.
-      const call = input.closest("[data-money-call]");
-      const f = Engine.facilities(st,C).find(f => f.id === input.dataset.moneyAmount);
-      const gate = Engine.canBorrow(st,C,moneyCall.amount,input.dataset.moneyAmount);
-      const draw = call.querySelector("[data-draw]");
-      draw.disabled = !gate.ok;
-      draw.dataset.tipTitle = "Draw " + cw(moneyCall.amount,f && f.currency);
-      draw.dataset.tipBody = gate.ok ? f && f.drawNote || "" : gate.reason;
-      const refusal = call.querySelector(".money-refusal");
-      refusal.hidden = gate.ok; refusal.textContent = gate.reason || "";
-    }));
+    if (calls) calls.querySelectorAll("[data-money-amount]").forEach(input => {
+      const update = () => {
+        moneyCall = {lender:input.dataset.moneyAmount,amount:parseMoneyAmount(input.value),
+                     text:input.value,matter:input.dataset.moneyMatter};
+        // Blur fires change between pointer down and click. Keep the pressed
+        // control alive while updating its live gate and explanation in place.
+        const call = input.closest("[data-money-call]");
+        const f = Engine.facilities(st,C).find(f => f.id === input.dataset.moneyAmount);
+        const gate = Engine.canBorrow(st,C,moneyCall.amount,input.dataset.moneyAmount);
+        const draw = call.querySelector("[data-draw]");
+        draw.disabled = !gate.ok;
+        draw.dataset.tipTitle = "Draw " + cw(moneyCall.amount,f && f.currency);
+        draw.dataset.tipBody = gate.ok ? f && f.drawNote || "" : gate.reason;
+        const refusal = call.querySelector(".money-refusal");
+        refusal.hidden = gate.ok; refusal.textContent = gate.reason || "";
+      };
+      input.addEventListener("input", update);
+      input.addEventListener("change", update);
+    });
+    if (calls) calls.querySelectorAll("[data-money-max]").forEach(b =>
+      b.addEventListener("click", () => {
+        const f = Engine.facilities(st,C).find(f => f.id === b.dataset.moneyMax);
+        if (!f) return;
+        const input = b.closest("[data-money-call]").querySelector("[data-money-amount]");
+        input.value = String(Math.max(0, f.cap - f.owed));
+        input.dispatchEvent(new Event("input", {bubbles:true}));
+      }));
     if (calls) calls.querySelectorAll("[data-draw]").forEach(b =>
       b.addEventListener("click", () => {
         const f = (Engine.facilities(st, C) || []).find(x => x.id === b.dataset.draw);
         if (!f) return;
         const input = b.closest("[data-money-call]").querySelector("[data-money-amount]");
-        const amount = Number(input.value);
+        const amount = parseMoneyAmount(input.value);
         const gate = Engine.canBorrow(st,C,amount,f.id);
         if (!gate.ok) { setStatus(gate.reason,"transient"); return; }
         b.disabled = true;
