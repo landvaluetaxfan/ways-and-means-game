@@ -513,6 +513,12 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #s-econ .money-call input::-webkit-inner-spin-button,#s-econ .money-call input::-webkit-outer-spin-button,
 .money-preset input::-webkit-inner-spin-button,.money-preset input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
 #s-econ .money-call input:focus-visible,.money-preset input:focus-visible{outline:2px dotted var(--gold);outline-offset:1px;}
+/* The amount, its Max button and what is left: the field and Max share a line,
+   the room left sits under them, so nothing wraps a word onto its own line. */
+#s-econ .money-call .money-preset + div{display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+#s-econ .money-call .money-preset + div input{flex:1 1 90px;min-width:0;width:auto;max-width:180px;}
+#s-econ .money-call .money-preset + div .btn{padding:6px 12px;}
+#s-econ .money-call .money-preset + div .note{order:3;flex:1 0 100%;margin:0;font-size:11px;}
 #s-econ .money-call .btn{font-size:clamp(12px,.65vw,15px);padding:6px 12px;}
 #s-econ .chartwrap{display:block;height:auto;}
 #s-econ .chartnow{margin:4px 0 10px;}
