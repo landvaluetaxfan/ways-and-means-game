@@ -137,3 +137,33 @@ A narrow first implementation.
   "fund a measure I will name" answer).
 - Defaults: `breachCost` 5, `noReasonCost` 2, in `setup.witness`. Write the wording
   plainly and name it in the commit for Claude's register pass.
+
+## Status, 4 Oct night (Claude): what exists on `integrate/witness`, and what is left
+
+Codex's usage ran out mid-build; its work was rescued and merged onto main's claims and
+interval engines (STATE_VERSION 37 is witnessed acts; migrations ascend 36, 37, 38).
+**Built and tested** (`WITNESSED ACTS` in `test.js`, `npm run check`): `Engine.witness`
+called from the lever writers; weights from `setup.witness.thresholds`; advised acts get a
+receipt and dissent is recorded; replies go to the log, the next brief and (for
+instruments) a memo by id; at most one question a sitting (`nextQuestionDue`,
+`lastQuestionAt`); a lever with no owner is silent; `content/witness.js` rules; schema,
+editor, refs and serialiser know them; the money draw and Make SI confirm dialogs are
+replaced by the terms shown in the panel; a playtest policy "Acts on its own reading".
+The 80-seed playtest is identical for the twelve existing policies.
+
+**Left, and why it is not on main:**
+1. **The questions are not authored.** `setup.witness.questions` is empty, so a grave act
+   gets a reply and no question. With the confirm dialogs gone, a large draw is therefore
+   unguarded. Author the money questions first (design/71, and the approved narrow plan
+   above): the bridge answer's undertaking is discharged by `{repaid: <lender>}` by the
+   rise; "no reason given" costs trust once. A question event is static, but its lender
+   and owner are not: either one question event per lender (rules in `content/witness.js`
+   keyed on `match:{id}`), or let `choose` substitute `{id}` and `{post}` from the queued
+   `witness` payload. The breach cost needs the owner's character id, which is dynamic too.
+2. **Treasury is vacant at the opening**, so `owners.money = "treasury"` makes the money
+   witness silent until a Treasurer is appointed. Decide: a different default owner for
+   money until then, or accept silence.
+3. Instrument, initiative and appointment questions (act completion), the instrument
+   Document memo view, and a refusal in the owner's voice (the 600000 case).
+4. `npm run layout` and screenshots of the Economy panel without the dialog.
+

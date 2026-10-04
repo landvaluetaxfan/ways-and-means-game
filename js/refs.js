@@ -36,7 +36,7 @@ const Refs = (function () {
   const EFFECT_KEYS = ["effects", "onPass", "onFail", "onTable", "reverse", "political_cost", "onSign", "close", "opening"];
   const COLLECTIONS = [["events", "event"], ["bills", "bill"], ["instruments", "instrument"],
     ["initiatives", "initiative"], ["minutes", "minute"], ["cabinet", "cabinet"],
-    ["matters", "matter"],
+    ["matters", "matter"], ["witness", "witness"],
     ["settlements", "settlement"], ["business", "business"], ["actors", "actor"],
     ["achievements", "achievement"], ["administrations", "administration"],
     ["resolutions", "resolution"]];
@@ -415,7 +415,7 @@ const Refs = (function () {
     resolutions: resolutionRefs, forums: forumRefs, members: memberRefs,
     parties: partyRefs, stations: stationRefs, bills: billRefs,
     events: eventRefs, characters: characterRefs, currents: currentRefs,
-    settlements: settlementRefs, initiatives: () => [], achievements: () => [],
+    settlements: settlementRefs, initiatives: () => [], witness: () => [], achievements: () => [],
     functional: () => [], glossary: () => [], concordance: () => [],
     constituencies: (M, id) => {
       const hits = [];
@@ -452,6 +452,16 @@ const Refs = (function () {
         if (r.target && r.target.kind === targetKind && r.target.id === id)
           H(`matter ${m.id} · remedy ${r.id}`, to => r.target.id = to);
       });
+    });
+    (M.witness || []).forEach(w => {
+      if (kind === "events" && w.question === id)
+        H(`witness ${w.id} · question`, to => w.question = to);
+      if (kind === "cabinet") {
+        if (w.owner === id) H(`witness ${w.id} · owner`, to => w.owner = to);
+        if ((w.match || {}).post === id) H(`witness ${w.id} · match post`, to => w.match.post = to);
+      }
+      if ((w.match || {}).id === id && w.kind === targetKind)
+        H(`witness ${w.id} · match id`, to => w.match.id = to);
     });
     if (kind === "cabinet") {
       (M.initiatives || []).forEach(i => { if (i.post === id) H(`initiative ${i.id} · post`, to => i.post = to); });

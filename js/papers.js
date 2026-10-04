@@ -259,6 +259,7 @@ const Papers = (function () {
 
   function instrumentDoc(it) {
     const si = it.si, s = it.state;
+    const memo = ((st.witness || {}).memo || {})[si.id];
     const post = (C.cabinetById || {})[si.author];
     const window = s.inForce && s.prayerCloses != null ? s.prayerCloses - st.sitting : null;
     const banner = s.revoked
@@ -284,6 +285,7 @@ const Papers = (function () {
           "against it within " + (si.prayer_window || 6) + " sittings. A prayer requires a " +
           "simple majority of elected members only."}
       ${si.revocable ? " It may be revoked by a further instrument." : ""}</p>
+      ${memo ? `<div class="note" data-witness-memo><b>Memo in return · ${esc(minister(si.author))}</b><p>${esc(memo.text)}</p></div>` : ""}
       <div class="sigblock">
         <div class="sigline"><div class="rule" style="height:${SIG_IMG.h}px">
           ${sigIMG()}</div>

@@ -1,6 +1,6 @@
 {
   "brief": "witnessed-acts",
-  "lane": "codex",
+  "lane": "claude",
   "since": "2026-10-04",
   "files": [
     "js/engine.js",
@@ -11,5 +11,5 @@
     "content/index.js",
     "test.js"
   ],
-  "note": ""
+  "note": "Claude: merged Codex's rescued WIP on integrate/witness; questions still to author"
 }

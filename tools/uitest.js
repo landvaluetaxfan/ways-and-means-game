@@ -1188,21 +1188,14 @@ try {
  amount=$('[data-money-amount="underwriters"]');
  ok('the player can adjust the amount',amount?.value==='2250');
  ok('adjusting a call is not borrowing',w.eval('Engine.save(UI.state())')===snap);
- w.eval(`window.__calls=0;Dialog.confirm=function(m,o,cb){window.__calls++;window.__question=m;window.__answer=cb;};`);
- const draw=()=>$('#econ-calls [data-draw="underwriters"]') || $('#econ-account [data-draw="underwriters"]');
- if(draw()){draw().focus();draw().click();draw().click();}
- ok('opening confirmation does not borrow',w.eval('Engine.save(UI.state())')===snap);
- ok('confirmation names the adjusted amount',w.__question?.includes(w.eval('Engine.money')(probe.c,2250)));
- ok('a repeated Draw click opens only one confirmation',w.__calls===1);
- if(w.__answer)w.__answer(false);
- ok('cancelling the drawing leaves simulation unchanged',w.eval('Engine.save(UI.state())')===snap);
- ok('cancelling leaves Draw usable',!!draw() && !draw().disabled);
- ok('cancelling returns focus to the same drawing',w.document.activeElement===draw());
- const before=w.eval('Engine.debtOf')(probe.s,'underwriters');if(draw())draw().click();
- const accepted=w.__answer;if(accepted)accepted(true);
- ok('confirmation draws the adjusted amount through the engine',w.eval('Engine.debtOf')(probe.s,'underwriters')===before+2250);
- const once=w.eval('Engine.save(UI.state())');if(accepted)accepted(true);
- ok('a repeated callback cannot draw twice',w.eval('Engine.save(UI.state())')===once);
+  w.eval(`window.__calls=0;Dialog.confirm=function(){window.__calls++;};`);
+  const draw=()=>$('#econ-calls [data-draw="underwriters"]') || $('#econ-account [data-draw="underwriters"]');
+  const terms=amount?.closest('[data-money-call]')?.textContent || '';
+  ok('the drawing terms are visible beside the amount',terms.includes('per cent') && terms.includes('order-paper time'));
+  const before=w.eval('Engine.debtOf')(probe.s,'underwriters');
+  if(draw()){draw().focus();draw().click();}
+  ok('one Draw click borrows the adjusted amount through the engine',w.eval('Engine.debtOf')(probe.s,'underwriters')===before+2250);
+  ok('Draw does not open a mechanics confirmation',w.__calls===0);
  const c={...probe.c,matters:[]},s=w.eval('Engine.newGame')(c);s.queue=[];s.flags._introRead=true;s.flags._act1=true;
  w.eval('UI.boot')(s,c);w.eval("UI.openTab('econ')");
  const facilities=w.eval('Engine.facilities')(s,c);
@@ -1220,10 +1213,8 @@ try {
  setEarth('60bn');
  ok('a bn money call parses as billions into millions',!earthDraw.disabled && earthDraw.dataset.tipTitle===
     'Draw '+w.eval('Engine.money')(c,60000,facilities.find(f=>f.id==='earth').currency));
- earthDraw.click();
- ok('the bn amount reaches the Draw confirmation in millions',w.__question?.includes(
-    w.eval('Engine.money')(c,60000,facilities.find(f=>f.id==='earth').currency)));
- if(w.__answer)w.__answer(false);
+  ok('the bn amount is shown on the Draw control in millions',earthDraw.dataset.tipTitle?.includes(
+     w.eval('Engine.money')(c,60000,facilities.find(f=>f.id==='earth').currency)));
  w.eval('UI.redraw()');
  const freshEarthInput=$('#econ-calls [data-money-amount="earth"]');
  const freshEarthCall=freshEarthInput?.closest('[data-money-call]');
@@ -1242,7 +1233,7 @@ try {
  const max=freshEarthCall.querySelector('[data-money-max]');
  if(max)max.click();
  ok('Max fills the remaining room',max?.classList.contains('btn') && Number(freshEarthInput.value)===earthRoom);
- const ordinaryBefore=w.eval('Engine.debtOf')(s,'underwriters');if(draw())draw().click();if(w.__answer)w.__answer(true);
+  const ordinaryBefore=w.eval('Engine.debtOf')(s,'underwriters');if(draw())draw().click();
  ok('an ordinary call can borrow without any matter',w.eval('Engine.debtOf')(s,'underwriters')===ordinaryBefore+facilities.find(f=>f.id==='underwriters').utilisation);
  w.eval(`Dialog.confirm=function(m,o,cb){(typeof o==='function'?o:cb)(true);};`);
  w.eval('UI.boot')(original,originalC);

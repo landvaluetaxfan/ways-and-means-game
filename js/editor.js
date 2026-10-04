@@ -51,6 +51,7 @@ const Editor = (function () {
       settlements: clone(typeof SETTLEMENTS !== "undefined" ? SETTLEMENTS : []),
       initiatives: clone(typeof INITIATIVES !== "undefined" ? INITIATIVES : []),
       matters: clone(typeof MATTERS !== "undefined" ? MATTERS : []),
+      witness: clone(typeof WITNESS !== "undefined" ? WITNESS : []),
       achievements: clone(typeof ACHIEVEMENTS !== "undefined" ? ACHIEVEMENTS : []),
       /* and the campaign record itself: who governs, the introduction, the
          setup a campaign changes and the effects it opens with */
@@ -1208,6 +1209,27 @@ const Editor = (function () {
     return typeof m.due === "number" ? {after:m.due} :
       m.due && ("after" in m.due || "when" in m.due) ? m.due : {when:m.due};
   }
+  function witnessForm(w) {
+    return `<div class="ed-grid">
+      <label>Id ${txt_("id",w.id,"",170)}<button class="btn ed-add" data-act="rename">rename…</button></label>
+      ${campField(w)}
+      <label>Kind ${opt_("kind",SCHEMA.witness.kinds.map(x=>[x,x]),w.kind,"any")}</label>
+      <label>Weight ${opt_("weight",SCHEMA.witness.weights.map(x=>[x,x]),w.weight,"computed")}</label>
+      <label>Owner ${opt_("owner",vocab("posts"),w.owner,"lever's post")}</label>
+      <label>Question ${opt_("question",vocab("events"),w.question,"default")}</label></div>
+      <div class="rulehead">Act facts to match</div>
+      <textarea class="ed-f ed-body" data-f="match" rows="4">${esc(JSON.stringify(w.match || {},null,2))}</textarea>
+      <div class="rulehead">Minister's reply</div>
+      <textarea class="ed-f ed-body" data-f="reply" rows="3">${esc(w.reply || "")}</textarea>`;
+  }
+  function readWitness(orig) {
+    const w = clone(orig);
+    w.id = g_("id").value.trim(); readCampaign(w);
+    ["kind","weight","owner","question","reply"].forEach(k => putText(w,k,g_(k).value));
+    try { w.match = JSON.parse(g_("match").value); }
+    catch (_) { w.match = orig.match || {}; }
+    return w;
+  }
   function matterForm(m) {
     const due = matterDue(m);
     const conditions = (key, label, value) => `<div class="rulehead">${label}
@@ -1937,7 +1959,9 @@ const Editor = (function () {
     matters: { arr: "matters", label: m => m.note || m.id, sub: m => m.owner || "unassigned",
               form: matterForm, blank: () => ({id:"new_matter", owner:(M.cabinet[0] || {}).id,
                 note:"", raise:{flags:["new_matter_raised"]}, figures:[], remedies:[],
-                due:{after:3}, settled:{flags:["new_matter_settled"]}}) },
+                 due:{after:3}, settled:{flags:["new_matter_settled"]}}) },
+    witness: { arr:"witness", label:w=>w.id, sub:w=>w.kind || "any",
+               form:witnessForm, blank:()=>({id:"new_witness",kind:"money",match:{},reply:""}) },
     cabinet: { arr: "cabinet", label: c => c.title || c.name || c.id,
               sub: c => { const h = M.characters.find(x => x.id === c.holder);
                           return h ? h.name.replace(/ MP$/, "").replace(/^Rt\. Hon\. /, "") : "vacant"; },
@@ -2033,6 +2057,7 @@ const Editor = (function () {
     else if (sel.tab === "settlements") { arr[i] = readSettlement(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "initiatives") { arr[i] = readInitiative(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "matters") { arr[i] = readMatter(arr[i]); sel.id = arr[i].id; }
+    else if (sel.tab === "witness") { arr[i] = readWitness(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "achievements") { arr[i] = readAchievement(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "campaigns") { arr[i] = readAdministration(arr[i]); sel.id = arr[i].id; }
     else if (sel.tab === "cabinet") { arr[i] = readCabinet(arr[i]); sel.id = arr[i].id; }
