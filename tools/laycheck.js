@@ -245,8 +245,64 @@ const HELPERS = `
       at: where(grid), detail: detail }] : [];
   }
 
+  /* Economy's content must fit, not merely disappear inside scrollboxes.
+     These faults reproduce the cramped Bank, tiny labels and capped plot. */
+  function measureEconomy(tab) {
+    if (tab !== "econ") return [];
+    var faults = [], scope = document.querySelector("#s-econ");
+    function fault(el, detail) {
+      faults.push({ tab: tab, el: name(el), kind: "LAYOUT", by: 0, at: where(el), detail: detail });
+    }
+    if (innerWidth <= 1080) {
+      var grid = scope.querySelector(".g-econ"), gr = grid.getBoundingClientRect();
+      [].slice.call(grid.children).forEach(function (p) {
+        var r = p.getBoundingClientRect();
+        if (Math.abs(r.left - gr.left) > TOL || Math.abs(r.width - gr.width) > TOL)
+          fault(p, "Economy panel does not occupy the full collapsed column");
+      });
+    }
+    [].slice.call(scope.querySelectorAll(".panel .pbody")).forEach(function (b) {
+      if (b.scrollHeight > b.clientHeight + TOL && getComputedStyle(b).overflowY !== "visible")
+        fault(b, "Economy content still scrolls inside a panel");
+    });
+    var sublabel = scope.querySelector("#econ-bank .plab em"), background = sublabel;
+    while (background.parentElement && getComputedStyle(background).backgroundColor === "rgba(0, 0, 0, 0)")
+      background = background.parentElement;
+    function luminance(color) {
+      var rgb = color.match(/[0-9.]+/g).slice(0, 3).map(function (v) {
+        var c = Number(v) / 255;
+        return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      });
+      return rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+    }
+    var fg = luminance(getComputedStyle(sublabel).color), bg = luminance(getComputedStyle(background).backgroundColor);
+    if ((Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05) < 4.5)
+      fault(sublabel, "Economy sub-label contrast is below 4.5:1");
+    if (innerWidth >= 1900) {
+      var label = scope.querySelector(".plab em");
+      if (parseFloat(getComputedStyle(label).fontSize) < 11.5)
+        fault(label, "Economy sub-label remains below 11.5px on a wide window");
+      var rows = {};
+      [].slice.call(scope.querySelectorAll(".panel")).forEach(function (p) {
+        var r = p.getBoundingClientRect(), key = Math.round(r.top);
+        (rows[key] || (rows[key] = [])).push(r.height);
+      });
+      Object.keys(rows).forEach(function (key) {
+        var hs = rows[key];
+        if (Math.max.apply(null, hs) - Math.min.apply(null, hs) > 65)
+          fault(scope, "Economy row leaves more than 65px below a shorter panel");
+      });
+    }
+    var plot = scope.querySelector(".bigchart"), bars = plot && plot.querySelectorAll(".bar");
+    if (bars && bars.length >= 8) {
+      var used = bars[bars.length - 1].getBoundingClientRect().right - bars[0].getBoundingClientRect().left;
+      if (used < plot.clientWidth * 0.8) fault(plot, "Economy chart occupies less than 80% of its plot width");
+    }
+    return faults;
+  }
+
   function measure(tab) {
-    return measureIn(document.querySelector(".screen.on"), tab).concat(measureGridLayout(tab));
+    return measureIn(document.querySelector(".screen.on"), tab).concat(measureGridLayout(tab), measureEconomy(tab));
   }
 `;
 

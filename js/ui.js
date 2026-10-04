@@ -1147,14 +1147,9 @@ const UI = (function () {
       `<div class="chartwrap"><div class="cnum">` +
         `<div class="chartnow">${s.fmt ? s.fmt(now) : Math.round(now).toLocaleString()}` +
         `<small> now</small></div>` +
-        /* TWO LINES, NOT ONE. "low 53,219 \u00b7 high 85,003" is about 145px
-           of text in a 120px column, so it wrapped between the word "high"
-           and its own number -- a label on one line and its figure on the
-           next. Widening the column would only move the fault to the
-           narrowest window, and a low and a high are two readings anyway. */
-        `<div class="note">low ${s.fmt ? s.fmt(lo) : Math.round(lo).toLocaleString()}` +
-        `<br>high ${s.fmt ? s.fmt(hi) : Math.round(hi).toLocaleString()}</div>` +
       `</div><div class="cplot">` +
+        `<div class="chartbounds"><span class="chart-high">high ${s.fmt ? s.fmt(hi) : Math.round(hi).toLocaleString()}</span>` +
+        `<span class="chart-low">low ${s.fmt ? s.fmt(lo) : Math.round(lo).toLocaleString()}</span></div>` +
         `<div class="bigchart">` + pts.map((v, i) => {
           const pc = Math.max(2, Math.round((v - lo) / span * 100));
           /* NO title ATTRIBUTE. A native tooltip is the one kind this

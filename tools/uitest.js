@@ -55,6 +55,16 @@ ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.
  ok('lender rates are kept in the account rather than repeated in calls',
    [...w.document.querySelectorAll('#econ-calls .money-call > .note:first-of-type')].length>0 &&
    [...w.document.querySelectorAll('#econ-calls .money-call > .note:first-of-type')].every(n=>!n.textContent.includes('per cent')));
+ const s=w.eval('UI.state()'), saved=s.solvencyHistory;
+ s.solvencyHistory=Array.from({length:61},(_,i)=>i%2 ? 78000 : 52000);
+ $('#econ-account [data-chart="solvency"]').click();
+ $('#chart-scale [data-cscale="session"]').click();
+ ok('chart scale bounds sit beside the plotted values',
+   $('#chart-body .chart-high')?.textContent==='high CW$78.0bn' &&
+   $('#chart-body .chart-low')?.textContent==='low CW$52.0bn');
+ ok('sitting chart retains its sixty readings',w.document.querySelectorAll('#chart-body .bar').length===60);
+ s.solvencyHistory=saved;
+ $('#chart-scale [data-cscale="record"]').click();
  w.eval("UI.openTab('sit')");
 }
 /* Owed owns obligations; the docket retains only business not listed there.
