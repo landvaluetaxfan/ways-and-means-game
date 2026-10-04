@@ -78,7 +78,26 @@ the points of confusion in `design/69-first-player-walkthrough.md`: a table
 ranked by whether it would stop a player, sorted into Codex (interface), Claude
 (wording) and author (design).
 
-**The first large rewrite is likely the opening itself.** The built opening
+**The first large rewrite is likely the opening itself, and it is a set of five
+things that change together** (the author flagged the first on 4 Oct: "She has
+one session before the country votes... the parliament's fourth and its last"
+is wrong under the new timeline, unless it isn't; it is true only of the game as
+built):
+1. the intro line, `content/campaigns/flash_i/campaign.js` (near line 102);
+2. the opening act card, "in the fourth and last session of this Parliament"
+   (same file, near line 153);
+3. `session: 4` in `content/setup.js` (printed as "SESS 4.1" in the top bar and
+   "session 4" on the calendar), which the engine reads to decide that the run's
+   last session ends in dissolution (grep "last session" in `js/engine.js`);
+4. the bill title "Appropriation (Session 4) Bill", `content/bills.js`;
+5. the run's ending, a count in August 2080.
+Changing only the text contradicts the top bar; changing `session` alone stops
+the built run from ending. The decision it needs from the author: **what ends
+the built run once the August count is gone** (a curtain at the end of Act I, an
+interim confidence vote, or the run continuing into acts nobody has written).
+Ask before touching any of the five.
+
+**Before that, the rest of the opening.** The built opening
 still has the old arrangement (Vijlbrief's last session, a by-election, a count
 in August). The new canon (bible §1.8, §11.1) has the PSD replace Vijlbrief in
 January, a hung House in March, the coalition deal, and the commission on 11
