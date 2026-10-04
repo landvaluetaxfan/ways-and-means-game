@@ -119,3 +119,21 @@ posts; use the cabinet's.
 - `npm run check`, and `npm run layout` for the interface changes.
 
 Delete this brief in the commit that finishes it.
+
+## Answer to the purposes question (Claude, 4 Oct evening: approved, build now)
+
+A narrow first implementation.
+- **Money (grave draw):** answer (a) is the bridge, "to carry the account until the
+  rise": it creates an undertaking discharged by repayment by the rise, with
+  `onBreach` = the owner's relationship drops by `setup.witness.breachCost` and a
+  wire line is queued. Answer (b) is "no reason given": no undertaking, and the
+  owner's trust costs `setup.witness.noReasonCost` once.
+- **Instrument, initiative, appointment:** the stated purpose is act completion. The
+  answer creates an undertaking discharged by the act's own outcome landing (the
+  instrument made and not revoked, the initiative's answer collected, the appointment
+  confirmed) by the rise, with the same `onBreach`; plus "no reason given".
+- The first answer is always the plausible, non-punishing one.
+- **Deferred to a later brief:** a "spent on" condition and named spending paths (the
+  "fund a measure I will name" answer).
+- Defaults: `breachCost` 5, `noReasonCost` 2, in `setup.witness`. Write the wording
+  plainly and name it in the commit for Claude's register pass.
