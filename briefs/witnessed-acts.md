@@ -166,4 +166,9 @@ The 80-seed playtest is identical for the twelve existing policies.
 3. Instrument, initiative and appointment questions (act completion), the instrument
    Document memo view, and a refusal in the owner's voice (the 600000 case).
 4. `npm run layout` and screenshots of the Economy panel without the dialog.
+5. **`npm run check` fails three `tools/uxtest.js` assertions on the branch**, all tied to the
+   removed confirm dialogs: "editing a drawing preserves the first click on Draw", "editing
+   then opening confirmation does not borrow", "canceling an overview order leaves the
+   entire simulation unchanged". Codex never reached the full check. Rewrite them for the
+   new behaviour (the draw happens on the click; the question follows) when the questions land.
 
