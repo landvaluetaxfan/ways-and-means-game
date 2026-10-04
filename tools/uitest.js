@@ -45,6 +45,18 @@ $('[data-admin]').click();
 ok("slot list appears", w.document.querySelectorAll(".slot").length === 4);
 $('[data-new="1"]').click();
 ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.contains("on"));
+/* Economy placement must retain its live controls and avoid duplicated
+   lender terms. Moving calls back under account, separating production,
+   or repeating a rate in a call must fail independently. */
+{
+ w.eval("UI.openTab('econ')");
+ ok('money calls have their own panel outside the account',!!$('#p-calls #econ-calls') && !$('#p-acct #econ-calls'));
+ ok('production figures share the Reserve Bank body',!!$('#p-bank #econ-bank') && !!$('#p-bank #econ-real') && !$('#p-real'));
+ ok('lender rates are kept in the account rather than repeated in calls',
+   [...w.document.querySelectorAll('#econ-calls .money-call > .note:first-of-type')].length>0 &&
+   [...w.document.querySelectorAll('#econ-calls .money-call > .note:first-of-type')].every(n=>!n.textContent.includes('per cent')));
+ w.eval("UI.openTab('sit')");
+}
 /* Owed owns obligations; the docket retains only business not listed there.
    Removing a kind/identity filter must duplicate it, not merely change prose. */
 {

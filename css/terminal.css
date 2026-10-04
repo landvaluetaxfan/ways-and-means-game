@@ -347,32 +347,17 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    short labels, the bases table is five columns of which two are phrases,
    and the labour table has the longest names on the tab, so it takes the
    slack. */
-.g-econ{grid-template-columns:minmax(264px,330px) minmax(430px,600px) minmax(300px,1fr);
+.g-econ{grid-template-columns:minmax(264px,1fr) minmax(430px,1.5fr) minmax(300px,1fr);
   grid-template-rows:minmax(0,auto) minmax(250px,1fr);height:100%;min-height:0;}
-/* FIVE PANELS, PLACED, and no .stack anywhere: each column of the top row
-   holds exactly one panel, so there is nothing for a column to divide and
-   no wrapper to scroll. Measured content need is 250 / 282 / 230 across the
-   three, against 332px of column at 1366x768.
-
-   THE BOTTOM BAND IS THE COMMENTARY. The Underwriters were stacked under
-   the account, which made that column need 457px of a 337px column while
-   the other two held 112px of air between them -- and the prose, being the
-   designated giver, was crushed to a 24px window. It has its own box in the
-   band now and the chart takes the other two columns, which still leaves
-   the plot about 1,000px at the narrowest supported window: sixty bars at
-   fifteen pixels each, which is a trend. */
+/* Six panels: account, prices and money calls above; commentary, history
+   and the combined Bank/production readings below. The outlook takes its
+   content height instead of inheriting the chart's unused height. */
 #p-acct   {grid-column:1;grid-row:1;}
 #p-bases  {grid-column:2;grid-row:1;}
-#p-bank   {grid-column:3;grid-row:1;}
-#p-outlook{grid-column:1;grid-row:2;min-height:0;}
+#p-calls  {grid-column:3;grid-row:1;}
+#p-outlook{grid-column:1;grid-row:2;min-height:0;align-self:start;}
 #econ-chart{grid-column:2;grid-row:2;min-height:0;}
-#p-real   {grid-column:3;grid-row:2;min-height:0;}
-/* SIX PANELS SINCE THE DOLLAR (design/39 option C). The Reserve Bank took
-   the top of the third column, because its readings are the working ones:
-   what the rate is, what inflation is, what the dollar is. What is made and
-   who makes it moved to the band beside the chart, which is where the slack
-   is, and the chart took one column where it had two -- sixty bars in the
-   narrowest column still draw a trend at eight pixels each. */
+#p-bank   {grid-column:3;grid-row:2;min-height:0;}
 /* THE TOP ROW TAKES WHAT IT NEEDS AND THE BAND TAKES THE REST, which is why
    the rows read `auto` then `1fr` and not the other way round.
 

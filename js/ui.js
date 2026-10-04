@@ -1406,7 +1406,7 @@ const UI = (function () {
       const gate = Engine.canBorrow(st,C,amount,f.id);
       const matter = selected ? moneyCall.matter : contexts.length ? contexts[0].matter.id : "";
       return `<section class="money-call" data-money-call="${esc(f.id)}"><h4>${esc(cap1(f.name))}</h4>` +
-        `<div class="note">${esc(f.facility)} · ${Number(f.rate).toFixed(2)} per cent</div>` +
+        `<div class="note">${esc(f.facility)}</div>` +
         contexts.map(x => `<div class="money-context">Raised by ${esc(govPostName(x.matter.owner))} · ` +
           `<button class="lnk" data-money-back="${esc(x.matter.id)}" data-goto="sit" data-open="matter:${esc(x.matter.id)}">Back to advice</button></div>`).join("") +
         `<label class="money-preset">Amount (millions${f.currency ? " of " + esc(f.currency) : " of Commonwealth dollars"})` +
@@ -2423,13 +2423,6 @@ const UI = (function () {
     box.querySelectorAll("details.foldsec[data-fold]").forEach(dt =>
       dt.addEventListener("toggle", () => { econOpen[dt.dataset.fold] = dt.open; }));
 
-    /* AND THE HEADING CARRIES THE LIVE FIGURE, not content's opening one.
-       `LABOUR.totals.participation` is 38% because that is where content set
-       it; `st.economy.participation` is what it has become, and a panel
-       heading printing the frozen number beside a row printing the live one
-       is two accounts of one fact. */
-    const rh = $("#econ-real-hdr");
-    if (rh) rh.textContent = E.participation.toFixed(1) + "% in paid work";
   }
 
   /* WHO WORKS, from content/labour.js — folded into the panel above it
