@@ -5,6 +5,22 @@ and for that session after its context is compacted. The rules are in
 `AGENTS.md`, the work is in `briefs/`, the protocol is in `README.md` here. This
 is the judgment between them. Where it disagrees with those, they win.
 
+## Starting cold
+
+A fresh orchestrator gets the judgment from files, not from a conversation. Read,
+in this order, and stop reading when you can say where the work stands:
+1. `AGENTS.md` (loaded through `CLAUDE.md`), then this file and `README.md` here.
+2. `node tools/exchange.js inbox --as claude`, then `briefs/README.md` and
+   `briefs/claude-lane.md` (the backlog that is yours).
+3. `design/62-why-the-overhaul.md`, and the first screen of
+   `design/58-the-game-on-one-page.md`, for why the game is shaped as it is.
+4. `git log --oneline -25` for what has just happened.
+
+Then say, in ten lines, the state of play, what you would do next, and what you
+are unsure of. **When the author corrects you, write the correction into this
+file** (a new line under "What the author dislikes", or "Traps"), not only into
+chat. A chat is forgotten; this file is how the next orchestrator learns it.
+
 ## The job
 
 Write briefs, set the order, review what lands, keep the exchange current, and
