@@ -255,6 +255,11 @@ const SCHEMA = {
     targetFields: ["kind", "id", "tempo", "amount"],
     counselFields: ["post", "remedy", "note"]
   },
+  witness: {
+    fields: ["id", "campaign", "kind", "match", "weight", "owner", "reply", "question"],
+    kinds: ["money", "instrument", "initiative", "appointment", "order", "bill"],
+    weights: ["routine", "notable", "grave"]
+  },
   currentFields: {
     leader: { label: "Leader", src: "characters", optional: true },
     asks: { label: "Asks", type: "text", optional: true }

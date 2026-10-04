@@ -441,7 +441,7 @@ try {
   const GLOB = { events: "EVENTS", parties: "PARTIES", stations: "STATIONS", characters: "CHARACTERS",
     bills: "BILLS", glossary: "GLOSSARY", constituencies: "CONSTITUENCIES", functional: "FUNCTIONAL",
     /* a campaign's own kinds, written here since 25 Sep */
-    settlements: "SETTLEMENTS", initiatives: "INITIATIVES", matters:"MATTERS", achievements: "ACHIEVEMENTS",
+    settlements: "SETTLEMENTS", initiatives: "INITIATIVES", matters:"MATTERS", witness:"WITNESS", achievements: "ACHIEVEMENTS",
     campaigns: "ADMINISTRATIONS", cabinet: "CABINET", instruments: "INSTRUMENTS",
     /* the forums (design/43) */
     resolutions: "RESOLUTIONS", forums: "FORUMS" };

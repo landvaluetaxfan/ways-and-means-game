@@ -19,7 +19,7 @@ const indexSrc=fs.readFileSync(path.join(root,"content","index.js"),"utf8");
 const GLOBALS={setup:"SETUP",parties:"PARTIES",currents:"CURRENTS",stations:"STATIONS",
   constituencies:"CONSTITUENCIES",functional:"FUNCTIONAL",characters:"CHARACTERS",bills:"BILLS",
   glossary:"GLOSSARY",events:"EVENTS",encyclopedia:"ENCYCLOPEDIA",cabinet:"CABINET",
-  instruments:"INSTRUMENTS",initiatives:"INITIATIVES",matters:"MATTERS",minutes:"MINUTES",settlements:"SETTLEMENTS",
+   instruments:"INSTRUMENTS",initiatives:"INITIATIVES",matters:"MATTERS",witness:"WITNESS",minutes:"MINUTES",settlements:"SETTLEMENTS",
   business:"BUSINESS",actors:"ACTORS",administrations:"ADMINISTRATIONS",achievements:"ACHIEVEMENTS",
   archetypes:"ARCHETYPES",names:"NAMELISTS",forums:"FORUMS",resolutions:"RESOLUTIONS"};
 function loadModel(){

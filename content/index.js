@@ -7,6 +7,7 @@ const CONTENT = (function () {
     administrations: typeof ADMINISTRATIONS !== "undefined" ? ADMINISTRATIONS : [],
     initiatives: typeof INITIATIVES !== "undefined" ? INITIATIVES : [],
     matters: typeof MATTERS !== "undefined" ? MATTERS : [],
+    witness: typeof WITNESS !== "undefined" ? WITNESS : [],
     stations: STATIONS,
     constituencies: typeof CONSTITUENCIES !== "undefined" ? CONSTITUENCIES : [],
     cabinet: typeof CABINET !== "undefined" ? CABINET : [],
@@ -55,6 +56,7 @@ const CONTENT = (function () {
     K.stationById = idx(K.stations);
     K.instrumentById = idx(K.instruments);
     K.matterById = idx(K.matters);
+    K.witnessById = idx(K.witness);
     K.cabinetById = idx(K.cabinet);
     K.constituencyById = idx(K.constituencies);
     K.characterById = idx(K.characters);

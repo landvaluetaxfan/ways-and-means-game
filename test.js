@@ -173,6 +173,61 @@ const RUN_BOUND = T.runBound(CONTENT);
   if(bad) process.exitCode=1;
 })();
 
+/* The witness reads act facts and open counsel; queue order is deterministic. */
+(function () {
+  let bad = 0;
+  const ok = (name, holds) => { console.log((holds ? "  ok   " : "  FAIL ") + name); if (!holds) bad++; };
+  console.log("\nWITNESSED ACTS:");
+  const posts = CONTENT.cabinet.filter(p => p.holder).map(p => p.id);
+  const [owner, other] = posts;
+  const Q = {id:"test_witness_question",title:"A minister asks for a reason",queuedOnly:true,
+    choices:[{label:"Give a purpose",effects:[]},{label:"No reason given",effects:[]}]};
+  const C = Object.assign({},CONTENT, {
+    setup:Object.assign({},CONTENT.setup,{witness:{owners:{money:owner},thresholds:{
+      moneyNotableRoom:.1,moneyNotableReserve:.25,moneyGraveRoom:.5,moneyGraveReserve:1,
+      slotsNotable:2,grave:2},replies:{money:"The drawing is entered.",
+      advised:"I have this on my note.",dissent:"I advised another course."},
+      questions:{money:Q.id}}}),
+    witness:[], eventById:Object.assign({},CONTENT.eventById,{[Q.id]:Q}), matters:[]
+  });
+  const st = Engine.newGame(C,410);
+  const old = JSON.parse(JSON.stringify(st));
+  old.version = 35; delete old.witness;
+  Engine.migrate(old,C);
+  ok("a version 35 save gains empty witness state at version 37",old.version === 37 &&
+     old.witness && !old.witness.replies.length && !Object.keys(old.witness.memo).length);
+  const act = {kind:"money",id:"test_lender",post:owner,
+    facts:{label:"the drawing",amount:6,room:10,reserve:10}};
+  const first = Engine.witness(st,C,act);
+  ok("a grave unadvised drawing has an owner and a reply",first && first.weight === "grave" &&
+     first.counsel === "unadvised" && first.post === owner && st.witness.replies.length === 1);
+  ok("the owner's question is queued for the next sitting",st.queue.some(q => q.eventId === Q.id && q.dueSitting === st.sitting + 1));
+  Engine.witness(st,C,act);
+  const dates = st.queue.filter(q => q.eventId === Q.id).map(q => q.dueSitting);
+  ok("two grave acts reserve separate question sittings",dates.length === 2 && dates[1] > dates[0]);
+  Engine.advance(st,C);
+  const question = Engine.nextEvent(st,C);
+  ok("the first queued question is an ordinary decision",question && question.id === Q.id && question.witness && !Engine.isEvent(question));
+  if (question && question.id === Q.id) Engine.choose(st,C,question,0);
+  const again = Engine.nextEvent(st,C);
+  ok("a second question never arrives in that sitting",!again || !again.witness);
+  const silent = Engine.witness(st,C,{kind:"bill",id:"one",post:null,facts:{label:"bill",slots:3}});
+  ok("a lever without an owner stays silent",silent === null);
+  C.matters = [{id:"test_matter",owner,remedies:[{id:"own",target:{kind:"money",id:act.id}},
+    {id:"alternative",target:{kind:"money",id:"other_lender"}}],
+    counsel:[{post:owner,remedy:"own"},{post:other,remedy:"alternative"}]}];
+  st.matters.test_matter = {state:"open"};
+  const pendingBefore = st.queue.filter(q => q.eventId === Q.id).length;
+  const advised = Engine.witness(st,C,act);
+  ok("the owner's advised remedy gets a receipt but no question",advised.counsel === "advised" &&
+     st.queue.filter(q => q.eventId === Q.id).length === pendingBefore);
+  C.matters[0].counsel = [{post:other,remedy:"own"},{post:owner,remedy:"alternative"}];
+  const dissent = Engine.witness(st,C,act);
+  ok("taking the other minister's remedy records dissent",dissent.counsel === "dissent" &&
+     /advised another course/.test(dissent.text));
+  if (bad) { console.log("\n" + bad + " WITNESS FAILURES"); process.exitCode = 1; }
+})();
+
 /* Alternatives must retain AND inside each branch and alongside the list.
    Dropping a branch, hiding a typo behind a true branch, or skipping nested
    reference walks must fail these real-condition probes. */
@@ -444,7 +499,7 @@ const RUN_BOUND = T.runBound(CONTENT);
     ok('matter saves round-trip unchanged',Engine.save(loaded)===Engine.save(s));
     const legacy=JSON.parse(Engine.save(s)); legacy.version=34; delete legacy.matters;
     const migrated=Engine.reconcile(Engine.load(JSON.stringify(legacy)),C);
-    ok('v34 saves gain the v35 matter table',migrated.version===35 && !!migrated.matters.matter_probe);
+    ok('v34 saves retain the v35 matter table through v37',migrated.version===Engine.STATE_VERSION && !!migrated.matters.matter_probe);
     ok('already witnessed legacy failures do not replay',Engine.matters(migrated,C).length===0 && migrated.matters.matter_probe.state==='failed');
     const updated=Object.assign({},C,{matters:[Object.assign({},base,{id:'replacement'})]});
     Engine.reconcile(loaded,updated);

@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 35;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar, 32 core inflation and the quarter, 33 the forums, 34 the Concordance's dates, 35 ministerial matters
+  const STATE_VERSION = 37;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar, 32 core inflation and the quarter, 33 the forums, 34 the Concordance's dates, 35 ministerial matters, 37 witnessed acts
 
   /* ---------------------------------------------------------
      1. STATE
@@ -30,6 +30,7 @@ const Engine = (function () {
       since: {},
       cxRead: {},
       matters: {},
+      witness: { replies: [], memo: {}, nextQuestionDue: 0, lastQuestionAt: 0 },
       /* The session is content's number (bible §11.1: Session 4), and a
          session is sat in PERIODS with a recess between them (§1.8). */
       session: C.setup.session || 1,
@@ -554,6 +555,10 @@ const Engine = (function () {
       st.matters = {};
       st.version = 35;
     }
+    if (st.version < 37) {                    // witnessed acts
+      st.witness = st.witness || {replies:[],memo:{},nextQuestionDue:0,lastQuestionAt:0};
+      st.version = 37;
+    }
     return st;
   }
 
@@ -1019,6 +1024,8 @@ const Engine = (function () {
     st.log.unshift({ sitting: st.sitting, text: "Tabled at the " + (f.short || f.name) + ": " + r.title +
                      ". It is voted on " + s.next + "." });
     apply(st, C, r.onTable || []);
+    witness(st, C, {kind:"order", id:resId, post:r.post || null,
+      facts:{label:r.title, slots:0, forum:r.forum}});
     return { ok: true };
   }
   function table(st, C, resId) {
@@ -2425,6 +2432,8 @@ const Engine = (function () {
     }
     st.log.unshift({ sitting: st.sitting,
       text: "Slot granted: " + b.title + (gained ? " (+" + gained + " with " + owner + ")" : "") });
+    witness(st, C, {kind:"bill", id:billId, post:b.post || null,
+      facts:{label:b.title, slots:1, stage:bs.stage}});
     syncMatters(st,C,{target:{kind:"bill",id:billId}});
     settle(st, C);
     return { ok: true, gained: gained, owner: owner, stage: bs.stage };
@@ -2480,6 +2489,9 @@ const Engine = (function () {
     }
     if (si.political_cost) apply(st, C, si.political_cost);
     st.log.unshift({ sitting: st.sitting, text: "Instrument made: " + si.title });
+    witness(st, C, {kind:"instrument", id:siId, post:si.author,
+      facts:{label:si.title, affirmative:si.procedure === "affirmative",
+        slots:si.slots || 0, irreversible:!si.revocable}});
     syncMatters(st,C,{target:{kind:"instrument",id:siId}});
     settle(st, C);
     return { ok: true, inForce: s.inForce };
@@ -2702,7 +2714,10 @@ const Engine = (function () {
     const who = (C.characters || []).find(x => x.id === c.holder);
     st.log.unshift({ sitting: st.sitting,
       text: (post ? post.title || post.name : postId) + ": " +
-            (who ? who.name : c.holder) + " appointed" });
+             (who ? who.name : c.holder) + " appointed" });
+    witness(st, C, {kind:"appointment", id:postId, post:postId,
+      facts:{label:(post ? post.name || post.title : postId), holder:c.holder,
+        irreversible:true}});
     settle(st, C);
     return { ok: true, holder: c.holder };
   }
@@ -4929,6 +4944,74 @@ const Engine = (function () {
 
   /* One writer for advice, including identity reconciliation. The save
      keeps clocks and work references; authored words remain in content. */
+  /* A lever's single writer calls this after it succeeds. Content supplies
+     owners, thresholds, words and question ids; the engine only compares the
+     act's facts and the open brief. */
+  function witness(st, C, act) {
+    const cfg = (C.setup || {}).witness || {};
+    const post = act.post || (cfg.owners || {})[act.kind];
+    if (!post || !(st.cabinet[post] || {}).holder) return null;
+    const facts = act.facts || {}, rule = (C.witness || []).find(r => {
+      if (r.kind && r.kind !== act.kind) return false;
+      const match = r.match || {};
+      return Object.keys(match).every(k => {
+        const want = match[k], got = k === "id" ? act.id : k === "post" ? post : facts[k];
+        return Array.isArray(want) ? want.includes(got) : want === got;
+      });
+    }) || {};
+    const owner = rule.owner || post;
+    if (!(st.cabinet[owner] || {}).holder) return null;
+    let counsel = "unadvised";
+    for (const m of C.matters || []) {
+      if (((st.matters || {})[m.id] || {}).state !== "open") continue;
+      const remedy = (m.remedies || []).find(r => r.target && r.target.kind === act.kind && r.target.id === act.id &&
+        (r.target.tempo == null || r.target.tempo === facts.tempo));
+      if (!remedy) continue;
+      const recommendation = (m.counsel || []).find(c => c.remedy === remedy.id);
+      if (!recommendation || recommendation.post === owner) { counsel = "advised"; break; }
+      if ((m.counsel || []).some(c => c.post === owner && c.remedy !== remedy.id)) counsel = "dissent";
+    }
+    const threshold = cfg.thresholds || {};
+    let points = 0;
+    if (act.kind === "money") {
+      const room = facts.room > 0 ? facts.amount / facts.room : 0;
+      const reserve = facts.reserve > 0 ? (facts.received == null ? facts.amount : facts.received) / facts.reserve : Infinity;
+      if (room >= (threshold.moneyNotableRoom ?? .1) || reserve >= (threshold.moneyNotableReserve ?? .25)) points = 1;
+      if (room >= (threshold.moneyGraveRoom ?? .5) || reserve >= (threshold.moneyGraveReserve ?? 1)) points = 2;
+    } else {
+      points += facts.affirmative ? 1 : 0;
+      points += facts.slots >= (threshold.slotsNotable ?? 2) ? 1 : 0;
+      points += facts.irreversible ? 1 : 0;
+    }
+    if (act.kind === "appointment" && counsel === "dissent") points = Math.max(points, 2);
+    const weight = rule.weight || (points >= (threshold.grave ?? 2) ? "grave" : points ? "notable" : "routine");
+    if (weight === "routine" && counsel === "unadvised") return null;
+    const holder = st.cabinet[owner].holder;
+    const name = personName(C, holder);
+    const template = rule.reply || ((cfg.replies || {})[counsel] || {})[act.kind] ||
+      (cfg.replies || {})[counsel] || (cfg.replies || {})[act.kind];
+    const fill = t => String(t || "").replace(/\{minister\}/g, name)
+      .replace(/\{post\}/g, postName(C, owner)).replace(/\{act\}/g, facts.label || act.id);
+    const reply = fill(template);
+    const record = {sitting:st.sitting, kind:act.kind, id:act.id, post:owner,
+      holder, counsel, weight, text:reply};
+    const book = st.witness || (st.witness = {replies:[],memo:{},nextQuestionDue:0,lastQuestionAt:0});
+    if (reply) {
+      book.replies.unshift(record);
+      if (act.kind === "instrument") book.memo[act.id] = record;
+      st.queue.push({eventId:null,effects:[],label:name + ": " + reply,
+        source:"witness",dueSitting:st.sitting + 1});
+    }
+    const question = rule.question || (cfg.questions || {})[act.kind];
+    if (weight === "grave" && counsel !== "advised" && question && C.eventById[question]) {
+      const due = Math.max(st.sitting + 1, (book.nextQuestionDue || 0) + 1);
+      book.nextQuestionDue = due;
+      st.queue.push({eventId:question,effects:null,label:null,source:"witness",dueSitting:due,
+        witness:{kind:act.kind,id:act.id,post:owner,holder,facts}});
+    }
+    return record;
+  }
+
   function matterClock(st, m, r) {
     if (!r || r.eligibleAt == null) return {due:null,remaining:null};
     const due = typeof m.due === "number" ? {after:m.due} : m.due || {};
@@ -5200,11 +5283,14 @@ const Engine = (function () {
     });
     if (consequence) return C.eventById[consequence.page];
     const due = st.queue.filter(q => q.dueSitting <= st.sitting && q.eventId &&
-      (!businessAnswered || isEvent(C.eventById[q.eventId])));
+      (!businessAnswered || isEvent(C.eventById[q.eventId])) &&
+      !(q.source === "witness" && (st.witness || {}).lastQuestionAt === st.sitting));
     if (due.length) {
       const q = due.find(x => isEvent(C.eventById[x.eventId])) || due[0];
       st.queue = st.queue.filter(x => x !== q);
-      return C.eventById[q.eventId];
+      return q.source === "witness"
+        ? Object.assign({}, C.eventById[q.eventId], {witness:q.witness})
+        : C.eventById[q.eventId];
     }
     if (businessAnswered) return null;
     const pro = nextPrologue(st, C);
@@ -5985,6 +6071,7 @@ const Engine = (function () {
        tier fall, 23 Sep). They apply once, with the answer. */
     apply(st, C, event.effects);
     apply(st, C, ch.effects);
+    if (event.witness) (st.witness || (st.witness = {})).lastQuestionAt = st.sitting;
     /* Answering the House is governing. The idleness drag is for a
        government that does nothing at all — not for one whose bills are
        stuck at a division that will not carry and whose only remaining
@@ -6925,6 +7012,8 @@ const Engine = (function () {
     if (!gate.ok) return gate;
     const L = lenderOf(C, id);
     const n = Math.max(0, Math.round(amount));
+    const roomBefore = Math.max(0, lenderCap(st, C, id).cap - debtOf(st, id));
+    const reserveBefore = (st.scalars || {}).solvency || 0;
     /* A drawing is in the lender's money, and the reserve receives what it
        buys in dollars today. */
     const got = Math.round(inHome(st, C, id, n));
@@ -6948,6 +7037,9 @@ const Engine = (function () {
     st.wire.unshift({ sitting: st.sitting, text: L.wire ? fill(L.wire)
       : "COMMONWEALTH BORROWS " + money(C, n, L.currency).toUpperCase() + " FROM " +
         String(L.name || id).toUpperCase() + " AT " + pc + " PER CENT" });
+    witness(st, C, {kind:"money", id, post:L.post || null,
+      facts:{label:L.name || id, amount:n, received:got, room:roomBefore, reserve:reserveBefore,
+        slots:L.slots == null ? 1 : L.slots}});
     syncMatters(st,C,{target:{kind:"money",id}});
     return { ok: true, borrowed: n, received: got, rate: rate };
   }
@@ -8200,6 +8292,9 @@ const Engine = (function () {
 
     st.log.unshift({ sitting: st.sitting,
       text: i.title + (t.label ? " \u2014 " + t.label : "") });
+    witness(st, C, {kind:"initiative", id, post:i.post || null,
+      facts:{label:i.title, slots:cost, irreversible:!i.reverse,
+        tempo:tempoIdx || 0}});
     syncMatters(st,C,{target:{kind:"initiative",id,tempo:tempoIdx || 0},landing:i.event ? st.sitting + (t.after || 3) : null});
     settle(st, C);
     return { ok: true, cost: cost, after: t.after || 3 };
@@ -9063,7 +9158,7 @@ const Engine = (function () {
   }
 
   return {
-    STATE_VERSION, newGame, migrate, save, load, noteSince, since, chapters, reportedActor, receipts, believed,
+    STATE_VERSION, newGame, migrate, save, load, noteSince, since, chapters, reportedActor, receipts, believed, witness,
     readout, campaignMarkers, matters, noteMatter, acknowledge,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal, currentSeats,

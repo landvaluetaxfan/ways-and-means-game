@@ -7,6 +7,22 @@ const SETUP = {
      and a three-session parliament is about four months. */
   sittingDays: [1, 2, 3, 4],
   pm: "flash", playerParty: "cu",
+  witness: {
+    owners: { money:"treasury" },
+    thresholds: { moneyNotableRoom:.1, moneyNotableReserve:.25,
+      moneyGraveRoom:.5, moneyGraveReserve:1, slotsNotable:2, grave:2 },
+    replies: {
+      advised:"I have the act on my note. I will account for what it does.",
+      dissent:"I advised another course. My objection belongs with the act.",
+      money:"I have entered the drawing. Tell me what the reserve must now carry.",
+      instrument:"I have made the order and entered its terms in the register.",
+      initiative:"I have set the work in motion. I will report when it returns.",
+      appointment:"I have recorded the appointment. The new holder takes the post now.",
+      bill:"I have put the measure on the order paper.",
+      order:"I have sent the resolution to the forum."
+    },
+    questions: {}
+  },
   coalition: ["cu","psa","rv"],
   /* THE INDEPENDENTS HOLD IT UP. Six district members with no whip, no
      leader and no caucus position, which is why this is confidence and

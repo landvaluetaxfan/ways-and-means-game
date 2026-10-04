@@ -1494,6 +1494,9 @@ const UI = (function () {
           ` <span class="note">up to ${room.toLocaleString("en-US")} left</span>` +
           ` <button type="button" class="btn" data-money-max="${esc(f.id)}">Max</button></div>` +
         `<div class="note">${esc(f.drawNote || "")}</div>` +
+        `<div class="note">${esc(Number(f.rate).toFixed(2))} per cent` +
+          `${f.currency ? ` · owed in ${esc(f.currency)} at the day's rate` : ""}` +
+          `${f.slots ? ` · ${esc(slotWord(f.slots))} of order-paper time` : ""}</div>` +
         `<button class="btn" data-draw="${esc(f.id)}"${gate.ok ? "" : " disabled"}` +
           tipAttr("Draw " + cw(amount,f.currency),gate.ok ? f.drawNote : gate.reason) + `>Draw</button>` +
         `<div class="note money-refusal"${gate.ok ? " hidden" : ""}>${esc(gate.reason || "")}</div></section>`;
@@ -1615,30 +1618,13 @@ const UI = (function () {
         const amount = parseMoneyAmount(input.value);
         const gate = Engine.canBorrow(st,C,amount,f.id);
         if (!gate.ok) { setStatus(gate.reason,"transient"); return; }
-        b.disabled = true;
-        let answered = false;
-        Dialog.confirm(
-          `Draw ${cw(amount, f.currency)} from ${f.name} ` +
-          `(${f.facility}) at ${Number(f.rate).toFixed(2)} per cent?` +
-          (f.currency ? ` At today's rate it brings ${cw(f.received * amount / f.utilisation)} into the reserve, ` +
-                        `and it is owed in ${f.currency} whatever the dollar does.` : "") +
-          (f.slots ? ` It takes ${slotWord(f.slots)} of order-paper time.` : "") +
-          (f.drawNote ? " " + f.drawNote : ""),
-          { title: "Draw on " + f.facility, yes: "Draw" },
-          ok => {
-            if (answered) return;
-            answered = true;
-            if (!ok) {
-              Focus.around(() => drawEconomy(), {sel:'#econ-calls [data-draw="' + f.id + '"]'});
-              return;
-            }
-            const r = acted(() => Engine.borrow(st, C, amount, f.id));
-            if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); drawAll(); return; }
-            cue("stamp");
-            setStatus("Drew " + cw(r.borrowed, f.currency) + " on " + f.facility +
-                      " at " + Number(r.rate).toFixed(2) + " per cent", "transient");
-            drawAll(); saved(); afterAction();
-          });
+         b.disabled = true;
+         const r = acted(() => Engine.borrow(st, C, amount, f.id));
+         if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); drawAll(); return; }
+         cue("stamp");
+         setStatus("Drew " + cw(r.borrowed, f.currency) + " on " + f.facility +
+                   " at " + Number(r.rate).toFixed(2) + " per cent", "transient");
+         drawAll(); saved(); afterAction();
       }));
     if (box) box.querySelectorAll("[data-repay]").forEach(b =>
       b.addEventListener("click", () => {
@@ -3225,13 +3211,7 @@ const UI = (function () {
     };
     $("#gov-si").querySelectorAll("[data-make]").forEach(b => b.addEventListener("click", () => {
       const si = (C.instruments || []).find(x => x.id === b.dataset.make);
-      Dialog.confirm("Make " + (si ? si.number + " — " + si.title : b.dataset.make) + "?\n\n" +
-        (si && si.procedure === "affirmative"
-          ? "It waits for the House's approval before taking effect."
-          : "It takes effect at once and may be prayed against."),
-        { title:"Make the order?", yes:"Make" }, ok => {
-      if (!ok) return;
-      const r = acted(() => Engine.makeInstrument(st, C, b.dataset.make));
+       const r = acted(() => Engine.makeInstrument(st, C, b.dataset.make));
       if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); Dialog.alert(r.reason, { title: "Order refused" }); }
       else {
         cue("stamp"); score("order");
@@ -3241,8 +3221,7 @@ const UI = (function () {
                     : " made \u2014 in force at once, and prayable"),
                   "transient");
       }
-      redrawGovWork(b); afterAction();
-      });
+       redrawGovWork(b); afterAction();
     }));
     $("#gov-si").querySelectorAll("[data-approve]").forEach(b => b.addEventListener("click", () => {
       const f = Engine.approvalForecast(st, C, b.dataset.approve);
@@ -5835,7 +5814,9 @@ const UI = (function () {
       const ch = (C.characterById || {})[holder];
       return `<b>${esc(govPostName(post))}</b><span>${ch ? esc(ch.name) + " " + mark(ch.party) : "Vacant"}</span>`;
     };
-    el.innerHTML = list.length ? list.map(m => {
+    const latestReply = ((st.witness || {}).replies || []).find(r => r.sitting < st.sitting);
+    const memo = latestReply ? `<div class="note" data-witness-brief><b>${esc(govPostName(latestReply.post))}:</b> ${esc(latestReply.text)}</div>` : "";
+    el.innerHTML = memo + (list.length ? list.map(m => {
       const ch = (C.characterById || {})[m.holder];
       const deadline = m.remaining == null ? "No deadline has begun"
         : m.remaining <= 0 ? "Due now" : m.remaining + " sitting" + (m.remaining === 1 ? "" : "s") + " to act";
@@ -5855,7 +5836,7 @@ const UI = (function () {
         }).join("")}</div>` : "") +
         `<button class="btn tiny" id="matter-note-${esc(m.id)}" data-note-matter="${esc(m.id)}"` +
         tipAttr("Set aside", "Remove this advice from the brief without stopping its deadline.") + `>Set aside</button></section>`;
-    }).join("") : `<div class="note">Ministers raise a matter here before it becomes a decision. None has yet.</div>`;
+    }).join("") : `<div class="note">Ministers raise a matter here before it becomes a decision. None has yet.</div>`);
     el.querySelectorAll("[data-matter-remedy]").forEach(b => b.addEventListener("click", () => {
       const m = Engine.matters(st,C).find(m => m.id === b.dataset.matterId);
       const r = m && m.remedies.find(r => r.id === b.dataset.matterRemedy);

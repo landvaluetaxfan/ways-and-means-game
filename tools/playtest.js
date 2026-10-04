@@ -280,7 +280,9 @@ const STRATEGIES = [
   ].map(([id,name,advice])=>({id,name,advice,budget:true,climbs:true,pick:()=>0,
     note:"First-option decisions and supply-first governing; advice policy " + advice + "."})),
   {id:"levers",name:"Pulls levers",levers:true,budget:true,climbs:true,pick:()=>0,
-    note:"Supply-first governing, plus one non-emergency order and one offered initiative."}
+    note:"Supply-first governing, plus one non-emergency order and one offered initiative."},
+  {id:"own_reading",name:"Acts on its own reading",ownReading:true,budget:true,climbs:true,pick:()=>0,
+    note:"Makes one large money call with no ministerial matter, then governs supply first."}
 ];
 
 /* ---------- one run ---------- */
@@ -349,6 +351,25 @@ function play(strategy, sittings) {
 
     /* AND THEN IT GOVERNS. */
     observe();
+    if (strategy.ownReading && i === 0) {
+      const post = ((CONTENT.setup.witness || {}).owners || {}).money;
+      if (post && !(st.cabinet[post] || {}).holder && Engine.candidates(st,CONTENT,post).length)
+        Engine.fillPost(st,CONTENT,post,0);
+      const graveShare = (((CONTENT.setup.witness || {}).thresholds || {}).moneyGraveRoom ?? 0.5);
+      const f = Engine.facilities(st,CONTENT).find(x => x.cap > x.owed &&
+        !Engine.matters(st,CONTENT).some(m => m.remedies.some(r => r.target.kind === "money" && r.target.id === x.id)) &&
+        Engine.canBorrow(st,CONTENT,Math.ceil((x.cap-x.owed)*graveShare),x.id).ok);
+      if (f) {
+        const n = Math.ceil((f.cap-f.owed)*graveShare);
+        const before = ((st.witness || {}).replies || []).length;
+        const r = Engine.borrow(st,CONTENT,n,f.id);
+        if (r.ok) {
+          if (((st.witness || {}).replies || []).length <= before)
+            throw new Error("an unadvised grave money call had no witness");
+          note("own reading: drew " + Engine.money(CONTENT,n,f.currency) + " on " + f.name);
+        }
+      }
+    }
     if (strategy.advice) {
       const records=Advice.actOnAdvice(Engine,st,CONTENT,strategy.advice,driverMemory);
       adviceRecords.push(...records);
