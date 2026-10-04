@@ -1165,6 +1165,9 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     s.slots.used=s.slots.total;
     ok("answering the course closes the reshuffle window",s.flags.course_set && !s.interval &&
       !Engine.canReshuffle(s,C,own.id).ok);
+    Engine.advance(s,C); Engine.advance(s,C);
+    ok("the second act has three sitting dates",s.sitting===6 &&
+      s.date===Engine.dateOfSitting(C,6) && s.period===2);
   }
 
   /* SITTING PERIODS (bible §1.8). A session is sat in periods, and a recess
