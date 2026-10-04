@@ -25,6 +25,7 @@ Each kind of information has one home. Read only the home you need.
 | canon, out-of-world | `bible.md`. Read the section index at its top, then only the range: `sed -n '274,296p' bible.md`. Sections are LOCKED, LEANING or OPEN |
 | canon, in-world | `textbook.md` (`node tools/toc.js --index textbook.md` prints its index) |
 | how to author content | `CONTENT_GUIDE.md` |
+| how to run a playtest | `PLAYTEST.md` |
 | how prose is written | `PROSE.md` |
 | faults already made | `LESSONS.md`, by area. Read the section for what you are touching |
 | why things are as they are | `design/`, dated decision records. A later record overrides an earlier one, and the files above override them all. `design/archive/` holds retired plans and status documents |
