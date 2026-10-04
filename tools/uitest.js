@@ -1280,6 +1280,62 @@ try {
   ok("no bar carries a native tooltip",
      [...w.document.querySelectorAll("#chart-body .bar")]
        .every(b => !b.getAttribute("title")));
+
+  /* STEP 1 OF briefs/economy-tab.md: five small faults, held by assertions
+     so they cannot come back. The dangling comma was fxSay's, but the
+     assertion is on the rendered text, so any other builder in the panel
+     that learns the habit is caught too. */
+  const bankEms = [...w.document.querySelectorAll("#econ-bank .plab em")];
+  const dangling = bankEms.filter(e => /[,;:]\s*$/.test((e.textContent || "").trim()));
+  ok("no reading in the Bank panel ends in a dangling comma or semicolon",
+     bankEms.length > 0 && dangling.length === 0,
+     dangling.length ? dangling.map(e => JSON.stringify(e.textContent.trim())).join("  ")
+                      : bankEms.length + " readings, all clean");
+  /* THE TREND COLUMN was an empty <th> over an empty cell until a price had
+     two points of history to draw, so it is there only when it holds
+     something, and named when it does. */
+  const bheads = [...w.document.querySelectorAll("#econ-bases thead th")];
+  ok("the prices table has no unlabelled column",
+     bheads.length > 0 && bheads.every(th => (th.textContent || "").trim().length > 0),
+     bheads.map(th => (th.textContent || "").trim() || "(empty)").join(" | "));
+  const browsAll = [...w.document.querySelectorAll("#econ-bases tbody tr")];
+  ok("and every row answers the header, the totals row included",
+     browsAll.length > 0 && browsAll.every(tr => tr.children.length === bheads.length),
+     browsAll.map(tr => tr.children.length).join(",") + " cells against " + bheads.length + " columns");
+  /* AND THE OTHER HALF, because a column that is drawn only when it is empty
+     would pass the assertion above by never appearing. With two points on a
+     base, spark() has something to draw, so the column comes back — and it
+     comes back named. Staged on a copy of the state and put back after. */
+  const snapB = w.eval("JSON.stringify(UI.state())");
+  const seeded = w.eval("(function(){ var s = UI.state();" +
+    " s.priceHistory = { substrate: [100, 102], thermal: [100, 97]," +
+    " transit: [100, 101], volume: [100, 104] }; UI.redraw();" +
+    " return { heads: [].map.call(document.querySelectorAll('#econ-bases thead th')," +
+    "   function(t){ return t.textContent.trim(); })," +
+    "  rows: [].map.call(document.querySelectorAll('#econ-bases tbody tr')," +
+    "   function(tr){ return tr.children.length; })," +
+    "  sparks: document.querySelectorAll('#econ-bases td.bspark').length }; })()");
+  ok("and a price with history brings the Trend column back, named",
+     seeded.heads.indexOf("Trend") >= 0 && seeded.rows.every(n => n === seeded.heads.length) &&
+     seeded.sparks > 0,
+     seeded.heads.join(" | ") + "  rows " + seeded.rows.join(",") + "  sparklines " + seeded.sparks);
+  w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapB) + "), UI.content())");
+  /* A FIGURE AND ITS UNIT are one number; the third column was a fixed 54px
+     and the unit wrapped. jsdom has no layout, so the rule is asserted as
+     the stylesheet writes it, which is how the other CSS assertions are
+     made here. */
+  const econCss = require("fs").readFileSync(__dirname + "/../css/terminal.css", "utf8");
+  ok("a figure and its unit cannot wrap onto two lines",
+     /\.g-econ \.pval\{[^}]*white-space:nowrap/.test(econCss) &&
+     /\.g-econ \.pval span\{display:inline;\}/.test(econCss),
+     "nowrap on .g-econ .pval, and the unit inline rather than a block box");
+  /* The selected row's gold bar is drawn on the panel's edge, so with no
+     left padding it sat over the first letter of the sub-label beneath it:
+     "asts 156 months at this rate". Same stylesheet-text assertion, since
+     there is no layout here to measure. */
+  ok("the selected row leaves room for its own gold bar",
+     /\.g-econ \.prow\.pick\{padding-left:6px;\}/.test(econCss),
+     ".g-econ .prow.pick{padding-left:6px}");
 } catch (e) { ok("the economy tab", false, e.message); }
 
 /* THE LADDER NOBODY FOUND (design/38 §7). Under the alert's line the

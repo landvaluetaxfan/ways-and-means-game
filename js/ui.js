@@ -1233,6 +1233,12 @@ const UI = (function () {
     };
 
     const meta = k => PRICE_META.find(m => m.k === k) || {};
+    /* A PRICE WITH NO HISTORY HAS NO TREND, and spark() draws nothing below
+       two points, so the column between Price and the law said nothing at
+       all until a price had moved twice. It is drawn only when it holds
+       something, and named when it does. */
+    const anyTrend = rows.some(row => ((st.priceHistory || {})[row.base] || []).length >= 2);
+    const sparkCell = h => anyTrend ? `<td class="bspark">${spark(h.slice(-40), 58, 20)}</td>` : "";
     const body = rows.map(row => {
       const k = row.base;
       const h = (st.priceHistory || {})[k] || [row.price];
@@ -1242,7 +1248,7 @@ const UI = (function () {
         `<td class="bname">${esc(row.name)}<em>${esc(meta(k).unit || "")}</em></td>` +
         `<td class="bidx ${cls}">${row.price.toFixed(0)}` +
           `<span>${chg >= 0 ? "+" : ""}${chg.toFixed(0)}</span></td>` +
-        `<td class="bspark">${spark(h.slice(-40), 58, 20)}</td>` +
+        sparkCell(h) +
         `<td>${lawCell(k)}</td>` +
         `<td class="brate">${esc(RATE_WORD[row.rate] || row.rate)}</td>` +
         `<td class="byield">${cw(row.yield)}</td></tr>`;
@@ -1257,11 +1263,13 @@ const UI = (function () {
 
     box.innerHTML =
       `<table><thead><tr><th>Base</th>` +
-      `<th class="n" data-tip="scarcity">Price</th><th></th>` +
+      `<th class="n" data-tip="scarcity">Price</th>` +
+      (anyTrend ? `<th class="n">Trend</th>` : "") +
       `<th>What the law does</th><th class="n">Levied</th>` +
       `<th class="n" data-tip="waysmeans">A year</th></tr></thead><tbody>` +
       body +
-      `<tr class="btot"><td class="bname">Every year</td><td></td><td></td>` +
+      `<tr class="btot"><td class="bname">Every year</td><td></td>` +
+      (anyTrend ? `<td></td>` : "") +
       `<td class="blaw">the appropriation's own clauses<b>what it all comes to</b></td>` +
       `<td></td><td class="byield">${cw(r.total)}</td></tr>` +
       `</tbody></table>` +
@@ -1312,9 +1320,16 @@ const UI = (function () {
       : "the rule asks " + rule.toFixed(2) + (Math.abs(move) < 0.125 ? ", a hold"
           : move > 0 ? ", a rise" : ", a cut") + " on " + dayLabel(m.nextMeeting);
     const fx0 = M.fx || m.fx;
-    const fxSay = (m.fx < fx0 * 0.97 ? "down " : m.fx > fx0 * 1.03 ? "up " : "near where it opened, ") +
-      (Math.abs(m.fx / fx0 - 1) >= 0.03 ? Math.abs(Math.round((m.fx / fx0 - 1) * 100)) + "% since the opening" : "") +
-      trend("fx");
+    /* "near where it opened, " carried its own comma, and with nothing after
+       it — no move, no trend — it printed as a dangling comma. The parts are
+       listed and joined instead, so the punctuation exists only when there
+       are two things to separate. */
+    const fxMoved = Math.abs(m.fx / fx0 - 1) >= 0.03;
+    const fxSay = [
+      fxMoved ? (m.fx < fx0 ? "down " : "up ") + Math.abs(Math.round((m.fx / fx0 - 1) * 100)) + "% since the opening"
+              : "near where it opened",
+      trend("fx").replace(/^,\s*/, "")
+    ].filter(Boolean).join(", ");
     const gapSay = m.gap > 1.5 ? "pressing on the radiators: output over capacity by " + m.gap.toFixed(1) + "%"
       : m.gap < -1.5 ? "slack: output under capacity by " + (-m.gap).toFixed(1) + "%"
       : "close to capacity (" + (m.gap >= 0 ? "+" : "") + m.gap.toFixed(1) + "%)";

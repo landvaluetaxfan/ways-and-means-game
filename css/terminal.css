@@ -398,6 +398,10 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .g-econ .prow.pick{cursor:pointer;}
 .g-econ .prow.pick:hover{background:var(--field);}
 .g-econ .prow.pick.on{background:var(--field);box-shadow:inset 2px 0 0 var(--gold);}
+/* THE SELECTED ROW'S GOLD BAR SITS ON THE PANEL'S EDGE, and with no left
+   padding it covered the first letter of the sub-label beneath it: "asts 156
+   months at this rate". */
+.g-econ .prow.pick{padding-left:6px;}
 /* THE BASES TABLE. One row per thing the Commonwealth prices, and the row
    reads left to right as the sum the engine actually does: this is what it
    costs, this is what the law does to it, this is what it is levied at,
@@ -498,6 +502,18 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .g-econ .plab em{font-size:10.5px;}
 .g-econ .pval{font-size:18px;font-variant-numeric:tabular-nums;}
 .g-econ .pval span{font-size:11px;}
+/* A FIGURE AND ITS UNIT ARE ONE NUMBER. The third column was a fixed 54px,
+   so "2.8" and "%" wrapped, and "0.840" and "US$" with it. Rows with two
+   children (the account's) put the value in the second, auto column; rows
+   with a sparkline use all three. */
+.g-econ .prow{grid-template-columns:minmax(0,1fr) auto auto;}
+.g-econ .pval{white-space:nowrap;text-align:right;}
+/* AND THE UNIT WITH IT. `.pval span` is display:block everywhere else in the
+   terminal, so nowrap on the parent could not lift it: a block box starts its
+   own line whatever the parent says. Inline here puts "2.8" and "%" together,
+   which is what the third column's auto width is for. */
+.g-econ .pval span{display:inline;}
+.g-econ .pval span{margin-left:2px;}
 /* A STANDING LENDER'S ROW carries two controls, Draw and (once anything is
    drawn) Repay, stacked in the row's third column so the figure keeps its
    place in the second. */
