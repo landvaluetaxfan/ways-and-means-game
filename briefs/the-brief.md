@@ -1,3 +1,10 @@
+**STATUS, 4 Oct 2026: the engine and the interface for the brief have landed**
+(matters, the three-matter slice, the Sitting's brief, counsel, the Economy's money
+calls; design/66 has the measurement). **Do not start a worker on this file.** What
+is left is the playable slice, and it is in `opening-playable-slice.md` (batch A:
+the carve-out as the first contested matter, the empty-brief orientation, the
+guards). This file stays only as the record of what the brief is.
+
 **Lane: Codex.** Written 29 Sep 2026 by Claude from the author's decisions.
 Do it after `tabs-overhaul.md`.
 

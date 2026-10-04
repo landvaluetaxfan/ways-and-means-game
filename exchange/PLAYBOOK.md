@@ -9,12 +9,20 @@ is the judgment between them. Where it disagrees with those, they win.
 
 A fresh orchestrator gets the judgment from files, not from a conversation. Read,
 in this order, and stop reading when you can say where the work stands:
+0. **`git pull origin main` first.** A clone that is a few commits behind is missing
+   files, and every file you cannot read is a wrong guess. If a read fails, pull
+   before you conclude anything.
 1. `AGENTS.md` (loaded through `CLAUDE.md`), then this file and `README.md` here.
 2. `node tools/exchange.js inbox --as claude`, then `briefs/README.md` and
    `briefs/claude-lane.md` (the backlog that is yours).
 3. `design/62-why-the-overhaul.md`, and the first screen of
    `design/58-the-game-on-one-page.md`, for why the game is shaped as it is.
-4. `git log --oneline -25` for what has just happened.
+4. `git log --oneline -25` for what has just happened, and
+   `node tools/exchange.js status` for what is open, including anything waiting
+   on the author. Surface those to the author; they are not yours to answer.
+5. **Never start a worker on a brief you have not opened.** A brief can be mostly
+   landed and still be on disk, with its remaining work moved elsewhere. Read its
+   first lines (a STATUS line says so), then `git log --oneline -- <the files it names>`.
 
 Then say, in ten lines, the state of play, what you would do next, and what you
 are unsure of. **When the author corrects you, write the correction into this
