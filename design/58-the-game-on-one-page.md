@@ -452,6 +452,11 @@ post remembers when it is filled. The question in a sitting is not only
 "which price do I pay?" but "whose future leverage am I creating by getting
 my way today?" That keeps the House political rather than transactional.
 
+**How leverage works** is specified in `design/68-leverage.md` (4 Oct):
+a ledger for time, named claims for concessions, promises and posts, claims
+called in as matters, favours that fade and claims that do not, and terms
+offered at the whip.
+
 **Decided: advice is contested from the start.** Among the first matters,
 at least one has two credible ministers asking for different remedies, and
 neither is simply wrong. Later the player can see why each thought as they
