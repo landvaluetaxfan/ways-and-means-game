@@ -1,8 +1,9 @@
 # 58 — The game on one page
 
-**DRAFT, 29 September 2026.** This is the game described from the player's
-chair. It is meant to become the top of the bible, LOCKED, once the author
-has cut it apart. Lines marked **decided** are the author's answers. Lines
+**LOCKED into the bible as §1.0 on 4 October 2026,** where the rules now
+live and win over this record. This is the game described from the player's
+chair, with the reasons. It was written as a draft on 29 September, to become
+the top of the bible once the author had cut it apart. Lines marked **decided** are the author's answers. Lines
 marked **proposed** are advice awaiting a yes or no. Every system in the
 game will be held up against this page (design/57, and the author's point
 that we built systems before doing enough game design).
@@ -467,6 +468,14 @@ player:
 
 If the slice is not fun, the design changes before four years of content
 are written on it.
+
+**Decided (4 Oct): the carve-out is the first contested matter.** The
+opening proves the contested-advice loop on the licensing carve-out, before
+the Works strands at sitting 14: the Chief Whip and the Life Support
+minister (keep the votes) against the Deputy Prime Minister (keep the
+partner). The measurement found no live contested heat advice before
+sitting 32 to 48, so the heat stays as the later case (design/66,
+`briefs/opening-playable-slice.md`).
 
 **Clarifications, consistent with decisions above:**
 - **An interval must show political time passing:** what endured, what

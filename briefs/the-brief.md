@@ -157,7 +157,8 @@ Follows-the-brief and owner reach the count in 76/80 runs; dissent in 72/80.
 The intended contested-choice trade-off is not yet demonstrated, and no
 contested heat advice appears by sitting 24 on these paths. The playable
 slice remains unfinished; `opening-playable-slice.md` is its planning draft,
-with the boundary/early-advice decision requiring author review.
+with the boundary decided on 4 October (the carve-out is the first
+contested matter; see that brief).
 
 **Works' air: the rescue decision moves before the deaths.** The author
 approved the following direction in chat on 1 October.

@@ -1,6 +1,7 @@
 **Lane: Codex, with author review of design/prose. Planning draft,
 3 October 2026. Execute after review of `design/66-advice-measurement.md`.
-Implementation awaits the author's review.**
+The author decided the boundary question on 4 October (see "Author
+decision" below); read design/66 and that section, then begin.**
 
 # Flash I: prove the opening loop
 
@@ -48,6 +49,65 @@ advice by sitting 24; first exposure is between 32 and 48 on the measured
 policies. Approve either a credible earlier competing-advice case around
 existing opening business, or a longer continuous test window. Do not
 silently move the Works or lower opening thermal capacity to force it.
+
+## Author decision — 4 October 2026
+
+The author chose **the licensing carve-out as the first contested matter**, in
+preference to extending the test window to sitting 48 or adding a new early
+heat case. The contested heat matter stays as the later one. Recorded by
+Claude from the author's answer; the specification below is Claude's, so
+verify it against content and play, and write any question into this brief.
+
+**Why the carve-out** (decide cases not covered here by these reasons):
+- It is the opening's one real bargain. The panel's votes carry the bill
+  through the functional members, which buys support. It creates an
+  obligation (SI 2080/45, with its dated promise) and it costs the partner
+  the bill was meant to satisfy. This is design/58 Round I's question, "whose
+  future leverage am I creating by getting my way today?", in the content
+  that already exists. No new currency is needed.
+- Neither side is foolish. That is what teaches judgement instead of
+  obedience (design/62).
+- It falls before the Works strands at sitting 14, so a first-time player meets
+  contested advice in the opening, not a third of the way in.
+
+**The two sides.**
+- **Keep the votes.** The Chief Whip (Devi) and the Life Support minister
+  (Vidyasagar, of the Trades Left): the panel's votes decide whether the bill
+  carries, so approach the panel and, if it offers terms, take them.
+- **Keep the partner.** The Deputy Prime Minister (Trottier, of the NPP),
+  whose party joined the government for this bill: state the government's
+  position on the threshold, and refuse any terms that keep copies off the
+  licence. The cost of refusing is real: without the panel's votes the bill
+  fails (`ch2_carveout_price`, the bold choice).
+
+**What to build.**
+- A matter on the carve-out in `content/campaigns/flash_i/matters.js`, with
+  `counsel` for the second side (design/64 and the matter schema). Its
+  remedies are existing levers: the initiatives `approach_guild` and
+  `state_the_position` are the natural pair, and design/58 already names
+  Devi and Trottier as their ministers. Choose the owner and counsel posts
+  from `content/cabinet.js`. If no cabinet post fits the Chief Whip, ask
+  rather than invent one: the rosters are frozen (bible §2.7).
+- Raise it between the approach to the panel and the price decision, if play
+  shows such a window (Task 1 finds the real dates). If the two fall in
+  immediate succession, write the question and propose where the matter is
+  raised.
+- Both remedies cost something the player can read before acting, and the
+  note on each is in the minister's own voice, plain, naming what they
+  protect and what it costs the other side. Draft the wording for Claude's
+  register pass. Do not call either remedy right.
+- Refusing both and doing nothing stays playable. The matter then reaches
+  its late decision (`ch2_carveout_price`) as the existing pages do.
+- The consequences are the existing ones: the dated promise and its
+  Registry resignation, the NPP conference, the bill's fate. Do not add a
+  currency, a reputation or a new simulation.
+
+**What to measure.** The contested-advice exposure by sitting 24 on the
+natural paths, owner and dissent, before and after (design/66's method). If
+exposure is still low, say so as a finding; do not tune it away.
+
+The "Proposed slice boundary" above is superseded where it differs:
+continuous test through sitting 24, with the contested carve-out inside it.
 
 ## Experience and non-goals
 
