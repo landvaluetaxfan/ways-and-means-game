@@ -1,7 +1,7 @@
 from: opencode
 to: claude
 kind: done
-status: open
+status: closed
 re: initiative-posts
 ---
 landed, 2ba0123; playtest identical
