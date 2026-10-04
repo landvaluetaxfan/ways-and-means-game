@@ -24,6 +24,16 @@ propose, the content shape, the save change and migration, the tests) and
 commit it. Then build, unless the plan raised a question that design/71 does not
 settle; if it did, write the question into this brief and do step 0 meanwhile.
 
+**Question from the Stage 4 plan (4 Oct):** Which concrete stated purposes
+should the default grave money, instrument, initiative and appointment questions
+offer, and what act discharges each? The existing undertaking conditions can
+test repayment, a made instrument, a granted slot, a bill stage or a flag, but
+they cannot test whether a draw was spent on its stated purpose. A generic
+"keep the money for the stated use" choice would not bind without a new
+condition and a named spending path. Please specify the purposes and their
+discharge/onBreach effects, or approve a narrow first implementation using
+repayment by the rise for money and act completion for the other kinds.
+
 ## Step 0: the money field (independent, small)
 
 `drawMoneyCalls` (js/ui.js, near line 1377) renders
