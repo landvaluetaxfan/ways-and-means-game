@@ -1229,7 +1229,7 @@ const Editor = (function () {
       ${conditions("due", "Due when (or after, whichever comes first)", due.when)}
       ${conditions("settled", "Settled when", m.settled)}
       ${array("figures", "Readout declarations or setup readout keys; live sources and word bands.")}
-      ${array("remedies", "Stable id, typed target, takes and note. " + targets)}
+      ${array("remedies", "Stable id, typed target, takes, note and optional label (button text). " + targets)}
       ${array("counsel", "Post, local remedy id and note. Posts: " + (M.cabinet || []).map(x => x.id).join(", "))}`;
   }
   function readMatter(orig) {

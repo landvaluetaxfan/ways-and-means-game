@@ -251,7 +251,7 @@ const SCHEMA = {
     fields: ["id", "campaign", "owner", "raise", "note", "figures", "remedies",
              "counsel", "due", "grace", "recurs", "late", "page", "settled"],
     targets: { initiative: "initiatives", instrument: "instruments", bill: "bills", money: "lenders" },
-    remedyFields: ["id", "target", "takes", "note"],
+    remedyFields: ["id", "target", "takes", "note", "label"],
     targetFields: ["kind", "id", "tempo", "amount"],
     counselFields: ["post", "remedy", "note"]
   },
@@ -426,6 +426,7 @@ SCHEMA.matterIssues = function (m, C) {
     if (!object(r)) { bad("invalid remedy row"); return; }
     if (!r.id || ids.has(r.id)) bad("missing or duplicate remedy id " + r.id);
     ids.add(r.id);
+    if ("label" in r && (typeof r.label !== "string" || !r.label.trim())) bad("invalid remedy label " + r.id);
     if (!Number.isInteger(r.takes) || r.takes < 0) bad("invalid remedy duration " + r.id);
     const t = r.target || {}, kind = SCHEMA.matter.targets[t.kind];
     if (!kind) { bad("unknown remedy kind " + t.kind); return; }

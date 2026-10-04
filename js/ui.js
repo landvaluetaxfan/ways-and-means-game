@@ -5721,7 +5721,7 @@ const UI = (function () {
   function matterRemedyHTML(m, r, suffix) {
     return `<div class="matter-remedy"><button class="btn" id="matter-${esc(m.id)}-${esc(suffix)}" data-matter-remedy="${esc(r.id)}"` +
       ` data-matter-id="${esc(m.id)}"${r.ok ? "" : " disabled"}` +
-      tipAttr(matterTargetName(r.target), r.ok ? r.note : r.reason) + `>${esc(matterTargetName(r.target))}</button>` +
+      tipAttr(matterTargetName(r.target), r.ok ? r.note : r.reason) + `>${esc(r.label || matterTargetName(r.target))}</button>` +
       `<div class="note">${esc(r.note)}${r.ok ? "" : " · " + esc(r.reason)}</div></div>`;
   }
   function drawMatters() {

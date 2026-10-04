@@ -10,6 +10,12 @@ browser, and `npm run check` before each push.
 Three faults in what is built, found on 4 October by playing the opening and
 sitting 17 in a real browser. One commit each.
 
+Execution checkpoint: items 1 and 2 are implemented. Item 3 remains open.
+The author asked to wrap the batch with 15% of the five-hour allowance left;
+keep this brief until item 3 is complete. The opening evidence map is next
+after item 3; the author's live request requires stopping at the map before
+drafting content, despite the later brief's instruction to continue.
+
 ## 1. The Sitting says the same thing twice
 
 At sitting 1 the brief shows "Treasurer is vacant" under **Owed**, and

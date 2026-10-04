@@ -131,11 +131,15 @@ try {
         w.eval('Editor.__test.entry("matters","editor_matter_probe").note') === "A revised ministerial note.");
       tab.click(); w.document.querySelector('[data-id="editor_matter_probe"]').click();
       const remedies = w.document.querySelector('#ed-form [data-f="remedies"]');
-      const edited = JSON.parse(remedies.value); edited[0].id = "renamed_order";
+      ok("the remedy editor explains the optional button label",
+        remedies.previousElementSibling.textContent.includes("optional label"));
+      const edited = JSON.parse(remedies.value); edited[0].id = "renamed_order"; edited[0].label = "Lay the order";
       remedies.value = JSON.stringify(edited);
       w.document.querySelector('.tab[data-t="events"]').click();
       ok("a local remedy rename preserves its counsel reference",
         w.eval('Editor.__test.entry("matters","editor_matter_probe").counsel[0].remedy') === "renamed_order");
+      ok("the matter editor preserves a remedy's optional label",
+        w.eval('Editor.__test.entry("matters","editor_matter_probe").remedies[0].label') === "Lay the order");
       tab.click(); w.document.querySelector('[data-id="editor_matter_probe"]').click();
       w.eval('window.__savedAlternativePrompt = Dialog.prompt; Dialog.prompt = (m,o,cb) => cb("anyOf");');
       w.document.querySelector('[data-act="msettled-add"]').click();

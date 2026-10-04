@@ -8,9 +8,9 @@ campaign("flash_i", { matters: [
     note:"The stations have little spare capacity to shed heat. An emergency allocation buys a larger margin and needs money and the House's approval. A conservation appeal reduces demand, with a smaller improvement.",
     figures:["heat"],
     remedies:[
-      {id:"allocate",target:{kind:"instrument",id:"si_2080_51"},takes:0,
+      {id:"allocate",label:"Pay for emergency thermal quota",target:{kind:"instrument",id:"si_2080_51"},takes:0,
        note:"Open the paid emergency allocation. It takes effect after the House approves it."},
-      {id:"conserve",target:{kind:"instrument",id:"rung1_conservation"},takes:0,
+      {id:"conserve",label:"Ask the stations to reduce demand",target:{kind:"instrument",id:"rung1_conservation"},takes:0,
        note:"Open the voluntary conservation appeal. It preserves cash and adds less thermal margin."}
     ],
     counsel:[
@@ -31,9 +31,9 @@ campaign("flash_i", { matters: [
       {label:"Bill authority",source:"economy.headroom",bands:[{min:30000,text:"room left"},{min:10000,text:"near its limit"},{min:null,text:"little room left"}]}
     ],
     remedies:[
-      {id:"notes",target:{kind:"money",id:"underwriters",amount:"utilisation"},takes:0,
+      {id:"notes",label:"Borrow from the Underwriters",target:{kind:"money",id:"underwriters",amount:"utilisation"},takes:0,
        note:"Open a drawing on Commonwealth Reserve Notes. The Underwriters price the loan against the thermal margin."},
-      {id:"advances",target:{kind:"instrument",id:"si_2080_73"},takes:0,
+      {id:"advances",label:"Open the Reserve Bank's overdraft",target:{kind:"instrument",id:"si_2080_73"},takes:0,
        note:"Open the Ways and Means order. The House must approve the Reserve Bank's advance."}
     ],
     counsel:[],late:"reserve_low",page:"f1_reserve_shortage"
@@ -44,9 +44,9 @@ campaign("flash_i", { matters: [
     note:"The Almanac Works' air plant needs filters and catalyst. The suppliers can still send them before the stocks run out. Paying now avoids the emergency premium; manufacturing them here costs less money and takes longer.",
     figures:[{label:"Reserve",source:"scalars.solvency",bands:[{min:5000,text:"held"},{min:null,text:"low"}]}],
     remedies:[
-      {id:"ship",target:{kind:"initiative",id:"pay_works_air",tempo:0},takes:1,
+      {id:"ship",label:"Pay the suppliers now",target:{kind:"initiative",id:"pay_works_air",tempo:0},takes:1,
        note:"Open payment for the suppliers' arrears and three months ahead, at CW$1.6bn."},
-      {id:"manufacture",target:{kind:"initiative",id:"pay_works_air",tempo:1},takes:3,
+      {id:"manufacture",label:"Make the parts here",target:{kind:"initiative",id:"pay_works_air",tempo:1},takes:3,
        note:"Open Commonwealth manufacture after the survey, at CW$600m. It also uses thermal capacity."}
     ],
     counsel:[],late:"f1_air_last_chance",page:"f1_air_fails"

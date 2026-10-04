@@ -88,7 +88,7 @@ ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.
      settled:{flags:['ui_matter_done']},note:'Minister note '+n,
      figures:[{label:'Thermal test',source:'scalars.thermal_margin',bands:[{min:null,text:'test margin'}]}],
      remedies:n===0?[{id:'order',target:{kind:'instrument',id:si.id},takes:0,note:'Order remedy'},
-       {id:'initiative',target:{kind:'initiative',id:init.id,tempo:1},takes:3,note:'Initiative remedy'},
+       {id:'initiative',target:{kind:'initiative',id:init.id,tempo:1},takes:3,note:'Initiative remedy',label:'Make <parts> here'},
        {id:'bill',target:{kind:'bill',id:bill.id},takes:1,note:'Bill remedy'},
        {id:'money',target:{kind:'money',id:'underwriters',amount:3000},takes:0,note:'Money remedy'}]:
        [{id:'missing',target:{kind:'instrument',id:'missing_order'},takes:0,note:'Unavailable remedy'}],
@@ -118,6 +118,11 @@ ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.
  ok('first counsel keeps its own recommendation',first()?.querySelector('[data-counsel="0"]')?.textContent.includes('Paid advice'));
  ok('second counsel keeps its different recommendation',first()?.querySelector('[data-counsel="1"]')?.textContent.includes('Other advice'));
  ok('a counsel recommendation has one lever button',first()?.querySelectorAll('[data-matter-remedy="order"]').length===1);
+ const labeled=first()?.querySelector('[data-matter-remedy="initiative"]');
+ ok('an authored remedy label is escaped text on the correct button',labeled?.textContent==='Make <parts> here' && !labeled.querySelector('parts'));
+ const orderEntry=probe.c.instruments.find(i=>i.id===probe.si), initiativeEntry=probe.c.initiatives.find(i=>i.id===probe.init);
+ ok('an unlabeled remedy falls back to its lever name',first()?.querySelector('[data-matter-remedy="order"]')?.textContent===(orderEntry.title || orderEntry.name));
+ ok('a labeled remedy keeps its underlying lever tooltip',labeled?.getAttribute('data-tip-title')===(initiativeEntry.title || initiativeEntry.name));
  const snapshot=w.eval('Engine.save(UI.state())');
  const red=()=>[...w.document.querySelectorAll('.tab-n')].map(n=>n.closest('.tab').dataset.t+':'+n.textContent).join(',');
  const redBefore=red(), riseBefore=$('#btn-advance').textContent;

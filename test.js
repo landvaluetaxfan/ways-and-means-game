@@ -268,7 +268,7 @@ const RUN_BOUND = T.runBound(CONTENT);
     figures: [{ label: "Heat", source: "scalars.thermal_margin",
       bands: [{ min: 15, text: "adequate" }, { min: null, text: "thin" }] }],
     remedies: [
-      { id: "cool", target: { kind: "instrument", id: ALL.instruments[0].id }, takes: 0 },
+      { id: "cool", target: { kind: "instrument", id: ALL.instruments[0].id }, takes: 0, label:"Lay the order" },
       { id: "act", target: { kind: "initiative", id: ALL.initiatives[0].id, tempo: 0 },
         takes: ALL.initiatives[0].tempo[0].after },
       { id: "draw", target: { kind: "money", id: "earth", amount: "utilisation" }, takes: 0 }
@@ -324,6 +324,7 @@ const RUN_BOUND = T.runBound(CONTENT);
     ok("matter rename follows its lender", M.matters[0].remedies[2].target.id === "renamed_lender");
   } catch (e) { ok("matter reference tracking", false); console.log("    " + e.message); }
   const C = Object.assign({}, ALL, { events: ALL.events.concat([late, page]), matters: [m] });
+  ok('matter schema declares the optional remedy label', S.matter.remedyFields.includes('label'));
   const passages = require('./js/prosemap.js').collect({matters:[m]});
   ok('matter prose includes ministerial notes', passages.some(x => x.addr === 'matters/probe_matter/note'));
   ok('matter live readout sources are not editable prose', !passages.some(x => x.addr.endsWith('/source')));
@@ -361,6 +362,8 @@ const RUN_BOUND = T.runBound(CONTENT);
       ["empty due", x => x.due = {}],
       ["negative due", x => x.due.after = -1],
       ["zero grace", x => x.grace = 0],
+      ["non-text remedy label", x => x.remedies[0].label = 12],
+      ["blank remedy label", x => x.remedies[0].label = "  "],
       ["invalid money amount", x => x.remedies[2].target.amount = -10],
       ["unknown lender", x => x.remedies[2].target.id = "missing"],
       ["invalid tempo", x => x.remedies[1].target.tempo = 999],
