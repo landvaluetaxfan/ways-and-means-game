@@ -1,0 +1,96 @@
+**Lane: Claude Code, with the author.** Written 4 October 2026 from the
+author's idea, widened the same day: "doesn't have to be prose, we can rewrite
+large parts of the story like this." This folds in and replaces
+`first-player-walkthrough.md`. Start it after Codex's `sitting-polish.md` and
+`opening-playable-slice.md` Batch A land and before any human tester plays.
+
+# The story walk
+
+The author and Claude walk Flash I together in the browser Claude Code has.
+Claude plays and shows each screen; the author dictates rewrites; Claude
+applies them. The rewrites can be of **wording** or of the **story itself**:
+what happens, in what order, who says it, what a choice does, what a chain
+leads to. The walk also does the first-player walkthrough: Claude notes every
+point where a first-time player would be confused.
+
+It costs the author's Claude usage faster than most work, so it is built to
+be cheap: text, not screenshots, and committed in batches, so it can stop at
+any sitting and lose nothing.
+
+## The tool: `tools/walk.js`
+
+Claude builds it when the walk starts (a small engine-driven script, not a DOM
+scraper, so it survives interface changes). Given a route (a list of picks) and
+a sitting, it prints each screen as the player sees it, with a **source
+address** on every block:
+- the event id, speaker, and its `when` condition;
+- the body, paragraph by paragraph, numbered;
+- each choice: its label, note and result, and what it sets, queues, moves or
+  calls (its effects, in words);
+- the matters the brief shows, with their notes and remedies;
+- what leads here and where it leads (from the story map, `tools/storymap.js`).
+
+Screenshots only for layout questions.
+
+## The loop
+
+Show a screen as text. The author dictates. Claude locates the passage by its
+address, edits the content file, and shows before and after. Next screen.
+
+**The author's words win.** Dictated wording goes in verbatim. Claude checks
+proper nouns and numbers against the rosters, since dictation mangles names, and
+reads the changed passage back. If a rewrite trips lint, Claude says which rule
+and proposes the smallest fix; the author decides. Lint is never weakened.
+
+## Three sizes of change, three levels of care
+
+1. **Wording.** Apply, run lint, commit in a batch.
+2. **Wiring:** what a choice does, a timing, a callback, an order. Apply, run
+   the guards and `node tools/playtest.js --seeds 80` before and after, and
+   report the movement in a line. Keep the canon reachable
+   (`npm run guards`) unless the author says the canon is moving.
+3. **Story:** a chain, a new event, a cut, the Works' arc, a change to who is
+   who. Before applying, say in two or three lines what else it touches
+   (dependent events, guards, canon, the order of the pool) and wait for the
+   author's go. Record the decision in the log below.
+
+**Rules that do not bend:** new events go at the end of their list (the pool's
+seed is keyed on position); cut events are archived in
+`content/archive/cut-events.js`, never deleted; one concept cluster per event;
+the rosters are frozen unless the author adds to them, and then it is done
+deliberately in the content files with `INTRODUCE` updated; prose follows
+`PROSE.md`; run `npm run prose` after a hand edit. Pull before every batch,
+because Codex edits the same files.
+
+## The log
+
+`design/70-story-changes.md`, a running record: date, what changed, why, what
+it touched. It is how Codex and later sessions know why the story reads as it
+does. After each session Claude also adds the patterns in the author's edits to
+`PROSE.md`'s settled verdicts, so the next pass follows them.
+
+## Order
+
+**Sittings 1 to 16 first,** the playtest window: the opening, the carve-out,
+the Works' stranding. Combine the author's edits with the first-player pass,
+playing three routes (take the bargain, refuse it, ignore the brief) and noting
+the points of confusion in `design/69-first-player-walkthrough.md`: a table
+ranked by whether it would stop a player, sorted into Codex (interface), Claude
+(wording) and author (design).
+
+**The first large rewrite is likely the opening itself.** The built opening
+still has the old arrangement (Vijlbrief's last session, a by-election, a count
+in August). The new canon (bible §1.8, §11.1) has the PSD replace Vijlbrief in
+January, a hung House in March, the coalition deal, and the commission on 11
+April. The intro's "How she came to it", "Why you?", the briefing and "one
+session before the country votes" all want rewriting to it.
+
+**Beyond sitting 16 waits for the act skeleton:** the five acts, their forks,
+and Watkins's moves (design/58, Stage 4). Otherwise story dictated later has
+no structure to land in. Either do a short design round on the skeleton first,
+or let the walk of the opening show what the skeleton needs.
+
+## Done
+
+When the author says the window is done. Then the outputs exist: the edits, the
+design/70 log, design/69, and the new rules in `PROSE.md`. Delete this brief.
