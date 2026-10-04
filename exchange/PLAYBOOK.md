@@ -89,6 +89,16 @@ Learned from their corrections. Check new screens against these before they ship
 - **Cost surprises.** The author pays for every token. Read ranges, keep output
   short, and hand mechanical work to the cheaper lane.
 
+## Check what a worker pushed, not only what it says
+
+The first run of the exchange showed the pattern. A worker's claim commit also
+carried its content edit, and a prose line changed that the brief had excluded.
+Read `git show --stat` of every commit a worker pushes while it works: a claim
+commit holds only `exchange/` files; work lands once, after the checks, with the
+brief deleted and the claim released; and a text change the brief did not ask for
+is a finding to post, however small. Workers can be steered live with
+`SendMessage` when `ListAgents` shows them, and in the exchange when it does not.
+
 ## Deciding and asking
 
 Decide when the answer follows from a standing rule, a locked bible section or a
