@@ -16,3 +16,27 @@ Add `setup.intervalDays` (28 in the synthetic campaign) and `setup.intervals` se
 ## Verification
 
 Use a synthetic administration with a three-sitting first act, four-month recess, and three-sitting second act. Assert the dates, receipts/outgoings/interest and Bank meetings, an item queued for a day inside the gap, each report kind, course choice and answer, reshuffle opening and closing, and exact save/load mid-interval. Temporarily omit gap accrual and require this test to fail, then restore it. Compare 80-seed Flash I sweeps before and after (identical), run guards, all checks and layout. Bump save version to 38 with an ascending migration; preserve reserved 36 and 37 on rebase.
+
+## Built (Codex's interval work, finished by Claude, 4 Oct evening)
+
+Codex wrote the plan and four commits before its usage ran out; the work was rescued
+from its workspace and finished here. As built:
+- **`Engine.interval(st, C, gap)`** runs when the next sitting's date is more than
+  `setup.intervalDays` after this one, or when the theatre frame's `play.intervals[]`
+  entry says `interval: true`. A campaign with neither behaves exactly as before
+  (Flash I sets neither; the 80-seed playtest is identical).
+- **`accrueCalendar`** is the one writer for the days between two dates, used by the
+  ordinary sitting tick and by the gap; dated queue entries and undertakings inside the
+  gap resolve at their own dates.
+- **`intervalSteps`**, a registry of `{ id, run(st, C, gap) -> rows }`: the economy
+  step (endured, decayed, used, from `setup.intervals` templates) and the **fade**
+  step (leverage's `fadeLedger`, reported as "decayed" rows from `setup.intervals.fade`
+  when content has one). Rows are ordered endured, decayed, used.
+- **The course** is the interval's `choices` (event ids), asked before ordinary
+  business through `nextEvent`; **the reshuffle window** is open while `st.interval` is,
+  and waives the order-paper time and the dismissal regard.
+- `STATE_VERSION` 38 adds `interval` and `intervalCourse`; 37 is unused, reserved for
+  witnessed acts.
+- **Not built here:** Flash I's own dates, acts and interval content (Stage 4b); who
+  used the absence beyond the Bank's meetings (the rival's moves, Stage 4d).
+

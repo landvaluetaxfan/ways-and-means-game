@@ -1111,6 +1111,7 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
         periodsPerSession:2, sessionsPerParliament:1, recessDays:120, intervalDays:200,
         intervals:{ endured:"The account carries {receipts} in yearly receipts over {days} days.",
           decayed:"The reserve moved by {change}.",
+          fade:"Favours owed by {party} thinned from {before} to {after}.",
           used:"The Bank met {meetings} times during the absence." } }),
       administrations:[{id:"synthetic", play:{ acts:[{chapter:1},{chapter:2}],
         intervals:[{id:"synthetic_gap",after:1,interval:true,direction:"The House was away.",
@@ -1129,6 +1130,8 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     Engine.apply(s,C,[{queue:{date:due,effects:[{flag:"interval_queued"}],label:"A dated item landed"}},
       {undertake:{id:"interval_promise",text:"A dated undertaking",date:due,by:10}}]);
     s.debt={owed:{earth:10000}};
+    const ck=Object.keys(s.capital)[0]; s.capital[ck]=3;
+    const promisesBefore=JSON.stringify(s.undertakings.filter(u=>u.id!=="interval_promise"));
     const reserve=s.scalars.solvency, level=s.macro.level,
       meetings=(s.macro.decisions||[]).length;
     s.slots.used=s.slots.total;
@@ -1147,6 +1150,9 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     ok("the interval report includes the accrued gap, before the sitting tick",
       s.interval.rows.find(r=>r.kind==="decayed").text.includes(
         Engine.money(C,Math.abs(s.scalars.solvency-reserve))) && s.scalars.solvency!==reserve);
+    ok("the ledger thins across the interval and the report says so; claims do not fade",
+      s.capital[ck]===1 && s.interval.rows.some(r=>r.kind==="decayed" && /thinned from \+3 to \+1/.test(r.text)) &&
+      JSON.stringify(s.undertakings.filter(u=>u.id!=="interval_promise"))===promisesBefore);
     ok("the course decision is asked before ordinary sitting business",
       Engine.nextEvent(s,C).id===course.id);
     const saved=Engine.save(s), loaded=Engine.load(saved,C);

@@ -8926,9 +8926,24 @@ const Engine = (function () {
     });
   }}];
 
+  /* THE LEDGER THINS ACROSS THE GAP; CLAIMS DO NOT (design/68). The fade is
+     leverage's (`fadeLedger`); the interval only runs it and, if content has
+     a template for it (`setup.intervals.fade`), says what moved. */
+  intervalSteps.push({ id: "fade", run(st, C, gap) {
+    const rows = fadeLedger(st, C, gap.days);
+    const t = ((C.setup || {}).intervals || {}).fade;
+    const name = id => ((C.partyById || {})[id] || {}).short || id;
+    const sg = n => (n > 0 ? "+" : "") + n;
+    return t ? rows.map(r => ({ kind: "decayed",
+      text: fillFigures(t, {}, { party: name(r.party), before: sg(r.before), after: sg(r.after) }) })) : [];
+  }});
+
   function interval(st, C, gap) {
     const entry = gap.entry || {};
     const rows = intervalSteps.flatMap(step => step.run(st, C, gap) || []);
+    /* the report reads endured, then decayed, then who used the absence, whatever step wrote it */
+    const order = { endured: 0, decayed: 1, used: 2 };
+    rows.sort((x, y) => (order[x.kind] == null ? 9 : order[x.kind]) - (order[y.kind] == null ? 9 : order[y.kind]));
     st.interval = { id: entry.id || "interval_" + (entry.after || st.sitting - 1),
       from: gap.from, to: gap.to, days: gap.days, rows };
     st.intervalCourse = (entry.choices || []).slice();
