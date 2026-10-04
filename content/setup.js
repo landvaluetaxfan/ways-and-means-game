@@ -304,6 +304,17 @@ const SETUP = {
       ease:    { move: -0.5, credibility: 0.06 },
       tighten: { move: 0.5,  credibility: 0.02 }
     },
+    /* WHAT A MOVE DOES, by its direction, for the briefing's `{bankEffect}`.
+       A reading used to carry its own consequence ("which slows output and
+       makes borrowing dearer"), so it said that of a cut, and of no change at
+       all, whenever inflation was high. The consequence belongs to the move,
+       not to the situation that prompted it. Each begins with its comma, and
+       a hold says nothing. */
+    moveWords: {
+      rise: ", which slows output and makes the Treasury's borrowing dearer",
+      cut:  ", which lifts output and weakens the dollar",
+      hold: ""
+    },
     /* the record's words, with {rate}, {from}, {rule}, {date} filled */
     say: {
       raise: { wire: "RESERVE BANK RAISES CASH RATE TO {rate} PER CENT",
@@ -698,12 +709,10 @@ const SETUP = {
     inflation_high: { topic: "bank", text:
       "Inflation is {inflation}, more than two points over the {target} target, and " +
       "{core} underlying. The Bank's rule points to {ruleRate} against {rate} today: " +
-      "expect {bankMove} on {meeting}, which slows output and makes the Treasury's " +
-      "borrowing dearer." },
+      "expect {bankMove} on {meeting}{bankEffect}." },
     inflation_low: { topic: "bank", text:
       "Inflation is {inflation}, under the {target} target. The Bank's rule points to " +
-      "{ruleRate} against {rate} today, so expect {bankMove} on {meeting}, which lifts " +
-      "output and weakens the dollar." },
+      "{ruleRate} against {rate} today, so expect {bankMove} on {meeting}{bankEffect}." },
     bank_directed: { topic: "bank", text:
       "The Bank is setting the cash rate under a Treasury direction to {directed}: " +
       "{bankMove} on {meeting}, whatever its rule asks ({ruleRate}). Each meeting under " +

@@ -7227,6 +7227,9 @@ const Engine = (function () {
       const size = Math.abs(move) === 0.25 ? "a quarter-point" : Math.abs(move) === 0.5 ? "a half-point"
                  : Math.abs(move) === 0.75 ? "a three-quarter-point" : pctText(Math.abs(move)).replace("%", "-point");
       F.bankMove = move > 0 ? size + " rise" : move < 0 ? size + " cut" : "no change";
+      /* what that move does is content's (`setup.macro.moveWords`), chosen by
+         its direction, so a reading never describes a rise when the Bank cuts */
+      F.bankEffect = (M.moveWords || {})[move > 0 ? "rise" : move < 0 ? "cut" : "hold"] || "";
       F.meeting = m.nextMeeting ? new Date(m.nextMeeting + "T00:00:00Z")
         .toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: "UTC" }) : "its next meeting";
       F.directed = m.directed || "";

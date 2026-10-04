@@ -3026,6 +3026,22 @@ console.log("\nBORROWING FROM THE PEOPLE YOU ARE QUARRELLING WITH:");
     hm.scalars.thermal_margin = 4;
     ok("the coupon steps up as the thermal margin narrows",
        Engine.debtRate(hm, CONTENT, "underwriters") > cp0, cp0 + " -> " + Engine.debtRate(hm, CONTENT, "underwriters"));
+    /* THE BRIEFING'S CONSEQUENCE BELONGS TO THE MOVE, not to the inflation that
+       prompted it: with inflation high the reading used to say "which slows
+       output" of a cut and of no change at all. */
+    {
+      const bk = Engine.newGame(CONTENT, 7);
+      bk.macro.inflation = 5.6; bk.macro.expected = 5.0; bk.macro.directed = null;
+      const rule = Engine.taylorRate(bk, CONTENT);
+      const say = rate => { bk.macro.rate = rate;
+        const r = Engine.outlook(bk, CONTENT).find(x => x.key === "inflation_high");
+        return r ? r.text : ""; };
+      const hold = say(Math.round(rule / 0.25) * 0.25), cut = say(rule + 1), rise = say(rule - 1);
+      ok("with inflation high and the Bank at its rule, no change is not said to slow output",
+         /no change/.test(hold) && !/slows output/.test(hold) && !/, which/.test(hold), hold);
+      ok("a cut is not said to slow output, and a rise is",
+         /cut/.test(cut) && !/slows output/.test(cut) && /rise/.test(rise) && /slows output/.test(rise), cut + " | " + rise);
+    }
     ok("and no notes are placed into a cascade",
        Engine.canBorrow(hm, CONTENT, L.underwriters.utilisation, "underwriters").ok === false);
 

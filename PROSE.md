@@ -279,7 +279,7 @@ reading with no topic.
 | `{pricesVs}` `{thermal}` `{substrate}` `{volume}` `{transit}` | the four prices against the opening, and each index |
 | `{volumeYield}` `{volumeForgone}` | the volume levy's yield, and what the standard rate would add |
 | `{inflation}` `{core}` `{expected}` `{target}` | headline, underlying, expected, and the remit |
-| `{rate}` `{ruleRate}` `{bankMove}` `{meeting}` | the cash rate, what the rule asks, the move to expect, the meeting's date |
+| `{rate}` `{ruleRate}` `{bankMove}` `{bankEffect}` `{meeting}` | the cash rate, what the rule asks, the move to expect, what that move does (content's `macro.moveWords`, with its comma, empty for a hold), the meeting's date |
 | `{directed}` `{credibility}` | a direction in force, and the Bank's credibility |
 | `{fx}` `{fxOpen}` `{fxChange}` `{fxFirst}` `{fxFirstYear}` | the dollar, where it opened, the change since, and the record's first year |
 | `{gap}` `{gapWords}` `{growth}` | output against capacity, and growth |

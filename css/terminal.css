@@ -300,6 +300,12 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #gov-main .gov-work-group{margin:4px 0 9px;padding:0 6px;}
 #gov-main .gov-work-group > h4{margin:0 -6px 3px;padding:4px 6px;}
 #gov-main .ini-h{padding:7px 0;width:100%;}
+#gov-cabinet .ini-h{padding:7px 8px 7px 11px;margin-left:-11px;width:calc(100% + 11px);}
+#gov-cabinet .one-kind .gov-work-type{display:none;}
+#gov-cabinet h4[data-kind]::after{content:" \00b7  " attr(data-kind);text-transform:none;letter-spacing:0;}
+/* The workspace title already names the post and its holder; the card's own
+   title stays in the page for focus and for a screen reader. */
+#gov-main .gov-person h3{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0;}
 #gov-main .ini-h i{font-size:10px;}
 .gov-work-state{display:block;font-size:10px;color:var(--ink-soft);}
 .gov-running{width:100%;text-align:left;background:transparent;color:var(--ink);border:0;}
@@ -497,7 +503,16 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #s-econ .money-call .btn{margin-top:5px;min-width:96px;}
 #s-econ .money-call .note{margin:8px 0;}
 #s-econ .money-call .money-preset{line-height:1.5;margin:8px 0;}
-#s-econ .money-call input{font-size:clamp(15px,.85vw,18px);padding:6px;width:min(100%,180px);}
+#s-econ .money-call input{width:min(100%,180px);}
+/* The interface's own field: the field colour, square, the data face, and no
+   native spinner. A browser's default is a white rounded box. */
+#s-econ .money-call input,.money-preset input{background:var(--field);color:var(--ink);
+  border:1px solid var(--chrome-dk);border-radius:0;box-sizing:border-box;
+  font:clamp(13px,.75vw,15px)/1.2 var(--f-data);padding:6px 7px;text-align:right;
+  appearance:textfield;-moz-appearance:textfield;}
+#s-econ .money-call input::-webkit-inner-spin-button,#s-econ .money-call input::-webkit-outer-spin-button,
+.money-preset input::-webkit-inner-spin-button,.money-preset input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+#s-econ .money-call input:focus-visible,.money-preset input:focus-visible{outline:2px dotted var(--gold);outline-offset:1px;}
 #s-econ .money-call .btn{font-size:clamp(12px,.65vw,15px);padding:6px 12px;}
 #s-econ .chartwrap{display:block;height:auto;}
 #s-econ .chartnow{margin:4px 0 10px;}
@@ -1902,6 +1917,14 @@ button.lnk:focus-visible{outline:1px dotted currentColor;outline-offset:1px;}
 #party-current .pval,#party-lead .pval{font-size:12.5px;}
 #rel-detail .pval.warn,#party-current .pval.warn,#party-lead .pval.warn{color:var(--alert);}
 #party-current .plead{margin:0 0 8px;font-size:12.5px;line-height:1.45;}
+/* The detail panels read as a page of sections. A single ruled column ran a
+   row's label and its value a thousand pixels apart on a wide screen. */
+#party-current,#rel-detail{column-width:330px;column-gap:44px;}
+#party-current > *,#rel-detail > *{break-inside:avoid;}
+#party-current > div,#rel-detail > section{margin:0 0 16px;}
+#party-current > .plead,#rel-detail > .plead{column-span:all;max-width:80ch;margin:0 0 14px;}
+#rel-detail > .pcx{column-span:all;margin-top:0;}
+#party-current .pval.say,#rel-detail .pval.say{font-family:var(--f-ui);font-size:12px;line-height:1.25;}
 #party-lead .pcx{margin-top:10px;}
 button.pown{background:none;cursor:pointer;font-family:inherit;}
 button.pown:hover{background:var(--field);}

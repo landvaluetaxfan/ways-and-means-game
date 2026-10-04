@@ -1781,7 +1781,7 @@ const UI = (function () {
         .sort((x, y) => Math.abs(y.d) - Math.abs(x.d))[0];
       const words = gap && AXIS_DRIFT[gap.axis];
       stands += prow("The party line", gap && words && Math.abs(gap.d) >= 0.25
-        ? "It " + words[gap.d < 0 ? 0 : 1] + " than the party." : "", say, a < 0.9 ? "warn" : "");
+        ? "It " + words[gap.d < 0 ? 0 : 1] + " than the party." : "", say, "say" + (a < 0.9 ? " warn" : ""));
     }
 
     /* 3. ITS MEMBERS: the named ones, what each holds now, where each
@@ -1789,7 +1789,7 @@ const UI = (function () {
        seats are members the cast does not name. */
     const named = namedIn(sel.id);
     const rest = Math.max(0, (seats || 0) - named.length);
-    const members = `<div class="current-members"><div class="rulehead">Its members <em>${named.length} named` +
+    const members = `<div class="current-members"><div class="rulehead">Its members <em>where they stand with you, 0 to 100` +
       (rest ? " · " + rest + " more" : "") + `</em></div>` +
       (named.length ? named.map(ch => {
         const rel = (st.characters[ch.id] || {}).relationship;
@@ -1807,7 +1807,7 @@ const UI = (function () {
     /* 4. ON THE ORDER PAPER: how many of its members the House would count
        with the party on each live measure, before the whip. */
     const votes = currentOnMeasures(sel.id);
-    const onPaper = `<div id="current-votes"><div class="rulehead">On the order paper <em>before the whip</em></div>` +
+    const onPaper = `<div id="current-votes"><div class="rulehead">On the order paper</div>` +
       (votes.length ? votes.map(v => {
         const val = v.seats == null
           ? (v.line === "against" ? "the party votes against it" : v.line === "abstain"
@@ -1826,8 +1826,8 @@ const UI = (function () {
     const leader = (sel.leader && named.find(ch => ch.id === sel.leader)) ||
       named.find(ch => liveOffice(ch.id)) || named[0];
     const who = `<div id="current-leader"><div class="rulehead">Who leads it</div>` +
-      (leader ? prow(sel.leader ? "Leader" : "Senior member", esc(liveOffice(leader.id) || "backbench"),
-        `<a class="cx-link" tabindex="0" data-go="person_${esc(leader.id)}">${esc(bare(leader.name))}</a>`)
+      (leader ? prow(`<a class="cx-link" tabindex="0" data-go="person_${esc(leader.id)}">${esc(bare(leader.name))}</a>`,
+        (sel.leader ? "Leader" : "Senior member") + " \u00b7 " + esc(liveOffice(leader.id) || "backbench"), "")
         : `<div class="note">No member of this current is named in the cast.</div>`) + `</div>`;
     const favours = votes.filter(v => v.seats != null
       ? v.aye > v.seats / 2
@@ -1835,14 +1835,12 @@ const UI = (function () {
     const wants = `<div id="current-wants"><div class="rulehead">What it wants</div>` +
       (sel.asks ? `<div class="note">${esc(sel.asks)}</div>` : "") +
       (favours.length ? favours.map(v => `<button class="dk goto" data-goto="cham"` +
-        ` data-open="bill:${esc(v.b.id)}"><b>${esc(v.b.title)}</b>` +
-        `<i>its members would carry this measure</i></button>`).join("")
+        ` data-open="bill:${esc(v.b.id)}"><b>${esc(v.b.title)}</b></button>`).join("")
         : `<div class="note">No measure before the House has its support.</div>`) + `</div>`;
-    /* Undertakings name people, not currents; the schema offers no direct
-       attribution. This stays empty until an author can name the current. */
-    const promises = `<div id="current-promises"><div class="rulehead">What you have promised</div></div>`;
+    /* Undertakings name people, not currents, so a current has no promises
+       section until the schema can attribute one to it. */
     stands += `</div>`;
-    det.innerHTML = lead + who + wants + promises + stands + onPaper + members;
+    det.innerHTML = lead + who + wants + stands + onPaper + members;
     det.querySelectorAll("[data-goto]").forEach(b0 =>
       b0.addEventListener("click", () => openTarget(b0)));
   }
@@ -2153,11 +2151,11 @@ const UI = (function () {
     /* 1. THE TERMS: which relation this is, in the engine's own prices,
        what the ledger says, how far their discipline has left to fall, and
        who you would be talking to. */
-    const terms =
-      `<div class="rulehead">The terms <em>${REL[rel].head}</em></div>` +
-      `<div class="note">${REL[rel].say}</div>` +
+    const terms = `<section class="psec">` +
+      `<div class="rulehead">The terms</div>` +
       (leader
-        ? prow("Their leader", esc(officeOfMember(leader.id)), esc(bareName(leader.name))) +
+        ? prow(`<a class="cx-link" tabindex="0" data-go="person_${esc(leader.id)}">${esc(bareName(leader.name))}</a>`,
+               "Their leader \u00b7 " + esc(officeOfMember(leader.id)), "") +
           (leaderRel != null
             ? prow("Where you stand with " + esc(bareName(leader.name).split(" ").pop()), "",
                    String(leaderRel), leaderRel < 30 ? "warn" : "")
@@ -2178,7 +2176,7 @@ const UI = (function () {
         : prow("If they walked", `${seats} seat${seats === 1 ? "" : "s"} out`,
                `${conf - seats} against ${maj}` +
                (conf - seats < maj ? " \u00b7 the government falls" : " \u00b7 it holds"),
-               conf - seats < maj ? "warn" : ""));
+               "say" + (conf - seats < maj ? " warn" : ""))) + `</section>`;
 
     /* 2. WHAT THEY WANT FROM YOU. A party's own bills are the trade this
        parliament runs on: every stage the government gives one order-paper
@@ -2187,8 +2185,7 @@ const UI = (function () {
        opens the bill where it is carried. */
     const theirs = (C.bills || []).filter(b => b.owner === sel.id).map(b => ({ b, bs: st.bills[b.id] }))
       .filter(x => x.bs);
-    const wants = `<div class="rulehead">What they want <em>${theirs.length
-        ? theirs.length + " measure" + (theirs.length === 1 ? "" : "s") + " of their own" : "nothing on the order paper"}</em></div>` +
+    const wants = `<section class="psec"><div class="rulehead">What they want</div>` +
       (theirs.length ? theirs.map(({ b, bs }) => {
         const state = billState(bs);
         const worth = rel === "opp" ? "" : " \u00b7 +" + (b.priority ? 3 : 2) + " a stage you grant it";
@@ -2201,7 +2198,7 @@ const UI = (function () {
           `${done ? "" : worth}</i></button>`;
       }).join("")
       : `<div class="note">${esc(sel.short || sel.name)} has no measure of its own before ` +
-        `the House, so there is nothing of theirs to give time to.</div>`);
+        `the House, so there is nothing of theirs to give time to.</div>`) + `</section>`;
 
     /* 3. WHAT YOU HAVE PROMISED THEM. An undertaking is owed to a person;
        the ones owed to this party's members are what this relationship
@@ -2209,8 +2206,7 @@ const UI = (function () {
     const partyOf = id => ((C.characterById || {})[id] || {}).party;
     const owed = (st.undertakings || []).filter(u => partyOf(u.owed_to) === sel.id);
     const open = owed.filter(u => u.state === "open");
-    const promises = `<div class="rulehead">What you have promised <em>${open.length
-        ? open.length + " outstanding" : owed.length ? "nothing outstanding" : "nothing"}</em></div>` +
+    const promises = `<section class="psec"><div class="rulehead">What you have promised</div>` +
       (owed.length ? owed.map(u => {
         if (u.state !== "open")
           return `<div class="prow"><div class="plab">${esc(u.text)}</div>` +
@@ -2223,7 +2219,7 @@ const UI = (function () {
           `<i>to ${esc(bareName(((C.characterById || {})[u.owed_to] || {}).name))} \u00b7 ` +
           `${esc(due)} \u00b7 ${esc(w0.how)}</i></button>`;
       }).join("")
-      : `<div class="note">The government has given ${esc(sel.short || sel.name)} no undertaking.</div>`);
+      : `<div class="note">The government has given ${esc(sel.short || sel.name)} no undertaking.</div>`) + `</section>`;
 
     /* 4. WHERE THEY PART FROM YOU. Distance from your own party answers the
        wrong question on its own: the Congregational Democratic Alliance
@@ -2245,22 +2241,22 @@ const UI = (function () {
                billState(sb) === "live" && b.axes && Object.keys(b.axes).length;
       }).map(b => ({ b: b, a: Engine.axisAgreement(sel.axes, b.axes) }))
         .filter(x => Math.abs(x.a) > 0.15).sort((x, y) => x.a - y.a);
-      parts = `<div class="rulehead">Where they part from you</div>` +
+      parts = `<section class="psec"><div class="rulehead">Where they part from you</div>` +
         prow("Distance from you", worst && worst.agree < -0.05
-               ? "furthest apart on " + esc(worst.axis) : "", say, a < -0.25 ? "warn" : "") +
+               ? "furthest apart on " + esc(worst.axis) : "", say, "say" + (a < -0.25 ? " warn" : "")) +
         live.map(x => x.a < 0
-          ? prow("Will not carry", esc(x.b.title), x.a <= -0.6 ? "flatly" : "against", "warn")
-          : prow("With you on", esc(x.b.title), x.a >= 0.6 ? "firmly" : "broadly")).join("");
+          ? prow(esc(x.b.title), "will not carry it", x.a <= -0.6 ? "flatly" : "against", "say warn")
+          : prow(esc(x.b.title), "with you on it", x.a >= 0.6 ? "firmly" : "broadly", "say")).join("") + `</section>`;
     } else {
-      parts = `<div class="rulehead">Where they part from you</div>` +
+      parts = `<section class="psec"><div class="rulehead">Where they part from you</div>` +
         `<div class="note">${esc(sel.name)} declares no party line, so there is ` +
         `nothing to part from. Each member votes on their own position, and the ` +
-        `Chamber's composition table counts them one by one.</div>`;
+        `Chamber's composition table counts them one by one.</div></section>`;
     }
 
     const det = $("#rel-detail");
     if (det) {
-      det.innerHTML = terms + wants + promises + parts +
+      det.innerHTML = `<div class="note plead">${REL[rel].say}</div>` + terms + wants + promises + parts +
         `<div class="note pcx">Who they are \u2014 their leader, members and ` +
         `organisation \u2014 is in the <a class="cx-link" tabindex="0" data-go="${esc(sel.id)}">` +
         `Concordance</a>.</div>`;
@@ -2329,8 +2325,8 @@ const UI = (function () {
     const person = ch => `<a class="cx-link" tabindex="0" data-go="person_${esc(ch.id)}">${esc(bare(ch.name))}</a>`;
     const shadows = (C.characters || []).filter(ch => ch.party === leader.party && ch.shadow && alive(ch));
     el.innerHTML = `<div class="prow"><div class="plab">${person(leader)}` +
-      `<em>${esc(party.name || party.short || leader.party)}</em></div>` +
-      `<div class="pval"><span data-opposition-seats>${Engine.partyTotal(st, leader.party)}</span> seats</div></div>` +
+      `<em>${esc(party.name || party.short || leader.party)} \u00b7 ` +
+      `<span data-opposition-seats>${Engine.partyTotal(st, leader.party)}</span> seats</em></div></div>` +
       `<div class="rulehead">Shadow cabinet</div>` + shadows.map(ch => {
         const post = (C.cabinet || []).find(p => p.id === ch.shadow);
         return `<div class="prow" data-person="${esc(ch.id)}" data-shadow="${esc(ch.shadow)}">` +
@@ -2695,6 +2691,12 @@ const UI = (function () {
         const section = card.querySelector('[data-gov-section="' + kind + '"]');
         const count = section.querySelectorAll(selector).length;
         section.hidden = !count;
+        const kinds = [...new Set([...section.querySelectorAll(".gov-work-type")]
+          .map(n => n.textContent.replace(/^[^A-Za-z]+/, "")))];
+        const one = count > 1 && kinds.length === 1 ? kinds[0].toLowerCase() + "s" : "";
+        section.classList.toggle("one-kind", !!one);
+        const h = section.querySelector("h4");
+        if (h) { if (one) h.dataset.kind = one; else delete h.dataset.kind; }
         if (count) counts.push(count + " " + label + (kind === "running" || count === 1 ? "" : "s"));
       });
       card.querySelector(".gov-summary-counts").textContent = counts.join(" · ");
@@ -3395,7 +3397,7 @@ const UI = (function () {
             ? `<div class="rulehead" data-chapter-mark>${esc(x.text)}</div>`
             : `<p><b${x.kind === "Decision" ? ` data-tip="log"` : ""}>${x.kind}.</b> ${x.text}</p>`).join("") + `</div>`).join("") +
           `<div class="note">Recent news and decisions. The complete run is in the playtest transcript in Options.</div>`
-      : `<div class="pbody"><div class="note">Nothing has happened yet.</div></div>`;
+      : `<div class="pbody"><div class="note">The wire and the record fill as the sittings pass.</div></div>`;
   }
 
   /* THE FOUR AXES, and the words for them. A bill and a party are both
@@ -3762,7 +3764,7 @@ const UI = (function () {
             : chk.reason) + `>Move</button>`) +
         `</div>`;
     }).join("");
-    return `<div class="rulehead">Amendments <em>moved at committee</em></div>` +
+    return `<div class="rulehead">Amendments</div>` +
       (chk.ok ? "" : `<div class="note">${esc(chk.reason)}.</div>`) + rows;
   }
 
@@ -5443,11 +5445,11 @@ const UI = (function () {
      --------------------------------------------------------------- */
   let moneyCall = null;             /* UI-only lender/amount/context preset */
 
-  function slotPips(used, total, need) {
+  function slotPips(used, total, need, label) {
     let out = "";
     for (let i = 0; i < total; i++)
       out += `<s class="${i < used ? "spent" : i < used + (need || 0) ? "want" : ""}"></s>`;
-    return `<span class="pips">${out}</span>`;
+    return `<span class="pips"${label ? ` role="img" aria-label="${esc(label)}"` : ""}>${out}</span>`;
   }
 
   function initHTML(postId) {
@@ -5466,8 +5468,7 @@ const UI = (function () {
           <b>${esc(i.title)}</b>
           <span class="gov-work-type">&#9655; Initiative</span>
           <i>${i.cost === 0 ? "no order-paper time"
-               : slotPips(st.slots.used, st.slots.total, i.cost) +
-                 " " + i.cost + " slot" + (i.cost === 1 ? "" : "s")}</i>
+               : slotPips(st.slots.used, st.slots.total, i.cost, i.cost + " slot" + (i.cost === 1 ? "" : "s"))}</i>
           ${!i.ok ? `<span class="note">${esc(i.reason)}</span>` : ""}
         </button>`;
       if (!open) return `<div class="ini">${head}</div>`;
@@ -5513,10 +5514,10 @@ const UI = (function () {
     drawGovWorkspace();
     drawGovInspector();
     govWorkKeys();
-    const hdr = $("#gov-init-hdr");
-    if (hdr) hdr.textContent = (st.slots.total - st.slots.used) + " of " +
-                               st.slots.total + " slots left this period";
+    /* The strip says it with marks; the words are for a screen reader only. */
     $("#gov-slot-strip").innerHTML = slotPips(st.slots.used, st.slots.total);
+    $("#gov-slot-strip").setAttribute("aria-label",
+      (st.slots.total - st.slots.used) + " of " + st.slots.total + " slots left this period");
     el.querySelectorAll("[data-ini]").forEach(b =>
       b.addEventListener("click", () => {
         setGovWorkKey("initiative:" + b.dataset.ini); Focus.seed("gov-utilities", null);
@@ -5755,7 +5756,7 @@ const UI = (function () {
         }).join("")}</div>` : "") +
         `<button class="btn tiny" id="matter-note-${esc(m.id)}" data-note-matter="${esc(m.id)}"` +
         tipAttr("Set aside", "Remove this advice from the brief without stopping its deadline.") + `>Set aside</button></section>`;
-    }).join("") : `<div class="note">No minister has raised a matter for the brief.</div>`;
+    }).join("") : `<div class="note">Ministers raise a matter here before it becomes a decision. None has yet.</div>`;
     el.querySelectorAll("[data-matter-remedy]").forEach(b => b.addEventListener("click", () => {
       const m = Engine.matters(st,C).find(m => m.id === b.dataset.matterId);
       const r = m && m.remedies.find(r => r.id === b.dataset.matterRemedy);
@@ -5780,10 +5781,6 @@ const UI = (function () {
     const el = $("#sit-today"); if (!el) return;
     const t = sittingToday();
     el.innerHTML = todayHTML(t);
-    const sum = $("#today-sum");
-    if (sum) sum.textContent = t.items.length
-      ? t.items.length + (t.items.length === 1 ? " thing asked" : " things asked")
-      : "nothing asked";
     el.querySelectorAll("[data-goto]").forEach(b =>
       b.addEventListener("click", () => openTarget(b)));
     /* THE TAB STRIP CARRIES THE SAME TRUTH. A tab with something asked of
@@ -6902,8 +6899,8 @@ const UI = (function () {
       dk.innerHTML = docketHTML();
       const polling = st.dissolved && !Engine.counted(st);
       const h = $("#dk-head"), sub = $("#dk-sub");
-      if (h) h.textContent = polling ? "The polls" : "Before the House";
-      if (sub) sub.textContent = polling ? "the count, on today's standing" : "the docket";
+      if (h) h.textContent = polling ? "The polls" : "Coming up";
+      if (sub) sub.textContent = polling ? "the count, on today's standing" : "";
       dk.querySelectorAll("[data-goto]").forEach(b =>
         b.addEventListener("click", () => openTarget(b)));
     }
@@ -7564,10 +7561,9 @@ const UI = (function () {
 
   /* One table, drawn from whichever state the House is in. */
   function drawBenchTable() {
-    const el = $("#comp-table"), hdr = $("#comp-hdr");
+    const el = $("#comp-table");
     if (!el) return;
     const id = chamberBill();
-    if (hdr) hdr.textContent = id ? "by tier, and how they are expected to go" : "by tier";
     el.innerHTML = benchTableHTML(id ? forecast(id) : null);
     /* A player action, so it may make a sound. Clicking the open party
        again closes it.
@@ -7644,9 +7640,9 @@ const UI = (function () {
     const grantRefusal = id => left + Engine.reservedFor(st, id) < 1
       ? "no order-paper time left this sitting period"
       : gtoday >= gcap ? "the House has taken " + gcap + " measures today" : null;
-    $("#gov-slots-hdr").textContent = left + " of " + st.slots.total + " left this period" +
-      (resTotal ? " + " + resTotal + " reserved" : "") +
-      (gtoday ? " · " + gtoday + " of " + gcap + " today" : "");
+    /* The bar shows what is spent; the tail says only what it cannot. */
+    $("#gov-slots-hdr").textContent = [resTotal ? resTotal + " reserved" : "",
+      gtoday ? gtoday + " of " + gcap + " measures today" : ""].filter(Boolean).join(" \u00b7 ");
     $("#cham-time").innerHTML = `<div class="slotbar">${Array.from({length: st.slots.total}, (_, i) =>
       `<i class="${i < st.slots.used ? "spent" : ""}"></i>`).join("")}${
       Array.from({length: resTotal}, () => `<i class="res"></i>`).join("")}</div>`;

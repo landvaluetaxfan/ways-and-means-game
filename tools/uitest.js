@@ -920,9 +920,9 @@ try {
   ok("the Party tab lists your own currents and no one else's",
       crow.length === mine.length && crow.every(r => mine.some(c => c.id === r.dataset.current)),
       crow.length + " rows for " + mine.length + " currents");
-  ok("a current has a leader, wants, promises, differences and votes in one reading",
-     ["current-leader", "current-wants", "current-promises", "current-parts", "current-votes"]
-       .every(id => !!w.document.getElementById(id)));
+  ok("a current has a leader, wants, differences and votes in one reading, and no empty promises section",
+     ["current-leader", "current-wants", "current-parts", "current-votes"]
+       .every(id => !!w.document.getElementById(id)) && !w.document.getElementById("current-promises"));
   {
     const f = w.eval("Engine.forecast(UI.state(), UI.content())");
     const tracker = w.document.querySelector("#party-country");

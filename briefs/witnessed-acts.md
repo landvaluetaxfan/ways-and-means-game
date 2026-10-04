@@ -38,7 +38,10 @@ Do, and keep every id and data attribute (`[data-money-amount]`, `[data-draw]`,
    `limit` minus drawn) and a **Max** button that fills it.
 3. Do not change the unit the handler works in (millions). Typing in billions is
    a later batch with its own review.
-4. Tests: "60,000" and "60bn" parse to 60000; "6o" is refused; Max fills the
+4. The field's look is done (4 Oct: the field colour, square, the data face, no
+   spinner; `css/terminal.css`, `.money-call input`). Keep it when the type
+   changes, and make Max a `.btn`.
+5. Tests: "60,000" and "60bn" parse to 60000; "6o" is refused; Max fills the
    room; 600000 keeps Draw disabled.
 
 New player-facing text here is only "Max" and "left". Name it in the commit.
