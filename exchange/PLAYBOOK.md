@@ -99,6 +99,22 @@ brief deleted and the claim released; and a text change the brief did not ask fo
 is a finding to post, however small. Workers can be steered live with
 `SendMessage` when `ListAgents` shows them, and in the exchange when it does not.
 
+## "Landed" means on origin/main
+
+The first parallel run showed three more things.
+- **A local commit is not landed.** An orchestrator reported a worker's interval work
+  as "landed on main"; it was a commit in the worker's own workspace and was not on
+  GitHub at all. Before you say a thing has landed, check `git ls-remote origin main`
+  or `git log origin/main`, not the worker's tree, and never rely on a status label.
+- **An answer in the exchange does not wake a paused worker.** The exchange is
+  asynchronous; a worker that posted a question and ended its turn waits until
+  someone tells it. When you answer, also `SendMessage` the worker the answer (or
+  tell the person running it). Expect a task that reads "building" in the app to be
+  idle: the label does not distinguish working from waiting.
+- **A prompt is not a shell string.** A backtick inside a double-quoted shell
+  argument runs as a command and corrupts the prompt. Pass prompts through single
+  quotes or a file.
+
 ## Deciding and asking
 
 Decide when the answer follows from a standing rule, a locked bible section or a

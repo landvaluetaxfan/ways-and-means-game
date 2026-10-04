@@ -13,7 +13,10 @@ not in a chat.
    the brief is stale: delete it and say so.
 3. Do the task, keeping to the files the brief names. If it turns out to
    need something the brief did not foresee (a new engine verb, new canon,
-   player-facing prose), stop and write the question into the brief.
+   player-facing prose), write the question into the brief and post it to the
+   exchange, then **carry on with any part that does not depend on the answer**.
+   If nothing is left, end your turn with one line saying which message you wait
+   on. Nothing wakes you when it is answered: whoever runs you must be told.
 4. `npm run check` must pass. Where the brief says so, run
    `node tools/playtest.js --seeds 80` before and after, and put both results
    in the commit message.
