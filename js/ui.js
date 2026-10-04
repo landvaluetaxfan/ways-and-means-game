@@ -5674,10 +5674,12 @@ const UI = (function () {
     }
   }
 
-  function todayHTML() {
-    const t = Engine.today(st, C, !!currentEvent || !!Engine.nextEvent(
+  function sittingToday() {
+    return Engine.today(st, C, !!currentEvent || !!Engine.nextEvent(
       /* on a COPY: nextEvent takes the queue apart as it reads it */
       JSON.parse(Engine.save(st)), C));
+  }
+  function todayHTML(t) {
     if (!t.items.length)
       return `<div class="note">Nothing is asked of you today. The House may rise.</div>`;
     return t.items.map(i => {
@@ -5685,7 +5687,7 @@ const UI = (function () {
         : i.away < 0 ? Math.abs(i.away) + " sittings late"
         : i.away === 0 ? "today"
         : i.away === 1 ? "next sitting" : "in " + i.away + " sittings";
-      return `<button class="tdo ${i.when}${i.required ? " req" : ""}" data-goto="${i.tab}" data-open="${esc(i.focus || "")}">
+      return `<button class="tdo ${i.when}${i.required ? " req" : ""}" data-obligation="${esc(i.kind)}" data-obligation-id="${esc(i.id || "")}" data-goto="${i.tab}" data-open="${esc(i.focus || "")}">
         <b>${esc(i.text)}</b>
         <i>${esc(TABNAME[i.tab] || i.tab)}${away ? " \u00b7 " + esc(away) : ""}${
           i.how ? " \u00b7 " + esc(i.how) : ""}</i>
@@ -5773,9 +5775,8 @@ const UI = (function () {
   function drawToday() {
     drawMatters();
     const el = $("#sit-today"); if (!el) return;
-    const t = Engine.today(st, C, !!currentEvent || !!Engine.nextEvent(
-      JSON.parse(Engine.save(st)), C));
-    el.innerHTML = todayHTML();
+    const t = sittingToday();
+    el.innerHTML = todayHTML(t);
     const sum = $("#today-sum");
     if (sum) sum.textContent = t.items.length
       ? t.items.length + (t.items.length === 1 ? " thing asked" : " things asked")
@@ -6100,15 +6101,19 @@ const UI = (function () {
 
   function docketHTML() {
     if (st.dissolved && !Engine.counted(st)) return pollsHTML();
+    const today = sittingToday();
+    const listed = (kind, focus, id) => today.items.some(i => i.kind === kind &&
+      (id != null ? i.id === id : focus == null || i.focus === focus));
     const owed = Engine.outstanding(st);
     const bill = (C.bills || []).find(b => st.bills[b.id] && !st.bills[b.id].dead &&
       st.bills[b.id].stage !== "assented");
     const rows = [];
-    if (bill) rows.push(`<div class="dk bill goto" data-goto="cham"><b>${esc(bill.title)}</b>
+    if (bill && !today.items.some(i => i.focus === "bill:" + bill.id)) rows.push(`<div class="dk bill goto" data-goto="cham"><b>${esc(bill.title)}</b>
       <i>${esc(String(st.bills[bill.id].stage).replace(/_/g, " "))} · Chamber — give it time on the order paper</i></div>`);
     owed.forEach(u => {
       const due = u.by - st.sitting;
       const w = Engine.undertakingWhere(C, u);
+      if (listed("owed", w.focus, u.id)) return;
       rows.push(`<div class="dk owed goto${due <= 1 ? " late" : ""}" data-goto="${w.tab}" data-open="${esc(w.focus || "")}"><b>${esc(u.text)}</b>
         <i>${due <= 0 ? "due this sitting" : "by sitting " + u.by}${
           u.owed_to ? " · " + esc(partyName(u.owed_to)) : ""} · ${esc(w.how)}</i></div>`);
@@ -6117,6 +6122,7 @@ const UI = (function () {
     (C.bills || []).forEach(b => {
       const bs = bsOf(b.id);
       if (!bs || bs.dead || bs.dividesOn == null) return;
+      if (listed("division", "bill:" + b.id)) return;
       const away = bs.dividesOn - st.sitting;
       rows.push(`<div class="dk div goto${away <= 0 ? " late" : ""}" data-goto="cham">
         <b>Division: ${esc(b.title)}</b>
@@ -6125,7 +6131,8 @@ const UI = (function () {
     });
     (C.instruments || []).forEach(si => {
       const x = st.instruments[si.id];
-      if (x && x.inForce && x.prayerCloses != null && x.prayerCloses > st.sitting)
+      if (x && x.inForce && x.prayerCloses != null && x.prayerCloses > st.sitting &&
+          !listed("prayer", "si:" + si.id))
         rows.push(`<div class="dk pray goto" data-goto="gov"><b>${esc(si.number)}</b>
           <i>prayable for ${x.prayerCloses - st.sitting} more · Papers</i></div>`);
     });
@@ -6134,6 +6141,7 @@ const UI = (function () {
        would never learn there was one — and the docket is where this
        game says what is outstanding. */
     Engine.vacancies(st, C).forEach(pid => {
+      if (listed("vacancy", "post:" + pid, pid)) return;
       const post = (C.cabinet || []).find(p => p.id === pid);
       /* `.post`, not `.owed`. An undertaking is a promise the government
          made; a vacancy is a hole in it. They look alike and they are not
@@ -6146,7 +6154,7 @@ const UI = (function () {
     /* THE SESSION'S END IS ALWAYS ON THE PAPER. It is the cheapest
        possible source of pressure and it needs no mechanic of its own:
        everything above it has to happen before it. */
-    if (st.risesAt != null) {
+    if (st.risesAt != null && !listed("rises")) {
       const left = st.risesAt - st.sitting + 1;
       rows.push(`<div class="dk rises${left <= 3 ? " late" : ""}">
         <b>${Engine.lastPeriod(st, C) ? "The House rises" : "The House rises for the recess"}</b>` +

@@ -1517,8 +1517,9 @@ try {
       by:2, discharge:{ flag:"probe_done" } }}]);
     UI.redraw();
   })()`);
-  const dk = w.document.querySelectorAll("#sit-docket .dk.owed");
-  ok("an undertaking appears on the docket", dk.length === 1, dk.length + " items");
+  const dk = w.document.querySelectorAll('#sit-today [data-obligation="owed"][data-obligation-id="probe_u"]');
+  ok("a due undertaking appears once in Owed", dk.length === 1 &&
+     w.document.querySelectorAll("#sit-docket .dk.owed").length === 0, dk.length + " items");
 
   ok("nothing on the docket is a control",
      w.document.querySelectorAll("#sit-docket button,#sit-docket a,#sit-docket input").length === 0);
@@ -1541,8 +1542,8 @@ try {
 
   /* keeping it, by the act itself */
   w.eval('Engine.apply(UI.state(), CONTENT, [{flag:"probe_done"}]); Engine.settle(UI.state(), CONTENT); UI.redraw();');
-  ok("doing the thing takes it off the docket",
-     w.document.querySelectorAll("#sit-docket .dk.owed").length === 0);
+  ok("doing the thing removes its obligation from both groups",
+     w.document.querySelectorAll('#sit-today [data-obligation="owed"][data-obligation-id="probe_u"],#sit-docket .dk.owed').length === 0);
 } catch (e) { ok("undertakings and the docket", false, e.message); }
 
 

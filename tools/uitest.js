@@ -45,6 +45,36 @@ $('[data-admin]').click();
 ok("slot list appears", w.document.querySelectorAll(".slot").length === 4);
 $('[data-new="1"]').click();
 ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.contains("on"));
+/* Owed owns obligations; the docket retains only business not listed there.
+   Removing a kind/identity filter must duplicate it, not merely change prose. */
+{
+ const original=w.eval('UI.state()'), base=w.eval('UI.content()');
+ const c={...base,events:[],matters:[]}, s=w.eval('Engine.newGame')(c);
+ const vacancy=base.cabinet.find(p=>!s.cabinet[p.id].holder);
+ const bill=base.bills.find(b=>b.test!=='supply' && !s.bills[b.id].dead);
+ const si=base.instruments[0];
+ s.flags._introRead=true;s.flags._act1=true;
+ s.undertakings=[{id:'polish_promise',text:'Keep the test order',by:s.sitting+6,state:'open',discharge:{si:si.id}}];
+ s.bills[bill.id].stage=w.eval('Engine.DIVIDES_AT');s.bills[bill.id].dividesOn=s.sitting+6;
+ w.eval('UI.boot')(s,c);w.eval('UI.openTab("sit")');
+ const owed=(focus)=>[...w.document.querySelectorAll('#sit-today [data-open]')].filter(n=>n.dataset.open===focus);
+ ok('a vacancy is listed once under Owed with its department destination',
+   owed('post:'+vacancy.id).length===1 && !$('#sit-docket .dk.post'));
+ ok('a distant promise remains on the docket',!!$('#sit-docket .dk.owed'));
+ ok('a distant division remains on the docket',!!$('#sit-docket .dk.div'));
+ s.undertakings[0].by=s.sitting+1;s.bills[bill.id].dividesOn=s.sitting+1;
+ s.instruments[si.id]={made:true,inForce:true,prayerCloses:s.sitting+1};
+ s.risesAt=s.sitting+1;w.eval('UI.redraw()');
+ ok('a near promise appears in Owed without a second docket obligation',
+   owed('si:'+si.id).some(n=>n.textContent.includes('Keep the test order')) && !$('#sit-docket .dk.owed'));
+ ok('a near division appears in Owed without a second docket division',
+   owed('bill:'+bill.id).length===1 && !$('#sit-docket .dk.div'));
+ ok('a near prayer window appears in Owed without a duplicate docket window',
+   owed('si:'+si.id).some(n=>n.textContent.includes('Last day to pray')) && !$('#sit-docket .dk.pray'));
+ ok('the near rise stays in Owed without a second docket reminder',
+   $('#sit-today').textContent.includes('The House rises') && !$('#sit-docket .dk.rises'));
+ w.eval('UI.boot')(original,base);
+}
 /* Removing cards, typed routing, the tempo preset, or note focus must fail
    independently. This uses real content targets and real matter queries. */
 {
@@ -479,12 +509,12 @@ ok("each order appears under its authoring department",
     [vacancy, second].every(p => !card(p.id).querySelector('[data-appoint]')) &&
     !w.document.querySelector('#gov-appoint-panel'));
   const route = spec => {
-    const link = w.document.querySelector('.dk.post[data-goto="gov"]');
+    const link = w.document.querySelector('#sit-today .tdo[data-goto="gov"][data-open^="post:"]');
     link.dataset.open = spec; link.click();
   };
   w.eval('UI.redraw();');
-  const docket = w.document.querySelector('.dk.post[data-open="post:' + vacancy.id + '"]');
-  ok('the vacancy docket names its department target', !!docket);
+  const docket = w.document.querySelector('#sit-today .tdo[data-open="post:' + vacancy.id + '"]');
+  ok('the vacancy obligation names its department target', !!docket);
   route('post:' + vacancy.id);
   ok('a vacancy destination opens its own card and focuses its first appointment',
     !card(vacancy.id).hidden && w.document.activeElement === w.document.querySelector('#gov-inspector [data-appoint="' + vacancy.id + '"]'));

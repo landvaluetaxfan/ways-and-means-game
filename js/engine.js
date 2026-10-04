@@ -7780,7 +7780,7 @@ const Engine = (function () {
       /* Where it is kept, and how: one helper, so the calendar, the
          undertakings panel and the order itself agree. */
       add(u.by == null ? sessionEndsAt(st, C) : u.by, "owed", u.text,
-          undertakingWhere(C, u));
+          Object.assign({id:u.id}, undertakingWhere(C, u)));
     });
     /* A PRAYER WINDOW IS A DEADLINE. An order stands unless the House
        prays against it before the window closes, and until now that date
@@ -7981,6 +7981,7 @@ const Engine = (function () {
       if (d.tab) o.tab = d.tab;
       if (d.how) o.how = d.how;
       if (d.focus) o.focus = d.focus;
+      if (d.id != null) o.id = d.id;
       push(d.kind, d.text, o);
     });
 
@@ -7990,7 +7991,7 @@ const Engine = (function () {
     vacancies(st, C).forEach(v => {
       const post = (C.cabinetById || {})[v] || {};
       push("vacancy", (post.title || post.name || v) + " is vacant",
-           { when: "soon", away: null });
+           { when: "soon", away: null, id:v, focus:"post:" + v });
     });
 
     /* A PARTNER NEAR ITS LINE (design/40 E9). The walkout was the commonest
