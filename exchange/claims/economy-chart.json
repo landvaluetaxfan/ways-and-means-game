@@ -1,0 +1,11 @@
+{
+  "brief": "economy-chart",
+  "lane": "codex",
+  "since": "2026-10-04",
+  "files": [
+    "js/ui.js",
+    "css/terminal.css",
+    "tools/uitest.js"
+  ],
+  "note": "drawChart and the chart's CSS only; in progress on the author's machine"
+}

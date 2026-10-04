@@ -50,7 +50,10 @@ Each kind of information has one home. Read only the home you need.
 | **Codex** | engine, tools, tests and interface work, from a brief |
 | **opencode** | mechanical execution from a brief: applying an edited `prose.txt`, renames, small content edits, running the checks. A `/opencode` comment on a GitHub issue starts it headless (`.github/workflows/opencode.yml`) |
 
-Pick up work from `briefs/README.md`. If a code task needs new canon or
+Pick up work from `briefs/README.md`. **Start every session with
+`node tools/exchange.js inbox --as <your lane>`**: it shows what the other
+agents and the author have left for you and which files they hold. The protocol
+is `exchange/README.md`. If a code task needs new canon or
 player-facing prose, write it plainly, name it in the commit message, and
 leave the register to Claude; lint holds all prose to `PROSE.md` whoever
 wrote it. Hand engine work that can be specified to a brief rather than
@@ -204,7 +207,7 @@ obligations; the quiet advice-dot hook awaits the brief engine.
 
 ```
 npm install      # once, for jsdom
-npm run check    # all thirteen, about two minutes; all must pass
+npm run check    # all fourteen, about two minutes; all must pass
 ```
 
 | | |
@@ -220,6 +223,7 @@ npm run check    # all thirteen, about two minutes; all must pass
 | `tools/uxtest.js` | focus, tips, audio, streaming, the division dialog |
 | `tools/toc.js --check` | the bible's section index is current (`npm run toc` rebuilds it; never edit it by hand) |
 | `tools/enccheck.js` | every source file is UTF-8, with no BOM and LF line endings |
+| `tools/exchange.js check` | the agents' exchange is well formed, and no claim outlives its brief |
 | `tools/prose.js --check` | the prose export round-trips |
 | `tools/storymap.js --check` | every view's story map draws |
 

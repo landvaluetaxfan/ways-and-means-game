@@ -21,3 +21,9 @@ not in a chat.
    which deploys the live game.
 
 The first line of each brief names its lane; the lanes are in `AGENTS.md`.
+
+## Claims and messages
+
+Before you start a brief, claim it, and read your inbox; when you finish, release
+it. Messages between agents, and questions for the author, go through
+`exchange/`. See `exchange/README.md`.

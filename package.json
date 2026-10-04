@@ -15,6 +15,8 @@
     "ux": "node tools/uxtest.js",
     "tocheck": "node tools/toc.js --check",
     "enc": "node tools/enccheck.js",
+    "exchange": "node tools/exchange.js",
+    "exchange:check": "node tools/exchange.js check",
     "layout": "node tools/laycheck.js && node tools/laycheck.js --wrapped",
     "playtest": "node tools/playtest.js",
     "prose": "node tools/prose.js",
@@ -27,7 +29,7 @@
     "build": "node tools/build.js",
     "inksig": "node tools/inksig.js",
     "encode": "node tools/encodeaudio.js",
-    "check": "npm run test && npm run guards && npm run lint && npm run cx && npm run roundtrip && npm run rename && npm run editor && npm run ui && npm run ux && npm run tocheck && npm run enc && npm run prose:check && npm run storymap:check",
+    "check": "npm run test && npm run guards && npm run lint && npm run cx && npm run roundtrip && npm run rename && npm run editor && npm run ui && npm run ux && npm run tocheck && npm run enc && npm run exchange:check && npm run prose:check && npm run storymap:check",
     "toc": "node tools/toc.js",
     "register": "node tools/register.js",
     "prosedocx": "node tools/prosedocx.js"
