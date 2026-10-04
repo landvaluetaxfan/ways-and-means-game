@@ -71,14 +71,14 @@ These are proposals from this record's author (Claude), not decisions. They
 follow from the four answers.
 
 **A claim** (in state, content-authored where it begins at a decision):
-- `holder`: a party, a current, or a cabinet post;
+- `holder`: a party, a current, a cabinet post, or a lobbying actor (4 Oct: actors are in the roster; record `holderKind`);
 - `kind`: `promise`, `concession`, `post`;
 - `direction`: owed by the player, or owed to the player;
 - `expects`: what the holder expects, in plain words;
 - `due`: sittings, or a condition (as a matter's `due`, design/64);
 - `limit`: the condition past which the holder acts, and what they do
   (withdraw confidence or supply, call a conference, resign);
-- `state`: `open`, `called`, `met`, `broken`;
+- `state`: `open`, `called`, `kept`, `broken` (`kept`, not `met`: the code's word, kept for no change in play);
 - `origin`: the decision, offer or term that created it.
 
 **The ledger** keeps its writers (`shiftLoyalty` and `capital` stay the one
