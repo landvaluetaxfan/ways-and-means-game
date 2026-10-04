@@ -109,6 +109,43 @@ exposure is still low, say so as a finding; do not tune it away.
 The "Proposed slice boundary" above is superseded where it differs:
 continuous test through sitting 24, with the contested carve-out inside it.
 
+## Playtest window and priority — 4 October 2026
+
+The author wants a human playtest of the opening as soon as it can be made
+sound, aimed at **5 October**. That sets the order of work here.
+
+**The window is sittings 1 to 16, to the first recess.** On the first-option
+run (`node tools/playtest.js --log brief --sittings 40`) the opening falls
+as follows:
+- sitting 3: the whips' count of the Divergence bill;
+- sitting 5: the twelve signatures, and sitting 7 the whip list;
+- **sitting 8: the Life Support panel's offer** (`gb_approach`), the carve-out;
+- sitting 13: the Registry resignation; sitting 14: the order never laid;
+- sitting 15: the Works strands, and `f1_works_air` is the first matter that
+  advice raises, one sitting before the recess;
+- sitting 16: the House rises for the first recess.
+
+The **contested carve-out matter must therefore be raised before sitting 8**,
+around sittings 5 to 7, so that a tester meets advice before the bargain and
+not after it. Today the first advice a player meets is at sitting 15.
+Verify these dates on the other policies, since they depend on the route.
+
+**Batch A is the minimum for the playtest. Do it first and push it.**
+1. Task 1's evidence map, written into design/67. **Do not stop to wait for
+   review**: write it, note any question in the brief, and continue. Claude
+   reviews it after the push.
+2. The contested carve-out matter, with `counsel`, inside the window.
+3. The empty-brief orientation: sitting 1's brief must say what it is for,
+   and the first matter must arrive early enough to be met in the window.
+   Wording is drafted plainly for Claude's register pass.
+4. Guards for both sides of the bargain and the refusal (Task 4's first
+   bullet), and the 80-seed sweep before and after.
+
+**Batch B waits for the first playtest's findings:** Task 3's advice-to-
+receipt audit beyond reproducible faults, the rejected-advice callbacks, the
+`design/67` playtest prompts in full, and the Firefox/Edge scrolling checks.
+Do not start Batch B until Claude or the author says the playtest is done.
+
 ## Experience and non-goals
 
 1. **The inherited programme:** carry the Divergence bill and hold the
