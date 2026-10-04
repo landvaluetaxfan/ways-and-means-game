@@ -97,7 +97,7 @@ const INITIATIVES = [
      `flag` and the ordinary queued answer carry the whole instrument. */
   { id: "quota_forward",
     title: "Sell quota forward",
-    note: "The Commonwealth's quota sold forward to the consortiums: cash this session, delivery at the term. The price is fixed today and the capacity leaves the margin at the term. If the margin falls before then, the Commonwealth will have sold capacity it needs.",
+    note: "The Commonwealth's quota sold forward to the consortiums: cash now, delivery at the term. The price is fixed today and the capacity leaves the margin at the term. If the margin falls before then, the Commonwealth will have sold capacity it needs.",
     cost: 1,
     post: "substrate_thermal",
     when: { flagsAbsent: ["quota_forward_sold"] },
