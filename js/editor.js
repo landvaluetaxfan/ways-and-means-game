@@ -391,7 +391,8 @@ const Editor = (function () {
       : d.shape === "nestedSet" && v && typeof v === "object" && v[Object.keys(v)[0]] &&
         typeof v[Object.keys(v)[0]] === "object"
         ? v[Object.keys(v)[0]][Object.keys(v[Object.keys(v)[0]])[0]] : undefined;
-    if (setVal === null || (setVal && typeof setVal === "object"))
+    if (setVal === null || (setVal && typeof setVal === "object") ||
+        (d.shape === "queue" && [].concat(v).some(q => q.effects || !q.event)))
       return { verb, key: "", field: "", value: JSON.stringify(v), delta: "", raw: true };
     const r = { verb, key: "", field: "", value: "", delta: "" };
     switch (d.shape) {
@@ -404,7 +405,7 @@ const Editor = (function () {
       case "scalarVal": r.value = [].concat(v)[0]; break;
       case "coalition": r.field = Object.keys(v)[0]; r.value = [].concat(v[r.field])[0]; break;
       case "queue":     { const q = [].concat(v)[0]; r.value = q.event; r.delta = q.after || 1;
-                          r.label = q.label || ""; break; }
+                          r.label = q.label || ""; r.date = q.date || ""; break; }
     }
     return r;
   }
@@ -440,6 +441,7 @@ const Editor = (function () {
       case "coalition": return { [r.verb]: { [r.field]: [r.value] } };
       case "queue":     { const q = { event: r.value, after: +r.delta || 1 };
                           if (r.label) q.label = r.label;
+                          if (r.date) q.date = r.date;
                           return { [r.verb]: [q] }; }
       case "list": {
         const e = {};
