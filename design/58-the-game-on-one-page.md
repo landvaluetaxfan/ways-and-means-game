@@ -452,6 +452,12 @@ post remembers when it is filled. The question in a sitting is not only
 "which price do I pay?" but "whose future leverage am I creating by getting
 my way today?" That keeps the House political rather than transactional.
 
+**Decided (4 Oct): every act is witnessed.** An act nobody advised is
+answered by its owner: a short in-voice reply for a notable one, a real
+question for a grave or unusual one, silence for a routine one. The reason the
+player gives binds as a stated purpose (an undertaking), and it is built for
+every lever at once with default weights. See `design/71-witnessed-acts.md`.
+
 **How leverage works** is specified in `design/68-leverage.md` (4 Oct):
 a ledger for time, named claims for concessions, promises and posts, claims
 called in as matters, favours that fade and claims that do not, and terms
