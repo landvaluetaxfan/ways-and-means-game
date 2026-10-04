@@ -1,0 +1,10 @@
+{
+  "brief": "witnessed-acts",
+  "lane": "codex",
+  "since": "2026-10-04",
+  "files": [
+    "js/ui.js",
+    "tools/uitest.js"
+  ],
+  "note": ""
+}
