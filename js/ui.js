@@ -3351,9 +3351,11 @@ const UI = (function () {
               " A post can be reshuffled only when content lists who may hold it; the Treasury does.")}>NO SUCCESSOR</span>`
         : `<button class="btn tiny sack" data-sack="${p.id}"${gate.ok ? "" : " disabled"}` +
           priceTip("Dismiss " + who,
-            { slots: 1, note: (gate.ok ? "Your own party's minister, and the post has a successor: " +
-                successors + ". " : "") + "They go to the back benches and do not forgive it. " +
-              "Their current reads it as an attack on them." },
+            { slots: st.interval ? 0 : 1, note: st.interval
+                ? "The interval is open for a cabinet change."
+                : (gate.ok ? "Your own party's minister, and the post has a successor: " +
+                  successors + ". " : "") + "They go to the back benches and do not forgive it. " +
+                  "Their current reads it as an attack on them." },
             gate.ok ? null : gate.reason) + `>Dismiss</button>`;
       const rel = ch && (st.characters[ch.id] || {}).relationship;
       const stand = rel == null ? "relationship unknown" :
@@ -3384,8 +3386,9 @@ const UI = (function () {
         const ch = s && s.holder ? C.characterById[s.holder] : null;
         Dialog.confirm(
           "Dismiss " + (ch ? bare(ch.name) : "the minister") + " from " +
-          (post.name || pid) + "? It costs a slot of order-paper time, and " +
-          "they will not forgive it.",
+          (post.name || pid) + (st.interval
+            ? "? The interval permits a cabinet change without order-paper time or dismissal penalties."
+            : "? It costs a slot of order-paper time, and they will not forgive it."),
           { title: "Reshuffle", ok: "Dismiss" },
           (yes) => {
             if (!yes) return;
@@ -5952,9 +5955,13 @@ const UI = (function () {
       .concat(act.direction ? [{ kind: "direction", body: act.direction }] : []) };
   }
   function intervalPage(iv) {
+    const report = st.interval && (st.interval.id === (iv.id || "interval_" + iv.after))
+      ? st.interval.rows || [] : [];
+    const names = { endured: "Endured", decayed: "Decayed", used: "Used the absence" };
     return { sections: [{ kind: "act", head: "Interval", body: "" },
-                        { kind: "direction", body: iv.direction +
-                          (st.date ? "\n\nThe House sits again on " + dayLabel(st.date) + "." : "") }] };
+                         { kind: "direction", body: iv.direction +
+                           (st.date ? "\n\nThe House sits again on " + dayLabel(st.date) + "." : "") }]
+      .concat(report.map(row => ({ kind: "body", head: names[row.kind], body: row.text }))) };
   }
   function framePage() {
     const play = currentPlay();
