@@ -1071,7 +1071,8 @@ const UI = (function () {
     if (st.priceHistory && st.priceHistory[key])
       return Object.assign(base, { pts: st.priceHistory[key].slice() });
     if (key === "solvency")
-      return Object.assign(base, { pts: (st.solvencyHistory || [st.scalars.solvency || 0]).slice() });
+      return Object.assign(base, { pts: (st.solvencyHistory && st.solvencyHistory.length
+        ? st.solvencyHistory : [st.scalars.solvency || 0]).slice() });
     const r = Engine.macro ? Engine.macro(st, C) : null;
     if (r && typeof r[key] === "number") return Object.assign(base, { pts: [r[key]] });
     return Object.assign(base, { pts: [st.scalars[key] || 0] });
@@ -1118,6 +1119,67 @@ const UI = (function () {
       }));
   }
 
+  /* Four to six readable ticks, with zero on the scale for signed series.
+     Scale decoration belongs to the view, not to the simulation. */
+  function chartTicks(values, fmt) {
+    let lo = Math.min.apply(null, values), hi = Math.max.apply(null, values);
+    if (lo === hi) {
+      const room = Math.abs(lo) * 0.1 || 1;
+      lo -= room; hi += room;
+    }
+    const power = Math.floor(Math.log10((hi - lo) / 4));
+    let best = null;
+    const endPower = Math.max(power + 2, Math.ceil(Math.log10(Math.max(Math.abs(lo), Math.abs(hi), 1))));
+    for (let p = power - 2; p <= endPower; p++) {
+      [1, 2, 5].forEach(n => {
+        const step = n * Math.pow(10, p);
+        let first = Math.floor(lo / step) * step, last = Math.ceil(hi / step) * step;
+        let count = Math.round((last - first) / step) + 1;
+        if (count > 6) return;
+        /* Some ranges fit only three nice ticks (1.55–2.45, for example).
+           Pad rather than fail; coarsen when the formatter rounds ticks
+           into indistinguishable labels. Keep the formatter itself intact. */
+        if (count < 4) {
+          const extra = 5 - count;
+          first -= Math.floor(extra / 2) * step;
+          last += Math.ceil(extra / 2) * step;
+          count = 5;
+        }
+        const labels = Array.from({ length: count }, (_, i) => fmt(Number((first + i * step).toPrecision(12))));
+        if (new Set(labels).size !== count) return;
+        const score = (last - first) / (hi - lo) - 1 + Math.abs(count - 5) / 10;
+        if (!best || score < best.score) best = { first, step, count, score };
+      });
+    }
+    return Array.from({ length: best.count }, (_, i) =>
+      Number((best.first + i * best.step).toPrecision(12)));
+  }
+
+  function wireChartReadout(plot, pts, labels, fmt, record) {
+    const readout = plot.querySelector(".chart-readout"), hairline = plot.querySelector(".chart-hairline");
+    let selected = pts.length - 1;
+    const show = i => {
+      selected = Math.max(0, Math.min(pts.length - 1, i));
+      const x = record ? (selected + 0.5) / pts.length : pts.length > 1 ? selected / (pts.length - 1) : 0.5;
+      hairline.style.left = x * 100 + "%";
+      readout.textContent = labels[selected] + " · " + fmt(pts[selected]);
+      readout.hidden = hairline.hidden = false;
+    };
+    plot.addEventListener("pointermove", e => {
+      const r = plot.getBoundingClientRect(), x = Math.max(0, Math.min(1, (e.clientX - r.left) / (r.width || 1)));
+      show(record ? Math.min(pts.length - 1, Math.floor(x * pts.length)) : Math.round(x * (pts.length - 1)));
+    });
+    plot.addEventListener("pointerleave", () => {
+      if (document.activeElement !== plot) readout.hidden = hairline.hidden = true;
+    });
+    plot.addEventListener("focus", () => show(selected));
+    plot.addEventListener("blur", () => { readout.hidden = hairline.hidden = true; });
+    plot.addEventListener("keydown", e => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      e.preventDefault(); show(selected + (e.key === "ArrowLeft" ? -1 : 1));
+    });
+  }
+
   function drawChart() {
     const box = $("#chart-body"); if (!box) return;
     const s = chartSeries(chartOn);
@@ -1140,32 +1202,46 @@ const UI = (function () {
 
     const pts = s.pts.slice(-60);
     const now = pts.length ? pts[pts.length - 1] : 0;
-    const lo = Math.min.apply(null, pts.concat(s.signed ? [0] : []));
-    const hi = Math.max.apply(null, pts.concat(s.signed ? [0] : []));
-    const span = (hi - lo) || 1;
+    const fmt = s.fmt || (n => Math.round(n).toLocaleString());
+    const refs = chartOn === "inflation" ? [{ value: Engine.macro(st, C).target, label: "target" }]
+      : chartOn === "solvency" ? [{ value: 0, label: "empty" }]
+      : s.signed ? [{ value: 0, label: "zero" }] : [];
+    const ticks = chartTicks(pts.concat(refs.map(r => r.value)), fmt);
+    const lo = ticks[0], hi = ticks[ticks.length - 1], span = hi - lo;
+    const y = v => (v - lo) / span * 100;
+    const labels = pts.map((_, i) => s.record ? String(s.to - pts.length + 1 + i)
+      : "sitting " + Math.max(1, st.sitting - pts.length + 1 + i));
+    const delta = now - pts[pts.length - 2];
+    const change = pts.length > 1 ? `<span class="chart-change">${delta ? (delta < 0 ? "▼ " : "▲ ") : ""}` +
+      `${delta < 0 ? "−" : "+"}${esc(fmt(Math.abs(delta)).replace(/^\+/, ""))}</span>` : "";
+    const coords = pts.map((v, i) => `${pts.length > 1 ? i / (pts.length - 1) * 100 : 50},${100 - y(v)}`).join(" ");
+    const plot = s.record ? pts.map((v, i) => {
+      const base = s.signed ? y(0) : 0, value = y(v);
+      return `<i class="bar${i === pts.length - 1 ? " hi" : ""}" aria-hidden="true" ` +
+        `style="left:${(i + 0.5) / pts.length * 100}%;width:calc(${100 / pts.length}% - 2px);` +
+        `bottom:${Math.min(base, value)}%;height:${Math.max(0.4, Math.abs(value - base))}%"></i>`;
+    }).join("") : `<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">` +
+      `<polygon class="chart-area" points="${pts.length > 1 ? "0,100" : "50,100"} ${coords} ${pts.length > 1 ? "100,100" : "50,100"}"></polygon>` +
+      `<polyline class="chart-line" points="${coords}" vector-effect="non-scaling-stroke"></polyline></svg>` +
+      `<i class="chart-point" style="left:${pts.length > 1 ? 100 : 50}%;bottom:${y(now)}%"></i>`;
+    const every = pts.length > 24 ? 3 : pts.length > 12 ? 2 : 1;
     box.innerHTML =
       `<div class="chartwrap"><div class="cnum">` +
-        `<div class="chartnow">${s.fmt ? s.fmt(now) : Math.round(now).toLocaleString()}` +
-        `<small> now</small></div>` +
+        `<div class="chartnow">${esc(fmt(now))}<small> now</small>${change}</div>` +
       `</div><div class="cplot">` +
-        `<div class="chartbounds"><span class="chart-high">high ${s.fmt ? s.fmt(hi) : Math.round(hi).toLocaleString()}</span>` +
-        `<span class="chart-low">low ${s.fmt ? s.fmt(lo) : Math.round(lo).toLocaleString()}</span></div>` +
-        `<div class="bigchart">` + pts.map((v, i) => {
-          const pc = Math.max(2, Math.round((v - lo) / span * 100));
-          /* NO title ATTRIBUTE. A native tooltip is the one kind this
-             interface does not use, and sixty annotated bars would also be
-             sixty tab stops in ? mode. The chart is a SHAPE; the numbers
-             that matter are printed beside it, which is the right division
-             of labour between a figure and a reading of it. */
-          return `<i class="bar${i === pts.length - 1 ? " hi" : ""}" ` +
-            `style="height:${pc}%" aria-hidden="true"></i>`;
-        }).join("") + `</div>` +
-        `<div class="chartaxis"><span>${
-            s.record ? String(s.to - pts.length + 1)
-            : pts.length > 1 ? "sitting " + Math.max(1, st.sitting - pts.length + 1) : ""}</span>` +
-          `<span>${s.record ? String(s.to)
-            : pts.length > 1 ? "sitting " + st.sitting : ""}</span></div>` +
+        `<div class="bigchart" tabindex="0" aria-label="${esc(s.label + " · " + s.unit)}">` +
+          ticks.map(v => `<i class="chart-grid${v === 0 && s.signed ? " zero" : ""}" style="bottom:${y(v)}%"></i>`).join("") +
+          refs.map(r => `<div class="chart-reference" data-chart-ref="${r.label}" data-chart-value="${r.value}" style="bottom:${y(r.value)}%">` +
+            (r.label !== "zero" ? `<span>${r.label}</span>` : "") + `</div>`).join("") +
+          plot + `<i class="chart-hairline" hidden></i><div class="chart-readout" aria-live="polite" hidden></div></div>` +
+        `<div class="chart-ticks"><span class="chart-axis-width" aria-hidden="true">${esc(ticks.map(fmt).concat(fmt(now)).sort((a,b)=>b.length-a.length)[0])}</span>` +
+          ticks.map(v => `<span class="chart-tick" data-chart-tick="${v}" style="bottom:${y(v)}%;${Math.abs(y(v)-y(now)) < 8 ? "visibility:hidden;" : ""}">${esc(fmt(v))}</span>`).join("") +
+          `<span class="chart-tag" style="bottom:${y(now)}%">${esc(fmt(now))}</span></div>` +
+        `<div class="chartaxis"${s.record ? ` style="display:grid;grid-template-columns:repeat(${pts.length},minmax(0,1fr))"` : ""}>` +
+          (s.record ? labels.map((label,i) => `<span data-chart-year="${label}">${i % every === 0 || i === pts.length-1 ? label : ""}</span>`).join("")
+            : `<span>${pts.length > 1 ? labels[0] : ""}</span><span>${pts.length > 1 ? labels[labels.length-1] : ""}</span>`) + `</div>` +
       `</div></div>`;
+    wireChartReadout(box.querySelector(".bigchart"), pts, labels, fmt, s.record);
     drawChartScale();
   }
 

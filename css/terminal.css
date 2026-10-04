@@ -376,7 +376,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
   text-transform:uppercase;color:var(--ink-soft);font-weight:400;}
 .bfoot i{font-style:normal;font-family:var(--f-data);font-size:17px;
   margin-left:auto;font-variant-numeric:tabular-nums;}
-/* the big chart: bars, because a quantity per sitting is a bar */
+/* The annual record uses bars; the per-sitting chart uses a line. */
 .bigchart{display:flex;align-items:flex-end;gap:1px;height:100%;min-height:110px;
   padding:4px 2px 0;}
 /* A BAR HAS A MAXIMUM WIDTH, so a short history reads as a short history.
@@ -501,11 +501,27 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #s-econ .money-call .btn{font-size:clamp(12px,.65vw,15px);padding:6px 12px;}
 #s-econ .chartwrap{display:block;height:auto;}
 #s-econ .chartnow{margin:4px 0 10px;}
-#s-econ .cplot{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:8px;}
-#s-econ .chartbounds{display:flex;flex-direction:column;justify-content:space-between;font-family:var(--f-data);font-size:clamp(10px,.55vw,13px);color:var(--ink-soft);padding:4px 0 0;}
-#s-econ .bigchart{height:auto;min-height:180px;aspect-ratio:1.5;}
-#s-econ .bigchart .bar{max-width:80px;}
-#s-econ .chartaxis{grid-column:2;font-size:clamp(9px,.5vw,12px);}
+#s-econ .cplot{display:grid;grid-template-columns:minmax(0,1fr) max-content;column-gap:8px;padding-top:8px;}
+#s-econ .bigchart{display:block;position:relative;height:auto;min-height:180px;aspect-ratio:1.8;padding:0;}
+#s-econ .bigchart .bar{position:absolute;max-width:80px;min-width:0;transform:translateX(-50%);}
+#s-econ .chartaxis{grid-column:1;font-size:clamp(9px,.5vw,12px);padding-top:10px;}
+#s-econ .chartaxis [data-chart-year]{text-align:center;}
+#s-econ .chart-ticks{position:relative;font-family:var(--f-data);font-size:clamp(10px,.55vw,13px);color:var(--ink-soft);}
+#s-econ .chart-axis-width{display:block;visibility:hidden;height:0;padding:0 6px;}
+#s-econ .chart-tick,#s-econ .chart-tag{position:absolute;left:0;white-space:nowrap;transform:translateY(50%);}
+#s-econ .chart-tag{padding:3px 6px;background:var(--ink);color:var(--field);z-index:2;}
+#s-econ .chart-grid,#s-econ .chart-reference{position:absolute;left:0;right:0;border-top:1px solid var(--rule);opacity:.45;pointer-events:none;}
+#s-econ .chart-grid.zero{border-top-color:var(--ink);opacity:.7;}
+#s-econ .chart-reference{border-top:1px dashed var(--ink-soft);opacity:1;z-index:1;}
+#s-econ .chart-reference span{position:absolute;left:4px;bottom:3px;background:var(--chrome);color:var(--ink-soft);font-family:var(--f-data);font-size:clamp(10px,.55vw,13px);}
+#s-econ .bigchart svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
+#s-econ .chart-line{fill:none;stroke:var(--ink);stroke-width:1.5;}
+#s-econ .chart-area{fill:var(--ink);opacity:.08;}
+#s-econ .chart-point{position:absolute;width:6px;height:6px;background:var(--gold);border-radius:50%;transform:translate(-50%,50%);pointer-events:none;}
+#s-econ .chart-change{font-size:clamp(11px,.6vw,14px);color:var(--ink-soft);margin-left:10px;white-space:nowrap;}
+#s-econ .chart-hairline{position:absolute;top:0;bottom:0;border-left:1px solid var(--ink-soft);pointer-events:none;z-index:3;}
+#s-econ .chart-readout{position:absolute;top:6px;left:6px;max-width:calc(100% - 12px);padding:4px 6px;background:var(--field);color:var(--ink);border:1px solid var(--rule);font-family:var(--f-data);font-size:clamp(10px,.55vw,13px);pointer-events:none;z-index:4;}
+#s-econ .bigchart:focus-visible{outline:1px dotted var(--ink);outline-offset:3px;}
 @media(max-width:1600px) and (min-width:1081px){
   #s-econ .g-econ{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
   #s-econ #p-acct{grid-column:1;grid-row:1;}
