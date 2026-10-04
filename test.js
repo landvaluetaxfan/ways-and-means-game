@@ -444,7 +444,7 @@ const RUN_BOUND = T.runBound(CONTENT);
     ok('matter saves round-trip unchanged',Engine.save(loaded)===Engine.save(s));
     const legacy=JSON.parse(Engine.save(s)); legacy.version=34; delete legacy.matters;
     const migrated=Engine.reconcile(Engine.load(JSON.stringify(legacy)),C);
-    ok('v34 saves gain the v35 matter table',migrated.version===35 && !!migrated.matters.matter_probe);
+    ok('v34 saves gain the matter table',migrated.version===Engine.STATE_VERSION && !!migrated.matters.matter_probe);
     ok('already witnessed legacy failures do not replay',Engine.matters(migrated,C).length===0 && migrated.matters.matter_probe.state==='failed');
     const updated=Object.assign({},C,{matters:[Object.assign({},base,{id:'replacement'})]});
     Engine.reconcile(loaded,updated);
@@ -1099,6 +1099,72 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     ok("and reserved time goes with the sitting period it was granted for",
        Engine.reservedFor(x, id) === 0 && x.slots.total === total0,
        Engine.reservedFor(x, id) + " reserved, " + x.slots.total + " general");
+  }
+
+  /* A synthetic two-act campaign: three sittings, four months away, three
+     more. Flash I's calendar and event pool are deliberately absent. */
+  {
+    const course = { id:"interval_course", title:"Set the course", choices:[
+      { label:"Keep the line", effects:[{flag:"course_set"}] }] };
+    const C = Object.assign({}, CONTENT, {
+      setup:Object.assign({}, CONTENT.setup, { startDate:"2080-04-11", sittingsPerPeriod:3,
+        periodsPerSession:2, sessionsPerParliament:1, recessDays:120, intervalDays:200,
+        intervals:{ endured:"The account carries {receipts} in yearly receipts over {days} days.",
+          decayed:"The reserve moved by {change}.",
+          used:"The Bank met {meetings} times during the absence." } }),
+      administrations:[{id:"synthetic", play:{ acts:[{chapter:1},{chapter:2}],
+        intervals:[{id:"synthetic_gap",after:1,interval:true,direction:"The House was away.",
+          choices:[course.id]}] }}],
+      events:[course], eventById:{[course.id]:course}, matters:[]
+    });
+    const s = Engine.newGame(C, 123); s.admin="synthetic";
+    const automatic=Object.assign({},C,{setup:Object.assign({},C.setup,{intervalDays:28}),
+      administrations:[{id:"synthetic",play:{intervals:[{after:1,direction:"The House was away."}]}}]});
+    const auto=Engine.newGame(automatic,123); auto.admin="synthetic";
+    for(let i=0;i<3;i++) Engine.advance(auto,automatic);
+    ok("a long calendar gap opens an interval without an explicit flag",!!auto.interval);
+    Engine.advance(s,C); Engine.advance(s,C);
+    const from=s.date, to=Engine.dateOfSitting(C,4);
+    const due=new Date(Date.parse(from)+30*86400000).toISOString().slice(0,10);
+    Engine.apply(s,C,[{queue:{date:due,effects:[{flag:"interval_queued"}],label:"A dated item landed"}},
+      {undertake:{id:"interval_promise",text:"A dated undertaking",date:due,by:10}}]);
+    s.debt={owed:{earth:10000}};
+    const reserve=s.scalars.solvency, level=s.macro.level,
+      meetings=(s.macro.decisions||[]).length;
+    s.slots.used=s.slots.total;
+    Engine.advance(s,C);
+    ok("an explicit frame flag opens the interval above the date threshold",
+      s.date===to && s.interval && s.interval.days>=120);
+    ok("the skipped months accrue the account and Bank meetings",
+      s.macro.asOf===to && s.macro.lastFlow.days>0 &&
+      s.macro.lastFlow.receipts>0 && s.macro.lastFlow.spending>0 &&
+      s.macro.lastFlow.interest>0 && s.macro.level!==level &&
+      s.scalars.solvency!==reserve && s.macro.decisions.length>meetings);
+    ok("a dated queue and undertaking resolve inside the gap",
+      s.flags.interval_queued && s.undertakings.find(u=>u.id==="interval_promise").state==="broken");
+    ok("the interval reports what endured, decayed and used the absence",
+      ["endured","decayed","used"].every(k=>s.interval.rows.some(r=>r.kind===k && !/\{\w+\}/.test(r.text))));
+    ok("the interval report includes the accrued gap, before the sitting tick",
+      s.interval.rows.find(r=>r.kind==="decayed").text.includes(
+        Engine.money(C,Math.abs(s.scalars.solvency-reserve))) && s.scalars.solvency!==reserve);
+    ok("the course decision is asked before ordinary sitting business",
+      Engine.nextEvent(s,C).id===course.id);
+    const saved=Engine.save(s), loaded=Engine.load(saved,C);
+    ok("a save and load round-trips during the interval",Engine.save(loaded)===saved);
+    const own=(C.cabinet||[]).find(p=>s.cabinet[p.id] && s.cabinet[p.id].holder &&
+      s.cabinet[p.id].party===s.playerParty && (p.candidates||[]).some(x=>x.holder!==s.cabinet[p.id].holder));
+    ok("the reshuffle window waives exhausted order-paper time",
+      !!own && Engine.canReshuffle(s,C,own.id).ok);
+    const holder=loaded.cabinet[own.id].holder, slots=loaded.slots.used,
+      relationship=loaded.characters[holder].relationship;
+    const changed=Engine.reshuffle(loaded,C,own.id);
+    ok("a cabinet change in the interval spends no time or dismissal regard",
+      changed.ok && !loaded.cabinet[own.id].holder && loaded.slots.used===slots &&
+      loaded.characters[holder].relationship===relationship);
+    Engine.choose(s,C,course,0);
+    s.slots.used=s.slots.total;
+    ok("answering the course closes the reshuffle window",s.flags.course_set && !s.interval &&
+      !Engine.canReshuffle(s,C,own.id).ok);
   }
 
   /* SITTING PERIODS (bible §1.8). A session is sat in periods, and a recess

@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 35;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar, 32 core inflation and the quarter, 33 the forums, 34 the Concordance's dates, 35 ministerial matters
+  const STATE_VERSION = 38;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar, 32 core inflation and the quarter, 33 the forums, 34 the Concordance's dates, 35 ministerial matters, 36 reserved leverage claims, 37 reserved witnessed acts, 38 intervals
 
   /* ---------------------------------------------------------
      1. STATE
@@ -241,6 +241,8 @@ const Engine = (function () {
       risesAt: periodLength(C),
 
       queue: [],      // [{eventId, dueSitting}]
+      interval: null, // open report and reshuffle window
+      intervalCourse: null, // remaining decision ids
       seen: {},       // eventId -> times fired
       wire: [],       // [{sitting, text}]
       log: []         // [{sitting, text}]
@@ -553,6 +555,11 @@ const Engine = (function () {
     if (st.version < 35) {
       st.matters = {};
       st.version = 35;
+    }
+    if (st.version < 38) {
+      st.interval = st.interval || null;
+      st.intervalCourse = st.intervalCourse || null;
+      st.version = 38;
     }
     return st;
   }
@@ -2886,7 +2893,7 @@ const Engine = (function () {
       return { ok: false, code: "successor",
         reason: "there is nobody on the list to succeed them, so the ministry would stand empty for " +
                 "the rest of the parliament, and an empty ministry cannot make an order" };
-    if (st.slots.used >= st.slots.total)
+    if (!st.interval && st.slots.used >= st.slots.total)
       return { ok: false, code: "time", reason: "no order-paper time left this sitting period" };
     return { ok: true, successors: bench.map(c => c.holder) };
   }
@@ -2899,20 +2906,20 @@ const Engine = (function () {
     const post = (C.cabinet || []).find(x => x.id === postId) || {};
     const ch = (C.characters || []).find(x => x.id === who);
 
-    st.slots.used += 1;
+    if (!st.interval) st.slots.used += 1;
 
     /* the regard goes, and nothing gives it back */
     const rec = st.characters[who];
-    if (rec) rec.relationship = clamp((rec.relationship || 50) - 34, 0, 100);
+    if (!st.interval && rec) rec.relationship = clamp((rec.relationship || 50) - 34, 0, 100);
 
     /* their current takes it personally */
     const cur = (C.currents || []).find(cu => cu.party === party &&
       ch && ch.current === cu.id);
-    if (cur && st.currents[cur.id]) shiftLoyalty(st, C, cur.id, -18);
-    else if (party && st.parties[party]) shiftLoyalty(st, C, party, -6);
+    if (!st.interval && cur && st.currents[cur.id]) shiftLoyalty(st, C, cur.id, -18);
+    else if (!st.interval && party && st.parties[party]) shiftLoyalty(st, C, party, -6);
 
     /* and the House notices */
-    shiftLoyalty(st, C, st.playerParty, -4);
+    if (!st.interval) shiftLoyalty(st, C, st.playerParty, -4);
 
     vacate(st, C, postId, "dismissed");
     const name = ch ? ch.name : who;
@@ -4833,6 +4840,7 @@ const Engine = (function () {
         effects: q.effects || null,
         label:   q.label || null,
         source:  q.source || null,
+        date: q.date || null,
         dueSitting: st.sitting + (q.after == null ? 1 : q.after)
       })),
     signatures: (st, C, v) => { st.signatures = Math.max(0, (st.signatures || 0) + v); },
@@ -4896,6 +4904,7 @@ const Engine = (function () {
            previously express without guessing a sitting number. */
         by: (Object.prototype.hasOwnProperty.call(u, "by") && u.by === null)
               ? null : st.sitting + (u.by === undefined ? 3 : u.by),
+        date: u.date || null,
         discharge: u.discharge || null, onBreach: u.onBreach || null,
         state: "open", made: st.sitting
       });
@@ -5191,6 +5200,8 @@ const Engine = (function () {
     /* AN EVENT BEFORE THE DECISION (design/49). A sitting opens with the
        pages that have arrived and then puts its business, so a due event is
        taken off the queue ahead of a due decision queued before it. */
+    if (st.intervalCourse && st.intervalCourse.length)
+      return C.eventById[st.intervalCourse[0]] || null;
     syncMatters(st, C);
     const businessAnswered = (st.log || []).some(l => l.sitting === st.sitting && l.kind === "decision");
     const consequence = (C.matters || []).find(m => {
@@ -5199,7 +5210,7 @@ const Engine = (function () {
         (st.lastFired || {})[m.page] !== st.sitting;
     });
     if (consequence) return C.eventById[consequence.page];
-    const due = st.queue.filter(q => q.dueSitting <= st.sitting && q.eventId &&
+    const due = st.queue.filter(q => (q.date ? q.date <= st.date : q.dueSitting <= st.sitting) && q.eventId &&
       (!businessAnswered || isEvent(C.eventById[q.eventId])));
     if (due.length) {
       const q = due.find(x => isEvent(C.eventById[x.eventId])) || due[0];
@@ -5991,6 +6002,10 @@ const Engine = (function () {
        move is the decision in front of it. */
     st.actedThisSitting = true;
     recordEvent(st,C,event,ch.label);
+    if (st.intervalCourse && st.intervalCourse[0] === event.id) {
+      st.intervalCourse.shift();
+      if (!st.intervalCourse.length) { st.intervalCourse = null; st.interval = null; }
+    }
     settle(st, C);
     return ch.result || null;
   }
@@ -7320,6 +7335,23 @@ const Engine = (function () {
     return (r.terms || []).reduce((n, t) => n + ruleTerm(st, C, t, P), r.base || 0);
   }
 
+  /* One calendar writer for both an ordinary sitting and a skipped interval. */
+  function accrueCalendar(st, C, marks) {
+    const was = st.macro && st.macro.asOf;
+    const days = was && st.date ? Math.max(0, (parseDay(st.date) - parseDay(was)) / DAY) : 0;
+    if (st.macro) st.macro.asOf = st.date;
+    if (!days) return;
+    const dt = days / 365;
+    runEconomy(st, C, dt).forEach(x => marks.push(x));
+    const b = budget(st, C);
+    if (st.macro) st.macro.lastFlow = { days, receipts: Math.round(b.receipts * dt),
+      spending: Math.round(b.spending * dt), interest: Math.round(b.interest * dt) };
+    const net = b.balance * dt + (st.accountCarry || 0);
+    const whole = Math.trunc(net);
+    st.accountCarry = net - whole;
+    if (whole) bumpScalar(st, C, "solvency", whole);
+  }
+
   function tick(st, C) {
     const P = st.prices, marks = [];
     driftStanding(st, C);
@@ -7419,21 +7451,7 @@ const Engine = (function () {
        economy runs over the same days first, so the revenue is levied on
        the output and prices this sitting has just set. This is still the
        only place the engine ADDS to solvency. */
-    (function () {
-      const was = st.macro && st.macro.asOf;
-      const days = was && st.date ? Math.max(0, (parseDay(st.date) - parseDay(was)) / DAY) : 0;
-      if (st.macro) st.macro.asOf = st.date;
-      if (!days) return;
-      const dt = days / 365;
-      runEconomy(st, C, dt).forEach(x => marks.push(x));
-      const b = budget(st, C);
-      st.macro && (st.macro.lastFlow = { days: days, receipts: Math.round(b.receipts * dt),
-        spending: Math.round(b.spending * dt), interest: Math.round(b.interest * dt) });
-      const net = b.balance * dt + (st.accountCarry || 0);
-      const whole = Math.trunc(net);
-      st.accountCarry = net - whole;
-      if (whole) bumpScalar(st, C, "solvency", whole);
-    })();
+    accrueCalendar(st, C, marks);
 
     /* THE FORUMS SIT ON THEIR OWN DATES (design/43), as the Bank meets on
        its own: every resolution on an agenda is voted at the first sitting
@@ -8786,7 +8804,54 @@ const Engine = (function () {
     try { return matches(st, cond) ? st.sitting : null; } catch (e) { return null; }
   }
 
+  const intervalSteps = [{ id: "economy", run(st, C, gap) {
+    const before = st.scalars.solvency;
+    const meetings = st.macro ? (st.macro.decisions || []).length : 0;
+    const marks = [];
+    const meetingsInGap = [];
+    if (st.macro && st.macro.nextMeeting) {
+      const every = (macroConst(C) || {}).meetingEvery || 42;
+      for (let date = st.macro.nextMeeting, n = 0; date <= gap.to && n < 20; n++) {
+        if (date > gap.from) meetingsInGap.push(date);
+        date = iso(new Date(parseDay(date).getTime() + every * DAY));
+      }
+    }
+    const dates = [...new Set((st.queue || []).filter(q => q.date && q.date > gap.from && q.date <= gap.to)
+      .map(q => q.date).concat((st.undertakings || []).filter(u => u.state === "open" && u.date &&
+        u.date > gap.from && u.date <= gap.to).map(u => u.date), meetingsInGap))].sort();
+    for (const date of dates.concat(gap.to)) {
+      st.date = date;
+      accrueCalendar(st, C, marks);
+      resolveDue(st, C, true);
+      (st.undertakings || []).forEach(u => {
+        if (u.state === "open" && u.date && u.date <= date) breakUndertaking(st, C, u);
+      });
+    }
+    st.date = gap.to;
+    const templates = ((C.setup || {}).intervals || {});
+    const figures = briefing(st, C);
+    const extra = { days: gap.days, from: gap.from, to: gap.to,
+      change: money(C, Math.abs(st.scalars.solvency - before)),
+      meetings: st.macro ? (st.macro.decisions || []).length - meetings : 0 };
+    return ["endured", "decayed", "used"].map(kind => {
+      if (!templates[kind]) throw new Error("Missing setup.intervals." + kind);
+      return { kind, text: fillFigures(templates[kind], figures, extra) };
+    });
+  }}];
+
+  function interval(st, C, gap) {
+    const entry = gap.entry || {};
+    const rows = intervalSteps.flatMap(step => step.run(st, C, gap) || []);
+    st.interval = { id: entry.id || "interval_" + (entry.after || st.sitting - 1),
+      from: gap.from, to: gap.to, days: gap.days, rows };
+    st.intervalCourse = (entry.choices || []).slice();
+    return st.interval;
+  }
+
   function advance(st, C) {
+    if (st.intervalCourse && st.intervalCourse.length) return;
+    if (st.interval) { st.interval = null; st.intervalCourse = null; }
+    const previousDate = st.date;
     settleWaits(st);
     if (C) noteSince(st, C);
     st.sitting += 1;
@@ -8828,6 +8893,14 @@ const Engine = (function () {
        so the topbar showed the same day for the whole game. A sitting is a
        day the House sits, and which day that is comes from the calendar. */
     if (C) st.date = dateOfSitting(C, st.sitting);
+    if (C && previousDate && st.date) {
+      const days = (parseDay(st.date) - parseDay(previousDate)) / DAY;
+      const frame = ((C.administrations || []).find(a => a.id === st.admin) || {}).play;
+      const entry = ((frame && frame.intervals) || []).find(x => x.after === (st.period || 1) && st.sitting > st.risesAt);
+      const threshold = (C.setup || {}).intervalDays;
+      if ((threshold != null && days > threshold) || (entry && entry.interval))
+        interval(st, C, { from: previousDate, to: st.date, days, entry });
+    }
     /* BEFORE ANYTHING READS THE STATE. A verdict that lands today is part
        of today's world: event selection, the docket and the loss check
        must all see it, so it resolves at the top of the sitting and not
@@ -8867,8 +8940,9 @@ const Engine = (function () {
      rather than a story. Applied in the order it was queued, removed as
      it goes, and logged under its own label so the player can see what
      arrived and what put it there. Returns what it resolved. */
-  function resolveDue(st, C) {
-    const due = (st.queue || []).filter(q => q.dueSitting <= st.sitting && q.effects);
+  function resolveDue(st, C, datedOnly) {
+    const due = (st.queue || []).filter(q => q.effects &&
+      (q.date ? q.date <= st.date : !datedOnly && q.dueSitting <= st.sitting));
     if (!due.length) return [];
     st.queue = st.queue.filter(q => due.indexOf(q) < 0);
     due.forEach(q => {
@@ -9067,7 +9141,7 @@ const Engine = (function () {
     readout, campaignMarkers, matters, noteMatter, acknowledge,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal, currentSeats,
-    division, reported, ballot, benchRoll, resolveDue, pairable, setPairs, clearPairs, benches, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss, checkSettlement,
+    division, reported, ballot, benchRoll, resolveDue, pairable, setPairs, clearPairs, benches, matches, apply, eligible, nextEvent, choose, advance, interval, tick, checkLoss, checkSettlement,
     dateOfSitting, sittingOfDate, inRecess, deadlines, calendar, today, business,
     initiatives, take, setDivision,
     apportionment, representedAs, seatMember, seatText, tierCheck, DIVIDES_AT, STAGE_ORDER,
