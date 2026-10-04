@@ -1,0 +1,10 @@
+{
+  "brief": "initiative-posts",
+  "lane": "opencode",
+  "since": "2026-10-04",
+  "files": [
+    "content/initiatives.js",
+    "tools/uitest.js"
+  ],
+  "note": ""
+}

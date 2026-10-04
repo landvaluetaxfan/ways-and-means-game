@@ -47,6 +47,7 @@ const INITIATIVES = [
     title: "Commission a review of the shed orders",
     note: "No official count exists of how many people the standing shed orders have suspended. A review would produce one, and the government that commissions it will be held to the figure.",
     cost: 1,
+    post: "law_charter",
     /* `review_ordered` is what makes this once-only, and nothing set it — so
        the review could be commissioned again every sitting, and a second
        order would have arrived while the first was still out. Both tempos
@@ -96,8 +97,9 @@ const INITIATIVES = [
      `flag` and the ordinary queued answer carry the whole instrument. */
   { id: "quota_forward",
     title: "Sell quota forward",
-    note: "The Commonwealth's quota sold forward to the consortiums: cash now, delivery at the term. The price is fixed today and the capacity leaves the margin at the term. If the margin falls before then, the Commonwealth will have sold capacity it needs.",
+    note: "The Commonwealth's quota sold forward to the consortiums: cash this session, delivery at the term. The price is fixed today and the capacity leaves the margin at the term. If the margin falls before then, the Commonwealth will have sold capacity it needs.",
     cost: 1,
+    post: "substrate_thermal",
     when: { flagsAbsent: ["quota_forward_sold"] },
     event: "quota_forward_settles",
     tempo: [
@@ -123,6 +125,7 @@ const INITIATIVES = [
           "lease. It will pay in cash, or in the work that raises its own " +
           "closure, and it would rather pay in work.",
     cost: 1,
+    post: "volume_housing",
     when: { flagsAbsent: ["volume_chartered"] },
     event: "volume_charter_settles",
     tempo: [
