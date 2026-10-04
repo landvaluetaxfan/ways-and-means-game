@@ -1777,7 +1777,7 @@ const UI = (function () {
     const own = C.partyById[st.playerParty] || {};
     const total = Engine.partyTotal(st, st.playerParty);
     const count = $("#party-count");
-    if (count) count.textContent = (own.short || own.name || "") + " · " + total + " seats";
+    if (count) count.textContent = own.short || own.name || "";
 
     const cs = ownCurrents();
     const sel = currentSel();
@@ -1857,7 +1857,7 @@ const UI = (function () {
     }
     if (hdr) hdr.textContent = sel.name;
     const seats = seatsOf[sel.id];
-    if (sub) sub.textContent = seats == null ? "" : seats + " seat" + (seats === 1 ? "" : "s");
+    if (sub) sub.textContent = "";
 
     /* 1. WHAT IT IS: content's own description, which is Reference prose. */
     const lead = sel.description ? `<p class="plead">${esc(sel.description)}</p>` : "";
@@ -2141,7 +2141,7 @@ const UI = (function () {
     const list = C.parties || [];
     const sel = relSel();
     const count = $("#rel-count");
-    if (count) count.textContent = (list.length - 1) + " others in the House";
+    if (count) count.textContent = "";
 
     /* THE ARRANGEMENT, grouped by relation. The engine has always priced the
        three relations differently: `whippable()` moves a coalition bench on
@@ -8262,7 +8262,7 @@ const UI = (function () {
       n.addEventListener("click", () => Focus.set("orbit-table", n.dataset.station)));
 
     const seats = C.stations.reduce((n, s0) => n + s0.seats, 0);
-    $("#orbit-count").textContent = `${C.stations.length} \u00b7 ${seats} seats`;
+    $("#orbit-count").textContent = `${seats} seats`;
 
     $("#orbit-table").innerHTML =
       "<thead><tr><th>Station</th><th class='n'>Seats</th></tr></thead><tbody>" +
