@@ -65,8 +65,12 @@ including the 40 functional members who delay a supply bill by three sittings).
 
 ## Open, for the author
 
-1. **Who can hold the Treasury?** A PSD member, an NPP partner (the post as a price), or an
-   outsider appointed from outside the House as Flash was (bible §3.8)?
+1. ~~Who can hold the Treasury?~~ **Settled: it is the player's choice, among three candidates
+   that already exist** in `content/cabinet.js` (design/14 §6.2): **Skye**, Flash's deputy at
+   the Treasury (the department stays steady); **Halloran**, who leads the leadership paper
+   (the challenger brought inside); **Abadi** of the CDA (the third partner paid). Their
+   notes there are marked placeholder, "opencode's to re-author": that is Claude's to write.
+   (An earlier draft of this note listed different options without reading the file.)
 2. **The name "(Session 4)".** It and the top bar's `SESS 4.1` are the older arrangement's
    numbering. The bill is the first of the 2080 Parliament. Rename it, and say what the
    top bar's label means.
