@@ -141,3 +141,5 @@ including the 40 functional members who delay a supply bill by three sittings).
 
 Still to write: fifth 3 (the clauses), fifth 4 (the consequence) and fifth 5
 (the vote).
+
+**Re-timed 5 Oct (design/78).** The Works is now a slow burn across the acts and annexation falls in Act IV; the stranding at sitting 14 and the 17 July air date above are being re-timed. Fifths 4 and 5 wait on design/78's open questions.
