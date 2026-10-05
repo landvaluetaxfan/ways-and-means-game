@@ -13,6 +13,19 @@ const Engine = require("./js/engine.js");
 const PROLOGUE1 = T.prologue1(CONTENT);
 const RUN_BOUND = T.runBound(CONTENT);
 
+/* THE NEXT EVENT THAT ASKS SOMETHING. A page with no choice is acknowledged
+   and the sitting goes on, as playSitting and the Sitting screen do, so a
+   loop that answers one decision a sitting is never stuck behind a page. */
+function nextDecision(st, C) {
+  for (let n = 0; n < 16; n++) {
+    const e = Engine.nextEvent(st, C);
+    if (!e) return null;
+    if (!Engine.isEvent(e) || (e.choices || []).length) return e;
+    if (!Engine.acknowledge(st, C, e).ok) Engine.passOver(st, e);
+  }
+  return null;
+}
+
 /* Driver tests use real engine actions and synthetic world entries. A wrong
    counsel, missing continuation or repeated charge must change these results. */
 (function () {
@@ -889,7 +902,7 @@ let s = Engine.newGame(CONTENT);
 for (let i=0;i<5;i++){
   const met = Engine.playSitting(s, CONTENT, () => 0);
   if(!met.length){ console.log("  sitting "+s.sitting+": (no eligible event)"); Engine.advance(s); continue; }
-  met.forEach(m => console.log("  sitting "+s.sitting+": "+m.event.title+"  ["+m.event.choices.length+" choices]"));
+  met.forEach(m => console.log("  sitting "+s.sitting+": "+m.event.title+"  ["+(m.event.choices||[]).length+" choices]"));
   Engine.advance(s);
 }
 console.log("\nloss check:", JSON.stringify(Engine.checkLoss(s, CONTENT)));
@@ -3589,7 +3602,7 @@ console.log("\nRECURRING BUSINESS, AND THE RESHUFFLE:");
          Time, so every other event sat unresolved and was handed back
          forever — and the scheduled item, which nextEvent reaches only
          after the prologue, never got a turn at all. */
-      const e = Engine.nextEvent(st, CONTENT);
+      const e = nextDecision(st, CONTENT);
       if (e) {
         if (e.id === qt.id) fired.push(st.sitting);
         for (let k = 0; k < (e.choices || []).length; k++)
@@ -5219,7 +5232,7 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
     const st = Engine.newGame(CONTENT);
     const fired = [];
     for (let s = 0; s < 16; s++) {
-      const e = Engine.nextEvent(st, CONTENT);
+      const e = nextDecision(st, CONTENT);
       if (e) {
         fired.push(e.id);
         /* take the first choice the engine will actually accept — a
@@ -5392,7 +5405,7 @@ console.log("\nTHE ECONOMY:");
 
   let delivery = null, beforeDelivery = null;
   for (let i = 0; i < 14 && !delivery; i++) {
-    const e = Engine.nextEvent(st, CONTENT);
+    const e = nextDecision(st, CONTENT);
     if (e && e.id === "quota_forward_settles") {
       beforeDelivery = st.scalars.thermal_margin;
       /* the tempo set the flags; the settle opens the delivery it sold */
@@ -5486,7 +5499,7 @@ console.log("\nTHE ECONOMY:");
   const s = Engine.newGame(C2);
   let firedAt = null;
   for (let i = 0; i < 12 && firedAt == null; i++) {
-    const e = Engine.nextEvent(s, C2);
+    const e = nextDecision(s, C2);
     if (e && e.id === "t_dated") { firedAt = s.sitting; break; }
     if (e) Engine.choose(s, C2, e, 0);
     Engine.advance(s, C2);
@@ -5502,7 +5515,7 @@ console.log("\nTHE ECONOMY:");
   const s2 = Engine.newGame(C2);
   let early = false;
   for (let i = 0; i < 5; i++) {
-    const e = Engine.nextEvent(s2, C2);
+    const e = nextDecision(s2, C2);
     if (e && e.id === "t_dated") early = true;
     if (e) Engine.choose(s2, C2, e, 0);
     Engine.advance(s2, C2);
@@ -6436,7 +6449,7 @@ console.log("\nTHE PRICE RULES ARE CONTENT'S (design/39 §6):");
 
   /* THE SITTING */
   for (let i = 0; i < 80 && s.resolutions.t_res.status === "tabled"; i++) {
-    const e = Engine.nextEvent(s, C2);
+    const e = nextDecision(s, C2);
     if (e) Engine.choose(s, C2, e, 0);
     Engine.advance(s, C2);
   }

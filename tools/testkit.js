@@ -66,7 +66,9 @@ function views() {
    first beat, which is a test measuring the tutorial and calling it the
    crisis. */
 function prologue1(C) {
-  return C.events.filter(e => (e.chapter || 1) === 1 && e.prologue).length;
+  /* A beat is a sitting, so a page (a choice-free setpiece shown with the next decision, such as
+     the estimates' costing) is not one: it takes no sitting of its own (design/76, 5 Oct). */
+  return C.events.filter(e => (e.chapter || 1) === 1 && e.prologue && (e.choices || []).length).length;
 }
 
 /* And how long a whole run can be: every sitting period of every session,

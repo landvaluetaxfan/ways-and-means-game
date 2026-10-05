@@ -103,3 +103,41 @@ including the 40 functional members who delay a supply bill by three sittings).
 - **The canon moved** (AGENTS.md has the new figures): the room under the bill authority is
   CW$3.2bn, where it was CW$13.1bn, and the PSD holds 99 seats where it held 107. It is still the
   debt trap and still reachable. Restoring room is a tuning job for the Act I rewrite.
+
+## Built, 5 October 2026: fifth 2
+
+- **`the_estimates_costed`** (prologue 4, a page with no choice) is the Treasury's
+  draft estimates: the ceiling (CW$48bn costed against a CW$52bn reserve), what a
+  cheaper or dearer level means, the four tax rates, and who signs. The draft's
+  line items are a document section, so the numbers are read, not narrated. It
+  says tax rates "do not change what the House may vote. They decide how much
+  each of the four yields over the year": the ceiling is the reserve, and a rate
+  moves a yield, not the ceiling. Substrate insurance is described as cover for
+  "digital residents", at the author's request; canon says "emulated" (the
+  glossary) and the four character categories are biological, emulation,
+  synthetic and uplift, so "digital resident" is the page's plain word and is not
+  a canon term.
+- **`the_order_of_the_day`** now teaches the order-paper slot before anything
+  asks the player to spend one: six slots in each sitting period, and the
+  Chief Whip's list wants them all. **`briefing_divergence`** (retitled "Time for
+  one bill") puts the slot arithmetic as the choice: the estimates need five
+  slots and the bill three, against six, so the government carries one of them
+  this period. Its three choices are measured (ask Trottier to wait for the
+  whips' count of the functional members), cautious (the estimates come first)
+  and bold (the bill comes first).
+- **The opening is still eight beats**, with chapter two at sitting 9. The page
+  does not take a sitting's decision.
+- **A choice-free page needed the harnesses taught.** `tools/playtest.js` and
+  `test.js` crashed or looped behind the page, and the General Assembly guard
+  called `Engine.choose` on it. They acknowledge it now, and `T.prologue1`
+  counts only the prologue events that ask (LESSONS.md).
+- **The canon moved, and the witness run is seeded**: `CANON_SEED` (5) in the
+  campaign's guards. The canon reads sitting 55 (13 August 2080) at standing
+  50, with CW$7.2bn of room, and AGENTS.md has the figures. The four crisis
+  strategies lose 12, 20, 5 and 10 of 80, against 14, 23, 4 and 16.
+  `Cycles the options` now loses all 80 to a vote of no confidence at sitting
+  16 where it lost 43; it is blind to the content and it lands on the
+  cautious branch, so it is a measure of that branch and not of the Act.
+
+Still to write: fifth 3 (the clauses), fifth 4 (the consequence) and fifth 5
+(the vote).

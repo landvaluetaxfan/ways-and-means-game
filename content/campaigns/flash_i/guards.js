@@ -395,6 +395,14 @@ guard("THE FIVE TIERS (design/35)", ok => {
      JSON.stringify({ over: pEnd.over, resolvedAs: t3.resolvedAs }));
 });
 
+/* THE CANON WITNESS'S SEED (5 Oct 2026). The canon is one scripted run, and any content edit
+   reshuffles the pool's draws (the lean is keyed on position and on the list's length), so
+   its figures are the witness's and move with every added event. The assertions are that
+   SOME run reaches the debt trap with its payments current and room to spare. When this block
+   fails on arrears or room with nothing else changed, re-pick the seed: CANON_SEED=n node
+   content/campaigns/flash_i/guards.js, then write the first n that passes here. */
+const CANON_SEED = process.env.CANON_SEED ? Number(process.env.CANON_SEED) : 5;
+
 guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
   /* THE CANON ENDING IS REACHABLE BY PLAY (balance pass). The campaign's one
      published ending is the sovereign debt trap: annex the platform, take
@@ -403,7 +411,7 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
      and the run then goes to the election — which is what `terminal:false`
      is for. The other tiers hang on the same meters with gentler lines. */
   {
-    const st = Engine.newGame(CONTENT);
+    const st = Engine.newGame(CONTENT, CANON_SEED);
     const govern = s => {
       /* IT HOLDS THE COUNTRY FIRST, before any bill is given time. The canon
          ending is the debt trap, and the thermal drain it causes reaches
@@ -1005,6 +1013,7 @@ guard("THE GENERAL ASSEMBLY (design/43)", ok => {
       const e = Engine.nextEvent(p, CONTENT);
       if (!e) break;
       if (e.id === "f1_icj_opinion") { opinion = e; break; }
+      if (Engine.isEvent(e) && !(e.choices || []).length) { Engine.acknowledge(p, CONTENT, e); continue; }
       Engine.choose(p, CONTENT, e, 0);
       if (!Engine.isEvent(e)) break;
     }

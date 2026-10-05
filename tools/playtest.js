@@ -320,6 +320,13 @@ function play(strategy, sittings) {
     for (let k = 0; k < 16; k++) {
     const e = Engine.nextEvent(st, CONTENT);
     if (!e) break;
+    /* A page with no choice is acknowledged, as playSitting and the Sitting
+       screen do; it takes neither a pick nor the sitting's decision */
+    if (Engine.isEvent(e) && !(e.choices || []).length) {
+      seen.add(e.id);
+      if (!Engine.acknowledge(st, CONTENT, e).ok) Engine.passOver(st, e);
+      continue;
+    }
     {
       seen.add(e.id);
       const n = e.choices.length;

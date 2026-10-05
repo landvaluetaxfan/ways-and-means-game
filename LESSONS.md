@@ -127,6 +127,22 @@ Sep 2026) and in the design notes cited.
   `{ratio}`, `{represented}` and `{member}` (`PROSE.md`).
 - **Run `npm run prose` after a hand edit to content**, or the next
   `prose:in` reverts the edit.
+- **A page with no choice is acknowledged, not chosen.** `Engine.playSitting`
+  and the Sitting screen call `Engine.acknowledge` on a setpiece with no
+  `choices`, and take neither a pick nor the sitting's decision. A harness
+  that reads `e.choices.length` or calls `Engine.choose(e, 0)` on whatever
+  `nextEvent` returns crashes on the first such page, or, worse, loops
+  forever behind it (an unanswered prologue page is handed back every
+  sitting). `tools/playtest.js` and `test.js` (`nextDecision`) do it now; a
+  new loop must too. `T.prologue1` counts only the prologue events that ask.
+- **Any added event reshuffles the pool, and the canon moves with it.** The
+  seeded lean is keyed on position and list length, so the canon witness
+  run can fall into arrears or lose its room under the bill authority after
+  an edit that touches nothing it plays. The witness is seeded by
+  `CANON_SEED` in `content/campaigns/flash_i/guards.js`. When the canon block
+  fails on arrears or room, probe seeds 1-6
+  (`CANON_SEED=n node tools/guards.js`), re-pick the constant, and update the
+  figures in `AGENTS.md`. Do not loosen a guard to make it pass.
 
 ## Campaigns
 

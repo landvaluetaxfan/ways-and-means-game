@@ -265,7 +265,7 @@ which part of your record you are known for.`,
    the `cabinet` effect appoints and does not apply a candidate's effects: the
    campaign's guards assert that the two copies agree. If the post is filled
    from the Government tab first, this never fires. */
-{ id:"the_treasury", prologue:4, once:true,
+{ id:"the_treasury", prologue:3, once:true,
   when:{ postVacant:["treasury"] },
   title:"Who holds the Treasury",
   speaker:"castellane",
@@ -333,13 +333,13 @@ answer for them in the House.`,
       result:"The Treasury can make no orders until someone holds the post, and the opposition knows it." }
   ]},
 
-{ id:"briefing_divergence", prologue:3, once:true,
-  title:"The bill you inherited",
-  speaker:"ceyhan",
-  body:`Nils Vijlbrief, the Prime Minister before you, promised the Divergence
-Threshold (Amendment) Bill to the New Progressive Party when it joined his
-government, and he was replaced before the bill came to a vote. It is now
-yours to carry.
+{ id:"briefing_divergence", prologue:6, once:true,
+  title:"Time for one bill",
+  speaker:"okarie",
+  body:`The Divergence Threshold (Amendment) Bill is in committee. Nils Vijlbrief,
+the Prime Minister before you, promised it to the New Progressive Party when
+it joined his government in 2076, and the party joined yours on the same
+terms.
 
 The law decides when a copy of a person becomes a separate person. At
 present the line is 168 hours, one week, of separate running. A copy younger
@@ -353,25 +353,38 @@ and that six districts would have to be redrawn for the new voters.
 Employers who now run copies of their staff for a week at a time, and merge
 them back unpaid, would have to employ and pay them.
 
-The New Progressive Party made the bill its price for joining your
-government. The Trades Left, your party's union wing, is divided on it. A copy that must be paid no longer
-undercuts their wages, but a copy that is a citizen can hold a maintenance
-licence and compete for their jobs.`,
-  choices:[
-    { posture:"cautious", label:`Read the whips' count of how every member is expected to vote, before saying anything about the bill in public.`,
-      note:`You read the whips' count first. It costs nothing and commits you to nothing, and whatever you say about the bill afterwards, you will say it knowing the numbers. The New Progressive Party will wait for a statement, and has no reason to worry yet.`,
-      effects:[{flag:"read_the_count"},],
-      result:"The count says the bill would carry among the 240 elected members and fail among the 40 functional members, who must also pass it because it touches life-support licensing." },
-    { posture:"bold", label:`Tell the press that the government stands behind the bill and will carry it through the House.`,
-      act:"Say it",
-      cost:{ slot:1 },
-      note:`You commit the government to the bill in public. The New Progressive Party and the voters who favour the bill are pleased. The Trades Left, the largest current in your party and divided on the bill, was not consulted and will learn of it from the news. A public commitment is hard to take back.`,
-      effects:[{flag:"read_the_count"},{move:{"public_standing":3}},
-               {move:{"loyalty.psa":8}},{move:{"loyalty.cu_maintenance":-9}},
-               {wire:"PM COMMITS GOVERNMENT TO FORTY-HOUR THRESHOLD"}],
-      result:`The New Progressive Party welcomes the statement within the hour. The Trades Left learns of it from the news wire, and its members complain in the tea room that nobody asked them.` }
-  ]},
+Every measure needs a slot for each stage it has left before its division,
+the vote that decides it, and one more slot for the division itself. The
+estimates are at first reading and need five slots. The bill is in committee
+and needs three.
 
+"Eight slots against six," says Anil Devi, the Chief Whip, setting the two
+measures side by side. "You can carry one of them this period."
+
+Mandelina Trottier, the Deputy Prime Minister and the New Progressives'
+leader, has asked him twice when the bill will be called. The bill carries
+among the 240 elected members and fails among the 40 functional members, who
+must also pass it because it touches life-support licensing. The Trades Left,
+your party's union wing, opposes it, because a copy that is a citizen can
+hold a maintenance licence and compete for their jobs.`,
+  choices:[
+    { posture:"measured", label:`Ask Trottier to wait until the whips have counted the functional members.`,
+      act:"Ask her",
+      note:`Devi will count the 40 functional members one by one, starting with the Life Support panel, and you say nothing about the bill in public until he has. Trottier agrees to wait, and her party's patience is short. The count is likely to show that the bill fails among the functional members unless the panel is brought round.`,
+      effects:[{ flag:"read_the_count" }, { move:{ "loyalty.psa":-2 } }],
+      result:`Devi starts with the Life Support panel, whose six members he expects to decide the vote.` },
+    { posture:"cautious", label:`Tell Trottier the estimates come first, and that the bill will be the first business of the next sitting period.`,
+      act:"Tell her",
+      note:`You spend five slots on the estimates so that the government can pay its officials, and have one left. The bill falls when the House rises, as any measure does that has not carried. The New Progressive Party will record that the government owes it, and Trottier will ask at every meeting until the bill is called.`,
+      effects:[{ flag:"estimates_first" }, { move:{ "loyalty.psa":-4 } }, { move:{ "capital.psa":-3 } }],
+      result:`Trottier takes it without comment. By evening the whips' ledger, their running account of what each partner is owed, shows the government in debt to her party.` },
+    { posture:"bold", label:`Tell Trottier the bill comes first, and carry the estimates with whatever time is left.`,
+      act:"Tell her",
+      note:`The New Progressive Party gets the bill it joined the government for, and its members say so in public. The bill and the estimates need eight slots and you have six, so the estimates may not carry before the House rises. A government that cannot pay its officials falls with the House, and the opposition will say you chose a bill over the budget.`,
+      effects:[{ flag:"bill_first" }, { move:{ "loyalty.psa":8 } }, { move:{ public_standing:-2 } },
+               { wire:"PM PUTS DIVERGENCE BILL AHEAD OF THE ESTIMATES" }],
+      result:`Trottier thanks you in front of her members. Devi writes the slots on the back of the order paper and says nothing.` }
+  ]},
 { id:"gb_approach", prologue:9, once:true,
   /* THE CHAPTER ADVANCE MUST NOT HINGE ON MUTABLE BILL STATE. This was
      gated `billStage:{divergence:"committee"}`, and the obvious first move
@@ -421,7 +434,7 @@ roll. For us this isn't a personhood bill. It changes who elects the panel."`,
       result:`She talks for twenty minutes about the grades of engineering certificate and never mentions the vote. Afterwards her secretary books the panel's room for Thursday at ten, four hours before the division.` }
   ]},
 
-{ id:"halloran_signatures", prologue:6,
+{ id:"halloran_signatures", prologue:7,
   when:{ loyaltyBelow:{cu_halloran:20}, flagsAbsent:["halloran_confronted"] },
   title:"Twelve signatures",
   speaker:"halloran",
@@ -501,7 +514,7 @@ redrawn list can move them up as easily as down.`,
       result:"You keep the leadership. The New Progressive Party, which joined the government for the bill you have just withdrawn, meets tonight without you." }
   ]},
 
-{ id:"vantage_radiator", prologue:7,
+{ id:"vantage_radiator", prologue:8,
   when:{ scalarBelow:{thermal_margin:22}, flagsAbsent:["vantage_handled"] },
   title:"Ember Ridge, third day short of cooling",
   speaker:null,
@@ -650,15 +663,18 @@ not clear that either act breaks any law.`,
   when:{ flagsAbsent:["taught_the_day"] },
   title:"The order of the day",
   speaker:"okarie",
-  body:`The Chief Whip, Anil Devi, puts the day's order paper on your desk before
-you sit down. It lists every measure waiting on the House and what each one
-needs next. He reads it aloud, slowly, the way he reads a division list.
+  body:`The Chief Whip, Anil Devi, puts the order paper on your desk before you sit
+down. It lists every measure waiting on the House, the stage each has
+reached, and what it needs next.
 
-"You get six slots of order-paper time each sitting period," he says. "A
-slot moves one measure one stage, from first reading to committee, say. So
-it's not just whether you have the votes, it's whether you have the time.
-The slots come back after every recess. And when the House rises at the end
-of the session, any bill that hasn't passed falls."`,
+Order-paper time is the floor time the House gives the government. It is
+counted in slots, six in each sitting period, and the slots come back after
+each recess. A slot moves one measure one stage: from first reading to
+second reading, say, or from committee to report. A measure that has not
+passed when the House rises at the end of the period falls.
+
+"Six slots until the House rises," Devi says. "Everything on this list wants
+some of them."`,
   choices:[
     { posture:"cautious", label:`Go through the order paper with him item by item, and ask what each measure needs and who wants it.`,
       note:`Devi knows who moved each measure and what they want for their votes. An hour with him teaches you the order paper you will be spending, and earns his trust and that of the Soft Left, the current that runs your party.`,
@@ -3853,6 +3869,36 @@ promise will carry a date by which we must keep it."`,
       note:`The whips will press the undecided members until they agree, spending the party's goodwill to secure the votes now. Members who are pressed twice remember it, and the party's loyalty to its leadership falls. Voters see a government in command of its benches.`,
       effects:[{ flag:"whip_briefed" }, { move:{ "loyalty.cu":-6 } }, { move:{ "public_standing":3 } }, { flag:"whipped_own_side" }],
       result:`The whips work the tea room until the division bells. The members they reach twice vote as asked, and The Spindle, the Commonwealth's newspaper of record, prints how many members they had to press.` }
-  ]}
+  ]},
+
+/* THE ESTIMATES, COSTED (design/76, fifth 2). A page, so it takes no sitting of its own, and the
+   figures are the Appropriation's own (content/bills.js: do not change the costs). The document
+   is the Treasury's paper; the tutorial's card will point at the same figures in the Chamber. */
+{ id:"the_estimates_costed", prologue:4, once:true,
+  setpiece:{ title:"The Treasury costs the session's estimates at CW$48bn against a CW$52bn reserve",
+    sections:[
+    { kind:"document", head:"The Treasury's draft estimates",
+      body:"Thermal quota, the cooling the stations are allowed: CW$14bn\n\nConsumables floor, the air, water, food and living space guaranteed to every resident: CW$16bn\n\nSubstrate insurance, cover for digital residents who cannot pay for the computing that runs them: CW$18bn\n\nCapital works: unfunded\n\nTransit subsidy: unfunded\n\nTax rates on volume, cooling, computing time and freight to orbit: all four at the standard rate\n\nTotal CW$48bn. Room under the reserve: CW$4bn.",
+      source:"The Treasury" } ] },
+  title:"The draft estimates",
+  speaker:null,
+  body:`The Treasury's officials have costed the estimates, the government's budget
+for the session, at CW$48bn. The House may not vote more money than the
+reserve holds, and the reserve holds CW$52bn.
+
+Each spending clause of the estimates has a cheaper level and a dearer one.
+The government can improve one clause only by cutting another, and a cut
+lands on someone. Substrate insurance covers the computer hardware, the
+substrate, that runs digital residents who cannot pay for it. If it is
+reduced, those residents move from the register of the insured to the
+register of the suspended, whose minds are kept intact but are not running.
+
+The estimates also set four tax rates, on pressurised volume, cooling,
+computing time and freight to orbit. The rates do not change what the House
+may vote. They decide how much each of the four yields over the year.
+
+Whoever holds the Treasury signs the estimates and answers for them in the
+House. Until the House votes, every figure can change.`,
+  choices:[] }
 
 ];

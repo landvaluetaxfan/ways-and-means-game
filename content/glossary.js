@@ -43,7 +43,7 @@ const GLOSSARY = [
   { term:"substrate", cluster:"cold", gloss:"The hardware an emulated mind runs on. Its tenants pay rent to exist on it.",
     article:"**Substrate** is the hardware an [[term_emulation|emulated]] person runs on. Its tenants pay rent for the computation they use, so the substrate price is the price of continuing to run. Part of it is held publicly and the rest by private providers, and a person who cannot pay and is not insured is suspended.",
     handle:"Rent, except the landlord can switch you off.",
-    introduced:"halloran_signatures" },
+    introduced:"the_estimates_costed" },
 
   { term:"thermal margin", cluster:"heat", gloss:"Spare radiator capacity. Every watt of thought becomes heat that must be dumped.",
     article:"The **thermal margin** is the spare capacity of the Commonwealth's radiators, as a share of what they can reject. Every watt of computation and industry becomes heat that must be radiated away, so the margin is what stands between a station and shedding load. At zero the stations shed load in cascade. The government's emergency orders raise it, each at a cost.",
