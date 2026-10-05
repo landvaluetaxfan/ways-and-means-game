@@ -10,6 +10,7 @@
    tools/uxtest.js. Both share tools/harness.js.                          */
 const H = require("./harness.js");
 const { fs, path, root, w, $, ok, CONTENT, JSDOM } = H;
+if (!process.env.SLICE_ONLY) {
 
 H.banner("SHELL AND GAME SMOKE TEST");
 
@@ -2757,4 +2758,53 @@ try {
   w.eval("Shell.boot(CONTENT)");
 } catch (e) { ok("the sandbox", false, e.message + " " + (e.stack || "").split("\n")[1]); }
 
-H.finish("shell and game are healthy");
+}
+
+async function slicedBuild() {
+  const cp = require("child_process");
+  cp.execFileSync(process.execPath, [path.join(root, "tools/build.js"), "--slice"], { cwd: root });
+  const built = fs.readFileSync(path.join(root, "dist/ways-and-means.html"), "utf8");
+  const calls = { fetch: 0, xhr: 0, beacon: 0 };
+  let copied = "";
+  const dom = new JSDOM(built, {
+    runScripts: "dangerously", pretendToBeVisual: true, url: "https://slice.test/",
+    beforeParse(win) {
+      win.fetch = () => { calls.fetch++; throw Error("network fetch"); };
+      win.XMLHttpRequest = function () { calls.xhr++; throw Error("network XHR"); };
+      win.navigator.sendBeacon = () => { calls.beacon++; throw Error("network beacon"); };
+      Object.defineProperty(win.navigator, "clipboard", { value: { writeText: t => { copied = t; return Promise.resolve(); } } });
+      win.HTMLAnchorElement.prototype.click = function () {};
+    }
+  });
+  const s = dom.window, q = x => s.document.querySelector(x);
+  await new Promise(resolve => s.setTimeout(resolve, 0));
+  s.eval(`Dialog.prompt = function(m,o,cb) { cb('Slice test'); };
+          Dialog.confirm = function(m,o,cb) { cb(true); };`);
+  s.localStorage.setItem("wm.slot.2", JSON.stringify({ name: "Other campaign", at: Date.now(),
+    state: JSON.stringify({ admin: "other_campaign" }) }));
+  s.eval("Shell.boot(CONTENT)");
+  ok("slice hides saves from other campaigns", !q('[data-cont]') && q('[data-go="load"]').disabled);
+  ok("slice offers one campaign and no Sandbox", !!q('[data-go="new"]') && !q('[data-go="sandbox"]'));
+  q('[data-go="new"]').click();
+  ok("slice government list is one campaign", s.document.querySelectorAll("[data-admin]").length === 1 &&
+     q('[data-admin]').dataset.admin === "flash_i");
+  s.eval("Shell.setOpt('motion', false)");
+  q('[data-admin]').click(); q('[data-new="1"]').click();
+  const st = s.eval("UI.state()");
+  st.log.push({ sitting: 1, text: "Test choice recorded" });
+  st.sitting = 4;
+  s.eval("Shell.autosave()");
+  await new Promise(resolve => s.setTimeout(resolve, 5));
+  ok("slice condition stops the run on a closing page", !!q('[data-slice-end]') && !q("#shell.on"));
+  q('[data-slice-copy]').click();
+  await Promise.resolve();
+  ok("slice report contains build and recorded choices", copied.includes(s.PLAYTEST.build) &&
+     copied.includes("Test choice recorded") && copied.includes("Seed:") && copied.includes("Final confidence:"));
+  ok("sliced path makes no network request", Object.values(calls).every(n => n === 0), JSON.stringify(calls));
+  dom.window.close();
+}
+
+slicedBuild().then(() => H.finish("shell and game are healthy"), e => {
+  ok("the sliced build", false, e.stack || e.message);
+  H.finish("shell and game are healthy");
+});

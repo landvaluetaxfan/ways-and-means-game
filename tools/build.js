@@ -12,7 +12,7 @@
    ever needed, the no-build-step rule has been lost and something
    has gone wrong upstream.
    ============================================================= */
-const fs = require("fs"), path = require("path");
+const fs = require("fs"), path = require("path"), cp = require("child_process");
 const root = path.join(__dirname, ".."), out = path.join(root, "dist");
 
 const rd = p => fs.readFileSync(path.join(root, p), "utf8");
@@ -95,6 +95,14 @@ window.__ASSETS = ${JSON.stringify(assets)};
 })();
 </script>`;
 html = html.replace("</head>", shim + "\n</head>");
+
+/* The slice is a literal switch in the spliced file. Content can later
+   replace the temporary sitting condition with its own play.sliceEnd. */
+if (process.argv.includes("--slice")) {
+  const build = cp.execFileSync("git", ["rev-parse", "--short", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+  const playtest = { campaign: "flash_i", build, endsAt: { minSitting: 4 } };
+  html = html.replace("</head>", `<script>window.PLAYTEST = ${JSON.stringify(playtest)};</script>\n</head>`);
+}
 
 const stamp = new Date().toISOString().slice(0, 10);
 const version = JSON.parse(rd("package.json")).version;

@@ -19,7 +19,9 @@ const Shell = (function () {
   "use strict";
 
   const SLOTS = 4, KEY = n => "wm.slot." + n, OPTS = "wm.opts";
-  let C = null, current = null, memory = {}, storageOK = true;
+  let C = null, current = null, memory = {}, storageOK = true, sliceReport = null, slicePending = false;
+  const slice = () => window.PLAYTEST || null;
+  const campaignOf = a => a && (a.campaign || a.id);
 
   /* ---------- storage that cannot throw ---------- */
   function read(k) {
@@ -131,7 +133,11 @@ const Shell = (function () {
   function slot(n) {
     const raw = read(KEY(n));
     if (!raw) return null;
-    try { return JSON.parse(raw); } catch (e) { return null; }
+    try {
+      const s = JSON.parse(raw);
+      if (slice() && (!s.state || campaignOf(adminOf(s.state)) !== slice().campaign)) return null;
+      return s;
+    } catch (e) { return null; }
   }
   function writeSlot(n, name, stateStr) {
     let sitting = 0, chapter = 1, date = "";
@@ -161,6 +167,7 @@ const Shell = (function () {
         <div class="menu-title"><span class="w">Ways</span><span class="a">&amp;</span><span class="m">Means</span></div>
         <div class="menu-tagline">A Space Story About Politics and Governance.</div>
         <div class="menu-body">${inner}</div>
+        ${slice() ? `<div class="menu-sub" data-slice-build="1">Build ${esc(slice().build)}</div>` : ""}
         ${storageOK ? "" : `<div class="menu-warn">Browser storage is unavailable, so slots will not
           survive closing this tab. Use <b>Export to file</b> in Options to keep a game.</div>`}
       </div>
@@ -210,7 +217,8 @@ const Shell = (function () {
     : view === "credits" ? credits()
     : view === "awards"  ? awards()
     : view === "options" ? menuOptions()
-    : view === "sandbox" ? sandboxMenu()
+     : view === "sandbox" && !slice() ? sandboxMenu()
+     : view === "slice-end" ? sliceEndPage()
     : root());
     paintMenu();
     wireMenu(m, view);
@@ -398,7 +406,7 @@ const Shell = (function () {
   }
 
   function newGov() {
-    const list = (C && C.administrations) || [];
+    const list = ((C && C.administrations) || []).filter(a => !slice() || campaignOf(a) === slice().campaign);
     if (!list.length)
       return `<div class="menu-sub">New government</div>
         <div class="menu-btns row"><button class="mbtn" data-go="slots">Choose a slot</button></div>
@@ -536,7 +544,7 @@ const Shell = (function () {
             last.date ? " &middot; " + esc(last.date) : ""}</i></button>` : ""}
       <button class="mbtn" data-go="new">New Government</button>
       <button class="mbtn${any ? "" : " off"}" data-go="load"${any ? "" : " disabled"}>Load</button>
-      <button class="mbtn" data-go="sandbox">Sandbox</button>
+      ${slice() ? "" : `<button class="mbtn" data-go="sandbox">Sandbox</button>`}
       <button class="mbtn" data-go="awards">Achievements
         <i>${sc.have} of ${sc.of}${sc.canon ? " &middot; Ways and Means" : ""}</i></button>
       <button class="mbtn" data-go="options">Options</button>
@@ -592,6 +600,52 @@ const Shell = (function () {
       <div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
   }
 
+  function sliceEndPage() {
+    const st = UI.state();
+    const choices = (st.log || []).filter(x => x.text).map(x =>
+      `Sitting ${x.sitting}: ${x.text}`);
+    return `<div class="menu-sub" data-slice-end="1">Playtest complete</div>
+      <div class="menu-text"><p>You reached the end of this test. Your recorded choices:</p>
+      <p>${esc(choices.length ? choices.join("; ") : "No choices recorded.")}</p>
+      <p>Please copy the report and share what was clear or confusing.</p></div>
+      <div class="menu-btns"><button class="mbtn" data-slice-copy="1">Copy playtest report</button>
+      <button class="mbtn" data-go="root">Return to main menu</button></div>`;
+  }
+
+  function makeSliceReport() {
+    const st = UI.state();
+    return `Build: ${slice().build}\nSeed: ${st.seed}\nFinal standing: ${st.scalars.public_standing}\nFinal confidence: ${Engine.confidence(st)}\n\n${UI.transcript()}`;
+  }
+
+  function copySliceReport() {
+    if (!sliceReport) return;
+    const copied = () => flash("Playtest report copied");
+    if (navigator.clipboard && navigator.clipboard.writeText)
+      navigator.clipboard.writeText(sliceReport).then(copied, () => flash("Copy was unavailable"));
+    else {
+      const ta = document.createElement("textarea");
+      ta.value = sliceReport; document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand && document.execCommand("copy");
+      ta.remove(); flash(ok ? "Playtest report copied" : "Copy was unavailable");
+    }
+  }
+
+  function checkSliceEnd() {
+    if (!slice() || !current || slicePending) return;
+    const st = UI.state(), adm = (C.administrations || []).find(a => a.id === st.admin);
+    const end = adm && adm.play && (adm.play.sliceEnd || slice().endsAt);
+    if (!end || !Object.keys(end).every(k => {
+      if (!Engine.CONDITIONS[k]) throw new Error("unknown slice condition: " + k);
+      return Engine.CONDITIONS[k](st, end[k]);
+    })) return;
+    sliceReport = makeSliceReport(); slicePending = true;
+    setTimeout(() => {
+      if (!current) return;
+      document.getElementById("shell").classList.remove("on");
+      showMenu("slice-end");
+    }, 0);
+  }
+
   function slotList(mode) {
     let rows = "";
     for (let i = 1; i <= SLOTS; i++) {
@@ -630,6 +684,8 @@ const Shell = (function () {
   }
 
   function wireMenu(m, view) {
+    const copy = m.querySelector("[data-slice-copy]");
+    if (copy) copy.addEventListener("click", copySliceReport);
     if (view === "options") wireOptions(m, false);
 
     m.querySelectorAll("[data-go]").forEach(b =>
@@ -738,6 +794,9 @@ const Shell = (function () {
 
   function start(n, name, stateStr, admin, how) {
     how = how || {};
+    if (slice() && (how.sandbox || (admin && campaignOf(admin) !== slice().campaign) ||
+        (stateStr && campaignOf(adminOf(stateStr)) !== slice().campaign))) return;
+    slicePending = false; sliceReport = null;
     let state;
     /* THE MERGED CONTENT IS THE SESSION'S CONTENT, not one call's.
        `contentFor(admin)` was handed to `newGame` and then thrown away, so
@@ -866,7 +925,10 @@ const Shell = (function () {
   }
 
   /* Called by the UI after anything that advances the game. */
-  function autosave() { if (opts.autosave && current) saveNow(true); }
+  function autosave() {
+    if (opts.autosave && current) saveNow(true);
+    checkSliceEnd();
+  }
 
   function flash(msg) {
     const f = document.getElementById("tb-flash");
@@ -890,6 +952,8 @@ const Shell = (function () {
       <input type="range" data-lvl="${k}" min="0" max="100" step="5"
         value="${Math.round((opts[k] || 0) * 100)}" aria-label="${label} volume"></label>`;
     return `${showTitle === false ? "" : `<div class="opt-title">Options</div>`}
+      ${slice() ? `<div class="note" data-slice-build="1">Build ${esc(slice().build)}</div>
+        ${inGame ? `<button class="mbtn sm wide" data-slice-copy="1">Copy playtest report</button>` : ""}` : ""}
       <div class="optgroups">
         <div class="opt-group general">
           <div class="opt-title">Interface</div>
@@ -936,6 +1000,11 @@ const Shell = (function () {
   }
 
   function wireOptions(p, inGame) {
+    const copy = p.querySelector("[data-slice-copy]");
+    if (copy) copy.addEventListener("click", () => {
+      if (inGame) sliceReport = makeSliceReport();
+      copySliceReport();
+    });
     p.querySelectorAll("[data-opt]").forEach(cb => cb.addEventListener("change", () => {
       opts[cb.dataset.opt] = cb.checked; saveOpts(); applyOpts();
     }));
@@ -1062,6 +1131,8 @@ const Shell = (function () {
           /* AN IMPORTED SAVE IS THE SAME CASE as a loaded slot: resolve
              its administration and run the session on the merged content,
              or an imported Flash I comes back 207 years off. */
+          if (slice() && campaignOf(adminOf(r.result)) !== slice().campaign)
+            throw new Error("This save belongs to another campaign");
           const K = contentFor(adminOf(r.result));
           const state = Engine.load(r.result, K);
           if (typeof Papers !== "undefined") Papers.reset();
@@ -1077,7 +1148,7 @@ const Shell = (function () {
       r.readAsText(f);
       e.target.value = "";
     });
-    const ask = addressAsks();
+    const ask = slice() ? null : addressAsks();
     if (ask) sandbox(ask.admin, ask);
     else showMenu(null);
   }

@@ -1,0 +1,37 @@
+name: Playtest slice
+
+on:
+  push:
+    branches: [playtest]
+  workflow_dispatch:
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build -- --slice
+      - name: Package HTML5 entry point
+        run: |
+          mv dist/ways-and-means.html dist/index.html
+          cd dist
+          zip -9 ../playtest.zip index.html
+      - name: Upload with official butler
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          ITCH_TARGET: ${{ vars.ITCH_TARGET }}
+        run: |
+          test -n "$BUTLER_API_KEY"
+          test -n "$ITCH_TARGET"
+          test "${ITCH_TARGET##*:}" = html5-playtest
+          curl --fail --location --silent --show-error \
+            https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default -o butler.zip
+          unzip -q butler.zip -d butler-bin
+          chmod +x butler-bin/butler
+          butler-bin/butler push playtest.zip "$ITCH_TARGET"
