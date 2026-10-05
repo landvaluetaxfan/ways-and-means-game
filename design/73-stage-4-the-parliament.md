@@ -39,7 +39,7 @@ Flash I's own calendar is not touched until 4b.
 ## Proposals for 4b, for the author to change
 
 Dates are authored in content; these are starting points, not canon.
-- **Act I**, April to August 2080, about 22 sittings: the existing opening, ending
+- **Act I** (spine and shape: design/76), April to August 2080, about 22 sittings: the existing opening, ending
   at the count-day set piece's replacement (a confidence test on the Divergence
   bill, in the summer), with the stranding at sitting 14 as built.
 - **Acts II, III and IV**: the autumn sittings of 2081, 2082 and 2083, about 8

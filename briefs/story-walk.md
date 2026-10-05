@@ -17,6 +17,10 @@ marks each event keep, reword, rewire, rewrite or cut, and Claude applies the ch
 batches and logs them in `design/70`. **Phase 2 is the decision-by-decision walk in the
 browser** described below, once the story has been read.
 
+**Act I is being rewritten around the Appropriation (design/76, 5 Oct).** Do not mark the old
+fifths 1.1 to 1.5; the author and Claude read the new Act I as it is drafted, fifth by
+fifth. Acts II and III and the pool are read as they stand.
+
 The author and Claude walk Flash I together in the browser Claude Code has.
 Claude plays and shows each screen; the author dictates rewrites; Claude
 applies them. The rewrites can be of **wording** or of the **story itself**:
