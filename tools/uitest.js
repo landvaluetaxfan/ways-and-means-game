@@ -2792,6 +2792,14 @@ async function slicedBuild() {
   q('[data-admin]').click(); q('[data-new="1"]').click();
   const st = s.eval("UI.state()");
   st.log.push({ sitting: 1, text: "Test choice recorded" });
+  q('#tb-options').click();
+  ok("slice Options shows build and report button", !!q('#tb-optpanel [data-slice-build]') &&
+     !!q('#tb-optpanel [data-slice-copy]'));
+  q('#tb-optpanel [data-slice-copy]').click();
+  await Promise.resolve();
+  ok("Options copies the same build and choices", copied.includes(s.PLAYTEST.build) &&
+     copied.includes("Test choice recorded"));
+  q('#tb-options').click();
   st.sitting = 4;
   s.eval("Shell.autosave()");
   await new Promise(resolve => s.setTimeout(resolve, 5));

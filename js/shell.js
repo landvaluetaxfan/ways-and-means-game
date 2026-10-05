@@ -903,6 +903,7 @@ const Shell = (function () {
          nobody was looking at. After boot, because ambient() reads the
          state boot has just installed. */
       UI.openTab("sit");
+      checkSliceEnd();
     };
     if (typeof Motion !== "undefined") Motion.dissolve(swap);
     else swap();
