@@ -1,0 +1,11 @@
+{
+  "brief": "ui-tabs",
+  "lane": "codex",
+  "since": "2026-10-05",
+  "files": [
+    "index.html",
+    "js/ui.js",
+    "css/terminal.css"
+  ],
+  "note": ""
+}
