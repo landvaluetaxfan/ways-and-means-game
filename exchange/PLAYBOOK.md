@@ -86,6 +86,10 @@ Learned from their corrections. Check new screens against these before they ship
   term ("docket", "SESS 4.1"). Say what it is, or cut it.
 - **Buttons that just do things.** An act with nobody reacting (design/71).
 - **A browser's default controls** on a panel that has its own style.
+- **Dramatic or hostile speeches.** A line that works as a headline, a lead-in ("before anything
+  else"), or a question that opens with the player's past. Openings are neutral, and
+  hostility is earned. PROSE.md, the third round; `npm run register -- flourish` and
+  `-- charge`.
 - **Cost surprises.** The author pays for every token. Read ranges, keep output
   short, and hand mechanical work to the cheaper lane.
 

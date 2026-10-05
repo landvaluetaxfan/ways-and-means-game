@@ -161,6 +161,33 @@ const HABITS = [
     why: "a real reason, or a twist? a reason usually names something",
     re: /\bbecause\s+(?:[\w'\u2019]+\s+){0,5}[\w'\u2019]+\s*[.;]/gi },
 
+  /* TEMPERATURE (the author, 5 Oct: "unnecessarily dramatic" and "interrogation-y
+     and maybe even hostile"). Two worklists, because a regex cannot know who is
+     speaking: read each hit. A speech is plain, and an opening scene is neutral
+     (PROSE.md, the third round). Faults in Voice, which is where speeches live. */
+  { id: "flourish", sev: { voice: "fault" }, name: "flourish in speech",
+    why: "a quip or a lead-in; say what the speaker needs the player to know and stop",
+    re: new RegExp([
+      "\\bbefore anything else\\b",
+      "\\blet me be (?:clear|plain|honest|frank)\\b",
+      "\\bmake no mistake\\b",
+      "\\bwith (?:all )?(?:due )?respect\\b",
+      "\\bneeds? no help from\\b",
+      "\\bI(?:'ll| will) not pretend\\b",
+      "\\bthe (?:simple|plain|honest|brutal) truth\\b",
+      "\\bhere is the thing\\b",
+      "\\bthat is the (?:question|point|whole)\\b"
+    ].join("|"), "gi") },
+
+  { id: "charge", sev: { voice: "fault" }, name: "a charge, not a question",
+    why: "an accusation or a challenge to the player's right to be here; ask about the plan, and put the history in narration",
+    re: new RegExp([
+      "\\bwhy (?:you|should (?:we|anyone|voters|the country) (?:trust|believe))\\b",
+      "\\byou (?:got|have) (?:this|that|the) job by\\b",
+      "\\byour (?:own )?(?:party|government|majority|treasury|cabinet)\\b[^.\"]{0,30}\\b(?:can't|cannot|couldn't|won't|doesn't|isn't|has no)\\b",
+      "\\byou (?:didn't|did not|never|failed to|refused to)\\b[^.\"]{0,40}\\b(?:ask|consult|tell|warn|write|read)\\b"
+    ].join("|"), "gi") },
+
   /* A TOOLTIP IS READ MID-ACTION: one answer, short. */
   { id: "long", sev: { interface: "note" }, name: "long for a tooltip",
     why: "over sixty words, or a sentence over thirty: split it or cut it",

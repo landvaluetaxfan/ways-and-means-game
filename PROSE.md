@@ -287,6 +287,31 @@ reading with no topic.
 A reading about one lender, `owed_<id>`, may also name `{lender}`,
 `{lenderOwed}`, `{lenderRate}`, `{lenderBase}` and `{lenderWhy}`.
 
+**The author's third round (5 Oct 2026): temperature.** Drafted openings kept breaking the
+second round's rule on speeches, and added a tone fault the rules did not name. These apply
+to everything a character says to the player.
+
+- **A speech says what the speaker needs the player to know, and what they want. It carries
+  no flourish.** No quip ("needs no help from me to fall"), no lead-in ("So, before anything
+  else:", "Let me be clear", "With respect"), no dare, and no closing line that sounds like a
+  closing line. If the sentence would work as a headline, it is a flourish.
+- **The scene's temperature comes from who is speaking and what the player has done, not from
+  the subject.** An opening scene is neutral, because the player has done nothing yet.
+  Officials, partners and journalists are doing their jobs. Hostility belongs to the
+  Opposition and the Hard Left, in the chamber, and arrives after a choice has given it a
+  cause.
+- **A question puts one thing to the player.** It does not list the player's problems first,
+  and it does not open with a charge ("You got this job by..."). A journalist's question
+  asks about the plan or the decision ("What should voters expect from this government that
+  they did not get from the last one?"), never about the player's right to be there.
+- **The player's history is a fact, stated once, in narration if it matters.** "She was
+  Treasurer until January", not a speaker's indictment of it.
+- **People who work with the player speak as if they do.** An ally, official or partner
+  informs, requests or proposes. A disagreement is a position and its reason: "The Alliance
+  wants a department that matters, and it has asked for the Treasury."
+- `npm run register -- flourish` and `npm run register -- charge` list the tells. They are
+  a worklist, since a regex cannot know who is speaking: read each hit.
+
 ## Voice
 
 A person speaking may sound like themselves, and that includes a contrast
@@ -336,6 +361,9 @@ surgically and keeps every comment and effect where it was.
   the engine's figures.
 - **Event pages are news reports** (27 Sep), and **decisions and choices
   follow the same rules** (27 Sep).
+- **Speeches carry no flourish, and openings are not hostile** (5 Oct). The author
+  rejected "needs no help from me to fall" and a press question that opened with the
+  player's past and ended "why you?".
 
 ```
 npm run register                    every passage with a fault, by register
