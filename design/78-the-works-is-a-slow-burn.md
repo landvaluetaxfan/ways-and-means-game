@@ -203,8 +203,13 @@ chain (parked, not deleted).
 6. **Whether each act gets its own Appropriation** (engine work).
 7. **Bible §1.0 and §11.1** (LOCKED) need editing once the shape is settled: the aim, the
    stranding at sitting 14, the NPP's price.
-8. **Pacing the clause scenes.** The player chooses when to call the division, so a player who
-   carries supply at sitting 6 would reach the clause scenes with nothing left to decide. Proposed:
-   fire the five scenes when the Appropriation reaches **committee**, one a sitting, in the order
-   of the estimates. Committee is where a real legislature goes through a bill clause by clause,
-   and the `billStage` condition already exists. The tutorial then follows the player's pace.
+8. **Pacing the clause scenes.** Two ways to time the five scenes: on set sittings (6 to 10), or
+   when the Appropriation reaches committee, one a sitting. **Recommended: set sittings, each
+   scene skipped if supply is already carried** (the author asked what the difference is and has
+   not yet chosen). Reasons: grants are capped at two a sitting (`setup.grantsPerSitting`), so the
+   earliest vote is sitting 4, and only by a player who spends slots on the budget at sittings 1
+   and 2 before the tutorial has explained them, which in practice is a replayer; a player who
+   is slow to reach committee would not fit five scenes before the rise at 16; and keying five
+   scenes to bill stage is more machinery to write and test. A "skip if carried" condition covers
+   the early-vote case. Keying to committee remains an option: it tracks the player and teaches
+   that committee goes clause by clause.
