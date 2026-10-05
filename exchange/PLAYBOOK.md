@@ -140,3 +140,6 @@ carry on with whatever does not depend on the answer. Never wait idle.
 - `index.html` and `js/ui.js` are shared by every interface task. Check the
   claims before touching them, and keep to a different function.
 - Push to main only after `npm run check` passes; the live game deploys from it.
+- **A character's id is not their name.** `halloran` is Dan Czarnecki, `vellan` is Suravaram
+  Vidyasagar. Read `name:` in `content/characters.js` before you write anyone into prose or a
+  message; the author catches the old id at once.
