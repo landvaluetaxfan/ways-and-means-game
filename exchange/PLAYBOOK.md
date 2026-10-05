@@ -89,6 +89,14 @@ Learned from their corrections. Check new screens against these before they ship
 - **Cost surprises.** The author pays for every token. Read ranges, keep output
   short, and hand mechanical work to the cheaper lane.
 
+## What the author likes
+
+The model to follow, not only the faults to avoid.
+
+- **A figure translated into a consequence.** "What the Underwriters say" (Economy) states
+  the numbers and what they mean for the country in one voice, and the author says it makes
+  them feel real. Where a panel shows a bare figure, prefer a line like that to a label.
+
 ## Check what a worker pushed, not only what it says
 
 The first run of the exchange showed the pattern. A worker's claim commit also

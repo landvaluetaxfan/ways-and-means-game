@@ -66,10 +66,9 @@ Relations, Foreign Affairs.
 ## Economy
 
 - **Do not touch Money calls.** Everything else is in scope.
-- **"What the Underwriters say"** repeats the Account's figures in prose (receipts, spending,
-  the deficit, the reserve, the four prices). That text is built from the engine's figures
-  (design/45) and is the author's call, not yours: leave it, and post a `question` with the
-  duplication to the author.
+- **"What the Underwriters say" stays as it is.** The author (5 Oct): it makes the numbers
+  feel real by turning them into consequences, and it is the model to follow elsewhere. Do not
+  cut its figures. Give it room and the body type; do not restyle its voice.
 - **"none", "none", "CW$0m"** are set in the large figure type. An undrawn facility is quiet
   text at the label size.
 - **Wording to fix** (plain strings, for a Claude pass): "100 idx", "80 /100", "The public 0 /yr",
