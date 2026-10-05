@@ -620,6 +620,16 @@ guard("THE CANON RUN: THE DEBT TRAP, THEN THE COUNT (bible §1.8)", ok => {
          .map(k => k + " " + Engine.money(CONTENT, owed[k])).join(", ") +
        "; room under the bill authority " + Engine.money(CONTENT, (st.macro && st.macro.headroom) || 0) +
        "; inflation " + (st.macro ? st.macro.inflation.toFixed(1) + " (core " + st.macro.core.toFixed(1) + ")" : "none"));
+    /* A FLOOR UNDER THE ROOM (5 Oct 2026). The canon is the debt trap, "a middle
+       ground between perfect and failure" (the author), and the room under
+       the bill authority is how far from failure it sits. It was CW$13.1bn
+       and fell to CW$3.2bn when the Treasury became an opening decision: the
+       figure is the output of a seeded run, so any edit that moves a list
+       position moves it. This holds it where it is until Stage 4 rewrites the
+       count, when the author's own number replaces this one. */
+    ok("and it keeps at least CW$3bn of room under the bill authority",
+       ((st.macro && st.macro.headroom) || 0) >= 3000,
+       "room " + Engine.money(CONTENT, (st.macro && st.macro.headroom) || 0));
     /* AND IT KEEPS ITS WORD TO THE PANEL (27 Sep). The carve-out was kept
        by SI 2080/44, the order that takes two of the panel's seats, so the
        promise and the betrayal were one act. It is its own order now. */
