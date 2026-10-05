@@ -104,15 +104,52 @@ and the 2084 election (the Works as the ballot's question; this fits Act V, not 
   for the computing that runs them; works are infrastructure; transit is the transport
   subsidy.
 
+## Settled, round 6: supply is compulsory, and the treaty is a gesture
+
+The author asked what happens if the player chooses the treaty, since "they have to figure out
+supply eventually". The engine's answer: supply is tested at every rise (`recess()` calls
+`testSupply()`), the first rise is sitting 16, and a government that has not carried the
+Appropriation by then loses (bible §3.5, loss condition 5). A sitting period has 6 slots and
+the Appropriation needs 5 (four stage grants and the division), so **in the first period the
+player has exactly one spare slot.** A treaty at committee needs 3, so spending all of them
+on it makes supply impossible and ends the run. The Divergence version of this beat had the
+same flaw: "the bill or the estimates" was never an either-or.
+
+**Decided (author, "1"): the treaty is a gesture, not a rival.**
+
+- Supply is mandatory, and the page says so plainly.
+- The one spare slot goes on the treaty (it advances a stage, Kenya notices, and the payoff is
+  in Act III's bloc deals) or is held back.
+- The treaty carries in period 2, as its first business.
+- The two other options were interim supply (a cheap stopgap vote, like a vote on account,
+  which needs engine work and relaxes the hard rise) and no competing bill at all.
+
+What this means for the build:
+
+- **A warning is required.** A careless player can still lose at sitting 16, so the tutorial
+  (`design/77`) and the docket warn when the slots left fall short of what supply still needs.
+- **`anchor_kepler` must be re-staged.** It starts at `assent` and waits for the chapter-2
+  event `fa_anchor_terms`. For the tutorial it starts at committee.
+- **`briefing_divergence` is rewritten** as the spare-slot beat. Its choices set a stance flag
+  and move the NPP; they do not spend slots, which the player spends in the Chamber. The
+  present "bold" text ("carry the estimates with whatever time is left") promises what the
+  arithmetic cannot deliver, and goes.
+- **The NPP's price is the insurance clause** (author: accepted). They want substrate insurance
+  set wide (CW$32bn), a price inside the budget.
+- **Each rise tests supply once.** After the Appropriation is assented, `supplyCarried` stays
+  true, so "the budget returns every act" (an Appropriation for each act) is not modelled yet
+  and needs engine work if the author wants it.
+
 ## Open
 
 1. **Ember Ridge** as the face of the thermal clause (a station whose radiators faulted on 6
-   April and is below its statutory reserve), or a different face.
+   April and is below its statutory reserve), or a different face. The author had not yet
+   seen the explanation of the thermal clause when asked.
 2. **The Hard Left and the leadership paper:** how much of the signature chain survives. The
    leadership ballot stays a general failure route.
 3. **The Anchorage treaty's first scene** and Kenya's and the African Union's stake in it.
 4. **The wire item's wording** and where in the tutorial it falls.
 5. **The clock** (Earth's rescue, which slips), still provisional.
-6. **The NPP's price,** now that the Divergence bill is parked.
+6. **Whether each act gets its own Appropriation** (engine work).
 7. **Bible §1.0 and §11.1** (LOCKED) need editing once the shape is settled: the aim, the
    stranding at sitting 14, the NPP's price.
