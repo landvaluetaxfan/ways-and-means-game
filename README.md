@@ -12,6 +12,12 @@ Play it in the browser at (https://landvaluetaxfan.github.io/ways-and-means-game
 
 From a clone, open `index.html`. `file://` is supported.
 
+## Cut a restricted playtest
+
+Once, create an itch.io project as a draft HTML game with restricted access and a password. Set its viewport to about 1366 × 768 and enable the fullscreen button. Create an itch.io API key. In this GitHub repository's Settings → Secrets and variables → Actions, add the key as the repository secret `BUTLER_API_KEY` and add `<user>/<game>:html5-playtest` as the repository variable `ITCH_TARGET`.
+
+After the desired commit has landed on `main`, run `git push origin main:playtest`. A push to that branch runs the checks, builds the single-file slice, packages it as `index.html`, and uploads it to the itch.io `html5-playtest` channel. The playtest branch is a pointer to a main commit; do not develop on it. The workflow can also be started manually from GitHub Actions.
+
 ## Where things are
 
 ```
