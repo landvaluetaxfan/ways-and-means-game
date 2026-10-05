@@ -73,12 +73,46 @@ and the 2084 election (the Works as the ballot's question; this fits Act V, not 
 - `design/76` fifths 4 and 5 (the consequence and the vote) are written against a stranding at
   sitting 14 and Ember Ridge. They wait on the author's answers below.
 
-## Open (next rounds)
+## Settled, rounds 4 and 5
 
-1. Which old threads survive as machinery: the Divergence bill (to teach stages and divisions),
-   the NPP as the partner whose votes matter, the Hard Left and the leadership paper, Ember
-   Ridge and the thermal margin.
-2. Who the faces of Earth's friction are: one recurring envoy, one per bloc, or none.
-3. What the tutorial ends on, and how the Works first appears.
-4. Whether five acts are still right.
-5. The clock, once the author has seen it described.
+- **Five acts stay,** with the ladder mapped onto them: **I** the tutorial and the Works's
+  arrival; **II** care; **III** standing and the UN deals; **IV** annexation; **V** the run-in
+  and the count.
+- **Faces as needed.** Earth's friction has no recurring cast. A name appears for each deal.
+- **The Works first appears as a quiet wire item** early in the tutorial (the author: "charming"),
+  for example Cordell's accounts frozen in Europe, with no action required. It plants the money
+  pressure and teaches that the wire exists.
+- **The Works breaks after supply is decided.** Act I is the tutorial, one sitting period (16
+  sittings), and closes on the estimates. The stranding opens what follows, so the Works is
+  paid for on top of a budget already set. This is "how to pay for it", the author's second
+  heart. The supply vote is the division on the Appropriation (nothing forces it before the rise
+  at sitting 16, `design/76`); the stranding is no longer fixed at sitting 14.
+- **The Divergence bill is not the tutorial's bill.** The author: it "introduces an unfamiliar
+  in-universe concept early-on that doesn't really have a strong real-world analogue". What
+  competes with the Appropriation for order-paper time is **the Anchor Concession (Anchorage)
+  Ratification Bill**, the elevator treaty with Kenya: a treaty everyone understands, foreign
+  affairs, and it plants Kenya and the African Union before the Works. Check that its slot cost
+  makes the trade-off real. The Divergence bill and its personhood fight are parked, not
+  deleted; the world keeps the concept, and a later act can bring it back.
+- **The NPP stays as the coalition partner.** Its price (canon had it as the Divergence bill,
+  bible §11.1) is to be decided.
+- **The five clauses need plain names.** The author did not know what "the thermal clause" is,
+  and neither will a new player. Each clause is taught through a familiar analogue before its
+  in-world name: thermal quota is the energy and cooling the stations are allowed to run
+  (every watt of thought becomes heat, and heat can only be radiated away); the floor is the
+  guaranteed basics; substrate insurance is health and pension cover for people who cannot pay
+  for the computing that runs them; works are infrastructure; transit is the transport
+  subsidy.
+
+## Open
+
+1. **Ember Ridge** as the face of the thermal clause (a station whose radiators faulted on 6
+   April and is below its statutory reserve), or a different face.
+2. **The Hard Left and the leadership paper:** how much of the signature chain survives. The
+   leadership ballot stays a general failure route.
+3. **The Anchorage treaty's first scene** and Kenya's and the African Union's stake in it.
+4. **The wire item's wording** and where in the tutorial it falls.
+5. **The clock** (Earth's rescue, which slips), still provisional.
+6. **The NPP's price,** now that the Divergence bill is parked.
+7. **Bible §1.0 and §11.1** (LOCKED) need editing once the shape is settled: the aim, the
+   stranding at sitting 14, the NPP's price.
