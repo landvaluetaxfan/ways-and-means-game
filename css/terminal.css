@@ -262,7 +262,13 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .gov-rail-work [data-gov-awaiting]{background:var(--gold-lt);color:var(--ink);padding:1px 4px;}
 #gov-time{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:8px 10px;background:var(--chrome);border-bottom:1px solid var(--rule);font-size:11px;}
 #gov-time em{font-style:normal;font-family:var(--f-data);}
-#gov-time .pips s{width:15px;height:9px;background:var(--ok);border:0;}
+/* The same bevelled blocks as the Chamber's order-paper bar (.slotbar i), so
+   the counter reads as one instrument wherever it appears. */
+#gov-time .pips s{
+  width:16px;height:12px;background:var(--ok);
+  border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);
+  border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);
+}
 #gov-time .pips s.spent{background:var(--chrome-dk);}
 #gov-inspector{border-top:3px solid var(--gold);padding-top:10px;}
 #gov-inspector > header{display:flex;justify-content:space-between;align-items:start;gap:10px;flex-wrap:wrap;}
