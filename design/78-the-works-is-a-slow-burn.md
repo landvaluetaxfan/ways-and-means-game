@@ -163,9 +163,10 @@ Chamber stays the lever (`design/76`). "Built" means in the game now; "rewrite" 
 | 8 | **Cover**: substrate insurance, the NPP's price | Trottier, Marin | new |
 | 9 | **Infrastructure**: works, and what they do to a station's pull to leave | Tómasson (Closure and Development) | new |
 | 10 | **Transport**: the fare subsidy on the launch windows | Vasmer (Transit) | new |
-| 11 to 12 | The whips' count. Czarnecki's paper, if the Treasurer is not him | Devi, Czarnecki | open |
+| 11 to 12 | The whips' count of the House, with your own party's currents (the Party tab). No signature chain in the tutorial | Devi | settled (author: "the cleaner count") |
 | 13 | The division, or a functional objection that delays it three sittings | Devi | engine, built |
-| 14 to 15 | Question Time, and a disclosure of the thermal margin | Watkins | open |
+| 14 | Question Time: one question from the Opposition on the estimates | Watkins | proposed; rewrite of "Questions to the Prime Minister" |
+| 15 | The Underwriters' read of the carried budget: the Economy tab, figures translated into consequences | the Underwriters | proposed; new |
 | 16 | The rise. Supply is carried or the government falls. The interval reads back the three books | | built (the rise) |
 
 After the rise, **Act II opens on the stranding at the Works**, and the Anchorage treaty is
@@ -178,17 +179,32 @@ warmer in Act III's bloc deals. If the slot is held, it is cooler.
 time), the first clause scene (the clause panel), a slots-short warning when the spare slot is
 gone and supply still needs more, and the rise (the deadline).
 
+**Five clause scenes are kept** (author: "if anything the tutorial should be wide in scope, like a
+prime minister getting acquainted to every element of their premiership"). Across the whole
+opening the tutorial now touches every tab: Government (3), Chamber (4, 13), Party (11 to 12),
+Relations (8), Orbit (6, 9, 10), Foreign Affairs (5), Economy (15), Sitting throughout, and the
+Concordance through a card at sitting 4.
+
+**Proposed, not yet answered:** the thermal-margin disclosure leaves Act I for Act II. The margin
+is the hardest figure to explain, and the Works story gives it a stronger reason to be published.
+
 **What leaves the opening:** the Divergence bill, the shed order and the Ember Ridge cascade
 chain (parked, not deleted).
 
 ## Open
 
 1. **Ember Ridge** is settled as the thermal clause's face (above).
-2. **The Hard Left and the leadership paper:** how much of the signature chain survives. The
-   leadership ballot stays a general failure route.
+2. **The Hard Left and the leadership paper:** settled for Act I (no signature chain in the
+   tutorial); whether it returns later is open. The leadership ballot stays a general failure
+   route.
 3. **The Anchorage treaty's first scene** and Kenya's and the African Union's stake in it.
 4. **The wire item's wording** and where in the tutorial it falls.
 5. **The clock** (Earth's rescue, which slips), still provisional.
 6. **Whether each act gets its own Appropriation** (engine work).
 7. **Bible §1.0 and §11.1** (LOCKED) need editing once the shape is settled: the aim, the
    stranding at sitting 14, the NPP's price.
+8. **Pacing the clause scenes.** The player chooses when to call the division, so a player who
+   carries supply at sitting 6 would reach the clause scenes with nothing left to decide. Proposed:
+   fire the five scenes when the Appropriation reaches **committee**, one a sitting, in the order
+   of the estimates. Committee is where a real legislature goes through a bill clause by clause,
+   and the `billStage` condition already exists. The tutorial then follows the player's pace.
