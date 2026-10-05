@@ -71,11 +71,16 @@ including the 40 functional members who delay a supply bill by three sittings).
    paper (the challenger brought inside; his character id is `halloran`); **Nadia Abadi** of the CDA (the third partner paid). Their
    notes there are marked placeholder, "opencode's to re-author": that is Claude's to write.
    (An earlier draft of this note listed different options without reading the file.)
-2. **The name "(Session 4)".** It and the top bar's `SESS 4.1` are the older arrangement's
-   numbering. The bill is the first of the 2080 Parliament. Rename it, and say what the
-   top bar's label means.
-3. **What forces the vote?** Today the rise is 15 sittings away and design/73 proposes about
-   22. The vote has to fall inside Act I, and the Act's length decides when.
+2. ~~The name "(Session 4)".~~ **Decided (author, 5 Oct): the bill is "Appropriation Bill 2080"**,
+   named for the year, with "(No. 2)" for a supplementary one. Session numbers leave everything a
+   player reads; the top bar drops `SESS 4.1` and shows no act label until Stage 4b maps acts onto
+   sitting periods. `briefs/appropriation-rename.md`.
+3. ~~What forces the vote?~~ **Decided (author, 5 Oct): a hard rise.** Nothing forces the vote;
+   the rise is the deadline, and the player brings it when they choose. The reason to wait is
+   information: the clause scenes and the three books come before the vote. Act I is not
+   lengthened yet; slots are per period, and the length is settled by playtest. Because the
+   estimates take five of six slots and the Divergence bill three, the NPP's price cannot be
+   carried in the same period: "pay the NPP or pay the officials" is the Act's dilemma.
 
 ## Built, 5 October 2026: fifth 1
 
