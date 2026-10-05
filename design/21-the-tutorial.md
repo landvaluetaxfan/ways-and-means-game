@@ -2,6 +2,10 @@
 
 *How the game teaches its own systems, given that it cannot use a tutorial box.*
 
+> **SUPERSEDED IN PART, 5 October 2026 (`design/77`).** The author now wants a tutorial
+> mechanism with popups and a dimmed interface. §2.1 (no tutorial box) and §7 (no modal, no
+> gating) no longer hold; the curriculum in §3 and the safety net in §5 do.
+
 > **STATUS, 14 September 2026 — THIS IS A BRIEF.**
 >
 > Chapter one is already canon the teaching chapter (`05` §3: *"fully authored,

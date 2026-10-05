@@ -31,6 +31,9 @@ when it is done, and this file when it is empty.
 - **The 57 missing choice notes**, and lint to require them (deferred).
 - **The opening's teaching dialogue** (deferred; the intro's timeline is in
   `story-walk.md`).
+- **The tutorial's steps** for Flash I (design/77), written fifth by fifth with Act I
+  (design/76), once `briefs/tutorial-mechanism.md` has landed. The curriculum is
+  design/21 §3 plus the Appropriation's five clauses, the Treasurer and the rise.
 - **Flash I's five-act skeleton**, its forks and the Watkins thread: a one-page
   design round for the author (design/58, Stage 4). The ending grid likewise
   (Stage 1).
