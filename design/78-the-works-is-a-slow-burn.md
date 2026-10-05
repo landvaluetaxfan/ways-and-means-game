@@ -140,11 +140,50 @@ What this means for the build:
   true, so "the budget returns every act" (an Appropriation for each act) is not modelled yet
   and needs engine work if the author wants it.
 
+## Act I, the tutorial: a draft outline (5 Oct, for the author)
+
+Ember Ridge is the face of the thermal clause (author: "Ember Ridge can be the face"). It is a
+middle-band torus of 213,000 people with four seats, closure 0.48 and 2,600 suspended, whose
+radiator fault of 6 April has not been repaired (`content/stations.js`, id `vantage`).
+
+Act I is one sitting period: **sittings 1 to 16**, closing at the rise on whether the House has
+carried the estimates. The Works breaks after it. Every clause scene is told through a familiar
+analogue before its in-world name, and the scene informs and pressures; the clause panel in the
+Chamber stays the lever (`design/76`). "Built" means in the game now; "rewrite" and "new" are not.
+
+| Sitting | Beat | Who | Status |
+|---|---|---|---|
+| 1 | Recommissioned after the March election; the House must carry the estimates before it rises | the President | built |
+| 2 | The first question: what should voters expect | Ceyhan | built |
+| 3 | Who holds the Treasury | Skye, Czarnecki, Abadi, or vacant | built |
+| 4 | The Treasury's draft estimates, then the order of the day (slots) | the Treasurer's officials, Devi | built |
+| 5 | A quiet wire item: Cordell's accounts frozen in Europe. No action. Then **one spare slot**: the budget takes five of six, and the treaty or a held slot is the choice | Ivarsen (Trade and the Anchors), Trottier | rewrite of `briefing_divergence` |
+| 6 | **Energy and cooling**: Ember Ridge and the thermal quota | Girard (Substrate and Thermal) | rewrite of `vantage_radiator` |
+| 7 | **The basics**: air, water, food, the floor | Tanako (the Life Support panel), Ashgrove | rewrite of `gb_approach` |
+| 8 | **Cover**: substrate insurance, the NPP's price | Trottier, Marin | new |
+| 9 | **Infrastructure**: works, and what they do to a station's pull to leave | Tómasson (Closure and Development) | new |
+| 10 | **Transport**: the fare subsidy on the launch windows | Vasmer (Transit) | new |
+| 11 to 12 | The whips' count. Czarnecki's paper, if the Treasurer is not him | Devi, Czarnecki | open |
+| 13 | The division, or a functional objection that delays it three sittings | Devi | engine, built |
+| 14 to 15 | Question Time, and a disclosure of the thermal margin | Watkins | open |
+| 16 | The rise. Supply is carried or the government falls. The interval reads back the three books | | built (the rise) |
+
+After the rise, **Act II opens on the stranding at the Works**, and the Anchorage treaty is
+period 2's first business.
+
+**The payoff.** If the spare slot goes on the treaty, a flag records it and the African Union is
+warmer in Act III's bloc deals. If the slot is held, it is cooler.
+
+**The tutorial cards** (`design/77`) fall on sitting 3 (the Treasury), sitting 4 (order-paper
+time), the first clause scene (the clause panel), a slots-short warning when the spare slot is
+gone and supply still needs more, and the rise (the deadline).
+
+**What leaves the opening:** the Divergence bill, the shed order and the Ember Ridge cascade
+chain (parked, not deleted).
+
 ## Open
 
-1. **Ember Ridge** as the face of the thermal clause (a station whose radiators faulted on 6
-   April and is below its statutory reserve), or a different face. The author had not yet
-   seen the explanation of the thermal clause when asked.
+1. **Ember Ridge** is settled as the thermal clause's face (above).
 2. **The Hard Left and the leadership paper:** how much of the signature chain survives. The
    leadership ballot stays a general failure route.
 3. **The Anchorage treaty's first scene** and Kenya's and the African Union's stake in it.
