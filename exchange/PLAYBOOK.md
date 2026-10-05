@@ -44,6 +44,9 @@ because that is the lane where an orchestrator is better than a worker.
 | Codex | the author starts it on their machine (Agent Orchestrator, **+ Task**, a Codex agent) with a prompt that claims the brief | a cloud session cannot reach it. Its own sandbox cannot push |
 | opencode | `actions_run_trigger` on `opencode.yml` with a `prompt`, or a `/opencode` comment on an issue | runs headless, runs `npm run check`, pushes to main if green. Ask the author before starting one: it spends their API key |
 
+Every worker prompt names `PROSE.md`. Workers write strings, and the register applies to a button
+label as much as to an event page; read the Interface section first.
+
 A local Claude Code session shows up in `ListAgents` only if the author runs
 `claude remote-control` in the clone. Otherwise nothing local is reachable from
 here, and the exchange is the channel.

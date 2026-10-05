@@ -21,8 +21,9 @@ Relations, Foreign Affairs.
    `/opt/pw-browsers/chromium`). **After:** the same two shots. Post all four to the
    orchestrator as paths in a `review` message.
 3. Touch only the tab's own functions, markup and rules. Add no literal pixel size or colour
-   that the stylesheet has a token for. Wording a player reads is Claude's: write plain
-   strings, and name every one in the commit message for a pass.
+   that the stylesheet has a token for. Read `PROSE.md` (the Interface section) before you write any string.
+   Wording a player reads is Claude's: write plain strings, and name every one in the commit
+   message for a pass.
 4. `npm run check` and `npm run layout`. Where a test asserts markup you changed, update the
    assertion and break-test it. No engine change, so no playtest.
 5. **Leave alone the surfaces the unlanded witnessed-acts work edits** (branch

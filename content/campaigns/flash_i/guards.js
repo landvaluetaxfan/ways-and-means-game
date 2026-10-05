@@ -33,6 +33,28 @@ const guard = T.guard;
 console.log("FLASH I: THE CAMPAIGN'S GUARDS");
 console.log("=".repeat(58));
 
+guard("THE TREASURY EVENT AGREES WITH THE TREASURY'S CANDIDATES", ok => {
+  /* the_treasury writes each candidate's effects out again, because the
+     `cabinet` effect appoints and applies nothing else (design/76). Two
+     copies of one fact drift, so this holds them equal. */
+  const ev = CONTENT.eventById.the_treasury;
+  const post = CONTENT.cabinet.find(p => p.id === "treasury");
+  ok("the event offers every candidate, then a wait",
+     !!ev && ev.choices.length === post.candidates.length + 1);
+  post.candidates.forEach((c, i) => {
+    const fx = (ev.choices[i] || {}).effects || [];
+    const appoints = fx.find(f => f.cabinet);
+    ok("choice " + (i + 1) + " appoints " + c.holder,
+       !!appoints && appoints.cabinet.treasury.holder === c.holder &&
+       appoints.cabinet.treasury.party === c.party);
+    ok("and carries that candidate's effects exactly",
+       JSON.stringify(fx.filter(f => !f.cabinet)) === JSON.stringify(c.effects));
+  });
+  const st = Engine.newGame(CONTENT);
+  Engine.choose(st, CONTENT, ev, 2);
+  ok("choosing the third fills the Treasury", st.cabinet.treasury.holder === post.candidates[2].holder);
+});
+
 guard("A BROKEN CARVE-OUT VACATES THE REGISTRY BEFORE ITS APOLOGY", ok => {
   /* Missing post/onBreach, either missing follow-up queue, a cosmetic
      appointment or an ungated order must each fail a real-play check. */

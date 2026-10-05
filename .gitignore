@@ -12,3 +12,5 @@ ways-and-means-prose.docx
 storymap/
 .npm-cache/
 .playtest-before.txt
+.playtest-*.txt
+.playtest-*.done

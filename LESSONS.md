@@ -106,6 +106,15 @@ Sep 2026) and in the design notes cited.
   round of content against its chapter.
 - **A choice appended to an event moves every strategy that picks by
   position.** Only the canon script's named picks are stable.
+- **An opening beat is a sitting.** Adding one shifts every dated event and the economy against
+  the story. A no-op beat with three flag-only choices reproduced the whole regression (the
+  first-option runs' losses went from 10 to 23 of 80). Replace a beat, or move one to chapter
+  two's pool, last in its list.
+- **A decision plays before the harness acts.** A choice that costs order-paper time, on the
+  sitting the supply division is set for (two sittings after third reading), takes the slot the
+  division needed, and the Appropriation dies at the rise. Put the costly choice on another
+  sitting. `Cycles the options` changes phase whenever the opening's order changes: judge a
+  content edit on the four crisis strategies, and read the blind ones as noise.
 - **Order-paper time and orders.**
   - Reserved time (`{slots:{reserve:{bill:n}}}`) is spent only by its bill,
     and it goes at the rise.

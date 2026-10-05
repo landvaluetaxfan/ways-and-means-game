@@ -26,7 +26,7 @@ Each kind of information has one home. Read only the home you need.
 | canon, in-world | `textbook.md` (`node tools/toc.js --index textbook.md` prints its index) |
 | how to author content | `CONTENT_GUIDE.md` |
 | how to run a playtest | `PLAYTEST.md` |
-| how prose is written | `PROSE.md` |
+| how any text a person reads is written | `PROSE.md` |
 | faults already made | `LESSONS.md`, by area. Read the section for what you are touching |
 | why things are as they are | `design/`, dated decision records. A later record overrides an earlier one, and the files above override them all. `design/archive/` holds retired plans and status documents |
 | the public description | `README.md` |
@@ -108,11 +108,16 @@ The author pays for every token.
   lean is keyed on position. Judge a content edit with
   `node tools/playtest.js --seeds 80`, before and after. Cut events are
   archived in `content/archive/cut-events.js`, never deleted.
-- **Prose follows `PROSE.md`**, and lint fails an event page, decision or
-  choice that does not explain. Add a new company, institution or setting
-  term to `INTRODUCE` in `tools/pagecheck.js` the day a page names it. Run
-  `npm run prose` after a hand edit to content, or the next write-back
-  reverts it.
+- **Read `PROSE.md` before you write any text a person will read, however small.** Event pages,
+  decisions and choices; UI labels, tooltips, empty states and error messages; tutorial cards;
+  Concordance, glossary and achievement entries; wire headlines; intros; and a line of dialogue you
+  draft in chat or in a brief for the author to mark. Read the author's standard at the top and the
+  section for the register you are writing, not the whole file. A speech is plain, with no
+  flourish, and an opening scene is neutral (the third round). Lint and `npm run register` catch
+  some faults and the rest are judgment, which the author reads for. Lint fails an event page,
+  decision or choice that does not explain. Add a new company, institution or setting term to
+  `INTRODUCE` in `tools/pagecheck.js` the day a page names it. Run `npm run prose` after a hand edit
+  to content, or the next write-back reverts it.
 - **State.** Bump `STATE_VERSION` when the state's shape changes, with
   migration guards ascending, one block per bump. Content owns identity, the
   save owns simulation, and `Engine.reconcile()` runs on every load. Player
@@ -147,18 +152,19 @@ arrangement: Vijlbrief's last session and the Works, to a count in August
 2080. Until Stage 4 of design/58 rewrites it, the canon ending is read at
 that count.
 
-The canon government reaches the count on 13 August 2080, sitting 55, at
-standing 56:
+The canon government reaches the count on 14 August 2080, sitting 56, at
+standing 51:
 
-- **Seats:** the PSD holds 107 of 280, and the government's side 171, a
+- **Seats:** the PSD holds 99 of 280, and the government's side 163, a
   working majority.
-- **Thermal margin:** 5.
-- **Debt:** it owes CW$46.9bn in Treasury bills, with CW$13.1bn of room left.
-- **Inflation:** 6.1%, or 3.0% core, with its payments current.
+- **Thermal margin:** 7.
+- **Debt:** it owes CW$56.8bn in Treasury bills, with CW$3.2bn of room left.
+- **Inflation:** 5.9%, or 3.0% core, with its payments current.
 
 `npm run guards` asserts that the canon is reachable by play and prints these
-figures. Across 80 seeds, the four crisis strategies lose 10, 18, 4 and 10
-runs. Keep the canon reachable until the
+figures. Across 80 seeds, the four crisis strategies lose 14, 23, 4 and 16
+runs. (They were 10, 18, 4 and 10 until 5 Oct, when the Treasury became an opening decision;
+the canon's room under the bill authority fell from CW$13.1bn with it, and is thin.) Keep the canon reachable until the
 author rewrites it, and update these figures when they move.
 
 ## The interface

@@ -27,9 +27,12 @@ const CABINET = [
     note:"Summonable by the engineering authority. Raised at every confirmation." },
   { id:"treasury",                name:"The Treasury",              title:"Treasurer",
     /* VACANT AT THE OPENING, because it is the post the Prime Minister
-       herself held until last week. A new leader's first appointment is
-       her own replacement, and it is the one seat at the table she
-       chose. See design/14 §6.2.
+       herself held until January, and she has left it empty through the
+       election and the coalition talks (design/76). A new leader's first
+       appointment is her own replacement, and it is the one seat at the
+       table she chose. See design/14 §6.2. THE EVENT the_treasury (content/events.js) offers
+       these three and writes their effects out again; the guards assert
+       that the copies agree.
 
        MECHANICAL DEMONSTRATION, opencode's to re-author: the three
        candidates are the three different acts available — keep the
@@ -43,7 +46,8 @@ const CABINET = [
       { holder:"skye", party:"cu",
         note:"Your deputy at the Treasury from 2076 to 2080, who knows its work in detail, and whose appointment owes no faction a favour.",
         effects:[{move:{"loyalty.cu_loyalists":4}},
-                 {move:{solvency:3000}},
+                 {move:{"loyalty.cu_halloran":-6}},
+                 {move:{"loyalty.cu_maintenance":-3}},
                  {wire:"SKYE CONFIRMED AT THE TREASURY; NO CHANGE OF DIRECTION SIGNALLED"}] },
       { holder:"halloran", party:"cu",
         note:`Leads the members collecting signatures for a ballot on your leadership. In the Cabinet he would be bound by collective responsibility, and could no longer lead them openly.`,

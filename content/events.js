@@ -115,7 +115,7 @@ const EVENTS = [
      Why You? \u00b7 The Winter Garden.) */
   title:"Adriana Eireann Flash \u2014 The Edge of History",
   speaker:"tenaya",
-  body:`The President receives a new Prime Minister in the Winter Garden, the
+  body:`The President receives the Prime Minister in the Winter Garden, the
 Commonwealth's capital. It was built as a station of its own so that no
 other station's voters would own the seat of government, and its 80,000
 residents return one member to Parliament, who can introduce bills and speak
@@ -138,11 +138,20 @@ review, and refuse an appointment.
 
 The commission is on the desk in front of him. He has not signed it.
 
+Adriana Flash has led the government since January, when the members of the
+Party of Socialists and Democrats replaced Nils Vijlbrief with his own
+Treasurer. In March she led the party into a general election that no party
+won outright, and she has spent the weeks since bargaining for a majority.
+The commission he is holding is for the new Parliament.
+
 "You have 147 votes on confidence," he says. "Eighty-five of your own,
 thirty-six New Progressives, twenty from the Congregational Democrats, and
 six independents who have promised you confidence and the budget and
 nothing else. If the independents go, you have 141, which is a majority of
 one."
+
+"The House has to carry your estimates, the budget bill, before it rises. If it
+does not, the government cannot pay its officials."
 
 He turns the commission round to face you. "The Charter says I appoint
 whoever can command the House, and on those numbers that is you. Before I
@@ -158,7 +167,7 @@ sign it, I would like to hear what the government means to do first."`,
                { wire:"PM TELLS PRESIDENT THE DIVERGENCE BILL COMES FIRST" }],
       result:`He dates the commission and signs it. His office's note of the meeting records that the new Prime Minister named the bill as the government's first business before the House had sat once. The note will be on file if the bill reaches his desk.` },
 
-    { posture:"measured", label:`The stations. The Commonwealth's radiators have little spare capacity, and a station that cannot get rid of its heat must switch off some of the minds it runs.`,
+    { posture:"measured", label:`The stations, and the estimates that pay for them. The Commonwealth's radiators have little spare capacity, and a station that cannot get rid of its heat must switch off some of the minds it runs.`,
       act:"Tell him",
       note:`You tell him the stations come first. Four stations have run short of cooling during his term, and the President, the only official the whole Commonwealth elects, has taken the small stations' side. The Trades Left, whose members maintain the stations, will welcome it. The New Progressive Party will notice that you did not mention its bill.`,
       effects:[{ flag:"commission_stations" },
@@ -182,9 +191,9 @@ sign it, I would like to hear what the government means to do first."`,
 
 { id:"the_account", prologue:2, once:true,
   /* The campaign's name moved to the_commission, which is the first thing
-     the player reads now; this takes "Why you?" from the same list of
-     alternatives the author was offered, because that is what the scene is. */
-  title:"Why you?",
+     the player reads now; the scene was "Why you?" until 5 Oct, when the
+     author found the question hostile (PROSE.md, the third round). */
+  title:"The first question",
   speaker:"ceyhan",
   /* THE EMPHASIS. Her record is FIXED (design/14 §2) — this does not
      change a thing she did. It decides which reading of it she puts her
@@ -197,7 +206,7 @@ sign it, I would like to hear what the government means to do first."`,
      are engineering. Three flags, and later content may gate a line on
      `led_on_competence` / `led_on_continuity` / `led_on_break` — never a
      branch, only a line. Nothing here forks the prose. */
-  body:`Your first press conference as Prime Minister is carried live to all thirty
+  body:`Your first press conference since the commission is carried live to all thirty
 stations. On Anselm Ring and the other stations of the ring band it falls in
 the middle of a working shift. On the outer habitats, supervisors have held
 back the shift change so that their crews can watch.
@@ -206,29 +215,27 @@ The press gallery has given the first question to Ivor Ceyhan, political
 editor of The Spindle, the Commonwealth's newspaper of record. He asks it
 without notes.
 
-"Prime Minister, your majority is six, and all six are independents. You've
-inherited a bill you didn't write, making copies into persons after forty
-hours, which your predecessor promised the New Progressives. And your own
-party can't agree what it's for. So, before anything else: why you?"
+"Prime Minister, what should voters expect from this government that they did
+not get from the last one?"
 
-He means the four currents of the Party of Socialists and Democrats: the
-maintenance unions of the Trades Left, the leadership's Soft Left, the deck
-co-operatives of the Station Left and Dan Czarnecki's Hard Left.
+Whatever you say, four currents of the Party of Socialists and Democrats will
+read it: the maintenance unions of the Trades Left, the leadership's Soft Left,
+the deck co-operatives of the Station Left and Dan Czarnecki's Hard Left.
 
 Your answer will be quoted for the rest of your term, and it will decide
 which part of your record you are known for.`,
   choices:[
-    { posture:"measured", label:`Because the last government could not run the Commonwealth, and I can.`,
+    { posture:"measured", label:`A government that runs the Commonwealth competently. The last one could not.`,
       act:"Say it",
       note:`You stake your reputation on competence: the promise that the stations will be run well, which most voters want to hear. Kazuya Tanako, who chairs the members elected by life-support engineers, hears a government that respects expertise. The Trades Left hears an attack on Nils Vijlbrief, the Prime Minister before you, and remembers that you were the Treasurer who refused him the money for the stations' upkeep.`,
       effects:[{flag:"led_on_competence"},
                {move:{public_standing:5}},
                {move:{"loyalty.cu_maintenance":-6}},
                {move:{"rel.gb_chair":6}},
-               {wire:"NEW PM PITCHES COMPETENCE; SAYS GOVERNMENT WILL BE 'RUN, NOT ARGUED WITH'"}],
+               {wire:"PM PITCHES COMPETENCE; SAYS GOVERNMENT WILL BE 'RUN, NOT ARGUED WITH'"}],
       result:`Ceyhan writes it down, and The Spindle leads with it the next morning. The Trades Left hears you blame Vijlbrief's government for breakdowns it wanted the money to prevent.` },
 
-    { posture:"cautious", label:`Because I stand for what this party has always stood for: public ownership, and the workers who keep the stations running.`,
+    { posture:"cautious", label:`A government that stands for what this party has always stood for: public ownership, and the workers who keep the stations running.`,
       act:"Say it",
       note:`You claim the party's traditions. The Trades Left will quote you at every meeting for a year, and the Soft Left is reassured. Voters who wanted a fresh start hear the old party, and the New Progressive Party, which joined the government to pass the bill on copies, will ask whether those traditions include its bill.`,
       effects:[{flag:"led_on_continuity"},
@@ -239,7 +246,7 @@ which part of your record you are known for.`,
                {wire:"PM CLAIMS THE MOVEMENT'S INHERITANCE; PARTNERS SEEK CLARIFICATION"}],
       result:`The New Progressive Party asks for the sentence in writing. At its next meeting it asks whether the party's traditions include the forty-hour bill, which would oblige employers to pay the copies they now run unpaid.` },
 
-    { posture:"bold", label:`Because the party had to change, and I changed it.`,
+    { posture:"bold", label:`A party that has changed. I changed it.`,
       act:"Say it",
       note:`You take credit for modernising the party, which most voters and the New Progressive Party want to hear. The Trades Left and Dan Czarnecki's Hard Left fought that modernisation, and they will hear that the leadership no longer needs them. Your own members will quote it back at you the first time you ask them for a hard vote.`,
       effects:[{flag:"led_on_break"},
@@ -249,6 +256,81 @@ which part of your record you are known for.`,
                {move:{"loyalty.cu_halloran":-6}},
                {wire:"PM: 'THE PARTY HAD TO CHANGE.' CZARNECKI GROUP DECLINES TO COMMENT"}],
       result:`The Spindle prints the sentence on its front page. The Hard Left declines to comment, and its members sit through the afternoon's business without speaking.` }
+  ]},
+
+/* THE TREASURY (design/76, 5 Oct 2026). The Treasury has been vacant since January:
+   the Prime Minister held it until her party made her leader, and left it empty
+   through the election and the coalition talks. The three candidates are
+   content/cabinet.js's, and their effects are written out again here because
+   the `cabinet` effect appoints and does not apply a candidate's effects: the
+   campaign's guards assert that the two copies agree. If the post is filled
+   from the Government tab first, this never fires. */
+{ id:"the_treasury", prologue:4, once:true,
+  when:{ postVacant:["treasury"] },
+  title:"Who holds the Treasury",
+  speaker:"castellane",
+  body:`The Treasury has had no minister since January. You held the post until your
+party made you Prime Minister, and you have left it empty through the election
+and the coalition talks, because it is the largest post the government has to
+give.
+
+In those months the Treasury's officials have drawn up the estimates, the
+budget bill for the session, without a minister. The Treasurer answers for the
+budget in the House, and no minister has signed this one. Until someone does,
+the Treasury can make no orders and begin no initiatives.
+
+Maren Castellane, the Governor of the Reserve Bank, was your deputy there and
+has run it since you left for the Treasury in 2076. She has come to talk about
+who will hold the Treasury.
+
+There are three names. Aster Skye, the Financial Secretary, was your deputy at
+the Treasury and carried its business in the House while you sat outside it.
+Dan Czarnecki leads the Hard Left and is collecting signatures for a ballot on
+your leadership; as a minister he would be bound by collective responsibility.
+Nadia Abadi, a backbencher of the Congregational Democratic Alliance, sits for
+the medicine roll, one of the 40 functional members, who are elected by their
+profession. Her party holds two junior posts and has asked for a department
+that matters.
+
+The estimates have to carry before the House rises, and whoever signs them will
+answer for them in the House.`,
+  choices:[
+    { posture:"cautious", label:`Appoint Aster Skye, the Financial Secretary, who knows the estimates line by line.`,
+      act:"Appoint her",
+      note:`Skye already carries the Treasury's business in the House, and the markets will read her appointment as no change of direction. The Soft Left, the current that runs your party, approves. The Hard Left and the Trades Left, your party's union wing, will read it as the same Treasury that refused the stations their money.`,
+      effects:[{ cabinet:{ treasury:{ holder:"skye", party:"cu" } } },
+               { move:{ "loyalty.cu_loyalists":4 } },
+               { move:{ "loyalty.cu_halloran":-6 } },
+               { move:{ "loyalty.cu_maintenance":-3 } },
+               { wire:"SKYE CONFIRMED AT THE TREASURY; NO CHANGE OF DIRECTION SIGNALLED" }],
+      result:`Aster Skye is sworn in at the Treasury that afternoon, and its officials hand her the estimates to sign. The Reserve Bank's statement says it expects no change of direction.` },
+
+    { posture:"bold", label:`Appoint Dan Czarnecki, who leads the Hard Left, and bind him to the Cabinet's collective responsibility.`,
+      act:"Appoint him",
+      note:`As Treasurer he must defend the estimates he signs, and he can no longer lead the signature drive openly: it loses four names. The Hard Left is delighted. The Soft Left says it was not consulted, and the markets will read the Hard Left's leader in the Treasury as a turn towards borrowing.`,
+      effects:[{ cabinet:{ treasury:{ holder:"halloran", party:"cu" } } },
+               { move:{ "loyalty.cu_halloran":26 } },
+               { move:{ "loyalty.cu_loyalists":-11 } },
+               { move:{ public_standing:-4 } },
+               { signatures:-4 },
+               { wire:"CZARNECKI TO THE TREASURY; LOYALISTS SAY THEY WERE NOT CONSULTED" }],
+      result:`Dan Czarnecki is sworn in at the Treasury that afternoon. Four members take their names off the signature drive before the evening, and the Soft Left tells the lobby correspondents that nobody asked it.` },
+
+    { posture:"measured", label:`Appoint Nadia Abadi of the Congregational Democratic Alliance, and give the third partner the department it asked for.`,
+      act:"Appoint her",
+      note:`The Alliance's 20 seats are one of the three blocs that make up 141, and it gets the department it asked for. The opposition will say the Treasury was bought with votes, and the Trades Left, whose members maintain the stations, will resent a partner deciding what the stations get.`,
+      effects:[{ cabinet:{ treasury:{ holder:"abadi", party:"rv" } } },
+               { move:{ "loyalty.rv":14 } },
+               { move:{ "capital.rv":3 } },
+               { move:{ "loyalty.cu_maintenance":-7 } },
+               { wire:"TREASURY GOES TO THE CONGREGATIONAL DEMOCRATIC ALLIANCE IN REBALANCE" }],
+      result:`Nadia Abadi is sworn in at the Treasury that afternoon. The Alliance's leaders say it is the first time the government has treated them as a partner, and the Liberal opposition asks in the House what qualifies a backbencher from the medicine roll to run the Treasury.` },
+
+    { posture:"bold", label:`Leave the Treasury without a minister for now, and let its officials carry on.`,
+      act:"Wait",
+      note:`The Treasury can make no orders until someone holds the post, including emergency orders it may need, and the opposition will point that out. Voters see a government that cannot fill its most important department.`,
+      effects:[{ flag:"treasury_left_vacant" }, { move:{ "public_standing":-5 } }],
+      result:"The Treasury can make no orders until someone holds the post, and the opposition knows it." }
   ]},
 
 { id:"briefing_divergence", prologue:3, once:true,
@@ -290,7 +372,7 @@ licence and compete for their jobs.`,
       result:`The New Progressive Party welcomes the statement within the hour. The Trades Left learns of it from the news wire, and its members complain in the tea room that nobody asked them.` }
   ]},
 
-{ id:"gb_approach", prologue:8, once:true,
+{ id:"gb_approach", prologue:9, once:true,
   /* THE CHAPTER ADVANCE MUST NOT HINGE ON MUTABLE BILL STATE. This was
      gated `billStage:{divergence:"committee"}`, and the obvious first move
      — granting the divergence bill a slot — moved it out of committee, so
@@ -339,7 +421,7 @@ roll. For us this isn't a personhood bill. It changes who elects the panel."`,
       result:`She talks for twenty minutes about the grades of engineering certificate and never mentions the vote. Afterwards her secretary books the panel's room for Thursday at ten, four hours before the division.` }
   ]},
 
-{ id:"halloran_signatures", prologue:5,
+{ id:"halloran_signatures", prologue:6,
   when:{ loyaltyBelow:{cu_halloran:20}, flagsAbsent:["halloran_confronted"] },
   title:"Twelve signatures",
   speaker:"halloran",
@@ -419,7 +501,7 @@ redrawn list can move them up as easily as down.`,
       result:"You keep the leadership. The New Progressive Party, which joined the government for the bill you have just withdrawn, meets tonight without you." }
   ]},
 
-{ id:"vantage_radiator", prologue:6,
+{ id:"vantage_radiator", prologue:7,
   when:{ scalarBelow:{thermal_margin:22}, flagsAbsent:["vantage_handled"] },
   title:"Ember Ridge, third day short of cooling",
   speaker:null,
@@ -564,7 +646,7 @@ not clear that either act breaks any law.`,
    voice, one sitting at a time. The Chief Whip can say whatever he likes; the
    prose never puts the tutorial in the Prime Minister's mouth. */
 
-{ id:"the_order_of_the_day", prologue:4,
+{ id:"the_order_of_the_day", prologue:5,
   when:{ flagsAbsent:["taught_the_day"] },
   title:"The order of the day",
   speaker:"okarie",
@@ -637,32 +719,6 @@ trade and so who votes for its functional seats."`,
       effects:[{ flag:"taught_the_house" }, { move:{ "rel.okarie":-3 } },
                { move:{ "public_standing":1 } }],
       result:`He nods and leaves to count the functional members himself. By the evening the press gallery has heard that the new Prime Minister sent the Chief Whip away, and reports it as confidence.` }
-  ]},
-
-{ id:"the_whip_list", prologue:7,
-  when:{ flagsAbsent:["whip_briefed"] },
-  title:"The list",
-  speaker:"okarie",
-  body:`The Divergence Threshold Bill will be called to a vote before the House
-rises. The Chief Whip, Anil Devi, brings one sheet with three columns: the
-members who will vote with the government, the members who will vote against
-it, and the members who have not decided. He reads out the third column.
-
-"There are two ways to move a vote," he says. "The first is to whip our own
-benches: tell our members how to vote, and make them. It costs the party's goodwill, and that takes time to rebuild.
-
-"The second is to ask another party for its votes. It will want a promise in
-return, such as time on the order paper for one of its bills, and the
-promise will carry a date by which we must keep it."`,
-  choices:[
-    { posture:"cautious", label:`Hold the members already with the government, and spend nothing on the undecided for now.`,
-      note:`The whips keep the members who have promised their votes and ask nothing more of the party, so its goodwill is saved for a harder vote later. The undecided stay undecided, and a government seen to wait on its own flagship bill looks less sure of it.`,
-      effects:[{ flag:"whip_briefed" }, { move:{ "loyalty.cu":5 } }, { move:{ "public_standing":-2 } }],
-      result:"The whips hold the members they already have and wait. It costs nothing, and the undecided members stay undecided." },
-    { posture:"bold", label:`Whip the party hard: tell every member how to vote on the bill, and make them.`,
-      note:`The whips will press the undecided members until they agree, spending the party's goodwill to secure the votes now. Members who are pressed twice remember it, and the party's loyalty to its leadership falls. Voters see a government in command of its benches.`,
-      effects:[{ flag:"whip_briefed" }, { move:{ "loyalty.cu":-6 } }, { move:{ "public_standing":3 } }, { flag:"whipped_own_side" }],
-      result:`The whips work the tea room until the division bells. The members they reach twice vote as asked, and The Spindle, the Commonwealth's newspaper of record, prints how many members they had to press.` }
   ]},
 
 /* ---------- CHAPTER TWO — the division and its consequences ----------
@@ -3764,6 +3820,39 @@ The letter says twice that the party will not bring the government down. Anil De
       effects:[{ court:15 }, { move:{ public_standing:-2 } },
                { wire:"PRIME MINISTER OFFERS A NEW COALITION AGREEMENT" }],
       result:"The new terms are with the partner, and its executive meets to decide whether they are enough." }
+  ]},
+
+/* THE LIST, moved from the opening to chapter two's pool (5 Oct 2026). The
+   Treasury became the third opening beat, and every opening beat is a sitting:
+   one more shifted the whole schedule and raised the first-option runs' losses
+   from 10 to 23 of 80. This was the beat the later chapter repeats, since
+   "Thursday" and "The three ways a government loses a vote" teach the same
+   whipping. It sits last in the list because the pool's seeded lean is keyed
+   on position. */
+{ id:"the_whip_list", chapter:2, weight:78, once:true,
+  when:{ flagsAbsent:["whip_briefed"] },
+  title:"The list",
+  speaker:"okarie",
+  body:`The Divergence Threshold Bill will be called to a vote before the House
+rises. The Chief Whip, Anil Devi, brings one sheet with three columns: the
+members who will vote with the government, the members who will vote against
+it, and the members who have not decided. He reads out the third column.
+
+"There are two ways to move a vote," he says. "The first is to whip our own
+benches: tell our members how to vote, and make them. It costs the party's goodwill, and that takes time to rebuild.
+
+"The second is to ask another party for its votes. It will want a promise in
+return, such as time on the order paper for one of its bills, and the
+promise will carry a date by which we must keep it."`,
+  choices:[
+    { posture:"cautious", label:`Hold the members already with the government, and spend nothing on the undecided for now.`,
+      note:`The whips keep the members who have promised their votes and ask nothing more of the party, so its goodwill is saved for a harder vote later. The undecided stay undecided, and a government seen to wait on its own flagship bill looks less sure of it.`,
+      effects:[{ flag:"whip_briefed" }, { move:{ "loyalty.cu":5 } }, { move:{ "public_standing":-2 } }],
+      result:"The whips hold the members they already have and wait. It costs nothing, and the undecided members stay undecided." },
+    { posture:"bold", label:`Whip the party hard: tell every member how to vote on the bill, and make them.`,
+      note:`The whips will press the undecided members until they agree, spending the party's goodwill to secure the votes now. Members who are pressed twice remember it, and the party's loyalty to its leadership falls. Voters see a government in command of its benches.`,
+      effects:[{ flag:"whip_briefed" }, { move:{ "loyalty.cu":-6 } }, { move:{ "public_standing":3 } }, { flag:"whipped_own_side" }],
+      result:`The whips work the tea room until the division bells. The members they reach twice vote as asked, and The Spindle, the Commonwealth's newspaper of record, prints how many members they had to press.` }
   ]}
 
 ];

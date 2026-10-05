@@ -8,7 +8,7 @@ not in a chat.
 ## Picking one up
 
 1. Read `AGENTS.md`, then only the section of `LESSONS.md` for the area the
-   brief touches, and `PROSE.md` if it touches anything a player reads.
+   brief touches, and `PROSE.md` before you write any text a person will read, a UI string included.
 2. Check `git log` for the brief's subject first. If the work is already in,
    the brief is stale: delete it and say so.
 3. Do the task, keeping to the files the brief names. If it turns out to

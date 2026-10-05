@@ -30,7 +30,7 @@ sets the shared type-scale tokens the card must use, and it holds `index.html`, 
    or `off`, set in the Options popover, which also replays any step.
 5. **One real step** in Flash I's `tutorial.js`: order-paper time, on the Government tab. Claude
    writes the rest.
-6. **Prose registration**: the steps' text goes into `js/prosemap.js` so `npm run prose:check`
+6. **Prose registration** (and read `PROSE.md`, the Interface section, before writing any card text): the steps' text goes into `js/prosemap.js` so `npm run prose:check`
    still round-trips, and `tools/lint.js` holds it to `PROSE.md` like any other page.
 
 ## Checks

@@ -76,3 +76,25 @@ including the 40 functional members who delay a supply bill by three sittings).
    top bar's label means.
 3. **What forces the vote?** Today the rise is 15 sittings away and design/73 proposes about
    22. The vote has to fall inside Act I, and the Act's length decides when.
+
+## Built, 5 October 2026: fifth 1
+
+- **`the_commission`** says the Prime Minister is recommissioned after the March election, and the
+  President states the budget rule plainly. **`the_account`** (retitled "The first question") asks
+  one neutral question; its three answers keep their flags and effects. Both follow PROSE.md's
+  third round (no flourish, neutral openings).
+- **`the_treasury`** (the fourth opening beat) offers the three candidates and a fourth, to leave
+  the post empty (the old `the_vacant_post` choice, kept so that "leave it vacant" survives). Skye
+  is repriced: no money, Hard Left -6, Trades Left -3. The event writes the candidates' effects
+  out again, and a guard holds the two copies equal. Abadi has a `role` now, because lint cannot
+  gloss a person whose role is empty.
+- **The opening is still eight beats**: the divergence briefing, the Treasury, then the order of
+  the day. `the_whip_list` moved to the end of chapter two's pool (weight 78), where "Thursday"
+  already teaches the same whipping. Adding a ninth beat shifted the schedule by a sitting and
+  raised the first-option runs' losses from 10 to 23 of 80, and a no-op beat reproduced all of it.
+- **The Treasury is no longer left vacant by every blind run**, so `Pulls levers` (earlier
+  Treasury powers) lost its elections, and `Cycles the options` changed phase. The four crisis
+  strategies now lose 14, 23, 4 and 16 of 80, against 10, 18, 4 and 10.
+- **The canon moved** (AGENTS.md has the new figures): the room under the bill authority is
+  CW$3.2bn, where it was CW$13.1bn, and the PSD holds 99 seats where it held 107. It is still the
+  debt trap and still reachable. Restoring room is a tuning job for the Act I rewrite.
