@@ -152,24 +152,25 @@ arrangement: Vijlbrief's last session and the Works, to a count in August
 2080. Until Stage 4 of design/58 rewrites it, the canon ending is read at
 that count.
 
-The canon government reaches the count on 13 August 2080, sitting 55, at
-standing 50:
+The canon government reaches the count on 14 August 2080, sitting 56, at
+standing 52:
 
-- **Seats:** the PSD holds 106 of 280, and the government's side 169, a
+- **Seats:** the PSD holds 99 of 280, and the government's side 163, a
   working majority.
-- **Thermal margin:** 9.
-- **Debt:** it owes CW$52.8bn in Treasury bills, with CW$7.2bn of room left.
-- **Inflation:** 5.5%, or 3.0% core, with its payments current.
+- **Thermal margin:** 7.
+- **Debt:** it owes CW$50.4bn in Treasury bills, with CW$9.6bn of room left.
+- **Inflation:** 5.7%, or 3.0% core, with its payments current.
 
 `npm run guards` asserts that the canon is reachable by play and prints these
 figures. Across 80 seeds, the four crisis strategies (first option, first
-option never climbing, follows the brief, costliest option) lose 12, 20, 5 and
-10 runs. (They were 14, 23, 4 and 16 before the estimates page (5 Oct), and
-10, 18, 4 and 10 before the Treasury became an opening decision.) The witness
-run is seeded by `CANON_SEED` in the campaign's guards, because any added event
-reshuffles the pool and moves the canon: when the canon block fails on arrears or
-room after a content edit, probe seeds 1-6 and re-pick it (LESSONS.md). Keep the canon reachable until the
-author rewrites it, and update these figures when they move.
+option never climbing, follows the brief, costliest option) lose 17, 24, 10 and
+15 runs. The same four lose 36, 59, 17 and 32 of 240 seeds, and an edit that only
+adds pages moves the 80-seed counts by five or so either way, so read a change
+across 240 seeds before calling it an effect. The witness run is seeded by
+`CANON_SEED` in the campaign's guards, because any added event reshuffles the pool
+and moves the canon: when the canon block fails on arrears or room after a content
+edit, probe seeds 1-6 and re-pick it (LESSONS.md). Keep the canon reachable until
+the author rewrites it, and update these figures when they move.
 
 ## The interface
 

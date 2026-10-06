@@ -127,6 +127,14 @@ Sep 2026) and in the design notes cited.
   `{ratio}`, `{represented}` and `{member}` (`PROSE.md`).
 - **Run `npm run prose` after a hand edit to content**, or the next
   `prose:in` reverts the edit.
+- **A scripted edit needs an exact, unique anchor and a size check.** A
+  replacement cut from `s.index(start)` to `s.index(end)` took the first match
+  of a sentence that a much earlier event also opened with, and deleted about
+  2,400 lines of `content/events.js` in one write; only the event count
+  (143 became 74) showed it. Replace by a whole string, assert
+  `s.count(old) == 1`, and compare the line count and `T.all().events.length`
+  before and after. Restore with `git checkout -- <file>`, and keep edits
+  uncommitted until the count is right.
 - **A page with no choice is acknowledged, not chosen.** `Engine.playSitting`
   and the Sitting screen call `Engine.acknowledge` on a setpiece with no
   `choices`, and take neither a pick nor the sitting's decision. A harness

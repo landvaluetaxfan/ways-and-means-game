@@ -333,7 +333,7 @@ answer for them in the House.`,
       result:"The Treasury can make no orders until someone holds the post, and the opposition knows it." }
   ]},
 
-{ id:"briefing_divergence", prologue:6, once:true,
+{ id:"briefing_divergence", prologue:7, once:true,
   title:"Time for one bill",
   speaker:"okarie",
   body:`The Divergence Threshold (Amendment) Bill is in committee. Nils Vijlbrief,
@@ -359,7 +359,8 @@ estimates are at first reading and need five slots. The bill is in committee
 and needs three.
 
 "Eight slots against six," says Anil Devi, the Chief Whip, setting the two
-measures side by side. "You can carry one of them this period."
+measures side by side. "The House can't rise without the estimates, so they
+take five. That leaves one slot, and the bill needs three."
 
 Mandelina Trottier, the Deputy Prime Minister and the New Progressives'
 leader, has asked him twice when the bill will be called. The bill carries
@@ -375,17 +376,17 @@ hold a maintenance licence and compete for their jobs.`,
       result:`Devi starts with the Life Support panel, whose six members he expects to decide the vote.` },
     { posture:"cautious", label:`Tell Trottier the estimates come first, and that the bill will be the first business of the next sitting period.`,
       act:"Tell her",
-      note:`You spend five slots on the estimates so that the government can pay its officials, and have one left. The bill falls when the House rises, as any measure does that has not carried. The New Progressive Party will record that the government owes it, and Trottier will ask at every meeting until the bill is called.`,
+      note:`You spend five slots on the estimates so that the government can pay its officials, and have one left over. The bill stays in committee, and the House takes it up when the next sitting period opens. The New Progressive Party will record that the government owes it, and Trottier will ask at every meeting until the bill is called.`,
       effects:[{ flag:"estimates_first" }, { move:{ "loyalty.psa":-4 } }, { move:{ "capital.psa":-3 } }],
       result:`Trottier takes it without comment. By evening the whips' ledger, their running account of what each partner is owed, shows the government in debt to her party.` },
-    { posture:"bold", label:`Tell Trottier the bill comes first, and carry the estimates with whatever time is left.`,
+    { posture:"bold", label:`Tell Trottier the bill comes first, and spend the period's time on it before the estimates.`,
       act:"Tell her",
-      note:`The New Progressive Party gets the bill it joined the government for, and its members say so in public. The bill and the estimates need eight slots and you have six, so the estimates may not carry before the House rises. A government that cannot pay its officials falls with the House, and the opposition will say you chose a bill over the budget.`,
+      note:`The New Progressive Party gets the bill it joined the government for, and its members say so in public. The bill needs three slots and the estimates five, and you have six. If the bill takes all three of the slots it needs, the estimates cannot carry before the House rises, and a government that cannot pay its officials falls with the House. The opposition will say you chose a bill over the budget.`,
       effects:[{ flag:"bill_first" }, { move:{ "loyalty.psa":8 } }, { move:{ public_standing:-2 } },
                { wire:"PM PUTS DIVERGENCE BILL AHEAD OF THE ESTIMATES" }],
       result:`Trottier thanks you in front of her members. Devi writes the slots on the back of the order paper and says nothing.` }
   ]},
-{ id:"gb_approach", prologue:9, once:true,
+{ id:"gb_approach", prologue:14, once:true,
   /* THE CHAPTER ADVANCE MUST NOT HINGE ON MUTABLE BILL STATE. This was
      gated `billStage:{divergence:"committee"}`, and the obvious first move
      — granting the divergence bill a slot — moved it out of committee, so
@@ -434,7 +435,7 @@ roll. For us this isn't a personhood bill. It changes who elects the panel."`,
       result:`She talks for twenty minutes about the grades of engineering certificate and never mentions the vote. Afterwards her secretary books the panel's room for Thursday at ten, four hours before the division.` }
   ]},
 
-{ id:"halloran_signatures", prologue:7,
+{ id:"halloran_signatures", prologue:9,
   when:{ loyaltyBelow:{cu_halloran:20}, flagsAbsent:["halloran_confronted"] },
   title:"Twelve signatures",
   speaker:"halloran",
@@ -514,7 +515,7 @@ redrawn list can move them up as easily as down.`,
       result:"You keep the leadership. The New Progressive Party, which joined the government for the bill you have just withdrawn, meets tonight without you." }
   ]},
 
-{ id:"vantage_radiator", prologue:8,
+{ id:"vantage_radiator", prologue:11,
   when:{ scalarBelow:{thermal_margin:22}, flagsAbsent:["vantage_handled"] },
   title:"Ember Ridge, third day short of cooling",
   speaker:null,
@@ -670,8 +671,10 @@ reached, and what it needs next.
 Order-paper time is the floor time the House gives the government. It is
 counted in slots, six in each sitting period, and the slots come back after
 each recess. A slot moves one measure one stage: from first reading to
-second reading, say, or from committee to report. A measure that has not
-passed when the House rises at the end of the period falls.
+second reading, say, or from committee to report. The House must have carried
+the estimates before it rises at the end of the period. Other measures wait
+on the order paper for the next period, and fall only when the session ends,
+three periods on.
 
 "Six slots until the House rises," Devi says. "Everything on this list wants
 some of them."`,
@@ -2777,26 +2780,24 @@ The government has until the division to change the count.`,
   title:"Questions to the Prime Minister",
   speaker:"watkins",
   body:`At Question Time, Darren Watkins Jr., the Leader of the Opposition, has the
-first three questions, and he has plainly had them prepared for a week.
+first question. It concerns the estimates.
 
-"The Prime Minister told this House the Treasury's cash reserve was sound,"
-he says. "Will she tell us today what it stands at, or will she tell us
-again that the figure is a matter for the Treasurer, who is also not
-answering?"
+"Can the Prime Minister tell the House what the Treasury's cash reserve
+stands at today?" he asks.
 
-The reserve is the Treasury's cash in hand. Your own members are already
-working out what the figure means for their seats, and the opposition worked
-it out last week.`,
+The reserve is the Treasury's cash in hand, and the estimates are paid from
+it. Your own members want the figure for the same reason the opposition does:
+it shows how much room the government has left to spend.`,
   choices:[
-    { posture:"measured", label:`Answer all of it: stay for the afternoon, and give the reserve's figure.`,
+    { posture:"measured", label:`Answer in full: stay for the afternoon, and give the reserve's figure.`,
       cost:{ slot:1 },
       note:`It costs the afternoon, and the House sits late. Nobody can then say the government is hiding the figure, so voters and your own members think better of it.`,
       effects:[
         { move:{ public_standing:4, party_loyalty:3 } },
         { wire:"PRIME MINISTER TAKES QUESTIONS FOR NINETY MINUTES; NO FIGURE WITHHELD" }
       ],
-      result:`You answer the three questions and the fourteen that follow. The House sits late, and nobody can say the government is hiding the figure.` },
-    { posture:"cautious", label:`Refer him to the Treasurer, and move on to the next question.`,
+      result:`You answer the question and the fourteen that follow. The House sits late, and nobody can say the government is hiding the figure.` },
+    { posture:"cautious", label:`Refer him to the Treasury, and move on to the next question.`,
       note:`It costs nothing today. The press gallery and The Spindle, the Commonwealth's newspaper of record, count every question you pass to someone else, and voters in the low band notice most.`,
       effects:[
         { move:{ public_standing:-4, party_loyalty:-2 } },
@@ -2808,8 +2809,8 @@ it out last week.`,
         { wire:"PRIME MINISTER REFERS RESERVE QUESTION TO THE TREASURY AGAIN" }
       ],
       result:`It costs nothing today. But the press gallery counts each question you pass to someone else, and so does The Spindle, and low-band voters notice most.` },
-    { posture:"bold", label:`Ask Watkins what he would have done, and keep asking.`,
-      note:`Your own members will enjoy it, and the party's loyalty to its leadership rises. Nobody outside the chamber will learn what the reserve stands at, voters think less of the government, and Watkins will remember it.`,
+    { posture:"bold", label:`Ask Watkins which clause of the estimates he would cut, and by how much.`,
+      note:`Your own members will welcome a Prime Minister who puts the question back, and the party's loyalty to its leadership rises. The reserve's figure stays unsaid, voters think less of the government for not giving it, and Watkins will remember being questioned in return.`,
       effects:[
         { move:{ party_loyalty:5, public_standing:-2 } },
         { move:{ "rel.watkins":-6 } },
@@ -3899,6 +3900,177 @@ may vote. They decide how much each of the four yields over the year.
 
 Whoever holds the Treasury signs the estimates and answers for them in the
 House. Until the House votes, every figure can change.`,
+  effects:[{ wire:"CORDELL'S ACCOUNTS STAY FROZEN IN EUROPE; ALMANAC WORKS CANNOT PAY SUPPLIERS" }],
+  choices:[] },
+
+/* THE FIVE CLAUSES, ONE PAGE EACH (design/78, 5 to 6 Oct 2026). The opening
+   teaches the estimates clause by clause, each through someone who wants it
+   and a familiar shape: the basics, cover, cooling, infrastructure, fares.
+   A page takes no decision, so the opening is still eight decisions long. The
+   prologue numbers 6, 8, 10, 12 and 13 slot the pages between the beats that
+   were already there. The clause panel stays the lever: a page informs and
+   presses, and the player sets the level. */
+{ id:"clause_floor", prologue:6, once:true,
+  setpiece:{ title:"The consumables floor costs CW$16bn, and lifting it would cost CW$30bn" },
+  title:"The consumables floor",
+  speaker:"ashgrove",
+  body:`Selim Ashgrove, the Minister for Consumables and Agriculture, has told the
+Prime Minister what the consumables floor covers: the air, water, food and
+living space guaranteed to every resident. The draft estimates carry it at
+CW$16bn.
+
+The floor sets the rate at which every resident is carried, and the estimates
+pay for it. Trimming the guarantee takes it out of the estimates, and the
+saving shows in this session's accounts. The stations that cannot grow or
+recycle enough of their own food, water and air show the shortfall by the end
+of the month.
+
+Lifting the floor carries the stations with the least of their own further
+than the guarantee requires. It costs CW$30bn, which is CW$14bn more than the
+draft, and the draft has CW$4bn of room under the reserve, the Treasury's
+cash in hand.
+
+"Every party wants the floor raised, and none of them says which clause pays
+for it," Ashgrove says. "If the House lifts it, something else in the
+estimates has to come down by CW$10bn."
+
+The government sets the level before the estimates go to the House: trimmed
+at CW$0, held at CW$16bn or lifted at CW$30bn.`,
+  choices:[] },
+
+{ id:"clause_cover", prologue:8, once:true,
+  setpiece:{ title:"The New Progressives ask to widen substrate insurance to CW$32bn" },
+  title:"Cover for those who cannot pay",
+  speaker:"trottier",
+  body:`Mandelina Trottier, the Deputy Prime Minister and leader of the New
+Progressive Party, wants substrate insurance widened from CW$18bn in the draft
+estimates to CW$32bn. The insurance covers residents who cannot pay for the
+hardware that runs their minds.
+
+Substrate owners charge rent for every hour a mind runs. A resident who fails
+the means test, the income check that decides who qualifies, and cannot pay
+the rent is suspended: the mind is kept intact and is not running.
+
+The draft holds the clause at CW$18bn and keeps the means test. Widening it
+to CW$32bn sets the test aside, so that anyone who cannot pay is covered. The
+providers that own the hardware are expected to raise their rents once the
+cover is in place. Reducing the clause to nothing would save CW$18bn and
+suspend every resident who fails the test.
+
+"I want the means test gone this session," Trottier says. "That's CW$14bn
+more than the draft. If the Treasury has a different figure, I'll look at
+it."
+
+The draft has CW$4bn of room under the reserve, the Treasury's cash in hand,
+so another clause would have to come down by CW$10bn to pay for the
+difference. The party also still wants its bill, the Divergence Threshold
+(Amendment) Bill.`,
+  choices:[] },
+
+{ id:"clause_energy", prologue:10, once:true,
+  setpiece:{ title:"Full release of the thermal quota would cost CW$34bn" },
+  title:"Energy and cooling",
+  speaker:"girard",
+  body:`Vesna Girard, the Minister for Substrate and Thermal, has set out what the
+thermal quota buys. The quota is the cooling that every station is allowed to
+use, released each session, and the draft estimates carry it at CW$14bn.
+
+In orbit, heat leaves a station only by being radiated into space, and every
+watt of computation and industry becomes heat. Each station's radiators can
+reject a fixed amount. The quota is the permit to reject it, and the price of
+the permit is part of what every station pays to keep running.
+
+The draft releases the quota at last session's figure, and the price holds
+where the market has held it. Held tight, the quota costs nothing in the
+estimates, the price rises, and the rise lands first on the stations with the
+least spare cooling. Released in full, it costs CW$34bn and the price falls to
+the cost of rejecting the heat. The radiators then limit how many minds the
+Commonwealth can carry.
+
+One station already shows the cost of a short quota. Ember Ridge, a station of
+213,000 residents in the middle band, is short of cooling because a radiator
+array has failed.
+
+"A tight quota saves CW$14bn in the estimates," Girard says. "Ember Ridge is
+already short, and it will pay more for heat under that quota."
+
+The government sets the level before the estimates go to the House: tight at
+CW$0, as last session at CW$14bn or released in full at CW$34bn.`,
+  choices:[] },
+
+{ id:"clause_works", prologue:12, once:true,
+  setpiece:{ title:"Capital works are unfunded, and would cost CW$20bn to CW$30bn" },
+  title:"Infrastructure",
+  speaker:"tomasson",
+  body:`Haukur Tómasson, the Minister for Closure and Development, says the draft
+estimates fund no capital works. Works are the one clause whose effects last
+beyond the session, and the Treasury has priced them at two levels.
+
+Works raise a station's closure, the share of its air, water, food and
+materials it can grow or recycle without imports. Most stations are below the
+level at which leaving the Commonwealth is survivable. A station with higher
+closure can leave at less cost to itself.
+
+Funded in the ring band, where the pressure on habitable volume is worst, the
+works cost CW$20bn and lower the price of volume. Funded at the outer stations,
+where closure is lowest, they cost CW$30bn, and those stations become better
+able to leave the Commonwealth.
+
+"Everything else in the estimates is spent by the end of the session,"
+Tómasson says. "Works are still there in ten years, and I can't tell you which
+way that cuts for the outer stations."
+
+The government sets the level before the estimates go to the House: deferred
+at CW$0, the ring band at CW$20bn or the outer stations at CW$30bn.`,
+  choices:[] },
+
+{ id:"clause_transit", prologue:13, once:true,
+  setpiece:{ title:"A transit subsidy would cost CW$10bn to CW$22bn" },
+  title:"Transport",
+  speaker:"vasmer",
+  body:`Henrik Vasmer, the Minister for Transit and Orbital Mechanics, says the
+draft estimates carry no transit subsidy, so every station pays the carriers'
+published fare for a launch window.
+
+A launch window is a scheduled place on a tether, the elevator that lifts
+freight to orbit. The stations farthest from a tether pay the highest fares.
+The subsidy decides how much of that difference the Commonwealth carries.
+
+Carrying the difference for the anchor states, where the tether is the only
+way in, costs CW$10bn. Carrying it for every station costs CW$22bn, and the
+reserve, the Treasury's cash in hand, pays for stations that the traffic does
+not reach.
+
+"The outer stations pay the most for a window," Vasmer says. "The CW$22bn
+level also pays for stations that don't use one."
+
+The government sets the level before the estimates go to the House: none at
+CW$0, the anchor states at CW$10bn or every station at CW$22bn.`,
+  choices:[] },
+
+/* THE UNDERWRITERS' FIRST READING (design/78). The Economy tab already says
+   what the Underwriters make of the account, in the engine's own figures. This
+   page introduces them once the estimates are carried, and points at the
+   reading. It names no figure, because the figures are the tab's. */
+{ id:"underwriters_read", weight:90, once:true,
+  when:{ billStage:{ appropriation:"assented" } },
+  setpiece:{ title:"The Underwriters publish their first reading of the government's account" },
+  title:"The Underwriters' first reading",
+  speaker:null,
+  body:`The Underwriters, the market of insurance syndicates and mutual insurers
+that lends to the government at home, have published their first reading of
+the Treasury's account since the House carried the estimates.
+
+The reading covers four parts of the account: what the Treasury receives,
+what it spends, the deficit between the two, and the reserve, the Treasury's
+cash in hand. For each, the Underwriters say what it means for the four
+prices the estimates move: pressurised volume, cooling, computing time and
+freight to orbit.
+
+The Underwriters lend to the Treasury at half a point over the Reserve Bank's
+cash rate. They raise the rate as the stations' spare cooling narrows,
+because a government that cannot keep the stations running cannot repay what
+it borrows. The reading is revised as the account changes.`,
   choices:[] }
 
 ];

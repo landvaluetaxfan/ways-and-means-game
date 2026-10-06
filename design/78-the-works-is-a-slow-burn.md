@@ -191,6 +191,48 @@ is the hardest figure to explain, and the Works story gives it a stronger reason
 **What leaves the opening:** the Divergence bill, the shed order and the Ember Ridge cascade
 chain (parked, not deleted).
 
+## Built, the night of 5 to 6 October
+
+The author asked for prose written and pushed live while they slept. What landed is the part that
+holds together with the structure as it stands; the part that does not is drafted in the document
+("Act I: the tutorial") and not built.
+
+**Landed (`content/events.js`):**
+
+- **Five clause pages**, choice-free, so the opening is still eight decisions long: `clause_floor`
+  (6), `clause_cover` (8), `clause_energy` (10), `clause_works` (12) and `clause_transit` (13). Each
+  teaches one clause of the estimates through the minister who argues for it, with its levels and
+  costs, and ends on the three levels the government can set. The chapter-one prologue was
+  renumbered to make room: commission 1, account 2, treasury 3, estimates 4, order of the day 5,
+  floor 6, briefing 7, cover 8, signatures 9, energy 10, radiator 11, works 12, transit 13,
+  `gb_approach` 14. Nothing reads a prologue number, and `gb_approach` stays last because it
+  advances the chapter.
+- **A quiet wire item**, on the estimates page: "CORDELL'S ACCOUNTS STAY FROZEN IN EUROPE; ALMANAC
+  WORKS CANNOT PAY SUPPLIERS". No action, no text.
+- **`underwriters_read`**, a pool page that fires once the Appropriation is assented. It introduces
+  the Underwriters and the account's four parts and names no figure; the figures are the Economy
+  tab's.
+- **Question Time** (`question_time`), rewritten: one neutral question from Watkins about the
+  reserve, and a third answer that puts a question back instead of fighting.
+- **The slot rule stated as the engine runs it.** `the_order_of_the_day` said a measure falls when
+  the House rises at the end of the period. It falls when the session ends, after three periods.
+  `briefing_divergence` said the estimates "may not carry" if the bill came first; they cannot, if
+  the bill takes the three slots it needs. Both now say so.
+
+**Not landed, and why.** The treaty beat (the Anchorage bill as the spare-slot competitor), the
+insurance decision, the whips' count for the estimates and the basics scene as decisions are not
+built. `gb_approach`, the last beat of chapter one, carries the chapter switch, the licensure
+carve-out undertaking that Act II reads (`licensure_carveout_offered`, `si_2080_45`) and the glossary
+terms `functional constituency` and `licensure`. `halloran_signatures` and `briefing_divergence` teach
+the glossary clusters `cold` and `copies`. Replacing them means re-homing those terms, re-wiring the
+Anchorage chain (`fa_anchor_terms` waits for the bill at `assent`), and deciding what chapter two's
+opener ("Thursday", the Divergence vote) becomes. That is the Stage 4b restructure, and it needs the
+shape of Acts II to V first. Doing it overnight, with no one to review it, risked a live game that
+contradicts itself.
+
+**Measured.** 240 seeds, before and after: the four crisis strategies lose 40, 59, 12 and 33, then
+36, 59, 17 and 32. The 80-seed counts moved by five or so, which is the noise of an added event.
+
 ## Open
 
 1. **Ember Ridge** is settled as the thermal clause's face (above).
