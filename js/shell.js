@@ -915,8 +915,16 @@ const Shell = (function () {
 
   function stampSlot() {
     const t = document.getElementById("tb-slot");
-    if (t) t.textContent = current
-      ? current.n === SANDBOX_SLOT ? current.name : `${current.name} — slot ${current.n}` : "";
+    if (t) {
+      t.textContent = current
+        ? current.n === SANDBOX_SLOT ? current.name : `${current.name} — slot ${current.n}` : "";
+      /* The bar clips it at 220px with an ellipsis ("Party of Socialists and
+         Democrats — Flash I..."), so the whole of it is on hover. */
+      if (t.textContent) {
+        t.setAttribute("data-tip-title", "This game");
+        t.setAttribute("data-tip-body", t.textContent);
+      } else { t.removeAttribute("data-tip-title"); t.removeAttribute("data-tip-body"); }
+    }
   }
 
   function saveNow(quiet) {

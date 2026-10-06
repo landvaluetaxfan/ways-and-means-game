@@ -1623,15 +1623,64 @@ try {
        feed.textContent.includes("History news 160") &&
        !feed.textContent.includes("History decision [1]"));
     const chapter = feed.querySelector("[data-chapter-mark]");
+    /* IN THE PLAY'S WORDS where it has them (6 Oct 2026): "Act III begins: The
+       Count", and the engine's own text where the play names no such act. */
+    const actThree = w.eval(`((UI.content().administrations || []).find(a => a.id === UI.state().admin) || {}).play`);
+    const actName = actThree && (actThree.acts || []).find(a => a.chapter === 3);
     ok("a chapter break is a header, never a decision",
-       !!chapter && chapter.textContent === "— Chapter 3 —" && !chapter.closest("p"));
+       !!chapter && !chapter.closest("p") &&
+       chapter.textContent === (actName ? actName.head + " begins: " + actName.title : "— Chapter 3 —"),
+       chapter && chapter.textContent);
     ok("the feed keeps the full run available to the transcript",
        state.log.length === 160 && state.wire.length === 160 &&
        w.eval("UI.transcript()").includes("History decision [1]"));
+
+    /* FOUR LABELS, FROM WHAT THE ENGINE WROTE (6 Oct 2026). Every log entry
+       was headed "Decision.", a page that was only read and an appointment
+       included. A page is News, a choice taken is a Decision, the engine's own
+       lines are the Record, and the wire stays the Wire. */
+    const evs = w.eval("UI.content().events");
+    const withChoice = evs.find(e => e.setpiece && (e.choices || []).length);
+    const page = evs.find(e => e.setpiece && !(e.choices || []).length);
+    const plain = evs.find(e => !e.setpiece);
+    state.log = [
+      { sitting: 9, kind: "event", eventId: page.id, text: "A page read" },
+      { sitting: 9, kind: "event", eventId: withChoice.id, text: "A page answered" },
+      { sitting: 9, kind: "decision", eventId: plain.id, text: "A choice taken" },
+      { sitting: 9, text: "Appointment: treasury" }];
+    state.wire = [{ sitting: 9, text: "A headline" }];
+    w.eval("UI.redraw()");
+    const labelled = [...w.document.querySelector("#gov-wire").querySelectorAll("p")]
+      .map(p => p.textContent.replace(/\s+/g, " ").trim());
+    ok("a page is News, a choice a Decision, the engine's own line the Record, and the wire the Wire",
+       labelled.join("|") === ["News. A page read", "Decision. A page answered", "Decision. A choice taken",
+         "Record. Appointment: treasury", "Wire. A headline"].join("|"), labelled.join(" | "));
   } finally {
     state.log = log; state.wire = wire; w.eval("UI.redraw()");
   }
 } catch (e) { ok("the merged history", false, e.message); }
+
+/* THE NOTICE CARD GOES WHEN THE PLAYER GOES TO LOOK (6 Oct 2026). It sits under
+   the tab it points at, over the first lines of that panel, and used to stay
+   its two seconds whatever was done. A click on a tab takes it down; code that
+   opens a tab straight after a decision must not, or no card would ever show. */
+try {
+  const M = "Motion";
+  w.eval(`${M}.notify({ tab: "gov", where: "Undertakings", text: "An undertaking has been entered." })`);
+  const there = !!w.document.querySelector(".movecard");
+  w.eval(`UI.openTab("cham")`);
+  const afterCode = !!w.document.querySelector(".movecard");
+  w.document.querySelector('.tab[data-t="party"]').click();
+  const afterClick = !!w.document.querySelector(".movecard");
+  const marked = !!w.document.querySelector(".tab.tab-moved");
+  ok("a notice card shows, and opening a tab from code leaves it up", there && afterCode,
+     "shown " + there + ", after openTab " + afterCode);
+  ok("a click on a tab takes it down, and the tab's mark with it", there && !afterClick && !marked,
+     "after click " + afterClick + ", mark " + marked);
+  w.eval(`${M}.notify({ tab: "gov", where: "a", text: "one" }); ${M}.notify({ tab: "gov", where: "b", text: "two" })`);
+  w.document.querySelector('.tab[data-t="sit"]').click();
+  ok("and the cards queued behind it go too", !w.document.querySelector(".movecard"));
+} catch (e) { ok("the notice card", false, e.message); }
 
 try {
   const text = w.eval("UI.transcript()");

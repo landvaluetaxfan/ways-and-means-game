@@ -12,8 +12,7 @@ pass deletes the file.
 
 | pass | what | waits on |
 |---|---|---|
-| **0** | the popover, the history labels, the top bar | nothing |
-| **1** | Government, and the shared type scale | pass 0 |
+| **1** | Government, and the shared type scale | nothing |
 | **2** | Economy | pass 1 (the tokens) |
 | **3** | Party | pass 1 |
 | **4** | Relations | pass 1 |
@@ -22,7 +21,8 @@ pass deletes the file.
 | **later** | Foreign Affairs, the friction desk (labels and key built) | the Acts II to V map (`design/78`) |
 
 Orbit and Concordance are satisfactory and are **not** to be touched. The Sandbox is the author's
-bench and is out of scope. Sitting and Chamber are touched only where a pass below names them.
+bench and is out of scope. Sitting and Chamber are touched only where a pass below names them. Pass 0 (the notice card, the
+history labels, the top bar) landed on 6 October; `design/79` says what it found.
 
 ## How every pass runs
 
@@ -39,8 +39,7 @@ bench and is out of scope. Sitting and Chamber are touched only where a pass bel
    assertion and break-test it. No engine change, so no playtest.
 5. **Leave alone the surfaces the unlanded witnessed-acts work edits** (branch `integrate/witness`,
    `briefs/witnessed-acts.md`): the Economy **Money calls** panel and its Draw buttons, the
-   initiative-post and instrument dialogs, and everything in Sitting and Chamber that pass 0 does
-   not name.
+   initiative-post and instrument dialogs, and everything in Sitting and Chamber.
 
 ## Shared rules, set in pass 1 and used by every pass after
 
@@ -51,24 +50,6 @@ bench and is out of scope. Sitting and Chamber are touched only where a pass bel
   60 px beneath its lowest panel while another column is taller, at either size.
 - **An empty state is one line, or the panel is absent.** No tall panel holding one sentence.
 - **A number says what it is.** No bare 44, no "100 idx", no column of dashes at the opening.
-
-## Pass 0: the popover, the history labels, the top bar
-
-- **The notice popover.** A notice under the Government tab ("An undertaking has been entered...")
-  stays across tabs and covers the history column's header and the Government utility strip.
-  It dismisses on a click anywhere, on a tab change and after a few seconds, and it is never placed
-  over the tab bar.
-- **The history column** (Sitting, left). It labels every record "Decision.", pages, appointments
-  and slot grants included. Three labels instead: **News** for a page, **Decision** for a choice
-  taken, **Wire** as now, and **Record** for the engine's own lines (a slot granted, an appointment,
-  a bill's stage). The "CHAPTER 2" divider falls mid-sitting; it belongs between sittings and reads
-  "Act II" (the act's name is in the play data).
-- **The Indicators panel** (Sitting, right) is cut by the status bar at 1366. Make it scroll inside
-  its panel or fit.
-- **The top bar.** "SESS 4.1" goes; the date and the act replace it (the appropriation-rename brief
-  drops the session number everywhere else). The party and campaign string is clipped ("Flash I...");
-  truncate it with a tooltip. The three small squares at the top right carry no label: label them,
-  or remove them if they do nothing.
 
 ## Pass 1: Government
 

@@ -105,3 +105,23 @@ then the rest), so a crowded stretch of East Africa names the Commonwealth's anc
 foreign one unnamed until a turn, a zoom or a click gives it room. **The globe's shrink did not go
 with it.** Shrinking before there are panels to fill the space only opens a blank band, which is
 what the audit objected to, so it lands with the first desk panel.
+
+**6 October, pass 0 (designs 6 and 7).** Built, and the walk's findings were corrected as it was.
+- **The notice card.** The audit said it "stays across tabs". It does not: it is `pointer-events:none`
+  and fades in about two seconds, and the screenshot script had switched tabs inside that window. What
+  was real is that it sits over the first lines of the panel the player has just opened. A click on a
+  tab now takes it down, with the cards queued behind it (`Motion.dismiss`). Code that opens a tab
+  straight after a decision does not, or no card would ever show; a test holds that.
+- **The history column.** Four labels from what the engine wrote: News (a page), Decision (a choice
+  taken), Record (the engine's own lines: an appointment, a division, an assent) and Wire. The
+  brief said "three" and listed four. The "Chapter 2" mark reads "Act II begins: Ways and Means".
+  **It stays mid-sitting.** The list is newest first, so the mark stands below the entries of the new act
+  and above those of the old, which is where the chapter turned. Moved between sittings it would
+  mislabel the entries of that sitting.
+- **The Indicators panel.** Not a fault. The column scrolls with the game's drawn bar (781 px of
+  content in 655 at 1366) and fits exactly at 1920. Dropped.
+- **The top bar.** "SESS 4.1" is the act ("ACT II"), where the play has acts. The slot name, clipped
+  with an ellipsis at 220 px, carries its whole text on hover.
+- **The three squares** are deliberate window chrome and do nothing; the stylesheet calls them the
+  dummy window boxes. Left as they are. The author may want them gone, which is one line.
+

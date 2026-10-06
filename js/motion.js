@@ -227,6 +227,10 @@ const Motion = (function () {
      that there is one place. */
   const QUEUE = [];
   let showing = false;
+  /* WHAT IS ON SCREEN, so that it can be taken off. A card that has done its job
+     is in the way: it sits under a tab over the first lines of the panel the
+     player has just opened. `gen` makes every timer of a dismissed card inert. */
+  let gen = 0, cardNow = null, tabNow = null;
 
   function notify(item) {
     if (typeof document === "undefined" || !item) return;
@@ -238,6 +242,7 @@ const Motion = (function () {
     const item = QUEUE.shift();
     if (!item) { showing = false; return; }
     showing = true;
+    const g = gen;
 
     let card;
     try {
@@ -260,6 +265,7 @@ const Motion = (function () {
       }
       document.body.appendChild(card);
       if (tab) tab.classList.add("tab-moved");
+      cardNow = card; tabNow = tab || null;
 
       const still = reduced();
       if (!still) raf(function () { card.classList.add("in"); });
@@ -267,10 +273,13 @@ const Motion = (function () {
 
       const hold = still ? 2600 : 2100;
       setTimeout(function () {
+        if (g !== gen) return;
         card.classList.remove("in");
         if (tab) tab.classList.remove("tab-moved");
         setTimeout(function () {
+          if (g !== gen) return;
           if (card.parentNode) card.parentNode.removeChild(card);
+          cardNow = tabNow = null;
           next();
         }, still ? 0 : 220);
       }, hold);
@@ -278,6 +287,17 @@ const Motion = (function () {
       if (card && card.parentNode) card.parentNode.removeChild(card);
       showing = false;
     }
+  }
+
+  /* The player has gone to look, or has moved on: the card and the cards behind
+     it have nothing more to say. */
+  function dismiss() {
+    gen++;
+    QUEUE.length = 0;
+    if (cardNow && cardNow.parentNode) cardNow.parentNode.removeChild(cardNow);
+    if (tabNow) tabNow.classList.remove("tab-moved");
+    cardNow = tabNow = null;
+    showing = false;
   }
 
   function esc(s) {
@@ -292,7 +312,7 @@ const Motion = (function () {
       !!document.querySelector(".dissolve, .movecard");
   }
 
-  return { dissolve: dissolve, notify: notify, reduced: reduced, busy: busy,
+  return { dissolve: dissolve, notify: notify, dismiss: dismiss, reduced: reduced, busy: busy,
            __plan: plan, __order: order };
 })();
 

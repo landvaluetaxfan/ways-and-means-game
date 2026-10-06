@@ -1096,6 +1096,13 @@ try {
     (document.getElementById("sb-rise").textContent.match(/rises in (\\d+)/) || [])[1]]`);
   ok("and it is the same count as the status bar's",
      twoClocks[0] != null && twoClocks[0] === twoClocks[1], twoClocks.join(" / "));
+  /* THE ACT, NOT THE SESSION (6 Oct 2026). "SESS 4.1" counted sitting periods,
+     which nothing else on screen mentions. The bar names the act the player is
+     in, where the play has acts. */
+  const bar = w.eval(`document.getElementById("tb-sys").textContent`);
+  const playActs = w.eval(`(((UI.content().administrations || []).find(a => a.id === UI.state().admin) || {}).play || {}).acts || []`);
+  ok("the topbar names the act, and no longer counts sessions",
+     !/SESS/.test(bar) && (!playActs.length || /^ACT [IVX]+ \/ SITTING/.test(bar)), bar);
 } catch (e) { ok("the division dialog", false, e.message); }
 
 /* STREAMING IS A PLAYER PREFERENCE, so it lives in Shell.opts with the

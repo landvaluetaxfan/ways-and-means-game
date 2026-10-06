@@ -218,8 +218,15 @@ const UI = (function () {
     document.addEventListener("click", sandboxClick);
     const find = document.getElementById("sbx-find");
     if (find) find.addEventListener("input", () => drawSandbox());
+    /* A TAB CLICK IS THE PLAYER GOING TO LOOK. The notice card that pointed at a
+       tab has done its work, and left on screen it covers the first lines of the
+       panel that has just opened. Only a click does this: the code opens tabs
+       too, straight after a decision, and must not take the card down. */
     document.querySelectorAll(".tab").forEach(t =>
-      t.addEventListener("click", () => openTab(t.dataset.t)));
+      t.addEventListener("click", () => {
+        if (typeof Motion !== "undefined" && Motion.dismiss) Motion.dismiss();
+        openTab(t.dataset.t);
+      }));
 
     /* THE TERMINAL'S OWN CLICK, delegated once.
 
@@ -549,11 +556,15 @@ const UI = (function () {
     const campaignDay = st.dissolved ? st.sitting - st.dissolved.at + 1 : null;
     const rise = campaignDay != null ? " / THE CAMPAIGN, DAY " + campaignDay
       : left == null ? "" : left === 0 ? " / RISES TODAY" : " / RISES IN " + left;
-    /* The period beside the session (bible §1.8), only where a session has
-       more than one: "SESS 4.2" is the second sitting period of Session 4. */
-    const per = (C.setup && C.setup.periodsPerSession) || 1;
-    const sess = per > 1 ? st.session + "." + (st.period || 1) : String(st.session);
-    $("#tb-sys").textContent = `SESS ${sess} / SITTING ${String(st.sitting).padStart(3, "0")} / ${st.date}${rise}`;
+    /* THE ACT, WHERE THE PLAY HAS ONE. The bar said "SESS 4.1", a count of
+       sitting periods that the player is told about nowhere else and that means
+       nothing to someone who has not read bible 1.8. The act is the play's own
+       division, and the one the player is in. A campaign with no acts shows no
+       such segment. */
+    const play = currentPlay();
+    const act = play && (play.acts || []).find(a => a.chapter === st.chapter);
+    $("#tb-sys").textContent = (act ? act.head.toUpperCase() + " / " : "") +
+      `SITTING ${String(st.sitting).padStart(3, "0")} / ${st.date}${rise}`;
   }
   function drawStatus() {
     /* Four essentials, using the same content-owned bands as the brief.
@@ -3481,10 +3492,24 @@ const UI = (function () {
 
     /* Keep the old panels' bounds on rendered history. The save and the
        transcript retain every entry; a redraw need only sort this tail. */
-    const happened = (st.wire || []).slice(0, 16).map((w, i) => ({ sitting: w.sitting, text: w.text, kind: "Wire", i }))
+    /* FOUR LABELS FOR WHAT HAPPENED, from what the engine wrote. Everything in
+       the log was headed "Decision.", which a page that was merely read, an
+       appointment and a slot of time given were not. A page is News and a
+       choice taken is a Decision; the engine's own lines (an appointment, a
+       division, an assent) are the Record. `src` keeps the log ahead of the
+       wire within a sitting, which the label no longer does. */
+    const kindOf = l => {
+      if (l.kind === "decision") return "Decision";
+      if (l.kind === "event") {
+        const ev = (C.events || []).find(e => e.id === l.eventId);
+        return ev && (ev.choices || []).length ? "Decision" : "News";
+      }
+      return "Record";
+    };
+    const happened = (st.wire || []).slice(0, 16).map((w, i) => ({ sitting: w.sitting, text: w.text, kind: "Wire", src: 1, i }))
       .concat((st.log || []).slice(0, 40).map((l, i) => ({ sitting: l.sitting, text: l.text,
-        chapterMark: l.chapterMark, kind: "Decision", i })))
-      .sort((a, b) => (b.sitting || 0) - (a.sitting || 0) || a.kind.localeCompare(b.kind) || a.i - b.i);
+        chapterMark: l.chapterMark, kind: kindOf(l), src: 0, i })))
+      .sort((a, b) => (b.sitting || 0) - (a.sitting || 0) || a.src - b.src || a.i - b.i);
     const sittings = [];
     happened.forEach(item => {
       let group = sittings[sittings.length - 1];
@@ -3496,9 +3521,9 @@ const UI = (function () {
     $("#gov-wire").innerHTML = sittings.length
       ? sittings.map(g => `<div class="post"><div class="meta">SITTING ${g.sitting}</div>` +
           g.items.map(x => x.chapterMark
-            ? `<div class="rulehead" data-chapter-mark>${esc(x.text)}</div>`
-            : `<p><b${x.kind === "Decision" ? ` data-tip="log"` : ""}>${x.kind}.</b> ${x.text}</p>`).join("") + `</div>`).join("") +
-          `<div class="note">Recent news and decisions. The complete run is in the playtest transcript in Options.</div>`
+            ? `<div class="rulehead" data-chapter-mark>${esc(chapterMarkText(x.text))}</div>`
+            : `<p><b${x.kind !== "Wire" ? ` data-tip="log"` : ""}>${x.kind}.</b> ${x.text}</p>`).join("") + `</div>`).join("") +
+          `<div class="note">The latest entries. The complete run is in the playtest transcript in Options.</div>`
       : `<div class="pbody"><div class="note">The wire and the record fill as the sittings pass.</div></div>`;
   }
 
@@ -5945,6 +5970,16 @@ const UI = (function () {
 
   /* THE CAMPAIGN AS A PLAY (design/56): its title, mark, cast, acts and
      intervals, from the administration being played. */
+  /* THE CHAPTER MARK, IN THE PLAY'S WORDS. The engine writes "— Chapter 2 —" when
+     the chapter turns. The list is newest first, so the mark stands below the
+     entries of the new act and above those of the old, which is why it says
+     the act begins and does not name a heading over what is beneath it. */
+  function chapterMarkText(text) {
+    const n = (/Chapter (\d+)/.exec(text || "") || [])[1];
+    const play = currentPlay();
+    const act = n && play && (play.acts || []).find(a => a.chapter === +n);
+    return act ? act.head + " begins: " + act.title : text;
+  }
   function currentPlay() {
     const adm = (C.administrations || []).find(a => a.id === st.admin);
     return adm && adm.play && typeof SetPiece !== "undefined" ? adm.play : null;

@@ -260,7 +260,7 @@ const Tips = (function () {
       body: "An instruction from your office, signed and served. It is not law " +
             "and it binds nobody outside the building." },
     log: { title: "The record",
-      body: "Every decision this government has taken, newest first. Each entry is written when the decision is made." },
+      body: "What has happened, newest first. News is a page you have read, Decision is a choice you took, and Record is a step in the House's business, such as an appointment, a division or an assent. The wire's headlines sit beside them." },
 
     /* ---- the coalition ---- */
     ledger: { title: "Capital",
