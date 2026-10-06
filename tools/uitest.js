@@ -2558,6 +2558,92 @@ try {
        /Commonwealth/.test(kt) && /Not the Commonwealth/.test(kt) && h.querySelectorAll(".w-ki").length === 3, kt);
   }
   if (w.eval("World.mode()") !== startMode) w.eval("World.toggle()");
+
+  /* THE GLOBE HOLDS STILL WHILE IT TURNS (6 Oct 2026). Two faults the author
+     reported on the first day. Labels were laid out afresh every frame with no
+     memory, and hopped 12 to 36 pixels, or flipped from one side of their
+     tether to the other, as the globe was dragged. And a country that crossed
+     the horizon lost the lens of land between its coast and a straight chord,
+     which showed as a dark wedge cut through Kazakhstan. */
+  {
+    const view = w.eval("({ lat: World.view.lat, lng: World.view.lng, mode: World.view.mode, zoom: World.view.zoom })");
+    const setView = (lat, lng, mode, zoom) =>
+      w.eval(`World.view.lat = ${lat}; World.view.lng = ${lng}; World.view.mode = "${mode}"; World.view.zoom = ${zoom}`);
+    try {
+      /* the labels: sweep the globe half a degree at a time and count the frames
+         in which a label moves, relative to its own mark, by more than four
+         pixels. A label may move when another label truly takes its place; it
+         may not move because it was laid out again. */
+      setView(14, -60, "map", 1); w.eval("World.render()");      /* a clean start */
+      setView(14, -60, "globe", 1);
+      const marks = svg => {
+        const out = {};
+        svg.replace(/<g class="w-(?:anchor|body)[^"]*" data-(?:anchor|body)="([^"]+)"[^>]*>(.*?)<\/g>/g, (m, id, inner) => {
+          const ln = /<line x1="([-\d.]+)" y1="([-\d.]+)"/.exec(inner), tx = /<text class="w-lab" x="([-\d.]+)" y="([-\d.]+)"/.exec(inner);
+          out[id] = { p: ln ? [+ln[1], +ln[2]] : null, t: tx ? [+tx[1], +tx[2]] : null };
+          return m;
+        });
+        return out;
+      };
+      let prev = null, hops = 0, frames = 0, worst = 0;
+      for (let lng = -60; lng < 110; lng += 0.5) {
+        w.eval(`World.view.lng = ${lng}`);
+        const cur = marks(w.eval("World.render()")); frames++;
+        if (prev) Object.keys(cur).forEach(id => {
+          const a = prev[id], c = cur[id];
+          if (!a || !a.t || !c.t || !a.p || !c.p) return;
+          const hop = Math.hypot((c.t[0] - c.p[0]) - (a.t[0] - a.p[0]), (c.t[1] - c.p[1]) - (a.t[1] - a.p[1]));
+          if (hop > 4) { hops++; worst = Math.max(worst, hop); }
+        });
+        prev = cur;
+      }
+      ok("a label keeps its place as the globe turns, moving only when another label takes its spot",
+         hops <= 8, hops + " hops over " + frames + " frames, the worst " + worst.toFixed(1) + "px");
+    } catch (e) { ok("the labels while the globe turns", false, e.message); }
+
+    try {
+      /* the outlines: countries made to cross the horizon, checked point by
+         point against the sphere. A band of latitude, and a cap that encircles
+         the south pole, each wound both ways round. */
+      const D = Math.PI / 180, R = 200;
+      const dense = pts => { const out = []; pts.forEach((a, i) => { const b = pts[(i + 1) % pts.length];
+        const n = Math.max(1, Math.ceil(Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])) / 4));
+        for (let k = 0; k < n; k++) out.push([a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n]); }); return out; };
+      const band = dense([[-60, 55], [-60, 75], [120, 75], [120, 55]]);             /* clockwise on the map */
+      /* stored as Antarctica is: one lap of the Earth, eastward, and no points at the pole */
+      const cap = []; for (let lng = -180; lng < 180; lng += 4) cap.push([lng, -65]);
+      const shapes = [
+        { name: "a band of latitude", ring: band, view: [20, 30], inside: (x, y, m) => x > -60 + m && x < 120 - m && y > 55 + m && y < 75 - m,
+          outside: (x, y, m) => x < -60 - m || x > 120 + m || y < 55 - m || y > 75 + m },
+        { name: "a cap round the south pole", ring: cap, view: [10, 40], inside: (x, y, m) => y < -65 - m, outside: (x, y, m) => y > -65 + m }
+      ];
+      let bad = [], tested = 0;
+      shapes.forEach(sh => [sh.ring, sh.ring.slice().reverse()].forEach((ring, wound) => {
+        setView(sh.view[0], sh.view[1], "globe", 1);
+        const d = w.eval("World.__ringFill(" + JSON.stringify(ring) + ")");
+        /* nonzero winding of the subpaths, in screen space */
+        const polys = d.split("Z").filter(Boolean).map(sp => { const q = []; sp.replace(/[ML]([-\d.]+) ([-\d.]+)/g, (m, x, y) => { q.push([+x, +y]); return m; }); return q; });
+        const winding = (x, y) => { let wn = 0; polys.forEach(q => { for (let i = 0; i < q.length; i++) { const a = q[i], b = q[(i + 1) % q.length];
+          if (a[1] <= y) { if (b[1] > y && (b[0] - a[0]) * (y - a[1]) - (x - a[0]) * (b[1] - a[1]) > 0) wn++; }
+          else if (b[1] <= y && (b[0] - a[0]) * (y - a[1]) - (x - a[0]) * (b[1] - a[1]) < 0) wn--; } }); return wn; };
+        const lam0 = sh.view[1] * D, phi0 = sh.view[0] * D;
+        for (let lat = -84; lat <= 84; lat += 3) for (let lng = -177; lng <= 177; lng += 3) {
+          const lam = lng * D - lam0, phi = lat * D;
+          const c = Math.sin(phi0) * Math.sin(phi) + Math.cos(phi0) * Math.cos(phi) * Math.cos(lam);
+          if (c < 0.12) continue;
+          const x = 360 + R * Math.cos(phi) * Math.sin(lam);
+          const y = 240 - R * (Math.cos(phi0) * Math.sin(phi) - Math.sin(phi0) * Math.cos(phi) * Math.cos(lam));
+          const inK = sh.inside(lng, lat, 3), outK = sh.outside(lng, lat, 3);
+          if (!inK && !outK) continue;
+          tested++;
+          if ((winding(x, y) !== 0) !== inK) bad.push(sh.name + (wound ? " reversed" : "") + " at " + lng + "," + lat);
+        }
+      }));
+      ok("a country that crosses the horizon is filled to the horizon, not cut off by a chord, whichever way it winds",
+         tested > 200 && bad.length === 0, bad.length + " wrong of " + tested + (bad.length ? ": " + bad.slice(0, 3).join("; ") : ""));
+    } catch (e) { ok("the outlines at the horizon", false, e.message); }
+    setView(view.lat, view.lng, view.mode, view.zoom);
+  }
   w.document.querySelector('.tab[data-t="sit"]').click();
   for (let i = 0; i < 2; i++) w.document.querySelector('#sit-cal [data-cal="1"]').click();
   const cal = $("#sit-cal").innerHTML;

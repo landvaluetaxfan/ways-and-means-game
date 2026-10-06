@@ -179,6 +179,122 @@ const World = (function () {
     return d;
   }
 
+  /* A COUNTRY'S FILL, CLIPPED TO THE NEAR SIDE. `ringD` lifts the pen where a
+     coast runs off the far side and starts again where it comes back, and an
+     SVG fill closes each piece with a straight chord. A country that crosses
+     the horizon (Russia, Canada, Antarctica) lost the sliver between that chord
+     and the horizon, which showed as a dark wedge cut through the land. The
+     boundary of the visible part follows the horizon where the coast leaves
+     it: each visible run is joined to the next entry point met travelling
+     round the limb with the country on the same hand, and the loop is closed
+     there.
+
+     Which hand is the ring's own: a ring that winds counter-clockwise on the
+     map has its inside on the left, and so does the visible disc when it is
+     walked counter-clockwise. A ring wholly on the near side is drawn as it
+     stands, and one wholly on the far side is not drawn. (A ring that wraps the
+     entire visible disc without a vertex on it would need its own case; no
+     outline in the data does.) */
+  const WIND = typeof WeakMap === "function" ? new WeakMap() : null;
+  function winding(ring) {
+    if (WIND && WIND.has(ring)) return WIND.get(ring);
+    let a = 0, px = ring[0][0], py = ring[0][1], net = 0, south = 0;
+    for (let i = 1; i <= ring.length; i++) {
+      const c = ring[i % ring.length];
+      let x = c[0];
+      while (x - px > 180) x -= 360;
+      while (x - px < -180) x += 360;
+      a += px * c[1] - x * py;
+      net += x - px; south += c[1];
+      px = x; py = c[1];
+    }
+    /* A ring that goes right round the Earth encloses a pole, and the area it
+       sweeps on the flat map says nothing of which side is the inside: the
+       inside is the pole's. Travelling east round the south pole keeps it on
+       the right hand, and round the north pole on the left. Antarctica is the
+       only outline in the data that does this. */
+    const w = Math.abs(net) > 180 ? (net > 0 === south < 0 ? -1 : 1) : a >= 0 ? 1 : -1;
+    if (WIND) WIND.set(ring, w);
+    return w;
+  }
+  function ringFill(ring) {
+    if (!ring || ring.length < 3) return "";
+    if (view.mode === "map") return ringD(ring);
+    const n = ring.length, cx = W / 2, cy = H / 2, Rz = R * view.zoom;
+    const vis = ring.map(c => cosc(c[0], c[1]) > 0);
+    const near = vis.reduce((k, v) => k + (v ? 1 : 0), 0);
+    if (!near) return "";
+    /* a crossing, put exactly on the circle so the arc and the coast meet */
+    const onLimb = (a, b) => {
+      const q = project(...limb(a, b));
+      const dx = q.x - cx, dy = q.y - cy, m = Math.hypot(dx, dy) || 1;
+      return { x: cx + dx / m * Rz, y: cy + dy / m * Rz };
+    };
+    if (near === n) {
+      let d = "";
+      ring.forEach((c, i) => { d += (i ? "L" : "M") + pt(project(c[0], c[1])); });
+      return d + "Z";
+    }
+    const i0 = vis.indexOf(false), runs = [];
+    let run = null;
+    for (let k = 0; k < n; k++) {
+      const ia = (i0 + k) % n, ib = (i0 + k + 1) % n, a = ring[ia], b = ring[ib];
+      if (!vis[ia] && vis[ib]) run = [onLimb(b, a), project(b[0], b[1])];
+      else if (vis[ia] && vis[ib]) { if (run) run.push(project(b[0], b[1])); }
+      else if (vis[ia] && !vis[ib]) { if (run) { run.push(onLimb(a, b)); runs.push(run); run = null; } }
+    }
+    /* A run that never rises a pixel off the horizon is a sliver of coast
+       clipping the edge of the disc. It covers under a pixel, and its entry and
+       exit are so close that their order is noise: guessed wrongly, the arc went
+       round the whole globe and filled it. It is left out. */
+    const kept = runs.filter(r => r.some(q => Rz - Math.hypot(q.x - cx, q.y - cy) > 1));
+    runs.length = 0;
+    kept.forEach(r => runs.push(r));
+    if (!runs.length) return "";
+    const ang = q => Math.atan2(q.y - cy, q.x - cx);
+    /* screen y points down, so a ring that winds counter-clockwise on the map
+       walks the limb with the raw angle falling */
+    const dir = winding(ring) > 0 ? -1 : 1, TAU = Math.PI * 2;
+    /* An entry a hair behind an exit is the same point found twice, to the
+       precision of the crossings. */
+    const travel = (from, to) => {
+      let t = ((to - from) * dir) % TAU;
+      if (t < 0) t += TAU;
+      return t > TAU - 3.5e-4 ? 0 : t;
+    };
+    const next = runs.map(r => {
+      const e = ang(r[r.length - 1]);
+      let best = 0, bt = Infinity;
+      runs.forEach((o, j) => { const t = travel(e, ang(o[0])); if (t < bt) { bt = t; best = j; } });
+      return best;
+    });
+    const arc = (r, to) => {
+      const from = ang(r[r.length - 1]), t = travel(from, ang(to)), steps = Math.max(1, Math.ceil(t / (Math.PI / 45)));
+      let s = "";
+      for (let k = 1; k < steps; k++) {
+        const th = from + dir * t * k / steps;
+        s += "L" + pt({ x: cx + Rz * Math.cos(th), y: cy + Rz * Math.sin(th) });
+      }
+      return s;
+    };
+    const done = runs.map(() => false);
+    let d = "";
+    runs.forEach((r0, i) => {
+      if (done[i]) return;
+      let j = i, first = true;
+      while (!done[j]) {
+        done[j] = true;
+        const r = runs[j];
+        r.forEach((q, k) => { d += (first && !k ? "M" : "L") + pt(q); });
+        first = false;
+        d += arc(r, runs[next[j]][0]);
+        j = next[j];
+      }
+      d += "Z";
+    });
+    return d;
+  }
+
   /* ---------- the things on it ---------- */
   function graticule() {
     let d = "";
@@ -222,7 +338,20 @@ const World = (function () {
      it room, and the Commonwealth's own never does. */
   const LAB = { cw: 5.5, up: 8, down: 2 };
   function labelText(t) { return t ? t.charAt(0).toUpperCase() + t.slice(1) : ""; }
+  /* A LABEL KEEPS ITS PLACE. Laid out afresh every frame, with no memory, a
+     label hopped 12 to 36 pixels whenever a neighbour's tip crossed its
+     preferred spot, and flipped from one side of its tether to the other as the
+     globe turned (the author, 6 Oct 2026: the text "shift[s] in position
+     rapidly when you move the globe"). So the spot a label last took is tried
+     first and kept for as long as it is clear; a label that was showing is
+     placed before one that was not, so a newcomer cannot take its spot; and a
+     label that was not showing needs a margin to appear, so one that only just
+     fits does not flicker in and out. It moves only when something is truly in
+     its way. */
+  const lastSpot = {};
+  let lastMode = null;
   function placeLabels() {
+    if (lastMode !== view.mode) { Object.keys(lastSpot).forEach(k => delete lastSpot[k]); lastMode = view.mode; }
     const items = [];
     (WORLD.anchors || []).forEach(a => {
       const g = geom(a.lng, a.lat, 26);
@@ -241,29 +370,45 @@ const World = (function () {
       marks.push({ key: it.key, x0: it.g.p.x - 4, x1: it.g.p.x + 4, y0: it.g.p.y - 4, y1: it.g.p.y + 4 });
       marks.push({ key: it.key, x0: it.g.q.x - 4, x1: it.g.q.x + 4, y0: it.g.q.y - 4, y1: it.g.q.y + 4 });
     });
+    const was = Object.assign({}, lastSpot);
+    Object.keys(lastSpot).forEach(k => delete lastSpot[k]);
     const placed = [], out = {};
     /* The Commonwealth's own and the selection are the ones that must be named:
        they try for a spot clear of every mark, and failing that take one that
        keeps clear of the labels already placed. The others need the first. */
     const hit = (r, it, bare) => placed.concat(bare ? [] : marks.filter(m => m.key !== it.key)).some(o =>
       r.x0 < o.x1 && r.x1 > o.x0 && r.y0 < o.y1 && r.y1 > o.y0);
-    items.slice().sort((x, y) => x.rank - y.rank).forEach(it => {
+    const grow = (r, m) => ({ x0: r.x0 - m, x1: r.x1 + m, y0: r.y0 - m, y1: r.y1 + m });
+    items.forEach((it, i) => { it.i = i; });
+    items.slice().sort((x, y) => x.rank - y.rank || (was[x.key] ? 0 : 1) - (was[y.key] ? 0 : 1) || x.i - y.i)
+      .forEach(it => {
       const w = it.text.length * LAB.cw, q = it.g.q;
-      const first = it.g.ux >= 0 ? "start" : "end", other = first === "start" ? "end" : "start";
-      const side = (a, dy) => ({ a: a, x: q.x + (a === "start" ? 6 : -6), y: q.y + dy });
-      const spots = [side(first, 3), side(other, 3),
-        { a: "middle", x: q.x, y: q.y - 7 }, { a: "middle", x: q.x, y: q.y + 14 }];
-      if (it.rank <= 1) [15, -9, 27, -21].forEach(dy => spots.push(side(first, dy), side(other, dy)));
+      const first = it.g.ux >= 0 ? "R" : "L";
+      const at = (side, dy) => ({ id: side + dy, a: side === "R" ? "start" : "end",
+                                  x: q.x + (side === "R" ? 6 : -6), y: q.y + dy });
+      const flip = side => side === "R" ? "L" : "R", other = flip(first);
+      let spots = [at(first, 3), at(other, 3),
+        { id: "U", a: "middle", x: q.x, y: q.y - 7 }, { id: "D", a: "middle", x: q.x, y: q.y + 14 }];
+      if (it.rank <= 1) [15, -9, 27, -21].forEach(dy => spots.push(at(first, dy), at(other, dy)));
+      const prior = was[it.key];
+      if (prior) spots = spots.filter(s => s.id === prior).concat(spots.filter(s => s.id !== prior));
       const box = s => {
         const x0 = s.a === "start" ? s.x : s.a === "end" ? s.x - w : s.x - w / 2;
         return { x0: x0 - 1, x1: x0 + w + 1, y0: s.y - LAB.up, y1: s.y + LAB.down };
       };
       const inside = r => r.x0 >= 2 && r.x1 <= W - 2 && r.y0 >= 2 && r.y1 <= H - 2;
-      let pick = spots.find(s => { const r = box(s); return inside(r) && !hit(r, it); });
+      const margin = prior ? 0 : 5;
+      /* A label that is already up stays where it is unless another LABEL is in
+         its way. A tether's tip drifting under the text is a small fault, and
+         the label hopping clear of it is a large one. */
+      let pick = prior && spots[0].id === prior && inside(box(spots[0])) && !hit(box(spots[0]), it, true)
+        ? spots[0] : null;
+      if (!pick) pick = spots.find(s => { const r = grow(box(s), margin); return inside(box(s)) && !hit(r, it); });
       if (!pick && it.rank <= 1)
         pick = spots.find(s => { const r = box(s); return inside(r) && !hit(r, it, true); }) || spots[0];
       if (!pick) return;
       placed.push(box(pick));
+      lastSpot[it.key] = pick.id;
       out[it.key] = { a: pick.a, x: pick.x, y: pick.y, text: it.text };
     });
     return out;
@@ -326,7 +471,7 @@ const World = (function () {
       const open = !!(st && st.flags && st.flags.station_issue);
       const has = open && !!((WORLD.states || {})[c.i] || {}).actor;
       let d = "";
-      (c.g || []).forEach(rings => rings.forEach(r => d += ringD(r) + " "));
+      (c.g || []).forEach(rings => rings.forEach(r => d += ringFill(r) + " "));
       if (!d.trim()) return;
       countries += `<path class="w-c${lit ? " sel" : ""}${has ? " has" : ""}" ` +
         `data-iso="${c.i}" data-name="${(c.n || "").replace(/"/g, "")}" d="${d.trim()}"/>`;
@@ -499,7 +644,7 @@ const World = (function () {
     return () => { if (t) clearInterval(t); };
   }
 
-  return { render, key, wire, set, toggle, mode, selected, select, selectBody, selectedBody, onSelect, auto, view,
+  return { render, key, wire, set, __ringFill: ringFill, toggle, mode, selected, select, selectBody, selectedBody, onSelect, auto, view,
            selectAnchor, selectedAnchor,
            zoom, zoomBy, canZoom, ZOOM_MIN, ZOOM_MAX };
 })();
