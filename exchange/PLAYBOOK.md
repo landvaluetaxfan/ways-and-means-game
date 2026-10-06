@@ -79,7 +79,9 @@ Learned from their corrections. Check new screens against these before they ship
 - **A line that restates what the panel already shows.** A count beside the list
   it counts, a tail that repeats the title, "6 of 6 left" beside a bar of six.
   Keep a tail only for a unit, a scope, an ordering, a condition or an
-  instruction. In-world characterisation ("the only accurate numbers") stays.
+  instruction. There is no in-world exemption: the author cut "the only accurate
+  numbers" and "public reference · attested editing" on 6 Oct 2026, and a link
+  that sells ("How it counts, and who sits in it") is written as what is there.
 - **The design's theory on the screen.** "Advice while there is time to act" is
   how the designer thinks, not what the player needs.
 - **Empty placeholders.** A heading with no body, or an empty state that says

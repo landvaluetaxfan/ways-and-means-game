@@ -255,3 +255,10 @@ contradicts itself.
    scenes to bill stage is more machinery to write and test. A "skip if carried" condition covers
    the early-vote case. Keying to committee remains an option: it tracks the player and teaches
    that committee goes clause by clause.
+9. **The first decision is to be rewritten entirely** (the author, 6 Oct). When it is, two notes
+   from the author's reading of the current one. The line in `the_commission`'s answer ("The Soft
+   Left, the current that runs your party, will approve of a Prime Minister who gives a Liberal
+   President nothing", `content/events.js`) misplaces the Soft Left: they are the party's
+   in-between and do not want a hardline stance. And the same pass should keep the interface
+   free of the taglines the author keeps finding (`PROSE.md`, Interface rule 8). The current
+   line is left alone because the decision it belongs to is going.

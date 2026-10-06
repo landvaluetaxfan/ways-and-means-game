@@ -6557,7 +6557,7 @@ const UI = (function () {
         html += `<div class="note">Nothing on the ${esc(f.short || f.name)}'s agenda concerns the ` +
           `Commonwealth. It sits next on ${esc(forumDay(fs.next) || "a date not yet set")}, and ` +
           `anything the government tables before then is voted on that day. ` +
-          `${cxlink("forum_" + f.id, "How it counts, and who sits in it")}.</div>`;
+          `${cxlink("forum_" + f.id, "More information about the " + esc(f.short || f.name) + " and its procedures")}.</div>`;
         return;
       }
       if (tabled.length) html += `<div class="ga-f">On the agenda for ${esc(forumDay(fs.next))}</div>` +

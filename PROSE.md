@@ -237,10 +237,14 @@ The register of good software help.
    owed"), sells the panel ("advice while there is time to act", "four bases,
    four prices, one row each"), or repeats what a bar, a count or a marker on
    the same panel already shows ("6 of 6 left this period" over a slot bar).
-   In-world voice is not interface and stays (the Concordance's "public
-   reference · attested editing", the Underwriters' "the only accurate
-   numbers"). This is the slogan under a label that a model adds
-   by reflex (the author, 4 Oct 2026: "slop flavour text"). If the tail
+   There is no in-world exemption. The Concordance's "public reference ·
+   attested editing" and the Underwriters' "the only accurate numbers" were
+   kept as in-world voice, and the author cut both (6 Oct 2026: "I still spot
+   taglines I don't like"). The same goes for a link that sells where it
+   goes ("How it counts, and who sits in it"): say what is there ("More
+   information about the General Assembly and its procedures"). This is the
+   slogan under a label that a model adds by reflex (the author, 4 Oct 2026:
+   "slop flavour text"). If the tail
    could be deleted and the reader would lose nothing, delete it. The design's
    theory ("advice is cheaper early") belongs in the design record, not on the
    screen: the screen shows the matter, and the player learns the rest by
