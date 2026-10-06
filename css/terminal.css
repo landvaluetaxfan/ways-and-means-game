@@ -762,6 +762,18 @@ tr.compopen .compdis{border-color:var(--gold-dk);color:var(--ink);background:var
 .w-body circle{fill:var(--warn,#a4632a);stroke:#12150f;stroke-width:1;cursor:pointer;}
 .w-body.in line{stroke:var(--gold);stroke-dasharray:none;}
 .w-body.in circle{fill:var(--gold);}
+/* THE LABELS AND THE KEY (6 Oct 2026). A name stands beside each tether, with a
+   halo the colour of the sea so that it reads over land, and the three marks
+   are explained in a strip under the drawing, on the same dark ground. */
+.w-lab{font-family:var(--f-data);font-size:9px;fill:#c9cfba;paint-order:stroke;stroke:#12150f;
+  stroke-width:2.6px;stroke-linejoin:round;cursor:pointer;user-select:none;}
+.w-anchor.mine .w-lab,.w-body.in .w-lab{fill:var(--gold);}
+.w-anchor.sel .w-lab{fill:#f0e6c8;}
+.w-body .w-lab{fill:#d9a56b;}
+.w-key{flex:0 0 auto;display:flex;flex-wrap:wrap;gap:3px 16px;padding:5px 8px;background:#12150f;
+  border-top:1px solid #2b3226;font-family:var(--f-ui);font-size:11.5px;color:#b9c0aa;}
+.w-ki{display:inline-flex;align-items:center;gap:6px;}
+.w-sw{width:28px;height:15px;flex:0 0 auto;}
 /* THE SELECTED COUNTRY'S HEAD. Bigger than a rulehead, because it is a window
    and the country is the subject of it. */
 .w-c-h{display:flex;align-items:baseline;gap:6px;border-bottom:1px solid var(--ink-soft);

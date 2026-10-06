@@ -2484,6 +2484,31 @@ try {
      ($("#w-side").textContent.match(/In the General Assembly.{0,120}/) || ["none"])[0]);
   ok("France's outline carries its code, so Kourou's host can be clicked",
      !!w.document.querySelector('#world-svg path.w-c[data-iso="FRA"]'));
+  /* THE MARKS ARE NAMED (6 Oct 2026). Twelve rings with no names left the
+     player clicking each to learn which tether it was. The Commonwealth's own
+     must carry a label wherever they are drawn, in the globe and in the map,
+     and the key under the drawing must explain the marks that are there. */
+  const startMode = w.eval("World.mode()");
+  const drawn = mode => {
+    if (w.eval("World.mode()") !== mode) w.eval("World.toggle()");
+    const h = w.document.createElement("div");
+    h.innerHTML = w.eval("World.render()");
+    return [...h.querySelectorAll("g.w-anchor.mine")];
+  };
+  ["globe", "map"].forEach(mode => {
+    const mine = drawn(mode);
+    const bare = mine.filter(g => !g.querySelector("text.w-lab")).map(g => g.dataset.anchor);
+    ok("every anchor of the Commonwealth's that is drawn in the " + mode + " is named",
+       mine.length > 0 && bare.length === 0, mine.length + " drawn, unnamed: " + (bare.join(",") || "none"));
+  });
+  {
+    const h = w.document.createElement("div");
+    h.innerHTML = w.eval("World.key()");
+    const kt = h.textContent;
+    ok("the key explains the Commonwealth's marks, the others' and the foreign body",
+       /Commonwealth/.test(kt) && /Not the Commonwealth/.test(kt) && h.querySelectorAll(".w-ki").length === 3, kt);
+  }
+  if (w.eval("World.mode()") !== startMode) w.eval("World.toggle()");
   w.document.querySelector('.tab[data-t="sit"]').click();
   for (let i = 0; i < 2; i++) w.document.querySelector('#sit-cal [data-cal="1"]').click();
   const cal = $("#sit-cal").innerHTML;

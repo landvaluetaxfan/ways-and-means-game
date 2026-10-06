@@ -6315,7 +6315,7 @@ const UI = (function () {
         `<button class="chv" data-wzoom="in"${World.canZoom(1.15) ? "" : " disabled"}>+</button>` +
       `</span>` +
       `<span class="w-hint">Drag to turn it. Click an anchor or a country. Wheel to zoom.</span>` +
-      `</div><div class="w-canvas" id="w-canvas">` + World.render() + `</div>`;
+      `</div><div class="w-canvas" id="w-canvas">` + World.render() + `</div>` + World.key();
     map.querySelectorAll("[data-wzoom]").forEach(b => b.addEventListener("click", () => {
       World.zoomBy(b.dataset.wzoom === "in" ? 1.15 : 1 / 1.15);
       cue("click"); drawWorld();

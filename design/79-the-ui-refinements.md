@@ -94,3 +94,14 @@ each, three unlabelled anchors, and nothing that shows Earth's pressure.
 No engine rule changes, so no playtest; `npm run check` and `npm run layout` pass, with before and
 after screenshots at both sizes. Orbit and Concordance are not touched. Any new wording is Claude's,
 read against `PROSE.md`.
+
+## Built
+
+**6 October, the labels and the key (design 1, first slice).** The author said to start on Foreign
+Affairs, so the part that needs nothing else went first: every tether is named on the globe and the
+map, and a key under the drawing says what the gold, the plain and the orange marks are. Labels are
+placed greedily in order of importance (the selection, the Commonwealth's four, the Almanac Works,
+then the rest), so a crowded stretch of East Africa names the Commonwealth's anchors and leaves a
+foreign one unnamed until a turn, a zoom or a click gives it room. **The globe's shrink did not go
+with it.** Shrinking before there are panels to fill the space only opens a blank band, which is
+what the audit objected to, so it lands with the first desk panel.

@@ -19,7 +19,7 @@ pass deletes the file.
 | **4** | Relations | pass 1 |
 | **5** | Placeholder portraits | pass 1 |
 | **later** | Chamber focus | `witnessed-acts` landing |
-| **later** | Foreign Affairs, the friction desk | the Acts II to V map (`design/78`) |
+| **later** | Foreign Affairs, the friction desk (labels and key built) | the Acts II to V map (`design/78`) |
 
 Orbit and Concordance are satisfactory and are **not** to be touched. The Sandbox is the author's
 bench and is out of scope. Sitting and Chamber are touched only where a pass below names them.
@@ -145,14 +145,21 @@ column note: DUAL, SIMPLE, POP., FUNC., and the twelve party codes. "Who is for 
 clipped at the right edge at 1366. Check what the Anchor Concession's Grant button does at stage
 "assent" and report it. The tutorial's dimming (`design/77`) uses the same regions.
 
-## Later: Foreign Affairs, the friction desk
+## Foreign Affairs, the friction desk
 
-Waits for the Acts II to V map (`design/78`). The globe shrinks, its anchors get labels and a key
-(the rings and the dotted lines). The panels become: Earth's pressure in words (money and the UN);
-a card for each bloc (the Union, the African Union, Kenya, Gabon) with what it wants and where it
-stands; the General Assembly's agenda and count; and, once the Works exists, a Works file showing the
-ladder rung, the rescue date and the next ask. The globe, the key and the labels can go first and
-need nothing else. Not audited: the MAP and STILL modes. Check them in this pass.
+**Built 6 October (Claude, at the author's go-ahead): the labels and the key.** Each tether on the
+globe and the map carries its name, placed so that none overlaps another or a mark, and the
+Commonwealth's four are always named; a key under the drawing explains the three marks. The code is
+`placeLabels` and `key` in `js/world.js`, one line in `drawWorld`, and the `.w-lab`/`.w-key` rules in
+the world block of `css/terminal.css`; `tools/uitest.js` asserts it. Do not redo it.
+
+**Still to build, and waiting for the Acts II to V map (`design/78`):** the globe shrinks, and
+the panels become: Earth's pressure in words (money and the UN); a card for each bloc (the Union,
+the African Union, Kenya, Gabon) with what it wants and where it stands; the General Assembly's
+agenda and count; and, once the Works exists, a Works file showing the ladder rung, the rescue date
+and the next ask. **The shrink goes in with the first of those panels.** On its own it only opens a
+blank band beside the globe, which is the fault the audit named. Not audited: the MAP and STILL
+modes' behaviour beyond the labels. Check them in this pass.
 
 ## Done when
 

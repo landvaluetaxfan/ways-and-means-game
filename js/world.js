@@ -195,20 +195,93 @@ const World = (function () {
     return d;
   }
 
-  /* An anchor: a mark on the ground, and a stub of tether standing off it.
-     The stub points away from the centre of the globe in globe mode — that is
-     the radial direction, which is what a geostationary tether does — and
-     straight up in map mode, where there is no centre. */
-  function anchorMark(a) {
-    const p = project(a.lng, a.lat);
-    if (!p.vis) return "";
-    const mine = a.mine;
-    const len = 26 * (view.zoom || 1);
+  /* WHERE A MARK AND ITS TETHER'S TIP STAND, or null off the near side. The tip
+     is `len` pixels outward from the ground: radially in globe mode, up in map
+     mode. Anchors, the labels and the foreign body all ask the same question,
+     so it is asked here. */
+  function geom(lng, lat, len) {
+    const p = project(lng, lat);
+    if (!p.vis) return null;
+    const L = len * (view.zoom || 1);
     const dx = view.mode === "globe" ? (p.x - W / 2) : 0;
     const dy = view.mode === "globe" ? (p.y - H / 2) : -1;
     const m = Math.hypot(dx, dy) || 1;
     const ux = dx / m, uy = view.mode === "globe" ? dy / m : -1;
-    const q = { x: p.x + ux * len, y: p.y + uy * len };
+    return { p: p, q: { x: p.x + ux * L, y: p.y + uy * L }, ux: ux };
+  }
+
+  /* LABELS. The marks were twelve rings with no names, four of them gold, so the
+     only way to learn which tether was which was to click each one (the
+     author's audit, 6 Oct 2026). A label stands beside the tip of each tether.
+     They are placed greedily and in order of importance, because on the near
+     side of the globe the East African tethers stand within a few pixels of
+     each other: the selection first, then the Commonwealth's, then the
+     foreign body, then the rest. Each takes the first spot that touches no
+     label already placed and, for the rest, no other mark; a foreign anchor
+     that fits nowhere goes unlabelled until a turn, a zoom or a click gives
+     it room, and the Commonwealth's own never does. */
+  const LAB = { cw: 5.5, up: 8, down: 2 };
+  function labelText(t) { return t ? t.charAt(0).toUpperCase() + t.slice(1) : ""; }
+  function placeLabels() {
+    const items = [];
+    (WORLD.anchors || []).forEach(a => {
+      const g = geom(a.lng, a.lat, 26);
+      if (!g) return;
+      const sel = (view.anchor && a.id === view.anchor) || (view.sel && a.iso === view.sel);
+      items.push({ key: a.id, text: labelText(a.tether || a.id), g: g, rank: sel ? 0 : a.mine ? 1 : 3 });
+    });
+    (WORLD.foreign || []).forEach(b => {
+      const g = geom(b.lng, b.lat, 44);
+      if (!g) return;
+      items.push({ key: b.id, text: labelText((b.short || b.name || b.id).replace(/^the /i, "")),
+                   g: g, rank: 2 });
+    });
+    const marks = [];
+    items.forEach(it => {
+      marks.push({ key: it.key, x0: it.g.p.x - 4, x1: it.g.p.x + 4, y0: it.g.p.y - 4, y1: it.g.p.y + 4 });
+      marks.push({ key: it.key, x0: it.g.q.x - 4, x1: it.g.q.x + 4, y0: it.g.q.y - 4, y1: it.g.q.y + 4 });
+    });
+    const placed = [], out = {};
+    /* The Commonwealth's own and the selection are the ones that must be named:
+       they try for a spot clear of every mark, and failing that take one that
+       keeps clear of the labels already placed. The others need the first. */
+    const hit = (r, it, bare) => placed.concat(bare ? [] : marks.filter(m => m.key !== it.key)).some(o =>
+      r.x0 < o.x1 && r.x1 > o.x0 && r.y0 < o.y1 && r.y1 > o.y0);
+    items.slice().sort((x, y) => x.rank - y.rank).forEach(it => {
+      const w = it.text.length * LAB.cw, q = it.g.q;
+      const first = it.g.ux >= 0 ? "start" : "end", other = first === "start" ? "end" : "start";
+      const side = (a, dy) => ({ a: a, x: q.x + (a === "start" ? 6 : -6), y: q.y + dy });
+      const spots = [side(first, 3), side(other, 3),
+        { a: "middle", x: q.x, y: q.y - 7 }, { a: "middle", x: q.x, y: q.y + 14 }];
+      if (it.rank <= 1) [15, -9, 27, -21].forEach(dy => spots.push(side(first, dy), side(other, dy)));
+      const box = s => {
+        const x0 = s.a === "start" ? s.x : s.a === "end" ? s.x - w : s.x - w / 2;
+        return { x0: x0 - 1, x1: x0 + w + 1, y0: s.y - LAB.up, y1: s.y + LAB.down };
+      };
+      const inside = r => r.x0 >= 2 && r.x1 <= W - 2 && r.y0 >= 2 && r.y1 <= H - 2;
+      let pick = spots.find(s => { const r = box(s); return inside(r) && !hit(r, it); });
+      if (!pick && it.rank <= 1)
+        pick = spots.find(s => { const r = box(s); return inside(r) && !hit(r, it, true); }) || spots[0];
+      if (!pick) return;
+      placed.push(box(pick));
+      out[it.key] = { a: pick.a, x: pick.x, y: pick.y, text: it.text };
+    });
+    return out;
+  }
+  function labelSvg(l) {
+    return l ? `<text class="w-lab" x="${l.x.toFixed(1)}" y="${l.y.toFixed(1)}" text-anchor="${l.a}">` +
+      `${l.text.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</text>` : "";
+  }
+
+  /* An anchor: a mark on the ground, and a stub of tether standing off it.
+     The stub points away from the centre of the globe in globe mode — that is
+     the radial direction, which is what a geostationary tether does — and
+     straight up in map mode, where there is no centre. */
+  function anchorMark(a, labels) {
+    const g = geom(a.lng, a.lat, 26);
+    if (!g) return "";
+    const p = g.p, q = g.q;
+    const mine = a.mine;
     /* `a.iso` AND NOT `a.host`. This read `a.host === view.sel`, and host is a
        display name — "Brazil", "the Maldives" — while a selection is a code
        like BRA. The two were never equal, so `.w-anchor.sel` has been in the
@@ -230,6 +303,7 @@ const World = (function () {
       `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${mine ? 3.1 : 2.2}"/>` +
       `<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="1.8"/>` +
       `<circle class="w-hit" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="7"/>` +
+      labelSvg(labels[a.id]) +
       `</g>`;
   }
 
@@ -262,12 +336,13 @@ const World = (function () {
       ? `<circle class="w-ocean" cx="${W / 2}" cy="${H / 2}" r="${(R * view.zoom).toFixed(1)}"/>`
       : `<rect class="w-ocean" x="0" y="0" width="${W}" height="${H}"/>`;
 
+    const labels = placeLabels();
     return `<svg id="world-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="The Earth, and where the elevators stand">` +
       ocean +
       `<path class="w-grat" d="${graticule()}"/>` +
       countries +
-      anchors.map(anchorMark).join("") +
-      ((WORLD.foreign || []).map(foreignMark).join("")) +
+      anchors.map(a => anchorMark(a, labels)).join("") +
+      ((WORLD.foreign || []).map(b => foreignMark(b, labels)).join("")) +
       `</svg>`;
   }
 
@@ -276,20 +351,36 @@ const World = (function () {
      rather than as a pin in a country, and it is drawn in the warning colour
      because it is the one thing here that is not yet the Commonwealth's. Annex
      it and it turns gold — the story told in one colour change. */
-  function foreignMark(b) {
-    const p = project(b.lng, b.lat);
-    if (!p.vis) return "";
+  function foreignMark(b, labels) {
+    const g = geom(b.lng, b.lat, 44);
+    if (!g) return "";
+    const p = g.p, q = g.q;
     const home = !!(st && st.flags && st.flags["annexed_" + b.id]);
-    const len = 44 * (view.zoom || 1);
-    const dx = view.mode === "globe" ? (p.x - W / 2) : 0;
-    const dy = view.mode === "globe" ? (p.y - H / 2) : -1;
-    const m = Math.hypot(dx, dy) || 1;
-    const ux = dx / m, uy = view.mode === "globe" ? dy / m : -1;
-    const q = { x: p.x + ux * len, y: p.y + uy * len };
     return `<g class="w-body${home ? " in" : ""}" data-body="${b.id}">` +
       `<line x1="${p.x.toFixed(1)}" y1="${p.y.toFixed(1)}" x2="${q.x.toFixed(1)}" y2="${q.y.toFixed(1)}"/>` +
       `<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="4.2"/>` +
+      labelSvg(labels[b.id]) +
       `</g>`;
+  }
+
+  /* THE KEY, under the drawing, and only for what the drawing holds: a campaign
+     with no leased anchor says "held", and one with no foreign body shows no
+     orange. The swatches are the marks themselves, so the stylesheet that
+     colours the globe colours the key. */
+  function key() {
+    const A = WORLD.anchors || [], F = WORLD.foreign || [];
+    const sw = (cls, ring) => `<svg class="w-sw" viewBox="0 0 22 12" aria-hidden="true"><g class="${cls}">` +
+      `<line x1="3" y1="9" x2="15" y2="3"/><circle cx="3" cy="9" r="2.6"/>` +
+      (ring ? `<circle cx="15" cy="3" r="1.8"/>` : "") + `</g></svg>`;
+    const item = (cls, ring, text) => `<span class="w-ki">${sw(cls, ring)}${text}</span>`;
+    const esc = t => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    let h = "";
+    if (A.some(a => a.mine))
+      h += item("w-anchor mine", true, A.some(a => a.mine && a.leased)
+        ? "Held or leased by the Commonwealth" : "Held by the Commonwealth");
+    if (A.some(a => !a.mine)) h += item("w-anchor", true, "Not the Commonwealth\u2019s");
+    F.forEach(b => { h += item("w-body", false, esc(labelText((b.short || b.name || b.id).replace(/^the /i, "")))); });
+    return h ? `<div class="w-key">${h}</div>` : "";
   }
 
   /* ---------- the turn and the spin ---------- */
@@ -408,7 +499,7 @@ const World = (function () {
     return () => { if (t) clearInterval(t); };
   }
 
-  return { render, wire, set, toggle, mode, selected, select, selectBody, selectedBody, onSelect, auto, view,
+  return { render, key, wire, set, toggle, mode, selected, select, selectBody, selectedBody, onSelect, auto, view,
            selectAnchor, selectedAnchor,
            zoom, zoomBy, canZoom, ZOOM_MIN, ZOOM_MAX };
 })();
