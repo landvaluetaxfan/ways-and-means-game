@@ -116,8 +116,7 @@ const PARTIES = [
     /* No carve-out: a national ideological party with no district roots and
        no category to protect. It lives or dies on the threshold every time,
        which is exactly the party 4.8 says will agonise just below the line. */
-    note:"It stands for a single tax on volume, on the principle of the land value tax, and for no other tax. Its list vote is always close to the threshold."+
-         "within a point of the threshold." },
+    note:"It stands for a single tax on volume, on the principle of the land value tax, and for no other tax. Its share of the list vote at the last election was only just above the threshold, the share a party must pass to win list seats." },
 
   { id:"upl", name:"Uplift Alliance",              short:"UPA", colour:"var(--p-upl)",
     leader:"lindegaard", logo:"upl.png", wordmark:"upl_mark.png",
@@ -129,9 +128,7 @@ const PARTIES = [
        permanently contested, which is the point of having it. */
     carve_out:"category",
     axes:{economic:-0.6, authority:-0.35, personhood:0.95, sovereignty:0.3, trade:0.4},
-    note:"It speaks for uplifted persons. It is exempt from the list threshold under the provision for parties representing a single category of person, which much of the House would repeal, and its votes are often decisive in a close House."+
-         "Exempt from the list threshold under the single-category carve-out, which "+
-         "half the chamber would repeal tomorrow." },
+    note:"It speaks for uplifted persons. It is exempt from the list threshold, the share of the list vote that a party must pass to win list seats, under the provision for parties that represent a single category of person. Much of the House would repeal the provision, and the Alliance's two members often decide a close division." },
 
   { id:"ind", name:"Independents",                 short:"IND", colour:"var(--p-ind)",
     leader:null,
@@ -214,7 +211,7 @@ const CURRENTS = [
      leadership in public (8.5). */
   { id:"rv_congregation", party:"rv", name:"Confessionals",         members:11, loyalty:62,
     axes:{economic:null, authority:-0.15, personhood:-0.95, sovereignty:null, trade:null},
-    description:"The Confessionals are the religious congregations that founded the Congregational Democratic Alliance, and include the party's leader, Ryan Jung-Hee Park. Their one fixed position is opposition to extending legal personhood; on other questions their members vote freely. At the party conference they voted 71 to 29 against the divergence threshold bill." },
+    description:"The Confessionals are the religious congregations that founded the Congregational Democratic Alliance, and include the party's leader, Ryan Jung-Hee Park. Their one fixed position is opposition to extending legal personhood; on other questions their members vote freely. At the party conference they voted 71 to 29 against extending legal personhood." },
   { id:"rv_ministerial",  party:"rv", name:"Coalitionists",         members:6, loyalty:40,
     axes:{economic:-0.55, authority:-0.2, personhood:-0.8, sovereignty:0.45, trade:null},
     description:"The Coalitionists are the Congregational Democratic Alliance members who hold office in the government, and their priority is keeping the coalition together. They oppose extending legal personhood, and they also support public ownership and a strong federal government. When the party conference voted against the leadership, they did not take part in the vote." },

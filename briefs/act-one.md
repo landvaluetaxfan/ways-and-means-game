@@ -324,6 +324,31 @@ remains is the rise.
 | 15 | `a1_underwriters` | a page; the Economy tab is the card's business |
 | 16 | `a1_works_abandoned` (curtain page; E1 landed) | the curtain, and the Almanac Works abandoned. Full-page superevent (E11) still to come |
 
+### Stage 4, the levers' and the reference text (Claude, 7 October)
+
+Done, read against `PROSE.md` and checked by lint and the prose round trip:
+
+- **The Appropriation Bill.** Summary, effect note, contested text, every clause and level
+  label and note. The tax clauses are renamed to the words the estimates page uses (tax on
+  pressurised volume, cooling, computing time, freight to orbit), the typed CW$ figures are
+  gone from their notes because the tooltip adds the Treasury's costing, and the works level
+  names Homestead, the one station whose closure the effect moves. The floor and transit
+  notes now say that a standing cost lowers the most the estimates may spend (`solvency`).
+- **The two orders, the treaty bill's contested text, the 18 cabinet notes and the three
+  Treasury candidates' notes, two party notes (a doubled sentence in each), and one
+  current (the Confessionals, which named the divergence bill).** The cabinet notes were
+  design notes ("the sharpest tool in the game") shown on the Government tab.
+- Character `note` fields are the author's design notes and are not printed; only `bio`
+  reaches the Concordance ("Career"), and those are in register and carry nothing after
+  Act I.
+
+Not done, and where it goes: the 35 stations' `dependency` and `grievance` (printed in the
+Concordance as "Principal dependency" and "Principal grievance", several as fragments such as
+"Everything." and "Where the contracts went."; one names the divergence threshold) belong with
+stage 5's pass on the generated articles. `setup.fiscal.bases` names ("Volume", "Thermal
+quota", "Substrate-hours", "Mass to orbit") are the Economy tab's labels and should match the
+estimates page too. Codex's E2 hides everything above by the introduced record.
+
 **Promises are the spine of 5 to 10.** Each is a real undertaking with a deadline by sitting 14,
 a place where it is kept (the Owed list names it) and a page for its breach, which sets the flag
 `promise_broken` that Question Time reads. By sitting 10 a player who promised every minister what

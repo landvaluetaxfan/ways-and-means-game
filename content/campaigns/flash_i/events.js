@@ -443,7 +443,7 @@ The renewed terms for the International Earth-Orbit Elevator stay unratified, an
 
 The floor sets the rate at which every resident is carried, and the estimates pay for it. Trimming the guarantee takes it out of the estimates, and the saving shows in this session's accounts. The stations that cannot grow or recycle enough of their own food, water and air show the shortfall by the end of the month.
 
-Lifting the floor carries the stations with the least of their own further than the guarantee requires. It costs CW$30bn, which is CW$14bn more than the draft carries, and the reserve, the Treasury's cash in hand, can pay only what the other clauses leave it.
+Lifting the floor raises the guarantee, and the stations that grow and recycle the least of their own food, water and air gain most. It costs CW$30bn, which is CW$14bn more than the draft carries. A higher guarantee is a standing cost, so the most the estimates may spend falls as well, and the reserve, the Treasury's cash in hand, can pay only what the other clauses leave it.
 
 "Every party wants the floor raised, and none of them says which clause pays for it," Ashgrove said. "If the House lifts it, the money has to come from somewhere else in the estimates."
 
@@ -573,7 +573,7 @@ Mandelina Trottier, its leader and the Deputy Prime Minister, was told the means
 
 Works raise a station's closure, the share of its air, water, food and materials it can grow or recycle without imports. Most stations are below the level at which leaving the Commonwealth is survivable. A station with higher closure can leave at less cost to itself.
 
-Funded in the ring band, where the pressure on habitable volume is worst, the works cost CW$20bn and lower the price of volume. Funded at the outer stations, where closure is lowest, they cost CW$30bn, and those stations become better able to leave.
+Funded in the ring band, where the pressure on habitable volume is worst, the works cost CW$20bn and lower the price of volume. Funded at the outer stations, where closure is lowest, they cost CW$30bn. The first works are at Homestead, a station of 880,000 people, which becomes better able to leave.
 
 "Everything else in the estimates is spent by the end of the session," Tómasson said. "Works are still there in ten years, and I cannot tell you which way that cuts for the outer stations."
 
@@ -586,7 +586,7 @@ The government sets the level before the estimates go to the House: deferred at 
   speaker:"tomasson",
   body:`Haukur Tómasson, the Minister for Closure and Development, has asked where the works go, if they go anywhere. The stations that would be funded will plan around what he tells them.
 
-You set the level in the Chamber. The ring band's works lower the price of volume, the space each resident pays for. The outer stations' works raise those stations' closure, and with it their ability to leave the Commonwealth.`,
+You set the level in the Chamber. The ring band's works lower the price of volume, the space each resident pays for. The outer stations' works begin at Homestead and raise its closure, and with it its ability to leave the Commonwealth.`,
   choices:[
     { posture:"measured",
       label:`Promise Haukur Tómasson works in the ring band, at CW$20bn, before the House votes.`,
@@ -601,7 +601,7 @@ You set the level in the Chamber. The ring band's works lower the price of volum
     { posture:"bold",
       label:`Promise Haukur Tómasson works at the outer stations, at CW$30bn, before the House votes.`,
       act:"Promise it",
-      note:`You tell Tómasson the outer stations are funded, and you keep the promise by setting the works to the outer stations in the Chamber within five sittings. The estimates must still fit the reserve, so another clause has to give. Their closure rises, and with it their ability to leave the Commonwealth, which Home Rule, the party that speaks for the outer stations, will welcome and the parties that want the Commonwealth held together will not. If you do not set it in time, he will say so.`,
+      note:`You tell Tómasson the outer stations are funded, and you keep the promise by setting the works to the outer stations in the Chamber within five sittings. The estimates must still fit the reserve, so another clause has to give. Homestead's closure rises, and with it its ability to leave the Commonwealth, which Home Rule, the party that speaks for the outer stations, will welcome and the parties that want the Commonwealth held together will not. If you do not set it in time, he will say so.`,
       effects:[{ undertake:{ id:"a1_works_outer", text:"Fund capital works at the outer stations at CW$30bn",
                  owed_to:"tomasson", by:5,
                  discharge:{ clause:{ bill:"appropriation", clause:"works", level:"outer" } },

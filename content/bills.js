@@ -108,57 +108,56 @@ const BILLS = [
     campaign:["world", "flash_i"],      /* the engine tests play on it, and Act I is built on it (design/80) */
     test:"supply", priority:true,
     title:"Appropriation (Session 4) Bill",
-    summary:"The estimates for the session, clause by clause, and the thermal quota released against them. It is a money bill: the 240 elected members decide it, and the 40 functional members vote and have their votes recorded.",
-    effectNote:"Sets the thermal quota, the consumables floor, substrate insurance, "+
-            "capital works and the transit subsidy. Whatever it appropriates, the "+
-            "benches that divide on it are the benches that have to deliver it.",
-    contested:"Every party wants the consumables floor raised and more quota released, and none wants to pay for either, though both come out of the same appropriation. A functional majority against the bill delays the whole of it by three sittings, and the same functional benches run the services it pays for, so a government that carries its budget against them still depends on them to deliver it.",
+    summary:`The estimates for the session: five spending clauses and four tax rates. The House must pass the bill before it rises, because until it does the government cannot pay its officials.`,
+    effectNote:"Sets the thermal quota released, the consumables floor, substrate insurance, capital works "+
+            "and the transit subsidy, and four tax rates, each at the level the government has chosen. "+
+            "The levels it chooses must cost no more than the reserve holds.",
+    contested:`The Party of Socialists and Democrats, the New Progressive Party, the Congregational Democratic Alliance and the independents support the bill. The Liberal Party and the Freehold Party oppose it. The other parties support it in part: each wants the levels it cares about raised, and the reserve cannot pay for every level at once.`,
     touches:[],
     clauses:[
       { id:"thermal", name:"Thermal quota released", default:"steady",
-        note:"The thermal quota released this session. How much is released sets the thermal price: the less quota, the higher the price every station pays to keep running.",
+        note:`Thermal quota is the permission to reject heat, which every station needs in order to run. The estimates decide how much quota is released this session. Less quota raises the thermal price that every station pays, and more quota lowers it.`,
         levels:[
-          { id:"tight",  label:"Held tight", cost:0,  note:"Less quota is released than last session, and the estimates pay nothing for it. The price rises to clear, and it lands first on the stations with the thinnest margins.",
+          { id:"tight",  label:"Held tight", cost:0,  note:`Less quota is released than last session, and the estimates pay nothing for it. The thermal price rises, and the stations with the thinnest thermal margins pay the most. Voters mark the government down.`,
             effects:[{ move:{ "price.thermal": 14, public_standing:-4 } }, { law:{ thermal_release:"tight" } }] },
-          { id:"steady", label:"As last session", cost:14000, note:"Released at last session's figure. The price holds where the market has held it.",
+          { id:"steady", label:`Unchanged`, cost:14000, note:`Quota is released at last session's figure, and the thermal price stays where the market has held it.`,
             effects:[{ law:{ thermal_release:"steady" } }] },
-          { id:"open",   label:"Released", cost:34000, note:"Released in full. The price falls to the cost of rejecting the heat, and the radiators become the limit on how many minds the Commonwealth can carry.",
+          { id:"open",   label:`Released in full`, cost:34000, note:`All of the quota is released. The thermal price falls to the cost of rejecting the heat, and the radiators that reject it become the limit on how many minds the Commonwealth can run. The thermal margin falls, and voters approve.`,
             effects:[{ move:{ "price.thermal": -16, thermal_margin:-5, public_standing:5 } }, { law:{ thermal_release:"open" } }] }
         ] },
       { id:"floor", name:"The consumables floor", default:"hold",
-        note:"The air, water, food and living space guaranteed to every "+
-             "resident, and the rate at which the guarantee is carried.",
+        note:`The consumables floor is the air, water, food and living space that the Commonwealth guarantees to every resident. The estimates set the rate at which the guarantee is carried, and a higher rate costs more.`,
         levels:[
-          { id:"cut",  label:"Trimmed", cost:0,  note:"The guarantee is trimmed. The saving shows in this session's return, and the stations that cannot feed themselves show it in their closure by the end of the month.",
+          { id:"cut",  label:"Trimmed", cost:0,  note:`The guarantee is trimmed, which saves money this session. The consumables reading falls, the stations that cannot feed themselves are the first to go short, and voters mark the government down.`,
             effects:[{ move:{ consumables:-8, public_standing:-7 } }] },
-          { id:"hold", label:"Held", cost:16000, note:"The floor is held where it stands. Every resident is carried at the current rate and the vote pays for it.", effects:[] },
-          { id:"lift", label:"Lifted", cost:30000, note:"The floor is raised. The stations with the lowest closure are carried further than the guarantee requires, and the difference comes out of the same vote.",
+          { id:"hold", label:"Held", cost:16000, note:`The floor stays at its present rate. Every resident is carried as now, and the estimates pay for it.`, effects:[] },
+          { id:"lift", label:"Lifted", cost:30000, note:`The floor is raised. The consumables reading rises and voters approve. A higher guarantee is a standing cost, so the most the estimates may spend falls as well.`,
             effects:[{ move:{ consumables:9, public_standing:4, solvency:-4000 } }] }
         ] },
       { id:"insurance", name:"Substrate insurance", default:"hold",
-        note:"Cover for the residents who cannot pay for substrate. A reduction moves people from the register of the insured to the register of the suspended.",
+        note:`Substrate insurance pays the rent on the computer hardware, the substrate, that runs digital residents who cannot pay it themselves. Where the cover is reduced, residents who fail the means test and cannot pay are suspended: their minds are kept intact but are not running.`,
         levels:[
-          { id:"cut",  label:"Reduced", cost:0, note:"The appropriation is reduced and the means test stands. People who fail the test and cannot pay are suspended, and the reserve saves the cost of their cover.",
+          { id:"cut",  label:"Reduced", cost:0, note:`The appropriation is reduced and the means test stands. Residents who fail the test and cannot pay are suspended, and the reserve saves the cost of their cover. Voters mark the government down, and so do members of your own party.`,
             effects:[{ move:{ public_standing:-11, "loyalty.cu":-6 } }] },
-          { id:"hold", label:"Held", cost:18000, note:"The appropriation is held. No resident is suspended this session for a debt they cannot pay.", effects:[] },
-          { id:"wide", label:"Widened", cost:32000, note:"The appropriation is widened and the means test set aside. Cover extends to people without attestation, and the substrate providers are expected to raise rents to take account of the guarantee.",
+          { id:"hold", label:"Held", cost:18000, note:`The appropriation is held, and no resident is suspended this session for a debt they cannot pay.`, effects:[] },
+          { id:"wide", label:"Widened", cost:32000, note:`The appropriation is widened and the means test is set aside. Cover extends to people without attestation, and the substrate providers are expected to raise rents to take account of the guarantee. Voters approve and the New Progressive Party welcomes it. The Freehold Party objects.`,
             effects:[{ move:{ public_standing:6, "loyalty.psa":7, "loyalty.fh":-5 } }] }
         ] },
       { id:"works", name:"Capital works", default:"none",
-        note:"The works funded this session, and the one clause whose effect is long-term. Works raise a station's closure, and a station with higher closure is more able to leave the Commonwealth.",
+        note:`Capital works are building projects funded this session, and the one clause whose effect outlasts it. Works raise a station's closure, the share of its material cycle that it can sustain without imports, and a station with higher closure can leave the Commonwealth at less cost to itself.`,
         levels:[
-          { id:"none", label:"Deferred", cost:0, note:"No works this session. Closure rises nowhere.", effects:[{ law:{ capital_works:"none" } }] },
-          { id:"some", label:"The ring band", cost:20000, note:"Funded in the ring band, where the volume pressure is worst. Closure holds in the middle of the Commonwealth and the outer stations wait.",
+          { id:"none", label:"Deferred", cost:0, note:`No works are funded this session, and closure rises at no station.`, effects:[{ law:{ capital_works:"none" } }] },
+          { id:"some", label:"The ring band", cost:20000, note:`Works are funded in the ring band, where the pressure on habitable volume is worst. The price of volume falls and voters approve. The outer stations get no works this session.`,
             effects:[{ move:{ "price.volume": -9, public_standing:3 } }, { law:{ capital_works:"ring" } }] },
-          { id:"outer", label:"The outer stations", cost:30000, note:"Funded at the outer stations, where closure is lowest. Their closure rises, and with it their capacity to leave the Commonwealth.",
+          { id:"outer", label:"The outer stations", cost:30000, note:`Works are funded at the outer stations, where closure is lowest. The first works are at Homestead, whose closure rises, and with it the station's ability to leave the Commonwealth. The price of volume falls a little.`,
             effects:[{ move:{ "price.volume": -5 } }, { station:{ ashfield:{ closure:0.04 } } }, { law:{ capital_works:"outer" } }] }
         ] },
       { id:"transit", name:"Transit subsidy", default:"none",
-        note:"The subsidy on the fare the stations pay for a launch window. The stations farthest from a tether pay the highest fares, and the subsidy decides how much of that difference the Commonwealth carries.",
+        note:`The transit subsidy is paid on the fare that stations pay for a launch window, a scheduled departure to orbit. The stations farthest from a tether pay the highest fares, and the subsidy decides how much of the difference the Commonwealth carries.`,
         levels:[
-          { id:"none",    label:"Unsubsidised", cost:0,  note:"With no subsidy the fare is set by the carriers, and the outer stations pay the carriers' published schedule.", effects:[{ law:{ transit_subsidy:"none" } }] },
-          { id:"anchors", label:"The tether stations", cost:10000, note:"The differential is carried for the stations a tether serves, where the tether is the only way in.", effects:[{ law:{ transit_subsidy:"anchors" } }, { move:{ "public_standing":3 } }] },
-          { id:"all",     label:"Every station", cost:22000, note:"The differential is carried for every station, and the reserve pays for the ones the traffic does not reach.", effects:[{ law:{ transit_subsidy:"all" } }, { move:{ "public_standing":5, solvency:-4000 } }] }
+          { id:"none",    label:"Unsubsidised", cost:0,  note:`No subsidy is paid. The carriers set the fare, and the outer stations pay the carriers' published schedule.`, effects:[{ law:{ transit_subsidy:"none" } }] },
+          { id:"anchors", label:"The tether stations", cost:10000, note:`The Commonwealth carries the extra fare for the stations that a tether serves, where the tether is the only way in. Voters approve.`, effects:[{ law:{ transit_subsidy:"anchors" } }, { move:{ "public_standing":3 } }] },
+          { id:"all",     label:"Every station", cost:22000, note:`The Commonwealth carries the extra fare for every station, including the ones the traffic does not reach, and the reserve pays for them. Voters approve more. A subsidy for every station is a standing cost, so the most the estimates may spend falls as well.`, effects:[{ law:{ transit_subsidy:"all" } }, { move:{ "public_standing":5, solvency:-4000 } }] }
         ] },
 
       /* THE OTHER HALF OF A BUDGET. Everything above is spending; bible
@@ -175,41 +174,41 @@ const BILLS = [
          PROSE IS PROVISIONAL and is opencode's to take further (see
          design/33). The mechanism and the levels are settled; the notes are
          serviceable and no more. */
-      { id:"rate_volume", name:"Ways and Means: volume", default:"standard",
-        note:"The levy on habitable volume, charged on the lease and not on what is done inside it. It falls on location inside a habitat, which the holder did not create, so it cannot be passed on in a price. It is the largest base the Commonwealth has, about CW$88bn a year at the opening, and a tenth of it is one of the largest single measures a budget can carry.",
+      { id:"rate_volume", name:"Tax on pressurised volume", default:"standard",
+        note:`The tax on pressurised volume is charged on the lease, the right to occupy habitable space in a station, whatever the leaseholder does inside it. It falls on the location, which the leaseholder did not create, so it cannot be passed on in a price. It is the largest of the four taxes in the estimates.`,
         levels:[
-          { id:"relief", label:"Cut by a fifth", cost:0, note:"About CW$17bn a year handed back, nearly all of it to the holders of the long leases on the ring band, who hold most of the Commonwealth's volume.", effects:[{ law:{ rate_volume:"relief" } }, { move:{ "standing.ring":4, "public_standing":1 } }] },
-          { id:"low", label:"Cut by a tenth", cost:0, note:"About CW$9bn a year back to the lease holders, most of them on the ring band.", effects:[{ law:{ rate_volume:"low" } }, { move:{ "standing.ring":2 } }] },
-          { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_volume:"standard" } }] },
-          { id:"high", label:"Raised by a tenth", cost:0, note:"About CW$9bn a year more, from the holders of the long leases. The government's case is that it raises the cost of holding a lease and raises no rent; the ring band disputes it.", effects:[{ law:{ rate_volume:"high" } }, { move:{ "standing.ring":-3 } }] },
-          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$17bn a year more. It falls on location, so it raises no rent, and the ring band calls it confiscation.", effects:[{ law:{ rate_volume:"surcharge" } }, { move:{ "standing.ring":-5, "public_standing":-1 } }] }
+          { id:"relief", label:"Cut by a fifth", cost:0, note:`The rate is cut by a fifth. Leaseholders pay less, and most of the saving goes to the holders of long leases in the ring band, who hold most of the Commonwealth's volume. The ring band approves.`, effects:[{ law:{ rate_volume:"relief" } }, { move:{ "standing.ring":4, "public_standing":1 } }] },
+          { id:"low", label:"Cut by a tenth", cost:0, note:`The rate is cut by a tenth. Leaseholders pay less, most of them in the ring band.`, effects:[{ law:{ rate_volume:"low" } }, { move:{ "standing.ring":2 } }] },
+          { id:"standard", label:"Unchanged", cost:0, note:"The rate stays where it is.", effects:[{ law:{ rate_volume:"standard" } }] },
+          { id:"high", label:"Raised by a tenth", cost:0, note:`The rate is raised by a tenth. The government's case is that a tax on location raises the cost of holding a lease and cannot raise rents. The ring band disputes that and thinks less of the government.`, effects:[{ law:{ rate_volume:"high" } }, { move:{ "standing.ring":-3 } }] },
+          { id:"surcharge", label:"Raised by a fifth", cost:0, note:`The rate is raised by a fifth. The ring band calls it confiscation and thinks much less of the government.`, effects:[{ law:{ rate_volume:"surcharge" } }, { move:{ "standing.ring":-5, "public_standing":-1 } }] }
         ] },
-      { id:"rate_thermal", name:"Ways and Means: thermal quota", default:"standard",
-        note:"The levy on quota rejected, about CW$55bn a year at the opening. It is charged on the right to run, so it is paid by everything that runs, and a quarter of any change reaches the price of heat within the session.",
+      { id:"rate_thermal", name:"Tax on cooling", default:"standard",
+        note:`The tax on cooling is charged on thermal quota, the permission to reject heat, so every station that runs pays it. Part of any change in the rate reaches the thermal price within the session.`,
         levels:[
-          { id:"relief", label:"Cut by a fifth", cost:0, note:"About CW$11bn a year forgone, and the price of heat falls with it. Every household on every deck feels it, and the reserve pays for it.", effects:[{ law:{ rate_thermal:"relief" } }, { move:{ "public_standing":3, "standing.low":1 } }] },
-          { id:"low", label:"Cut by a tenth", cost:0, note:"About CW$5.5bn a year forgone, and heat is a little cheaper for every household.", effects:[{ law:{ rate_thermal:"low" } }, { move:{ "public_standing":1 } }] },
-          { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_thermal:"standard" } }] },
-          { id:"high", label:"Raised by a tenth", cost:0, note:"About CW$5.5bn a year more, passed on within the session to everyone buying the right to keep running, and hardest on the low band, which runs closest to its quota.", effects:[{ law:{ rate_thermal:"high" } }, { move:{ "public_standing":-2, "standing.low":-2 } }] },
-          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$11bn a year more, and a rise in the price of heat that every station sees on its next bill.", effects:[{ law:{ rate_thermal:"surcharge" } }, { move:{ "public_standing":-4, "standing.low":-3 } }] }
+          { id:"relief", label:"Cut by a fifth", cost:0, note:`The rate is cut by a fifth and the thermal price falls with it. Every household on every deck pays less for heat, and the reserve pays for it.`, effects:[{ law:{ rate_thermal:"relief" } }, { move:{ "public_standing":3, "standing.low":1 } }] },
+          { id:"low", label:"Cut by a tenth", cost:0, note:`The rate is cut by a tenth, and heat is a little cheaper for every household.`, effects:[{ law:{ rate_thermal:"low" } }, { move:{ "public_standing":1 } }] },
+          { id:"standard", label:"Unchanged", cost:0, note:"The rate stays where it is.", effects:[{ law:{ rate_thermal:"standard" } }] },
+          { id:"high", label:"Raised by a tenth", cost:0, note:`The rate is raised by a tenth. The cost is passed on within the session to everyone who buys the right to keep running, and it falls hardest on the low band, which runs closest to its quota.`, effects:[{ law:{ rate_thermal:"high" } }, { move:{ "public_standing":-2, "standing.low":-2 } }] },
+          { id:"surcharge", label:"Raised by a fifth", cost:0, note:`The rate is raised by a fifth. The thermal price rises, and every station sees it on its next bill.`, effects:[{ law:{ rate_thermal:"surcharge" } }, { move:{ "public_standing":-4, "standing.low":-3 } }] }
         ] },
-      { id:"rate_substrate", name:"Ways and Means: substrate-hours", default:"standard",
-        note:"The levy on mind-hours run, about CW$51bn a year at the opening. It is charged by the hour of computation, so it falls hardest on emulated persons, whose whole existence is computation.",
+      { id:"rate_substrate", name:"Tax on computing time", default:"standard",
+        note:`The tax on computing time is charged by the hour of computation. Emulated persons, who are people running as software, pay most of it, because all of their existence is computation.`,
         levels:[
-          { id:"relief", label:"Cut by a fifth", cost:0, note:"About CW$10bn a year forgone. Substrate rent falls, which matters most to emulated persons, for whom it is the largest cost of living.", effects:[{ law:{ rate_substrate:"relief" } }, { move:{ "public_standing":2, "legitimacy":1 } }] },
-          { id:"low", label:"Cut by a tenth", cost:0, note:"About CW$5bn a year forgone.", effects:[{ law:{ rate_substrate:"low" } }, { move:{ "public_standing":1 } }] },
-          { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_substrate:"standard" } }] },
-          { id:"high", label:"Raised by a tenth", cost:0, note:"About CW$5bn a year more. Substrate rent rises, and emulated persons pay most of it.", effects:[{ law:{ rate_substrate:"high" } }, { move:{ "public_standing":-2, "legitimacy":-1 } }] },
-          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$10bn a year more, nearly all of it from emulated persons. The parties that speak for them call it a tax on existing.", effects:[{ law:{ rate_substrate:"surcharge" } }, { move:{ "public_standing":-3, "legitimacy":-3 } }] }
+          { id:"relief", label:"Cut by a fifth", cost:0, note:`The rate is cut by a fifth. Substrate rent falls, and emulated persons gain most, because rent is their largest cost of living.`, effects:[{ law:{ rate_substrate:"relief" } }, { move:{ "public_standing":2, "legitimacy":1 } }] },
+          { id:"low", label:"Cut by a tenth", cost:0, note:`The rate is cut by a tenth, and substrate rent falls a little.`, effects:[{ law:{ rate_substrate:"low" } }, { move:{ "public_standing":1 } }] },
+          { id:"standard", label:"Unchanged", cost:0, note:"The rate stays where it is.", effects:[{ law:{ rate_substrate:"standard" } }] },
+          { id:"high", label:"Raised by a tenth", cost:0, note:`The rate is raised by a tenth. Substrate rent rises, and emulated persons pay most of the increase.`, effects:[{ law:{ rate_substrate:"high" } }, { move:{ "public_standing":-2, "legitimacy":-1 } }] },
+          { id:"surcharge", label:"Raised by a fifth", cost:0, note:`The rate is raised by a fifth, and nearly all of it falls on emulated persons. The parties that speak for them call it a tax on existing.`, effects:[{ law:{ rate_substrate:"surcharge" } }, { move:{ "public_standing":-3, "legitimacy":-3 } }] }
         ] },
-      { id:"rate_transit", name:"Ways and Means: mass to orbit", default:"standard",
-        note:"The levy on mass lifted and moved, about CW$26bn a year at the opening. Charged at the tether and carried into the price of everything the outer stations cannot make.",
+      { id:"rate_transit", name:"Tax on freight to orbit", default:"standard",
+        note:`The tax on freight to orbit is charged on mass lifted and moved, at the tether. It is carried into the price of everything the outer stations cannot make for themselves.`,
         levels:[
-          { id:"relief", label:"Cut by a fifth", cost:0, note:"About CW$5bn a year forgone, and the far stations' imports are cheaper by the next schedule.", effects:[{ law:{ rate_transit:"relief" } }, { move:{ "standing.far":3, "standing.external":3 } }] },
-          { id:"low", label:"Cut by a tenth", cost:0, note:"About CW$2.6bn a year forgone, and all of it lands at the end of the schedule.", effects:[{ law:{ rate_transit:"low" } }, { move:{ "standing.far":2, "standing.external":1 } }] },
-          { id:"standard", label:"At the standing rate", cost:0, note:"Charged as it has been charged.", effects:[{ law:{ rate_transit:"standard" } }] },
-          { id:"high", label:"Raised by a tenth", cost:0, note:"About CW$2.6bn a year more. It reaches the stations at the end of the schedule first and hardest.", effects:[{ law:{ rate_transit:"high" } }, { move:{ "standing.far":-2, "standing.external":-2 } }] },
-          { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$5bn a year more, charged on everything the outer stations import. Home Rule, which speaks for them, opposes it.", effects:[{ law:{ rate_transit:"surcharge" } }, { move:{ "standing.far":-4, "standing.external":-4, "public_standing":-1 } }] }
+          { id:"relief", label:"Cut by a fifth", cost:0, note:`The rate is cut by a fifth. Imports cost less at the far stations from the next freight schedule.`, effects:[{ law:{ rate_transit:"relief" } }, { move:{ "standing.far":3, "standing.external":3 } }] },
+          { id:"low", label:"Cut by a tenth", cost:0, note:`The rate is cut by a tenth, and imports cost a little less at the stations farthest from the tether.`, effects:[{ law:{ rate_transit:"low" } }, { move:{ "standing.far":2, "standing.external":1 } }] },
+          { id:"standard", label:"Unchanged", cost:0, note:"The rate stays where it is.", effects:[{ law:{ rate_transit:"standard" } }] },
+          { id:"high", label:"Raised by a tenth", cost:0, note:`The rate is raised by a tenth. Imports cost more, and the stations farthest from the tether pay the most.`, effects:[{ law:{ rate_transit:"high" } }, { move:{ "standing.far":-2, "standing.external":-2 } }] },
+          { id:"surcharge", label:"Raised by a fifth", cost:0, note:`The rate is raised by a fifth, on everything the outer stations import. Home Rule, the party that speaks for them, opposes it.`, effects:[{ law:{ rate_transit:"surcharge" } }, { move:{ "standing.far":-4, "standing.external":-4, "public_standing":-1 } }] }
         ] } ],
     /* the independents promised their votes on confidence and the budget only (the commission page, sitting 1) */
     stances:{ cu:"for", psa:"for", rv:"for", ind:"for", upl:{forPct:0.5}, geo:{forPct:0.5},
@@ -266,7 +265,7 @@ const BILLS = [
     author:"ivarsen",
     title:"Anchor Concession (Anchorage) Ratification Bill",
     summary:`Ratifies renewed terms for the International Earth-Orbit Elevator, whose anchor stands at Malindi, on Kenyan territory.`,
-    contested:"The anchor stands on Kenyan soil, so the Commonwealth negotiates as a tenant. Ratifying keeps the International running and puts eight billion dollars into the year. Refusing asserts sovereignty at the cost of Anchorage, a station of 231,000 people that depends on the tether. The objection is that a renewed lease is still a lease, and the price is paid again at the next renewal with less left to trade.",
+    contested:`Kenya owns the land at the elevator's anchor, so the Commonwealth runs the elevator as a tenant under a concession. Ratifying the renewal keeps the elevator running and adds CW$8bn to what the Treasury can spend. Refusing lets the concession lapse, which costs the Treasury CW$6bn, and Anchorage, a station of 231,000 people, depends on the elevator. The Liberal Party supports ratification. Home Rule and the Association of Engineers and Systems oppose it, and opponents argue that a renewed lease keeps the Commonwealth a tenant at the next renewal.`,
     dualMajority:false,
     axes:{economic:0.6, authority:0.1, personhood:0, sovereignty:0.5, trade:0.95},
     stances:{ cl:"for", cu:{forPct:0.7}, psa:{forPct:0.5}, sc:"against", hul:"against" },

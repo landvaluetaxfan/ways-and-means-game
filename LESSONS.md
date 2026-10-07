@@ -323,6 +323,12 @@ Sep 2026) and in the design notes cited.
 
 ## Text and encoding
 
+- **`npm run prose:in` writes prose.txt over the source, so a hand edit to a content file must be
+  followed by `npm run prose` before the next `prose:in`.** Twice in one session the write-back
+  silently reverted direct edits made after prose.txt was generated (a scene's wording, two clause
+  notes), and `git status` was the only thing that showed it. The order is edit, `npm run prose`,
+  `npm run prose:check`; after any `prose:in`, grep for one phrase of each direct edit.
+
 - **Never judge bytes by what a terminal drew.** PowerShell 5.1 shows UTF-8
   as mojibake, and its `Set-Content` "fix" then writes the mojibake in, with
   a BOM. Read and write source with node or the editor tools.
