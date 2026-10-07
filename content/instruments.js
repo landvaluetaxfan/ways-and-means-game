@@ -20,7 +20,7 @@
    Franchise in a functional constituency runs through professional
    licensure, and the government appoints the boards. Widening the
    Life Support Engineering electorate shifts functional seats without
-   a bill. It is the only available answer to the HC 4/117 trap, and
+   a bill. It is the only available answer to the HC 2080/117 trap, and
    it must be discoverable, costly, and ugly.
    ============================================================= */
 

@@ -970,7 +970,7 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
 
   let s = Engine.newGame(CONTENT);
   const d0 = Engine.division(s, CONTENT, "divergence");
-  ok("HC 4/117 fails the functional test on opening state",
+  ok("HC 2080/117 fails the functional test on opening state",
      !d0.functional.carries, d0.functional.aye + "/" + d0.functional.need);
 
   Engine.makeInstrument(s, CONTENT, "si_2080_44");
@@ -1925,7 +1925,7 @@ console.log("\nCURRENTS IN A DIVISION:");
      interface inventing a reason the content did not give. */
   ok("a stated forecast is not attributed to the factions",
      row("divergence", "cu").benches === null,
-     "HC 4/117 states cu popular {for:68}");
+     "HC 2080/117 states cu popular {for:68}");
 
   /* Parties WITH currents now report factions (T7 gave three more of them
      currents), and parties without still report none. A party with

@@ -4,7 +4,7 @@ leave everything a player reads.
 
 # Rename the Appropriation, and retire "Session 4"
 
-**STATUS: not started. Step 2 waits for `briefs/ui-tabs.md` pass 1 to land on origin/main.**
+**STATUS: step 1 done (Claude Code, 7 October, with the Act I text pass): the title is `Appropriation Bill 2080` and every `HC 4/` reference is `HC 2080/`, in `content/bills.js`, the parked bills, `content/instruments.js` and `test.js`. Step 2, the top bar's `SESS 4.1`, waits for `briefs/ui-tabs.md` pass 1 to land on origin/main.**
 
 ## What changes
 

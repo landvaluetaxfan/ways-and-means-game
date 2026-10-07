@@ -27,7 +27,7 @@
    dualMajority:true means it must carry separately on both benches. */
 
 const BILLS = [
-  { id:"divergence", ref:"HC 4/117", stage:"committee", owner:"psa", priority:true,
+  { id:"divergence", ref:"HC 2080/117", stage:"committee", owner:"psa", priority:true,
     touches:["attestation_enforcement","reclassification_practice"],
     author:"herrera", cosponsors:["lindegaard","cutter"],
     referrable:true, signalled:true,   /* King has privately indicated he would refer this */
@@ -104,10 +104,10 @@ const BILLS = [
      measure is exempt from domain consent because the elected benches
      vote money (§7.3).
      ========================================================= */
-  { id:"appropriation", ref:"HC 4/140", stage:"first_reading", owner:"cu",
+  { id:"appropriation", ref:"HC 2080/140", stage:"first_reading", owner:"cu",
     campaign:["world", "flash_i"],      /* the engine tests play on it, and Act I is built on it (design/80) */
     test:"supply", priority:true,
-    title:"Appropriation (Session 4) Bill",
+    title:"Appropriation Bill 2080",
     summary:`The estimates for the session: five spending clauses and four tax rates. The House must pass the bill before it rises, because until it does the government cannot pay its officials.`,
     effectNote:"Sets the thermal quota released, the consumables floor, substrate insurance, capital works "+
             "and the transit subsidy, and four tax rates, each at the level the government has chosen. "+
@@ -216,7 +216,7 @@ const BILLS = [
               gb:{forPct:0.3}, des:{forPct:0.4} },
     onPass:[{ flag:"supply_granted" }],
     onFail:[{ flag:"supply_refused" }] },
-  { id:"thermal2", ref:"HC 4/094", stage:"second_reading", owner:"cu",
+  { id:"thermal2", ref:"HC 2080/094", stage:"second_reading", owner:"cu",
     touches:["thermal_quota"],
     author:"vellan", cosponsors:["laughon"],
     title:"Thermal Quota Allocation (No. 2) Bill",
@@ -239,7 +239,7 @@ const BILLS = [
             {wire:"THERMAL QUOTA REALLOCATED; QUOTA PRICE FALLS SHARPLY"}],
     onFail:[{move:{"thermal_margin":-4}},{move:{"price.thermal":8}}] },
 
-  { id:"shedorder", ref:"HC 4/061", stage:"blocked", owner:"cu", referrable:true,
+  { id:"shedorder", ref:"HC 2080/061", stage:"blocked", owner:"cu", referrable:true,
     touches:["shed_order_priority","essential_services_law"],
     author:"halloran", cosponsors:["kaunda"],
     title:"Shed Order (Civilian Oversight) Bill",
@@ -259,7 +259,7 @@ const BILLS = [
     onPass:[{law:{shed_order_authority:"statute"}},{move:{"public_standing":6}}],
     onFail:[{move:{"loyalty.cu_halloran":-8}}] },
 
-  { id:"anchor_kepler", ref:"HC 4/103", stage:"assent", owner:"psa",
+  { id:"anchor_kepler", ref:"HC 2080/103", stage:"assent", owner:"psa",
     campaign:["world", "flash_i"],      /* Act I's treaty: its opening restages it (design/78, design/80) */
     touches:["anchor_concession"],
     author:"ivarsen",
@@ -272,7 +272,7 @@ const BILLS = [
     onPass:[{move:{"solvency": 8000}},{station:{kepler:{closure:0.02}}},{move:{"price.transit":-11}}],
     onFail:[{move:{"solvency": -6000}},{wire:`ANCHORAGE CONCESSION LAPSES; EARTH STATE SIGNALS REVIEW`}] },
 
-  { id:"substrate_insurance", ref:"HC 4/121", stage:"drafting", owner:"psa",
+  { id:"substrate_insurance", ref:"HC 2080/121", stage:"drafting", owner:"psa",
     touches:["substrate_insurance","risk_pricing"],
     author:"girard",
     title:"Substrate Insurance (Uprating) Bill",
@@ -288,7 +288,7 @@ const BILLS = [
             {wire:"SUBSTRATE INSURANCE UPRATED; MEANS TEST ABOLISHED"}],
     onFail:[{move:{"loyalty.psa":-13}}] },
 
-  { id:"continuity_registration", ref:"HC 4/129", stage:"drafting", owner:"rv", priority:true,
+  { id:"continuity_registration", ref:"HC 2080/129", stage:"drafting", owner:"rv", priority:true,
     touches:["registry_powers","reclassification_practice"],
     author:"marin", cosponsors:["abadi"],
     title:"Continuity of Person (Registration) Bill",
@@ -313,7 +313,7 @@ const BILLS = [
             {wire:"CONTINUITY REGISTER ESTABLISHED; SUBSTRATE LEFT VOTES AGAINST GOVERNMENT BILL"}],
     onFail:[{move:{"loyalty.rv":-16}}] },
 
-  { id:"substrate_public_stake", ref:"HC 4/133", stage:"drafting", owner:"psa",
+  { id:"substrate_public_stake", ref:"HC 2080/133", stage:"drafting", owner:"psa",
     touches:["substrate_ownership"],
     author:"ivarsen",
     title:"Substrate (Public Stake) Bill",
@@ -338,7 +338,7 @@ const BILLS = [
      paused debt's restorations), and these are the bills that set them.
      Both open in drafting, so the government decides whether to bring them
      in: giving one its first reading is the introduction. */
-  { id:"civic_clock", ref:"HC 4/171", stage:"drafting", owner:"psa",
+  { id:"civic_clock", ref:"HC 2080/171", stage:"drafting", owner:"psa",
     touches:["substrate_ownership","thermal_quota"],
     author:"trottier", cosponsors:["herrera"],
     title:"Civic Clock (Minimum Rate) Bill",
@@ -354,7 +354,7 @@ const BILLS = [
             {wire:"CIVIC CLOCK ACT PASSES: EVERY ENFRANCHISED MIND AT REAL TIME"}],
     onFail:[{move:{"loyalty.psa":-6}}] },
 
-  { id:"debt_moratorium", ref:"HC 4/177", stage:"drafting", owner:"psa",
+  { id:"debt_moratorium", ref:"HC 2080/177", stage:"drafting", owner:"psa",
     touches:["substrate_insurance","risk_pricing"],
     author:"herrera", cosponsors:["trottier"],
     title:"Suspended Persons (Debt Moratorium) Bill",

@@ -43,7 +43,7 @@ campaign("parked", { bills: [
      entering the labour market the way they read the divergence bill, and
      for the same reason.
      ============================================================= */
-  { id:"annexation", ref:"HC 4/163", stage:"drafting", owner:"cu",
+  { id:"annexation", ref:"HC 2080/163", stage:"drafting", owner:"cu",
     /* It brings 184,000 people inside the services guarantee and it settles
        what happens to a charter held on the International's corridor, so those are
        the two benches whose consent it needs. */
