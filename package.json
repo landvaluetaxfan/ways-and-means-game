@@ -19,6 +19,7 @@
     "exchange:check": "node tools/exchange.js check",
     "layout": "node tools/laycheck.js && node tools/laycheck.js --wrapped",
     "playtest": "node tools/playtest.js",
+    "balance": "node tools/actbalance.js",
     "prose": "node tools/prose.js",
     "prose:in": "node tools/prose.js --in",
     "prose:check": "node tools/prose.js --check",

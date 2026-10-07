@@ -246,6 +246,22 @@ release or are sequenced with them.
 - **E2 The introduced record.** Scenes, wire items and events name what they introduce; the
   save records it; every list the player sees (bills, orders, stations, people, Concordance)
   filters by it. `STATE_VERSION` bump with a migration guard.
+  *Content half of E2 (Claude, 7 October).* A scan of Act I's scenes in play order
+  (`a1_commission` to `a1_underwriters`) gives the first scene that names each person, station,
+  party, bill and glossary term, so the `introduces` data can be filled from it rather than
+  written twice. Sitting 1: Flash, Tenaya (the President), Vijlbrief, the Winter Garden, the
+  PSD, LIB, NPP, CDA and the independents, the Charter, Parliament, the Prime Minister.
+  Sitting 2: Czarnecki (id `halloran`), Ceyhan, Anselm Ring. Sitting 3: Skye, Abadi, Castellane.
+  Sitting 4: Devi (id `okarie`). Sitting 5: Ivarsen, Anchorage, `anchor_kepler`. Sitting 6:
+  Girard, Ember Ridge, the thermal margin, the engineering authority. Sitting 7: Ashgrove.
+  Sitting 8: Marin, Trottier. Sitting 9: Tómasson, Homestead, Home Rule. Sitting 10: Vasmer.
+  Sitting 14: the AES. The glossary's `introduced` ids already name Act I's scenes for
+  substrate, suspension, closure, the thermal margin, the engineering authority, the shed order,
+  the functional constituency and the dual majority; every other term keeps the id of a parked
+  event and so never opens in Act I. Two things the filter must catch that a scan of scenes
+  cannot: a bill's Concordance article prints a **division forecast** ("On present numbers the
+  bill carries") from sitting 1, three sittings of teaching before the count exists; and the
+  Chamber lists the Appropriation with a Grant button before `a1_order_paper` has taught slots.
 - **E3 The tutorial and the lever ladder** (`design/77`, plus this ladder). Cards that dim and
   block the pointer outside one region. Writing controls inert until taught, dimmed with one
   line saying when they open, a ratchet that only opens. The player's taught record lives in
@@ -410,6 +426,17 @@ named human read, and none is a judgement of "looks fine".
 6. **Balance.** The four crisis strategies and the fidget run across 240 seeds. The dilemma
    of the Act, pay the New Progressives or pay the officials, is real: neither extreme
    dominates. The bands are proposed after the first measurement and agreed with the author.
+   **First measurement, 7 October (`npm run balance`, `tools/actbalance.js`).** Act I has no random
+   event, so every seed plays the same game, and the 240-seed clause is moot until a random event
+   exists: the variation is the player's answers. No answer strategy loses. All reach the curtain,
+   because nothing ends a run except leaving the estimates unmoved (`STILL=1` shows that, all
+   `loss:supply`). What the answers change is the price. Refusing every promise ends at public
+   standing 49 and New Progressive loyalty 30. Promising every minister and keeping what the
+   Treasury's ceiling allows ends at standing 32 and loyalty 37, with two of six promises broken.
+   Promising and keeping nothing is the worst: loyalty 23, against the loss line at 15 and 30 for
+   refusing. So the dilemma is real and a broken promise costs more than a refused one. If the
+   author wants a run to be losable in Act I, that needs a decision; today it is loss-proof by
+   design (`design/77`, constraint 3).
 7. **The tutorial.** Every taught lever has one card that fires once, the lever is inert before
    it and live after, Options can replay it, and `tools/tutest.js` passes.
 8. **My read-through.** I play all of Act I through the harness as a first-time player on
