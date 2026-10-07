@@ -331,12 +331,22 @@ orders under **Levers**.
 
 ### Posture: cautious, measured, bold
 
-Every choice in an entry with two or more ungated choices says how far it
-goes (`design/40` E7). The Sitting screen lists the cautious answer first,
-then the measured one, then the bold one, and marks each; the engine keeps
-the order you wrote, so reordering a posture never changes a run. `npm run
-lint` fails an entry that leaves one out. An entry whose choices are all
-gated, so the state picks one, or that has one answer, carries none.
+A choice says how far it goes (`design/40` E7) **when that is true of it**. A posture
+is optional but not uncommon: lint fails an entry only for an unknown word, for more than
+four answers open whatever the state or more than five in all, and for fewer than 60% of
+competing answers carrying one across the content. A lone bold answer, or a cautious and a
+bold with nothing between, is a dilemma and not a gap; do not write a measured answer to
+fill it. Two answers may share a posture where they differ in who they favour. An answer
+that is open only because of what the government has done (a kept promise, a signature,
+banked capital) is gated by `when` and says why in `because`, in one clause that
+completes "Open because ...": it lists last, with an "earned" mark, and lint fails a gated
+answer beside open ones without it. Two wordings of one answer chosen by the state are not
+earned answers and need no `because`.
+
+The Sitting screen lists the cautious answer first, then the measured one, then the
+bold one, then any answer with no posture, then the earned ones, and marks each; the engine
+keeps the order you wrote, so reordering never changes a run. An entry whose choices are
+all gated, so the state picks one, or that has one answer, carries none.
 
 Posture is the ACTION, not the size of its consequences. Doing nothing can
 be expensive and still be the cautious answer; a big public stand can cost

@@ -32,7 +32,8 @@ const STRATS = {
   last:     ev => Math.max(0, (ev.choices || []).length - 1),
   promiser: ev => { const i = (ev.choices || []).findIndex(hasU); return i >= 0 ? i : 0; },
   refuser:  ev => { const i = (ev.choices || []).findIndex(c => !hasU(c)); return i >= 0 ? i : 0; },
-  bold:     ev => { const i = (ev.choices || []).findIndex(c => c.posture === "bold"); return i >= 0 ? i : 0; },
+  /* the furthest-going answer there is: bold, else measured, else the first (a posture is optional, so a decision may lack bold) */
+  bold:     ev => { const cs = ev.choices || []; for (const p of ["bold", "measured"]) { const i = cs.findIndex(c => c.posture === p && !c.when); if (i >= 0) return i; } return 0; },
 };
 const CUTS = [["insurance", "cut"], ["thermal", "tight"], ["floor", "cut"], ["works", "none"], ["transit", "none"]];
 

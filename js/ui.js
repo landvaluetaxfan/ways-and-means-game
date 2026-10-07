@@ -5511,6 +5511,7 @@ const UI = (function () {
     const cab = cabinetView(c.effects);
     const strip = [
       c.posture ? `<span class="cm pose ${esc(c.posture)}" data-tip="posture_${esc(c.posture)}">${esc(c.posture)}</span>` : "",
+      c.because ? `<span class="cm pose earned" data-tip="posture_earned">earned</span>` : "",
       c.cost && c.cost.slot ? `<span class="cm cost">costs order-paper time</span>` : "",
       owed.length ? `<span class="cm owed">commits you</span>` : "",
       grave && !owed.length && !(c.cost && c.cost.slot)
@@ -5521,7 +5522,8 @@ const UI = (function () {
        and hold in your head. The first two effects sit under the label, so
        the trade is legible before the row is expanded; the row still opens
        onto the full reading. */
-    const peek = cl.filter(x => !x.owed).slice(0, 2).map(x => x.text).join(" \u00b7 ");
+    const peek = (c.because ? "Open because " + c.because.replace(/^because\s+/i, "").replace(/\.$/, "") + ". " : "") +
+      cl.filter(x => !x.owed).slice(0, 2).map(x => x.text).join(" \u00b7 ");
 
     return `<div class="ch${open ? " open" : ""}" data-ch="${i}">
       <button class="ch-head" data-expand="${i}" aria-expanded="${open}">
@@ -7387,7 +7389,8 @@ const UI = (function () {
        declares, and keeps the authored order within a posture; the engine
        is still handed the authored index. */
     const RANK = { cautious: 0, measured: 1, bold: 2 };
-    const rank = x => RANK[x.choice.posture] == null ? 3 : RANK[x.choice.posture];
+    /* AN EARNED ANSWER (`because`) LISTS LAST, and a choice without a posture lists after the ranked ones */
+    const rank = x => x.choice.because ? 4 : RANK[x.choice.posture] == null ? 3 : RANK[x.choice.posture];
     const open = Engine.openChoices(st, C, e).slice()
       .sort((a, b) => rank(a) - rank(b) || a.index - b.index);
     /* THE HEADING SAYS WHICH OF THE TWO THIS IS (design/49): the sitting's

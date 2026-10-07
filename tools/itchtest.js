@@ -131,6 +131,14 @@ async function boot(label, how) {
      w.document.querySelectorAll(".cl-lock").length > 0);
   w.eval("UI.openTab('sit')");
 
+  /* an earned answer lists last, with its mark and the reason it is open */
+  for (let i = 0; i < 8 && !w.document.querySelector("#sitting-body .ch-head"); i++) { const g = w.document.querySelector("#sitting-body [data-sp-go]"); if (!g) break; g.click(); }
+  w.eval(`(function () { var e = Engine.nextEvent(UI.state(), UI.content()); e.choices.push({ label: "An earned answer.", because: "of a kept promise", when: { minSitting: 1 }, note: "n", effects: [], result: "r" }); UI.redraw(); })()`);
+  const rows = [...w.document.querySelectorAll("#sitting-body .ch")], lastRow = rows[rows.length - 1];
+  ok("served: an earned answer lists last, marked, with the reason it is open",
+     !!lastRow && !!lastRow.querySelector(".earned") && /Open because of a kept promise/.test(lastRow.textContent));
+  w.eval("Engine.nextEvent(UI.state(), UI.content()).choices.pop(); UI.redraw()");
+
   /* ---- saves across builds: an older shape migrates, a newer one is refused plainly ---- */
   const cur = JSON.parse(w.localStorage.getItem(keys[0]));
   const older = JSON.parse(cur.state); older.version = w.eval("Engine.STATE_VERSION") - 1; delete older.intervalCourse; delete older.interval;

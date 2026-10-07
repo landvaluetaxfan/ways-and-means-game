@@ -217,6 +217,8 @@ const Tips = (function () {
     posture_bold: { title: "Bold",
       body: "The answer that goes furthest: the most to gain, and the most " +
             "that can go wrong, now or later." },
+    posture_earned: { title: "Earned",
+      body: "An answer that is open only because of what this government has done, and not offered to every government. The line under it says why." },
     economyvote: { title: "The public",
       body: "What the economy is doing to the government's standing, a year. " +
             "Headline inflation more than a point over the target costs, output " +

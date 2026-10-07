@@ -22,7 +22,7 @@ var ProseMap = (function () {
     "lede", "epigraph", "caption", "blurb", "why", "asks", "answer", "question",
     /* design/45: a person's Career and descriptor, a term's definition, and
        the analogy a glossary tooltip now shows (it was never shown before) */
-    "bio", "descriptor", "article", "handle",
+    "bio", "descriptor", "article", "handle", "because",
     /* design/56: the play's stage directions, its cast's parts and ensemble */
     "direction", "role", "ensemble"];
 

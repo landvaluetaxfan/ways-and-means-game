@@ -1132,14 +1132,28 @@ try {
      picks, or a lone one, has nothing to be ranked against. */
   const VOCAB = require(path.join(root, "js", "schema.js")).vocab;
   const POSTURES = new Set(VOCAB.postures || []);
+  const postured = { total: 0, have: 0 };
   (EVENTS || []).forEach(ev => {
     const cs = ev.choices || [];
     cs.forEach((c, i) => { if (c.posture != null && !POSTURES.has(c.posture))
       refBad.push("event " + ev.id + " choice " + i + ": posture '" + c.posture + "' is not one of " + [...POSTURES].join(", ")); });
-    if (cs.filter(c => !c.when).length >= 2 && cs.some(c => !c.posture))
-      refBad.push("event " + ev.id + ": " + cs.filter(c => !c.posture).length + " of " + cs.length +
-                  " choices carry no posture, so the Sitting screen cannot order them");
+    /* A POSTURE IS OPTIONAL (the author, 7 Oct: "optional, but not uncommon"). It is on a choice when it is true of it:
+       a lone bold answer, or a cautious and a bold with nothing between, is a dilemma and not a gap. A choice without
+       one lists after the ranked ones. Two things are held instead. A decision offers at most four open answers and an
+       earned fifth, and a gated answer that stands beside open ones says why it is open (`because`), since the player
+       would otherwise meet a fifth option with no reason for it. */
+    const open = cs.filter(c => !c.when), gated = cs.filter(c => c.when);
+    if (open.length > 4) refBad.push("event " + ev.id + ": " + open.length + " answers open whatever the state; the most is four");
+    if (cs.length > 5) refBad.push("event " + ev.id + ": " + cs.length + " answers; the most is four and an earned fifth");
+    cs.forEach((c, i) => {
+      if (c.because != null && !c.when) refBad.push("event " + ev.id + " choice " + i + ": `because` explains a gated answer, and this one has no `when`");
+      const variant = cs.some((o, j) => j !== i && o.label === c.label);   /* the state picks between two wordings of one answer */
+      if (c.when && open.length && !c.because && !variant && [].concat(ev.campaign || []).indexOf("flash_i") >= 0) refBad.push("event " + ev.id + " choice " + i + ": a gated answer beside open ones must say why it is open (`because`)");
+    });
+    if (open.length >= 2) { postured.total += open.length; postured.have += open.filter(c => c.posture).length; }
   });
+  if (postured.total && postured.have / postured.total < 0.6)
+    refBad.push("only " + postured.have + " of " + postured.total + " competing answers carry a posture; it is optional but not uncommon (60%)");
 
   /* AN EVENT'S PAGE (design/49): a mood an event may name (one that plays
      and resolves on its own, SCHEMA.vocab.eventMoods), and sections of a
