@@ -69,7 +69,7 @@ console.log("  regenerated size:", regen.length, "chars, in", out.length, "files
 /* The split is the point: a campaign's entry written into the world's file
    as well would load twice, and one written only there would lose its folder. */
 const tagged=[].concat(A.EVENTS,A.BILLS,A.SETTLEMENTS,A.INITIATIVES,A.MATTERS,A.ACHIEVEMENTS,A.RESOLUTIONS)
-  .filter(e=>e.campaign).map(e=>'id:"'+e.id+'"');
+  .filter(e=>e.campaign && [].concat(e.campaign).indexOf("world")<0).map(e=>'id:"'+e.id+'"');   /* an entry also tagged "world" is a fixture and stays in the world's file (design/80) */
 eq("no campaign entry written to a world file",
    tagged.filter(t=>world.some(f=>f.text.indexOf(t)>=0)).join(" "), "");
 eq("every campaign's entries written to its folder",

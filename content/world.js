@@ -63,7 +63,6 @@ const WORLD = {
       banners:[{ id:"contested", since:{ flags:["station_issue"] } }],
       cx:[
         { h:"Abandonment", since:{ flags:["station_issue"] }, body:"On {date} the Commonwealth learned that Cordell had wound up the Works' operator. The European Union had frozen the assets of Gabon's sovereign wealth fund, Cordell's majority owner, in March, and the operator could no longer pay for the platform's air, water or fuel. Its engineers said the air would last about two months. Kenya approved a plan to bring the residents down that would take two years." },
-        { h:"Referendum", since:{ seen:"f1_referendum" }, body:"The residents voted on asking to join the Commonwealth, in a vote their elected council of delegates called. The result was published on {date}: of the 88 per cent of adults who voted, 79 per cent said yes." },
         { h:"Air supply", since:{ flags:["works_air_paid"] }, body:"On {date} the Commonwealth undertook to supply the air plant with filters and catalyst until the platform's future was settled." },
         { h:"Air plant failure", since:{ flags:["f1_air_failed"] }, body:"The air plant ran out of filters and catalyst on {date}. The council sealed the foundry decks and moved 70,000 residents into the housing ring, and eleven residents died in the first two days." },
         { h:"Accession", since:{ flags:["almanac_annexed"] }, body:"On {date} Parliament carried the Almanac Works (Annexation) Act, and the Works became part of the Commonwealth. See [[commonwealth|Circumterrestrial Commonwealth]]." }

@@ -105,6 +105,7 @@ const BILLS = [
      vote money (§7.3).
      ========================================================= */
   { id:"appropriation", ref:"HC 4/140", stage:"first_reading", owner:"cu",
+    campaign:["world", "flash_i"],      /* the engine tests play on it, and Act I is built on it (design/80) */
     test:"supply", priority:true,
     title:"Appropriation (Session 4) Bill",
     summary:"The estimates for the session, clause by clause, and the thermal quota released against them. It is a money bill: the 240 elected members decide it, and the 40 functional members vote and have their votes recorded.",
@@ -117,7 +118,7 @@ const BILLS = [
       { id:"thermal", name:"Thermal quota released", default:"steady",
         note:"The thermal quota released this session. How much is released sets the thermal price: the less quota, the higher the price every station pays to keep running.",
         levels:[
-          { id:"tight",  label:"Held tight", cost:0,  note:"Released against last session's figure, and no more. The price rises to clear, and it lands on the stations with the thinnest margins.",
+          { id:"tight",  label:"Held tight", cost:0,  note:"Less quota is released than last session, and the estimates pay nothing for it. The price rises to clear, and it lands first on the stations with the thinnest margins.",
             effects:[{ move:{ "price.thermal": 14, public_standing:-4 } }, { law:{ thermal_release:"tight" } }] },
           { id:"steady", label:"As last session", cost:14000, note:"Released at last session's figure. The price holds where the market has held it.",
             effects:[{ law:{ thermal_release:"steady" } }] },
@@ -125,7 +126,7 @@ const BILLS = [
             effects:[{ move:{ "price.thermal": -16, thermal_margin:-5, public_standing:5 } }, { law:{ thermal_release:"open" } }] }
         ] },
       { id:"floor", name:"The consumables floor", default:"hold",
-        note:"The air, water, calories and minimum volume guaranteed to every "+
+        note:"The air, water, food and living space guaranteed to every "+
              "resident, and the rate at which the guarantee is carried.",
         levels:[
           { id:"cut",  label:"Trimmed", cost:0,  note:"The guarantee is trimmed. The saving shows in this session's return, and the stations that cannot feed themselves show it in their closure by the end of the month.",
@@ -156,7 +157,7 @@ const BILLS = [
         note:"The subsidy on the fare the stations pay for a launch window. The stations farthest from a tether pay the highest fares, and the subsidy decides how much of that difference the Commonwealth carries.",
         levels:[
           { id:"none",    label:"Unsubsidised", cost:0,  note:"With no subsidy the fare is set by the carriers, and the outer stations pay the carriers' published schedule.", effects:[{ law:{ transit_subsidy:"none" } }] },
-          { id:"anchors", label:"The anchor states", cost:10000, note:"The differential is carried for the anchor states, where the tether is the only way in.", effects:[{ law:{ transit_subsidy:"anchors" } }, { move:{ "public_standing":3 } }] },
+          { id:"anchors", label:"The tether stations", cost:10000, note:"The differential is carried for the stations a tether serves, where the tether is the only way in.", effects:[{ law:{ transit_subsidy:"anchors" } }, { move:{ "public_standing":3 } }] },
           { id:"all",     label:"Every station", cost:22000, note:"The differential is carried for every station, and the reserve pays for the ones the traffic does not reach.", effects:[{ law:{ transit_subsidy:"all" } }, { move:{ "public_standing":5, solvency:-4000 } }] }
         ] },
 
@@ -210,7 +211,8 @@ const BILLS = [
           { id:"high", label:"Raised by a tenth", cost:0, note:"About CW$2.6bn a year more. It reaches the stations at the end of the schedule first and hardest.", effects:[{ law:{ rate_transit:"high" } }, { move:{ "standing.far":-2, "standing.external":-2 } }] },
           { id:"surcharge", label:"Raised by a fifth", cost:0, note:"About CW$5bn a year more, charged on everything the outer stations import. Home Rule, which speaks for them, opposes it.", effects:[{ law:{ rate_transit:"surcharge" } }, { move:{ "standing.far":-4, "standing.external":-4, "public_standing":-1 } }] }
         ] } ],
-    stances:{ cu:"for", psa:"for", rv:"for", upl:{forPct:0.5}, geo:{forPct:0.5},
+    /* the independents promised their votes on confidence and the budget only (the commission page, sitting 1) */
+    stances:{ cu:"for", psa:"for", rv:"for", ind:"for", upl:{forPct:0.5}, geo:{forPct:0.5},
               cl:"against", sc:{forPct:0.3}, hul:{forPct:0.4}, fh:"against",
               gb:{forPct:0.3}, des:{forPct:0.4} },
     onPass:[{ flag:"supply_granted" }],
@@ -258,9 +260,10 @@ const BILLS = [
     onPass:[{law:{shed_order_authority:"statute"}},{move:{"public_standing":6}}],
     onFail:[{move:{"loyalty.cu_halloran":-8}}] },
 
-  { id:"anchor_kepler", ref:"HC 4/103", stage:"assent", owner:null,
+  { id:"anchor_kepler", ref:"HC 4/103", stage:"assent", owner:"psa",
+    campaign:["world", "flash_i"],      /* Act I's treaty: its opening restages it (design/78, design/80) */
     touches:["anchor_concession"],
-    author:"estevez",
+    author:"ivarsen",
     title:"Anchor Concession (Anchorage) Ratification Bill",
     summary:`Ratifies renewed terms for the International Earth-Orbit Elevator, whose anchor stands at Malindi, on Kenyan territory.`,
     contested:"The anchor stands on Kenyan soil, so the Commonwealth negotiates as a tenant. Ratifying keeps the International running and puts eight billion dollars into the year. Refusing asserts sovereignty at the cost of Anchorage, a station of 231,000 people that depends on the tether. The objection is that a renewed lease is still a lease, and the price is paid again at the next renewal with less left to trade.",

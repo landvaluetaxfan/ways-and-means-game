@@ -2751,7 +2751,7 @@ const Editor = (function () {
     });
 
     /* an entry belongs to a campaign that exists, or it is played by none */
-    const known = new Set(campaignIds());
+    const known = new Set(campaignIds().concat(["parked", "world"]));   /* holding tags, design/80 */
     [["event", M.events], ["bill", M.bills], ["ending", M.settlements], ["initiative", M.initiatives],
      ["award", M.achievements], ["resolution", M.resolutions], ["matter", M.matters],
      ["article", (M.encyclopedia || {}).articles]].forEach(([what, arr]) =>

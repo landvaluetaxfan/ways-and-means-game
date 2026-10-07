@@ -4876,6 +4876,29 @@ const Engine = (function () {
         Object.keys(v.reserve).forEach(id => { r[id] = (r[id] || 0) + v.reserve[id]; });
       }
     },
+    /* CLAUSE — set a level of a bill's clause, through the same door as the
+       Chamber's panel and refused in the same way (design/80, brief E12). It
+       is what lets a scene that argues for a clause end in the decision that
+       sets it. A refusal is logged, as a bad id is, so a scene never fails in
+       silence. */
+    clause: (st, C, v) => [].concat(v).forEach(x => {
+      const r = x ? setClause(st, C, x.bill, x.clause, x.level) : null;
+      if (!r || !r.ok) st.log.unshift({ sitting: st.sitting,
+        text: "A clause was not set" + (r && r.reason ? ": " + r.reason : "") });
+    }),
+    /* WHIP — commit a party's members to vote with the government on a bill,
+       through the same door as the Chamber's panel, so a scene can end in the
+       act it argues for (brief E13). `seats` omitted commits every seat the whip
+       can move. The plan is paid at the division, whoever set it, and the player
+       can change it in the Chamber until then. Refused seats are not logged: a
+       party the whip cannot reach simply moves nobody, as it does in the panel. */
+    whip: (st, C, v) => [].concat(v).forEach(x => {
+      if (!x || !C.billById[x.bill]) return;
+      (x.tier ? [x.tier] : ["popular", "functional"]).forEach(t => {
+        const cap = whippable(st, C, x.bill, x.party, t);
+        setWhip(st, C, x.bill, x.party, t, x.seats == null ? cap.max : Math.min(cap.max, x.seats));
+      });
+    }),
     /* Seats move by these four verbs and no other. Writing a district count
        directly would desynchronise it from the roll on the next syncRoll,
        silently, which is the failure this whole section exists to prevent. */
@@ -5486,6 +5509,9 @@ const Engine = (function () {
     if (d.flag) return !!st.flags[d.flag];
     if (d.si) { const x = st.instruments[d.si]; return !!(x && x.made); }
     if (d.slot) return (st.slotsGranted || []).indexOf(d.slot) >= 0;
+    /* `{clause:{bill, clause, level}}`: the plan stands at that level, whether
+       it was set or is the clause's default */
+    if (d.clause) return (clausePlan(st, C, d.clause.bill)[d.clause.clause] || {}).id === d.clause.level;
     if (d.bill) {
       const b = st.bills[d.bill];
       if (!b) return false;
@@ -5838,6 +5864,24 @@ const Engine = (function () {
           break;
         case "undertake": [].concat(v).forEach(u => out.push({
           tone: "owed", owed: true, text: u.text || u.id }));
+          break;
+        /* who is committed, and what it will cost, in the words the panel uses */
+        case "whip": [].concat(v).forEach(x => {
+          const own = x && x.party === st.playerParty;
+          out.push({ tone: own ? "bad" : "plain", cost: true,
+            text: own ? "Presses your own benches to vote with the government, at a cost in their goodwill"
+                      : "Commits " + nameOf("parties", x && x.party, "name") + " members to vote with the government, at a cost in credit" });
+        });
+          break;
+        /* what the clause is called and the level it is set to, both read
+           from the bill, so the line cannot drift from the text of the Act */
+        case "clause": [].concat(v).forEach(x => {
+          const cl = x && clausesOf(C, x.bill).find(c => c.id === x.clause);
+          const lv = cl && (cl.levels || []).find(l => l.id === x.level);
+          out.push({ tone: "plain", text: cl && lv
+            ? "Sets " + String(cl.name).toLowerCase() + " to " + String(lv.label).toLowerCase()
+            : "Sets a clause of the estimates" });
+        });
           break;
         case "si": [].concat(v).forEach(id => out.push({
           tone: "grave", text: "Makes " + nameOf("instruments", id, "number") }));
@@ -7826,6 +7870,18 @@ const Engine = (function () {
       tab = "cham";
       how = "Carry the " + (C.billById[id].title || id);
       focus = "bill:" + id;
+    } else if (dz.slot && C.billById && C.billById[dz.slot]) {
+      /* a promise of time is kept where time is given: the Chamber, on the bill */
+      tab = "cham";
+      how = "Give the " + (C.billById[dz.slot].title || dz.slot) + " a slot";
+      focus = "bill:" + dz.slot;
+    } else if (dz.clause && C.billById && C.billById[dz.clause.bill]) {
+      /* and a promise of a level where the clauses are set: the same bill's panel */
+      const cl = clausesOf(C, dz.clause.bill).find(c => c.id === dz.clause.clause);
+      const lv = cl && (cl.levels || []).find(l => l.id === dz.clause.level);
+      tab = "cham";
+      how = cl && lv ? "Set " + String(cl.name).toLowerCase() + " to " + String(lv.label).toLowerCase() : "Set the clause";
+      focus = "bill:" + dz.clause.bill;
     }
     return { tab: tab, how: how, focus: focus };
   }

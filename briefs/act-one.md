@@ -274,6 +274,85 @@ release or are sequenced with them.
   last beat, since `design/78` has the stranding opening what follows the rise, so the
   slice ends on it and the superevent is exercised in the build.
 
+- **E12 A clause effect. LANDED (Claude, 7 October, minimal).**
+  `{clause:{bill:"appropriation", clause:"floor", level:"lift"}}` sets a level through
+  `Engine.setClause`, refused as the Chamber's panel refuses it (the refusal is logged, as a bad
+  id is). A promise may be kept by it: `discharge:{clause:{bill, clause, level}}`, which reads
+  the plan, defaults included. The effects panel names the clause and the level
+  (`describe`), the Owed list says where it is kept (`undertakingWhere`: "Set the consumables
+  floor to lifted", in the Chamber), lint checks the bill, clause and level, and
+  `js/refs.js` follows a renamed bill. What it does **not** do, and is Codex's: return a change
+  notice (E9), and a condition that reads a level (`clauseIs`) so a page can react to the
+  level the player set.
+- **E13 A whip effect. LANDED (Claude, 7 October, minimal).**
+  `{whip:{bill, party, tier?, seats?}}` commits a party's members through `Engine.setWhip`
+  (all that can be moved when `seats` is omitted); the plan is paid at the division like any
+  other and the Chamber can change it until then. Needed so that "press the party" and "ask
+  Trottier" in the count scene (sitting 11) are the act and not the announcement of it. Same
+  limits as E12: no change notice.
+
+Both are additive hunks in `js/engine.js` (`EFFECTS`, `met`, `describe`, `undertakingWhere`),
+`js/schema.js`, `js/refs.js`, `tools/lint.js` and `test.js`, in files the `witnessed-acts` claim
+holds. They are small and listed in the commit that carries them, so a merge is the reader's
+diff and nothing more. **Also in that commit**, found while building the slices: the first rung
+of the ladder may carry a campaign's lock (`when:{flagsAbsent:[...]}`), which `test.js` had
+forbidden; the Owed list had no words for a promise of a slot or a level.
+
+## What is built, sitting by sitting
+
+The ledger's sittings 1 to 11, 14 and 15 are built, as `a1_` events in
+`content/campaigns/flash_i/events.js`, with guards in `guards.js`. Sitting 12 and 13 are the
+player's own work in the Chamber (the count's whips, the division) and have no scene. What
+remains is the rise.
+
+| sitting | built as | what the player does |
+|---|---|---|
+| 1 to 4 | the commission, the first question, the Treasury, the estimates and the order paper | answer; appoint; learn slots |
+| 5 | `a1_treaty`, `a1_spare_slot` | promise the spare slot (a promise, kept in the Chamber) or hold it |
+| 6 | `a1_cooling`, `a1_ember_ridge` | answer Girard; the first order opens (`a1_orders_locked`) |
+| 7 to 10 | a page and a decision each: the floor, the cover, the works, the transit subsidy | promise a level (kept by setting it), or refuse; the money has to come from another clause |
+| 11 | `a1_count` | the whip: nothing, your party's goodwill, or a partner's credit |
+| 14 | `a1_qt_ember`, `a1_qt_promise`, `a1_qt_reserve` | one question, chosen by what the player did |
+| 15 | `a1_underwriters` | a page; the Economy tab is the card's business |
+| 16 | **not built.** Needs E1 and E11 | the curtain, and the Almanac Works abandoned |
+
+**Promises are the spine of 5 to 10.** Each is a real undertaking with a deadline by sitting 14,
+a place where it is kept (the Owed list names it) and a page for its breach, which sets the flag
+`promise_broken` that Question Time reads. By sitting 10 a player who promised every minister what
+they asked holds promises the reserve cannot pay for: that is the budget, learned by play (guarded
+in `flash_i/guards.js`).
+
+### The rise: draft text for E1 and E11 (for Codex to wire, and the author to mark)
+
+The date needs the author's word. `bible.md` and `content/world.js` say the Commonwealth learned of
+the abandonment on **6 May**; the House rises on **8 May** (sitting 16). A curtain that ends on the
+abandonment either moves the date to the rise or has the news arrive as the House rises. I have
+written it as arriving at the rise and changed nothing else.
+
+**The superevent** (`setpiece.scale:"super"`), the curtain's last beat. A news page, third person:
+
+> **Cordell abandons the Almanac Works, and 184,000 people are left without an operator**
+>
+> Cordell, the mining company that owns the Bellamy Almanac Works, has wound up the company that
+> operated it. The platform's 184,000 residents now have no operator to pay for their air, water or
+> fuel.
+>
+> The Works is a refinery and foundry on Tether 2, the International Earth-Orbit Elevator, whose
+> anchor stands at Malindi in Kenya. It smelts the ore that Cordell's extraction platforms bring in
+> and rolls it into structural metal and hull plate.
+>
+> Cordell is owned by the sovereign wealth fund of Gabon. The European Union froze the fund's assets
+> in March, and Cordell's accounts in Europe have stayed frozen since. The operator could not pay its
+> suppliers, and its engineers say the platform's air will last about two months.
+>
+> Kenya, on whose coast the tether stands, has approved a plan to bring down the residents who wish
+> to come. Its tender law and the platform's safety inspection put the last descents in 2082. The
+> European Union, whose banks hold the platform's bonds, says that whoever takes the platform takes
+> its debts.
+
+Every fact in it is already canon (`content/world.js`, `content/actors.js`); the only new thing is
+the day.
+
 ## The exit gate
 
 The playtest build ships only when **all** of these hold. Each is a machine check or a
@@ -349,3 +428,15 @@ author does.
 - Old text is archived, not deleted.
 - Axes stay as the bible has them. The personhood axis shows only where a bill on the paper
   moves it, and is glossed where it first appears.
+- **The play's frame is kept as the author wrote it** (`content/campaigns/flash_i/campaign.js`:
+  the introduction, the cast, three acts with their epigraphs and stage directions, two
+  intervals and the curtain call). Act I's card, "The House Is Sitting", fits the slice. The
+  intervals and the curtain call describe a three-act play that ends at an election; the
+  slice ends at the rise, so they need the author's word on the five-act shape before E1
+  wires the curtain. Nothing in them has been rewritten.
+- **The promises' deadlines** (sitting 6's appeal, three sittings; sitting 5's treaty slot,
+  eight; the four clause promises, four to five, all due by sitting 14) are provisional and
+  want a playtest. So does every number in the choices, which the commit marks PROVISIONAL.
+- **Question Time is the only scene that depends on what the player did.** Its three
+  variants are exclusive; a fourth (for a government that carried the estimates early, or
+  whipped hard) is easy to add if the playtest wants one.

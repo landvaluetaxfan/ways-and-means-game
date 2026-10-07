@@ -148,21 +148,27 @@ const INSTRUMENTS = [
    ============================================================= */
 
   { id:"rung1_conservation",
+    campaign:["world", "flash_i"],      /* Act I's first order (design/80); the world's tests play on it too */
     title:"Voluntary Conservation (Appeal) Order 2080", number:"SI 2080/61",
     author:"substrate_thermal", procedure:"negative", prayer_window:6, revocable:true,
-    summary:"Asks the stations to cut non-essential load ahead of the winter margin. Compliance is voluntary, so the margin improves only a little, and only while the appeal is observed.",
-    effect_note:"The first rung of the emergency ladder: it costs nothing politically and raises the margin least of any order.",
+    /* LOCKED UNTIL EMBER RIDGE EXPLAINS IT. Flash I's opening sets the flag and the scene
+       a1_ember_ridge clears it; the world never sets it, so the world's tests are unchanged.
+       The tutorial ladder (brief E3) will do this for every lever and this can go. */
+    when:{ flagsAbsent:["a1_orders_locked"] },
+    summary:"Asks every station to cut the power it does not need, so that its radiators have less heat to reject. A station may ignore the appeal, so the thermal margin rises only a little, and only while the appeal is observed.",
+    effect_note:"The first of the government's orders on cooling. It costs nothing in money and raises the margin least of any order. It takes effect when made, and stands unless the House votes against it within six sittings.",
     effects:[ {move:{"thermal_margin":3}}, { flag:"rung1_tried" },
               { wire:"CONSERVATION APPEAL ISSUED TO STATION AUTHORITIES" } ],
     reverse:[ {move:{"thermal_margin":-3}}, { flag:{ rung1_tried:false } } ],
     political_cost:[ {move:{"public_standing":-2}} ] },
 
   { id:"rung2_clockrate",
+    campaign:["world", "flash_i"],      /* Act I's second order (design/80) */
     title:"Clock-Rate (Reduction) Order 2080", number:"SI 2080/62",
     author:"persons_continuity", procedure:"negative", prayer_window:6, revocable:true,
     when:{ flags:["rung1_tried"] },
-    summary:"Slows the clock rate of the emulated population by four per cent until the margin recovers, which cuts the heat their computation makes. Every emulated person has four per cent less working time each day, and those paid by the hour earn four per cent less.",
-    effect_note:"The New Progressive Party, which speaks for the emulated population, loses loyalty to the government.",
+    summary:"Slows the computers that run digital residents by four per cent until the margin recovers, which cuts the heat they make. Every digital resident then has four per cent less working time each day, and those paid by the hour earn four per cent less.",
+    effect_note:"The New Progressive Party, which speaks for digital residents, loses loyalty to the government.",
     effects:[ {move:{"thermal_margin":4}}, {move:{"loyalty.psa":-8}}, { flag:"rung2_tried" },
               { wire:"CLOCK RATES CUT FOUR PER CENT; SUBSTRATE LEFT PROTESTS" } ],
     reverse:[ {move:{"thermal_margin":-4}}, {move:{"loyalty.psa":8}}, { flag:{ rung2_tried:false } } ],

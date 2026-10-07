@@ -148,6 +148,13 @@ exit gate are `briefs/act-one.md`. While it runs, the canon guards below are not
 a change: do not "repair" a failing canon block, and do not revive retired text from
 `content/archive/`. The canon stays as the target for Acts II to V.
 
+How the cut is held, so that nothing is lost and nothing old is shown: the retired story is
+`content/campaigns/parked/` (moved byte for byte by `tools/park.js`, which can prove it), a
+campaign sees only the story entries tagged for it (`content/index.js`), and `test.js` still
+plays on the world's untagged story as fixtures. The interface checks play on a fixture
+government, the old Flash I (`tools/harness.js`), and `node tools/actwalk.js` plays the real
+Flash I through the page. Act I's own promises are in `content/campaigns/flash_i/guards.js`.
+
 A campaign has one canon ending, and the next campaign opens on it (bible
 §1.8). **Flash I's canon is the debt trap** (the author: "a middle ground
 between perfect and failure").

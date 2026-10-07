@@ -48,12 +48,12 @@ const GLOSSARY = [
   { term:"thermal margin", cluster:"heat", gloss:"Spare radiator capacity. Every watt of thought becomes heat that must be dumped.",
     article:"The **thermal margin** is the spare capacity of the Commonwealth's radiators, as a share of what they can reject. Every watt of computation and industry becomes heat that must be radiated away, so the margin is what stands between a station and shedding load. At zero the stations shed load in cascade. The government's emergency orders raise it, each at a cost.",
     handle:"Grid capacity on the hottest day of the year.",
-    introduced:"vantage_radiator" },
+    introduced:"a1_ember_ridge" },
 
   { term:"engineering authority", cluster:"heat", gloss:"The body that may act on life-support integrity without asking a minister.",
     article:"The **engineering authority** is the body that may act on the integrity of life-support systems without asking a minister. It can summon the Minister for Life Support, and under the Allocation Act it may shed the [[term_tier_four|tier-four]] register without notice. Who holds the power to order a shed is itself set by statute.",
     handle:"A regulator with emergency powers and no election to lose.",
-    introduced:"vantage_radiator" },
+    introduced:"a1_ember_ridge" },
 
   { term:"functional constituency", cluster:"functional", gloss:"A seat elected by the members of a profession or industry.",
     handle:"The House of Lords, if the Lords were chosen by their trade bodies.",

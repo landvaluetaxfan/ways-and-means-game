@@ -197,6 +197,10 @@ const Serialise = (function () {
      An entry naming several campaigns is kept with the first. */
   function home(x) {
     const c = x && x.campaign;
+    /* "world" is the world's own view, not a campaign (design/80): an entry that
+       names it, alone or beside a campaign, is a fixture the tests play on and
+       stays in the world's file. */
+    if (c === "world" || (Array.isArray(c) && c.indexOf("world") >= 0)) return null;
     return typeof c === "string" ? c : Array.isArray(c) && c.length ? c[0] : null;
   }
   function untag(x, id) {

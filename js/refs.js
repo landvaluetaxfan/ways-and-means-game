@@ -158,6 +158,9 @@ const Refs = (function () {
         const t = eff.cabinet[post];
         if (t && t.party === id) H(`${where} · cabinet ${post}`, to => t.party = to);
       });
+      [].concat(eff.whip || []).forEach(x => {
+        if (x && x.party === id) H(`${where} · whip`, to => x.party = to);
+      });
     });
     eachCondition(M, (w, where) => {
       ["loyaltyAbove", "loyaltyBelow", "capitalAbove", "capitalBelow"].forEach(k => {
@@ -204,6 +207,15 @@ const Refs = (function () {
         const d = u.discharge || {};
         if (d.bill === id) H(`${where} · undertaking ${u.id} discharge`, to => d.bill = to);
         if (d.division === id) H(`${where} · undertaking ${u.id} discharge`, to => d.division = to);
+        if (d.slot === id) H(`${where} · undertaking ${u.id} discharge`, to => d.slot = to);
+        if (d.clause && d.clause.bill === id)
+          H(`${where} · undertaking ${u.id} discharge`, to => d.clause.bill = to);
+      });
+      [].concat(eff.clause || []).forEach(x => {
+        if (x && x.bill === id) H(`${where} · clause`, to => x.bill = to);
+      });
+      [].concat(eff.whip || []).forEach(x => {
+        if (x && x.bill === id) H(`${where} · whip`, to => x.bill = to);
       });
     });
     eachCondition(M, (w, where) => {

@@ -48,6 +48,12 @@ html = html.replace(/<link[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][
   return `<style>\n/* ${href} */\n${rd(href)}\n</style>`;
 });
 
+/* DEV-ONLY SCRIPTS ARE LEFT OUT OF A RELEASE. The parked story (design/80) is
+   written for later acts and kept for the tests; its script tags carry
+   `data-dev`, and the page a player gets does not load them. This removes
+   whole tags and changes nothing else. */
+html = html.replace(/<script data-dev src=["'][^"']+["']><\/script>\n?/g, "");
+
 /* scripts, in document order */
 html = html.replace(/<script src=["']([^"']+)["']><\/script>/g, (m, src) => {
   if (/^https?:/.test(src)) return m;

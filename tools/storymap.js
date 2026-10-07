@@ -435,7 +435,7 @@ function page(M, all) {
       `<td>${who(g.need)}${g.rules ? (g.need.length ? ", " : "") + "<i>the interface or rules</i>" : ""}</td><td>${who(g.absent)}</td><td>${status}</td></tr>`;
   }).join("");
   const counts = `${events.filter(n => n.own).length} events, ${own.filter(n => n.kind === "initiative").length} initiatives, ` +
-    `${own.filter(n => n.kind === "bill").length} bills, ${own.filter(n => n.kind === "matter").length} matters and ${own.filter(n => n.kind === "settlement").length} results of its own`;
+    `${own.filter(n => n.kind === "bill").length} bills, ${own.filter(n => n.kind === "instrument").length} orders, ${own.filter(n => n.kind === "matter").length} matters and ${own.filter(n => n.kind === "settlement").length} results of its own`;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Story map: ${esc(name)}</title>
@@ -503,6 +503,7 @@ ${Object.keys(byCh).map(Number).sort((a, b) => a - b).map(c => `<h3 class="${byC
 <h2 id="others">Initiatives, bills, results</h2>
 <h3>Initiatives</h3>${others("initiative").map(n => card(M, n)).join("")}
 <h3>Bills</h3>${others("bill").map(n => card(M, n)).join("")}
+<h3>Orders</h3>${others("instrument").map(n => card(M, n)).join("")}
 <h3>Results</h3>${others("settlement").map(n => card(M, n)).join("")}
 <h3>Ministerial matters</h3>${others("matter").map(n => card(M, n)).join("")}
 <h3>Facilities</h3>${others("money").map(n => card(M, n)).join("")}

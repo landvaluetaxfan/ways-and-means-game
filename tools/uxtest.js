@@ -2030,7 +2030,7 @@ try {
     var st = UI.state(), before = UI.__test.structure(st);
     var owned = CONTENT.bills.filter(function (b) {
       return b.owner && b.owner !== st.playerParty && !st.bills[b.id].dead &&
-             st.bills[b.id].stage !== "third_reading"; })[0];
+             st.bills[b.id].stage !== "third_reading" && st.bills[b.id].stage !== "assent"; })[0];
     if (!owned) return ["no partner bill"];
     Engine.grantSlot(st, CONTENT, owned.id);
     UI.__test.reportMoves(before, UI.__test.structure(st));

@@ -1978,7 +1978,9 @@ console.log("\nTHE ESCALATION LADDER:");
   ok("the ladder has nine rungs", rungs.length === 9, rungs.map(r => r.id).join(", "));
   ok("each rung is gated on the one above it",
      rungs.every((r, i) => i === 0
-       ? !r.when
+       /* a campaign may lock the first rung with a flag it clears (Act I does, design/80);
+          the first rung is never gated on a flag the ladder itself sets */
+       ? !(r.when && r.when.flags)
        : !!(r.when && r.when.flags && r.when.flags[0] === "rung" + i + "_tried")),
      rungs.map(r => (r.when && r.when.flags ? r.when.flags[0] : "ungated")).join(" "));
   ok("A9: the political cost rises down the ladder",
@@ -4984,6 +4986,55 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
        Engine.setClause(A, CONTENT, "appropriation", "works", "some").ok,
        Engine.clauseCost(A, CONTENT, "appropriation").total + " allocated");
 
+    /* A SCENE CAN PULL THE LEVER (design/80, brief E12). The effect goes through
+       setClause, so it is refused when the Treasury cannot pay, and a promise can be
+       kept by the level it names. */
+    {
+      const S = Engine.newGame(CONTENT);
+      const cut = { clause: { bill: "appropriation", clause: "floor", level: "cut" } };
+      const dear = { clause: { bill: "appropriation", clause: "works", level: "outer" } };
+      const probe = { id: "clause_probe", title: "A clause", body: "b", choices: [
+        { label: "cut the floor", effects: [{ undertake: { id: "clause_promise", text: "Trim the floor",
+            by: 5, discharge: cut } }] },
+        { label: "set it", effects: [cut] },
+        { label: "too dear", effects: [dear] } ] };
+      Engine.choose(S, CONTENT, probe, 0);
+      ok("a promise to set a clause level is open until it is set",
+         S.undertakings.some(u => u.id === "clause_promise" && u.state === "open"));
+      Engine.choose(S, CONTENT, probe, 1);
+      ok("a clause effect sets the level the Chamber's panel would",
+         Engine.clausePlan(S, CONTENT, "appropriation").floor.id === "cut");
+      ok("and the promise it names is kept", S.undertakings.find(u => u.id === "clause_promise").state === "kept");
+      const T = Engine.newGame(CONTENT);
+      Engine.choose(T, CONTENT, probe, 2);
+      ok("an unaffordable level is refused, as the panel refuses it",
+         !((T.clauses.appropriation || {}).works));
+      ok("and the refusal is logged rather than silent", T.log.some(l => /clause was not set.*short by/.test(l.text)));
+      ok("the Owed list says where a clause promise is kept, and a slot promise",
+         Engine.undertakingWhere(CONTENT, { discharge: cut }).how === "Set the consumables floor to trimmed" &&
+         Engine.undertakingWhere(CONTENT, { discharge: cut }).tab === "cham" &&
+         /^Give the .* a slot$/.test(Engine.undertakingWhere(CONTENT, { discharge: { slot: "appropriation" } }).how));
+      ok("the effects panel names the clause and the level",
+         Engine.describe(S, CONTENT, [cut])[0].text === "Sets the consumables floor to trimmed");
+    }
+
+    /* A SCENE CAN COMMIT THE WHIPS (brief E13), through setWhip, and the plan is paid at the division */
+    {
+      const W = Engine.newGame(CONTENT), mine = W.playerParty;
+      const own = { whip: { bill: "appropriation", party: mine } }, partner = { whip: { bill: "appropriation", party: "psa", tier: "popular", seats: 2 } };
+      const probe = { id: "whip_probe", title: "A count", body: "b", choices: [{ label: "press", effects: [own, partner] }] };
+      const room = Engine.whippable(W, CONTENT, "appropriation", mine, "popular").max;
+      Engine.choose(W, CONTENT, probe, 0);
+      const plan = W.whips.appropriation || {};
+      ok("a whip effect commits every seat the whip can move on the player's own benches",
+         (plan[mine] || {}).popular === room && room > 0, JSON.stringify(plan[mine]) + " of " + room);
+      ok("and no more than the seats it names on a partner's", (plan.psa || {}).popular <= 2 && (plan.psa || {}).popular > 0, JSON.stringify(plan.psa));
+      ok("the plan is priced in loyalty for the player's own party and in credit for a partner",
+         Engine.whipCost(W, CONTENT, "appropriation").loyalty > 0 && Engine.whipCost(W, CONTENT, "appropriation").capital.psa > 0);
+      ok("and the effects panel says whose benches are pressed",
+         /your own benches/.test(Engine.describe(W, CONTENT, [own])[0].text) && /credit/.test(Engine.describe(W, CONTENT, [partner])[0].text));
+    }
+
     /* And the choices are part of the Act. */
     const eff = Engine.clauseEffects(A, CONTENT, "appropriation");
     ok("the chosen levels are what the Act does", eff.length >= 2,
@@ -5726,7 +5777,8 @@ console.log("\nA CAMPAIGN IS A UNIT (design/36 §3):");
      guards; the machinery is asserted here on two probe campaigns, built
      the way an author would add one: an administration, one event of its
      own, and an opening. */
-  const tagged = k => (ALL[k] || []).filter(x => x && x.campaign != null);
+  /* an entry also tagged "world" (design/80) is the world's as well, so it is in its view */
+  const tagged = k => (ALL[k] || []).filter(x => x && x.campaign != null && [].concat(x.campaign).indexOf("world") < 0);
   ok("the world's view holds no campaign's entry",
      ["events", "bills", "settlements", "initiatives", "achievements"]
        .every(k => tagged(k).every(x => !(CONTENT[k] || []).some(y => y.id === x.id))),
@@ -5752,9 +5804,15 @@ console.log("\nA CAMPAIGN IS A UNIT (design/36 §3):");
   ok("a campaign sees its own entries", !!K.eventById.test_next_event);
   ok("and none of another campaign's",
      !K.eventById.test_other_event && !ALL2.forCampaign("test_other").eventById.test_next_event);
-  ok("and all of the world's",
-     ALL.events.filter(e => e.campaign == null).every(e => K.eventById[e.id]) &&
-     K.parties.length === ALL.parties.length && K.stations.length === ALL.stations.length);
+  /* THE WORLD'S REFERENCE, NOT ITS STORY (design/80). An untagged party or station
+     is every campaign's. An untagged event, bill, order or initiative is the world's
+     alone, the fixture these tests play on, so that a story written for a later act
+     cannot show before the story has brought it in. */
+  ok("and all of the world's reference entries, and none of its story",
+     K.parties.length === ALL.parties.length && K.stations.length === ALL.stations.length &&
+     ALL.events.filter(e => e.campaign == null).every(e => !K.eventById[e.id]) &&
+     ALL.bills.filter(b => b.campaign == null).every(b => !K.billById[b.id]) &&
+     ALL.instruments.filter(i => i.campaign == null).every(i => !K.instrumentById[i.id]));
   ok("a campaign's setup changes one scalar without restating the rest",
      K.setup.scalars.friction === 30 && K.setup.scalars.solvency === ALL.setup.scalars.solvency,
      JSON.stringify(K.setup.scalars));

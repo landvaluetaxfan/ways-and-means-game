@@ -108,7 +108,7 @@ const CHARACTERS = [
     party:"psa", category:"emulation", status:["disembodied"], functional:"fc_substrate", relationship:50, office:"minister",
     bio:"The constituency's electors are the registered substrate providers, and as Minister for Substrate and Thermal, Girard sets the policy that prices their product.",
     note:"Elected by 411 corporate voters to set the policy that prices their own product." },
-  { id:"abadi", name:"Nadia Abadi MP", role:"Member for the medicine roll",
+  { id:"abadi", name:"Nadia Abadi MP", role:"Backbencher, Congregational Democratic Alliance",
     party:"rv", category:"biological", functional:"fc_medicine", relationship:49,
     note:"Backbench. Sits for the medicine roll, and argues the ministry's case from it rather than for it." },
   { id:"okarie", name:"Anil Devi MP", role:"Chief Whip",

@@ -26,6 +26,12 @@ campaign("flash_i", { administrations: [
 
   { id:"flash_i", party:"cu", leader:"flash", ordinal:"I",
     from:2080, to:2084, session:4,
+    /* THE TREATY OPENS AT COMMITTEE, where Act I needs it (design/78): the world has it awaiting assent,
+       for a chain Act I does not play. Hiding a bill until the story introduces it is brief E2's, and
+       until then the order paper lists both bills from the first sitting. The first order is locked
+       until Ember Ridge explains it (the stand-in for brief E3's lever ladder). */
+    opening:[ { bill:{ anchor_kepler:{ stage:"committee" } } },
+              { flag:"a1_orders_locked" } ],
     /* THE CAMPAIGN'S OWN SETUP, merged one level deep over the world's
        (CONTENT.forCampaign). Its content is this folder plus the world's.
        `opening` would hold effects applied at the first sitting; Flash I

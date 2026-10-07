@@ -166,6 +166,28 @@ Sep 2026) and in the design notes cited.
 - **`content/setup.js` is hand-edited on purpose.** Its comments document
   every setting, and it defines `campaign()`. A campaign changes setup
   through its administration record.
+- **Cutting a campaign's story makes every test that played on it lose its subject.**
+  Flash I was cut to Act I (design/80) and the interface checks, which needed orders, initiatives
+  and a long run of events to put on the screen, crashed on an empty list. The cut story is
+  `parked`, the world's untagged story stays as fixtures for `test.js`, and the DOM checks play on
+  a fixture government (`tools/harness.js`, the old Flash I). Nothing was lost, and Act I's own
+  opening is held by its guards. Decide what each check plays on before cutting what it plays on.
+- **A new default can be a lie to every campaign that did not ask for it.** Untagged story used to
+  belong to every campaign, so a bill written for Act II sat on Act I's order paper. Story kinds
+  are opt-in now (`content/index.js`), and an entry a test and a campaign both need is tagged for
+  both: `campaign:["world","flash_i"]`.
+- **A promise with no breach is a sentence the player can ignore.** Each Act I promise has a page
+  that fires when it is broken, and a guard that breaks it and reads the page. The note on the
+  choice said "it will count against you" while a broken promise only wrote a line in a
+  register; reading the mechanism against the note found it.
+- **A bill in drafting is on the order paper, not off it.** The Chamber lists it with a Grant button,
+  and `uxtest` grants time to a drafting measure on purpose ("drafting is two readings away"). Act I
+  restaged its bills to drafting to keep them off the paper, a check refused the grant, and two
+  tests that rely on the design failed. Reading what the screen showed would have settled it first:
+  hiding a thing until its scene brings it in is the introduced record (brief E2), not a stage.
+- **A test that checks for a flag can pass by a path it was not about.** The Question Time guard
+  first read Ember Ridge's shutdown on a clean path, because the appeal's deadline broke before
+  the guard made the order. Make the act before its deadline, not after the loop.
 
 ## Checks and tools
 

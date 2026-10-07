@@ -147,6 +147,35 @@ function newGame() {
   if (act) act.click();
 }
 
+/* THE DOM CHECKS PLAY ON A FIXTURE WORLD, NOT ON ACT I (design/80).
+
+   These two files test the interface: the order paper, the brief, the
+   Government tab, the division, the saves. They need a game with orders,
+   initiatives, bills and a long run of events to put on the screen. Flash I
+   is Act I only now, and has none of that by design, so the checks play on
+   the old Flash I, which is the world's untagged story with the story
+   `parked` for the later acts put back in the world's view. It is not a
+   campaign anyone can choose: the menu lists it first only because this
+   page is a harness, and it is a copy of Flash I's government with its own
+   id and no campaign of its own. Act I's own opening is asserted where it
+   belongs, in the campaign's guards and the playtest. HARNESS_REAL=1 leaves
+   the fixture out, so a script can play the real Flash I through the page. */
+if (!process.env.HARNESS_REAL) w.eval(`(function () {
+  ["events", "bills", "instruments", "initiatives", "matters", "settlements",
+   "achievements", "resolutions"].forEach(function (k) {
+    (CONTENT[k] || []).forEach(function (x) {
+      if (x && x.campaign === "parked") x.campaign = "world";
+    });
+  });
+  /* the old Flash I's own sandbox shortcuts are not story kinds, and are tagged for it */
+  (CONTENT.sandbox || []).forEach(function (x) {
+    if (x && x.campaign === "flash_i") x.campaign = "world";
+  });
+  var fl = (CONTENT.administrations || []).find(function (a) { return a.id === "flash_i"; });
+  /* without Act I's opening, which restages its two bills and locks its first order */
+  if (fl) CONTENT.administrations.unshift(Object.assign({}, fl, { id: "harness", campaign: "world", opening: [] }));
+})()`);
+
 /* `const CONTENT` inside a script is a lexical global, not a window
    property, so it has to be read through eval rather than off w. */
 const CONTENT = w.eval("CONTENT");

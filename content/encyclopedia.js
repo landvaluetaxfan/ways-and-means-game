@@ -418,7 +418,6 @@ This produces a recurring constitutional argument. Federal development spending 
     see:["volume_lease","closure","ashfield","substrate"] },
 
   { id:"substrate_futures", title:"Substrate futures and debt", category:"Economy",
-    banners:[{ id:"contested", since:{ seen:"f1_referendum" } }],
     edited:{ by:"multiple", attested:true, note:"" },
     summary:"**Substrate futures** are forward contracts on mind-hours, and the debt written "+"against them is secured by the continuation of the persons who run. Where a "+"platform is abandoned, its debt survives its residents, and the choice between "+"assuming that debt and writing it off is a choice about who is owed.",
     sections:[
@@ -426,8 +425,6 @@ This produces a recurring constitutional argument. Federal development spending 
         "A substrate future fixes a price now for computation delivered later. Because "+"clock rates differ twentyfold between persons, the contract is written on "+"objective hours and settled in dollars." },
       { h:"The debt", body:
         "**Credit secured against one's own continuation** is the ordinary financing of a "+"habitat. A station borrows against the productive capacity of its residents, who "+"are the collateral. When the station fails, the lenders' claim runs against the "+"people." },
-      { h:"The Almanac Works", since:{ seen:"f1_referendum" }, body:
-        "The Ministry for Life Support's survey of the Bellamy Almanac Works, reported on {date}, "+"found that the platform's substrate debt had not failed with its operator: it had been "+"assigned, and it runs against the 184,000 residents. A government that assumes it pays "+"for people it does not own. A government that [[write-off|writes it off]] tells the "+"lenders what its word is worth." }
     ],
     see:["write-off","substrate","suspension","commonwealth"] },
 

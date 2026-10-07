@@ -130,11 +130,24 @@ const CONTENT = (function () {
     if (!admin) return C;
     const camp = admin.campaign || admin.id;
     const host = camp !== admin.id ? list.find(x => x.id === camp) : null;
-    const mine = x => !x || typeof x !== "object" || x.campaign == null ||
-                      [].concat(x.campaign).indexOf(camp) >= 0;
+    /* STORY KINDS ARE OPT-IN (design/80). An untagged event, bill, order,
+       initiative, matter, tier, achievement or resolution belongs to the
+       WORLD's view alone, the one the engine tests play on, and a campaign
+       sees only the story entries tagged for it. Before this an untagged
+       entry belonged to every campaign, so a bill written for a later act
+       sat on the order paper before the story had brought it in (the
+       author, 7 Oct 2026: the annexation bill in drafting before the Works
+       had appeared as an event). The reference kinds (parties, stations,
+       characters and the rest) are still every campaign's. An entry that a
+       test and a campaign both need is tagged for both:
+       campaign: ["world", "flash_i"]. */
+    const STORY = { events: 1, bills: 1, instruments: 1, initiatives: 1, matters: 1,
+                    settlements: 1, achievements: 1, resolutions: 1 };
+    const mine = (x, k) => !x || typeof x !== "object" ||
+      (x.campaign == null ? !STORY[k] || camp === "world" : [].concat(x.campaign).indexOf(camp) >= 0);
     const K = Object.assign({}, C0);
     Object.keys(C0).forEach(k => {
-      if (Array.isArray(C0[k]) && k !== "administrations") K[k] = C0[k].filter(mine);
+      if (Array.isArray(C0[k]) && k !== "administrations") K[k] = C0[k].filter(x => mine(x, k));
     });
     if (C0.encyclopedia && C0.encyclopedia.articles)
       K.encyclopedia = Object.assign({}, C0.encyclopedia,

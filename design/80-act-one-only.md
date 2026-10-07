@@ -82,6 +82,41 @@ Decisions 1 to 5 were analysed one at a time. The faults were not local:
   agenda, and every lever stays open. `briefs/act-one.md` states what that requires of
   scenes.
 
+## Decided while building the slices (7 October, Claude, for the author to overturn)
+
+The author's instruction was "you generate the rest and I go over it later", so these are made,
+and each can be changed without undoing the others.
+
+1. **Promises are the spine of sittings 5 to 10.** A choice that announces an intention
+   (the treaty's slot, the conservation appeal, a clause level) makes an undertaking with a
+   deadline, a place where it is kept (the Owed list names it) and a page for its breach. The
+   player keeps it in the Chamber or on the Government screen, never in the scene.
+   The four clause scenes each ask for a level the reserve cannot pay for alongside the others,
+   so by sitting 10 the budget is a puzzle the player made, and nothing was scripted to make it.
+2. **A scene may set a level or commit the whips itself**, through the Chamber's own door
+   (`clause`, `whip`; briefs/act-one.md E12 and E13), so "tell Ashgrove it stays as drafted" is
+   the act and not a sentence. The Chamber's panel stays the free route to the same level.
+3. **The first order is locked until Ember Ridge explains it.** Flash I's opening sets
+   `a1_orders_locked` and the scene clears it. This is the stand-in for the tutorial ladder
+   (E3) and can go when E3 lands. Every other lever is open from the start, and so is the order paper:
+   both bills are listed from the first sitting, the estimates at first reading and the treaty at
+   committee (`design/78`; the world has it awaiting assent). A bill in drafting is not hidden in
+   this engine, it is a bill the House has not read, and time given to it reads it, so restaging
+   a bill to drafting would not have kept it off the paper. Hiding a bill until its scene brings
+   it in is the introduced record (E2), and the sitting-1 Chamber that lists the Appropriation
+   with a Grant button is the thing E2 and E3 exist to fix.
+4. **Sittings 12 and 13 have no scene.** They are the player's own work: the whips, the day set
+   for the division, the division. A scene there would be a lecture over the thing the player is
+   doing. Question Time (14) asks one question, chosen by what the player did (Ember Ridge, a
+   broken promise, or the reserve). The Underwriters (15) are a page, once the Act is assented.
+5. **The Act's end is not built.** It needs E1 (the curtain) and E11 (the superevent). The draft
+   text is in `briefs/act-one.md`, with one question for the author: the canon says the
+   Commonwealth learned of the abandonment on 6 May, and the House rises on 8 May.
+6. **The DOM checks play on a fixture world**, the old Flash I (the world's story plus the
+   parked story), added to the page by `tools/harness.js` as a government called `harness`.
+   `HARNESS_REAL=1` plays the real Flash I through the same page (`tools/actwalk.js` does).
+   Act I's own opening is held by the campaign's guards and, at the gate, by the fidget playtest.
+
 ## What stays open
 
 Whether any later campaign opens with a tutorial at all (recommended: a half-tutorial, with

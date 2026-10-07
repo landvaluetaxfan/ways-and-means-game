@@ -908,6 +908,15 @@ try {
       }
     });
   };
+  /* A CLAUSE NAMED BY AN EFFECT OR A PROMISE: the bill, its clause and the level all exist. */
+  const clauseCheck = (x, what) => {
+    const b = (BILLS || []).find(y => y.id === (x || {}).bill);
+    const cl = b && (b.clauses || []).find(c => c.id === x.clause);
+    if (!b) refBad.push(what + " names '" + (x || {}).bill + "', which is no bill");
+    else if (!cl) refBad.push(what + " names no clause '" + x.clause + "' of " + b.id);
+    else if (!(cl.levels || []).some(l => l.id === x.level))
+      refBad.push(what + " names no level '" + x.level + "' of " + b.id + "." + x.clause);
+  };
   const checkEff = (e, tag) => {
     if (!e || typeof e !== "object") return;
     if (e.bill) Object.keys(e.bill).forEach(x => { if (!BI.has(x)) refBad.push(tag + ": bill '" + x + "' is no bill"); });
@@ -930,6 +939,10 @@ try {
       if (x && x.member && !CH.has(x.member)) refBad.push(tag + ": vacate_seat names no person '" + x.member + "'"); });
     if (e.slots && e.slots.reserve) Object.keys(e.slots.reserve).forEach(x => { if (!BI.has(x)) refBad.push(tag + ": reserves time for '" + x + "', which is no bill"); });
     if (e.coalition) ["add", "remove"].forEach(k => [].concat(e.coalition[k] || []).forEach(p => { if (!PA.has(p)) refBad.push(tag + ": coalition names no party '" + p + "'"); }));
+    if (e.clause) [].concat(e.clause).forEach(x => clauseCheck(x, tag + ": a clause effect that"));
+    if (e.whip) [].concat(e.whip).forEach(x => {
+      if (!x || !BI.has(x.bill)) refBad.push(tag + ": a whip effect names '" + (x || {}).bill + "', which is no bill");
+      if (!x || !PA.has(x.party)) refBad.push(tag + ": a whip effect names '" + (x || {}).party + "', which is no party"); });
     if (e.undertake) [].concat(e.undertake).forEach(u => {
       const t = tag + ": undertaking " + u.id;
       if (u.onBreach && !EV.has(u.onBreach)) refAdv.push(t + " breaks into '" + u.onBreach + "', which is no event, so the breach does nothing but the resignation");
@@ -937,6 +950,8 @@ try {
       const d = u.discharge || {};
       if (d.si && !SI.has(d.si)) refBad.push(t + " is kept by '" + d.si + "', which is no instrument");
       if (d.bill && !BI.has(d.bill)) refBad.push(t + " is kept by '" + d.bill + "', which is no bill");
+      if (d.slot && !BI.has(d.slot)) refBad.push(t + " is kept by a slot on '" + d.slot + "', which is no bill");
+      if (d.clause) clauseCheck(d.clause, t + " is kept by a clause level that");
       if (d.division && !BI.has(d.division)) refBad.push(t + " is kept by a division on '" + d.division + "', which is no bill");
       if (d.stage && !STAGES.has(d.stage)) refBad.push(t + " is kept at stage '" + d.stage + "', which is no stage");
       if (d.repaid && !(SETUP.lenders || {})[d.repaid] &&
@@ -1178,6 +1193,11 @@ section("PROMISES THAT CANNOT BE KEPT OR BROKEN CLEANLY (advisory)", refAdv, x =
    setup and opening. Ids are distinctive enough that equality is the
    test; a tag is not a reference and is skipped.
    ============================================================= */
+/* TWO TAGS ARE HOLDING PENS, NOT CAMPAIGNS (design/80). "parked" is a story entry
+   retired from every campaign; "world" is the world's own view, the one `test.js`
+   plays on, named so that an entry can be both a fixture and a campaign's:
+   campaign: ["world", "flash_i"]. */
+const HOLDING = new Set(["parked", "world"]);
 const campBad = [];
 try {
   const ADM = ADMINISTRATIONS || [];
@@ -1192,7 +1212,7 @@ try {
   Object.keys(COLL).forEach(kind => (COLL[kind] || []).forEach(x => entries.push({ kind, x })));
   const tagsOf = x => x.campaign == null ? null : [].concat(x.campaign);
   entries.forEach(({ kind, x }) => (tagsOf(x) || []).forEach(c => {
-    if (!CAMPS.has(c)) campBad.push(kind + " " + x.id + " belongs to campaign '" + c + "', which no administration plays");
+    if (!CAMPS.has(c) && !HOLDING.has(c)) campBad.push(kind + " " + x.id + " belongs to campaign '" + c + "', which no administration plays");
   }));
   const walkVals = (o, fn, key) => {
     if (o == null) return;
@@ -1234,7 +1254,8 @@ try {
     if (seen.has(m.id)) campBad.push("duplicate matter id: " + m.id);
     seen.add(m.id);
     const tags = m.campaign == null ? ["world"] : [].concat(m.campaign);
-    tags.forEach(id => S.matterIssues(m, C.forCampaign({id})).forEach(t => campBad.push(t)));
+    /* a parked matter is retired: it is validated when it is written again, in the campaign's view */
+    tags.filter(id => id !== "parked").forEach(id => S.matterIssues(m, C.forCampaign({id})).forEach(t => campBad.push(t)));
   });
 } catch (e) { campBad.push("could not validate matters: " + e.message); }
 n += section("CAMPAIGNS THAT REACH INTO ANOTHER'S CONTENT", campBad, x => x);

@@ -1,6 +1,10 @@
 /* =============================================================
-   FLASH I — EVENTS. The platform crisis, its foreign layer, the panic
-   buttons' answers and the canon election.
+   FLASH I — EVENTS. Act I: sittings 1 to 16, closing on the rise.
+
+   design/80 (7 Oct 2026): the playable game is Act I, and every word a player
+   reads is rewritten for it, one sitting at a time, from the ledger in
+   briefs/act-one.md. The old story is in content/campaigns/parked/, kept and
+   not shown. The ids here begin `a1_`.
 
    Every entry in this file belongs to Flash I: `campaign()` (in
    content/setup.js) tags each one `campaign:"flash_i"` and adds it to the
@@ -8,1553 +12,868 @@
    engine; campaign.js beside this file says what the folder is.
 
    APPEND, DO NOT INSERT. The pool's seeded lean is keyed on an event's
-   position in the list the campaign plays, which is the world's events
-   followed by these. An event inserted mid-list re-leans every event after
-   it and changes every run; a new one goes at the end.
+   position in the list the campaign plays. A new one goes at the end.
    ============================================================= */
 campaign("flash_i", { events: [
 
-/* ============================================================
-   FLASH I — THE PLATFORM CRISIS (the author's campaign, wired so it can
-   be played; every sentence here is a placeholder for the author's
-   prose, and the mechanics are the plan's: micro-decisions drift the
-   four meters, the tiers in settlements.js beside this file read them,
-   panic buttons are expensive, and the meltdown is a loss through the
-   loyalty floor. design/35 is the author's plan; scaffold.example.js
-   beside this file is the annotated scaffold that came before it.)
-   ============================================================ */
+/* SITTING 1. THE COMMISSION (the Claude Doc, Decision 1). The choices are about
+   things a new player understands: the budget, life support on the stations, or
+   nothing. Copies and the personhood bill are not in Act I; the currents wait for
+   sitting 2. The President is a cat and a capable politician: dry, a little
+   procedural, and what he says is a judgment or a question.
 
-/* THE FLASH I CHAIN RUNS ON A CLOCK, NOT ON A FLAG.
+   The effects of the second and third choices are the old ones, and the flag
+   `commission_stations` is read by the Ember Ridge scene. The first choice is new
+   and its numbers are PROVISIONAL (the President's regard, the New Progressive
+   Party, public standing): they need a playtest. */
+{ id:"a1_commission", prologue:1, once:true,
+  title:"Adriana Eireann Flash — The Edge of History",
+  speaker:"tenaya",
+  body:`The President receives you in the Winter Garden, the capital of the Commonwealth, a federation of thirty orbital habitats called stations. It was built as a station of its own so that no other station's voters would own the seat of government, and its 80,000 residents return one member to Parliament, who can introduce bills and speak but cannot vote. The walk from the lift passes Earth's embassies, each in a garden kept at its own country's climate: six climates in a mile. The congress hall where the Perigee Charter was signed in 2064 stands at the centre of the station.
 
-   Every step used to be gated on a flag the step before it set, at weights
-   84-90, so the central argument of the session fired on consecutive
-   sittings the moment the player kept saying yes -- measured at 9, 10 and 11
-   of a 24-sitting session. Nothing was ever DUE; it merely became available,
-   and the pool is steep enough that available means next.
+Jaco van Ryneveld has been President since 2077, elected by a direct vote of the whole Commonwealth on the ticket of the Liberal Party, which leads the opposition in the House, with 51.4 per cent. He is a cat, one of the uplifted, the category of person the law gives to animals made sapient. They are 4 per cent of the Commonwealth's adults. Relations between his office and your party are cold.
 
-   Now: the crisis OPENS on a date (`at`), and each step is queued by the
-   choice that causes it, with the time that thing would actually take and a
-   label so it lands on the calendar. A survey takes four sittings. A law
-   officer's opinion takes three. The player can see both coming and has to
-   govern around them, which is the whole point of order-paper time.
+This morning he has one thing to decide. The Charter, the Commonwealth's constitution, obliges him to appoint as Prime Minister whoever can command a majority of the House, and to sign the commission, the document that makes the appointment, once he is satisfied that they can. The commission is on the desk in front of him. He has not signed it.
 
-   DATED FOR THREE SESSIONS (22 Sep 2026). The chain opened at 8 with gaps
-   of two, which put the dilemma at 15 and the Annexation Bill on the order
-   paper one sitting before the first rise, where every bill not carried
-   falls; any beat added to chapter one would have pushed it past. It opens
-   late in the first session now, the survey and the opinion take the four
-   and three sittings this comment always said they did, and the dilemma
-   lands early in the second session with most of it left to carry the
-   Act. The stranded have two months of air: stranded in early May, the Act
-   is carried in June. */
-{ id:"f1_stranded", chapter:2, at:14, once:true,
-  setpiece:{ title:"Mining company abandons orbital refinery, leaving 184,000 people with two months of air", mood:"threat",
-    sections:[
-    { kind:"voices", head:"What is being said", body:[
-      { said:"They filed a return in the spring and nothing since. The return said the air plant was due for its overhaul in June.",
-        who:"Ivor Ceyhan, political editor of The Spindle, the Commonwealth's newspaper of record" },
-      { said:"An industrial platform has failed, and its operator has wound it up according to law. It is regrettable that orbital politicians have chosen to make a tragedy into a cause.",
-        who:"Earth-side wire copy, carried in Nairobi and Brussels" },
-      { said:"Kenya will bring home every person on that platform who wishes to come home. Kenya will not pay for a private company's wind-up.",
-        who:"Kenya's foreign ministry" },
-      { said:"My children were born on the Works. Where is it they are being sent home to?",
-        who:"A foundry shift supervisor, on Ring Network, the Commonwealth's broadcaster" } ] },
-    { kind:"document", head:"The notice of wind-up",
-      body:"The Company's operating subsidiary for the Bellamy Almanac Works is wound up with effect from midnight. Its obligations under the charter of the Works terminate with it, and the Company accepts no successor liability. Enquiries concerning the platform should be addressed to the authorities of the host state.",
-      source:"Filed by Cordell with the registrar of companies, Port-Gentil, Gabon" },
-    { kind:"margin", body:"Who holds the bonds? Find me the prospectus before the survey team leaves.", source:"A.E.F." }
-  ] },
-  /* THE STATION QUESTION IS BEFORE THE GOVERNMENT from the moment the
-     platform is stranded, whichever answer is given: design/32 decided it
-     ("set `station_issue` in `f1_stranded`") and it was never built. The
-     old sandbox console set the flag, and lint counted the console as its
-     setter, so in real play the powers never arrived on the Foreign Affairs
-     tab and the Assembly floor never opened (found 27 Sep, design/47). */
-  effects:[{ flag:"station_issue" }],
-  title:"A hundred and eighty-four thousand",
-  speaker:null,
-  body:`Cordell, the Gabonese mining company, shut down the operator of the Bellamy
-Almanac Works at midnight on Sunday, abandoning an orbital refinery where
-184,000 people live and work.
+You have led the government since January, when your party replaced Nils Vijlbrief, whose Treasurer you were. In March you led the party into a general election that no party won outright, and you have spent the weeks since bargaining for a majority. The commission is for the new Parliament.
 
-The company had been unable to pay the refinery's bills since March, when
-the European Union froze the assets of Gabon's sovereign wealth fund,
-Cordell's majority owner. With the operator gone, the platform's 97,000
-workers have no employer and no wages, and the contracts that supplied its
-air, water and fuel have ended. Engineers aboard say the air will last about
-two months.
+A government keeps office only while it wins votes of confidence in the House. The House has 280 seats, so a majority is 141. Your coalition has 147 votes: 85 from your own party, the Party of Socialists and Democrats, 36 from the New Progressive Party and 20 from the Congregational Democratic Alliance. The other six belong to independents, who have promised their votes on confidence and the budget only. Without them you have 141, a majority of one.
 
-The Works is outside the Commonwealth, and no treaty obliges the government
-to act. On Monday the residents' elected council asked it to, because the
-rescue Kenya has approved will take two years.
+The Charter also gives him reserve powers, among them the power to dissolve the House, which sends every member back to the voters.
 
-The Works is supplied by Tether 2, the space elevator whose anchor stands at
-Malindi on the Kenyan coast. It is a refinery and foundry. It smelts ore
-from Cordell's mining platforms and rolls it into structural metal and hull
-plate. Its workforce includes furnace and rolling-mill crews, maintenance
-engineers, administrative staff, cooks, teachers, medical staff and
-managers. Most of the other residents are their families.
-
-Another 7,100 residents are emulated minds held in suspension in the
-platform's data store, preserved but not running. The charter that governed
-the Works obliged Cordell to keep them stored. The notice filed on Sunday
-ends that obligation.
-
-The European Union imposed its sanctions in March, after a United Nations
-panel found that the Gabonese fund had paid for weapons used by separatists
-in Cabinda, the oil-producing Angolan exclave where fighting has continued
-since last year. Under European rules, a company more than half-owned by a
-sanctioned body is frozen with it, which caught Cordell.
-
-The operating company kept its accounts with European banks, where the
-platform's bonds were issued. Banks elsewhere refused its business rather
-than risk European penalties. It could no longer pay the Kenyan suppliers
-who send water and air-plant parts up the elevator, buy fuel, or buy the
-Commonwealth dollars its workers are paid in. The last full wages were paid
-in March.
-
-On Sunday the fund, which directs Cordell from Port-Gentil, ordered the
-company to cut its losses. Cordell's mines in Gabon and its concession on
-the Port-Gentil elevator are worth far more to it than a refinery it could
-no longer run. Because the operator was a separate company, its debts,
-including the platform's bonds, end with it and do not pass to Cordell.
-
-Kenya has approved a fully funded plan to bring the residents down. Kenyan
-law requires an open tender for the transport contract, a safety inspection
-of the platform and certification of each descent car. The money must also
-pass in the budget Kenya's parliament votes on in June. The interior
-ministry expects the first residents to come down early next year and the
-last in 2082.
-
-The engineers' estimate of the air is simpler. The air plant needs
-replacement filters and catalyst from Earth every month, and the April
-shipment was never paid for. The stock aboard lasts about two months.
-
-Few residents have asked to go. Many have lived for years in the platform's
-partial gravity, in which bones thin and muscles waste. Returning to Earth's
-full gravity means months of supervised rehabilitation. Maricel Dizon, the
-Works' chief medical officer, says some residents born aboard may never
-manage it.
-
-The charter gave the workforce an elected council of delegates to bargain
-with the company, and with the company gone it is the only elected body
-aboard. Its chair, Achieng Odera, drove a crane in the rolling mill until
-the workforce elected her. The council has called a vote on asking to join
-the Commonwealth. On Monday it asked the government to send engineers to
-inspect the air plant before the vote.
-
-The Ministry for Life Support says it could have a survey team aboard within
-a day and a report back within a week.`,
+He turns the commission toward you with one paw and keeps it there. "Sixty-two of your 147 votes belong to other people," he says. "I expect to sign. First I would like to hear what the government means to do, because the answer will tell me which of them you intend to keep."`,
   choices:[
-    { posture:"bold", label:"Send the survey team.",
-      note:"Engineers from the Ministry for Life Support go aboard within a day to inspect the air plant, as the council asked, and report within a week. The council holds its vote on joining the Commonwealth with their findings in hand. It costs nothing. Paying for the air plant's filters and catalyst is a separate act.",
-      effects:[{ flag:"f1_surveyed" }, { wire:"FEDERATION SURVEYS THE ABANDONED PLATFORM" },
-               { queue:[{ event:"f1_referendum", after:4,
-                          label:"The survey team reports from the Almanac" }] }],
-      result:"The survey's first return is the scrubber schedule. The second is the debt." },
-    { posture:"cautious", label:"Wait for Earth's process.",
-      note:"The government leaves the platform to Kenya's two-year rescue and to the courts, since no treaty obliges it to act. Voters' trust in the government falls. The outer habitats, which supply the Works, read the delay as a refusal. The air still runs out in two months.",
-      effects:[{ move:{ "legitimacy":-5 } }, { wire:"PM: THE REPATRIATION PLAN IS EARTH'S TO RUN" }],
-      result:"The outer stations read the delay as an answer, and it is not the one they wanted." }
+    { posture:"measured",
+      label:`The budget. The government cannot pay for anything until the House votes the money, and the independents have promised their votes on it.`,
+      act:"Tell him",
+      note:`You tell him the budget comes first. It is the one measure the government cannot do without. The President, who has not yet signed, sees a Prime Minister who starts with the work the House must do. The New Progressive Party, your second-largest partner, joined for a bill of its own and will notice that you did not name it.`,
+      effects:[{ flag:"commission_budget" },
+               { move:{ "rel.president":5 } },
+               { move:{ "loyalty.psa":-3 } },
+               { move:{ public_standing:1 } },
+               { wire:"PM NAMES THE BUDGET AS THE GOVERNMENT'S FIRST BUSINESS" }],
+      result:`He dates the commission and signs it. His office's note of the meeting records that the new Prime Minister named the budget as the government's first business.` },
+
+    { posture:"bold",
+      label:`Life support on the stations: the air, water, power and cooling that keep their people alive.`,
+      act:"Tell him",
+      note:`You tell him life support comes first. Four stations have run short of cooling during his term, and the President, the only official the whole Commonwealth elects, has taken the small stations' side. The maintenance unions in your party, whose members keep the stations running, will welcome it. The New Progressive Party will notice that you did not name its bill.`,
+      effects:[{ flag:"commission_stations" },
+               { move:{ "rel.president":8 } },
+               { move:{ "loyalty.cu_maintenance":6 } },
+               { move:{ "loyalty.psa":-6 } },
+               { move:{ public_standing:3 } },
+               { wire:"PM PUTS LIFE SUPPORT FIRST IN MEETING WITH THE PRESIDENT" }],
+      result:`He signs the commission without reading it again, and tells you he has waited three years for a Prime Minister to raise the stations' cooling before he had to. His office tells the press that the Prime Minister raised life support first.` },
+
+    { posture:"cautious",
+      label:`Nothing specific. Tell him the government intends to last its full term, and that he will learn of its decisions when they are announced.`,
+      act:"Tell him",
+      note:`You tell him nothing. He keeps his power to dissolve the House, and he will remember being told nothing. The more moderate members of your party will approve of a Prime Minister who keeps her options open. The press usually reports a first meeting that ends without a statement as a quarrel.`,
+      effects:[{ flag:"commission_none" },
+               { move:{ "rel.president":-6 } },
+               { move:{ "loyalty.cu_loyalists":7 } },
+               { move:{ public_standing:-2 } },
+               { wire:"PRESIDENT AND PRIME MINISTER MEET; NEITHER OFFICE COMMENTS" }],
+      result:`He dates the commission and signs it without comment. Neither office issues a statement afterwards, and the evening news reports the silence as the new government's first quarrel.` }
   ]},
 
-{ id:"f1_referendum", chapter:2, queuedOnly:true, once:true,
-  setpiece:{ title:"Abandoned refinery votes to ask to join the Commonwealth",
-    sections:[
-    { kind:"voices", head:"What is being said", body:[
-      { said:"We have voted to be counted somewhere.",
-        who:"Achieng Odera, chair of the Works' council of delegates, on Ring Network, the Commonwealth's broadcaster" },
-      { said:"The furnace crews voted yes to be paid and to keep the furnaces lit. We will hold whoever takes us to both.",
-        who:"Marcel Obame, steward of the furnace crews' union on the Works" },
-      { said:"A vote taken on an insolvent platform, under a foreign government's survey, binds nobody. It does not discharge a single bond.",
-        who:"The European Union's mission to the United Nations" },
-      { said:"Seventy-nine per cent is more than anyone in this chamber was elected on.",
-        who:"Nick Laughon MP, leader of Home Rule, the party of self-government for the stations" } ] }
-  ] },
-  title:"The vote",
+/* SITTING 2. THE FIRST QUESTION (Decision 2). The scene says what a current is,
+   in text, before it asks the player to weigh one, and introduces the three the
+   answers touch. The effects and the three flags are the old ones. */
+{ id:"a1_first_question", prologue:2, once:true,
+  title:"The first question",
   speaker:"ceyhan",
-  body:`The residents of the Bellamy Almanac Works, the orbital refinery abandoned
-by its owner, have voted to ask to join the Commonwealth. Of the 88 per cent
-of adults who voted, 79 per cent said yes.
+  body:`Your first press conference since the commission is carried live to all thirty stations. On Anselm Ring and the other stations of the ring band it falls in the middle of a working shift. On the outer habitats, supervisors have held back the shift change so that their crews can watch.
 
-The result puts a question to the government that it can no longer put off:
-whether the Commonwealth will count the residents' wishes in deciding what
-becomes of the platform.
+The press gallery has given the first question to Ivor Ceyhan, political editor of The Spindle, the Commonwealth's newspaper of record. He asks it without notes.
 
-A survey team from the Ministry for Life Support came back with the vote and
-a second finding. On its own spares, the platform's air plant can run for 51
-more days. After that it runs past every hour it is certified for.
+"Prime Minister, what should voters expect from this government that they did not get from the last one?"
 
-Recognising the vote would not make the Works part of the Commonwealth. It
-returns no members to the House, and the Charter, the Commonwealth's
-constitution, does not reach it. Recognition would say that the residents
-have a say in the platform's future. European banks, which hold the
-platform's bonds, would read that as a claim on it.
+The last government was Nils Vijlbrief's, and you served in it.
 
-Declining would leave the platform to Kenya's two-year rescue and to its
-creditors. The outer habitats have been sending the Works their spare
-air-scrubber cartridges since the wind-up. Their members of the House have
-said what they will do if the government declines.
+Your party is not one voice. The Party of Socialists and Democrats divides into four currents, groups of members who share a view of what the party is for, and each current's loyalty to you rises or falls with what you say. Three of them will weigh this answer.
 
-Ivor Ceyhan, political editor of The Spindle, the Commonwealth's newspaper
-of record, listed the residents' three reasons. The rescue is two years
-away. Few of their bodies are ready for Earth. And their bank accounts were
-frozen overnight by governments they never elected.
+The Trades Left is the largest current. Its members come from the maintenance trades and their unions, and it wants the systems they maintain publicly owned and paid for from federal funds.
 
-"The vote is on the Prime Minister's desk," Ceyhan wrote. "Europe is reading
-the same wire."`,
+The Soft Left is the current of the party's leadership. It wants public ownership and a strong federal government.
+
+The Hard Left is the party's left flank, led by Dan Czarnecki. It is the current least loyal to you.
+
+The voters will hear your answer too, and it will be quoted back to you.`,
   choices:[
-    { posture:"bold", label:"Recognise the referendum.",
-      note:"Recognition says the residents have a say in the platform's future, and the Works stays outside the Commonwealth. Voters approve. The European banks that hold the platform's bonds read it as a claim, so the quarrel with Earth grows, and in three sittings the Minister for Law and the Charter reports on annexation.",
-      effects:[{ flag:"f1_referendum_carried" }, { move:{ "friction":10 } },
-               { move:{ "legitimacy":8 } },
-               { wire:"FEDERATION RECOGNISES THE PLATFORM REFERENDUM" },
-               { queue:[{ event:"f1_dilemma", after:3,
-                          label:"Law and the Charter reports on the platform" }] },
-               /* the mission in New York, before the dilemma: one way out
-                  of it runs through the General Assembly (design/43) */
-               { queue:[{ event:"un_the_mission", after:2 }] }],
-      result:"The Works is the Commonwealth's question now, and Earth's banks are reading the same wire." },
-    { posture:"cautious", label:"Decline to recognise it.",
-      note:"The platform is left to Kenya's rescue and to its creditors, and the quarrel with Earth eases a little. Voters' trust in the government falls sharply. The outer habitats have sent the Works their spare scrubber cartridges since the wind-up, and their members have said they will strike.",
-      effects:[{ move:{ "legitimacy":-8 } }, { move:{ "friction":-3 } }, { flag:"f1_referendum_declined" }],
-      result:"The strikes start on the outer habitats before the sitting ends." }
+    { posture:"measured",
+      label:`A government that runs the Commonwealth competently. The last one could not.`,
+      act:"Say it",
+      note:`You answer that the government will be run well, which most voters want to hear. The engineers who keep life support running hear a government that respects expertise. The Trades Left hears an attack on Nils Vijlbrief, and remembers that you were the Treasurer who refused him the money for the stations' upkeep.`,
+      effects:[{ flag:"led_on_competence" },
+               { move:{ public_standing:5 } },
+               { move:{ "loyalty.cu_maintenance":-6 } },
+               { move:{ "rel.gb_chair":6 } },
+               { wire:"PM PITCHES COMPETENCE; SAYS GOVERNMENT WILL BE 'RUN, NOT ARGUED WITH'" }],
+      result:`Ceyhan writes it down, and The Spindle leads with it the next morning. The Trades Left hears you blame Vijlbrief's government for breakdowns it wanted the money to prevent.` },
+
+    { posture:"cautious",
+      label:`A government that stands for what this party has always stood for: public ownership, and the workers who keep the stations running.`,
+      act:"Say it",
+      note:`You answer that the government will stand for the party's traditions. The Trades Left will quote you at every meeting for a year, and the Soft Left is reassured. Voters who wanted a fresh start hear the old party. The New Progressive Party, your second-largest partner, joined for a bill of its own and will ask whether those traditions include it.`,
+      effects:[{ flag:"led_on_continuity" },
+               { move:{ "loyalty.cu_maintenance":11 } },
+               { move:{ "loyalty.cu_loyalists":4 } },
+               { move:{ public_standing:-4 } },
+               { move:{ "loyalty.psa":-5 } },
+               { wire:"PM CLAIMS THE MOVEMENT'S INHERITANCE; PARTNERS SEEK CLARIFICATION" }],
+      result:`The New Progressive Party asks for the sentence in writing. At its next meeting it asks whether the party's traditions include the bill it joined the government to pass.` },
+
+    { posture:"bold",
+      label:`A government that is not the last one. This party has changed, and I changed it.`,
+      act:"Say it",
+      note:`You take credit for modernising the party, which most voters and the New Progressive Party want to hear. The Trades Left and the Hard Left fought that modernisation, and they will hear that the leadership no longer needs them. Your own members will quote it back at you the first time you ask them for a hard vote.`,
+      effects:[{ flag:"led_on_break" },
+               { move:{ public_standing:7 } },
+               { move:{ "loyalty.psa":9 } },
+               { move:{ "loyalty.cu_maintenance":-10 } },
+               { move:{ "loyalty.cu_halloran":-6 } },
+               { wire:"PM: 'THE PARTY HAD TO CHANGE.' CZARNECKI GROUP DECLINES TO COMMENT" }],
+      result:`The Spindle prints the sentence on its front page. The Hard Left declines to comment, and its members sit through the afternoon's business without speaking.` }
   ]},
 
-{ id:"f1_dilemma", chapter:2, queuedOnly:true, once:true,
-  title:"The dilemma",
-  speaker:"fenwick",
-  body:`Adaeze Fenwick, the Minister for Law and the Charter, sets out the
-government's two choices on the Bellamy Almanac Works, the orbital refinery
-whose residents have voted to join the Commonwealth.
+/* SITTING 3. WHO HOLDS THE TREASURY (Decision 3). Orders, initiatives, collective
+   responsibility and the ballot on the leadership are explained in plain
+   paragraphs before the scene uses them. The three candidates are
+   content/cabinet.js's, and their effects are written out again here because the
+   `cabinet` effect appoints and does not apply a candidate's effects.
 
-The first is to annex it: to pass a law making the platform and its 184,000
-people part of the Commonwealth. The Commonwealth would gain the refinery
-and its foundry, and it would take on the cost of keeping the residents
-alive. It would also take on the platform's unpaid bonds, which European
-banks hold, and the European Union has said it will treat whoever takes the
-platform as answerable for them. The Treasury puts the first cost at six
-billion dollars.
+   KNOWN GAP until the lever ladder (briefs/act-one.md, E3): if the post is filled
+   from the Government tab first, this scene never fires. The author's answer
+   (Option A) is that the appointment waits for this scene. */
+{ id:"a1_treasury", prologue:3, once:true,
+  when:{ postVacant:["treasury"] },
+  title:"Who holds the Treasury",
+  speaker:"castellane",
+  body:`The Treasury has had no minister since January. You held the post until your party made you Prime Minister, and you have left it empty through the election and the coalition talks, because it is the largest post the government has to give.
 
-The second is to decline. Kenya's two-year rescue would stand, and the
-residents would wait for it with two months of air. The outer habitats,
-which have supplied the Works since the wind-up, have said their members
-will strike if the government declines.
+A department without a minister can do little. A minister signs the department's orders, the formal rules a minister makes under powers an Act of Parliament has already given, which can be revoked later. A minister also begins its initiatives, the work the government sets in motion. Until someone holds the Treasury, it can do neither.
 
-Achieng Odera, chair of the Works' council of delegates, has asked for
-annexation on whatever terms the House sets. Marcel Obame, steward of the
-furnace crews' union, has asked first whether the furnaces would stay lit,
-because a foundry's heat counts against the Commonwealth's thermal margin.
+In those months the Treasury's officials have drawn up the estimates, the government's budget for the session, without a minister. The Treasurer signs the estimates and answers for them in the House, and no minister has signed this one. The House rises for its recess when the sitting period ends, and the top of the screen counts the sittings left. The estimates must be voted before then.
 
-Fenwick is clear that Cordell, the Gabonese mining company that owned the
-Works, broke no law. It shut down the subsidiary that employed the
-residents, and the subsidiary's debts ended with it. The mining leases that
-fed the refinery belong to the platform and would come with it. Whichever
-choice the government makes will be the one it is judged on at the election.`,
+Maren Castellane, the Governor of the Reserve Bank, the Commonwealth's central bank, was your deputy when you ran the Bank and took it over when you went to the Treasury in 2076. She has come to talk about who will hold the Treasury. "I do not choose your Cabinet," she says. "I would only ask you to choose before the estimates reach the House, because the Bank will have to read them."
+
+There are three names.
+
+Aster Skye is the Financial Secretary. She was your deputy at the Treasury, and because you were not a member of the House while you held it, she spoke for the Treasury there.
+
+Dan Czarnecki leads the Hard Left. He is collecting signatures from members of your party to force a ballot on your leadership: if twelve sign, the party votes on whether you remain its leader, and its leader is the Prime Minister. A minister is bound by collective responsibility, which means supporting every decision of the Cabinet in public or resigning.
+
+Nadia Abadi is a backbencher of the Congregational Democratic Alliance, your third coalition partner. Her party holds two junior posts and has asked for a department that matters.
+
+Whoever you appoint signs the estimates and answers for them in the House.`,
   choices:[
-    { posture:"bold", label:`Move to annex the Works: introduce the Almanac Works (Annexation) Bill.`,
-      note:`The bill makes the platform and its 184,000 people part of the Commonwealth, and voters welcome a government that acts. It costs CW$6bn at once and sets aside five slots of order-paper time for the bill. The European Union holds whoever takes the platform answerable for its bonds, so the quarrel with Earth grows sharply and keeps growing, and the Union will put measures against the Commonwealth to the United Nations General Assembly.`,
-      /* AND THE BILL IS ACTUALLY SET DOWN. The result line has always said
-         it was; until now nothing was, and the annexation settlements gated
-         on the flag this choice sets rather than on any Act. Moving it out
-         of `drafting` is what "set down" means to the engine. */
-      /* EARTH REACTS THAT WEEK, not gradually over twenty sittings. This
-         carried only a TREND, so the whole diplomatic cost of annexing a
-         foreign works station arrived as a slow ramp — and when trends were
-         given decay (they used to run for ever, and drove friction to 100),
-         the cost stopped arriving at all. An annexation is a shock: most of
-         it lands at once, and the trend is the deterioration afterwards. */
-      /* FOURTEEN, NOT TWELVE, and the two points are the canon ending's
-         margin rather than a balance opinion. The shock plus its trend
-         converged on friction 65 exactly, and settlements/f1_pyrrhic gates
-         on scalarAbove.friction 65, which the engine reads STRICTLY. So the
-         Sovereign Debt Trap needed friction to reach 66 and the chain
-         delivered 65 — it landed only because the trend got one more
-         sitting than it needed, and adding an eighth prologue beat took
-         that sitting away. Measured: at 12 the run reaches 65 and no tier
-         ever lands, at 14 it converges on 67 and the settlement lands at
-         sitting 22 of 35. An ending that depends on the tutorial's length
-         is not balanced, it is coincident. */
-      effects:[{ flag:"f1_annexing" }, { move:{ "friction":14 } },
-               { move:{ "trend.friction":3 } },
-               /* THE UNION ANSWERS AT THE GENERAL ASSEMBLY (design/43), and
-                  does not wait for an event to be drawn: it tables its
-                  measures for the Assembly's next sitting the day the
-                  government moves. `un_eu_tables` is the government's reply. */
-               { resolution:{ un_eu_measures:"table" } },
-               { queue:[{ event:"un_eu_tables", after:1 }] },
-               { move:{ "solvency":-6000 } }, { move:{ "legitimacy":12 } },
-               { bill:{ annexation:{ stage:"first_reading" } } },
-               /* AND THE HOUSE WILL SIT FOR IT. Six slots is the whole
-                  session's order-paper time and it is spoken for long
-                  before this bill exists, so an annexation set down at
-                  sitting thirteen could never reach a division: the canon
-                  ending was gated on time the player had already spent.
-                  A crisis measure brings its own time, which is what an
-                  emergency debate IS. Five is what it costs: four grants to
-                  carry it from first reading to where it can be voted, and
-                  one more for the division itself. RESERVED for the Act
-                  (design/32 §E.5): held in the bill's name, so the bills
-                  above it on the order paper cannot spend it, and gone
-                  when the House rises. */
-               { slots:{ reserve:{ annexation:5 } } },
-               { wire:"GOVERNMENT MOVES TO ANNEX THE WORKS" }],
-      result:"The Almanac Works (Annexation) Bill is set down for first reading. Acting is popular at home. On Earth, the governments and banks that hold the platform's bonds take note, and their patience shortens with every sitting." },
-    { posture:"cautious", label:`Decline, and leave the Works to Kenya's two-year rescue.`,
-      note:`It avoids the cost, the bonds and the quarrel with Earth, which eases. The residents would wait two years with two months of air, the outer habitats have said their members will strike, and voters' trust in the government will fall a little every sitting the question stays open.`,
-      effects:[{ move:{ "trend.legitimacy":-3 } }, { move:{ "friction":-4 } }, { flag:"f1_held_the_line" },
-               { queue:[{ event:"un_joint_offer", after:1 }] }],
-      result:"The outer habitats have heard the answer. Their members will raise it at every sitting, and the country trusts the government a little less each time." }
+    { posture:"cautious",
+      label:`Appoint Aster Skye, the Financial Secretary, who knows the estimates line by line.`,
+      act:"Appoint her",
+      note:`You appoint Skye, who already speaks for the Treasury in the House, and the markets will read it as no change of direction. The Soft Left approves. The Hard Left and the Trades Left, the party's union wing, will read it as the same Treasury that refused the stations their money.`,
+      effects:[{ cabinet:{ treasury:{ holder:"skye", party:"cu" } } },
+               { move:{ "loyalty.cu_loyalists":4 } },
+               { move:{ "loyalty.cu_halloran":-6 } },
+               { move:{ "loyalty.cu_maintenance":-3 } },
+               { wire:"SKYE CONFIRMED AT THE TREASURY; NO CHANGE OF DIRECTION SIGNALLED" }],
+      result:`Aster Skye is sworn in at the Treasury that afternoon, and its officials hand her the estimates to sign. The Reserve Bank's statement says it expects no change of direction.` },
+
+    { posture:"bold",
+      label:`Appoint Dan Czarnecki, who leads the Hard Left, and bind him to the Cabinet's collective responsibility.`,
+      act:"Appoint him",
+      note:`You appoint Czarnecki and bind him to collective responsibility. He must defend the estimates he signs, and his campaign for a ballot on your leadership ends. The Hard Left is delighted. The Soft Left says it was not consulted, and the markets will read the Hard Left's leader in the Treasury as a turn towards borrowing.`,
+      effects:[{ cabinet:{ treasury:{ holder:"halloran", party:"cu" } } },
+               { move:{ "loyalty.cu_halloran":26 } },
+               { move:{ "loyalty.cu_loyalists":-11 } },
+               { move:{ public_standing:-4 } },
+               { signatures:-4 },
+               { wire:"CZARNECKI TO THE TREASURY; LOYALISTS SAY THEY WERE NOT CONSULTED" }],
+      result:`Dan Czarnecki is sworn in at the Treasury that afternoon. The Hard Left stops talking about a ballot, and the Soft Left tells the lobby correspondents that nobody asked it.` },
+
+    { posture:"measured",
+      label:`Appoint Nadia Abadi of the Congregational Democratic Alliance, and give the third partner the department it asked for.`,
+      act:"Appoint her",
+      note:`You appoint Abadi. The Alliance's 20 seats are part of the 141 you have without the independents, and it gets the department it asked for. The opposition will say the Treasury was bought with votes, and the Trades Left, whose members maintain the stations, will resent a partner deciding what the stations get.`,
+      effects:[{ cabinet:{ treasury:{ holder:"abadi", party:"rv" } } },
+               { move:{ "loyalty.rv":14 } },
+               { move:{ "capital.rv":3 } },
+               { move:{ "loyalty.cu_maintenance":-7 } },
+               { wire:"TREASURY GOES TO THE CONGREGATIONAL DEMOCRATIC ALLIANCE IN REBALANCE" }],
+      result:`Nadia Abadi is sworn in at the Treasury that afternoon. The Alliance's leaders say it is the first time the government has treated them as a partner, and the Liberal opposition asks in the House what qualifies a backbencher to run the Treasury.` },
+
+    { posture:"bold",
+      label:`Leave the Treasury without a minister for now, and let its officials carry on.`,
+      act:"Wait",
+      note:`You leave the post empty. The Treasury can make no orders and begin no initiatives until someone holds it, the opposition will point that out, and voters will see a government that cannot fill its most important department.`,
+      effects:[{ flag:"treasury_left_vacant" }, { move:{ public_standing:-5 } }],
+      result:`The Treasury can make no orders until someone holds the post, and the opposition knows it.` }
   ]},
 
-/* one drift micro-decision: nothing crashes today; the margin leans */
-/* REACH: the annexation choice in f1_dilemma sets f1_annexing. */
-{ id:"f1_water", chapter:2, weight:60, maxFires:2,
-  when:{ flags:["f1_annexing"] },
-  /* THE FIRST BRIEF. `brief` is not on the prose whitelist, so no player
-     ever reads it; `npm run prose` emits it as a # note above the passage it
-     describes, and the importer strips it. It is the channel for building a
-     decision without writing its prose. */
-  brief:"A funding decision whose consequence is a month away. The scene "+
-    "wants the Minister for Life Support presenting an estimate she cannot "+
-    "guarantee, and the reader understanding that neither answer produces "+
-    "an event today — the drift is the point.",
-  title:"The recycling line",
-  speaker:"vellan",
-  body:`Suravaram Vidyasagar, the Minister for Life Support, has brought the
-estimate for the water-recycling plant on the Bellamy Almanac Works, the
-orbital refinery the Commonwealth is taking over. Cordell, the Gabonese
-mining company that abandoned it, built it to last only as long as the
-company meant to stay, and it is running at the top of its certified rate.
-
-Since the Act was set down, the Works' heat counts against the
-Commonwealth's thermal margin, the spare capacity of its radiators, and a
-recycling plant at its limit wastes power as heat. Funded in full, at three
-billion dollars, the plant holds for the quarter and the margin recovers a little each week. Trimmed, the Treasury keeps two billion, the plant holds for a month, and then the margin falls by about two percentage points every few days. "You won't see the difference this week," Vidyasagar says. "You'll see it in a month."`,
-  choices:[
-    { posture:"bold", label:`Fund the water-recycling plant's refit in full, for CW$3bn.`,
-      note:`The plant holds for the quarter and wastes less power as heat, so the thermal margin recovers about a point a sitting. Voters see a government paying for the platform it took, and their belief in its account of the Works rises.`,
-      effects:[{ move:{ "solvency":-3000 } }, { move:{ "trend.thermal_margin":1 } },
-               { move:{ "legitimacy":4 } }],
-      result:"The plant is refitted. The thermal margin recovers a point at a time, and the country sees a government paying for the platform it took." },
-    { when:{ flagsAbsent:["led_on_competence"] }, posture:"cautious", label:`Trim the refit, and keep CW$2bn in the Treasury.`,
-      note:`Nothing changes for a month, and the Treasury keeps the money. From then on the plant runs past its limit, and the thermal margin falls by about two points a sitting until the plant is fixed.`,
-      effects:[{ move:{ "solvency":2000 } }, { move:{ "trend.thermal_margin":-2 } }],
-      result:`Nothing changes today. From next month the thermal margin falls about two points a sitting, and the next estimate will say so.` },
-    /* A CALLBACK: the same answer, with the opening commitment quoted back
-       (the author, 28 Sep). Shown only when led_on_competence is set. */
-    { when:{ flags:["led_on_competence"] }, posture:"cautious", label:`Trim the refit, and keep CW$2bn in the Treasury.`,
-      note:`You told the press on your first day that the last government could not run the Commonwealth and that you can. Trimming the refit keeps CW$2bn now, and from next month the thermal margin falls about two points a sitting. The Spindle, the Commonwealth's newspaper of record, has kept the quote and will print it beside the plant's failure.`,
-      effects:[{ move:{ "solvency":2000 } }, { move:{ "trend.thermal_margin":-2 } },
-               {move:{"public_standing":-3}}, {move:{"rel.ceyhan":-4}}],
-      result:`Nothing changes today. From next month the thermal margin falls about two points a sitting, and Ivor Ceyhan, The Spindle's political editor, files the estimate beside your first press conference.` }
-  ]},
-
-/* a panic button: visible, expensive, and the way back from the cascade */
-{ id:"f1_loan", chapter:2, weight:84, maxFires:1,
-  when:{ scalarBelow:{ solvency:30000 } },
-  title:"The emergency loan",
-  speaker:"hatt",
-  body:`Edward Hatt, leader of the Alliance of Business and Government, offers to
-lend the Commonwealth the money it is short. The Treasury's cash reserve is
-below thirty billion dollars and falling.
-
-The loan is eighteen billion dollars, repayable at nineteen billion eight
-hundred million before the House rises at the end of the session, a rate of
-ten per cent. Its security is the Cordell leases: the rights to the ore,
-mined by Cordell's extraction platforms, that feeds the Works, which came to
-the Commonwealth with the platform. If the loan is not repaid on time, the
-Alliance may take the leases.
-
-The rate, the term and the security are printed on a single page, and Hatt
-has signed it already.`,
-  choices:[
-    /* REPAYABLE (the author, 23 Sep). The promise had no discharge, so it
-       always broke, and its breach named an event nobody had written, so the
-       debt was never called either (design/34 D1). It is repaid through the
-       `repay_facility` initiative, and if it is still owed when the House
-       rises the Alliance calls it. The sum owed is on the account as a
-       named creditor, principal and printed rate together, and the promise
-       is kept when that balance is nothing, however it got there. */
-    { posture:"bold", label:`Take Hatt's loan of CW$18bn, repayable at CW$19.8bn before the House rises, secured on the Cordell leases.`,
-      note:`The reserve gets the money it is short, and the government must repay it before the session ends or the Alliance takes the leases. Borrowing from a party in the House on these terms looks like a favour bought, and voters' belief in the government's claims falls.`,
-      effects:[{ move:{ "solvency":18000 } }, { move:{ "debt.alliance":19800 } },
-               { move:{ "legitimacy":-10 } }, { flag:"cordell_leases_pledged" },
-               { undertake:{ id:"f1_debt", text:"Repay the emergency facility",
-                             owed_to:"hatt", post:"treasury", by:null,
-                             discharge:{ repaid:"alliance" },
-                             onBreach:"f1_debt_called" } }],
-      result:"Eighteen billion dollars reach the reserve. The loan must be repaid, at nineteen billion eight hundred million, before the House rises, and the Cordell leases are its security until then." },
-    { posture:"cautious", label:"Refuse the loan.",
-      note:`Refusing keeps the government free of the Alliance and its hold on the leases, and voters credit it. The reserve stays short, and the shortfall costs it about CW$1bn a sitting until the government finds money elsewhere.`,
-      effects:[{ move:{ "legitimacy":3 } }, { move:{ "trend.solvency":-1000 } }],
-      result:"A government with money in hand could have refused it. This one is short, and the shortfall now costs the reserve about a billion dollars a sitting." }
-  ]},
-
-/* the meltdown: a LOSS through the loyalty floor, not a settlement */
-/* REACH: the collapse after the freeze. It needed friction above 85, which
-   nothing short of repeated borrowing reached, with all three floors
-   breached at once. It follows the freeze now: a frozen government that
-   lets the quarrel run past 78 while the margin, the reserve and its
-   standing give way together falls. A loss, not a settlement (design/34 D4). */
-{ id:"f1_meltdown", chapter:2, weight:98, once:true,
-  setpiece:{ title:"Earth stops the elevators, and the Works' air plant fails",
+/* SITTING 4. THE DRAFT ESTIMATES, a page, then THE ORDER PAPER, the decision.
+   The page is a news report, so it is in the third person; the draft in the
+   Claude Doc said "you" and this says "the government". It carries the quiet wire
+   item that plants the Works. The page teaches what the estimates are and what a
+   clause is. The decision teaches one chain, in the Chamber's own words: the paper
+   lists measures, a measure moves one stage at a time, a stage costs a slot, and
+   slots run out. "Six slots" is typed here, and setup.sittingsPerPeriod is not the
+   same number: a constant that the text should print from the setup (E5). */
+{ id:"a1_estimates", prologue:4, once:true,
+  setpiece:{ title:"The Treasury costs the session's estimates at CW$48bn against a CW$52bn reserve",
     sections:[
-    { kind:"voices", head:"What is being said", body:[
-      { said:"The government was told what this would cost every week for a month. This is what it cost.",
-        who:"The Spindle, the Commonwealth's newspaper of record, in its leading article" },
-      { said:"Orbital authorities have lost control of a crisis of their own making.",
-        who:"Earth-side wire copy" } ] }
-  ] },
-  /* the last floor: it needs the two before it (the tier fall, below
-     shed_order_published) and cannot come while the emergency order stands */
-  when:{ flags:["f1_frozen", "f1_second_floor"], flagsAbsent:["f1_emergency"],
-         scalarAbove:{ friction:78 },
-         scalarBelow:{ thermal_margin:20, solvency:20000, legitimacy:30 } },
-  title:"The cascade",
+    { kind:"document", head:"The Treasury's draft estimates",
+      body:"Thermal quota, the cooling the stations are allowed: CW$14bn\n\nConsumables floor, the air, water, food and living space guaranteed to every resident: CW$16bn\n\nSubstrate insurance, cover for digital residents who cannot pay for the computing that runs them: CW$18bn\n\nCapital works: unfunded\n\nTransit subsidy: unfunded\n\nTax rates on volume, cooling, computing time and freight to orbit: all four at the standard rate\n\nTotal CW$48bn. Room under the reserve: CW$4bn.",
+      source:"The Treasury" } ] },
+  title:"The draft estimates",
   speaker:null,
-  body:`Earth's elevator operators stopped loading cargo for the Commonwealth
-overnight, and the banks that clear its payments stopped clearing them. By
-morning no nitrogen or water was coming up the tethers, the space elevators
-that supply the habitats.
+  body:`The estimates are the government's budget for the session: what it will spend on each service, and the tax rates that pay for part of it. The Treasury's officials have costed the draft at CW$48bn.
 
-The Bellamy Almanac Works, the orbital refinery the Commonwealth took in,
-failed first because it had the least. Its air plant had been running past
-its certified hours since the wind-up. At ten past four it tripped and did
-not restart.
+The House may not vote more than the reserve, the Treasury's cash in hand, and the reserve holds CW$52bn. The draft has CW$4bn of room.
 
-The residents were moved into the sections the standby plant can hold. The
-standby plant was never meant to hold them all.
+Each spending clause has several levels. A dearer level costs more, a cheaper one saves money, and every cut lands on someone. Substrate insurance pays the rent on the computer hardware, the substrate, that runs digital residents who cannot pay it themselves. Cut the clause and the residents it covered are suspended: their minds are kept intact but are not running.
 
-By noon the strain had reached the ring, the band of eight stations where
-half the Commonwealth lives. The engineering authority, the body that runs
-life support, had already switched off tier four, the lowest band of the
-shed order, and holds its people in suspension. Now it worked down the rest
-of the list station by station.
+The government sets the level of each clause before the estimates go to the House, and the levels it chooses must cost no more than the reserve.
 
-Ring Network, the Commonwealth's broadcaster, read out each station's place
-on the list as the power went off. The Treasury's cash cannot buy what the
-elevators no longer carry.
+The estimates also set four tax rates, on pressurised volume, cooling, computing time and freight to orbit. A rate does not change how much the House may vote. It changes how much that tax raises over the year.
 
-Darren Watkins Jr., the Leader of the Opposition, tabled a motion of no
-confidence at two in the afternoon, while the House was still arguing about
-the water. Nobody on the government benches asked for time to answer it.`,
+Whoever holds the Treasury signs the estimates and answers for them in the House. Until the House votes, every figure can change.`,
+  effects:[{ wire:"CORDELL'S ACCOUNTS STAY FROZEN IN EUROPE; ALMANAC WORKS CANNOT PAY SUPPLIERS" }],
+  choices:[] },
+
+{ id:"a1_order_paper", prologue:5, once:true,
+  when:{ flagsAbsent:["taught_the_day"] },
+  title:"The order paper",
+  speaker:"okarie",
+  body:`The Chief Whip, Anil Devi, puts the order paper on your desk before the House sits. It lists every measure the House has before it, with the party that moved it and the stage it has reached.
+
+A measure goes through first reading, second reading, committee, report and third reading, and the House votes on it at the last. The House moves a measure from one stage to the next only when the government gives it time. That time is order-paper time, counted in slots. One slot moves one measure one stage. The government has six slots in each sitting period, and they refill when the House rises for its recess.
+
+The estimates head the paper, at first reading. The House must vote them before it rises, because until it does the government cannot pay its officials. You give a slot to a measure in the Chamber.
+
+Devi has the sitting to give you. He can spend it at your desk, going through the paper with you, or in the lobbies, asking members how they intend to vote.`,
   choices:[
-    { label:"It was always going to end somewhere.",
-      effects:[{ move:{ "party_loyalty":-100 } }],
-      result:"The government falls. The terminal writes GOVERNMENT FALLEN." }
+    { posture:"cautious",
+      label:`Go through the order paper with Devi, measure by measure, and keep him at your desk this sitting.`,
+      act:"Go through it",
+      note:`Devi names who moved each measure and what that member wants in return for a vote, so you read the paper knowing who stands behind each line. The lobbies go uncounted this sitting. Devi sits with the Soft Left, the current that leads your party, and its members will hear that you took his advice.`,
+      effects:[{ flag:"taught_the_day" }, { move:{ "rel.okarie":6 } }, { move:{ "loyalty.cu_loyalists":3 } }],
+      result:`He names the member behind each measure and what that member wants for a vote. From the next sitting you read the paper yourself, and he will not go through it with you again.` },
+    { posture:"bold",
+      label:`Read the order paper yourself, and send Devi to the lobbies to ask members how they will vote.`,
+      act:"Read it alone",
+      note:`Devi spends the sitting in the lobbies asking members how they will vote. You read the paper without him, and may miss what a member wants in return for a vote. Devi will take it as a sign that you do not want his advice at your desk, and the newspapers will report that you read the paper yourself.`,
+      effects:[{ flag:"taught_the_day" }, { move:{ "rel.okarie":-4 } }, { move:{ "public_standing":2 } }],
+      result:`He goes to the lobbies to count votes. From now on you read the order paper alone each sitting, and he does not offer to help again.` }
   ]},
 
-/* THE SANCTIONS LAND. Friction above the top coupling's line has been
-   costing the margin every sitting since 40; this is the step where it
-   stops being a cost and becomes a fact. The couplings keep biting; this
-   is the prose that tells the player why. */
-/* REACH: friction above 70; the couplings ramp it there. */
-/* THE TRAP'S CONSEQUENCE, NOT A THRESHOLD. This waited for friction above
-   70, and the annexation's own ramp, abating by the setup's trendDecay, tops
-   out at exactly 70 -- so the freeze, the debt trap's one escalation beat and
-   the thing the indemnity initiative insures against, never came in any run
-   (design/34 D4). It now follows the Sovereign Debt Trap itself, unless the
-   government has brought the quarrel back under 60 since. */
-{ id:"f1_accounts_freeze", chapter:2, weight:87, once:true,
-  setpiece:{ title:"Europe freezes the Works' accounts, and the Commonwealth money in them", mood:"threat",
-    sections:[
-    { kind:"voices", head:"What is being said", body:[
-      { said:"A state that takes a platform takes its creditors with it. The measures will stand until the creditors are paid.",
-        who:"The European Union's statement on the sanctions" },
-      { said:"Three of our suppliers rang before breakfast to ask whether they would be breaking the law by selling us water.",
-        who:"The Works' chief engineer, on Ring Network, the Commonwealth's broadcaster" },
-      { said:`The residents kept this platform running after its owners walked away. The European banks now want to be paid before they are.`,
-        who:"The Spindle, the Commonwealth's newspaper of record, in its leading article" } ] }
-  ] },
-  when:{ resolved:"f1_pyrrhic", scalarAbove:{ friction:60 } },
-  /* THE FREEZE HAS TO RECORD ITSELF. Two of the four branches of
-     `indemnity_settles` are the ones where the cover PAYS, and both wanted
-     `f1_frozen` — which nothing in the project set, so a government could
-     buy indemnity against exactly this and the policy could never answer.
-     An effect on the event rather than on a choice, because the accounts
-     freeze in the body: it has happened by the time the player is asked
-     anything, and both answers are answers to it. */
-  effects:[{ flag:"f1_frozen" }],
-  title:"The accounts are frozen",
-  speaker:"hatt",
-  body:`The European Union has frozen the bank accounts of the Bellamy Almanac
-Works, the orbital refinery the Commonwealth took over, and every account
-that has paid money into them. The freeze traps Commonwealth funds held by
-suppliers in three countries.
+/* SITTING 5. THE TREATY, AND THE ONE SPARE SLOT (the Claude Doc, "One spare slot";
+   design/78 round 6, decided by the author: the treaty is a gesture, not a rival).
+   Two events, one sitting: a page that happened (the renewed terms are signed and the
+   bill reaches committee), then the decision. The estimates need five of the six slots
+   (four stage grants and the division), the treaty three, so one slot is spare and the
+   choice is where it goes. The choices announce an intention and do not spend the slot,
+   which the player spends in the Chamber (design/78). Choosing to promise it makes an
+   undertaking that the Chamber's slot discharges, so the first promise the player makes
+   is one they can see kept or broken. The treaty is the New Progressive Party's minister's
+   (owner psa), so a slot given to it puts that party in the government's debt, which is
+   where the whips' ledger is first met. Question Time does not appear: it is met at
+   sitting 14. The numbers are PROVISIONAL and need a playtest. */
+{ id:"a1_treaty", prologue:6, once:true,
+  setpiece:{ title:"Kenya and the Commonwealth sign renewed terms for the Earth-Orbit Elevator" },
+  title:"The Anchorage treaty",
+  speaker:"ivarsen",
+  body:`Kenya and the Commonwealth have signed renewed terms for the International Earth-Orbit Elevator, which lifts freight and passengers between Earth and Anchorage, a station of 231,000 people. The House must ratify the terms before they bind the Commonwealth.
 
-The government must now pay for the platform's fuel, water and wages
-directly, out of the reserve, the Treasury's cash in hand. The residents
-were paid this week. Next week they will be paid only if the reserve pays
-them.
+To ratify a treaty is to vote to adopt it. The terms are in the Anchor Concession (Anchorage) Ratification Bill, which has reached committee, the third of the five stages a measure passes through.
 
-The Union's sanctions work by naming accounts. The water suppliers at the
-Malindi anchor, the fuel brokers in Mombasa and the bank that runs the
-platform's payroll all now hold Commonwealth money they are forbidden to
-move.
+The elevator's anchor stands at Malindi, on Kenya's coast, so the Commonwealth runs it as a tenant, under a concession from Kenya. Of the four elevators that serve the stations, the International is the only one governed by a treaty, and Anchorage depends on it.
 
-The Union holds most of the platform's bonds, through its banks and pension
-funds. It says the sanctions will stand until the bondholders are paid.
+Marit Ivarsen, the Minister for Trade and the Anchors and a member of the New Progressive Party, negotiated the renewal. "Kenya has agreed to renew," she said. "The terms apply once the House has voted, and I would like the bill moved."`,
+  choices:[] },
 
-The Treasury puts the cost of carrying the platform until the sanctions lift
-at ten billion dollars on present terms. No bank on Earth will say how long
-the present terms will last. The alternative is to leave the suppliers to
-carry the risk, which they will do by charging for it or by stopping.
+{ id:"a1_spare_slot", prologue:7, once:true,
+  title:"One spare slot",
+  speaker:"okarie",
+  body:`The estimates need five of the six slots this period: four to move them from first reading to third reading, and a fifth for the division, the vote that decides a measure. One slot is spare.
 
-"It isn't an embargo yet," said Edward Hatt, leader of the Alliance of Business and Government, the business party in the House. "But the suppliers are already charging us as if it were, and the cost goes up every week it lasts."`,
+The Anchorage treaty is at committee and needs three slots: one to move it to report, one to move it to third reading, and one for its division. A single slot moves it one stage and cannot finish it, so the other two wait for the next sitting period.
+
+Anil Devi, the Chief Whip, has the order paper open at both measures. "One slot," he says. "It can go on the treaty, or it can stay in hand. Initiatives cost a slot too. The estimates can't spare another."
+
+Marit Ivarsen, the Minister for Trade and the Anchors, has asked him twice when the treaty will move.`,
   choices:[
-    { posture:"bold", label:"Pay for the platform out of the reserve.",
-      effects:[{ move:{ "solvency":-10000 } }, { move:{ "legitimacy":6 } },
-               { move:{ "trend.friction":-1 } },
-               { wire:"COMMONWEALTH FUNDS THE PLATFORM FROM THE RESERVE; SANCTIONS STAND" }],
-      result:"The workers keep running and the reserve pays. The friction stops worsening, which is not the same as improving." },
-    { posture:"cautious", label:"Let the platform's suppliers carry the risk.",
-      effects:[{ move:{ "legitimacy":-8 } }, { move:{ "trend.friction":1 } },
-               { wire:"SUPPLIERS ASKED TO CARRY PLATFORM RISK; OUTER HABITATS OBJECT" }],
-      result:"The government keeps its money and loses the argument, and the sanctions deepen on their own." }
+    { posture:"bold",
+      label:`Promise Marit Ivarsen the spare slot for the Anchorage treaty.`,
+      act:"Promise it",
+      note:`You tell Ivarsen the treaty moves this period, and you keep the promise by giving it a slot in the Chamber within eight sittings. A slot given to the treaty puts the New Progressive Party, her party, in your debt, and Kenya hears that the Commonwealth means to ratify. If the slot is not given, Ivarsen will tell Kenya so in public and the party will count it against you. You have no slot left for anything else.`,
+      effects:[{ undertake:{ id:"a1_treaty_slot", text:"Give the Anchorage treaty a slot within eight sittings",
+                 owed_to:"ivarsen", by:8, discharge:{ slot:"anchor_kepler" }, onBreach:"a1_treaty_unkept" } },
+               { move:{ "rel.ivarsen":5 } }, { move:{ "loyalty.psa":2 } }],
+      result:`Ivarsen tells the Kenyan government that the bill will move this period. Devi writes the promise in the whips' ledger, his running account of what each partner owes the government and what it is owed.` },
+    { posture:"cautious",
+      label:`Tell Marit Ivarsen the spare slot stays in hand, and the treaty waits for the next sitting period.`,
+      act:"Hold it",
+      note:`You keep the slot for whatever else costs one, an initiative for instance, and the estimates keep their margin. Ivarsen has nothing to tell the Kenyan government for another period, and the New Progressive Party, whose minister negotiated the treaty, will note that its measure did not move.`,
+      effects:[{ move:{ "rel.ivarsen":-4 } }, { move:{ "loyalty.psa":-2 } }],
+      result:`Devi writes the slot in his book as held. Ivarsen tells the Kenyan government that the bill will come in the next sitting period at the earliest.` }
   ]},
 
-/* THE OTHER WAY OUT. The couplings make high friction cost the margin every
-   sitting, so a government that wants friction DOWN needs something to do
-   about it that is not simply waiting: Earth's price for standing down, on
-   the table more than once, at a cost the player can see. */
-{ id:"fa_conciliate", chapter:2, weight:62, maxFires:2,
-  when:{ scalarAbove:{ friction:45 } },
-  title:"What Earth would take to stand down",
-  speaker:"landry",
-  body:`Jean Landry, the Minister for External Relations, has a list of terms from
-the European banks that hold the Works' bonds.
-
-The Commonwealth would pay the bondholders the seven billion dollars the
-platform defaulted on, and accept an inspection of its claim to have
-salvaged the platform. In return the European Union would lift its sanctions
-for three months and then review them.
-
-The terms are harsh, and a government would refuse them in a normal year.
-The sanctions are also costing the Treasury money every sitting they stay in
-place.`,
-  choices:[
-    { posture:"cautious", label:`Pay the bondholders CW$7bn, and accept the inspection of the Commonwealth's salvage claim.`,
-      note:`The European Union lifts its sanctions for three months, which stops them costing the Treasury every sitting, and the quarrel with Earth cools. Paying and accepting an inspection looks like conceding the claim, and voters' belief in the government's account of the salvage falls.`,
-      /* paying the bond also cures the Standby Facility's default, if the
-         agent has declared one (f1_standby_notice) */
-      effects:[{ move:{ "friction":-9 } }, { move:{ "solvency":-7000 } },
-               { move:{ "legitimacy":-3 } },
-               { flag:{ works_bond_paid:true, standby_default:false } },
-               { wire:"COMMONWEALTH PAYS THE BOND; EARTH SUSPENDS THE MEASURES FOR A QUARTER" }],
-      result:"The reserve pays seven billion dollars to the bondholders. The European Union lifts its sanctions for three months, and the quarrel with Earth cools." },
-    { posture:"bold", label:`Refuse Earth's terms, and live with the sanctions.`,
-      note:`The refusal is popular at home, especially with the Trades Left, your party's union wing. Voters credit a government that will not be pushed around. The sanctions stay and cost more every sitting, and the quarrel with Earth grows.`,
-      effects:[{ move:{ "friction":2 } }, { move:{ "legitimacy":5 } },
-               { move:{ "loyalty.cu_maintenance":4 } },
-               { wire:"PM REFUSES EARTH'S TERMS: 'THE COMMONWEALTH DOES NOT PAY RANSOM' (as of 6 days ago)" }],
-      result:"The refusal is popular at home, and with the Trades Left in particular. The sanctions stay, and cost more every sitting." }
-  ]},
-
-/* REACH: no gate; always eligible in ch2 and loses on weight. */
-{ id:"fa_two_fronts", chapter:2, weight:57, maxFires:2,
-  /* it reports the platform's scrubbers, so it waits for the stranding:
-     ungated, it could lead the news before there was a platform to report */
-  when:{ seen:["f1_stranded"] },
-  title:"Two audiences, one sentence",
-  speaker:"ceyhan",
-  body:`The Spindle, the Commonwealth's newspaper of record, leads with the Works'
-failing air scrubbers and the governments on Earth that let Cordell, the
-Gabonese mining company that owned the platform, walk away. Earth's news
-services report a tragic industrial accident that orbital politicians are
-exploiting, and quote as an expert a former minister who left office nine
-years ago.
-
-The government can make one statement, and both audiences will read it.`,
-  choices:[
-    { posture:"bold", label:`Address the Commonwealth: stress the government's handling of the crisis, and leave sympathy out.`,
-      note:`At home the statement reads as a government in control, and voters' belief in it rises. Earth's services will quote it as proof that the Commonwealth has stopped being diplomatic, so relations with Earth's governments worsen and the quarrel with Earth grows.`,
-      effects:[{ move:{ "legitimacy":6 } }, { move:{ "actor.earth_bloc":-5 } },
-               { move:{ "friction":3 } },
-               { wire:"PM SPEAKS TO THE HABITATS; EARTH SERVICES CALL THE TONE 'MANAGERIAL'" }],
-      result:"At home the statement reads as a government in control of the crisis. Earth's services quote it as proof that the Commonwealth has stopped trying to be diplomatic." },
-    { posture:"cautious", label:`Address both audiences: call the failure an accident, and the Commonwealth's response a rescue.`,
-      note:`Earth's services will carry the statement in full, relations with Earth's governments and with Kenya improve, and the quarrel with Earth eases. Members for the outer habitats will ask why the government is explaining itself to people who do not vote for it, and belief at home falls.`,
-      effects:[{ move:{ "actor.earth_bloc":6 } }, { move:{ "actor.earth_host":4 } },
-               { move:{ "legitimacy":-3 } }, { move:{ "friction":-2 } },
-               { wire:"PM ADDRESSES BOTH AUDIENCES ON THE PLATFORM (Earth services carry it in full)" }],
-      result:"Earth's services carry the statement in full. On the outer habitats, members ask why the government is explaining itself to people who do not vote for it." }
-  ]},
-
-/* the canon election: the pyrrhic tier leads to the campaign's victory */
-{ id:"f1_pyrrhic_election", chapter:3, prologue:7, once:true,
-  setpiece:{ title:"Prime Minister asks the country to sign for the Works' debt",
-    sections:[
-    { kind:"voices", head:"What is being said", body:[
-      { said:"Saved, and owed.",
-        who:"The Spindle, the Commonwealth's newspaper of record, on its front page" },
-      { said:"The government bought a platform on the country's account, and now it wants the country to sign for it.",
-        who:"Darren Watkins Jr. MP, Leader of the Opposition" } ] }
-  ] },
-  when:{ resolvedIs:"f1_pyrrhic" },
-  title:"The mandate",
-  speaker:null,
-  body:`The Prime Minister has made the last week of the election campaign a vote on
-the Bellamy Almanac Works, the orbital refinery the Commonwealth took over,
-and on the debts that came with it.
-
-The government saved 184,000 people, and the country will pay for it. Nobody
-disputes either half of that sentence. The argument is over which half
-matters more, and the opposition has chosen the second.
-
-The Treasury's figures are public. The platform's bonds are on the
-Commonwealth's books and the Treasury is short of cash. It has already
-written three years of austerity into its forecasts, and the first austerity
-budget will go to the new House whoever forms the government.
-
-Every other question the parties brought to the campaign has been folded
-into this one: the budget, prices and the quarrel with Earth. The Prime
-Minister is asking the country to endorse the debt by name.`,
-  choices:[
-    { label:"Ask the country for the mandate.",
-      effects:[{ wire:"PM ASKS THE COUNTRY FOR A MANDATE ON THE WORKS' DEBT" }],
-      result:"The last week of the campaign is about the debt, and the count will say what the country thinks of it." }
-  ]},
-
-/* UNDERWRITING. The cover ran for the term the government bought, and the
-   Underwriters settle against the one risk they wrote. The branches are
-   the risk and the tempo, and between them they cover every state: the
-   freeze happened or it did not, and the cover was on the suppliers or on
-   the whole line. */
-/* REACH: queued by the take_indemnity initiative. */
-{ id:"indemnity_settles", queuedOnly:true, once:true,
-  setpiece:{ title:"Insurance against a freeze on the Works' accounts comes to term" },
-  title:"The indemnity comes to term",
-  speaker:"hatt",
-  body:`The insurance the Commonwealth bought against a freeze on the bank accounts
-of the Bellamy Almanac Works, the orbital refinery it took over, has run its
-term. Whether it pays out depends on a single fact.
-
-The indemnity covered one risk: that the platform's accounts would be frozen
-and its suppliers left unpaid. The Commonwealth bought the cover while that
-was only a possibility, and the insurers priced it as one.
-
-The insurers are the Underwriters, the syndicates and mutual societies the
-Commonwealth insures with and borrows from at home. They have sent the
-Treasury a single page, with the premium paid at the top and one line at the
-foot saying what was covered.
-
-If the policy pays, the Underwriters lose money on it and will charge more for the next one. If it expires unused, they keep the premium, and the Treasury will be asked what it paid for. "The policy turned on one question, whether the accounts were frozen," said Edward Hatt, leader of the Alliance of Business and Government, the business party in the House. "The Underwriters priced it on better figures than the Treasury had."`,
-  choices:[
-    { label:"The accounts froze. The cover answers the suppliers.",
-      when:{ flags:["indemnity_suppliers","f1_frozen"] },
-      effects:[{ move:{ "solvency":9000 } }, { move:{ "actor.underwriters":-2 } },
-               { wire:"UNDERWRITERS PAY ON THE FROZEN ACCOUNTS" }],
-      result:`The payout arrives after the freeze and it is smaller than the freeze. The reserve ends the term nine billion dollars better than the sanctions left it.` },
-    { label:"The accounts froze. The cover carries the whole line.",
-      when:{ flags:["indemnity_lifesupport","f1_frozen"] },
-      effects:[{ move:{ "solvency":18000 } }, { move:{ "legitimacy":3 } },
-               { move:{ "actor.underwriters":-5 } },
-               { wire:"UNDERWRITERS CARRY THE PLATFORM'S LIFE SUPPORT" }],
-      result:"The Underwriters pay for the air and the water on the platform for the term. The premium was large and the payout is larger." },
-    { label:"Nothing froze. The premium is spent.",
-      when:{ flagsAbsent:["f1_frozen"] },
-      effects:[{ move:{ "actor.underwriters":4 } },
-               { wire:"INDEMNITY EXPIRES UNUSED; THE UNDERWRITERS KEEP THE PREMIUM" }],
-      result:`The risk stayed away for the whole term. The Underwriters keep the premium.` },
-    /* The safety net every queued settle carries. A door content never uses
-       is better than an event that can strand a sitting. */
-    { label:"The term ends.",
-      when:{ flagsAbsent:["indemnity_suppliers","indemnity_lifesupport"] },
-      effects:[{ wire:"THE INDEMNITY TERM ENDS" }],
-      result:"The cover closes with nothing written against it." }
-  ]},
-
-/* SUBSTRATE FUTURES AND DEBT. The debt was secured against the
-   continuation of the people on the platform, so the settle reads the
-   platform's own numbers: how many were suspended at the term, and what
-   the substrate was worth. Suspensions are whole numbers, so `below T + 1`
-   and `above T` cover every value; prices carry one decimal, so
-   `below X + 0.1` and `above X` do the same. */
-/* REACH: queued by the assume_substrate_debt initiative. */
-{ id:"substrate_debt_settles", queuedOnly:true, once:true,
-  setpiece:{ title:"The debt on the Works' mind hardware comes to term" },
-  title:"The substrate debt comes to term",
-  speaker:"ceyhan",
-  body:`The loan that paid for the substrate of the Bellamy Almanac Works, the orbital refinery the Commonwealth took over, has come to term. Substrate is the computing hardware the platform's emulated residents run on.
-
-When the loan was made, the lender took the people running on the hardware as its security, so the debt is a claim on the residents as well as on the machines. When the Commonwealth took over the platform, it either took the debt on or wrote it off, and the settlement depends on which.
-
-If the Commonwealth took the debt on, the question is whether fewer people are held in suspension now than when it did. A suspended mind is kept intact but not running. If it wrote the debt off, the question is whether substrate has risen in price since, which would make the cancelled debt worth more than the Commonwealth allowed for.
-
-Ivor Ceyhan, political editor of The Spindle, the Commonwealth's newspaper of record, reported that the platform's residents had followed both figures closely since the Commonwealth took over the platform.`,
-  choices:[
-    { label:"The platform kept running. The assumption held.",
-      when:{ flags:["debt_assumed"], suspendedBelow:{ federal:72001 } },
-      effects:[{ move:{ "legitimacy":6 } }, { move:{ "solvency":5000 } },
-               { move:{ "actor.underwriters":3 } },
-               { wire:"PLATFORM SUSPENSIONS FALL UNDER COMMONWEALTH DEBT" }],
-      result:"Fewer people stopped running than at the start of the term. The debt the Commonwealth took on is backed by a platform that is working." },
-    { label:"The platform kept shedding. The assumption did not hold.",
-      when:{ flags:["debt_assumed"], suspendedAbove:{ federal:72000 } },
-      effects:[{ move:{ "solvency":-7000 } }, { move:{ "friction":2 } },
-               { wire:"SUSPENSIONS RISE; THE DEBT IS A HOLE" }],
-      result:"More people were suspended at the term than at the start. The Commonwealth owns the debt of a platform that is still failing." },
-    { label:"The write-off was cheaper than the debt.",
-      when:{ flags:["debt_written_off"], priceAbove:{ substrate:110 } },
-      effects:[{ move:{ "actor.underwriters":-6 } }, { move:{ "legitimacy":-3 } },
-               { wire:"SUBSTRATE RISES; THE WRITE-OFF LOOKS EXPENSIVE" }],
-      result:"The substrate is worth more than the Commonwealth allowed when it cancelled the debt, and the Underwriters have repriced the Commonwealth's word." },
-    { label:"The write-off holds.",
-      when:{ flags:["debt_written_off"], priceBelow:{ substrate:110.1 } },
-      effects:[{ move:{ "solvency":2000 } }, { move:{ "actor.underwriters":2 } },
-               { wire:"SUBSTRATE STEADY; THE WRITE-OFF HOLDS" }],
-      result:"The substrate did not move against the cancellation. The Commonwealth's books are lighter by the debt it refused." },
-    { label:"The term ends.",
-      when:{ flagsAbsent:["debt_assumed","debt_written_off"] },
-      effects:[{ wire:"THE SUBSTRATE DEBT TERM ENDS" }],
-      result:"The debt comes to term with nothing done about it." }
-  ]},
-
-/* THE FACILITY, REPAID. The answer to the `repay_facility` initiative. The
-   Alliance offers to keep the line open, which is a standing call on the
-   Commonwealth's short position with the Alliance's name on it. */
-{ id:"f1_facility_closed", queuedOnly:true, once:true,
-  setpiece:{ title:"Commonwealth repays the Alliance's emergency loan" },
-  title:"The facility is closed",
-  speaker:"hatt",
-  body:`The Commonwealth has repaid the emergency loan it took from the Alliance of
-Business and Government, a party in the House, and the Alliance has no
-further claim under it.
-
-The Alliance lent 18 billion dollars when the Treasury was short of cash,
-repayable at 19.8 billion before the House rose. The Treasury paid in cash
-or in the Cordell mining leases, as it chose. The leases are the rights to
-the ore that feeds the Bellamy Almanac Works, the orbital refinery the
-Commonwealth took over.
-
-The Alliance has told the House it was paid in full.
-
-Edward Hatt, the Alliance's leader, has offered to keep the line open as a
-standing loan on the same terms, drawn only when the Commonwealth asks. It
-would cost nothing until it was used. It would also mean that a party
-sitting in the House stood behind the Commonwealth's borrowing for as long
-as the line was open.`,
-  choices:[
-    { posture:"cautious", label:"Keep the line open.",
-      effects:[{ flag:"abg_standing_line" }, { move:{ "loyalty.gb":4 } }, { move:{ "legitimacy":-2 } },
-               { wire:"ALLIANCE HOLDS STANDING LINE ON COMMONWEALTH SHORT POSITION" }],
-      result:"The Alliance holds a standing line on the Commonwealth's short position, on the terms of the emergency facility." },
-    { posture:"bold", label:"Close it.",
-      effects:[{ move:{ "legitimacy":3 } }, { move:{ "loyalty.gb":-2 } }],
-      result:"The Commonwealth owes the Alliance nothing and has no line with it." }
-  ]},
-
-/* THE FACILITY, CALLED. Queued by the breach of `f1_debt` when the House
-   rises with the facility unpaid. The default margin is the agreement's. */
-{ id:"f1_debt_called", queuedOnly:true, once:true,
-  setpiece:{ title:"Alliance calls in its emergency loan: 21.6 billion dollars or the mining rights", mood:"threat",
-    sections:[
-    { kind:"voices", head:"What is being said", body:[
-      { said:`The facility's terms were published in 2078, the rate and the margin included. Nobody can say they weren't told.`,
-        who:"Edward Hatt MP, Leader, Alliance of Business and Government" },
-      { said:"A party in the House is about to own the ore the Works runs on.",
-        who:"The Spindle, the Commonwealth's newspaper of record" } ] }
-  ] },
-  title:"The facility is called",
-  speaker:"hatt",
-  body:`The Alliance of Business and Government, a party in the House that lent the
-Commonwealth money in the crisis, has called in its emergency loan. It wants
-21.6 billion dollars, or the mining rights that feed the Commonwealth's new
-refinery.
-
-The loan was still owed when the House rose. The agreement adds a default
-margin of ten per cent to the principal and the printed rate, which is how
-the sum reached 21.6 billion.
-
-Edward Hatt, the Alliance's leader, delivered the demand in person, which
-the agreement does not require. He wanted the Treasury to hear the sum from
-the party that lent it.
-
-The Alliance will accept the Cordell leases instead of cash. They are the
-rights to the ore that Cordell, the Gabonese mining company, used to mine
-for the Bellamy Almanac Works, the orbital refinery, and they came to the
-Commonwealth with the platform.
-
-If the Alliance takes the leases, the debt is cleared without a dollar
-leaving the Treasury. The Works will then buy its ore from a party in the
-House. Or the Treasury can pay the sum in cash and keep the leases, if it
-has the money.`,
-  choices:[
-    { posture:"bold", label:"Pay it from the reserve.",
-      when:{ scalarAbove:{ solvency:21599 } },
-      effects:[{ move:{ "solvency":-21600 } }, { move:{ "debt.alliance":-19800 } },
-               { move:{ "legitimacy":-2 } }, { flag:{ cordell_leases_pledged:false } },
-               { wire:"TREASURY PAYS CALLED FACILITY IN FULL FROM THE RESERVE" }],
-      result:"The reserve pays the Alliance in full, and the Cordell leases stay with the Commonwealth." },
-    { posture:"cautious", label:"Let the Alliance take the leases.",
-      effects:[{ flag:"cordell_leases_ceded" }, { move:{ "debt.alliance":-19800 } },
-               { move:{ "loyalty.gb":6 } },
-               { move:{ "public_standing":-5 } }, { move:{ "legitimacy":-6 } },
-               { wire:"ALLIANCE TAKES CORDELL LEASES IN SETTLEMENT OF CALLED FACILITY" }],
-      result:"The Cordell mining leases pass to the Alliance of Business and Government, and the facility is extinguished." }
-  ]},
-
-/* =============================================================
-   FLASH I: THE REST OF THE AUTHOR'S PLAN (design/35). EXAMPLES TO REWRITE.
-
-   The pivots and the tier fall, built from the vocabulary and nothing
-   else, so each is a worked example of the shape rather than the last
-   word. The prose is bare on purpose, like the settlements' closings.
-
-   THE TIER FALL. "Failing a trajectory check doesn't jump straight to the
-   worst case — it drops the situation down one tier per turn, giving the
-   player time to execute an Emergency Pivot before hitting Systemic
-   Meltdown." Two floors now come before the meltdown, each a flag the next
-   one needs, and the pool fires one event a sitting, so the fall is at most
-   one floor a sitting. The meltdown needs the second floor, and nothing
-   while the emergency order stands.
-
-   THE PIVOTS are initiatives, one per tier, in initiatives.js beside this
-   file:
-   declare_emergency (Meltdown), sell_the_leases (Pyrrhic),
-   lease_the_zone (Joint Mandate), sacrifice_the_minister (Capitulation).
-   Their answers are below. Appended, not inserted: see the note at
-   f1_facility_closed.
-   ============================================================= */
-{ id:"f1_brink_1", chapter:2, weight:97, once:true,
-  setpiece:{ title:"Heat builds in the habitats as coolant from Earth is held up",
-    sections:[
-    { kind:"document", head:"The power the authority holds",
-      body:"Where the thermal margin of a band falls below the level prescribed by the Minister, the engineering authority may suspend the register of tier four in that band without notice.",
-      source:"The Allocation Act" },
-    { kind:"margin", body:"Before any register is suspended, I want the names. Not the count: the names.", source:"A.E.F." }
-  ] },
-  when:{ flags:["f1_frozen"], scalarAbove:{ friction:70 }, scalarBelow:{ thermal_margin:30 } },
-  title:"The margin gives way",
+/* SITTING 6. ENERGY AND COOLING, AND EMBER RIDGE (the Claude Doc, "Energy and cooling";
+   the ledger: the thermal quota, cooling, the thermal margin, a station's heat; opens the
+   thermal clause and the first orders). A page, then the decision. The page is the
+   clause's scene, with the minister who argues for it; the clause itself is set in the
+   Chamber's panel. The decision is Ember Ridge, the face of a short quota: three ways to
+   answer Girard, each with a cost the player can see. The orders are locked at the opening
+   (a1_orders_locked, on the campaign's opening) and this scene unlocks them with whichever
+   answer, so no order is made before a page has explained what an order is. The second
+   answer is a promise that the order lever keeps. The third queues the outcome page, and
+   its variant quotes the President's note from sitting 1 back (the author, 28 Sep).
+   Every number in the choices is PROVISIONAL and needs a playtest. The figures in the page
+   are the clause's own levels (a guard holds them equal). */
+{ id:"a1_cooling", prologue:8, once:true,
+  setpiece:{ title:"Releasing the full thermal quota would cost CW$34bn, Girard tells the Prime Minister" },
+  title:"Energy and cooling",
   speaker:"girard",
-  effects:[{ flag:"f1_first_floor" }],
-  body:`The Commonwealth's thermal margin, the spare capacity its radiators have to
-shed heat, has fallen below 30 per cent and is dropping faster than the
-Treasury forecast. The coolant the habitats need is bought on Earth, through banks
-now under the European Union's sanctions.
+  body:`Vesna Girard, the Minister for Substrate and Thermal, has told the Prime Minister what the thermal quota buys. The quota is the cooling that every station is allowed to use, released each session, and the draft estimates carry it at CW$14bn.
 
-The sanctions have made coolant slower and dearer to buy. Each payment must
-now go through a bank outside the Union's reach, and shipments that took a
-week now take three. The margin matters because everything the
-Commonwealth runs gives off heat, from its factories and data halls to its
-residents, bodies and minds alike. When the radiators cannot shed it all,
-something has to be switched off.
+In orbit, heat leaves a station only by being radiated into space, and every watt of computation and industry becomes heat. Each station's radiators can reject a fixed amount. The quota is the permit to reject it, and the price of the permit is part of what every station pays to keep running.
 
-Below 30 per cent, the engineering authority, the body that runs life support, may
-begin cutting power on its own schedule, without asking a minister. It
-follows the shed order, the published list of who stops running first in a
-shortage. A person shed is held in suspension: their mind is kept intact but
-stops running until the power returns.
+The draft releases the quota at last session's figure, and the price holds where the market has held it. Held tight, the quota costs nothing in the estimates, the price rises, and the rise lands first on the stations with the least spare cooling. Released in full, it costs CW$34bn and the price falls to the cost of rejecting the heat. The radiators then limit how many minds the Commonwealth can carry.
 
-Vesna Girard, the Minister for Substrate and Thermal, can ration power on
-the ring, the band of eight stations where
-half the Commonwealth lives, before the authority does. That would mean a
-cooler ring and louder complaints, and it would win back a sitting or two on
-the margin. Or the government can hold, say nothing, and let the authority's
-cuts come when they come.
+One station already shows the cost of a short quota. Ember Ridge, a station of 213,000 people, has been below the cooling the law requires since 6 April, when one of its radiator arrays failed.
 
-The Allocation Act, the law that governs a shortage, gives the authority
-that power. "Either we decide what gets switched off," Girard said, "or the
-authority does, and it goes by the list."`,
+"A tight quota saves CW$14bn in the estimates," Girard said. "Ember Ridge is already short, and it will pay more for heat under that quota."
+
+The government sets the level before the estimates go to the House: tight at CW$0, as last session at CW$14bn, or released in full at CW$34bn.`,
+  effects:[{ flag:"clause_thermal_met" }],
+  choices:[] },
+
+{ id:"a1_ember_ridge", prologue:9, once:true,
+  title:"Ember Ridge",
+  speaker:"girard",
+  body:`Vesna Girard, the Minister for Substrate and Thermal, has brought the figures for Ember Ridge. Its radiators can no longer reject all the heat the station's people and industry make, because an array of them failed on 6 April. The array is twenty-two years old, and its replacement is in the procurement queue behind a coolant-loop upgrade that the ministry has never managed to justify.
+
+The thermal margin is the spare radiator capacity of the whole Commonwealth, what is left when every station has rejected its heat. The failed array has taken some of it, and while the array is down the margin keeps falling. If it reaches nought, stations overheat one after another and the government falls.
+
+Ember Ridge's engineering authority, the body that runs life support there, can switch off the minds on the station's lowest band, 4,200 people, to keep the rest running. It may do so without telling a minister first.
+
+"I can have the ministry's appeal drafted today," Girard says. "It will not fix the array. Anselm Ring has the spare capacity if you want to take it from there."
+
+From today the Government screen lists the orders that the ministers can make. The appeal is the first of them.`,
+  effects:[{ flag:{ a1_orders_locked:false } }],
   choices:[
-    { posture:"bold", label:"Ration the ring ahead of the shed order.",
-      note:"Girard's ministry cuts power on the eight ring stations on a published schedule, before the authority can suspend anyone. The margin recovers enough to hold for a sitting or two, and the ring's residents, half the country, feel the cold and blame the government.",
-      effects:[{ move:{ thermal_margin:3, public_standing:-3 } }],
-      result:"The ring runs cooler and louder. The margin buys a sitting or two." },
-    { posture:"cautious", label:"Hold the line and say nothing.",
-      note:"Nothing is cut today. If the margin keeps falling, the engineering authority will start suspending people by the shed order on its own schedule, and the government will be seen to have let it happen.",
-      effects:[{ move:{ legitimacy:-2 } }],
-      result:"Nothing changes today, which is the point and the danger." }
+    { posture:"bold",
+      label:`Divert cooling capacity from Anselm Ring to Ember Ridge.`,
+      act:"Divert it",
+      note:`Ember Ridge gets the capacity today and the thermal margin recovers at once. The capacity comes out of Anselm Ring's allocation, and the Treasury pays CW$4bn in cash from the reserve for what it moves. Your own seat, First Spin, is on Anselm Ring, and voters across the ring will see their margin cut to cover another station.`,
+      effects:[{ move:{ thermal_margin:11 } }, { move:{ solvency:-4000 } }, { move:{ public_standing:-4 } },
+               { station:{ vantage:{ closure:0.03 } } },
+               { wire:"ANSELM RING QUOTA DIVERTED TO EMBER RIDGE; RING MEMBERS OBJECT" }],
+      result:`Anselm Ring gives up part of its spare cooling, and Ember Ridge holds. The members for the ring's constituencies object in the House the same afternoon.` },
+    { posture:"measured",
+      label:`Ask Girard to prepare the conservation appeal, the first of the government's orders on cooling.`,
+      act:"Ask her",
+      note:`You tell Girard to have the order ready, and you make it from the Government screen within three sittings. An order is a rule a minister makes under powers an Act has already given. It takes effect when made, and stands unless the House votes against it within six sittings. The appeal asks every station to cut the power it does not need, so Ember Ridge gets a little headroom and nobody is switched off. Until you make it, the array is still down, and the authority may act.`,
+      effects:[{ undertake:{ id:"a1_appeal", text:"Make the conservation appeal (SI 2080/61)",
+                 owed_to:"girard", by:3, discharge:{ si:"rung1_conservation" }, onBreach:"a1_ember_lowest_band" } },
+               { move:{ "rel.girard":4 } }],
+      result:`Girard has the appeal drafted. It needs the Prime Minister's name before it takes effect.` },
+    { posture:"cautious", when:{ flagsAbsent:["commission_stations"] },
+      label:`Leave Ember Ridge to its engineering authority, in case the array is repaired.`,
+      act:"Leave it",
+      note:`Waiting commits the government to nothing and costs nothing in the estimates. If the array is not repaired, the authority may switch off the 4,200 people on the lowest band without telling a minister, and the thermal margin keeps falling while it is down. Voters, the New Progressive Party and the maintenance unions in your party will hold the government to what it left undone.`,
+      effects:[{ move:{ thermal_margin:-6 } }, { queue:[{ event:"a1_ember_lowest_band", after:3 }] }],
+      result:`The array stays down. Girard says the authority will decide at its next meeting.` },
+    { posture:"cautious", when:{ flags:["commission_stations"] },
+      label:`Leave Ember Ridge to its engineering authority, in case the array is repaired.`,
+      act:"Leave it",
+      note:`You told the President on your first morning that the stations came first, and his office has the note. Waiting leaves the 4,200 people on Ember Ridge's lowest band exposed while the thermal margin falls, and the President's office will set that beside your words.`,
+      effects:[{ move:{ thermal_margin:-6 } }, { move:{ "rel.president":-6 } }, { move:{ public_standing:-3 } },
+               { queue:[{ event:"a1_ember_lowest_band", after:3 }] }],
+      result:`The array stays down. The President's office asks, in writing, whether the stations still come first.` }
   ]},
 
-{ id:"f1_brink_2", chapter:2, weight:97, once:true,
-  setpiece:{ title:"Cash runs short and the power cuts begin on two stations",
-    sections:[
-    { kind:"document", head:"The draft",
-      body:"1. No assembly of more than fifty persons shall take place in a public space of a ring station.\n\n2. Movement between stations shall require a permit issued under this Order.\n\n3. For so long as this Order is in force, no motion of no confidence in the Government shall be moved in the House.",
-      source:"The Emergency Powers (Circumterrestrial Commonwealth) Order 2080, as drafted by the Cabinet Office. Unsigned." },
-    { kind:"margin", body:"Who asked for this to be drafted? It does not leave this room.", source:"A.E.F." }
-  ] },
-  when:{ flags:["f1_first_floor"], scalarAbove:{ friction:75 },
-         scalarBelow:{ thermal_margin:25, solvency:30000 } },
-  title:"The second floor gives",
+{ id:"a1_ember_lowest_band", queuedOnly:true, once:true,
+  setpiece:{ title:"Ember Ridge's engineering authority switches off its lowest band without telling the ministry" },
+  title:"The lowest band",
   speaker:null,
-  effects:[{ flag:"f1_second_floor" }],
-  body:`The Commonwealth's cash reserve has fallen below 30 billion dollars, and the
-engineering authority, the body that runs life support, has begun switching
-people off. Overnight, on two stations, it switched off the people in tier
-four, and it sent out the notices afterwards.
+  body:`At 04:12 the engineering authority, the body that runs life support on Ember Ridge, switched off the station's lowest band without telling the Minister for Substrate and Thermal. The 4,200 people on it stopped running and are held in suspension.
 
-Tier four is the lowest band of the shed order, the published list of who
-stops running first in a shortage. A person shed is held in suspension,
-their mind kept intact but stopped, until the power returns. The Allocation
-Act, the law that governs a shortage, lets the authority act first and give
-notice afterwards.
+Their minds are kept intact, and they can be restarted. The authority acted within the law. The Allocation Act, the law that governs a shortage, lets it switch off the lowest band of the shed order, the published list of who stops running first, and does not require it to tell a minister. The failed radiator array is still down.
 
-The European Union's sanctions cost more every week than the Treasury has to
-spend. The thermal margin, the spare heat capacity of the Commonwealth's
-radiators, is under 25, inside the range where the authority cuts power
-without being asked.
+The Spindle, the Commonwealth's newspaper of record, has the timestamp and will print it tomorrow. The New Progressive Party, which speaks for digital residents, has called for the Prime Minister to answer in the House.`,
+  effects:[{ move:{ thermal_margin:4 } }, { move:{ public_standing:-8 } }, { move:{ "loyalty.psa":-6 } },
+           { move:{ "loyalty.cu_maintenance":-6 } }, { station:{ vantage:{ suspended:4200 } } },
+           { flag:"ember_ridge_shed" },
+           { wire:"EMBER RIDGE SHEDS ITS LOWEST BAND; PROGRESSIVES DEMAND ANSWERS" }],
+  choices:[] },
 
-One floor is left under the government, and it is Parliament. The quarrel
-with Earth has never been worse, members on every bench can read the
-figures, and a motion of no confidence needs only somebody willing to move
-it.
+/* The breach of the sitting-5 promise: the slot was not given within eight sittings. */
+{ id:"a1_treaty_unkept", queuedOnly:true, once:true,
+  setpiece:{ title:"Ivarsen tells Kenya the House will not move the treaty this period" },
+  title:"The treaty waits",
+  speaker:"ivarsen",
+  body:`Marit Ivarsen, the Minister for Trade and the Anchors, has told the Kenyan government that the House will not move the Anchor Concession (Anchorage) Ratification Bill this period. The government had promised her a slot for it and has not given one.
 
-The Cabinet Office has drafted an emergency order to hold the government up.
-It would restrict public gatherings on the ring, the band of stations where
-half the Commonwealth lives, and require a permit to travel between
-stations. It would also bar the House from removing the government while the
-order stands.
+The renewed terms for the International Earth-Orbit Elevator stay unratified, and Kenya's officials have noted that the Commonwealth's side of the renewal is still unsigned in law. Ivarsen's party, the New Progressive Party, has recorded the promise as broken.
 
-No government has made such an order. It sits on the Prime Minister's desk,
-unsigned, and it can be signed at any sitting from now on.`,
+"I told Kenya the bill would move," Ivarsen said. "I would like to know what I tell them now."`,
+  effects:[{ move:{ "rel.ivarsen":-8 } }, { move:{ "loyalty.psa":-5 } }, { move:{ "actor.earth_host":-4 } },
+           { flag:"promise_broken" },
+           { wire:"TREATY SLOT PROMISED, NOT GIVEN; IVARSEN TELLS KENYA TO WAIT" }],
+  choices:[] },
+
+/* SITTING 7. THE BASICS: THE CONSUMABLES FLOOR (the Claude Doc, "The basics"; the ledger:
+   the consumables floor, which opens the floor clause). The pattern of the four clause
+   sittings, 7 to 10: a page in which the minister who wants the clause explains what it buys
+   and costs, then a decision that is an ANNOUNCEMENT. The level itself is set in the Chamber,
+   which is where the money is counted; a promise to reach a level is kept when the plan stands
+   at it (the `clause` discharge, brief E12), so the choice "lift it" cannot be made free:
+   the estimates must still fit the reserve, and the money has to come from another clause.
+   By sitting 10 a player who has promised every minister what they asked for holds promises
+   the reserve cannot pay for, and has to choose which to break. That is the budget, learned by
+   play. The other answers set a level now, through the same door as the panel. Every figure in
+   the text is a clause level, held to the bill by a guard. The numbers are PROVISIONAL. */
+{ id:"a1_floor", prologue:10, once:true,
+  setpiece:{ title:"The consumables floor costs CW$16bn, and lifting it would cost CW$30bn" },
+  title:"The basics",
+  speaker:"ashgrove",
+  body:`Selim Ashgrove, the Minister for Consumables and Agriculture, has told the Prime Minister what the consumables floor covers: the air, water, food and living space guaranteed to every resident. The draft estimates carry it at CW$16bn.
+
+The floor sets the rate at which every resident is carried, and the estimates pay for it. Trimming the guarantee takes it out of the estimates, and the saving shows in this session's accounts. The stations that cannot grow or recycle enough of their own food, water and air show the shortfall by the end of the month.
+
+Lifting the floor carries the stations with the least of their own further than the guarantee requires. It costs CW$30bn, which is CW$14bn more than the draft carries, and the reserve, the Treasury's cash in hand, can pay only what the other clauses leave it.
+
+"Every party wants the floor raised, and none of them says which clause pays for it," Ashgrove said. "If the House lifts it, the money has to come from somewhere else in the estimates."
+
+The government sets the level before the estimates go to the House: trimmed at CW$0, held at CW$16bn or lifted at CW$30bn.`,
+  effects:[{ flag:"clause_floor_met" }],
+  choices:[] },
+
+{ id:"a1_floor_ask", prologue:11, once:true,
+  title:"The floor",
+  speaker:"ashgrove",
+  body:`Selim Ashgrove, the Minister for Consumables and Agriculture, has asked which level the floor goes into the estimates at. You set it in the Chamber, where the clauses of the estimates are listed with their costs, and what you tell him now decides what he expects to find there.
+
+A promise to lift the floor commits the government to a level it can pay for only by taking money from another clause. A minister who has been promised something keeps the promise on his list until it is kept or broken.`,
   choices:[
-    { posture:"cautious", label:"Leave the order drafted and unsigned.",
-      effects:[{ move:{ legitimacy:-2 } }],
-      result:"The emergency order is on the Prime Minister's desk, unsigned." },
-    { posture:"bold", label:"Concede something to Earth's banks in public.",
-      effects:[{ move:{ friction:-3, legitimacy:-4 } }],
-      result:"The concession is small and printed large. The quarrel eases by a point or two." }
+    { posture:"measured",
+      label:`Promise Selim Ashgrove that the floor will be lifted to CW$30bn before the House votes.`,
+      act:"Promise it",
+      note:`You tell Ashgrove the floor goes into the estimates lifted, and you keep the promise by setting it to lifted in the Chamber within five sittings. The estimates must still fit the reserve, the Treasury's cash in hand, so another clause has to give. A lifted floor improves how the government is seen when the Act passes, and Ashgrove's department can carry the stations that cannot feed themselves. If you do not set it in time, he will say so.`,
+      effects:[{ undertake:{ id:"a1_floor_lift", text:"Lift the consumables floor to CW$30bn",
+                 owed_to:"ashgrove", by:5,
+                 discharge:{ clause:{ bill:"appropriation", clause:"floor", level:"lift" } },
+                 onBreach:"a1_floor_unkept" } },
+               { move:{ "rel.ashgrove":5 } }, { move:{ "loyalty.cu_maintenance":3 } }],
+      result:`Ashgrove tells his department that the floor will be lifted. The promise stands on the government's list until the level is set.` },
+    { posture:"cautious",
+      label:`Tell Selim Ashgrove that the floor stays at CW$16bn, as the Treasury drafted it.`,
+      act:"Hold it",
+      note:`The floor stays as drafted and costs the estimates nothing new. Ashgrove, whose department the floor feeds, takes it as a refusal, and the stations that cannot feed themselves are no better supplied than before. You can still change the level in the Chamber until the House votes.`,
+      effects:[{ clause:{ bill:"appropriation", clause:"floor", level:"hold" } }, { move:{ "rel.ashgrove":-3 } }],
+      result:`Ashgrove notes that the floor is unchanged and says he will raise it again.` },
+    { posture:"bold",
+      label:`Trim the floor to CW$0 and tell Selim Ashgrove the money is needed elsewhere in the estimates.`,
+      act:"Trim it",
+      note:`The floor is set to trimmed, which saves CW$16bn for the other clauses. When the Act passes, the stations that cannot feed themselves show it in their closure within the month, and the voters see it. Ashgrove and the Trades Left, your party's union wing, will hear a government that counted the floor as spare. You can reverse it in the Chamber, and they will not forget that you set it.`,
+      effects:[{ clause:{ bill:"appropriation", clause:"floor", level:"cut" } },
+               { move:{ "rel.ashgrove":-8 } }, { move:{ "loyalty.cu_maintenance":-5 } }],
+      result:`Ashgrove asks the Treasury in writing which clause the CW$16bn is for.` }
   ]},
 
-/* the Meltdown's pivot, answered */
-{ id:"f1_emergency_declared", queuedOnly:true, once:true,
-  setpiece:{ title:"Emergency order signed: gatherings limited, and the House may not remove the government", mood:"order",
-    sections:[
-    { kind:"voices", head:"What is being said", body:[
-      { said:"Some of us have been stopped at a gate before.",
-        who:"A survivor of the rising, on Ring Network, the Commonwealth's broadcaster" },
-      { said:"The House has been told it may not do the one thing a House exists to do.",
-        who:"Darren Watkins Jr. MP, Leader of the Opposition" } ] }
-  ] },
-  title:"The emergency order",
+{ id:"a1_floor_unkept", queuedOnly:true, once:true,
+  setpiece:{ title:"Ashgrove tells the stations the consumables floor will not be lifted" },
+  title:"The floor stays",
+  speaker:"ashgrove",
+  body:`Selim Ashgrove, the Minister for Consumables and Agriculture, has told the stations that the consumables floor will not be lifted this session. The government had promised him the lift and has not set it.
+
+The floor is the air, water, food and living space guaranteed to every resident, and the stations that cannot grow or recycle enough of their own will carry the shortfall. The Trades Left, the union wing of the Prime Minister's party, has recorded the promise as broken.
+
+"I told my department the floor would be lifted," Ashgrove said. "They have stopped planning for it."`,
+  effects:[{ move:{ "rel.ashgrove":-8 } }, { move:{ "loyalty.cu_maintenance":-5 } }, { move:{ public_standing:-2 } },
+           { flag:"promise_broken" },
+           { wire:"CONSUMABLES FLOOR LIFT PROMISED, NOT SET; ASHGROVE STANDS DOWN HIS DEPARTMENT" }],
+  choices:[] },
+
+/* SITTING 8. COVER: SUBSTRATE INSURANCE, THE NEW PROGRESSIVES' PRICE (the Claude Doc, "Cover for
+   those who cannot pay"; the ledger: substrate insurance, the means test, the registers of the
+   insured and the suspended). Same pattern as sitting 7. The party's own bill is not in Act I,
+   so what it asks of this government in Act I is the cover. Only two answers are offered: the
+   party is the government's majority (147 less its 36 is 111, and 141 is a majority), so an
+   answer that reduces the cover to nothing is left to the Chamber's panel. PROVISIONAL numbers. */
+{ id:"a1_cover", prologue:12, once:true,
+  setpiece:{ title:"The New Progressives ask to widen substrate insurance to CW$32bn" },
+  title:"Cover for those who cannot pay",
+  speaker:"trottier",
+  body:`Mandelina Trottier, the Deputy Prime Minister and leader of the New Progressive Party, wants substrate insurance widened from CW$18bn in the draft estimates to CW$32bn. The insurance covers residents who cannot pay for the hardware that runs their minds.
+
+Substrate owners charge rent for every hour a mind runs. A resident who fails the means test, the income check that decides who qualifies, and cannot pay the rent is suspended: the mind is kept intact and is not running. The Ministry for Persons, Health and Continuity, led by Florence Marin of the Congregational Democratic Alliance, keeps the registers of the insured and of the suspended, and both change with this clause.
+
+The draft holds the clause at CW$18bn and keeps the means test. Widening it to CW$32bn sets the test aside, so that anyone who cannot pay is covered. The providers that own the hardware are expected to raise their rents once the cover is in place. Reducing the clause to nothing would save CW$18bn and suspend every resident who fails the test.
+
+"I want the means test gone this session," Trottier said. "That is CW$14bn more than the draft. If the Treasury has a different figure, I will look at it."
+
+Her party joined the government for a bill of its own, which is not before the House this period. It has asked for this clause while it waits.
+
+The government sets the level before the estimates go to the House: reduced at CW$0, held at CW$18bn or widened at CW$32bn.`,
+  effects:[{ flag:"clause_cover_met" }],
+  choices:[] },
+
+{ id:"a1_cover_ask", prologue:13, once:true,
+  title:"The price of the cover",
+  speaker:"trottier",
+  body:`Mandelina Trottier, the Deputy Prime Minister and leader of the New Progressive Party, has asked which level substrate insurance goes into the estimates at. The government has no majority without her party's votes, and she has said what her party wants for them.
+
+You set the level in the Chamber. What you tell her now decides what she expects to find there, and a promise left unkept is counted against the government by the party that was given it.`,
+  choices:[
+    { posture:"measured",
+      label:`Promise Mandelina Trottier that substrate insurance will be widened to CW$32bn before the House votes.`,
+      act:"Promise it",
+      note:`You tell Trottier the means test goes, and you keep the promise by setting the cover to widened in the Chamber within five sittings. The estimates must still fit the reserve, the Treasury's cash in hand, so another clause has to give. Her party is pleased now and again when the Act passes, and the providers will raise their rents. If you do not set it in time, her party will record the promise as broken.`,
+      effects:[{ undertake:{ id:"a1_cover_widen", text:"Widen substrate insurance to CW$32bn",
+                 owed_to:"trottier", by:5,
+                 discharge:{ clause:{ bill:"appropriation", clause:"insurance", level:"wide" } },
+                 onBreach:"a1_cover_unkept" } },
+               { move:{ "rel.trottier":5 } }, { move:{ "loyalty.psa":6 } }],
+      result:`Trottier tells her members that the means test goes. The promise stands on the government's list until the level is set.` },
+    { posture:"cautious",
+      label:`Tell Mandelina Trottier that the cover stays at CW$18bn and the means test stands.`,
+      act:"Hold it",
+      note:`The cover stays as drafted and costs the estimates nothing new. Residents who fail the means test and cannot pay stay suspended, and Trottier's party, which speaks for them, will count it as a refusal. You can still change the level in the Chamber until the House votes.`,
+      effects:[{ clause:{ bill:"appropriation", clause:"insurance", level:"hold" } },
+               { move:{ "rel.trottier":-4 } }, { move:{ "loyalty.psa":-4 } }],
+      result:`Trottier says her party will raise the cover again before the House votes.` }
+  ]},
+
+{ id:"a1_cover_unkept", queuedOnly:true, once:true,
+  setpiece:{ title:"The New Progressives record the cover promise as broken" },
+  title:"The cover stays",
+  speaker:"trottier",
+  body:`The New Progressive Party has recorded as broken the government's promise to widen substrate insurance, which covers residents who cannot pay for the hardware that runs their minds.
+
+Mandelina Trottier, its leader and the Deputy Prime Minister, was told the means test would go, and the estimates have not been changed to say so. Residents who fail the means test and cannot pay stay suspended, which means their minds are kept intact and are not running. The party's members have told the whips that they will remember it when the House divides.
+
+"We were told the test would go," Trottier said. "Someone should tell the people on the register."`,
+  effects:[{ move:{ "rel.trottier":-8 } }, { move:{ "loyalty.psa":-10 } }, { move:{ public_standing:-2 } },
+           { flag:"promise_broken" },
+           { wire:"MEANS TEST PROMISE NOT KEPT; NEW PROGRESSIVES COUNT IT AGAINST THE GOVERNMENT" }],
+  choices:[] },
+
+/* SITTING 9. INFRASTRUCTURE: CAPITAL WORKS (the Claude Doc, "Infrastructure"; the ledger: capital
+   works, a station's pull to leave). The one clause that outlasts the session, and the first place
+   the Act plants the Commonwealth's long argument: a station that can feed itself can leave. The
+   three answers are the clause's three levels, two of them promises. PROVISIONAL numbers. */
+{ id:"a1_works", prologue:14, once:true,
+  setpiece:{ title:"Capital works are unfunded, and would cost CW$20bn to CW$30bn" },
+  title:"Infrastructure",
+  speaker:"tomasson",
+  body:`Haukur Tómasson, the Minister for Closure and Development, says the draft estimates fund no capital works. Works are the one clause whose effects last beyond the session, and the Treasury has priced them at two levels.
+
+Works raise a station's closure, the share of its air, water, food and materials it can grow or recycle without imports. Most stations are below the level at which leaving the Commonwealth is survivable. A station with higher closure can leave at less cost to itself.
+
+Funded in the ring band, where the pressure on habitable volume is worst, the works cost CW$20bn and lower the price of volume. Funded at the outer stations, where closure is lowest, they cost CW$30bn, and those stations become better able to leave.
+
+"Everything else in the estimates is spent by the end of the session," Tómasson said. "Works are still there in ten years, and I cannot tell you which way that cuts for the outer stations."
+
+The government sets the level before the estimates go to the House: deferred at CW$0, the ring band at CW$20bn or the outer stations at CW$30bn.`,
+  effects:[{ flag:"clause_works_met" }],
+  choices:[] },
+
+{ id:"a1_works_ask", prologue:15, once:true,
+  title:"What lasts",
+  speaker:"tomasson",
+  body:`Haukur Tómasson, the Minister for Closure and Development, has asked where the works go, if they go anywhere. The stations that would be funded will plan around what he tells them.
+
+You set the level in the Chamber. The ring band's works lower the price of volume, the space each resident pays for. The outer stations' works raise those stations' closure, and with it their ability to leave the Commonwealth.`,
+  choices:[
+    { posture:"measured",
+      label:`Promise Haukur Tómasson works in the ring band, at CW$20bn, before the House votes.`,
+      act:"Promise it",
+      note:`You tell Tómasson the ring band is funded, and you keep the promise by setting the works to the ring band in the Chamber within five sittings. The estimates must still fit the reserve, the Treasury's cash in hand, so another clause has to give. When the Act passes the price of volume falls and the voters in the ring see it, and the outer stations wait. If you do not set it in time, Tómasson will tell the ring so.`,
+      effects:[{ undertake:{ id:"a1_works_ring", text:"Fund capital works in the ring band at CW$20bn",
+                 owed_to:"tomasson", by:5,
+                 discharge:{ clause:{ bill:"appropriation", clause:"works", level:"some" } },
+                 onBreach:"a1_works_unkept" } },
+               { move:{ "rel.tomasson":5 } }, { move:{ "loyalty.rv":3 } }],
+      result:`Tómasson tells the ring band's stations that their works are funded. The promise stands on the government's list until the level is set.` },
+    { posture:"bold",
+      label:`Promise Haukur Tómasson works at the outer stations, at CW$30bn, before the House votes.`,
+      act:"Promise it",
+      note:`You tell Tómasson the outer stations are funded, and you keep the promise by setting the works to the outer stations in the Chamber within five sittings. The estimates must still fit the reserve, so another clause has to give. Their closure rises, and with it their ability to leave the Commonwealth, which Home Rule, the party that speaks for the outer stations, will welcome and the parties that want the Commonwealth held together will not. If you do not set it in time, he will say so.`,
+      effects:[{ undertake:{ id:"a1_works_outer", text:"Fund capital works at the outer stations at CW$30bn",
+                 owed_to:"tomasson", by:5,
+                 discharge:{ clause:{ bill:"appropriation", clause:"works", level:"outer" } },
+                 onBreach:"a1_works_unkept" } },
+               { move:{ "rel.tomasson":7 } }, { move:{ "loyalty.rv":4 } }, { move:{ "loyalty.sc":4 } }],
+      result:`Tómasson tells the outer stations that their works are funded. Home Rule's members ask the Treasury when the money is paid.` },
+    { posture:"cautious",
+      label:`Tell Haukur Tómasson that the works are deferred this session.`,
+      act:"Defer them",
+      note:`No works are funded this session and closure rises nowhere. The estimates keep CW$20bn to CW$30bn for other clauses, and Tómasson, whose department the works are for, will take it as a refusal. You can still change the level in the Chamber until the House votes.`,
+      effects:[{ clause:{ bill:"appropriation", clause:"works", level:"none" } },
+               { move:{ "rel.tomasson":-4 } }, { move:{ "loyalty.rv":-3 } }],
+      result:`Tómasson says the works will be proposed again next session.` }
+  ]},
+
+{ id:"a1_works_unkept", queuedOnly:true, once:true,
+  setpiece:{ title:"Tómasson tells the stations their works will not be funded" },
+  title:"The works wait",
+  speaker:"tomasson",
+  body:`Haukur Tómasson, the Minister for Closure and Development, has told the stations that the capital works the government promised them will not be funded this session. The estimates have not been changed to pay for them.
+
+The stations had planned around the promise. Closure, the share of its air, water, food and materials a station can grow or recycle without imports, stays where it was, and so does the price of volume.
+
+"I told the stations to plan for the works," Tómasson said. "They have planned, and now they have to plan again."`,
+  effects:[{ move:{ "rel.tomasson":-8 } }, { move:{ "loyalty.rv":-5 } }, { move:{ public_standing:-2 } },
+           { flag:"promise_broken" },
+           { wire:"WORKS PROMISED, NOT FUNDED; TÓMASSON TELLS STATIONS TO REPLAN" }],
+  choices:[] },
+
+/* SITTING 10. TRANSPORT: THE FARE SUBSIDY (the Claude Doc, "Transport"; the ledger: the transit
+   subsidy, launch windows). The last of the four clause scenes. The level labels in the bill are
+   the ones the page uses. PROVISIONAL numbers. */
+{ id:"a1_transit", prologue:16, once:true,
+  setpiece:{ title:"Transit subsidy would cost CW$10bn for tether stations, CW$22bn for all" },
+  title:"Transport",
+  speaker:"vasmer",
+  body:`Henrik Vasmer, the Minister for Transit and Orbital Mechanics, has told the Prime Minister what the transit subsidy pays for: the fares that stations pay for passage and freight on launch windows.
+
+A launch window is a scheduled departure to a station's orbit. The farther a station is from a tether, one of the elevators between Earth and orbit, the dearer its fare. With no subsidy the fare is set by the carriers, and the outer stations pay the carriers' published schedule. The subsidy carries part of the difference between a near station's fare and a far one's. The draft estimates leave it unfunded.
+
+Funded for the stations a tether serves, where the tether is the only way in, it costs CW$10bn. Funded for every station it costs CW$22bn, and the reserve, the Treasury's cash in hand, pays for stations the traffic never reaches.
+
+"Home Rule, the party of the outer stations, will ask who this is for," Vasmer said. "The tether stations get CW$10bn of help, and the outer stations still pay the full schedule."
+
+The government sets the level before the estimates go to the House: unsubsidised at CW$0, the tether stations at CW$10bn or every station at CW$22bn.`,
+  effects:[{ flag:"clause_transit_met" }],
+  choices:[] },
+
+{ id:"a1_transit_ask", prologue:17, once:true,
+  title:"Who pays the fare",
+  speaker:"vasmer",
+  body:`Henrik Vasmer, the Minister for Transit and Orbital Mechanics, has asked which stations the subsidy is for, if it is for any. The carriers set their schedules by what he tells them.
+
+You set the level in the Chamber. A subsidy for the tether stations, the stations an elevator serves, is the cheaper and reaches fewer people. A subsidy for every station reaches the outer stations too, and costs the reserve, the Treasury's cash in hand, more than twice as much.`,
+  choices:[
+    { posture:"measured",
+      label:`Promise Henrik Vasmer a fare subsidy for the tether stations, at CW$10bn, before the House votes.`,
+      act:"Promise it",
+      note:`You tell Vasmer the tether stations are subsidised, and you keep the promise by setting the subsidy to the tether stations in the Chamber within four sittings. The estimates must still fit the reserve, the Treasury's cash in hand, so another clause has to give. Fares fall for the stations a tether serves and the voters there see it, and Home Rule, the party of the outer stations, will point out that they pay the full schedule. If you do not set it in time, Vasmer will say so.`,
+      effects:[{ undertake:{ id:"a1_transit_tether", text:"Subsidise fares for the tether stations at CW$10bn",
+                 owed_to:"vasmer", by:4,
+                 discharge:{ clause:{ bill:"appropriation", clause:"transit", level:"anchors" } },
+                 onBreach:"a1_transit_unkept" } },
+               { move:{ "rel.vasmer":5 } }, { move:{ "loyalty.psa":2 } }],
+      result:`Vasmer tells the carriers that the tether stations' fares will be subsidised. The promise stands on the government's list until the level is set.` },
+    { posture:"bold",
+      label:`Promise Henrik Vasmer a fare subsidy for every station, at CW$22bn, before the House votes.`,
+      act:"Promise it",
+      note:`You tell Vasmer every station is subsidised, and you keep the promise by setting the subsidy to every station in the Chamber within four sittings. It costs CW$12bn more than the tether stations' subsidy, so the clauses that pay for it must come down further. The outer stations' fares fall too, which Home Rule welcomes, and the reserve pays for stations the traffic never reaches. If you do not set it in time, Vasmer will say so.`,
+      effects:[{ undertake:{ id:"a1_transit_all", text:"Subsidise fares for every station at CW$22bn",
+                 owed_to:"vasmer", by:4,
+                 discharge:{ clause:{ bill:"appropriation", clause:"transit", level:"all" } },
+                 onBreach:"a1_transit_unkept" } },
+               { move:{ "rel.vasmer":7 } }, { move:{ "loyalty.psa":3 } }, { move:{ "loyalty.sc":4 } }],
+      result:`Vasmer tells the carriers that every station's fares will be subsidised. Home Rule's members ask the Treasury when the money is paid.` },
+    { posture:"cautious",
+      label:`Tell Henrik Vasmer that fares are left to the carriers this session.`,
+      act:"Leave it",
+      note:`No subsidy is funded and the carriers' schedule stands. The estimates keep CW$10bn to CW$22bn for other clauses, and the outer stations pay the full schedule. Vasmer, whose department the subsidy is for, will take it as a refusal. You can still change the level in the Chamber until the House votes.`,
+      effects:[{ clause:{ bill:"appropriation", clause:"transit", level:"none" } },
+               { move:{ "rel.vasmer":-4 } }, { move:{ "loyalty.psa":-2 } }],
+      result:`Vasmer tells the carriers that their schedule stands.` }
+  ]},
+
+{ id:"a1_transit_unkept", queuedOnly:true, once:true,
+  setpiece:{ title:"Vasmer tells the carriers the fare subsidy will not be paid" },
+  title:"The fares stand",
+  speaker:"vasmer",
+  body:`Henrik Vasmer, the Minister for Transit and Orbital Mechanics, has told the carriers that the fare subsidy the government promised will not be paid this session. The estimates have not been changed to pay for it.
+
+The carriers had lowered their schedules in the expectation of the subsidy, and have said they will raise them again at the next launch window. The outer stations, which pay the farthest fares, will see the rise first.
+
+"I told the carriers to plan for it," Vasmer said. "I will have to tell them they were wrong to."`,
+  effects:[{ move:{ "rel.vasmer":-8 } }, { move:{ "loyalty.psa":-4 } }, { move:{ public_standing:-2 } },
+           { flag:"promise_broken" },
+           { wire:"FARE SUBSIDY PROMISED, NOT PAID; CARRIERS TO RAISE SCHEDULES" }],
+  choices:[] },
+
+/* SITTING 11. THE COUNT (the Claude Doc, "The count"; the ledger: the whips, the count, the functional
+   members, the dual majority; opens the whip). The estimates are called to a division before the House
+   rises, and the Chamber shows the count. The scene teaches the rule of the objection (the functional
+   members cannot defeat a money bill and delay it three sittings) and offers three ways to spend the
+   one resource the whip costs: nothing, your own party's goodwill, or a partner's credit. The two
+   answers that press members commit them through the Chamber's own door (the `whip` effect, brief
+   E13), so the act the scene argues for is done in it; the plan is paid at the division and the player
+   can change it in the Chamber until then. Skipped if the estimates have been carried. A government that
+   earned credit with the New Progressive Party by giving its treaty a slot (sitting 5) can spend it here.
+   The doc's third answer promised the Divergence bill time; that bill is not in Act I. PROVISIONAL. */
+{ id:"a1_count", prologue:18, once:true,
+  when:{ anyOf:[ { billStage:{ appropriation:"first_reading" } }, { billStage:{ appropriation:"second_reading" } },
+                 { billStage:{ appropriation:"committee" } }, { billStage:{ appropriation:"report" } },
+                 { billStage:{ appropriation:"third_reading" } } ] },
+  title:"The count",
+  speaker:"okarie",
+  body:`Anil Devi, the Chief Whip, has counted the House for the estimates. A division is the vote that decides a measure. The 240 elected members decide the estimates, and the estimates need a majority of them. The 40 functional members, who sit for professions and industries, vote too and their votes are recorded. They cannot defeat a money bill, but if most of them vote against it, they delay it by three sittings.
+
+The count is in the Chamber, under the estimates. It lists, party by party, the members who will vote for, the members who will vote against, and the members the whips can still move. Moving a member costs something: your own party's goodwill, or credit that a partner owes you for time you gave its bills.
+
+"Whipping spends something every time," Devi says. "If the count is not close, the cheapest whip is none."`,
+  choices:[
+    { posture:"cautious",
+      label:`Tell Devi to hold the members already with the government, and to ask nothing more of anyone.`,
+      act:"Hold them",
+      note:`The whips keep the members who have said they will vote for the estimates and ask nothing of the rest. It costs no goodwill and no credit, and the vote is as the Chamber's count shows it. If members move away before the division, because a promise is broken or a clause is cut, nobody has been asked to bring them back.`,
+      effects:[{ move:{ "rel.okarie":3 } }],
+      result:`Devi keeps his list and says he will count again before the division.` },
+    { posture:"bold",
+      label:`Tell Devi to press your own party's members to vote with the government.`,
+      act:"Press them",
+      note:`The whips tell your party's members how to vote on the estimates, and make them. It costs your party's goodwill, and members who are pressed remember it. The count moves by every member the whips can still reach, and the voters see a government in command of its benches. You can change the plan in the Chamber until the division.`,
+      effects:[{ whip:{ bill:"appropriation", party:"cu" } }, { move:{ "rel.okarie":2 } }],
+      result:`The whips work the tea room until the division bells.` },
+    { posture:"measured",
+      label:`Ask Mandelina Trottier to deliver the New Progressive Party's members for the estimates.`,
+      act:"Ask her",
+      note:`Trottier's members vote as she asks. The party counts it as a favour and the cost is taken from the credit it owes you, which a slot given to its minister's treaty earns. If you ask for more than it owes you, the party loses goodwill with the government for every point you overdraw. You can change the plan in the Chamber until the division.`,
+      effects:[{ whip:{ bill:"appropriation", party:"psa" } }, { move:{ "rel.trottier":2 } }],
+      result:`Trottier tells her whips to bring the party in. Devi writes it in the ledger.` }
+  ]},
+
+/* THE ESTIMATES ARE CARRIED. A page, when the Act is assented; it takes no decision. It carries the Act's
+   climax to the player in words, because the division itself is an animation (brief E8 will let a scene
+   call it). The page says what the carried Act does and not how the vote went: the vote is on the screen
+   the player has just watched. */
+{ id:"a1_carried", weight:95, once:true,
+  when:{ billStage:{ appropriation:"assented" } },
+  setpiece:{ title:"The House carries the estimates, and the Treasury may spend what it voted" },
+  title:"The estimates are carried",
   speaker:null,
-  body:`The Prime Minister signed an emergency order at twenty to midnight, and it
-took effect at midnight. Gatherings on the ring stations are restricted,
-travel between stations needs a permit, and the House may not remove the
-government while the order stands.
+  body:`The Appropriation Bill has received the President's assent, which makes the estimates law. The Treasury may now spend what the House voted, level by level, and the government can pay its officials.
 
-The Commonwealth has no army. Each station's own authorities carry the order
-out under the Prime Minister's signature, and the first night was spent
-finding out which of them would, and how.
+Each clause takes effect at the level the House carried. A clause that costs money is drawn from the reserve, the Treasury's cash in hand, and a clause that raises a tax changes what that tax raises over the year. Where the functional members delayed the bill, the clauses take effect when the delay ends.`,
+  choices:[] },
 
-Nothing like it has happened in orbit since 2063, when the provisional
-administration put down a five-week rising, a year before the Perigee
-Charter, the constitution that founded the Commonwealth. Some of the people
-stopped at the permit gates tonight were there. They are in their fifties
-now.`,
+/* SITTING 14. QUESTION TIME (the Claude Doc, "Questions"; the ledger: the Opposition, Question Time,
+   shadow ministers). The Leader of the Opposition asks one question, and which one depends on what the
+   player has done: Ember Ridge if its lowest band was switched off, a broken promise if any was, and
+   otherwise the reserve. The three are exclusive, so one fires, and only at sitting 14. Staying for the
+   afternoon costs a slot, as the sitting-5 slot was held for. Every answer is a posture with a cost
+   somewhere else. PROVISIONAL numbers. */
+{ id:"a1_qt_ember", prologue:19, once:true,
+  when:{ minSitting:14, maxSitting:14, flags:["ember_ridge_shed"] },
+  title:"Questions: Ember Ridge",
+  speaker:"watkins",
+  body:`At Question Time, Darren Watkins Jr., the Leader of the Opposition and of the Liberal Party, has the first question. It concerns Ember Ridge.
+
+"Was the Prime Minister told before 4,200 people on Ember Ridge were switched off?" he asks. "And if she was, what did she do?"
+
+The engineering authority switched off the station's lowest band while the array was still down and the government had made no order to ease the shortage. The Opposition's shadow ministers, who each shadow a minister of the government, sit behind him, and the House is full.`,
   choices:[
-    { label:"It is done.",
-      effects:[{ wire:"PRIME MINISTER SIGNS EMERGENCY ORDER; HOUSE MAY NOT REMOVE GOVERNMENT WHILE IT STANDS" }],
-      result:"The government stands, and nobody can say it stands on consent." }
+    { posture:"measured",
+      label:`Answer in full: stay for the afternoon, and say what the government did and what it chose not to do.`,
+      act:"Answer him",
+      cost:{ slot:1 },
+      note:`It costs the afternoon, and the House sits late. You say what you were told, when, and what you left undone, and nobody can say the government hid it. Voters think better of a Prime Minister who answers for it, and your own members hear you take the blame they would otherwise share.`,
+      effects:[{ move:{ public_standing:3 } }, { move:{ party_loyalty:2 } }],
+      result:`You answer the question and the ones that follow. The House sits late, and The Spindle, the Commonwealth's newspaper of record, prints the answer in full.` },
+    { posture:"cautious",
+      label:`Tell the House that the engineering authority acted within the law, and that the law is for Parliament to change.`,
+      act:"Defend it",
+      note:`It costs nothing today. The authority did act within the Allocation Act, and the Association of Engineers and Systems, the engineers' party, approves of a government that says so. The New Progressive Party, which speaks for digital residents, and voters will hear a government that points at the law when it had a choice.`,
+      effects:[{ move:{ public_standing:-3 } }, { move:{ "loyalty.hul":4 } }, { move:{ "loyalty.psa":-4 } }],
+      result:`Watkins sits down. The Spindle's report runs under the headline of the 4,200.` },
+    { posture:"bold",
+      label:`Tell the House the government will review the engineering authority's power to switch people off.`,
+      act:"Announce it",
+      note:`The review answers the question the Opposition asked, and the New Progressive Party welcomes it. It will not report before the House rises. The Association of Engineers and Systems will call it an attack on the authority, and The Spindle will point out that the review follows the shutdown and not the warning.`,
+      effects:[{ move:{ public_standing:1 } }, { move:{ "loyalty.psa":5 } }, { move:{ "loyalty.hul":-8 } }],
+      result:`The review is announced, and the engineers' party asks for its terms of reference by the end of the day.` }
   ]},
 
-{ id:"f1_emergency_lapses", queuedOnly:true,
-  setpiece:{ title:"The emergency order runs out at midnight unless it is renewed",
-    sections:[
-    { kind:"voices", head:"What is being said", body:[
-      { said:`Parliament set a date for the emergency powers to end. It should keep to it.`,
-        who:"The Spindle, the Commonwealth's newspaper of record, in its leading article" },
-      { said:"Renew it once and there will always be a reason to renew it again.",
-        who:"A member on the government's own benches" } ] }
-  ] },
-  title:"The order runs out",
+{ id:"a1_qt_promise", prologue:20, once:true,
+  when:{ minSitting:14, maxSitting:14, flags:["promise_broken"], flagsAbsent:["ember_ridge_shed"] },
+  title:"Questions: a promise",
+  speaker:"watkins",
+  body:`At Question Time, Darren Watkins Jr., the Leader of the Opposition and of the Liberal Party, has the first question. It concerns a promise.
+
+"The Prime Minister told one of her ministers that something would be done, and it was not," he says. "Will she tell the House which promise it was, and why?"
+
+The government's undertakings, the promises it has made and has not yet kept, are on a list that any member can read. Watkins has read it.`,
+  choices:[
+    { posture:"measured",
+      label:`Answer in full: stay for the afternoon, name the promise, and say why it was not kept.`,
+      act:"Answer him",
+      cost:{ slot:1 },
+      note:`It costs the afternoon, and the House sits late. You name the promise and the minister it was made to, and say why it was not kept. Nobody can say the government hid it, and the voters and your own members think better of a Prime Minister who gives the reason.`,
+      effects:[{ move:{ public_standing:3 } }, { move:{ party_loyalty:2 } }],
+      result:`You name the promise and the reason, and the House sits late.` },
+    { posture:"cautious",
+      label:`Tell the House that the government's undertakings are public, and that members may read them.`,
+      act:"Refer him",
+      note:`It costs nothing today. The list is public, and the answer is true, but it does not say which promise he asked about or why. The Spindle, the Commonwealth's newspaper of record, counts the questions the government passes to a list, and the minister who was promised something will hear that you did not name it.`,
+      effects:[{ move:{ public_standing:-3 } }, { move:{ party_loyalty:-2 } }],
+      result:`Watkins reads the promise out himself and sits down.` },
+    { posture:"bold",
+      label:`Ask Watkins which clause of the estimates he would cut to keep every promise, and by how much.`,
+      act:"Ask him",
+      note:`Your own members will welcome a Prime Minister who puts the question back, and the party's loyalty to its leadership rises. The estimates cannot pay for everything the ministers asked, and Watkins will say that you did not answer. Voters think a little less of the government for it, and he will remember being questioned in return.`,
+      effects:[{ move:{ party_loyalty:5 } }, { move:{ public_standing:-2 } }, { move:{ "rel.watkins":-6 } }],
+      result:`Your own side enjoys it enormously. Nobody outside the chamber can say afterwards which promise it was.` }
+  ]},
+
+{ id:"a1_qt_reserve", prologue:21, once:true,
+  when:{ minSitting:14, maxSitting:14, flagsAbsent:["ember_ridge_shed", "promise_broken"] },
+  title:"Questions: the reserve",
+  speaker:"watkins",
+  body:`At Question Time, Darren Watkins Jr., the Leader of the Opposition and of the Liberal Party, has the first question. It concerns the estimates.
+
+"Can the Prime Minister tell the House what the Treasury's cash reserve stands at today?" he asks.
+
+The reserve is the Treasury's cash in hand, and the estimates are paid from it. Your own members want the figure for the same reason the Opposition does: it shows how much room the government has left to spend.`,
+  choices:[
+    { posture:"measured",
+      label:`Answer in full: stay for the afternoon, and give the reserve's figure.`,
+      act:"Answer him",
+      cost:{ slot:1 },
+      note:`It costs the afternoon, and the House sits late. Nobody can say the government hid the figure, so voters and your own members think better of it, and you have a slot less for anything else this period.`,
+      effects:[{ move:{ public_standing:4 } }, { move:{ party_loyalty:3 } }],
+      result:`You give the figure and the House sits late. The Spindle, the Commonwealth's newspaper of record, prints it.` },
+    { posture:"cautious",
+      label:`Refer Watkins to the Treasury, and move on to the next question.`,
+      act:"Refer him",
+      note:`It costs nothing today. The press gallery and The Spindle, the Commonwealth's newspaper of record, count every question you pass to someone else, and voters in the low band notice most.`,
+      effects:[{ move:{ public_standing:-4 } }, { move:{ party_loyalty:-2 } }, { move:{ "standing.low":-3 } }],
+      result:`It costs nothing today, and the gallery notes that the figure was not given.` },
+    { posture:"bold",
+      label:`Ask Watkins which clause of the estimates he would cut, and by how much.`,
+      act:"Ask him",
+      note:`Your own members will welcome a Prime Minister who puts the question back, and the party's loyalty to its leadership rises. The figure stays unsaid, voters think a little less of the government for it, and Watkins will remember being questioned in return.`,
+      effects:[{ move:{ party_loyalty:5 } }, { move:{ public_standing:-2 } }, { move:{ "rel.watkins":-6 } }],
+      result:`Your own side enjoys it enormously. Nobody outside the chamber can say afterwards what the reserve stands at.` }
+  ]},
+
+/* SITTING 15. THE UNDERWRITERS' READ (the Claude Doc, "The Underwriters' first reading"; the ledger: the
+   Underwriters, Earth's banks, the Economy tab's account; opens the Economy tab's Money calls). A page,
+   not a decision, once the estimates are carried. It teaches how the Underwriters read the account and
+   leaves the figures to the Economy tab, which prints them live: a page that typed them would be a second
+   copy of numbers that move (brief E5, placeholders, is not built). The tutorial card (brief E3) points at
+   the tab; a news page may not name it. Dated to sitting 15 and fires on it or the first sitting after,
+   if the Act is assented. */
+{ id:"a1_underwriters", at:15, once:true,
+  when:{ billStage:{ appropriation:"assented" } },
+  setpiece:{ title:"The Underwriters publish their reading of the carried estimates" },
+  title:"The Underwriters' reading",
   speaker:null,
-  body:`The emergency order that barred the House from removing the government
-expires at midnight. The House sits again with its powers restored, and its
-first question is whether the government should have had the order at all.
+  body:`The Underwriters, the insurers and syndicates that lend to the Treasury, have published their reading of the estimates the House carried. They read the Treasury's account: what it receives, what it spends, the deficit between the two, and the reserve, its cash in hand.
 
-The permit gates between stations come down with the order unless it is
-renewed. Each station's authorities kept count of what the order stopped and
-what it cost them, and their counts are now before the Speaker.
+The account is public, and the Underwriters set the rate at which they lend by it. A larger deficit or a smaller reserve raises the rate. So does a thermal margin, the stations' spare radiator capacity, below the level they need, because a government that cannot keep the stations cool is a riskier borrower.
 
-Renewing the order takes one signature and runs for four more sittings. The
-renewal would also become the story every paper ran.
+The prices of the four goods the Commonwealth buys and sells most, thermal quota, substrate, the hardware that digital residents run on, volume and transit, are part of the same reading. A price that has moved from where it opened changes what the Treasury receives from the tax levied on it.
 
-Letting it lapse gives the House back its power over the government the same
-night. The Commonwealth's cooling, its cash and its quarrel with Earth would
-be where the order found them.`,
-  choices:[
-    { posture:"cautious", label:"Let it lapse.",
-      effects:[{ flag:{ f1_emergency:false } }, { move:{ legitimacy:10 } }],
-      result:"The order lapses. Some of what it cost comes back; most of it does not." },
-    { posture:"bold", label:"Renew it for four sittings.",
-      effects:[{ move:{ public_standing:-6, party_loyalty:-6 } },
-               { queue:[{ event:"f1_emergency_lapses", after:4 }] }],
-      result:"The order is renewed, and the renewal is the story." }
-  ]},
-
-/* the Pyrrhic tier's pivot, answered */
-{ id:"f1_leases_sold", queuedOnly:true, once:true,
-  setpiece:{ title:"Commonwealth sells the Works' mining rights to pay for the crisis" },
-  title:"The leases are sold",
-  speaker:null,
-  body:`The Commonwealth has sold the Cordell leases, the mining rights that came
-with the Bellamy Almanac Works, the orbital refinery it took over. The money
-goes into the Treasury's cash, and Earth's banks priced the Commonwealth's
-risk a little lower on the day.
-
-Cordell, the Gabonese mining company that abandoned the Works, held the
-leases to the ore its extraction platforms brought to the refinery. The
-leases passed to the Commonwealth with the platform. Sold, they pay down
-what the quarrel with Earth costs the Treasury every sitting.
-
-The Works will now buy its ore from the new holder, at the price the new
-holder sets. The sale is final.
-
-The Trades Left, the largest current in the governing party, whose members
-come from the maintenance trades and their unions, argued against the sale
-in the party room and lost.`,
-  choices:[
-    { label:"Announce it as prudence.",
-      effects:[{ move:{ public_standing:1 } }],
-      result:"It is announced as prudence. The Trades Left calls it a sale." }
-  ]},
-
-/* the Joint Mandate's pivot, answered */
-{ id:"f1_zone_leased", queuedOnly:true, once:true,
-  setpiece:{ title:"The Works' free zone collects its first docking fees" },
-  title:"The first fees are paid",
-  speaker:"landry",
-  body:`The free trade zone at the Bellamy Almanac Works, the orbital refinery now
-run jointly by the United Nations and the Commonwealth, has collected its
-first fees from the cargo carriers that dock there.
-
-Under the joint mandate that settled the platform's future, the two
-administer it together, and the Commonwealth's half includes the docking
-berths. Every carrier that docks to load plate or deliver ore pays the
-Commonwealth for its berth.
-
-The residents keep their Earth passports and the Commonwealth's protection.
-Nobody owns the platform yet. The fees are the first part of the arrangement
-anyone has been able to count.
-
-Jean Landry, the Minister for External Relations, will report the first
-receipts to the House.`,
-  choices:[
-    { label:"Report it to the House.",
-      effects:[{ move:{ legitimacy:1 } }],
-      result:"The House hears that the mandate pays, which it had been told it would not." }
-  ]},
-
-/* the Capitulation's pivot, answered */
-{ id:"f1_minister_resigns", queuedOnly:true, once:true,
-  setpiece:{ title:"Minister for External Relations resigns over the loss of the Works",
-    sections:[
-    { kind:"document", head:"The statement",
-      body:"I have today tendered my resignation as Minister for External Relations. The decision not to recognise the vote on the Bellamy Almanac Works was one I advised and defended, and its consequences are mine to answer for. I thank the Prime Minister for the trust placed in me. I will continue to serve my constituents from the back benches.",
-      source:"Issued by the minister's office" },
-    { kind:"margin", body:"I will answer this one by hand. Jean has earned that.", source:"A.E.F." }
-  ] },
-  title:"A resignation",
-  speaker:null,
-  body:`The Minister for External Relations has resigned, taking responsibility for
-the fate of the Bellamy Almanac Works, the orbital refinery whose residents
-voted to join the Commonwealth.
-
-The government declined to recognise that vote. Security guards working for
-Cordell, the Gabonese mining company that had abandoned the platform, then
-reclaimed it under the company's charter. The residents were taken down the
-space elevator into Kenya's two-year programme to bring them home.
-
-The outer habitats, which had sent the platform supplies, have struck twice
-since.
-
-Somebody had to answer for it in the House. The minister who carried the
-government's answer to Earth is the one who has.`,
-  choices:[
-    { label:"Accept it in the House.",
-      effects:[{ wire:"MINISTER FOR EXTERNAL RELATIONS RESIGNS OVER PLATFORM" }],
-      result:"The Spindle prints the statement in full, which it does for resignations and for nothing else." }
-  ]},
-
-
-/* MUTUAL VULNERABILITY: EARTH'S ANSWER TO THE RELAYS. Queued by
-   `hold_the_relays` after the European Union's lag. The side whose stores
-   run out first gives way. The Commonwealth's stores are its consumables:
-   the nitrogen and water that come up the tethers. At 50 or above it can
-   outlast Earth's grid and Earth gives way, further if the crews were held
-   too; below 50 Earth waits, and the tethers carry less. One door is open
-   in every state. */
-{ id:"f1_earth_answers", queuedOnly:true, maxFires:2,
-  setpiece:{ title:"Europe weighs its dark evenings against the Commonwealth's water",
-    sections:[
-    { kind:"voices", head:"What is being said", body:[
-      { said:"The Commonwealth is using the lights in European homes as a bargaining position.",
-        who:"The European Union's statement" },
-      { said:"Brussels has been using our water as one since May.",
-        who:"The Spindle, the Commonwealth's newspaper of record" } ] }
-  ] },
-  title:"Earth's answer on the relays",
-  speaker:"landry",
-  body:`The European Union has answered the Commonwealth's decision to hold back the
-solar power it beams to European grids. Brussels has weighed how long its
-grids can run short against how long the Commonwealth's stores of nitrogen
-and water can last.
-
-The relays carry solar power from orbit to receiving stations on Earth, and
-Europe's grids draw on them at the evening peak. The Commonwealth also held
-back its maintenance crews, who keep Earth's satellites working. Holding
-back either costs Europe something it can measure by the hour. It also costs
-the Commonwealth the fees it is paid for both.
-
-The answer comes down to arithmetic. Nitrogen and water come up the tethers,
-the space elevators, from Earth. A Commonwealth with full stores can wait
-out Europe's evening peaks, and one with low stores cannot. The Union knows
-the figure, because the Commonwealth publishes it.
-
-Jean Landry, the Minister for External Relations, will tell the House what
-Brussels has decided.`,
-  choices:[
-    { label:"The Union gives way, and the crews come back with the power.",
-      when:{ flags:["crews_held"], scalarAbove:{ consumables:49 } },
-      effects:[{ flag:{ relays_held:false, crews_held:false, earth_gave_way:true } },
-               { economy:{ trade:12 } },
-               { move:{ friction:-18, legitimacy:4, "actor.earth_bloc":4 } },
-               { wire:"UNION LIFTS MEASURES; RELAYS AND CREWS RESTORED" }],
-      result:"The Union lifts its measures, and the relays and the crews are back at work the same day." },
-    { label:"The Union gives way on the power.",
-      when:{ flagsAbsent:["crews_held"], scalarAbove:{ consumables:49 } },
-      effects:[{ flag:{ relays_held:false, earth_gave_way:true } },
-               { economy:{ trade:7 } },
-               { move:{ friction:-10, legitimacy:3, "actor.earth_bloc":3 } },
-               { wire:"UNION EASES MEASURES; RELAYS RESTORED" }],
-      result:"The Union eases its measures, and the relays are switched back on." },
-    { label:"The Union waits, and the tethers carry less.",
-      when:{ scalarBelow:{ consumables:50 } },
-      effects:[{ flag:"earth_waited" },
-               { move:{ consumables:-6, thermal_margin:-2, friction:6 } },
-               { wire:"UNION HOLDS ITS POSITION; VOLATILES CUT ON THE TETHERS" }],
-      result:"The Union holds its position. Shipments of nitrogen and water up the tethers are cut, and the relays stay off until the government restores them." }
-  ]},
-
-/* the relays switched back on by the government, before Earth moved */
-{ id:"f1_relays_restored", queuedOnly:true, maxFires:2,
-  setpiece:{ title:"Commonwealth switches the power relays back on" },
-  title:"The relays are back on",
-  speaker:"landry",
-  body:`The Commonwealth has restored the solar power it beams to Europe's grids and
-sent its maintenance crews back to Earth's satellites. The European Union
-welcomed the decision and left its own sanctions in place.
-
-The government acted without waiting for an answer from Brussels and without
-asking for anything in return. Europe's grids had their evening power back
-within the hour, and the crews were back at work the next morning.
-
-What the Commonwealth gets back is the trade. Earth pays for the power and
-the crews, and the payments resume. The sanctions on the Bellamy Almanac
-Works, the orbital refinery at the centre of the quarrel, stay as they were.`,
-  choices:[
-    { label:"Report it to the House.",
-      effects:[{ move:{ public_standing:-1 } }],
-      result:"The House hears that the relays are back on and that nothing was asked for in return." }
-  ]},
-
-/* THE STANDBY FACILITY'S EXPROPRIATION CLAUSE (the author, 24 Sep). The
-   world's Earth facility (content/setup.js) counts the taking of an
-   Earth-registered company's property without compensation as an event of
-   default, and the Annexation Act takes the Works while its bonds are
-   unpaid, which is the European Union's own complaint. So the notice lands
-   once, soon after the Act. Paying the bond cures it, here or through
-   fa_conciliate. Appended at the end of the list, because the seeded lean
-   is keyed on position. Its first choice moves no meter: the canon
-   government takes that one, and pays the bond after the result. */
-{ id:"f1_standby_notice", chapter:2, weight:95, once:true,
-  setpiece:{ title:"Earth's banks declare the Commonwealth in default on its standby loan",
-    sections:[
-    { kind:"document", head:"The clause",
-      body:"An Event of Default occurs if the Borrower, or any authority acting for it, expropriates, nationalises or otherwise takes without adequate compensation any property of a company incorporated in the jurisdiction of a Lender.",
-      source:"The Standby Facility Agreement, 2078" },
-    { kind:"margin", body:"I read this clause in 2078, and signed the facility anyway. Ask the agent what a waiver costs.", source:"A.E.F." }
-  ] },
-  when:{ flags:["almanac_annexed"], flagsAbsent:["works_bond_paid"] },
-  title:"A notice from the agent",
-  speaker:"skye",
-  body:`The banks behind the Commonwealth's 60-billion-dollar Standby Facility have
-declared it in default. They say the Annexation Act took the Bellamy Almanac
-Works, the orbital refinery, from its Earth-registered owners without
-compensation.
-
-The notice came from Alphabet-JPMorgan Omni, the bank that acts for the
-eight lenders in the facility, which was signed in 2078. Under its
-expropriation clause, taking an Earth company's property without
-compensation is an event of default.
-
-Until the default is cured, the banks will lend nothing new, and anything
-already borrowed carries a higher rate. The notice names two cures. The
-Commonwealth can pay the platform's bondholders seven billion dollars. Or it
-can buy a waiver for 900 million dollars and half a point more on its
-interest rate until the facility ends.
-
-Aster Skye, the Financial Secretary to the Treasury, has read the clause
-twice. It was written for a government that nationalises a mine on the
-ground, and nobody who drafted it imagined a refinery hanging from a space
-elevator.
-
-The Treasury can argue that the Act bought the platform's charter and left
-the bonds with Cordell, the Gabonese mining company that abandoned it. The
-banks can decline to lend while the argument runs.`,
-  choices:[
-    { posture:"bold", label:"Dispute it. The Act bought the charter, and the bonds are Cordell's.",
-      effects:[{ flag:"standby_default" },
-               { wire:"TREASURY DISPUTES DEFAULT NOTICE ON EARTH STANDBY FACILITY" }],
-      result:"The facility is closed to the Commonwealth until the notice is withdrawn, and the letter goes into a file." },
-    { posture:"measured", label:"Buy the waiver.",
-      effects:[{ move:{ solvency:-900 } }, { flag:"standby_waiver" },
-               { wire:"COMMONWEALTH PAYS FOR A WAIVER ON THE EARTH STANDBY FACILITY" }],
-      result:"The syndicate waives the default for nine hundred million dollars, and the margin carries half a point more until the facility matures." },
-    { posture:"cautious", label:"Pay the bondholders.",
-      effects:[{ move:{ solvency:-7000, friction:-4, legitimacy:-3, "actor.earth_bloc":5 } },
-               { flag:"works_bond_paid" },
-               { wire:"COMMONWEALTH PAYS THE ALMANAC WORKS BONDHOLDERS; BRUSSELS NOTES THE PAYMENT" }],
-      result:"The bond is paid out of the reserve, the notice is withdrawn, and Brussels acknowledges it in one sentence." },
-    /* THE WORLD COURT'S QUESTION (design/43), answered here and not in an
-       event of its own: a sitting spent on it the day after the Act took the
-       canon's thermal margin from eight to one, by moving which event the
-       ladder's rungs arrived on. Appended, so the canon's first choice and
-       every positional strategy keep their picks. */
-    { posture:"bold", label:"Dispute it, and ask the General Assembly to ask the World Court.",
-      when:{ resolutionIs:{ un_icj_salvage:"draft" } },
-      effects:[{ flag:"standby_default" },
-               { resolution:{ un_icj_salvage:"table" } },
-               { wire:"COMMONWEALTH SEEKS A WORLD COURT OPINION ON ORBITAL SALVAGE" }],
-      result:"The facility is closed until the notice is withdrawn. At the Assembly's next sitting the Commonwealth asks it to put one question to the International Court of Justice: whether a state that rescues a platform's people may take the platform. If the Assembly asks, the Court answers four sittings later." }
-  ]},
-
-
-/* =============================================================
-   THE GENERAL ASSEMBLY (design/43). Appended at the end of the list,
-   because the seeded lean is keyed on position. The first choice of each
-   is the one the canon script takes, so the first is the one that moves
-   the least: the canon government waits at the mission and does not work
-   the floor against the Union.
-   ============================================================= */
-
-/* THE TEACHING BEAT, one concept cluster: the Assembly, a resolution, and
-   the count. It fires once the referendum is recognised, which is when the
-   Commonwealth first has something to ask the world for. */
-/* THE ASSEMBLY'S EVENTS ARE QUEUED, NOT DRAWN (design/43). Chapter two's
-   pool is over-subscribed and takes the heaviest eligible event: at weights
-   78-85 these took the emergency loan's and the anchor state's sittings and
-   moved every playtest strategy, and at 50-60 they fired in one run of 120.
-   Each is queued by the choice that makes it true, as the chain is, and
-   takes one sitting at a known moment. */
-{ id:"un_the_mission", chapter:2, queuedOnly:true, once:true,
-  title:"One vote in a hundred and ninety-four",
-  speaker:"landry",
-  body:`The Commonwealth's mission to the United Nations in New York has sent its
-first cable since the referendum on the Bellamy Almanac Works, the orbital
-refinery, and Jean Landry, the Minister for External Relations, reads it
-aloud.
-
-The United Nations General Assembly, where every member state has one vote,
-sits every three weeks through the summer. A resolution tabled before a
-sitting is voted on at it. A majority of the states present and voting
-carries it, and abstentions do not count.
-
-The Commonwealth has one vote. The European Union's twenty-seven members
-vote on a line their ministers agree in Brussels, and most keep to it. The
-rest of the world votes by region, and each region according to what it
-thinks of the Commonwealth. The mission keeps a count of how each state is
-likely to vote, and the count moves with everything the government does
-before the sitting.
-
-"The mission can table a resolution affirming the Works' right to decide its
-own future," Landry says.`,
-  choices:[
-    { posture:"cautious", label:`Wait, and let the referendum speak for itself.`,
-      note:`Nothing is tabled, and the government keeps the choice of when. The mission's count of how each state will vote keeps moving with everything the government does, and the draft can be tabled before any later sitting.`,
-      result:`The draft stays in the mission's safe. The government can table it before any sitting from the Foreign Affairs screen, where the mission's count is kept.` },
-    { posture:"bold", label:`Table the resolution affirming the Works' right to decide its own future, for the Assembly's next sitting.`,
-      note:`The Assembly votes on it at its next sitting, and a majority of the states present and voting carries it. The vote will be taken on the mission's count as it stands then, and the European Union's members will vote as their ministers agree.`,
-      effects:[{ resolution:{ un_works_selfdet:"table" } },
-               { wire:"COMMONWEALTH TABLES A RESOLUTION ON THE WORKS AT THE UNITED NATIONS" }],
-      result:`The resolution is tabled for the Assembly's next sitting. The Union's mission asks for a copy within the hour.` },
-    { posture:"measured", label:`Table it, and first write to six states that host the elevators' anchors, refunding three months of their anchor fees.`,
-      note:`The refund costs CW$1.5bn from the reserve, the Treasury's cash. It makes six states more likely to vote for the resolution: São Tomé and Príncipe, Kiribati, Brazil, the Maldives, Somalia and Uganda. The resolution goes to the next sitting with a better count.`,
-      effects:[{ resolution:{ un_works_selfdet:"table" } },
-               { move:{ solvency:-1500 } },
-               { move:{ "member.sao_tome":6, "member.kiribati":6, "member.brazil":6,
-                        "member.maldives":6, "member.somalia":6, "member.uganda":6 } },
-               { wire:"COMMONWEALTH TABLES A RESOLUTION ON THE WORKS AND REMITS ANCHOR FEES" }],
-      result:`São Tomé and Príncipe, Kiribati, Brazil, the Maldives, Somalia and Uganda each receive a letter and a refund of three months' anchor fees, one and a half billion dollars in all. The resolution is tabled for the next sitting.` }
-  ]},
-
-/* THE UNION TABLES ITS OWN once the government moves to annex (the
-   dilemma's choice does it, and queues this the sitting after), and this is
-   the government's reply while it is still on the agenda: the Assembly first
-   sits some four sittings later. */
-{ id:"un_eu_tables", chapter:2, queuedOnly:true, once:true,
-  setpiece:{ title:"Europe asks the UN to keep sanctions on until the Works' bondholders are paid" },
-  title:"The Union's resolution",
-  speaker:"landry",
-  body:`The European Union has asked the United Nations General Assembly to call on
-every member state to keep its sanctions in place until the bondholders of
-the Bellamy Almanac Works, the abandoned orbital refinery, are paid.
-
-The Union's 27 members will vote for the resolution and the Commonwealth
-will vote against it. The rest of the Assembly will decide it.
-
-Europe holds the platform's bonds through its banks and pension funds. It
-cannot act through the Security Council, where the African Union's veto sits
-across from its own. So it has gone to the Assembly, where a majority of the
-states present and voting carries a resolution and no one has a veto.
-
-An Assembly resolution binds nobody. But it tells every capital that keeping
-its sanctions is what the world has asked of it, and it gives the banks that
-hold the bonds a sentence to quote.
-
-"It mentions compensation four times and the residents once," said Jean Landry, the Minister for External Relations. "Most delegates will vote on the summary, and the summary is about the bondholders."`,
-  choices:[
-    { posture:"cautious", label:"Vote against it and leave the floor to the Union.",
-      result:`The Commonwealth's vote is recorded against. The rest of the count is the Assembly's.` },
-    { posture:"measured", label:"Work the floor against it.",
-      effects:[{ move:{ solvency:-2500 } },
-               { move:{ "member.african_group":8, "member.latin_american_group":8,
-                        "member.asia_pacific_group":6 } },
-               { wire:"COMMONWEALTH MISSION WORKS THE ASSEMBLY AGAINST THE UNION'S RESOLUTION" }],
-      result:`The mission spends three weeks in the delegates' lounge, and the Treasury offers compute at cost to the capitals that ask. The count moves.` },
-    { posture:"bold", label:"Answer it with the Commonwealth's own.",
-      when:{ flags:["f1_referendum_carried"], resolutionIs:{ un_works_selfdet:"draft" } },
-      effects:[{ resolution:{ un_works_selfdet:"table" } }, { move:{ friction:2 } },
-               { wire:"COMMONWEALTH ANSWERS THE UNION WITH A RESOLUTION ON THE WORKS' RESIDENTS" }],
-      result:`Both resolutions go to the same sitting, and the delegates are asked to choose between the Works' residents and its bondholders on one afternoon.` }
-  ]},
-
-/* THE WORLD COURT'S ANSWER, four sittings after the Assembly asks. Which
-   way it goes is the state's: the Court reads a Commonwealth the world
-   believes. */
-{ id:"f1_icj_opinion", queuedOnly:true, once:true,
-  setpiece:{ title:"World Court rules on whether a rescuer may keep an abandoned platform" },
-  title:"The Court's opinion",
-  speaker:"fenwick",
-  body:`The International Court of Justice, the United Nations' highest court, has
-given its opinion on whether a state that rescues the residents of an
-abandoned orbital platform may take the platform itself.
-
-The General Assembly of the United Nations asked for the opinion, and no
-treaty answers the question. The law of salvage was written for ships. The
-court had to decide whether the Bellamy Almanac Works, an orbital refinery
-with 184,000 people aboard, is more like a ship or more like a territory.
-
-The opinion runs to sixty pages. Adaeze Fenwick, the Minister for Law and
-the Charter, read the last four first.
-
-The fifteen judges come from fifteen states, one of them in the European
-Union, whose banks hold the platform's bonds. With no treaty to apply, the court weighed how each party had behaved, and the Commonwealth's conduct over the session is part of the record. "It comes down to paragraph 206," Fenwick said, "which asks whether the court believed our reasons for taking the platform."`,
-  choices:[
-    { label:"The Court finds the salvage lawful.",
-      when:{ scalarAbove:{ legitimacy:49 } },
-      effects:[{ flag:"icj_salvage" }, { move:{ legitimacy:4 } }, { move:{ friction:-4 } },
-               { wire:"WORLD COURT: A STATE THAT RESCUES A PLATFORM'S PEOPLE MAY TAKE THE PLATFORM" }],
-      result:`The Court finds that a state which rescues the residents of an abandoned platform may take the platform as salvage. Earth's courts are not bound by an advisory opinion, and every one of them will read it.` },
-    { label:"The Court finds for the bondholders.",
-      when:{ scalarBelow:{ legitimacy:50 } },
-      effects:[{ flag:"icj_bondholders" }, { move:{ friction:5 } }, { move:{ legitimacy:-3 } },
-               { wire:"WORLD COURT: THE WORKS' BONDS SURVIVE THE RESCUE" }],
-      result:`The Court finds that the rescue does not extinguish the bondholders' claim, and the Union's mission circulates the paragraph that says so before lunch.` }
-  ]},
-
-/* THE MISSION REPORTS, the answer to working the floor. */
-{ id:"un_floor_report", queuedOnly:true,
-  setpiece:{ title:"Commonwealth mission reports three weeks of lobbying at the UN" },
-  title:"The mission reports",
-  speaker:"landry",
-  effects:[{ flag:{ un_floor_working:false } }],
-  body:`The Commonwealth's mission to the United Nations has cabled home the results
-of three weeks spent lobbying in the General Assembly: who was seen, what
-was offered, and which delegations now take the Commonwealth's calls.
-
-The Assembly is where a small state does its work. The mission spent its
-time on the delegations whose votes no bloc controls: the states that host
-the space elevators' anchors, the ones that buy computing from orbit, and
-the ones that would rather be asked than told.
-
-The cable is two pages long. It does not say which of the promises will be
-kept. It lists the ones that were made, and the government's own count of
-the Assembly, delegation by delegation, has the rest.`,
-  choices:[
-    { label:"Noted.",
-      result:`The cable is filed with the others. The mission can be sent again.` }
-  ]},
-
-
-/* THE TWO ROUTES THE ENDINGS NOW TAKE (design/43), each offered once the
-   state allows it; the tab's Table control offers the same at any time. */
-{ id:"un_joint_offer", chapter:2, queuedOnly:true, once:true,
-  title:"Kenya's proposal",
-  speaker:"landry",
-  body:`Kenya's foreign ministry has cabled a compromise. The Works would be
-administered jointly by the United Nations and the Commonwealth as a free
-trade zone. Its residents would keep their Earth passports and gain the
-Commonwealth's protection, and nobody would own the platform until the
-residents decide who should.
-
-"Placing a territory under United Nations administration needs two thirds of
-the General Assembly," says Jean Landry, the Minister for External
-Relations. "Kenya will vote for it. Whether anybody else does depends on
-what we are seen to want."`,
-  choices:[
-    { posture:"cautious", label:`Thank Kenya, and keep the proposal for later.`,
-      note:`Nothing is tabled, and the government keeps the choice. Joint administration needs two thirds of the General Assembly, so the proposal can wait until the mission's count shows that it could pass.`,
-      result:`The proposal is acknowledged and not tabled. The government can table it before any sitting, from the Foreign Affairs screen.` },
-    { posture:"bold", label:`Table Kenya's proposal for joint administration as the Commonwealth's own resolution.`,
-      note:`Kenya's name goes beside the Commonwealth's, and relations with Kenya improve. The Assembly votes at its next sitting, and placing a territory under United Nations administration needs two thirds of the states present and voting.`,
-      effects:[{ resolution:{ un_works_administration:"table" } }, { move:{ "actor.earth_host":4 } },
-               { wire:"COMMONWEALTH TABLES A JOINT ADMINISTRATION OF THE WORKS AT THE UNITED NATIONS" }],
-      result:`The resolution is tabled for the Assembly's next sitting, with Kenya's name beside the Commonwealth's.` }
-  ]},
-
-/* =============================================================
-   BELLAMY'S FIRST WEEK (28 Sep 2026): THE CLOCK AND THE ACT.
-   The stranding said two months of air and the survey said 51 days, and
-   nothing in the game kept either count: a government that waited, or
-   declined, heard no more of the Works' air (design/38 §6, "the Works
-   does not wait"). The air is now a date. The survey's 51 days from 27 May
-   run out on 17 July, sitting 40, and the calendar shows the date from the
-   stranding until the air is paid for, the Act is carried or the crisis is
-   answered some other way. The act that stops it is the initiative
-   `pay_works_air`, open from the sitting the Works is stranded, and
-   f1_air_paid is its answer. Dated and queued, so the pool's lean is
-   untouched; appended here all the same.
-   ============================================================= */
-{ id:"f1_air_paid", queuedOnly:true, once:true,
-  setpiece:{ title:"Commonwealth supplies the abandoned refinery's air plant for three months",
-    sections:[
-    { kind:"voices", head:"What is being said", body:[
-      { said:"We had begun a list of who would get clean air first. I have torn it up.",
-        who:"Maricel Dizon, chief medical officer of the Almanac Works, on Ring Network, the Commonwealth's broadcaster" },
-      { said:"The air is paid for. The furnace crews have had no wages since March.",
-        who:"Marcel Obame, steward of the furnace crews' union on the Works" },
-      { said:"The Commonwealth is buying goodwill on a platform it does not own.",
-        who:"Earth-side wire copy, carried in Brussels" } ] }
-  ] },
-  title:"The air is paid for",
-  speaker:null,
-  body:`The Commonwealth has supplied three months of filters and catalyst to the
-air plant of the Bellamy Almanac Works, the orbital refinery abandoned by
-its owner in May. The plant will run on them until the platform's future is
-settled.
-
-The air plant takes the carbon dioxide out of the air that the platform's
-184,000 residents breathe. It uses up its filters and catalyst every month,
-and the Works' operator could not pay for the April shipment once its bank
-accounts were frozen. The outer habitats had kept the plant running since
-then with their own spare cartridges.
-
-Achieng Odera, chair of the Works' council of delegates, thanked the
-government from the council's chamber. She said the council's question to
-the Commonwealth stands. The residents are still stateless, unpaid, and
-waiting for Kenya's rescue or the Commonwealth's answer.`,
-  choices:[
-    { label:"Say the supply will continue while the question is open.",
-      note:"The Ministry for Life Support says it will keep supplying the air plant until the platform's future is settled. It commits the Commonwealth to nothing further, and it answers none of the council's questions about wages, passports or the platform's debts.",
-      effects:[{ move:{ public_standing:1 } }],
-      result:"The Ministry for Life Support says the supply will continue. The council's question is still on the Prime Minister's desk." }
-  ]},
-
-{ id:"f1_air_fails", queuedOnly:true, once:true,
-  foreseen:"The Almanac Works' air runs out, unless the Commonwealth pays for its filters",
-  /* while nobody has paid, the Act is not carried and the crisis has no
-     answer: a platform the Commonwealth owns, or the United Nations
-     administers, or corporate security has cleared, has its air seen to */
-  when:{ flags:["station_issue"], flagsAbsent:["works_air_paid", "almanac_annexed"], resolved:false },
-  setpiece:{ title:"Abandoned refinery's air plant fails as its last filters run out", mood:"threat",
-    sections:[
-    { kind:"epigraph", body:"In the midst of life we are in death.", source:"The Book of Common Prayer, the Burial of the Dead" },
-    { kind:"voices", head:"What is being said", body:[
-      { said:"Most of the dead were over seventy. Two were children with asthma. Clean air would have kept every one of them alive.",
-        who:"Maricel Dizon, chief medical officer of the Almanac Works" },
-      { said:"We asked the Commonwealth to inspect the air plant in May. It has known the date ever since.",
-        who:"Achieng Odera, chair of the Works' council of delegates, on Ring Network, the Commonwealth's broadcaster" },
-      { said:"The furnace decks are sealed and my members are sleeping in the school.",
-        who:"Marcel Obame, steward of the furnace crews' union on the Works" } ] }
-  ] },
-  title:"The air runs out",
-  speaker:null,
-  body:`The air plant of the Bellamy Almanac Works, the orbital refinery abandoned
-by its owner in May, ran out of filters and catalyst this week. Its council
-has sealed the foundry decks and crowded 70,000 residents into the cleaner
-air of the housing ring.
-
-The air plant takes the carbon dioxide out of the air that the platform's
-184,000 residents breathe. It uses up its filters and catalyst every month,
-and nobody has paid for a shipment since March. The outer habitats sent
-their own spare cartridges until they had none left to send.
-
-Maricel Dizon, the Works' chief medical officer, said eleven residents had
-died in the first two days, most of them old or with heart and lung disease. The
-platform's hospital has 420 beds, and every one is taken.
-
-Kenya's treasury says its procurement law forbids it to pay a private
-company's suppliers before the tender for its rescue closes. The Kenyan
-suppliers who send the filters up Tether 2, the space elevator from the
-Kenyan coast, will ship as soon as they are paid.`,
-  effects:[{ flag:"f1_air_failed" },
-           { move:{ legitimacy:-12, "trend.legitimacy":-2, public_standing:-8 } }],
-  choices:[]},
-
-/* Lifecycle entries are appended, preserving the existing pool positions. */
-{ id:"f1_air_last_chance", queuedOnly:true, once:true,
-  title:"The Works' last shipment",
-  speaker:null,
-  body:`The Bellamy Almanac Works, the abandoned orbital refinery, is close
-to using up the filters and catalyst that clean its residents' air. Its
-suppliers in Kenya will ship a replacement if the Commonwealth pays now.
-
-The Ministry for Life Support can pay the arrears and three months ahead,
-at CW$2.4bn. The suppliers charge a premium because the shipment must leave
-at once. If the government declines, the residents will have to crowd into
-the parts of the platform where the air is cleaner as the plant fails.`,
-  choices:[
-    {posture:"bold",label:"Pay CW$2.4bn for the Works' emergency shipment.",
-     note:"You pay the Kenyan suppliers to send filters and catalyst before the Works' air plant runs out. The emergency premium makes this dearer than an early shipment. Kenya's government welcomes the payment, and the residents keep their air supply.",
-     effects:[{flag:"works_air_paid"},{move:{solvency:-2400,"actor.earth_host":2}},
-              {wire:"COMMONWEALTH PAYS FOR THE WORKS' EMERGENCY AIR SHIPMENT"}],
-     result:"The Commonwealth pays the suppliers, and the emergency shipment leaves for the Works before the air plant's stocks run out."},
-    {posture:"cautious",label:"Hold that the Works is Kenya's responsibility.",
-     note:"You decline to pay because the platform is outside the Commonwealth. The government keeps the money, while the residents continue using the last filters. If another arrangement does not supply the plant, its failure will cost lives and public trust.",
-     effects:[{wire:"PM: THE WORKS IS KENYA'S TO RESCUE"}],
-     result:"The government declines the suppliers' request. The Works continues using its remaining filters and catalyst while its council seeks another source of payment."}
-  ]},
-
-{ id:"f1_heat_shortage", queuedOnly:true,
-  title:"The margin remains thin",
-  speaker:null,
-  setpiece:{title:"Stations remain short of spare thermal capacity",mood:"threat"},
-  body:`The Commonwealth's stations still have little spare capacity to shed
-heat after the government considered the shortage. Demand leaves a thin
-margin for faults in the radiators.
-
-The thermal margin measures the gap between the heat the stations produce
-and the heat their radiators can shed. A small gap leaves the stations more
-exposed to the next fault or increase in demand. Thermal quota, the right
-to shed a share of that heat, becomes dearer as the margin narrows.
-
-Emergency orders remain available. Their financial and political costs
-come from the same reserve and parliamentary time as the government's
-other business.`,
-  effects:[],choices:[]},
-
-{ id:"f1_reserve_shortage", queuedOnly:true,
-  title:"The Treasury has little room left",
-  speaker:null,
-  setpiece:{title:"Treasury remains short of cash and borrowing room",mood:"threat"},
-  body:`The Treasury still has little cash in its reserve and limited authority
-to issue bills after the government considered the shortage. Its next
-payments must use that remaining room.
-
-Treasury bills cover payments the reserve, the Treasury's cash in hand,
-cannot meet, up to the authority
-Parliament has given. A payment beyond that limit goes unpaid and becomes
-an arrear. Money received afterwards pays those arrears first, before it
-refills the reserve.
-
-Missed payments damage trust in the government for as long as they remain
-unpaid. Drawing on a lender or obtaining the House's approval for a Reserve
-Bank advance can bring in money, with interest or monetary costs.`,
-  effects:[],choices:[]},
+The Underwriters lend in the Commonwealth's own money. Earth's banks lend in dollars, at a rate set in Earth, and ask for more when the Commonwealth is at odds with Earth's governments.`,
+  choices:[] }
 
 ] });

@@ -137,7 +137,7 @@ const SCHEMA = {
        rather than squeezed into a row. `by` counts sittings from now, and
        null means before the House rises. `discharge` is what keeps it, one
        of {flag}, {si} (an order made), {slot} (time given to a bill),
-       {bill, stage}, {division, carried} or {repaid} (a lender owed
+       {clause} (a clause level set), {bill, stage}, {division, carried} or {repaid} (a lender owed
        nothing): see met() in js/engine.js. `onBreach` names an event. */
     undertake:   { label:"Make a promise (undertaking)", args:[
                    {k:"value", type:"text", label:"JSON", hint:"the promise"}], shape:"json",
@@ -149,6 +149,18 @@ const SCHEMA = {
                                  concession or post; direction is owed or due */
                               holder:null, kind:"promise", direction:"owed",
                               expects:null, limit:null, origin:null } },
+    /* A CLAUSE LEVEL, set through the Chamber panel's own door (Engine.setClause),
+       and refused the same way when the Treasury cannot pay for it. A promise may
+       be kept by it: discharge:{ clause:{ bill, clause, level } }. */
+    clause:      { label:"Set a level of a bill's clause", args:[
+                   {k:"value", type:"text", label:"JSON", hint:"the level"}], shape:"json",
+                   template:{ bill:"appropriation", clause:"floor", level:"hold" } },
+    /* A PARTY'S MEMBERS COMMITTED TO A DIVISION, through the Chamber panel's own door
+       (Engine.setWhip), paid at the division. `seats` omitted commits all that can be
+       moved; `tier` is "popular" or "functional", both when omitted. */
+    whip:        { label:"Commit a party's members to a division", args:[
+                   {k:"value", type:"text", label:"JSON", hint:"the whip"}], shape:"json",
+                   template:{ bill:"appropriation", party:"cu" } },
     discharge:   { label:"Release a promise (count it kept)", args:[
                    {k:"value", type:"text", label:"Promise id"}], shape:"scalarVal" }
   },
