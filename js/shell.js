@@ -168,6 +168,7 @@ const Shell = (function () {
         <div class="menu-tagline">A Space Story About Politics and Governance.</div>
         <div class="menu-body">${inner}</div>
         ${slice() ? `<div class="menu-sub" data-slice-build="1">Build ${esc(slice().build)}</div>` : ""}
+        ${slice() ? `<div class="menu-narrow">This game is for a desktop window.</div>` : ""}
         ${storageOK ? "" : `<div class="menu-warn">Browser storage is unavailable, so slots will not
           survive closing this tab. Use <b>Export to file</b> in Options to keep a game.</div>`}
       </div>
@@ -678,6 +679,10 @@ const Shell = (function () {
         <p>Art and imagery by Harper.</p>
         <p>Engine, editor and tooling built with Claude Code and
         DeepSeek V4.1 Flash.</p>
+        <p>Sound and music are generated in the browser as the game runs. The
+        game uses no recorded music and no downloaded fonts.</p>
+        <p>The outlines on the globe are from Natural Earth, which is in the
+        public domain.</p>
       </div>
       <img class="studio" src="img/logos/retrograde.png" alt="Retrograde Softworks">
       <div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;

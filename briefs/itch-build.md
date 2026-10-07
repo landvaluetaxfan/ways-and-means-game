@@ -4,11 +4,33 @@ does not yet have. Read that section first.
 
 # The itch.io build
 
-**STATUS: not started.** Claim it as `itch-build` with `tools/package-itch.js`, `tools/itchtest.js`
-and the credits page's file. `js/ui.js`, `index.html` and `css/terminal.css` are held by
-`ui-tabs`, so the version stamp, the feedback line and the narrow-screen line are written to a
-small new file (`js/release.js`, a plain `<script src>`) that adds them to the menu and the
-curtain page, and a hook is asked of `ui-tabs` through the exchange.
+**STATUS (7 October, Claude Code): built, items 1, 2, 4 (all but the feedback place), 5 and 6.** The claim was not
+taken: Codex has held nothing active since 5 October, so Claude wrote the tools and made three small hunks
+in files `ui-tabs` holds (`js/ui.js`: the curtain's thank-you section; `css/terminal.css`: `.menu-narrow`;
+`js/shell.js` is nobody's). What exists:
+
+- `tools/package-itch.js` (`npm run itch`) builds with `tools/build.js --release` and writes
+  `dist/ways-and-means-itch.zip` (4 MB, one `index.html` of 6.8 MB). `--release` drops the `data-dev` scripts,
+  **removes the world's untagged story from the source text of each inlined content file**
+  (`tools/storystrip.js`, 109 events, 80 lines of business, 18 achievements and so on), and sets
+  `window.PLAYTEST` (the playtest frame `js/shell.js` already had: one campaign, no Sandbox, the build on the
+  menu and in the report) with the commit and the date. The strip is the stopgap the brief allowed; the lasting
+  fix, a fixture of the engine's own for `test.js`, is still open.
+- `tools/itchtest.js` (`npm run itchtest`, the seventeenth check) unpacks the zip outside the repository and
+  plays the page: zip contents, no network call in the code, no untagged story entry in the page, no retired
+  phrase in it that a carried file does not also hold, boot from `file://` and from a static server, the
+  opening, a save written and read back, an older state shape migrates, a newer one is refused, the
+  console clean, and Act I from the menu to the curtain. Each assertion was broken once and failed.
+- The curtain page now has a "Thank you for playing" section that points to Options > Copy playtest report, and
+  names `setup.feedback` where the campaign gives one. **It gives none yet: the author chooses where reports go.**
+- A load of a save from a newer build now throws a plain reason (`Engine.load`) and the shell shows it.
+- The credits say the sound is generated, the page uses no downloaded fonts, and the globe is Natural Earth.
+
+Open: the narrow-screen line and the page at itch's embed size in Chromium (`npm run layout` does not yet
+cover the release page), and the author's confirmation of the art's licences below. **A finding for the
+author:** 132 lines of the old story's first sentences appear unchanged in Act I's own files (114 in
+`flash_i/events.js`, 13 in `business.js`); `itchtest` lists the count, and `briefs/act-one.md` stage 4 should
+name them for a rewrite pass if the gate means none.
 
 ## What to build
 

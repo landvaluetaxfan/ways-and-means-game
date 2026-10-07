@@ -2208,6 +2208,10 @@ body.menu-on{background:#0b1826;}
   padding:10px;box-shadow:0 2px 14px rgba(0,0,0,.45);}
 .menu-warn{margin-top:26px;max-width:600px;font-family:var(--f-ui);font-size:12px;
   color:#e9a08f;border-left:2px solid #e9a08f;padding-left:9px;line-height:1.45;}
+/* the playtest build's one line for a screen under 900 px (briefs/itch-build.md); shown by the menu only in that build */
+.menu-narrow{display:none;margin-top:26px;max-width:600px;font-family:var(--f-ui);font-size:12px;
+  color:#e9a08f;border-left:2px solid #e9a08f;padding-left:9px;line-height:1.45;}
+@media (max-width:899px){.menu-narrow{display:block;}}
 
 /* the printed band under the plate, on the same stock as an instrument. The
    text sits toward the head of the band and the mark on the foot, so the copy

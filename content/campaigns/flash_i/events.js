@@ -47,7 +47,7 @@ He turns the commission toward you with one paw and keeps it there. "Sixty-two o
       label:`The budget. The government cannot pay for anything until the House votes the money, and the independents have promised their votes on it.`,
       act:"Tell him",
       note:`You tell him the budget comes first. It is the one measure the government cannot do without. The President, who has not yet signed, sees a Prime Minister who starts with the work the House must do. The New Progressive Party, your second-largest partner, joined for a bill of its own and will notice that you did not name it.`,
-      effects:[{ flag:"commission_budget" },
+      effects:[
                { move:{ "rel.president":5 } },
                { move:{ "loyalty.psa":-3 } },
                { move:{ public_standing:1 } },
@@ -70,7 +70,7 @@ He turns the commission toward you with one paw and keeps it there. "Sixty-two o
       label:`Nothing specific. Tell him the government intends to last its full term, and that he will learn of its decisions when they are announced.`,
       act:"Tell him",
       note:`You tell him nothing. He keeps his power to dissolve the House, and he will remember being told nothing. The more moderate members of your party will approve of a Prime Minister who keeps her options open. The press usually reports a first meeting that ends without a statement as a quarrel.`,
-      effects:[{ flag:"commission_none" },
+      effects:[
                { move:{ "rel.president":-6 } },
                { move:{ "loyalty.cu_loyalists":7 } },
                { move:{ public_standing:-2 } },
@@ -207,7 +207,7 @@ Whoever you appoint signs the estimates and answers for them in the House.`,
       label:`Leave the Treasury without a minister for now, and let its officials carry on.`,
       act:"Wait",
       note:`You leave the post empty. The Treasury can make no orders and begin no initiatives until someone holds it, the opposition will point that out, and voters will see a government that cannot fill its most important department.`,
-      effects:[{ flag:"treasury_left_vacant" }, { move:{ public_standing:-5 } }],
+      effects:[{ move:{ public_standing:-5 } }],
       result:`The Treasury can make no orders until someone holds the post, and the opposition knows it.` }
   ]},
 

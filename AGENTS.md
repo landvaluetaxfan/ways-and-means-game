@@ -233,7 +233,7 @@ obligations; the quiet advice-dot hook awaits the brief engine.
 
 ```
 npm install      # once, for jsdom
-npm run check    # all fourteen, about two minutes; all must pass
+npm run check    # all seventeen, about two minutes; all must pass
 ```
 
 | | |
@@ -252,6 +252,9 @@ npm run check    # all fourteen, about two minutes; all must pass
 | `tools/exchange.js check` | the agents' exchange is well formed, and no claim outlives its brief |
 | `tools/prose.js --check` | the prose export round-trips |
 | `tools/storymap.js --check` | every view's story map draws |
+| `tools/fidget.js` | a player who uses every lever in a random legal order, across 240 seeds of Act I: no throw, no `IGNORED:` log line, no stuck sitting, a save and load that keep the ending |
+| `tools/flagaudit.js` | every flag Flash I sets is read somewhere (the scene contract's third rule); a flag held for a reader not yet built is listed in the tool, and the list fails when the reader lands |
+| `tools/itchtest.js` | builds the itch.io zip, unpacks it outside the repository and plays the page in it: boots, saves, no network, no world story, Act I to the curtain |
 
 **`npm run balance`** is outside `check` because it measures and asserts nothing: it plays Act I to
 the curtain under five answer strategies (`tools/actbalance.js`) and prints how each ends. `node

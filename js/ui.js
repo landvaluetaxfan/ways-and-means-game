@@ -6973,6 +6973,12 @@ const UI = (function () {
       body: st.log.length + " entries, sitting " + st.sitting + ", session " + st.session +
             ", seed " + st.seed + ". Recent decisions are under What has happened on the Sitting. " +
             "The complete run is in the playtest transcript in Options. Nothing here can be taken back." });
+    /* A PLAYTEST BUILD ASKS FOR THE REPORT (briefs/itch-build.md): the button is in Options, where the same copy
+       serves the run in progress, and the place to send it is the campaign's (`setup.feedback`). */
+    if (typeof window !== "undefined" && window.PLAYTEST)
+      secs.push({ kind: "body", head: "Thank you for playing",
+        body: "This was a test of the first act. To tell the author what was clear and what was not, open Options, choose Copy playtest report" +
+              (C.setup && C.setup.feedback ? " and send it to " + C.setup.feedback : "") + "." });
 
     return { title: title, sections: secs, mood: endMood(end) };
   }

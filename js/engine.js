@@ -9253,7 +9253,12 @@ const Engine = (function () {
   /* load takes content so a migration that needs it can run. Pre-roll saves
      have no constituency map to restore and must be reseeded from content. */
   function load(str, C) {
-    const st = migrate(JSON.parse(str));
+    const raw = JSON.parse(str);
+    /* A SAVE FROM A NEWER BUILD CANNOT BE READ BY THIS ONE: the migrations only run upward, and half-reading a state
+       with fields this build does not know is how a run is lost without a message. The shell shows the reason. */
+    if (raw && raw.version > STATE_VERSION)
+      throw new Error("it was saved by a newer version of the game (state " + raw.version + "; this one reads up to " + STATE_VERSION + ")");
+    const st = migrate(raw);
     if (C && (st.rollReseeded || !st.roll)) { seedRoll(st, C); delete st.rollReseeded; }
     if (C && (st.functionalReseeded || !st.functional)) { seedFunctional(st, C); delete st.functionalReseeded; }
     return reconcile(st, C);
