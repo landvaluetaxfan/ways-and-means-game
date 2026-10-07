@@ -443,7 +443,7 @@ The renewed terms for the International Earth-Orbit Elevator stay unratified, an
 
 The floor sets the rate at which every resident is carried, and the estimates pay for it. Trimming the guarantee takes it out of the estimates, and the saving shows in this session's accounts. The stations that cannot grow or recycle enough of their own food, water and air show the shortfall by the end of the month.
 
-Lifting the floor raises the guarantee, and the stations that grow and recycle the least of their own food, water and air gain most. It costs CW$30bn, which is CW$14bn more than the draft carries. A higher guarantee is a standing cost, so the most the estimates may spend falls as well, and the reserve, the Treasury's cash in hand, can pay only what the other clauses leave it.
+Lifting the floor raises the guarantee, and the stations with the least of their own gain most. It costs CW$30bn, which is CW$14bn more than the draft carries. A higher guarantee is a standing cost, so the most the estimates may spend falls as well, and the reserve, the Treasury's cash in hand, can pay only what the other clauses leave it.
 
 "Every party wants the floor raised, and none of them says which clause pays for it," Ashgrove said. "If the House lifts it, the money has to come from somewhere else in the estimates."
 
@@ -871,7 +871,7 @@ The reserve is the Treasury's cash in hand, and the estimates are paid from it. 
 
 The account is public, and the Underwriters set the rate at which they lend by it. A larger deficit or a smaller reserve raises the rate. So does a thermal margin, the stations' spare radiator capacity, below the level they need, because a government that cannot keep the stations cool is a riskier borrower.
 
-The prices of the four goods the Commonwealth buys and sells most, thermal quota, substrate, the hardware that digital residents run on, volume and transit, are part of the same reading. A price that has moved from where it opened changes what the Treasury receives from the tax levied on it.
+The prices of the four goods the Commonwealth buys and sells most are part of the same reading: thermal quota, volume, transit, and substrate, the hardware that digital residents run on. A price that has moved from where it opened changes what the Treasury receives from the tax levied on it.
 
 The Underwriters lend in the Commonwealth's own money. Earth's banks lend in dollars, at a rate set in Earth, and ask for more when the Commonwealth is at odds with Earth's governments.`,
   choices:[] },

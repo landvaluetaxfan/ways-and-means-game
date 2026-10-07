@@ -433,7 +433,7 @@ named human read, and none is a judgement of "looks fine".
    `loss:supply`). What the answers change is the price. Refusing every promise ends at public
    standing 49 and New Progressive loyalty 30. Promising every minister and keeping what the
    Treasury's ceiling allows ends at standing 32 and loyalty 37, with two of six promises broken.
-   Promising and keeping nothing is the worst: loyalty 23, against the loss line at 15 and 30 for
+   Promising and keeping nothing is the worst: loyalty 23, against 15, the line at which the party leaves the coalition, and 30 for
    refusing. So the dilemma is real and a broken promise costs more than a refused one. If the
    author wants a run to be losable in Act I, that needs a decision; today it is loss-proof by
    design (`design/77`, constraint 3).
@@ -476,6 +476,29 @@ are the first-time players, and the gate adds what a public release needs:
 A gate cannot promise that the game will feel refined. It promises that every class of fault
 we have found so far is checked by a machine, and that a person reads for the rest before the
 author does.
+
+## Mechanic issues found while building (exit gate 10)
+
+Each is fixed, or deferred with its reason and its owner. Kept in order found; add to it, do not
+reword it.
+
+| # | issue | state |
+|---|---|---|
+| 1 | A bill in drafting is on the order paper with a Grant button, so staging it to "drafting" does not hide it | Deferred to E2. A refusal in `canGrant` was tried and reverted, because `uxtest` grants time to a drafting bill by design |
+| 2 | The run did not end at the rise: a carried rise opens the next period, with an interval page | Fixed (E1, `Engine.checkEnd` on `st.period`) |
+| 3 | The curtain page reads the date the next period opens (23 May), not the rise (8 May) | Deferred to Codex with E1's frame |
+| 4 | Every seed plays the same game, because Act I has no random event | Recorded in `tools/actbalance.js`. The 240-seed gate is moot until one exists |
+| 5 | No answer strategy loses; only leaving the estimates unmoved ends the run | Deferred to the author, who decides whether Act I may be lost (design/77 says it stays loss-proof) |
+| 6 | Floor "lifted" and transit "every station" lower the Treasury's ceiling (`solvency -4000`), and no text said so | Fixed in the clause notes and the floor page |
+| 7 | The works "outer" level moves one station's closure (Homestead) while the text said the outer stations' | Fixed in the text. Deferred: whether the effect should reach more stations, which changes Acts II to V's secession arithmetic |
+| 8 | The four tax clauses sit in the Chamber's clause panel with five levels each and are mentioned in one paragraph at sitting 4 | Deferred to the author: lock them until the Economy tab opens at sitting 15, or teach them. Open question 5 in `design/81` |
+| 9 | The clause panel named the taxes "Ways and Means: volume" and the page named them "tax on pressurised volume"; the Economy tab's base names differ again | Fixed in the bill. The Economy tab's names (`setup.fiscal.bases`) are still the old ones: stage 5 |
+| 10 | A bill's Concordance article prints a division forecast from sitting 1 | Deferred to E2 |
+| 11 | `Appropriation (Session 4) Bill` and `HC 4/` references still show | Deferred to opencode (`briefs/appropriation-rename.md`) |
+| 12 | Tooltips carry typed constants ("a thermal margin of 15") | Deferred to E5's placeholders |
+| 13 | `prose:in` writes prose.txt over the source, so a hand edit after generation is silently reverted | Recorded in `LESSONS.md`. Deferred: make `prose:in` refuse when the source has changed since the export |
+| 14 | `lint` ordered the world's retired events with Act I's glossary, and read neither choice notes nor headlines | Fixed. It now reads the live campaign's path and the notes, and caught two early uses of a term |
+| 15 | The glossary's `handle` asides are analogies ("Voter ID, for a world where copies are cheap"), against the Reference rule of no metaphor | Deferred to the author. Open question 6 in `design/81` |
 
 ## Assumptions the author may overturn
 

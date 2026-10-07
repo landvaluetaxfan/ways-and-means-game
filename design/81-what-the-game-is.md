@@ -63,3 +63,17 @@ These are faults you found by playing, so each is a rule:
    which is the sitting-1 Chamber listing the Appropriation with a Grant button.
 4. **Should every sitting have a scene?** Sittings 12 and 13 do not, because they are the
    player's own work (the whips, the division).
+5. **The four tax clauses.** The estimates carry four tax rates, each with five levels, in the
+   Chamber from the first sitting, and one paragraph at sitting 4 explains them. A first-time
+   player can change a tax rate before the game has said what the Economy tab is. Should they
+   stay locked until the Economy tab opens at sitting 15, or be taught as the other clauses are?
+6. **The glossary's handles.** Each glossary term has a one-line analogy shown beside its gloss
+   ("Voter ID, for a world where copies are cheap"). `PROSE.md` forbids metaphor in reference
+   text, and the 4 October note on "slop flavour text" is the nearest thing to a ruling. Keep
+   them, cut them, or rewrite them as plain statements?
+7. **Can Act I be lost?** Today no run loses unless the player leaves the estimates unmoved:
+   every answer strategy reaches the curtain (`npm run balance`). That fits "Act I stays
+   loss-proof" (`design/77`). If the playtest slice should have teeth, the cheapest place is the
+   New Progressive Party's loyalty, which a player who promises and keeps nothing already drives
+   to 23, against the line of 15 at which it leaves the coalition.
+
