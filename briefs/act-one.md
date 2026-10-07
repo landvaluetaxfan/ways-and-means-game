@@ -4,7 +4,9 @@ reasons are there. This file is the plan and the exit gate.
 
 # Act I, built whole
 
-**STATUS: stage 0 done (the record and this plan). Nothing else started.**
+**STATUS: stage 0 done (the record and this plan), and the author confirmed the assumptions at
+the foot on 7 October. Stage 1 (the ledger, the retirement tiers, the Act I world) is drafted
+below for the author to read. Nothing is retired yet.**
 
 The playable game is Act I, sittings 1 to 16, closing on the rise. Every word a player reads is
 rewritten, scoped to what Act I has introduced, and built one sitting at a time. The author
@@ -45,19 +47,109 @@ then the rest of the outline in the doc: the treaty beat, the five clause scenes
 count, the division, Question Time, the Underwriters' reading, the rise. A slice that
 exposes a fault in an earlier one reopens the earlier one.
 
-## The introduction ledger (stage 1 fills it)
+## Two kinds of thing, and what each owes the player
 
-One row per sitting. The columns are the contract between scenes: what is **first met**
-there (terms, bills, orders, people, stations, tabs), and which control **opens**. A term
-used before its row fails lint. An entity shown before its row fails the visibility test.
+The author's complaint was a bill sitting in drafting before the story had brought in the
+Works. That is a **story thing** showing before its scene. A **reference thing** is a
+different matter, and the rule is not the same for both.
 
-| sitting | beat | first met | opens |
+- **Story things** follow the ledger, and nothing shows before its row: bills, orders,
+  initiatives, events and pages, wire items, matters, undertakings, achievements, and anyone
+  who speaks or acts.
+- **Reference things** are the standing structure of the world: the Earth and its anchors, the
+  stations, the districts, the parties and their currents, the offices and who holds them,
+  and the Concordance's reference articles. They are visible from the start, because a map
+  that fills in as you play is another game. Their text carries nothing from Acts II to V, and
+  a section that changes later is dated (`since`) so that it appears only when the world has
+  reached it.
+
+## The introduction ledger (draft, for the author)
+
+One row per sitting. The columns are the contract between scenes: what is **first met** there,
+and which control **opens**. A term used before its row fails lint, and a story thing shown
+before its row fails the visibility test. The beats are the Claude Doc's outline. The
+columns after them are mine.
+
+| sitting | beat (who) | first met | opens |
 |---|---|---|---|
-| 1 | the commission | the Charter, a majority, confidence | nothing |
-| 2 | the first question | the currents, loyalty | nothing |
-| 3 | who holds the Treasury | orders, initiatives, collective responsibility, the ballot, the estimates, the rise | appoint (the Treasury) |
-| 4 | the draft estimates, the order paper | the order paper, stage, slot, order-paper time | grant order-paper time |
-| 5 to 16 | per the outline in the Claude Doc | to be written in stage 1 | to be written in stage 1 |
+| 1 | recommissioned; the House must carry the estimates before it rises (the President) | the Charter, a majority of the House, confidence, the Prime Minister's office | nothing |
+| 2 | the first question: what should voters expect (Ceyhan) | the party's currents, loyalty | nothing |
+| 3 | who holds the Treasury (Castellane; Skye, Czarnecki, Abadi) | orders, initiatives, collective responsibility, the leadership ballot, the estimates, the rise, the sitting period, the Reserve Bank | appoint, for the Treasury only |
+| 4 | the draft estimates (the Treasury), then the order paper (Devi) | the Appropriation Bill 2080, the five clauses by name, the reserve, the wire, the order paper, stage, slot, order-paper time | grant order-paper time |
+| 5 | a quiet wire item, then the one spare slot: the treaty, or hold it (Ivarsen, Trottier) | a treaty, ratification, the Anchorage concession, Kenya, a partner's patience (capital, the whips' ledger) | nothing new |
+| 6 | energy and cooling; Ember Ridge short of cooling (Girard) | the thermal quota, cooling, the thermal margin, a station's heat | set the thermal clause; make orders (the first two rungs of the conservation ladder) |
+| 7 | the basics: air, water, food (Ashgrove) | the consumables floor | set the floor clause |
+| 8 | cover: substrate insurance, the New Progressives' price (Trottier, Marin) | substrate insurance, the means test, the registers of the insured and the suspended | set the cover clause |
+| 9 | infrastructure: works (Tómasson) | capital works, a station's pull to leave | set the works clause |
+| 10 | transport: the fare subsidy (Vasmer) | the transit subsidy, launch windows | set the transit clause |
+| 11 | the whips' count of the House (Devi) | the whips, the count, the functional members, the dual majority | the whip: commit members to a division |
+| 12 | the count, with your own party's currents (Devi) | how a current votes | nothing new |
+| 13 | the division, or a functional objection that delays it three sittings (Devi) | the division, an objection | call the division |
+| 14 | Question Time (Watkins) | the Opposition, Question Time, shadow ministers | nothing new |
+| 15 | the Underwriters' read of the carried budget | the Underwriters, Earth's banks, the Economy tab's account | the Economy tab's Money calls |
+| 16 | the rise: supply carried, or the government falls | nothing | nothing |
+
+Where the Chamber is empty before sitting 4 ("nothing is before the House yet"), the
+Chamber says so in one line. The clause panel is on the Appropriation's detail in the
+Chamber, so each clause lever opens with its page there.
+
+The division is the Act's climax, and the player is brought to it more than once: at the
+whips' count, when the bill reaches third reading, and at every sitting from 15 if it has not
+been called, because the rise is the deadline and nothing forces the vote (`design/76`: the
+reason to wait is information). The treaty stays at committee, so it never reaches a
+division in Act I (`design/78`).
+
+## How old text leaves the build
+
+Three tiers, chosen per entry by what depends on it. The numbers are from the inventory of
+7 October.
+
+| tier | what | how |
+|---|---|---|
+| **Archive** | story entries nothing checks | moved to `content/archive/`, which `index.html` does not load and the itch.io zip does not carry. 109 of the 143 events are named by no test, tool or guard |
+| **Park** | entries a test needs | stay in the world files tagged `campaign: "parked"`, so raw `CONTENT`, which `test.js` plays on, still holds them, and Flash I's view (`forCampaign`) leaves them out. `divergence` is named 56 times in `test.js`, `appropriation` 21 and `thermal2` 14. Each parked entry is on a list to be re-pointed at a test fixture and then archived. They ship inside the data files, unseen |
+| **Rewrite in place** | reference text | every entry read against the rules and the ledger, rewritten where it fails, with its disposition recorded (kept, rewritten) so that nothing is skipped. Districts, stations, parties, characters, the glossary, the Concordance, the textbook |
+
+`tools/prose.js` already lists every player-facing sentence under an address. The disposition
+record is keyed on those addresses, and a check fails if an address has none.
+
+## The Act I world (draft, for the author)
+
+Sizes, from the inventory: 79,000 words of prose across the content files, of which 44,000
+are the 143 events, 11,000 the districts, 4,500 the Concordance's authored articles, 2,500
+the bills, 2,200 the characters.
+
+- **Bills.** Visible: `appropriation`, renamed Appropriation Bill 2080 (`briefs/appropriation-rename.md`),
+  and `anchor_kepler`, the Anchorage treaty, restaged at committee so that it needs three
+  slots. The other nine are parked: `divergence`, `thermal2`, `shedorder`,
+  `substrate_insurance`, `continuity_registration`, `substrate_public_stake`, `civic_clock`,
+  `debt_moratorium`, `annexation`. The order paper in Act I holds two lines.
+- **Orders.** Visible: `rung1_conservation` (SI 2080/61) and `rung2_clockrate` (SI 2080/62),
+  the first two rungs of the conservation ladder, made at Ember Ridge. The other sixteen are
+  parked.
+- **Initiatives.** At most three, chosen when the Treasury scene is written, from the
+  Treasurer's own (`quota_forward`, `charter_volume`, `lean_on_governor`, `defend_dollar`).
+  The rest are parked. `lean_on_governor` and `defend_dollar` stay where the author left them.
+- **People.** Reference. The speakers in Act I are the President, Ceyhan, Skye, Czarnecki,
+  Abadi, Castellane, Devi, Ivarsen, Trottier, Girard, Ashgrove, Marin, Tómasson, Vasmer and
+  Watkins. Each is introduced by their scene, and their note says only what the world
+  knows by then.
+- **Events.** All 143 are retired. The 34 tagged `flash_i` and the world events that the
+  tests name are parked until their checks are re-pointed; the rest are archived.
+- **The Flash I guards** (`content/campaigns/flash_i/guards.js`, 1,187 lines, 45 event
+  references) are archived and replaced by a new file holding Act I's promises.
+
+## Stage 1 findings
+
+- **The checks are too slow to be a gate.** `npm run check` took 22 minutes on 7 October,
+  13 of them in `tools/uitest.js`. A V8 profile puts the cost in `document.querySelector`,
+  reached through the page's `$` helper, scanning a large jsdom DOM, mostly in the
+  Government block. The fourteen checks are independent and run one after another. The gate
+  needs minutes, so this is engine item E10.
+- **The tests lean on story content.** `test.js` names `divergence` 56 times, which is why
+  the park tier exists. The lasting fix is a fixture for the engine tests, so that no test
+  depends on a story bill.
+- **My earlier Decision 5 draft is superseded**, as `design/80` says.
 
 ## Three faults the author found by playing the old build (7 October)
 
@@ -76,10 +168,9 @@ is the decision-versus-lever seam again, from the other side. The rules that fol
 2. **The story brings the division.** When a measure reaches third reading, or the whips'
    count says it is ready, a scene asks the player (call it now, wait for the count, pull the
    measure), and the vote runs on screen with its result page. The Chamber's control stays
-   as the free route to the same division. The first division is taught by a card. Across
-   Act I the player is asked to call the Appropriation's division at least twice before the
-   rise, so that nobody reaches the rise without having seen one. The ledger fixes the
-   sittings.
+   as the free route to the same division. The first division is taught by a card. The ledger
+   fixes the sittings: the player is brought to the Appropriation's division at the whips'
+   count, at third reading and at every sitting from 15 if it is still uncalled.
 3. **No silent change.** Every effect that changes something shown in another tab produces a
    notice on the Sitting tab, using the existing card animation (`js/motion.js`), naming the
    tab and the item, and clicking it opens the item there. The engine's effects return what
@@ -138,6 +229,9 @@ release or are sequenced with them.
   the Sitting tab shows each as a card; every cross-tab effect must have one. The check:
   snapshot the state before and after each decision on sampled paths, and fail on any change
   to a displayed field with no notice.
+- **E10 A check that runs in minutes.** Run the fourteen independent checks in parallel, and
+  cut the per-call DOM scans in `tools/uitest.js` and the helpers it drives. Evidence in
+  "Stage 1 findings". It must not weaken a check.
 
 ## The exit gate
 
