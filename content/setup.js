@@ -141,10 +141,10 @@ const SETUP = {
      price rule below reads it, so the figure is written once. */
   fiscal: {
     bases: [
-      { k: "volume",    weight: 88000, passthrough: 0,  name: "Volume" },
-      { k: "thermal",   weight: 55000, passthrough: 26, name: "Thermal quota" },
-      { k: "substrate", weight: 51000, passthrough: 24, name: "Substrate-hours" },
-      { k: "transit",   weight: 26000, passthrough: 20, name: "Mass to orbit" }
+      { k: "volume",    weight: 88000, passthrough: 0,  name: "Pressurised volume" },
+      { k: "thermal",   weight: 55000, passthrough: 26, name: "Cooling" },
+      { k: "substrate", weight: 51000, passthrough: 24, name: "Computing time" },
+      { k: "transit",   weight: 26000, passthrough: 20, name: "Freight to orbit" }
     ],
     /* THE STEPS A BUDGET CAN TAKE (design/40 E5). They were none, half,
        standard and half again, on four bases that are the whole of revenue,

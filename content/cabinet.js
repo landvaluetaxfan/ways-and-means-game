@@ -61,7 +61,7 @@ const CABINET = [
         effects:[{move:{"loyalty.rv":14}},
                  {move:{"capital.rv":3}},
                  {move:{"loyalty.cu_maintenance":-7}},
-                 {wire:"TREASURY GOES TO THE CONGREGATIONAL DEMOCRATIC ALLIANCE IN REBALANCE"}] }
+                 {wire:`TREASURY GOES TO THE CONGREGATIONAL DEMOCRATIC ALLIANCE, THE COALITION'S THIRD PARTNER`}] }
     ],
     note:`The Treasurer signs the estimates and answers for them in the House, and reports directly to the Prime Minister. Only a Treasurer can make the Treasury's orders and begin its initiatives.` },
   { id:"external_relations",      name:"External Relations",        title:"Minister for External Relations",

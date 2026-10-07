@@ -262,6 +262,24 @@ release or are sequenced with them.
   cannot: a bill's Concordance article prints a **division forecast** ("On present numbers the
   bill carries") from sitting 1, three sittings of teaching before the count exists; and the
   Chamber lists the Appropriation with a Grant button before `a1_order_paper` has taught slots.
+- **E15 Interface strings** (Claude wrote the replacements on 7 October, Codex applies them in
+  `js/ui.js`, which the `ui-tabs` claim holds; the rule is `PROSE.md`, Interface 9: an empty state
+  says what will appear and when). Line numbers are today's and drift.
+
+  | where | now | replace with |
+  |---|---|---|
+  | `drawPartyCurrent`, on the order paper (1933) | Nothing is before the House. | No measure is on the order paper, so this current has no vote to cast yet. |
+  | `drawOpposition` (2447) | Nothing yet. | The Opposition's questions, motions and votes are listed here as they happen. |
+  | `drawGovernment`, a department with no business (2816) | No business in this department. | This department has nothing before you. An order its minister can make appears here once the Prime Minister may make it. |
+  | `docketHTML` (6309) | Nothing before the House but the sitting itself. | No measure is due for debate or a division this sitting. |
+  | `drawDecision`, board (7353) | Nothing on the board moved. | No figure on the board changed this sitting. |
+  | `drawDecision`, heading with no answer open (7384) | No answer is open now | No decision this sitting |
+  | the Chamber before sitting 4 (E2) | (the list is empty) | No measure is before the House yet. Measures are listed here once the order paper has been put in front of you. |
+  | the choice panel's promise heading (5542) | You would be undertaking | You would be promising |
+  | the note under it (5544) | It goes on the order paper. Keep it there and it stands against you. | The promise goes on the Owed list. If it is not kept by the date shown, the person it was made to acts on it. |
+
+  Two strings keep as they are because they already say what to do: "Nothing is asked of you
+  today. The House may rise." and "Nothing on the order paper demands a decision this sitting."
 - **E3 The tutorial and the lever ladder** (`design/77`, plus this ladder). Cards that dim and
   block the pointer outside one region. Writing controls inert until taught, dimmed with one
   line saying when they open, a ratchet that only opens. The player's taught record lives in
@@ -492,7 +510,7 @@ reword it.
 | 6 | Floor "lifted" and transit "every station" lower the Treasury's ceiling (`solvency -4000`), and no text said so | Fixed in the clause notes and the floor page |
 | 7 | The works "outer" level moves one station's closure (Homestead) while the text said the outer stations' | Fixed in the text. Deferred: whether the effect should reach more stations, which changes Acts II to V's secession arithmetic |
 | 8 | The four tax clauses sit in the Chamber's clause panel with five levels each and are mentioned in one paragraph at sitting 4 | Deferred to the author: lock them until the Economy tab opens at sitting 15, or teach them. Open question 5 in `design/81` |
-| 9 | The clause panel named the taxes "Ways and Means: volume" and the page named them "tax on pressurised volume"; the Economy tab's base names differ again | Fixed in the bill. The Economy tab's names (`setup.fiscal.bases`) are still the old ones: stage 5 |
+| 9 | The clause panel named the taxes "Ways and Means: volume" and the page named them "tax on pressurised volume"; the Economy tab's base names differ again | Fixed in the bill and in `setup.fiscal.bases` (pressurised volume, cooling, computing time, freight to orbit) |
 | 10 | A bill's Concordance article prints a division forecast from sitting 1 | Deferred to E2 |
 | 11 | `Appropriation (Session 4) Bill` and `HC 4/` references still show | Deferred to opencode (`briefs/appropriation-rename.md`) |
 | 12 | Tooltips carry typed constants ("a thermal margin of 15") | Deferred to E5's placeholders |
