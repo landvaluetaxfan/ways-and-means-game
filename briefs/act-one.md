@@ -233,8 +233,16 @@ Each needs a design check with me before it starts. All touch files the existing
 `ui-tabs`: `index.html`, `js/ui.js`, `css/terminal.css`), so they wait for those claims to
 release or are sequenced with them.
 
-- **E1 The curtain.** A carried rise ends the run on a content-supplied page (`act_end`). A
-  lost rise is the existing supply loss. Nothing after it runs.
+- **E1 The curtain. Landed, minimal (Claude, 7 October).** A campaign names its closing page
+  in `setup.actEnd: { event, note }`. `Engine.checkEnd` returns `{ over:true, kind:"act",
+  reason:"curtain" }` once the House has risen and the next period has begun (`st.period`
+  above `actEnd.period`, default 1), read after supply lost and no confidence, so a lost rise
+  is still the supply loss. The last page, the state of the country and the curtain call read
+  `kind:"act"` in `js/ui.js`; the event is `queuedOnly` and never fires, so no decision is
+  taken on it. Guards: `THE ACT CAN BE WON`, `THE CURTAIN IS THE ALMANAC WORKS ABANDONED`;
+  `test.js` (periods block); `tools/uitest.js` (the curtain block). Codex still owes the
+  signed-off form: a campaign `play.curtain` frame, and a dated last page (the state of the
+  country reads the date the next period would open on, 23 May, and not the rise's, 8 May).
 - **E2 The introduced record.** Scenes, wire items and events name what they introduce; the
   save records it; every list the player sees (bills, orders, stations, people, Concordance)
   filters by it. `STATE_VERSION` bump with a migration guard.
@@ -314,7 +322,7 @@ remains is the rise.
 | 11 | `a1_count` | the whip: nothing, your party's goodwill, or a partner's credit |
 | 14 | `a1_qt_ember`, `a1_qt_promise`, `a1_qt_reserve` | one question, chosen by what the player did |
 | 15 | `a1_underwriters` | a page; the Economy tab is the card's business |
-| 16 | **not built.** Needs E1 and E11 | the curtain, and the Almanac Works abandoned |
+| 16 | `a1_works_abandoned` (curtain page; E1 landed) | the curtain, and the Almanac Works abandoned. Full-page superevent (E11) still to come |
 
 **Promises are the spine of 5 to 10.** Each is a real undertaking with a deadline by sitting 14,
 a place where it is kept (the Owed list names it) and a page for its breach, which sets the flag
@@ -432,8 +440,9 @@ author does.
   the introduction, the cast, three acts with their epigraphs and stage directions, two
   intervals and the curtain call). Act I's card, "The House Is Sitting", fits the slice. The
   intervals and the curtain call describe a three-act play that ends at an election; the
-  slice ends at the rise, so they need the author's word on the five-act shape before E1
-  wires the curtain. Nothing in them has been rewritten.
+  slice ends at the rise, so they need the author's word on the five-act shape. E1 is wired
+  without them: the run ends on the curtain page and the interval is never reached.
+  Nothing in them has been rewritten.
 - **The promises' deadlines** (sitting 6's appeal, three sittings; sitting 5's treaty slot,
   eight; the four clause promises, four to five, all due by sitting 14) are provisional and
   want a playtest. So does every number in the choices, which the commit marks PROVISIONAL.

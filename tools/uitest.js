@@ -1159,6 +1159,31 @@ try {
      w.document.querySelectorAll("#sitting-body button[data-choice]").length === 0);
 } catch (e) { ok("the last page", false, e.message); }
 
+/* A CAMPAIGN'S CURTAIN (design/80, brief E1). Where a campaign names an event as its act's end
+   (`setup.actEnd`), a carried rise ends the run on that page and not on an election's returns. The
+   fixture government names none, so the test gives the content one and takes it away again. */
+try {
+  const snapC = w.eval("JSON.stringify(UI.state())");
+  w.eval(`(function(){ var s=UI.state(), K=UI.content(); s.flags._introRead=true;
+    K.eventById.curtain_probe = { id:"curtain_probe", title:"Probe", setpiece:{ title:"The curtain headline" },
+      body:"The first paragraph of the curtain.\\n\\nThe second paragraph of the curtain." };
+    K.setup.actEnd = { event:"curtain_probe", note:"Here the first act ends." };
+    K.bills.forEach(function(b){ if (b.test==='supply') s.bills[b.id].stage='assented'; });
+    s.noConfidence = null; s.period = 2; s.sitting += 1;
+    UI.boot(s, K); })()`);
+  w.document.querySelector('.tab[data-t="sit"]').click();
+  const pc = w.document.querySelector("#sitting-body .sp-page"), tc = pc ? pc.textContent : "";
+  ok("a campaign that names a curtain ends a carried rise on its page", /The curtain headline/.test(tc) &&
+     /first paragraph of the curtain/.test(tc) && /second paragraph of the curtain/.test(tc), tc.slice(0, 80));
+  ok("with the campaign's own note", /Here the first act ends/.test(tc));
+  ok("and not on an election's returns", !/The Commonwealth has voted/.test(tc));
+  w.eval("(function(){ var K=UI.content(), s=UI.state(); delete K.setup.actEnd; delete K.eventById.curtain_probe; s.period=1; Engine.dissolve(s, K); Engine.count(s, K); UI.redraw(); })()");
+  const pe = w.document.querySelector("#sitting-body .sp-page");
+  ok("a campaign that names none keeps the election's page", !!pe && /voted/i.test(pe.textContent));
+  w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapC) + "), Shell.contentFor((CONTENT.administrations||[])" +
+         ".find(function(x){return x.id===JSON.parse(" + JSON.stringify(snapC) + ").admin;})))");
+} catch (e) { ok("a campaign's curtain", false, e.message); }
+
 /* Calls retain independent borrowing, contextual amounts and exactly one
    confirmation-owned action. Removing any of those is a behavioral fault. */
 {

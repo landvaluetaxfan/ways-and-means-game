@@ -188,6 +188,11 @@ Sep 2026) and in the design notes cited.
 - **A test that checks for a flag can pass by a path it was not about.** The Question Time guard
   first read Ember Ridge's shutdown on a clean path, because the appeal's deadline broke before
   the guard made the order. Make the act before its deadline, not after the loop.
+- **The run does not end at the rise: a carried rise opens the next period.** The first curtain
+  hook assumed the rise was the election and keyed the last page on `kind:"election"`. Walking
+  the real game (`CHAMBER=1 node tools/actwalk.js`) showed an interval page at sitting 17 and
+  empty periods after it. The hook belongs in `Engine.checkEnd`, on `st.period`, and the walk is
+  how you find that out before the author does.
 
 ## Checks and tools
 

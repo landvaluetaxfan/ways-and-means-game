@@ -8671,6 +8671,12 @@ const Engine = (function () {
     /* A CARRIED MOTION IS READ WITH SUPPLY, above dissolution, for the same
        reason: it happened in the House that was still sitting. */
     if (st.noConfidence) return { over: true, kind: "loss", reason: "no confidence" };
+    /* THE ACT'S CURTAIN (design/80, brief E1). A campaign built to the end of its first act names
+       the page that closes it (`setup.actEnd`). The run is over when the House has risen on that act
+       and the next period has begun, which only a carried rise does, so a government that lost
+       supply or a confidence vote has already ended above and never reaches the curtain. */
+    const ae = C && C.setup && C.setup.actEnd;
+    if (ae && (st.period || 1) > (ae.period || 1)) return { over: true, kind: "act", reason: "curtain" };
     /* A CRISIS CAN RESOLVE AFTER THE WRITS ARE OUT. This sat below the
        dissolution branch, which returns, so checkSettlement was never
        reached once the House was dissolved and the twelve sittings of the

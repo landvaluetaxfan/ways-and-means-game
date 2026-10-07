@@ -313,6 +313,19 @@ guard("QUESTION TIME ASKS ABOUT WHAT HAPPENED, ONE QUESTION, AT SITTING 14", ok 
      ["a1_qt_ember", "a1_qt_promise", "a1_qt_reserve"].every(id => CONTENT.eventById[id].choices.filter(ch => ch.cost && ch.cost.slot).length === 1) && stay === 1);
 });
 
+guard("THE CURTAIN IS THE ALMANAC WORKS ABANDONED, READ BY THE LAST PAGE AND NEVER PLAYED", ok => {
+  const adm = (T.all().administrations || []).find(a => a.id === "flash_i"), ae = ((adm || {}).setup || {}).actEnd || {};
+  const ev = CONTENT.eventById[ae.event];
+  ok("the campaign names its curtain, and it is an event the view holds", !!ev && ev.queuedOnly === true && ae.event === "a1_works_abandoned");
+  const seen = [], st = Engine.newGame(CONTENT);
+  for (let i = 1; i <= 16; i++) { Engine.playSitting(st, CONTENT, () => 0).forEach(m => seen.push(m.event.id)); Engine.advance(st, CONTENT); }
+  ok("and it never fires in play, because nothing queues it", !seen.includes("a1_works_abandoned"));
+  const aw = ((T.all().world || {}).foreign || []).find(f => f.id === "almanac_works") || {};
+  ok("its figures are the world's: the platform's people, and the tether it stands on",
+     !!aw.population && ev.body.indexOf(aw.population.toLocaleString("en-GB")) >= 0 && ev.body.indexOf("Tether 2") >= 0 &&
+     /Tether 2/.test(aw.site || ""), String(aw.population));
+});
+
 guard("THE RISE IS THE DEADLINE: SUPPLY NOT MOVED IS SUPPLY LOST (design/76)", ok => {
   const st = Engine.newGame(CONTENT);
   let over = null, at = null;
@@ -328,7 +341,7 @@ guard("THE RISE IS THE DEADLINE: SUPPLY NOT MOVED IS SUPPLY LOST (design/76)", o
   ok("at the rise, the sixteenth sitting, and not before", at === 16, "sitting " + at);
 });
 
-guard("THE ACT CAN BE WON: THE APPROPRIATION CARRIES AND THE GOVERNMENT SURVIVES THE RISE", ok => {
+guard("THE ACT CAN BE WON: THE APPROPRIATION CARRIES AND THE GOVERNMENT REACHES THE CURTAIN", ok => {
   /* One slot a sitting from the fifth, then the division on the day the House
      sets. The supply bill's functional objection delays it three sittings
      (design/76), and all of that has to fit inside the period. */
@@ -346,7 +359,9 @@ guard("THE ACT CAN BE WON: THE APPROPRIATION CARRIES AND THE GOVERNMENT SURVIVES
     if (end.over) over = end;
   }
   ok("the Appropriation is assented", st.bills.appropriation.stage === "assented", st.bills.appropriation.stage);
-  ok("and the run is not over at the rise", !over, JSON.stringify(over));
+  ok("and the run ends at the rise on the curtain, which is not a loss and not an election",
+     !!over && over.kind === "act" && over.reason === "curtain", JSON.stringify(over));
+  ok("at the sitting the next period opens on, the seventeenth", st.sitting === 17 && st.period === 2, st.sitting + "/" + st.period);
 });
 
 guard("FLASH I IS A CAMPAIGN (design/36 §3)", ok => {

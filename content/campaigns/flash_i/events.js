@@ -874,6 +874,24 @@ The account is public, and the Underwriters set the rate at which they lend by i
 The prices of the four goods the Commonwealth buys and sells most, thermal quota, substrate, the hardware that digital residents run on, volume and transit, are part of the same reading. A price that has moved from where it opened changes what the Treasury receives from the tax levied on it.
 
 The Underwriters lend in the Commonwealth's own money. Earth's banks lend in dollars, at a rate set in Earth, and ask for more when the Commonwealth is at odds with Earth's governments.`,
+  choices:[] },
+
+/* THE CURTAIN (design/80, brief E1 and E11): what the last page of Act I says happens as the House rises. The
+   design/78 beat, and the author's first superevent: the Almanac Works abandoned. It is never queued and never
+   fires in play; the last page reads it through `setup.actEnd` (campaign.js). Every fact in it is canon
+   (content/world.js, content/actors.js). The day is the open question: the canon says the Commonwealth learned of
+   it on 6 May and the House rises on 8 May, so here the news arrives as the House rises. */
+{ id:"a1_works_abandoned", queuedOnly:true, once:true,
+  setpiece:{ title:"Cordell abandons the Almanac Works, and 184,000 people are left without an operator" },
+  title:"The Almanac Works",
+  speaker:null,
+  body:`Cordell, the mining company that owns the Bellamy Almanac Works, has wound up the company that operated it. The platform's 184,000 residents now have no operator to pay for their air, water or fuel.
+
+The Works is a refinery and foundry on Tether 2, the International Earth-Orbit Elevator, whose anchor stands at Malindi in Kenya. It smelts the ore that Cordell's extraction platforms bring in and rolls it into structural metal and hull plate.
+
+Cordell is owned by the sovereign wealth fund of Gabon. The European Union froze the fund's assets in March, and Cordell's accounts in Europe have stayed frozen since. The operator could not pay its suppliers, and its engineers say the platform's air will last about two months.
+
+Kenya, on whose coast the tether stands, has approved a plan to bring down the residents who wish to come. Its tender law and the platform's safety inspection put the last descents in 2082. The European Union, whose banks hold the platform's bonds, says that whoever takes the platform takes its debts.`,
   choices:[] }
 
 ] });

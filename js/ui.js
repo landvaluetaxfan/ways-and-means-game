@@ -792,6 +792,8 @@ const UI = (function () {
            resolved its crisis went in three times, twice before it ended. */
         score("moment");
         setStatus("Settled: " + end.settlement.name, "transient");
+      } else if (end.kind === "act" && end.over) {
+        setStatus("The House has risen. This is the end of the act.", "transient");
       } else if (end.kind === "election" && end.over) {
         setStatus("The Commonwealth has voted. The campaign is over.", "transient");
         if (!bench && typeof Shell !== "undefined" && Shell.record)
@@ -6034,7 +6036,8 @@ const UI = (function () {
     const play = currentPlay();
     if (!play || !play.cast) return [];
     const said = id => (st.log || []).filter(e => e.cx && (e.about || []).indexOf(id) >= 0)[0];
-    const pmLine = ending.kind === "election" && ending.result ? governmentReturn(ending.result).line
+    const pmLine = ending.kind === "act" ? "carried the estimates"
+      : ending.kind === "election" && ending.result ? governmentReturn(ending.result).line
       : ending.kind === "preview" ? play.cast[0].role
       : ending.kind === "settlement" ? "saw the session through"
       : "lost the House";
@@ -6894,7 +6897,16 @@ const UI = (function () {
     const secs = [];
     let title;
 
-    if (end.kind === "election" && end.result) {
+    /* A CAMPAIGN'S ACT CAN END THE RUN AT THE RISE (design/80, brief E1). Where the campaign names a curtain
+       event (`setup.actEnd`), a government that carried the House to the rise ends on that event's page and not on
+       an election's returns; a government that fell, or lost supply, keeps its own page below. */
+    const actEnd = C.setup && C.setup.actEnd && C.eventById && C.eventById[C.setup.actEnd.event];
+    if (actEnd && end.kind === "act") {
+      title = (actEnd.setpiece && actEnd.setpiece.title) || actEnd.title;
+      String(actEnd.body || "").split(/\n\s*\n/).filter(Boolean).forEach((p, i) =>
+        secs.push({ kind: i === 0 ? "lede" : "body", body: p.replace(/\s*\n\s*/g, " ") }));
+      if (C.setup.actEnd.note) secs.push({ kind: "body", head: "End of the first act", body: C.setup.actEnd.note });
+    } else if (end.kind === "election" && end.result) {
       const r = end.result, was = r.was || 0, held = r.held || 0;
       title = "The Commonwealth has voted";
       secs.push({ kind: "lede", body: governmentReturn(r).line + " " + ownSeatsLine(was, held) });
@@ -7003,7 +7015,13 @@ const UI = (function () {
     const seatsOf = map => Object.keys(map || {}).sort((a, b) => map[b] - map[a])
       .map(id => `${mark(id)}${esc(ps(id))} ${map[id]}`).join(" &middot; ");
     let head, body = "";
-    if (end.kind === "election" && end.result) {
+    const actEnd = C.setup && C.setup.actEnd && C.eventById && C.eventById[C.setup.actEnd.event];
+    if (actEnd && end.kind === "act") {
+      head = (actEnd.setpiece && actEnd.setpiece.title) || actEnd.title;
+      body = String(actEnd.body || "").split(/\n\s*\n/).filter(Boolean)
+        .map(p => `<div class="note">${esc(p.replace(/\s*\n\s*/g, " "))}</div>`).join("") +
+        (C.setup.actEnd.note ? `<div class="note">${esc(C.setup.actEnd.note)}</div>` : "");
+    } else if (end.kind === "election" && end.result) {
       const r = end.result, was = r.was || 0, held = r.held || 0;
       head = "The Commonwealth has voted";
       body =

@@ -39,6 +39,10 @@ campaign("flash_i", { administrations: [
        placeholder older than the term, and this dates the campaign to the
        term's own first year. */
     setup:{ startDate:"2080-04-11",
+      /* THE ACT'S CURTAIN (design/80, brief E1). A carried rise ends the run on this event's page
+         instead of an election: the event is read by the last page and never fires in play. */
+      actEnd:{ event:"a1_works_abandoned",
+               note:"This is the end of the first act. The rest of the play is not yet written." },
       campaignMarkers:[{ id:"works", label:"Bellamy Almanac Works", place:"belowBands",
         article:"body_almanac_works", when:{ flags:["station_issue"] },
         note:"The refinery and foundry whose operator has abandoned its residents." }],

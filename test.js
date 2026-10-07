@@ -1252,6 +1252,21 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
        mig.session === 4 && mig.period === 2 && mig.risesAt === 33 &&
        !("sessionEnds" in mig) && mig.version === Engine.STATE_VERSION,
        JSON.stringify({ session: mig.session, period: mig.period, risesAt: mig.risesAt }));
+
+    /* THE ACT'S CURTAIN (design/80, brief E1). A campaign that names the page which closes its act
+       ends on it when the House has risen and the next period begins. */
+    const K = Object.assign({}, CONTENT, { setup: Object.assign({}, CONTENT.setup, { actEnd: { event: "curtain" } }) });
+    const c = Engine.newGame(K);
+    ok("a campaign with a curtain is not over while the first period sits",
+       !Engine.checkEnd(c, K).over);
+    c.period = 2;
+    const ce = Engine.checkEnd(c, K);
+    ok("and is over, as the curtain and not an election, once the House has risen",
+       ce.over === true && ce.kind === "act" && ce.reason === "curtain", JSON.stringify(ce));
+    ok("a campaign without one goes on through the recess", !Engine.checkEnd(Object.assign(Engine.newGame(CONTENT), { period: 2 }), CONTENT).over);
+    c.supplyLost = true;
+    ok("and supply lost at that rise is a loss, which the curtain does not hide",
+       Engine.checkEnd(c, K).kind === "loss", Engine.checkEnd(c, K).kind);
   }
 
   /* THREE CHAPTERS, AND NOTHING AFTER THE COUNT (bible §1.7). */

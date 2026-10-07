@@ -245,6 +245,11 @@ const Refs = (function () {
     const S = M.setup || {};
     Object.keys(S).filter(k => /^on[A-Z]/.test(k) && S[k] === id).forEach(k =>
       H(`setup · ${k}`, to => S[k] = to));
+    /* A campaign's curtain page (setup.actEnd.event, design/80 E1) is an event too. */
+    (M.administrations || []).forEach(a => {
+      const ae = (a.setup || {}).actEnd;
+      if (ae && ae.event === id) H(`administration ${a.id} · setup.actEnd`, to => ae.event = to);
+    });
     M.glossary.forEach(g => {
       if (g.introduced === id) H(`glossary "${g.term}" · introduced`, to => g.introduced = to);
     });
