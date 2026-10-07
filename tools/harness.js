@@ -174,9 +174,9 @@ if (!process.env.HARNESS_REAL) w.eval(`(function () {
     if (x && x.campaign === "flash_i") x.campaign = "world";
   });
   var fl = (CONTENT.administrations || []).find(function (a) { return a.id === "flash_i"; });
-  /* without Act I's opening, which sets its treaty at committee and locks its first order, and without its curtain */
+  /* without Act I's opening, which sets its treaty at committee and locks its first order, and without its curtain or its lever locks (the checks use every lever at once) */
   if (fl) CONTENT.administrations.unshift(Object.assign({}, fl, { id: "harness", campaign: "world", opening: [],
-    setup: Object.assign({}, fl.setup, { actEnd: undefined }) }));
+    setup: Object.assign({}, fl.setup, { actEnd: undefined, locks: undefined }) }));
 })()`);
 
 /* `const CONTENT` inside a script is a lexical global, not a window
