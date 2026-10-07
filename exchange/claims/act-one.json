@@ -1,0 +1,15 @@
+{
+  "brief": "act-one",
+  "lane": "claude",
+  "since": "2026-10-07",
+  "files": [
+    "content/campaigns/",
+    "tools/uitest.js",
+    "tools/uxtest.js",
+    "tools/edtest.js",
+    "tools/lint.js",
+    "tools/guards.js",
+    "tools/playtest.js"
+  ],
+  "note": ""
+}
