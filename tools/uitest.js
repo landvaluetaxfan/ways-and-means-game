@@ -2602,6 +2602,56 @@ try {
     } catch (e) { ok("the labels while the globe turns", false, e.message); }
 
     try {
+      /* A LABEL NEVER SITS ON ITS OWN TETHER, and the Commonwealth's own are not
+         lost when the globe is zoomed (the author, 7 Oct 2026: the text on the
+         globe is still wrong). Swept over twelve hundred views. Before the fix a
+         label lay across its own leader in 1,396 of 720 frames, which is how a mark
+         showed through "The Male line"; and a zoomed anchor either lost its name
+         or had it run off the edge. */
+      const CW = 5.5, UP = 8, DOWN = 2, VW = 720, VH = 480;
+      const parse = svg => {
+        const m = {};
+        svg.replace(/<g class="w-(anchor|body)([^"]*)" data-(?:anchor|body)="([^"]+)"[^>]*>(.*?)<\/g>/g, (all, kind, cls, id, inner) => {
+          const ln = /<line x1="([-\d.]+)" y1="([-\d.]+)" x2="([-\d.]+)" y2="([-\d.]+)"/.exec(inner);
+          const tx = /<text class="w-lab" x="([-\d.]+)" y="([-\d.]+)" text-anchor="(\w+)">([^<]*)</.exec(inner);
+          if (ln) m[id] = { mine: kind === "anchor" && /\bmine\b/.test(cls), p: [+ln[1], +ln[2]], q: [+ln[3], +ln[4]],
+                            lab: tx ? { x: +tx[1], y: +tx[2], a: tx[3], t: tx[4] } : null };
+          return all;
+        });
+        return m;
+      };
+      const inView = P => P[0] >= 0 && P[0] <= VW && P[1] >= 0 && P[1] <= VH;
+      let onLeader = 0, unnamed = 0, cutOff = 0, frames = 0, seen = 0;
+      [1, 1.8].forEach(zoom => [-20, 15, 40].forEach(lat => {
+        setView(lat, -180, "globe", zoom);
+        for (let lng = -180; lng < 180; lng += 3) {
+          w.eval(`World.view.lng = ${lng}`);
+          const m = parse(w.eval("World.render()")); frames++;
+          Object.keys(m).forEach(id => {
+            const g = m[id], l = g.lab;
+            if (g.mine && !l && (inView(g.q) || inView(g.p))) unnamed++;
+            if (!l) return;
+            seen++;
+            const wd = l.t.length * CW;
+            const x0 = (l.a === "start" ? l.x : l.a === "end" ? l.x - wd : l.x - wd / 2) - 1, x1 = x0 + wd + 2, y0 = l.y - UP, y1 = l.y + DOWN;
+            if (x0 < 0 || x1 > VW) cutOff++;
+            const n = Math.max(1, Math.floor(Math.hypot(g.q[0] - g.p[0], g.q[1] - g.p[1]) / 5));
+            for (let k = 0; k < n; k++) {
+              const x = g.p[0] + (g.q[0] - g.p[0]) * k / n, y = g.p[1] + (g.q[1] - g.p[1]) * k / n;
+              if (x + 2.5 > x0 && x - 2.5 < x1 && y + 2.5 > y0 && y - 2.5 < y1) { onLeader++; break; }
+            }
+          });
+        }
+      }));
+      ok("no label lies across its own tether, over every view of the globe and at two zooms",
+         seen > 500 && onLeader === 0, onLeader + " of " + seen + " labels over " + frames + " views");
+      ok("no label runs off the edge of the drawing",
+         cutOff === 0, cutOff + " cut off");
+      ok("the Commonwealth's own anchors are named whenever any of them is in view, zoomed or not",
+         unnamed === 0, unnamed + " unnamed");
+    } catch (e) { ok("the labels and their tethers", false, e.message); }
+
+    try {
       /* the outlines: countries made to cross the horizon, checked point by
          point against the sphere. A band of latitude, and a cap that encircles
          the south pole, each wound both ways round. */

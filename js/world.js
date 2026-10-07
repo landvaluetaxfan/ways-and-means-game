@@ -370,19 +370,39 @@ const World = (function () {
       marks.push({ key: it.key, x0: it.g.p.x - 4, x1: it.g.p.x + 4, y0: it.g.p.y - 4, y1: it.g.p.y + 4 });
       marks.push({ key: it.key, x0: it.g.q.x - 4, x1: it.g.q.x + 4, y0: it.g.q.y - 4, y1: it.g.q.y + 4 });
     });
+    /* A LABEL NEVER SITS ON ITS OWN TETHER. The tip is the label's anchor, so the
+       last step of the line is left out, but the rest of it and its foot are an
+       obstacle for every spot, a retained one included. Near the limb the tether
+       lies along the text, and without this a mark showed through "The Male
+       line" (the author, 7 Oct 2026: the text on the globe is still wrong). */
+    const leader = {};
+    items.forEach(it => {
+      const p = it.g.p, q = it.g.q, n = Math.max(1, Math.floor(Math.hypot(q.x - p.x, q.y - p.y) / 5)), bx = [];
+      for (let k = 0; k < n; k++) {
+        const x = p.x + (q.x - p.x) * k / n, y = p.y + (q.y - p.y) * k / n;
+        bx.push({ x0: x - 2.5, x1: x + 2.5, y0: y - 2.5, y1: y + 2.5 });
+      }
+      leader[it.key] = bx;
+    });
     const was = Object.assign({}, lastSpot);
     Object.keys(lastSpot).forEach(k => delete lastSpot[k]);
     const placed = [], out = {};
     /* The Commonwealth's own and the selection are the ones that must be named:
        they try for a spot clear of every mark, and failing that take one that
        keeps clear of the labels already placed. The others need the first. */
-    const hit = (r, it, bare) => placed.concat(bare ? [] : marks.filter(m => m.key !== it.key)).some(o =>
+    const hit = (r, it, bare) => placed.concat(bare ? [] : marks.filter(m => m.key !== it.key), leader[it.key] || []).some(o =>
       r.x0 < o.x1 && r.x1 > o.x0 && r.y0 < o.y1 && r.y1 > o.y0);
     const grow = (r, m) => ({ x0: r.x0 - m, x1: r.x1 + m, y0: r.y0 - m, y1: r.y1 + m });
     items.forEach((it, i) => { it.i = i; });
     items.slice().sort((x, y) => x.rank - y.rank || (was[x.key] ? 0 : 1) - (was[y.key] ? 0 : 1) || x.i - y.i)
       .forEach(it => {
-      const w = it.text.length * LAB.cw, q = it.g.q;
+      /* The name hangs from the tether's tip. When the globe is zoomed and the tip
+         is out of view while the foot is not, a name that must be shown hangs from
+         the foot instead, so that it is still there and still next to its mark. */
+      const inView = P => P.x >= 0 && P.x <= W && P.y >= 0 && P.y <= H;
+      const q = inView(it.g.q) ? it.g.q : it.rank <= 1 && inView(it.g.p) ? it.g.p : null;
+      if (!q) return;
+      const w = it.text.length * LAB.cw;
       const first = it.g.ux >= 0 ? "R" : "L";
       const at = (side, dy) => ({ id: side + dy, a: side === "R" ? "start" : "end",
                                   x: q.x + (side === "R" ? 6 : -6), y: q.y + dy });
@@ -404,8 +424,19 @@ const World = (function () {
       let pick = prior && spots[0].id === prior && inside(box(spots[0])) && !hit(box(spots[0]), it, true)
         ? spots[0] : null;
       if (!pick) pick = spots.find(s => { const r = grow(box(s), margin); return inside(box(s)) && !hit(r, it); });
-      if (!pick && it.rank <= 1)
-        pick = spots.find(s => { const r = box(s); return inside(r) && !hit(r, it, true); }) || spots[0];
+      if (!pick && it.rank <= 1) {
+        pick = spots.find(s => { const r = box(s); return inside(r) && !hit(r, it, true); });
+        /* No spot fits whole. The name still has to be there, so the best spot is
+           slid into view instead of being left to run off the edge and be cut
+           mid-word, as "The Beanstalk" was when the globe was zoomed. A tether
+           that is itself out of view is not named from the edge. */
+        if (!pick) {
+          const s = spots.find(c => !hit(box(c), it, true)) || spots[0], r = box(s);
+          const dx = r.x0 < 2 ? 2 - r.x0 : r.x1 > W - 2 ? W - 2 - r.x1 : 0;
+          const dy = r.y0 < 2 ? 2 - r.y0 : r.y1 > H - 2 ? H - 2 - r.y1 : 0;
+          pick = Object.assign({}, s, { x: s.x + dx, y: s.y + dy });
+        }
+      }
       if (!pick) return;
       placed.push(box(pick));
       lastSpot[it.key] = pick.id;
