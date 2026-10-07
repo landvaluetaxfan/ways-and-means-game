@@ -342,6 +342,7 @@ const PROBE = `
      because after it the menu is gone. */
   var menu = null;
   try {
+    window.__NO_TUTORIAL = true;      /* the card is measured on its own, below */
     Shell.boot(CONTENT);
     Shell.setOpt("govDepartments", {});
     menu = (function () {
@@ -626,6 +627,29 @@ ${HELPERS}
       fellBack: skipped.length > 0 || GENERIC[face] === 1
     };
   }
+
+  /* THE TUTORIAL CARD (js/tutorial.js), in the real browser: it lies wholly inside the window, clears the part it lights,
+     and shows all its text. jsdom has no layout, so this is the only place that can say so. */
+  try {
+    window.__NO_TUTORIAL = false;
+    Shell.setOpt("tutorial", "on"); Shell.setOpt("taught", "");
+    UI.state().seen.a1_treasury = 1; delete UI.state().flags.sandbox;   /* the probe plays on the bench, which never teaches */
+    UI.openTab("gov"); Tutorial.refresh();
+    var tc = document.querySelector("#tut.on .tut-card"), th = document.querySelector("#tut .tut-hole");
+    drawn.push("tutorial card" + (tc ? "" : " (NOT DRAWN)"));
+    if (tc && th) {
+      var cr = tc.getBoundingClientRect(), hr = th.getBoundingClientRect(), W = innerWidth, H = innerHeight;
+      if (cr.left < 0 || cr.top < 0 || cr.right > W + 1 || cr.bottom > H + 1)
+        found.push({ tab: "tutorial", el: "#tut .tut-card", kind: "LAYOUT", by: 1, detail: "The card is not wholly inside the window." });
+      if (cr.left < hr.right - 1 && cr.right > hr.left + 1 && cr.top < hr.bottom - 1 && cr.bottom > hr.top + 1)
+        found.push({ tab: "tutorial", el: "#tut .tut-card", kind: "LAYOUT", by: 1, detail: "The card covers the part it lights." });
+      if (tc.scrollHeight > tc.clientHeight + 2)
+        found.push({ tab: "tutorial", el: "#tut .tut-card", kind: "CLIPPED", by: tc.scrollHeight - tc.clientHeight, detail: "The card clips its own text." });
+      var ok = tc.querySelector("[data-tut=ok]").getBoundingClientRect();
+      if (ok.width < 20 || ok.bottom > H) found.push({ tab: "tutorial", el: "[data-tut=ok]", kind: "LAYOUT", by: 1, detail: "Got it is out of reach." });
+    }
+    Tutorial.dismiss(); window.__NO_TUTORIAL = true;
+  } catch (e) { found.push({ tab: "tutorial", el: "#tut", kind: "LAYOUT", by: 1, detail: "tutorial probe: " + (e && e.message) }); }
 
   done({ hits: found, tabs: drawn, pageX: pageX, vw: de.clientWidth, menu: menu,
          fonts: fonts });

@@ -233,7 +233,7 @@ obligations; the quiet advice-dot hook awaits the brief engine.
 
 ```
 npm install      # once, for jsdom
-npm run check    # all seventeen, about two minutes; all must pass
+npm run check    # all eighteen, about two minutes; all must pass
 ```
 
 | | |
@@ -254,6 +254,7 @@ npm run check    # all seventeen, about two minutes; all must pass
 | `tools/storymap.js --check` | every view's story map draws |
 | `tools/fidget.js` | a player who uses every lever in a random legal order, across 240 seeds of Act I: no throw, no `IGNORED:` log line, no stuck sitting, a save and load that keep the ending |
 | `tools/flagaudit.js` | every flag Flash I sets is read somewhere (the scene contract's third rule); a flag held for a reader not yet built is listed in the tool, and the list fails when the reader lands |
+| `tools/tutest.js` | the tutorial card (`js/tutorial.js`): shows on its tab, waits elsewhere, records what is taught in the player's options, skip, replay, Esc, survives a re-render, and every Act I step names a region that exists. Every other check runs with it off |
 | `tools/itchtest.js` | builds the itch.io zip, unpacks it outside the repository and plays the page in it: boots, saves, no network, no world story, Act I to the curtain |
 
 **`npm run balance`** is outside `check` because it measures and asserts nothing: it plays Act I to

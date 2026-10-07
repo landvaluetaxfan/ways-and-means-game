@@ -16,7 +16,7 @@ in files `ui-tabs` holds (`js/ui.js`: the curtain's thank-you section; `css/term
   `window.PLAYTEST` (the playtest frame `js/shell.js` already had: one campaign, no Sandbox, the build on the
   menu and in the report) with the commit and the date. The strip is the stopgap the brief allowed; the lasting
   fix, a fixture of the engine's own for `test.js`, is still open.
-- `tools/itchtest.js` (`npm run itchtest`, the seventeenth check) unpacks the zip outside the repository and
+- `tools/itchtest.js` (`npm run itchtest`, the seventeenth check (`tutest` is the eighteenth)) unpacks the zip outside the repository and
   plays the page: zip contents, no network call in the code, no untagged story entry in the page, no retired
   phrase in it that a carried file does not also hold, boot from `file://` and from a static server, the
   opening, a save written and read back, an older state shape migrates, a newer one is refused, the

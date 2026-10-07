@@ -64,7 +64,10 @@ const Shell = (function () {
     stream: true, streamSpeed: "normal",
     /* The terminal explaining itself. On by default because the terminal
        is full of abbreviations that carry rules. */
-    tips: true
+    tips: true,
+    /* THE TUTORIAL (js/tutorial.js): "on" or "off", and the lessons already given, as a comma list of step ids.
+       The player's, not the save's: a second game on this machine does not teach again. */
+    tutorial: "on", taught: ""
   };
   /* MUTATED IN PLACE, NEVER REASSIGNED. `options` below hands this object
      out; reassigning it on load would leave every holder pointing at the
@@ -998,6 +1001,14 @@ const Shell = (function () {
                           v.charAt(0).toUpperCase() + v.slice(1) + `</option>`).join("")}
             </select></label>
         </div>
+        <div class="opt-group tutorial">
+          <div class="opt-title">Tutorial</div>
+          <label class="optlvl"><span>Lessons</span>
+            <select data-pick="tutorial" aria-label="Tutorial">
+              <option value="on"${opts.tutorial !== "off" ? " selected" : ""}>On</option>
+              <option value="off"${opts.tutorial === "off" ? " selected" : ""}>Off</option></select></label>
+          <button class="mbtn sm wide" data-tut-replay="1">Show the lessons again</button>
+        </div>
         ${inGame === false ? "" : `<div class="opt-group session">
           <div class="opt-title">Session</div>
           <details class="opt-transcript"><summary>Playtest transcript</summary>
@@ -1018,6 +1029,11 @@ const Shell = (function () {
     if (copy) copy.addEventListener("click", () => {
       if (inGame) sliceReport = makeSliceReport();
       copySliceReport();
+    });
+    const again = p.querySelector("[data-tut-replay]");
+    if (again) again.addEventListener("click", () => {
+      if (typeof Tutorial !== "undefined") Tutorial.replay();
+      flash("The lessons will be given again");
     });
     p.querySelectorAll("[data-opt]").forEach(cb => cb.addEventListener("change", () => {
       opts[cb.dataset.opt] = cb.checked; saveOpts(); applyOpts();
