@@ -256,6 +256,9 @@ npm run check    # all fourteen, about two minutes; all must pass
 **`npm run balance`** is outside `check` because it measures and asserts nothing: it plays Act I to
 the curtain under five answer strategies (`tools/actbalance.js`) and prints how each ends. `node
 tools/actwalk.js` plays the real Flash I through the page and prints what a first-time player reads.
+`npm run prose:act` writes `prose-act.txt`: only the passages Act I's player can meet, in order of play, in
+`prose.txt`'s own format, for the author to read and mark (`node tools/prosedocx.js --act` makes the phone
+copy). An edited copy saved as `prose.txt` goes back in with `npm run prose:in`.
 
 **`npm run layout`** is outside `check` because it needs a real browser. It
 boots the game and the editor in headless Chromium and reports clipped or

@@ -38,7 +38,10 @@ const fs = require("fs");
 const { Document, Packer, Paragraph, TextRun, HeadingLevel, PageBreak,
         AlignmentType, ShadingType, BorderStyle } = require("docx");
 
-const src = fs.readFileSync(require("path").join(__dirname, "..", "prose.txt"), "utf8");
+/* `--act` reads prose-act.txt (npm run prose:act: Act I only, in order of play) and writes
+   ways-and-means-act-one.docx beside it. The addresses are the same, so either file goes back in. */
+const ACT = process.argv.includes("--act");
+const src = fs.readFileSync(require("path").join(__dirname, "..", ACT ? "prose-act.txt" : "prose.txt"), "utf8");
 
 /* ---- parse prose.txt into blocks ---- */
 const lines = src.split(/\r?\n/);
@@ -197,8 +200,9 @@ const doc = new Document({
 });
 
 Packer.toBuffer(doc).then(buf => {
-  fs.writeFileSync(require("path").join(__dirname, "..", "ways-and-means-prose.docx"), buf);
-  console.log("wrote ways-and-means-prose.docx");
+  const outName = ACT ? "ways-and-means-act-one.docx" : "ways-and-means-prose.docx";
+  fs.writeFileSync(require("path").join(__dirname, "..", outName), buf);
+  console.log("wrote " + outName);
   console.log("  work items:", work.length, "| other passages:", rest.length);
   console.log("  size:", (buf.length / 1024).toFixed(0) + "KB");
 });

@@ -21,6 +21,7 @@
     "playtest": "node tools/playtest.js",
     "balance": "node tools/actbalance.js",
     "prose": "node tools/prose.js",
+    "prose:act": "node tools/prose.js --act",
     "prose:in": "node tools/prose.js --in",
     "prose:check": "node tools/prose.js --check",
     "storymap": "node tools/storymap.js",

@@ -419,6 +419,63 @@ if (argv.includes("--check")) {
   process.exit();
 }
 
+/* THE ACT'S SHEET (briefs/act-one.md, exit gate 9). `--act [id]` writes prose-act.txt: only the
+   passages a player of that campaign can meet, in order of play, so that the author reads Act I and
+   not the 3,700 passages of every retired act. It is in prose.txt's own format and its addresses
+   are the same, so the author's marked copy saved as prose.txt goes back in with `npm run prose:in`.
+   Left out on purpose: the 141 districts' descriptions, and the sandbox. */
+if (argv.includes("--act")) {
+  const nx = argv[argv.indexOf("--act") + 1], id = nx && nx.indexOf("--") !== 0 ? nx : "flash_i";
+  const V = require("./testkit.js").view(id), E = require("../js/engine.js");
+  /* the sitting each scene plays at, found by playing the campaign with the first answer */
+  const at = {};
+  const g = E.newGame(V);
+  for (let i = 1; i <= 30; i++) {
+    E.playSitting(g, V, () => 0).forEach(m => { if (at[m.event.id] == null) at[m.event.id] = g.sitting; });
+    E.advance(g, V);
+  }
+  const ids = k => (Array.isArray(V[k]) ? V[k] : []).map(x => x && x.id);
+  const GROUPS = [
+    ["administrations", () => [id]], ["events", () => V.events.slice().sort((a, b) =>
+      (at[a.id] == null ? 99 : at[a.id]) - (at[b.id] == null ? 99 : at[b.id]) || (a.prologue || 99) - (b.prologue || 99)).map(e => e.id)],
+    ["bills", () => ids("bills")], ["instruments", () => ids("instruments")], ["initiatives", () => ids("initiatives")],
+    ["cabinet", () => ids("cabinet")], ["business", () => ids("business")], ["parties", () => ids("parties")],
+    ["currents", () => ids("currents")], ["characters", () => ids("characters")], ["stations", () => ids("stations")],
+    ["actors", () => ids("actors")], ["functional", () => ids("functional")], ["minutes", () => ids("minutes")],
+    ["encyclopedia", () => ((V.encyclopedia || {}).articles || []).map(a => a.id)],
+    ["glossary", null], ["tips", null], ["setup", null], ["partyOrg", null], ["world", null], ["forums", null],
+    ["matters", () => ids("matters")], ["settlements", () => ids("settlements")], ["achievements", () => ids("achievements")]
+  ];
+  const rank = {};
+  GROUPS.forEach((gr, gi) => { rank[gr[0]] = { gi: gi, order: gr[1] ? gr[1]() : null }; });
+  const keyOf = r => {
+    const parts = r.addr.split("/"), coll = parts[0], R = rank[coll];
+    if (!R) return null;
+    const eid = coll === "encyclopedia" ? parts[2] : parts[1];
+    if (!R.order) return [R.gi, 0];
+    if (coll === "administrations" && eid !== id) return null;
+    const i = R.order.indexOf(eid);
+    return i < 0 ? null : [R.gi, i];
+  };
+  const rows = collect(C).map((r, i) => ({ r: r, k: keyOf(r), i: i })).filter(x => x.k)
+    .sort((a, b) => a.k[0] - b.k[0] || a.k[1] - b.k[1] || a.i - b.i);
+  const seenEvent = {};
+  rows.forEach(x => {
+    const p = x.r.addr.split("/");
+    if (p[0] === "events" && !seenEvent[p[1]]) {
+      seenEvent[p[1]] = 1;
+      x.r.brief = (at[p[1]] != null ? "Plays at sitting " + at[p[1]] + " with the first answer taken." : "Queued by an earlier answer; not on the first path.");
+    }
+  });
+  const out = path.join(root, "prose-act.txt");
+  fs.writeFileSync(out, Map_.format(C, rows.map(x => x.r)), "utf8");
+  console.log("PROSE ACT");
+  console.log("=".repeat(58));
+  console.log("  " + rows.length + " passages of " + id + " written to prose-act.txt, in order of play");
+  console.log("  to apply an edited copy: save it as prose.txt and run `npm run prose:in`");
+  process.exit();
+}
+
 const n = writeFile(C, target);
 console.log("PROSE OUT");
 console.log("=".repeat(58));
