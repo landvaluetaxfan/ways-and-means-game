@@ -286,6 +286,27 @@ release or are sequenced with them.
   block the pointer outside one region. Writing controls inert until taught, dimmed with one
   line saying when they open, a ratchet that only opens. The player's taught record lives in
   `Shell.opts`, not in the save, so a second campaign does not teach again.
+
+  **The ladder, as decided** (`design/81`, question 3, and question 5 for the taxes). Reading is
+  always open: every tab, the Concordance, every list. A control that WRITES is inert, dimmed,
+  with one line saying what opens it, until the scene that teaches it has been read, and once open
+  it never closes. The unit is "the scene has been read", so the data is the introduced record (E2)
+  and the same flag drives the tutorial card.
+
+  | control | opens when | scene |
+  |---|---|---|
+  | appoint a minister | `a1_treasury` is open | sitting 3 |
+  | Grant (order-paper time) | `a1_order_paper` is read | 4 |
+  | the thermal, floor, cover, works and transit clauses | `a1_cooling`, `a1_floor`, `a1_cover`, `a1_works`, `a1_transit` are read, each its own | 6 to 10 |
+  | make an order (the first, then the second) | `a1_ember_ridge` is read (today `a1_orders_locked`); the second after the first is made | 6 |
+  | the whip | `a1_count` is read | 11 |
+  | Divide | the estimates are at third reading and `a1_count` is read | 11 on |
+  | the four tax clauses, and the Economy tab's Money calls | `a1_underwriters` is read | 15 |
+  | Undo, Options, saves, the Concordance | never locked | |
+
+  The tax clauses stay at the standing rate until then. The clause needs a way to say "not open
+  yet": a `when` on the clause, read by `setClause` and by the clause panel, which dims the row and
+  prints `whenText`. That is the one engine change the ladder needs that is not general.
 - **E4 Guarded writers.** `cabinet` refuses to overwrite a filled post unless the effect says
   so. `bill` moves forward only. A refused write logs a line, as a bad id already does.
 - **E5 Setup constants in text.** `{{setup.slotsPerPeriod}}`-style placeholders, resolved when
@@ -393,10 +414,9 @@ in `flash_i/guards.js`).
 
 ### The rise: draft text for E1 and E11 (for Codex to wire, and the author to mark)
 
-The date needs the author's word. `bible.md` and `content/world.js` say the Commonwealth learned of
-the abandonment on **6 May**; the House rises on **8 May** (sitting 16). A curtain that ends on the
-abandonment either moves the date to the rise or has the news arrive as the House rises. I have
-written it as arriving at the rise and changed nothing else.
+Decided (`design/81`, question 1): the Commonwealth learns of the abandonment on **8 May**, the day
+the House rises (sitting 16). `bible.md` said 6 May and now says 8 May; the 17 July air date and
+"about two months" both still fit. The curtain page needs no date of its own.
 
 **The superevent** (`setpiece.scale:"super"`), the curtain's last beat. A news page, third person:
 
@@ -508,17 +528,17 @@ reword it.
 | 2 | The run did not end at the rise: a carried rise opens the next period, with an interval page | Fixed (E1, `Engine.checkEnd` on `st.period`) |
 | 3 | The curtain page reads the date the next period opens (23 May), not the rise (8 May) | Deferred to Codex with E1's frame |
 | 4 | Every seed plays the same game, because Act I has no random event | Recorded in `tools/actbalance.js`. The 240-seed gate is moot until one exists |
-| 5 | No answer strategy loses; only leaving the estimates unmoved ends the run | Deferred to the author, who decides whether Act I may be lost (design/77 says it stays loss-proof) |
+| 5 | No answer strategy loses; only leaving the estimates unmoved ends the run | Decided (`design/81`, question 7): it stays so, as `design/77` says |
 | 6 | Floor "lifted" and transit "every station" lower the Treasury's ceiling (`solvency -4000`), and no text said so | Fixed in the clause notes and the floor page |
 | 7 | The works "outer" level moves one station's closure (Homestead) while the text said the outer stations' | Fixed in the text. Deferred: whether the effect should reach more stations, which changes Acts II to V's secession arithmetic |
-| 8 | The four tax clauses sit in the Chamber's clause panel with five levels each and are mentioned in one paragraph at sitting 4 | Deferred to the author: lock them until the Economy tab opens at sitting 15, or teach them. Open question 5 in `design/81` |
+| 8 | The four tax clauses sit in the Chamber's clause panel with five levels each and are mentioned in one paragraph at sitting 4 | Decided (`design/81`, question 5): locked at the standing rate until sitting 15. Deferred to E3's ladder, with a `when` on the clause |
 | 9 | The clause panel named the taxes "Ways and Means: volume" and the page named them "tax on pressurised volume"; the Economy tab's base names differ again | Fixed in the bill and in `setup.fiscal.bases` (pressurised volume, cooling, computing time, freight to orbit) |
 | 10 | A bill's Concordance article prints a division forecast from sitting 1 | Deferred to E2 |
 | 11 | `Appropriation (Session 4) Bill` and `HC 4/` references still show | Deferred to opencode (`briefs/appropriation-rename.md`) |
 | 12 | Tooltips carry typed constants ("a thermal margin of 15") | Deferred to E5's placeholders |
 | 13 | `prose:in` writes prose.txt over the source, so a hand edit after generation is silently reverted | Recorded in `LESSONS.md`. Deferred: make `prose:in` refuse when the source has changed since the export |
 | 14 | `lint` ordered the world's retired events with Act I's glossary, and read neither choice notes nor headlines | Fixed. It now reads the live campaign's path and the notes, and caught two early uses of a term |
-| 15 | The glossary's `handle` asides are analogies ("Voter ID, for a world where copies are cheap"), against the Reference rule of no metaphor | Deferred to the author. Open question 6 in `design/81` |
+| 15 | The glossary's `handle` asides are analogies ("Voter ID, for a world where copies are cheap"), against the Reference rule of no metaphor | Fixed (`design/81`, question 6): cut, kept whole in `content/archive/glossary-handles.js` |
 | 16 | The quiet sittings (12, 13, 16) print lines from the world's old `business` pool, 80 lines of pre-reset text, several about the divergence bill, reclassification and an emergency thermal appropriation that Act I does not have | Fixed. `business` and `minutes` are now story kinds (`content/index.js`), Act I has its own 29 business lines (`content/campaigns/flash_i/business.js`) and no minute, and a guard holds both |
 | 17 | The Register held two Prime Minister's minutes from the retired story (a direction on licensing boards; a minute about "the division on Thursday") from sitting 1 | Fixed with 16 |
 | 18 | The Anselm Elevator actor note said its concession "awaits ratification by the House", which is the International's treaty, not the Beanstalk's | Fixed |

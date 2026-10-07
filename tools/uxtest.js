@@ -1060,6 +1060,11 @@ try {
      id, so it matched nothing and was dropped: no term linked anywhere and
      the analogy was never shown. annotate() on a sentence that uses terms
      with a hand-written article and with a generated one, then the card. */
+  /* The shipping glossary has no handles (design/81, question 6: cut on 7 Oct 2026), and the
+     card still draws one for any term that has one, so the test gives one term a handle for
+     the length of the probe and takes it away after. */
+  w.eval(`(function () { var g = CONTENT.glossary.find(function (x) { return x.term === "fork"; });
+    g.__was = g.handle; g.handle = "A handle the test gave this term."; })()`);
   const gl = JSON.parse(w.eval(`(function () {
     var host = document.createElement("p");
     host.id = "gl-probe";
@@ -1083,6 +1088,8 @@ try {
   ok("and the card draws the link and the handle",
      /tip-go/.test(card) && /tip-aside/.test(card), card.replace(/<[^>]+>/g, " ").slice(0, 110));
   if (probe) probe.blur();
+  w.eval(`(function () { var g = CONTENT.glossary.find(function (x) { return x.term === "fork"; });
+    if (g.__was === undefined) delete g.handle; else g.handle = g.__was; delete g.__was; })()`);
   const gp = w.document.getElementById("gl-probe"); if (gp) gp.remove();
 
   /* design/19: how long until the House rises, answerable by looking. */

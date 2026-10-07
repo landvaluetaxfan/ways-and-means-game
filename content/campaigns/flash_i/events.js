@@ -879,8 +879,8 @@ The Underwriters lend in the Commonwealth's own money. Earth's banks lend in dol
 /* THE CURTAIN (design/80, brief E1 and E11): what the last page of Act I says happens as the House rises. The
    design/78 beat, and the author's first superevent: the Almanac Works abandoned. It is never queued and never
    fires in play; the last page reads it through `setup.actEnd` (campaign.js). Every fact in it is canon
-   (content/world.js, content/actors.js). The day is the open question: the canon says the Commonwealth learned of
-   it on 6 May and the House rises on 8 May, so here the news arrives as the House rises. */
+   (content/world.js, content/actors.js). The canon date is the day the House rises, 8 May (design/81, question 1), so the news
+   arrives as the House rises. */
 { id:"a1_works_abandoned", queuedOnly:true, once:true,
   setpiece:{ title:"Cordell abandons the Almanac Works, and 184,000 people are left without an operator" },
   title:"The Almanac Works",

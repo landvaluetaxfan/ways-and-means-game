@@ -15,8 +15,9 @@ curtain page, and a hook is asked of `ui-tabs` through the exchange.
 1. **`tools/package-itch.js`.** Runs `tools/build.js` (one playable file, no `data-dev` scripts),
    and writes `dist/ways-and-means-itch.zip` holding `index.html` (the built file) and nothing
    else. itch.io serves a zip of an HTML5 game with `index.html` at its root, and the single file
-   keeps the page working with no server. The build is about 15 MB because the music track is
-   inlined (`img/audio/ready_to_fly.ogg`, 5.5 MB), and itch accepts far more.
+   keeps the page working with no server. The build was 15 MB while the page carried a recorded
+   track; that track was cut on 7 October (`content/anthem.js`), so the build is about 7 MB, and the
+   music is the generated bed alone.
 2. **`tools/itchtest.js`**, added to `npm run check` and to the checks table in `AGENTS.md`. It
    unzips the build into a fresh directory outside the repository and asserts: the zip holds
    only `index.html`; the page boots from `file://` and from a static server in jsdom and
@@ -53,19 +54,19 @@ curtain page, and a hook is asked of `ui-tabs` through the exchange.
 
 ## The inventory the author confirms
 
-Loaded by the page: `img/audio/ready_to_fly.ogg` (5.5 MB; the introduction's music, "The
-introduction opens on Ready to Fly, 52 seconds in"; source and licence unknown to the
-repository), `img/menu/tether.jpg`, `img/menu/gov.png`, `img/artifacts/flash-intro.png`,
+Loaded by the page: `img/menu/tether.jpg`, `img/menu/gov.png`, `img/artifacts/flash-intro.png`,
 `img/plays/flash_i_logo.png`, `flash_i_logo_black.png`, `flash_i_playbill.png`,
 `img/portraits/flash.png`, `gb_chair.png`, `placeholder.png`, `tenaya.png`, `watkins.png`,
 `img/events/vantage_radiator.png`, `img/signature-ink.png`, and the party logos in
-`img/logos/` (twelve parties and their marks, a flag and `retrograde.png`). There is no font
-file: the stylesheet uses the system's fonts (`--f-ui`, `--f-data`), so the page looks different
-on each platform, and `npm run layout` measures one face.
+`img/logos/` (twelve parties and their marks, a flag and `retrograde.png`). The sound is generated in
+the browser (`js/audio.js`, `js/music.js`), so there is no audio file. There is no font file either:
+the stylesheet uses the system's fonts (`--f-ui`, `--f-data`), so the page looks different on each
+platform, and `npm run layout` measures one face.
 
-**Not loaded and not to ship:** `img/La_Bionda__One_for_you_one_for_me.mid` (108 KB, a
-transcription of another artist's recording, referenced nowhere; the author may wish to remove
-it from the repository altogether) and `img/signature.png` (referenced nowhere).
+**Removed on 7 October**, on the author's word: the recorded track "Ready to Fly" (the
+introduction's music, a commercial recording with no licence to show) and
+`img/La_Bionda__One_for_you_one_for_me.mid` (a transcription of another artist's recording,
+referenced nowhere). `img/signature.png` is referenced nowhere and should not ship.
 
 ## Leave alone
 

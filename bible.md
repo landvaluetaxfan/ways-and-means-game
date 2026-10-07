@@ -2191,7 +2191,7 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
 - **The Works' air runs out on 17 July 2080** (decided 28 Sep 2026 by
   Claude, for the author's approval). The air plant uses up its filters and
   catalyst every month, and nobody has paid for them since March. The
-  stranding (6 May) says about two months, and the survey (27 May) says 51
+  stranding (8 May, the day the House rises) says about two months, and the survey (27 May) says 51
   days on its own spares. Unless the Commonwealth supplies the plant, or
   carries the Act, or the crisis is otherwise answered, the plant fails on
   that day and residents die. The date is on the calendar from the

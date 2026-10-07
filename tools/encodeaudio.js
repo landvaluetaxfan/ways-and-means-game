@@ -1,8 +1,7 @@
 /* =============================================================
    ENCODE A RECORDING FOR THE ANTHEM SLOT
 
-     node tools/encodeaudio.js img/audio/la_bionda.ogg la_bionda \
-          "La Bionda — One for You, One for Me"
+     node tools/encodeaudio.js img/audio/<file>.ogg <id> "<Artist — Title>"
 
    Writes content/anthem.js: the recording as base64 inside a .js file.
 

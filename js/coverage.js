@@ -124,11 +124,6 @@ const Coverage = (function () {
       add(2, `${untaught.length} glossary terms are never taught`,
         untaught.map(g => g.term).join(", ") + ".",
         "Set `introduced` on each, or mark it assumed.");
-    const noHandle = M.glossary.filter(g => !g.assumed && !g.handle);
-    if (noHandle.length)
-      add(3, `${noHandle.length} terms have no familiar handle`,
-        "The handle is the teaching device — the real-world shape the idea hangs on.",
-        "Add a handle to: " + noHandle.map(g => g.term).join(", ") + ".");
 
     /* ---------- art ---------- */
     const noLogo = M.parties.filter(p => !p.logo).length;
