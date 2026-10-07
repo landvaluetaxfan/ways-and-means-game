@@ -131,7 +131,7 @@ const CONTENT = (function () {
     const camp = admin.campaign || admin.id;
     const host = camp !== admin.id ? list.find(x => x.id === camp) : null;
     /* STORY KINDS ARE OPT-IN (design/80). An untagged event, bill, order,
-       initiative, matter, tier, achievement or resolution belongs to the
+       initiative, matter, tier, achievement, resolution, line of business or minute belongs to the
        WORLD's view alone, the one the engine tests play on, and a campaign
        sees only the story entries tagged for it. Before this an untagged
        entry belonged to every campaign, so a bill written for a later act
@@ -142,7 +142,7 @@ const CONTENT = (function () {
        test and a campaign both need is tagged for both:
        campaign: ["world", "flash_i"]. */
     const STORY = { events: 1, bills: 1, instruments: 1, initiatives: 1, matters: 1,
-                    settlements: 1, achievements: 1, resolutions: 1 };
+                    settlements: 1, achievements: 1, resolutions: 1, business: 1, minutes: 1 };
     const mine = (x, k) => !x || typeof x !== "object" ||
       (x.campaign == null ? !STORY[k] || camp === "world" : [].concat(x.campaign).indexOf(camp) >= 0);
     const K = Object.assign({}, C0);

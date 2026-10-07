@@ -517,6 +517,9 @@ reword it.
 | 13 | `prose:in` writes prose.txt over the source, so a hand edit after generation is silently reverted | Recorded in `LESSONS.md`. Deferred: make `prose:in` refuse when the source has changed since the export |
 | 14 | `lint` ordered the world's retired events with Act I's glossary, and read neither choice notes nor headlines | Fixed. It now reads the live campaign's path and the notes, and caught two early uses of a term |
 | 15 | The glossary's `handle` asides are analogies ("Voter ID, for a world where copies are cheap"), against the Reference rule of no metaphor | Deferred to the author. Open question 6 in `design/81` |
+| 16 | The quiet sittings (12, 13, 16) print lines from the world's old `business` pool, 80 lines of pre-reset text, several about the divergence bill, reclassification and an emergency thermal appropriation that Act I does not have | Fixed. `business` and `minutes` are now story kinds (`content/index.js`), Act I has its own 29 business lines (`content/campaigns/flash_i/business.js`) and no minute, and a guard holds both |
+| 17 | The Register held two Prime Minister's minutes from the retired story (a direction on licensing boards; a minute about "the division on Thursday") from sitting 1 | Fixed with 16 |
+| 18 | The Anselm Elevator actor note said its concession "awaits ratification by the House", which is the International's treaty, not the Beanstalk's | Fixed |
 
 ## Assumptions the author may overturn
 

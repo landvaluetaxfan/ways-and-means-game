@@ -111,7 +111,7 @@ const ACTORS = [
     reach: { fc_elevator: 3, fc_transit: 2 },
     wants: { divergence_threshold_hours: 1, anchor_concession: 1, transit_windows: 1 },
     asks: "the anchorage concession ratified before the House rises",
-    note: "Anselm Elevator is the consortium that owns and operates the Beanstalk, the tether at Macapá on which Anselm Ring's traffic from Earth arrives. Its concession on the anchorage awaits ratification by the House, and it can move votes on the Tether and Anchorage and the Transit benches." },
+    note: `Anselm Elevator is the consortium that owns and operates the Beanstalk, the tether at Macapá on which Anselm Ring's traffic from Earth arrives. It can move votes on the Tether and Anchorage and the Transit benches.` },
 
   { id: "standard_substrate", name: "Standard Substrate", kind: "consortium",
     standing: 35, patience: 65,

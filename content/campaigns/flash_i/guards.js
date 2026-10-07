@@ -75,6 +75,8 @@ guard("THE WORLD SHOWS ONLY WHAT ACT I HAS WRITTEN (design/80)", ok => {
   ok("the events are Act I's and no others",
      CONTENT.events.length > 0 && CONTENT.events.every(e => /^a1_/.test(e.id)),
      CONTENT.events.map(e => e.id).join(", "));
+  ok("the Register holds no minute from the retired story", CONTENT.minutes.length === 0,
+     CONTENT.minutes.map(m => m.id).join(", "));
   ok("the order paper holds the Appropriation Bill and the Anchorage treaty and nothing else",
      JSON.stringify(CONTENT.bills.map(b => b.id).sort()) === JSON.stringify(["anchor_kepler", "appropriation"]),
      CONTENT.bills.map(b => b.id).join(", "));
@@ -95,6 +97,20 @@ guard("THE TWO BILLS OPEN WHERE ACT I NEEDS THEM (the introduction ledger, brief
   ok("and the treaty at committee, not awaiting assent as the world has it", st.bills.anchor_kepler.stage === "committee",
      st.bills.anchor_kepler.stage);
   ok("the first order is locked until Ember Ridge", st.flags.a1_orders_locked === true);
+});
+
+guard("THE QUIET SITTINGS PRINT ACT I'S OWN BUSINESS, NOT THE WORLD'S OLD POOL", ok => {
+  /* Sittings 12 and 13 have no scene, so the lines the order paper prints are most of what they
+     hold. `business` is a story kind (content/index.js), so the retired pool stays with the world. */
+  ok("the view's pool is Act I's own lines and no others",
+     CONTENT.business.length >= 20 && CONTENT.business.every(b => /^a1_/.test(b.id)),
+     CONTENT.business.filter(b => !/^a1_/.test(b.id)).map(b => b.id).join(", "));
+  const st = play(12);
+  const lines = Engine.business(st, CONTENT, 3);
+  ok("a quiet sitting prints three of them", lines.length === 3 && lines.every(b => /^a1_/.test(b.id)),
+     lines.map(b => b.id).join(", "));
+  ok("and the same three on the same sitting", JSON.stringify(Engine.business(play(12), CONTENT, 3).map(b => b.id)) ===
+     JSON.stringify(lines.map(b => b.id)));
 });
 
 guard("THE SPARE SLOT IS ONE: THE ESTIMATES TAKE FIVE, THE TREATY CANNOT FINISH ON THE SIXTH", ok => {
