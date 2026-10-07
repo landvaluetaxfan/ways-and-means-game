@@ -314,7 +314,7 @@ Marit Ivarsen, the Minister for Trade and the Anchors, has asked him twice when 
     { posture:"cautious",
       label:`Tell Marit Ivarsen the spare slot stays in hand, and the treaty waits for the next sitting period.`,
       act:"Hold it",
-      note:`You keep the slot for whatever else costs one, an initiative for instance, and the estimates keep their margin. Ivarsen has nothing to tell the Kenyan government for another period, and the New Progressive Party, whose minister negotiated the treaty, will note that its measure did not move.`,
+      note:`You keep the slot for whatever else costs one, such as an initiative, and the estimates keep their margin. Ivarsen has nothing to tell the Kenyan government for another period, and the New Progressive Party, whose minister negotiated the treaty, will note that its measure did not move.`,
       effects:[{ move:{ "rel.ivarsen":-4 } }, { move:{ "loyalty.psa":-2 } }],
       result:`Devi writes the slot in his book as held. Ivarsen tells the Kenyan government that the bill will come in the next sitting period at the earliest.` }
   ]},
@@ -477,7 +477,7 @@ A promise to lift the floor commits the government to a level it can pay for onl
     { posture:"bold",
       label:`Trim the floor to CW$0 and tell Selim Ashgrove the money is needed elsewhere in the estimates.`,
       act:"Trim it",
-      note:`The floor is set to trimmed, which saves CW$16bn for the other clauses. When the Act passes, the stations that cannot feed themselves show it in their closure within the month, and the voters see it. Ashgrove and the Trades Left, your party's union wing, will hear a government that counted the floor as spare. You can reverse it in the Chamber, and they will not forget that you set it.`,
+      note:`The floor is set to trimmed, which saves CW$16bn for the other clauses. When the Act passes, the stations that cannot feed themselves go short within the month, and the voters see it. Ashgrove and the Trades Left, your party's union wing, will hear a government that counted the floor as spare. You can reverse it in the Chamber, and they will not forget that you set it.`,
       effects:[{ clause:{ bill:"appropriation", clause:"floor", level:"cut" } },
                { move:{ "rel.ashgrove":-8 } }, { move:{ "loyalty.cu_maintenance":-5 } }],
       result:`Ashgrove asks the Treasury in writing which clause the CW$16bn is for.` }

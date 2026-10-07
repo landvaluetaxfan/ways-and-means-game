@@ -324,9 +324,9 @@ This produces a recurring constitutional argument. Federal development spending 
         "integrity. It does not apply to ordinary legislation, appropriation, or instruments "+
         "made under existing statutory powers." },
       { h:"Effect", body:
-        `A government with a comfortable majority among elected members can still be unable to legislate in the field it was elected to reform. At the opening of the fourth session the coalition held twelve of the forty functional seats and needed twenty-one.` }
+        `A government with a comfortable majority among elected members can still be unable to legislate in the field it was elected to reform. At the opening of the 2080 Parliament the coalition held twelve of the forty functional seats and needed twenty-one.` }
     ],
-    see:["functional_constituency","divergence_threshold"] },
+    see:["functional_constituency","perigee_charter"] },
 
   { id:"suspension", title:"Suspension", category:"Personhood",
     banners:["contested"],

@@ -33,17 +33,17 @@ const GLOSSARY = [
 
   { term:"suspension", cluster:"cold", gloss:"A mind held intact and not running. Not death.",
     handle:"An induced coma nobody has agreed to end.",
-    introduced:"halloran_signatures" },
+    introduced:"a1_estimates" },
 
   { term:"shed order", cluster:"cold", gloss:"The published list deciding who stops running first in a power shortfall.",
     article:"A **shed order** is the published list that decides who stops running first when a station cannot cool or power everyone. It ranks the population in tiers; [[term_tier_four|tier four]] is shed first. The Allocation Act allows the [[term_engineering_authority|engineering authority]] to shed the tier-four register without notice, and a person shed is held in [[suspension]].",
     handle:"A triage list, written in advance, by whoever holds the pen.",
-    introduced:"halloran_signatures" },
+    introduced:"a1_ember_lowest_band" },
 
   { term:"substrate", cluster:"cold", gloss:"The hardware an emulated mind runs on. Its tenants pay rent to exist on it.",
     article:"**Substrate** is the hardware an [[term_emulation|emulated]] person runs on. Its tenants pay rent for the computation they use, so the substrate price is the price of continuing to run. Part of it is held publicly and the rest by private providers, and a person who cannot pay and is not insured is suspended.",
     handle:"Rent, except the landlord can switch you off.",
-    introduced:"the_estimates_costed" },
+    introduced:"a1_estimates" },
 
   { term:"thermal margin", cluster:"heat", gloss:"Spare radiator capacity. Every watt of thought becomes heat that must be dumped.",
     article:"The **thermal margin** is the spare capacity of the Commonwealth's radiators, as a share of what they can reject. Every watt of computation and industry becomes heat that must be radiated away, so the margin is what stands between a station and shedding load. At zero the stations shed load in cascade. The government's emergency orders raise it, each at a cost.",
@@ -57,11 +57,11 @@ const GLOSSARY = [
 
   { term:"functional constituency", cluster:"functional", gloss:"A seat elected by the members of a profession or industry.",
     handle:"The House of Lords, if the Lords were chosen by their trade bodies.",
-    introduced:"gb_approach" },
+    introduced:"a1_count" },
 
   { term:"dual majority", cluster:"functional", gloss:"Some bills must carry separately among functional and elected members.",
     handle:"A second chamber that sits inside the first one.",
-    introduced:"the_rules_of_the_house" },
+    introduced:"a1_count" },
 
   { term:"licensure", cluster:"functional", gloss:"Professional certification. It decides who votes in a functional seat.",
     handle:"A medical licence that also comes with a ballot.",
@@ -75,7 +75,7 @@ const GLOSSARY = [
   { term:"closure", gloss:"The fraction of a habitat's material cycle it can sustain without imports.",
     article:"**Closure** is the fraction of a habitat's material cycle that it can sustain without imports. Most stations are below the level at which leaving the Commonwealth is survivable, which is what holds the union together; federal development spending raises a station's closure, and with it the station's capacity to leave. See [[commonwealth|Circumterrestrial Commonwealth]].",
     handle:"How long the town survives if the road closes.",
-    cluster:"cold", introduced:"halloran_signatures" },
+    cluster:"cold", introduced:"a1_works" },
 
   { term:"revenant", gloss:"A member returned on the party list after losing a district.",
     article:"A **revenant** is a member returned on the party list after losing a district. A candidate may stand in a district and on the list at once, and section 44 of the Representation Act governs how a defeated district candidate is ranked on the list.",

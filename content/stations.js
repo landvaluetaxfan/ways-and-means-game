@@ -52,15 +52,15 @@ const STATIONS = [
     composition:{biological:0.5187,emulation:0.3814,uplift:0.0388,synthetic:0.0611},
     material_interest:["tether_traffic", "volume_rationing"],
     dependency:"The Beanstalk, its tether to Earth at Macapá, and the trade that comes up it.",
-    grievance:"That everyone else resents it." },
+    grievance:`That the other stations resent it.` },
 
   { id:"belvedere", name:"Belvedere", band:"ring", type:"single", form:"torus",
     seats:3, population:145000,
     closure:0.58, suspended:1180, attested:0.87,
     composition:{biological:0.51,emulation:0.42,uplift:0.04,synthetic:0.03},
     material_interest:["substrate_supply", "risk_pricing"],
-    dependency:"Hosting it buys rather than owns, and the price of it.",
-    grievance:"The divergence threshold. Much of its income is earned by instances of its residents, and a lower threshold would make those instances persons with incomes of their own." },
+    dependency:"Hosting capacity that it buys, and the price of it.",
+    grievance:`Proposals to change the legal status of its residents' running copies, whose earnings make up much of its income.` },
 
   { id:"meridian", name:"Meridian Spindle", band:"ring", type:"single", form:"cylinder",
     seats:16, population:682000,
@@ -68,7 +68,7 @@ const STATIONS = [
     composition:{biological:0.63,emulation:0.29,uplift:0.04,synthetic:0.04},
     material_interest:["tether_traffic", "substrate_supply"],
     dependency:"The Clothesline's traffic rights, which it does not own.",
-    grievance:"Anselm sets the schedule." },
+    grievance:`That Anselm Ring sets the schedule.` },
 
   { id:"corvus", name:"Rookworks—Anselm", band:"ring", type:"single", form:"torus",
     seats:6, population:293000,
@@ -84,7 +84,7 @@ const STATIONS = [
     composition:{biological:0.66,emulation:0.26,uplift:0.05,synthetic:0.03},
     material_interest:["tether_traffic", "consumables_subsidy"],
     dependency:"The Bond, which is leased rather than owned.",
-    grievance:"The lease terms on the Bond, signed when the station was smaller and worse advised." },
+    grievance:`The lease terms on the Bond, which were signed when the station was smaller.` },
 
   { id:"halvard", name:"Halvard Works", band:"ring", type:"single", form:"torus",
     seats:3, population:153000,
@@ -153,7 +153,7 @@ const STATIONS = [
     composition:{biological:0.68,emulation:0.24,uplift:0.05,synthetic:0.03},
     material_interest:["thermal_quota", "yard_contracts"],
     dependency:"It builds radiators. It depends on the appropriation that funds them.",
-    grievance:`Eight years of deferred maintenance on its own array.` },
+    grievance:`That its own radiator array has had eight years of deferred maintenance.` },
 
   { id:"vantage", name:"Ember Ridge", band:"middle", type:"single", form:"torus",
     seats:4, population:213000,
@@ -168,8 +168,8 @@ const STATIONS = [
     closure:0.57, suspended:1610, attested:0.86,
     composition:{biological:0.78,emulation:0.16,uplift:0.04,synthetic:0.02},
     material_interest:["tether_traffic", "yard_contracts"],
-    dependency:"Yard contracts awarded elsewhere.",
-    grievance:"Where the contracts went." },
+    dependency:"Yard contracts.",
+    grievance:`That recent yard contracts were awarded elsewhere.` },
 
   { id:"calloway", name:"Calloway Loop", band:"middle", type:"single", form:"drum",
     seats:2, population:118000,
@@ -177,14 +177,14 @@ const STATIONS = [
     composition:{biological:0.69,emulation:0.24,uplift:0.04,synthetic:0.03},
     material_interest:["shed_order_priority", "consumables_subsidy"],
     dependency:"The federal power interlink.",
-    grievance:"Tier three and falling." },
+    grievance:`That its place in the shed order is tier three and has been falling.` },
 
   { id:"grimaldi", name:"Layover", band:"middle", type:"single", form:"cylinder",
     seats:2, population:106000,
     closure:0.53, suspended:1500, attested:0.84,
     composition:{biological:0.66,emulation:0.27,uplift:0.04,synthetic:0.03},
     material_interest:["transit_windows", "tether_traffic"],
-    dependency:"Traffic. It is a junction and nothing else.",
+    dependency:"Traffic, because the station is a junction.",
     grievance:"That traffic schedules through the junction are set by stations that do not pass through it." },
 
   { id:"wickstead", name:"Harvest", band:"middle", type:"single", form:"torus",
@@ -217,7 +217,7 @@ const STATIONS = [
     composition:{biological:0.81,emulation:0.13,uplift:0.04,synthetic:0.02},
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"],
     dependency:"Federal consumables lift, three deliveries weekly. Fourteen days of stored margin.",
-    grievance:"Tier four in the shed order for eleven consecutive years." },
+    grievance:`That it has been in tier four of the shed order for eleven consecutive years.` },
 
   { id:"kepler", name:"Anchorage", band:"low", type:"single", form:"cylinder",
     seats:4, population:231000,
@@ -273,7 +273,7 @@ const STATIONS = [
     composition:{biological:0.83,emulation:0.11,uplift:0.04,synthetic:0.02},
     material_interest:["consumables_subsidy", "shed_order_priority"],
     dependency:"Federal transfers, for almost everything it consumes.",
-    grievance:"Everything." },
+    grievance:`Its place in the shed order and the size of the federal consumables lift.` },
 
   { id:"sinter", name:"Colonnade", band:"low", type:"single", form:"drum",
     seats:2, population:44000,
@@ -297,7 +297,7 @@ const STATIONS = [
     composition:{biological:0.69,emulation:0.23,uplift:0.04,synthetic:0.04},
     material_interest:["transit_windows"],
     dependency:"Launch window allocation.",
-    grievance:"Counted last, every time." },
+    grievance:`That it is counted last.` },
 
   { id:"bloomery", name:"The Bloomery", band:"external", type:"external", form:"surface",
     seats:1, population:24000,
@@ -320,7 +320,7 @@ const STATIONS = [
     closure:0.86, suspended:230, attested:0.92,
     composition:{biological:0.42,emulation:0.48,uplift:0.03,synthetic:0.07},
     material_interest:["transit_windows", "substrate_supply"],
-    dependency:"Nothing, by its own account.",
+    dependency:"It reports no dependency on the Commonwealth.",
     grievance:"That it is counted in the apportionment at all: it regards its membership of the federation as a courtesy." },
 
   { id:"l5", name:"Sanctuary", band:"external", type:"external", form:"sphere",
@@ -328,7 +328,7 @@ const STATIONS = [
     closure:0.91, suspended:120, attested:0.95,
     composition:{biological:0.38,emulation:0.51,uplift:0.03,synthetic:0.08},
     material_interest:["transit_windows"],
-    dependency:"Nothing, by its own account.",
-    grievance:"Being legislated for at all." }
+    dependency:"It reports no dependency on the Commonwealth.",
+    grievance:`That the Commonwealth legislates for it at all.` }
 
 ];

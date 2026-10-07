@@ -56,12 +56,10 @@ const Tips = (function () {
             "change made from this tab is saved first, so Undo and Try again step " +
             "back. The sandbox keeps its own save, records no ending and earns no award." },
     rise: { title: "The House rises",
-      body: "The sittings left before the House rises. A session is sat in " +
-            "periods: at a recess order-paper time refills and nothing else ends. " +
-            "When the last period rises the session ends with it, business not " +
-            "carried falls, and every undertaking due before the House rises " +
-            "comes due at once. It is the deadline everything else on the board " +
-            "is measured against." },
+      body: "The sittings left before the House rises for its recess. The " +
+            "government must have carried the estimates by then, or it cannot pay " +
+            "its officials and falls. At the rise, order-paper time refills. It is " +
+            "the deadline everything else on the board is measured against." },
     globe: { title: "The Earth",
       body: "Every anchor in the dozen stands on somebody else's soil. The globe " +
             "turns and can be dragged; the map is the same drawing in a different " +
@@ -70,8 +68,8 @@ const Tips = (function () {
             "drawn at a point on the ground." },
     actors: { title: "Relevant actors",
       body: "Whoever the state of the campaign has actually put in play. The four " +
-            "powers outside the Commonwealth are not relevant until the station " +
-            "question is raised, and the panel says so until then. Before that, " +
+            "powers outside the Commonwealth are not relevant until something in " +
+            "the campaign involves them, and the panel says so until then. Before that, " +
             "clicking a country on the globe shows what the Commonwealth depends " +
             "on it for — anchors, standing, and what it sells." },
     tribunal: { title: "The Tribunal",
@@ -85,9 +83,8 @@ const Tips = (function () {
       body: `One slot moves one bill one stage closer to its division, and each sitting period holds only a few. Give a slot to a partner's bill and you earn capital with that partner; spend one on your own and only your programme advances. Slots refill when the House rises for a recess. A hollow mark is time a crisis measure brought with it: only that measure can spend it, and it goes when the House rises.` },
     signatures: { title: "Signatures",
       body: "Names Czarnecki has collected, against the number that forces a " +
-            "leadership ballot, which the bar prints beside them. Your own conduct " +
-            "adds to this count: packing one licensing " +
-            "board adds two names, and packing a second adds three." },
+            "leadership ballot, which the bar prints beside them. Your own decisions " +
+            "can add names or take them away." },
     confidence: { title: "Confidence",
       body: "Seats held by your coalition, plus any party supplying confidence. " +
             "This is measured against all 280 seats, and it keeps you in office. " +
@@ -201,7 +198,7 @@ const Tips = (function () {
       body: "US dollars per Commonwealth dollar. It rises with the rate gap " +
             "over Earth and a believed Bank, and falls with the quarrel, the " +
             "debt and the deficit. A weaker dollar makes imports dearer and " +
-            "the Standby Facility, which is owed in US dollars, heavier." },
+            "makes what the Commonwealth owes in US dollars heavier." },
     growth: { title: "Growth",
       body: "Real output over the last quarter, at a yearly rate, as a " +
             "statistics office prints it. Capacity is set by the " +

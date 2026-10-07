@@ -33,9 +33,15 @@ const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATI
 const MAX_NEW_CLUSTERS = 1;  // per event. Raise this and you are choosing to confuse people.
 
 /* Order events the way a player actually meets them: prologue first, then weight. */
+/* A PLAYER MEETS ONE CAMPAIGN'S EVENTS, NOT ALL OF THE FILES' (design/80). The world's untagged story
+   and the parked story are fixtures and retired text, and checking their order against a glossary
+   that now points at Act I's scenes reports faults nobody can meet. When a campaign tags events
+   for itself, that campaign's events are the ones whose order is checked. */
+const live = e => [].concat(e.campaign || []).some(c => c !== "world" && c !== "parked");
+const metEvents = EVENTS.some(live) ? EVENTS.filter(live) : EVENTS;
 const ordered = [
-  ...EVENTS.filter(e => e.prologue).sort((a, b) => a.prologue - b.prologue),
-  ...EVENTS.filter(e => !e.prologue).sort((a, b) => (b.weight || 1) - (a.weight || 1) || (a.id < b.id ? -1 : 1))
+  ...metEvents.filter(e => e.prologue).sort((a, b) => a.prologue - b.prologue),
+  ...metEvents.filter(e => !e.prologue).sort((a, b) => (b.weight || 1) - (a.weight || 1) || (a.id < b.id ? -1 : 1))
 ];
 
 const taught = new Set(GLOSSARY.filter(g => g.assumed).map(g => g.term.toLowerCase()));
@@ -51,7 +57,7 @@ const PROPER = [...(typeof PARTIES !== "undefined" ? PARTIES.flatMap(p => [p.nam
   .sort((a, b) => b.length - a.length);
 
 function textOf(e) {
-  let t = [e.title, e.body, ...(e.choices || []).flatMap(c => [c.label, c.result || ""])].join(" ");
+  let t = [e.title, e.body, e.setpiece && e.setpiece.title, ...(e.choices || []).flatMap(c => [c.label, c.note || "", c.result || ""])].join(" ");
   PROPER.forEach(n => { t = t.split(n).join(" \u00b7 "); });
   return t.toLowerCase();
 }
