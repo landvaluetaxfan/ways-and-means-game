@@ -53,6 +53,8 @@ const dom = new JSDOM(html, {
   }
 });
 const w = dom.window;
+/* the tutorial (js/tutorial.js) is off in every check but its own, tools/tutest.js, which sets TUTORIAL=1 */
+if (!process.env.TUTORIAL) w.__NO_TUTORIAL = true;
 w.alert = () => {}; w.confirm = () => true; w.prompt = () => "Test ministry";
 w.URL.createObjectURL = () => "blob:x"; w.HTMLAnchorElement.prototype.click = function () {};
 

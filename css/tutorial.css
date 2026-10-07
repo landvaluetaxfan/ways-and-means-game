@@ -1,0 +1,23 @@
+/* THE TUTORIAL (js/tutorial.js, design/77). The dim is four blocks around a hole, so the region itself stays live
+   and the pointer is blocked everywhere else. Nothing here animates unless the person allows motion. */
+#tut{display:none;position:fixed;inset:0;z-index:250;pointer-events:none;}
+#tut.on{display:block;}
+#tut .tut-block{position:fixed;background:rgba(27,29,25,.62);pointer-events:auto;}
+#tut .tut-hole{position:fixed;box-sizing:border-box;border:1px solid var(--gold);pointer-events:none;
+  box-shadow:0 0 0 2px rgba(201,162,39,.35);}
+#tut .tut-card{position:fixed;box-sizing:border-box;pointer-events:auto;background:var(--chrome);color:var(--ink);
+  padding:10px 12px 11px;border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
+  border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
+  box-shadow:0 6px 22px rgba(0,0,0,.45);}
+#tut .tut-card:focus-visible{outline:1px dotted var(--ink);outline-offset:2px;}
+#tut .tut-who{font-family:var(--f-ui);font-size:11px;color:var(--ink-soft);margin-bottom:2px;}
+#tut .tut-who:empty{display:none;}
+#tut h3{font-family:var(--f-ui);font-size:14px;margin:0 0 5px;}
+#tut .tut-body{font-family:var(--f-read);font-size:13px;line-height:1.5;margin:0 0 10px;}
+#tut .tut-btns{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+#tut .tut-btns .mbtn{width:auto;max-width:none;}
+#tut .tut-skip{font-family:var(--f-ui);font-size:11px;background:none;border:0;color:var(--ink-soft);
+  text-decoration:underline;cursor:pointer;padding:2px;}
+#tut .tut-skip:hover{color:var(--ink);}
+@media (prefers-reduced-motion:no-preference){#tut.on .tut-card{animation:tutIn .18s ease-out;}}
+@keyframes tutIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
