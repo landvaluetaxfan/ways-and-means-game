@@ -141,6 +141,13 @@ The author pays for every token.
 
 ## Flash I's canon
 
+**Suspended, 7 October 2026 (`design/80`).** The author decided that Flash I is built to
+the end of Act I only (sittings 1 to 16, closing on the rise) and that all existing
+player-facing writing is retired and rewritten, one sitting at a time. The plan and the
+exit gate are `briefs/act-one.md`. While it runs, the canon guards below are not the test of
+a change: do not "repair" a failing canon block, and do not revive retired text from
+`content/archive/`. The canon stays as the target for Acts II to V.
+
 A campaign has one canon ending, and the next campaign opens on it (bible
 §1.8). **Flash I's canon is the debt trap** (the author: "a middle ground
 between perfect and failure").
