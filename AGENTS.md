@@ -253,6 +253,10 @@ npm run check    # all fourteen, about two minutes; all must pass
 | `tools/prose.js --check` | the prose export round-trips |
 | `tools/storymap.js --check` | every view's story map draws |
 
+**`npm run balance`** is outside `check` because it measures and asserts nothing: it plays Act I to
+the curtain under five answer strategies (`tools/actbalance.js`) and prints how each ends. `node
+tools/actwalk.js` plays the real Flash I through the page and prints what a first-time player reads.
+
 **`npm run layout`** is outside `check` because it needs a real browser. It
 boots the game and the editor in headless Chromium and reports clipped or
 escaping content. Run it after touching the stylesheet or a panel. Install
