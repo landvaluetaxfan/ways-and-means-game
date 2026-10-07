@@ -36,11 +36,9 @@ const texts = WORLD_READERS.concat(JS).map(f => {
   return { f, s };
 });
 
-/* FLAGS WRITTEN NOW FOR A READER NOT YET BUILT. The tax clauses open when their teaching page has been read
-   (design/81, question 5; brief E3: a `when` on the clause). Until E3 lands nothing reads them. An entry here
-   that IS read fails the audit, so this list empties itself. */
+/* FLAGS WRITTEN NOW FOR A READER NOT YET BUILT: name them here with the reader. An entry that IS read fails the audit,
+   so this list empties itself. (The clauses' locks read `seen`, not flags, and the list is empty.) */
 const HELD = {};
-["floor", "cover", "thermal", "works", "transit"].forEach(c => { HELD["clause_" + c + "_met"] = "the clause's `when` (brief E3)"; });
 
 const report = {};
 Object.keys(writes).forEach(name => {

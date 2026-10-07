@@ -121,6 +121,16 @@ async function boot(label, how) {
   w.eval("Shell.boot(CONTENT)");
   ok("served: the menu offers to continue it", !!q("[data-cont]"));
 
+  /* the lever ladder, as the page draws it: at the start the estimates' clauses and the grant are shut and say so */
+  w.eval("UI.openTab('cham')");
+  const arow = w.document.querySelector('#cham-bills tr[data-bill="appropriation"]');
+  if (arow) arow.click();
+  ok("served: the Chamber's grant is shut at the start", !!arow && !!arow.querySelector(".slotbtn") && arow.querySelector(".slotbtn").disabled);
+  ok("served: every clause level is dimmed, with the line that says what opens it",
+     w.document.querySelectorAll(".cl-opt").length > 0 && w.document.querySelectorAll(".cl-opt:not(.locked)").length === 0 &&
+     w.document.querySelectorAll(".cl-lock").length > 0);
+  w.eval("UI.openTab('sit')");
+
   /* ---- saves across builds: an older shape migrates, a newer one is refused plainly ---- */
   const cur = JSON.parse(w.localStorage.getItem(keys[0]));
   const older = JSON.parse(cur.state); older.version = w.eval("Engine.STATE_VERSION") - 1; delete older.intervalCourse; delete older.interval;

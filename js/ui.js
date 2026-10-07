@@ -3993,6 +3993,7 @@ const UI = (function () {
       else if (dchk.noTime) dbtn.textContent = "No order-paper time left";
       else if (dchk.unread) dbtn.textContent = "Not yet read a second time";
       else if (dchk.full)   dbtn.textContent = "The House has finished for today";
+      else if (dchk.locked) dbtn.textContent = "Not yet open";
     }
     $("#btn-divide").addEventListener("click", () => {
       if (!Engine.canDivide(st, C, id).ok) { cue("deny"); return; }
@@ -4373,6 +4374,8 @@ const UI = (function () {
   function whipLine(billId) {
     if (bsOf(billId).dead) return "";
     const cost = Engine.whipCost(st, C, billId);
+    const wl = Engine.lockOf(st, C, "whip");
+    if (wl) return `<div class="note">The whip is not yet yours to use. ${esc(wl.text)}</div>`;
     if (!cost.seats) return `<div class="note">No members whipped. ` +
       `The whip is below the plan, and the seats it buys fill as you commit them.</div>`;
     const capLines = Object.keys(cost.capital).map(p =>
@@ -4589,6 +4592,8 @@ const UI = (function () {
          against the level in force, at today's prices, not "costs nothing". */
       const isRate = (cl.levels || []).every(lv => !lv.cost && [].concat(lv.effects || []).some(e => e && e.law));
       const inForce = (cl.levels || []).find(lv => lv.id === now.id);
+      /* A CLAUSE THE CAMPAIGN KEEPS SHUT shows its levels dimmed, and says once what opens it (engine lockOf) */
+      const lock = Engine.lockOf(st, C, "clause:" + cl.id);
       const opts = (cl.levels || []).map(lv => {
         const on = lv.id === now.id;
         const would = cost.total - (now.cost || 0) + (lv.cost || 0);
@@ -4603,15 +4608,16 @@ const UI = (function () {
             cw(Math.abs(d)) + " a year against the rate in force, " +
             Math.abs(Math.round(pct * 10) / 10).toFixed(1) + "% of output.";
         }
-        return `<button class="btn cl-opt${on ? " on" : ""}${bad ? " over" : ""}"` +
-          ` data-cl="${esc(cl.id)}" data-lv="${esc(lv.id)}"` +
+        return `<button class="btn cl-opt${on ? " on" : ""}${bad ? " over" : ""}${lock ? " locked" : ""}"` +
+          ` data-cl="${esc(cl.id)}" data-lv="${esc(lv.id)}"${lock ? " disabled" : ""}` +
           ` data-tip-title="${esc(lv.label)}"` +
-          ` data-tip-body="${esc((lv.note || "") + said +
-             (bad ? " The Treasury is short by " + cw(would - cost.solvency) + "." : ""))}"` +
+          ` data-tip-body="${esc(lock ? lock.text : (lv.note || "") + said +
+             (bad && !lock ? " The Treasury is short by " + cw(would - cost.solvency) + "." : ""))}"` +
           `>${esc(lv.label)}<i>${chip}</i></button>`;
       }).join("");
       return `<div class="cl-row"><b data-tip-title="${esc(cl.name)}" ` +
         `data-tip-body="${esc(cl.note || "")}">${esc(cl.name)}</b>` +
+        (lock ? `<div class="cl-lock">${esc(lock.text)}</div>` : "") +
         `<div class="cl-opts">${opts}</div></div>`;
     }).join("");
     return `<div class="clsec"><h4>The estimates</h4>${rows}` +
@@ -7802,9 +7808,9 @@ const UI = (function () {
     const gcap = (C.setup && C.setup.grantsPerSitting) || 2;
     const gtoday = st.grantsToday || 0;
     const resTotal = Object.values(st.slots.reserved || {}).reduce((a, n) => a + n, 0);
-    const grantRefusal = id => left + Engine.reservedFor(st, id) < 1
+    const grantRefusal = id => (Engine.lockOf(st, C, "grant") || {}).text || (left + Engine.reservedFor(st, id) < 1
       ? "no order-paper time left this sitting period"
-      : gtoday >= gcap ? "the House has taken " + gcap + " measures today" : null;
+      : gtoday >= gcap ? "the House has taken " + gcap + " measures today" : null);
     /* The bar shows what is spent; the tail says only what it cannot. */
     $("#gov-slots-hdr").textContent = [resTotal ? resTotal + " reserved" : "",
       gtoday ? gtoday + " of " + gcap + " measures today" : ""].filter(Boolean).join(" \u00b7 ");

@@ -41,6 +41,22 @@ campaign("flash_i", { administrations: [
     setup:{ startDate:"2080-04-11",
       /* THE ACT'S CURTAIN (design/80, brief E1). A carried rise ends the run on this event's page
          instead of an election: the event is read by the last page and never fires in play. */
+      /* THE LEVER LADDER (design/81 question 3; js/engine.js `lockOf`). A control that writes is shut, dimmed, with one line
+         saying what opens it, until the scene that teaches it has been read; reading is never shut. */
+      locks:{
+        grant:{ when:{ seen:["a1_order_paper"] }, text:"Opens once the order paper has been put before you." },
+        divide:{ when:{ seen:["a1_count"] }, text:"Opens once the count has been explained to you." },
+        whip:{ when:{ seen:["a1_count"] }, text:"Opens once the count has been explained to you." },
+        money:{ when:{ seen:["a1_underwriters"] }, text:"Opens once the Underwriters have given their reading." },
+        "clause:thermal":{ when:{ seen:["a1_cooling"] }, text:"Opens once cooling has been put to you." },
+        "clause:floor":{ when:{ seen:["a1_floor"] }, text:"Opens once the consumables floor has been put to you." },
+        "clause:insurance":{ when:{ seen:["a1_cover"] }, text:"Opens once substrate insurance has been put to you." },
+        "clause:works":{ when:{ seen:["a1_works"] }, text:"Opens once capital works have been put to you." },
+        "clause:transit":{ when:{ seen:["a1_transit"] }, text:"Opens once the transit subsidy has been put to you." },
+        "clause:rate_volume":{ when:{ seen:["a1_underwriters"] }, text:"Opens once the Underwriters have given their reading." },
+        "clause:rate_thermal":{ when:{ seen:["a1_underwriters"] }, text:"Opens once the Underwriters have given their reading." },
+        "clause:rate_substrate":{ when:{ seen:["a1_underwriters"] }, text:"Opens once the Underwriters have given their reading." },
+        "clause:rate_transit":{ when:{ seen:["a1_underwriters"] }, text:"Opens once the Underwriters have given their reading." } },
       actEnd:{ event:"a1_works_abandoned",
                note:"This is the end of the first act. The rest of the play is not yet written." },
       campaignMarkers:[{ id:"works", label:"Bellamy Almanac Works", place:"belowBands",

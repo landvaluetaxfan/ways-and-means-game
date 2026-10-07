@@ -346,7 +346,6 @@ One station already shows the cost of a short quota. Ember Ridge, a station of 2
 "A tight quota saves CW$14bn in the estimates," Girard said. "Ember Ridge is already short, and it will pay more for heat under that quota."
 
 The government sets the level before the estimates go to the House: tight at CW$0, as last session at CW$14bn, or released in full at CW$34bn.`,
-  effects:[{ flag:"clause_thermal_met" }],
   choices:[] },
 
 { id:"a1_ember_ridge", prologue:9, once:true,
@@ -448,7 +447,6 @@ Lifting the floor raises the guarantee, and the stations with the least of their
 "Every party wants the floor raised, and none of them says which clause pays for it," Ashgrove said. "If the House lifts it, the money has to come from somewhere else in the estimates."
 
 The government sets the level before the estimates go to the House: trimmed at CW$0, held at CW$16bn or lifted at CW$30bn.`,
-  effects:[{ flag:"clause_floor_met" }],
   choices:[] },
 
 { id:"a1_floor_ask", prologue:11, once:true,
@@ -518,7 +516,6 @@ The draft holds the clause at CW$18bn and keeps the means test. Widening it to C
 Her party joined the government for a bill of its own, which is not before the House this period. It has asked for this clause while it waits.
 
 The government sets the level before the estimates go to the House: reduced at CW$0, held at CW$18bn or widened at CW$32bn.`,
-  effects:[{ flag:"clause_cover_met" }],
   choices:[] },
 
 { id:"a1_cover_ask", prologue:13, once:true,
@@ -578,7 +575,6 @@ Funded in the ring band, where the pressure on habitable volume is worst, the wo
 "Everything else in the estimates is spent by the end of the session," Tómasson said. "Works are still there in ten years, and I cannot tell you which way that cuts for the outer stations."
 
 The government sets the level before the estimates go to the House: deferred at CW$0, the ring band at CW$20bn or the outer stations at CW$30bn.`,
-  effects:[{ flag:"clause_works_met" }],
   choices:[] },
 
 { id:"a1_works_ask", prologue:15, once:true,
@@ -647,7 +643,6 @@ Funded for the stations a tether serves, where the tether is the only way in, it
 "Home Rule, the party of the outer stations, will ask who this is for," Vasmer said. "The tether stations get CW$10bn of help, and the outer stations still pay the full schedule."
 
 The government sets the level before the estimates go to the House: unsubsidised at CW$0, the tether stations at CW$10bn or every station at CW$22bn.`,
-  effects:[{ flag:"clause_transit_met" }],
   choices:[] },
 
 { id:"a1_transit_ask", prologue:17, once:true,

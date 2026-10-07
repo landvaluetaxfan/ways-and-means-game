@@ -2043,6 +2043,8 @@ const Engine = (function () {
   }
 
   function whippable(st, C, billId, partyId, tier) {
+    const lk = lockOf(st, C, "whip");
+    if (lk) return { max: 0, costPerSeat: 0, locked: true, reason: lk.text };
     const bill = C.billById[billId];
     const own = partyId === st.playerParty;
     const inCoalition = st.coalition.includes(partyId);
@@ -2397,7 +2399,24 @@ const Engine = (function () {
     return true;
   }
 
+  /* THE LEVER LADDER (design/81, question 3; brief E3). A campaign may keep a control that WRITES shut until the
+     scene that teaches it has been read: `setup.locks[lever] = { when, text }`, `when` in the usual vocabulary
+     (`seen:[event]`), `text` the one line that says what opens it. Reading is never locked. A `seen` condition only
+     ever becomes true, so a lock that has opened does not close again. The author's bench (the sandbox flag) is
+     never locked. The levers named: "grant", "divide", "whip", "money", and "clause:<id>" for one clause. The
+     engine names no lever of its own beyond these keys; content decides which are locked and when. */
+  let sceneWrite = 0;     /* >0 while a scene's own effect writes: the scene that argues for a lever may use it */
+  function lockOf(st, C, lever) {
+    if (sceneWrite) return null;
+    const L = ((C && C.setup) || {}).locks;
+    const k = L && L[lever];
+    if (!k || (st.flags && st.flags.sandbox)) return null;
+    return matches(st, k.when) ? null : { lever: lever, text: k.text || "Not open yet." };
+  }
+
   function canGrant(st, C, billId) {
+    const lk = lockOf(st, C, "grant");
+    if (lk) return { ok: false, locked: true, reason: lk.text };
     if (slotsFor(st, billId) < 1) return { ok: false, reason: "no order-paper time left this sitting period" };
     const b = C.billById[billId], bs = st.bills[billId];
     if (!b || !bs || bs.dead) return { ok: false, reason: "not before Parliament" };
@@ -3511,6 +3530,8 @@ const Engine = (function () {
   function setClause(st, C, billId, clauseId, levelId) {
     const cl = clausesOf(C, billId).find(c => c.id === clauseId);
     if (!cl) return { ok: false, reason: "no such clause" };
+    const lk = lockOf(st, C, "clause:" + clauseId);
+    if (lk) return { ok: false, locked: true, reason: lk.text };
     const lv = (cl.levels || []).find(l => l.id === levelId);
     if (!lv) return { ok: false, reason: "no such level" };
     const was = ((st.clauses || {})[billId] || {})[clauseId];
@@ -4882,7 +4903,8 @@ const Engine = (function () {
        sets it. A refusal is logged, as a bad id is, so a scene never fails in
        silence. */
     clause: (st, C, v) => [].concat(v).forEach(x => {
-      const r = x ? setClause(st, C, x.bill, x.clause, x.level) : null;
+      sceneWrite++;
+      let r; try { r = x ? setClause(st, C, x.bill, x.clause, x.level) : null; } finally { sceneWrite--; }
       if (!r || !r.ok) st.log.unshift({ sitting: st.sitting,
         text: "A clause was not set" + (r && r.reason ? ": " + r.reason : "") });
     }),
@@ -4894,10 +4916,13 @@ const Engine = (function () {
        party the whip cannot reach simply moves nobody, as it does in the panel. */
     whip: (st, C, v) => [].concat(v).forEach(x => {
       if (!x || !C.billById[x.bill]) return;
-      (x.tier ? [x.tier] : ["popular", "functional"]).forEach(t => {
-        const cap = whippable(st, C, x.bill, x.party, t);
-        setWhip(st, C, x.bill, x.party, t, x.seats == null ? cap.max : Math.min(cap.max, x.seats));
-      });
+      sceneWrite++;
+      try {
+        (x.tier ? [x.tier] : ["popular", "functional"]).forEach(t => {
+          const cap = whippable(st, C, x.bill, x.party, t);
+          setWhip(st, C, x.bill, x.party, t, x.seats == null ? cap.max : Math.min(cap.max, x.seats));
+        });
+      } finally { sceneWrite--; }
     }),
     /* Seats move by these four verbs and no other. Writing a district count
        directly would desynchronise it from the roll on the next syncRoll,
@@ -7050,6 +7075,8 @@ const Engine = (function () {
   function canBorrow(st, C, amount, lender) {
     const id = lender || "earth";
     const n = Math.max(0, Math.round(amount || 0));
+    const lk = lockOf(st, C, "money");
+    if (lk) return { ok: false, locked: true, reason: lk.text };
     if (!n) return { ok: false, reason: "nothing to borrow" };
     const L = lenderOf(C, id);
     if (L.drawable === false)
@@ -8798,6 +8825,8 @@ const Engine = (function () {
     const bs = st.bills[billId];
     if (!bs) return { ok: false, reason: "no such bill" };
     if (bs.dead) return { ok: false, reason: "the bill is dead" };
+    const lk = lockOf(st, C, "divide");
+    if (lk) return { ok: false, locked: true, reason: lk.text };
     /* A DIVISION IS HOUSE TIME (design/18 §3). It costs a slot like any other
        business, so when the session's order-paper time is gone the House is
        done — which is what makes §7.7's scarcity bite. `noTime` lets the
@@ -9330,7 +9359,7 @@ const Engine = (function () {
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
     canApprove, approveInstrument, approvalForecast, reservedFor,
     instrumentsInForce, appoint, vacate,
-    loyaltyOf, whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
+    lockOf, loyaltyOf, whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
     /* Exported so the interface cannot invent a second way to score
        agreement. A tooltip that disagreed with a division would be the
        worst kind of bug here: both right, neither checkable. */

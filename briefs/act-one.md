@@ -282,6 +282,18 @@ release or are sequenced with them.
 
   Two strings keep as they are because they already say what to do: "Nothing is asked of you
   today. The House may rise." and "Nothing on the order paper demands a decision this sitting."
+- **E3, the lever ladder: landed (Claude, 7 October).** `setup.locks[lever] = { when, text }` in the campaign;
+  `Engine.lockOf(st, C, lever)` (exported) reads it, and `canGrant`, `canDivide`, `whippable`, `setClause` and
+  `canBorrow` refuse with the line while it is shut. Levers: `grant`, `divide`, `whip`, `money`, `clause:<id>`
+  (Flash I locks the five spending clauses to their teaching pages, the four rates and the money calls to
+  `a1_underwriters`, grant to `a1_order_paper`, whip and divide to `a1_count`). The unit is `seen`, the record the
+  engine already keeps, which only grows, so a lock that opens stays open and **no state bump or E2 record was
+  needed**. A scene's own `clause` and `whip` effects bypass the locks (the scene that argues for a lever may use it),
+  and the sandbox flag is never locked. The Chamber dims the grant, the clause levels (`.cl-opt.locked`, one
+  `.cl-lock` line a clause), the whip (a note) and the Divide button ("Not yet open"). Guards: `THE LEVERS OPEN IN THE
+  ORDER THE SCENES TEACH THEM`; `test.js`; `tools/itchtest.js` (the page at the start). Not done: appointing and
+  orders keep their existing content gates (`a1_orders_locked`); the tutorial cards (`js/tutorial.js`), which can
+  read the same `lockOf`. The five `clause_*_met` flags were removed as unread.
 - **E3 The tutorial and the lever ladder** (`design/77`, plus this ladder). Cards that dim and
   block the pointer outside one region. Writing controls inert until taught, dimmed with one
   line saying when they open, a ratchet that only opens. The player's taught record lives in
@@ -524,14 +536,14 @@ reword it.
 
 | # | issue | state |
 |---|---|---|
-| 1 | A bill in drafting is on the order paper with a Grant button, so staging it to "drafting" does not hide it | Deferred to E2. A refusal in `canGrant` was tried and reverted, because `uxtest` grants time to a drafting bill by design |
+| 1 | A bill in drafting is on the order paper with a Grant button, so staging it to "drafting" does not hide it | Fixed for the Grant by E3's lock (dimmed until `a1_order_paper`); the row itself still shows, which reading allows. Was deferred to E2. A refusal in `canGrant` was tried and reverted, because `uxtest` grants time to a drafting bill by design |
 | 2 | The run did not end at the rise: a carried rise opens the next period, with an interval page | Fixed (E1, `Engine.checkEnd` on `st.period`) |
 | 3 | The curtain page reads the date the next period opens (23 May), not the rise (8 May) | Deferred to Codex with E1's frame |
 | 4 | Every seed plays the same game, because Act I has no random event | Recorded in `tools/actbalance.js`. The 240-seed gate is moot until one exists |
 | 5 | No answer strategy loses; only leaving the estimates unmoved ends the run | Decided (`design/81`, question 7): it stays so, as `design/77` says |
 | 6 | Floor "lifted" and transit "every station" lower the Treasury's ceiling (`solvency -4000`), and no text said so | Fixed in the clause notes and the floor page |
 | 7 | The works "outer" level moves one station's closure (Homestead) while the text said the outer stations' | Fixed in the text. Deferred: whether the effect should reach more stations, which changes Acts II to V's secession arithmetic |
-| 8 | The four tax clauses sit in the Chamber's clause panel with five levels each and are mentioned in one paragraph at sitting 4 | Decided (`design/81`, question 5): locked at the standing rate until sitting 15. Deferred to E3's ladder, with a `when` on the clause |
+| 8 | The four tax clauses sit in the Chamber's clause panel with five levels each and are mentioned in one paragraph at sitting 4 | Fixed (E3 ladder: `clause:rate_*` locked until `a1_underwriters`) |
 | 9 | The clause panel named the taxes "Ways and Means: volume" and the page named them "tax on pressurised volume"; the Economy tab's base names differ again | Fixed in the bill and in `setup.fiscal.bases` (pressurised volume, cooling, computing time, freight to orbit) |
 | 10 | A bill's Concordance article prints a division forecast from sitting 1 | Deferred to E2 |
 | 11 | `Appropriation (Session 4) Bill` and `HC 4/` references still show | Deferred to opencode (`briefs/appropriation-rename.md`) |

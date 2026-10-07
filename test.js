@@ -1269,6 +1269,27 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
        Engine.checkEnd(c, K).kind === "loss", Engine.checkEnd(c, K).kind);
   }
 
+  /* THE LEVER LADDER (brief E3). A campaign's setup.locks shut a writing control until a scene has been seen. */
+  {
+    const bill = "appropriation", cl = Engine.clausesOf(CONTENT, bill)[0];
+    const K = Object.assign({}, CONTENT, { setup: Object.assign({}, CONTENT.setup, { locks: {
+      grant: { when: { seen: ["gate_scene"] }, text: "Opens once the gate scene is read." },
+      whip: { when: { seen: ["gate_scene"] }, text: "Opens once the gate scene is read." },
+      money: { when: { seen: ["gate_scene"] }, text: "Opens once the gate scene is read." },
+      ["clause:" + (cl && cl.id)]: { when: { seen: ["gate_scene"] }, text: "Opens once the gate scene is read." } } }) });
+    const st = Engine.newGame(K);
+    ok("a shut grant refuses with the line that says what opens it",
+       (r => r.ok === false && r.locked && r.reason === "Opens once the gate scene is read.")(Engine.grantSlot(st, K, bill)));
+    ok("a shut whip has no seats", Engine.whippable(st, K, bill, st.playerParty, "popular").max === 0);
+    ok("a shut money call refuses", (r => r.ok === false && r.locked)(Engine.canBorrow(st, K, 1000, "earth")));
+    if (cl) ok("a shut clause refuses a level", (r => r.ok === false && r.locked)(Engine.setClause(st, K, bill, cl.id, cl.levels[0].id)));
+    st.seen.gate_scene = 1;
+    ok("and the scene having been seen opens them all", !Engine.lockOf(st, K, "grant") && !Engine.lockOf(st, K, "whip") && !Engine.lockOf(st, K, "money"));
+    const sb = Engine.newGame(K); sb.flags.sandbox = true;
+    ok("the sandbox is never shut", !Engine.lockOf(sb, K, "grant"));
+    ok("a campaign without locks shuts nothing", !Engine.lockOf(Engine.newGame(CONTENT), CONTENT, "grant"));
+  }
+
   /* THREE CHAPTERS, AND NOTHING AFTER THE COUNT (bible §1.7). */
   {
     /* every campaign's events, not the world's alone: a sweep of content

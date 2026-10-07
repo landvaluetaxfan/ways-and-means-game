@@ -3935,3 +3935,7 @@ body.no-motion .sp-signature.sig-draw .sigimg{transition:none;}
   #s-gov #gov-si.gov-mobile-list #gov-file-pane{display:none;}
   #gov-file-pane [data-gov-back]{display:inline-block;}
 }
+
+/* a lever the campaign keeps shut until its scene has been read (engine lockOf) */
+.cl-opt.locked{opacity:.45;cursor:not-allowed;}
+.cl-lock{font-family:var(--f-ui);font-size:11px;color:var(--dim, #8a8f98);margin:2px 0 4px;}

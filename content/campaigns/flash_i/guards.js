@@ -237,16 +237,37 @@ guard("THE FOUR CLAUSE SCENES: A PAGE AND A PROMISE EACH, AND THE BUDGET IS THE 
          cl.levels.some(l => l.id === u.discharge.clause.level) && sitting + u.by <= 14 && !!CONTENT.eventById[u.onBreach]),
        promises.map(u => u.id + " by " + (sitting + u.by)).join(", "));
   });
+  /* the clauses are shut until their pages are read (setup.locks), so these opens them as play would */
+  const taught = () => { const t = Engine.newGame(CONTENT); ["a1_cooling", "a1_floor", "a1_cover", "a1_works", "a1_transit"].forEach(e => { t.seen[e] = 1; }); return t; };
   ok("at the draft, lifting the floor is refused, as the Chamber's panel refuses it, because the reserve cannot pay",
-     Engine.setClause(Engine.newGame(CONTENT), CONTENT, "appropriation", "floor", "lift").ok === false);
+     Engine.setClause(taught(), CONTENT, "appropriation", "floor", "lift").ok === false);
   ok("and it is paid for by cutting another clause, here the thermal quota held tight",
-     (() => { const t = Engine.newGame(CONTENT); return Engine.setClause(t, CONTENT, "appropriation", "thermal", "tight").ok &&
+     (() => { const t = taught(); return Engine.setClause(t, CONTENT, "appropriation", "thermal", "tight").ok &&
        Engine.setClause(t, CONTENT, "appropriation", "floor", "lift").ok; })());
   /* a promise to widen the cover and one to lift the floor cannot both be kept from the draft's other levels */
-  const both = Engine.newGame(CONTENT);
+  const both = taught();
   Engine.setClause(both, CONTENT, "appropriation", "thermal", "tight");
   Engine.setClause(both, CONTENT, "appropriation", "floor", "lift");
   ok("the floor lifted and the cover widened do not fit one reserve", Engine.setClause(both, CONTENT, "appropriation", "insurance", "wide").ok === false);
+});
+
+guard("THE LEVERS OPEN IN THE ORDER THE SCENES TEACH THEM, AND STAY OPEN", ok => {
+  const fresh = Engine.newGame(CONTENT), L = id => Engine.lockOf(fresh, CONTENT, id);
+  ok("at the start the grant, the whip, the division, the money calls and every clause are shut",
+     ["grant", "whip", "divide", "money", "clause:thermal", "clause:floor", "clause:insurance", "clause:works", "clause:transit", "clause:rate_volume"].every(id => !!L(id)));
+  ok("a shut clause refuses a level with the line that says what opens it",
+     (r => r.ok === false && r.locked && /Opens once/.test(r.reason))(Engine.setClause(fresh, CONTENT, "appropriation", "thermal", "tight")));
+  ok("a shut grant refuses, and says why", (r => r.ok === false && r.locked)(Engine.grantSlot(fresh, CONTENT, "appropriation")));
+  ok("the whip has no seats to move before the count has been explained", Engine.whippable(fresh, CONTENT, "appropriation", "cu", "popular").max === 0);
+  ok("the author's bench is never shut", (() => { const t = Engine.newGame(CONTENT); t.flags.sandbox = true; return !Engine.lockOf(t, CONTENT, "grant"); })());
+  const t = Engine.newGame(CONTENT); t.seen.a1_order_paper = 1;
+  ok("reading the order paper opens the grant, and nothing else", !Engine.lockOf(t, CONTENT, "grant") && !!Engine.lockOf(t, CONTENT, "whip") && !!Engine.lockOf(t, CONTENT, "clause:thermal"));
+  ok("each tax clause waits for the Underwriters, and no earlier page opens it", (u => !!Engine.lockOf(u, CONTENT, "clause:rate_volume"))((() => { const u = Engine.newGame(CONTENT); Object.keys(CONTENT.eventById).filter(e => e !== "a1_underwriters").forEach(e => { u.seen[e] = 1; }); return u; })()));
+  const played = Engine.newGame(CONTENT); const ids = [];
+  for (let i = 1; i <= 16; i++) { Engine.playSitting(played, CONTENT, () => 0).forEach(m => ids.push(m.event.id));
+    const b = played.bills.appropriation; if (played.sitting >= 5 && !b.dead && b.stage !== "assented") { try { if (b.stage === Engine.DIVIDES_AT) Engine.divide(played, CONTENT, "appropriation"); else Engine.grantSlot(played, CONTENT, "appropriation"); } catch (e) { /* locked */ } }
+    Engine.advance(played, CONTENT); }
+  ok("by the curtain every lever has opened by play", ["grant", "whip", "divide", "money", "clause:rate_volume"].every(id => !Engine.lockOf(played, CONTENT, id)), ids.length + " scenes");
 });
 
 guard("THE PAGES' FIGURES ARE THE CLAUSES' OWN", ok => {
