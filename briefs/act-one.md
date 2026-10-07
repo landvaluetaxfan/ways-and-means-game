@@ -261,6 +261,19 @@ release or are sequenced with them.
   cut the per-call DOM scans in `tools/uitest.js` and the helpers it drives. Evidence in
   "Stage 1 findings". It must not weaken a check.
 
+- **E11 Superevents** (the author's idea, 7 October). An event may carry `setpiece.scale:
+  "super"`, and then its page takes the whole Sitting tab: the centre column widens until the
+  side columns are gone, using the dither already in `js/motion.js` as the widening, and the
+  sides return when the decision is made. A thin ribbon keeps the date and the rise's
+  countdown, so the player is never without them. Reduced motion is instant. It is for the
+  few events that change the world, such as the stranding at the Works, a carried motion of
+  no confidence, the thermal cascade beginning, the election called. It is not for texture,
+  and not for a random event unless that event changes the state of the game. Lint warns
+  above two in an act, so that the width stays an event. The author's first: the Almanac
+  Works abandoned (`design/78`). **Proposal, for the author:** make it the Act I curtain's
+  last beat, since `design/78` has the stranding opening what follows the rise, so the
+  slice ends on it and the superevent is exercised in the build.
+
 ## The exit gate
 
 The playtest build ships only when **all** of these hold. Each is a machine check or a
