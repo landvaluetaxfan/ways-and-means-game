@@ -101,17 +101,45 @@ division in Act I (`design/78`).
 
 ## How old text leaves the build
 
-Three tiers, chosen per entry by what depends on it. The numbers are from the inventory of
-7 October.
+The first plan here, three tiers chosen per entry, was tried on a scratch copy of the tree on
+7 October and corrected. What works, and what it costs:
 
-| tier | what | how |
-|---|---|---|
-| **Archive** | story entries nothing checks | moved to `content/archive/`, which `index.html` does not load and the itch.io zip does not carry. 109 of the 143 events are named by no test, tool or guard |
-| **Park** | entries a test needs | stay in the world files tagged `campaign: "parked"`, so raw `CONTENT`, which `test.js` plays on, still holds them, and Flash I's view (`forCampaign`) leaves them out. `divergence` is named 56 times in `test.js`, `appropriation` 21 and `thermal2` 14. Each parked entry is on a list to be re-pointed at a test fixture and then archived. They ship inside the data files, unseen |
-| **Rewrite in place** | reference text | every entry read against the rules and the ledger, rewritten where it fails, with its disposition recorded (kept, rewritten) so that nothing is skipped. Districts, stations, parties, characters, the glossary, the Concordance, the textbook |
+1. **A campaign sees story only if it is tagged for it** (default-deny, in `content/index.js`).
+   The story kinds are events, bills, orders, initiatives, matters, tiers, achievements and
+   resolutions. An untagged one belongs to the world's view alone, the view `test.js` plays
+   on, so a story written for a later act cannot show before the story has brought it in. The
+   reference kinds (parties, stations, characters and the rest) are still every campaign's.
+   An entry that a test and a campaign both need is tagged `campaign: ["world", "flash_i"]`.
+   This is the structural fix for the annexation bill in drafting; the checks assert it.
+2. **Flash I's own story is parked.** `tools/park.js` moves entries out of a content file,
+   byte for byte with the comments that lead them, into `content/campaigns/parked/<kind>.js`,
+   a `campaign("parked", {...})` call, and proves that nothing changed but the tag. The
+   script tags for those files carry `data-dev`, so the itch.io build leaves them out. Tried:
+   34 events, 1 bill, 6 tiers, 12 initiatives, 3 matters, 4 resolutions and 8 achievements,
+   all verified entry for entry.
+3. **The world's untagged story stays where it is, as the engine tests' fixtures.** It is
+   invisible to Flash I under rule 1. Moving it out as well broke `test.js` at once, because
+   the tests lean on the story chain's order (with the old opening gone, `gb_approach` fired
+   at sitting 1 and its promise fell due inside a helper that passes no content). The lasting
+   fix is a fixture of the engine's own, and until then these entries ship in the data files,
+   unseen. **Before the itch.io release** the fixture exists, they are archived, and the
+   shipped bundle holds no retired prose. That is a line in the exit gate.
+4. **Two holding tags** (`parked`, `world`) are accepted by lint and by the editor's
+   validator, which otherwise reject a tag that no administration plays.
 
-`tools/prose.js` already lists every player-facing sentence under an address. The disposition
-record is keyed on those addresses, and a check fails if an address has none.
+What the cut disturbs, so that it is done in one commit with the first slice and not alone:
+`test.js` (one assertion, which asserted that a campaign sees all of the world), lint (the
+holding tags, and parked matters naming instruments a campaign cannot see), the editor test
+(its "play in the game" step picks an event that is now parked), the Flash I guards (38
+failures: they assert the old story, so they are archived and replaced by Act I's own),
+and `tools/uitest.js` and `tools/uxtest.js`, which play the old opening. `js/engine.js`
+names two events itself (`f1_dilemma`, `the_pairing_kept`), which breaks the rule that the
+engine names none and must go before the cut.
+
+Reference text is not parked. Every entry is read against the rules and the ledger and
+rewritten where it fails, with its disposition recorded, so that nothing is skipped.
+`tools/prose.js` already lists every player-facing sentence under an address; the
+disposition record is keyed on those addresses and a check fails if one has none.
 
 ## The Act I world (draft, for the author)
 
