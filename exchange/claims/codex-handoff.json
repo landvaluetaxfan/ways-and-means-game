@@ -26,7 +26,10 @@
     "tools/itchtest.js",
     "briefs/codex-handoff.md",
     "AGENTS.md",
-    "prose.txt"
+    "prose.txt",
+    "js/encyclopedia.js",
+    "tools/uitest.js",
+    "tools/uxtest.js"
   ],
   "note": ""
 }
