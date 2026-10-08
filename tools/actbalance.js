@@ -28,6 +28,8 @@ const C = T.view("flash_i");
 const SEEDS = +process.env.SEEDS || 80;
 const hasU = ch => [].concat(ch.effects || []).some(f => f && f.undertake);
 const STRATS = {
+  /* takes an earned answer wherever one is open, and promises where it can: the path a player who reads the board takes */
+  earned:   (ev, st) => { const cs = ev.choices || []; const i = cs.findIndex(c => c.because && Engine.choiceOpen(st, C, c)); if (i >= 0) return i; const j = cs.findIndex(hasU); return j >= 0 ? j : 0; },
   first:    ev => 0,
   last:     ev => Math.max(0, (ev.choices || []).length - 1),
   promiser: ev => { const i = (ev.choices || []).findIndex(hasU); return i >= 0 ? i : 0; },
@@ -55,7 +57,7 @@ function run(seed, name, keep) {
   const st = Engine.newGame(C, seed), pick = STRATS[name];
   let end = null;
   for (let guard = 0; guard < 40 && !end; guard++) {
-    Engine.playSitting(st, C, ev => pick(ev));
+    Engine.playSitting(st, C, (ev, s2) => pick(ev, s2));
     if (keep) keepPromises(st);
     const b = st.bills.appropriation;
     if (!process.env.STILL && st.sitting >= 5 && b && !b.dead && b.stage !== "assented") {

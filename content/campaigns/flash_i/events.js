@@ -264,7 +264,13 @@ Devi has the sitting to give you. He can spend it at your desk, going through th
       act:"Read it alone",
       note:`Devi spends the sitting in the lobbies asking members how they will vote. You read the paper without him, and may miss what a member wants in return for a vote. Devi will take it as a sign that you do not want his advice at your desk, and the newspapers will report that you read the paper yourself.`,
       effects:[{ flag:"taught_the_day" }, { move:{ "rel.okarie":-4 } }, { move:{ "public_standing":2 } }],
-      result:`He goes to the lobbies to count votes. From now on you read the order paper alone each sitting, and he does not offer to help again.` }
+      result:`He goes to the lobbies to count votes. From now on you read the order paper alone each sitting, and he does not offer to help again.` },
+    { posture:"measured",
+      label:`Go through the first measures on the paper with Devi, and then send him to the lobbies for the rest of the sitting.`,
+      act:"Split the sitting",
+      note:`Devi names who moved the estimates and what that member wants in return for a vote, and then he goes to the lobbies to ask members how they will vote. You have read part of the paper with him and the count of the House is half done. He will see that you took some of his advice, and the newspapers will report that you read the rest of the paper yourself.`,
+      effects:[{ flag:"taught_the_day" }, { move:{ "rel.okarie":1 } }, { move:{ "loyalty.cu_loyalists":1 } }, { move:{ "public_standing":1 } }],
+      result:`He names the member behind the estimates, and then he goes to the lobbies. From the next sitting you read the paper yourself.` }
   ]},
 
 /* SITTING 5. THE TREATY, AND THE ONE SPARE SLOT (the Claude Doc, "One spare slot";
@@ -316,7 +322,15 @@ Marit Ivarsen, the Minister for Trade and the Anchors, has asked him twice when 
       act:"Hold it",
       note:`You keep the slot for whatever else costs one, such as an initiative, and the estimates keep their margin. Ivarsen has nothing to tell the Kenyan government for another period, and the New Progressive Party, whose minister negotiated the treaty, will note that its measure did not move.`,
       effects:[{ move:{ "rel.ivarsen":-4 } }, { move:{ "loyalty.psa":-2 } }],
-      result:`Devi writes the slot in his book as held. Ivarsen tells the Kenyan government that the bill will come in the next sitting period at the earliest.` }
+      result:`Devi writes the slot in his book as held. Ivarsen tells the Kenyan government that the bill will come in the next sitting period at the earliest.` },
+    { posture:"measured",
+      label:`Promise Marit Ivarsen that the Anchorage treaty has a slot after the estimates are carried.`,
+      act:"Promise it later",
+      note:`You tell Ivarsen the treaty moves once the estimates have passed, and you keep the promise by giving it a slot in the Chamber within nine sittings. She has a date to tell Kenya and no slot this period. A slot given to the treaty puts the New Progressive Party, her party, in your debt. If the slot is not given in time, Ivarsen will tell Kenya so in public and the party will count it against you.`,
+      effects:[{ undertake:{ id:"a1_treaty_slot_late", text:"Give the Anchorage treaty a slot within nine sittings",
+                 owed_to:"ivarsen", by:9, discharge:{ slot:"anchor_kepler" }, onBreach:"a1_treaty_unkept" } },
+               { move:{ "rel.ivarsen":2 } }, { move:{ "loyalty.psa":1 } }],
+      result:`Ivarsen tells the Kenyan government that the bill will move once the estimates have passed. Devi writes the date in the whips' ledger.` }
   ]},
 
 /* SITTING 6. ENERGY AND COOLING, AND EMBER RIDGE (the Claude Doc, "Energy and cooling";
@@ -541,7 +555,18 @@ You set the level in the Chamber. What you tell her now decides what she expects
       note:`The cover stays as drafted and costs the estimates nothing new. Residents who fail the means test and cannot pay stay suspended, and Trottier's party, which speaks for them, will count it as a refusal. You can still change the level in the Chamber until the House votes.`,
       effects:[{ clause:{ bill:"appropriation", clause:"insurance", level:"hold" } },
                { move:{ "rel.trottier":-4 } }, { move:{ "loyalty.psa":-4 } }],
-      result:`Trottier says her party will raise the cover again before the House votes.` }
+      result:`Trottier says her party will raise the cover again before the House votes.` },
+    { posture:"bold",
+      label:`Promise Mandelina Trottier that substrate insurance will be widened to CW$32bn, and hold the thermal quota tight to pay for it.`,
+      act:"Promise it and pay",
+      note:`You tell Trottier the means test goes, and you set the thermal quota to held tight now, which takes CW$14bn out of the estimates against last session's level. You keep the promise by setting the cover to widened in the Chamber within five sittings. If the reserve cannot meet it even then, another clause has to give. Less quota is released, so the thermal price rises when the Act passes and the Association of Engineers and Systems will object. Trottier's party is pleased, and sees that the money has been found. If you do not set the level in time, the party will record the promise as broken.`,
+      effects:[{ clause:{ bill:"appropriation", clause:"thermal", level:"tight" } },
+               { undertake:{ id:"a1_cover_widen_paid", text:"Widen substrate insurance to CW$32bn",
+                 owed_to:"trottier", by:5,
+                 discharge:{ clause:{ bill:"appropriation", clause:"insurance", level:"wide" } },
+                 onBreach:"a1_cover_unkept" } },
+               { move:{ "rel.trottier":7 } }, { move:{ "loyalty.psa":8 } }, { move:{ "loyalty.hul":-4 } }],
+      result:`Trottier tells her members that the means test goes and that the thermal quota will pay for it. The promise stands on the government's list until the level is set.` }
   ]},
 
 { id:"a1_cover_unkept", queuedOnly:true, once:true,
@@ -734,7 +759,14 @@ The count is in the Chamber, under the estimates. It lists, party by party, the 
       act:"Ask her",
       note:`Trottier's members vote as she asks. The party counts it as a favour and the cost is taken from the credit it owes you, which a slot given to its minister's treaty earns. If you ask for more than it owes you, the party loses goodwill with the government for every point you overdraw. You can change the plan in the Chamber until the division.`,
       effects:[{ whip:{ bill:"appropriation", party:"psa" } }, { move:{ "rel.trottier":2 } }],
-      result:`Trottier tells her whips to bring the party in. Devi writes it in the ledger.` }
+      result:`Trottier tells her whips to bring the party in. Devi writes it in the ledger.` },
+    { posture:"measured", when:{ capitalAbove:{ psa:3 } },
+      because:`the government gave the Anchorage treaty a slot, and the New Progressive Party holds credit for it`,
+      label:`Remind Mandelina Trottier of the slot her party's treaty was given, and ask for its members on those terms.`,
+      act:"Call it in",
+      note:`The slot you gave the treaty earned the New Progressive Party credit with the government, and you ask for its members against that credit. No new promise is made, and the party counts it as a debt paid. If you ask for more than it owes you, the party loses goodwill with the government for every point you overdraw. You can change the plan in the Chamber until the division.`,
+      effects:[{ whip:{ bill:"appropriation", party:"psa" } }, { move:{ "rel.trottier":5 } }, { move:{ "loyalty.psa":3 } }],
+      result:`Trottier tells her whips the credit is being called, and the party comes in. Devi writes the call in the ledger.` }
   ]},
 
 /* THE ESTIMATES ARE CARRIED. A page, when the Act is assented; it takes no decision. It carries the Act's
@@ -816,7 +848,14 @@ The government's undertakings, the promises it has made and has not yet kept, ar
       act:"Ask him",
       note:`Your own members will welcome a Prime Minister who puts the question back, and the party's loyalty to its leadership rises. The estimates cannot pay for everything the ministers asked, and Watkins will say that you did not answer. Voters think a little less of the government for it, and he will remember being questioned in return.`,
       effects:[{ move:{ party_loyalty:5 } }, { move:{ public_standing:-2 } }, { move:{ "rel.watkins":-6 } }],
-      result:`Your own side enjoys it enormously. Nobody outside the chamber can say afterwards which promise it was.` }
+      result:`Your own side enjoys it enormously. Nobody outside the chamber can say afterwards which promise it was.` },
+    { posture:"measured", when:{ keptAtLeast:1 },
+      because:`the government has kept some of the promises it made`,
+      label:`Name the promise that was not kept and the reason, and read out the promises that were.`,
+      act:"Read the list",
+      note:`You name the promise and the minister it was made to, say why it was not kept, and read out the promises the government did keep. It takes no more of the afternoon than the question, so it costs no slot. The House hears that the government has kept some of what its ministers were told, and your own members hear you answer for the one it did not.`,
+      effects:[{ move:{ public_standing:3 } }, { move:{ party_loyalty:3 } }],
+      result:`You name the promise and the reason, and then read the others. The House does not need to sit late.` }
   ]},
 
 { id:"a1_qt_reserve", prologue:21, once:true,
@@ -847,7 +886,14 @@ The reserve is the Treasury's cash in hand, and the estimates are paid from it. 
       act:"Ask him",
       note:`Your own members will welcome a Prime Minister who puts the question back, and the party's loyalty to its leadership rises. The figure stays unsaid, voters think a little less of the government for it, and Watkins will remember being questioned in return.`,
       effects:[{ move:{ party_loyalty:5 } }, { move:{ public_standing:-2 } }, { move:{ "rel.watkins":-6 } }],
-      result:`Your own side enjoys it enormously. Nobody outside the chamber can say afterwards what the reserve stands at.` }
+      result:`Your own side enjoys it enormously. Nobody outside the chamber can say afterwards what the reserve stands at.` },
+    { posture:"measured", when:{ keptAtLeast:2 },
+      because:`the government has kept at least two of the promises it made`,
+      label:`Give the reserve's figure, and read out the promises the government has kept.`,
+      act:"Read the list",
+      note:`You give the figure and read out the promises the government has kept, which answer the question behind the question: whether the government does what it says. It takes no more of the afternoon than the question, so it costs no slot. Voters and your own members think better of a government that can show the list.`,
+      effects:[{ move:{ public_standing:5 } }, { move:{ party_loyalty:3 } }],
+      result:`You give the figure and read the list. The Spindle, the Commonwealth's newspaper of record, prints both.` }
   ]},
 
 /* SITTING 15. THE UNDERWRITERS' READ (the Claude Doc, "The Underwriters' first reading"; the ledger: the

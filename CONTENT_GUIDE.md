@@ -380,6 +380,7 @@ because content had a habit of writing the good answer first.
 | `inGovernment` | `inGovernment:false` |
 | `seen` | `seen:["f1_stranded"]` — events already met; how a sequence chains |
 | `settled` / `resolved` | `resolved:true`, or an ending's id |
+| `keptAtLeast` | `keptAtLeast:2` — at least that many promises kept, whoever they were made to |
 | `owes` / `breached` | `breached:"carry_threshold"` — a promise still open, or broken |
 
 **Who** (design/46). An event can move a person, so a story can ask about one:

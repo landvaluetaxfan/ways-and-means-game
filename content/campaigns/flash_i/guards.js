@@ -408,3 +408,47 @@ guard("FLASH I IS A CAMPAIGN (design/36 §3)", ok => {
      ["events", "bills", "instruments", "initiatives", "matters", "settlements", "achievements", "resolutions"]
        .every(k => (CONTENT[k] || []).every(x => x.campaign != null && [].concat(x.campaign).indexOf("flash_i") >= 0)));
 });
+
+guard("THE EXTRA ANSWERS: THREE OPEN, THREE EARNED, EACH REACHABLE", ok => {
+  const E = id => CONTENT.eventById[id], last = id => E(id).choices[E(id).choices.length - 1];
+  const earnedIds = ["a1_count", "a1_qt_promise", "a1_qt_reserve"];
+  ok("each earned answer says why it is open, is gated, and lists last",
+     earnedIds.every(id => { const c = last(id); return !!c.because && !!c.when; }));
+  ok("the other decisions carry no earned answer", CONTENT.events.filter(e => e.campaign === "flash_i" && !earnedIds.includes(e.id))
+     .every(e => (e.choices || []).every(c => !c.because)));
+  /* the three open answers do what they say */
+  const st5 = play(5, { a1_order_paper: 2 });
+  ok("the measured order-paper answer is taken and teaches the day", st5.flags.taught_the_day === true);
+  const slot = play(5, { a1_spare_slot: 2 });
+  ok("promising the slot after the estimates makes one open undertaking, with a longer fuse than the plain promise",
+     slot.undertakings.filter(u => u.id === "a1_treaty_slot_late" && u.state === "open" && u.owed_to === "ivarsen" && u.by === 14).length === 1);
+  const cover = play(8, { a1_cover_ask: 2 });
+  ok("the bold cover answer promises the widening and sets the thermal quota tight to pay for it",
+     cover.undertakings.some(u => u.id === "a1_cover_widen_paid" && u.state === "open") && ((cover.clauses.appropriation || {}).thermal === "tight"),
+     JSON.stringify((cover.clauses || {}).appropriation));
+  ok("and, where the reserve has not been spent at Ember Ridge, the widening then fits it, so the promise can be kept", (() => {
+    const t = play(8, { a1_ember_ridge: 1, a1_cover_ask: 2 }); return Engine.setClause(t, CONTENT, "appropriation", "insurance", "wide").ok; })());
+  /* each earned answer is shut without its ground and open with it */
+  const open = (st, id) => Engine.choiceOpen(st, CONTENT, last(id));
+  const bare = Engine.newGame(CONTENT);
+  ok("with no ground, none of the three is open", earnedIds.every(id => !open(bare, id)));
+  const credit = play(10, { a1_spare_slot: 0 }); Engine.advance(credit, CONTENT);
+  ok("the count's earned answer is shut until the treaty has been given a slot", !open(credit, "a1_count"));
+  Engine.grantSlot(credit, CONTENT, "anchor_kepler");
+  ok("and open once it has, by play", open(credit, "a1_count"), "credit " + credit.capital.psa);
+  /* by play: promise at every chance, keep the first clause promise, let the rest lapse, and Question Time offers the list */
+  const t = Engine.newGame(CONTENT); let keptOne = false;
+  for (let i = 1; i <= 13; i++) {
+    Engine.playSitting(t, CONTENT, ev => { const cs = ev.choices || []; const k = cs.findIndex(c => [].concat(c.effects || []).some(f => f && f.undertake)); return k >= 0 ? k : 0; });
+    if (!keptOne) {
+      const o = (t.undertakings || []).find(u => u.state === "open" && u.discharge && u.discharge.clause);
+      if (o) { const d = o.discharge.clause; Engine.setClause(t, CONTENT, d.bill || "appropriation", "thermal", "tight");
+               keptOne = Engine.setClause(t, CONTENT, d.bill || "appropriation", d.clause, d.level).ok; }
+    }
+    Engine.advance(t, CONTENT);
+  }
+  const states = (t.undertakings || []).map(u => u.id + ":" + u.state).join(" ");
+  ok("a government that keeps one promise and lets the rest lapse is offered the Question Time answer that reads out the list",
+     open(t, "a1_qt_promise"), states);
+  ok("and the reserve's answer needs two kept, which one kept does not give", !open(t, "a1_qt_reserve") || t.undertakings.filter(u => u.state === "kept").length >= 2, states);
+});

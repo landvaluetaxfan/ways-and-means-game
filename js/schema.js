@@ -188,6 +188,7 @@ const SCHEMA = {
     capitalAbove:   { label:"Debt above",              form:"map", src:"parties", vtype:"int" },
     capitalBelow:   { label:"Debt below",              form:"map", src:"parties", vtype:"int" },
     pairsKeptAtLeast: { label:"Pairs honoured at least", form:"int" },
+    keptAtLeast:    { label:"Promises kept at least",    form:"int" },
     economyAbove:   { label:"Economy reading above", form:"map", src:"economyReadings", vtype:"num" },
     economyBelow:   { label:"Economy reading below", form:"map", src:"economyReadings", vtype:"num" },
     slotsLeft:      { label:"Order-paper slots left",  form:"int" },

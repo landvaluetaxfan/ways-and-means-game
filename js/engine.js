@@ -4388,6 +4388,8 @@ const Engine = (function () {
                       (st.undertakings || []).some(u => u.id === id && u.state === "broken")),
     /* How many divisions have run with a pair in force. See divide(). */
     pairsKeptAtLeast: (st, v) => (st.pairsKept || 0) >= v,
+    /* How many promises the government has kept (undertakings discharged, whoever they were made to). */
+    keptAtLeast:    (st, v) => (st.undertakings || []).filter(u => u.state === "kept").length >= v,
 
     /* WHO, AND NOT ONLY HOW MANY (design/46). An event could move a person:
        appoint them, vacate their seat, warm or cool their relations with
