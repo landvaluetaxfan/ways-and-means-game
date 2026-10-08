@@ -29,7 +29,15 @@
     "prose.txt",
     "js/encyclopedia.js",
     "tools/uitest.js",
-    "tools/uxtest.js"
+    "tools/uxtest.js",
+    "tools/archiveworldtest.js",
+    "tools/roundtrip.js",
+    "tools/renametest.js",
+    "tools/setuptexttest.js",
+    "tools/flagaudit.js",
+    "tools/lint.js",
+    "js/editor.js",
+    "tools/fixtures/archive-contracts.js"
   ],
   "note": ""
 }
