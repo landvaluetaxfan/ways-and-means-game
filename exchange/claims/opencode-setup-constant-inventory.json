@@ -1,9 +1,0 @@
-{
-  "brief": "opencode-setup-constant-inventory",
-  "lane": "opencode",
-  "since": "2026-10-08",
-  "files": [
-    "design/setup-constant-inventory.md"
-  ],
-  "note": "report only; E5 inventory"
-}
