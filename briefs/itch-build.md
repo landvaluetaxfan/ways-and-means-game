@@ -92,7 +92,7 @@ platform, and `npm run layout` measures one face.
 `img/artifacts/flash-intro.png` are an edited photograph of CC BY-NC-ND 2.0** ("UK Government hosts AI Summit at
 Bletchley Park", UK Government, on Flickr). ND forbids distributing a modified version, so these two cannot ship
 as they are, and NC would bar a later paid release; the photograph is also of a real person shown as a fictional
-Prime Minister, which a Creative Commons licence does not cover. They need replacing before the public build.
+Prime Minister, which a Creative Commons licence does not cover. **Cut on 8 October, on the author's word**, with `img/portraits/watkins.png` (a photograph with the UN emblem): the Prime Minister and the Leader of the Opposition now have no portrait file (the interface already shows the party's mark and the placeholder), and the introduction page has no image. `tenaya.png` is the author's own. Portraits for both are still to be made.
 Also to be sourced: `tenaya.png` (a photograph of a cat; its author is unknown) and `watkins.png` (a photograph
 with the United Nations emblem behind it, whose use the UN restricts).
 

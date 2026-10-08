@@ -2448,7 +2448,7 @@ try {
   const filled = w.eval(
     "Artifacts.names().filter(function(n){return Artifacts.file(n);}).join(',')");
   ok("the slots that ship art are the ones we meant to",
-     filled === "flash_intro", filled || "none");
+     filled === "", filled || "none");
 
   const shape = () => w.eval(`
     [].slice.call(document.querySelectorAll(".menu-plate, .menu-title, .menu-btns"))

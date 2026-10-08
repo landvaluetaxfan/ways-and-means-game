@@ -30,7 +30,7 @@
    ============================================================= */
 
 const ARTIFACTS = {
-  flash_intro:     "flash-intro.png",  /*  2:3   480px  broadcast */
+  /* flash_intro:    "flash-intro.png",  2:3   480px  broadcast -- cut 8 Oct 2026: an edited photograph under a licence that forbids it */
   /* crest:           "seal.png",        1:1   128px  registry  */
   /* department_mark: "cabinet.png",     1:1    64px  registry  */
   /* notice_plate:    "plate.png",      12:5   640px  registry  */

@@ -120,7 +120,6 @@ campaign("flash_i", { administrations: [
          2026 for want of a licence (content/anthem.js). */
       mood:"moment",
       title:"Adriana Eireann Flash",
-      art:"flash_intro",
       sections:[
         { kind:"epigraph",
           body:"All the rivers run into the sea; yet the sea is not full.",
