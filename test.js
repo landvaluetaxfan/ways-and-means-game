@@ -6654,6 +6654,38 @@ console.log("\nTHE EDITOR OFFERS EVERY VERB, AND A STORY CAN ASK ABOUT A PERSON 
        /cannot move back/.test(h.log[0].text), h.log[0] && h.log[0].text);
     Engine.apply(h, C, [{ bill: { [bid]: { stage: "report" } } }]);
     ok("and moves forward when it should", h.bills[bid].stage === "report", h.bills[bid].stage);
+
+    const cases = [
+      ["passed", "defeated", false],
+      ["assented", "withdrawn", false],
+      ["in_force", "fallen", false],
+      ["defeated", "first_reading", false],
+      ["withdrawn", "committee", false],
+      ["fallen", "drafting", false],
+      ["struck", "awaiting_assent", false],
+      ["committee", "unknown_stage", false],
+      ["committee", "blocked", false],
+      ["blocked", "second_reading", true],
+      ["committee", "defeated", true],
+      ["committee", "withdrawn", true],
+      ["referred", "struck", true],
+      ["passed", "in_force", true]
+    ];
+    for (const [from, to, allowed] of cases) {
+      const probe = Engine.newGame(C, 17), bill = probe.bills[bid];
+      bill.stage = from;
+      const logSize = probe.log.length;
+      Engine.apply(probe, C, [{bill:{[bid]:{stage:to, amendments:["guard_probe"]}}}]);
+      ok("bill effect " + from + " -> " + to + (allowed ? " advances or ends the measure" : " is refused atomically"),
+         allowed ? bill.stage === to && bill.amendments[0] === "guard_probe" :
+         bill.stage === from && bill.amendments.length === 0 && probe.log.length > logSize &&
+         /^IGNORED:/.test(probe.log[0].text));
+    }
+    const ended = Engine.newGame(C, 17);
+    ended.bills[bid].stage = "defeated"; ended.bills[bid].dead = true;
+    Engine.apply(ended, C, [{bill:{[bid]:{dead:false}}}]);
+    ok("clearing dead cannot reopen an ended bill", ended.bills[bid].dead === true &&
+       /^IGNORED:/.test(ended.log[0].text));
   }
 
   /* THE PAPER */

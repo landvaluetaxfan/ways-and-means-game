@@ -4866,19 +4866,30 @@ const Engine = (function () {
        any stage, so a scene could quietly un-pass a bill and the state would
        contradict the order paper. The stage is ranked (stageRank) and a write
        that would move it back down the ladder is refused and logged, as a bad
-       id is, so a scene never fails in silence. A terminal stage (defeated,
-       withdrawn) and a revival of a dead bill to a live stage are not backward
-       moves and pass: rank() is -1 off the ladder, so the comparison is only
-       made when both ends are on it. */
+       id is, so a scene never fails in silence. stageRank answers attainment
+       questions and puts every dead end at -1; writes must distinguish those
+       ends from unknown stages, and cannot reopen an ended measure. */
     bill:   (st, C, v) => Object.keys(v).forEach(id => {
       const b = st.bills[id], set = v[id] || {};
       if (!b) {
         st.log.unshift({ sitting: st.sitting, text: "IGNORED: no bill is called " + id + "." });
         return;
       }
-      if (!openingWrite && "stage" in set) {
-        const from = stageRank(b.stage), to = stageRank(set.stage);
-        if (from >= 0 && to >= 0 && to < from) {
+      const ended = ["defeated", "withdrawn", "fallen", "struck"];
+      if ("stage" in set && stageRank(set.stage) < 0 && set.stage !== "blocked" && !ended.includes(set.stage)) {
+        st.log.unshift({ sitting: st.sitting, text:
+          "IGNORED: " + String(set.stage) + " is not a known bill stage for " + id + "." });
+        return;
+      }
+      if (!openingWrite) {
+        if (ended.includes(b.stage) && (set.dead === false || ("stage" in set && set.stage !== b.stage))) {
+          st.log.unshift({ sitting: st.sitting, text: "IGNORED: " + id + " has ended and cannot be reopened." });
+          return;
+        }
+        const from = b.stage === "blocked" ? stageRank("first_reading") : stageRank(b.stage);
+        const to = set.stage === "blocked" ? stageRank("first_reading") : stageRank(set.stage);
+        if ("stage" in set && from >= 0 &&
+            ((to >= 0 && to < from) || (from === STAGE_ORDER.length && ended.includes(set.stage)))) {
           st.log.unshift({ sitting: st.sitting, text:
             "IGNORED: " + id + " cannot move back from " + b.stage + " to " + set.stage + "." });
           return;

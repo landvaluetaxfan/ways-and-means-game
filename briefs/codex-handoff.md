@@ -59,8 +59,13 @@ assertions were removed and no player-facing wording was added.
 2. **E9, change notices.** Effects return `{kind, tab, id, summary}`; the Sitting tab shows each as a card; a check
    snapshots state before and after each decision on sampled paths and fails on any change to a displayed field with no
    notice. It is the largest machine check still missing from the exit gate (`briefs/act-one.md`, item 5).
-3. **E4, guarded writers.** `cabinet` refuses to overwrite a filled post unless the effect says so; `bill` moves forward only;
-   a refused write logs a line.
+3. **E4, guarded writers: implemented.** OpenCode's `87b40e2` guards filled Cabinet posts and backward bill
+   stages. Codex's follow-up closes the off-ladder exceptions: ended bills cannot reopen, enacted bills
+   cannot become defeated/withdrawn/fallen, unknown stages are refused, and blocked bills advance from
+   their existing first-reading position. Refusals reject the entire bill patch and log a line. Campaign
+   opening can restage known stages because it defines the initial state. Fifteen transition assertions
+   were break-tested; the 80-seed before/after reports are byte-identical. The editor retains explicit
+   Cabinet replacements as raw JSON; adding its normal replacement control remains a small editor follow-up.
 4. **E5, setup constants in text** (`{{setup.slotsPerPeriod}}`-style, resolved when the page is shown and by lint, stored
    rendered in the log, round-tripped by the prose file and the editor). Mechanic issue 12: tooltips carry typed constants.
 5. **A fixture of the engine's own for `test.js`**, so the world's untagged story can be archived and dropped from the
