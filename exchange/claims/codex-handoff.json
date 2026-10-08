@@ -1,0 +1,18 @@
+{
+  "brief": "codex-handoff",
+  "lane": "codex",
+  "since": "2026-10-08",
+  "files": [
+    "js/engine.js",
+    "js/ui.js",
+    "js/motion.js",
+    "css/terminal.css",
+    "tools/noticecheck.js",
+    "tools/uitest.js",
+    "tools/check.js",
+    "package.json",
+    "briefs/codex-handoff.md",
+    "design/82-change-notices-plan.md"
+  ],
+  "note": "Resume preserved E9 implementation on current main; fix coverage and item navigation before publishing"
+}
