@@ -284,7 +284,8 @@ const Engine = (function () {
        opening's, so it is cleared. */
     st.campaign = C.campaign || null;
     if (C.opening && C.opening.length) {
-      apply(st, C, C.opening);
+      openingWrite = true;
+      try { apply(st, C, C.opening); } finally { openingWrite = false; }
       st.log = [];
       st.wire = [];
     }
@@ -2406,6 +2407,8 @@ const Engine = (function () {
      never locked. The levers named: "grant", "divide", "whip", "money", and "clause:<id>" for one clause. The
      engine names no lever of its own beyond these keys; content decides which are locked and when. */
   let sceneWrite = 0;     /* >0 while a scene's own effect writes: the scene that argues for a lever may use it */
+  let openingWrite = false; /* true while the campaign's `opening` is applied: it DEFINES the first state, so
+                               a bill it restages (the treaty at committee, design/80) is not a backward move */
   function lockOf(st, C, lever) {
     if (sceneWrite) return null;
     const L = ((C && C.setup) || {}).locks;
@@ -4859,7 +4862,30 @@ const Engine = (function () {
         Object.keys(v).forEach(f => { if (v[f]) st.flags[f] = true; else delete st.flags[f]; });
       else [].concat(v).forEach(f => st.flags[f] = true);
     },
-    bill:   (st, C, v) => Object.keys(v).forEach(id => Object.assign(st.bills[id], v[id])),
+    /* A BILL MOVES FORWARD ONLY (brief E4). `Object.assign` let an effect set
+       any stage, so a scene could quietly un-pass a bill and the state would
+       contradict the order paper. The stage is ranked (stageRank) and a write
+       that would move it back down the ladder is refused and logged, as a bad
+       id is, so a scene never fails in silence. A terminal stage (defeated,
+       withdrawn) and a revival of a dead bill to a live stage are not backward
+       moves and pass: rank() is -1 off the ladder, so the comparison is only
+       made when both ends are on it. */
+    bill:   (st, C, v) => Object.keys(v).forEach(id => {
+      const b = st.bills[id], set = v[id] || {};
+      if (!b) {
+        st.log.unshift({ sitting: st.sitting, text: "IGNORED: no bill is called " + id + "." });
+        return;
+      }
+      if (!openingWrite && "stage" in set) {
+        const from = stageRank(b.stage), to = stageRank(set.stage);
+        if (from >= 0 && to >= 0 && to < from) {
+          st.log.unshift({ sitting: st.sitting, text:
+            "IGNORED: " + id + " cannot move back from " + b.stage + " to " + set.stage + "." });
+          return;
+        }
+      }
+      Object.assign(b, set);
+    }),
     coalition: (st, C, v) => {
       if (v.remove) st.coalition = st.coalition.filter(p => !v.remove.includes(p));
       if (v.add) v.add.forEach(p => { if (!st.coalition.includes(p)) st.coalition.push(p); });
@@ -4896,9 +4922,26 @@ const Engine = (function () {
     court: (st, C, v) => Object.keys(st.withdrawn || {}).concat(Object.keys(st.stoodAside || {}))
       .forEach(id => shiftLoyalty(st, C, id, Number(v) || 0)),
     si: (st, C, v) => [].concat(v).forEach(id => makeInstrument(st, C, id)),
+    /* A FILLED POST IS NOT OVERWRITTEN IN SILENCE (brief E4). An appointment
+       effect on a post that already has a holder is refused unless the effect
+       says to replace it ({holder, party, replace:true}), and the refusal is
+       logged, as a bad id is. `null` still vacates. The Treasury scene runs on
+       a vacant post, so the guard costs normal play nothing; it stops a second
+       appointment from quietly unseating the first. */
     cabinet: (st, C, v) => Object.keys(v).forEach(post => {
-      if (v[post] === null) vacate(st, C, post, "resigned");
-      else appoint(st, C, post, v[post].holder, v[post].party);
+      const held = st.cabinet[post];
+      if (!held) {
+        st.log.unshift({ sitting: st.sitting, text: "IGNORED: no cabinet post is called " + post + "." });
+        return;
+      }
+      if (v[post] === null) { vacate(st, C, post, "resigned"); return; }
+      if (held.holder && !(v[post] && v[post].replace)) {
+        st.log.unshift({ sitting: st.sitting, text:
+          "IGNORED: " + postName(C, post) + " is already held by " + personName(C, held.holder) +
+          "; the effect did not say to replace." });
+        return;
+      }
+      appoint(st, C, post, v[post].holder, v[post].party);
     }),
     slots: (st, C, v) => {
       if (v.total != null) st.slots.total += v.total;

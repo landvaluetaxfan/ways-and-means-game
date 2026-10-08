@@ -118,6 +118,10 @@ const SCHEMA = {
        all along; the schema did not describe them, so the editor kept them
        as raw JSON when it found them and never offered them to an author.
        test.js now holds this file to the engine's own list. */
+    /* The engine refuses to overwrite a filled post unless the effect carries
+       `replace:true` (brief E4). The appoint shape below has no field for it,
+       so such an effect is kept as raw JSON in the editor, not dropped; widen
+       this shape when the editor next offers the flag. */
     cabinet:     { label:"Appoint to a post, or vacate it", args:[
                    {k:"key", type:"enum", src:"posts", label:"Post"},
                    {k:"holder", type:"enum", src:"holderOrVacant", label:"Holder"},

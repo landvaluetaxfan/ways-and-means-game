@@ -692,7 +692,7 @@ console.log("\nLIVE CABINET PAYROLL:");
   Engine.apply(s, CONTENT, [{ cabinet:{ treasury:{ holder:"halloran", party:"cu" } } }]);
   ok("appointment puts a backbencher on the leadership payroll", will(s, "halloran") === backbencher - 12);
   ok("an appointed district member votes as payroll", bench(s, "halloran").payroll === true && bench(s, "halloran").office === "minister");
-  Engine.apply(s, CONTENT, [{ cabinet:{ education:{ holder:"halloran", party:"cu" }, treasury:null } }]);
+  Engine.apply(s, CONTENT, [{ cabinet:{ education:{ holder:"halloran", party:"cu", replace:true }, treasury:null } }]);
   ok("holding another post keeps the payroll restraint", will(s, "halloran") === 38);
   Engine.apply(s, CONTENT, [{ cabinet:{ education:null } }]);
   ok("leaving the last post releases an appointed backbencher", will(s, "halloran") === 50);
@@ -6616,9 +6616,45 @@ console.log("\nTHE EDITOR OFFERS EVERY VERB, AND A STORY CAN ASK ABOUT A PERSON 
      Engine.matches(s, { holds: { [post]: [other, holder] } }) && !Engine.matches(s, { holds: { [post]: other } }));
   ok("inCabinet and outOfCabinet read any post", Engine.matches(s, { inCabinet: holder, outOfCabinet: [other] }) &&
      !Engine.matches(s, { inCabinet: other }));
-  Engine.apply(s, C, [{ cabinet: { [post]: { holder: other, party: C.characterById[other].party } } }]);
+  Engine.apply(s, C, [{ cabinet: { [post]: { holder: other, party: C.characterById[other].party, replace: true } } }]);
   ok("and follow an appointment", Engine.matches(s, { holds: { [post]: other }, inCabinet: other }) &&
      !Engine.matches(s, { holds: { [post]: holder } }));
+
+  /* E4: GUARDED WRITERS (briefs/codex-handoff.md item 3). A filled post is not
+     overwritten in silence, and a bill moves forward only. Break each guard and
+     watch its assertion fail. */
+  {
+    const g = Engine.newGame(C);
+    const post0 = Object.keys(g.cabinet).find(k => g.cabinet[k].holder);
+    const was = g.cabinet[post0].holder;
+    const outsider = C.characters.find(c => c.id !== was &&
+      !Object.values(g.cabinet).some(p => p.holder === c.id)).id;
+    const n0 = (g.log || []).length;
+    Engine.apply(g, C, [{ cabinet: { [post0]: { holder: outsider, party: C.characterById[outsider].party } } }]);
+    ok("a filled post is not overwritten without a word",
+       g.cabinet[post0].holder === was && (g.log || []).length > n0 &&
+       /already held/.test(g.log[0].text), g.log[0] && g.log[0].text);
+    Engine.apply(g, C, [{ cabinet: { [post0]: { holder: outsider, party: C.characterById[outsider].party, replace: true } } }]);
+    ok("and is replaced when the effect says to", g.cabinet[post0].holder === outsider, g.cabinet[post0].holder);
+    const vac = Object.keys(g.cabinet).find(k => !g.cabinet[k].holder);
+    if (vac) {
+      const newcomer = C.characters.find(c => c.id !== outsider &&
+        !Object.values(g.cabinet).some(p => p.holder === c.id)).id;
+      Engine.apply(g, C, [{ cabinet: { [vac]: { holder: newcomer, party: C.characterById[newcomer].party } } }]);
+      ok("a vacant post fills without the flag", g.cabinet[vac].holder === newcomer, vac + " -> " + g.cabinet[vac].holder);
+    }
+
+    const h = Engine.newGame(C);
+    const bid = Object.keys(h.bills)[0];
+    h.bills[bid].stage = "committee";
+    const nb = (h.log || []).length;
+    Engine.apply(h, C, [{ bill: { [bid]: { stage: "first_reading" } } }]);
+    ok("a bill does not move back down the ladder",
+       h.bills[bid].stage === "committee" && (h.log || []).length > nb &&
+       /cannot move back/.test(h.log[0].text), h.log[0] && h.log[0].text);
+    Engine.apply(h, C, [{ bill: { [bid]: { stage: "report" } } }]);
+    ok("and moves forward when it should", h.bills[bid].stage === "report", h.bills[bid].stage);
+  }
 
   /* THE PAPER */
   s.signedBy = [other]; s.refusedBy = [holder];
