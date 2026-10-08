@@ -3405,6 +3405,10 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
 .movetab td.d{width:44px;font-weight:700;}
 .movetab tr.t-good td.d{color:var(--ok);}
 .movetab tr.t-bad  td.d{color:var(--alert);}
+.decision-changes{display:grid;gap:5px;margin:8px 0;}
+.decision-changes .change-notice{display:flex;flex-wrap:wrap;gap:4px 10px;
+  text-align:left;white-space:normal;min-width:0;overflow-wrap:anywhere;}
+.decision-changes .change-notice strong{color:var(--ink);}
 
 /* =============================================================
    MOTION — the dissolve, and the card that says something moved.

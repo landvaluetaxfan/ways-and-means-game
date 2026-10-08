@@ -10,6 +10,25 @@
 
 **Spec:** `briefs/codex-handoff.md` E9; `briefs/act-one.md` Stage 1 finding 3, E9 and exit gate 5.
 
+## Implementation evidence — 8 October 2026
+
+Tasks 1 to 3 implemented. The complete nineteen-check suite passed in 280.29 seconds. The independent
+gate checked 1,480 legal branches across eight seeds and five strategies; eighty-seed playtest reports
+are byte-identical to the pre-E9 baseline. Eighteen mutation cases were caught, alongside precise missing
+clause, appointment, settlement and second-answer change failures. Engine-only clause evidence and the
+shared bill router's UI evidence verify the clause destination together.
+
+Fresh review found missing map/resolution control projections and a missing actor record below lobbying
+eligibility; both were fixed RED–GREEN. Destination validation now covers every inventoried category.
+The full suite caught an empty-effects advice-clock regression and a pre-existing map operator link that
+treated a display name as an actor ID; both have passing regressions. Notices remain transient, with no
+save migration or new content. Private flags are represented by the controls or map facts they change.
+
+Real Edge layout passed for the game and editor; three font-stack warnings remain. Screenshots at
+1920x1000 and 1366x768 show all fifteen reduced-motion stress-test cards, with no card clipping. At the
+smaller size the action buttons below the long card list need the existing panel scroll. A real card click
+opened Orbit without changing the save. No fresh-review finding is deferred.
+
 ## Constraints
 
 - Engine code names no concrete event, party, station or campaign.

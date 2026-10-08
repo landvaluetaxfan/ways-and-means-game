@@ -38,7 +38,7 @@ async function main() {
   const root = path.join(__dirname, ".."), pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
   // Start the long DOM checks first. Every former check remains a full process.
   const names = ["ui", "ux", "editor", "itchtest", "test", "guards", "lint", "cx", "roundtrip", "rename",
-    "tocheck", "enc", "exchange:check", "storymap:check", "fidget", "flags", "tutorial"];
+    "tocheck", "enc", "exchange:check", "storymap:check", "fidget", "flags", "tutorial", "notices"];
   const job = name => ({ name, resource: name === "ui" || name === "itchtest" ? "bundle" : undefined,
     commands: pkg.scripts[name].split(/\s*&&\s*/).map(command => {
     // These scripts use only Node, paths without spaces, and plain flags.
@@ -56,7 +56,8 @@ async function main() {
   if (preflight[0].code) { process.exitCode = 1; return; }
   const results = await run(names.map(job), { concurrency, report });
   const failed = results.filter(r => r.code);
-  console.log("\n" + (18 - failed.length) + "/18 checks passed in " + ((performance.now() - start) / 1000).toFixed(2) +
+  const total = names.length + preflight.length;
+  console.log("\n" + (total - failed.length) + "/" + total + " checks passed in " + ((performance.now() - start) / 1000).toFixed(2) +
     "s (" + concurrency + " parallel readers)" + (failed.length ? "; failed: " + failed.map(r => r.name).join(", ") : ""));
   process.exitCode = failed.length ? 1 : 0;
 }

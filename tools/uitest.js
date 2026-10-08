@@ -77,6 +77,75 @@ $('[data-admin]').click();
 ok("slot list appears", w.document.querySelectorAll(".slot").length === 4);
 $('[data-new="1"]').click();
 ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.contains("on"));
+/* Persistent structural notices: uncapped, navigable, and observational.
+   A truncated collection or a route that executes the target must fail. */
+{
+ const original=w.eval('UI.state()'), base=w.eval('UI.content()'), E=w.eval('Engine');
+ const s=E.newGame(base,1), post=base.cabinet.find(p=>s.cabinet[p.id].holder && s.cabinet[p.id].holder!==s.pm);
+ const bill=base.bills[0], station=base.stations[1];
+ const court=base.actors.find(a=>a.kind==='court');
+ const actor=base.actors.find(a=>!a.foreign && a.kind!=='court' && base.bills.some(b=>E.lobbyable(s,base,b.id,a.id).max));
+ const event={id:'notice_ui_probe',title:'Notice test',body:'Test the changed items.',choices:[{label:'Apply changes',result:'Changes recorded.',effects:[
+   {bill:{[bill.id]:{stage:s.bills[bill.id].stage==='committee'?'third_reading':'committee'}}},
+   {cabinet:{[post.id]:null}}, {station:{[station.id]:{suspended:1}}},
+   {undertake:{id:'notice_ui_promise',text:'Test promise',by:4}},
+   {move:{['actor.'+court.id]:1,['actor.'+actor.id]:1}}]}]};
+ const c={...base,events:[event],eventById:{[event.id]:event},matters:[]};
+ s.flags._introRead=true;s.flags._act1=true;s.flags.sandbox=true;
+ w.eval('UI.boot')(s,c);w.eval('UI.openTab("sit")');w.eval('UI.sandboxShow')(event.id);
+ const expand=$('#sit-decide [data-expand]');if(expand)expand.click();
+ const commit=$('#sit-decide .commit');if(commit)commit.click();
+ const cards=[...w.document.querySelectorAll('#sit-decide [data-change-notice]')];
+ ok('decision keeps more than two structural notice cards',cards.length>=4);
+ ok('decision cards name the destination and changed item',cards.some(n=>n.dataset.open==='bill:'+bill.id && n.textContent.includes('Chamber')));
+ const saved=E.save(s), billCard=cards.find(n=>n.dataset.open==='bill:'+bill.id);
+ if(billCard)billCard.click();
+ ok('bill notice navigates to its Chamber item',!!$('#s-cham').classList.contains('on') && w.eval('Focus.selected("cham-bills")')===bill.id);
+ ok('notice navigation does not execute a lever',!!billCard && E.save(s)===saved);
+ w.eval('UI.openTab("sit")');
+ const postCard=$('#sit-decide [data-open="post:'+post.id+'"]');if(postCard)postCard.click();
+ ok('vacated post notice opens its current Government file',!!postCard && w.eval('Focus.selected("gov-work")')==='post:'+post.id);
+ w.eval('UI.openTab("sit")');
+ const stationCard=$('#sit-decide [data-open="station:'+station.id+'"]');if(stationCard)stationCard.click();
+ ok('station notice selects its Orbit detail',w.eval('Focus.selected("orbit-table")')===station.id);
+ w.eval('UI.openTab("sit")');
+ const promiseCard=$('#sit-decide [data-open="promise:notice_ui_promise"]');if(promiseCard)promiseCard.click();
+ ok('promise notice opens the undertaking record',!!promiseCard && !$('#gov-undertakings').hidden && $('#gov-undertakings').textContent.includes('Test promise'));
+ w.eval('UI.openTab("sit")');
+ const courtCard=$('#sit-decide [data-open="tribunal:'+court.id+'"]');if(courtCard)courtCard.click();
+ ok('court notice opens the visible Tribunal record',!!courtCard && w.eval('Focus.selected("gov-utilities")')==='gov-tribunal' && !$('#gov-tribunal').hidden);
+ w.eval('UI.openTab("sit")');
+ const actorCard=$('#sit-decide [data-open="actor:'+actor.id+'"]');if(actorCard)actorCard.click();
+ const actorRow=$('#s-cham [data-notice-actor="'+actor.id+'"]');
+ ok('domestic actor notice opens its visible lobbying record',!!actorCard && $('#s-cham').classList.contains('on') && !!actorRow && !actorRow.closest('[hidden]'));
+ ok('domestic actor notice focuses its record without changing the save',!!actorRow && w.document.activeElement===actorRow && E.save(s)===saved);
+ const reduced=w.eval('Shell.options.motion');w.eval('Shell.setOpt("motion",false)');
+ w.eval('UI.openTab("sit");UI.redraw()');
+ const reducedCards=[...w.document.querySelectorAll('#sit-decide [data-change-notice]')];
+ ok('persistent notices remain readable with reduced motion',reducedCards.length>=4 && reducedCards.every(n=>!n.hidden && w.getComputedStyle(n).display!=='none'));
+ w.eval('Shell.setOpt')("motion",reduced);
+ const body=base.world.foreign[0], threshold=E.newGame(base,3);
+ const follow={...event,choices:[{label:'Apply changes',result:'Changes recorded.',effects:[
+   {move:{['actor.'+actor.id]:-100}},{flag:{['annexed_'+body.id]:true}}]}]};
+ const followC={...c,events:[follow],eventById:{[follow.id]:follow}};
+ threshold.flags._introRead=true;threshold.flags._act1=true;threshold.flags.sandbox=true;
+ w.eval('UI.boot')(threshold,followC);w.eval('UI.openTab("sit")');w.eval('UI.sandboxShow')(follow.id);
+ $('#sit-decide [data-expand]').click();$('#sit-decide .commit').click();
+ const thresholdSave=E.save(threshold), lost=$('#sit-decide [data-open="actor:'+actor.id+'"]');if(lost)lost.click();
+ const lostRecord=$('#s-cham [data-notice-actor="'+actor.id+'"]');
+ ok('actor losing lobbying eligibility still has a visible current record',!!lostRecord && lostRecord.textContent.includes(actor.name) && lostRecord.querySelector('.n')?.textContent==='0');
+ ok('ineligible actor record remains observational',!!lostRecord && E.save(threshold)===thresholdSave);
+ w.eval('UI.openTab("sit")');
+ const bodyCard=$('#sit-decide [data-open="body:'+body.id+'"]');if(bodyCard)bodyCard.click();
+ ok('world-body notice selects its map detail',!!bodyCard && w.eval('World.selectedBody()')===body.id && $('#s-world').classList.contains('on'));
+ const operator=base.actors.find(a=>a.id===body.operator || a.name===body.operator);
+ ok('world-body operator links use the actor identity',!!operator && !!$('#w-side [data-go="actor_'+operator.id+'"]') && !$('#w-side [data-go="actor_'+body.operator+'"]'));
+ const fresh=E.newGame(c,2);fresh.flags._introRead=true;fresh.flags._act1=true;fresh.flags.sandbox=true;
+ w.eval('UI.boot')(fresh,c);
+ ok('a new government clears previous decision notice cards',!$('#sit-decide [data-change-notice]'));
+ w.eval('UI.boot')(original,base);
+}
+if(process.env.NOTICE_UI_ONLY)H.finish('notice interface is healthy');
 /* Economy placement must retain its live controls and avoid duplicated
    lender terms. Moving calls back under account, separating production,
    or repeating a rate in a call must fail independently. */

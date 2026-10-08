@@ -206,7 +206,7 @@ const UI = (function () {
     Focus.seed("gov-work", typeof govPref.work === "string" ? govPref.work : null);
     Focus.seed("gov-utilities", null);
     $("#gov-si").classList.remove("gov-mobile-list");
-    currentEvent = null; lastResult = null;
+    currentEvent = null; lastResult = null; lastChanges = null; lastNotices = [];
     /* Shell re-boots on every load, and both of these are EDGE triggers
        against the previous state. Carrying them across a load would fire
        a cadence for a session the player never sat through, or swallow
@@ -2614,7 +2614,7 @@ const UI = (function () {
       const asOf = !lag ? "as it happens"
         : rep.lastHeard <= 0 ? "as of the opening"
         : "as of sitting " + rep.lastHeard;
-      return `<div class="fgn">` +
+      return `<div class="fgn" data-notice-actor="${esc(a.id)}">` +
         `<div class="fgn-h"><b>${cxlink("actor_" + a.id, a.name)}</b><span class="sm2">${esc(a.kind)}</span>` +
         `<span class="fgn-lag"${lag ? ` data-tip-title="A foreign fact is never current"` +
           ` data-tip-body="This is what the ${esc(a.name)} reported, and it took ` +
@@ -4497,7 +4497,7 @@ const UI = (function () {
       const cur = plan[a.id] || 0;
       if (!cap.max && !cur) return;
       const live = (st.actors || {})[a.id] || {};
-      rows += `<tr><td>${esc(a.name)} <span class="sm2">${esc(a.kind)}</span></td>` +
+      rows += `<tr data-notice-actor="${esc(a.id)}"><td>${esc(a.name)} <span class="sm2">${esc(a.kind)}</span></td>` +
         `<td class="n">${live.standing}</td>` +
         `<td class="n">${cur} / ${cap.max}</td>` +
         `<td class="mv"><div class="whipbar" data-lb="${a.id}"` +
@@ -5151,6 +5151,7 @@ const UI = (function () {
   let openRow = { event: null, i: -1 };
   /* the measured diff of the last decision, held for the outcome block */
   let lastChanges = null;
+  let lastNotices = [];
 
   /* ---------- what moved somewhere else ----------
 
@@ -5704,7 +5705,7 @@ const UI = (function () {
      that never goes out teaches a player to stop reading it.
      --------------------------------------------------------------- */
   const TABNAME = { sit: "Sitting", gov: "Government", cham: "Chamber", econ: "Economy",
-                    party: "Party", rel: "Relations", orb: "Orbit" };
+                    party: "Party", rel: "Relations", orb: "Orbit", world: "Foreign Affairs" };
   const WHENWORD = { overdue: "overdue", now: "today", soon: "soon" };
 
   /* A ROW THAT NAMES A THING AS WELL AS A SCREEN. An undertaking is kept by
@@ -5758,6 +5759,40 @@ const UI = (function () {
     } else if (kind === "initiative") {
       setGovWorkKey("initiative:" + id);
       drawAll();
+    } else if (kind === "station" && typeof Focus !== "undefined") {
+      Focus.activate("orbit-table", id);
+    } else if (kind === "current" && typeof Focus !== "undefined") {
+      Focus.activate("party-currents", id);
+    } else if (kind === "ledger" && typeof Focus !== "undefined") {
+      Focus.activate("rel-table", id);
+    } else if (kind === "ownparty") {
+      drawParty();
+    } else if (kind === "register" || kind === "presidency" || kind === "tribunal") {
+      setGovWorkKey(null); Focus.activate("gov-utilities", kind === "register" ? "gov-register" :
+        kind === "tribunal" ? "gov-tribunal" : "gov-presidency");
+    } else if (kind === "actor" && btn.dataset.goto === "cham") {
+      const bill = (C.bills || []).find(b => Engine.lobbyable(st,C,b.id,id).max ||
+        ((st.lobby || {})[b.id] || {})[id]);
+      if (bill) Focus.activate("cham-bills",bill.id);
+      else {
+        // A body that refuses the call still has a current standing.
+        // Show the record alone, with no lever or invented eligibility.
+        const actor=(C.actors || []).find(a=>a.id===id), live=(st.actors || {})[id];
+        if(actor && live) $("#cham-pick").insertAdjacentHTML("beforeend",
+          `<table class="whiptab"><thead><tr><th>Body</th><th class="n">Standing</th></tr></thead>`+
+          `<tbody><tr data-notice-actor="${esc(id)}"><td>${esc(actor.name)} `+
+          `<span class="sm2">${esc(actor.kind)}</span></td><td class="n">${esc(live.standing)}</td></tr></tbody></table>`);
+      }
+    } else if (kind === "body" && typeof World !== "undefined") {
+      if(World.selectedBody() !== id) World.selectBody(id);
+      drawWorld();
+    } else if (kind === "resolution" && typeof Focus !== "undefined") {
+      Focus.activate("ga-agenda",id);
+    } else if (kind === "promise") {
+      setGovWorkKey(null); Focus.seed("gov-utilities", "gov-undertakings"); drawAll();
+      const panel = $("#gov-undertakings");
+      if (panel) { panel.tabIndex = -1; panel.focus({preventScroll:true});
+        if (panel.scrollIntoView) panel.scrollIntoView({block:"nearest"}); }
     } else if (kind === "bill" && typeof Focus !== "undefined") {
       Focus.activate("cham-bills", id);
     } else if (kind === "party" && typeof Focus !== "undefined") {
@@ -5811,6 +5846,23 @@ const UI = (function () {
           tempo.focus({preventScroll:true});
           if (tempo.scrollIntoView) tempo.scrollIntoView({block:"nearest"});
         }
+      }
+    }
+    if (btn.hasAttribute && btn.hasAttribute("data-change-notice") && !governmentTarget) {
+      /* A retired item can be absent from its active list. Keep its current
+         record panel in view; never execute a control as a routing shortcut. */
+      const targets = {economy:"#econ-bank",history:"#econ-chart",price:"#econ-bases",
+        figure:"#gov-meters",time:"#cham-time",composition:"#comp-table",confidence:"#cham-house",
+        leadership:"#party-lead",forecast:"#party-country",calendar:"#sit-cal",business:"#sit-today",
+        actor:btn.dataset.goto === "cham" ? "#cham-pick" : "#w-actors",forum:"#ga-agenda",
+        opposition:"#rel-opposition",coalition:"#rel-table",stations:"#orbit-table",body:"#w-side",
+        moneycontrols:"#econ-calls",chambercontrols:id === "forecast" ? "#cham-forecast" :
+          id === "whip" ? "#cham-whip" : "#cham-bills"};
+      const selector = kind === "actor" ? '#s-'+btn.dataset.goto+' [data-notice-actor="' + id + '"]' : targets[kind];
+      const target = selector && ($(selector) || $(targets[kind]));
+      if (target) {
+        target.tabIndex = -1; target.focus({preventScroll:true});
+        if (target.scrollIntoView) target.scrollIntoView({block:"nearest"});
       }
     }
   }
@@ -6826,11 +6878,11 @@ const UI = (function () {
     const b = Engine.foreignBody(C, id);
     if (!b) return `<div class="note">No such body.</div>`;
     const home = Engine.isAnnexed(st, C, id);
-    const a = (C.actors || []).find(x => x.id === b.operator);
-    const live = (st.actors || {})[b.operator] || {};
+    const a = (C.actors || []).find(x => x.id === b.operator || x.name === b.operator);
+    const live = (st.actors || {})[a ? a.id : b.operator] || {};
     return `<div class="w-c-h"><b>${esc(b.name)}</b><span class="w-c-iso">${home ? "annexed" : "outside"}</span></div>` +
       `<div class="note">${cxlink("body_" + b.id, "Concordance")} &middot; ` +
-        `operated by ${cxlink("actor_" + (b.operator || ""), a ? a.name : b.operator)}</div>` +
+        `operated by ${a ? cxlink("actor_" + a.id,a.name) : esc(b.operator || "")}</div>` +
       (b.note ? `<div class="note">${esc(b.note)}</div>` : "") +
       `<div class="ostats">` +
         `<span><b>${(b.population || 0).toLocaleString()}</b><i>population</i></span>` +
@@ -7373,6 +7425,10 @@ const UI = (function () {
                     <td class="n d">${m.delta > 0 ? "+" : ""}${m.delta}</td></tr>`
                ).join("")}</tbody></table></div>`
           : `<div class="note">No figure on the board changed this sitting.</div>`) +
+        (lastNotices.filter(n => !n.numeric).length ?
+          `<div class="ch-sec decision-changes" aria-label="Changed items">${lastNotices.filter(n => !n.numeric).map(n =>
+            `<button class="btn change-notice" data-change-notice="${esc(n.kind)}" data-goto="${esc(n.tab)}" data-open="${esc(n.open)}"><strong>${esc(TABNAME[n.tab] || n.tab)}</strong><span>${esc(n.summary)}</span></button>`
+          ).join("")}</div>` : "") +
         `<div class="btnrow">` +
         /* AN EVENT DOES NOT END THE SITTING (design/49): what it opened on
            is still to come, so the way on is the next page or the decision,
@@ -7387,6 +7443,11 @@ const UI = (function () {
         `</div>`;
       const adv = $("#btn-advance"); if (adv) adv.addEventListener("click", rise);
       const cont = $("#btn-continue"); if (cont) cont.addEventListener("click", carryOn);
+      foot.querySelectorAll("[data-change-notice]").forEach(btn => btn.addEventListener("click", () => openTarget(btn)));
+      const noticeBeat = "notices:" + st.sitting + ":" + e.id + ":" + st.seen[e.id];
+      if (!shown[noticeBeat] && typeof Motion !== "undefined" && Motion.revealCards) {
+        shown[noticeBeat] = true; Motion.revealCards(foot.querySelector(".decision-changes"));
+      }
       return;
     }
 
@@ -7435,8 +7496,10 @@ const UI = (function () {
     foot.querySelectorAll(".commit").forEach(b => b.addEventListener("click", () => {
       const i = +b.dataset.i, ch = e.choices[i];
       const owes = [].concat(ch.effects || []).some(x => x.undertake);
-      const before = Engine.snapshot(st), beforeStruct = structure(st);
-      lastResult = Engine.choose(st, C, e, i) || "Noted.";
+      const before = Engine.snapshot(st);
+      const outcome = Engine.chooseWithNotices(st,C,e,i);
+      lastResult = outcome.result || "Noted.";
+      lastNotices = outcome.notices;
       lastChanges = Engine.changes(before, Engine.snapshot(st), C);
       /* THE FIGURE, AND THE HOURGLASS. Both scale with what was done:
          an undertaking hangs unresolved and takes longer to file. */
@@ -7448,7 +7511,8 @@ const UI = (function () {
       setStatus(e.title + ": " + lastResult.replace(/\s+/g, " ").slice(0, 120), "transient");
       saved();
       drawAll(); afterAction();
-      reportMoves(beforeStruct, structure(st));
+      /* The complete decision collection is in its outcome; lever actions
+         retain their transient notices. Do not announce the decision twice. */
       revealNode($("#sitting-outcome"), e);
     }));
   }
@@ -7474,7 +7538,7 @@ const UI = (function () {
 
   function rise() {
     Engine.advance(st, C); currentEvent = null; lastResult = null;
-    lastChanges = null;
+    lastChanges = null; lastNotices = [];
     openRow = { event: null, i: -1 };
     setStatus("The House rises · sitting " + st.sitting, "transient");
     if (typeof Wait !== "undefined") Wait.brief(200);
@@ -7491,7 +7555,7 @@ const UI = (function () {
   /* ON FROM AN EVENT TO WHATEVER IS NEXT THE SAME SITTING: another page,
      or the decision. The sitting does not advance. */
   function carryOn() {
-    currentEvent = null; lastResult = null; lastChanges = null;
+    currentEvent = null; lastResult = null; lastChanges = null; lastNotices = [];
     openRow = { event: null, i: -1 };
     cue("click");
     drawAll(); saved(); afterAction(); arrive(); reveal();
@@ -8814,7 +8878,7 @@ const UI = (function () {
     currentEvent = id ? C.eventById[id] || null : null;
     sbxShown = retry ? currentEvent : null;
     if (!retry) sbxStack.pop();
-    lastResult = null; lastChanges = null; openRow = { event: null, i: -1 };
+    lastResult = null; lastChanges = null; lastNotices = []; openRow = { event: null, i: -1 };
     /* the same edges boot() clears, since this is a different state */
     fallen = false; ended = null;
   }
@@ -8827,7 +8891,7 @@ const UI = (function () {
     sbxPush("before “" + e.title + "”", id);
     st.flags._introRead = true;
     currentEvent = e; sbxShown = e; sbxFrame = null;
-    lastResult = null; lastChanges = null; openRow = { event: e.id, i: -1 };
+    lastResult = null; lastChanges = null; lastNotices = []; openRow = { event: e.id, i: -1 };
     if (typeof Focus !== "undefined") Focus.seed("sbx-events", id);
     openTab("sit");
     setStatus("Sandbox: showing “" + e.title + "”", "transient");

@@ -312,7 +312,14 @@ const Motion = (function () {
       !!document.querySelector(".dissolve, .movecard");
   }
 
-  return { dissolve: dissolve, notify: notify, dismiss: dismiss, reduced: reduced, busy: busy,
+  function revealCards(container) {
+    if (!container || reduced()) return;
+    container.querySelectorAll("[data-change-notice]").forEach(card => {
+      card.style.animation = "chip-in 180ms ease-out";
+    });
+  }
+
+  return { dissolve: dissolve, notify: notify, dismiss: dismiss, reduced: reduced, busy: busy, revealCards,
            __plan: plan, __order: order };
 })();
 

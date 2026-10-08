@@ -5060,7 +5060,8 @@ const Engine = (function () {
   };
 
   function apply(st, C, effects) {
-    if (!effects) return;
+    if (!effects) return [];
+    const before = C ? noticeSnapshot(st,C) : null;
     [].concat(effects).forEach(eff => {
       Object.keys(eff).forEach(k => {
         if (!EFFECTS[k]) throw new Error("unknown effect: " + k);
@@ -5070,6 +5071,7 @@ const Engine = (function () {
     /* The campaign's last beat ends it, and the count is taken then. */
     if (C && st.dissolved && !counted(st) && st.flags && st.flags.campaign_done) count(st, C);
     if (C) syncMatters(st, C);
+    return before ? noticeChanges(before,noticeSnapshot(st,C),C) : [];
   }
 
   /* One writer for advice, including identity reconciliation. The save
@@ -6051,6 +6053,177 @@ const Engine = (function () {
      tells, arrived at from the other side.
 
      So the outcome is a DIFF of two snapshots taken around the act. */
+  /* Transient evidence, not save state. Content supplies identities and
+     titles; these routes are simulation namespaces, never campaign ids. */
+  const NOTICE_ROUTES = {
+    bills:["cham","bill","bills"], clauses:["cham","clause","bills"],
+    cabinet:["gov","post","cabinet"], instruments:["gov","si","instruments"],
+    undertakings:["gov","promise",null], parties:["rel","party","parties"],
+    currents:["party","current","currents"], stations:["orb","station","stations"],
+    characters:["party","person","characters"], actors:["world","actor","actors"],
+    foreign:["world","actor","actors"], worldBodies:["world","body",null], forums:["world","forum","forums"],
+    resolutions:["world","resolution","resolutions"], capital:["rel","ledger","parties"],
+    debts:["econ","money",null], debt:["econ","economy",null], whips:["cham","bill","bills"],
+    pairs:["cham","bill","bills"], lobby:["cham","bill","bills"],
+    scalars:["sit","figure",null], prices:["econ","price",null],
+    standing:["party","forecast",null], macro:["econ","economy",null],
+    economy:["econ","economy",null], law:["cham","law",null],
+    coalition:["rel","coalition",null], confidenceSupply:["rel","coalition",null],
+    withdrawn:["rel","coalition",null], stoodAside:["rel","coalition",null],
+    slots:["cham","time",null], signatures:["party","leadership",null],
+    signedBy:["party","leadership",null], refusedBy:["party","leadership",null],
+    ballot:["party","leadership",null], president:["gov","presidency",null],
+    signedMinutes:["gov","register",null], matters:["sit","matter","matters"],
+    queue:["sit","calendar",null], motion:["cham","confidence",null],
+    roll:["cham","composition",null], functional:["cham","composition",null],
+    polls:["party","forecast",null], flags:["sit","business",null], availability:["sit","business",null],
+    trends:["econ","economy",null], grievances:["orb","stations",null],
+    grantsToday:["cham","time",null], divisionsToday:["cham","division",null],
+    pm:["gov","cabinet",null], playerParty:["party","leadership",null],
+    inGovernment:["cham","confidence",null], dissolved:["sit","ending",null],
+    resolvedAs:["sit","ending",null], settledAs:["sit","ending",null],
+    interval:["sit","calendar",null], risesAt:["sit","calendar",null],
+    sitting:["sit","calendar",null], session:["sit","calendar",null],
+    period:["sit","calendar",null], date:["sit","calendar",null],
+    priceHistory:["econ","history",null], economyHistory:["econ","history",null],
+    solvencyHistory:["econ","history",null], boards:["cham","composition",null],
+    closureIndex:["orb","stations",null], lastElection:["cham","composition",null],
+    electionsHeld:["sit","calendar",null], lastResignation:["gov","cabinet",null],
+    noConfidence:["cham","confidence",null], pairsKept:["cham","composition",null],
+    pendingCeremony:["gov","presidency",null], resolvedAt:["sit","ending",null],
+    slotsGranted:["cham","time",null], supplyLost:["rel","coalition",null]
+  };
+  const NOTICE_HIDDEN = new Set(["version","seed","admin","campaign","chapter","since","cxRead",
+    "seen","lastFired","wire","log","actedThisSitting","idleSittings","parliamentOpenedAt","intervalCourse",
+    "standingCarry","accountCarry","rolled","rolledToday","pooled","waited","rollReseeded","functionalReseeded"]);
+  const NOTICE_KEYED = new Set(["bills","clauses","cabinet","instruments","undertakings","parties",
+    "currents","stations","characters","actors","foreign","forums","resolutions","capital","debts",
+    "whips","pairs","lobby","scalars","prices","matters","worldBodies"]);
+
+  function noticeSnapshot(st,C) {
+    const out = {};
+    Object.keys(st).forEach(k => { if (!NOTICE_HIDDEN.has(k)) out[k] = st[k]; });
+    out.undertakings = Object.fromEntries((st.undertakings || []).map(u => [u.id,u]));
+    /* Story flags are private bookkeeping. Only direct interface flags
+       and the controls they actually open belong in the displayed projection. */
+    out.flags = Object.fromEntries(Object.entries(st.flags || {}).filter(([k]) =>
+      k === "paper_opened" || k === "pair_offered" || k === "station_issue" || k.startsWith("init_")));
+    out.actors = Object.fromEntries(Object.entries(st.actors || {}).map(([id,actor]) =>
+      [id,Object.assign({},actor,{standing:reportedActor(st,id).standing})]));
+    out.foreign = Object.fromEntries(Object.keys(st.foreign || {}).map(id => [id,reportedActor(st,id)]));
+    out.availability = {
+      locks:Object.fromEntries(Object.keys(C.setup.locks || {}).map(k => [k,!!lockOf(st,C,k)])),
+      reveals:Object.fromEntries(Object.keys(C.setup.reveals || {}).map(k => [k,revealed(st,C,k)]))
+    };
+    out.controls = {};
+    out.worldBodies = Object.fromEntries((((C.world || {}).foreign) || []).map(body =>
+      [body.id,{annexed:!!(st.flags || {})["annexed_"+body.id]}]));
+    (C.resolutions || []).forEach(r => {
+      out.controls["resolution:"+r.id] = {ready:canTable(st,C,r.id).ok};
+    });
+    (C.instruments || []).forEach(si => {
+      const visible = ((!si.author || (st.cabinet[si.author] || {}).holder) &&
+        matches(st,si.when)) || !!(st.instruments[si.id] || {}).made;
+      out.controls["si:" + si.id] = visible ? {visible:true,make:canMake(st,C,si.id).ok,
+        approve:canApprove(st,C,si.id).ok} : {visible:false};
+    });
+    (C.initiatives || []).forEach(i => {
+      const visible = !(st.flags || {})["init_"+i.id] && matches(st,i.when) &&
+        (!i.post || !!(st.cabinet[i.post] || {}).holder);
+      const left = st.slots.total-st.slots.used, cost = i.cost == null ? 1 : i.cost;
+      out.controls["initiative:"+i.id] = visible ? {visible:true,ready:cost<=left,
+        tempo:(i.tempo || []).map(t => cost+(t.cost || 0)<=left && matches(st,t.when))} : {visible:false};
+    });
+    return JSON.parse(JSON.stringify(out));
+  }
+  function noticeChanges(a,b,C) {
+    const leaves = (x,path,out) => {
+      if (x && typeof x === "object") {
+        Object.keys(x).forEach(k => leaves(x[k],path + "/" + k.replace(/~/g,"~0").replace(/\//g,"~1"),out));
+      } else out[path] = JSON.stringify(x);
+      return out;
+    };
+    const from = leaves(a,"",{}), to = leaves(b,"",{}), grouped = new Map();
+    new Set(Object.keys(from).concat(Object.keys(to))).forEach(path => {
+      if (from[path] === to[path]) return;
+      const parts = path.slice(1).split("/").map(k => k.replace(/~1/g,"/").replace(/~0/g,"~"));
+      const root = parts[0], control = root === "controls" && parts[1].split(":");
+      const available = root === "availability" && parts[2];
+      const clauseBill = available && available.startsWith("clause:") &&
+        (C.bills || []).find(b=>clausesOf(C,b.id).some(cl=>cl.id===available.slice(7)));
+      const route = control ? [control[0] === "resolution" ? "world" : "gov",control[0],
+        control[0] === "si" ? "instruments" : control[0] === "resolution" ? "resolutions" : "initiatives"]
+        : available ? clauseBill ? ["cham","bill","bills"] : available === "money" ? ["econ","moneycontrols",null]
+          : ["cham","chambercontrols",null]
+        : NOTICE_ROUTES[root] || ["sit","business",null];
+      const id = control ? control.slice(1).join(":") : available ? clauseBill ? clauseBill.id : available
+        : NOTICE_KEYED.has(root) ? parts[1] || root : root;
+      const key = route[1] + "/" + id;
+      if (!grouped.has(key)) {
+        const entry = root === "worldBodies" ? (((C.world || {}).foreign) || []).find(x=>x.id===id)
+          : route[2] && (C[route[2]] || []).find(x => x.id === id);
+        const promise = root === "undertakings" && ((b.undertakings || {})[id] || (a.undertakings || {})[id]);
+        const labels = {macro:"Reserve Bank",economy:"What is made",debt:"The account",flags:"Government business",
+          availability:"Available controls",queue:"The calendar",law:"The law",slots:"Order-paper time",
+          president:"Presidency",signedMinutes:"Register",coalition:"Coalition",confidenceSupply:"Confidence and supply"};
+        const label = entry ? entry.title || entry.name || id : promise ? promise.text || id : labels[id] || String(id).replace(/_/g," ");
+        const kind = route[1], openKind = kind === "clause" ? "bill" : kind;
+        grouped.set(key,{kind,tab:route[0],id,summary:label + ": updated.",
+          open:openKind + ":" + id,fields:[],numeric:true});
+        if (root === "parties" && id === b.playerParty) {
+          grouped.get(key).tab = "party"; grouped.get(key).open = "ownparty:" + id;
+        }
+        if (root === "characters") {
+          const n = grouped.get(key), post = Object.keys(b.cabinet || {}).find(p => b.cabinet[p].holder === id);
+          const person = entry, leader = (C.parties || []).find(p => p.leader === id);
+          if (post) { n.tab="gov"; n.open="post:"+post; }
+          else if (person && person.party === b.playerParty && person.current) {
+            n.tab="party"; n.open="current:"+person.current;
+          } else if (leader && leader.id !== b.playerParty) { n.tab="rel"; n.open="party:"+leader.id; }
+          else if (id === (C.setup.president || {}).id) { n.tab="gov"; n.open="presidency:"+id; }
+          else if (person && person.party !== b.playerParty) { n.tab="rel"; n.open="opposition:"+id; }
+          else { n.tab="party"; n.open="leadership:"+id; }
+        }
+        if (root === "actors" && entry && !entry.foreign) {
+          const n=grouped.get(key);
+          n.tab=entry.kind === "court" ? "gov" : "cham";
+          n.open=(entry.kind === "court" ? "tribunal:" : "actor:")+id;
+        }
+      }
+      const n = grouped.get(key);
+      n.fields.push(path);
+      const numeric = root === "scalars" || root === "prices" || root === "capital" || root === "signatures" ||
+        ((root === "parties" || root === "currents") && parts[2] === "loyalty");
+      n.numeric = n.numeric && numeric;
+    });
+    return Array.from(grouped.values()).map(n => {
+      const label = n.summary.slice(0,-10);
+      if (n.kind === "bill" && (b.bills || {})[n.id])
+        n.summary = label + ": " + String(b.bills[n.id].stage).replace(/_/g," ") + ".";
+      else if (n.kind === "post") {
+        const holder = ((b.cabinet || {})[n.id] || {}).holder;
+        const person = (C.characters || []).find(x => x.id === holder);
+        n.summary = label + ": " + (person ? person.name : "Vacant") + ".";
+      } else if (n.kind === "promise") {
+        const u = (b.undertakings || {})[n.id];
+        n.summary = label + ": " + (u ? u.state : "removed") + ".";
+      } else if (n.kind === "clause") {
+        const names = clausesOf(C,n.id);
+        const ids = [...new Set(n.fields.map(p => p.split("/")[3]))].filter(Boolean);
+        n.summary = label + ": " + ids.map(id => {
+          const cl = names.find(x => x.id === id), value = ((b.clauses || {})[n.id] || {})[id];
+          const level = cl && (cl.levels || []).find(x => x.id === value);
+          return (cl ? cl.name || cl.label || cl.id : id) + " — " + (level ? level.label || level.name || level.id : value);
+        }).join("; ") + ".";
+      }
+      return n;
+    });
+  }
+  function chooseWithNotices(st,C,event,index) {
+    const before = noticeSnapshot(st,C), result = choose(st,C,event,index);
+    return {result,notices:noticeChanges(before,noticeSnapshot(st,C),C)};
+  }
+
   function snapshot(st) {
     const snap = { scalars: {}, prices: {}, loyalty: {}, capital: {},
                    signatures: st.signatures || 0,
@@ -9403,6 +9576,7 @@ const Engine = (function () {
   return {
     STATE_VERSION, newGame, migrate, save, load, noteSince, since, chapters, reportedActor, receipts, believed,
     readout, campaignMarkers, matters, noteMatter, acknowledge,
+    noticeSnapshot, noticeChanges, chooseWithNotices,
     confidence, majority, chamberTotal, popularTotal, functionalTotal,
     partyPopular, partyFunctional, partyTotal, currentSeats,
     division, reported, ballot, benchRoll, resolveDue, pairable, setPairs, clearPairs, benches, matches, apply, eligible, nextEvent, choose, advance, interval, tick, checkLoss, checkSettlement,

@@ -8,7 +8,7 @@ Flash I is built to the end of Act I (sittings 1 to 16, the rise, `a1_works_aban
 build is `npm run itch` (`dist/ways-and-means-itch.zip`, one `index.html`, about 4 MB). The author will upload it to itch.io
 and send testers a Discord link; there is no network call anywhere and no server.
 
-`npm run check` has **eighteen** checks. E10 now runs bounded parallel readers; on the author's Windows checkout the
+`npm run check` has **nineteen** checks, including E9's independent notice coverage. E10 runs bounded parallel readers; on the author's Windows checkout the
 unchanged baseline took 524.40 seconds and the final passing run took 349.27 seconds. Run it in the
 background and wait for it; never edit a source file while it runs, because the DOM checks read files late. **Break a check's
 subject and watch it fail before you trust it** (`AGENTS.md`); this session found a vacuous assertion that way
@@ -56,9 +56,18 @@ assertions were removed and no player-facing wording was added.
 1. **Make `npm run check` fast (E10): done.** The eighteen checks remain; runner contracts are tested before the
    engine test within the existing `test` job. DOM lookups use live ID indexing and panel-scoped descendants,
    with document lookup retained for grouped selectors and siblings. No check was removed or split away.
-2. **E9, change notices.** Effects return `{kind, tab, id, summary}`; the Sitting tab shows each as a card; a check
-   snapshots state before and after each decision on sampled paths and fails on any change to a displayed field with no
-   notice. It is the largest machine check still missing from the exit gate (`briefs/act-one.md`, item 5).
+2. **E9, change notices: implemented.** `apply` returns actual final-state notices; `chooseWithNotices` includes
+   decision costs and settlement while preserving `choose`'s string result and save shape. Numerical changes stay
+   in What moved, as approved; uncapped structural cards open the current item. The independent gate checks
+   1,480 legal answer branches across eight seeds and five strategies, including control gates and map changes,
+   and rejects missing fields or wrong destinations. Eighteen original mutations were caught; stripping real
+   clause, appointment and settlement notices failed on precise paths, as did an unreported second-answer change.
+   Review fixes cover role-based relationship routes, domestic actors below lobbying eligibility, map designation,
+   resolution availability and unlock targets. Empty effects still update advice clocks. The complete nineteen
+   checks passed in 280.29 seconds; real Edge layout passed, with three font-stack warnings. Fifteen reduced-motion
+   cards were inspected at 1920x1000 and 1366x768. The 80-seed before/after reports are byte-identical.
+   Plain new wording for Claude's register pass: Changed items; updated; removed; final bill stages, post holders
+   and undertaking states in item summaries; clause names and final levels. No Act I prose or content changed.
 3. **E4, guarded writers: implemented.** OpenCode's `87b40e2` guards filled Cabinet posts and backward bill
    stages. Codex's follow-up closes the off-ladder exceptions: ended bills cannot reopen, enacted bills
    cannot become defeated/withdrawn/fallen, unknown stages are refused, and blocked bills advance from
