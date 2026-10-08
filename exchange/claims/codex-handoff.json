@@ -1,0 +1,19 @@
+{
+  "brief": "codex-handoff",
+  "lane": "codex",
+  "since": "2026-10-08",
+  "files": [
+    "js/text.js",
+    "js/engine.js",
+    "js/ui.js",
+    "js/tips.js",
+    "index.html",
+    "editor.html",
+    "tools/lint.js",
+    "tools/setuptexttest.js",
+    "tools/check.js",
+    "package.json",
+    "design/83-setup-text-plan.md"
+  ],
+  "note": ""
+}
