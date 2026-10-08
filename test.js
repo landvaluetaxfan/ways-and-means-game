@@ -3185,7 +3185,7 @@ console.log("\nBORROWING FROM THE PEOPLE YOU ARE QUARRELLING WITH:");
        ec_borrow_case moves the debt itself, so its draw is gated by hand on
        the facility's two full stops; sampled here, so the gate and the
        limits cannot drift apart. */
-    const bc = (ALL.events || []).find(e => e.id === "ec_borrow_case");
+    const bc = (CONTENT.events || []).find(e => e.id === "ec_borrow_case");
     if (bc) {
       const drawC = bc.choices[0];
       const agree = [[30, 30000], [84, 30000], [86, 30000], [95, 30000], [30, 9000], [30, 10000],
@@ -4942,6 +4942,7 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
     const named = (CONTENT.parties || []).map(p => p.id)
       .concat((CONTENT.stations || []).map(x => x.id))
       .concat((ALL.events || []).map(e => e.id))
+      .concat((CONTENT.events || []).map(e => e.id))
       .filter(id => new RegExp('"' + id + '"').test(src));
     ok("the engine names no party, station or event", named.length === 0,
        named.join(", "));

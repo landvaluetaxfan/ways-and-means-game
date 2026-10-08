@@ -7,6 +7,12 @@ const fs=require("fs"), vm=require("vm"), path=require("path"), root=path.join(_
 const src=require("./loadcontent.js").source();
 vm.runInThisContext(src+"\n;globalThis.__A={SETUP,PARTIES,CURRENTS,STATIONS,CHARACTERS,BILLS,EVENTS,GLOSSARY,ENCYCLOPEDIA,CONSTITUENCIES,SETTLEMENTS,INITIATIVES,MATTERS,ACHIEVEMENTS,ADMINISTRATIONS,CABINET,INSTRUMENTS,FORUMS,RESOLUTIONS};");
 const A=globalThis.__A;
+const fixtureMode = process.argv.includes("--fixture");
+if (fixtureMode) {
+  const C = require("./fixtures/index.js").build(require("./loadcontent.js").loadContent(),"engine");
+  for (const k of Object.keys(A)) A[k] = C[k.toLowerCase()];
+}
+const divisionBill = fixtureMode ? "divergence" : "appropriation";
 const Serialise=require("../js/serialise.js");
 const Engine=require("../js/engine.js");
 
@@ -27,7 +33,7 @@ function play(C,n){
     Engine.advance(s);
   }
   return {trace:out.join("|"), scalars:JSON.stringify(s.scalars),
-          div:JSON.stringify(Engine.division(s,C,"divergence"))};
+          div:JSON.stringify(Engine.division(s,C,divisionBill))};
 }
 
 const before=play(mkContent(A),40);
@@ -94,3 +100,5 @@ eq("division identical", before.div, after.div);
                    JSON.stringify(A[k]), JSON.stringify(B[k])));
 console.log("");
 console.log(fail?fail+" FAILURES — the editor would corrupt content":"round-trip is lossless");
+if (fail) process.exitCode=1;
+else if (!fixtureMode) require("node:child_process").execFileSync(process.execPath,[__filename,"--fixture"],{stdio:"inherit"});

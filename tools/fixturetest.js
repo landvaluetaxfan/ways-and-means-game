@@ -54,6 +54,28 @@ function run() {
     if (added) live.events.splice(live.events.indexOf(event),1);
   }
   console.log("fixture profiles: ordered rules, independent setup and fresh copies pass");
+  runArchive();
+}
+function runArchive() {
+  const A = require("./archiveworld.js"), crypto = require("crypto");
+  const root = path.join(__dirname,"..");
+  const original = require("./fixtures/archive-contracts.js");
+  const manifest = require("../content/archive/world/manifest.js");
+  assert.deepEqual(manifest,original.filter(x=>!x.shared).map(({shared,...x})=>x),
+                   "archive manifest keeps original identities, order and hashes");
+  A.verify(root);
+  const live = A.inventory(root);
+  for (const spec of A.KINDS) {
+    const expected = original.filter(x=>x.kind===spec.kind&&x.shared);
+    const actual = live.filter(x=>x.kind===spec.kind);
+    assert.deepEqual(actual.map(x=>x.id),expected.map(x=>x.id),
+                     spec.kind+" shared survivors retain original order");
+    for (let i=0;i<actual.length;i++) assert.equal(
+      crypto.createHash("sha256").update(actual[i].raw).digest("hex"),expected[i].sha256,
+      spec.kind+"/"+actual[i].id+" shared source remains byte exact");
+  }
+  require("./archiveworldtest.js").run();
+  console.log("archive boundary: original chunks, shared entries and writer contracts pass");
 }
 function runHarness() {
   const H = require("./harness.js"), F = require("./fixtures/index.js");
@@ -83,5 +105,6 @@ function runHarnessPair() {
     process.stdout.write(out);
   }
 }
-module.exports = {run,runHarness,runHarnessPair};
-if (require.main === module) process.argv.includes("--harness") ? runHarness() : run();
+module.exports = {run,runArchive,runHarness,runHarnessPair};
+if (require.main === module) process.argv.includes("--harness") ? runHarness()
+  : process.argv.includes("--archive") ? runArchive() : run();

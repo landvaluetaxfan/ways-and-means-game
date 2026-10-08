@@ -43,7 +43,11 @@ const archiveName = kind => "WORLD_ARCHIVE_" + kind.toUpperCase();
 /* The campaign tags of an object element, as strings, or null if untagged.
    An unsupported tag expression is an explicit error, never a guess. */
 function tagsOf(el) {
-  const p = el.properties.find(x => x.type === "Property" && park.keyName(x) === "campaign");
+  if (el.properties.some(x=>x.type !== "Property" || x.computed && x.key.type !== "Literal"))
+    throw new Error("archiveworld: unsupported campaign tag source");
+  const tags = el.properties.filter(x => x.type === "Property" && park.keyName(x) === "campaign");
+  if (tags.length > 1) throw new Error("archiveworld: duplicate campaign tags");
+  const p = tags[0];
   if (!p) return null;
   const v = p.value;
   if (v.type === "Literal" && typeof v.value === "string") return [v.value];
@@ -96,6 +100,13 @@ function dry(root) {
 function write(root) {
   const records = inventory(root);
   const cands = records.filter(r => !r.shared);
+  const dir = path.join(root, ARCHIVE_DIR);
+  if (!cands.length) {
+    if (fs.existsSync(path.join(dir,"manifest.js"))) verify(root);
+    return 0;
+  }
+  if (fs.existsSync(dir) && fs.readdirSync(dir).length)
+    throw new Error("archiveworld: existing archive; refusing to overwrite it");
   const seen = new Set();
   cands.forEach(r => { const key = r.kind + ":" + r.id; if (r.id && seen.has(key)) throw new Error("archiveworld: duplicate " + key); seen.add(key); });
 
@@ -103,16 +114,19 @@ function write(root) {
   const byKind = {};
   cands.forEach(r => { (byKind[r.kind] = byKind[r.kind] || []).push(r); });
 
-  /* The source files, edited last range first so earlier ranges stay valid. */
+  /* Prepare source edits, but keep every source byte until archive outputs
+     have been written and read back successfully. A partial archive is safe
+     to inspect and recover; a cut source without its archive is not. */
   const byFile = {};
   cands.forEach(r => { (byFile[r.file] = byFile[r.file] || []).push(r); });
+  const edits = {};
   Object.keys(byFile).forEach(file => {
     const abs = path.join(root, file);
     let src = fs.readFileSync(abs, "utf8");
     byFile[file].slice().sort((a, b) => b.start - a.start).forEach(r => {
       src = src.slice(0, r.start) + src.slice(r.end);
     });
-    fs.writeFileSync(abs, src);
+    edits[file] = src;
   });
 
   fs.mkdirSync(path.join(root, ARCHIVE_DIR), { recursive: true });
@@ -128,7 +142,10 @@ function write(root) {
     const body = rs.map(r => r.raw).join("");
     const text = head + "const " + archiveName(kind) + " = [" + body + "];\n" +
       'if (typeof module !== "undefined") module.exports = ' + archiveName(kind) + ";\n";
-    fs.writeFileSync(path.join(root, ARCHIVE_DIR, kind + ".js"), text);
+    fs.writeFileSync(path.join(dir, kind + ".js"), text, {flag:"wx"});
+    const readback = archivedChunks(root,kind);
+    if (readback.length !== rs.length || readback.some((raw,i)=>raw!==rs[i].raw))
+      throw new Error("archiveworld: archive readback differs from source: "+kind);
     rs.forEach(r => manifest.push({ file: r.file, kind: r.kind, id: r.id, ordinal: r.ordinal, sha256: sha(r.raw) }));
     console.log("  " + ARCHIVE_DIR + "/" + kind + ".js: " + rs.length + " entries");
   });
@@ -139,8 +156,12 @@ function write(root) {
     "   --verify checks the archive against this. Do not edit. */\n";
   const mtext = mhead + "const WORLD_ARCHIVE_MANIFEST = " + JSON.stringify(manifest, null, 2) + ";\n" +
     'if (typeof module !== "undefined") module.exports = WORLD_ARCHIVE_MANIFEST;\n';
-  fs.writeFileSync(path.join(root, ARCHIVE_DIR, "manifest.js"), mtext);
+  fs.writeFileSync(path.join(dir, "manifest.js"), mtext, {flag:"wx"});
+  if (fs.readFileSync(path.join(dir,"manifest.js"),"utf8") !== mtext)
+    throw new Error("archiveworld: manifest readback differs");
   console.log("  " + ARCHIVE_DIR + "/manifest.js: " + manifest.length + " records");
+  Object.entries(edits).forEach(([file,src])=>fs.writeFileSync(path.join(root,file),src));
+  return manifest.length;
 }
 
 /* Read one archive array's raw chunks, exactly as written. */
@@ -154,31 +175,36 @@ function archivedChunks(root, kind) {
 
 function verify(root) {
   const mfile = path.join(root, ARCHIVE_DIR, "manifest.js");
-  if (!fs.existsSync(mfile)) { console.log("  FAIL no archive manifest"); process.exit(1); }
-  const manifest = require(mfile);
-  let bad = 0;
+  if (!fs.existsSync(mfile)) throw new Error("archiveworld: no archive manifest");
+  const ctx = {};
+  require("node:vm").runInNewContext(fs.readFileSync(mfile,"utf8")+"\n;globalThis.rows=WORLD_ARCHIVE_MANIFEST",ctx);
+  const manifest = ctx.rows, problems = [];
   const byKind = {};
   manifest.forEach(m => { (byKind[m.kind] = byKind[m.kind] || []).push(m); });
   Object.keys(byKind).forEach(kind => {
     const chunks = archivedChunks(root, kind);
     const ms = byKind[kind];
-    if (chunks.length !== ms.length) { console.log("  FAIL " + kind + ": " + ms.length + " in manifest, " + chunks.length + " archived"); bad++; }
+    if (chunks.length !== ms.length) problems.push(kind+": archive entry count changed");
     ms.forEach((m, i) => {
       if (chunks[i] == null) return;
-      if (sha(chunks[i]) !== m.sha256) { console.log("  FAIL " + kind + "/" + m.id + " archived bytes changed"); bad++; }
+      if (sha(chunks[i]) !== m.sha256) problems.push(kind+"/"+m.id+" archived bytes changed");
     });
   });
   const left = inventory(root).filter(r => !r.shared);
-  if (left.length) { console.log("  FAIL " + left.length + " world-only entries still in the source"); bad++; }
-  console.log(bad ? "  " + bad + " problems" : "  archive matches the manifest and no world-only entry is left in the source");
-  process.exit(bad ? 1 : 0);
+  if (left.length) problems.push(left.length+" world-only entries still in the source");
+  if (problems.length) throw new Error("archiveworld: "+problems.join("; "));
+  console.log("  archive matches the manifest and no world-only entry is left in the source");
+  return true;
 }
 
-const args = process.argv.slice(2);
-const root = path.join(__dirname, "..");
-if (args.includes("--dry")) dry(root);
-else if (args.includes("--write")) write(root);
-else if (args.includes("--verify")) verify(root);
-else console.log("usage: node tools/archiveworld.js --dry | --write | --verify");
+if (require.main === module) {
+  const args = process.argv.slice(2), root = path.join(__dirname,"..");
+  try {
+    if (args.includes("--dry")) dry(root);
+    else if (args.includes("--write")) write(root);
+    else if (args.includes("--verify")) verify(root);
+    else console.log("usage: node tools/archiveworld.js --dry | --write | --verify");
+  } catch(e) { console.error(e.message); process.exitCode=1; }
+}
 
-module.exports = { inventory, tagsOf, isShared, KINDS, ARCHIVE_DIR, archiveName };
+module.exports = { inventory, write, verify, archivedChunks, tagsOf, isShared, KINDS, ARCHIVE_DIR, archiveName };

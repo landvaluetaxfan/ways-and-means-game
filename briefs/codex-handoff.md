@@ -93,6 +93,24 @@ assertions were removed and no player-facing wording was added.
     `design/85-engine-fixture-plan.md`. Task 1 adds independent engine/interface profiles, ordered-rule
     contracts and fresh-copy checks. Existing consumers and source story remain unchanged in this batch.
     Twenty checks passed in 297.50 seconds; fixture mutations cover ordering, gates, setup and isolation.
+    **8 October continuation:** Task 2 is committed in `05125b4`; its full suite passed 20/20 in
+    314.13 seconds. Task 3's source/archive move is checkpointed in `e98602a`, explicitly unfinished.
+    All 246 archived chunks and four shared survivors match their pre-move source bytes. Consumer
+    repairs and archival safety tests are in progress; Task 4 has not started.
+
+    **Questions exposed by archival (author decision needed):**
+
+    - May `led_on_competence`, `led_on_continuity` and `led_on_break` be explicitly reserved for
+      later-act readers? Their only previous readers were in retired world story. Keep the flag
+      audit strict for everything else, and reject a reservation once its live reader exists.
+    - May the default setup's `onPartnerWithdraws` and `onPartnerStandsAside` hooks be removed?
+      They name archived pages. The independent fixtures keep their original hook values.
+    - The consequence-chain audit currently reports six breaks: substrate has gates but no
+      counted mover; thermal, transit, volume, party loyalty and public standing have movers
+      but no counted gate. Retired story formerly supplied the missing sides. Bible §7.9 is
+      LOCKED and explicitly requires price consequences to reach an event. Should the slice
+      gain those readers, or should its acceptance rule be deliberately revised? Do not count
+      archived or fixture story as live readers, or silently exempt these rows.
 6. **The tutorial's "Promises" card** and any step the author marks after playing.
 7. **E1's signed-off form**: a campaign `play.curtain` frame (`design/80`).
 8. **E11, full-page superevents**, only if the author still wants it after playing the build.

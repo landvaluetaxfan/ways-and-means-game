@@ -124,10 +124,14 @@ ordered.forEach((e, i) => {
   used.forEach(t => taught.add(t));
 });
 
+/* Glossary metadata may identify a preserved historical introducing page.
+   This validates provenance only: archives never join live teaching order. */
+const historicalEvents = new Set(require("../content/archive/world/manifest.js")
+  .filter(x => x.kind === "events").map(x => x.id));
 GLOSSARY.forEach(g => {
   if (g.assumed) return;
   if (g.introduced === null) return;
-  if (!EVENTS.some(e => e.id === g.introduced))
+  if (!EVENTS.some(e => e.id === g.introduced) && !historicalEvents.has(g.introduced))
     problems.orphan.push(g.term + " → introduced by \"" + g.introduced + "\", which does not exist");
 });
 GLOSSARY.filter(g => !g.assumed && g.introduced === null).forEach(g =>

@@ -2826,7 +2826,7 @@ try {
   console.log("\nAWARDS READ THE RUN");
   const meets = (when, facts) => w.eval("Shell.meets(" + JSON.stringify(when) + ", " +
     JSON.stringify(Object.assign({ flags: {}, log: [] }, facts)) + ")");
-  const byId = id => JSON.parse(w.eval("JSON.stringify(ACHIEVEMENTS.find(a => a.id === " +
+  const byId = id => JSON.parse(w.eval("JSON.stringify(CONTENT.achievements.find(a => a.id === " +
     JSON.stringify(id) + "))"));
   const kept = byId("act_carveout_kept").when, broke = byId("act_carveout_broken").when;
   ok("a promise kept earns the kept award", meets(kept, { promises: { licensure_carveout: "kept" } }));

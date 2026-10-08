@@ -1033,6 +1033,9 @@ const Editor = (function () {
       <label class="ed-w">Cluster ${txt_("cluster", g.cluster || "", "copies, cold, heat…", 160)}
         <span class="ed-hint">${clusters.join(" · ")}</span></label>
       <label>Introduced <select class="ed-f" data-f="introduced"><option value="">— none —</option>${
+        g.introduced && !M.events.some(e => e.id === g.introduced)
+          ? `<option value="${esc(g.introduced)}" selected>${esc(g.introduced)}</option>` : ""
+      }${
         M.events.map(e => `<option value="${e.id}"${g.introduced === e.id ? " selected" : ""}>${esc(e.title)}</option>`).join("")
       }</select></label>
       <label class="ed-chk"><input type="checkbox" class="ed-f" data-f="assumed" ${g.assumed ? "checked" : ""}> assumed (needs no teaching)</label>

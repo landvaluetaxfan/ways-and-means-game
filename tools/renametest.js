@@ -7,6 +7,8 @@ const fs=require("fs"), vm=require("vm"), path=require("path"), root=path.join(_
 /* the content files index.html loads, in its order (tools/loadcontent.js) */
 const LC=require("./loadcontent.js"); const src=LC.source(LC.modelFiles);
 const indexSrc=fs.readFileSync(path.join(root,"content","index.js"),"utf8");
+const fixtureMode = process.argv.includes("--fixture");
+const divisionBill = fixtureMode ? "divergence" : "appropriation";
 
 /* THE WHOLE MODEL, AND THE WHOLE GAME. This loaded eleven collections and
    played them through a hand-built content object with no instruments,
@@ -25,7 +27,7 @@ const GLOBALS={setup:"SETUP",parties:"PARTIES",currents:"CURRENTS",stations:"STA
 function loadModel(){
   const c={}; vm.runInNewContext(src+";__={"+Object.values(GLOBALS).join(",")+"};",c);
   const M={}; Object.keys(GLOBALS).forEach(k=>M[k]=c.__[GLOBALS[k]]);
-  return M;
+  return fixtureMode ? require("./fixtures/index.js").build(content(M),"engine") : M;
 }
 const r={}; vm.runInNewContext(fs.readFileSync(path.join(root,"js/refs.js"),"utf8")+";__R=Refs;",r);
 const Refs=r.__R, Engine=require("../js/engine.js");
@@ -58,7 +60,7 @@ function play(M,n){
   return { trace: out.join("|"), res, mem,
            scalars: JSON.stringify(s.scalars),
            capital: caps,
-           div: JSON.stringify(Engine.division(s,C,M.__bill||"divergence").popular),
+           div: JSON.stringify(Engine.division(s,C,M.__bill||divisionBill).popular),
            loy: M.parties.map(p=>(M.__party&&M.__party[p.id]||p.id)+":"+s.parties[p.id].loyalty).sort().join(",") };
 }
 
@@ -85,7 +87,7 @@ KINDS.forEach(([kind,tag])=>{
 });
 /* map renamed ids back for comparison */
 B.__map=map.event; B.__cap=map.party; B.__party=map.party; B.__res=map.resolution; B.__mem=map.member;
-B.__bill=Object.keys(map.bill).find(k=>map.bill[k]==="divergence");
+B.__bill=Object.keys(map.bill).find(k=>map.bill[k]===divisionBill);
 
 const after=play(B,40);
 
@@ -154,4 +156,5 @@ else console.log("  ok   and no old id survives anywhere in the model");
 
 console.log("");
 console.log(fail?fail+" FAILURES — renaming would corrupt content":"renaming is behaviour-preserving");
+if (!fail && !fixtureMode) require("node:child_process").execFileSync(process.execPath,[__filename,"--fixture"],{stdio:"inherit"});
 process.exit(fail?1:0);
