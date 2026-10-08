@@ -698,7 +698,7 @@ try {
   ok("the Opposition shows every authored shadow department and an empty moves list",
      shadow.length > 0 && rows.length === shadow.length &&
      rows.every(r => shadow.some(c => c.id === r.dataset.person && c.shadow === r.dataset.shadow)) &&
-     panel.querySelector("[data-opposition-moves]").textContent.trim() === "Nothing yet.");
+     panel.querySelector("[data-opposition-moves]").textContent.trim() === "The Opposition's questions, motions and votes are listed here as they happen.");
   const roles = shadow.map(c => c.role);
   try {
     shadow.forEach(c => c.role = "Reworded role"); w.eval("UI.redraw()");
