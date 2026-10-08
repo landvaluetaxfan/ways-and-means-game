@@ -38,7 +38,7 @@ function all() {
 /* THE WORLD'S VIEW: what a campaign with no story of its own would play.
    `forCampaign` takes an administration, and this one names no campaign
    any entry is tagged for, so it sees the world and nothing else. */
-function world() { return all().forCampaign({ id: "world" }); }
+function world() { return require("./fixtures/index.js").build(all(), "engine"); }
 
 /* One campaign's view, by the id of the administration that opens it. A
    name that is not one is an error, not the whole of content. */

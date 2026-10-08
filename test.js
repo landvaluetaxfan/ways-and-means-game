@@ -8,6 +8,7 @@ const fs = require("fs"), vm = require("vm");
    content, for the tests of the view itself. */
 const T = require("./tools/testkit.js");
 require("./tools/fixturetest.js").run();
+require("./tools/fixturetest.js").runHarnessPair();
 const ALL = T.all();
 const CONTENT = T.world();
 const Engine = require("./js/engine.js");
@@ -5056,11 +5057,11 @@ console.log("\nTHE SETTLEMENTS (3.5.1):");
          !((T.clauses.appropriation || {}).works));
       ok("and the refusal is logged rather than silent", T.log.some(l => /clause was not set.*short by/.test(l.text)));
       ok("the Owed list says where a clause promise is kept, and a slot promise",
-         Engine.undertakingWhere(CONTENT, { discharge: cut }).how === "Set the consumables floor to trimmed" &&
+          Engine.undertakingWhere(CONTENT, { discharge: cut }).how === "Set fixture bills appropriation bills/appropriation/clauses/1/name to trimmed" &&
          Engine.undertakingWhere(CONTENT, { discharge: cut }).tab === "cham" &&
          /^Give the .* a slot$/.test(Engine.undertakingWhere(CONTENT, { discharge: { slot: "appropriation" } }).how));
       ok("the effects panel names the clause and the level",
-         Engine.describe(S, CONTENT, [cut])[0].text === "Sets the consumables floor to trimmed");
+          Engine.describe(S, CONTENT, [cut])[0].text === "Sets fixture bills appropriation bills/appropriation/clauses/1/name to trimmed");
     }
 
     /* A SCENE CAN COMMIT THE WHIPS (brief E13), through setWhip, and the plan is paid at the division */
@@ -5458,7 +5459,7 @@ console.log("\nTHE OPENING SURVIVES GOOD PLAY:");
     const u = Engine.outstanding(st).find(x => x.id === "probe_si");
     const w = Engine.undertakingWhere(CONTENT, u);
     ok("an undertaking names the screen that keeps it",
-       w.tab === "gov" && /Life Support Engineering/.test(w.how), w.tab + " - " + w.how);
+        w.tab === "gov" && w.how === "Make SI 2080/44 — Fixture instruments si_2080_44 instruments/si_2080_44/title", w.tab + " - " + w.how);
     const dl = Engine.deadlines(st, CONTENT).find(d => d.kind === "owed" && d.text === "Lay the order");
     ok("and its calendar item carries the same place",
        dl && dl.tab === "gov" && !!dl.how, dl ? dl.tab + " - " + dl.how : "no item");

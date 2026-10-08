@@ -1212,7 +1212,7 @@ try {
   if (slot) slot.click();
   const st9 = w.eval("UI.state()");
   ok("a settlement landing mid-session is recorded", st9.settledAs === "restriction", st9.settledAs);
-  ok("in the register", st9.log.some(l => /The question is settled: The Restriction Settlement/.test(l.text)));
+  ok("in the register", st9.log.some(l => /The question is settled: Fixture settlements restriction settlements\/restriction\/name/.test(l.text)));
   ok("and it opens no dialog", !w.eval("window.__alerts").some(t => /Settlement/.test(t)),
      w.eval("window.__alerts").join(" / "));
   /* put the run back as it was: the checks below read its calendar */
@@ -1253,8 +1253,8 @@ try {
   const setl = w.eval("(function(){ var s = UI.state(); s.settledAs = 'restriction'; UI.redraw();" +
     " var p = document.querySelector('#sitting-body .sp-page'); return p ? p.textContent : ''; })()");
   ok("and the settlement's own closing words, which no dialog read out earlier",
-     /What the session settled: The Restriction Settlement/.test(setl) &&
-     /one hundred and sixty-eight hours/.test(setl), setl.slice(setl.indexOf("settled"), setl.indexOf("settled") + 80));
+      /What the session settled: Fixture settlements restriction settlements\/restriction\/name/.test(setl) &&
+      /Fixture settlements restriction settlements\/restriction\/closing/.test(setl), setl.slice(setl.indexOf("settled"), setl.indexOf("settled") + 80));
   ok("and it offers no decision, because there is nothing left to decide",
      w.document.querySelectorAll("#sitting-body button[data-choice]").length === 0);
 } catch (e) { ok("the last page", false, e.message); }
@@ -2161,7 +2161,7 @@ try {
    Engine.matches the events use. */
 try {
   const openIt = () => { w.eval('Concordance.render(UI.state(), UI.content(), "commonwealth", true)');
-                         return H.$("#cx-article"); };
+                          return H.$("#cx-article"); };
   const stt = w.eval("UI.state()");
   const was = !!stt.flags.almanac_annexed;
   delete stt.flags.almanac_annexed;
@@ -2284,8 +2284,11 @@ try {
 /* THE BILL LIFECYCLE TRACK. An assented act must show the road it took, not
    just its end state — and the terminal branch must be drawn off the end of
    the track rather than as a position on it. */
+let lifecycleTitle;
 try {
   const stt = w.eval("UI.state()");
+  lifecycleTitle = w.eval("CONTENT.billById.anchor_kepler.title");
+  w.eval("CONTENT.billById.anchor_kepler.title = 'Test Ratification Bill'");
   stt.bills.anchor_kepler.stage = "assented";
   stt.bills.anchor_kepler.assentedAt = 3;
   /* Switching tabs only toggles visibility; the register is drawn in drawAll,
@@ -2294,7 +2297,7 @@ try {
   H.$('.tab[data-t="gov"]').click();
 
    const rows = [...w.document.querySelectorAll("#pp-list tbody tr")];
-  const act = rows.find(r => /Ratification Act/.test(r.textContent));
+  const act = rows.find(r => /Test Ratification Act/.test(r.textContent));
   ok("the assented act is in the register", !!act, rows.length + " register rows");
   if (act) {
     act.click();
@@ -2407,6 +2410,10 @@ try {
      !doc || !/&[a-z]+;/i.test(doc.textContent),
      (doc && (doc.textContent.match(/&[a-z]+;/i) || [""])[0]) || "clean");
 } catch (e) { ok("bill lifecycle track", false, e.message); }
+finally {
+  if (lifecycleTitle !== undefined)
+    w.eval("CONTENT.billById.anchor_kepler.title = " + JSON.stringify(lifecycleTitle));
+}
 
 /* options panel */
 try {
@@ -2614,7 +2621,7 @@ try {
   if (cxl) {
     cxl.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
     const art = $("#cx-article").textContent;
-    ok("which reads as a reference work", /Measures concerning the Almanac Works is a resolution put to the General Assembly by the European Union's twenty-seven, and is to be voted on/.test(art) &&
+    ok("which reads as a reference work", /Fixture resolutions un_eu_measures resolutions\/un_eu_measures\/title is a resolution put to the General Assembly by the European Union's twenty-seven, and is to be voted on/.test(art) &&
        !/undefined|NaN/.test(art), art.slice(0, 160));
     w.eval("(function(){var s=UI.state(), K=UI.content(), c=Engine.forumCount(s, K, 'un_eu_measures');" +
            "s.resolutions.un_eu_measures.status='adopted'; s.resolutions.un_eu_measures.decided={date:'2080-06-11'," +

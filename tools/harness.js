@@ -169,22 +169,14 @@ function newGame() {
    id and no campaign of its own. Act I's own opening is asserted where it
    belongs, in the campaign's guards and the playtest. HARNESS_REAL=1 leaves
    the fixture out, so a script can play the real Flash I through the page. */
-if (!process.env.HARNESS_REAL) w.eval(`(function () {
-  ["events", "bills", "instruments", "initiatives", "matters", "settlements",
-   "achievements", "resolutions"].forEach(function (k) {
-    (CONTENT[k] || []).forEach(function (x) {
-      if (x && x.campaign === "parked") x.campaign = "world";
-    });
+if (!process.env.HARNESS_REAL) {
+  ["engine-data.js", "interface-data.js", "index.js"].forEach(file => {
+    const script = w.document.createElement("script");
+    script.textContent = fs.readFileSync(path.join(root,"tools","fixtures",file),"utf8");
+    w.document.body.appendChild(script);
   });
-  /* the old Flash I's own sandbox shortcuts are not story kinds, and are tagged for it */
-  (CONTENT.sandbox || []).forEach(function (x) {
-    if (x && x.campaign === "flash_i") x.campaign = "world";
-  });
-  var fl = (CONTENT.administrations || []).find(function (a) { return a.id === "flash_i"; });
-  /* without Act I's opening, which sets its treaty at committee and locks its first order, and without its curtain or its lever locks (the checks use every lever at once) */
-  if (fl) CONTENT.administrations.unshift(Object.assign({}, fl, { id: "harness", campaign: "world", opening: [],
-    setup: Object.assign({}, fl.setup, { actEnd: undefined, locks: undefined, reveals: undefined }) }));
-})()`);
+  w.eval(`Object.assign(CONTENT, EngineFixture.build(CONTENT, "interface"));`);
+}
 
 /* `const CONTENT` inside a script is a lexical global, not a window
    property, so it has to be read through eval rather than off w. */

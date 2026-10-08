@@ -962,7 +962,7 @@ const Concordance = (function () {
   function build() {
     roll = null;
     /* an article, or a person, the world does not know of yet is not there */
-    const hand = ENCYCLOPEDIA.articles.filter(a => !a.since || sinceOf(a.since) != null)
+    const hand = (C.encyclopedia || ENCYCLOPEDIA).articles.filter(a => !a.since || sinceOf(a.since) != null)
       .map(a => Object.assign({ generated: false, appeared: sinceOf(a.since) }, a));
     const handIds = new Set(hand.map(a => a.id));
     const gen = [];

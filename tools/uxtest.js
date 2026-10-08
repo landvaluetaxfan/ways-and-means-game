@@ -2399,7 +2399,7 @@ try {
        the order paper names; picking a bill IS naming it to the House. */
     ok("choosing a measure colours the House for it, with no second picker",
        w.document.querySelectorAll("#cham-pick [data-cb]").length <= 1 &&
-       /Thermal Quota/.test(w.document.querySelector("#cham-pick").textContent),
+        /Fixture bills thermal2 bills\/thermal2\/title/.test(w.document.querySelector("#cham-pick").textContent),
        w.document.querySelector("#cham-pick").textContent.trim().slice(0, 60));
     ok("and the seats say how the benches are expected to go",
        w.document.querySelectorAll("#chamber .sg.no").length > 0);
