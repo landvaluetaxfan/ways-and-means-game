@@ -7,6 +7,7 @@ const fs = require("fs"), vm = require("vm");
    rewrites its guards and leaves these standing. ALL is every campaign's
    content, for the tests of the view itself. */
 const T = require("./tools/testkit.js");
+require("./tools/fixturetest.js").run();
 const ALL = T.all();
 const CONTENT = T.world();
 const Engine = require("./js/engine.js");

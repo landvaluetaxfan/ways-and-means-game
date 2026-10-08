@@ -89,8 +89,10 @@ assertions were removed and no player-facing wording was added.
    totals remain outside setup-only E5. Plan and scope rulings: `design/83-setup-text-plan.md`.
 5. **A fixture of the engine's own for `test.js`**, so the world's untagged story can be archived and dropped from the
     shipping page by data and not by `tools/storystrip.js`. Brief `act-one.md`, "How old text leaves the build", rule 3.
-    **Design drafted, 8 October:** `design/84-engine-fixture.md`. The author approved the approach; the written
-    design is awaiting review. No fixture or archival implementation has started.
+    **In progress, 8 October:** the author approved `design/84-engine-fixture.md` and native execution of
+    `design/85-engine-fixture-plan.md`. Task 1 adds independent engine/interface profiles, ordered-rule
+    contracts and fresh-copy checks. Existing consumers and source story remain unchanged in this batch.
+    Twenty checks passed in 297.50 seconds; fixture mutations cover ordering, gates, setup and isolation.
 6. **The tutorial's "Promises" card** and any step the author marks after playing.
 7. **E1's signed-off form**: a campaign `play.curtain` frame (`design/80`).
 8. **E11, full-page superevents**, only if the author still wants it after playing the build.
