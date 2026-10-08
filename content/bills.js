@@ -139,7 +139,7 @@ const BILLS = [
         levels:[
           { id:"cut",  label:"Reduced", cost:0, note:`The appropriation is reduced and the means test stands. Residents who fail the test and cannot pay are suspended, and the reserve saves the cost of their cover. Voters mark the government down, and so do members of your own party.`,
             effects:[{ move:{ public_standing:-11, "loyalty.cu":-6 } }] },
-          { id:"hold", label:"Held", cost:18000, note:`The appropriation is held, and no resident is suspended this session for a debt they cannot pay.`, effects:[] },
+          { id:"hold", label:"Held", cost:18000, note:`The appropriation is held and the means test stands. Residents who fail the test and cannot pay stay suspended, as they are now.`, effects:[] },
           { id:"wide", label:"Widened", cost:32000, note:`The appropriation is widened and the means test is set aside. Cover extends to people without attestation, and the substrate providers are expected to raise rents to take account of the guarantee. Voters approve and the New Progressive Party welcomes it. The Freehold Party objects.`,
             effects:[{ move:{ public_standing:6, "loyalty.psa":7, "loyalty.fh":-5 } }] }
         ] },

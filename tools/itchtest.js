@@ -163,6 +163,9 @@ async function boot(label, how) {
   /* ---- 5. Act I from the menu to the curtain ---- */
   w.eval("Shell.boot(CONTENT)");
   q('[data-go="new"]').click(); q("[data-admin]").click(); q('[data-new="1"]').click();
+  /* WHAT THE PLAYER READS: the Sitting's own panel. document.body.textContent also holds every inline script of the
+     page, which contains each of these sentences as source and made the assertions pass whatever was drawn. */
+  const shown = () => ((w.document.querySelector("#sitting-body") || {}).textContent || "").replace(/\s+/g, " ");
   let curtain = false, steps = 0;
   for (let guard = 0; guard < 400 && !curtain; guard++) {
     const body = q("#sitting-body");
@@ -170,7 +173,7 @@ async function boot(label, how) {
     const go = body.querySelector("[data-sp-go]") || body.querySelector("#btn-pass");
     const heads = [...body.querySelectorAll(".ch-head")];
     const adv = q("#btn-advance");
-    if (/This is the end of the act/.test(w.document.body.textContent)) { curtain = true; break; }
+    if (/This is the end of the first act/.test(shown())) { curtain = true; break; }
     if (go) { go.click(); steps++; continue; }
     if (heads.length) { heads[0].click(); const c = body.querySelector(".btn.commit"); if (c) c.click(); steps++; continue; }
     if (adv) {
@@ -183,8 +186,8 @@ async function boot(label, how) {
     break;
   }
   ok("Act I plays from the menu to the curtain through the packaged page", curtain, "stopped at sitting " + w.eval("UI.state().sitting") + " after " + steps + " steps");
-  ok("the curtain page is dated the day the House rose, in words", /Treasury and Reserve Bank, 8 May 2080/.test(w.document.body.textContent));
-  ok("the curtain page thanks the player and points to the report", /Thank you for playing/.test(w.document.body.textContent) && /Copy playtest report/.test(w.document.body.textContent));
+  ok("the curtain page is dated the day the House rose, in words", /Treasury and Reserve Bank, 8 May 2080/.test(shown()), (shown().match(/Treasury and Reserve Bank[^A-Z]{0,30}/) || ["none"])[0]);
+  ok("the curtain page thanks the player and points to the report", /Thank you for playing/.test(shown()) && /Copy playtest report/.test(shown()));
   ok("served: the console is clean after the whole act", s.errs.length === 0, s.errs.slice(0, 2).join(" | "));
   w.close(); srv.close();
 

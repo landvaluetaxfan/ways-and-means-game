@@ -559,7 +559,7 @@ You set the level in the Chamber. What you tell her now decides what she expects
     { posture:"bold",
       label:`Promise Mandelina Trottier that substrate insurance will be widened to CW$32bn, and hold the thermal quota tight to pay for it.`,
       act:"Promise it and pay",
-      note:`You tell Trottier the means test goes, and you set the thermal quota to held tight now, which takes CW$14bn out of the estimates against last session's level. You keep the promise by setting the cover to widened in the Chamber within five sittings. If the reserve cannot meet it even then, another clause has to give. Less quota is released, so the thermal price rises when the Act passes and the Association of Engineers and Systems will object. Trottier's party is pleased, and sees that the money has been found. If you do not set the level in time, the party will record the promise as broken.`,
+      note:`You tell Trottier the means test goes, and you set the thermal quota to held tight now, which takes CW$14bn out of the estimates against last session's level. You keep the promise by setting the cover to widened in the Chamber within five sittings. If the reserve cannot meet it even then, another clause has to give. Less quota is released, so the thermal price rises when the Act passes and the engineers who run the radiators will object. Trottier's party is pleased, and sees that the money has been found. If you do not set the level in time, the party will record the promise as broken.`,
       effects:[{ clause:{ bill:"appropriation", clause:"thermal", level:"tight" } },
                { undertake:{ id:"a1_cover_widen_paid", text:"Widen substrate insurance to CW$32bn",
                  owed_to:"trottier", by:5,
@@ -828,7 +828,7 @@ The engineering authority switched off the station's lowest band while the array
 
 "The Prime Minister told one of her ministers that something would be done, and it was not," he says. "Will she tell the House which promise it was, and why?"
 
-The government's undertakings, the promises it has made and has not yet kept, are on a list that any member can read. Watkins has read it.`,
+The government's promises that are not yet kept are on the Owed list, which any member can read. Watkins has read it.`,
   choices:[
     { posture:"measured",
       label:`Answer in full: stay for the afternoon, name the promise, and say why it was not kept.`,
@@ -838,7 +838,7 @@ The government's undertakings, the promises it has made and has not yet kept, ar
       effects:[{ move:{ public_standing:3 } }, { move:{ party_loyalty:2 } }],
       result:`You name the promise and the reason, and the House sits late.` },
     { posture:"cautious",
-      label:`Tell the House that the government's undertakings are public, and that members may read them.`,
+      label:`Tell the House that the government's promises are on the Owed list, and that members may read them.`,
       act:"Refer him",
       note:`It costs nothing today. The list is public, and the answer is true, but it does not say which promise he asked about or why. The Spindle, the Commonwealth's newspaper of record, counts the questions the government passes to a list, and the minister who was promised something will hear that you did not name it.`,
       effects:[{ move:{ public_standing:-3 } }, { move:{ party_loyalty:-2 } }],

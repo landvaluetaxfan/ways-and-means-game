@@ -18,7 +18,7 @@ campaign("flash_i", { business: [
   { id:"a1_q_closure", kind:"question",
     text:"Oral question, Home Rule: how the consumables floor reaches the stations with the lowest closure." },
   { id:"a1_q_lowest_band", kind:"question",
-    text:"Oral question, the Association of Engineers and Systems: whether an engineering authority must tell a minister before it switches off a station's lowest band." },
+    text:"Oral question: whether an engineering authority must tell a minister before it switches off a station's lowest band." },
   { id:"a1_q_means_test", kind:"question",
     text:"Written question, the New Progressive Party: how many residents the means test on substrate insurance has left suspended." },
   { id:"a1_q_clause", kind:"question",

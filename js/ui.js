@@ -3928,12 +3928,13 @@ const UI = (function () {
              the right on the same screen, where it doubles as the legend for
              the seat colouring. Two copies of one number is not emphasis. */
           `<div class="note" style="margin-top:5px">${
+            !Engine.revealed(st, C, "forecast") ? "" :
             rep.carries ? "<b>Carries</b> as the benches stand." :
             (b.dualMajority && rep.popular.carries && !rep.functional.carries
               ? "<b>Carries on the popular benches and fails on the functional.</b> The dual test applies: bills touching life-support integrity and charter amendments must carry separately among functional members."
               : "<b>Fails</b> as the benches stand.")}</div>` +
         `</div>` +
-        `<div class="billside">` + billWhoHTML(b) + `</div>` +
+        `<div class="billside">` + (Engine.revealed(st, C, "forecast") ? billWhoHTML(b) : "") + `</div>` +
       `</div>` +
       whipLine(id) +
       dayLine(id, dchk) +
@@ -7867,8 +7868,8 @@ const UI = (function () {
            that can never come true — worse than no number at all. A carried
            one keeps its figures: that is the division that actually
            happened and it is the record. */
-        `<td class="n">${dead ? "&mdash;" : d.popular.aye}</td>` +
-        `<td class="n">${dead || !b.dualMajority ? "&mdash;" : d.functional.aye}</td>` +
+        `<td class="n">${dead || !Engine.revealed(st, C, "forecast") ? "&mdash;" : d.popular.aye}</td>` +
+        `<td class="n">${dead || !b.dualMajority || !Engine.revealed(st, C, "forecast") ? "&mdash;" : d.functional.aye}</td>` +
         `<td><span class="flag ${b.dualMajority ? "bad" : ""}" data-tip="${b.dualMajority ? "dual" : "simple"}">` +
         `${b.dualMajority ? "DUAL" : "SIMPLE"}</span></td>` +
         `<td>${dead ? "" : `<button class="btn slotbtn" data-slot="${b.id}"${grantRefusal(b.id) ? " disabled" : ""}` +
