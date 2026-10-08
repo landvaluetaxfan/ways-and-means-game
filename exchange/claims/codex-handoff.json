@@ -37,7 +37,11 @@
     "tools/flagaudit.js",
     "tools/lint.js",
     "js/editor.js",
-    "tools/fixtures/archive-contracts.js"
+    "tools/fixtures/archive-contracts.js",
+    "content/setup.js",
+    "tools/consequence.js",
+    "tools/consequencetest.js",
+    "tools/flagaudittest.js"
   ],
   "note": ""
 }
