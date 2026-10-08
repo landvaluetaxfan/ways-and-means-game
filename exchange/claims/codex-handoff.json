@@ -1,0 +1,14 @@
+{
+  "brief": "codex-handoff",
+  "lane": "codex",
+  "since": "2026-10-08",
+  "files": [
+    "package.json",
+    "tools/check.js",
+    "tools/checktest.js",
+    "tools/uitest.js",
+    "tools/harness.js",
+    "briefs/codex-handoff.md"
+  ],
+  "note": "E10 only: parallel checks and DOM lookup cost"
+}
