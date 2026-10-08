@@ -1,0 +1,11 @@
+{
+  "brief": "itch-build",
+  "lane": "codex",
+  "since": "2026-10-08",
+  "files": [
+    "js/shell.js",
+    "tools/itchtest.js",
+    "briefs/itch-build.md"
+  ],
+  "note": ""
+}
