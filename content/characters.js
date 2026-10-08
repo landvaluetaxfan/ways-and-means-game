@@ -63,7 +63,7 @@
    the New Progressive Party, made checkable. */
 const CHARACTERS = [
   /* ---- the government ---- */
-  { id:"flash", pronouns:"she", name:"Rt. Hon. Adriana Flash MP", role:"Prime Minister",
+  { id:"flash", pronouns:"she", portrait:"flash.png",   name:"Rt. Hon. Adriana Flash MP", role:"Prime Minister",
     party:"cu", current:"cu_loyalists", category:"biological", seat:"First Spin", relationship:100, office:"pm",
     bio:"Adriana Flash came up to the Winter Garden in 2070 from a career in Earth banking with Alphabet-JPMorgan Omni. In 2071 she became the first Governor of the [[reserve_bank|Reserve Bank]], and in 2073 she floated the [[commonwealth_dollar|Commonwealth dollar]] at parity with the US dollar. She left the Bank in 2076 to become Treasurer, appointed from outside the House under the Charter's provision that a minister need not sit, the only time it has been used. In the spring of 2080 she won the leadership of the Party of Socialists and Democrats, and then First Spin at the by-election that followed.",
     note:"Liabilities, not buffs. Her record is the thing that can be dug up." },
@@ -143,7 +143,7 @@ const CHARACTERS = [
     shadow:"attestation_registry",
     party:"cl", current:"cl_social", category:"biological", seat:"Marlowe Green", relationship:27, office:"shadow",
     note:"Wants the boards depoliticised, which is a position with no constituents." },
-  { id:"watkins", name:"Darren Watkins Jr. MP", role:"Leader of the Opposition",
+  { id:"watkins", portrait:"watkins.png", name:"Darren Watkins Jr. MP", role:"Leader of the Opposition",
     party:"cl", current:"cl_classical", category:"biological", seat:"Anselm Proper", relationship:19, office:"opposition",
     note:"Leads the largest party outside the coalition. The government's alternative, and says so." },
   { id:"raj", name:"Chandrama Raj MP", role:"Shadow Minister for External Relations",
