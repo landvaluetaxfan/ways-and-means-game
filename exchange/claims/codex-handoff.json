@@ -1,21 +1,15 @@
 {
   "brief": "codex-handoff",
-  "lane": "codex",
+  "lane": "opencode",
   "since": "2026-10-08",
   "files": [
     "js/engine.js",
     "js/ui.js",
-    "js/motion.js",
-    "css/terminal.css",
     "test.js",
-    "tools/noticecheck.js",
-    "tools/uitest.js",
-    "tools/uxtest.js",
-    "tools/check.js",
-    "package.json",
+    "js/schema.js",
     "briefs/codex-handoff.md",
     "briefs/act-one.md",
     "design/82-change-notices-plan.md"
   ],
-  "note": ""
+  "note": "codex is out of usage; opencode continues its items (E4 now, E5/E9 later)"
 }
