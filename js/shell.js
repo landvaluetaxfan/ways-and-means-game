@@ -682,6 +682,9 @@ const Shell = (function () {
         <p>Art and imagery by Harper.</p>
         <p>Engine, editor and tooling built with Claude Code and
         DeepSeek V4.1 Flash.</p>
+        <p>Menu image: "Florida" by Ralph Hockens, from Wikimedia Commons, licensed
+        under Creative Commons Attribution 3.0 Unported
+        (creativecommons.org/licenses/by/3.0). Edited by Harper.</p>
         <p>Sound and music are generated in the browser as the game runs. The
         game uses no recorded music and no downloaded fonts.</p>
         <p>The outlines on the globe are from Natural Earth, which is in the
