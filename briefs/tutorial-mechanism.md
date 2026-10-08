@@ -3,9 +3,14 @@ the author's request; the spec is `design/77-the-tutorial-mechanism.md`. Read it
 
 # The tutorial mechanism
 
-**STATUS: not started. Do not start it before `briefs/ui-tabs.md` pass 1 has landed**: that pass
-sets the shared type-scale tokens the card must use, and it holds `index.html`, `js/ui.js` and
-`css/terminal.css`. Claim it as `tutorial-mechanism`, and list in the claim the files below.
+**STATUS: BUILT by Claude Code, 8 October 2026; do not rebuild it.** `js/tutorial.js`, `css/tutorial.css`, `tools/tutest.js`
+(the eighteenth check), a layout probe for the card in `tools/laycheck.js`, and eight Act I steps in
+`content/campaigns/flash_i/campaign.js` (`setup.tutorial`). It differs from the plan below in three ways, all deliberate:
+the taught record is in `Shell.opts.taught` (the player's, not the save's), so there was **no `STATE_VERSION` bump**; the
+steps live in the campaign's `setup`, not in a new content kind, so the schema and editor are untouched; and the card watches
+the shell with a MutationObserver, so `js/ui.js` has **no render hook**. The region registry is `Tutorial.REGIONS` in
+`js/tutorial.js`. What is left of this brief: the "Promises" card (`owed`, held until the Owed list has a stable region),
+and the author's read of the cards in the real browser. `briefs/codex-handoff.md` has the rest.
 
 ## What to build
 
