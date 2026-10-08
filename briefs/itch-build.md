@@ -4,6 +4,12 @@ does not yet have. Read that section first.
 
 # The itch.io build
 
+**Image race repair (Codex, 8 October):** OpenCode's independent browser QA
+found that the menu emblem and playbill images briefly request relative files
+before the build observer replaces their URLs. Resolve their asset URLs before
+inserting the markup. The package check must inspect insertion synchronously,
+including the enlarged playbill, so the observer cannot conceal a regression.
+
 **STATUS (7 October, Claude Code): built, items 1, 2, 4 (all but the feedback place), 5 and 6.** The claim was not
 taken: Codex has held nothing active since 5 October, so Claude wrote the tools and made three small hunks
 in files `ui-tabs` holds (`js/ui.js`: the curtain's thank-you section; `css/terminal.css`: `.menu-narrow`;

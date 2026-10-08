@@ -188,7 +188,7 @@ const Shell = (function () {
         running while you manage your party, your coalition, the House and the Earth
         states.</p>
       </div>
-      <img class="mf-gov" src="img/menu/gov.png"
+      <img class="mf-gov" src="${esc(assetUrl('img/menu/gov.png'))}"
         alt="Government of the Circumterrestrial Commonwealth">
     </div>`;
   }
@@ -196,11 +196,15 @@ const Shell = (function () {
   /* The plate. In the single-file build the image is a data URI in
      window.__ASSETS; on disk it is a relative path. Either way a missing
      image leaves the dark ground the CSS already sets. */
+  function assetUrl(path) {
+    return (typeof window !== "undefined" && window.__ASSETS && window.__ASSETS[path]) || path;
+  }
+
   function paintMenu() {
     const m = document.querySelector("#menu .menu-stage");
     if (!m) return;
     const path = "img/menu/tether.jpg";
-    const url = (typeof window !== "undefined" && window.__ASSETS && window.__ASSETS[path]) || path;
+    const url = assetUrl(path);
     m.style.backgroundImage = 'url("' + url + '")';
   }
 
@@ -436,7 +440,7 @@ const Shell = (function () {
     const rest = adminLabel(a).split(" \u2014 ").slice(1).join(" \u00b7 ");
     return `<div class="adm-card">` +
       `<button class="mbtn adm bill" data-admin="${esc(a.id)}">` +
-        `<img class="adm-bill" src="${esc(pl.playbill)}" alt="" onerror="this.remove()">` +
+        `<img class="adm-bill" src="${esc(assetUrl(pl.playbill))}" alt="" onerror="this.remove()">` +
         `<span class="adm-t"><b>${esc(pl.title || p.name || a.id)}</b>` +
         `<span>${esc(p.name || a.party)}</span><span>${esc(rest)}</span>` +
         `<i>Session ${session}</i></span></button>` +
@@ -458,7 +462,7 @@ const Shell = (function () {
     v.setAttribute("aria-modal", "true");
     v.setAttribute("aria-label", "The playbill for " + name);
     v.innerHTML = `<button class="mbtn sm bill-close" data-bill-close>Close</button>` +
-      `<img class="bill-img" src="${esc(pl.playbill)}" alt="The playbill for ${esc(name)}">`;
+      `<img class="bill-img" src="${esc(assetUrl(pl.playbill))}" alt="The playbill for ${esc(name)}">`;
     const close = () => {
       document.removeEventListener("keydown", key, true);
       v.remove();

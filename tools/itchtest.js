@@ -73,6 +73,20 @@ function open(how) {
   vc.on("error", (...a) => errs.push("console.error: " + a.join(" ")));
   vc.on("warn", (...a) => errs.push("console.warn: " + a.join(" ")));
   const opts = { runScripts: "dangerously", pretendToBeVisual: true, virtualConsole: vc, beforeParse(win) {
+    /* Observe the URL at insertion, before the build's MutationObserver can
+       repair it. A browser starts an image request during this interval. */
+    win.__bareImageSources = [];
+    const htmlSetter = Object.getOwnPropertyDescriptor(win.Element.prototype, "innerHTML");
+    Object.defineProperty(win.Element.prototype, "innerHTML", {
+      ...htmlSetter,
+      set(value) {
+        htmlSetter.set.call(this, value);
+        this.querySelectorAll("img[src]").forEach(img => {
+          const src = img.getAttribute("src");
+          if (win.__ASSETS && win.__ASSETS[src]) win.__bareImageSources.push(src);
+        });
+      }
+    });
     win.HTMLAnchorElement.prototype.click = function () {};
     win.HTMLCanvasElement.prototype.getContext = () => null;
     let s = 0x2080;
@@ -86,12 +100,23 @@ async function boot(label, how) {
   const { dom, errs } = await open(how), w = dom.window, q = x => w.document.querySelector(x);
   await tick(w, 20);
   ok(label + ": the menu is up", !!q('[data-go="new"]'));
+  ok(label + ": menu images have embedded URLs at insertion", w.__bareImageSources.length === 0,
+     w.__bareImageSources.join(", "));
+  w.__bareImageSources.length = 0;
   ok(label + ": the menu carries the narrow-screen line", !!q(".menu-narrow") && /desktop window/.test(q(".menu-narrow").textContent));
   ok(label + ": the menu shows the build", /Build [0-9a-f]{4,}, \d{4}-/.test((q("[data-slice-build]") || {}).textContent || ""));
   w.eval("Dialog.prompt = function(m,o,cb){ cb('Itch test'); }; Dialog.confirm = function(m,o,cb){ cb(true); };");
   w.eval("Shell.setOpt('motion', false)");
   q('[data-go="new"]').click();
   ok(label + ": one government to choose, and no Sandbox", w.document.querySelectorAll("[data-admin]").length === 1 && !q('[data-go="sandbox"]'));
+  ok(label + ": campaign images have embedded URLs at insertion", w.__bareImageSources.length === 0,
+     w.__bareImageSources.join(", "));
+  w.__bareImageSources.length = 0;
+  const readBill = q("[data-bill]");
+  if (readBill) readBill.click();
+  ok(label + ": enlarged playbill has an embedded URL at insertion",
+     !!q(".bill-img") && w.__bareImageSources.length === 0, w.__bareImageSources.join(", "));
+  if (q("[data-bill-close]")) q("[data-bill-close]").click();
   q("[data-admin]").click(); q('[data-new="1"]').click();
   ok(label + ": the opening plays", !!q("#sitting-body") && w.eval("UI.state().sitting") === 1 && /\S/.test(q("#sitting-body").textContent));
   return { dom, w, q, errs };
