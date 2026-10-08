@@ -1203,7 +1203,7 @@ try {
      under a party opened in the composition table - so each is proved
      separately below rather than excused. */
   const anchored = new Set(anchors.map(a => a.getAttribute("data-tip")));
-  const LATER = ["prayer", "repay", "mps"];
+  const LATER = ["prayer", "repay", "mps", "posture_earned"];   /* the last exists only on a decision that offers an earned answer */
   const orphan = w.eval("Tips.keys()").filter(k => !anchored.has(k) && LATER.indexOf(k) < 0);
   ok("and every explanation is anchored to something", orphan.length === 0,
      orphan.join(", "));
