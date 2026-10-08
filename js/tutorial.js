@@ -129,8 +129,8 @@ const Tutorial = (function () {
       returnTo = document.activeElement && document.activeElement !== document.body ? document.activeElement : null;
       const who = s.voice && C.characterById && C.characterById[s.voice];
       card.querySelector(".tut-who").textContent = who ? who.name + (who.role ? ", " + who.role : "") : "";
-      card.querySelector("h3").textContent = s.title;
-      card.querySelector(".tut-body").textContent = s.body;
+      card.querySelector("h3").textContent = Engine.text(s.title,C);
+      card.querySelector(".tut-body").textContent = Engine.text(s.body,C);
       layer.classList.add("on");
       shown = { id: s.id, el: p.el };
       place(p.el);

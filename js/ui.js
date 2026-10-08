@@ -496,6 +496,9 @@ const UI = (function () {
      absorbed by the wrapper's own depth count, so the capture happens
      once on the outside and not four times. */
   function drawAll() {
+    document.querySelectorAll("[data-setup-text]").forEach(el => {
+      el.textContent = Engine.text(el.dataset.setupText,C);
+    });
     const active = document.activeElement;
     const govRegion = active && active.closest && active.closest("#gov-business, #gov-cabinet, #gov-inspector");
     const ownerBox = govRegion && active.closest("[data-post], [data-business-post]");
@@ -1436,7 +1439,9 @@ const UI = (function () {
       voteRow() +
       `<div class="note">The Governor sets the rate at a meeting every ` +
         `${M.meetingEvery || 42} days, by her rule: ${M.neutral == null ? 1 : M.neutral}% real, plus ` +
-        `underlying inflation, plus half its miss, plus ${m.mandate === "dual" ? "all" : "half"} the output gap. ` +
+        `underlying inflation, plus ${Engine.text("{{setup.macro.rule.inflation|percent}}",C)} per cent of its miss, plus ` +
+        Engine.text(m.mandate === "dual" ? "{{setup.macro.rule.dualGap|percent}}" : "{{setup.macro.rule.gap|percent}}",C) +
+        ` per cent of the output gap. ` +
         (last ? "Last: " + (last.kind === "hold" ? "held at " + last.to.toFixed(2)
                            : (last.kind === "raise" ? "raised to " : "cut to ") + last.to.toFixed(2)) +
                 " on " + dayLabel(last.date) + ". " : "") +
@@ -3905,7 +3910,7 @@ const UI = (function () {
        costs to whip, and the division itself. */
     const rep = forecast(id);
     const det = $("#bill-detail");
-    $("#bill-hdr").textContent = b.title;
+    $("#bill-hdr").textContent = Engine.text(b.title,C);
     $("#bill-ref").textContent = b.ref;
     det.innerHTML =
       /* WHAT IT DOES LEADS, AND GETS THE ROOM. The opinions are real and stay,
@@ -5000,6 +5005,7 @@ const UI = (function () {
     return Concordance.knows(u) ? u : Concordance.knows("term_" + u) ? "term_" + u : null;
   }
   function annotate(html) {
+    html = Engine.text(html,C);
     const terms = (C.glossary || []).filter(g => !g.assumed)
       .sort((a, b) => b.term.length - a.term.length);
     const done = new Set();
@@ -5042,7 +5048,7 @@ const UI = (function () {
   }
   /* Attribute-safe. & must go first or it double-escapes the entities below. */
   function esc(s) {
-    return String(s == null ? "" : s)
+    return Engine.text(s,C)
       .replace(/&/g, "&amp;").replace(/"/g, "&quot;")
       .replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
@@ -7324,7 +7330,7 @@ const UI = (function () {
        the reader left the last one */
     box.dataset.page = e.id + "@" + st.sitting;
     const spk = e.speaker ? C.characterById[e.speaker] : null;
-    $("#sitting-hdr").textContent = e.title;
+    $("#sitting-hdr").textContent = Engine.text(e.title,C);
 
     /* TWO BLOCKS: what you are reading, and what you are deciding.
        The reading block is ONE element so the portrait's float still
@@ -7791,7 +7797,7 @@ const UI = (function () {
     if (panel) panel.hidden = !html;
     if (!html) { el.innerHTML = ""; return; }
     const hdr = $("#cham-whip-hdr");
-    if (hdr) hdr.textContent = b.title;
+    if (hdr) hdr.textContent = Engine.text(b.title,C);
     el.innerHTML = html;
     wireWhipbars(el, id, () => { drawChamber(); drawBill(id); drawStatus(); });
     /* The pairing steppers. A pair is an action, so it goes through acted(). */

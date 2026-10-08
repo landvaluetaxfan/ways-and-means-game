@@ -28,6 +28,45 @@ const LC = require("./loadcontent.js");
 const files = LC.files.map(f => path.join(root, f));
 vm.runInThisContext(LC.source() +
   "\n;globalThis.__G = {EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, MATTERS, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA, ADMINISTRATIONS, FORUMS, RESOLUTIONS};");
+/* E5: check the same numbers the player will read. Keep raw source and the
+   editor/prose model untouched; a campaign owns its setup overrides. */
+const TextEngine = require("../js/engine.js"), TextContent = LC.loadContent();
+const setupTextBad = [];
+const textViews = [TextContent].concat((TextContent.administrations || []).map(a => TextContent.forCampaign(a)));
+textViews.forEach((C,i) => {
+  try { TextEngine.textView(TextContent.tips,C); }
+  catch (e) { setupTextBad.push((i ? TextContent.administrations[i-1].id : "world") + ": " + e.message); }
+  const html = fs.readFileSync(path.join(root,"index.html"),"utf8");
+  for (const m of html.matchAll(/data-setup-text="([^"]*)"/g)) {
+    try { TextEngine.text(m[1],C); } catch(e) { setupTextBad.push("index.html: " + e.message); }
+  }
+});
+function resolvedText(value,contexts,key) {
+  if (typeof value === "string") {
+    let rendered = value;
+    contexts.forEach((C,i) => {
+      try { const s = TextEngine.text(value,C); if (!i) rendered = s; }
+      catch(e) { setupTextBad.push(key + ": " + e.message); }
+    });
+    return rendered;
+  }
+  if (Array.isArray(value)) return value.map(x => resolvedText(x,contexts,key));
+  if (value && typeof value === "object") {
+    const tags = value.campaign == null ? null : [].concat(value.campaign);
+    const owned = textViews.slice(1).filter(C => key === "ADMINISTRATIONS"
+      ? C.admin === value.id : tags && tags.includes(C.campaign));
+    if (owned.length) contexts = owned;
+    else if (tags) contexts = [TextContent];
+    const out = {};
+    Object.keys(value).forEach(k => { out[k] = resolvedText(value[k],contexts,key); });
+    return out;
+  }
+  return value;
+}
+Object.keys(globalThis.__G).forEach(k => {
+  const raw = globalThis.__G[k];
+  globalThis.__G[k] = resolvedText(raw,[TextContent],k);
+});
 const { EVENTS, GLOSSARY, BILLS, PARTIES, CHARACTERS, STATIONS, LABOUR, INITIATIVES, MATTERS, SETUP, CURRENTS, ACTORS, INSTRUMENTS, SETTLEMENTS, BUSINESS, ACHIEVEMENTS, MINUTES, CABINET, ENCYCLOPEDIA, ADMINISTRATIONS, FORUMS, RESOLUTIONS } = globalThis.__G;
 
 const MAX_NEW_CLUSTERS = 1;  // per event. Raise this and you are choosing to confuse people.
@@ -1449,6 +1488,7 @@ try {
     .forEach(f => pageBad.push("editor.html does not load " + f + ", which index.html does"));
 } catch (e) { pageBad.push("could not compare the pages: " + e.message); }
 n += section("CONTENT THE EDITOR CANNOT SEE", pageBad, x => x);
+n += section("INVALID SETUP TEXT", setupTextBad, x => x);
 
 R.push("=".repeat(60));
 R.push(n ? `${n} legibility issues` : "no legibility issues");
@@ -1479,7 +1519,7 @@ console.log(R.join("\n"));
    ADVISORY: popBad. Which of the two stored populations is canon is a bible
    edit and a content fix, not a call a linter gets to make, and a check that
    fails from the day it lands gets disabled rather than fixed. */
-if (artBad.length || chainBad.length || cssBad.length || verbBad.length ||
+if (setupTextBad.length || artBad.length || chainBad.length || cssBad.length || verbBad.length ||
     parseBad.length || initBad.length || gridBad.length || targetBad.length ||
     labelBad.length || gateBad.length || refBad.length || campBad.length ||
     pageBad.length || retiredBad.length || seatBad.length || briefBad.length ||

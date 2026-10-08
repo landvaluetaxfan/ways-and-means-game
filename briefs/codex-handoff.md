@@ -8,7 +8,7 @@ Flash I is built to the end of Act I (sittings 1 to 16, the rise, `a1_works_aban
 build is `npm run itch` (`dist/ways-and-means-itch.zip`, one `index.html`, about 4 MB). The author will upload it to itch.io
 and send testers a Discord link; there is no network call anywhere and no server.
 
-`npm run check` has **nineteen** checks, including E9's independent notice coverage. E10 runs bounded parallel readers; on the author's Windows checkout the
+`npm run check` has **twenty** checks, including E9's independent notice coverage and E5's setup-text contracts. E10 runs bounded parallel readers; on the author's Windows checkout the
 unchanged baseline took 524.40 seconds and the final passing run took 349.27 seconds. Run it in the
 background and wait for it; never edit a source file while it runs, because the DOM checks read files late. **Break a check's
 subject and watch it fail before you trust it** (`AGENTS.md`); this session found a vacuous assertion that way
@@ -75,8 +75,18 @@ assertions were removed and no player-facing wording was added.
    opening can restage known stages because it defines the initial state. Fifteen transition assertions
    were break-tested; the 80-seed before/after reports are byte-identical. The editor retains explicit
    Cabinet replacements as raw JSON; adding its normal replacement control remains a small editor follow-up.
-4. **E5, setup constants in text** (`{{setup.slotsPerPeriod}}`-style, resolved when the page is shown and by lint, stored
-   rendered in the log, round-tripped by the prose file and the editor). Mechanic issue 12: tooltips carry typed constants.
+4. **E5, setup-text infrastructure: implemented (Codex).** Numeric `{{setup.path}}` tokens and coefficient
+   `|percent` formatting resolve in active-campaign pages, frames, references, tutorials and tooltips. Recorded
+   history, wire, bill history, amendment labels and promises retain their original rendered values. Lint uses
+   each entry's campaign setup; exports and editor serialization retain literal templates. The real-browser
+   probe caught ordinary JSON braces being mistaken for templates; the repaired resolver preserves JSON and
+   legacy single-brace substitutions. Twenty checks passed in 287.57 seconds; 22 deliberate breaks were caught.
+   Edge layout passed, with three font-stack warnings. Screenshots at 1920x1000 and 1366x768 show the tuned
+   Bank interval, coefficients and tooltip agreeing; the smaller Bank explanation wraps and scrolls with the
+   tab. The 80-seed reports are byte-identical. New plain wording for Claude: Bank intervals in days,
+   coefficients as percentages in tooltips and the Bank explanation, and setup-token diagnostics.
+   **Still Claude's:** inventory B's two Act I token substitutions and the register pass. Constitutional
+   totals remain outside setup-only E5. Plan and scope rulings: `design/83-setup-text-plan.md`.
 5. **A fixture of the engine's own for `test.js`**, so the world's untagged story can be archived and dropped from the
    shipping page by data and not by `tools/storystrip.js`. Brief `act-one.md`, "How old text leaves the build", rule 3.
 6. **The tutorial's "Promises" card** and any step the author marks after playing.

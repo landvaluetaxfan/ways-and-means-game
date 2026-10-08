@@ -92,7 +92,7 @@ const Tips = (function () {
 
     /* ---- the chamber ---- */
     seats: { title: "Seats",
-      body: "280 seats in all. 140 come from districts, 100 from party lists, " +
+      body: "280 seats in all. 140 come from districts, {{setup.law.tier_ratio_list}} from party lists, " +
             "and 40 from functional constituencies. The three tiers run " +
             "separately and do not make up for each other." },
     loyalty: { title: "Loyalty",
@@ -124,8 +124,8 @@ const Tips = (function () {
             "roll of who holds each seat is the only record. Totals are counted " +
             "from it, never stored beside it." },
     list: { title: "List seats",
-      body: "100 seats allocated from closed party lists by D'Hondt. A party " +
-            "needs 4 per cent of the national vote to qualify. A party below " +
+      body: "{{setup.law.tier_ratio_list}} seats allocated from closed party lists by D'Hondt. A party " +
+            "needs {{setup.law.threshold_pct}} per cent of the national vote to qualify. A party below " +
             "that still keeps its list seats if it won a district, or if it " +
             "represents one station or one category of legal person. The divisor " +
             "and the threshold are both set by law, so a bill can change them.",
@@ -176,7 +176,7 @@ const Tips = (function () {
 
     /* ---- the Reserve Bank (design/39 option C) ---- */
     reservebank: { title: "The Reserve Bank",
-      body: "Sets the cash rate at a meeting every six weeks, by a rule it " +
+      body: "Sets the cash rate at a meeting every {{setup.macro.meetingEvery}} days, by a rule it " +
             "publishes, to hold inflation to the target the Treasurer's remit " +
             "sets. The government cannot move the rate except by an order the " +
             "House approves, and every meeting under one costs the Bank " +
@@ -191,8 +191,8 @@ const Tips = (function () {
             "costs the government standing every week." },
     rate: { title: "The cash rate",
       body: "The Reserve Bank's rate. The rule under it is the neutral real " +
-            "rate, plus underlying inflation, plus half its miss from the target, plus " +
-            "half the output gap. A higher rate cools demand, lifts the dollar " +
+            "rate, plus underlying inflation, plus {{setup.macro.rule.inflation|percent}} per cent of its miss from the target, plus " +
+            "{{setup.macro.rule.gap|percent}} per cent of the output gap. A higher rate cools demand, lifts the dollar " +
             "and raises what the Treasury pays at home." },
     dollar: { title: "The dollar",
       body: "US dollars per Commonwealth dollar. It rises with the rate gap " +
@@ -202,7 +202,7 @@ const Tips = (function () {
     growth: { title: "Growth",
       body: "Real output over the last quarter, at a yearly rate, as a " +
             "statistics office prints it. Capacity is set by the " +
-            "radiators and the labour force: under a thermal margin of 15 " +
+            "radiators and the labour force: under a thermal margin of {{setup.macro.heat.line}} " +
             "every point costs output, and more people in paid work adds it." },
     credibility: { title: "Credibility",
       body: "Whether the market believes the Bank will hold inflation to the " +
@@ -514,7 +514,9 @@ const Tips = (function () {
   }
 
   function esc(s) {
-    return String(s == null ? "" : s)
+    const C = typeof UI !== "undefined" && UI.content && UI.content() ||
+      (typeof CONTENT !== "undefined" ? CONTENT : null);
+    return (typeof Engine !== "undefined" ? Engine.text(s,C) : String(s == null ? "" : s))
       .replace(/&/g, "&amp;").replace(/"/g, "&quot;")
       .replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }

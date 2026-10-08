@@ -18,11 +18,11 @@ const Concordance = (function () {
   /* ---------- inline syntax: **emphasis** and [[id]] or [[id|shown text]] ---------- */
   /* ONE ESCAPE HELPER at module scope. It lived inside `renderHits`, so the
      article footer could not reach it. */
-  const esc0 = t => String(t == null ? "" : t)
+  const esc0 = t => Engine.text(t,C)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
   function links(text) {
-    return String(text).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    return Engine.text(text,C).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
                        .replace(/\*([^*]+)\*/g, "<em>$1</em>")
                        /* `[a-z0-9_-]`, because a term may contain a hyphen: the
                           glossary has write-off, and the old class stopped at the
@@ -1118,7 +1118,7 @@ const Concordance = (function () {
     if (!openCats) openCats = new Set(keys.filter(k => !CLOSED.has(k)));
     if (current && current.category) openCats.add(current.category);
 
-    document.getElementById("cx-nav").innerHTML = keys.map(k => {
+    document.getElementById("cx-nav").innerHTML = Engine.text(keys.map(k => {
       const open = openCats.has(k), n = cats[k].length;
       /* REVISED SINCE YOU LAST READ IT (design/55), on the article and on
          its category, since most categories start closed */
@@ -1129,7 +1129,7 @@ const Concordance = (function () {
         (open ? cats[k].sort((p, q) => p.title.localeCompare(q.title)).map(a =>
           `<a class="cx-navlink${a.id === current.id ? " on" : ""}${unread(a) ? " cx-unread" : ""}" tabindex="0" data-go="${a.id}">${a.title}` +
           (a.generated ? "" : " <em>&sect;</em>") + `</a>`).join("") : "");
-    }).join("");
+    }).join(""),C);
   }
 
   function drawArticle(a) {
@@ -1197,12 +1197,12 @@ const Concordance = (function () {
       `<div class="cx-cats"><b>Categories</b>` +
       categoriesOf(a).map(c => `<span>${esc0(c)}</span>`).join("") + `</div>`;
 
-    document.getElementById("cx-article").innerHTML =
+    document.getElementById("cx-article").innerHTML = Engine.text(
       `<h2 class="cx-title">${a.title}</h2>` +
       `<div class="cx-from">From the ${ENCYCLOPEDIA.meta.title}, ${ENCYCLOPEDIA.meta.tagline}</div>` +
       banners + info +
       `<div class="cx-lede">${paras(a.summary)}</div>` +
-      toc + body + seeAlso + `<div style="clear:both"></div>` + foot;
+      toc + body + seeAlso + `<div style="clear:both"></div>` + foot,C);
 
     /* read now: the marks come off at the next draw of the navigation */
     if (!st.cxRead) st.cxRead = {};

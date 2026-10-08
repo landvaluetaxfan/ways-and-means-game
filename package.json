@@ -38,6 +38,7 @@
     "encode": "node tools/encodeaudio.js",
     "check": "node tools/check.js",
     "notices": "node tools/noticecheck.js",
+    "setuptext": "node tools/setuptexttest.js",
     "toc": "node tools/toc.js",
     "register": "node tools/register.js",
     "prosedocx": "node tools/prosedocx.js"

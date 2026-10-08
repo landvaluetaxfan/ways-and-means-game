@@ -38,7 +38,7 @@ async function main() {
   const root = path.join(__dirname, ".."), pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
   // Start the long DOM checks first. Every former check remains a full process.
   const names = ["ui", "ux", "editor", "itchtest", "test", "guards", "lint", "cx", "roundtrip", "rename",
-    "tocheck", "enc", "exchange:check", "storymap:check", "fidget", "flags", "tutorial", "notices"];
+    "tocheck", "enc", "exchange:check", "storymap:check", "fidget", "flags", "tutorial", "notices", "setuptext"];
   const job = name => ({ name, resource: name === "ui" || name === "itchtest" ? "bundle" : undefined,
     commands: pkg.scripts[name].split(/\s*&&\s*/).map(command => {
     // These scripts use only Node, paths without spaces, and plain flags.

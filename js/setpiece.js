@@ -257,7 +257,9 @@ const SetPiece = (function () {
         `${esc(o.go)}</button></div>`
       : "";
 
-    return { html: `<div class="sp-scroll">${body}</div>${foot}`,
+    const textC = typeof UI !== "undefined" && UI.content && UI.content() ||
+      (typeof CONTENT !== "undefined" ? CONTENT : null);
+    return { html: Engine.text(`<div class="sp-scroll">${body}</div>${foot}`,textC),
              mood: sp.mood || null };
   }
 

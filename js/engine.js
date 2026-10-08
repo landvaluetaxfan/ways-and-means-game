@@ -13,6 +13,52 @@
 const Engine = (function () {
   "use strict";
 
+  /* E5: authoring keeps the template; readers receive numeric setup
+     constants only. Own-property traversal excludes prototypes and state. */
+  function text(value, C) {
+    const src = String(value == null ? "" : value);
+    if (!src.includes("{{")) return src;
+    if (src.includes("{{{") || /\{\{[^{}]*\}\}\}/.test(src)) throw new Error("Malformed setup text token: " + src);
+    const rendered = src.replace(/\{\{([^{}]+)\}\}/g, (token, expr) => {
+      const m = /^setup\.([A-Za-z][\w]*(?:\.[A-Za-z][\w]*)*)(?:\|(percent))?$/.exec(expr.trim());
+      if (!m) throw new Error("Invalid setup text token: " + token);
+      let v = C && C.setup;
+      for (const key of m[1].split(".")) {
+        if (["__proto__", "prototype", "constructor"].includes(key) ||
+            !v || !Object.prototype.hasOwnProperty.call(v,key))
+          throw new Error("Unknown setup text path: " + token);
+        v = v[key];
+      }
+      if (typeof v !== "number" || !Number.isFinite(v))
+        throw new Error("Non-numeric setup text constant: " + token);
+      if (m[2] === "percent") v = Number((v * 100).toPrecision(12));
+      return String(v);
+    });
+    if (rendered.includes("{{")) throw new Error("Malformed setup text token: " + src);
+    return rendered;
+  }
+
+  /* Detached lint/display view. Authoring and serialisation keep the raw
+     strings, including templates, so an editor save cannot freeze a value. */
+  function record(st,C,channel,row) {
+    const saved = Object.assign({},row,{text:text(row.text,C)});
+    if (typeof saved.cx === "string") saved.cx = text(saved.cx,C);
+    st[channel].unshift(saved);
+  }
+
+  function upper(value,C) { return text(value,C).toUpperCase(); }
+
+  function textView(value,C) {
+    if (typeof value === "string") return text(value,C);
+    if (Array.isArray(value)) return value.map(v => textView(v,C));
+    if (value && typeof value === "object") {
+      const out = {};
+      Object.keys(value).forEach(k => { out[k] = textView(value[k],C); });
+      return out;
+    }
+    return value;
+  }
+
   const STATE_VERSION = 38;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar, 11 the day's business, 12 pairing, 13 actors and lobbying, 14 the parliament ends, 15 trends, 16 the campaign meters, 17 the day's order-paper business, 18 pressure by default, 19 the denominated treasury, 20 what the Commonwealth has heard, 26 the productive economy, 27 reserved order-paper time, 28 sitting periods, 29 named creditors, 30 campaigns, 31 the Commonwealth dollar, 32 core inflation and the quarter, 33 the forums, 34 the Concordance's dates, 35 ministerial matters, 36 claims, 36 claims, 37 (reserved: witnessed acts), 38 intervals
 
   /* ---------------------------------------------------------
@@ -1037,7 +1083,7 @@ const Engine = (function () {
     rs.status = "tabled"; rs.tabledAt = st.sitting;
     const s = st.forums[f.id];
     if (s.agenda.indexOf(resId) < 0) s.agenda.push(resId);
-    st.log.unshift({ sitting: st.sitting, text: "Tabled at the " + (f.short || f.name) + ": " + r.title +
+    record(st,C,"log",{ sitting: st.sitting, text: "Tabled at the " + (f.short || f.name) + ": " + r.title +
                      ". It is voted on " + s.next + "." });
     apply(st, C, r.onTable || []);
     return { ok: true };
@@ -1084,7 +1130,7 @@ const Engine = (function () {
     rs.status = c.carries ? "adopted" : "rejected";
     rs.decided = { date: day, sitting: st.sitting, yes: c.yes, no: c.no, abstain: c.abstain,
                    own: c.own, rows: c.rows.map(x => ({ id: x.id, yes: x.yes, no: x.no, abstain: x.abstain })) };
-    st.log.unshift({ sitting: st.sitting, text: (f.short || f.name) + ": " + r.title +
+    record(st,C,"log",{ sitting: st.sitting, text: (f.short || f.name) + ": " + r.title +
       (c.carries ? " adopted, " : " rejected, ") + c.yes + " to " + c.no + ", " + c.abstain + " abstaining." });
     apply(st, C, (c.carries ? r.onPass : r.onFail) || []);
   }
@@ -1164,7 +1210,7 @@ const Engine = (function () {
     r.vacant += 1;
     syncRoll(st, C);
     const k = C.constituencyById[cid];
-    st.log.unshift({ sitting: st.sitting,
+    record(st,C,"log",{ sitting: st.sitting,
       text: `Seat vacated: ${k ? k.name : cid} (${party})${why ? ", " + why : ""}` });
     return { ok: true };
   }
@@ -1179,7 +1225,7 @@ const Engine = (function () {
     r.held[to] = (r.held[to] || 0) + n;
     syncRoll(st, C);
     const k = C.constituencyById[cid];
-    chronicle(st, `Crossed the floor: ${n} seat${n === 1 ? "" : "s"} for ` +
+    chronicle(st, C, `Crossed the floor: ${n} seat${n === 1 ? "" : "s"} for ` +
             `${k ? k.name : cid}, ${from} to ${to}`, [from, to, cid],
       `${n === 1 ? "the member" : n + " members"} for ${k ? k.name : cid} crossed the floor from the ` +
       `${partyName(C, from)} to the ${partyName(C, to)}`);
@@ -1508,11 +1554,11 @@ const Engine = (function () {
     const filled = r.vacant; r.vacant = 0;
     syncRoll(st, C);
     const gains = Object.keys(won).filter(p => (before[p] || 0) === 0);
-    st.log.unshift({ sitting: st.sitting,
+    record(st,C,"log",{ sitting: st.sitting,
       text: `By-election, ${k.name}: ${filled} seat${filled === 1 ? "" : "s"} filled` +
             (gains.length ? `, gain for ${gains.join(", ")}` : ", no change of hands") });
-    st.wire.unshift({ sitting: st.sitting,
-      text: `BY-ELECTION ${k.name.toUpperCase()}: ` +
+    record(st,C,"wire",{ sitting: st.sitting,
+      text: `BY-ELECTION ${upper(k.name,C)}: ` +
             Object.keys(won).map(p => `${p.toUpperCase()} ${won[p]}`).join(", ") });
     return { ok: true, filled: filled, won: won, gains: gains };
   }
@@ -1582,10 +1628,10 @@ const Engine = (function () {
       functional: st.parties[p.id].seats.functional || 0
     });
     const tot = x => x.district + x.list + (x.functional || 0);
-    st.log.unshift({ sitting: st.sitting, text: "GENERAL ELECTION" });
+    record(st,C,"log",{ sitting: st.sitting, text: "GENERAL ELECTION" });
     C.parties.forEach(p => {
       const d = tot(after[p.id]) - tot(before[p.id]);
-      if (d) chronicle(st,
+      if (d) chronicle(st, C,
         `  ${(C.partyById[p.id] && C.partyById[p.id].short) || p.id}: ${d > 0 ? "+" : ""}${d} ` +
         `(${after[p.id].district} district, ${after[p.id].list} list, ${after[p.id].functional} functional)`, p.id,
         `the ${partyName(C, p.id)} won ${tot(after[p.id])} seats at the general election, ` +
@@ -2141,10 +2187,10 @@ const Engine = (function () {
      defeated at 14 and re-read at 20 had no page that said so. This is
      written at the same moments the global log is, never derived, and it is
      what a player reads when deciding whether to give a bill more time. */
-  function billLog(st, billId, kind, text) {
+  function billLog(st, C, billId, kind, message) {
     const bs = st.bills && st.bills[billId];
     if (!bs) return;
-    (bs.history = bs.history || []).unshift({ sitting: st.sitting, kind: kind, text: text });
+    (bs.history = bs.history || []).unshift({ sitting: st.sitting, kind: kind, text: text(message,C) });
   }
 
   function divide(st, C, billId) {
@@ -2193,9 +2239,9 @@ const Engine = (function () {
     if (!result.carries) {
       apply(st, C, b.onFail);
       bs.stage = "defeated"; bs.dead = true;
-      billLog(st, billId, "division", "Defeated on a division" +
+      billLog(st, C, billId, "division", "Defeated on a division" +
         (paid.seats ? ", " + paid.seats + " whipped" : ""));
-      st.log.unshift({ sitting: st.sitting, text: "Division: " + b.title + " defeated" +
+      record(st,C,"log",{ sitting: st.sitting, text: "Division: " + b.title + " defeated" +
         (paid.seats ? " (" + paid.seats + " whipped)" : "") });
       return { result: result, paid: paid, assent: null };
     }
@@ -2208,11 +2254,11 @@ const Engine = (function () {
     bs.stage = "awaiting_assent";
     bs.carriedAt = st.sitting;
     bs.contested = !!(b.dualMajority && result.functional.aye < result.functional.need + 3);
-    billLog(st, billId, "division", "Carried on a division" +
+    billLog(st, C, billId, "division", "Carried on a division" +
       (result.popular ? " " + result.popular.aye + "/" + result.popular.need : "") +
       (b.dualMajority && result.functional ? " popular, " + result.functional.aye + "/" +
         result.functional.need + " functional" : ""));
-    st.log.unshift({ sitting: st.sitting, text: "Division: " + b.title + " carried" +
+    record(st,C,"log",{ sitting: st.sitting, text: "Division: " + b.title + " carried" +
       (paid.seats ? " (" + paid.seats + " whipped)" : "") });
     const a = presidentDecides(st, C, billId, result);
     settle(st, C);
@@ -2246,10 +2292,10 @@ const Engine = (function () {
     if (risk.willRefer) {
       bs.stage = "referred";
       bs.returnsAt = st.sitting + 4 + (bs.contested ? 4 : 0);
-      billLog(st, billId, "referral", "Referred for constitutional review, due sitting " + bs.returnsAt);
-      st.log.unshift({ sitting: st.sitting, text: "Referred for constitutional review: " + b.title });
-      st.wire.unshift({ sitting: st.sitting,
-        text: "PRESIDENT REFERS " + b.title.toUpperCase() + " FOR CONSTITUTIONAL REVIEW" });
+      billLog(st, C, billId, "referral", "Referred for constitutional review, due sitting " + bs.returnsAt);
+      record(st,C,"log",{ sitting: st.sitting, text: "Referred for constitutional review: " + b.title });
+      record(st,C,"wire",{ sitting: st.sitting,
+        text: "PRESIDENT REFERS " + upper(b.title,C) + " FOR CONSTITUTIONAL REVIEW" });
       return { referred: true, reasons: risk.reasons, returnsAt: bs.returnsAt };
     }
     return assent(st, C, billId, (result.supply || {}).delay || 0);
@@ -2272,7 +2318,7 @@ const Engine = (function () {
                       label: b.title + " takes effect",
                       source: "supply delayed by the functional benches" });
       bs.delayedUntil = st.sitting + delay;
-      st.log.unshift({ sitting: st.sitting, text:
+      record(st,C,"log",{ sitting: st.sitting, text:
         "Supply delayed " + delay + " sittings by the functional benches: " + b.title });
     } else {
       apply(st, C, b.onPass);
@@ -2287,10 +2333,10 @@ const Engine = (function () {
       else apply(st, C, cls);
     }
     bs.stage = "assented"; bs.dead = true; bs.assentedAt = st.sitting;
-    billLog(st, billId, "assent", delay > 0
+    billLog(st, C, billId, "assent", delay > 0
       ? "Assented, and in force in " + delay + " sittings (held by the functional benches)"
       : "Assented");
-    st.log.unshift({ sitting: st.sitting, text: "Assented: " + b.title });
+    record(st,C,"log",{ sitting: st.sitting, text: "Assented: " + b.title });
     /* The ceremony is reserved for acts that cannot be undone, so it fires only
        on a bill that needed more than a simple majority. Six or eight times a
        playthrough, not on every division. */
@@ -2312,13 +2358,13 @@ const Engine = (function () {
       if (struck) {
         bs.stage = "struck"; bs.dead = true;
         apply(st, C, b.onFail);
-        billLog(st, id, "struck", "Struck down on presidential review");
-        st.log.unshift({ sitting: st.sitting, text: "Struck on review: " + b.title });
-        st.wire.unshift({ sitting: st.sitting, text: "COURT STRIKES " + b.title.toUpperCase() });
+        billLog(st, C, id, "struck", "Struck down on presidential review");
+        record(st,C,"log",{ sitting: st.sitting, text: "Struck on review: " + b.title });
+        record(st,C,"wire",{ sitting: st.sitting, text: "COURT STRIKES " + upper(b.title,C) });
         out.push({ bill: id, struck: true });
       } else {
         assent(st, C, id);
-        st.wire.unshift({ sitting: st.sitting, text: "REVIEW UPHOLDS " + b.title.toUpperCase() + "; ACT SIGNED" });
+        record(st,C,"wire",{ sitting: st.sitting, text: "REVIEW UPHOLDS " + upper(b.title,C) + "; ACT SIGNED" });
         out.push({ bill: id, struck: false });
       }
     });
@@ -2458,7 +2504,7 @@ const Engine = (function () {
     const gate = canGrant(st,C,billId); if (!gate.ok) return gate;
     const b = C.billById[billId], bs = st.bills[billId], i = STAGE_ORDER.indexOf(bs.stage);
     bs.stage = bs.stage === "blocked" ? "second_reading" : STAGE_ORDER[i + 1];
-    billLog(st, billId, "stage", "Advanced to " + String(bs.stage).replace(/_/g, " "));
+    billLog(st, C, billId, "stage", "Advanced to " + String(bs.stage).replace(/_/g, " "));
     spendSlotsFor(st, billId, 1);
     st.grantsToday = (st.grantsToday || 0) + 1;
     st.actedThisSitting = true;
@@ -2467,7 +2513,7 @@ const Engine = (function () {
        short enough that the session can still hold a division. */
     if (bs.stage === DIVIDES_AT && bs.dividesOn == null) {
       bs.dividesOn = st.sitting + 2;
-      billLog(st, billId, "day", "Set down for sitting " + bs.dividesOn);
+      billLog(st, C, billId, "day", "Set down for sitting " + bs.dividesOn);
     }
     let gained = 0;
     const owner = b.owner;
@@ -2475,7 +2521,7 @@ const Engine = (function () {
       gained = b.priority ? 3 : 2;
       st.capital[owner] += gained;
     }
-    st.log.unshift({ sitting: st.sitting,
+    record(st,C,"log",{ sitting: st.sitting,
       text: "Slot granted: " + b.title + (gained ? " (+" + gained + " with " + owner + ")" : "") });
     syncMatters(st,C,{target:{kind:"bill",id:billId}});
     settle(st, C);
@@ -2531,7 +2577,7 @@ const Engine = (function () {
       apply(st, C, si.effects);
     }
     if (si.political_cost) apply(st, C, si.political_cost);
-    st.log.unshift({ sitting: st.sitting, text: "Instrument made: " + si.title });
+    record(st,C,"log",{ sitting: st.sitting, text: "Instrument made: " + si.title });
     syncMatters(st,C,{target:{kind:"instrument",id:siId}});
     settle(st, C);
     return { ok: true, inForce: s.inForce };
@@ -2660,11 +2706,11 @@ const Engine = (function () {
     if (f.carries) {
       s.inForce = true; s.effectApplied = true; s.approvedAt = st.sitting;
       apply(st, C, si.effects);
-      st.log.unshift({ sitting: st.sitting, text: "Instrument approved: " + si.title +
+      record(st,C,"log",{ sitting: st.sitting, text: "Instrument approved: " + si.title +
                        " (" + f.aye + " of " + f.need + " needed)" });
     } else {
       s.made = false; s.inForce = false; s.lapsed = st.sitting;
-      st.log.unshift({ sitting: st.sitting, text: "Instrument not approved, and lapses: " +
+      record(st,C,"log",{ sitting: st.sitting, text: "Instrument not approved, and lapses: " +
                        si.title + " (" + f.aye + " of " + f.need + " needed)" });
     }
     settle(st, C);
@@ -2680,9 +2726,9 @@ const Engine = (function () {
     if (f.carries) {
       s.revoked = true; s.inForce = false;
       if (s.effectApplied && si.reverse) { apply(st, C, si.reverse); s.effectApplied = false; }
-      st.log.unshift({ sitting: st.sitting, text: "Prayer carried: " + si.title + " revoked" });
-      st.wire.unshift({ sitting: st.sitting, text: "HOUSE PRAYS AGAINST " + si.title.toUpperCase() });
-    } else st.log.unshift({ sitting: st.sitting, text: "Prayer defeated: " + si.title + " stands" });
+      record(st,C,"log",{ sitting: st.sitting, text: "Prayer carried: " + si.title + " revoked" });
+      record(st,C,"wire",{ sitting: st.sitting, text: "HOUSE PRAYS AGAINST " + upper(si.title,C) });
+    } else record(st,C,"log",{ sitting: st.sitting, text: "Prayer defeated: " + si.title + " stands" });
     return { ok: true, carried: f.carries, forecast: f };
   }
 
@@ -2692,7 +2738,7 @@ const Engine = (function () {
     if (!si.revocable) return { ok: false, reason: "not revocable" };
     s.revoked = true; s.inForce = false;
     if (s.effectApplied && si.reverse) { apply(st, C, si.reverse); s.effectApplied = false; }
-    st.log.unshift({ sitting: st.sitting, text: "Instrument revoked: " + si.title });
+    record(st,C,"log",{ sitting: st.sitting, text: "Instrument revoked: " + si.title });
     return { ok: true };
   }
 
@@ -2708,7 +2754,7 @@ const Engine = (function () {
     const p = st.cabinet[postId];
     if (!p) return { ok: false, reason: "no such post" };
     p.holder = holderId; p.party = partyId || null;
-    chronicle(st, "Appointment: " + postId.replace(/_/g, " "), [holderId, partyId],
+    chronicle(st, C, "Appointment: " + postId.replace(/_/g, " "), [holderId, partyId],
       personName(C, holderId) + " was appointed " + postName(C, postId));
     return { ok: true };
   }
@@ -2752,7 +2798,7 @@ const Engine = (function () {
     appoint(st, C, postId, c.holder, c.party);
     apply(st, C, c.effects);
     const who = (C.characters || []).find(x => x.id === c.holder);
-    st.log.unshift({ sitting: st.sitting,
+    record(st,C,"log",{ sitting: st.sitting,
       text: (post ? post.title || post.name : postId) + ": " +
             (who ? who.name : c.holder) + " appointed" });
     settle(st, C);
@@ -2764,8 +2810,8 @@ const Engine = (function () {
      write about it ("the Liberal Party withdrew from the government"), so
      the Concordance can give those articles their history, dated by the
      entry's sitting. The log's own `text` is unchanged. */
-  function chronicle(st, text, about, cx) {
-    st.log.unshift({ sitting: st.sitting, text: text,
+  function chronicle(st, C, text, about, cx) {
+    record(st,C,"log",{ sitting: st.sitting, text: text,
                      about: [].concat(about || []).filter(Boolean), cx: cx });
   }
   const personName = (C, id) => ((C.characterById || {})[id] || {}).name || id;
@@ -2777,7 +2823,7 @@ const Engine = (function () {
     if (!p || !p.holder) return { ok: false };
     const was = p.holder;
     p.holder = null;
-    chronicle(st, "Ministerial vacancy: " + postId.replace(/_/g, " ") + (reason ? ", " + reason : ""),
+    chronicle(st, C, "Ministerial vacancy: " + postId.replace(/_/g, " ") + (reason ? ", " + reason : ""),
       [was, p.party], personName(C, was) + (reason === "resigned" ? " resigned as "
         : reason === "dismissed" ? " was dismissed as " : " left office as ") + postName(C, postId));
     return { ok: true };
@@ -2859,11 +2905,11 @@ const Engine = (function () {
     if (st.parties[from])
       shiftLoyalty(st, C, from, -5);
 
-    st.log.unshift({ sitting: st.sitting,
+    record(st,C,"log",{ sitting: st.sitting,
       text: "Appointments made to the " + (f.name || fcId) + " licensing board." });
     st.wire = st.wire || [];
-    st.wire.unshift({ sitting: st.sitting,
-      text: "GOVERNMENT APPOINTS TO THE " + String(f.name || fcId).toUpperCase() +
+    record(st,C,"wire",{ sitting: st.sitting,
+      text: "GOVERNMENT APPOINTS TO THE " + upper(String(f.name || fcId),C) +
             " BOARD; ONE SEAT CHANGES HANDS" });
     return { ok: true, from: from, to: mine, constituency: fcId };
   }
@@ -2969,9 +3015,9 @@ const Engine = (function () {
     vacate(st, C, postId, "dismissed");
     const name = ch ? ch.name : who;
     st.wire = st.wire || [];
-    st.wire.unshift({ sitting: st.sitting,
-      text: String(name).toUpperCase().replace(/ MP$/, "") + " DISMISSED FROM " +
-            String(post.name || postId).toUpperCase() });
+    record(st,C,"wire",{ sitting: st.sitting,
+      text: upper(String(name),C).replace(/ MP$/, "") + " DISMISSED FROM " +
+            upper(String(post.name || postId),C) });
     return { ok: true, who: who, post: postId, name: name };
   }
 
@@ -3306,12 +3352,12 @@ const Engine = (function () {
       (st.refusedBy || (st.refusedBy = [])).push(id);
       const firm = T.refusalLoyalty == null ? 2 : T.refusalLoyalty;
       if (firm) shiftLoyalty(st, C, m.current || st.playerParty, firm);
-      billLogSafe(st, "The paper: " + m.name + " refused to sign");
+      billLogSafe(st, C, "The paper: " + m.name + " refused to sign");
       return { ok: true, signed: false, member: m, signatures: st.signatures || 0 };
     }
     signed.push(id);
     apply(st, C, [{ signatures: 1 }]);
-    billLogSafe(st, "Signature: " + m.name + " added to the paper");
+    billLogSafe(st, C, "Signature: " + m.name + " added to the paper");
     return { ok: true, signed: true, member: m, signatures: st.signatures || 0 };
   }
 
@@ -3363,14 +3409,14 @@ const Engine = (function () {
     const u = (st.undertakings || []).find(x => x.id === "winback_" + id && x.state === "open");
     if (u) u.signs = id;
     st.actedThisSitting = true;
-    billLogSafe(st, "The paper: " + ch.name + " withdraws their name, on a promise of time for the " + t.billTitle);
+    billLogSafe(st, C, "The paper: " + ch.name + " withdraws their name, on a promise of time for the " + t.billTitle);
     return { ok: true, member: t.member, bill: t.bill, billTitle: t.billTitle,
              signatures: st.signatures || 0 };
   }
   const bareName = n => String(n || "").replace(/^(Rt\. Hon\.|Hon\.)\s*/, "").replace(/\s+MP$/, "");
 
-  function billLogSafe(st, text) {
-    st.log.unshift({ sitting: st.sitting, text: text });
+  function billLogSafe(st, C, text) {
+    record(st,C,"log",{ sitting: st.sitting, text: text });
   }
 
   function ballot(st, C) {
@@ -3479,7 +3525,7 @@ const Engine = (function () {
     if (v !== before) {
       st.flags = st.flags || {};
       if (v > 0) st.flags.paired = true;
-      st.log.unshift({ sitting: st.sitting,
+      record(st,C,"log",{ sitting: st.sitting,
         text: (v > before ? "Paired " + (v - before) : "Unpaired " + (before - v)) +
               " with " + String(partyId).toUpperCase() +
               " on the division of " + ((C.billById[billId] || {}).title || billId) });
@@ -4656,7 +4702,7 @@ const Engine = (function () {
             st.standing[k] = clamp(st.standing[k] + d, 0, 100);
             syncStanding(st, C);
           } else {
-            st.log.unshift({ sitting: st.sitting, text:
+            record(st,C,"log",{ sitting: st.sitting, text:
               "IGNORED: no band of the roll is called " + k + "." });
           }
           break;
@@ -4714,7 +4760,7 @@ const Engine = (function () {
            moves the actor's, so the two are never told apart. */
         case "member": {
           const hit = memberOf(C, k);
-          if (!hit) { st.log.unshift({ sitting: st.sitting, text:
+          if (!hit) { record(st,C,"log",{ sitting: st.sitting, text:
             "IGNORED: no forum has a member called " + k + "." }); break; }
           if (hit.member.actor && st.actors[hit.member.actor]) {
             const a = st.actors[hit.member.actor];
@@ -4727,7 +4773,7 @@ const Engine = (function () {
           break;
         }
         default:
-          st.log.unshift({ sitting: st.sitting, text:
+          record(st,C,"log",{ sitting: st.sitting, text:
             "IGNORED: a move effect named no such target: " + key + "." });
       }
     }),
@@ -4758,7 +4804,7 @@ const Engine = (function () {
       const r = a === "table" ? tableResolution(st, C, id)
         : a === "withdraw" ? withdrawResolution(st, C, id)
         : castVote(st, C, id, a);
-      if (!r.ok) st.log.unshift({ sitting: st.sitting, text:
+      if (!r.ok) record(st,C,"log",{ sitting: st.sitting, text:
         "IGNORED: resolution " + id + " (" + a + "): " + r.reason + "." });
     }),
 
@@ -4794,13 +4840,13 @@ const Engine = (function () {
         /* district and functional are derived from their rolls; setting one
            here would be undone by the next sync without saying so. */
         if (t === "district") {
-          st.log.unshift({ sitting: st.sitting, text:
+          record(st,C,"log",{ sitting: st.sitting, text:
             "IGNORED: a seats effect tried to set district seats for " + pid +
             ". District seats live in the roll — use cross or vacate_seat." });
           return;
         }
         if (t === "functional") {
-          st.log.unshift({ sitting: st.sitting, text:
+          record(st,C,"log",{ sitting: st.sitting, text:
             "IGNORED: a seats effect tried to set functional seats for " + pid +
             ". Functional seats live in the functional roll — use the functional verb." });
           return;
@@ -4814,7 +4860,7 @@ const Engine = (function () {
     functional: (st, C, v) => Object.keys(v).forEach(fid => {
       const roll = st.functional && st.functional[fid];
       if (!roll) {
-        st.log.unshift({ sitting: st.sitting, text:
+        record(st,C,"log",{ sitting: st.sitting, text:
           "IGNORED: a functional effect named no such constituency: " + fid + "." });
         return;
       }
@@ -4853,7 +4899,7 @@ const Engine = (function () {
                     by: o.by || null, tabledAt: st.sitting,
                     label: o.label || "Motion of no confidence" };
       st.wire = st.wire || [];
-      st.wire.unshift({ sitting: st.sitting,
+      record(st,C,"wire",{ sitting: st.sitting,
         text: "MOTION OF NO CONFIDENCE TABLED; THE HOUSE DIVIDES ON SITTING " + st.motion.on });
     },
 
@@ -4872,25 +4918,25 @@ const Engine = (function () {
     bill:   (st, C, v) => Object.keys(v).forEach(id => {
       const b = st.bills[id], set = v[id] || {};
       if (!b) {
-        st.log.unshift({ sitting: st.sitting, text: "IGNORED: no bill is called " + id + "." });
+        record(st,C,"log",{ sitting: st.sitting, text: "IGNORED: no bill is called " + id + "." });
         return;
       }
       const ended = ["defeated", "withdrawn", "fallen", "struck"];
       if ("stage" in set && stageRank(set.stage) < 0 && set.stage !== "blocked" && !ended.includes(set.stage)) {
-        st.log.unshift({ sitting: st.sitting, text:
+        record(st,C,"log",{ sitting: st.sitting, text:
           "IGNORED: " + String(set.stage) + " is not a known bill stage for " + id + "." });
         return;
       }
       if (!openingWrite) {
         if (ended.includes(b.stage) && (set.dead === false || ("stage" in set && set.stage !== b.stage))) {
-          st.log.unshift({ sitting: st.sitting, text: "IGNORED: " + id + " has ended and cannot be reopened." });
+          record(st,C,"log",{ sitting: st.sitting, text: "IGNORED: " + id + " has ended and cannot be reopened." });
           return;
         }
         const from = b.stage === "blocked" ? stageRank("first_reading") : stageRank(b.stage);
         const to = set.stage === "blocked" ? stageRank("first_reading") : stageRank(set.stage);
         if ("stage" in set && from >= 0 &&
             ((to >= 0 && to < from) || (from === STAGE_ORDER.length && ended.includes(set.stage)))) {
-          st.log.unshift({ sitting: st.sitting, text:
+          record(st,C,"log",{ sitting: st.sitting, text:
             "IGNORED: " + id + " cannot move back from " + b.stage + " to " + set.stage + "." });
           return;
         }
@@ -4901,7 +4947,7 @@ const Engine = (function () {
       if (v.remove) st.coalition = st.coalition.filter(p => !v.remove.includes(p));
       if (v.add) v.add.forEach(p => { if (!st.coalition.includes(p)) st.coalition.push(p); });
     },
-    wire: (st, C, v) => [].concat(v).forEach(t => st.wire.unshift({ sitting: st.sitting, text: t })),
+    wire: (st, C, v) => [].concat(v).forEach(t => record(st,C,"wire",{ sitting: st.sitting, text: t })),
     /* THE QUEUE CARRIES A FACT AS WELL AS A STORY.
 
        It held `{eventId, dueSitting}` and nothing else, so anything the
@@ -4942,12 +4988,12 @@ const Engine = (function () {
     cabinet: (st, C, v) => Object.keys(v).forEach(post => {
       const held = st.cabinet[post];
       if (!held) {
-        st.log.unshift({ sitting: st.sitting, text: "IGNORED: no cabinet post is called " + post + "." });
+        record(st,C,"log",{ sitting: st.sitting, text: "IGNORED: no cabinet post is called " + post + "." });
         return;
       }
       if (v[post] === null) { vacate(st, C, post, "resigned"); return; }
       if (held.holder && !(v[post] && v[post].replace)) {
-        st.log.unshift({ sitting: st.sitting, text:
+        record(st,C,"log",{ sitting: st.sitting, text:
           "IGNORED: " + postName(C, post) + " is already held by " + personName(C, held.holder) +
           "; the effect did not say to replace." });
         return;
@@ -4971,7 +5017,7 @@ const Engine = (function () {
     clause: (st, C, v) => [].concat(v).forEach(x => {
       sceneWrite++;
       let r; try { r = x ? setClause(st, C, x.bill, x.clause, x.level) : null; } finally { sceneWrite--; }
-      if (!r || !r.ok) st.log.unshift({ sitting: st.sitting,
+      if (!r || !r.ok) record(st,C,"log",{ sitting: st.sitting,
         text: "A clause was not set" + (r && r.reason ? ": " + r.reason : "") });
     }),
     /* WHIP — commit a party's members to vote with the government on a bill,
@@ -5020,7 +5066,7 @@ const Engine = (function () {
       if (!u || !u.id) return;
       if ((st.undertakings || []).some(x => x.id === u.id && x.state === "open")) return;
       st.undertakings.push({
-        id: u.id, text: u.text || u.id, owed_to: u.owed_to || null,
+        id: u.id, text: text(u.text || u.id,C), owed_to: u.owed_to || null,
         /* `post` names the cabinet brief the promise belongs to. A promise
            broken in a minister's brief is answered by that minister
            (design/08 §3); a promise with no post is answered by nobody. */
@@ -5055,7 +5101,7 @@ const Engine = (function () {
     chapter: (st, C, v) => {
       if (v === st.chapter) return;
       st.chapter = v;
-      st.log.unshift({ sitting: st.sitting, text: "— Chapter " + v + " —", chapterMark: true });
+      record(st,C,"log",{ sitting: st.sitting, text: "— Chapter " + v + " —", chapterMark: true });
     }
   };
 
@@ -5522,9 +5568,9 @@ const Engine = (function () {
       delete st.stoodAside[id];
       const from = side === "coalition" ? "government" : aside ? "government's side and its confidence"
                                                      : "confidence-and-supply agreement";
-      chronicle(st, nameOf(id) + " withdraws from the " + from + ".", id,
+      chronicle(st, C, nameOf(id) + " withdraws from the " + from + ".", id,
         "the " + nameOf(id) + " withdrew from the " + from);
-      st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() +
+      record(st,C,"wire",{ sitting: st.sitting, text: upper(String(nameOf(id)),C) +
         (side === "coalition" ? " WALKS OUT OF THE GOVERNMENT" : " WITHDRAWS CONFIDENCE") });
       if (C.setup.onPartnerWithdraws && C.eventById && C.eventById[C.setup.onPartnerWithdraws])
         st.queue.push({ eventId: C.setup.onPartnerWithdraws, dueSitting: st.sitting });
@@ -5535,10 +5581,10 @@ const Engine = (function () {
       st.coalition = st.coalition.filter(x => x !== id);
       if (st.confidenceSupply.indexOf(id) < 0) st.confidenceSupply.push(id);
       st.stoodAside[id] = { at: st.sitting };
-      chronicle(st, nameOf(id) + " leaves the coalition agreement and " +
+      chronicle(st, C, nameOf(id) + " leaves the coalition agreement and " +
         "keeps the government on confidence and supply, free on everything else.", id,
         "the " + nameOf(id) + " left the coalition agreement and kept the government on confidence and supply");
-      st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() +
+      record(st,C,"wire",{ sitting: st.sitting, text: upper(String(nameOf(id)),C) +
         " LEAVES THE COALITION AGREEMENT; WILL NOT BRING THE GOVERNMENT DOWN" });
       if (C.setup.onPartnerStandsAside && C.eventById && C.eventById[C.setup.onPartnerStandsAside])
         st.queue.push({ eventId: C.setup.onPartnerStandsAside, dueSitting: st.sitting });
@@ -5553,18 +5599,18 @@ const Engine = (function () {
         const w = st.withdrawn[id];
         if (st[w.from].indexOf(id) < 0) st[w.from].push(id);
         delete st.withdrawn[id];
-        chronicle(st, nameOf(id) + " returns to the government's side.", id,
+        chronicle(st, C, nameOf(id) + " returns to the government's side.", id,
           "the " + nameOf(id) + " returned to the government's side");
-        st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() + " BACK ON THE GOVERNMENT BENCHES" });
+        record(st,C,"wire",{ sitting: st.sitting, text: upper(String(nameOf(id)),C) + " BACK ON THE GOVERNMENT BENCHES" });
       });
       Object.keys(st.stoodAside).forEach(id => {
         if (loyaltyOf(st, id) < L.returns) return;
         st.confidenceSupply = st.confidenceSupply.filter(x => x !== id);
         if (st.coalition.indexOf(id) < 0) st.coalition.push(id);
         delete st.stoodAside[id];
-        chronicle(st, nameOf(id) + " returns to the coalition agreement.", id,
+        chronicle(st, C, nameOf(id) + " returns to the coalition agreement.", id,
           "the " + nameOf(id) + " returned to the coalition agreement");
-        st.wire.unshift({ sitting: st.sitting, text: String(nameOf(id)).toUpperCase() + " BACK IN THE COALITION" });
+        record(st,C,"wire",{ sitting: st.sitting, text: upper(String(nameOf(id)),C) + " BACK IN THE COALITION" });
       });
     }
     const pending = st.motion && !st.motion.resolved;
@@ -5695,7 +5741,7 @@ const Engine = (function () {
       if (!met(st, C, u.discharge)) return;
       u.state = "kept";
       kept.push(u);
-      st.log.unshift({ sitting: st.sitting, text: "Undertaking kept \u2014 " + u.text });
+      record(st,C,"log",{ sitting: st.sitting, text: "Undertaking kept \u2014 " + u.text });
     });
     return kept;
   }
@@ -5720,7 +5766,7 @@ const Engine = (function () {
     u.state = "broken";
     claimResolve(C, u);
     (st.grievances || (st.grievances = [])).push(grievanceOf(u, st.sitting));
-    st.log.unshift({ sitting: st.sitting, text: "Undertaking broken" +
+    record(st,C,"log",{ sitting: st.sitting, text: "Undertaking broken" +
       (why ? " at " + why : "") + " \u2014 " + u.text });
     const post = u.post && st.cabinet ? st.cabinet[u.post] : null;
     if (post && post.holder) {
@@ -5730,7 +5776,7 @@ const Engine = (function () {
                              undertaking: u.id, sitting: st.sitting };
       st.flags["minister_resigned"] = true;
       const pname = ((C && C.cabinetById && C.cabinetById[u.post]) || {}).name || u.post;
-      chronicle(st, "The " + pname + " resigns", [holder, post.party],
+      chronicle(st, C, "The " + pname + " resigns", [holder, post.party],
         personName(C, holder) + " resigned as " + pname + ", after the government broke an undertaking it had given");
     }
     /* A PROMISE THAT BOUGHT A NAME OFF THE PAPER puts it back when broken
@@ -5740,7 +5786,7 @@ const Engine = (function () {
       (st.signedBy || (st.signedBy = [])).push(u.signs);
       st.signatures = (st.signatures || 0) + 1;
       const who = ((C && C.characterById) || {})[u.signs];
-      st.log.unshift({ sitting: st.sitting, text: "The paper: " +
+      record(st,C,"log",{ sitting: st.sitting, text: "The paper: " +
         (who ? who.name : u.signs) + "'s name goes back on it" });
     }
     if (u.onBreach && C && C.eventById && C.eventById[u.onBreach])
@@ -6402,12 +6448,12 @@ const Engine = (function () {
       if (!st.intervalCourse.length) { st.intervalCourse = null; st.interval = null; }
     }
     settle(st, C);
-    return ch.result || null;
+    return ch.result ? text(ch.result,C) : null;
   }
   function recordEvent(st, C, event, label) {
     st.seen[event.id] = (st.seen[event.id] || 0) + 1;
     (st.lastFired || (st.lastFired = {}))[event.id] = st.sitting;
-    st.log.unshift({sitting:st.sitting,eventId:event.id,kind:eventKind(event),text:event.title + (label == null ? "" : " — " + label)});
+    record(st,C,"log",{sitting:st.sitting,eventId:event.id,kind:eventKind(event),text:text(event.title,C) + (label == null ? "" : " — " + text(label,C))});
     syncMatters(st,C,{event:event.id});
   }
   function acknowledge(st, C, event) {
@@ -6862,8 +6908,8 @@ const Engine = (function () {
       .replace(/\{date\}/g, date);
     const key = (dir ? "directed_" : "") + kind;
     const wire = S[key] || S[kind];
-    if (wire && wire.wire) st.wire.unshift({ sitting: st.sitting, text: fill(wire.wire) });
-    if (wire && wire.log) st.log.unshift({ sitting: st.sitting, text: fill(wire.log) });
+    if (wire && wire.wire) record(st,C,"wire",{ sitting: st.sitting, text: fill(wire.wire) });
+    if (wire && wire.log) record(st,C,"log",{ sitting: st.sitting, text: fill(wire.log) });
     return d;
   }
 
@@ -7261,15 +7307,15 @@ const Engine = (function () {
       const key = "_tender_" + k;
       if (!st.flags[key]) {
         st.flags[key] = true;
-        if (L[k].wire) st.wire.unshift({ sitting: st.sitting, text: String(L[k].wire).toUpperCase() });
-        if (L[k].log) st.log.unshift({ sitting: st.sitting, text: L[k].log });
+        if (L[k].wire) record(st,C,"wire",{ sitting: st.sitting, text: upper(String(L[k].wire),C) });
+        if (L[k].log) record(st,C,"log",{ sitting: st.sitting, text: L[k].log });
       }
     });
     if (left > 0 && st.macro) {
       st.macro.arrears = (st.macro.arrears || 0) + left;
       if (!st.flags._arrears) {
         st.flags._arrears = true;
-        st.log.unshift({ sitting: st.sitting, text:
+        record(st,C,"log",{ sitting: st.sitting, text:
           "The reserve is empty and the tender is full: " + money(C, left) +
           " of the Commonwealth's payments are unpaid." });
       }
@@ -7294,7 +7340,7 @@ const Engine = (function () {
       if (m.arrears <= 0) {
         m.arrears = 0;
         delete st.flags._arrears;
-        st.log.unshift({ sitting: st.sitting, text:
+        record(st,C,"log",{ sitting: st.sitting, text:
           "The Treasury has paid its arrears, and the Commonwealth's payments are current again." });
       }
     }
@@ -7353,13 +7399,13 @@ const Engine = (function () {
     const pc = rate.toFixed(2);
     const fill = t => String(t).replace(/\{n\}/g, money(C, n, L.currency))
       .replace(/\{got\}/g, money(C, got)).replace(/\{rate\}/g, pc);
-    st.log.unshift({ sitting: st.sitting, text: L.log ? fill(L.log)
+    record(st,C,"log",{ sitting: st.sitting, text: L.log ? fill(L.log)
       : "Borrowed " + money(C, n, L.currency) + " from " + (L.name || id) +
         ", at " + pc + " per cent." });
     st.wire = st.wire || [];
-    st.wire.unshift({ sitting: st.sitting, text: L.wire ? fill(L.wire)
+    record(st,C,"wire",{ sitting: st.sitting, text: L.wire ? fill(L.wire)
       : "COMMONWEALTH BORROWS " + money(C, n, L.currency).toUpperCase() + " FROM " +
-        String(L.name || id).toUpperCase() + " AT " + pc + " PER CENT" });
+        upper(String(L.name || id),C) + " AT " + pc + " PER CENT" });
     syncMatters(st,C,{target:{kind:"money",id}});
     return { ok: true, borrowed: n, received: got, rate: rate };
   }
@@ -7408,7 +7454,7 @@ const Engine = (function () {
        a debt paid a unit at a time would buy legitimacy by the unit. */
     if (p - off <= 0)
       st.scalars.legitimacy = clamp((st.scalars.legitimacy || 0) + 2, 0, 100);
-    st.log.unshift({ sitting: st.sitting,
+    record(st,C,"log",{ sitting: st.sitting,
       text: "Repaid " + money(C, n) + " to " + (L.name || id) + "." });
     settle(st, C);
     return { ok: true, repaid: n };
@@ -7974,7 +8020,7 @@ const Engine = (function () {
       marks.push("LEADERSHIP BALLOT: " + st.ballot.for + " for, " +
         st.ballot.against + " against, " + st.ballot.need + " needed");
       const pm = ((C.parties || []).find(p0 => p0.id === st.playerParty) || {}).leader;
-      chronicle(st, "Leadership ballot: " +
+      chronicle(st, C, "Leadership ballot: " +
         st.ballot.for + " for, " + st.ballot.against + " against, " +
         st.ballot.need + " needed \u2014 " +
         (st.ballot.carries ? "the Prime Minister holds" : "the Prime Minister loses"), [st.playerParty, pm],
@@ -8625,7 +8671,7 @@ const Engine = (function () {
     if (t.effects) apply(st, C, t.effects);
     if (i.event) apply(st, C, [{ queue: { event: i.event, after: t.after || 3 } }]);
 
-    st.log.unshift({ sitting: st.sitting,
+    record(st,C,"log",{ sitting: st.sitting,
       text: i.title + (t.label ? " \u2014 " + t.label : "") });
     syncMatters(st,C,{target:{kind:"initiative",id,tempo:tempoIdx || 0},landing:i.event ? st.sitting + (t.after || 3) : null});
     settle(st, C);
@@ -8676,9 +8722,9 @@ const Engine = (function () {
     spendSlots(st, 1);
     st.actedThisSitting = true;
     apply(st, C, a.effects || []);
-    (bs.amendments = bs.amendments || []).push({ id: a.id, label: a.label, at: st.sitting });
-    billLog(st, billId, "amendment", "Amended: " + (a.label || a.id));
-    st.log.unshift({ sitting: st.sitting,
+    (bs.amendments = bs.amendments || []).push({ id: a.id, label: a.label == null ? a.label : text(a.label,C), at: st.sitting });
+    billLog(st, C, billId, "amendment", "Amended: " + (a.label || a.id));
+    record(st,C,"log",{ sitting: st.sitting,
       text: "Amendment moved to " + b.title + ": " + (a.label || a.id) });
     settle(st, C);
     return { ok: true, amendment: a };
@@ -8708,8 +8754,8 @@ const Engine = (function () {
     if (on < first) return { ok: false, reason: "the House cannot divide before sitting " + first };
     if (on > last) return { ok: false, reason: "the House rises at sitting " + last };
     bs.dividesOn = on;
-    billLog(st, billId, "day", "Set down for sitting " + on);
-    st.log.unshift({ sitting: st.sitting, text:
+    billLog(st, C, billId, "day", "Set down for sitting " + on);
+    record(st,C,"log",{ sitting: st.sitting, text:
       (C.billById[billId] || {}).title + " set down for sitting " + on });
     return { ok: true, on: on };
   }
@@ -8824,11 +8870,11 @@ const Engine = (function () {
        every period after the first for seventeen sittings where setup says
        sixteen, and a run of three periods for fifty. */
     st.risesAt = st.sitting + periodLength(C) - 1;
-    st.log.unshift({ sitting: st.sitting, text: "The House rises for the recess, and returns " +
+    record(st,C,"log",{ sitting: st.sitting, text: "The House rises for the recess, and returns " +
       (C && C.setup && C.setup.recessDays && st.date ? "on " + st.date + " " : "") +
       "for the " + (["", "first", "second", "third", "fourth", "fifth"][st.period] ||
       "next") + " sitting period of the session." });
-    st.wire.unshift({ sitting: st.sitting, text: "THE HOUSE RISES FOR THE RECESS" });
+    record(st,C,"wire",{ sitting: st.sitting, text: "THE HOUSE RISES FOR THE RECESS" });
   }
 
   /* Dissolution, the election, and the end of the campaign. The seats are
@@ -8856,9 +8902,9 @@ const Engine = (function () {
     st.dissolved = { at: st.sitting, session: st.session, period: st.period || 1,
                      before: before, was: before[st.playerParty] || 0,
                      side: confidence(st), sideParties: govSide(st).slice() };
-    st.log.unshift({ sitting: st.sitting,
+    record(st,C,"log",{ sitting: st.sitting,
       text: "The House is dissolved. The Commonwealth goes to the country." });
-    st.wire.unshift({ sitting: st.sitting, text: "PARLIAMENT DISSOLVED" });
+    record(st,C,"wire",{ sitting: st.sitting, text: "PARLIAMENT DISSOLVED" });
     return { ok: true };
   }
 
@@ -8875,7 +8921,7 @@ const Engine = (function () {
     st.dissolved.countedAt = st.sitting;
     st.dissolved.sideNow = confidence(st);
     st.dissolved.majority = majority(st);
-    st.wire.unshift({ sitting: st.sitting, text: "THE COUNT: THE GOVERNMENT'S SIDE " +
+    record(st,C,"wire",{ sitting: st.sitting, text: "THE COUNT: THE GOVERNMENT'S SIDE " +
       st.dissolved.sideNow + " OF " + chamberTotal(st) + ", " +
       (st.dissolved.sideNow >= st.dissolved.majority ? "A MAJORITY" : "SHORT OF A MAJORITY") });
     return res;
@@ -9010,9 +9056,9 @@ const Engine = (function () {
     if (!C || !supplyPending(st, C) && !supplyCarried(st, C)) return;
     if (supplyCarried(st, C)) return;
     st.supplyLost = true;
-    st.log.unshift({ sitting: st.sitting, text:
+    record(st,C,"log",{ sitting: st.sitting, text:
       "The House rises without supply. The government cannot pay for itself." });
-    st.wire.unshift({ sitting: st.sitting, text: "SUPPLY NOT GRANTED" });
+    record(st,C,"wire",{ sitting: st.sitting, text: "SUPPLY NOT GRANTED" });
   }
 
   function prorogue(st, C) {
@@ -9028,7 +9074,7 @@ const Engine = (function () {
          from wiping the whole legislative programme on the first pass. */
       if (bs.stage === "drafting") return;
       bs.stage = "fallen"; bs.dead = true; bs.dividesOn = null;
-      billLog(st, b.id, "fallen", "Fell when the House rose");
+      billLog(st, C, b.id, "fallen", "Fell when the House rose");
       fell.push(b.title);
     });
 
@@ -9045,11 +9091,11 @@ const Engine = (function () {
     st.slots.reserved = {};                   /* reserved time is the period's */
     st.slotsGranted = [];
     st.risesAt = st.sitting + periodLength(C) - 1;   /* this sitting is the first; see recess() */
-    st.log.unshift({ sitting: st.sitting,
+    record(st,C,"log",{ sitting: st.sitting,
       text: "The House rises. Session " + st.session + " opens" +
             (fell.length ? "; " + fell.length + " bill" + (fell.length > 1 ? "s" : "") +
              " fell" : "") + "." });
-    st.wire.unshift({ sitting: st.sitting,
+    record(st,C,"wire",{ sitting: st.sitting,
       text: "THE HOUSE RISES" + (fell.length ? "; " + fell.length + " BILL" +
         (fell.length > 1 ? "S FALL" : " FALLS") : "") });
     return fell;
@@ -9179,9 +9225,9 @@ const Engine = (function () {
     if (have < need) {
       m.carried = true;
       st.noConfidence = { at: st.sitting, have: have, need: need };
-      st.wire.unshift({ sitting: st.sitting,
+      record(st,C,"wire",{ sitting: st.sitting,
         text: "THE HOUSE HAS NO CONFIDENCE IN THE GOVERNMENT: " + have + " TO " + need });
-      st.log.unshift({ sitting: st.sitting,
+      record(st,C,"log",{ sitting: st.sitting,
         text: "The motion of no confidence was carried, " + have + " against " + need + " needed." });
     } else {
       /* A MOTION THAT FAILS STRENGTHENS THE GOVERNMENT. */
@@ -9191,9 +9237,9 @@ const Engine = (function () {
       bumpScalar(st, C, "party_loyalty", 6);
       bumpScalar(st, C, "public_standing", 3);
       bumpScalar(st, C, "legitimacy", 4);
-      st.wire.unshift({ sitting: st.sitting,
+      record(st,C,"wire",{ sitting: st.sitting,
         text: "GOVERNMENT SURVIVES NO-CONFIDENCE MOTION " + have + " TO " + need });
-      st.log.unshift({ sitting: st.sitting,
+      record(st,C,"log",{ sitting: st.sitting,
         text: "The motion of no confidence was defeated, " + have + " against " + need + " needed." });
     }
     return m;
@@ -9306,7 +9352,7 @@ const Engine = (function () {
         Object.keys(idle.drag || {}).forEach(k => bumpScalar(st, C, k, idle.drag[k]));
         if (idle.mark && !st.flags._idle_mark) {
           st.flags._idle_mark = true;
-          st.wire.unshift({ sitting: st.sitting, text: idle.mark.toUpperCase() });
+          record(st,C,"wire",{ sitting: st.sitting, text: upper(idle.mark,C) });
         }
       }
     } else {
@@ -9350,7 +9396,7 @@ const Engine = (function () {
         const f = forecast(st, C);
         st.polls = st.polls || [];
         st.polls.push({ sitting: st.sitting, side: f.side, mine: f.mine });
-        st.wire.unshift({ sitting: st.sitting, text: "THE POLLS PUT THE GOVERNMENT'S SIDE ON " +
+        record(st,C,"wire",{ sitting: st.sitting, text: "THE POLLS PUT THE GOVERNMENT'S SIDE ON " +
           f.side + " OF " + f.total + ", " + (f.side >= f.majority ? "A MAJORITY OF " + (2 * f.side - f.total)
                                                                    : (f.majority - f.side) + " SHORT") });
       }
@@ -9364,7 +9410,7 @@ const Engine = (function () {
     }
     if (C) reviewReturns(st, C);
     if (C) tick(st, C).forEach(m =>
-      st.wire.unshift({ sitting: st.sitting, text: m.toUpperCase() }));
+      record(st,C,"wire",{ sitting: st.sitting, text: upper(m,C) }));
     if (C) syncMatters(st,C);
   }
 
@@ -9379,7 +9425,7 @@ const Engine = (function () {
     st.queue = st.queue.filter(q => due.indexOf(q) < 0);
     due.forEach(q => {
       apply(st, C, q.effects);
-      if (q.label) st.log.unshift({ sitting: st.sitting, text: q.label });
+      if (q.label) record(st,C,"log",{ sitting: st.sitting, text: q.label });
     });
     return due;
   }
@@ -9446,8 +9492,8 @@ const Engine = (function () {
        a settlement ends nothing, so it is recorded like any other fact of
        the sitting and its closing words wait for the last page. */
     const mark = (s0, how) => {
-      st.log.unshift({ sitting: st.sitting, text: how + ": " + s0.name });
-      st.wire.unshift({ sitting: st.sitting, text: String(s0.name).toUpperCase() });
+      record(st,C,"log",{ sitting: st.sitting, text: how + ": " + s0.name });
+      record(st,C,"wire",{ sitting: st.sitting, text: upper(String(s0.name),C) });
     };
     if (!st.resolvedAs) {
       const c = best(all.filter(s0 => s0.crisis));
@@ -9574,6 +9620,7 @@ const Engine = (function () {
   }
 
   return {
+    text, textView,
     STATE_VERSION, newGame, migrate, save, load, noteSince, since, chapters, reportedActor, receipts, believed,
     readout, campaignMarkers, matters, noteMatter, acknowledge,
     noticeSnapshot, noticeChanges, chooseWithNotices,
