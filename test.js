@@ -1288,6 +1288,14 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     const sb = Engine.newGame(K); sb.flags.sandbox = true;
     ok("the sandbox is never shut", !Engine.lockOf(sb, K, "grant"));
     ok("a campaign without locks shuts nothing", !Engine.lockOf(Engine.newGame(CONTENT), CONTENT, "grant"));
+    /* WHAT IS SHOWN WHEN (brief E2): setup.reveals keeps a piece of the board out of sight until a scene has been read */
+    const R = Object.assign({}, CONTENT, { setup: Object.assign({}, CONTENT.setup, { reveals: { forecast: { when: { seen: ["gate_scene"] } } } }) });
+    const rs = Engine.newGame(R);
+    ok("a revealed key that has not been earned is hidden", Engine.revealed(rs, R, "forecast") === false);
+    rs.seen.gate_scene = 1;
+    ok("and shown once its scene has been read", Engine.revealed(rs, R, "forecast") === true);
+    ok("a key with no entry is always shown, and so is the author's bench", Engine.revealed(Engine.newGame(R), R, "orderpaper") === true &&
+       (b => { b.flags.sandbox = true; return Engine.revealed(b, R, "forecast"); })(Engine.newGame(R)));
   }
 
   /* THREE CHAPTERS, AND NOTHING AFTER THE COUNT (bible §1.7). */

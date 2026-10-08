@@ -1930,7 +1930,7 @@ const UI = (function () {
           (v.seats != null && v.aye < v.seats ? " · " + (v.seats - v.aye) + " will not vote with the party" : "") +
           `</i></button>`;
       }).join("")
-       : `<div class="note">Nothing is before the House.</div>`) + `</div>`;
+       : `<div class="note">No measure is on the order paper, so this current has no vote to cast yet.</div>`) + `</div>`;
 
     /* The named leader is authored when the current has one. Until then,
        a member holding an office speaks for it; otherwise its first named
@@ -2444,7 +2444,7 @@ const UI = (function () {
         return `<div class="prow" data-person="${esc(ch.id)}" data-shadow="${esc(ch.shadow)}">` +
           `<div class="plab">${person(ch)}<em>${esc(post ? post.name : ch.shadow)}</em></div></div>`;
       }).join("") + `<div class="rulehead">What the Opposition is doing</div>` +
-      `<div class="note" data-opposition-moves>Nothing yet.</div>`;
+      `<div class="note" data-opposition-moves>The Opposition's questions, motions and votes are listed here as they happen.</div>`;
   }
 
   /* The bands' own words. Content names them; this only capitalises. */
@@ -2813,7 +2813,7 @@ const UI = (function () {
       });
       card.querySelector(".gov-summary-counts").textContent = counts.join(" · ");
       const empty = document.createElement("p"); empty.className = "note gov-no-business";
-      empty.textContent = "No business in this department.";
+      empty.textContent = "This department has nothing before you. An order its minister can make appears here once the Prime Minister may make it.";
       empty.hidden = counts.length > 0 || !!card.querySelector('.flag.bad[data-tip="vacant"]');
       card.querySelector(".gov-card-work").appendChild(empty);
     });
@@ -3653,11 +3653,9 @@ const UI = (function () {
   function billRuleHTML(b) {
     if (b.test === "supply")
       return `<div class="rulehead">The rule</div><div class="note">` +
-        `A money bill. The elected benches vote money, so it needs a majority of ` +
-        `the 240 and nothing else: a budget touches every subject there is, so the ` +
-        `domain test is not applied to it. The functional forty divide and are ` +
-        `recorded. They cannot stop it, and a bench that votes it down holds it ` +
-        `for ${words(C.setup.supplyDelaySittings || 3)} sittings — paid in the one currency that cannot be topped up.</div>`;
+        `A money bill. It needs a majority of the 240 elected members. The 40 functional ` +
+        `members vote and their votes are recorded, and if most of them vote against it, ` +
+        `it is held for ${words(C.setup.supplyDelaySittings || 3)} sittings.</div>`;
     if (b.dualMajority)
       return `<div class="rulehead">The rule</div><div class="note">` +
         `The dual test applies. It must carry separately among the 240 elected ` +
@@ -3714,8 +3712,7 @@ const UI = (function () {
     if (!rows) return "";
     return `<div class="rulehead">Who is for it, and why</div>
       <table class="billwhy"><tbody>${rows}</tbody></table>
-      <div class="note wykey">own / per / sov / clo \u2014 with it <b>+</b>, against it <b>\u2212</b>.
-        Hover a row for the long form.</div>`;
+      <div class="note wykey">Each code is an axis the bill moves: ownership, civil liberties, personhood, sovereignty or trade with Earth. A <b>+</b> means the bill moves the party's position towards its own, a <b>\u2212</b> away from it. Hover a row for the long form.</div>`;
   }
 
   /* THE DIVISION LIST — every member, by name, after the fact.
@@ -5547,10 +5544,10 @@ const UI = (function () {
             : `<div class="note">Nothing that moves a number. What changes is
                  what you have said, and who heard it.</div>`}
         </div>
-        ${owed.length ? `<div class="ch-sec owed"><h4>You would be undertaking</h4>
+        ${owed.length ? `<div class="ch-sec owed"><h4>You would be promising</h4>
           ${owed.map(x => `<div class="ch-owe">${esc(x.text)}</div>`).join("")}
-          <div class="note">It goes on the order paper. Keep it there and it stands
-            against you.</div></div>` : ""}
+          <div class="note">The promise goes on the Owed list. If it is not kept by the date
+            shown, the person it was made to acts on it.</div></div>` : ""}
         ${cab.length ? `<div class="ch-sec"><h4>The cabinet</h4>
           ${cab.map(r => `<div class="ch-cab ${r.for ? "for" : "against"}">
             <b>${esc(r.name)}</b> <em>${esc(r.office)}</em>
@@ -6062,6 +6059,14 @@ const UI = (function () {
       .concat([{ kind: "cast", body: rows }]);
   }
 
+  /* "8 May 2080", for a dateline. The act's last page is dated the day the House rose, which is the sitting before the
+     one the next period opens on (the state in hand has already moved on to it). */
+  function longDate(iso) {
+    if (!iso) return "";
+    const [y, m, d] = String(iso).split("-").map(Number);
+    return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+  }
+
   /* "Thursday 14 April" — the card names the day, because a player
      reading a date wants the weekday as much as the number. */
   function dayLabel(iso) {
@@ -6209,7 +6214,7 @@ const UI = (function () {
   function drawCalendar() {
     const el = $("#sit-cal"); if (!el) return;
     el.innerHTML = calendarHTML();
-    const ss = $("#cal-sess"); if (ss) ss.textContent = st.session;
+
     /* One listener, and a real <button> brings its own keyboard. */
     el.querySelectorAll("[data-goto]").forEach(b =>
       b.addEventListener("click", () => openTarget(b)));
@@ -6314,7 +6319,7 @@ const UI = (function () {
           Engine.lastPeriod(st, C) ? "of session " + st.session : "in this sitting period"}</i></div>`);
     }
     return rows.length ? rows.join("")
-      : `<div class="note">Nothing before the House but the sitting itself.</div>`;
+      : `<div class="note">No measure is due for debate or a division this sitting.</div>`;
   }
   function partyName(id) {
     const p = (C.parties || []).find(x => x.id === id) ||
@@ -6951,7 +6956,7 @@ const UI = (function () {
     const country = stateOfCountry();
     if (country.length) secs.push({ kind: "document", head: "The state of the country",
       body: country.map(r => r.k + ": " + r.then + " when the session opened, " + r.now + " now.").join("\n\n"),
-      source: "Treasury and Reserve Bank, " + (st.date || "") });
+      source: "Treasury and Reserve Bank, " + longDate(end.kind === "act" && Engine.dateOfSitting(C, st.sitting - 1) || st.date) });
 
     /* WHAT THE GOVERNMENT DID TO THE COUNTRY, which is the thing a player
        wants at the end and which no board has ever printed: where it was
@@ -7364,7 +7369,7 @@ const UI = (function () {
                     <td class="n to">${m.to}</td>
                     <td class="n d">${m.delta > 0 ? "+" : ""}${m.delta}</td></tr>`
                ).join("")}</tbody></table></div>`
-          : `<div class="note">Nothing on the board moved.</div>`) +
+          : `<div class="note">No figure on the board changed this sitting.</div>`) +
         `<div class="btnrow">` +
         /* AN EVENT DOES NOT END THE SITTING (design/49): what it opened on
            is still to come, so the way on is the next page or the decision,
@@ -7396,7 +7401,7 @@ const UI = (function () {
     /* THE HEADING SAYS WHICH OF THE TWO THIS IS (design/49): the sitting's
        decision, or the government's answer to an event that has arrived. */
     const kind = Engine.eventKind(e);
-    const head = !open.length ? "No answer is open now"
+    const head = !open.length ? "No decision this sitting"
       : kind === "event" ? "Your answer" : "Decision";
     foot.innerHTML = `<div class="rulehead" id="sit-decide-head" data-kind="${kind}">${head}</div><div class="choices">` +
       open.map(x => choiceRow(e, x.choice, x.index, openRow.i === x.index)).join("") +
@@ -7570,6 +7575,9 @@ const UI = (function () {
   const CHCOLOURS = [["party", "by party"], ["vote", "by vote"]];
   const CHTOGGLES = [["group", "ayes together"], ["fold", "bench folded in"]];
   const chamberBill = () => chamberBare ? null : Focus.selected("cham-bills");
+  /* THE MEASURE WHOSE COUNT IS SHOWN: the same selection, and none until the campaign has explained the count
+     (setup.reveals.forecast), so the benches are not coloured by an expected vote before the player knows what one is */
+  const forecastBill = () => Engine.revealed(st, C, "forecast") ? chamberBill() : null;
 
   function drawChamberPicker() {
     const el = $("#cham-pick"); if (!el) return;
@@ -7630,7 +7638,7 @@ const UI = (function () {
      would have handed the player the exact division by counting marks. */
   function drawChamberForecast() {
     const el = $("#cham-forecast"); if (!el) return;
-    const id = chamberBill();
+    const id = forecastBill();
     if (!id) {
       el.innerHTML = `<div class="note">Naming a measure colours the benches by how they are expected to go, ` +
         `and puts the whip beside them.</div>`;
@@ -7737,7 +7745,7 @@ const UI = (function () {
   function drawBenchTable() {
     const el = $("#comp-table");
     if (!el) return;
-    const id = chamberBill();
+    const id = forecastBill();
     el.innerHTML = benchTableHTML(id ? forecast(id) : null);
     /* A player action, so it may make a sound. Clicking the open party
        again closes it.
@@ -7802,6 +7810,12 @@ const UI = (function () {
   }
 
   function drawOrderPaper() {
+    /* NOT YET PUT BEFORE THE PLAYER (setup.reveals.orderpaper): the list waits for the scene that explains it */
+    if (!Engine.revealed(st, C, "orderpaper")) {
+      $("#cham-bills").innerHTML = `<tbody><tr><td class="note">No measure is before the House yet. Measures are listed here once the order paper has been put in front of you.</td></tr></tbody>`;
+      const ct = $("#cham-time"); if (ct) ct.innerHTML = "";
+      return;
+    }
     /* WHICH BILL IS OPEN. This used to be the string "divergence", hard
        coded, so the order paper marked the same row for the whole of a
        game however many other bills you opened. The renderer asks the
@@ -7913,7 +7927,7 @@ const UI = (function () {
        pretend otherwise — the engine returns a count per party per tier,
        so the first n seats of each block are filled. The block is honest;
        the individual seat is a convenience of drawing. */
-    const shown = chamberBill();
+    const shown = forecastBill();
     /* WHILE A DIVISION IS BEING READ the plan is drawn from the running count
        and not from the bill: the seats of a party that has been called fill,
        and a party still to come does not. */

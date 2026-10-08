@@ -43,6 +43,11 @@ campaign("flash_i", { administrations: [
          instead of an election: the event is read by the last page and never fires in play. */
       /* THE LEVER LADDER (design/81 question 3; js/engine.js `lockOf`). A control that writes is shut, dimmed, with one line
          saying what opens it, until the scene that teaches it has been read; reading is never shut. */
+      /* WHAT IS SHOWN WHEN (brief E2; js/engine.js `revealed`). The Chamber's list of measures waits for the order paper's
+         scene, and the count of a measure (in the Chamber and in its Concordance article) for the scene that explains it. */
+      reveals:{
+        orderpaper:{ when:{ seen:["a1_order_paper"] } },
+        forecast:{ when:{ seen:["a1_count"] } } },
       locks:{
         grant:{ when:{ seen:["a1_order_paper"] }, text:"Opens once the order paper has been put before you." },
         divide:{ when:{ seen:["a1_count"] }, text:"Opens once the count has been explained to you." },

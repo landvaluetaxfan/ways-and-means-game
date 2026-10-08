@@ -243,6 +243,7 @@ release or are sequenced with them.
   `test.js` (periods block); `tools/uitest.js` (the curtain block). Codex still owes the
   signed-off form: a campaign `play.curtain` frame, and a dated last page (the state of the
   country reads the date the next period would open on, 23 May, and not the rise's, 8 May).
+- **E2, landed in part (Claude, 8 October).** `setup.reveals[key] = { when }` and `Engine.revealed(st, C, key)` keep a piece of the board out of sight until a scene has been read, with no state change (it reads `seen`). Flash I reveals the Chamber's list of measures at `a1_order_paper` (with the empty state E15 asked for) and the count of a measure, in the Chamber's benches and in a bill's Concordance article, at `a1_count`. Not built: the full introduced record of people, stations and parties (visible from the start by decision, `design/81`). E15's strings, the curtain's date (the day the House rose, in words) and the calendar's "session 4" are done.
 - **E2 The introduced record.** Scenes, wire items and events name what they introduce; the
   save records it; every list the player sees (bills, orders, stations, people, Concordance)
   filters by it. `STATE_VERSION` bump with a migration guard.
@@ -545,9 +546,9 @@ reword it.
 | 7 | The works "outer" level moves one station's closure (Homestead) while the text said the outer stations' | Fixed in the text. Deferred: whether the effect should reach more stations, which changes Acts II to V's secession arithmetic |
 | 8 | The four tax clauses sit in the Chamber's clause panel with five levels each and are mentioned in one paragraph at sitting 4 | Fixed (E3 ladder: `clause:rate_*` locked until `a1_underwriters`) |
 | 9 | The clause panel named the taxes "Ways and Means: volume" and the page named them "tax on pressurised volume"; the Economy tab's base names differ again | Fixed in the bill and in `setup.fiscal.bases` (pressurised volume, cooling, computing time, freight to orbit) |
-| 10 | A bill's Concordance article prints a division forecast from sitting 1 | Deferred to E2 |
+| 10 | A bill's Concordance article prints a division forecast from sitting 1 | Fixed (E2, `setup.reveals.forecast`: the forecast waits for `a1_count`, here and in the Chamber's benches) |
 | 11 | `Appropriation (Session 4) Bill` and `HC 4/` references still show | Deferred to opencode (`briefs/appropriation-rename.md`) |
-| 12 | Tooltips carry typed constants ("a thermal margin of 15") | Deferred to E5's placeholders |
+| 12 | Tooltips carry typed constants ("a thermal margin of 15") | Deferred to E5's placeholders. What remains typed is the constitution's own (280 seats, 140, 100 and 40, a majority of 141), which bible §11 locks, and one tuning knee (the thermal margin of 15) |
 | 13 | `prose:in` writes prose.txt over the source, so a hand edit after generation is silently reverted | Recorded in `LESSONS.md`. Deferred: make `prose:in` refuse when the source has changed since the export |
 | 14 | `lint` ordered the world's retired events with Act I's glossary, and read neither choice notes nor headlines | Fixed. It now reads the live campaign's path and the notes, and caught two early uses of a term |
 | 15 | The glossary's `handle` asides are analogies ("Voter ID, for a world where copies are cheap"), against the Reference rule of no metaphor | Fixed (`design/81`, question 6): cut, kept whole in `content/archive/glossary-handles.js` |

@@ -701,7 +701,7 @@ const Concordance = (function () {
   function billArticle(b) {    const bs = st.bills[b.id], d = Engine.division(st, C, b.id);
     const sections = [{ h: "Provisions", body: b.summary }];
     if (b.effectNote) sections.push({ h: "Estimated effect", body: b.effectNote });
-    sections.push({ h: "Division forecast", body:
+    if (Engine.revealed(st, C, "forecast")) sections.push({ h: "Division forecast", body:
       `Among elected members, ${d.popular.aye} of ${d.popular.total} against a requirement of ` +
       `${d.popular.need}. ` +
       (b.dualMajority

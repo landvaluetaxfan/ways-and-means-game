@@ -79,7 +79,7 @@ const tick = () => new Promise(r => w.setTimeout(r, 20));
   /* each region resolves on its tab in a booted game: the estimates are opened for the two that need a bill */
   const tabs = {};
   Object.keys(R).forEach(n => { (tabs[R[n].tab] = tabs[R[n].tab] || []).push(n); });
-  w.eval("UI.state().seen.a1_order_paper = 1; Shell.setOpt('tutorial','off')");
+  w.eval("UI.state().seen.a1_order_paper = 1; UI.redraw(); Shell.setOpt('tutorial','off')");
   for (const tab of Object.keys(tabs)) {
     w.eval(`UI.openTab(${JSON.stringify(tab)})`);
     if (tab === "cham") { const row = q('#cham-bills tr[data-bill="appropriation"]'); if (row) row.click(); }

@@ -2414,6 +2414,16 @@ const Engine = (function () {
     return matches(st, k.when) ? null : { lever: lever, text: k.text || "Not open yet." };
   }
 
+  /* WHAT THE PLAYER HAS BEEN SHOWN YET (brief E2). A campaign may keep a piece of the board out of sight until the scene
+     that introduces it has been read: `setup.reveals[key] = { when }`. A key with no entry is always shown, and so is
+     everything on the author's bench. Keys the interface asks: "orderpaper" (the Chamber's list of measures) and
+     "forecast" (the count of a measure, in the Chamber and in its Concordance article). */
+  function revealed(st, C, key) {
+    const R = ((C && C.setup) || {}).reveals, k = R && R[key];
+    if (!k || (st.flags && st.flags.sandbox)) return true;
+    return matches(st, k.when);
+  }
+
   function canGrant(st, C, billId) {
     const lk = lockOf(st, C, "grant");
     if (lk) return { ok: false, locked: true, reason: lk.text };
@@ -9361,7 +9371,7 @@ const Engine = (function () {
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
     canApprove, approveInstrument, approvalForecast, reservedFor,
     instrumentsInForce, appoint, vacate,
-    lockOf, loyaltyOf, whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
+    lockOf, revealed, loyaltyOf, whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
     /* Exported so the interface cannot invent a second way to score
        agreement. A tooltip that disagreed with a division would be the
        worst kind of bug here: both right, neither checkable. */

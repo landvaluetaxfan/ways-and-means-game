@@ -123,9 +123,13 @@ async function boot(label, how) {
 
   /* the lever ladder, as the page draws it: at the start the estimates' clauses and the grant are shut and say so */
   w.eval("UI.openTab('cham')");
+  ok("served: the Chamber lists no measure before the order paper has been put in front of the player",
+     !w.document.querySelector("#cham-bills tr[data-bill]") && /No measure is before the House yet/.test(w.document.querySelector("#cham-bills").textContent));
+  ok("served: and the count of a measure is not shown yet", w.eval("Engine.revealed(UI.state(), UI.content(), 'forecast')") === false);
+  w.eval("UI.state().seen.a1_order_paper = 1; UI.redraw()");
   const arow = w.document.querySelector('#cham-bills tr[data-bill="appropriation"]');
   if (arow) arow.click();
-  ok("served: the Chamber's grant is shut at the start", !!arow && !!arow.querySelector(".slotbtn") && arow.querySelector(".slotbtn").disabled);
+  ok("served: the Chamber's grant is open once the order paper has been read", !!arow && !!arow.querySelector(".slotbtn") && !arow.querySelector(".slotbtn").disabled);
   ok("served: every clause level is dimmed, with the line that says what opens it",
      w.document.querySelectorAll(".cl-opt").length > 0 && w.document.querySelectorAll(".cl-opt:not(.locked)").length === 0 &&
      w.document.querySelectorAll(".cl-lock").length > 0);
@@ -179,6 +183,7 @@ async function boot(label, how) {
     break;
   }
   ok("Act I plays from the menu to the curtain through the packaged page", curtain, "stopped at sitting " + w.eval("UI.state().sitting") + " after " + steps + " steps");
+  ok("the curtain page is dated the day the House rose, in words", /Treasury and Reserve Bank, 8 May 2080/.test(w.document.body.textContent));
   ok("the curtain page thanks the player and points to the report", /Thank you for playing/.test(w.document.body.textContent) && /Copy playtest report/.test(w.document.body.textContent));
   ok("served: the console is clean after the whole act", s.errs.length === 0, s.errs.slice(0, 2).join(" | "));
   w.close(); srv.close();
