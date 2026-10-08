@@ -108,7 +108,7 @@ const ok = (label, cond, extra) => {
    to their unique panel ID; :scope prevents an outside ancestor matching. */
 const $ = s => {
   const anchored = /^#([A-Za-z_][\w-]*)(?:\s+([^,]+))?$/.exec(s);
-  if (!anchored) return w.document.querySelector(s);
+  if (!anchored || (anchored[2] && /^[+~]/.test(anchored[2]))) return w.document.querySelector(s);
   const panel = w.document.getElementById(anchored[1]);
   return anchored[2] ? (panel ? panel.querySelector(":scope " + anchored[2]) : null) : panel;
 };

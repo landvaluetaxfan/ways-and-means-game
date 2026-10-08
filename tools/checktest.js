@@ -35,6 +35,17 @@ async function main() {
     }
     assert.strictEqual(active, 0, "all children finish before the runner returns");
     assert.strictEqual(peak, 2, "readers overlap within the concurrency limit");
+    fs.writeFileSync(events, "");
+    const writer = `const fs=require('fs'),file=process.argv[1],id=process.argv[2];
+      fs.appendFileSync(file,'start '+id+'\\n');
+      setTimeout(()=>{fs.appendFileSync(file,'end '+id+'\\n');},300);`;
+    await run([0,1].map(id => ({ name: String(id), resource: "bundle", commands: [["-e",writer,events,String(id)]] })),
+      { concurrency: 2, report: () => {} });
+    active = 0; peak = 0;
+    for (const line of fs.readFileSync(events,"utf8").trim().split("\n")) {
+      active += line.startsWith("start ") ? 1 : -1; peak = Math.max(peak, active);
+    }
+    assert.strictEqual(peak, 1, "checks sharing an output file never overlap");
     await assert.rejects(run(jobs, { concurrency: 0 }), /concurrency/, "bad limits must not silently skip checks");
     console.log("check runner: real children overlap, all run, failures and output survive");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }

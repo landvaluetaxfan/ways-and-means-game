@@ -39,6 +39,12 @@ H.boot(); ok("Shell.boot()", true);
     ok("unanchored selectors still use the CSS search", $(".ui-lookup-child") === replacement.firstChild && scans === 1);
     ok("grouped selectors retain the document's first-match semantics",
       $("#ui-lookup-missing, #ui-lookup-probe") === replacement);
+    const adjacent = doc.createElement("div"); adjacent.className = "ui-lookup-next";
+    replacement.after(adjacent);
+    try {
+      ok("adjacent sibling selectors retain their document scope", $("#ui-lookup-probe + .ui-lookup-next") === adjacent);
+      ok("general sibling selectors retain their document scope", $("#ui-lookup-probe ~ .ui-lookup-next") === adjacent);
+    } finally { adjacent.remove(); }
   } finally { doc.querySelector = original; doc.body.classList.remove("ui-lookup-outside"); replacement.remove(); }
 }
 
@@ -2194,8 +2200,8 @@ try {
        campaign's year when it was written and stopped being true the moment
        the canon date moved -- the third place in one sweep where a literal
        stood in for content's own number. */
-    const H = w.eval("JSON.stringify(CONTENT.setup.history)");
-    const span = JSON.parse(H);
+    const historyJSON = w.eval("JSON.stringify(CONTENT.setup.history)");
+    const span = JSON.parse(historyJSON);
     ok("and the record draws the years before the game",
        ((H.$("#chart-sub") || {}).textContent || "")
          .indexOf(String(span.from)) >= 0,

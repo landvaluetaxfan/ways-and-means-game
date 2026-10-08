@@ -8,7 +8,8 @@ Flash I is built to the end of Act I (sittings 1 to 16, the rise, `a1_works_aban
 build is `npm run itch` (`dist/ways-and-means-itch.zip`, one `index.html`, about 4 MB). The author will upload it to itch.io
 and send testers a Discord link; there is no network call anywhere and no server.
 
-`npm run check` has **eighteen** checks and takes about 25 minutes (`uitest` about 13 and `uxtest` about 8). Run it in the
+`npm run check` has **eighteen** checks. E10 now runs bounded parallel readers; on the author's Windows checkout the
+unchanged baseline took 524.40 seconds and the final passing run took 349.27 seconds. Run it in the
 background and wait for it; never edit a source file while it runs, because the DOM checks read files late. **Break a check's
 subject and watch it fail before you trust it** (`AGENTS.md`); this session found a vacuous assertion that way
 (`itchtest` read `document.body.textContent`, which includes every inline script).
@@ -44,13 +45,17 @@ touch them.** `exchange/claims` still lists both claims; release or renew them.
 
 # Yours, in order
 
-**E10 in progress (Codex):** the unchanged eighteen-check baseline passed in 524.40 seconds on the author's
-Windows checkout. A bounded parallel runner preserves every check and isolates the prose write-back. The
-existing Government selection assertion failed before and after the lookup changes; the parallel mutation run
-reported 17/18 and exited 1. Final integration and green verification are pending. No player-facing wording added.
+**E10 complete (Codex):** all eighteen checks passed in 349.27 seconds, against the unchanged 524.40-second
+baseline (33.4% faster). The prose write-back runs alone, then up to four readers run together. UI and itch
+checks share a bundle-writing resource and cannot overlap. The original Government selection assertion
+failed before and after the lookup changes; fifteen focused mutations also failed as intended, covering live
+DOM replacements, selector semantics, failure/output preservation and shared-build exclusion. Review caught
+and corrected a local harness-name shadow, sibling selector scoping and the shared-build race. No existing
+assertions were removed and no player-facing wording was added.
 
-1. **Make `npm run check` fast (E10).** Run the independent checks in parallel and cut the per-call DOM scans in
-   `tools/uitest.js`. It must not weaken a check. This is the most useful thing left: every change costs 25 minutes now.
+1. **Make `npm run check` fast (E10): done.** The eighteen checks remain; runner contracts are tested before the
+   engine test within the existing `test` job. DOM lookups use live ID indexing and panel-scoped descendants,
+   with document lookup retained for grouped selectors and siblings. No check was removed or split away.
 2. **E9, change notices.** Effects return `{kind, tab, id, summary}`; the Sitting tab shows each as a card; a check
    snapshots state before and after each decision on sampled paths and fails on any change to a displayed field with no
    notice. It is the largest machine check still missing from the exit gate (`briefs/act-one.md`, item 5).

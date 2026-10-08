@@ -5,11 +5,16 @@ const fs = require("fs"), path = require("path"), os = require("os"), cp = requi
 
 async function run(jobs, { concurrency = 4, cwd = path.join(__dirname, ".."), report = () => {} } = {}) {
   if (!Number.isInteger(concurrency) || concurrency < 1) throw new Error("concurrency must be a positive integer");
-  const results = [];
+  const results = [], resources = new Map();
   let next = 0;
   await Promise.all(Array.from({ length: Math.min(concurrency, jobs.length) }, async () => {
     while (next < jobs.length) {
-      const job = jobs[next++], start = performance.now();
+      const job = jobs[next++], previous = job.resource && resources.get(job.resource);
+      let release = () => {};
+      if (job.resource) resources.set(job.resource, new Promise(resolve => { release = resolve; }));
+      if (previous) await previous;
+      const start = performance.now();
+      try {
       let output = "", code = 0;
       for (const args of job.commands) {
         code = await new Promise(resolve => {
@@ -23,6 +28,7 @@ async function run(jobs, { concurrency = 4, cwd = path.join(__dirname, ".."), re
       }
       const result = { name: job.name, code, output, seconds: (performance.now() - start) / 1000 };
       results.push(result); report(result);
+      } finally { release(); }
     }
   }));
   return results;
@@ -33,7 +39,8 @@ async function main() {
   // Start the long DOM checks first. Every former check remains a full process.
   const names = ["ui", "ux", "editor", "itchtest", "test", "guards", "lint", "cx", "roundtrip", "rename",
     "tocheck", "enc", "exchange:check", "storymap:check", "fidget", "flags", "tutorial"];
-  const job = name => ({ name, commands: pkg.scripts[name].split(/\s*&&\s*/).map(command => {
+  const job = name => ({ name, resource: name === "ui" || name === "itchtest" ? "bundle" : undefined,
+    commands: pkg.scripts[name].split(/\s*&&\s*/).map(command => {
     // These scripts use only Node, paths without spaces, and plain flags.
     // Refuse a new shell construct rather than quietly change its meaning.
     if (!/^node [\w./:-]+(?: [\w./:-]+)*$/.test(command)) throw new Error("unsupported check command: " + command);
