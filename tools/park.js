@@ -155,7 +155,13 @@ function verify(origRoot) {
   process.exit(bad ? 1 : 0);
 }
 
-const args = process.argv.slice(2);
-if (args[0] === "--verify") verify(path.resolve(args[1]));
-else if (args[0]) run(JSON.parse(fs.readFileSync(args[0], "utf8")), args.includes("--dry"));
-else console.log("usage: node tools/park.js <plan.json> [--dry] | --verify <original-root>");
+/* The parser and range helpers are reused by tools/archiveworld.js, so they
+   are exported. The CLI runs only when this file is the entry point, not when
+   it is required. */
+if (require.main === module) {
+  const args = process.argv.slice(2);
+  if (args[0] === "--verify") verify(path.resolve(args[1]));
+  else if (args[0]) run(JSON.parse(fs.readFileSync(args[0], "utf8")), args.includes("--dry"));
+  else console.log("usage: node tools/park.js <plan.json> [--dry] | --verify <original-root>");
+}
+module.exports = { parse, findArray, chunks, keyName, idOf, stripCampaign };
