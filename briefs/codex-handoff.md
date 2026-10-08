@@ -44,6 +44,11 @@ touch them.** `exchange/claims` still lists both claims; release or renew them.
 
 # Yours, in order
 
+**E10 in progress (Codex):** the unchanged eighteen-check baseline passed in 524.40 seconds on the author's
+Windows checkout. A bounded parallel runner preserves every check and isolates the prose write-back. The
+existing Government selection assertion failed before and after the lookup changes; the parallel mutation run
+reported 17/18 and exited 1. Final integration and green verification are pending. No player-facing wording added.
+
 1. **Make `npm run check` fast (E10).** Run the independent checks in parallel and cut the per-call DOM scans in
    `tools/uitest.js`. It must not weaken a check. This is the most useful thing left: every change costs 25 minutes now.
 2. **E9, change notices.** Effects return `{kind, tab, id, summary}`; the Sitting tab shows each as a card; a check

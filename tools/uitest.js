@@ -17,6 +17,31 @@ H.banner("SHELL AND GAME SMOKE TEST");
 
 H.boot(); ok("Shell.boot()", true);
 
+/* Count searches, not elapsed time: this must stay cheap on a large DOM,
+   and must look up the replacement node rather than cache a detached one. */
+{
+  const doc = w.document, original = doc.querySelector;
+  let scans = 0;
+  doc.querySelector = function (selector) { scans++; return original.call(this, selector); };
+  const probe = doc.createElement("div"); probe.id = "ui-lookup-probe";
+  probe.innerHTML = '<span class="ui-lookup-child"></span>'; doc.body.appendChild(probe);
+  const replacement = probe.cloneNode(true);
+  try {
+    const first = $("#ui-lookup-probe"); probe.replaceWith(replacement);
+    ok("ID lookups use the live replacement after a redraw", first === probe && $("#ui-lookup-probe") === replacement);
+    ok("ID lookups do not scan the full document", scans === 0);
+    ok("anchored descendants keep their root and avoid document scans",
+      $("#ui-lookup-probe .ui-lookup-child") === replacement.firstChild && scans === 0);
+    doc.body.classList.add("ui-lookup-outside");
+    ok("anchored descendants never borrow an outside ancestor",
+      $("#ui-lookup-probe .ui-lookup-outside .ui-lookup-child") === null);
+    ok("an absent ID remains absent", $("#ui-lookup-missing") === null);
+    ok("unanchored selectors still use the CSS search", $(".ui-lookup-child") === replacement.firstChild && scans === 1);
+    ok("grouped selectors retain the document's first-match semantics",
+      $("#ui-lookup-missing, #ui-lookup-probe") === replacement);
+  } finally { doc.querySelector = original; doc.body.classList.remove("ui-lookup-outside"); replacement.remove(); }
+}
+
 ok("main menu is showing", $("#menu").classList.contains("on"));
 ok("game shell is hidden", !$("#shell").classList.contains("on"));
 ok("title renders", /WAYS|Ways/i.test($(".menu-title").textContent));
@@ -192,7 +217,7 @@ ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.
  ok('the brief shows at most four stable matter cards',cards().length===4);
  ok('noted advice is absent from the brief',!cards().some(n=>n.dataset.matter==='ui_matter_4'));
  ok('overflow advice is absent from the brief',!cards().some(n=>n.dataset.matter==='ui_matter_5'));
- const first=()=>w.document.querySelector('[data-matter="ui_matter_0"]');
+ const first=()=>H.$('[data-matter="ui_matter_0"]');
  ok('the matter identifies its live owning minister',!!first() && first().textContent.includes(probe.c.characterById[probe.s.cabinet.life_support.holder].name));
  ok('the matter shows its authored note',!!first() && first().textContent.includes('Minister note 0'));
  ok('the matter shows a word readout',!!first() && first().textContent.includes('test margin'));
@@ -230,26 +255,26 @@ ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.
  ok('a money remedy focuses the exact lender',w.document.activeElement===amount && !!amount);
  ok('a money remedy forwards the authored amount',amount?.value==='3000');
  ok('opening a money call does not borrow',w.eval('Engine.save(UI.state())')===snapshot);
- const unavailable=w.document.querySelector('[data-matter="ui_matter_1"] [data-matter-remedy]');
+ const unavailable=H.$('[data-matter="ui_matter_1"] [data-matter-remedy]');
  ok('an unavailable target cannot look actionable',!!unavailable && unavailable.disabled);
  const reason=w.eval('Engine.matters')(probe.s,probe.c).find(m=>m.id==='ui_matter_1').remedies[0].reason;
  ok('an unavailable target explains the engine reason',!!unavailable && unavailable.getAttribute('data-tip-body').includes(reason));
  ok('advice navigation leaves red obligations unchanged',red()===redBefore);
  ok('advice navigation leaves the Rise warning unchanged',$('#btn-advance').textContent===riseBefore);
- ok('visible Government remedies light a quiet dot',!!w.document.querySelector('.tab[data-t="gov"] .tab-dot'));
- ok('visible Chamber remedies light a quiet dot',!!w.document.querySelector('.tab[data-t="cham"] .tab-dot'));
+ ok('visible Government remedies light a quiet dot',!!H.$('.tab[data-t="gov"] .tab-dot'));
+ ok('visible Chamber remedies light a quiet dot',!!H.$('.tab[data-t="cham"] .tab-dot'));
  w.eval("UI.openTab('sit')");const note=first()?.querySelector('[data-note-matter]');if(note){note.focus();note.click();}
  ok('Set aside records the real matter as noted',probe.s.matters.ui_matter_0.state==='noted');
  ok('Set aside removes that advice card',!first());
  ok('Set aside lands focus on the nearest surviving matter',w.document.activeElement?.dataset.matter==='ui_matter_1');
- ok('Set aside clears a now-stale Chamber advice dot',!w.document.querySelector('.tab[data-t="cham"] .tab-dot'));
- for(let n=0;n<8;n++){const b=w.document.querySelector('#sit-matters [data-note-matter]');if(!b)break;b.focus();b.click();}
+ ok('Set aside clears a now-stale Chamber advice dot',!H.$('.tab[data-t="cham"] .tab-dot'));
+ for(let n=0;n<8;n++){const b=H.$('#sit-matters [data-note-matter]');if(!b)break;b.focus();b.click();}
  ok('an empty brief retains focus on its own panel',w.document.activeElement?.id==='sit-matters');
  const held=w.eval('Engine.newGame')(probe.c);held.queue=[];held.flags._introRead=true;held.flags._act1=true;
  w.eval('Engine.reconcile')(held,probe.c);w.eval('Engine.makeInstrument')(held,probe.c,probe.si);
  w.eval('UI.boot')(held,probe.c);
- ok('a held matter shows its real work under way',!!w.document.querySelector('[data-matter="ui_matter_0"] [data-matter-underway]'));
- ok('a held affirmative order explains pending approval',w.document.querySelector('[data-matter="ui_matter_0"] [data-matter-underway]')?.textContent.includes('approval'));
+ ok('a held matter shows its real work under way',!!H.$('[data-matter="ui_matter_0"] [data-matter-underway]'));
+ ok('a held affirmative order explains pending approval',H.$('[data-matter="ui_matter_0"] [data-matter-underway]')?.textContent.includes('approval'));
  w.eval('UI.boot')(original,originalC);
 }
 
@@ -283,9 +308,9 @@ ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.
   const doc=w.document, Cg=w.eval('UI.content()'), state=w.eval('UI.state()');
   w.__workspaceContent=Cg;
   const before=w.eval('Engine.save(UI.state())'), post=Cg.cabinet[0].id;
-  const pick=id=>doc.querySelector('[data-select-post="'+id+'"]');
-  const visible=()=>[...doc.querySelectorAll('#gov-cabinet .gov-card')].filter(n=>!n.closest('[hidden]'));
-  const roster=[...doc.querySelectorAll('#gov-roster [data-select-post]')];
+  const pick=id=>$('#gov-roster [data-select-post="'+id+'"]');
+  const visible=()=>[...$('#gov-cabinet').querySelectorAll('.gov-card')].filter(n=>!n.closest('[hidden]'));
+  const roster=[...$('#gov-roster').querySelectorAll('[data-select-post]')];
   ok('the cabinet selector includes the Prime Minister and all authored offices in order',
     roster.length===Cg.cabinet.length+1 && roster.map(n=>n.dataset.selectPost).join(',')===[''].concat(Cg.cabinet.map(p=>p.id)).join(','));
   if(pick(post))pick(post).click();
@@ -330,21 +355,21 @@ ok("Government has a Prime Minister card then one card per cabinet post in conte
    [...w.document.querySelectorAll("#gov-cabinet .gov-card")].map(n => n.dataset.post).join(",") ===
    [""].concat(CONTENT.cabinet.map(p => p.id)).join(","));
 ok('the initial workspace shows all business, with vacancies exposed by the overview',
-   !w.document.querySelector('#gov-business').hidden && w.document.querySelector('#gov-cabinet').hidden &&
-   !!w.document.querySelector('#gov-vacancies [data-open^="post:"]'));
+   !H.$('#gov-business').hidden && H.$('#gov-cabinet').hidden &&
+   !!H.$('#gov-vacancies [data-open^="post:"]'));
 ok("each order appears under its authoring department",
    CONTENT.instruments.filter(i => {
      const s = w.eval("UI.state()");
      return ((s.cabinet[i.author] || {}).holder &&
        (!i.when || w.eval("Engine.matches(UI.state(), UI.content().instrumentById[" + JSON.stringify(i.id) + "].when)"))) ||
        (s.instruments[i.id] || {}).made;
-   }).every(i => !!w.document.querySelector(
+   }).every(i => !!H.$(
      '#gov-cabinet .gov-card[data-post="' + i.author + '"] [data-si="' + i.id + '"]')));
 /* CABINET DESK: inspect real authored work, not a second inventory. */
 {
   const doc=w.document, Cg=w.eval('UI.content()'), original=w.eval('Engine.save(UI.state())');
   w.__deskContent=Cg;
-  const $=s=>doc.querySelector(s), file=()=>$('#gov-inspector');
+  const $=H.$, file=()=>$('#gov-inspector');
   $('[data-gov-all]').click();
   const head=$('#gov-business [data-ini]'), id=head?.dataset.ini;
   if(head)head.click();
@@ -454,20 +479,20 @@ ok("each order appears under its authoring department",
   state.cabinet[post].holder = null;
   w.__businessFixture = fixture; w.__businessState = state;
   w.eval('UI.boot(window.__businessState, window.__businessFixture);');
-  const overview = () => w.document.querySelector('#gov-business');
+  const overview = () => H.$('#gov-business');
   ok('business overview exposes every vacancy, including posts without candidates',
     !!overview() && [post, 'treasury'].every(id => !!overview().querySelector('[data-open="post:' + id + '"]')));
-  const available = () => w.document.querySelector('#gov-available');
+  const available = () => H.$('#gov-available');
   ok('available powers retain a temporary refusal and omit closed story gates',
     !!available() && !!available().querySelector('[data-ini="test_business_open"]') &&
     /order-paper time/.test(available().textContent) && !available().querySelector('[data-ini="test_business_gated"]'));
   const blocked = available() && available().querySelector('[data-ini="test_business_open"]');
   if (blocked) blocked.click();
-  const inspected = w.document.querySelector('#gov-inspector:not([hidden])');
+  const inspected = H.$('#gov-inspector:not([hidden])');
   ok('temporarily blocked work remains readable while every unaffordable execution stays disabled',
     !!blocked && !blocked.disabled && !!inspected && /A plain explanation/.test(inspected.textContent) &&
     !!inspected.querySelector('[data-take]:disabled') && !inspected.querySelector('[data-take]:not(:disabled)'));
-  const pending = () => w.document.querySelector('#gov-pending');
+  const pending = () => H.$('#gov-pending');
   ok('under way shows one queue-backed answer with its sitting despite a vacant owner',
     !!pending() && pending().querySelectorAll('[data-running="test_business_pending"]').length === 1 &&
     pending().textContent.includes('sitting ' + (state.sitting+3)) && !pending().querySelector('[data-running="test_business_stale"]'));
@@ -475,12 +500,12 @@ ok("each order appears under its authoring department",
     !!pending() && !!available() && !!pending().querySelector('[data-si="test_business_order"]') &&
     !available().querySelector('[data-si="test_business_order"]'));
   ok('Cabinet groups an awaiting order with the department\'s pending work',
-    !!w.document.querySelector('#gov-cabinet [data-gov-section="running"] [data-si="test_business_order"]'));
-  const rail=()=>w.document.querySelector('#gov-roster [data-select-post="'+post+'"]');
+    !!H.$('#gov-cabinet [data-gov-section="running"] [data-si="test_business_order"]'));
+  const rail=()=>H.$('#gov-roster [data-select-post="'+post+'"]');
   const initialRailCounts=rail()?.querySelector('[data-gov-awaiting]')?.textContent==='1 awaiting approval' &&
     rail()?.querySelector('[data-gov-running]')?.textContent==='1 under way';
   pending().querySelector('[data-inspect="test_business_order"]').click();
-  const orderSummary=w.document.querySelector('#gov-file-summary');
+  const orderSummary=H.$('#gov-file-summary');
   ok('an awaiting order names the approval vote and its cost rather than the free making step',
     !!orderSummary && !orderSummary.hidden && /Affirmative/.test(orderSummary.textContent) &&
     /1 slot/.test(orderSummary.querySelector('[data-gov-fact="time"]')?.textContent) &&
@@ -488,9 +513,9 @@ ok("each order appears under its authoring department",
   const previousUsed=state.slots.used;
   state.slots.used=state.slots.total; w.eval('UI.redraw();');
   ok('an unavailable approval remains the next action even when Read is available',
-    !!w.document.querySelector('#gov-file-body [data-approve]:disabled') &&
-    /Approve.*unavailable/.test(w.document.querySelector('[data-gov-fact="next"]')?.textContent) &&
-    /0 left/.test(w.document.querySelector('[data-gov-fact="time"]')?.textContent));
+    !!H.$('#gov-file-body [data-approve]:disabled') &&
+    /Approve.*unavailable/.test(H.$('[data-gov-fact="next"]')?.textContent) &&
+    /0 left/.test(H.$('[data-gov-fact="time"]')?.textContent));
   state.slots.used=previousUsed;
   state.queue = state.queue.filter(q => q.eventId !== 'business_answer');
   state.instruments.test_business_order.awaitingApproval = false;
@@ -498,12 +523,12 @@ ok("each order appears under its authoring department",
   w.eval('UI.redraw();');
   ok('settled work leaves the pending overview while the instrument remains inspectable in Cabinet',
     !!pending() && !pending().querySelector('[data-running], [data-si]') &&
-    !!w.document.querySelector('#gov-cabinet [data-si="test_business_order"]'));
+    !!H.$('#gov-cabinet [data-si="test_business_order"]'));
   ok('Cabinet moves an in-force instrument into the department record',
-    !!w.document.querySelector('#gov-cabinet [data-gov-section="records"] [data-si="test_business_order"]'));
+    !!H.$('#gov-cabinet [data-gov-section="records"] [data-si="test_business_order"]'));
   ok('minister indicators count only live approvals and queue-backed work and clear when settled',
     initialRailCounts && !rail()?.querySelector('[data-gov-awaiting], [data-gov-running]'));
-  const occupied = w.document.querySelector('#gov-roster [data-select-post="' + Cg.cabinet[3].id + '"]');
+  const occupied = H.$('#gov-roster [data-select-post="' + Cg.cabinet[3].id + '"]');
   const party = Cg.partyById[state.cabinet[Cg.cabinet[3].id].party];
   ok('directory summaries identify parties by colour and abbreviation without repeating ordinary relationships',
     !!occupied && !!occupied.querySelector('.swatch') && !!occupied.querySelector('.gov-party') &&
@@ -513,11 +538,11 @@ ok("each order appears under its authoring department",
   delete costEntry.cost;
   costEntry.tempo=[{label:'Standard',after:2},{label:'More effort',after:1,cost:2}];
   w.eval('UI.redraw();');
-  w.document.querySelector('#gov-business [data-ini="test_business_open"]').click();
-  const defaultCost=w.document.querySelector('[data-gov-fact="time"]')?.textContent.includes('1–3 slots');
+  H.$('#gov-business [data-ini="test_business_open"]').click();
+  const defaultCost=H.$('[data-gov-fact="time"]')?.textContent.includes('1–3 slots');
   costEntry.cost=0; w.eval('UI.redraw();');
   ok('the file follows engine default costs, explicit free costs and authored tempo extras',
-    defaultCost && w.document.querySelector('[data-gov-fact="time"]')?.textContent.includes('0–2 slots'));
+    defaultCost && H.$('[data-gov-fact="time"]')?.textContent.includes('0–2 slots'));
   w.__businessFixture = Cg;
   w.eval('UI.boot(Engine.load(' + JSON.stringify(original) + ', CONTENT), window.__businessFixture);');
 }
@@ -528,11 +553,11 @@ ok("each order appears under its authoring department",
   const fixture = Object.assign({}, Cg, { minutes });
   w.__recordFixture = fixture; w.__recordState = state;
   w.eval('UI.boot(window.__recordState, window.__recordFixture);');
-  const fold = () => w.document.querySelector('#gov-register');
-  const pending = () => w.document.querySelector('[data-gov-record="gov-register"] .gov-record-count').textContent;
+  const fold = () => H.$('#gov-register');
+  const pending = () => H.$('[data-gov-record="gov-register"] .gov-record-count').textContent;
   ok('unsigned minutes mark the Register utility without choosing it for the player',
     minutes.length === 2 && fold().hidden && /2 pending/.test(pending()));
-  w.document.querySelector('[data-gov-record="gov-register"]').click();
+  H.$('[data-gov-record="gov-register"]').click();
   w.eval('UI.redraw();');
   ok('explicit Register selection survives while its pending indication remains visible',
     !fold().hidden && /2 pending/.test(pending()));
@@ -567,7 +592,7 @@ ok("each order appears under its authoring department",
   pending.cabinet[post].holder = null;
   w.__govFixture = fixture; w.__govState = pending;
   w.eval('UI.boot(window.__govState, window.__govFixture);');
-  const running = w.document.querySelector('[data-post="' + post + '"]');
+  const running = H.$('[data-post="' + post + '"]');
   ok("a vacant department retains its running initiative and instrument in force",
      !!running.querySelector('[data-running="test_running"]') && !!running.querySelector('[data-si="test_inforce"]'));
   ok("running work is counted once and cannot be started again while vacant",
@@ -576,12 +601,12 @@ ok("each order appears under its authoring department",
   pending.queue = [];
   w.eval('UI.boot(window.__govState, window.__govFixture);');
   ok("an answered initiative disappears from Under way and its summary count",
-     !w.document.querySelector('[data-running="test_running"]') &&
-     !/under way/.test(w.document.querySelector('[data-post="' + post + '"] .gov-summary-counts').textContent));
+     !H.$('[data-running="test_running"]') &&
+     !/under way/.test(H.$('[data-post="' + post + '"] .gov-summary-counts').textContent));
   w.__govFixture = Cg;
   w.eval('Shell.setOpt("govWorkspace", {[' + JSON.stringify(state.admin) + ']: "malformed"});');
   w.eval('UI.boot(' + clone + ', window.__govFixture);');
-  ok("malformed department preferences fall back to a usable default", !!pm() && !w.document.querySelector('#gov-business').hidden);
+  ok("malformed department preferences fall back to a usable default", !!pm() && !H.$('#gov-business').hidden);
 }
 /* GOVERNMENT DESTINATIONS use the same live docket route as normal play. */
 {
@@ -594,28 +619,28 @@ ok("each order appears under its authoring department",
   state.cabinet[second.id].holder = null;
   w.__govFixture = fixture; w.__govState = state;
   w.eval('UI.boot(window.__govState, window.__govFixture); UI.openTab("gov");');
-  const card = id => w.document.querySelector('#gov-cabinet [data-post="' + id + '"]');
+  const card = id => H.$('#gov-cabinet [data-post="' + id + '"]');
   ok('two vacancies keep appointment actions out of the business list',
     [vacancy, second].every(p => !card(p.id).querySelector('[data-appoint]')) &&
-    !w.document.querySelector('#gov-appoint-panel'));
+    !H.$('#gov-appoint-panel'));
   const route = spec => {
-    const link = w.document.querySelector('#sit-today .tdo[data-goto="gov"][data-open^="post:"]');
+    const link = H.$('#sit-today .tdo[data-goto="gov"][data-open^="post:"]');
     link.dataset.open = spec; link.click();
   };
   w.eval('UI.redraw();');
-  const docket = w.document.querySelector('#sit-today .tdo[data-open="post:' + vacancy.id + '"]');
+  const docket = H.$('#sit-today .tdo[data-open="post:' + vacancy.id + '"]');
   ok('the vacancy obligation names its department target', !!docket);
   route('post:' + vacancy.id);
   ok('a vacancy destination opens its own card and focuses its first appointment',
-    !card(vacancy.id).hidden && w.document.activeElement === w.document.querySelector('#gov-inspector [data-appoint="' + vacancy.id + '"]'));
-  w.document.querySelector('[data-gov-back]').click(); route('post:'+vacancy.id);
+    !card(vacancy.id).hidden && w.document.activeElement === H.$('#gov-inspector [data-appoint="' + vacancy.id + '"]'));
+  H.$('[data-gov-back]').click(); route('post:'+vacancy.id);
   ok('direct vacancy navigation reveals the file after returning to narrow business',
-    !w.document.querySelector('#gov-si').classList.contains('gov-mobile-list') &&
+    !H.$('#gov-si').classList.contains('gov-mobile-list') &&
     w.document.activeElement.matches('#gov-inspector [data-appoint]'));
   const originalConfirm = w.eval('Dialog.confirm');
   w.__govConfirm = originalConfirm;
   w.eval('Dialog.confirm = function(m,o,cb) { cb(false); };');
-  const appointment = w.document.querySelector('#gov-inspector [data-appoint="' + vacancy.id + '"]');
+  const appointment = H.$('#gov-inspector [data-appoint="' + vacancy.id + '"]');
   if (appointment) appointment.click();
   ok('canceling an appointment preserves its vacancy and selected department', !state.cabinet[vacancy.id].holder && !card(vacancy.id).hidden);
   w.eval('Dialog.confirm = window.__govConfirm;');
@@ -624,17 +649,17 @@ ok("each order appears under its authoring department",
     state.cabinet[vacancy.id].holder === vacancy.candidates[0].holder &&
     !card(vacancy.id).querySelector('[data-appoint]') && !card(vacancy.id).hidden &&
     w.document.activeElement.id === 'gov-file-title');
-  const dismiss=w.document.querySelector('#gov-inspector [data-sack="'+vacancy.id+'"]');
+  const dismiss=H.$('#gov-inspector [data-sack="'+vacancy.id+'"]');
   if(dismiss)dismiss.click();
   ok('dismissal updates the office file and retains its keyboard focus',
     !!dismiss && !state.cabinet[vacancy.id].holder &&
     w.document.activeElement.id==='gov-file-title' &&
-    w.document.querySelector('#gov-file-office').textContent.includes('Vacant'));
+    H.$('#gov-file-office').textContent.includes('Vacant'));
   const si = fixture.instruments.find(i => i.author && state.cabinet[i.author].holder && (!i.when || w.eval('Engine.matches(UI.state(), ' + JSON.stringify(i.when) + ')')));
   w.eval('UI.redraw();');
   route('order:' + si.id);
   ok('an order destination reveals its owner and focuses the expanded instrument',
-    !card(si.author).hidden && card('').hidden && !!w.document.querySelector('#gov-inspector .si-d') &&
+    !card(si.author).hidden && card('').hidden && !!H.$('#gov-inspector .si-d') &&
     w.document.activeElement.id === 'gov-file-title' && w.document.activeElement.textContent === si.title);
   fixture.initiatives = [{ id:'test_destination', post:si.author, title:'Destination fixture', cost:1, when:{}, tempo:[{ after:2 }] }];
   w.eval('UI.redraw();');
@@ -643,13 +668,13 @@ ok("each order appears under its authoring department",
     !card(si.author).hidden && w.document.activeElement.id === 'gov-file-title' && w.document.activeElement.textContent === 'Destination fixture');
   route('order:' + si.id);
   ok('routing from an initiative to an order replaces the shared inspector file',
-    !!w.document.querySelector('#gov-inspector .si-d') && !w.document.querySelector('#gov-inspector [data-take]'));
+    !!H.$('#gov-inspector .si-d') && !H.$('#gov-inspector [data-take]'));
   const used = state.slots.used;
   state.slots.used = state.slots.total;
   w.eval('UI.redraw();'); route('initiative:test_destination');
   ok('an unaffordable initiative destination remains readable inside its own expanded entry',
     !card(si.author).querySelector('[data-ini="test_destination"]').disabled &&
-    !!w.document.querySelector('#gov-inspector [data-take]:disabled') &&
+    !!H.$('#gov-inspector [data-take]:disabled') &&
     w.document.activeElement.id === 'gov-file-title' && !w.document.activeElement.closest('[hidden]'));
   state.slots.used = used;
   route('post:');
@@ -659,7 +684,7 @@ ok("each order appears under its authoring department",
   fixture.initiatives[0].when = { flags:['test_not_available'] };
   w.eval('UI.redraw();'); route('initiative:test_destination');
   ok('a surviving owner supplies the fallback when its initiative is unavailable',
-    !card(si.author).hidden && w.document.activeElement === card(si.author).querySelector('[data-gov-summary]') && w.document.querySelector('#gov-inspector').hidden);
+    !card(si.author).hidden && w.document.activeElement === card(si.author).querySelector('[data-gov-summary]') && H.$('#gov-inspector').hidden);
   fixture.cabinet = fixture.cabinet.map(p => p.id === second.id ? Object.assign({}, p, { candidates:[] }) : p);
   state.cabinet[vacancy.id].holder = null;
   w.eval('UI.redraw();');
@@ -674,12 +699,12 @@ ok("each order appears under its authoring department",
   route('order:missing_test_order');
   ok('an unknown Government destination falls back to the visible workspace heading',
     w.document.activeElement.id === 'gov-workspace-title');
-  const owed = () => w.document.querySelector('#gov-undertakings');
+  const owed = () => H.$('#gov-undertakings');
   ok('empty Undertakings are available without auto-selecting a record', !!owed() && owed().hidden);
   state.undertakings = [{ id:'test_owed', state:'open', text:'Fixture undertaking', by:state.sitting+2, keep:{ flag:'fixture_kept' } }];
   w.eval('UI.redraw();');
   ok('populated Undertakings do not displace the player\'s work file', !!owed() && owed().hidden);
-  w.document.querySelector('[data-gov-record="gov-undertakings"]').click(); w.eval('UI.redraw();');
+  H.$('[data-gov-record="gov-undertakings"]').click(); w.eval('UI.redraw();');
   ok('an explicit Undertakings selection survives rendering', !!owed() && !owed().hidden);
   w.__govFixture = Cg;
   w.eval('UI.boot(' + original + ', window.__govFixture);');
@@ -688,7 +713,7 @@ try {
   const C = w.eval("UI.content()"), state = w.eval("UI.state()");
   const leader = C.characters.find(c => c.office === "opposition" &&
     (state.characters[c.id] || {}).alive !== false);
-  const panel = w.document.querySelector("#rel-opposition");
+  const panel = H.$("#rel-opposition");
   ok("Relations names the Opposition leader and the party's live seat total",
      !!leader && !!panel && !!panel.querySelector('[data-go="person_' + leader.id + '"]') &&
      panel.querySelector("[data-opposition-seats]").textContent ===
@@ -715,7 +740,7 @@ try {
 /* ORBIT READINGS keep national capacity apart from a station's exposure. */
 try {
   const state = w.eval("UI.state()"), C = w.eval("UI.content()");
-  const detail = w.document.querySelector("#station-detail");
+  const detail = H.$("#station-detail");
   ok("Orbit describes national heat and consumables beside the station's band standing",
      !!detail.querySelector('[data-station-reading="heat"]') &&
      !!detail.querySelector('[data-station-reading="consumables"]') &&
@@ -724,13 +749,13 @@ try {
   const markers = C.setup.campaignMarkers || [];
   const gated = markers.find(m => m.when && m.when.flags && m.when.flags.length === 1);
   ok("the campaign supplies a gated schematic marker outside the station roster", !!gated &&
-     !w.document.querySelector("#orbit-chart [data-campaign-marker]"));
+     !H.$("#orbit-chart [data-campaign-marker]"));
   if (gated) {
     const flag = gated.when.flags[0], before = state.flags[flag];
     const n = C.stations.length;
     try {
       state.flags[flag] = true; w.eval("UI.redraw()");
-      const marker = w.document.querySelector('#orbit-chart [data-campaign-marker="' + gated.id + '"]');
+      const marker = H.$('#orbit-chart [data-campaign-marker="' + gated.id + '"]');
       ok("the stranded marker appears without inventing a station or seats",
          !!marker && marker.textContent.includes(gated.label) && !marker.hasAttribute("data-station") &&
          C.stations.length === n && Object.keys(state.stations).length === n);
@@ -754,9 +779,9 @@ ok("Chamber has one order paper with grant controls in its bill rows",
    !$("#gov-slots") && [...w.document.querySelectorAll("#cham-bills tr[data-bill]")].every(tr =>
      !!tr.querySelector("button[data-slot]")));
 ok("Chamber confidence is in Parliament's heading, not another panel",
-   !$("#gov-margin") && !!w.document.querySelector("#cham-mid .panel h2 #gov-coalition-hdr"));
+   !$("#gov-margin") && !!H.$("#cham-mid .panel h2 #gov-coalition-hdr"));
 ok("Chamber composition contains a closed functional drawer and no repeated legend",
-   !$("#chamber-legend") && !!w.document.querySelector("#comp-table + details:not([open]) #func-table"));
+   !$("#chamber-legend") && !!H.$("#comp-table + details:not([open]) #func-table"));
 {
   const logo = $("#sit-play img"), adm = (CONTENT.administrations || [])[0];
   ok("the play's small logo is on the Sitting screen", !!logo && !$("#sit-play").hidden &&
@@ -784,7 +809,7 @@ ok("no markup leaks into the prose",
    whether the CURRENT event's prose contains a glossary term at all, and
    only then requires the wrapping. */
 const glossed = w.document.querySelectorAll("#sitting-body .gl").length;
-const bodyText = (w.document.querySelector("#sitting-prose") || { textContent: "" }).textContent;
+const bodyText = (H.$("#sitting-prose") || { textContent: "" }).textContent;
 const hasTerm = w.eval("CONTENT.glossary").some(g =>
   !g.assumed && new RegExp("\\b" + g.term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "s?\\b", "i")
     .test(bodyText));
@@ -818,12 +843,12 @@ try {
      to survive the menu: the next government opened on whatever screen the
      last one was left on, which for a new game meant its introduction was
      drawn into a sitting page the player was not looking at. */
-  w.document.querySelector(String.raw`.tab[data-t="orb"]`).click();
+  H.$(String.raw`.tab[data-t="orb"]`).click();
   ok("a government can be left on another tab",
      $("#s-orb").classList.contains("on"));
   /* back to the menu the way a player does it: Options > Return to main menu */
   $("#tb-options").click();
-  w.document.querySelector('#tb-optpanel [data-act="menu"]').click();
+  H.$('#tb-optpanel [data-act="menu"]').click();
   ok("returns to the main menu", $("#menu").classList.contains("on") &&
      !$("#shell").classList.contains("on"));
   $('[data-go="load"]').click();
@@ -844,7 +869,7 @@ try {
    failed; the row simply did not open. tools/edtest.js exists for exactly
    this in the editor. */
 try {
-  w.document.querySelector('.tab[data-t="rel"]').click();
+  H.$('.tab[data-t="rel"]').click();
   /* INTERPARTY AFFAIRS, NOT A DIRECTORY (the author, 23 Sep; its own tab,
      Relations, since 24 Sep). The tab opens every OTHER party and not your
      own, which has the Party tab; and who a party is lives in the
@@ -855,34 +880,34 @@ try {
      prows.length === CONTENT.parties.length - 1 && !prows.some(r => r.dataset.party === me),
      prows.length + " of " + CONTENT.parties.length);
   ok("and your own is on the roster, for the arithmetic",
-     !!w.document.querySelector("#rel-table tr.ownrow"));
+     !!H.$("#rel-table tr.ownrow"));
   ok("and opens on one of them",
-     (w.document.querySelector("#rel-detail").textContent || "").trim().length > 40);
+     (H.$("#rel-detail").textContent || "").trim().length > 40);
   ok("and is not a directory any more",
-     !w.document.querySelector("#s-rel [data-current], #s-rel .cx-wikitable, #s-rel #party-org"));
+     !H.$("#s-rel [data-current], #s-rel .cx-wikitable, #s-rel #party-org"));
   /* and your own row sends you to your own party */
-  const yours = w.document.querySelector('#rel-table tr.ownrow [data-goto="party"]');
+  const yours = H.$('#rel-table tr.ownrow [data-goto="party"]');
   if (yours) {
     yours.click();
     ok("your own row on Relations opens the Party tab",
-       w.document.querySelector('.tab[data-t="party"]').getAttribute("aria-selected") === "true");
-    w.document.querySelector('.tab[data-t="rel"]').click();
+       H.$('.tab[data-t="party"]').getAttribute("aria-selected") === "true");
+    H.$('.tab[data-t="rel"]').click();
   } else ok("your own row on Relations links to the Party tab", false);
-  const first = w.document.querySelector("#rel-hdr").textContent;
-  const detFirst = w.document.querySelector("#rel-detail").textContent;
+  const first = H.$("#rel-hdr").textContent;
+  const detFirst = H.$("#rel-detail").textContent;
   if (prows[1]) {
     prows[1].click();
     ok("choosing another party changes the page",
-       w.document.querySelector("#rel-hdr").textContent !== first,
-       first + " -> " + w.document.querySelector("#rel-hdr").textContent);
+       H.$("#rel-hdr").textContent !== first,
+       first + " -> " + H.$("#rel-hdr").textContent);
     ok("and the relationship with it",
-       w.document.querySelector("#rel-detail").textContent !== detFirst);
+       H.$("#rel-detail").textContent !== detFirst);
     /* THE LOYALTY COLUMN IS THE LIVE ONE. It read st.loyalty, which does
        not exist, and fell back to content, so it printed the opening figure
        for the whole run whatever happened to the party. */
     const lp = CONTENT.parties.find(p => p.id !== me && !CONTENT.currents.some(c => c.party === p.id));
     w.eval('UI.state().parties[' + JSON.stringify(lp.id) + '].loyalty = 7; UI.redraw();');
-    const lcell = w.document.querySelector('#rel-table tr[data-party="' + lp.id + '"] td:nth-child(4)');
+    const lcell = H.$('#rel-table tr[data-party="' + lp.id + '"] td:nth-child(4)');
     ok("the party table prints loyalty as it stands, not as it opened",
        lcell && lcell.textContent.trim() === "7", lcell ? lcell.textContent : "no row");
     w.eval('UI.state().parties[' + JSON.stringify(lp.id) + '].loyalty = ' + lp.loyalty + '; UI.redraw();');
@@ -892,7 +917,7 @@ try {
     const wantP = CONTENT.parties.find(p => p.id !== me &&
       CONTENT.bills.some(b => b.owner === p.id && w.eval("!!UI.state().bills[" + JSON.stringify(b.id) + "]")));
     if (wantP) {
-      w.document.querySelector('#rel-table tr[data-party="' + wantP.id + '"]').click();
+      H.$('#rel-table tr[data-party="' + wantP.id + '"]').click();
       const theirs = CONTENT.bills.filter(b => b.owner === wantP.id &&
         w.eval("!!UI.state().bills[" + JSON.stringify(b.id) + "]"));
       const wb = [...w.document.querySelectorAll('#rel-detail [data-open^="grant:"], #rel-detail [data-open^="bill:"]')];
@@ -903,9 +928,9 @@ try {
         const bid = live.dataset.open.slice(6);
         live.click();
         ok("and a live one opens where time is given to it",
-            w.document.querySelector('.tab[data-t="cham"]').getAttribute("aria-selected") === "true" &&
-            !!w.document.querySelector('#cham-bills [data-slot="' + bid + '"]'), bid);
-        w.document.querySelector('.tab[data-t="rel"]').click();
+            H.$('.tab[data-t="cham"]').getAttribute("aria-selected") === "true" &&
+            !!H.$('#cham-bills [data-slot="' + bid + '"]'), bid);
+        H.$('.tab[data-t="rel"]').click();
       }
     } else ok("some party has a measure of its own", false);
 
@@ -913,21 +938,21 @@ try {
        members is on their page, staged and put back. */
     const snapP = w.eval("JSON.stringify(UI.state())");
     const their = CONTENT.characters.find(c => c.party && c.party !== me &&
-      w.document.querySelector('#rel-table tr[data-party="' + c.party + '"]'));
+      H.$('#rel-table tr[data-party="' + c.party + '"]'));
     if (their) {
       w.eval("Engine.apply(UI.state(), UI.content(), [{ undertake: { id: 'ut_party', " +
         "text: 'A promise kept for the test', owed_to: " + JSON.stringify(their.id) + ", " +
         "by: UI.state().sitting + 6, discharge: { flag: 'ut_party_kept' } } }]); UI.redraw();");
-      w.document.querySelector('#rel-table tr[data-party="' + their.party + '"]').click();
+      H.$('#rel-table tr[data-party="' + their.party + '"]').click();
       ok("a promise owed to one of their members is on their page",
-         /A promise kept for the test/.test(w.document.querySelector("#rel-detail").textContent),
+         /A promise kept for the test/.test(H.$("#rel-detail").textContent),
          their.party);
       w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapP) + "), UI.content())");
-      w.document.querySelector('.tab[data-t="rel"]').click();
+      H.$('.tab[data-t="rel"]').click();
     }
     ok("and the selection is marked on the row that was clicked",
-       (w.document.querySelector("#rel-table tr.sel") || {}) === prows[1] ||
-       !!w.document.querySelector("#rel-table tr.sel"));
+       (H.$("#rel-table tr.sel") || {}) === prows[1] ||
+       !!H.$("#rel-table tr.sel"));
   }
 
   /* THE LAST PAGE SAYS WHO GOVERNS (design/37). It printed the Prime
@@ -942,19 +967,19 @@ try {
            "Engine.dissolve(s, K); s.sitting += 1;" +
            "UI.boot(s, Shell.contentFor((CONTENT.administrations||[])" +
            ".find(function(x){return x.id===s.admin;})));})()");
-    w.document.querySelector('.tab[data-t="sit"]').click();
+    H.$('.tab[data-t="sit"]').click();
     /* THE CAMPAIGN SHOWS THE POLLS (design/38 §1): where the docket was, and
        on the status bar in place of confidence in a House that is gone. */
     const f = w.eval("Engine.forecast(UI.state(), UI.content())");
     ok("the campaign shows the polls where the docket was",
-       w.document.querySelector("#dk-head").textContent === "The polls" &&
-       new RegExp("on " + f.side + " of " + f.total).test(w.document.querySelector("#sit-docket").textContent),
-       w.document.querySelector("#sit-docket").textContent.slice(0, 120));
-    ok("and the status bar reads the poll in words, with seats on hover", /^Poll: /.test(w.document.querySelector("#sb-conf").textContent) &&
-       (w.document.querySelector("#sb-conf").getAttribute("data-tip-body") || "").includes(f.side + " of " + f.total),
-       w.document.querySelector("#sb-conf").textContent);
+       H.$("#dk-head").textContent === "The polls" &&
+       new RegExp("on " + f.side + " of " + f.total).test(H.$("#sit-docket").textContent),
+       H.$("#sit-docket").textContent.slice(0, 120));
+    ok("and the status bar reads the poll in words, with seats on hover", /^Poll: /.test(H.$("#sb-conf").textContent) &&
+       (H.$("#sb-conf").getAttribute("data-tip-body") || "").includes(f.side + " of " + f.total),
+       H.$("#sb-conf").textContent);
     w.eval("(function(){var s=UI.state(); s.sitting += 40; Engine.count(s, UI.content()); UI.redraw();})()");
-    const endText = w.document.querySelector("#sitting-body").textContent;
+    const endText = H.$("#sitting-body").textContent;
     const conf = w.eval("Engine.confidence(UI.state())"), maj = w.eval("Engine.majority(UI.state())");
     ok("the last page says whether the government's side has a majority",
        new RegExp("come back with " + conf + ", against a majority of " + maj).test(endText) &&
@@ -977,7 +1002,7 @@ try {
      Minister's own bench: one row per current, the party's figures as their
      footing, a current read one at a time, and the leadership. Each figure
      is the engine's, so each is checked against the engine. */
-  w.document.querySelector('.tab[data-t="party"]').click();
+  H.$('.tab[data-t="party"]').click();
   const mine = CONTENT.currents.filter(c => c.party === me);
   const crow = [...w.document.querySelectorAll("#party-currents tr[data-current]")];
   ok("the Party tab lists your own currents and no one else's",
@@ -988,22 +1013,22 @@ try {
        .every(id => !!w.document.getElementById(id)) && !w.document.getElementById("current-promises"));
   {
     const f = w.eval("Engine.forecast(UI.state(), UI.content())");
-    const tracker = w.document.querySelector("#party-country");
+    const tracker = H.$("#party-country");
     ok("the country tracker uses the engine count and the poll bands",
        !!tracker && tracker.textContent.includes(String(f.mine)) &&
        tracker.querySelectorAll("[data-poll-band]").length === Object.keys(f.bands).length);
   }
-  const foot = w.document.querySelector("#party-currents tfoot td:nth-child(3)");
+  const foot = H.$("#party-currents tfoot td:nth-child(3)");
   ok("and the party's loyalty is their footing, as the meter reads it",
      foot && foot.textContent.trim() === String(w.eval("UI.state().scalars.party_loyalty")),
      foot ? foot.textContent : "no footing");
   if (crow[1]) {
-    const h0 = w.document.querySelector("#party-cur-hdr").textContent;
+    const h0 = H.$("#party-cur-hdr").textContent;
     crow[1].click();
     ok("choosing a current reads that current",
-       w.document.querySelector("#party-cur-hdr").textContent !== h0 &&
-       w.document.querySelector("#party-cur-hdr").textContent === mine.find(c => c.id === crow[1].dataset.current).name,
-       h0 + " -> " + w.document.querySelector("#party-cur-hdr").textContent);
+       H.$("#party-cur-hdr").textContent !== h0 &&
+       H.$("#party-cur-hdr").textContent === mine.find(c => c.id === crow[1].dataset.current).name,
+       h0 + " -> " + H.$("#party-cur-hdr").textContent);
     const cid = crow[1].dataset.current;
     const named = CONTENT.characters.filter(ch => ch.party === me && ch.current === cid);
     const links = w.document.querySelectorAll("#party-current .current-members a[data-go]");
@@ -1014,7 +1039,7 @@ try {
     /* THE LOYALTY IS THE LIVE ONE, which the old Party tab once was not */
     const was = w.eval("UI.state().currents[" + JSON.stringify(cid) + "].loyalty");
     w.eval("UI.state().currents[" + JSON.stringify(cid) + "].loyalty = 7; UI.redraw();");
-    const lc = w.document.querySelector('#party-currents tr[data-current="' + cid + '"] td:nth-child(3)');
+    const lc = H.$('#party-currents tr[data-current="' + cid + '"] td:nth-child(3)');
     ok("a current's loyalty is printed as it stands", lc && lc.textContent.trim() === "7",
        lc ? lc.textContent : "no row");
     w.eval("UI.state().currents[" + JSON.stringify(cid) + "].loyalty = " + was + "; UI.redraw();");
@@ -1026,8 +1051,8 @@ try {
   if (onPaper[0]) {
     onPaper[0].click();
     ok("and a measure opens in the Chamber",
-       w.document.querySelector('.tab[data-t="cham"]').getAttribute("aria-selected") === "true");
-    w.document.querySelector('.tab[data-t="party"]').click();
+       H.$('.tab[data-t="cham"]').getAttribute("aria-selected") === "true");
+    H.$('.tab[data-t="party"]').click();
   }
   /* THE PAPER lives with the party now, and nowhere else */
   const snapL = w.eval("JSON.stringify(UI.state())");
@@ -1036,32 +1061,32 @@ try {
   ok("once the paper is open, the members closest to signing are on the Party tab",
      asks.length > 0, asks.length + " members");
   ok("and not under the whip on the Chamber tab",
-     !w.document.querySelector("#s-cham [data-sign]"));
+     !H.$("#s-cham [data-sign]"));
   const sig0 = w.eval("UI.state().signatures || 0");
   if (asks[0]) asks[0].dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
   ok("and asking one adds a name", w.eval("UI.state().signatures || 0") === sig0 + 1);
   /* A NAME WON BACK AT A PRICE (design/26 #14): the member too far gone
      cannot be, one who is not can, for a slot and a promise. */
   const asked = w.eval("UI.state().signedBy[0]");
-  const far = w.document.querySelector('#party-lead [data-winback="' + asked + '"]');
+  const far = H.$('#party-lead [data-winback="' + asked + '"]');
   ok("a member too far gone has no way back", !!far && far.disabled,
      asked + (far ? (far.disabled ? " disabled" : " enabled") : " no control"));
   const soft = w.eval("(function(){ var T = UI.content().setup.thresholds;" +
     " var m = Engine.signableMembers(UI.state(), UI.content()).find(function(x){" +
     " return x.will >= T.signsAt && x.will < T.winBackBelow; }); return m ? m.id : null; })()");
-  const softAsk = soft && w.document.querySelector('#party-lead [data-sign="' + soft + '"]');
+  const softAsk = soft && H.$('#party-lead [data-sign="' + soft + '"]');
   if (softAsk) softAsk.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
-  const back = soft && w.document.querySelector('#party-lead [data-winback="' + soft + '"]');
+  const back = soft && H.$('#party-lead [data-winback="' + soft + '"]');
   const sig1 = w.eval("UI.state().signatures || 0");
   if (back && !back.disabled) back.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
   ok("one who is not is won back, for a promise the panel lists",
      !!back && w.eval("UI.state().signatures || 0") === sig1 - 1 &&
-     /Promised, to keep names off the paper/.test(w.document.querySelector("#party-lead").textContent),
+     /Promised, to keep names off the paper/.test(H.$("#party-lead").textContent),
      soft + ": " + sig1 + " -> " + w.eval("UI.state().signatures || 0"));
   const b = w.eval("Engine.ballot(UI.state(), UI.content())");
   ok("the ballot forecast is the engine's",
      new RegExp(b.for + " for you, " + b.against + " against").test(
-       w.document.querySelector("#party-lead").textContent));
+       H.$("#party-lead").textContent));
   w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapL) + "), UI.content())");
 
   /* A NEW GOVERNMENT IS NOT NAMED AFTER THE LAST ONE. The name box offered the
@@ -1079,10 +1104,10 @@ try {
          "  window.__seenDefaults.push((o && o.value) || '');" +
          "  (typeof o === 'function' ? o : cb)('Second ministry');" +
          "};");
-  w.document.querySelector('[data-go="new"]').click();
-  const adm = w.document.querySelector("[data-admin]");
+  H.$('[data-go="new"]').click();
+  const adm = H.$("[data-admin]");
   if (adm) adm.click();
-  const slot1 = w.document.querySelector('[data-new="1"]');
+  const slot1 = H.$('[data-new="1"]');
   /* The slot BUTTON reads "Overwrite" once a slot is occupied, so the
      occupancy is read from the save itself rather than from the label. */
   ok("slot 1 already holds the earlier government",
@@ -1107,8 +1132,8 @@ try {
     Dialog.alert = function (m, o, cb) { window.__alerts.push((o && o.title) || ""); return a.apply(this, arguments); }; })();
     (function(){ var s = UI.state(); s.sitting = Math.max(s.sitting, 15);
       s.bills.divergence.stage = "defeated"; s.bills.divergence.dead = true; })();`);
-  w.document.querySelector('.tab[data-t="cham"]').click();
-  const slot = w.document.querySelector("#cham-bills .slotbtn");
+  H.$('.tab[data-t="cham"]').click();
+  const slot = H.$("#cham-bills .slotbtn");
   if (slot) slot.click();
   const st9 = w.eval("UI.state()");
   ok("a settlement landing mid-session is recorded", st9.settledAs === "restriction", st9.settledAs);
@@ -1138,10 +1163,10 @@ try {
          "s.noConfidence={at:s.sitting,have:0,need:141};" +
          "UI.boot(s, Shell.contentFor((CONTENT.administrations||[])" +
          ".find(function(x){return x.id===s.admin;})));})()");
-  w.document.querySelector('.tab[data-t="sit"]').click();
-  const page = w.document.querySelector("#sitting-body .sp-page");
+  H.$('.tab[data-t="sit"]').click();
+  const page = H.$("#sitting-body .sp-page");
   ok("a finished run draws the last page as a set piece", !!page);
-  const sit = w.document.querySelector("#s-sit");
+  const sit = H.$("#s-sit");
   ok("and the screen wears the set-piece and full-page classes, so the columns give way",
      !!sit && sit.classList.contains("setpiece") && sit.classList.contains("fullpage"));
   const text = page ? page.textContent : "";
@@ -1171,14 +1196,14 @@ try {
     K.bills.forEach(function(b){ if (b.test==='supply') s.bills[b.id].stage='assented'; });
     s.noConfidence = null; s.period = 2; s.sitting += 1;
     UI.boot(s, K); })()`);
-  w.document.querySelector('.tab[data-t="sit"]').click();
-  const pc = w.document.querySelector("#sitting-body .sp-page"), tc = pc ? pc.textContent : "";
+  H.$('.tab[data-t="sit"]').click();
+  const pc = H.$("#sitting-body .sp-page"), tc = pc ? pc.textContent : "";
   ok("a campaign that names a curtain ends a carried rise on its page", /The curtain headline/.test(tc) &&
      /first paragraph of the curtain/.test(tc) && /second paragraph of the curtain/.test(tc), tc.slice(0, 80));
   ok("with the campaign's own note", /Here the first act ends/.test(tc));
   ok("and not on an election's returns", !/The Commonwealth has voted/.test(tc));
   w.eval("(function(){ var K=UI.content(), s=UI.state(); delete K.setup.actEnd; delete K.eventById.curtain_probe; s.period=1; Engine.dissolve(s, K); Engine.count(s, K); UI.redraw(); })()");
-  const pe = w.document.querySelector("#sitting-body .sp-page");
+  const pe = H.$("#sitting-body .sp-page");
   ok("a campaign that names none keeps the election's page", !!pe && /voted/i.test(pe.textContent));
   w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapC) + "), Shell.contentFor((CONTENT.administrations||[])" +
          ".find(function(x){return x.id===JSON.parse(" + JSON.stringify(snapC) + ").admin;})))");
@@ -1278,15 +1303,15 @@ try {
    needed was not more numbers but the things a reader asks of a number:
    where it came from, what it means, and what it has been doing. */
 try {
-  w.document.querySelector('.tab[data-t="econ"]').click();
-  const tre = (w.document.querySelector("#econ-account") || {}).textContent || "";
+  H.$('.tab[data-t="econ"]').click();
+  const tre = (H.$("#econ-account") || {}).textContent || "";
   /* THE STANDING LENDERS (24 Sep): a row each, drawn or not, because a
      facility nobody has drawn is still a choice the government has. */
   const facRows = [...w.document.querySelectorAll("#econ-account .prow.fac")];
   const drawable = Object.keys(CONTENT.setup.lenders).filter(k => CONTENT.setup.lenders[k].drawable);
   ok("the account lists each standing lender, drawn or not",
      facRows.length === drawable.length && facRows.every(r => /none/.test(r.textContent)) &&
-     drawable.every(k => !!w.document.querySelector('#econ-calls [data-draw="' + k + '"]')),
+     drawable.every(k => !!H.$('#econ-calls [data-draw="' + k + '"]')),
      facRows.map(r => r.textContent.slice(0, 40)).join(" | "));
   /* NAMED CREDITORS: each lender its own row, on its own terms, and a Repay
      control only where the lender is paid across the counter. Staged on a
@@ -1304,7 +1329,7 @@ try {
   /* A DRAWING goes through the engine's own borrow: the lender's size, a
      slot of order-paper time, and the line in the record. */
   const d0 = w.eval("({ owed: Engine.debtOf(UI.state(), 'earth'), used: UI.state().slots.used })");
-  const dbtn = w.document.querySelector('#econ-calls [data-draw="earth"]');
+  const dbtn = H.$('#econ-calls [data-draw="earth"]');
   if (dbtn) dbtn.click();
   const d1 = w.eval("({ owed: Engine.debtOf(UI.state(), 'earth'), used: UI.state().slots.used, log: UI.state().log[0].text })");
   ok("Draw takes one drawing on the facility, through the engine",
@@ -1336,25 +1361,25 @@ try {
      brows.map(r => r.dataset.chart).sort().join(","));
   const bnum = el => Number((el.textContent || "").replace(/[^0-9-]/g, ""));
   const byield = brows.map(r => bnum(r.querySelector(".byield")));
-  const btot = bnum(w.document.querySelector("#econ-bases tr.btot .byield"));
+  const btot = bnum(H.$("#econ-bases tr.btot .byield"));
   /* printed in tenths of a billion, so four rounded rows may miss the
      rounded total by a tenth or two and no more */
   ok("the printed yields add up to the printed total",
      Math.abs(byield.reduce((a, b) => a + b, 0) - btot) <= 2, byield.join("+") + " = " + btot);
   ok("which is the engine's number and not the interface's",
-     w.document.querySelector("#econ-bases tr.btot .byield").textContent ===
+     H.$("#econ-bases tr.btot .byield").textContent ===
        w.eval("Engine.money(UI.content(), Engine.receipts(UI.state(), UI.content()).total)"), btot + "");
   ok("and it names the rate each base is charged at",
      brows.every(r => /levied|reduced|standing rate|raised/.test(r.textContent)),
      (brows[0] || { textContent: "" }).textContent.trim().slice(0, 40));
   ok("the cost of existing is a reading of those four and sits under them",
-     /cost of existing/i.test((w.document.querySelector("#econ-bases") || {}).textContent || "") &&
+     /cost of existing/i.test((H.$("#econ-bases") || {}).textContent || "") &&
      !/cost of existing/i.test(tre), "moved out of the account panel");
 
   /* THE RESERVE BANK AND THE DOLLAR (design/39 option C): the working
      readings, each pickable into the chart, and the Bank's own arithmetic
      printed beside its rate. */
-  const bank = w.document.querySelector("#econ-bank");
+  const bank = H.$("#econ-bank");
   const bankPicks = bank ? [...bank.querySelectorAll("[data-chart]")].map(x => x.dataset.chart) : [];
   ok("the Bank's panel carries inflation, the cash rate, the dollar and growth",
      ["inflation", "rate", "fx", "growth"].every(k => bankPicks.indexOf(k) >= 0), bankPicks.join(" "));
@@ -1364,12 +1389,12 @@ try {
   const rateRow = bank && bank.querySelector('[data-chart="rate"]');
   if (rateRow) rateRow.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
   ok("and a reading picks into the chart",
-     /cash rate/i.test((w.document.querySelector("#chart-hdr") || {}).textContent || ""),
-     (w.document.querySelector("#chart-hdr") || {}).textContent);
+     /cash rate/i.test((H.$("#chart-hdr") || {}).textContent || ""),
+     (H.$("#chart-hdr") || {}).textContent);
 
   /* WHO WORKS IS FOLDED, and the fold says what is behind it: eighteen
      categories at 429px were most of the reason this tab scrolled. */
-  const lab = w.document.querySelector("#econ-real details.foldsec[data-fold=labour]");
+  const lab = H.$("#econ-real details.foldsec[data-fold=labour]");
   ok("the labour table is on the tab, with the economy it describes", !!lab);
   if (lab) {
     ok("and it is closed until the player asks", !lab.open);
@@ -1409,17 +1434,17 @@ try {
      sparkline with ambitions. */
   const picks = [...w.document.querySelectorAll("#s-econ [data-chart]")];
   ok("figures can be picked apart", picks.length >= 4, picks.length + " pickable");
-  const was = w.document.querySelector("#chart-hdr").textContent;
+  const was = H.$("#chart-hdr").textContent;
   const therm = picks.find(p => p.dataset.chart === "thermal");
   if (therm) {
     therm.click();
     ok("and picking one changes the subject",
-       w.document.querySelector("#chart-hdr").textContent !== was,
-       was + " -> " + w.document.querySelector("#chart-hdr").textContent);
+       H.$("#chart-hdr").textContent !== was,
+       was + " -> " + H.$("#chart-hdr").textContent);
     ok("and the chart draws something",
        w.document.querySelectorAll("#chart-body .bar, #chart-body svg polyline").length > 0);
     ok("and prints the figure, because a bar is not a number",
-       /\d/.test((w.document.querySelector("#chart-body .chartnow") || {}).textContent || ""));
+       /\d/.test((H.$("#chart-body .chartnow") || {}).textContent || ""));
   }
   ok("no bar carries a native tooltip",
      [...w.document.querySelectorAll("#chart-body .bar")]
@@ -1489,7 +1514,7 @@ try {
 try {
   const snapT = w.eval("JSON.stringify(UI.state())");
   w.eval("UI.state().scalars.thermal_margin = 5; UI.redraw();");
-  const chip = w.document.querySelector("#sb-thermal");
+  const chip = H.$("#sb-thermal");
   ok("a thin margin turns the THERMAL chip red and says where the orders are",
      !!chip && chip.style.color !== "" &&
      /orders are open/.test(chip.getAttribute("data-tip-title") || "") &&
@@ -1503,13 +1528,13 @@ try {
     row.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
     const id = row.dataset.open.slice("order:".length);
     ok("which opens the Government tab on that order's row",
-       !!w.document.querySelector("#s-gov.on") &&
-       !!w.document.querySelector('#gov-si tr[data-si="' + id + '"]'), id);
+       !!H.$("#s-gov.on") &&
+       !!H.$('#gov-si tr[data-si="' + id + '"]'), id);
   }
   w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapT) + "), UI.content())");
   ok("and a calm margin leaves the chip plain, with its figure on hover",
-     w.document.querySelector("#sb-thermal").style.color === "" &&
-     /per cent/.test(w.document.querySelector("#sb-thermal").getAttribute("data-tip-body") || ""));
+     H.$("#sb-thermal").style.color === "" &&
+     /per cent/.test(H.$("#sb-thermal").getAttribute("data-tip-body") || ""));
 } catch (e) { ok("the thermal alert", false, e.message); }
 
 /* A NUMBER THE INTERFACE PRINTS IS CONTENT'S NUMBER. The status bar had
@@ -1523,7 +1548,7 @@ try {
   const snap = w.eval("Engine.save(UI.state())");
   const need = w.eval("UI.content().setup.thresholds.ballot");
   w.eval("UI.state().signatures = 2; UI.redraw();");
-  const paper = w.document.querySelector("#sb-sig");
+  const paper = H.$("#sb-sig");
   ok("the paper names progress against content's ballot threshold",
      paper.textContent.includes("2 of " + need + " names"), paper.textContent);
   w.eval("UI.state().signatures = " + need + "; UI.redraw();");
@@ -1534,7 +1559,7 @@ try {
      ["sb-conf", "sb-thermal", "sb-rise", "sb-sig"].every(id => w.document.getElementById(id)));
   w.eval("UI.content().setup.readouts.heat.bands[0].text = 'probe ample'; UI.state().scalars.thermal_margin = 50; UI.redraw();");
   ok("status words come from content rather than a second interface mapping",
-     w.document.querySelector("#sb-thermal").textContent === "Heat: probe ample");
+     H.$("#sb-thermal").textContent === "Heat: probe ample");
   w.eval("UI.content().setup.readouts.heat.bands[0].text = 'ample'; UI.boot(JSON.parse(" + JSON.stringify(snap) + "), UI.content());");
 } catch (e) { ok("the signatures readout", false, e.message); }
 
@@ -1555,7 +1580,7 @@ try {
    `d.sits` (a weekday test, correct) and the card reads `d.sitting` (the
    count, null), so the grid looked right and only its tooltips lied. */
 try {
-  w.document.querySelector('.tab[data-t="sit"]').click();
+  H.$('.tab[data-t="sit"]').click();
   const cells = [...w.document.querySelectorAll("#sit-cal .calgrid .cd")];
   ok("the calendar draws a month of days", cells.length >= 28, cells.length + " days");
   /* THE INVARIANT THAT WOULD HAVE CAUGHT IT, stated once: the content the
@@ -1573,9 +1598,9 @@ try {
   ok("the calendar's month is the state's own year",
      new RegExp("^" + String(stDate).slice(0, 4))
        .test(String(w.eval("UI.state().date")).slice(0, 4)) &&
-     (w.document.querySelector("#sit-cal .calhead span") || {}).textContent
+     (H.$("#sit-cal .calhead span") || {}).textContent
        .indexOf(String(stDate).slice(0, 4)) >= 0,
-     stDate + " vs " + (w.document.querySelector("#sit-cal .calhead span") || {}).textContent);
+     stDate + " vs " + (H.$("#sit-cal .calhead span") || {}).textContent);
 
   const numbered = cells.filter(c => c.querySelector("u"));
   ok("and the sitting days in it carry their sitting numbers",
@@ -1615,8 +1640,8 @@ try {
    scroll is the same list behind a window, and a calendar you have to scroll
    defeats the only reason it is on the screen. */
 try {
-  w.document.querySelector('.tab[data-t="sit"]').click();
-  const cal = w.document.querySelector("#sit-cal");
+  H.$('.tab[data-t="sit"]').click();
+  const cal = H.$("#sit-cal");
   ok("the calendar still draws a whole month",
      w.document.querySelectorAll("#sit-cal .calgrid .cd").length >= 28,
      w.document.querySelectorAll("#sit-cal .calgrid .cd").length + " days");
@@ -1642,7 +1667,7 @@ try {
     }));
     state.log[0] = { sitting: 160, text: "— Chapter 3 —", chapterMark: true };
     w.eval("UI.redraw()");
-    const feed = w.document.querySelector("#gov-wire");
+    const feed = H.$("#gov-wire");
     ok("the merged feed bounds its rendered history and keeps the latest news",
        feed.querySelectorAll("p").length <= 56 &&
        feed.textContent.includes("History news 160") &&
@@ -1675,7 +1700,7 @@ try {
       { sitting: 9, text: "Appointment: treasury" }];
     state.wire = [{ sitting: 9, text: "A headline" }];
     w.eval("UI.redraw()");
-    const labelled = [...w.document.querySelector("#gov-wire").querySelectorAll("p")]
+    const labelled = [...H.$("#gov-wire").querySelectorAll("p")]
       .map(p => p.textContent.replace(/\s+/g, " ").trim());
     ok("a page is News, a choice a Decision, the engine's own line the Record, and the wire the Wire",
        labelled.join("|") === ["News. A page read", "Decision. A page answered", "Decision. A choice taken",
@@ -1692,30 +1717,30 @@ try {
 try {
   const M = "Motion";
   w.eval(`${M}.notify({ tab: "gov", where: "Undertakings", text: "An undertaking has been entered." })`);
-  const there = !!w.document.querySelector(".movecard");
+  const there = !!H.$(".movecard");
   w.eval(`UI.openTab("cham")`);
-  const afterCode = !!w.document.querySelector(".movecard");
-  w.document.querySelector('.tab[data-t="party"]').click();
-  const afterClick = !!w.document.querySelector(".movecard");
-  const marked = !!w.document.querySelector(".tab.tab-moved");
+  const afterCode = !!H.$(".movecard");
+  H.$('.tab[data-t="party"]').click();
+  const afterClick = !!H.$(".movecard");
+  const marked = !!H.$(".tab.tab-moved");
   ok("a notice card shows, and opening a tab from code leaves it up", there && afterCode,
      "shown " + there + ", after openTab " + afterCode);
   ok("a click on a tab takes it down, and the tab's mark with it", there && !afterClick && !marked,
      "after click " + afterClick + ", mark " + marked);
   w.eval(`${M}.notify({ tab: "gov", where: "a", text: "one" }); ${M}.notify({ tab: "gov", where: "b", text: "two" })`);
-  w.document.querySelector('.tab[data-t="sit"]').click();
-  ok("and the cards queued behind it go too", !w.document.querySelector(".movecard"));
+  H.$('.tab[data-t="sit"]').click();
+  ok("and the cards queued behind it go too", !H.$(".movecard"));
 } catch (e) { ok("the notice card", false, e.message); }
 
 try {
   const text = w.eval("UI.transcript()");
-  const optTranscript = w.document.querySelector("#tb-optpanel .opt-transcript textarea");
-  ok("Options offers a transcript", !!w.document.querySelector('#tb-optpanel [data-act="transcript"]') &&
+  const optTranscript = H.$("#tb-optpanel .opt-transcript textarea");
+  ok("Options offers a transcript", !!H.$('#tb-optpanel [data-act="transcript"]') &&
      !!optTranscript && /PLAYTEST TRANSCRIPT/.test(optTranscript.value));
   const guidance = optTranscript && w.document.getElementById(optTranscript.getAttribute("aria-describedby"));
   ok("the transcript explains how to put the run in a playtest report",
      !!guidance && /report/.test(guidance.textContent));
-  const select = w.document.querySelector('#tb-optpanel [data-act="transcript-select"]');
+  const select = H.$('#tb-optpanel [data-act="transcript-select"]');
   if (select) select.click();
   ok("Select all focuses and selects the complete transcript",
      !!select && w.document.activeElement === optTranscript &&
@@ -1723,9 +1748,9 @@ try {
   const createURL = w.URL.createObjectURL;
   try {
     w.URL.createObjectURL = () => { throw new w.Error("download refused"); };
-    w.document.querySelector('#tb-optpanel [data-act="transcript"]').click();
+    H.$('#tb-optpanel [data-act="transcript"]').click();
     ok("a refused transcript download explains how to copy the report",
-       /select and copy/i.test(w.document.querySelector("#sb-msg").textContent));
+       /select and copy/i.test(H.$("#sb-msg").textContent));
   } finally { w.URL.createObjectURL = createURL; }
   ok("and it has the run in it", text.length > 300, text.length + " characters");
   for (const want of ["PLAYTEST TRANSCRIPT", "WHERE IT STANDS", "MEASURES",
@@ -1736,7 +1761,7 @@ try {
      (text.match(/confidence.*/) || [""])[0]);
   ok("and nothing after it in drawAll was skipped",
      w.document.querySelectorAll("#chamber .seat, #chamber circle, #chamber rect").length > 0 ||
-     (w.document.querySelector("#gov-cabinet") || {}).innerHTML.length > 0);
+     (H.$("#gov-cabinet") || {}).innerHTML.length > 0);
 } catch (e) { ok("the playtest transcript", false, e.message); }
 
 /* WHY A MINISTER CAN OR CANNOT BE DISMISSED (the author, 24 Sep): every
@@ -1748,9 +1773,9 @@ try {
   const rows=[''].concat(content.cabinet.filter(p=>(state.cabinet[p.id]||{}).holder).map(p=>p.id));
   const silent=[], tags=[];
   rows.forEach(post=>{
-    w.document.querySelector('[data-select-post="'+post+'"]').click();
-    w.document.querySelector('[data-gov-post-file="'+post+'"]').click();
-    const x=w.document.querySelector('#gov-inspector [data-sack], #gov-inspector .flag.nosack');
+    H.$('[data-select-post="'+post+'"]').click();
+    H.$('[data-gov-post-file="'+post+'"]').click();
+    const x=H.$('#gov-inspector [data-sack], #gov-inspector .flag.nosack');
     if(!x || !x.getAttribute('data-tip-body'))silent.push(post || 'Prime Minister');
     if(x?.classList.contains('nosack'))tags.push(x.textContent);
   });
@@ -1770,15 +1795,15 @@ try {
     /* In the Concordance now. A partner is reached from Relations' own
        link; your own party is not a subject there, so it is opened the way
        any [data-go] reference in the shell opens an article. */
-    w.document.querySelector('.tab[data-t="rel"]').click();
-    const row = w.document.querySelector('#rel-table tr[data-party="' + pid + '"]');
+    H.$('.tab[data-t="rel"]').click();
+    const row = H.$('#rel-table tr[data-party="' + pid + '"]');
     if (row) row.click();
-    let link = row && w.document.querySelector('#rel-detail a[data-go="' + pid + '"]');
+    let link = row && H.$('#rel-detail a[data-go="' + pid + '"]');
     if (row && !link) { ok("Relations links " + pid + " to its article", false); continue; }
     if (!link) {
       link = w.document.createElement("a");
       link.setAttribute("data-go", pid);
-      w.document.querySelector("#shell").appendChild(link);
+      H.$("#shell").appendChild(link);
     }
     link.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
     if (!row) link.remove();
@@ -1794,10 +1819,10 @@ try {
   {
     const link = w.document.createElement("a");
     link.setAttribute("data-go", "cu");
-    w.document.querySelector("#shell").appendChild(link);
+    H.$("#shell").appendChild(link);
     link.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
     link.remove();
-    const cuText = (w.document.querySelector("#cx-article") || {}).textContent || "";
+    const cuText = (H.$("#cx-article") || {}).textContent || "";
     const cuC = CONTENT.currents.filter(c => c.party === "cu");
     ok("the governing party's article describes each of its currents",
        cuC.length > 0 && cuC.every(c => cuText.indexOf(c.name) >= 0 &&
@@ -1819,7 +1844,7 @@ try {
       x.push((C.constituencies[0] || {}).id); x.push(C.stations[0].id);
       return x; })()`);
     const st0 = w.eval("UI.state()"), C0 = w.eval("UI.content()"), Cx = w.eval("Concordance");
-    const text = id => { Cx.render(st0, C0, id); return (w.document.querySelector("#cx-article") || {}).textContent || ""; };
+    const text = id => { Cx.render(st0, C0, id); return (H.$("#cx-article") || {}).textContent || ""; };
     /* a sitting as a unit ("sitting 1", "2 sittings"); a member "sitting
        for" a seat is English */
     const units = gen.filter(id => /\bsitting \d|\d+ sittings?\b|House of Delegates/.test(text(id)));
@@ -1831,10 +1856,10 @@ try {
     const body = gen.find(id => /^body_/.test(id));
     text(body);
     ok("and a platform is not marked as disputed before the dispute",
-       !w.document.querySelector("#cx-article .cx-banner"), body);
+       !H.$("#cx-article .cx-banner"), body);
   }
 
-  w.document.querySelector('.tab[data-t="cham"]').click();
+  H.$('.tab[data-t="cham"]').click();
   /* EVERY PARTY OPENS, by its triangle (the author, 24 Sep). */
   const comp = [...w.document.querySelectorAll("#comp-table tr[data-comp]")]
     .filter(tr => w.eval("CONTENT.currents.some(function (c) { return c.party === '" + tr.dataset.comp + "'; })"));
@@ -1844,7 +1869,7 @@ try {
      everyRow.every(tr => { const b = tr.cells[0].firstElementChild;
        return b && b.matches("button.compdis[data-compbtn]") && b.getAttribute("data-tip") === "currents"; }),
      everyRow.length + " rows");
-  const dis = pid => w.document.querySelector('#comp-table [data-compbtn="' + pid + '"]');
+  const dis = pid => H.$('#comp-table [data-compbtn="' + pid + '"]');
   const lone = w.eval("(CONTENT.parties.filter(function (p) { return !CONTENT.currents.some(function (c) { return c.party === p.id; }); })[0] || {}).id");
   if (lone) {
     dis(lone).click();
@@ -1882,22 +1907,22 @@ try {
 
     /* ONE CLICK, ONE ACTION. The name is a Concordance link inside a row
        that opens the currents; a click on it did both. */
-    const nameLink = w.document.querySelector('#comp-table tr[data-comp="' + pid + '"] a[data-go]');
+    const nameLink = H.$('#comp-table tr[data-comp="' + pid + '"] a[data-go]');
     if (nameLink) {
       const goes = nameLink.dataset.go;
       nameLink.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
       ok("the party's name opens its Concordance article and not the currents",
-         w.document.querySelector('.tab[data-t="cx"]').getAttribute("aria-selected") === "true" &&
+         H.$('.tab[data-t="cx"]').getAttribute("aria-selected") === "true" &&
          w.document.querySelectorAll("#comp-table tr.bench").length === 0,
          goes);
-      w.document.querySelector('.tab[data-t="cham"]').click();
+      H.$('.tab[data-t="cham"]').click();
       dis(pid).dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
       ok("and the triangle opens the currents without leaving the Chamber",
-         w.document.querySelector('.tab[data-t="cham"]').getAttribute("aria-selected") === "true" &&
+         H.$('.tab[data-t="cham"]').getAttribute("aria-selected") === "true" &&
          w.document.querySelectorAll("#comp-table tr.bench").length > 0);
       /* and the rest of the row is not a button: a click on the seats opens nothing */
       dis(pid).click();
-      const row = w.document.querySelector('#comp-table tr[data-comp="' + pid + '"]');
+      const row = H.$('#comp-table tr[data-comp="' + pid + '"]');
       row.cells[4].dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
       ok("while the rest of the row is not a button",
          w.document.querySelectorAll("#comp-table tr.bench").length === 0);
@@ -1913,10 +1938,10 @@ try {
   const openCx = id => {
     const a = w.document.createElement("a");
     a.setAttribute("data-go", id);
-    w.document.querySelector("#shell").appendChild(a);
+    H.$("#shell").appendChild(a);
     a.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
     a.remove();
-    return w.document.querySelector("#cx-article");
+    return H.$("#cx-article");
   };
   const intl = openCx("anchor_tether_2");
   ok("an anchor's page carries its host state",
@@ -1941,8 +1966,8 @@ try {
    the page under it never changed. */
 try {
   const click = el => el.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
-  click(w.document.querySelector('.tab[data-t="cx"]'));
-  const title = () => (w.document.querySelector("#cx-article .cx-title") || {}).textContent || "";
+  click(H.$('.tab[data-t="cx"]'));
+  const title = () => (H.$("#cx-article .cx-title") || {}).textContent || "";
   const navlink = i => [...w.document.querySelectorAll("#cx-nav .cx-navlink")][i];
 
   /* jsdom's HTMLAnchorElement.click() does not dispatch, so every assertion
@@ -1952,29 +1977,29 @@ try {
   const first = title();
   ok("a Concordance nav link opens its article", !!first, first);
 
-  w.document.querySelector("#cx-q").value = "seat";
-  click(w.document.querySelector("#cx-goto"));
+  H.$("#cx-q").value = "seat";
+  click(H.$("#cx-goto"));
   ok("searching lists every match, not the best one",
      w.document.querySelectorAll("#cx-article .cx-hits a").length > 1,
      w.document.querySelectorAll("#cx-article .cx-hits a").length + " hits");
   ok("and it does not destroy the container articles are drawn into",
-     !!w.document.querySelector("#cx-article"), "#cx-article survives");
+     !!H.$("#cx-article"), "#cx-article survives");
 
   click(navlink(5));
   ok("a nav link still works after a search", title() !== "Search" && !!title(), title());
 
-  w.document.querySelector("#cx-q").value = "seat";
-  click(w.document.querySelector("#cx-goto"));
-  const hit = w.document.querySelector("#cx-article .cx-hits a");
+  H.$("#cx-q").value = "seat";
+  click(H.$("#cx-goto"));
+  const hit = H.$("#cx-article .cx-hits a");
   const wanted = hit.dataset.go;
   click(hit);
   ok("and clicking a result opens the article it names",
      title() === w.eval('Concordance.hits("seat")[0].title') || title() !== "Search",
      wanted + " -> " + title());
 
-  w.document.querySelector("#cx-q").value = "seat";
-  click(w.document.querySelector("#cx-goto"));
-  click(w.document.querySelector("#cx-back"));
+  H.$("#cx-q").value = "seat";
+  click(H.$("#cx-goto"));
+  click(H.$("#cx-back"));
   ok("and the back button is not dead either", title() !== "Search", title());
 } catch (e) { ok("the Concordance search", false, e.message); }
 
@@ -1988,9 +2013,9 @@ try {
    without exception, and that is the most recognisable thing about it. */
 try {
   const click = el => el.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
-  click(w.document.querySelector('.tab[data-t="cx"]'));
+  click(H.$('.tab[data-t="cx"]'));
   const open = id => { w.eval('Concordance.render(UI.state(), UI.content(), "' + id + '", true)');
-                       return w.document.querySelector("#cx-article"); };
+                       return H.$("#cx-article"); };
 
   /* Every KIND of article, because the fault was per generator. */
   const kinds = ["cu", "person_flash", "anselm", "commonwealth", "bill_divergence"];
@@ -2061,7 +2086,7 @@ try {
    Engine.matches the events use. */
 try {
   const openIt = () => { w.eval('Concordance.render(UI.state(), UI.content(), "commonwealth", true)');
-                         return w.document.querySelector("#cx-article"); };
+                         return H.$("#cx-article"); };
   const stt = w.eval("UI.state()");
   const was = !!stt.flags.almanac_annexed;
   delete stt.flags.almanac_annexed;
@@ -2092,17 +2117,17 @@ try {
      !w.eval('Concordance.knows("no_such_article")'));
 
   const click = el => el.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
-  click(w.document.querySelector('.tab[data-t="cham"]'));
+  click(H.$('.tab[data-t="cham"]'));
   const ext = [...w.document.querySelectorAll("#shell [data-go]")]
     .filter(e => !e.closest("#cx-body") && !e.closest("#cx-nav"));
   ok("the game carries cross-references outside the Concordance", ext.length > 0,
      ext.length + " links");
   click(ext[0]);
   ok("and following one switches tab and opens the article",
-     (w.document.querySelector(".screen.on") || {}).id === "s-cx" &&
-     !!(w.document.querySelector("#cx-article .cx-title") || {}).textContent,
+     (H.$(".screen.on") || {}).id === "s-cx" &&
+     !!(H.$("#cx-article .cx-title") || {}).textContent,
      ext[0].dataset.go + " -> " +
-     (w.document.querySelector("#cx-article .cx-title") || {}).textContent);
+     (H.$("#cx-article .cx-title") || {}).textContent);
 } catch (e) { ok("cross-references into the Concordance", false, e.message); }
 
 /* AND THE MENU KEEPS ITS OWN data-go NAMESPACE. `root` is both the menu's
@@ -2156,12 +2181,12 @@ try {
    their height at every window, so they live in the heading now — and a
    control drawn into a heading slot is one nothing re-renders over. */
 try {
-  w.document.querySelector('.tab[data-t="econ"]').click();
+  H.$('.tab[data-t="econ"]').click();
   const sc = [...w.document.querySelectorAll("#chart-scale [data-cscale]")];
   ok("the chart offers both timescales", sc.length === 2,
      sc.map(b => b.dataset.cscale).join(" "));
   ok("and neither is inside the body it would cost height",
-     !w.document.querySelector("#chart-body [data-cscale]"));
+     !H.$("#chart-body [data-cscale]"));
   const rec = sc.find(b => b.dataset.cscale === "record");
   if (rec) {
     rec.click();
@@ -2172,9 +2197,9 @@ try {
     const H = w.eval("JSON.stringify(CONTENT.setup.history)");
     const span = JSON.parse(H);
     ok("and the record draws the years before the game",
-       ((w.document.querySelector("#chart-sub") || {}).textContent || "")
+       ((H.$("#chart-sub") || {}).textContent || "")
          .indexOf(String(span.from)) >= 0,
-       (w.document.querySelector("#chart-sub") || {}).textContent +
+       (H.$("#chart-sub") || {}).textContent +
          " against " + span.from + "-" + span.to);
     sc.find(b => b.dataset.cscale === "session").click();
   }
@@ -2191,7 +2216,7 @@ try {
   /* Switching tabs only toggles visibility; the register is drawn in drawAll,
      so re-enter boot (which is re-entrant) to redraw against the new state. */
   w.eval("UI.boot(UI.state(), CONTENT)");
-  w.document.querySelector('.tab[data-t="gov"]').click();
+  H.$('.tab[data-t="gov"]').click();
 
    const rows = [...w.document.querySelectorAll("#pp-list tbody tr")];
   const act = rows.find(r => /Ratification Act/.test(r.textContent));
@@ -2201,11 +2226,11 @@ try {
     /* SCOPED TO THE REGISTER. The Chamber's bill detail draws the same track
        now, and it is earlier in the document — an unscoped query found that
        one and read a committee bill as if it were the assented act. */
-    const track = w.document.querySelector("#pp-doc .stagetrack");
+    const track = H.$("#pp-doc .stagetrack");
     ok("the act document draws a stage track", !!track);
     /* THE DATE ON THE FILE IS THE CALENDAR'S. It was the literal "11 APR
        2287" on every bill paper, two centuries off the campaign's own. */
-    const docText = (w.document.querySelector("#pp-doc") || {}).textContent || "";
+    const docText = (H.$("#pp-doc") || {}).textContent || "";
     const year = String(w.eval("UI.content().setup.startDate")).slice(0, 4);
     ok("and it is dated in the campaign's own year", docText.indexOf(year) >= 0 && !/2287/.test(docText),
        (docText.match(/\d{1,2} [A-Z]{3} \d{4}/) || ["no date"])[0]);
@@ -2227,14 +2252,14 @@ try {
      stt.instruments[order.id].made = true;
      stt.instruments[order.id].inForce = true;
      w.eval("UI.boot(UI.state(), CONTENT)");
-     w.document.querySelector('[data-select-post="' + order.author + '"]').click();
-     w.document.querySelector('#gov-cabinet [data-inspect="' + order.id + '"]').click();
-     const read = w.document.querySelector('#gov-si [data-read="' + order.id + '"]');
+     H.$('[data-select-post="' + order.author + '"]').click();
+     H.$('#gov-cabinet [data-inspect="' + order.id + '"]').click();
+     const read = H.$('#gov-si [data-read="' + order.id + '"]');
      if (read) read.click();
-     const overlay = w.document.querySelector("#gov-docs");
+     const overlay = H.$("#gov-docs");
      const opened = !!read && !overlay.hidden &&
-       w.document.querySelector("#pp-doc").textContent.includes(order.number);
-     if (opened) w.document.querySelector("#gov-doc-close").click();
+       H.$("#pp-doc").textContent.includes(order.number);
+     if (opened) H.$("#gov-doc-close").click();
      ok("an instrument opens its document overlay and Close dismisses it",
         opened && overlay.hidden);
      if (opened) {
@@ -2269,8 +2294,8 @@ try {
      made Escape ineffective on both mouse and keyboard entry. */
   w.eval('UI.openTab("gov");');
   for (const route of ["click", "keyboard"]) {
-    w.document.querySelector('[data-gov-record="gov-register"]').click();
-    const row = w.document.querySelector("#pp-list [data-doc]");
+    H.$('[data-gov-record="gov-register"]').click();
+    const row = H.$("#pp-list [data-doc]");
     const id = row && row.dataset.doc;
     if (row) {
       if (route === "click") row.click();
@@ -2279,8 +2304,8 @@ try {
         row.dispatchEvent(new w.KeyboardEvent("keydown", { key:"Enter", bubbles:true, cancelable:true }));
       }
     }
-    const overlay = w.document.querySelector("#gov-docs");
-    const first = w.document.querySelector("#gov-doc-close");
+    const overlay = H.$("#gov-docs");
+    const first = H.$("#gov-doc-close");
     const controls = [...overlay.querySelectorAll('button,input,select,textarea,a[href],[tabindex]')]
       .filter(n => !n.disabled && n.tabIndex >= 0 && !n.closest("[hidden]"));
     const last = controls[controls.length - 1];
@@ -2297,12 +2322,12 @@ try {
     first.dispatchEvent(escape);
     ok("Escape closes a Register document opened by " + route + " and restores its row",
        overlay.hidden && escape.defaultPrevented && w.document.activeElement ===
-       w.document.querySelector('#pp-list [data-doc="' + id + '"]'));
+       H.$('#pp-list [data-doc="' + id + '"]'));
     if (!overlay.hidden) first.click();
   }
   w.eval('UI.openTab("sit");');
   /* the letterhead must not leak an HTML entity as text */
-  const doc = w.document.querySelector("#pp-doc, .paper");
+  const doc = H.$("#pp-doc, .paper");
   ok("no raw entities in the letterhead",
      !doc || !/&[a-z]+;/i.test(doc.textContent),
      (doc && (doc.textContent.match(/&[a-z]+;/i) || [""])[0]) || "clean");
@@ -2400,7 +2425,7 @@ try {
      ![...w.document.querySelectorAll(".menu-btns .mbtn")]
        .some(b => /^Continue/.test(b.textContent.trim())));
   ok("New Government takes focus instead",
-     w.document.activeElement === w.document.querySelector('[data-go="new"]'),
+     w.document.activeElement === H.$('[data-go="new"]'),
      (w.document.activeElement.textContent || "").trim().slice(0, 20));
   const labels = [...w.document.querySelectorAll(".menu-btns .mbtn")]
     .map(b => b.textContent.trim().split("\n")[0].trim());
@@ -2479,11 +2504,11 @@ try {
   w.eval("(function(){var s=UI.state(), K=UI.content(); s.flags.f1_referendum_carried=true;" +
          "s.flags.f1_annexing=true; s.flags.station_issue=true;" +
          "Engine.apply(s, K, [{ resolution: { un_eu_measures: 'table' } }]); UI.redraw();})()");
-  const tab = w.document.querySelector('.tab[data-t="world"]');
+  const tab = H.$('.tab[data-t="world"]');
   ok("the World tab is Foreign Affairs", tab && tab.textContent.trim() === "Foreign Affairs",
      tab && tab.textContent);
   tab.click();
-  const row = id => w.document.querySelector('#ga-agenda [data-res="' + id + '"]');
+  const row = id => H.$('#ga-agenda [data-res="' + id + '"]');
   ok("the forum's panel is headed with its name",
      $("#ga-hdr").textContent === "General Assembly" && /sits /.test($("#ga-sub").textContent),
      $("#ga-hdr").textContent + " / " + $("#ga-sub").textContent);
@@ -2491,16 +2516,16 @@ try {
      !!row("un_eu_measures") && /on the agenda/.test(row("un_eu_measures").textContent) &&
      !!row("un_eu_measures").querySelector(".lobbyl"));
   ok("and the Commonwealth's own may be tabled",
-     !!row("un_works_selfdet") && !!w.document.querySelector('[data-restab="un_works_selfdet"]'));
+     !!row("un_works_selfdet") && !!H.$('[data-restab="un_works_selfdet"]'));
   ok("but a draft whose gate does not hold is not listed", !row("un_icj_salvage"));
-  w.document.querySelector('[data-rv="un_eu_measures:abstain"]').click();
+  H.$('[data-rv="un_eu_measures:abstain"]').click();
   ok("a vote cast from the panel is the Commonwealth's vote",
      w.eval("UI.state().forums.un_ga.votes.un_eu_measures") === "abstain" &&
-     w.document.querySelector('[data-rv="un_eu_measures:abstain"]').classList.contains("on"));
-  w.document.querySelector('[data-restab="un_works_selfdet"]').click();
+     H.$('[data-rv="un_eu_measures:abstain"]').classList.contains("on"));
+  H.$('[data-restab="un_works_selfdet"]').click();
   ok("Table it tables it", w.eval("UI.state().resolutions.un_works_selfdet.status") === "tabled" &&
      /on the agenda/.test(row("un_works_selfdet").textContent) &&
-     !!w.document.querySelector('[data-reswd="un_works_selfdet"]'));
+     !!H.$('[data-reswd="un_works_selfdet"]'));
   row("un_eu_measures").dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
   const members = w.eval("UI.content().forumById.un_ga.members.length");
   ok("selecting a resolution shows its count member by member beside the globe",
@@ -2509,7 +2534,7 @@ try {
      row("un_eu_measures").classList.contains("sel"),
      $("#w-sel-hdr").textContent + ", " + w.document.querySelectorAll("#w-side .ga-mt tbody tr").length + " rows");
   /* and a tabled resolution has its Concordance page, reached from the window */
-  const cxl = w.document.querySelector('#w-side [data-go="resolution_un_eu_measures"]');
+  const cxl = H.$('#w-side [data-go="resolution_un_eu_measures"]');
   ok("the window links a tabled resolution to its Concordance page", !!cxl);
   if (cxl) {
     cxl.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
@@ -2531,13 +2556,13 @@ try {
     ok("the forum's own page lists its members and the Commonwealth's business",
        /is the plenary organ of the United Nations/.test(fo) && /Disposition/.test(fo) &&
        /Resolutions concerning the Commonwealth/.test(fo) && !/undefined|NaN/.test(fo), fo.slice(0, 160));
-    w.document.querySelector('.tab[data-t="world"]').click();
-    const r2 = w.document.querySelector('#ga-agenda [data-res="un_eu_measures"]');
+    H.$('.tab[data-t="world"]').click();
+    const r2 = H.$('#ga-agenda [data-res="un_eu_measures"]');
     r2 && r2.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
   }
   w.eval("World.select('KEN')");
   ok("and a pick on the globe gives the window back to the country",
-     !w.document.querySelector("#w-side .ga-mt") && !row("un_eu_measures").classList.contains("sel"),
+     !H.$("#w-side .ga-mt") && !row("un_eu_measures").classList.contains("sel"),
      $("#w-sel-hdr").textContent);
   /* EVERY COUNTRY HAS A PAGE, not only the twelve hosts (design/45): its
      description, and the member of the Assembly it votes through with that
@@ -2557,7 +2582,7 @@ try {
      /Kenya holds its own seat in the General Assembly and casts one vote/.test($("#w-side").textContent),
      ($("#w-side").textContent.match(/In the General Assembly.{0,120}/) || ["none"])[0]);
   ok("France's outline carries its code, so Kourou's host can be clicked",
-     !!w.document.querySelector('#world-svg path.w-c[data-iso="FRA"]'));
+     !!H.$('#world-svg path.w-c[data-iso="FRA"]'));
   /* THE MARKS ARE NAMED (6 Oct 2026). Twelve rings with no names left the
      player clicking each to learn which tether it was. The Commonwealth's own
      must carry a label wherever they are drawn, in the globe and in the map,
@@ -2719,13 +2744,13 @@ try {
     } catch (e) { ok("the outlines at the horizon", false, e.message); }
     setView(view.lat, view.lng, view.mode, view.zoom);
   }
-  w.document.querySelector('.tab[data-t="sit"]').click();
-  for (let i = 0; i < 2; i++) w.document.querySelector('#sit-cal [data-cal="1"]').click();
+  H.$('.tab[data-t="sit"]').click();
+  for (let i = 0; i < 2; i++) H.$('#sit-cal [data-cal="1"]').click();
   const cal = $("#sit-cal").innerHTML;
   ok("the calendar names a ministerial deadline as advice", /Advice\./.test(cal));
   ok("the calendar names the Assembly's sitting in words", /Abroad\. The General Assembly sits/.test(cal) &&
      !/undefined\./.test(cal), (cal.match(/[^"]{0,20}General Assembly[^"]{0,40}/) || ["none"])[0]);
-  for (let i = 0; i < 2; i++) w.document.querySelector('#sit-cal [data-cal="-1"]').click();
+  for (let i = 0; i < 2; i++) H.$('#sit-cal [data-cal="-1"]').click();
   w.eval("UI.boot(JSON.parse(" + JSON.stringify(snapF) + "), UI.content())");
 } catch (e) { ok("the General Assembly panel", false, e.message); }
 
@@ -2757,7 +2782,7 @@ try {
   const sb = $('[data-go="sandbox"]');
   ok("the main menu offers the sandbox", !!sb);
   sb.click();
-  const adm = w.document.querySelector("[data-sbx-admin]");
+  const adm = H.$("[data-sbx-admin]");
   ok("and lists the campaigns to open in it", !!adm,
      w.document.querySelectorAll("[data-sbx-admin]").length + " campaigns");
   adm.click();
@@ -2986,10 +3011,10 @@ try {
      $("#sitting-hdr").textContent);
   w.eval("Shell.boot(CONTENT)");
   $('[data-go="load"]') && $('[data-go="load"]').click();
-  ok("the Load screen does not list the bench", !w.document.querySelector('[data-load="0"]'));
+  ok("the Load screen does not list the bench", !H.$('[data-load="0"]'));
   w.eval("Shell.boot(CONTENT)");
   $('[data-go="new"]').click();
-  ok("and there is no sandbox government among the campaigns", !w.document.querySelector('[data-admin="sandbox"]'));
+  ok("and there is no sandbox government among the campaigns", !H.$('[data-admin="sandbox"]'));
   w.eval("Shell.boot(CONTENT)");
 } catch (e) { ok("the sandbox", false, e.message + " " + (e.stack || "").split("\n")[1]); }
 

@@ -32,7 +32,9 @@ const UI = (function () {
   const bsOf = id => (countFreeze && countFreeze.id === id)
     ? Object.assign({}, st.bills[id], countFreeze) : st.bills[id];
 
-  const $ = s => document.querySelector(s);
+  // An ID uses the DOM's live index, not a CSS scan or a cached node.
+  const $ = s => /^#[A-Za-z_][\w-]*$/.test(s)
+    ? document.getElementById(s.slice(1)) : document.querySelector(s);
   const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
   const sw = col => `<i class="swatch" style="background:${col}"></i>`;
   /* The party mark in the lists and panels: the colour block. The logo is

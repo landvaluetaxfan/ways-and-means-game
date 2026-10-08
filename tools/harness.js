@@ -104,7 +104,14 @@ const ok = (label, cond, extra) => {
   if (!cond) fail++;
   console.log((cond ? "  ok   " : "  FAIL ") + label + (extra ? "  " + extra : ""));
 };
-const $ = s => w.document.querySelector(s);
+/* Re-rendered nodes are always fetched afresh. Anchor descendant searches
+   to their unique panel ID; :scope prevents an outside ancestor matching. */
+const $ = s => {
+  const anchored = /^#([A-Za-z_][\w-]*)(?:\s+([^,]+))?$/.exec(s);
+  if (!anchored) return w.document.querySelector(s);
+  const panel = w.document.getElementById(anchored[1]);
+  return anchored[2] ? (panel ? panel.querySelector(":scope " + anchored[2]) : null) : panel;
+};
 
 /* Both files start from the same place: a booted shell on the main menu,
    then a new game in slot one. uitest asserts its way through those steps;
