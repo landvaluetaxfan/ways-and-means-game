@@ -1,9 +1,0 @@
-{
-  "brief": "opencode-release-qa",
-  "lane": "opencode",
-  "since": "2026-10-08",
-  "files": [
-    "design/itch-release-qa.md"
-  ],
-  "note": "independent release QA; no source edits"
-}
