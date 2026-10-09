@@ -1,0 +1,11 @@
+{
+  "brief": "codex-handoff",
+  "lane": "codex",
+  "since": "2026-10-09",
+  "files": [
+    "content/campaigns/flash_i/events.js",
+    "briefs/codex-handoff.md",
+    "briefs/act-one.md"
+  ],
+  "note": ""
+}
