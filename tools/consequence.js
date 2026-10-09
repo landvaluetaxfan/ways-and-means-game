@@ -69,7 +69,7 @@ function observeMechanics(C,E){
   return proof;
 }
 function analyze(C,engineSource,proof={edges:[],feedback:[]}){
-  const moved=new Map(),gated=new Map(),edges=new Map(),ruleReads=new Set();
+  const moved=new Map(),gated=new Map(),edges=new Map();
   const engine=engineReaders(engineSource),S=C.setup||{};
   if(engine.has("law.rate_*"))for(const b of S.fiscal&&S.fiscal.bases||[])engine.add("law.rate_"+b.k);
   const bump=(map,key)=>map.set(key,(map.get(key)||0)+1);
@@ -138,7 +138,7 @@ function analyze(C,engineSource,proof={edges:[],feedback:[]}){
         const active=t.map?Object.values(t.map).some(x=>+x!==0):!!(t.per==null?rate&&rate.passthrough:t.per);
         if(!active)continue;
         for(const name of t.map?inputs.slice(0,1):inputs){
-          const input=keyOf(name);ruleReads.add(input);link(input,target);
+          const input=keyOf(name);link(input,target);
         }
       }
     }
@@ -172,7 +172,6 @@ function analyze(C,engineSource,proof={edges:[],feedback:[]}){
     let verdict="ok";
     if(m&&!path){
       if(/^(law|scalar)\./.test(k)&&engine.has(k))verdict="ok (read by the engine)";
-      else if(k.startsWith("law.")&&ruleReads.has(k))verdict="ok (read by a policy rule)";
       else verdict="NUMBER NOBODY SEES";
     }else if(!m&&g)verdict="EVENT NEVER FIRES";
     return {k,m,g,verdict,path};

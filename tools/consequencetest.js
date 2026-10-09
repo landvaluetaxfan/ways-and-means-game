@@ -39,6 +39,20 @@ function run(){
       {k:"b",terms:[{from:"price.a",per:1}]},{k:"a",terms:[{from:"price.b",per:1}]}]}};
     assert.equal(row(C,"price.a").verdict,"NUMBER NOBODY SEES");
   });
+  check("a law feeding an isolated economy cycle is not feedback",()=>{
+    const C={events:[{choices:[{effects:[{law:{dead:true}}]}]}],setup:{economyRules:[
+      {k:"a",terms:[{from:"law.dead",per:1},{from:"economy.b",per:1}]},
+      {k:"b",terms:[{from:"economy.a",per:1}]}]}};
+    const r=row(C,"law.dead");
+    assert.equal(r.path,null);assert.equal(r.verdict,"NUMBER NOBODY SEES");
+  });
+  check("a law through economy rules must reach terminal feedback",()=>{
+    const C={events:[{choices:[{effects:[{law:{tax:true}}]}]},{when:{priceAbove:{rent:10}}}],
+      setup:{economyRules:[{k:"a",terms:[{from:"law.tax",per:1}]}],
+        priceRules:[{k:"rent",terms:[{from:"economy.a",per:1}]}]}};
+    const r=row(C,"law.tax");assert.equal(r.verdict,"ok");
+    assert.deepEqual(r.path,["law.tax","economy.a","price.rent"]);
+  });
   check("a zero coefficient creates no reader",()=>{
     const C={events:[moved("price.a"),{when:{priceAbove:{b:1}}}],
       setup:{priceRules:[{k:"b",terms:[{from:"price.a",per:0}]}]}};

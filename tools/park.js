@@ -70,8 +70,14 @@ function findArray(ast, spec) {
 /* the text of one element with the comments that lead it, and where it sits */
 function chunks(src, arr) {
   const out = []; let prev = arr.start + 1;
-  arr.elements.forEach(el => {
-    let end = el.end; const m = /^\s*,/.exec(src.slice(end)); if (m) end += m[0].length;
+  if (arr.elements.some(el => !el)) throw new Error("park: array holes are unsupported");
+  arr.elements.forEach((el,i) => {
+    let end = el.end;
+    const limit = i + 1 < arr.elements.length ? arr.elements[i+1].start : arr.end - 1;
+    /* A separator may follow a lexical comment. Tokenize only the gap so
+       the comment and comma travel with the entry, without changing its bytes. */
+    const token = load("acorn").tokenizer(src.slice(end,limit),{ecmaVersion:"latest"}).getToken();
+    if (token.type.label === ",") end += token.end;
     out.push({ el, start: prev, end });
     prev = end;
   });

@@ -35,6 +35,29 @@ function run(only) {
       assert.deepEqual(A.archivedChunks(root,"events"), [old,tagged], "archive retains exact comments, literals and functions");
       assert.equal(A.verify(root), true);
     },
+    commentedSeparator() {
+      const P=require("./park.js");
+      for(const comment of [" /* trailing comment */", " // trailing comment\n"]) {
+        const root=fixture(),file=path.join(root,"content/events.js");
+        const retired='\n{id:"old"}'+comment+',';
+        const survivor='\n{id:"shared",campaign:["world","flash_i"]}';
+        fs.writeFileSync(file,'const EVENTS = ['+retired+survivor+'];\n');
+        A.write(root);
+        const src=fs.readFileSync(file,"utf8"),arr=P.findArray(P.parse(src),{file,list:"EVENTS"});
+        assert.ok(arr.elements.every(Boolean),"comment before separator must not leave an array hole");
+        assert.deepEqual(arr.elements.map(P.idOf),["shared"]);
+        assert.equal(src,'const EVENTS = ['+survivor+'];\n',"survivor remains byte exact");
+        assert.deepEqual(A.archivedChunks(root,"events"),[retired],"trailing comment and separator travel with retired entry");
+        assert.equal(A.verify(root),true);
+      }
+    },
+    hole() {
+      const root=fixture(),file=path.join(root,"content/events.js");
+      fs.writeFileSync(file,'const EVENTS = [,{id:"old"}];\n');
+      const before=snapshot(root);
+      assert.throws(()=>A.write(root),/array holes are unsupported/);
+      assert.deepEqual(snapshot(root),before,"existing array holes fail before any archive or source write");
+    },
     repeat() {
       const root = fixture(); A.write(root);
       const before = snapshot(root); A.write(root);

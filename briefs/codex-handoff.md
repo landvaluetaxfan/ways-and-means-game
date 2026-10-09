@@ -87,7 +87,7 @@ assertions were removed and no player-facing wording was added.
    coefficients as percentages in tooltips and the Bank explanation, and setup-token diagnostics.
    **Still Claude's:** inventory B's two Act I token substitutions and the register pass. Constitutional
    totals remain outside setup-only E5. Plan and scope rulings: `design/83-setup-text-plan.md`.
-5. **A fixture of the engine's own for `test.js`**, so the world's untagged story can be archived and dropped from the
+5. **A fixture of the engine's own for `test.js`: implemented and independently reviewed**, so the world's untagged story can be archived and dropped from the
     shipping page by data and not by `tools/storystrip.js`. Brief `act-one.md`, "How old text leaves the build", rule 3.
     **In progress, 8 October:** the author approved `design/84-engine-fixture.md` and native execution of
     `design/85-engine-fixture-plan.md`. Task 1 adds independent engine/interface profiles, ordered-rule
@@ -105,11 +105,23 @@ assertions were removed and no player-facing wording was added.
     story collections and reject fixture/archive scripts. Thirteen deliberate boundary mutations
     fail. Packaged Edge runs at 1920x1000, 1366x768 and a cross-origin 960x640 frame reach the curtain,
     restore a complete save through Continue, and have clean console/external-network logs.
-    Final whole-branch review and stable-tree checks are pending.
+    The pre-review tree passed 20/20 checks in 185 seconds, with zero direct Edge layout findings
+    and a matching 960-run baseline. The fresh reviewer independently reconstructed both original
+    profiles and all 250 source chunks. Two Important findings were repaired RED→GREEN: lexical
+    comments before commas now travel with their retired entry without leaving holes; a law feeding
+    an isolated policy cycle cannot pass without terminal feedback. Existing holes fail before writing.
+    Three deliberate review-fix mutations fail. Final reviewed tree: 20/20 checks in 179.27 seconds,
+    zero findings from direct Edge layout probes at seven sizes native/wrapped, and the 960-run
+    report matching baseline after decoding/LF normalization. Job 5 is complete; its claim is released
+    with the finishing commit. Other jobs in this brief remain. No new player-facing wording.
+    **Deferred minor:** AGENTS.md's historical loading paragraph and comments in testkit/harness still
+    describe the former arrangement; the independent profiles and world archive described above
+    are the current implementation.
 
     **Existing curtain follow-up (separate job 7):** the header shows sitting 17, 23 May, while the
-    curtain report is dated the 8 May rise. At smaller sizes the report/thank-you controls require
-    scrolling the reading pane. The archive migration changes neither the curtain nor its wording.
+    curtain report is dated the 8 May rise. At smaller sizes the report figures and thank-you section
+    require scrolling the reading pane; copying the report is in Options. The archive migration changes
+    neither the curtain nor its wording.
 
     **Archival decisions approved by the author, 8 October:**
 
