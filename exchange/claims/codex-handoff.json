@@ -11,7 +11,8 @@
     "content/campaigns/flash_i/campaign.js",
     "content/campaigns/flash_i/guards.js",
     "briefs/codex-handoff.md",
-    "briefs/act-one.md"
+    "briefs/act-one.md",
+    "js/refs.js"
   ],
   "note": ""
 }
