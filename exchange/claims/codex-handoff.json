@@ -1,0 +1,17 @@
+{
+  "brief": "codex-handoff",
+  "lane": "codex",
+  "since": "2026-10-09",
+  "files": [
+    "js/engine.js",
+    "js/ui.js",
+    "test.js",
+    "tools/uitest.js",
+    "tools/itchtest.js",
+    "content/campaigns/flash_i/campaign.js",
+    "content/campaigns/flash_i/guards.js",
+    "briefs/codex-handoff.md",
+    "briefs/act-one.md"
+  ],
+  "note": ""
+}
