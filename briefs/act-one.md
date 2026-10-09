@@ -240,9 +240,10 @@ release or are sequenced with them.
   is still the supply loss. The last page, the state of the country and the curtain call read
   `kind:"act"` in `js/ui.js`; the event is `queuedOnly` and never fires, so no decision is
   taken on it. Guards: `THE ACT CAN BE WON`, `THE CURTAIN IS THE ALMANAC WORKS ABANDONED`;
-  `test.js` (periods block); `tools/uitest.js` (the curtain block). Codex still owes the
-  signed-off form: a campaign `play.curtain` frame, and a dated last page (the state of the
-  country reads the date the next period would open on, 23 May, and not the rise's, 8 May).
+  `test.js` (periods block); `tools/uitest.js` (the curtain block). The
+  signed-off form is implemented (Codex, 9 October): `play.curtain: { after, event, note }`,
+  with `setup.actEnd` retained for older campaigns. The page, header and copied report
+  read sitting 16, 8 May, from the endpoint returned by `Engine.checkEnd`.
 - **E2, landed in part (Claude, 8 October).** `setup.reveals[key] = { when }` and `Engine.revealed(st, C, key)` keep a piece of the board out of sight until a scene has been read, with no state change (it reads `seen`). Flash I reveals the Chamber's list of measures at `a1_order_paper` (with the empty state E15 asked for) and the count of a measure, in the Chamber's benches and in a bill's Concordance article, at `a1_count`. Not built: the full introduced record of people, stations and parties (visible from the start by decision, `design/81`). E15's strings, the curtain's date (the day the House rose, in words) and the calendar's "session 4" are done.
 - **E2 The introduced record.** Scenes, wire items and events name what they introduce; the
   save records it; every list the player sees (bills, orders, stations, people, Concordance)
@@ -519,6 +520,8 @@ are the first-time players, and the gate adds what a public release needs:
 14. **A feedback path.** A version stamp on the menu and in every transcript. The curtain page
     thanks the player, says where to send feedback (the author chooses the place), and lets
     them copy the run's transcript. No network call anywhere, so the game collects nothing.
+    **Author's decision, 9 October:** feedback goes to Discord; the author gives testers
+    the destination directly. No channel name or invite is required in the game.
 15. **Saves across builds.** A build that changes the state's shape bumps `STATE_VERSION` with
     a migration, or says plainly on load that an older save cannot continue.
 16. **Rights.** Every font, sound, image and data file in the zip is listed with its licence on

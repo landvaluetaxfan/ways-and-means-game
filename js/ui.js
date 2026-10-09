@@ -556,10 +556,11 @@ const UI = (function () {
     /* The same count as the status bar's chip and the calendar's "in n
        sittings". This one added a sitting, so the top of the screen said
        RISES IN 16 over a status bar saying RISE IN 15 (design/37). */
+    const end = Engine.checkEnd(st, C), closed = end.kind === "act";
     const left = st.risesAt != null ? Math.max(0, st.risesAt - st.sitting) : null;
     /* After the writs there is no House to rise: the clock is the campaign's. */
     const campaignDay = st.dissolved ? st.sitting - st.dissolved.at + 1 : null;
-    const rise = campaignDay != null ? " / THE CAMPAIGN, DAY " + campaignDay
+    const rise = closed ? "" : campaignDay != null ? " / THE CAMPAIGN, DAY " + campaignDay
       : left == null ? "" : left === 0 ? " / RISES TODAY" : " / RISES IN " + left;
     /* THE ACT, WHERE THE PLAY HAS ONE. The bar said "SESS 4.1", a count of
        sitting periods that the player is told about nowhere else and that means
@@ -569,7 +570,7 @@ const UI = (function () {
     const play = currentPlay();
     const act = play && (play.acts || []).find(a => a.chapter === st.chapter);
     $("#tb-sys").textContent = (act ? act.head.toUpperCase() + " / " : "") +
-      `SITTING ${String(st.sitting).padStart(3, "0")} / ${st.date}${rise}`;
+      `SITTING ${String(closed ? end.sitting : st.sitting).padStart(3, "0")} / ${closed ? end.date : st.date}${rise}`;
   }
   function drawStatus() {
     /* Four essentials, using the same content-owned bands as the brief.
@@ -605,6 +606,9 @@ const UI = (function () {
     if (st.dissolved) {
       rise.textContent = "House dissolved";
       rise.setAttribute("data-tip-body", "Campaign day " + (st.sitting - st.dissolved.at + 1) + ".");
+    } else if (Engine.checkEnd(st, C).kind === "act") {
+      rise.textContent = "The House has risen";
+      rise.setAttribute("data-tip-body", "This run has ended. The playtest transcript is in Options.");
     }
     rise.style.color = clock.value != null && clock.value <= 3 ? "var(--alert)" : "";
     const sigNeed = C.setup.thresholds.ballot;
@@ -699,6 +703,8 @@ const UI = (function () {
   };
 
   function ambient() {
+    if (screen === "sit" && Engine.checkEnd(st, C).kind === "act")
+      return "This run has ended. The playtest transcript is in Options.";
     const note = SCREEN_NOTE[screen] || "";
     if (screen !== "gov" && screen !== "cham") return note;
     const id = Focus.selected("cham-bills");
@@ -891,7 +897,8 @@ const UI = (function () {
        its twenty thousand days out, so the transcript was dated in the
        2340s (design/38). The state carries its own date. */
     try {
-      return st.date || Engine.dateOfSitting(C, st.sitting) || "\u2014";
+      const end = Engine.checkEnd(st, C);
+      return end.date || st.date || Engine.dateOfSitting(C, st.sitting) || "\u2014";
     } catch (e) { return "\u2014"; }
   }
 
@@ -912,7 +919,8 @@ const UI = (function () {
 
     L.push("WAYS AND MEANS — PLAYTEST TRANSCRIPT");
     L.push("=".repeat(58));
-    L.push("sitting      " + st.sitting + " of the session, chapter " + st.chapter);
+    const end = Engine.checkEnd(st, C);
+    L.push("sitting      " + (end.sitting || st.sitting) + " of the session, chapter " + st.chapter);
     L.push("date         " + dateLine());
 
     rule("WHERE IT STANDS");
@@ -6974,12 +6982,12 @@ const UI = (function () {
     /* A CAMPAIGN'S ACT CAN END THE RUN AT THE RISE (design/80, brief E1). Where the campaign names a curtain
        event (`setup.actEnd`), a government that carried the House to the rise ends on that event's page and not on
        an election's returns; a government that fell, or lost supply, keeps its own page below. */
-    const actEnd = C.setup && C.setup.actEnd && C.eventById && C.eventById[C.setup.actEnd.event];
+    const actEnd = end.curtain && C.eventById && C.eventById[end.curtain.event];
     if (actEnd && end.kind === "act") {
       title = (actEnd.setpiece && actEnd.setpiece.title) || actEnd.title;
       String(actEnd.body || "").split(/\n\s*\n/).filter(Boolean).forEach((p, i) =>
         secs.push({ kind: i === 0 ? "lede" : "body", body: p.replace(/\s*\n\s*/g, " ") }));
-      if (C.setup.actEnd.note) secs.push({ kind: "body", head: "End of the first act", body: C.setup.actEnd.note });
+      if (end.curtain.note) secs.push({ kind: "body", head: "End of the first act", body: end.curtain.note });
     } else if (end.kind === "election" && end.result) {
       const r = end.result, was = r.was || 0, held = r.held || 0;
       title = "The Commonwealth has voted";
@@ -7017,7 +7025,7 @@ const UI = (function () {
     const country = stateOfCountry();
     if (country.length) secs.push({ kind: "document", head: "The state of the country",
       body: country.map(r => r.k + ": " + r.then + " when the session opened, " + r.now + " now.").join("\n\n"),
-      source: "Treasury and Reserve Bank, " + longDate(end.kind === "act" && Engine.dateOfSitting(C, st.sitting - 1) || st.date) });
+      source: "Treasury and Reserve Bank, " + longDate(end.date || st.date) });
 
     /* WHAT THE GOVERNMENT DID TO THE COUNTRY, which is the thing a player
        wants at the end and which no board has ever printed: where it was
@@ -7044,7 +7052,7 @@ const UI = (function () {
     curtainCall(end).forEach(x => secs.push(x));
 
     secs.push({ kind: "body", head: "The record",
-      body: st.log.length + " entries, sitting " + st.sitting + ", session " + st.session +
+      body: st.log.length + " entries, sitting " + (end.sitting || st.sitting) + ", session " + st.session +
             ", seed " + st.seed + ". Recent decisions are under What has happened on the Sitting. " +
             "The complete run is in the playtest transcript in Options. Nothing here can be taken back." });
     /* A PLAYTEST BUILD ASKS FOR THE REPORT (briefs/itch-build.md): the button is in Options, where the same copy
@@ -7095,12 +7103,12 @@ const UI = (function () {
     const seatsOf = map => Object.keys(map || {}).sort((a, b) => map[b] - map[a])
       .map(id => `${mark(id)}${esc(ps(id))} ${map[id]}`).join(" &middot; ");
     let head, body = "";
-    const actEnd = C.setup && C.setup.actEnd && C.eventById && C.eventById[C.setup.actEnd.event];
+    const actEnd = end.curtain && C.eventById && C.eventById[end.curtain.event];
     if (actEnd && end.kind === "act") {
       head = (actEnd.setpiece && actEnd.setpiece.title) || actEnd.title;
       body = String(actEnd.body || "").split(/\n\s*\n/).filter(Boolean)
         .map(p => `<div class="note">${esc(p.replace(/\s*\n\s*/g, " "))}</div>`).join("") +
-        (C.setup.actEnd.note ? `<div class="note">${esc(C.setup.actEnd.note)}</div>` : "");
+        (end.curtain.note ? `<div class="note">${esc(end.curtain.note)}</div>` : "");
     } else if (end.kind === "election" && end.result) {
       const r = end.result, was = r.was || 0, held = r.held || 0;
       head = "The Commonwealth has voted";
@@ -7128,7 +7136,7 @@ const UI = (function () {
       (country.length ? `<div class="rulehead">The state of the country</div><div class="note">` +
         country.map(r => `${esc(r.k)} ${esc(r.then)} &rarr; ${esc(r.now)}`).join(" &middot; ") + `</div>` : "") +
       `<div class="rulehead">The record</div><div class="note">` +
-        `${st.log.length} entries, sitting ${st.sitting}, session ${st.session}, seed ${st.seed}. ` +
+        `${st.log.length} entries, sitting ${end.sitting || st.sitting}, session ${st.session}, seed ${st.seed}. ` +
         `Recent decisions are under What has happened on the Sitting. The complete run is in the playtest transcript in Options, and nothing here can be taken back.</div></div>`;
   }
 

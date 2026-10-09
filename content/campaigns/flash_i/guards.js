@@ -351,9 +351,9 @@ guard("QUESTION TIME ASKS ABOUT WHAT HAPPENED, ONE QUESTION, AT SITTING 14", ok 
 });
 
 guard("THE CURTAIN IS THE ALMANAC WORKS ABANDONED, READ BY THE LAST PAGE AND NEVER PLAYED", ok => {
-  const adm = (T.all().administrations || []).find(a => a.id === "flash_i"), ae = ((adm || {}).setup || {}).actEnd || {};
+  const adm = (T.all().administrations || []).find(a => a.id === "flash_i"), ae = ((adm || {}).play || {}).curtain || {};
   const ev = CONTENT.eventById[ae.event];
-  ok("the campaign names its curtain, and it is an event the view holds", !!ev && ev.queuedOnly === true && ae.event === "a1_works_abandoned");
+  ok("the campaign names its curtain, and it is an event the view holds", ae.after === 1 && !adm.setup.actEnd && !!ev && ev.queuedOnly === true && ae.event === "a1_works_abandoned");
   const seen = [], st = Engine.newGame(CONTENT);
   for (let i = 1; i <= 16; i++) { Engine.playSitting(st, CONTENT, () => 0).forEach(m => seen.push(m.event.id)); Engine.advance(st, CONTENT); }
   ok("and it never fires in play, because nothing queues it", !seen.includes("a1_works_abandoned"));

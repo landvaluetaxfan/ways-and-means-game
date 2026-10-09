@@ -1277,6 +1277,23 @@ try {
      /first paragraph of the curtain/.test(tc) && /second paragraph of the curtain/.test(tc), tc.slice(0, 80));
   ok("with the campaign's own note", /Here the first act ends/.test(tc));
   ok("and not on an election's returns", !/The Commonwealth has voted/.test(tc));
+  const frameProbe = w.eval(`(function(){ var K=UI.content(), s=UI.state();
+    var a=K.administrations.find(function(a){return a.id===s.admin;});
+    var before=a.play; a.play={curtain:{after:1,event:"curtain_probe",note:"Here the first act ends."}};
+    delete K.setup.actEnd; s.sitting=(K.setup.sittingsPerPeriod||24)+1;
+    s.date=Engine.dateOfSitting(K,s.sitting); UI.redraw();
+    var result={page:document.querySelector('#sitting-body').textContent,
+      header:document.querySelector('#tb-sys').textContent, report:UI.transcript(),
+      status:document.querySelector('#sb-rise').textContent, hint:document.querySelector('#sb-msg').textContent,
+      date:Engine.dateOfSitting(K,s.sitting-1), sitting:s.sitting-1};
+    a.play=before; return result; })()`);
+  ok("the play frame owns the closing page", /The curtain headline/.test(frameProbe.page));
+  ok("the header closes on the rise without announcing another rise",
+     frameProbe.header.includes(frameProbe.date) && frameProbe.header.includes(String(frameProbe.sitting).padStart(3,"0")) && !/RISES IN/.test(frameProbe.header));
+  ok("the copied report shares the closing sitting and date",
+     frameProbe.report.includes("sitting      "+frameProbe.sitting+" of") && frameProbe.report.includes("date         "+frameProbe.date));
+  ok("the curtain status announces the completed rise and the report",
+     frameProbe.status === "The House has risen", frameProbe.status);
   w.eval("(function(){ var K=UI.content(), s=UI.state(); delete K.setup.actEnd; delete K.eventById.curtain_probe; s.period=1; Engine.dissolve(s, K); Engine.count(s, K); UI.redraw(); })()");
   const pe = H.$("#sitting-body .sp-page");
   ok("a campaign that names none keeps the election's page", !!pe && /voted/i.test(pe.textContent));

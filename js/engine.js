@@ -8984,11 +8984,19 @@ const Engine = (function () {
        reason: it happened in the House that was still sitting. */
     if (st.noConfidence) return { over: true, kind: "loss", reason: "no confidence" };
     /* THE ACT'S CURTAIN (design/80, brief E1). A campaign built to the end of its first act names
-       the page that closes it (`setup.actEnd`). The run is over when the House has risen on that act
+       the page that closes it (`play.curtain`, with setup.actEnd kept for older campaigns). The run is over when the House has risen on that act
        and the next period has begun, which only a carried rise does, so a government that lost
        supply or a confidence vote has already ended above and never reaches the curtain. */
-    const ae = C && C.setup && C.setup.actEnd;
-    if (ae && (st.period || 1) > (ae.period || 1)) return { over: true, kind: "act", reason: "curtain" };
+    const adm = ((C && C.administrations) || []).find(a => a.id === (st.admin || C.admin));
+    const frame = adm && adm.play && adm.play.curtain;
+    const legacy = C && C.setup && C.setup.actEnd;
+    const ae = frame && frame.after != null ? frame : legacy;
+    const after = ae && (ae.after || ae.period || 1);
+    if (ae && (st.period || 1) > after) {
+      const sitting = after * periodLength(C);
+      return { over: true, kind: "act", reason: "curtain", curtain: ae,
+               sitting, date: dateOfSitting(C, sitting) };
+    }
     /* A CRISIS CAN RESOLVE AFTER THE WRITS ARE OUT. This sat below the
        dissolution branch, which returns, so checkSettlement was never
        reached once the House was dissolved and the twelve sittings of the

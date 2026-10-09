@@ -1268,7 +1268,18 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     ok("a campaign without one goes on through the recess", !Engine.checkEnd(Object.assign(Engine.newGame(CONTENT), { period: 2 }), CONTENT).over);
     c.supplyLost = true;
     ok("and supply lost at that rise is a loss, which the curtain does not hide",
-       Engine.checkEnd(c, K).kind === "loss", Engine.checkEnd(c, K).kind);
+        Engine.checkEnd(c, K).kind === "loss", Engine.checkEnd(c, K).kind);
+    const F = Object.assign({}, CONTENT, { administrations: [{ id: "synthetic",
+      play: { curtain: { after: 1, event: "frame_curtain" } } }] });
+    const f = Engine.newGame(F); f.admin = "synthetic"; f.period = 2; f.sitting = 30;
+    const fe = Engine.checkEnd(f, F);
+    ok("the play frame closes at its configured rise even when read later",
+       fe.kind === "act" && fe.curtain.event === "frame_curtain" &&
+       fe.sitting === (F.setup.sittingsPerPeriod || 24) && fe.date === Engine.dateOfSitting(F, fe.sitting), JSON.stringify(fe));
+    F.admin = "synthetic"; delete f.admin;
+    ok("headless campaign play reads the administration from its content view", Engine.checkEnd(f,F).kind === "act");
+    f.noConfidence = true;
+    ok("the frame cannot hide a carried confidence loss", Engine.checkEnd(f, F).kind === "loss");
   }
 
   /* THE LEVER LADDER (brief E3). A campaign's setup.locks shut a writing control until a scene has been seen. */

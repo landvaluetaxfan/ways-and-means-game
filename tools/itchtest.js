@@ -216,6 +216,10 @@ async function boot(label, how) {
   ok("Act I plays from the menu to the curtain through the packaged page", curtain, "stopped at sitting " + w.eval("UI.state().sitting") + " after " + steps + " steps");
   ok("the curtain page is dated the day the House rose, in words", /Treasury and Reserve Bank, 8 May 2080/.test(shown()), (shown().match(/Treasury and Reserve Bank[^A-Z]{0,30}/) || ["none"])[0]);
   ok("the curtain page thanks the player and points to the report", /Thank you for playing/.test(shown()) && /Copy playtest report/.test(shown()));
+  ok("the packaged header and report close on sitting 16, 8 May",
+     /SITTING 016 \/ 2080-05-08/.test(w.document.querySelector("#tb-sys").textContent) &&
+     w.eval('UI.transcript()').includes("sitting      16 of") &&
+     w.eval('UI.transcript()').includes("date         2080-05-08"));
   ok("served: the console is clean after the whole act", s.errs.length === 0, s.errs.slice(0, 2).join(" | "));
   w.close(); srv.close();
 

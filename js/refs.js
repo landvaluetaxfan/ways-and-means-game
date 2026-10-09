@@ -247,6 +247,8 @@ const Refs = (function () {
       H(`setup · ${k}`, to => S[k] = to));
     /* A campaign's curtain page (setup.actEnd.event, design/80 E1) is an event too. */
     (M.administrations || []).forEach(a => {
+      const frame = (a.play || {}).curtain;
+      if (frame && frame.event === id) H(`administration ${a.id} · play.curtain`, to => frame.event = to);
       const ae = (a.setup || {}).actEnd;
       if (ae && ae.event === id) H(`administration ${a.id} · setup.actEnd`, to => ae.event = to);
     });

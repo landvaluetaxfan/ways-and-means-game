@@ -93,8 +93,6 @@ campaign("flash_i", { administrations: [
           title:"The account",
           body:`The account shows what the Treasury receives and spends, the deficit, the reserve and what the Commonwealth owes. The Underwriters read these figures. Money calls, on this screen, borrow or repay.` }
       ],
-      actEnd:{ event:"a1_works_abandoned",
-               note:"This is the end of the first act. The rest of the play is not yet written." },
       campaignMarkers:[{ id:"works", label:"Bellamy Almanac Works", place:"belowBands",
         article:"body_almanac_works", when:{ flags:["station_issue"] },
         note:"The refinery and foundry whose operator has abandoned its residents." }],
@@ -225,7 +223,9 @@ ADRIANA EIREANN FLASH takes the Prime Minister's place on the front bench, in th
         { after:2, direction:
 `The House rises again. It will sit once more before the session ends, and every member knows it. On the concourse outside the chamber the talk is of seats: who will hold theirs, and who is already drafting a farewell.` }
       ],
-      curtain:{ epigraph:{ body:"As the ends of such a partnership cannot be obtained in many generations, it becomes a partnership not only between those who are living, but between those who are living, those who are dead, and those who are to be born.",
+      curtain:{ after:1, event:"a1_works_abandoned",
+        note:"This is the end of the first act. The rest of the play is not yet written.",
+        epigraph:{ body:"As the ends of such a partnership cannot be obtained in many generations, it becomes a partnership not only between those who are living, but between those who are living, those who are dead, and those who are to be born.",
                            source:"Edmund Burke, Reflections on the Revolution in France" } }
     } }
 ] });

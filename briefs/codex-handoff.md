@@ -148,7 +148,16 @@ assertions were removed and no player-facing wording was added.
    fallbacks); four settled screenshots at 1920x1000 and 1366x768 were inspected. The 80-seed reports
    are byte-identical. This checkout uses locked local jsdom and the existing migration worktree's
    Acorn 8.19.0 through NODE_PATH; Acorn is not declared in the project's lockfile.
-7. **E1's signed-off form**: a campaign `play.curtain` frame (`design/80`).
+7. **E1's signed-off form (Codex, 9 October):** the campaign's `play.curtain`
+   owns `after`, `event` and `note`. Older campaigns using `setup.actEnd` still work.
+   The closing page, header and copied report share the closing sitting and date;
+   losses of supply or confidence still take precedence. Event renaming follows the frame.
+   Plain interface wording for the register pass: “The House has risen” and
+   “This run has ended. The playtest transcript is in Options.”
+   Verification: 20/20 checks in 194.83 seconds; Edge native and wrapped layout
+   at seven sizes, zero findings; curtain screenshots at 1920x1000 and 1366x768;
+   80-seed before/after results identical. Feedback destination is given by the author
+   directly to testers (Discord); no channel or invite is required in the game.
 8. **E11, full-page superevents**, only if the author still wants it after playing the build.
 
 # Not yours
