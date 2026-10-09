@@ -7062,7 +7062,8 @@ const UI = (function () {
         body: "This was a test of the first act. To tell the author what was clear and what was not, open Options, choose Copy playtest report" +
               (C.setup && C.setup.feedback ? " and send it to " + C.setup.feedback : "") + "." });
 
-    return { title: title, sections: secs, mood: endMood(end) };
+    return { title: title, sections: secs, mood: endMood(end),
+             scale: actEnd && actEnd.setpiece && actEnd.setpiece.scale || null };
   }
 
   /* THE STATE OF THE COUNTRY (design/40 E14). The last page said who governs
@@ -7246,11 +7247,15 @@ const UI = (function () {
          the board, which is the same facts in a panel. */
       const sitEnd = $("#s-sit");
       if (typeof SetPiece !== "undefined" && SetPiece.html) {
-        box.innerHTML = SetPiece.html({ setpiece: endPiece(ending) }, { play: currentPlay() }).html;
-        if (sitEnd) sitEnd.classList.add("setpiece", "fullpage");
+        const piece = endPiece(ending);
+        box.innerHTML = SetPiece.html({ setpiece: piece }, { play: currentPlay() }).html;
+        if (sitEnd) {
+          sitEnd.classList.add("setpiece", "fullpage");
+          sitEnd.classList.toggle("super", piece.scale === "super");
+        }
       } else {
         box.innerHTML = endBoardHTML(ending);
-        if (sitEnd) sitEnd.classList.remove("setpiece", "fullpage");
+        if (sitEnd) sitEnd.classList.remove("setpiece", "fullpage", "super");
       }
       return;
     }
@@ -7263,7 +7268,7 @@ const UI = (function () {
     if (frame) {
       const sitF = $("#s-sit");
       box.innerHTML = SetPiece.html({ setpiece: frame.page }, { go: frame.go, play: frame.play }).html;
-      if (sitF) { sitF.classList.add("setpiece"); sitF.classList.remove("fullpage"); }
+      if (sitF) { sitF.classList.add("setpiece"); sitF.classList.remove("fullpage", "super"); }
       const goF = box.querySelector("[data-sp-go]");
       if (goF) goF.addEventListener("click", () => { st.flags[frame.flag] = true; saved(); drawAll(); });
       return;
@@ -7278,7 +7283,7 @@ const UI = (function () {
     const sit = $("#s-sit");
     if (sit) sit.classList.toggle("setpiece",
       typeof SetPiece !== "undefined" && SetPiece.is(currentEvent));
-    if (sit) sit.classList.remove("fullpage");
+    if (sit) sit.classList.remove("fullpage", "super");
     if (!currentEvent) {
       /* A QUIET SITTING IS NOT THE SAME AS AN EMPTY GAME, and the screen
          used to say the same sentence for both. A player met "nothing
@@ -7362,10 +7367,16 @@ const UI = (function () {
          photograph; under the headline the name read as the byline */
       box.innerHTML = annotate(SetPiece.html(e, {
         kicker: eventDateline(),
-        figure: e.image && e.image.src ? plate(e.image)
-          : spk ? portrait(spk, spk.name + " \u2014 " + spk.role) : null
-      /* the answers take the page's own measure, under it (briefs/decision-layout.md) */
-      }).html) + `<div class="sp-page sit-answers"><div class="sit-decide" id="sit-decide"></div></div>`;
+         figure: e.image && e.image.src ? plate(e.image)
+           : spk ? portrait(spk, spk.name + " \u2014 " + spk.role) : null,
+         /* the answers take the page's own measure, under it (briefs/decision-layout.md) */
+        ribbon: e.setpiece && e.setpiece.scale === "super"
+          ? ((st.risesAt != null && st.risesAt <= st.sitting)
+            ? "The House rises today"
+            : "The House rises in " + Math.max(0, (st.risesAt || st.sitting) - st.sitting))
+          : null
+       }).html) + `<div class="sp-page sit-answers"><div class="sit-decide" id="sit-decide"></div></div>`;
+       if (sit) sit.classList.toggle("super", e.setpiece && e.setpiece.scale === "super");
       drawDecision();
       placeJump();
       return;
@@ -7582,10 +7593,19 @@ const UI = (function () {
   const arrived = Object.create(null);
   function arrive() {
     const e = currentEvent;
-    if (!e || !Engine.isEvent(e) || arrived[e.id]) return;
-    arrived[e.id] = true;
-    const mood = e.setpiece && typeof e.setpiece === "object" ? e.setpiece.mood : null;
-    if (mood) score(mood);
+    if (e && Engine.isEvent(e) && !arrived[e.id]) {
+      arrived[e.id] = true;
+      const mood = e.setpiece && typeof e.setpiece === "object" ? e.setpiece.mood : null;
+      if (mood) score(mood);
+      if (e.setpiece && e.setpiece.scale === "super" && typeof Motion !== "undefined") Motion.dissolve(() => {}, null, 520);
+      return;
+    }
+    const end = Engine.checkEnd(st, C);
+    const curtain = end && end.curtain && C.eventById && C.eventById[end.curtain.event];
+    if (end && end.over && curtain && curtain.setpiece && curtain.setpiece.scale === "super" && !arrived["ending:" + curtain.id]) {
+      arrived["ending:" + curtain.id] = true;
+      if (typeof Motion !== "undefined") Motion.dissolve(() => {}, null, 520);
+    }
   }
 
   /* ---------- chamber ---------- */

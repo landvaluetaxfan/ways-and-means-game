@@ -923,7 +923,7 @@ The Underwriters lend in the Commonwealth's own money. Earth's banks lend in dol
    (content/world.js, content/actors.js). The canon date is the day the House rises, 8 May (design/81, question 1), so the news
    arrives as the House rises. */
 { id:"a1_works_abandoned", queuedOnly:true, once:true,
-  setpiece:{ title:"Cordell abandons the Almanac Works, and 184,000 people are left without an operator" },
+  setpiece:{ scale:"super", title:"Cordell abandons the Almanac Works, and 184,000 people are left without an operator" },
   title:"The Almanac Works",
   speaker:null,
   body:`Cordell, the mining company that owns the Bellamy Almanac Works, has wound up the company that operated it. The platform's 184,000 residents now have no operator to pay for their air, water or fuel.

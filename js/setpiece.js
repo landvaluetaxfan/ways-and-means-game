@@ -226,6 +226,7 @@ const SetPiece = (function () {
       `<div class="sp-page">` +
         /* the dateline, where the caller has one: an event is news */
         (o.kicker ? `<div class="sp-kicker">${esc(o.kicker)}</div>` : "") +
+        (o.ribbon ? `<div class="sp-ribbon">${esc(o.ribbon)}</div>` : "") +
         (title ? `<h2 class="sp-title">${esc(title)}</h2>` : "") +
         /* who is speaking, where the event has somebody: a byline under the
            title, since a page has no portrait column */
@@ -260,7 +261,7 @@ const SetPiece = (function () {
     const textC = typeof UI !== "undefined" && UI.content && UI.content() ||
       (typeof CONTENT !== "undefined" ? CONTENT : null);
     return { html: Engine.text(`<div class="sp-scroll">${body}</div>${foot}`,textC),
-             mood: sp.mood || null };
+             mood: sp.mood || null, scale: sp.scale || null };
   }
 
   /* AND IT WRITES ITSELF. The assent ceremony has drawn its signature with a

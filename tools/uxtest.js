@@ -1976,6 +1976,16 @@ try {
    action or an engine outcome and may NEVER follow a redraw. A player
    who switches tabs must not watch the screen dither at them. */
 try {
+  const superPage = w.eval(`(function () {
+    var page = SetPiece.html({ setpiece: { scale: "super", title: "A super page" } },
+      { kicker: "8 May 2080", ribbon: "The House rises today" });
+    var ordinary = SetPiece.html({ setpiece: { title: "An ordinary page" } }, {});
+    return { scale: page.scale, hasRibbon: /sp-ribbon/.test(page.html), ordinary: ordinary.scale };
+  })()`);
+  ok("a super setpiece preserves its scale and ribbon metadata",
+     superPage.scale === "super" && superPage.hasRibbon && superPage.ordinary === null,
+     JSON.stringify(superPage));
+
   /* KEEP THE REAL ONE before spying, or the no-motion assertion below
      tests the spy and passes for the wrong reason. */
   w.eval(`window.__realDissolve = Motion.dissolve;

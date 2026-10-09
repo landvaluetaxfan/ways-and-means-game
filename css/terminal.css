@@ -3748,6 +3748,15 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 #s-sit .sp-sec p{font-size:14.5px;line-height:1.62;}
 #s-sit .sp-sec.sp-lede p{font-size:16px;line-height:1.66;}
 #s-sit.setpiece .sp-page{max-width:66ch;}
+/* A rare event can take the Sitting screen. The dither is opened by the
+   action that brought the page; this layout only holds the settled state. */
+#s-sit.super .grid{display:flex;flex-direction:column;}
+#s-sit.super .stack:not(.stackmain){display:none;}
+#s-sit.super .stackmain{flex:1 1 auto;min-height:0;}
+#s-sit.super .stackmain > .panel{flex:1 1 auto;min-height:0;}
+.sp-ribbon{border-top:1px solid var(--chrome-dk);border-bottom:1px solid var(--chrome-dk);
+  margin:0 auto 16px;padding:4px 0;font-family:var(--f-ui);font-size:9px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);text-align:center;}
 /* The picture on an event's page: its plate, or the speaker's portrait,
    centred under the title and larger than the reading block's thumbnail. */
 .sp-figure{display:flex;justify-content:center;margin:0 0 16px;}
