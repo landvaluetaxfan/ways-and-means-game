@@ -163,9 +163,16 @@ assertions were removed and no player-facing wording was added.
    at seven sizes, zero findings; curtain screenshots at 1920x1000 and 1366x768;
    80-seed before/after results identical. Feedback destination is given by the author
    directly to testers (Discord); no channel or invite is required in the game.
-8. **E11, full-page superevents:** the author requested opencode implement it in this
-   release run (8 October). `briefs/superevents.md` bounds the delegated branch;
-   Codex reviews and integrates it after verification.
+8. **E11, full-page superevents: implemented (opencode; reviewed by Codex, 8 October).**
+   The Works curtain carries `scale:"super"`, its closing date and rise ribbon.
+   Actions cover the layout change with the existing dither; reduced motion is instant,
+   redraw/load are inert, and ordinary pages restore the columns. Lint warns per campaign/act.
+   Review repaired the missing curtain ribbon and the animation order, and guarded the
+   failed-layer fallback against executing an action twice. Production mutations fail.
+   Combined candidate: 20/20 checks in 230.79 seconds, zero Edge layout findings at seven
+   sizes native/wrapped, and the 80-seed baseline unchanged. The upload workflow now builds
+   `npm run itch`, rather than the retired four-sitting slice. The author's playthrough
+   and actual itch.io upload/embed check remain the acceptance gates.
 
 # Not yours
 

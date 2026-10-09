@@ -202,6 +202,9 @@ const UI = (function () {
   function boot(state, content) {
     st = state; C = content;
     moneyCall = null;
+    Object.keys(arrived).forEach(k => delete arrived[k]);
+    const sitting = $("#s-sit");
+    if (sitting) sitting.classList.remove("setpiece", "fullpage", "super");
     const govPref = govStoredWorkspace();
     Focus.seed("gov-work", typeof govPref.work === "string" ? govPref.work : null);
     Focus.seed("gov-utilities", null);
@@ -7173,6 +7176,8 @@ const UI = (function () {
     if (!(st.flags || {})._introRead) {
       const adm = (C.administrations || []).find(a => a.id === st.admin);
       if (adm && adm.intro && typeof SetPiece !== "undefined") {
+        const sitIntro = $("#s-sit");
+        if (sitIntro) sitIntro.classList.remove("setpiece", "fullpage", "super");
         box.innerHTML = SetPiece.html({ setpiece: adm.intro },
                                       { go: "Take office", play: adm.play || null }).html;
         /* ARMED WITH THE PAGE, WRITTEN ON THE CLICK. `armed` is false where
@@ -7248,7 +7253,12 @@ const UI = (function () {
       const sitEnd = $("#s-sit");
       if (typeof SetPiece !== "undefined" && SetPiece.html) {
         const piece = endPiece(ending);
-        box.innerHTML = SetPiece.html({ setpiece: piece }, { play: currentPlay() }).html;
+        const curtain = piece.scale === "super";
+        box.innerHTML = SetPiece.html({ setpiece: piece }, curtain ? {
+          play: currentPlay(),
+          kicker: "Sitting " + (ending.sitting || st.sitting) + " · " + longDate(ending.date || st.date),
+          ribbon: "The House has risen"
+        } : { play: currentPlay() }).html;
         if (sitEnd) {
           sitEnd.classList.add("setpiece", "fullpage");
           sitEnd.classList.toggle("super", piece.scale === "super");
@@ -7567,7 +7577,7 @@ const UI = (function () {
     openRow = { event: null, i: -1 };
     setStatus("The House rises · sitting " + st.sitting, "transient");
     if (typeof Wait !== "undefined") Wait.brief(200);
-    drawAll(); saved(); afterAction(); arrive(); reveal();
+    actionDraw(() => { drawAll(); saved(); afterAction(); arrive(); reveal(); });
   }
 
   /* IS ANYTHING ELSE BEFORE THE HOUSE TODAY? Asked of a copy, because
@@ -7583,7 +7593,23 @@ const UI = (function () {
     currentEvent = null; lastResult = null; lastChanges = null; lastNotices = [];
     openRow = { event: null, i: -1 };
     cue("click");
-    drawAll(); saved(); afterAction(); arrive(); reveal();
+    actionDraw(() => { drawAll(); saved(); afterAction(); arrive(); reveal(); });
+  }
+
+  /* A scale change is an action presentation, never a render side effect. The
+     copy is only a peek: nextEvent mutates it while the live state stays put. */
+  function actionWantsSuper() {
+    try {
+      const end = Engine.checkEnd(st, C);
+      const curtain = end && end.curtain && C.eventById && C.eventById[end.curtain.event];
+      if (end && end.over && curtain && curtain.setpiece && curtain.setpiece.scale === "super") return true;
+      const probe = Engine.load(Engine.save(st), C), e = Engine.nextEvent(probe, C);
+      return !!(e && e.setpiece && typeof e.setpiece === "object" && e.setpiece.scale === "super");
+    } catch (e) { return false; }
+  }
+  function actionDraw(fn) {
+    if (actionWantsSuper() && typeof Motion !== "undefined" && Motion.enter) Motion.enter(fn);
+    else fn();
   }
 
   /* A PAGE THAT ARRIVES NAMES A MOOD, AND THE ACTION THAT BROUGHT IT CUES
@@ -7597,14 +7623,12 @@ const UI = (function () {
       arrived[e.id] = true;
       const mood = e.setpiece && typeof e.setpiece === "object" ? e.setpiece.mood : null;
       if (mood) score(mood);
-      if (e.setpiece && e.setpiece.scale === "super" && typeof Motion !== "undefined") Motion.dissolve(() => {}, null, 520);
       return;
     }
     const end = Engine.checkEnd(st, C);
     const curtain = end && end.curtain && C.eventById && C.eventById[end.curtain.event];
     if (end && end.over && curtain && curtain.setpiece && curtain.setpiece.scale === "super" && !arrived["ending:" + curtain.id]) {
       arrived["ending:" + curtain.id] = true;
-      if (typeof Motion !== "undefined") Motion.dissolve(() => {}, null, 520);
     }
   }
 

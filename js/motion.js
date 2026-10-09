@@ -151,14 +151,27 @@ const Motion = (function () {
      And the overlay is removed by a timeout as well as by the last
      frame, because a layer that outlives its animation is a layer over
      the whole game. */
-  function dissolve(swap, done, ms) {
+  function dissolve(swap, done, ms, cover) {
     swap = typeof swap === "function" ? swap : function () {};
     done = typeof done === "function" ? done : function () {};
     if (typeof document === "undefined") { swap(); done(); return; }
+    let swapped = false;
+    const swapOnce = function () {
+      if (swapped) return;
+      swapped = true;
+      try { swap(); } catch (e) { /* the caller owns the action */ }
+    };
 
-    /* ALWAYS, before anything else. */
-    try { swap(); } catch (e) { /* the caller's problem, not the layer's */ }
-    if (reduced()) { done(); return; }
+    /* Ordinary dissolves keep the established synchronous swap contract. An
+       action that changes the Sitting scale can ask for a covered swap so the
+       dither is laid over the old layout before the new one is drawn. */
+    if (!cover) {
+      swapOnce();
+    }
+    if (reduced()) {
+      if (cover) swapOnce();
+      done(); return;
+    }
 
     let layer = null;
     const clean = function () {
@@ -181,6 +194,7 @@ const Motion = (function () {
       layer.style.gridAutoRows = CELL + "px";
       layer.innerHTML = html;
       document.body.appendChild(layer);
+      if (cover) swapOnce();
       const cells = [].slice.call(layer.querySelectorAll("i"));
 
       const total = ms || 420;
@@ -206,10 +220,13 @@ const Motion = (function () {
       };
       raf(frame);
     } catch (e) {
+      if (cover) swapOnce();
       clean();
       done();
     }
   }
+
+  function enter(swap, done, ms) { dissolve(swap, done, ms, true); }
 
   /* ---------- the notice ----------
 
@@ -319,7 +336,7 @@ const Motion = (function () {
     });
   }
 
-  return { dissolve: dissolve, notify: notify, dismiss: dismiss, reduced: reduced, busy: busy, revealCards,
+  return { dissolve: dissolve, enter: enter, notify: notify, dismiss: dismiss, reduced: reduced, busy: busy, revealCards,
            __plan: plan, __order: order };
 })();
 

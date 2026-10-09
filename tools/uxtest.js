@@ -1986,6 +1986,53 @@ try {
      superPage.scale === "super" && superPage.hasRibbon && superPage.ordinary === null,
      JSON.stringify(superPage));
 
+  /* Use the author's bench route so this checks UI class ownership, not only
+     the renderer. A page shown in the sandbox is still ordinary UI state: the
+     acknowledgement must put the Sitting columns back. */
+  const pageState = w.eval(`(function () {
+    var C = UI.content(), st = UI.state(), oldSandbox = st.flags.sandbox;
+    var superEv = { id: "uxtest_super_page", title: "Super page", body: "A page.",
+      setpiece: { scale: "super", title: "Super page" }, choices: [] };
+    var nextSuper = { id: "uxtest_next_super_page", title: "Next super page", body: "A page.",
+      setpiece: { scale: "super", title: "Next super page" }, choices: [] };
+    var plainEv = { id: "uxtest_plain_page", title: "Plain page", body: "A page.",
+      setpiece: true, choices: [] };
+    C.eventById[superEv.id] = superEv; C.eventById[nextSuper.id] = nextSuper; C.eventById[plainEv.id] = plainEv;
+    st.flags.sandbox = true;
+    UI.sandboxShow(superEv.id);
+    var superClass = document.getElementById("s-sit").classList.contains("super");
+    UI.redraw();
+    var redrawClass = document.getElementById("s-sit").classList.contains("super");
+    UI.sandboxShow(plainEv.id);
+    var plainClass = document.getElementById("s-sit").classList.contains("super");
+    var pass = document.getElementById("btn-pass"); if (pass) pass.click();
+    var restored = !document.getElementById("s-sit").classList.contains("super");
+    UI.sandboxShow(superEv.id); st.queue.push({ eventId: nextSuper.id, dueSitting: st.sitting });
+    pass = document.getElementById("btn-pass"); if (pass) pass.click();
+    var actionOverlay = !!document.querySelector(".dissolve");
+    document.querySelectorAll(".dissolve").forEach(function (n) { n.remove(); });
+    st.flags.sandbox = oldSandbox; st.queue = st.queue.filter(function (q) { return q.eventId !== nextSuper.id; });
+    delete C.eventById[superEv.id]; delete C.eventById[nextSuper.id]; delete C.eventById[plainEv.id];
+    UI.boot(st, C);
+    return { superClass: superClass, redrawClass: redrawClass, plainClass: plainClass, actionOverlay: actionOverlay, restored: restored };
+  })()`);
+  ok("tagged pages expand, ordinary pages do not, and acknowledgement restores the sides",
+     pageState.superClass && pageState.redrawClass && !pageState.plainClass && pageState.actionOverlay && pageState.restored,
+     JSON.stringify(pageState));
+
+  const reducedEntry = w.eval(`(function () {
+    var swapped = false, finished = false;
+    document.querySelectorAll(".dissolve").forEach(function (n) { n.remove(); });
+    document.body.classList.add("no-motion");
+    Motion.enter(function () { swapped = true; }, function () { finished = true; });
+    var overlay = !!document.querySelector(".dissolve");
+    document.body.classList.remove("no-motion");
+    return { swapped: swapped, finished: finished, overlay: overlay };
+  })()`);
+  ok("reduced motion enters instantly without an overlay",
+     reducedEntry.swapped && reducedEntry.finished && !reducedEntry.overlay,
+     JSON.stringify(reducedEntry));
+
   /* KEEP THE REAL ONE before spying, or the no-motion assertion below
      tests the spy and passes for the wrong reason. */
   w.eval(`window.__realDissolve = Motion.dissolve;

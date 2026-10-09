@@ -38,8 +38,9 @@ the full 240-seed check, beyond this one deliberately readable path.
 The two inventory-B setup tokens are substituted. The ordered author review
 sheet is `prose-act.txt` (1520 passages before the factual correction), generated
 by `npm run prose:act`; the full prose export is regenerated after every edit.
-E11 superevents is delegated to opencode and must pass Codex review and final
-checks before inclusion. The author's own first playthrough remains acceptance.
+E11 superevents is implemented by opencode and reviewed by Codex. Review corrected
+the curtain ribbon and covered transition, and prevented a failed animation layer
+from executing its action twice. The author's own first playthrough remains acceptance.
 
 The itch.io project is `https://chereamie.itch.io/ways-and-means`. There is no
 GitHub `ITCH_TARGET` variable or `BUTLER_API_KEY` secret configured. Browser
@@ -53,4 +54,6 @@ Cleanup verification: all 20 checks passed in 197.36 seconds without NODE_PATH;
 the final 80-seed report is byte-identical to the before report. Direct Edge
 native/wrapped layout at seven sizes reported zero findings. The curtain at
 1920x1000 and 1366x768 retains sitting 16, 8 May, with no console errors or
-horizontal overflow. E11 requires its own combined-build verification.
+horizontal overflow. Combined E11 verification: 20/20 checks in 230.79 seconds,
+zero Edge layout findings at seven sizes native/wrapped, and an identical 80-seed
+baseline. The upload workflow now uses the full `npm run itch` package.

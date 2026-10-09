@@ -1265,7 +1265,7 @@ try {
 try {
   const snapC = w.eval("JSON.stringify(UI.state())");
   w.eval(`(function(){ var s=UI.state(), K=UI.content(); s.flags._introRead=true;
-    K.eventById.curtain_probe = { id:"curtain_probe", title:"Probe", setpiece:{ title:"The curtain headline" },
+     K.eventById.curtain_probe = { id:"curtain_probe", title:"Probe", setpiece:{ scale:"super", title:"The curtain headline" },
       body:"The first paragraph of the curtain.\\n\\nThe second paragraph of the curtain." };
     K.setup.actEnd = { event:"curtain_probe", note:"Here the first act ends." };
     K.bills.forEach(function(b){ if (b.test==='supply') s.bills[b.id].stage='assented'; });
@@ -1275,7 +1275,9 @@ try {
   const pc = H.$("#sitting-body .sp-page"), tc = pc ? pc.textContent : "";
   ok("a campaign that names a curtain ends a carried rise on its page", /The curtain headline/.test(tc) &&
      /first paragraph of the curtain/.test(tc) && /second paragraph of the curtain/.test(tc), tc.slice(0, 80));
-  ok("with the campaign's own note", /Here the first act ends/.test(tc));
+   ok("with the campaign's own note", /Here the first act ends/.test(tc));
+   ok("the superevent curtain carries its closing sitting and date", /Sitting \d+ · \d+ [A-Z]/.test(tc) && /The House has risen/.test(tc), tc.slice(0, 100));
+   ok("the completed curtain keeps the super presentation", H.$("#s-sit").classList.contains("super"));
   ok("and not on an election's returns", !/The Commonwealth has voted/.test(tc));
   const frameProbe = w.eval(`(function(){ var K=UI.content(), s=UI.state();
     var a=K.administrations.find(function(a){return a.id===s.admin;});

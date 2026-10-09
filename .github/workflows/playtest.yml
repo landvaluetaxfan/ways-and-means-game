@@ -1,4 +1,4 @@
-name: Playtest slice
+name: Act I playtest
 
 on:
   push:
@@ -16,12 +16,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
-      - run: npm run build -- --slice
-      - name: Package HTML5 entry point
-        run: |
-          mv dist/ways-and-means.html dist/index.html
-          cd dist
-          zip -9 ../playtest.zip index.html
+      - run: npm run itch
       - name: Upload with official butler
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
@@ -34,4 +29,4 @@ jobs:
             https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default -o butler.zip
           unzip -q butler.zip -d butler-bin
           chmod +x butler-bin/butler
-          butler-bin/butler push playtest.zip "$ITCH_TARGET"
+          butler-bin/butler push dist/ways-and-means-itch.zip "$ITCH_TARGET"

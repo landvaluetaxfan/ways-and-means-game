@@ -1117,9 +1117,23 @@ try {
     (sp.sections || []).forEach((sec, i) => { if (!PAGE_KINDS.has(sec.kind))
       refBad.push("event " + ev.id + " section " + i + ": kind '" + sec.kind + "' is not one of " + [...PAGE_KINDS].join(", ")); });
   });
-  const supers = (EVENTS || []).filter(ev => ev.setpiece && typeof ev.setpiece === "object" && ev.setpiece.scale === "super");
-  if (supers.length > 2)
-    refAdv.push("more than two superevents in this act (" + supers.length + "): " + supers.map(ev => ev.id).join(", "));
+  /* The limit belongs to a campaign's act, not to the merged world view.
+     Entries without an explicit chapter are Act I's opening act, which is the
+     content convention used by campaigns whose first act owns the file. */
+  const superGroups = Object.create(null);
+  (EVENTS || []).forEach(ev => {
+    if (!ev.setpiece || typeof ev.setpiece !== "object" || ev.setpiece.scale !== "super") return;
+    const owners = [].concat(ev.campaign || "world");
+    owners.forEach(c => {
+      const act = ev.chapter == null ? 1 : ev.chapter;
+      const key = c + "@" + act;
+      (superGroups[key] ||= []).push(ev.id);
+    });
+  });
+  Object.keys(superGroups).forEach(key => {
+    if (superGroups[key].length > 2)
+      refAdv.push("more than two superevents in " + key + " (" + superGroups[key].length + "): " + superGroups[key].join(", "));
+  });
 
   /* AND THE AWARDS, which have a matcher of their own in js/shell.js. Its
      vocabulary is listed here because it is small; a key it does not know
