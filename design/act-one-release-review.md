@@ -57,3 +57,14 @@ native/wrapped layout at seven sizes reported zero findings. The curtain at
 horizontal overflow. Combined E11 verification: 20/20 checks in 230.79 seconds,
 zero Edge layout findings at seven sizes native/wrapped, and an identical 80-seed
 baseline. The upload workflow now uses the full `npm run itch` package.
+
+Final artifact: build `7583bd9`, 4,188,869 bytes. Packaged Edge at 1920x1000,
+1366x768 and a cross-origin 960x640 iframe restores a complete save and reaches
+the curtain, with the super class, sitting 16/date ribbon, no console errors,
+no external requests and no horizontal overflow. SHA-256:
+`f4c57e8353c369b3adde3fddd87c14b4cbde0af923f35a17bd5bab0119d54c13`.
+
+Minor presentation follow-up: the curtain's outer panel bar can retain the prior
+event's label (the sampled run says "The Underwriters' reading"). Its headline,
+date, report and ending are correct. Deferred to the next interface batch to keep
+this tested artifact stable; it does not obstruct play or change the outcome.
