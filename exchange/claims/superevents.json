@@ -1,0 +1,18 @@
+{
+  "brief": "superevents",
+  "lane": "opencode",
+  "since": "2026-10-09",
+  "files": [
+    "js/ui.js",
+    "js/setpiece.js",
+    "js/motion.js",
+    "css/terminal.css",
+    "content/campaigns/flash_i/events.js",
+    "tools/uitest.js",
+    "tools/uxtest.js",
+    "tools/lint.js",
+    "tools/itchtest.js",
+    "briefs/superevents.md"
+  ],
+  "note": ""
+}
