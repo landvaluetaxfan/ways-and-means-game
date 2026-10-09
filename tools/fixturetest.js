@@ -6,6 +6,8 @@ function run() {
   assert.ok(fs.existsSync(file), "independent fixture builder is required");
   const F = require(file), baseline = require("./fixtures/contracts.js");
   const authored = require("./loadcontent.js").loadContent();
+  for (const key of ["onPartnerWithdraws","onPartnerStandsAside"])
+    assert.equal(authored.setup[key],undefined,"global setup must not enqueue archived pages: "+key);
   const plain = x => JSON.parse(JSON.stringify(x));
   for (const profile of ["engine", "interface"]) {
     const a = F.build(authored, profile), b = F.build(authored, profile);
@@ -55,6 +57,8 @@ function run() {
   }
   console.log("fixture profiles: ordered rules, independent setup and fresh copies pass");
   runArchive();
+  require("./flagaudittest.js").run();
+  require("./consequencetest.js").run();
 }
 function runArchive() {
   const A = require("./archiveworld.js"), crypto = require("crypto");

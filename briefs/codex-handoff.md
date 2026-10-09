@@ -95,22 +95,27 @@ assertions were removed and no player-facing wording was added.
     Twenty checks passed in 297.50 seconds; fixture mutations cover ordering, gates, setup and isolation.
     **8 October continuation:** Task 2 is committed in `05125b4`; its full suite passed 20/20 in
     314.13 seconds. Task 3's source/archive move is checkpointed in `e98602a`, explicitly unfinished.
-    All 246 archived chunks and four shared survivors match their pre-move source bytes. Consumer
-    repairs and archival safety tests are in progress; Task 4 has not started.
+    All 246 archived chunks and four shared survivors match their pre-move source bytes.
+    Task 3 is complete: 20/20 checks passed in 172.34 seconds; 31 audit/flag mutations and one
+    fixture-setup serialization mutation fail for their intended reasons. The 960-run report matches
+    the baseline after decoding and LF normalization. Edge's direct layout probe finds no faults
+    at seven sizes, native and wrapped; the CLI dump runner returned no usable document.
+    Task 4, removing packaging surgery and verifying the independent release boundaries, is next.
 
-    **Questions exposed by archival (author decision needed):**
+    **Archival decisions approved by the author, 8 October:**
 
-    - May `led_on_competence`, `led_on_continuity` and `led_on_break` be explicitly reserved for
-      later-act readers? Their only previous readers were in retired world story. Keep the flag
-      audit strict for everything else, and reject a reservation once its live reader exists.
-    - May the default setup's `onPartnerWithdraws` and `onPartnerStandsAside` hooks be removed?
-      They name archived pages. The independent fixtures keep their original hook values.
-    - The consequence-chain audit currently reports six breaks: substrate has gates but no
-      counted mover; thermal, transit, volume, party loyalty and public standing have movers
-      but no counted gate. Retired story formerly supplied the missing sides. Bible §7.9 is
-      LOCKED and explicitly requires price consequences to reach an event. Should the slice
-      gain those readers, or should its acceptance rule be deliberately revised? Do not count
-      archived or fixture story as live readers, or silently exempt these rows.
+    - Explicitly reserve `led_on_competence`, `led_on_continuity` and `led_on_break` for live
+      callbacks recalling the opening speech. Their immediate effects remain. The writing's
+      promised quotations still need those callbacks; Claude should revisit them for the standalone
+      slice. A real reader must retire its reservation; a comment or archived page cannot do so.
+    - Remove the default setup's `onPartnerWithdraws` and `onPartnerStandsAside` hooks naming
+      archived pages. The independent fixtures retain their original hooks and setup hashes.
+    - Repair the consequence audit before requesting new scenes. It now reads each playable
+      campaign separately, counts policy-rule movers, House business and alerts, and traces rule
+      dependencies. Fresh engine probes establish price → inflation → standing, and closure or
+      suspension → recorded news. These are structural dependency proofs, not a promise that
+      every threshold fires within Act I. A cycle, a comment or a number displayed alone cannot
+      satisfy the rule. Malformed graphs fail closed. No Act I writing or engine rule changes.
 6. **The tutorial's "Promises" card** and any step the author marks after playing.
 7. **E1's signed-off form**: a campaign `play.curtain` frame (`design/80`).
 8. **E11, full-page superevents**, only if the author still wants it after playing the build.

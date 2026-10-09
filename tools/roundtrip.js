@@ -56,8 +56,20 @@ const out=[].concat(files("glossary"),
      resolutions are in its folder (design/43) */
   Serialise.forumsFiles(A.FORUMS,A.RESOLUTIONS));
 const world=out.filter(f=>!/campaigns\//.test(f.path)), camp=out.filter(f=>/campaigns\//.test(f.path));
+let setupSource=fs.readFileSync(path.join(root,"content","setup.js"),"utf8");
+if(fixtureMode){
+  /* The fixture owns its setup too. Regenerating from the authored setup
+     happened to work while both copies matched, and lost its old hooks as
+     soon as the live defaults stopped naming archived pages. Serialize the
+     fixture initializer, retaining the campaign registration scaffolding. */
+  const tree=require("acorn").parse(setupSource,{ecmaVersion:"latest"});
+  const declaration=tree.body.filter(n=>n.type==="VariableDeclaration")
+    .flatMap(n=>n.declarations).find(n=>n.id.name==="SETUP");
+  if(!declaration||!declaration.init)throw new Error("roundtrip fixture: SETUP initializer is missing");
+  setupSource=setupSource.slice(0,declaration.init.start)+Serialise.val(A.SETUP,"")+setupSource.slice(declaration.init.end);
+}
 const regen =
-  fs.readFileSync(path.join(root,"content","setup.js"),"utf8")+"\n"+
+  setupSource+"\n"+
   world.map(f=>f.text).join("\n")+"\n"+camp.map(f=>f.text).join("\n");
 const ctx={};
 vm.runInNewContext(regen+"\n;__B={SETUP,PARTIES,CURRENTS,STATIONS,CHARACTERS,BILLS,EVENTS,GLOSSARY,CONSTITUENCIES,SETTLEMENTS,INITIATIVES,MATTERS,ACHIEVEMENTS,ADMINISTRATIONS,CABINET,INSTRUMENTS,FORUMS,RESOLUTIONS};",ctx);

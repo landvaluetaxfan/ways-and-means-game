@@ -8,17 +8,24 @@
      node tools/flagaudit.js
      node tools/flagaudit.js --list    every flag, its writers and its readers
 
-   A READ is any mention of the name that is not the write that sets it, found as text across the content
+   A READ is any non-comment mention of the name that is not the write that sets it, across the content
    files the page loads and js/. A flag the engine itself writes (`flags.x =`) is not audited here.
    ============================================================= */
 "use strict";
-const fs = require("fs"), path = require("path");
+const fs = require("fs"), path = require("path"), acorn = require("acorn");
 const L = require("./loadcontent.js");
 const root = L.root;
 const LIVE = L.files.filter(f => /^content\/campaigns\/flash_i\//.test(f));
 const WORLD_READERS = L.files.filter(f => !/^content\/campaigns\/parked\//.test(f));
 const JS = fs.readdirSync(path.join(root, "js")).filter(f => /\.js$/.test(f)).map(f => "js/" + f);
-const read = f => fs.readFileSync(path.join(root, f), "utf8");
+const read = f => {
+  const s=fs.readFileSync(path.join(root,f),"utf8"),comments=[];
+  const tokens=acorn.tokenizer(s,{ecmaVersion:"latest",onComment:(block,text,start,end)=>comments.push([start,end])});
+  while(tokens.getToken().type.label!=="eof"){}
+  let out=s;
+  for(const [start,end] of comments.reverse())out=out.slice(0,start)+" ".repeat(end-start)+out.slice(end);
+  return out;
+};
 
 const writes = {};   /* name -> [file] */
 LIVE.forEach(f => {
@@ -37,8 +44,13 @@ const texts = WORLD_READERS.concat(JS).map(f => {
 });
 
 /* FLAGS WRITTEN NOW FOR A READER NOT YET BUILT: name them here with the reader. An entry that IS read fails the audit,
-   so this list empties itself. (The clauses' locks read `seen`, not flags, and the list is empty.) */
-const HELD = {};
+   so this list empties itself. The author approved these reservations on 8 October 2026.
+   The speech already changes standing and loyalties; its promised quotations need live callbacks. */
+const HELD = {
+  led_on_competence: "a live response recalling the opening competence pledge",
+  led_on_continuity: "a live response recalling the opening continuity pledge",
+  led_on_break: "a live response recalling the opening break with the previous government"
+};
 
 const report = {};
 Object.keys(writes).forEach(name => {
@@ -55,4 +67,4 @@ stale.forEach(n => console.log("  FAIL  " + n + " is read now; take it off the h
 console.log(`FLAG AUDIT  ${Object.keys(report).length} flags set by Flash I`);
 unread.forEach(n => console.log("  FAIL  " + n + " is set in " + report[n].writers.join(", ") + " and read nowhere"));
 if (unread.length || stale.length) { console.log(`\nFAILED: ${unread.length} flag(s) nothing reads, ${stale.length} stale on the held list`); process.exit(1); }
-console.log("\nevery flag the act sets is read somewhere");
+console.log("\nevery flag the act sets has a reader or an explicit reservation");

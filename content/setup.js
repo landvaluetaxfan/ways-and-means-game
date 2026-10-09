@@ -991,9 +991,6 @@ const SETUP = {
                    only at supplyWithdrawn does a party on confidence and supply
                    withdraw it. The docket warns within partnerWarn of either. */
                 supplyWithdrawn: 8, partnerWarn: 8 },
-  /* The event content wants when a partner walks out; the engine names none. */
-  onPartnerWithdraws: "partner_walks",
-  onPartnerStandsAside: "partner_stands_aside",
   /* AN ENDING MUST BE CARRIED (design/26 #91). No settlement before this
      sitting, whatever the meters say: without the floor the crisis resolved
      at sitting 7 on one play policy and 13 on another, which is a third of

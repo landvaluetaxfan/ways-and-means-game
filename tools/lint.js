@@ -499,134 +499,35 @@ section("STYLESHEETS THAT DO NOT PARSE", parseBad, x => x);
      "a `price` effect with no event gated on it is a number nobody
       sees; an event gated on a price nothing moves will never fire."
 
-   Nobody enforced that rule, and the build drifted into the first
-   failure mode across the board: prices and station conditions move
-   every sitting and almost nothing is gated on them. This walks the
-   content and reports both directions.
+   Audit each playable campaign separately. Policy rules and couplings
+   can carry a change to a later condition; actual engine probes also
+   establish price-to-vote and station-to-wire feedback. Neither a cycle
+   nor a displayed number alone completes the chain. Archived readers
+   cannot satisfy it. These are dependency proofs, not a claim that every
+   threshold will be crossed during a sixteen-sitting playtest.
 
    `inert` is a note rather than a failure - a number nothing moves and
    nothing reads is merely unused. The asymmetric cases are the bugs.
    ============================================================= */
 const chainRows = [];
 try {
-  const moved = {}, gated = {};
-  const bump = (m, k) => { m[k] = (m[k] || 0) + 1; };
-
-  /* The `move` verb consolidated price/scalar/loyalty/relationship/capital, and
-     this walk predated it, so every keyed effect written the new way was
-     invisible to the chain. A number that moves and is not seen here is exactly
-     the bug this check exists to find. */
-  const walkEffects = eff => [].concat(eff || []).forEach(e => Object.keys(e).forEach(k => {
-    if (k === "price")   Object.keys(e[k]).forEach(x => bump(moved, "price." + x));
-    if (k === "scalar")  Object.keys(e[k]).forEach(x => bump(moved, "scalar." + x));
-    if (k === "station") bump(moved, "station");
-    if (k === "law")     Object.keys(e[k]).forEach(x => bump(moved, "law." + x));
-    if (k === "move")    Object.keys(e[k]).forEach(key => {
-      const dot = key.indexOf(".");
-      if (dot < 0) return bump(moved, "scalar." + key);
-      const ns = key.slice(0, dot), x = key.slice(dot + 1);
-      if (ns === "price" || ns === "scalar") bump(moved, ns + "." + x);
-      /* a trend moves its scalar every sitting, so the chain must count
-         it as a mover of that scalar or a watched number goes invisible */
-      if (ns === "trend") bump(moved, "scalar." + x);
-    });
-  }));
-  const walkWhen = w => w && Object.keys(w).forEach(k => {
-    if (k === "anyOf" && Array.isArray(w[k])) w[k].forEach(walkWhen);
-    if (k === "priceAbove" || k === "priceBelow")
-      Object.keys(w[k]).forEach(x => bump(gated, "price." + x));
-    if (k === "scalarAbove" || k === "scalarBelow")
-      Object.keys(w[k]).forEach(x => bump(gated, "scalar." + x));
-    if (k === "stationBelow" || k === "suspendedAbove" || k === "suspendedBelow")
-      bump(gated, "station");
-    if (k === "lawIs" || k === "lawAbove" || k === "lawBelow")
-      Object.keys(w[k]).forEach(x => bump(gated, "law." + x));
-  });
-
-  EVENTS.forEach(e => {
-    walkWhen(e.when);
-    (e.choices || []).forEach(c => { walkEffects(c.effects); walkWhen(c.when); });
-  });
-  /* AN INITIATIVE MOVES NUMBERS TOO, and this walk predated it carrying
-     effects: `tempo[].effects` was invisible here, so a decision made on
-     the Government screen could move a price and the chain would still
-     call it unseen. Same omission the `move` consolidation note above
-     describes, one content file over. */
-  (INITIATIVES || []).forEach(i => {
-    walkWhen(i.when);
-    walkEffects(i.effects);
-    (i.tempo || []).forEach(t => { walkEffects(t.effects); walkWhen(t.when); });
-  });
-  (MATTERS || []).forEach(m => {
-    walkWhen(m.raise); walkWhen(m.settled);
-    if (m.due && typeof m.due === "object") walkWhen("after" in m.due || "when" in m.due ? m.due.when : m.due);
-  });
-  /* instruments carry effects too, and an order that moves a price is
-     exactly the kind of thing that needs an event watching it */
-  try {
-    const src2 = fs.readFileSync(path.join(root, "content", "instruments.js"), "utf8");
-    const box = {}; require("vm").runInNewContext(src2 + ";this.__I = INSTRUMENTS;", box);
-    (box.__I || []).forEach(i => { walkEffects(i.effects); walkWhen(i.when); });
-  } catch (e) { /* instruments are optional to this check */ }
-  /* AND THE BILLS, which are the main thing that moves a law. The walk
-     read events, initiatives and instruments and never a bill's onPass,
-     clauses or amendments, so a law only an Act could set was reported
-     "moved by 0" and a law no event watched passed as seen (design/34). */
-  (BILLS || []).forEach(b => {
-    walkEffects(b.onPass); walkEffects(b.onFail);
-    (b.amendments || []).forEach(a => walkEffects(a.effects));
-    (b.clauses || []).forEach(cl => (cl.levels || []).forEach(lv => walkEffects(lv.effects)));
-  });
-  /* A FORUM'S RESOLUTIONS move numbers when the forum decides them
-     (design/43), and a government-sponsored one is gated on its `when`. */
-  (typeof RESOLUTIONS !== "undefined" ? RESOLUTIONS : []).forEach(r => {
-    walkWhen(r.when);
-    walkEffects(r.onTable); walkEffects(r.onPass); walkEffects(r.onFail);
-  });
-  /* A coupling drags a scalar every sitting (Flash I). A number that moves
-     and is not watched is exactly the bug this audit exists to catch, so
-     the couplings are movers too. */
-  (SETUP.couplings || []).forEach(cp =>
-    Object.keys(cp.drag || {}).forEach(k => bump(moved, "scalar." + k)));
-
-  /* A LAW THE ENGINE READS IS SEEN THROUGH WHAT IT MOVES. The rates, the
-     thermal release, capital works and the public share of substrate set the
-     four prices in tick(), and the prices are gated, so the chain runs
-     law -> price -> event without an event naming the law. The engine is
-     read for the key (the rates by their shared prefix), so a law nothing
-     reads at all -- not the engine, not an event -- is still a break. */
-  const engSrc3 = fs.readFileSync(path.join(root, "js", "engine.js"), "utf8");
-  /* and since 25 Sep a law a price or economy RULE reads is read the same
-     way: the rules moved out of tick() into setup, and the price they set
-     is what is gated (design/39 §6) */
-  const ruleLaws = new Set();
-  (SETUP.priceRules || []).concat(SETUP.economyRules || []).forEach(r => (r.terms || []).forEach(t =>
-    [].concat(t.from || []).forEach(f => { if (/^law\./.test(f)) ruleLaws.add(f.slice(4)); })));
-  const engineReads = k => {
-    const law = k.slice(4);
-    if (ruleLaws.has(law)) return true;
-    return new RegExp("law(\\.|\\[\"|\\)\\.)" + law + "\\b").test(engSrc3) ||
-           new RegExp("\\b" + law + "\\b").test(engSrc3) ||
-           (/^rate_/.test(law) && /"rate_"\s*\+/.test(engSrc3));
-  };
-  const keys = [...new Set(Object.keys(moved).concat(Object.keys(gated)))].sort();
-  keys.forEach(k => {
-    const m = moved[k] || 0, g = gated[k] || 0;
-    let verdict = "ok";
-    if (m && !g && /^law\./.test(k) && engineReads(k)) verdict = "ok (read by the engine)";
-    else if (m && !g) verdict = "NUMBER NOBODY SEES";
-    else if (!m && g) verdict = "EVENT NEVER FIRES";
-    else if (!m && !g) verdict = "inert";
-    chainRows.push({ k, m, g, verdict });
-  });
-} catch (e) { chainRows.push({ k: "(could not read the chain)", m: 0, g: 0, verdict: "ok" }); }
+  const audit = require("./consequence.js");
+  const engineSource = fs.readFileSync(path.join(root,"js","engine.js"),"utf8");
+  const campaigns = (TextContent.administrations || []).filter(a => (a.campaign || a.id) !== "parked");
+  const views = campaigns.length ? campaigns.map(a => TextContent.forCampaign(a)) : [TextContent];
+  views.forEach(C => audit.analyze(C,engineSource,audit.observeMechanics(C,TextEngine)).forEach(row =>
+    chainRows.push(Object.assign({campaign:C.campaign || C.admin || "world"},row))));
+} catch (e) {
+  chainRows.push({campaign:"audit",k:e.message,m:0,g:0,verdict:"CANNOT AUDIT"});
+}
 
 const chainBad = chainRows.filter(r => r.verdict === "NUMBER NOBODY SEES" ||
-                                       r.verdict === "EVENT NEVER FIRES");
+                                       r.verdict === "EVENT NEVER FIRES" || r.verdict === "CANNOT AUDIT");
 R.push("CONSEQUENCE CHAIN (7.9)");
 if (!chainRows.length) R.push("  nothing moves and nothing is gated");
-chainRows.forEach(r => R.push("  " + r.k.padEnd(34) +
-  ("moved by " + r.m).padEnd(12) + ("gated by " + r.g).padEnd(13) + r.verdict));
+chainRows.forEach(r => R.push("  " + r.campaign + ": " + r.k.padEnd(34) +
+  ("moved by " + r.m).padEnd(12) + ("gated by " + r.g).padEnd(13) + r.verdict +
+  (r.path && r.path.length > 1 ? " via " + r.path.join(" -> ") : "")));
 R.push("");
 
 /* =============================================================
