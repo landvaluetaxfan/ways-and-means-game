@@ -648,6 +648,34 @@ ${HELPERS}
       var ok = tc.querySelector("[data-tut=ok]").getBoundingClientRect();
       if (ok.width < 20 || ok.bottom > H) found.push({ tab: "tutorial", el: "[data-tut=ok]", kind: "LAYOUT", by: 1, detail: "Got it is out of reach." });
     }
+    /* A long explanation at doubled reading size must retain its controls and readable scroll range. */
+    if (tc) {
+      var text = tc.querySelector(".tut-body"), savedText = text.textContent;
+      text.textContent = Array(9).join(savedText + " "); text.style.fontSize = "26px";
+      Tutorial.refresh();
+      var enlarged = tc.getBoundingClientRect(), footer = tc.querySelector(".tut-btns").getBoundingClientRect();
+      if (enlarged.left < 0 || enlarged.top < 0 || enlarged.right > innerWidth + 1 || enlarged.bottom > innerHeight + 1)
+        found.push({ tab: "tutorial enlarged", el: ".tut-card", kind: "LAYOUT", by: 1, detail: "Enlarged tutorial escapes the viewport." });
+      var lit = document.querySelector(".tut-hole").getBoundingClientRect();
+      if (enlarged.left < lit.right && enlarged.right > lit.left && enlarged.top < lit.bottom && enlarged.bottom > lit.top)
+        found.push({ tab: "tutorial enlarged", el: ".tut-card", kind: "LAYOUT", by: 1, detail: "Enlarged tutorial covers the highlighted region." });
+      if (footer.bottom > innerHeight + 1 || footer.top < 0)
+        found.push({ tab: "tutorial enlarged", el: ".tut-btns", kind: "LAYOUT", by: 1, detail: "Enlarged tutorial dismissal buttons are out of reach." });
+      if (text.scrollHeight > text.clientHeight + 2) {
+        text.scrollTop = text.scrollHeight;
+        if (!/auto|scroll/.test(getComputedStyle(text).overflowY) || text.scrollTop < 1)
+          found.push({ tab: "tutorial enlarged", el: ".tut-body", kind: "LAYOUT", by: 1, detail: "Enlarged tutorial text cannot be scrolled." });
+      }
+      /* A region below the visible window must not pull the card below it. */
+      var litElement = Tutorial.shown().el, savedTransform = litElement.style.transform;
+      litElement.style.transform = "translateY(" + innerHeight + "px)"; Tutorial.refresh();
+      var offscreenCard = tc.getBoundingClientRect();
+      if (offscreenCard.bottom > innerHeight + 1 || offscreenCard.top < 0)
+        found.push({ tab: "tutorial enlarged", el: ".tut-card", kind: "LAYOUT", by: 1, detail: "Off-screen target pulls the tutorial outside the window." });
+      litElement.style.transform = savedTransform; Tutorial.refresh();
+      drawn.push("tutorial enlarged");
+      text.textContent = savedText; text.style.fontSize = ""; Tutorial.refresh();
+    }
     Tutorial.dismiss(); window.__NO_TUTORIAL = true;
   } catch (e) { found.push({ tab: "tutorial", el: "#tut", kind: "LAYOUT", by: 1, detail: "tutorial probe: " + (e && e.message) }); }
 

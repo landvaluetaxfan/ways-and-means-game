@@ -77,6 +77,19 @@ $('[data-admin]').click();
 ok("slot list appears", w.document.querySelectorAll(".slot").length === 4);
 $('[data-new="1"]').click();
 ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.contains("on"));
+/* Selected fiscal options must expose the same state to assistive technology and sighted players. */
+{
+  const E = w.eval("Engine"), C = w.eval("UI.content()"), before = E.save(w.eval("UI.state()"));
+  w.eval("UI.openTab('cham')");
+  $('[data-bill="appropriation"]').click();
+  const option = level => $('[data-cl="floor"][data-lv="' + level + '"]');
+  ok("the selected estimate level is announced as pressed", option("hold").getAttribute("aria-pressed") === "true");
+  ok("other estimate levels are announced as unpressed", option("cut").getAttribute("aria-pressed") === "false");
+  option("cut").click();
+  ok("changing an estimate updates its accessible selected state", option("cut").getAttribute("aria-pressed") === "true" &&
+    option("hold").getAttribute("aria-pressed") === "false" && w.eval("UI.state().clauses.appropriation.floor") === "cut");
+  w.eval("UI.boot")(E.load(before, C), C); w.eval("UI.openTab('sit')");
+}
 /* Persistent structural notices: uncapped, navigable, and observational.
    A truncated collection or a route that executes the target must fail. */
 {

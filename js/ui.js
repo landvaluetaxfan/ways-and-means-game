@@ -4625,7 +4625,7 @@ const UI = (function () {
             Math.abs(Math.round(pct * 10) / 10).toFixed(1) + "% of output.";
         }
         return `<button class="btn cl-opt${on ? " on" : ""}${bad ? " over" : ""}${lock ? " locked" : ""}"` +
-          ` data-cl="${esc(cl.id)}" data-lv="${esc(lv.id)}"${lock ? " disabled" : ""}` +
+          ` data-cl="${esc(cl.id)}" data-lv="${esc(lv.id)}" aria-pressed="${on ? "true" : "false"}"${lock ? " disabled" : ""}` +
           ` data-tip-title="${esc(lv.label)}"` +
           ` data-tip-body="${esc(lock ? lock.text : (lv.note || "") + said +
              (bad && !lock ? " The Treasury is short by " + cw(would - cost.solvency) + "." : ""))}"` +

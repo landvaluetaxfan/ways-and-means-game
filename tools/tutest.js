@@ -34,6 +34,36 @@ const tick = () => new Promise(r => w.setTimeout(r, 20));
   ok("the first eligible step shows on its tab, with its title and body", title() === "First lesson" &&
      card().querySelector(".tut-body").textContent === "This is the first lesson.", String(title()));
   ok("the dim is four blocks around a hole, and the card is not among them", q("#tut").querySelectorAll(".tut-block").length === 4 && !!q("#tut .tut-hole"));
+  /* The lit region is live for keyboard users too. The ring skips disabled and hidden controls. */
+  const region = q("#gov-time");
+  region.tabIndex = 0;
+  const actions = w.document.createElement("div");
+  actions.innerHTML = '<button id="tut-action">Fixture action</button><button disabled>Unavailable</button>' +
+    '<span hidden><button>Hidden action</button></span><a id="tut-link" href="#fixture">Fixture link</a>';
+  region.appendChild(actions);
+  const tabKey = shift => w.document.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Tab", shiftKey: !!shift, bubbles: true, cancelable: true }));
+  q('#tut [data-tut="skip"]').focus(); tabKey();
+  ok("Tab reaches the highlighted region itself when focusable", w.document.activeElement === region);
+  tabKey();
+  ok("Tab reaches an enabled action inside the highlighted region", w.document.activeElement === q("#tut-action"));
+  tabKey();
+  ok("Tab skips disabled and hidden highlighted actions", w.document.activeElement === q("#tut-link"));
+  tabKey();
+  ok("Tab reaches the scrollable tutorial text", w.document.activeElement === q("#tut .tut-body"));
+  tabKey();
+  ok("Tab reaches Got it after the explanation", w.document.activeElement === q('#tut [data-tut="ok"]'));
+  tabKey();
+  ok("Tab reaches Skip after Got it", w.document.activeElement === q('#tut [data-tut="skip"]'));
+  tabKey();
+  ok("Tab wraps back to the highlighted region", w.document.activeElement === region);
+  tabKey(true);
+  ok("Shift-Tab wraps back to Skip", w.document.activeElement === q('#tut [data-tut="skip"]'));
+  q("#tut-link").focus(); tabKey(true);
+  ok("Shift-Tab returns through highlighted actions", w.document.activeElement === q("#tut-action"));
+  let activated = 0; q("#tut-action").addEventListener("click", () => activated++);
+  q("#tut-action").click();
+  ok("the highlighted action remains operable during its lesson", activated === 1 && !!card());
+  actions.remove(); region.removeAttribute("tabindex");
   w.eval("UI.openTab('cham')"); await tick();
   ok("it waits when the player leaves the tab", !card());
   w.eval("UI.openTab('gov')"); await tick();

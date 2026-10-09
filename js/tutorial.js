@@ -80,7 +80,7 @@ const Tutorial = (function () {
     layer.innerHTML = '<div class="tut-block" data-b="t"></div><div class="tut-block" data-b="l"></div>' +
       '<div class="tut-block" data-b="r"></div><div class="tut-block" data-b="b"></div><div class="tut-hole"></div>' +
       '<div class="tut-card" role="dialog" aria-modal="false" aria-labelledby="tut-title" tabindex="-1">' +
-      '<div class="tut-who"></div><h3 id="tut-title"></h3><p class="tut-body"></p>' +
+      '<div class="tut-who"></div><h3 id="tut-title"></h3><p class="tut-body" tabindex="0"></p>' +
       '<div class="tut-btns"><button class="mbtn sm" data-tut="ok">Got it</button>' +
       '<button class="tut-skip" data-tut="skip">Skip the tutorial</button></div></div>';
     document.body.appendChild(layer);
@@ -92,33 +92,58 @@ const Tutorial = (function () {
     document.addEventListener("keydown", e => {
       if (!shown) return;
       if (e.key === "Escape") { e.preventDefault(); dismiss(); }
-      else if (e.key === "Tab") {                                       /* focus stays on the card */
-        const f = [...card.querySelectorAll("button")];
+      else if (e.key === "Tab") {               /* the lit region and the lesson are both live */
+        const selector = 'a[href],button,input,select,textarea,[tabindex]';
+        const usable = el => {
+          if (el.tabIndex < 0 || el.matches(":disabled") || el.closest("[hidden],[inert]")) return false;
+          const style = getComputedStyle(el), box = el.getBoundingClientRect();
+          return style.visibility !== "hidden" && style.visibility !== "collapse" && box.width > 0 && box.height > 0;
+        };
+        const region = shown.el;
+        const targets = region && document.contains(region)
+          ? [region, ...region.querySelectorAll(selector)].filter(el => el.matches(selector) && usable(el)) : [];
+        const f = targets.concat([...card.querySelectorAll(selector)].filter(usable));
         if (!f.length) return;
         const i = f.indexOf(document.activeElement);
-        e.preventDefault(); f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus();
+        const next = i < 0 ? (e.shiftKey ? f.length - 1 : 0) : (i + (e.shiftKey ? -1 : 1) + f.length) % f.length;
+        e.preventDefault(); f[next].focus();
+        if (region && document.contains(region)) place(region);
       }
     }, true);
   }
 
   function place(el) {
-    const pad = 6, vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
-    const b = el.getBoundingClientRect();
-    const x0 = Math.max(0, b.left - pad), y0 = Math.max(0, b.top - pad);
-    const x1 = Math.min(vw, b.right + pad), y1 = Math.min(vh, b.bottom + pad);
+    const pad = 6, vw = Math.min(innerWidth, document.documentElement.clientWidth),
+      vh = Math.min(innerHeight, document.documentElement.clientHeight);
+    const focused = document.activeElement;
+    const anchor = focused && el.contains(focused) ? focused : el;
+    const b = anchor.getBoundingClientRect(), regionBox = el.getBoundingClientRect();
+    const x0 = Math.max(0, Math.min(vw, b.left - pad)), y0 = Math.max(0, Math.min(vh, b.top - pad));
+    const x1 = Math.max(0, Math.min(vw, b.right + pad)), y1 = Math.max(0, Math.min(vh, b.bottom + pad));
     const set = (n, l, t, w, h) => { const s = layer.querySelector(n).style; s.left = l + "px"; s.top = t + "px"; s.width = Math.max(0, w) + "px"; s.height = Math.max(0, h) + "px"; };
-    set('[data-b="t"]', 0, 0, vw, y0);
-    set('[data-b="b"]', 0, y1, vw, vh - y1);
-    set('[data-b="l"]', 0, y0, x0, y1 - y0);
-    set('[data-b="r"]', x1, y0, vw - x1, y1 - y0);
-    set(".tut-hole", x0, y0, x1 - x0, y1 - y0);
+    /* Keep the whole region live even when positioning beside its focused control. */
+    const hx0 = Math.max(0, Math.min(vw, regionBox.left - pad)), hy0 = Math.max(0, Math.min(vh, regionBox.top - pad));
+    const hx1 = Math.max(0, Math.min(vw, regionBox.right + pad)), hy1 = Math.max(0, Math.min(vh, regionBox.bottom + pad));
+    set('[data-b="t"]', 0, 0, vw, hy0);
+    set('[data-b="b"]', 0, hy1, vw, vh - hy1);
+    set('[data-b="l"]', 0, hy0, hx0, hy1 - hy0);
+    set('[data-b="r"]', hx1, hy0, vw - hx1, hy1 - hy0);
+    set(".tut-hole", hx0, hy0, hx1 - hx0, hy1 - hy0);
     /* the card: right of the region if it fits, else left, else below, else above; never off the screen */
-    const cw = Math.min(340, vw - 24), ch = card.offsetHeight || 170, gap = 14;
+    const cw = Math.max(1, Math.min(340, vw - 24)), gap = 14;
+    card.style.width = cw + "px";                 /* measure after wrapping to the current viewport */
+    card.style.maxHeight = Math.max(1, vh - 16) + "px";
+    let ch = card.offsetHeight || 170;
     let l, t;
     if (vw - x1 >= cw + gap + 8) { l = x1 + gap; t = y0; }
     else if (x0 >= cw + gap + 8) { l = x0 - gap - cw; t = y0; }
-    else if (vh - y1 >= ch + gap) { l = x0; t = y1 + gap; }
-    else { l = x0; t = Math.max(8, y0 - gap - ch); }
+    else {
+      const below = vh - y1 - gap - 8, above = y0 - gap - 8;
+      const room = Math.max(below, above);
+      /* Prefer a shorter, scrollable explanation to covering the control being taught. */
+      if (room >= 120) { card.style.maxHeight = room + "px"; ch = card.offsetHeight || ch; }
+      l = x0; t = below >= ch || below >= above ? y1 + gap : y0 - gap - ch;
+    }
     l = Math.max(8, Math.min(vw - cw - 8, l)); t = Math.max(8, Math.min(vh - ch - 8, t));
     card.style.width = cw + "px"; card.style.left = l + "px"; card.style.top = t + "px";
   }
