@@ -10,7 +10,8 @@
     "tools/laycheck.js",
     "tools/tutorialwalk.js",
     "prose.txt",
-    "design/tutorial-walkthrough.md"
+    "design/tutorial-walkthrough.md",
+    "js/refs.js"
   ],
   "note": ""
 }
