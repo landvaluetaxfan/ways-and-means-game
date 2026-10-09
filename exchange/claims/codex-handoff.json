@@ -41,7 +41,8 @@
     "content/setup.js",
     "tools/consequence.js",
     "tools/consequencetest.js",
-    "tools/flagaudittest.js"
+    "tools/flagaudittest.js",
+    "tools/storystrip.js"
   ],
   "note": ""
 }
