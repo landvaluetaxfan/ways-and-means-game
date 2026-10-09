@@ -23,9 +23,10 @@
 @keyframes tutIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
 
 /* Discovery stays distinct from the red obligation count. Review reuses the campaign's lesson text. */
-.tab .tut-tab-hint{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
-  width:14px;height:14px;margin-left:4px;border:1px solid var(--gold);border-radius:50%;
-  color:var(--ink);font-size:11px;line-height:1;font-weight:bold;}
+.tab:has(.tut-tab-hint){position:relative;}
+.tab .tut-tab-hint{position:absolute;top:0;left:0;display:inline-flex;align-items:center;justify-content:center;
+  box-sizing:border-box;width:11px;height:11px;border:1px solid var(--gold);border-radius:50%;
+  color:var(--ink);font-size:8.5px;line-height:1;letter-spacing:0;font-weight:bold;}
 #tb-optpanel{max-height:calc(100vh - 80px);max-width:calc(100vw - 16px);overflow-y:auto;}
 .tut-review{margin:8px 0;font-family:var(--f-ui);font-size:12px;}
 .tut-review summary{cursor:pointer;}

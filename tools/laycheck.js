@@ -631,10 +631,24 @@ ${HELPERS}
   /* THE TUTORIAL CARD (js/tutorial.js), in the real browser: it lies wholly inside the window, clears the part it lights,
      and shows all its text. jsdom has no layout, so this is the only place that can say so. */
   try {
+    var lessonTab = document.querySelector('.tab[data-t="gov"]'), tabWidthWithoutLesson = lessonTab.getBoundingClientRect().width;
     window.__NO_TUTORIAL = false;
     Shell.setOpt("tutorial", "on"); Shell.setOpt("taught", "");
     UI.state().seen.a1_treasury = 1; delete UI.state().flags.sandbox;   /* the probe plays on the bench, which never teaches */
     UI.openTab("gov"); Tutorial.refresh();
+    if (Math.abs(lessonTab.getBoundingClientRect().width - tabWidthWithoutLesson) > .5)
+      found.push({ tab: "tutorial", el: ".tut-tab-hint", kind: "LAYOUT", by: 1, detail: "The lesson marker changes its tab's width." });
+    var lessonStamp = lessonTab.querySelector(".tut-tab-hint"), redStamp = lessonTab.querySelector(".tab-n"), stampFixture = !redStamp;
+    if (stampFixture) { redStamp = document.createElement("span"); redStamp.className = "tab-n"; redStamp.textContent = "3"; lessonTab.appendChild(redStamp); }
+    if (lessonStamp) {
+      var ls = lessonStamp.getBoundingClientRect(), rs = redStamp.getBoundingClientRect();
+      if (ls.left < rs.right && ls.right > rs.left && ls.top < rs.bottom && ls.bottom > rs.top)
+        found.push({ tab: "tutorial", el: ".tut-tab-hint", kind: "LAYOUT", by: 1, detail: "The lesson marker covers the obligation count." });
+      var labelRange = document.createRange(); labelRange.selectNodeContents(lessonTab.firstChild);
+      if (ls.right > labelRange.getBoundingClientRect().left + .5)
+        found.push({ tab: "tutorial", el: ".tut-tab-hint", kind: "LAYOUT", by: 1, detail: "The lesson marker covers its tab label." });
+    }
+    if (stampFixture) redStamp.remove();
     var tc = document.querySelector("#tut.on .tut-card"), th = document.querySelector("#tut .tut-hole");
     drawn.push("tutorial card" + (tc ? "" : " (NOT DRAWN)"));
     if (tc && th) {
