@@ -7479,7 +7479,7 @@ const UI = (function () {
     /* THE HEADING SAYS WHICH OF THE TWO THIS IS (design/49): the sitting's
        decision, or the government's answer to an event that has arrived. */
     const kind = Engine.eventKind(e);
-    const head = !open.length ? "No decision this sitting"
+    const head = !open.length ? (kind === "event" ? "No decision on this page" : "No decision this sitting")
       : kind === "event" ? "Your answer" : "Decision";
     foot.innerHTML = `<div class="rulehead" id="sit-decide-head" data-kind="${kind}">${head}</div><div class="choices">` +
       open.map(x => choiceRow(e, x.choice, x.index, openRow.i === x.index)).join("") +

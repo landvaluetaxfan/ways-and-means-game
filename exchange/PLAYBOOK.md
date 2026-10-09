@@ -74,6 +74,12 @@ here, and the exchange is the channel.
 
 ## What the author dislikes
 
+- 8 October 2026: the author approved correcting only the factual chronology in
+  Flash I's preserved introduction and Act I card: January leadership, March
+  election/First Spin, new Parliament's first session on 11 April, next election
+  2084. Preserve the surrounding authored wording. The author also requested
+  opencode implement E11 superevents during this release run, for Codex review.
+
 Learned from their corrections. Check new screens against these before they ship.
 
 - **A line that restates what the panel already shows.** A count beside the list

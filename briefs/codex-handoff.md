@@ -85,7 +85,12 @@ assertions were removed and no player-facing wording was added.
    Bank interval, coefficients and tooltip agreeing; the smaller Bank explanation wraps and scrolls with the
    tab. The 80-seed reports are byte-identical. New plain wording for Claude: Bank intervals in days,
    coefficients as percentages in tooltips and the Bank explanation, and setup-token diagnostics.
-   **Still Claude's:** inventory B's two Act I token substitutions and the register pass. Constitutional
+   **Release cleanup (Codex, author-authorized 8 October):** inventory B's two Act I
+   token substitutions are applied. The register and three page-based read-throughs
+   are recorded in `design/act-one-release-review.md`. The attributed Burke quotation
+   is retained. The author approved factual corrections to the introduction/card,
+   with surrounding prose preserved. Acorn 8.19.0 is now a locked development dependency.
+   Constitutional
    totals remain outside setup-only E5. Plan and scope rulings: `design/83-setup-text-plan.md`.
 5. **A fixture of the engine's own for `test.js`: implemented and independently reviewed**, so the world's untagged story can be archived and dropped from the
     shipping page by data and not by `tools/storystrip.js`. Brief `act-one.md`, "How old text leaves the build", rule 3.
@@ -158,7 +163,9 @@ assertions were removed and no player-facing wording was added.
    at seven sizes, zero findings; curtain screenshots at 1920x1000 and 1366x768;
    80-seed before/after results identical. Feedback destination is given by the author
    directly to testers (Discord); no channel or invite is required in the game.
-8. **E11, full-page superevents**, only if the author still wants it after playing the build.
+8. **E11, full-page superevents:** the author requested opencode implement it in this
+   release run (8 October). `briefs/superevents.md` bounds the delegated branch;
+   Codex reviews and integrates it after verification.
 
 # Not yours
 

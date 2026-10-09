@@ -542,7 +542,7 @@ reword it.
 |---|---|---|
 | 1 | A bill in drafting is on the order paper with a Grant button, so staging it to "drafting" does not hide it | Fixed for the Grant by E3's lock (dimmed until `a1_order_paper`); the row itself still shows, which reading allows. Was deferred to E2. A refusal in `canGrant` was tried and reverted, because `uxtest` grants time to a drafting bill by design |
 | 2 | The run did not end at the rise: a carried rise opens the next period, with an interval page | Fixed (E1, `Engine.checkEnd` on `st.period`) |
-| 3 | The curtain page reads the date the next period opens (23 May), not the rise (8 May) | Deferred to Codex with E1's frame |
+| 3 | The curtain page reads the date the next period opens (23 May), not the rise (8 May) | Fixed in 8537337: header, page and report share sitting 16, 8 May |
 | 4 | Every seed plays the same game, because Act I has no random event | Recorded in `tools/actbalance.js`. The 240-seed gate is moot until one exists |
 | 5 | No answer strategy loses; only leaving the estimates unmoved ends the run | Decided (`design/81`, question 7): it stays so, as `design/77` says |
 | 6 | Floor "lifted" and transit "every station" lower the Treasury's ceiling (`solvency -4000`), and no text said so | Fixed in the clause notes and the floor page |
@@ -558,6 +558,9 @@ reword it.
 | 16 | The quiet sittings (12, 13, 16) print lines from the world's old `business` pool, 80 lines of pre-reset text, several about the divergence bill, reclassification and an emergency thermal appropriation that Act I does not have | Fixed. `business` and `minutes` are now story kinds (`content/index.js`), Act I has its own 29 business lines (`content/campaigns/flash_i/business.js`) and no minute, and a guard holds both |
 | 17 | The Register held two Prime Minister's minutes from the retired story (a direction on licensing boards; a minute about "the division on Thursday") from sitting 1 | Fixed with 16 |
 | 18 | The Anselm Elevator actor note said its concession "awaits ratification by the House", which is the International's treaty, not the Beanstalk's | Fixed |
+| 19 | A no-choice event page said there was no decision this sitting before opening the sitting's decision | Fixed: “No decision on this page” |
+| 20 | Archive/fixture checks relied on undeclared Acorn from another checkout | Fixed: Acorn 8.19.0 declared and locked; fixture migration unchanged |
+| 21 | The introduction/card used the old August election and final-session chronology while the commission described March's election and a new Parliament | Fixed with the author's explicit approval of factual corrections; surrounding writing preserved |
 
 ## Assumptions the author may overturn
 

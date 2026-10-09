@@ -301,7 +301,7 @@ Marit Ivarsen, the Minister for Trade and the Anchors and a member of the New Pr
 { id:"a1_spare_slot", prologue:7, once:true,
   title:"One spare slot",
   speaker:"okarie",
-  body:`The estimates need five of the six slots this period: four to move them from first reading to third reading, and a fifth for the division, the vote that decides a measure. One slot is spare.
+  body:`The estimates need five of the {{setup.slotsPerSession}} slots this period: four to move them from first reading to third reading, and a fifth for the division, the vote that decides a measure. One slot is spare.
 
 The Anchorage treaty is at committee and needs three slots: one to move it to report, one to move it to third reading, and one for its division. A single slot moves it one stage and cannot finish it, so the other two wait for the next sitting period.
 
@@ -736,7 +736,7 @@ The carriers had lowered their schedules in the expectation of the subsidy, and 
                  { billStage:{ appropriation:"third_reading" } } ] },
   title:"The count",
   speaker:"okarie",
-  body:`Anil Devi, the Chief Whip, has counted the House for the estimates. A division is the vote that decides a measure. The 240 elected members decide the estimates, and the estimates need a majority of them. The 40 functional members, who sit for professions and industries, vote too and their votes are recorded. They cannot defeat a money bill, but if most of them vote against it, they delay it by three sittings.
+  body:`Anil Devi, the Chief Whip, has counted the House for the estimates. A division is the vote that decides a measure. The 240 elected members decide the estimates, and the estimates need a majority of them. The 40 functional members, who sit for professions and industries, vote too and their votes are recorded. They cannot defeat a money bill, but if most of them vote against it, they delay it by {{setup.supplyDelaySittings}} sittings.
 
 The count is in the Chamber, under the estimates. It lists, party by party, the members who will vote for, the members who will vote against, and the members the whips can still move. Moving a member costs something: your own party's goodwill, or credit that a partner owes you for time you gave its bills.
 

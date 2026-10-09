@@ -143,9 +143,9 @@ She came up to the Winter Garden in 2070, in the Commonwealth's springtime, when
 That could have been the whole of it. A decade of steady hands and unread minutes, a portrait in a corridor, a pension. Instead, in 2076, the Party of Socialists and Democrats asked her to the Treasury from outside the House, which the Charter has never forbidden, and for four years she ran the Commonwealth's money from the other side of the desk. But it's not like every capable leader was evidently destined to do it beforehand.` },
 
         { kind:"body", head:"How she came to it", body:
-`Its leader, Nils Vijlbrief, had taken the party into government in 2076 and brought her to the Treasury. When he wanted the stations' upkeep paid for from an overdraft at the Reserve Bank, she refused him in public, and the markets sided with her. With an election due in August and the polls against them, the party's members of Parliament went looking for someone else.
+`Its leader, Nils Vijlbrief, had taken the party into government in 2076 and brought her to the Treasury. When he wanted the stations' upkeep paid for from an overdraft at the Reserve Bank, she refused him in public, and the markets sided with her. In January, with an election due in March and the polls against them, the party's members of Parliament went looking for someone else.
 
-The Party of Socialists and Democrats did not choose her because she was one of them. It chose her because the party was seemingly in between worlds, in constant melancholic turmoil, unsure of what was to come next. And so, dark horse she was, she hammered her way to the leadership election, and then she won it. She took First Spin at the by-election that followed, which is the first elected office she has ever held.
+The Party of Socialists and Democrats did not choose her because she was one of them. It chose her because the party was seemingly in between worlds, in constant melancholic turmoil, unsure of what was to come next. And so, dark horse she was, she hammered her way to the leadership election, and then she won it. She took First Spin at the March general election, which is the first elected office she has ever held.
 
 So she is a banker at the head of the party of maintenance labour, which occasionally mitigates the two facts; occasionally it exemplifies it. The members who put her there did it to keep a government.` },
 
@@ -154,7 +154,7 @@ So she is a banker at the head of the party of maintenance labour, which occasio
 
 The PSD are in power because of labour and trade unions. Expanding personhood is a natural threat against that, while the CDA agree from a humanist perspective. The New Progressive Party sees otherwise.
 
-She has one session before the country votes. The one that opens on the eleventh of April is the parliament's fourth and its last, and the House is already sitting.` },
+The new Parliament opens its first session on the eleventh of April. The next general election is due in 2084.` },
 
         /* THE ROLE AND THE CAST (design/56), part of the introduction and in
            its style, before the signature, which closes it (the author, 28
@@ -163,7 +163,7 @@ She has one session before the country votes. The one that opens on the eleventh
            the model of Things That Never Were's casting notes, and the cast
            from `play` below. */
         { kind:"body", head:"The role", body:
-`The performer playing this role should be able to capture Flash's composure, and the discipline of someone who has spent a career saying less than she knows. She believes a country can be run the way she ran its currency: by setting clear rules, publishing them, and keeping to them when it hurts. She must hold together a coalition that agrees on the economy and on almost nothing else, a party that chose her to stay in government, and a Parliament in its final session, whose members are already thinking about the election. Beneath the composure is someone who has never been elected to lead anything, and who privately doubts she has the right to. Her most essential characteristic is solitude: she has no old allies in politics, and the one colleague who understood her work, she left behind at the Bank.
+`The performer playing this role should be able to capture Flash's composure, and the discipline of someone who has spent a career saying less than she knows. She believes a country can be run the way she ran its currency: by setting clear rules, publishing them, and keeping to them when it hurts. She must hold together a coalition that agrees on the economy and on almost nothing else, a party that chose her to stay in government, and a new Parliament in its first session, whose members have just fought an election. Beneath the composure is someone who has never been directly elected to lead the country, and who privately doubts she has the right to. Her most essential characteristic is solitude: she has no old allies in politics, and the one colleague who understood her work, she left behind at the Bank.
 
 Ideal performer for this role is a woman in her early fifties in the alto range.` },
         { kind:"cast", head:"Cast of characters" },
@@ -205,7 +205,7 @@ Ideal performer for this role is a woman in her early fifties in the alto range.
           direction:
 `The chamber of Parliament, at the Winter Garden, the capital. Morning, 11 April 2080. Two hundred and eighty seats, most of them filled. The coolant pumps run under the floor, and a member who stands to speak learns to pitch a voice over them.
 
-ADRIANA EIREANN FLASH takes the Prime Minister's place on the front bench, in the fourth and last session of this Parliament.` },
+ADRIANA EIREANN FLASH takes the Prime Minister's place on the front bench, in the first session of this new Parliament.` },
         { chapter:2, head:"Act II", title:"Ways and Means",
           epigraph:{ body:"The equal right of all men to the use of land is as clear as their equal right to breathe the air \u2014 it is a right proclaimed by the fact of their existence.",
                      source:"Henry George, Progress and Poverty" },
