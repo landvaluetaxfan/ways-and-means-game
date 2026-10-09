@@ -634,7 +634,17 @@ ${HELPERS}
     var lessonTab = document.querySelector('.tab[data-t="gov"]'), tabWidthWithoutLesson = lessonTab.getBoundingClientRect().width;
     window.__NO_TUTORIAL = false;
     Shell.setOpt("tutorial", "on"); Shell.setOpt("taught", "");
-    UI.state().seen.a1_treasury = 1; delete UI.state().flags.sandbox;   /* the probe plays on the bench, which never teaches */
+    UI.state().seen.a1_order_paper = 1; delete UI.state().flags.sandbox;   /* the probe plays on the bench, which never teaches */
+    UI.openTab("sit"); Tutorial.refresh();
+    var prompt = document.querySelector('#sit-tutorial [data-tut-open="order-paper-time"]');
+    if (!prompt) found.push({ tab: "tutorial discovery", el: "#sit-tutorial", kind: "LAYOUT", by: 1, detail: "Sitting has no route to the introduced lesson." });
+    else {
+      prompt.scrollIntoView({ block: "nearest" });
+      var pb = prompt.getBoundingClientRect();
+      if (pb.left < 0 || pb.right > innerWidth + 1 || prompt.scrollWidth > prompt.clientWidth + 2)
+        found.push({ tab: "tutorial discovery", el: ".tut-lesson-link", kind: "LAYOUT", by: 1, detail: "The Sitting lesson link clips or escapes the window." });
+      prompt.click();
+    }
     UI.openTab("gov"); Tutorial.refresh();
     if (Math.abs(lessonTab.getBoundingClientRect().width - tabWidthWithoutLesson) > .5)
       found.push({ tab: "tutorial", el: ".tut-tab-hint", kind: "LAYOUT", by: 1, detail: "The lesson marker changes its tab's width." });

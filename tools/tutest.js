@@ -31,10 +31,33 @@ const tick = () => new Promise(r => w.setTimeout(r, 20));
   w.eval("UI.openTab('sit')"); await tick();
   ok("a step for another tab waits, and shows nothing", !card());
   ok("an unread lesson marks its tab without interrupting this tab", !!q('.tab[data-t="gov"] .tut-tab-hint') && !card());
+  ok("Sitting names an introduced unread lesson", !!q('#sit-tutorial [data-tut-open="t_a"]') && !q('#sit-tutorial [data-tut-open="t_b"]'));
+  const beforeOpen = w.eval("Engine.save(UI.state())");
+  if (q('#sit-tutorial [data-tut-open="t_a"]')) q('#sit-tutorial [data-tut-open="t_a"]').click();
+  await tick();
+  ok("the Sitting lesson link opens that lesson without acting or marking it read", title() === "First lesson" &&
+    beforeOpen === w.eval("Engine.save(UI.state())") && !w.eval("Tutorial.taught().includes('t_a')"));
+  ok("a future lesson cannot be opened through navigation", !w.eval("Tutorial.open('t_b')") &&
+    beforeOpen === w.eval("Engine.save(UI.state())"));
+  S.tutorial.push({ id:"t_selected", onTab:"gov", region:"order-paper-time", title:"Selected lesson", body:"This is the selected lesson." });
+  w.eval("Tutorial.open('t_selected')"); await tick();
+  ok("an explicitly selected lesson takes priority over earlier unread lessons", title() === "Selected lesson");
+  S.tutorial.pop(); w.eval("Tutorial.replay('t_a'); Tutorial.open('t_a')"); await tick();
+  const resizeTarget = q('#gov-time'), originalBox = resizeTarget.getBoundingClientRect, originalScroll = resizeTarget.scrollIntoView;
+  let reveals = 0, below = true;
+  resizeTarget.getBoundingClientRect = () => below ? { left:40, top:900, right:340, bottom:1000, width:300, height:100 } : originalBox.call(resizeTarget);
+  resizeTarget.scrollIntoView = () => { reveals++; below = false; };
+  w.eval("Tutorial.refresh(); Tutorial.refresh()");
+  ok("a resized lesson reveals a displaced target once without changing the simulation", reveals === 1 &&
+    beforeOpen === w.eval("Engine.save(UI.state())"));
+  resizeTarget.getBoundingClientRect = originalBox;
+  if (originalScroll) resizeTarget.scrollIntoView = originalScroll; else delete resizeTarget.scrollIntoView;
+  w.eval("UI.openTab('sit'); Tutorial.refresh()"); await tick();
   ok("future lessons are absent from the review list", typeof w.eval("Tutorial.available") === "function" &&
     w.eval("Tutorial.available().map(s => s.id).join()") === "t_a");
   w.eval("Shell.setOpt('tutorial','off'); Tutorial.refresh()"); await tick();
   ok("turning automatic teaching off clears an unread discovery marker", !q(".tut-tab-hint"));
+  ok("turning teaching off removes the Sitting prompt and disables lesson navigation", !q('#sit-tutorial') && !w.eval("Tutorial.open('t_a')"));
   w.eval("Shell.setOpt('tutorial','on'); Tutorial.refresh()"); await tick();
   ok("turning it on restores the unread marker", !!q('.tab[data-t="gov"] .tut-tab-hint'));
   w.eval("window.__NO_TUTORIAL = true; Tutorial.refresh()"); await tick();

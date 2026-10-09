@@ -198,6 +198,11 @@ const Refs = (function () {
   function billRefs(M, id) {
     const hits = [];
     const H = (where, apply) => hits.push({ where, apply });
+    [M.setup || {}, ...(M.administrations || []).map(a => a.setup || {})].forEach((S, i) => {
+      (S.tutorial || []).forEach(s => {
+        if (s.bill === id) H(`setup ${i} · tutorial ${s.id} · bill`, to => s.bill = to);
+      });
+    });
     eachEffect(M, (eff, where) => {
       if (eff.bill && eff.bill[id] !== undefined)
         H(`${where} · bill`, to => renameKey(eff.bill, id, to));

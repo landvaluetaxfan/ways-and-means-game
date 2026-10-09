@@ -2,12 +2,13 @@
    THE TUTORIAL (design/77). A card beside one part of the interface, with the rest dimmed and the pointer
    blocked outside it, saying what one mechanic is, what changes it and what to do.
 
-   A STEP is content: `setup.tutorial[]` in the campaign, each { id, when, onTab, region, title, body, voice }.
+   A STEP is content: `setup.tutorial[]` in the campaign, each { id, when, onTab, region, title, body, voice, bill }.
      when    the usual conditions (`Engine.matches`), e.g. { seen:["a1_order_paper"] }
      onTab   the tab it points at (sit, gov, cham, econ ...); the step waits on any other
      region a NAME in REGIONS below. Content never writes a selector, so a pass over the interface that moves
              a panel is one line here and not a rewrite of the steps
-     voice   an optional character id; the card then shows their name. Without one the game speaks plainly.
+   voice   an optional character id; the card then shows their name. Without one the game speaks plainly.
+     bill    optional bill id selected by a Sitting lesson link; selection never advances or votes on it.
 
    WHAT IT KNOWS. It reads the state and the content, writes nothing to the save, and keeps what has been taught
    in the player's own options (`Shell.opts.taught`), beside the preference (`Shell.opts.tutorial`, "on" or
@@ -33,10 +34,11 @@ const Tutorial = (function () {
     "estimates-clauses":{ tab: "cham", sel: ".clsec" },
     "whip":             { tab: "cham", sel: "#cham-whip" },
     "divide":           { tab: "cham", sel: "#btn-divide" },
-    "account":          { tab: "econ", sel: "#p-acct" }
+    "account":          { tab: "econ", sel: "#p-acct" },
+    "money-calls":      { tab: "econ", sel: "#econ-calls" }
   };
 
-  let layer = null, card = null, shown = null, queued = false, returnTo = null, dismissedNow = {};
+  let layer = null, card = null, shown = null, queued = false, returnTo = null, dismissedNow = {}, requested = null;
   const $ = s => document.querySelector(s);
   const O = () => (typeof Shell !== "undefined" && Shell.options) || {};
   const mode = () => O().tutorial === "off" ? "off" : "on";
@@ -92,6 +94,48 @@ const Tutorial = (function () {
         tab.appendChild(hint);
       } else if (!needed && badge) badge.remove();
     });
+    sittingLessons(pending);
+  }
+
+  /* A route from the Sitting to an explanation, never to an action. Bill selection is view state. */
+  function open(id) {
+    const s = eligible().find(s => s.id === id);
+    if (!s || silent() || mode() === "off" || Engine.checkEnd(UI.state(), UI.content()).over) return false;
+    requested = id;
+    UI.openTab(s.onTab);
+    if (s.bill && UI.state().bills[s.bill]) Focus.activate("cham-bills", s.bill);
+    refresh();
+    return !!(shown && shown.id === id);
+  }
+  function sittingLessons(pending) {
+    let root = $("#sit-tutorial");
+    if (!pending.length) { if (root) root.remove(); return; }
+    const anchor = $("#sit-matters"); if (!anchor) return;
+    const signature = JSON.stringify(pending.map(s => [s.id, s.title, s.onTab]));
+    if (root && root.dataset.lessons === signature) return;
+    if (!root) {
+      root = document.createElement("section"); root.id = "sit-tutorial";
+      root.setAttribute("aria-label", "Tutorial"); anchor.after(root);
+      root.addEventListener("click", e => {
+        const button = e.target.closest("[data-tut-open]");
+        if (button) open(button.dataset.tutOpen);
+      });
+    }
+    root.dataset.lessons = signature; root.replaceChildren();
+    const heading = document.createElement("h3"); heading.className = "rulehead"; heading.textContent = "Tutorial";
+    root.appendChild(heading);
+    const add = (s, parent) => {
+      const button = document.createElement("button"); button.className = "tut-lesson-link"; button.dataset.tutOpen = s.id;
+      const tab = $('.tab[data-t="' + s.onTab + '"]');
+      button.textContent = Engine.text(s.title, UI.content()) + " · " + (tab ? tab.childNodes[0].textContent.trim() : s.onTab);
+      parent.appendChild(button);
+    };
+    add(pending[0], root);
+    if (pending.length > 1) {
+      const details = document.createElement("details"), summary = document.createElement("summary");
+      summary.textContent = "Other lessons"; details.appendChild(summary);
+      pending.slice(1).forEach(s => add(s, details)); root.appendChild(details);
+    }
   }
 
   /* the step that should be showing now, and the element it lights */
@@ -102,10 +146,12 @@ const Tutorial = (function () {
     if (typeof UI === "undefined" || !UI.state) return null;
     const st = UI.state(); if (!st || (st.flags && st.flags.sandbox) || Engine.checkEnd(st, UI.content()).over) return null;
     const done = taught(), tab = activeTab();
-    for (const s of steps()) {
+    const ordered = steps().slice().sort((a, b) => Number(b.id === requested) - Number(a.id === requested));
+    for (const s of ordered) {
       if (done.indexOf(s.id) >= 0 || dismissedNow[s.id]) continue;
       if (s.onTab && s.onTab !== tab) continue;
       if (s.when && !Engine.matches(st, s.when)) continue;
+      if (s.bill && Focus.selected("cham-bills") !== s.bill) continue;
       const el = resolve(s.region);
       if (el) return { step: s, el };
     }
@@ -197,9 +243,16 @@ const Tutorial = (function () {
       card.querySelector(".tut-body").textContent = Engine.text(s.body,C);
       layer.classList.add("on");
       shown = { id: s.id, el: p.el };
+      if (p.el.scrollIntoView) p.el.scrollIntoView({ block: "nearest", inline: "nearest" });
       place(p.el);
-      const ok = card.querySelector('[data-tut="ok"]'); if (ok) ok.focus();
-    } else { shown.el = p.el; place(p.el); }
+      const ok = card.querySelector('[data-tut="ok"]'); if (ok) ok.focus({ preventScroll: true });
+    } else {
+      shown.el = p.el;
+      const b = p.el.getBoundingClientRect();
+      if ((b.bottom <= 0 || b.top >= innerHeight) && p.el.scrollIntoView)
+        p.el.scrollIntoView({ block: "nearest", inline: "nearest" });
+      place(p.el);
+    }
   }
   function hide() {
     if (!layer || !shown) return;
@@ -223,7 +276,7 @@ const Tutorial = (function () {
   function setTaught(list) { if (typeof Shell !== "undefined" && Shell.setOpt) Shell.setOpt("taught", list.join(",")); }
   function dismiss() {
     if (!shown) return;
-    const id = shown.id; dismissedNow[id] = true;
+    const id = shown.id; dismissedNow[id] = true; requested = null;
     const t = taught(); if (t.indexOf(id) < 0) { t.push(id); setTaught(t); }
     hide(); schedule();
   }
@@ -231,7 +284,7 @@ const Tutorial = (function () {
 
   /* from Options: back on, and every lesson to be given again (one id, or all) */
   function replay(id) {
-    dismissedNow = {};
+    dismissedNow = {}; requested = null;
     setTaught(id ? taught().filter(x => x !== id) : []);
     if (typeof Shell !== "undefined" && Shell.setOpt) Shell.setOpt("tutorial", "on");
     schedule();
@@ -249,6 +302,6 @@ const Tutorial = (function () {
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wire); else wire();
   }
 
-  return { refresh, replay, steps, available, REGIONS, shown: () => shown, taught, dismiss, skip, pick };
+  return { refresh, replay, open, steps, available, REGIONS, shown: () => shown, taught, dismiss, skip, pick };
 })();
 if (typeof module !== "undefined") module.exports = Tutorial;

@@ -35,3 +35,8 @@
 .tut-review-status{margin-left:7px;color:var(--ink-soft);font-size:11px;}
 .tut-review-lesson p{font-family:var(--f-read);font-size:13px;line-height:1.5;margin:7px 0 2px;overflow-wrap:anywhere;}
 .tut-review summary:focus-visible{outline:1px dotted var(--ink);outline-offset:2px;}
+/* Sitting discovery stays in the existing scrolling brief. */
+#sit-tutorial { margin: 10px 0; }
+#sit-tutorial summary { cursor: pointer; margin: 5px 0; }
+.tut-lesson-link { display: block; width: 100%; text-align: left; white-space: normal; overflow-wrap: anywhere; padding: 5px 7px; margin: 3px 0; font: inherit; color: inherit; background: transparent; border: 1px solid var(--rule, #777); cursor: pointer; }
+.tut-lesson-link:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
