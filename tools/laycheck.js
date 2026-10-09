@@ -677,6 +677,27 @@ ${HELPERS}
       text.textContent = savedText; text.style.fontSize = ""; Tutorial.refresh();
     }
     Tutorial.dismiss(); window.__NO_TUTORIAL = true;
+    /* Review stays available with automatic cards off, and the growing Options panel must fit. */
+    Shell.setOpt("tutorial", "off");
+    document.getElementById("tb-options").click();
+    var options = document.getElementById("tb-optpanel"), review = options.querySelector(".tut-review");
+    if (!review || !review.querySelector(".tut-review-lesson")) {
+      found.push({ tab: "tutorial review", el: ".tut-review", kind: "LAYOUT", by: 1, detail: "Introduced lessons cannot be reviewed." });
+    } else {
+      review.open = true; review.querySelector(".tut-review-lesson").open = true;
+      review.scrollIntoView({ block: "nearest" });
+      var ob = options.getBoundingClientRect(), explanation = review.querySelector("p").getBoundingClientRect();
+      if (ob.left < 0 || ob.right > innerWidth + 1 || ob.top < 0 || ob.bottom > innerHeight + 1)
+        found.push({ tab: "tutorial review", el: "#tb-optpanel", kind: "LAYOUT", by: 1, detail: "Lesson review escapes the window." });
+      if (explanation.right > ob.right + 1 || explanation.left < ob.left)
+        found.push({ tab: "tutorial review", el: ".tut-review-lesson p", kind: "LAYOUT", by: 1, detail: "Lesson explanation escapes Options." });
+      if (options.scrollHeight > options.clientHeight + 2) {
+        options.scrollTop = options.scrollHeight;
+        if (options.scrollTop < 1)
+          found.push({ tab: "tutorial review", el: "#tb-optpanel", kind: "LAYOUT", by: 1, detail: "Lesson review cannot be scrolled." });
+      }
+    }
+    document.getElementById("tb-options").click(); drawn.push("tutorial review");
   } catch (e) { found.push({ tab: "tutorial", el: "#tut", kind: "LAYOUT", by: 1, detail: "tutorial probe: " + (e && e.message) }); }
 
   done({ hits: found, tabs: drawn, pageX: pageX, vw: de.clientWidth, menu: menu,

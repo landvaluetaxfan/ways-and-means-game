@@ -56,13 +56,51 @@ const Tutorial = (function () {
     return b.width > 0 && b.height > 0 ? el : null;
   }
 
+
+  /* Review is independent of automatic teaching. Previously read explanations stay available. */
+  function eligible() {
+    const st = typeof UI !== "undefined" && UI.state && UI.state();
+    if (!st || (st.flags && st.flags.sandbox)) return [];
+    return steps().filter(s => s.when ? Engine.matches(st, s.when) :
+      !!(REGIONS[s.region] && document.querySelector("#s-" + REGIONS[s.region].tab + " " + REGIONS[s.region].sel)));
+  }
+  const met = () => String(O().tutorialMet || "").split(",").filter(Boolean);
+  function available() {
+    const st = typeof UI !== "undefined" && UI.state && UI.state();
+    if (!st || (st.flags && st.flags.sandbox)) return [];
+    const known = new Set(taught().concat(met(), eligible().map(s => s.id)));
+    return steps().filter(s => known.has(s.id));
+  }
+  function rememberIntroductions() {
+    if (silent() || !$("#shell.on")) return;
+    const old = met(), all = [...new Set(old.concat(eligible().map(s => s.id)))];
+    if (all.length !== old.length && typeof Shell !== "undefined" && Shell.setOpt)
+      Shell.setOpt("tutorialMet", all.join(","));
+  }
+  function markTabs() {
+    const st = typeof UI !== "undefined" && UI.state && UI.state(), shell = $("#shell");
+    const active = !silent() && mode() !== "off" && shell && shell.classList.contains("on") && st &&
+      !(st.flags && st.flags.sandbox) && !Engine.checkEnd(st, UI.content()).over;
+    const done = taught();
+    const pending = active ? eligible().filter(s => !done.includes(s.id) && !dismissedNow[s.id]) : [];
+    document.querySelectorAll(".tab[data-t]").forEach(tab => {
+      const needed = pending.some(s => s.onTab === tab.dataset.t), badge = tab.querySelector(".tut-tab-hint");
+      if (needed && !badge) {
+        const hint = document.createElement("span"); hint.className = "tut-tab-hint";
+        hint.textContent = "?"; hint.setAttribute("role", "img");
+        hint.setAttribute("aria-label", "Tutorial lesson available"); hint.title = "Tutorial lesson available";
+        tab.appendChild(hint);
+      } else if (!needed && badge) badge.remove();
+    });
+  }
+
   /* the step that should be showing now, and the element it lights */
   function pick() {
     if (silent() || mode() === "off") return null;
     const shell = $("#shell"); if (!shell || !shell.classList.contains("on")) return null;
-    if (document.querySelector(".dlg-back")) return null;               /* a dialog is up */
+    if (document.querySelector(".dlg-back, #tb-optpanel.on")) return null;               /* a dialog is up */
     if (typeof UI === "undefined" || !UI.state) return null;
-    const st = UI.state(); if (!st || (st.flags && st.flags.sandbox)) return null;
+    const st = UI.state(); if (!st || (st.flags && st.flags.sandbox) || Engine.checkEnd(st, UI.content()).over) return null;
     const done = taught(), tab = activeTab();
     for (const s of steps()) {
       if (done.indexOf(s.id) >= 0 || dismissedNow[s.id]) continue;
@@ -172,6 +210,8 @@ const Tutorial = (function () {
 
   function refresh() {
     queued = false;
+    rememberIntroductions();
+    markTabs();
     const p = pick();
     if (p) show(p); else hide();
   }
@@ -209,6 +249,6 @@ const Tutorial = (function () {
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wire); else wire();
   }
 
-  return { refresh, replay, steps, REGIONS, shown: () => shown, taught, dismiss, skip, pick };
+  return { refresh, replay, steps, available, REGIONS, shown: () => shown, taught, dismiss, skip, pick };
 })();
 if (typeof module !== "undefined") module.exports = Tutorial;

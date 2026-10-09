@@ -21,3 +21,16 @@
 #tut .tut-skip:hover{color:var(--ink);}
 @media (prefers-reduced-motion:no-preference){#tut.on .tut-card{animation:tutIn .18s ease-out;}}
 @keyframes tutIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+/* Discovery stays distinct from the red obligation count. Review reuses the campaign's lesson text. */
+.tab .tut-tab-hint{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+  width:14px;height:14px;margin-left:4px;border:1px solid var(--gold);border-radius:50%;
+  color:var(--ink);font-size:11px;line-height:1;font-weight:bold;}
+#tb-optpanel{max-height:calc(100vh - 80px);max-width:calc(100vw - 16px);overflow-y:auto;}
+.tut-review{margin:8px 0;font-family:var(--f-ui);font-size:12px;}
+.tut-review summary{cursor:pointer;}
+.tut-review-lesson{margin-top:7px;padding:6px 0;border-top:1px solid var(--chrome-dk);}
+.tut-review-lesson summary{line-height:1.5;}
+.tut-review-status{margin-left:7px;color:var(--ink-soft);font-size:11px;}
+.tut-review-lesson p{font-family:var(--f-read);font-size:13px;line-height:1.5;margin:7px 0 2px;overflow-wrap:anywhere;}
+.tut-review summary:focus-visible{outline:1px dotted var(--ink);outline-offset:2px;}

@@ -67,7 +67,7 @@ const Shell = (function () {
     tips: true,
     /* THE TUTORIAL (js/tutorial.js): "on" or "off", and the lessons already given, as a comma list of step ids.
        The player's, not the save's: a second game on this machine does not teach again. */
-    tutorial: "on", taught: ""
+    tutorial: "on", taught: "", tutorialMet: ""
   };
   /* MUTATED IN PLACE, NEVER REASSIGNED. `options` below hands this object
      out; reassigning it on load would leave every holder pointing at the
@@ -977,6 +977,8 @@ const Shell = (function () {
      is called. `inGame` drops the three session buttons, because from the
      main menu there is no game to export and nowhere to return to. */
   function optionsHTML(inGame, showTitle) {
+    const lessons = inGame !== false && typeof Tutorial !== "undefined" ? Tutorial.available() : [];
+    const readLessons = typeof Tutorial !== "undefined" ? Tutorial.taught() : [];
     const row = (k, label, note) => `<label class="opt"><input type="checkbox" data-opt="${k}"
       ${opts[k] ? "checked" : ""}><span><b>${label}</b><i>${note}</i></span></label>`;
     const slider = (k, label) => `<label class="optlvl"><span>${label}</span>
@@ -1021,6 +1023,12 @@ const Shell = (function () {
             <select data-pick="tutorial" aria-label="Tutorial">
               <option value="on"${opts.tutorial !== "off" ? " selected" : ""}>On</option>
               <option value="off"${opts.tutorial === "off" ? " selected" : ""}>Off</option></select></label>
+          ${inGame === false ? "" : `<details class="tut-review"><summary>Review lessons</summary>
+            ${lessons.length ? lessons.map(s => `<details class="tut-review-lesson" data-lesson="${esc(s.id)}">
+              <summary>${esc(Engine.text(s.title, UI.content()))}<span class="tut-review-status">${readLessons.includes(s.id) ? "Read" : "New"}</span></summary>
+              <p>${esc(Engine.text(s.body, UI.content()))}</p></details>`).join("") :
+              `<p class="note">Lessons appear here as you meet their subjects in play.</p>`}
+          </details>`}
           <button class="mbtn sm wide" data-tut-replay="1">Show the lessons again</button>
         </div>
         ${inGame === false ? "" : `<div class="opt-group session">
@@ -1055,6 +1063,7 @@ const Shell = (function () {
     /* change, not input: a select lands when it lands. */
     p.querySelectorAll("[data-pick]").forEach(sel => sel.addEventListener("change", () => {
       setOpt(sel.dataset.pick, sel.value);
+      if (sel.dataset.pick === "tutorial" && typeof Tutorial !== "undefined") Tutorial.refresh();
     }));
     /* input, not change: a volume slider that only lands when you let go is
        a slider you cannot aim. */
@@ -1106,6 +1115,11 @@ const Shell = (function () {
     });
   }
 
+  function fitOptions() {
+    const p = document.getElementById("tb-optpanel");
+    if (p && p.classList.contains("on"))
+      p.style.maxHeight = Math.max(1, window.innerHeight - p.getBoundingClientRect().top - 8) + "px";
+  }
   function toggleOptions(force) {
     const p = document.getElementById("tb-optpanel");
     const open = force != null ? force : !p.classList.contains("on");
@@ -1121,6 +1135,7 @@ const Shell = (function () {
     }
     p.innerHTML = optionsHTML(true);
     wireOptions(p, true);
+    fitOptions();
     watchAudio(true);   /* only ticks while the panel is open */
   }
 
@@ -1143,6 +1158,7 @@ const Shell = (function () {
     loadOpts();
     if (wired) { current = null; showMenu(null); return; }
     wired = true;
+    window.addEventListener("resize", fitOptions);
     document.getElementById("tb-save").addEventListener("click", () => saveNow(false));
     document.getElementById("tb-load").addEventListener("click", () => {
       toggleOptions(false);

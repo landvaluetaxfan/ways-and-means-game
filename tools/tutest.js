@@ -30,6 +30,18 @@ const tick = () => new Promise(r => w.setTimeout(r, 20));
 
   w.eval("UI.openTab('sit')"); await tick();
   ok("a step for another tab waits, and shows nothing", !card());
+  ok("an unread lesson marks its tab without interrupting this tab", !!q('.tab[data-t="gov"] .tut-tab-hint') && !card());
+  ok("future lessons are absent from the review list", typeof w.eval("Tutorial.available") === "function" &&
+    w.eval("Tutorial.available().map(s => s.id).join()") === "t_a");
+  w.eval("Shell.setOpt('tutorial','off'); Tutorial.refresh()"); await tick();
+  ok("turning automatic teaching off clears an unread discovery marker", !q(".tut-tab-hint"));
+  w.eval("Shell.setOpt('tutorial','on'); Tutorial.refresh()"); await tick();
+  ok("turning it on restores the unread marker", !!q('.tab[data-t="gov"] .tut-tab-hint'));
+  w.eval("window.__NO_TUTORIAL = true; Tutorial.refresh()"); await tick();
+  ok("silent harnesses never decorate tabs", !q(".tut-tab-hint"));
+  w.eval("window.__NO_TUTORIAL = false; UI.state().supplyLost = true; Tutorial.refresh()"); await tick();
+  ok("an ended run has no automatic lesson or discovery marker", !card() && !q(".tut-tab-hint"));
+  w.eval("delete UI.state().supplyLost; Tutorial.refresh()"); await tick();
   w.eval("UI.openTab('gov')"); await tick();
   ok("the first eligible step shows on its tab, with its title and body", title() === "First lesson" &&
      card().querySelector(".tut-body").textContent === "This is the first lesson.", String(title()));
@@ -73,10 +85,33 @@ const tick = () => new Promise(r => w.setTimeout(r, 20));
 
   q('#tut [data-tut="ok"]').click(); await tick();
   ok("Got it dismisses it", !card());
+  ok("reading the last available lesson clears its tab marker", !q('.tab[data-t="gov"] .tut-tab-hint'));
   ok("and records it in the player's options", /t_a/.test(w.eval("Shell.options.taught")), w.eval("Shell.options.taught"));
   ok("the second step waits for its condition", !card());
+  /* One explanation can be revisited without replaying the curriculum or revealing a future step. */
+  const progressBeforeReview = w.eval("Shell.options.taught"), gameBeforeReview = w.eval("Engine.save(UI.state())");
+  q("#tb-options").click(); await tick();
+  const review = q("#tb-optpanel .tut-review");
+  ok("Options offers individual introduced lessons", !!review && review.querySelectorAll(".tut-review-lesson").length === 1);
+  ok("Options hides the future lesson's title and body", !q("#tb-optpanel").textContent.includes("Second lesson") && !q("#tb-optpanel").textContent.includes("This is the second."));
+  if (review) { review.querySelector("summary").click(); const lesson = review.querySelector(".tut-review-lesson"); lesson.querySelector("summary").click();
+    ok("an individual lesson opens with its existing explanation", lesson.open && lesson.querySelector("p").textContent === "This is the first lesson."); }
+  ok("individual review preserves tutorial progress and game state", w.eval("Shell.options.taught") === progressBeforeReview && w.eval("Engine.save(UI.state())") === gameBeforeReview);
+  q("#tb-options").click(); await tick();
+  w.eval("Shell.setOpt('tutorial','off'); Tutorial.refresh()"); await tick();
+  ok("automatic lessons off removes discovery markers", !q(".tut-tab-hint"));
+  q("#tb-options").click(); await tick();
+  ok("introduced lessons remain reviewable with automatic lessons off", !!q("#tb-optpanel .tut-review-lesson"));
+  q("#tb-options").click(); w.eval("Shell.setOpt('tutorial','on')"); await tick();
+
   w.eval("UI.state().seen.t_gate = 1; UI.redraw()"); await tick();
   ok("and shows when the condition holds", title() === "Second lesson", String(title()));
+  /* Options may be opened by keyboard while a lesson is up. It must remain readable. */
+  q("#tb-options").click(); await tick();
+  ok("opening Options suspends the automatic lesson", !card() && q("#tb-optpanel").classList.contains("on"));
+  ok("a newly introduced lesson joins the review list", q("#tb-optpanel").querySelectorAll(".tut-review-lesson").length === 2);
+  q("#tb-options").click(); await tick();
+  ok("closing Options resumes the unread lesson", title() === "Second lesson");
   w.document.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true })); await tick();
   ok("Escape dismisses it", !card() && /t_b/.test(w.eval("Shell.options.taught")));
   w.eval("UI.boot(Engine.load(Engine.save(UI.state()), UI.content()), UI.content())"); await tick();
@@ -95,6 +130,15 @@ const tick = () => new Promise(r => w.setTimeout(r, 20));
   w.eval("UI.state().flags.sandbox = true; Tutorial.refresh()"); await tick();
   ok("the author's bench never teaches", !card());
   w.eval("delete UI.state().flags.sandbox");
+
+  /* Review must outlive a temporary card trigger, even if the card was never read. */
+  S.tutorial.push({ id: "t_transient", onTab: "gov", region: "order-paper-time", when: { flags: ["t_transient"] },
+    title: "Temporary occasion", body: "Keep this explanation after its occasion passes." });
+  w.eval("Shell.setOpt('tutorial','off'); UI.state().flags.t_transient = true; Tutorial.refresh()"); await tick();
+  ok("an introduced lesson is reviewable while automatic teaching is off", w.eval("Tutorial.available().some(s => s.id === 't_transient')"));
+  w.eval("delete UI.state().flags.t_transient; Tutorial.refresh()"); await tick();
+  ok("review retains an unread lesson after its temporary trigger passes", w.eval("Tutorial.available().some(s => s.id === 't_transient')"));
+  w.eval("Shell.setOpt('tutorial','on')");
 
   /* the steps the campaign carries */
   S.tutorial = real;
