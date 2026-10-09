@@ -5,6 +5,8 @@
   "files": [
     "content/campaigns/flash_i/events.js",
     "js/ui.js",
+    "package.json",
+    "package-lock.json",
     "briefs/codex-handoff.md",
     "briefs/act-one.md",
     "design/act-one-release-review.md"
