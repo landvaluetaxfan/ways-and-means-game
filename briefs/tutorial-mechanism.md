@@ -9,8 +9,9 @@ the author's request; the spec is `design/77-the-tutorial-mechanism.md`. Read it
 the taught record is in `Shell.opts.taught` (the player's, not the save's), so there was **no `STATE_VERSION` bump**; the
 steps live in the campaign's `setup`, not in a new content kind, so the schema and editor are untouched; and the card watches
 the shell with a MutationObserver, so `js/ui.js` has **no render hook**. The region registry is `Tutorial.REGIONS` in
-`js/tutorial.js`. What is left of this brief: the "Promises" card (`owed`, held until the Owed list has a stable region),
-and the author's read of the cards in the real browser. `briefs/codex-handoff.md` has the rest.
+`js/tutorial.js`. The "Promises" card (`owed`) is wired by Codex: its region follows a promise from Coming up
+to Owed as its deadline approaches. The remaining work is the author's read of the cards in the real browser
+and any steps they mark. `briefs/codex-handoff.md` has the rest.
 
 ## What to build
 

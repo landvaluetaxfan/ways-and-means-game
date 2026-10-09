@@ -25,6 +25,7 @@ const Tutorial = (function () {
      where the lesson is about the panel. */
   const REGIONS = {
     "calendar":         { tab: "sit",  sel: "#sit-cal" },
+    "owed":             { tab: "sit",  sel: ':is(#sit-today [data-obligation="owed"], #sit-docket .dk.owed)' },
     "order-paper-time": { tab: "gov",  sel: "#gov-time" },
     "treasury-vacancy": { tab: "gov",  sel: "#gov-vacancies" },
     "orders":           { tab: "gov",  sel: "#gov-available" },

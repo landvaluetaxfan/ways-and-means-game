@@ -137,7 +137,17 @@ assertions were removed and no player-facing wording was added.
       suspension → recorded news. These are structural dependency proofs, not a promise that
       every threshold fires within Act I. A cycle, a comment or a number displayed alone cannot
       satisfy the rule. Malformed graphs fail closed. No Act I writing or engine rule changes.
-6. **The tutorial's "Promises" card** and any step the author marks after playing.
+6. **The tutorial's "Promises" card: implemented (Codex).** The `owed` region highlights the first
+   visible open promise, under Coming up initially and Owed as its deadline approaches. The card waits
+   when no promise row exists; other obligations do not trigger it. The real Act I path, deadline
+   transition, redraw, tab changes, dismissal, save/load and Options replay are covered by `tutest`.
+   Plain wording adjusted for Claude's register review: the drafted card names Coming up and Owed,
+   and says to keep the promise where its row says. Any steps the author marks after playing remain open.
+   Twenty checks passed in 187.76 seconds; four in-memory region/tab mutations failed as intended.
+   Direct Edge layout found no faults at seven sizes, native and wrapped (Arial Narrow/Arial/Consolas
+   fallbacks); four settled screenshots at 1920x1000 and 1366x768 were inspected. The 80-seed reports
+   are byte-identical. This checkout uses locked local jsdom and the existing migration worktree's
+   Acorn 8.19.0 through NODE_PATH; Acorn is not declared in the project's lockfile.
 7. **E1's signed-off form**: a campaign `play.curtain` frame (`design/80`).
 8. **E11, full-page superevents**, only if the author still wants it after playing the build.
 

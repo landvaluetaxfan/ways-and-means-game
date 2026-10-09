@@ -76,6 +76,59 @@ const tick = () => new Promise(r => w.setTimeout(r, 20));
      real.filter(s => !(R[s.region] && s.onTab === R[s.region].tab)).map(s => s.id).join(", "));
   const E = w.eval("Engine");
   ok("every step's condition is in the vocabulary", real.every(s => !s.when || Object.keys(s.when).every(k => E.CONDITIONS ? !!E.CONDITIONS[k] : true)));
+  /* Catch an absent Promises lesson, a region that lights unrelated business, or a card shown before a promise.
+     Reach the first undertaking through lawful Act I sitting answers, without injecting a tutorial step. */
+  w.eval("Shell.setOpt('taught', UI.content().setup.tutorial.filter(s => s.id !== 'owed').map(s => s.id).join(',')); UI.openTab('sit'); Tutorial.refresh()");
+  await tick();
+  ok("Promises waits while the government has given no undertaking", !card());
+  w.eval(`(function () {
+    const C = UI.content(), st = UI.state();
+    st.flags._introRead = true; st.flags._act1 = true;
+    for (let n = 0; n < 10 && !Engine.outstanding(st).length; n++) {
+      Engine.playSitting(st, C, () => 0);
+      if (!Engine.outstanding(st).length) Engine.advance(st, C);
+    }
+    UI.boot(st, C); UI.openTab('sit');
+  })()`);
+  await tick();
+  const promise = E.outstanding(w.eval("UI.state()"))[0];
+  const promiseRow = '#sit-today [data-obligation="owed"], #sit-docket .dk.owed';
+  ok("the legal Act I path gives a promise shown in Coming up", !!promise && !!q('#sit-docket .dk.owed'),
+    "sitting " + w.eval("UI.state().sitting") + "; " + [...q("#sitting-body").querySelectorAll("button")].map(b => b.textContent.trim()).join(" / "));
+  const owedShown = () => w.eval("Tutorial.shown() && Tutorial.shown().id === 'owed'");
+  ok("the first promise shows the campaign's Promises card", !!owedShown());
+  ok("Promises lights the promise row and its way to keep it", !!owedShown() &&
+    w.eval(`Tutorial.shown().el.matches(${JSON.stringify(promiseRow)})`) &&
+    w.eval("Tutorial.shown().el.textContent").includes(promise && promise.text));
+  w.eval("UI.redraw()"); await tick();
+  ok("Promises follows the replacement row after a redraw", !!owedShown() &&
+    w.eval("document.contains(Tutorial.shown().el)") && w.document.querySelectorAll("#tut.on .tut-card").length === 1);
+  w.eval("UI.openTab('gov')"); await tick();
+  ok("Promises waits on another tab", !card());
+  w.eval("UI.openTab('sit')"); await tick();
+  ok("Promises returns with the Owed list", !!owedShown());
+  if (owedShown()) q('#tut [data-tut="ok"]').click();
+  await tick();
+  ok("dismissing Promises records it in player preferences", w.eval("Tutorial.taught().includes('owed')") && !card());
+  w.eval("UI.boot(Engine.load(Engine.save(UI.state()), UI.content()), UI.content()); UI.openTab('sit')"); await tick();
+  ok("loading the promised run does not repeat Promises", !card());
+  w.eval("Tutorial.replay('owed')"); await tick();
+  ok("Options can replay Promises while its row exists", !!owedShown());
+  w.eval(`(function () {
+    const st = UI.state(), C = UI.content();
+    for (let n = 0; n < 8 && !document.querySelector('#sit-today [data-obligation="owed"]'); n++) {
+      Engine.advance(st, C); UI.redraw();
+    }
+  })()`);
+  await tick();
+  ok("Promises follows the approaching deadline into Owed", !!owedShown() &&
+    w.eval("Tutorial.shown().el.matches('#sit-today [data-obligation=owed]')") && !q('#sit-docket .dk.owed'));
+  if (promise) w.eval(`UI.state().undertakings.find(u => u.id === ${JSON.stringify(promise.id)}).state = 'kept'; UI.redraw()`);
+  await tick();
+  ok("Promises waits when only other business remains", !card() && !q(promiseRow));
+  if (promise) w.eval(`UI.state().undertakings.find(u => u.id === ${JSON.stringify(promise.id)}).state = 'open'; UI.redraw()`);
+  await tick();
+  ok("an untaught Promises card returns when its promise is visible again", !!owedShown());
   /* each region resolves on its tab in a booted game: the estimates are opened for the two that need a bill */
   const tabs = {};
   Object.keys(R).forEach(n => { (tabs[R[n].tab] = tabs[R[n].tab] || []).push(n); });
