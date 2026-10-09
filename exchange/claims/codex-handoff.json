@@ -4,8 +4,10 @@
   "since": "2026-10-09",
   "files": [
     "content/campaigns/flash_i/events.js",
+    "js/ui.js",
     "briefs/codex-handoff.md",
-    "briefs/act-one.md"
+    "briefs/act-one.md",
+    "design/act-one-release-review.md"
   ],
   "note": ""
 }
