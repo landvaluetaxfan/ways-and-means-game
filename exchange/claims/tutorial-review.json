@@ -1,0 +1,13 @@
+{
+  "brief": "tutorial-review",
+  "lane": "codex",
+  "since": "2026-10-09",
+  "files": [
+    "js/tutorial.js",
+    "js/shell.js",
+    "css/tutorial.css",
+    "tools/tutest.js",
+    "tools/laycheck.js"
+  ],
+  "note": ""
+}
