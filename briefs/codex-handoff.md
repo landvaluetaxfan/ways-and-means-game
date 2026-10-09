@@ -18,7 +18,7 @@ subject and watch it fail before you trust it** (`AGENTS.md`); this session foun
 
 | | where | notes |
 |---|---|---|
-| The release build | `tools/build.js --release`, `tools/storystrip.js`, `tools/package-itch.js`, `tools/minizip.js` | strips the world's untagged story out of the inlined files; sets `window.PLAYTEST` (the playtest frame `js/shell.js` already had) |
+| The release build | `tools/build.js --release`, `tools/package-itch.js`, `tools/minizip.js` | inlines the authored page without rewriting story; retired world story is archived outside the source graph; keeps `data-dev` exclusions and sets `window.PLAYTEST` |
 | Its test | `tools/itchtest.js` | unzips outside the repo, plays Act I menu to curtain through the page, saves, no network, no retired phrases, the lever ladder and reveals as drawn |
 | The curtain | `setup.actEnd`, `Engine.checkEnd` kind `"act"`, `js/ui.js` | a dated last page (the day the House rose), a thank-you section |
 | The lever ladder (E3) | `setup.locks`, `Engine.lockOf` | `grant`, `divide`, `whip`, `money`, `clause:<id>`; a scene's own `clause` and `whip` effects bypass it; the sandbox is never locked |
@@ -100,7 +100,16 @@ assertions were removed and no player-facing wording was added.
     fixture-setup serialization mutation fail for their intended reasons. The 960-run report matches
     the baseline after decoding and LF normalization. Edge's direct layout probe finds no faults
     at seven sizes, native and wrapped; the CLI dump runner returned no usable document.
-    Task 4, removing packaging surgery and verifying the independent release boundaries, is next.
+    Task 4 removes packaging surgery and retires `tools/storystrip.js` (its only executable consumer
+    was the builder). Independent source-page/model and unpacked-bundle assertions cover all ten
+    story collections and reject fixture/archive scripts. Thirteen deliberate boundary mutations
+    fail. Packaged Edge runs at 1920x1000, 1366x768 and a cross-origin 960x640 frame reach the curtain,
+    restore a complete save through Continue, and have clean console/external-network logs.
+    Final whole-branch review and stable-tree checks are pending.
+
+    **Existing curtain follow-up (separate job 7):** the header shows sitting 17, 23 May, while the
+    curtain report is dated the 8 May rise. At smaller sizes the report/thank-you controls require
+    scrolling the reading pane. The archive migration changes neither the curtain nor its wording.
 
     **Archival decisions approved by the author, 8 October:**
 

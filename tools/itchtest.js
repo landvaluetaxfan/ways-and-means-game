@@ -20,6 +20,7 @@ let JSDOM, VirtualConsole;
 try { ({ JSDOM, VirtualConsole } = require("jsdom")); }
 catch (e) { console.log("SKIP: jsdom not installed  (npm install jsdom)"); process.exit(0); }
 const zip = require("./minizip.js"), L = require("./loadcontent.js");
+const boundary = require("./fixturetest.js");
 
 let bad = 0;
 const ok = (name, pass, why) => { console.log((pass ? "  ok   " : "  FAIL ") + name + (pass || !why ? "" : "  -- " + why)); if (!pass) bad++; };
@@ -34,6 +35,8 @@ const dir = fs.mkdtempSync(path.join(os.tmpdir(), "wm-itch-"));
 const file = path.join(dir, "index.html");
 fs.writeFileSync(file, entries[0].data);
 const html = entries[0].data.toString("utf8");
+boundary.runRelease();
+boundary.assertNoTestScripts(boundary.releaseScriptPaths(html),"unpacked bundle");
 ok("the unpacked page is outside the repository", path.relative(root, file).startsWith(".."));
 ok("the page is no larger than 9 MB", html.length < 9 * 1048576, (html.length / 1048576).toFixed(1) + " MB");
 ok("the page loads no external file", !/<script[^>]+\ssrc=|<link[^>]+rel=["']stylesheet|<img[^>]+src=["']https?:/.test(html.replace(/`[^`]*`/g, "")));
@@ -47,7 +50,8 @@ const found = NET.filter(n => code.split(n).length > 1);
 ok("the page carries no network call", !found.length, found.join(", "));
 
 /* ---- 3. the world's untagged story is not in it ---- */
-/* The untagged entries are read from the loaded content, not cut out by the build's own tool, so a broken strip cannot hide its own leak. */
+/* Retired phrases are additional coverage. The independent script/data
+   boundary above and below does not depend on the builder's implementation. */
 const world = (() => { const ctx = {}; require("vm").runInNewContext(L.source() + "\n;__R = [EVENTS, BILLS, INSTRUMENTS, INITIATIVES, MATTERS, SETTLEMENTS, ACHIEVEMENTS, BUSINESS, MINUTES];", ctx);
   const out = [], walk = v => typeof v === "string" ? out.push(v) : v && typeof v === "object" ? Object.keys(v).forEach(k => walk(v[k])) : 0;
   ctx.__R.forEach(a => a.filter(x => x.campaign == null || [].concat(x.campaign).every(c => c === "world")).forEach(walk)); return out; })();
@@ -128,9 +132,8 @@ async function boot(label, how) {
   let throws = false; try { f.w.localStorage.getItem("x"); } catch (e) { throws = true; }
   f.w.eval("Shell.boot(CONTENT)");
   ok("file://: where storage throws, the menu says slots will not save", !throws || !!f.q(".menu-warn"), "storage throws: " + throws);
-  const untagged = f.w.eval(`[EVENTS, BILLS, INSTRUMENTS, INITIATIVES, MATTERS, SETTLEMENTS, ACHIEVEMENTS, BUSINESS, MINUTES]
-    .reduce((n, a) => n + a.filter(x => x.campaign == null || [].concat(x.campaign).every(c => c === "world")).length, 0)`);
-  ok("file://: the page holds no story entry that is not tagged for a campaign", untagged === 0, untagged + " untagged");
+  boundary.assertNoStoryLeaks(f.w.eval("CONTENT"),"unpacked file:// page");
+  ok("file://: every story collection is present and has no untagged or world-only entry",true);
   ok("file://: the console is clean", f.errs.length === 0, f.errs.slice(0, 2).join(" | "));
   f.dom.window.close();
 

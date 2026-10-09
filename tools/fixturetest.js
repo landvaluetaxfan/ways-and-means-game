@@ -59,6 +59,63 @@ function run() {
   runArchive();
   require("./flagaudittest.js").run();
   require("./consequencetest.js").run();
+  runRelease();
+}
+/* Independent of the package builder and of the fixture's own kind list. */
+const storyKinds = ["events","bills","instruments","initiatives","matters",
+  "settlements","achievements","business","minutes","resolutions"];
+function assertNoStoryLeaks(C,label) {
+  for (const k of storyKinds) {
+    assert.ok(Array.isArray(C[k]),label+": missing story array "+k);
+    for (const x of C[k]) assert.ok(x && x.campaign != null &&
+      ![].concat(x.campaign).every(c=>c==="world"),label+": story leak "+k+"/"+(x&&x.id));
+  }
+}
+function assertNoTestScripts(paths,label) {
+  for (const p of paths) {
+    const normalized = new URL(decodeURIComponent(p).replace(/\\/g,"/"),"https://probe.invalid/").pathname;
+    assert.ok(!/(?:^|\/)tools\/fixtures\/|(?:^|\/)content\/archive\/world\//.test(normalized),
+              label+": test-only script "+p);
+  }
+}
+function releaseScriptPaths(html) {
+  const {JSDOM} = require("jsdom"), dom = new JSDOM(html);
+  try {
+    return [...dom.window.document.scripts].map(s=>s.getAttribute("src") ||
+      ((s.textContent.match(/^\s*\/\*\s*([^*\n]+)\s*\*\//)||[])[1]||"").trim()).filter(Boolean);
+  } finally {dom.window.close();}
+}
+function runRelease() {
+  const L = require("./loadcontent.js"), vm = require("vm");
+  const live = Object.fromEntries(storyKinds.map(k=>[k,[{id:k,campaign:"live"}]]));
+  assertNoStoryLeaks(live,"tagged probe");
+  for (const k of storyKinds) {
+    for (const tag of [null,undefined,"world",["world"],[]]) {
+      const C = {...live,[k]:[{id:"leak",campaign:tag}]};
+      assert.throws(()=>assertNoStoryLeaks(C,"probe"),/story leak/,k+" world-only leak rejected");
+    }
+    assertNoStoryLeaks({...live,[k]:[{id:"shared",campaign:["world","live"]}]},"shared probe");
+    assert.throws(()=>assertNoStoryLeaks({...live,[k]:null},"probe"),/missing story array/,
+                  k+" missing collection fails closed");
+  }
+  for (const p of ["tools/fixtures/index.js","content/archive/world/events.js",
+    "./tools/fixtures/index.js?v=1","content/archive/x/../world/events.js",
+    "tools\\fixtures\\index.js","%74ools/fixtures/index.js"]) {
+    assert.throws(()=>assertNoTestScripts([p],"probe"),/test-only script/,p+" script leak rejected");
+    assert.throws(()=>assertNoTestScripts(releaseScriptPaths('<script src="'+p+'"></script>'),"probe"),
+                  /test-only script/,"external bundle script leak rejected");
+    assert.throws(()=>assertNoTestScripts(releaseScriptPaths('<script>\n/* '+p+' */\nvar probe=1;</script>'),"probe"),
+                  /test-only script/,"inline bundle script leak rejected");
+  }
+  assertNoTestScripts(["content/events.js","content/campaigns/flash_i/events.js"],"live scripts");
+  for (const page of ["index.html","editor.html"])
+    assertNoTestScripts(releaseScriptPaths(fs.readFileSync(path.join(L.root,page),"utf8")),page);
+  assertNoTestScripts(L.modelFiles,"editor model graph");
+  assertNoStoryLeaks(L.loadContent(),"source page");
+  const ctx = {};
+  vm.runInNewContext(L.source(L.modelFiles)+"\n;__C=CONTENT;",ctx);
+  assertNoStoryLeaks(ctx.__C,"editor model");
+  console.log("release boundary: source/model data, scripts and isolated leak probes pass");
 }
 function runArchive() {
   const A = require("./archiveworld.js"), crypto = require("crypto");
@@ -109,6 +166,8 @@ function runHarnessPair() {
     process.stdout.write(out);
   }
 }
-module.exports = {run,runArchive,runHarness,runHarnessPair};
-if (require.main === module) process.argv.includes("--harness") ? runHarness()
+module.exports = {run,runArchive,runHarness,runHarnessPair,runRelease,
+  assertNoStoryLeaks,assertNoTestScripts,releaseScriptPaths};
+if (require.main === module) process.argv.includes("--release") ? runRelease()
+  : process.argv.includes("--harness") ? runHarness()
   : process.argv.includes("--archive") ? runArchive() : run();
