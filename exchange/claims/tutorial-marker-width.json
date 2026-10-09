@@ -1,0 +1,10 @@
+{
+  "brief": "tutorial-marker-width",
+  "lane": "codex",
+  "since": "2026-10-09",
+  "files": [
+    "css/tutorial.css",
+    "tools/laycheck.js"
+  ],
+  "note": ""
+}
