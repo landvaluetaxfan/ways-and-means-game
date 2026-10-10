@@ -21,7 +21,7 @@
 const Papers = (function () {
   "use strict";
 
-  let st, C, drawn = {}, onChange = null;
+  let st, C, drawn = {}, onChange = null, draftOrder = null;
 
   /* THE REGISTER'S SELECTION LIVES IN Focus, not here. It used to be a
      closure variable, which worked and was also the third of four
@@ -32,6 +32,7 @@ const Papers = (function () {
     rows: "tr[data-doc]",
     key: tr => tr.dataset.doc,
     activate: () => {
+      draftOrder = null;
       render(st, C);
       const overlay = document.getElementById("gov-docs");
       if (overlay) {
@@ -259,6 +260,7 @@ const Papers = (function () {
 
   function instrumentDoc(it) {
     const si = it.si, s = it.state;
+    const draft = it.draft, gate = draft ? Engine.canMake(st, C, si.id) : null;
     const post = (C.cabinetById || {})[si.author];
     const window = s.inForce && s.prayerCloses != null ? s.prayerCloses - st.sitting : null;
     const banner = s.revoked
@@ -269,7 +271,7 @@ const Papers = (function () {
     return { html: `<div class="paper">
       ${head("Office of the Minister for " + (post ? post.name : si.author.replace(/_/g, " ")),
              "Made under the Allocation Act and the Representation Act",
-             si.number, "SITTING " + s.madeAt)}
+             si.number, draft ? "UNSIGNED DRAFT" : "SITTING " + s.madeAt)}
       ${banner}
       <h5>${esc(si.title)}</h5>
       <p>${esc(si.summary)}</p>
@@ -280,16 +282,21 @@ const Papers = (function () {
             : s.approvedAt != null ? " The House approved it at sitting " + s.approvedAt + "."
             : !s.made && s.lapsed != null ? " The House did not approve it, and it lapsed at " +
               "sitting " + s.lapsed + "." : "")
-        : "This instrument took effect on being made. It stands unless the House prays " +
+        : (draft ? "This instrument takes effect when you sign it. It stands unless the House prays " : "This instrument took effect on being made. It stands unless the House prays ") +
           "against it within " + (si.prayer_window || 6) + " sittings. A prayer requires a " +
           "simple majority of elected members only."}
       ${si.revocable ? " It may be revoked by a further instrument." : ""}</p>
+      ${draft ? `<p class="note">${si.procedure === "affirmative"
+        ? "Signing lays the order without spending order-paper time. It waits for the House's approval, whose vote costs time."
+        : "Signing costs no order-paper time. The order takes effect immediately."}</p>` : ""}
       <div class="sigblock">
         <div class="sigline"><div class="rule" style="height:${SIG_IMG.h}px">
-          ${sigIMG()}</div>
+          ${draft ? "" : sigIMG()}</div>
           <div class="cap">${esc(minister(si.author))} &middot; ${esc(postName(si.author))}</div></div>
-        <div class="madestamp">Made<small>${esc(si.number)} &middot; SITTING ${s.madeAt}</small></div>
-      </div></div>`, ceremonial: false, drawSig: true };
+        ${draft ? `<div><button class="btn signbtn" data-sign-order="${esc(si.id)}"${gate.ok ? "" : " disabled"}>Sign the order</button>` +
+          (!gate.ok ? `<p class="note" data-order-refusal>${esc(gate.reason)}</p>` : "") + `</div>`
+          : `<div class="madestamp">Made<small>${esc(si.number)} &middot; SITTING ${s.madeAt}</small></div>`}
+      </div></div>`, ceremonial: false, drawSig: !draft };
   }
 
   function minister(postId) {
@@ -373,7 +380,10 @@ const Papers = (function () {
     const trib = document.getElementById("pp-tribunal");
     if (trib) trib.innerHTML = tribunalHTML();
 
-    const it = list.find(i => i.id === sel);
+    const draftSI = draftOrder && (C.instruments || []).find(si => si.id === draftOrder);
+    if (!draftSI || (st.instruments[draftOrder] || {}).made) draftOrder = null;
+    const it = draftOrder ? { kind:"instrument", id:draftOrder, si:draftSI, state:st.instruments[draftOrder], draft:true }
+      : list.find(i => i.id === sel);
     const box = document.getElementById("pp-doc");
     if (!it) { box.innerHTML = `<div class="pbody"><div class="note">Nothing selected.</div></div>`; return; }
 
@@ -413,11 +423,13 @@ const Papers = (function () {
     }
   }
 
-  function reset() { drawn = {}; Focus.seed("pp-list", null); }
+  function reset() { drawn = {}; draftOrder = null; Focus.seed("pp-list", null); }
+  function openDraft(state, content, id) { draftOrder = id; render(state, content); }
+  function closeDraft() { draftOrder = null; }
   function onUpdate(fn) { onChange = fn; }
 
   /* SIG_IMG is exported so the set piece ends an introduction with the SAME
      hand that signs every Act — one scan, one size, drawn by two ceremonies
      as a clip reveal. */
-  return { render, reset, onUpdate, stageTrack, SIG_IMG };
+  return { render, reset, onUpdate, stageTrack, SIG_IMG, openDraft, closeDraft };
 })();

@@ -27,6 +27,8 @@
 .tab .tut-tab-hint{position:absolute;top:0;left:0;display:inline-flex;align-items:center;justify-content:center;
   box-sizing:border-box;width:11px;height:11px;border:1px solid var(--gold);border-radius:50%;
   color:var(--ink);font-size:8.5px;line-height:1;letter-spacing:0;font-weight:bold;}
+@media(prefers-reduced-motion:no-preference){.tut-tab-hint{animation:tutHintPulse .8s ease-in-out 2;}}
+@keyframes tutHintPulse{50%{background:var(--gold-lt);box-shadow:0 0 0 2px var(--gold-lt);}}
 #tb-optpanel{max-height:calc(100vh - 80px);max-width:calc(100vw - 16px);overflow-y:auto;}
 .tut-review{margin:8px 0;font-family:var(--f-ui);font-size:12px;}
 .tut-review summary{cursor:pointer;}

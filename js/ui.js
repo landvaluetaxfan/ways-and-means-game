@@ -201,6 +201,7 @@ const UI = (function () {
 
   function boot(state, content) {
     st = state; C = content;
+    if (typeof Papers !== "undefined" && Papers.closeDraft) Papers.closeDraft();
     moneyCall = null;
     Object.keys(arrived).forEach(k => delete arrived[k]);
     const sitting = $("#s-sit");
@@ -221,6 +222,12 @@ const UI = (function () {
     wired = true;
     /* THE SANDBOX'S CONTROLS AND ITS FINDER, delegated once (design/47) */
     document.addEventListener("click", sandboxClick);
+    $("#gov-docs").addEventListener("click", e => {
+      const button = e.target.closest("[data-sign-order]");
+      if (button && !button.disabled) signOrder(button.dataset.signOrder);
+    });
+    $("#sitting-body").addEventListener("scroll", syncOpeningScroll);
+    window.addEventListener("resize", syncOpeningScroll);
     const find = document.getElementById("sbx-find");
     if (find) find.addEventListener("input", () => drawSandbox());
     /* A TAB CLICK IS THE PLAYER GOING TO LOOK. The notice card that pointed at a
@@ -499,6 +506,14 @@ const UI = (function () {
      absorbed by the wrapper's own depth count, so the capture happens
      once on the outside and not four times. */
   function drawAll() {
+    const opening = openingUnread();
+    $("#shell").classList.toggle("opening", opening);
+    if (!opening) {
+      const hint = $("#intro-scroll-cue"); if (hint) hint.remove();
+      $("#sitting-body").classList.remove("intro-scroll-more");
+    }
+    document.querySelectorAll(".tab[data-t]").forEach(tab => { tab.disabled = opening && tab.dataset.t !== "sit"; });
+    if (opening && screen !== "sit") openTab("sit");
     document.querySelectorAll("[data-setup-text]").forEach(el => {
       el.textContent = Engine.text(el.dataset.setupText,C);
     });
@@ -656,6 +671,7 @@ const UI = (function () {
      the ? mode's tab stops, which are marked on the VISIBLE screen only.
      tools/uxtest.js asserts that, and caught exactly this. */
   function openTab(name) {
+    if (name !== "sit" && openingUnread()) return;
     const doc = $("#gov-docs");
     if (name !== "gov" && doc && !doc.hidden && doc.__closeDoc) doc.__closeDoc();
     document.querySelectorAll(".tab").forEach(o =>
@@ -668,6 +684,15 @@ const UI = (function () {
     /* The globe is drawn lazily: it is the one expensive thing on the
        screen and there is no reason to build it before the tab is opened. */
     if (screen === "world") drawWorld();
+  }
+  function openingUnread() {
+    const adm = C && (C.administrations || []).find(a => a.id === st.admin);
+    return !!(adm && adm.intro && !(st.flags || {})._introRead && !(st.flags || {}).sandbox);
+  }
+  function syncOpeningScroll() {
+    const box = $("#sitting-body"), more = openingUnread() && box.scrollHeight - box.clientHeight - box.scrollTop > 2;
+    box.classList.toggle("intro-scroll-more", !!more);
+    const hint = $("#intro-scroll-cue"); if (hint) hint.hidden = !more;
   }
 
   function setStatus(text, level) {
@@ -2793,6 +2818,20 @@ const UI = (function () {
     Focus.around(() => drawAll(), { sel:govWorkId("si") === id ? "#gov-file-title"
       : govPreferences(st.admin) === null ? "#gov-pending-hdr" : '[data-gov-summary="' + owner + '"]' });
   }
+  function signOrder(id) {
+    const si = C.instrumentById[id], r = acted(() => Engine.makeInstrument(st, C, id));
+    if (!r.ok) {
+      cue("deny"); setStatus(r.reason, "transient"); Papers.openDraft(st, C, id);
+      $("#gov-doc-close").focus({preventScroll:true}); return;
+    }
+    Papers.closeDraft(); Focus.seed("pp-list", id);
+    cue("stamp"); score("order");
+    setStatus(si.number + (si.procedure === "affirmative"
+      ? " laid — it takes effect only when the House approves it"
+      : " made — in force at once, and prayable"), "transient");
+    redrawGovWork({dataset:{make:id}}); afterAction();
+    $("#gov-doc-close").focus({preventScroll:true});
+  }
   function drawGovBusiness(siRows) {
     const vac = (C.cabinet || []).filter(p => !(st.cabinet[p.id] || {}).holder);
     const vacancies = $("#gov-vacancies"); vacancies.hidden = !vac.length;
@@ -3154,7 +3193,7 @@ const UI = (function () {
                                  "does cost time." }
                        : { free: "Costs no order-paper time. That is the point of an order: " +
                                  "it is in force at once, and prayable." },
-                     chk.ok ? null : chk.reason) + `>Make</button>`}
+                     chk.ok ? null : chk.reason) + `>Open order</button>`}
           ${s.awaitingApproval ? (function () {
             /* THE VOTE THAT WAS NEVER THERE. The row said "awaiting approval"
                and offered nothing to do about it, because nothing in the
@@ -3227,6 +3266,7 @@ const UI = (function () {
       if (doc.__docKey) document.removeEventListener("keydown", doc.__docKey, true);
       doc.__docKey = null;
       doc.hidden = true;
+      Papers.closeDraft();
       const origin = document.getElementById(doc.dataset.returnControl) || (id ? $("#gov-si").querySelector('[data-read="' + id + '"]')
                         : $("#pp-list tr.sel"));
       if (origin) origin.focus({ preventScroll:true });
@@ -3255,25 +3295,8 @@ const UI = (function () {
       e.stopPropagation(); closeDoc();
     };
     $("#gov-si").querySelectorAll("[data-make]").forEach(b => b.addEventListener("click", () => {
-      const si = (C.instruments || []).find(x => x.id === b.dataset.make);
-      Dialog.confirm("Make " + (si ? si.number + " — " + si.title : b.dataset.make) + "?\n\n" +
-        (si && si.procedure === "affirmative"
-          ? "It waits for the House's approval before taking effect."
-          : "It takes effect at once and may be prayed against."),
-        { title:"Make the order?", yes:"Make" }, ok => {
-      if (!ok) return;
-      const r = acted(() => Engine.makeInstrument(st, C, b.dataset.make));
-      if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); Dialog.alert(r.reason, { title: "Order refused" }); }
-      else {
-        cue("stamp"); score("order");
-        setStatus((si ? si.number : b.dataset.make) +
-                  (si && si.procedure === "affirmative"
-                    ? " laid \u2014 it takes effect only when the House approves it"
-                    : " made \u2014 in force at once, and prayable"),
-                  "transient");
-      }
-      redrawGovWork(b); afterAction();
-      });
+      Papers.openDraft(st, C, b.dataset.make);
+      openDoc(b.dataset.make, b.id);
     }));
     $("#gov-si").querySelectorAll("[data-approve]").forEach(b => b.addEventListener("click", () => {
       const f = Engine.approvalForecast(st, C, b.dataset.approve);
@@ -7169,17 +7192,20 @@ const UI = (function () {
        around it — so the first thing a player reads is already inside the
        chrome they are about to govern from.
 
-       It deliberately does NOT take the screen. Everywhere else a set piece
-       collapses the columns either side, because a turn the world takes
-       should; an introduction is the opposite, and is better for being
-       surrounded by the instrument panel it is teaching you to read. */
+       The introduction takes the screen like a superevent. Other tabs wait
+       until the player takes office; a scroll cue points to any unread page. */
     if (!(st.flags || {})._introRead) {
       const adm = (C.administrations || []).find(a => a.id === st.admin);
       if (adm && adm.intro && typeof SetPiece !== "undefined") {
         const sitIntro = $("#s-sit");
-        if (sitIntro) sitIntro.classList.remove("setpiece", "fullpage", "super");
+        if (sitIntro) sitIntro.classList.add("setpiece", "super");
         box.innerHTML = SetPiece.html({ setpiece: adm.intro },
                                       { go: "Take office", play: adm.play || null }).html;
+        const oldHint = $("#intro-scroll-cue"); if (oldHint) oldHint.remove();
+        const hint = document.createElement("span"); hint.id = "intro-scroll-cue";
+        hint.className = "intro-scroll-cue"; hint.textContent = "More below ↓"; hint.hidden = true;
+        box.closest(".panel").querySelector("h2").appendChild(hint);
+        (window.requestAnimationFrame || (fn => setTimeout(fn, 0)))(syncOpeningScroll);
         /* ARMED WITH THE PAGE, WRITTEN ON THE CLICK. `armed` is false where
            the path cannot be measured (jsdom, a browser without
            getTotalLength); then there is no stroke to wait for, so the click

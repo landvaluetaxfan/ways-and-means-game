@@ -82,7 +82,7 @@ const Tutorial = (function () {
   function markTabs() {
     const st = typeof UI !== "undefined" && UI.state && UI.state(), shell = $("#shell");
     const active = !silent() && mode() !== "off" && shell && shell.classList.contains("on") && st &&
-      !(st.flags && st.flags.sandbox) && !Engine.checkEnd(st, UI.content()).over;
+      !(st.flags && st.flags.sandbox) && !$("#shell.opening") && !Engine.checkEnd(st, UI.content()).over;
     const done = taught();
     const pending = active ? eligible().filter(s => !done.includes(s.id) && !dismissedNow[s.id]) : [];
     document.querySelectorAll(".tab[data-t]").forEach(tab => {
@@ -142,7 +142,7 @@ const Tutorial = (function () {
   function pick() {
     if (silent() || mode() === "off") return null;
     const shell = $("#shell"); if (!shell || !shell.classList.contains("on")) return null;
-    if (document.querySelector(".dlg-back, #tb-optpanel.on")) return null;               /* a dialog is up */
+    if (document.querySelector(".dlg-back, #tb-optpanel.on, #shell.opening, #gov-docs:not([hidden])")) return null;
     if (typeof UI === "undefined" || !UI.state) return null;
     const st = UI.state(); if (!st || (st.flags && st.flags.sandbox) || Engine.checkEnd(st, UI.content()).over) return null;
     const done = taught(), tab = activeTab();

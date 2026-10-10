@@ -17,7 +17,8 @@ const tick = () => new Promise(r => w.setTimeout(r, 20));
   w.eval(`Element.prototype.getBoundingClientRect = function () { return { left: 40, top: 40, right: 340, bottom: 140, width: 300, height: 100, x: 40, y: 40 }; };
           Object.defineProperty(document.documentElement, "clientWidth", { value: 1366, configurable: true });
           Object.defineProperty(document.documentElement, "clientHeight", { value: 768, configurable: true });`);
-  H.boot(); H.newGame();
+  H.boot(); w.eval("Shell.setOpt('motion', false)"); H.newGame();
+  ok("taking office unlocks the terminal before lessons begin", !q("#shell.opening"));
   w.eval("Shell.setOpt('motion', false); Shell.setOpt('tutorial', 'on'); Shell.setOpt('taught', '')");
   /* two synthetic steps, so the logic is tested apart from whatever Act I teaches */
   const S = w.eval("UI.content().setup");

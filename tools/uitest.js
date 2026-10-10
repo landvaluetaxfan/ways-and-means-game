@@ -537,6 +537,13 @@ ok("each order appears under its authoring department",
   w.eval('Motion.notify=function(n){window.__deskNotices.push(n);return window.__deskNotify(n);};');
   const make=affirmative && $('#gov-file-body [data-make="'+affirmative.id+'"]');
   if(make)make.click();
+  const sign=$('#pp-doc [data-sign-order]');
+  const beforeSign=w.eval('Engine.save(UI.state())');
+  ok('an affirmative order opens for signing without being made', !!sign && !w.eval('UI.state().instruments['+JSON.stringify(affirmative && affirmative.id)+'].made'));
+  if(sign)sign.click();
+  const afterSign=w.eval('Engine.save(UI.state())');
+  if(sign)sign.click();
+  ok('signing executes once and leaves a signed document', !!sign && beforeSign!==afterSign && afterSign===w.eval('Engine.save(UI.state())') && !!$('#pp-doc .sigimg') && !$('#pp-doc [data-sign-order]'));
   w.eval('Motion.notify=window.__deskNotify;');
   ok('making an affirmative order announces pending approval without claiming it is in force',
     !!make && w.__deskNotices.some(n=>n.tab==='gov' && /awaiting approval/.test(n.text)) &&
@@ -921,6 +928,9 @@ ok("a new government has its own seed, not the engine's default",
 
 /* SAVE ROUND-TRIP through a slot */
 try {
+  /* This round-trip represents a government already in office. Unread openings are locked. */
+  for (let n=0;n<2;n++) { const go=$('#sitting-body [data-sp-go]'); if(go)go.click(); }
+  ok('taking office unlocks the other tabs', !$('.tab[data-t="orb"]').disabled);
   $("#tb-save").click();
   const raw = w.localStorage.getItem("wm.slot.1");
   const slot = JSON.parse(raw);

@@ -148,9 +148,27 @@ H.newGame();
   const beforeMake = w.eval('Engine.save(UI.state())');
   w.eval('Dialog.confirm = function(m,o,cb) { cb(false); };');
   if (make) make.click();
-  ok('canceling an overview order leaves the entire simulation unchanged',
-    !!make && beforeMake === w.eval('Engine.save(UI.state())'));
+  ok('opening an order shows an unsigned document without changing the simulation',
+    !!make && !doc.querySelector('#gov-docs').hidden && !!doc.querySelector('#pp-doc [data-sign-order]') &&
+    !doc.querySelector('#pp-doc .sigimg') && beforeMake === w.eval('Engine.save(UI.state())'));
+  w.eval('UI.redraw()');
+  ok('the unsigned document survives a redraw', !!doc.querySelector('#pp-doc [data-sign-order]'));
+  if (!doc.querySelector('#gov-docs').hidden) doc.querySelector('#gov-doc-close').click();
+  ok('closing the unsigned order leaves the entire simulation unchanged', beforeMake === w.eval('Engine.save(UI.state())'));
   w.eval('Dialog.confirm = window.__businessConfirm;');
+  const negative = w.eval("UI.content().instruments.find(i => i.procedure === 'negative' && Engine.canMake(UI.state(),UI.content(),i.id).ok)");
+  doc.querySelector('[data-gov-all]').click();
+  const negativeInspect = negative && doc.querySelector('#gov-business [data-inspect="' + negative.id + '"]');
+  if (negativeInspect) negativeInspect.click();
+  const reopen = negative && doc.querySelector('#gov-inspector [data-make="' + negative.id + '"]');
+  if (reopen) reopen.click();
+  const signOrderButton = doc.querySelector('#pp-doc [data-sign-order]');
+  if (signOrderButton) signOrderButton.click();
+  ok('signing a negative order makes it effective and leaves its signed paper',
+    !!signOrderButton && w.eval('UI.state().instruments[' + JSON.stringify(negative && negative.id) + '].inForce') &&
+    !!doc.querySelector('#pp-doc .sigimg') && !doc.querySelector('#pp-doc [data-sign-order]'));
+  if (!doc.querySelector('#gov-docs').hidden) doc.querySelector('#gov-doc-close').click();
+  w.eval('UI.boot(Engine.load(' + JSON.stringify(beforeMake) + ',UI.content()),UI.content()); UI.openTab("gov")');
   const head = business() && [...business().querySelectorAll('[data-ini]')].find(b => !b.disabled);
   if (head) { head.click(); const current = doc.getElementById(head.id); if (current) current.focus(); }
   w.eval('UI.redraw(); UI.redraw();');
@@ -259,8 +277,8 @@ H.ok("the government introduces itself on the first sitting",
      H.seen.intro, H.seen.intro ? "the page was there" : "the sitting opened on an event");
 H.ok("and the introduction opens on its epigraph",
      H.seen.epigraph, H.seen.epigraph ? "rendered" : "no .sp-epigraph in the sitting");
-H.ok("and it is surrounded by the terminal, not taking the screen",
-     H.seen.chromed, H.seen.chromed ? "the columns stayed" : "#s-sit went full-bleed");
+H.ok("the introduction uses the superevent presentation", H.seen.super);
+H.ok("the unread introduction locks tabs and programmatic navigation", H.seen.locked && H.seen.lockedRoute);
 /* THE CAMPAIGN AS A PLAY (design/56): the cast of characters is part of
    the introduction, before the signature, which stays its last word; the
    first act's card follows the introduction before the first sitting. */
@@ -1737,6 +1755,10 @@ try {
      !!mk && !/in force at once/.test(mk.getAttribute("data-tip-body") || ""),
      mk ? mk.getAttribute("data-tip-body") : "no control");
   mk.click();
+  const sign = doc.querySelector('#pp-doc [data-sign-order="' + aff + '"]');
+  ok("the affirmative order must be signed in its document", !!sign);
+  if (sign) sign.click();
+  doc.querySelector('#gov-doc-close').click();
   const ap = doc.querySelector('#gov-si [data-approve="' + aff + '"]');
   ok("laid, it offers the House's approval", !!ap && !ap.disabled);
   const row = () => doc.querySelector('#pp-list [data-doc="' + aff + '"] .flag');

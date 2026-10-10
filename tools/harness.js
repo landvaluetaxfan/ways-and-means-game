@@ -139,6 +139,10 @@ function newGame() {
   seen.intro = !!intro;
   seen.epigraph = !!(intro && intro.querySelector(".sp-epigraph"));
   seen.chromed = !!(intro && !w.document.querySelector("#s-sit.setpiece"));
+  seen.super = !!(intro && w.document.querySelector('#s-sit.super'));
+  seen.locked = [...w.document.querySelectorAll('.tab[data-t]')].filter(t => t.dataset.t !== 'sit').every(t => t.disabled);
+  w.eval("UI.openTab('gov')");
+  seen.lockedRoute = !!w.document.querySelector('#s-sit.on');
   /* THE ROLE AND THE CAST OF CHARACTERS (design/56), part of the
      introduction and before its signature, which closes it */
   const secs = intro ? [...intro.querySelectorAll(".sp-sec")] : [];
