@@ -1574,6 +1574,12 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
   #s-world #w-side,#s-world #w-actors{flex:1 1 auto;min-height:140px;}
   #s-world .grid{flex:0 0 auto;}
 
+  /* A stacked page has room for the bill's complete explanation. The
+     desktop zero flex basis otherwise leaves it a 120px scrolling slot. */
+  #cham-biz > .panel:first-child,#cham-biz > .panel:nth-child(2){flex:0 0 auto;max-height:none;min-height:0;}
+  #cham-biz > .panel > .pbody,#cham-biz > .panel > .sbwrap{flex:0 0 auto;overflow:visible;}
+  #cham-biz #bill-detail{overflow:visible;}
+
   /* one column: the plan is already fluid, nothing to release */
   .newsbody{column-count:1;}
 }
@@ -2265,6 +2271,12 @@ body.no-motion *{animation:none !important;}
   .menu-tagline{font-size:13px;}
   .mbtn{width:100%;max-width:306px;}
   .slot{flex-wrap:wrap;}
+}
+/* On a short window the printed footer follows the menu controls instead
+   of pinning them into a strip too small to use. */
+@media (max-height:600px){
+  #menu{overflow:auto;}
+  .menu-stage{flex:0 0 auto;overflow:visible;}
 }
 
 
@@ -3243,7 +3255,10 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
    auto height, so it did nothing, and an expanded row grew the grid past
    the viewport — the window "expanding" underneath the decision. The
    screen gets the definite height instead, exactly as #s-orb does. */
-.g-sit{align-items:stretch;grid-template-rows:minmax(0,1fr);}
+.g-sit{align-items:stretch;grid-template-rows:minmax(0,1fr);grid-template-areas:"wire business brief";}
+.g-sit > .stackmain,.g-sit > .sbwrap:has(> .stackmain){grid-area:business;}
+.g-sit > .p-brief,.g-sit > .sbwrap:has(> .p-brief){grid-area:brief;}
+.g-sit > .p-wire,.g-sit > .sbwrap:has(> .p-wire){grid-area:wire;}
 #s-sit.screen.on{display:flex;flex-direction:column;height:100%;min-height:0;}
 #s-sit .grid{flex:1 1 auto;min-height:0;}
 #s-sit .panel{min-height:0;}
@@ -3284,7 +3299,7 @@ s.p-more{width:5px;border-radius:0;background:var(--ink-soft);}
    of. This has to sit AFTER the rules it undoes — the shared breakpoint
    is 1100 lines above and would lose to them on source order alone. */
 @media (max-width:1080px){
-  .g-sit{grid-template-rows:none;}
+  .g-sit{grid-template-rows:none;grid-template-areas:"business" "brief" "wire";}
   #s-sit.screen.on{display:block;height:auto;min-height:0;}
   #s-sit .grid{flex:none;}
   #s-sit #sitting-body,#s-sit .stack>.panel:last-child>.pbody{overflow:visible;}
@@ -3762,6 +3777,8 @@ body.no-motion .lroll.arrive{animation:none;opacity:1;transform:none;}
 #s-sit.super .stack:not(.stackmain){display:none;}
 #s-sit.super .stackmain{flex:1 1 auto;min-height:0;}
 #s-sit.super .stackmain > .panel{flex:1 1 auto;min-height:0;}
+#s-sit.super .g-sit > .sbwrap:not(:has(> .stackmain)),
+#s-sit.fullpage .g-sit > .sbwrap:not(:has(> .stackmain)){display:none;}
 .opening .tab:disabled{opacity:.5;cursor:default;}
 .intro-scroll-cue{float:right;color:var(--ink);background:var(--gold-lt);padding:1px 6px;font-size:11px;letter-spacing:0;text-transform:none;}
 #sitting-body.intro-scroll-more::-webkit-scrollbar-thumb{background:var(--gold);}

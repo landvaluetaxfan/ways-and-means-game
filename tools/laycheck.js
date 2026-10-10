@@ -314,7 +314,27 @@ const HELPERS = `
   }
 
   function measure(tab) {
-    return measureIn(document.querySelector(".screen.on"), tab).concat(measureGridLayout(tab), measureEconomy(tab));
+    var active = document.querySelector(".screen.on");
+    if (!active || active.id !== "s-" + tab.split(":")[0].split("-")[0]) {
+      /* Expanded states use labels such as gov-expanded on the same tab. */
+      var expected = tab.split(":")[0].split("-")[0];
+      if (["sit","gov","cham","party","rel","econ","orb","world","cx","sbx"].indexOf(expected) >= 0)
+        return [{tab:tab,el:'.screen.on',kind:'LAYOUT',by:1,detail:'The requested tab is not active.'}];
+    }
+    var reading = [];
+    if (innerWidth <= 1080 && active && active.id === 's-sit' && !active.matches('.super,.fullpage')) {
+      var business = document.querySelector('#sitting-body').getBoundingClientRect();
+      var wire = document.querySelector('#gov-wire').getBoundingClientRect();
+      var brief = document.querySelector('#sit-brief').getBoundingClientRect();
+      if (business.top > wire.top || business.top > brief.top)
+        reading.push({tab:tab,el:'#sitting-body',kind:'LAYOUT',by:1,detail:'Current business follows history or advice in the stacked layout.'});
+    }
+    if (innerWidth <= 1080 && active && active.id === 's-cham') {
+      var detail = document.querySelector('#bill-detail');
+      if (detail && detail.textContent.trim() && detail.scrollHeight > detail.clientHeight + 2)
+        reading.push({tab:tab,el:'#bill-detail',kind:'LAYOUT',by:detail.scrollHeight-detail.clientHeight,detail:'The stacked bill is compressed into an internal scroller.'});
+    }
+    return measureIn(active, tab).concat(measureGridLayout(tab), measureEconomy(tab), reading);
   }
 `;
 
@@ -344,6 +364,8 @@ const PROBE = `
   try {
     window.__NO_TUTORIAL = true;      /* the card is measured on its own, below */
     Shell.boot(CONTENT);
+    Shell.setOpt("motion", false);
+    Shell.setOpt("stream", false);
     Shell.setOpt("govDepartments", {});
     menu = (function () {
       var out = [];
@@ -355,7 +377,8 @@ const PROBE = `
 
       /* A BAND THAT GROWS AS THE GLASS SHRINKS. It is furniture, not content,
          so a third of a short screen is a fault however correct its CSS. */
-      if (br.height > vh * 0.28)
+      var visibleBand = Math.max(0, Math.min(vh, br.bottom) - Math.max(0, br.top));
+      if (visibleBand > vh * 0.28)
         out.push({ what: "the printed band", detail: Math.round(br.height) +
                    "px is " + Math.round(br.height / vh * 100) + "% of a " + vh + "px screen" });
 
@@ -384,6 +407,22 @@ const PROBE = `
     var spGo = document.querySelector("[data-sp-go]");
     if (spGo) spGo.click();
     document.querySelector('[data-new="1"]').click();
+    /* Take office in the running terminal, then read the act card. The
+       opening locks the other tabs; measuring Sitting under their names
+       gives a false pass. */
+    for (var introBeat = 0; introBeat < 2; introBeat++) {
+      var openingGo = document.querySelector('#sitting-body [data-sp-go]');
+      if (openingGo) openingGo.click();
+    }
+    if (document.querySelector('#shell.opening')) throw new Error('the introduction did not unlock the tabs');
+    /* A prepared mid-act state exposes the bills and orders whose panels
+       are intentionally absent before their introductory scenes. */
+    var layoutState = UI.state(), layoutContent = UI.content();
+    while (layoutState.sitting < 9 && !Engine.checkEnd(layoutState,layoutContent).over) {
+      Engine.playSitting(layoutState,layoutContent,function(){return 0;});
+      Engine.advance(layoutState,layoutContent);
+    }
+    UI.boot(layoutState,layoutContent);
   } catch (e) { return done({ error: "boot: " + (e && e.message) }); }
 
 ${HELPERS}
@@ -393,7 +432,7 @@ ${HELPERS}
     if (!btn) continue;
     try { btn.click(); } catch (e) { continue; }
     var on = document.querySelector(".screen.on");
-    drawn.push(tabs[t] + (on ? "" : " (NOT DRAWN)"));
+    drawn.push(tabs[t] + (on && on.id === "s-" + tabs[t] ? "" : " (NOT DRAWN)"));
     found = found.concat(measure(tabs[t]));
     var supply = document.querySelector('#supply-warning:not([hidden])');
     if (supply) {
