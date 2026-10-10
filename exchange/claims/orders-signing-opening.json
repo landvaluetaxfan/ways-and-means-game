@@ -1,0 +1,17 @@
+{
+  "brief": "orders-signing-opening",
+  "lane": "codex",
+  "since": "2026-10-10",
+  "files": [
+    "js/ui.js",
+    "js/papers.js",
+    "js/tutorial.js",
+    "css/terminal.css",
+    "tools/harness.js",
+    "tools/uxtest.js",
+    "tools/uitest.js",
+    "tools/laycheck.js",
+    "tools/tutest.js"
+  ],
+  "note": ""
+}
