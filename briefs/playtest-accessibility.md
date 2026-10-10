@@ -214,7 +214,13 @@ Return a recommendation covering which directions deserve exploration, which sho
 
 Once a direction is agreed, record its rationale in design and put scoped executable work in briefs, following the project lanes. Claude owns prose, canon and design judgement; Codex can build specified engine, interface and checks. Respect existing claims and concurrent work. This handoff itself does not authorise wholesale rewriting of Act I or an unsolicited engine redesign.
 
-## 13. Evaluate with a new player
+## 13. Further playtester evidence: returning after following links
+
+On 9 October the author shared a Discord exchange. The tester said: "if i click on links, there seems to be no back button, i have to navigate back by memory". The author (chery cheesecake) replied that habitual use of mouse side buttons had made this easy to overlook. The screenshot does not identify which links or destinations were involved.
+
+Treat this as evidence that the way back was absent or undiscoverable in the tester's route. The current Concordance already has an arrow-only Back control (index.html, cx-back) and its own article history; do not infer that adding a second article-history button solves the report. Explore visible, plainly labelled Back navigation that restores the originating screen, selection and scroll after reference and cross-tab links. Check the existing arrow's discoverability, keyboard operation and narrow-screen placement, and whether mouse/browser Back currently follows the same route. Verify with a fresh player without mouse side buttons. Record the exact route before choosing a navigation-history design.
+
+## 14. Evaluate with a new player
 
 Use PLAYTEST.md's neutral observation method. Ask the player to explain what they think is happening rather than teaching them during the test. Capture the actual transcript, browser, window size and zoom, with the save and notes. Ask for their reasoning about delayed consequences before drawing conclusions about comprehension.
 
