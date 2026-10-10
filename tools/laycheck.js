@@ -395,6 +395,13 @@ ${HELPERS}
     var on = document.querySelector(".screen.on");
     drawn.push(tabs[t] + (on ? "" : " (NOT DRAWN)"));
     found = found.concat(measure(tabs[t]));
+    var supply = document.querySelector('#supply-warning:not([hidden])');
+    if (supply) {
+      found = found.concat(measureIn(supply, tabs[t] + ': supply warning'));
+      var supplyBox = supply.getBoundingClientRect();
+      if (supplyBox.left < -2 || supplyBox.right > innerWidth + 2 || supplyBox.bottom > innerHeight + 2)
+        found.push({tab:tabs[t],el:'#supply-warning',axis:'screen',by:Math.max(-supplyBox.left,supplyBox.right-innerWidth,supplyBox.bottom-innerHeight)});
+    }
     if (tabs[t] === "econ") {
       /* The opening annual record cannot expose a squeezed session line. */
       var economyState = UI.state(), oldReserveHistory = economyState.solvencyHistory, oldSitting = economyState.sitting;

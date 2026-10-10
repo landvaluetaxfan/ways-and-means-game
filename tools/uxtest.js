@@ -12,6 +12,63 @@ H.banner("INTERFACE AND INTERACTION");
 H.boot();
 H.newGame();
 
+/* Supply remains visible away from the Chamber; the final rise is a
+   deliberate choice. These fixtures leave the engine's real loss rule on. */
+{
+  const original=w.eval('UI.state()'), originalC=w.eval('UI.content()');
+  const probe=w.eval(`(function(){
+    const base=UI.content(), bill=base.bills.find(b=>b.test==='supply');
+    const c={...base,events:[],matters:[],setup:{...base.setup,reveals:{}}};
+    const s=Engine.newGame(c);s.admin=UI.state().admin;s.flags._introRead=true;s.flags._act1=true;s.queue=[];
+    s.sitting=s.risesAt-5;s.slots.total=6;s.slots.used=0;s.slots.reserved={};
+    s.bills[bill.id]={...s.bills[bill.id],stage:'first_reading',dead:false};
+    Shell.setOpt('motion',false);UI.boot(s,c);UI.openTab('econ');return {s,c,id:bill.id};
+  })()`);
+  const warning=()=>w.document.querySelector('#supply-warning:not([hidden])');
+  const before=w.eval('Engine.save(UI.state())');
+  ok('unsecured supply is visible on another tab',!!warning() && /supply/i.test(warning().textContent));
+  ok('supply warning reports actual remaining work and available time',/5 slots needed/.test(warning()?.textContent||'') && /6 available/.test(warning()?.textContent||''));
+  warning()?.querySelector('[data-review-supply]')?.click();
+  ok('review supply selects the bill without acting',!!w.document.querySelector('#s-cham.on tr.sel[data-bill="'+probe.id+'"]') && before===w.eval('Engine.save(UI.state())'));
+  probe.s.slots.used=2;w.eval('UI.redraw()');
+  ok('insufficient parliamentary time escalates the warning',warning()?.classList.contains('urgent') && /insufficient/i.test(warning()?.textContent||''));
+  probe.s.slots.reserved[probe.id]=2;w.eval('UI.redraw()');
+  ok('bill-reserved time counts towards supply',/6 available/.test(warning()?.textContent||'') && !/insufficient/i.test(warning()?.textContent||''));
+  probe.s.bills[probe.id].stage='awaiting_assent';w.eval('UI.redraw()');
+  ok('a carried bill awaits assent rather than another vote',/awaiting assent/i.test(warning()?.textContent||'') && !/slots needed/.test(warning()?.textContent||''));
+  probe.s.bills[probe.id].stage='assented';probe.s.bills[probe.id].dead=true;w.eval('UI.redraw()');
+  ok('secured supply clears the warning',!warning());
+  probe.s.bills[probe.id].stage='report';probe.s.bills[probe.id].dead=false;
+  probe.s.flags._introRead=false;w.eval('UI.redraw()');
+  ok('supply warning waits during the locked introduction',!warning());
+  probe.s.flags._introRead=true;probe.c.setup.reveals={orderpaper:{when:{flags:['ux_supply_reveal']}}};w.eval('UI.redraw()');
+  ok('supply warning respects the campaign introduction of the order paper',!warning());
+  probe.c.setup.reveals={};probe.s.sitting=probe.s.risesAt-2;
+  w.eval("UI.boot(UI.state(),UI.content()); UI.openTab('sit')");
+  const fast=w.document.querySelector('#btn-until');if(fast)fast.click();
+  ok('sitting until business cannot skip past the fatal supply deadline',!!fast && probe.s.sitting===probe.s.risesAt && !probe.s.supplyLost);
+  probe.s.sitting=probe.s.risesAt;w.eval("UI.boot(UI.state(),UI.content()); UI.openTab('sit')");
+  const dialog=w.eval('Dialog'), confirm=dialog.confirm;
+  let question=null, answer=null;
+  dialog.confirm=(msg,opts,cb)=>{question={msg,opts};answer=cb;};
+  const finalSave=w.eval('Engine.save(UI.state())');
+  w.document.querySelector('#btn-advance')?.click();
+  ok('the final rise names the loss before advancing',!!answer && /ends your government/i.test(question.msg) && question.opts.danger && finalSave===w.eval('Engine.save(UI.state())'));
+  if(answer) answer(false);
+  ok('reviewing instead of rising preserves the simulation',finalSave===w.eval('Engine.save(UI.state())') && !!w.document.querySelector('#s-cham.on'));
+  w.eval("UI.openTab('sit')");answer=null;w.document.querySelector('#btn-advance')?.click();
+  if(answer) answer(true);
+  ok('a deliberate final rise still loses supply',probe.s.supplyLost===true);
+  const shut={id:'ux_supply_shut',title:'Final sitting',body:'The decision is unavailable today.',choices:[{label:'Unavailable',when:{minSitting:99999},effects:{}}]};
+  probe.c.events=[shut];probe.c.eventById={...probe.c.eventById,[shut.id]:shut};
+  w.eval('UI.boot')(w.eval('Engine.load')(finalSave,probe.c),probe.c);w.eval("UI.openTab('sit')");
+  answer=null;const beforePass=w.eval('Engine.save(UI.state())'), pass=w.document.querySelector('#btn-pass');
+  if(pass)pass.click();if(answer)answer(false);
+  ok('cancelling a fatal pass preserves the unread decision',!!pass && !!answer && beforePass===w.eval('Engine.save(UI.state())'));
+  dialog.confirm=confirm;
+  w.eval('UI.boot')(original,originalC);
+}
+
 /* Editing a drawing then clicking once must not replace the pressed
    button during native blur/change, swallowing that click. */
 {

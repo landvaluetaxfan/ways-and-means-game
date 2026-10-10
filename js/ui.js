@@ -507,6 +507,7 @@ const UI = (function () {
      once on the outside and not four times. */
   function drawAll() {
     const opening = openingUnread();
+    drawSupplyWarning();
     $("#shell").classList.toggle("opening", opening);
     if (!opening) {
       const hint = $("#intro-scroll-cue"); if (hint) hint.remove();
@@ -7362,7 +7363,10 @@ const UI = (function () {
            item is taken off the queue by the first asking: an answer that
            arrived this way was lost (found 27 Sep, design/49). */
         let found = null;
-        for (let i = 0; i < LOOKAHEAD && !(found = Engine.nextEvent(st, C)); i++) Engine.advance(st, C);
+        for (let i = 0; i < LOOKAHEAD && !(found = Engine.nextEvent(st, C)); i++) {
+          if (fatalSupplyRise()) break;
+          Engine.advance(st, C);
+        }
         currentEvent = found; lastResult = null;
         cue("stamp");
         if (typeof Wait !== "undefined") Wait.brief(520);
@@ -7539,9 +7543,11 @@ const UI = (function () {
           ? "Continue to the sitting's business" : "Rise until the next sitting"}</button></div>`);
     const pass = $("#btn-pass");
     if (pass) pass.addEventListener("click", () => {
-      if (Engine.isEvent(e) && !(e.choices || []).length) Engine.acknowledge(st,C,e);
-      else Engine.passOver(st, e);
-      if (kind === "event") carryOn(); else rise();
+      if (kind === "event") {
+        if (!(e.choices || []).length) Engine.acknowledge(st,C,e);
+        else Engine.passOver(st, e);
+        carryOn();
+      } else rise(() => Engine.passOver(st, e));
     });
 
     /* Expanding is a user action, so it may cue. Drawing is not. */
@@ -7597,13 +7603,56 @@ const UI = (function () {
     return { n: 0 };
   }
 
-  function rise() {
-    Engine.advance(st, C); currentEvent = null; lastResult = null;
-    lastChanges = null; lastNotices = [];
-    openRow = { event: null, i: -1 };
-    setStatus("The House rises · sitting " + st.sitting, "transient");
-    if (typeof Wait !== "undefined") Wait.brief(200);
-    actionDraw(() => { drawAll(); saved(); afterAction(); arrive(); reveal(); });
+  function supplyWork() {
+    if (!st || inSandbox() || Engine.supplyCarried(st, C) || !Engine.supplyPending(st, C)) return null;
+    const bill = (C.bills || []).find(b => b.test === "supply" && !(st.bills[b.id] || {}).dead);
+    if (!bill) return null;
+    const stage = (st.bills[bill.id] || {}).stage || "drafting";
+    const at = Engine.STAGE_ORDER.indexOf(stage), vote = Engine.STAGE_ORDER.indexOf(Engine.DIVIDES_AT);
+    const needed = stage === "blocked" ? vote - Engine.STAGE_ORDER.indexOf("second_reading") + 2
+      : at >= 0 && at <= vote ? vote - at + 1 : null;
+    const available = st.slots.total - st.slots.used + ((st.slots.reserved || {})[bill.id] || 0);
+    return { bill, stage, needed, available, remaining: st.risesAt == null ? null : st.risesAt - st.sitting };
+  }
+  function reviewSupply() {
+    const work = supplyWork(); if (!work) return;
+    openTab("cham"); Focus.activate("cham-bills", work.bill.id);
+  }
+  function fatalSupplyRise() {
+    return !inSandbox() && st.risesAt != null && st.sitting >= st.risesAt &&
+      !st.dissolved && !Engine.checkEnd(st, C).over && !!supplyWork();
+  }
+  function drawSupplyWarning() {
+    const box = $("#supply-warning"); if (!box) return;
+    const work = supplyWork(), visible = work && !openingUnread() &&
+      Engine.revealed(st, C, "orderpaper") && !Engine.checkEnd(st, C).over;
+    box.hidden = !visible; if (!visible) return;
+    const due = work.remaining == null ? "before the House rises" : work.remaining <= 0
+      ? "before you leave this sitting" : "before the House rises in " + work.remaining + " sitting" + (work.remaining === 1 ? "" : "s");
+    const short = work.needed != null && work.available < work.needed;
+    box.classList.toggle("urgent", short || (work.remaining != null && work.remaining <= 2));
+    let text = work.bill.title + ": supply is unsecured. Rising without supply ends your government. ";
+    if (work.needed != null) text += "Complete its " + (work.needed === 1 ? "final vote " : "remaining stages and final vote ") + due + ". " +
+      work.needed + " slots needed; " + work.available + " available" + (short ? " — insufficient order-paper time." : ".");
+    else text += (work.stage === "referred" ? "Referred for review; awaiting assent" : "Awaiting assent") + "; supply must be secured " + due + ".";
+    const label = $("#supply-warning-text"); if (label.textContent !== text) label.textContent = text;
+    box.querySelector("[data-review-supply]").onclick = reviewSupply;
+  }
+  function rise(beforeAdvance) {
+    const proceed = () => {
+      if (typeof beforeAdvance === "function") beforeAdvance();
+      Engine.advance(st, C); currentEvent = null; lastResult = null;
+      lastChanges = null; lastNotices = [];
+      openRow = { event: null, i: -1 };
+      setStatus("The House rises · sitting " + st.sitting, "transient");
+      if (typeof Wait !== "undefined") Wait.brief(200);
+      actionDraw(() => { drawAll(); saved(); afterAction(); arrive(); reveal(); });
+    };
+    if (fatalSupplyRise()) {
+      Dialog.confirm("Supply is unsecured. Advancing now makes the House rise without supply and ends your government. Review the estimates before you leave this sitting.",
+        { title: "Rise without supply?", yes: "Rise without supply", no: "Review estimates", danger: true },
+        ok => { if (ok) proceed(); else reviewSupply(); });
+    } else proceed();
   }
 
   /* IS ANYTHING ELSE BEFORE THE HOUSE TODAY? Asked of a copy, because
